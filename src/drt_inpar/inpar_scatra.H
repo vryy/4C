@@ -181,6 +181,7 @@ namespace INPAR
       impltype_loma,
       impltype_elch_NP,
       impltype_elch_electrode,
+      impltype_elch_electrode_growth,
       impltype_elch_electrode_thermo,
       impltype_elch_diffcond,
       impltype_elch_diffcond_thermo,
@@ -215,8 +216,9 @@ namespace INPAR
     enum FDCheck
     {
       fdcheck_none,
-      fdcheck_local,
-      fdcheck_global
+      fdcheck_global,
+      fdcheck_global_extended,
+      fdcheck_local
     };
 
     /// possible options for output of means of scalars

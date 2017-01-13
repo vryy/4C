@@ -26,7 +26,11 @@
 
 #include "../drt_geometry/position_array.H"
 
+#include "../drt_io/io.H"
+
+#include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mortar/mortar_coupling3d_classes.H"
@@ -87,6 +91,19 @@ invcolsums_(Teuchos::null),
 lmside_(DRT::INPUT::IntegralValue<INPAR::S2I::InterfaceSides>(parameters,"LMSIDE")),
 matrixtype_(DRT::INPUT::IntegralValue<INPAR::S2I::MatrixType>(parameters,"MATRIXTYPE")),
 ntsprojtol_(parameters.get<double>("NTSPROJTOL")),
+intlayergrowth_evaluation_(DRT::INPUT::IntegralValue<INPAR::S2I::GrowthEvaluation>(parameters,"INTLAYERGROWTH_EVALUATION")),
+intlayergrowth_convtol_(parameters.get<double>("INTLAYERGROWTH_CONVTOL")),
+intlayergrowth_itemax_(parameters.get<int>("INTLAYERGROWTH_ITEMAX")),
+growthn_(Teuchos::null),
+growthnp_(Teuchos::null),
+growthdtn_(Teuchos::null),
+growthdtnp_(Teuchos::null),
+growthhist_(Teuchos::null),
+growthresidual_(Teuchos::null),
+growthincrement_(Teuchos::null),
+scatragrowthblock_(Teuchos::null),
+growthscatrablock_(Teuchos::null),
+growthgrowthblock_(Teuchos::null),
 slaveconditions_(),
 rowequilibration_(
     DRT::INPUT::IntegralValue<INPAR::S2I::EquilibrationMethods>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_rows
@@ -839,6 +856,250 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
   }
   }
 
+  // extract boundary conditions for scatra-scatra interface layer growth
+  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth",conditions);
+
+  // evaluate scatra-scatra interface layer growth
+  if(conditions.size())
+  {
+    switch(couplingtype_)
+    {
+      case INPAR::S2I::coupling_matching_nodes:
+      {
+        // create parameter list for elements
+        Teuchos::ParameterList condparams;
+
+        // action for elements
+        condparams.set<int>("action",SCATRA::bd_calc_s2icoupling);
+
+        // set global state vectors according to time-integration scheme
+        scatratimint_->Discretization()->ClearState();
+        scatratimint_->AddTimeIntegrationSpecificVectors();
+
+        // set interface state vector
+        scatratimint_->Discretization()->SetState("imasterphinp",imasterphinp_);
+
+        // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
+        islavematrix_->Zero();
+        imastermatrix_->Zero();
+        islaveresidual_->PutScalar(0.);
+        scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,imastermatrix_,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICouplingGrowth");
+        scatratimint_->Discretization()->ClearState();
+
+        // finalize interface matrices
+        islavematrix_->Complete();
+        imastermatrix_->Complete();
+
+        // assemble interface matrices into global system matrix depending on matrix type
+        switch(matrixtype_)
+        {
+          case INPAR::S2I::matrix_sparse:
+          {
+            // check matrix
+            const Teuchos::RCP<LINALG::SparseMatrix>& systemmatrix = scatratimint_->SystemMatrix();
+            if (systemmatrix == Teuchos::null)
+              dserror("System matrix is not a sparse matrix!");
+
+            // We assume that the scatra-scatra interface layer growth is caused by master-side fluxes to the interface,
+            // whereas there is no mass exchange between the interface layer and the slave side of the interface. Hence,
+            // we only need to linearize the master-side fluxes w.r.t. the slave-side and mster-side degrees of freedom.
+
+            // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
+            (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true);
+
+            // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
+            (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true,true);
+
+            break;
+          }
+
+          default:
+          {
+            dserror("Type of global system matrix for scatra-scatra interface coupling involving interface layer growth not recognized!");
+            break;
+          }
+        }
+
+        // As before, we only need to consider residual contributions from the master-side fluxes.
+
+        // transform master residuals and assemble into global residual vector
+        interfacemaps_->AddVector(icoup_->SlaveToMaster(islaveresidual_),2,scatratimint_->Residual(),-1.);
+
+        // compute additional linearizations and residuals in case of monolithic evaluation approach
+        if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
+        {
+          // extract map associated with scalar transport degrees of freedom
+          const Epetra_Map& dofrowmap_scatra = *scatratimint_->Discretization()->DofRowMap();
+
+          // extract map associated with scatra-scatra interface layer thicknesses
+          const Epetra_Map& dofrowmap_growth = *scatratimint_->Discretization()->DofRowMap(2);
+
+          // extract ID of boundary condition for scatra-scatra interface layer growth
+          // the corresponding boundary condition for scatra-scatra interface coupling is expected to have the same ID
+          const int condid = scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth")->GetInt("ConditionID");
+
+          // set global state vectors according to time-integration scheme
+          scatratimint_->Discretization()->ClearState();
+          scatratimint_->AddTimeIntegrationSpecificVectors();
+
+          // set interface state vector
+          scatratimint_->Discretization()->SetState("imasterphinp",imasterphinp_);
+
+          // compute additional linearizations and residuals depending on type of scalar transport system matrix
+          switch(matrixtype_)
+          {
+            case INPAR::S2I::matrix_sparse:
+            {
+              // assemble off-diagonal scatra-growth block of global system matrix, containing derivatives of discrete scatra residuals w.r.t. discrete scatra-scatra interface layer thicknesses
+              {
+                // initialize matrix block
+                scatragrowthblock_->Zero();
+
+                // initialize auxiliary matrix block for linearizations of slave fluxes w.r.t. scatra-scatra interface layer thicknesses
+                Teuchos::RCP<LINALG::SparseMatrix> islavematrix = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_)->SlaveDofMap(),81));
+
+                // initialize assembly strategy for auxiliary matrix block
+                DRT::AssembleStrategy strategy(
+                    0,
+                    2,
+                    islavematrix,
+                    Teuchos::null,
+                    Teuchos::null,
+                    Teuchos::null,
+                    Teuchos::null
+                    );
+
+                // create parameter list for elements
+                Teuchos::ParameterList condparams;
+
+                // set action for elements
+                condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_scatragrowth);
+
+                // evaluate off-diagonal linearizations arising from scatra-scatra interface coupling
+                scatratimint_->Discretization()->EvaluateCondition(condparams,strategy,"S2ICoupling",condid);
+
+                // finalize auxiliary matrix block
+                islavematrix->Complete(dofrowmap_growth,dofrowmap_scatra);
+
+                // assemble linearizations of slave fluxes associated with scatra-scatra interface coupling w.r.t. scatra-scatra interface layer thicknesses into global matrix block
+                scatragrowthblock_->Add(*islavematrix,false,1.,0.);
+
+                // derive linearizations of master fluxes associated with scatra-scatra interface coupling w.r.t. scatra-scatra interface layer thicknesses and assemble into global matrix block
+                FSI::UTILS::MatrixRowTransform()(*islavematrix,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*scatragrowthblock_,false);
+
+                // zero out auxiliary matrix block for subsequent evaluation
+                islavematrix->Zero();
+
+                // evaluate off-diagonal linearizations arising from scatra-scatra interface layer growth
+                scatratimint_->Discretization()->EvaluateCondition(condparams,strategy,"S2ICouplingGrowth",condid);
+
+                // finalize auxiliary matrix block
+                islavematrix->Complete(dofrowmap_growth,dofrowmap_scatra);
+
+                // derive linearizations of master fluxes associated with scatra-scatra interface layer growth w.r.t. scatra-scatra interface layer thicknesses and assemble into global matrix block
+                FSI::UTILS::MatrixRowTransform()(*islavematrix,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*scatragrowthblock_,true);
+
+                // finalize global matrix block
+                scatragrowthblock_->Complete(dofrowmap_growth,dofrowmap_scatra);
+
+                // apply Dirichlet boundary conditions to global matrix block
+                scatragrowthblock_->ApplyDirichlet(*scatratimint_->DirichMaps()->CondMap(),false);
+              }
+
+              // assemble off-diagonal growth-scatra block of global system matrix, containing derivatives of discrete scatra-scatra interface layer growth residuals w.r.t. discrete scatra degrees of freedom
+              {
+                // initialize matrix block
+                growthscatrablock_->Zero();
+
+                // initialize auxiliary matrix blocks for linearizations of scatra-scatra interface layer growth residuals w.r.t. slave-side and master-side scalar transport degrees of freedom
+                Teuchos::RCP<LINALG::SparseMatrix> islavematrix = Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap_growth,81));
+                Teuchos::RCP<LINALG::SparseMatrix> imastermatrix = Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap_growth,81));
+
+                // initialize assembly strategy for auxiliary matrix block
+                DRT::AssembleStrategy strategy(
+                    2,
+                    0,
+                    islavematrix,
+                    imastermatrix,
+                    Teuchos::null,
+                    Teuchos::null,
+                    Teuchos::null
+                    );
+
+                // create parameter list for elements
+                Teuchos::ParameterList condparams;
+
+                // set action for elements
+                condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_growthscatra);
+
+                // evaluate off-diagonal linearizations
+                scatratimint_->Discretization()->EvaluateCondition(condparams,strategy,"S2ICouplingGrowth",condid);
+
+                // finalize auxiliary matrix blocks
+                islavematrix->Complete(dofrowmap_scatra,dofrowmap_growth);
+                imastermatrix->Complete(dofrowmap_scatra,dofrowmap_growth);
+
+                // assemble linearizations of scatra-scatra interface layer growth residuals w.r.t. slave-side scalar transport degrees of freedom into global matrix block
+                growthscatrablock_->Add(*islavematrix,false,1.,0.);
+
+                // derive linearizations of scatra-scatra interface layer growth residuals w.r.t. master-side scalar transport degrees of freedom and assemble into global matrix block
+                FSI::UTILS::MatrixColTransform()(imastermatrix->RowMap(),imastermatrix->ColMap(),*imastermatrix,1.,ADAPTER::CouplingSlaveConverter(*icoup_),*growthscatrablock_,true,true);
+
+                // finalize global matrix block
+                growthscatrablock_->Complete(dofrowmap_scatra,dofrowmap_growth);
+              }
+
+              // assemble residual vector associated with scatra-scatra interface layer thicknesses and
+              // main-diagonal growth-growth block of global system matrix, containing derivatives of discrete scatra-scatra interface layer growth residuals w.r.t. discrete scatra-scatra interface layer thicknesses
+              {
+                // initialize matrix block and corresponding residual vector
+                growthgrowthblock_->Zero();
+                growthresidual_->PutScalar(0.);
+
+                // initialize assembly strategy for main-diagonal growth-growth block and
+                DRT::AssembleStrategy strategy( 2, 2, growthgrowthblock_, Teuchos::null, growthresidual_, Teuchos::null, Teuchos::null );
+
+                // create parameter list for elements
+                Teuchos::ParameterList condparams;
+
+                // set action for elements
+                condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_growthgrowth);
+
+                // set history vector associated with discrete scatra-scatra interface layer thicknesses
+                scatratimint_->Discretization()->SetState(2,"growthhist",growthhist_);
+
+                // evaluate main-diagonal linearizations and corresponding residuals
+                scatratimint_->Discretization()->EvaluateCondition(condparams,strategy,"S2ICouplingGrowth",condid);
+
+                // finalize global matrix block
+                growthgrowthblock_->Complete();
+              }
+
+              // clear discretization
+              scatratimint_->Discretization()->ClearState();
+
+              break;
+            }
+
+            default:
+            {
+              dserror("Type of global system matrix for scatra-scatra interface coupling involving interface layer growth not recognized!");
+              break;
+            }
+          } // type of scalar transport system matrix
+        } // monolithic evaluation of scatra-scatra interface layer growth
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Evaluation of scatra-scatra interface layer growth only implemented for conforming interface discretizations!");
+        break;
+      }
+    }
+  }
+
   return;
 } // SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying
 
@@ -1392,8 +1653,6 @@ void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 {
-
-
   // extract scatra-scatra coupling conditions from discretization
   std::vector<DRT::Condition*> conditions(0,NULL);
   scatratimint_->Discretization()->GetCondition("S2ICoupling",conditions);
@@ -1821,20 +2080,20 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             params,
             D_,
             lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-                lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-                    M_,
-                    lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-                        lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_master : INPAR::S2I::side_slave,
-                            E_,
-                            lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-                                lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
-                                    Teuchos::null,
-                                    INPAR::S2I::side_undefined,
-                                    INPAR::S2I::side_undefined,
-                                    Teuchos::null,
-                                    INPAR::S2I::side_undefined,
-                                    Teuchos::null,
-                                    INPAR::S2I::side_undefined
+            lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
+            M_,
+            lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
+            lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_master : INPAR::S2I::side_slave,
+            E_,
+            lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
+            lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave : INPAR::S2I::side_master,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            INPAR::S2I::side_undefined,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            Teuchos::null,
+            INPAR::S2I::side_undefined
         );
       }
 
@@ -1998,17 +2257,357 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   if(colequilibration_)
     invcolsums_ = Teuchos::rcp(new Epetra_Vector(*scatratimint_->Discretization()->DofRowMap(),false));
 
+  // extract boundary condition for scatra-scatra interface layer growth
+  const DRT::Condition* const condition = scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth");
+
+  // setup evaluation of scatra-scatra interface layer growth if applicable
+  if(condition)
+  {
+    // perform setup depending on evaluation method
+    switch(intlayergrowth_evaluation_)
+    {
+      case INPAR::S2I::growth_evaluation_monolithic:
+      case INPAR::S2I::growth_evaluation_semi_implicit:
+      {
+        // extract map associated with scatra-scatra interface layer thicknesses
+        const Epetra_Map& dofrowmap_growth = *scatratimint_->Discretization()->DofRowMap(2);
+
+        // initialize state vector of discrete scatra-scatra interface layer thicknesses at time n
+        growthn_ = Teuchos::rcp(new Epetra_Vector(dofrowmap_growth,true));
+
+        // additional initializations for monolithic solution approach
+        if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
+        {
+          // initialize additional state vectors
+          growthnp_ = Teuchos::rcp(new Epetra_Vector(dofrowmap_growth,true));
+          growthdtn_ = Teuchos::rcp(new Epetra_Vector(dofrowmap_growth,true));
+          growthdtnp_ = Teuchos::rcp(new Epetra_Vector(dofrowmap_growth,true));
+          growthhist_ = Teuchos::rcp(new Epetra_Vector(dofrowmap_growth,true));
+          growthresidual_ = Teuchos::rcp(new Epetra_Vector(dofrowmap_growth,true));
+          growthincrement_ = Teuchos::rcp(new Epetra_Vector(dofrowmap_growth,true));
+
+          // initialize global matrix blocks
+          scatragrowthblock_ = Teuchos::rcp(new LINALG::SparseMatrix(*LINALG::MergeMap(*icoup_->SlaveDofMap(),*icoup_->MasterDofMap(),false),81));
+          growthscatrablock_ = Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap_growth,81));
+          growthgrowthblock_ = Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap_growth,81));
+
+          // initialize extended map extractor
+          const Epetra_Map* dofrowmap_scatra = scatratimint_->Discretization()->DofRowMap();
+          extendedmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*LINALG::MergeMap(*dofrowmap_scatra,dofrowmap_growth,false),scatratimint_->DofRowMap(2),dofrowmap_scatra));
+          extendedmaps_->CheckForValidMapExtractor();
+        }
+
+        // loop over all boundary conditions for scatra-scatra interface coupling
+        for(unsigned icond=0; icond<conditions.size(); ++icond)
+        {
+          // check whether current boundary condition is associated with boundary condition for scatra-scatra interface layer growth
+          if(conditions[icond]->GetInt("ConditionID") == condition->GetInt("ConditionID"))
+            // copy conductivity parameter
+            conditions[icond]->Add("conductivity",condition->GetDouble("conductivity"));
+        }
+
+        // extract initial scatra-scatra interface layer thickness from condition
+        const double initthickness = condition->GetDouble("initial thickness");
+
+        // extract nodal cloud from condition
+        const std::vector<int>* nodegids = condition->Nodes();
+
+        // loop over all nodes
+        for(unsigned inode=0; inode<nodegids->size(); ++inode)
+        {
+          // extract global ID of current node
+          const int nodegid = (*nodegids)[inode];
+
+          // extract current node
+          const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
+
+          // process only nodes owned by current processor
+          if(scatratimint_->Discretization()->HaveGlobalNode(nodegid) and node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+          {
+            // extract local ID of scatra-scatra interface layer thickness variable associated with current node
+            const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(scatratimint_->Discretization()->Dof(2,node,0));
+            if(doflid_growth < 0)
+              dserror("Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
+
+            // set initial value
+            (*growthn_)[doflid_growth] = initthickness;
+          }
+        } // loop over all nodes
+
+        // copy initial state
+        if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
+          growthnp_->Update(1.,*growthn_,0.);
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Unknown evaluation method for scatra-scatra interface coupling involving interface layer growth!");
+        break;
+      }
+    }
+  }
+
   return;
 } // SCATRA::MeshtyingStrategyS2I::SetupMeshtying
 
 
 /*----------------------------------------------------------------------*
- | perform setup of scatra-scatra interface coupling         fang 10/14 |
+ | compute time derivatives of discrete state variables      fang 01/17 |
  *----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::ComputeTimeDerivative() const
+{
+  // only relevant for monolithic evaluation of scatra-scatra interface layer growth
+  if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
+  {
+    // compute inverse time factor 1./(theta*dt)
+    const double timefac_inverse = 1./scatratimint_->ScatraTimeParameterList()->get<double>("time factor");
+
+    // compute state vector of time derivatives of discrete scatra-scatra interface layer thicknesses
+    growthdtnp_->Update(timefac_inverse,*growthnp_,-timefac_inverse,*growthhist_,0.);
+  }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------*
+ | update solution after convergence of the nonlinear Newton-Raphson iteration   fang 01/17 |
+ *------------------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::Update() const
+{
+  // only relevant for monolithic evaluation of scatra-scatra interface layer growth
+  if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
+  {
+    // update state vectors
+    growthn_->Update(1.,*growthnp_,0.);
+    growthdtn_->Update(1.,*growthdtnp_,0.);
+  }
+
+  return;
+}
+
+
+/*-------------------------------------------------------------------------------------*
+ | set general parameters for element evaluation                            fang 01/17 |
+ *-------------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::SetElementGeneralParameters(Teuchos::ParameterList& parameters) const
+{
+  // add local Newton-Raphson convergence tolerance for scatra-scatra interface layer growth to parameter list
+  parameters.set<double>("intlayergrowth_convtol",intlayergrowth_convtol_);
+
+  // add maximum number of local Newton-Raphson iterations for scatra-scatra interface layer growth to parameter list
+  parameters.set<unsigned>("intlayergrowth_itemax",intlayergrowth_itemax_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------------------------------------------------------------------------------*
+ | compute history vector, i.e., the history part of the right-hand side vector with all contributions from the previous time step   fang 01/17 |
+ *----------------------------------------------------------------------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::SetOldPartOfRHS() const
+{
+  // only relevant for monolithic evaluation of scatra-scatra interface layer growth
+  if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
+  {
+    // compute factor dt*(1-theta)
+    const double factor = scatratimint_->Dt()-scatratimint_->ScatraTimeParameterList()->get<double>("time factor");
+
+    // compute history vector
+    growthhist_->Update(1.,*growthn_,factor,*growthdtn_,0.);
+  }
+
+  return;
+}
+
+
+/*-----------------------------------------------------------------------*
+ | output restart information                                 fang 01/17 |
+ *-----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::OutputRestart() const
+{
+  // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer growth
+  if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic or intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
+  {
+    // output state vector of discrete scatra-scatra interface layer thicknesses
+    scatratimint_->DiscWriter()->WriteVector("growthn",growthn_);
+
+    if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
+      // output state vector of time derivatives of discrete scatra-scatra interface layer thicknesses
+      scatratimint_->DiscWriter()->WriteVector("growthdtn",growthdtn_);
+  }
+
+  return;
+}
+
+
+/*-----------------------------------------------------------------------*
+ | read restart data                                          fang 01/17 |
+ *-----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::ReadRestart(
+    const int                        step,   //!< restart step
+    Teuchos::RCP<IO::InputControl>   input   //!< control file manager
+    ) const
+{
+  // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer growth
+  if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic or intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
+  {
+    // initialize reader
+    Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+    if(input == Teuchos::null)
+      reader = Teuchos::rcp(new IO::DiscretizationReader(scatratimint_->Discretization(),step));
+    else
+      reader = Teuchos::rcp(new IO::DiscretizationReader(scatratimint_->Discretization(),input,step));
+
+    // read state vector of discrete scatra-scatra interface layer thicknesses
+    reader->ReadVector(growthn_,"growthn");
+
+    if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
+    {
+      // read state vector of time derivatives of discrete scatra-scatra interface layer thicknesses
+      reader->ReadVector(growthdtn_,"growthdtn");
+
+      // copy restart state
+      growthnp_->Update(1.,*growthn_,0.);
+      growthdtnp_->Update(1.,*growthdtn_,0.);
+    }
+  }
+
+  return;
+}
+
+
+/*-----------------------------------------------------------------------*
+ | output solution for post-processing                        fang 01/17 |
+ *-----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::Output() const
+{
+  // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer growth
+  if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic or intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
+  {
+    // extract relevant state vector of discrete scatra-scatra interface layer thicknesses based on map of scatra-scatra interface layer thickness variables
+    const Epetra_Vector& growth = intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic ? *growthnp_ : *growthn_;
+
+    // for proper output, initialize target state vector of discrete scatra-scatra interface layer thicknesses based on map of row nodes
+    const Teuchos::RCP<Epetra_Vector> intlayerthickness = Teuchos::rcp(new Epetra_Vector(*scatratimint_->Discretization()->NodeRowMap(),true));
+
+    // extract boundary condition for scatra-scatra interface layer growth
+    const DRT::Condition* const condition = scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth");
+
+    // extract nodal cloud from condition
+    const std::vector<int>* nodegids = condition->Nodes();
+
+    // loop over all nodes
+    for(unsigned inode=0; inode<nodegids->size(); ++inode)
+    {
+      // extract global ID of current node
+      const int nodegid((*nodegids)[inode]);
+
+      // extract current node
+      const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
+
+      // process only nodes owned by current processor
+      if(scatratimint_->Discretization()->HaveGlobalNode(nodegid) and node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+      {
+        // extract local ID of current node
+        const int nodelid = scatratimint_->Discretization()->NodeRowMap()->LID(nodegid);
+        if(nodelid < 0)
+          dserror("Couldn't extract local node ID!");
+
+        // extract local ID of scatra-scatra interface layer thickness variable associated with current node
+        const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(scatratimint_->Discretization()->Dof(2,node,0));
+        if(doflid_growth < 0)
+          dserror("Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
+
+        // copy thickness variable into target state vector of discrete scatra-scatra interface layer thicknesses
+        (*intlayerthickness)[nodelid] = growth[doflid_growth];
+      }
+    }// loop over all nodes
+
+    // output target state vector of discrete scatra-scatra interface layer thicknesses
+    scatratimint_->DiscWriter()->WriteVector("intlayerthickness",intlayerthickness);
+  }
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------------------------------*
+ | explicit predictor step to obtain better starting value for Newton-Raphson iteration   fang 01/17 |
+ *---------------------------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::ExplicitPredictor() const
+{
+  // only relevant for monolithic evaluation of scatra-scatra interface layer growth
+  if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
+    // predict state vector of discrete scatra-scatra interface layer thicknesses at time n+1
+    growthnp_->Update(scatratimint_->Dt(),*growthdtn_,1.);
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------*
+ | provide global state vectors for element evaluation            fang 01/17 |
+ *---------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::AddTimeIntegrationSpecificVectors() const
+{
+  // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer growth
+  if (intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic or intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
+  {
+    // extract relevant state vector of discrete scatra-scatra interface layer thicknesses
+    const Teuchos::RCP<Epetra_Vector>& growth = intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic ? growthnp_ : growthn_;
+
+    // set state vector
+    scatratimint_->Discretization()->SetState(2,"growth",growth);
+  }
+
+  return;
+}
+
+
+/*-------------------------------------------------------------------------------*
+ | perform initialization of scatra-scatra interface coupling         fang 10/14 |
+ *-------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 {
   // instantiate strategy for Newton-Raphson convergence check
   InitConvCheckStrategy();
+
+  // extract boundary conditions for scatra-scatra interface layer growth
+  std::vector<Teuchos::RCP<DRT::Condition> > conditions;
+  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth",conditions);
+
+  // initialize scatra-scatra interface layer growth
+  if(conditions.size())
+  {
+    // safety checks
+    if(conditions.size() != 1)
+      dserror("Can't have more than one boundary condition for scatra-scatra interface layer growth at the moment!");
+    if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_none)
+      dserror("Invalid flag for evaluation of scatra-scatra interface coupling involving interface layer growth!");
+    if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic and scatratimint_->MethodName() != INPAR::SCATRA::timeint_one_step_theta)
+      dserror("Monolithic evaluation of scatra-scatra interface layer growth only implemented for one-step-theta time integration scheme at the moment!");
+    if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit and (*conditions[0]->Get<std::string>("regularization type")) != "none")
+      dserror("No regularization implemented for semi-implicit evaluation of scatra-scatra interface layer growth!");
+    if(couplingtype_ != INPAR::S2I::coupling_matching_nodes)
+      dserror("Evaluation of scatra-scatra interface layer growth only implemented for conforming interface discretizations!");
+
+    // provide scalar transport discretization with additional dofset for scatra-scatra interface layer thickness
+    std::vector<int> numdofpernode(scatratimint_->Discretization()->NumMyColNodes(),0);
+    for(int inode=0; inode<scatratimint_->Discretization()->NumMyColNodes(); ++inode)
+      // add one degree of freedom for scatra-scatra interface layer growth to current node if applicable
+      if(scatratimint_->Discretization()->lColNode(inode)->GetCondition("S2ICouplingGrowth"))
+        numdofpernode[inode] = 1;
+    Teuchos::RCP<DRT::DofSetInterface> dofset = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numdofpernode,std::vector<int>(0,0),std::vector<int>(0,0),true));
+    if(scatratimint_->Discretization()->AddDofSet(dofset) != 2)
+      dserror("Scalar transport discretization exhibits invalid number of dofsets!");
+  } // initialize scatra-scatra interface layer growth
+
+  // safety check
+  else if(intlayergrowth_evaluation_ != INPAR::S2I::growth_evaluation_none)
+    dserror("Cannot evaluate scatra-scatra interface coupling involving interface layer growth without specifying a corresponding boundary condition!");
 
   return;
 }
@@ -2212,77 +2811,152 @@ void SCATRA::MeshtyingStrategyS2I::Solve(
     const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
     ) const
 {
-  switch(couplingtype_)
+  switch(intlayergrowth_evaluation_)
   {
-    case INPAR::S2I::coupling_matching_nodes:
-    case INPAR::S2I::coupling_mortar_standard:
-    case INPAR::S2I::coupling_mortar_condensed_petrov:
-    case INPAR::S2I::coupling_mortar_condensed_bubnov:
-    case INPAR::S2I::coupling_nts_standard:
+    // no or semi-implicit treatment of scatra-scatra interface layer growth
+    case INPAR::S2I::growth_evaluation_none:
+    case INPAR::S2I::growth_evaluation_semi_implicit:
     {
-      // equilibrate global system of equations if necessary
-      EquilibrateSystem(systemmatrix,residual);
+      switch(couplingtype_)
+      {
+        case INPAR::S2I::coupling_matching_nodes:
+        case INPAR::S2I::coupling_mortar_standard:
+        case INPAR::S2I::coupling_mortar_condensed_petrov:
+        case INPAR::S2I::coupling_mortar_condensed_bubnov:
+        case INPAR::S2I::coupling_nts_standard:
+        {
+          // equilibrate global system of equations if necessary
+          EquilibrateSystem(systemmatrix,residual);
 
-      // solve global system of equations
-      solver->Solve(systemmatrix->EpetraOperator(),increment,residual,true,iteration==1,projector);
+          // solve global system of equations
+          solver->Solve(systemmatrix->EpetraOperator(),increment,residual,true,iteration==1,projector);
 
-      // unequilibrate global increment vector if necessary
-      UnequilibrateIncrement(increment);
+          // unequilibrate global increment vector if necessary
+          UnequilibrateIncrement(increment);
+
+          break;
+        }
+
+        case INPAR::S2I::coupling_mortar_saddlepoint_petrov:
+        case INPAR::S2I::coupling_mortar_saddlepoint_bubnov:
+        {
+          // check scalar transport system matrix
+          Teuchos::RCP<LINALG::SparseMatrix> sparsematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
+          if(sparsematrix == Teuchos::null)
+            dserror("System matrix is not a sparse matrix!");
+
+          // assemble extended system matrix including rows and columns associated with Lagrange multipliers
+          LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> extendedsystemmatrix(*extendedmaps_,*extendedmaps_);
+          extendedsystemmatrix.Assign(0,0,LINALG::View,*sparsematrix);
+          if(lmside_ == INPAR::S2I::side_slave)
+          {
+            extendedsystemmatrix.Matrix(0,1).Add(*D_,true,1.,0.);
+            extendedsystemmatrix.Matrix(0,1).Add(*M_,true,-1.,1.);
+            extendedsystemmatrix.Matrix(1,0).Add(*MORTAR::MatrixRowTransformGIDs(islavematrix_,extendedmaps_->Map(1)),false,1.,0.);
+          }
+          else
+          {
+            extendedsystemmatrix.Matrix(0,1).Add(*M_,true,-1.,0.);
+            extendedsystemmatrix.Matrix(0,1).Add(*D_,true,1.,1.);
+            extendedsystemmatrix.Matrix(1,0).Add(*MORTAR::MatrixRowTransformGIDs(imastermatrix_,extendedmaps_->Map(1)),false,1.,0.);
+          }
+          extendedsystemmatrix.Matrix(1,1).Add(*E_,true,-1.,0.);
+          extendedsystemmatrix.Complete();
+          extendedsystemmatrix.Matrix(0,1).ApplyDirichlet(*scatratimint_->DirichMaps()->CondMap(),false);
+
+          Teuchos::RCP<Epetra_Vector> extendedresidual = LINALG::CreateVector(*extendedmaps_->FullMap());
+          extendedmaps_->InsertVector(scatratimint_->Residual(),0,extendedresidual);
+          extendedmaps_->InsertVector(lmresidual_,1,extendedresidual);
+
+          Teuchos::RCP<Epetra_Vector> extendedincrement = LINALG::CreateVector(*extendedmaps_->FullMap());
+          extendedmaps_->InsertVector(scatratimint_->Increment(),0,extendedincrement);
+          extendedmaps_->InsertVector(lmincrement_,1,extendedincrement);
+
+          // solve extended system of equations
+          solver->Solve(extendedsystemmatrix.EpetraOperator(),extendedincrement,extendedresidual,true,iteration==1,projector);
+
+          // store solution
+          extendedmaps_->ExtractVector(extendedincrement,0,scatratimint_->Increment());
+          extendedmaps_->ExtractVector(extendedincrement,1,lmincrement_);
+
+          // update Lagrange multipliers
+          lm_->Update(1.,*lmincrement_,1.);
+
+          break;
+        }
+
+        default:
+        {
+          dserror("Type of scatra-scatra interface coupling not recognized!");
+          break;
+        }
+      }
 
       break;
     }
 
-    case INPAR::S2I::coupling_mortar_saddlepoint_petrov:
-    case INPAR::S2I::coupling_mortar_saddlepoint_bubnov:
+    // monolithic treatment of scatra-scatra interface layer growth
+    case INPAR::S2I::growth_evaluation_monolithic:
     {
-      // check scalar transport system matrix
-      Teuchos::RCP<LINALG::SparseMatrix> sparsematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
-      if(sparsematrix == Teuchos::null)
-        dserror("System matrix is not a sparse matrix!");
-
-      // assemble extended system matrix including rows and columns associated with Lagrange multipliers
-      LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> extendedsystemmatrix(*extendedmaps_,*extendedmaps_);
-      extendedsystemmatrix.Assign(0,0,LINALG::View,*sparsematrix);
-      if(lmside_ == INPAR::S2I::side_slave)
+      switch(couplingtype_)
       {
-        extendedsystemmatrix.Matrix(0,1).Add(*D_,true,1.,0.);
-        extendedsystemmatrix.Matrix(0,1).Add(*M_,true,-1.,1.);
-        extendedsystemmatrix.Matrix(1,0).Add(*MORTAR::MatrixRowTransformGIDs(islavematrix_,extendedmaps_->Map(1)),false,1.,0.);
-      }
-      else
-      {
-        extendedsystemmatrix.Matrix(0,1).Add(*M_,true,-1.,0.);
-        extendedsystemmatrix.Matrix(0,1).Add(*D_,true,1.,1.);
-        extendedsystemmatrix.Matrix(1,0).Add(*MORTAR::MatrixRowTransformGIDs(imastermatrix_,extendedmaps_->Map(1)),false,1.,0.);
-      }
-      extendedsystemmatrix.Matrix(1,1).Add(*E_,true,-1.,0.);
-      extendedsystemmatrix.Complete();
-      extendedsystemmatrix.Matrix(0,1).ApplyDirichlet(*scatratimint_->DirichMaps()->CondMap(),false);
+        case INPAR::S2I::coupling_matching_nodes:
+        {
+          // check scalar transport system matrix
+          Teuchos::RCP<LINALG::SparseMatrix> sparsematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
+          if (sparsematrix == Teuchos::null)
+            dserror("System matrix is not a sparse matrix!");
 
-      Teuchos::RCP<Epetra_Vector> extendedresidual = LINALG::CreateVector(*extendedmaps_->FullMap());
-      extendedmaps_->InsertVector(scatratimint_->Residual(),0,extendedresidual);
-      extendedmaps_->InsertVector(lmresidual_,1,extendedresidual);
+          // assemble extended system matrix including rows and columns associated with scatra-scatra interface layer thickness variables
+          LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> extendedsystemmatrix(*extendedmaps_,*extendedmaps_);
+          extendedsystemmatrix.Assign(0,0,LINALG::View,*sparsematrix);
+          extendedsystemmatrix.Assign(0,1,LINALG::View,*scatragrowthblock_);
+          extendedsystemmatrix.Assign(1,0,LINALG::View,*growthscatrablock_);
+          extendedsystemmatrix.Assign(1,1,LINALG::View,*growthgrowthblock_);
 
-      Teuchos::RCP<Epetra_Vector> extendedincrement = LINALG::CreateVector(*extendedmaps_->FullMap());
-      extendedmaps_->InsertVector(scatratimint_->Increment(),0,extendedincrement);
-      extendedmaps_->InsertVector(lmincrement_,1,extendedincrement);
+          // finalize extended system matrix
+          extendedsystemmatrix.Complete();
 
-      // solve extended system of equations
-      solver->Solve(extendedsystemmatrix.EpetraOperator(),extendedincrement,extendedresidual,true,iteration==1,projector);
+          // assemble extended residual vector
+          Teuchos::RCP<Epetra_Vector> extendedresidual = Teuchos::rcp(new Epetra_Vector(*extendedmaps_->FullMap(),true));
+          extendedmaps_->InsertVector(scatratimint_->Residual(),0,extendedresidual);
+          extendedmaps_->InsertVector(growthresidual_,1,extendedresidual);
 
-      // store solution
-      extendedmaps_->ExtractVector(extendedincrement,0,scatratimint_->Increment());
-      extendedmaps_->ExtractVector(extendedincrement,1,lmincrement_);
+          // perform finite-difference check if desired
+          if(scatratimint_->FDCheckType() == INPAR::SCATRA::fdcheck_global_extended)
+            FDCheck(extendedsystemmatrix,extendedresidual);
 
-      // update Lagrange multipliers
-      lm_->Update(1.,*lmincrement_,1.);
+          // assemble extended increment vector
+          Teuchos::RCP<Epetra_Vector> extendedincrement = Teuchos::rcp(new Epetra_Vector(*extendedmaps_->FullMap(),true));
+          extendedmaps_->InsertVector(scatratimint_->Increment(),0,extendedincrement);
+          extendedmaps_->InsertVector(growthincrement_,1,extendedincrement);
+
+          // solve extended system of equations
+          solver->Solve(extendedsystemmatrix.EpetraOperator(),extendedincrement,extendedresidual,true,iteration==1,projector);
+
+          // store solution
+          extendedmaps_->ExtractVector(extendedincrement,0,scatratimint_->Increment());
+          extendedmaps_->ExtractVector(extendedincrement,1,growthincrement_);
+
+          // update state vector of discrete scatra-scatra interface layer thicknesses
+          growthnp_->Update(1.,*growthincrement_,1.);
+
+          break;
+        }
+
+        default:
+        {
+          dserror("Type of scatra-scatra interface coupling not recognized!");
+          break;
+        }
+      } // switch(couplingtype_)
 
       break;
     }
 
     default:
     {
-      dserror("Type of mortar meshtying for scatra-scatra interface coupling not recognized!");
+      dserror("Unknown evaluation method for scatra-scatra interface coupling involving interface layer growth!");
       break;
     }
   }
@@ -2397,6 +3071,199 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
 
   return;
 } // SCATRA::MeshtyingStrategyS2I::EquilibrateSystem
+
+
+/*-------------------------------------------------------------------------------------------------------------------------------------*
+ | finite difference check for extended system matrix involving scatra-scatra interface layer growth (for debugging only)   fang 01/17 |
+ *-------------------------------------------------------------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::FDCheck(
+    const LINALG::BlockSparseMatrixBase&   extendedsystemmatrix,   //!< global system matrix
+    const Teuchos::RCP<Epetra_Vector>&     extendedresidual        //!< global residual vector
+    ) const
+{
+  // initial screen output
+  if (scatratimint_->Discretization()->Comm().MyPID() == 0)
+    std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR EXTENDED SYSTEM MATRIX INVOLVING SCATRA-SCATRA INTERFACE LAYER GROWTH" << std::endl;
+
+  // extract perturbation magnitude and relative tolerance
+  const double fdcheckeps(scatratimint_->FDCheckEps());
+  const double fdchecktol(scatratimint_->FDCheckTol());
+
+  // create global state vector
+  Epetra_Vector statenp(*extendedmaps_->FullMap(),true);
+  extendedmaps_->InsertVector(*scatratimint_->Phinp(),0,statenp);
+  extendedmaps_->InsertVector(*growthnp_,1,statenp);
+
+  // make a copy of global state vector to undo perturbations later
+  Epetra_Vector statenp_original(statenp);
+
+  // make a copy of system matrix as Epetra_CrsMatrix
+  Epetra_CrsMatrix sysmat_original = *LINALG::SparseMatrix(*extendedsystemmatrix.Merge()).EpetraMatrix();
+  sysmat_original.FillComplete();
+
+  // make a copy of system right-hand side vector
+  Epetra_Vector rhs_original(*extendedresidual);
+
+  // initialize counter for system matrix entries with failing finite difference check
+  int counter(0);
+
+  // initialize tracking variable for maximum absolute and relative errors
+  double maxabserr(0.);
+  double maxrelerr(0.);
+
+  // loop over all columns of system matrix
+  for (int colgid=0; colgid<=sysmat_original.ColMap().MaxAllGID(); ++colgid)
+  {
+    // check whether current column index is a valid global column index and continue loop if not
+    int collid(sysmat_original.ColMap().LID(colgid));
+    int maxcollid(-1);
+    scatratimint_->Discretization()->Comm().MaxAll(&collid,&maxcollid,1);
+    if(maxcollid < 0)
+      continue;
+
+    // fill global state vector with original state variables
+    statenp.Update(1.,statenp_original,0.);
+
+    // impose perturbation
+    if(statenp.Map().MyGID(colgid))
+      if(statenp.SumIntoGlobalValue(colgid,0,fdcheckeps))
+        dserror("Perturbation could not be imposed on state vector for finite difference check!");
+    scatratimint_->Phinp()->Update(1.,*extendedmaps_->ExtractVector(statenp,0),0.);
+    growthnp_->Update(1.,*extendedmaps_->ExtractVector(statenp,1),0.);
+
+    // calculate global right-hand side contributions based on perturbed state
+    scatratimint_->AssembleMatAndRHS();
+
+    // assemble global residual vector
+    extendedmaps_->InsertVector(scatratimint_->Residual(),0,extendedresidual);
+    extendedmaps_->InsertVector(growthresidual_,1,extendedresidual);
+
+    // Now we compare the difference between the current entries in the system matrix
+    // and their finite difference approximations according to
+    // entries ?= (residual_perturbed - residual_original) / epsilon
+
+    // Note that the residual_ vector actually denotes the right-hand side of the linear
+    // system of equations, i.e., the negative system residual.
+    // To account for errors due to numerical cancellation, we additionally consider
+    // entries + residual_original / epsilon ?= residual_perturbed / epsilon
+
+    // Note that we still need to evaluate the first comparison as well. For small entries in the system
+    // matrix, the second comparison might yield good agreement in spite of the entries being wrong!
+    for(int rowlid=0; rowlid<extendedmaps_->FullMap()->NumMyElements(); ++rowlid)
+    {
+      // get global index of current matrix row
+      const int rowgid = sysmat_original.RowMap().GID(rowlid);
+      if(rowgid < 0)
+        dserror("Invalid global ID of matrix row!");
+
+      // get relevant entry in current row of original system matrix
+      double entry(0.);
+      int length = sysmat_original.NumMyEntries(rowlid);
+      int numentries;
+      std::vector<double> values(length);
+      std::vector<int> indices(length);
+      sysmat_original.ExtractMyRowCopy(rowlid,length,numentries,&values[0],&indices[0]);
+      for(int ientry=0; ientry<length; ++ientry)
+      {
+        if(sysmat_original.ColMap().GID(indices[ientry]) == colgid)
+        {
+          entry = values[ientry];
+          break;
+        }
+      }
+
+      // finite difference suggestion (first divide by epsilon and then add for better conditioning)
+      const double fdval = -(*extendedresidual)[rowlid] / fdcheckeps + rhs_original[rowlid] / fdcheckeps;
+
+      // absolute and relative errors in first comparison
+      const double abserr1 = entry - fdval;
+      if(abs(abserr1) > maxabserr)
+        maxabserr = abs(abserr1);
+      double relerr1(0.);
+      if(abs(entry) > 1.e-17)
+        relerr1 = abserr1 / abs(entry);
+      else if(abs(fdval) > 1.e-17)
+        relerr1 = abserr1 / abs(fdval);
+      if(abs(relerr1) > maxrelerr)
+        maxrelerr = abs(relerr1);
+
+      // evaluate first comparison
+      if(abs(relerr1) > fdchecktol)
+      {
+        std::cout << std::setprecision(6);
+        std::cout << "sysmat[" << rowgid << "," << colgid << "]:  " << entry << "   ";
+        std::cout << "finite difference suggestion:  " << fdval << "   ";
+        std::cout << "absolute error:  " << abserr1 << "   ";
+        std::cout << "relative error:  " << relerr1 << std::endl;
+
+        counter++;
+      }
+
+      // first comparison OK
+      else
+      {
+        // left-hand side in second comparison
+        const double left  = entry - rhs_original[rowlid] / fdcheckeps;
+
+        // right-hand side in second comparison
+        const double right = -(*extendedresidual)[rowlid] / fdcheckeps;
+
+        // absolute and relative errors in second comparison
+        const double abserr2 = left - right;
+        if(abs(abserr2) > maxabserr)
+          maxabserr = abs(abserr2);
+        double relerr2(0.);
+        if(abs(left) > 1.e-17)
+          relerr2 = abserr2 / abs(left);
+        else if(abs(right) > 1.e-17)
+          relerr2 = abserr2 / abs(right);
+        if(abs(relerr2) > maxrelerr)
+          maxrelerr = abs(relerr2);
+
+        // evaluate second comparison
+        if(abs(relerr2) > fdchecktol)
+        {
+          std::cout << std::setprecision(6);
+          std::cout << "sysmat[" << rowgid << "," << colgid << "]-rhs[" << rowgid << "]/eps:  " << left << "   ";
+          std::cout << "-rhs_perturbed[" << rowgid << "]/eps:  " << right << "   ";
+          std::cout << "absolute error:  " << abserr2 << "   ";
+          std::cout << "relative error:  " << relerr2 << std::endl;
+
+          counter++;
+        }
+      }
+    }
+  }
+
+  // communicate tracking variables
+  int counterglobal(0);
+  scatratimint_->Discretization()->Comm().SumAll(&counter,&counterglobal,1);
+  double maxabserrglobal(0.);
+  scatratimint_->Discretization()->Comm().MaxAll(&maxabserr,&maxabserrglobal,1);
+  double maxrelerrglobal(0.);
+  scatratimint_->Discretization()->Comm().MaxAll(&maxrelerr,&maxrelerrglobal,1);
+
+  // final screen output
+  if(scatratimint_->Discretization()->Comm().MyPID() == 0)
+  {
+    if(counterglobal)
+    {
+      printf("--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n",counterglobal);
+      dserror("Finite difference check failed for extended system matrix involving scatra-scatra interface layer growth!");
+    }
+    else
+      printf("--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR %+12.5e\n\n",maxabserrglobal,maxrelerrglobal);
+  }
+
+  // undo perturbations of state variables
+  scatratimint_->Phinp()->Update(1.,*extendedmaps_->ExtractVector(statenp_original,0),0.);
+  growthnp_->Update(1.,*extendedmaps_->ExtractVector(statenp_original,1),0.);
+
+  // recompute system matrix and right-hand side vector based on original state variables
+  scatratimint_->AssembleMatAndRHS();
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------------*

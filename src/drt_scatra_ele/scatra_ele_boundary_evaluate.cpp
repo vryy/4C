@@ -63,6 +63,7 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
   case INPAR::SCATRA::impltype_elch_diffcond:
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   case INPAR::SCATRA::impltype_elch_electrode:
+  case INPAR::SCATRA::impltype_elch_electrode_growth:
   case INPAR::SCATRA::impltype_elch_electrode_thermo:
   case INPAR::SCATRA::impltype_elch_NP:
   {

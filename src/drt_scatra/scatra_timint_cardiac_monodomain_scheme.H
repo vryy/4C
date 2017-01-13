@@ -58,7 +58,7 @@ public:
 protected:
 
   //! write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
   /// add parameters specific for time-integration scheme
   void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
@@ -99,7 +99,7 @@ public:
 protected:
 
   //! write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
   //! do not calculate initial scalar time derivatives for ep
   virtual void CalcInitialTimeDerivative() {return;};
@@ -137,7 +137,7 @@ public:
 protected:
 
   //! write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
   //! do not calculate initial scalar time derivatives for ep
   virtual void CalcInitialTimeDerivative() {return;};
@@ -175,7 +175,7 @@ public:
 protected:
 
   //! write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
 }; // class TimIntCardiacMonodomainStatationary
 */

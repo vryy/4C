@@ -61,7 +61,7 @@ public:
   virtual void OutputState();
 
   //! write output for restart
-  virtual void OutputRestart();
+  virtual void OutputRestart() const;
 
   //! read restart
   virtual void ReadRestart(const int step);

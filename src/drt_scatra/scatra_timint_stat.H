@@ -46,9 +46,6 @@ public:
   /// compute values at the interior of the elements (required for hdg)
   virtual void ComputeInteriorValues(){return;};
 
-  ///  compute scalar time derivative
-  void ComputeTimeDerivative(){return;};
-
   ///  compute scalar time derivate parameters of the input voltage
   void ComputeTimeDerivPot0(const bool init){return;};
 
@@ -57,7 +54,7 @@ public:
   virtual void Update(const int num=0);
 
   /// read restart data
-  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
   // routine to return scalar field phi at time step n-1
   Teuchos::RCP<Epetra_Vector> Phinm() { return Teuchos::null; }
@@ -104,7 +101,7 @@ protected:
   void SetOldPartOfRighthandside();
 
   /// do explicit predictor step (nothing to predict for stationary problems!)
-  void ExplicitPredictor(){return;};
+  void ExplicitPredictor() const {return;};
 
   /// add actual Neumann loads with time factor
   void AddNeumannToResidual();
@@ -122,7 +119,7 @@ protected:
   void DynamicComputationOfCv() {dserror("no turbulence in stationary flows!"); return;};
 
   /// write additional data required for restart
-  void OutputRestart();
+  virtual void OutputRestart() const;
 
   /// return the right time-scaling-factor for the true residual
   double ResidualScaling() const { return 1.0; }

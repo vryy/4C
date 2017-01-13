@@ -538,4 +538,96 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     condlist.push_back(electrodedomainkineticssurf);
     condlist.push_back(electrodedomainkineticsvol);
   }
+
+  /*--------------------------------------------------------------------*/
+  // boundary condition for constant-current constant-voltage (CCCV) cell cycling
+  {
+    // definition of line and surface conditions for CCCV cell cycling
+    Teuchos::RCP<ConditionDefinition> cccvcyclingline =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CCCV CELL CYCLING LINE CONDITIONS",
+                                             "CCCVCycling",
+                                             "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
+                                             DRT::Condition::CCCVCycling,
+                                             true,
+                                             DRT::Condition::Line));
+
+    Teuchos::RCP<ConditionDefinition> cccvcyclingsurf =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CCCV CELL CYCLING SURF CONDITIONS",
+                                             "CCCVCycling",
+                                             "surface boundary condition for constant-current constant-voltage (CCCV) cell cycling",
+                                             DRT::Condition::CCCVCycling,
+                                             true,
+                                             DRT::Condition::Surface));
+
+    // equip condition definitions with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent> > cccvcyclingcomponents;
+
+    {
+      cccvcyclingcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NumberOfHalfCycles")));
+      cccvcyclingcomponents.push_back(Teuchos::rcp(new IntConditionComponent("NumberOfHalfCycles")));
+      cccvcyclingcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("BeginWithCharging")));
+      cccvcyclingcomponents.push_back(Teuchos::rcp(new IntConditionComponent("BeginWithCharging")));   // Boolean parameter represented by integer parameter
+      cccvcyclingcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ConditionIDForCharge")));
+      cccvcyclingcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionIDForCharge",false,true)));
+      cccvcyclingcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ConditionIDForDischarge")));
+      cccvcyclingcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionIDForDischarge",false,true)));
+    }
+
+    // insert input file line components into condition definitions
+    for (unsigned i=0; i<cccvcyclingcomponents.size(); ++i)
+    {
+      cccvcyclingline->AddComponent(cccvcyclingcomponents[i]);
+      cccvcyclingsurf->AddComponent(cccvcyclingcomponents[i]);
+    }
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(cccvcyclingline);
+    condlist.push_back(cccvcyclingsurf);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // boundary condition for constant-current constant-voltage (CCCV) half-cycle
+  {
+    // definition of line and surface conditions for CCCV half-cycle
+    Teuchos::RCP<ConditionDefinition> cccvhalfcycleline =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CCCV HALF-CYCLE LINE CONDITIONS",
+                                             "CCCVHalfCycle",
+                                             "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
+                                             DRT::Condition::CCCVHalfCycle,
+                                             true,
+                                             DRT::Condition::Line));
+
+    Teuchos::RCP<ConditionDefinition> cccvhalfcyclesurf =
+        Teuchos::rcp(new ConditionDefinition("DESIGN CCCV HALF-CYCLE SURF CONDITIONS",
+                                             "CCCVHalfCycle",
+                                             "surface boundary condition for constant-current constant-voltage (CCCV) half-cycle",
+                                             DRT::Condition::CCCVHalfCycle,
+                                             true,
+                                             DRT::Condition::Surface));
+
+    // equip condition definitions with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent> > cccvhalfcyclecomponents;
+
+    {
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Current")));
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new RealConditionComponent("Current")));
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("CutoffVoltage")));
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new RealConditionComponent("CutoffVoltage")));
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("CutoffCRate")));
+      cccvhalfcyclecomponents.push_back(Teuchos::rcp(new RealConditionComponent("CutoffCRate")));
+    }
+
+    // insert input file line components into condition definitions
+    for (unsigned i=0; i<cccvhalfcyclecomponents.size(); ++i)
+    {
+      cccvhalfcycleline->AddComponent(cccvhalfcyclecomponents[i]);
+      cccvhalfcyclesurf->AddComponent(cccvhalfcyclecomponents[i]);
+    }
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(cccvhalfcycleline);
+    condlist.push_back(cccvhalfcyclesurf);
+  }
 }

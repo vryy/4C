@@ -198,6 +198,9 @@ void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
 {
+  // call base class routine
+  ScaTraTimIntImpl::SetOldPartOfRighthandside();
+
   // hist_ = phin_ + dt*(1-Theta)*phidtn_
   hist_->Update(1.0, *phin_, dta_*(1.0-theta_), *phidtn_, 0.0);
 
@@ -208,8 +211,12 @@ void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  | perform an explicit predictor step                         gjb 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ExplicitPredictor()
+void SCATRA::TimIntOneStepTheta::ExplicitPredictor() const
 {
+  // call base class routine
+  ScaTraTimIntImpl::ExplicitPredictor();
+
+  // predict discrete solution variables
   phinp_->Update(dta_, *phidtn_,1.0);
 
   return;
@@ -282,6 +289,9 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCv()
  *--------------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
+  // call base class routine
+  ScaTraTimIntImpl::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
 
@@ -294,6 +304,9 @@ void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(bool forcedin
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
 {
+  // call base class routine
+  ScaTraTimIntImpl::ComputeTimeDerivative();
+
   // time derivative of phi:
   // phidt(n+1) = (phi(n+1)-phi(n)) / (theta*dt) + (1-(1/theta))*phidt(n)
   const double fact = 1.0/(theta_*dta_);
@@ -318,6 +331,9 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
 {
   // compute time derivative at time n+1
   ComputeTimeDerivative();
+
+  // call base class routine
+  ScaTraTimIntImpl::Update(num);
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
@@ -361,8 +377,11 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::OutputRestart()
+void SCATRA::TimIntOneStepTheta::OutputRestart() const
 {
+  // call base class routine
+  ScaTraTimIntImpl::OutputRestart();
+
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin", phin_);
@@ -376,6 +395,9 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
+  // call base class routine
+  ScaTraTimIntImpl::ReadRestart(step,input);
+
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if(input == Teuchos::null)
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
@@ -393,7 +415,7 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step,Teuchos::RCP<IO::Inp
   reader->ReadVector(phin_,  "phin");
   reader->ReadVector(phidtn_,"phidtn");
 
-  RestartProblemSpecific(step,*reader);
+  ReadRestartProblemSpecific(step,*reader);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)

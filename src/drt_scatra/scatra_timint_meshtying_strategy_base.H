@@ -23,6 +23,11 @@
 #include <Teuchos_ParameterList.hpp>
 
 // forward declarations
+namespace IO
+{
+  class InputControl;
+}
+
 namespace LINALG
 {
   class KrylovProjector;
@@ -79,6 +84,12 @@ class MeshtyingStrategyBase
       return convcheckstrategy_->AbortNonlinIter(scatratimint,actresidual);
     }
 
+    //! provide global state vectors for element evaluation
+    virtual void AddTimeIntegrationSpecificVectors() const {return;};
+
+    //! compute time derivatives of discrete state variables
+    virtual void ComputeTimeDerivative() const {return;};
+
     //! condense global system of equations
     virtual void CondenseMatAndRHS(
         const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,              //!< system matrix
@@ -86,31 +97,8 @@ class MeshtyingStrategyBase
         const bool                                    calcinittimederiv = false  //!< flag for calculation of initial time derivative
         ) const {return;};
 
-    //! compute meshtying residual terms and their linearizations
-    virtual void EvaluateMeshtying() = 0;
-
-    //! include Dirichlet conditions into condensation
-    virtual void IncludeDirichletInCondensation() const {return;};
-
-    //! setup meshtying objects
-    virtual void SetupMeshtying() = 0;
-
-    //! init meshtying objects
-    virtual void InitMeshtying() = 0;
-
-    //! initialize system matrix
-    virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const = 0;
-
-    //! solve resulting linear system of equations
-    virtual void Solve(
-        const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
-        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
-        const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
-        const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
-        const int&                                     iteration,      //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
-        ) const = 0;
+    //! return strategy for Newton-Raphson convergence check called by scalar transport time integrator
+    const Teuchos::RCP<SCATRA::ConvCheckStrategyBase>& ConvCheckStrategy() const {return convcheckstrategy_;};
 
     /*!
     \brief Evaluate a given condition
@@ -151,6 +139,42 @@ class MeshtyingStrategyBase
         )
       {dserror("EvaluateCondition(...) is not implemented in MeshtyingStrategyBase.");};
 
+    //! compute meshtying residual terms and their linearizations
+    virtual void EvaluateMeshtying() = 0;
+
+    //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
+    virtual void ExplicitPredictor() const {return;};
+
+    //! include Dirichlet conditions into condensation
+    virtual void IncludeDirichletInCondensation() const {return;};
+
+    //! init meshtying objects
+    virtual void InitMeshtying() = 0;
+
+    //! initialize system matrix
+    virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const = 0;
+
+    //! output solution for post-processing
+    virtual void Output() const {return;};
+
+    //! output restart information
+    virtual void OutputRestart() const {return;};
+
+    //! read restart data
+    virtual void ReadRestart(
+        const int                        step,                   //!< restart step
+        Teuchos::RCP<IO::InputControl>   input = Teuchos::null   //!< control file manager
+        ) const
+    {
+      return;
+    };
+
+    //! set general parameters for element evaluation
+    virtual void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const {return;};
+
+    //! compute history vector, i.e., the history part of the right-hand side vector with all contributions from the previous time step
+    virtual void SetOldPartOfRHS() const {return;};
+
     /*!
     \brief Set state on an discretization hidden in any MeshtyingStrategy.
 
@@ -174,6 +198,23 @@ class MeshtyingStrategyBase
                "SetState(...) allows to set states on discretizations held within any\n"
                "specific MeshtyingStrategy. See e.g. HeterogeneousReactionStrategy for\n"
                "an example implementation.");};
+
+    //! setup meshtying objects
+    virtual void SetupMeshtying() = 0;
+
+    //! solve resulting linear system of equations
+    virtual void Solve(
+        const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
+        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
+        const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
+        const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
+        const int&                                     iteration,      //!< number of current Newton-Raphson iteration
+        const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
+        ) const = 0;
+
+    //! update solution after convergence of the nonlinear Newton-Raphson iteration
+    virtual void Update() const {return;};
 
   protected:
 

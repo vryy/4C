@@ -51,8 +51,11 @@ public:
       bool uniqueGIDs)
   : DofSet(),
     numdofpernode_(numdofpernode),
+    numdofpernodenodewise_(0,0),
     numdofperelement_(numdofperelement),
+    numdofperelementelewise_(0,0),
     numdofperface_(numdofperface),
+    numdofperfacefacewise_(0,0),
     uniqueGIDs_(uniqueGIDs)
   {
     return;
@@ -66,9 +69,29 @@ public:
       bool uniqueGIDs)
   : DofSet(),
     numdofpernode_(numdofpernode),
+    numdofpernodenodewise_(0,0),
     numdofperelement_(0),
     numdofperelementelewise_(numdofperelement),
     numdofperface_(numdofperface),
+    numdofperfacefacewise_(0,0),
+    uniqueGIDs_(uniqueGIDs)
+  {
+    return;
+  }
+
+  /// Constructor
+  explicit DofSetPredefinedDoFNumber(
+      std::vector<int> numdofpernode,
+      std::vector<int> numdofperelement,
+      std::vector<int> numdofperface,
+      bool uniqueGIDs)
+  : DofSet(),
+    numdofpernode_(0),
+    numdofpernodenodewise_(numdofpernode),
+    numdofperelement_(0),
+    numdofperelementelewise_(numdofperelement),
+    numdofperface_(0),
+    numdofperfacefacewise_(numdofperface),
     uniqueGIDs_(uniqueGIDs)
   {
     return;
@@ -96,7 +119,8 @@ protected:
   /// get number of nodal dofs
   virtual int NumDofPerNode( const Node & node ) const
   {
-    return numdofpernode_;
+    if (numdofpernodenodewise_.size()==0) return numdofpernode_;
+    else return numdofpernodenodewise_[node.LID()];
   }
 
   /// get number of element dofs for this element
@@ -109,13 +133,17 @@ protected:
   /// get number of element dofs for this element
   virtual int NumDofPerFace( const Element & element, int face) const
   {
-    return numdofperface_;
+    if (numdofperfacefacewise_.size()==0) return numdofperface_;
+    else { dserror("Not yet implemented!"); return -1; }
   }
 
 private:
 
   /// number of dofs per node of dofset
   const int numdofpernode_;
+
+  /// another member
+  std::vector<int> numdofpernodenodewise_;
 
   /// number of dofs per element of dofset
   const int numdofperelement_;
@@ -125,6 +153,9 @@ private:
 
   /// number of dofs per element of dofset
   const int numdofperface_;
+
+  /// another member
+  std::vector<int> numdofperfacefacewise_;
 
   /// bool indicating if the dofs should get unique global IDs
   /// can be set to false, if the dofs never appear in a global map)

@@ -55,6 +55,7 @@ namespace FSI
 
 namespace LINALG
 {
+  class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
   class SparseMatrix;
@@ -98,6 +99,12 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! destructor
     virtual ~MeshtyingStrategyS2I(){return;};
 
+    //! provide global state vectors for element evaluation
+    void AddTimeIntegrationSpecificVectors() const;
+
+    //! compute time derivatives of discrete state variables
+    void ComputeTimeDerivative() const;
+
     //! condense global system of equations
     void CondenseMatAndRHS(
         const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,              //!< system matrix
@@ -111,14 +118,29 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! compute meshtying residual terms and their linearizations
     virtual void EvaluateMeshtying();
 
-    //! setup meshtying objects
-    void SetupMeshtying();
+    //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
+    void ExplicitPredictor() const;
 
-    //! init meshtying objects
+    //! finite difference check for extended system matrix involving scatra-scatra interface layer growth (for debugging only)
+    void FDCheck(
+        const LINALG::BlockSparseMatrixBase&   extendedsystemmatrix,   //!< global system matrix
+        const Teuchos::RCP<Epetra_Vector>&     extendedresidual        //!< global residual vector
+        ) const;
+
+    //! return state vector of discrete scatra-scatra interface layer thicknesses at time n
+    const Teuchos::RCP<Epetra_Vector>& GrowthVarN() const {return growthn_;};
+
+    //! return state vector of discrete scatra-scatra interface layer thicknesses at time n+1
+    const Teuchos::RCP<Epetra_Vector>& GrowthVarNp() const {return growthnp_;};
+
+    //! perform initialization of scatra-scatra interface coupling
     void InitMeshtying();
 
     //! initialize system matrix
     Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+
+    //! return flag for evaluation of scatra-scatra interface coupling involving interface layer growth
+    const INPAR::S2I::GrowthEvaluation& IntLayerGrowthEvaluation() const {return intlayergrowth_evaluation_;};
 
     //! return vector of Lagrange multiplier dofs
     const Teuchos::RCP<const Epetra_Vector> LM() const {return lm_;};
@@ -135,6 +157,27 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! return master dofs transformed to slave side of scatra-scatra interface
     const Teuchos::RCP<const Epetra_Vector> MasterPhinp() const {return imasterphinp_;};
 
+    //! output solution for post-processing
+    void Output() const;
+
+    //! output restart information
+    void OutputRestart() const;
+
+    //! read restart data
+    void ReadRestart(
+        const int                        step,                   //!< restart step
+        Teuchos::RCP<IO::InputControl>   input = Teuchos::null   //!< control file manager
+        ) const;
+
+    //! set general parameters for element evaluation
+    void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const;
+
+    //! compute history vector, i.e., the history part of the right-hand side vector with all contributions from the previous time step
+    void SetOldPartOfRHS() const;
+
+    //! perform setup of scatra-scatra interface coupling
+    void SetupMeshtying();
+
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs
     const Teuchos::RCP<LINALG::SparseMatrix>& SlaveMatrix() const {return islavematrix_;};
 
@@ -148,6 +191,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
         const int&                                     iteration,      //!< number of current Newton-Raphson iteration
         const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
         ) const;
+
+    //! update solution after convergence of the nonlinear Newton-Raphson iteration
+    virtual void Update() const;
 
   protected:
 
@@ -218,7 +264,7 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! vector of Lagrange multiplier dofs
     Teuchos::RCP<Epetra_Vector> lm_;
 
-    //! extended map extractor (0: standard dofs, 1: Lagrange multiplier dofs)
+    //! extended map extractor (0: standard dofs, 1: Lagrange multiplier dofs or scatra-scatra interface layer thickness variables)
     Teuchos::RCP<LINALG::MapExtractor> extendedmaps_;
 
     //! constraint residual vector associated with Lagrange multiplier dofs
@@ -256,6 +302,45 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! node-to-segment projection tolerance
     const double ntsprojtol_;
+
+    //! flag for evaluation of scatra-scatra interface coupling involving interface layer growth
+    const INPAR::S2I::GrowthEvaluation intlayergrowth_evaluation_;
+
+    //! local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving interface layer growth
+    const double intlayergrowth_convtol_;
+
+    //! maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
+    const unsigned intlayergrowth_itemax_;
+
+    //! state vector of discrete scatra-scatra interface layer thicknesses at time n
+    Teuchos::RCP<Epetra_Vector> growthn_;
+
+    //! state vector of discrete scatra-scatra interface layer thicknesses at time n+1
+    Teuchos::RCP<Epetra_Vector> growthnp_;
+
+    //! state vector of time derivatives of discrete scatra-scatra interface layer thicknesses at time n
+    Teuchos::RCP<Epetra_Vector> growthdtn_;
+
+    //! state vector of time derivatives of discrete scatra-scatra interface layer thicknesses at time n+1
+    Teuchos::RCP<Epetra_Vector> growthdtnp_;
+
+    //! state vector of history values associated with discrete scatra-scatra interface layer thicknesses
+    Teuchos::RCP<Epetra_Vector> growthhist_;
+
+    //! state vector of residual values associated with discrete scatra-scatra interface layer thicknesses
+    Teuchos::RCP<Epetra_Vector> growthresidual_;
+
+    //! state vector of Newton-Raphson increment values associated with discrete scatra-scatra interface layer thicknesses
+    Teuchos::RCP<Epetra_Vector> growthincrement_;
+
+    //! scatra-growth block of extended global system matrix (derivatives of discrete scatra residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
+    Teuchos::RCP<LINALG::SparseMatrix> scatragrowthblock_;
+
+    //! growth-scatra block of extended global system matrix (derivatives of discrete scatra-scatra interface layer growth residuals w.r.t. discrete scatra degrees of freedom)
+    Teuchos::RCP<LINALG::SparseMatrix> growthscatrablock_;
+
+    //! growth-growth block of extended global system matrix (derivatives of discrete scatra-scatra interface layer growth residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
+    Teuchos::RCP<LINALG::SparseMatrix> growthgrowthblock_;
 
   private:
 

@@ -8,143 +8,119 @@
                   General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Test case for electrode-electrolyte interface coupling:
-- based on results in Goldin et al., Electrochimica Acta 64 (2012) 118-129
+Test case for electrode-electrolyte interface coupling involving lithium plating:
+- based on geometry in Goldin et al., Electrochimica Acta 64 (2012) 118-129
 - three-dimensional problem with two two-dimensional electrode-electrolyte interfaces
 - spherical anode particle, electrolyte, and spherical cathode particle, each with
   constant initial lithium concentrations and electric potentials
-- charge transfer kinetics characterized by Butler-Volmer equation
-- discharge from fully charged state at C rate of 10
+- charge transfer and lithium plating kinetics characterized by Butler-Volmer equations
+- charge from 70% state of charge at a C rate of 10
+- lithium plating begins at time step 21
+- semi-implicit evaluation of lithium plating without regularization for lithium stripping
 - 1560 tet4 elements with matching interface nodes
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1560
 //NODES       533
 DIM           3
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMTHERMDIS                     0
-NUMAIRWAYSDIS                   0
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
-MAXTIME                         20
+TIMEINTEGR                      One_Step_Theta
+NUMSTEP                         35
 TIMESTEP                        1.0
+THETA                           0.5
 INITIALFIELD                    field_by_condition
-CALCFLUX_BOUNDARY               total
 LINEAR_SOLVER                   1
+OUTPUTSCALARS                   entire_domain_and_by_condition
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-ADAPTCONV                       no
+ABSTOLRES                       0.0
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 ----------------------------------------------------------------ELCH CONTROL
+TEMPERATURE                     253
 INITPOTCALC                     yes
 DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-MATRIXTYPE                      block_condition
-EQUILIBRATION                   rows
+INTLAYERGROWTH_EVALUATION       semi-implicit
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Aztec_MSR
-AZPREC                          AMGnxn
-AMGNXN_TYPE                     XML
-AMGNXN_XML_FILE                 elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3.xml
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 2.e-10 COND_PARA_NUM 1 COND_PARA 1.e5 C_MAX 16.1 OCP_MODEL Redlich-Kister OCP_PARA_NUM 16 OCP_PARA 1.1652e4 -3.268e3 3.955e3 -4.573e3 6.147e3 -3.339e3 1.117e4 2.997e2 -4.866e4 1.362e2 1.373e5 -2.129e4 -1.722e5 3.956e4 9.302e4 -3.280e4 END
+MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 4.3e-8 COND_PARA_NUM 1 COND_PARA 1.e6 C_MAX 26.39 OCP_MODEL Taralov OCP_PARA_NUM 13 OCP_PARA -0.132 0 0 0 0 0 0 0 0 0 1.41 -3.52 0 END
 MAT 2 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 4 END
-MAT 3 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 3.7e-10 COND_PARA_NUM 1 COND_PARA 1.e4 C_MAX 23.9 OCP_MODEL Redlich-Kister OCP_PARA_NUM 21 OCP_PARA 3.954616e5 -7.676e4 3.799e4 -2.873e4 1.169e4 1.451e4 -8.938e4 1.671e5 -7.236e4 -1.746e5 -4.067e5 9.534e5 5.897e5 -7.455e5 -1.102e6 -2.927e5 7.214e5 9.029e5 -1.599e5 6.658e5 -1.084e6 END
+MAT 3 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 1.1e-7 COND_PARA_NUM 1 COND_PARA 3.8e4 C_MAX 23.671 OCP_MODEL Taralov OCP_PARA_NUM 13 OCP_PARA 4.06279 0.0677504 -21.8502 12.8268 -0.045 -71.69 -0.105734 1.00167 0.379571 -1.576 0.01 -200. -0.19 END
 MAT 4 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 5 END
-MAT 5 MAT_newman VALENCE 1.0 DIFFCOEF -1 TRANSNR -1 THERMFAC 0 COND -11 DIFF_PARA_NUM 1 DIFF_PARA 2.6e-4 TRANS_PARA_NUM 1 TRANS_PARA 0.363 COND_PARA_NUM 3 COND_PARA 1.58e3 0.85 1.4 END
+MAT 5 MAT_newman VALENCE 1.0 DIFFCOEF -1 TRANSNR -1 THERMFAC 0 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 3.9e-5 TRANS_PARA_NUM 1 TRANS_PARA 0.399 COND_PARA_NUM 1 COND_PARA 5.0e2 END
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 10.88
-FUNCT 1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+FUNCT 1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 9.00172
+FUNCT 1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 9.44e-9
 ----------------------------------------------------------------------FUNCT2
 FUNCT 2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.2
-FUNCT 2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION -0.080830788307857
+FUNCT 2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION -0.0332652803
 ----------------------------------------------------------------------FUNCT3
-FUNCT 3 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 10.56
-FUNCT 3 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 3.892392107528559
+FUNCT 3 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 12.89178
+FUNCT 3 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 4.1850999
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 8.25396772000835277e+00 TOLERANCE 1.e-09          // local lithium concentration at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE -7.10589074647923177e-08 TOLERANCE 1.e-16         // local electric potential at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 40 QUANTITY flux_boundary_1_x VALUE -4.21591414759109804e-06 TOLERANCE 1.e-15        // local flux at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 40 QUANTITY flux_boundary_1_y VALUE -5.00101440939460398e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 40 QUANTITY flux_boundary_1_z VALUE 3.74044645038590858e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 277 QUANTITY flux_boundary_1_x VALUE -4.21591433560311685e-06 TOLERANCE 1.e-15       // local flux at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 277 QUANTITY flux_boundary_1_y VALUE -5.00101463241878896e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 277 QUANTITY flux_boundary_1_z VALUE 3.74044661719407031e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 277 QUANTITY phi1 VALUE 1.20013697622577320e+00 TOLERANCE 1.e-09         // local lithium concentration at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 277 QUANTITY phi2 VALUE -9.96792305450167476e-02 TOLERANCE 1.e-11        // local electric potential at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY phi1 VALUE 1.19995884330002944e+00 TOLERANCE 1.e-09         // local lithium concentration at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY phi2 VALUE -9.96863554104856359e-02 TOLERANCE 1.e-11        // local electric potential at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY flux_boundary_1_x VALUE 4.09405124926159764e-06 TOLERANCE 1.e-15        // local flux at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY flux_boundary_1_y VALUE 6.83957530877800857e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 391 QUANTITY flux_boundary_1_z VALUE -3.79928156196052193e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 452 QUANTITY flux_boundary_1_x VALUE 4.09405154821937085e-06 TOLERANCE 1.e-15        // local flux at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 452 QUANTITY flux_boundary_1_y VALUE 6.83957580822075715e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 452 QUANTITY flux_boundary_1_z VALUE -3.79928183939348287e-06 TOLERANCE 1.e-15
-SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE 1.26475801518204385e+01 TOLERANCE 1.e-08         // local lithium concentration at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE 3.77032797839341782e+00 TOLERANCE 1.e-09         // local electric potential at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.44444508649222358e-01 TOLERANCE 1.e-10          // anode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58363864709579905e-01 TOLERANCE 1.e-10          // cathode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.77032703976186667e+00 TOLERANCE 1.e-09   // cell voltage
-SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                 // number of Newton-Raphson iterations during last time step
+SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 1.01162675258318533e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE 8.81127665953029191e-09 TOLERANCE 1.e-16                // local electric potential at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 277 QUANTITY phi1 VALUE 1.19815730824288691e+00 TOLERANCE 1.e-09               // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 277 QUANTITY phi2 VALUE 2.08772197208782727e-02 TOLERANCE 1.e-11               // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY phi1 VALUE 1.20073701639052177e+00 TOLERANCE 1.e-09               // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY phi2 VALUE 2.09652916616435980e-02 TOLERANCE 1.e-11               // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE 1.18038903694282453e+01 TOLERANCE 1.e-08               // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE 4.25093764919096984e+00 TOLERANCE 1.e-09               // local electric potential at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 7.96970479354735195e-01 TOLERANCE 1.e-10                // anode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 7.97222222220815624e-01 TOLERANCE 1.e-10                // cathode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 4.25093795821998022e+00 TOLERANCE 1.e-09         // cell voltage
+SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 4.0 TOLERANCE 1.e-20                       // number of Newton-Raphson iterations during last time step
+SCATRA DIS scatra NODE 108 QUANTITY s2ilayerthickness VALUE 1.47029884451475036e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (near separator)
+SCATRA DIS scatra NODE 22 QUANTITY s2ilayerthickness VALUE 1.46479116251543952e-08 TOLERANCE 1.e-16        // local plating film thickness at anode-electrolyte interface (medium distance from separator)
+SCATRA DIS scatra NODE 106 QUANTITY s2ilayerthickness VALUE 1.46129793857267602e-08 TOLERANCE 1.e-16       // local plating film thickness at anode-electrolyte interface (large distance from separator)
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1 VALUE 5.50737430200563693e+00 TOLERANCE 1e-09             // mean lithium concentration averaged over total domain
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1_0 VALUE 1.00659322227264774e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over anode domain
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1_1 VALUE 1.19999999999999019e+00 TOLERANCE 1e-09           // mean lithium concentration averaged over electrolyte domain
+SCATRA DIS scatra SPECIAL QUANTITY meanphi1_2 VALUE 1.18248050000154361e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over cathode domain
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF                          14
 NDVOL                           5
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -5.278302597e-4 CURVE 0 0 FUNCT 0 0 Live Mid
+E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 6.544713556e-4 CURVE 0 0 FUNCT 0 0 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            3
-//
 E 1 - ScaTra 1
-//
 E 2 - ScaTra 2
-//
 E 3 - ScaTra 3
 -----------------------------------------DESIGN S2I COUPLING SURF CONDITIONS
-DSURF                           4
-E 2 - 0 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 4.52e-5 alpha_a 0.5 alpha_c 0.5
+DSURF  4
+E 2 - 0 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.2e-9 alpha_a 0.5 alpha_c 0.5
 E 3 - 0 Master
 E 4 - 1 Master
-E 5 - 1 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5
----------------------------DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING
-DVOL                            3
-// Do not remove these three comments, since they...
-E 1 -
-// ...impose additional difficulty on the test case...
-E 2 -
-// ...elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3-p3-agg2vtk!
-E 3 -
+E 5 - 1 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 7.2e-8 alpha_a 0.5 alpha_c 0.5
+----------------------------------DESIGN S2I COUPLING GROWTH SURF CONDITIONS
+DSURF  1
+E 2 - 0 KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 1.2e-7 alpha_a 0.5 alpha_c 0.5 molmass 6.941e-9 density 5.34e-7 conductivity 10.6e9 regtype none regpar 0.0 initthickness 0.0
 -----------------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
-DVOL                            2
-//
-E 1 - ID 0 c_0% 2.029 c_100% 10.88
-//
-E 3 - ID 1 c_0% 22.37 c_100% 10.56
+DVOL   2
+E 1 - ID 0 c_0% 1.3195 c_100% 12.2941
+E 3 - ID 1 c_0% 20.574 c_100% 9.5994
 -----------------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
 DSURF                           2
 E 1 - ID 0
 E 6 - ID 1
---------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
-DSURF                           6
-E 1 -
-E 2 -
-E 3 -
-E 4 -
-E 5 -
-E 6 -
+---------------------------------DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS
+DVOL                            3
+E 1 - ID 0
+E 2 - ID 1
+E 3 - ID 2
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE    104 DSURFACE 1
 NODE    106 DSURFACE 1
@@ -1376,335 +1352,332 @@ NODE       530 COORD  2.9829629131445340e-03  0.0000000000000000e+00  0.00000000
 NODE       531 COORD  2.0000000000000000e-03  0.0000000000000000e+00  0.0000000000000000e+00
 NODE       532 COORD  3.9659258262890679e-03  0.0000000000000000e+00  0.0000000000000000e+00
 NODE       533 COORD  2.5000000000000001e-03 -8.6602540378443859e-04  0.0000000000000000e+00
-------------------------------------------------STRUCTURE ELEMENTS
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
-   1 TRANSP TET4  1 2 3 4    MAT 1 TYPE ElchElectrode
-   2 TRANSP TET4  5 6 7 3    MAT 1 TYPE ElchElectrode
-   3 TRANSP TET4  6 7 3 1    MAT 1 TYPE ElchElectrode
-   4 TRANSP TET4  1 6 8 9    MAT 1 TYPE ElchElectrode
-   5 TRANSP TET4  1 6 7 8    MAT 1 TYPE ElchElectrode
-   6 TRANSP TET4  10 11 12 13    MAT 1 TYPE ElchElectrode
-   7 TRANSP TET4  10 14 13 15    MAT 1 TYPE ElchElectrode
-   8 TRANSP TET4  10 11 14 16    MAT 1 TYPE ElchElectrode
-   9 TRANSP TET4  14 17 15 18    MAT 1 TYPE ElchElectrode
-   10 TRANSP TET4  18 15 14 19    MAT 1 TYPE ElchElectrode
-   11 TRANSP TET4  18 20 21 19    MAT 1 TYPE ElchElectrode
-   12 TRANSP TET4  18 22 23 24    MAT 1 TYPE ElchElectrode
-   13 TRANSP TET4  18 25 22 24    MAT 1 TYPE ElchElectrode
-   14 TRANSP TET4  18 20 23 21    MAT 1 TYPE ElchElectrode
-   15 TRANSP TET4  10 26 19 15    MAT 1 TYPE ElchElectrode
-   16 TRANSP TET4  26 15 27 28    MAT 1 TYPE ElchElectrode
-   17 TRANSP TET4  10 19 26 16    MAT 1 TYPE ElchElectrode
-   18 TRANSP TET4  10 12 11 29    MAT 1 TYPE ElchElectrode
-   19 TRANSP TET4  26 30 16 19    MAT 1 TYPE ElchElectrode
-   20 TRANSP TET4  26 28 31 32    MAT 1 TYPE ElchElectrode
-   21 TRANSP TET4  33 31 30 26    MAT 1 TYPE ElchElectrode
-   22 TRANSP TET4  34 33 31 30    MAT 1 TYPE ElchElectrode
-   23 TRANSP TET4  35 24 25 17    MAT 1 TYPE ElchElectrode
-   24 TRANSP TET4  35 36 24 17    MAT 1 TYPE ElchElectrode
-   25 TRANSP TET4  35 1 6 37    MAT 1 TYPE ElchElectrode
-   26 TRANSP TET4  35 6 38 37    MAT 1 TYPE ElchElectrode
-   27 TRANSP TET4  9 35 1 6    MAT 1 TYPE ElchElectrode
-   28 TRANSP TET4  11 29 12 39    MAT 1 TYPE ElchElectrode
-   29 TRANSP TET4  40 9 38 36    MAT 1 TYPE ElchElectrode
-   30 TRANSP TET4  41 42 43 44    MAT 1 TYPE ElchElectrode
-   31 TRANSP TET4  35 17 37 38    MAT 1 TYPE ElchElectrode
-   32 TRANSP TET4  2 15 45 28    MAT 1 TYPE ElchElectrode
-   33 TRANSP TET4  1 4 3 6    MAT 1 TYPE ElchElectrode
-   34 TRANSP TET4  44 46 47 29    MAT 1 TYPE ElchElectrode
-   35 TRANSP TET4  48 7 49 3    MAT 1 TYPE ElchElectrode
-   36 TRANSP TET4  2 49 28 45    MAT 1 TYPE ElchElectrode
-   37 TRANSP TET4  2 3 4 50    MAT 1 TYPE ElchElectrode
-   38 TRANSP TET4  20 42 51 16    MAT 1 TYPE ElchElectrode
-   39 TRANSP TET4  20 21 19 51    MAT 1 TYPE ElchElectrode
-   40 TRANSP TET4  52 53 54 55    MAT 1 TYPE ElchElectrode
-   41 TRANSP TET4  52 56 57 58    MAT 1 TYPE ElchElectrode
-   42 TRANSP TET4  59 41 60 47    MAT 1 TYPE ElchElectrode
-   43 TRANSP TET4  41 60 47 52    MAT 1 TYPE ElchElectrode
-   44 TRANSP TET4  52 54 61 60    MAT 1 TYPE ElchElectrode
-   45 TRANSP TET4  62 63 64 65    MAT 1 TYPE ElchElectrode
-   46 TRANSP TET4  62 66 67 8    MAT 1 TYPE ElchElectrode
-   47 TRANSP TET4  62 63 5 68    MAT 1 TYPE ElchElectrode
-   48 TRANSP TET4  62 6 66 8    MAT 1 TYPE ElchElectrode
-   49 TRANSP TET4  44 11 16 69    MAT 1 TYPE ElchElectrode
-   50 TRANSP TET4  44 42 43 69    MAT 1 TYPE ElchElectrode
-   51 TRANSP TET4  44 11 39 29    MAT 1 TYPE ElchElectrode
-   52 TRANSP TET4  52 55 46 44    MAT 1 TYPE ElchElectrode
-   53 TRANSP TET4  44 39 70 46    MAT 1 TYPE ElchElectrode
-   54 TRANSP TET4  44 55 46 70    MAT 1 TYPE ElchElectrode
-   55 TRANSP TET4  1 2 71 7    MAT 1 TYPE ElchElectrode
-   56 TRANSP TET4  1 35 15 37    MAT 1 TYPE ElchElectrode
-   57 TRANSP TET4  13 72 50 4    MAT 1 TYPE ElchElectrode
-   58 TRANSP TET4  12 13 72 50    MAT 1 TYPE ElchElectrode
-   59 TRANSP TET4  4 6 37 73    MAT 1 TYPE ElchElectrode
-   60 TRANSP TET4  2 4 15 50    MAT 1 TYPE ElchElectrode
-   61 TRANSP TET4  2 50 49 3    MAT 1 TYPE ElchElectrode
-   62 TRANSP TET4  4 13 37 15    MAT 1 TYPE ElchElectrode
-   63 TRANSP TET4  62 74 66 75    MAT 1 TYPE ElchElectrode
-   64 TRANSP TET4  62 76 77 73    MAT 1 TYPE ElchElectrode
-   65 TRANSP TET4  6 38 37 75    MAT 1 TYPE ElchElectrode
-   66 TRANSP TET4  6 7 8 5    MAT 1 TYPE ElchElectrode
-   67 TRANSP TET4  6 76 73 3    MAT 1 TYPE ElchElectrode
-   68 TRANSP TET4  73 78 79 80    MAT 1 TYPE ElchElectrode
-   69 TRANSP TET4  65 77 78 73    MAT 1 TYPE ElchElectrode
-   70 TRANSP TET4  44 39 11 70    MAT 1 TYPE ElchElectrode
-   71 TRANSP TET4  4 6 73 3    MAT 1 TYPE ElchElectrode
-   72 TRANSP TET4  10 16 33 29    MAT 1 TYPE ElchElectrode
-   73 TRANSP TET4  26 15 28 32    MAT 1 TYPE ElchElectrode
-   74 TRANSP TET4  81 72 4 73    MAT 1 TYPE ElchElectrode
-   75 TRANSP TET4  73 75 78 65    MAT 1 TYPE ElchElectrode
-   76 TRANSP TET4  6 73 75 37    MAT 1 TYPE ElchElectrode
-   77 TRANSP TET4  4 3 73 72    MAT 1 TYPE ElchElectrode
-   78 TRANSP TET4  42 16 44 41    MAT 1 TYPE ElchElectrode
-   79 TRANSP TET4  41 29 47 33    MAT 1 TYPE ElchElectrode
-   80 TRANSP TET4  30 16 42 41    MAT 1 TYPE ElchElectrode
-   81 TRANSP TET4  52 56 41 60    MAT 1 TYPE ElchElectrode
-   82 TRANSP TET4  2 15 28 50    MAT 1 TYPE ElchElectrode
-   83 TRANSP TET4  41 56 58 42    MAT 1 TYPE ElchElectrode
-   84 TRANSP TET4  27 13 15 10    MAT 1 TYPE ElchElectrode
-   85 TRANSP TET4  52 47 54 60    MAT 1 TYPE ElchElectrode
-   86 TRANSP TET4  10 16 14 19    MAT 1 TYPE ElchElectrode
-   87 TRANSP TET4  11 13 82 83    MAT 1 TYPE ElchElectrode
-   88 TRANSP TET4  11 14 69 82    MAT 1 TYPE ElchElectrode
-   89 TRANSP TET4  10 13 12 27    MAT 1 TYPE ElchElectrode
-   90 TRANSP TET4  44 11 69 84    MAT 1 TYPE ElchElectrode
-   91 TRANSP TET4  44 16 11 29    MAT 1 TYPE ElchElectrode
-   92 TRANSP TET4  41 52 47 44    MAT 1 TYPE ElchElectrode
-   93 TRANSP TET4  20 16 14 69    MAT 1 TYPE ElchElectrode
-   94 TRANSP TET4  20 85 51 86    MAT 1 TYPE ElchElectrode
-   95 TRANSP TET4  20 69 85 86    MAT 1 TYPE ElchElectrode
-   96 TRANSP TET4  52 46 55 54    MAT 1 TYPE ElchElectrode
-   97 TRANSP TET4  41 16 33 30    MAT 1 TYPE ElchElectrode
-   98 TRANSP TET4  20 16 51 19    MAT 1 TYPE ElchElectrode
-   99 TRANSP TET4  42 87 88 86    MAT 1 TYPE ElchElectrode
-   100 TRANSP TET4  42 56 58 88    MAT 1 TYPE ElchElectrode
-   101 TRANSP TET4  55 43 44 52    MAT 1 TYPE ElchElectrode
-   102 TRANSP TET4  69 16 44 42    MAT 1 TYPE ElchElectrode
-   103 TRANSP TET4  41 43 42 58    MAT 1 TYPE ElchElectrode
-   104 TRANSP TET4  1 3 2 7    MAT 1 TYPE ElchElectrode
-   105 TRANSP TET4  10 15 19 14    MAT 1 TYPE ElchElectrode
-   106 TRANSP TET4  10 26 33 16    MAT 1 TYPE ElchElectrode
-   107 TRANSP TET4  50 27 13 15    MAT 1 TYPE ElchElectrode
-   108 TRANSP TET4  4 37 13 81    MAT 1 TYPE ElchElectrode
-   109 TRANSP TET4  13 15 17 37    MAT 1 TYPE ElchElectrode
-   110 TRANSP TET4  13 14 17 15    MAT 1 TYPE ElchElectrode
-   111 TRANSP TET4  10 11 13 14    MAT 1 TYPE ElchElectrode
-   112 TRANSP TET4  4 81 73 37    MAT 1 TYPE ElchElectrode
-   113 TRANSP TET4  1 4 37 15    MAT 1 TYPE ElchElectrode
-   114 TRANSP TET4  1 15 2 4    MAT 1 TYPE ElchElectrode
-   115 TRANSP TET4  11 13 14 82    MAT 1 TYPE ElchElectrode
-   116 TRANSP TET4  66 74 89 90    MAT 1 TYPE ElchElectrode
-   117 TRANSP TET4  67 74 91 92    MAT 1 TYPE ElchElectrode
-   118 TRANSP TET4  62 6 5 76    MAT 1 TYPE ElchElectrode
-   119 TRANSP TET4  62 6 76 73    MAT 1 TYPE ElchElectrode
-   120 TRANSP TET4  42 69 58 43    MAT 1 TYPE ElchElectrode
-   121 TRANSP TET4  90 8 89 66    MAT 1 TYPE ElchElectrode
-   122 TRANSP TET4  62 64 91 74    MAT 1 TYPE ElchElectrode
-   123 TRANSP TET4  6 90 66 8    MAT 1 TYPE ElchElectrode
-   124 TRANSP TET4  41 59 87 30    MAT 1 TYPE ElchElectrode
-   125 TRANSP TET4  41 30 87 42    MAT 1 TYPE ElchElectrode
-   126 TRANSP TET4  20 14 16 19    MAT 1 TYPE ElchElectrode
-   127 TRANSP TET4  20 85 93 23    MAT 1 TYPE ElchElectrode
-   128 TRANSP TET4  52 43 41 58    MAT 1 TYPE ElchElectrode
-   129 TRANSP TET4  1 71 2 15    MAT 1 TYPE ElchElectrode
-   130 TRANSP TET4  6 8 9 90    MAT 1 TYPE ElchElectrode
-   131 TRANSP TET4  2 45 15 71    MAT 1 TYPE ElchElectrode
-   132 TRANSP TET4  1 15 25 71    MAT 1 TYPE ElchElectrode
-   133 TRANSP TET4  1 35 9 25    MAT 1 TYPE ElchElectrode
-   134 TRANSP TET4  18 20 19 14    MAT 1 TYPE ElchElectrode
-   135 TRANSP TET4  20 14 93 69    MAT 1 TYPE ElchElectrode
-   136 TRANSP TET4  20 85 23 21    MAT 1 TYPE ElchElectrode
-   137 TRANSP TET4  20 86 42 69    MAT 1 TYPE ElchElectrode
-   138 TRANSP TET4  10 11 16 29    MAT 1 TYPE ElchElectrode
-   139 TRANSP TET4  35 15 17 25    MAT 1 TYPE ElchElectrode
-   140 TRANSP TET4  41 87 59 56    MAT 1 TYPE ElchElectrode
-   141 TRANSP TET4  44 70 84 43    MAT 1 TYPE ElchElectrode
-   142 TRANSP TET4  18 15 19 22    MAT 1 TYPE ElchElectrode
-   143 TRANSP TET4  18 19 21 22    MAT 1 TYPE ElchElectrode
-   144 TRANSP TET4  11 12 13 83    MAT 1 TYPE ElchElectrode
-   145 TRANSP TET4  18 93 14 17    MAT 1 TYPE ElchElectrode
-   146 TRANSP TET4  11 14 16 69    MAT 1 TYPE ElchElectrode
-   147 TRANSP TET4  19 51 94 30    MAT 1 TYPE ElchElectrode
-   148 TRANSP TET4  10 33 26 27    MAT 1 TYPE ElchElectrode
-   149 TRANSP TET4  26 15 32 19    MAT 1 TYPE ElchElectrode
-   150 TRANSP TET4  18 20 14 93    MAT 1 TYPE ElchElectrode
-   151 TRANSP TET4  26 19 32 94    MAT 1 TYPE ElchElectrode
-   152 TRANSP TET4  16 51 19 30    MAT 1 TYPE ElchElectrode
-   153 TRANSP TET4  54 53 95 55    MAT 1 TYPE ElchElectrode
-   154 TRANSP TET4  96 97 98 79    MAT 1 TYPE ElchElectrode
-   155 TRANSP TET4  79 97 98 83    MAT 1 TYPE ElchElectrode
-   156 TRANSP TET4  44 69 43 84    MAT 1 TYPE ElchElectrode
-   157 TRANSP TET4  12 79 83 39    MAT 1 TYPE ElchElectrode
-   158 TRANSP TET4  35 38 36 17    MAT 1 TYPE ElchElectrode
-   159 TRANSP TET4  39 46 99 70    MAT 1 TYPE ElchElectrode
-   160 TRANSP TET4  54 95 100 55    MAT 1 TYPE ElchElectrode
-   161 TRANSP TET4  52 43 44 41    MAT 1 TYPE ElchElectrode
-   162 TRANSP TET4  52 41 56 58    MAT 1 TYPE ElchElectrode
-   163 TRANSP TET4  97 39 79 96    MAT 1 TYPE ElchElectrode
-   164 TRANSP TET4  54 61 95 53    MAT 1 TYPE ElchElectrode
-   165 TRANSP TET4  13 14 82 17    MAT 1 TYPE ElchElectrode
-   166 TRANSP TET4  8 9 90 40    MAT 1 TYPE ElchElectrode
-   167 TRANSP TET4  66 8 89 67    MAT 1 TYPE ElchElectrode
-   168 TRANSP TET4  62 8 67 5    MAT 1 TYPE ElchElectrode
-   169 TRANSP TET4  8 67 5 101    MAT 1 TYPE ElchElectrode
-   170 TRANSP TET4  13 12 81 83    MAT 1 TYPE ElchElectrode
-   171 TRANSP TET4  62 73 65 75    MAT 1 TYPE ElchElectrode
-   172 TRANSP TET4  11 84 97 83    MAT 1 TYPE ElchElectrode
-   173 TRANSP TET4  10 29 27 12    MAT 1 TYPE ElchElectrode
-   174 TRANSP TET4  78 102 98 79    MAT 1 TYPE ElchElectrode
-   175 TRANSP TET4  12 81 83 79    MAT 1 TYPE ElchElectrode
-   176 TRANSP TET4  79 98 81 83    MAT 1 TYPE ElchElectrode
-   177 TRANSP TET4  78 79 80 102    MAT 1 TYPE ElchElectrode
-   178 TRANSP TET4  78 103 102 80    MAT 1 TYPE ElchElectrode
-   179 TRANSP TET4  39 96 97 99    MAT 1 TYPE ElchElectrode
-   180 TRANSP TET4  41 60 56 59    MAT 1 TYPE ElchElectrode
-   181 TRANSP TET4  6 3 5 76    MAT 1 TYPE ElchElectrode
-   182 TRANSP TET4  13 81 72 4    MAT 1 TYPE ElchElectrode
-   183 TRANSP TET4  2 45 71 49    MAT 1 TYPE ElchElectrode
-   184 TRANSP TET4  14 17 93 82    MAT 1 TYPE ElchElectrode
-   185 TRANSP TET4  18 24 23 17    MAT 1 TYPE ElchElectrode
-   186 TRANSP TET4  41 47 59 33    MAT 1 TYPE ElchElectrode
-   187 TRANSP TET4  44 52 47 46    MAT 1 TYPE ElchElectrode
-   188 TRANSP TET4  52 54 53 61    MAT 1 TYPE ElchElectrode
-   189 TRANSP TET4  42 87 86 51    MAT 1 TYPE ElchElectrode
-   190 TRANSP TET4  52 57 60 61    MAT 1 TYPE ElchElectrode
-   191 TRANSP TET4  18 23 20 93    MAT 1 TYPE ElchElectrode
-   192 TRANSP TET4  20 85 69 93    MAT 1 TYPE ElchElectrode
-   193 TRANSP TET4  20 51 85 21    MAT 1 TYPE ElchElectrode
-   194 TRANSP TET4  35 25 24 36    MAT 1 TYPE ElchElectrode
-   195 TRANSP TET4  18 93 17 23    MAT 1 TYPE ElchElectrode
-   196 TRANSP TET4  20 69 42 16    MAT 1 TYPE ElchElectrode
-   197 TRANSP TET4  9 90 40 38    MAT 1 TYPE ElchElectrode
-   198 TRANSP TET4  1 25 9 71    MAT 1 TYPE ElchElectrode
-   199 TRANSP TET4  24 17 18 25    MAT 1 TYPE ElchElectrode
-   200 TRANSP TET4  19 94 21 32    MAT 1 TYPE ElchElectrode
-   201 TRANSP TET4  12 79 72 81    MAT 1 TYPE ElchElectrode
-   202 TRANSP TET4  26 94 32 31    MAT 1 TYPE ElchElectrode
-   203 TRANSP TET4  15 45 28 32    MAT 1 TYPE ElchElectrode
-   204 TRANSP TET4  15 19 22 32    MAT 1 TYPE ElchElectrode
-   205 TRANSP TET4  51 16 42 30    MAT 1 TYPE ElchElectrode
-   206 TRANSP TET4  42 30 87 51    MAT 1 TYPE ElchElectrode
-   207 TRANSP TET4  20 42 86 51    MAT 1 TYPE ElchElectrode
-   208 TRANSP TET4  15 25 71 45    MAT 1 TYPE ElchElectrode
-   209 TRANSP TET4  4 72 50 3    MAT 1 TYPE ElchElectrode
-   210 TRANSP TET4  13 12 27 50    MAT 1 TYPE ElchElectrode
-   211 TRANSP TET4  26 27 33 31    MAT 1 TYPE ElchElectrode
-   212 TRANSP TET4  25 17 18 15    MAT 1 TYPE ElchElectrode
-   213 TRANSP TET4  11 39 12 83    MAT 1 TYPE ElchElectrode
-   214 TRANSP TET4  13 83 81 82    MAT 1 TYPE ElchElectrode
-   215 TRANSP TET4  15 25 22 18    MAT 1 TYPE ElchElectrode
-   216 TRANSP TET4  26 30 19 94    MAT 1 TYPE ElchElectrode
-   217 TRANSP TET4  19 21 94 51    MAT 1 TYPE ElchElectrode
-   218 TRANSP TET4  13 81 17 82    MAT 1 TYPE ElchElectrode
-   219 TRANSP TET4  15 32 22 45    MAT 1 TYPE ElchElectrode
-   220 TRANSP TET4  14 93 69 82    MAT 1 TYPE ElchElectrode
-   221 TRANSP TET4  40 90 8 89    MAT 1 TYPE ElchElectrode
-   222 TRANSP TET4  6 75 66 90    MAT 1 TYPE ElchElectrode
-   223 TRANSP TET4  35 36 9 25    MAT 1 TYPE ElchElectrode
-   224 TRANSP TET4  44 46 29 39    MAT 1 TYPE ElchElectrode
-   225 TRANSP TET4  73 72 3 76    MAT 1 TYPE ElchElectrode
-   226 TRANSP TET4  73 79 81 72    MAT 1 TYPE ElchElectrode
-   227 TRANSP TET4  62 63 91 64    MAT 1 TYPE ElchElectrode
-   228 TRANSP TET4  77 62 65 63    MAT 1 TYPE ElchElectrode
-   229 TRANSP TET4  63 91 64 104    MAT 1 TYPE ElchElectrode
-   230 TRANSP TET4  77 63 65 105    MAT 1 TYPE ElchElectrode
-   231 TRANSP TET4  33 16 41 29    MAT 1 TYPE ElchElectrode
-   232 TRANSP TET4  18 22 21 23    MAT 1 TYPE ElchElectrode
-   233 TRANSP TET4  11 39 83 97    MAT 1 TYPE ElchElectrode
-   234 TRANSP TET4  29 16 41 44    MAT 1 TYPE ElchElectrode
-   235 TRANSP TET4  70 39 11 97    MAT 1 TYPE ElchElectrode
-   236 TRANSP TET4  19 22 32 21    MAT 1 TYPE ElchElectrode
-   237 TRANSP TET4  52 61 53 57    MAT 1 TYPE ElchElectrode
-   238 TRANSP TET4  15 28 50 27    MAT 1 TYPE ElchElectrode
-   239 TRANSP TET4  1 71 9 7    MAT 1 TYPE ElchElectrode
-   240 TRANSP TET4  15 22 25 45    MAT 1 TYPE ElchElectrode
-   241 TRANSP TET4  13 81 12 72    MAT 1 TYPE ElchElectrode
-   242 TRANSP TET4  44 29 47 41    MAT 1 TYPE ElchElectrode
-   243 TRANSP TET4  97 70 84 11    MAT 1 TYPE ElchElectrode
-   244 TRANSP TET4  1 15 35 25    MAT 1 TYPE ElchElectrode
-   245 TRANSP TET4  63 104 68 91    MAT 1 TYPE ElchElectrode
-   246 TRANSP TET4  63 65 105 64    MAT 1 TYPE ElchElectrode
-   247 TRANSP TET4  64 104 106 105    MAT 1 TYPE ElchElectrode
-   248 TRANSP TET4  64 106 91 92    MAT 1 TYPE ElchElectrode
-   249 TRANSP TET4  80 76 73 77    MAT 1 TYPE ElchElectrode
-   250 TRANSP TET4  62 65 64 74    MAT 1 TYPE ElchElectrode
-   251 TRANSP TET4  62 5 63 76    MAT 1 TYPE ElchElectrode
-   252 TRANSP TET4  62 65 74 75    MAT 1 TYPE ElchElectrode
-   253 TRANSP TET4  62 6 73 75    MAT 1 TYPE ElchElectrode
-   254 TRANSP TET4  13 37 17 81    MAT 1 TYPE ElchElectrode
-   255 TRANSP TET4  4 13 15 50    MAT 1 TYPE ElchElectrode
-   256 TRANSP TET4  37 81 75 38    MAT 1 TYPE ElchElectrode
-   257 TRANSP TET4  64 106 104 91    MAT 1 TYPE ElchElectrode
-   258 TRANSP TET4  107 106 104 105    MAT 1 TYPE ElchElectrode
-   259 TRANSP TET4  26 94 31 30    MAT 1 TYPE ElchElectrode
-   260 TRANSP TET4  11 83 82 84    MAT 1 TYPE ElchElectrode
-   261 TRANSP TET4  26 33 16 30    MAT 1 TYPE ElchElectrode
-   262 TRANSP TET4  73 81 78 75    MAT 1 TYPE ElchElectrode
-   263 TRANSP TET4  73 72 80 79    MAT 1 TYPE ElchElectrode
-   264 TRANSP TET4  10 27 29 33    MAT 1 TYPE ElchElectrode
-   265 TRANSP TET4  83 39 79 97    MAT 1 TYPE ElchElectrode
-   266 TRANSP TET4  74 67 89 92    MAT 1 TYPE ElchElectrode
-   267 TRANSP TET4  35 15 37 17    MAT 1 TYPE ElchElectrode
-   268 TRANSP TET4  63 76 77 62    MAT 1 TYPE ElchElectrode
-   269 TRANSP TET4  64 92 91 74    MAT 1 TYPE ElchElectrode
-   270 TRANSP TET4  63 105 104 64    MAT 1 TYPE ElchElectrode
-   271 TRANSP TET4  62 91 63 68    MAT 1 TYPE ElchElectrode
-   272 TRANSP TET4  62 67 68 5    MAT 1 TYPE ElchElectrode
-   273 TRANSP TET4  73 77 78 80    MAT 1 TYPE ElchElectrode
-   274 TRANSP TET4  95 108 53 61    MAT 1 TYPE ElchElectrode
-   275 TRANSP TET4  73 72 76 80    MAT 1 TYPE ElchElectrode
-   276 TRANSP TET4  11 70 84 44    MAT 1 TYPE ElchElectrode
-   277 TRANSP TET4  62 68 67 91    MAT 1 TYPE ElchElectrode
-   278 TRANSP TET4  78 77 103 80    MAT 1 TYPE ElchElectrode
-   279 TRANSP TET4  65 77 105 103    MAT 1 TYPE ElchElectrode
-   280 TRANSP TET4  39 70 99 97    MAT 1 TYPE ElchElectrode
-   281 TRANSP TET4  78 65 103 77    MAT 1 TYPE ElchElectrode
-   282 TRANSP TET4  62 6 75 66    MAT 1 TYPE ElchElectrode
-   283 TRANSP TET4  74 66 67 62    MAT 1 TYPE ElchElectrode
-   284 TRANSP TET4  66 74 67 89    MAT 1 TYPE ElchElectrode
-   285 TRANSP TET4  1 37 4 6    MAT 1 TYPE ElchElectrode
-   286 TRANSP TET4  79 81 78 73    MAT 1 TYPE ElchElectrode
-   287 TRANSP TET4  66 90 75 74    MAT 1 TYPE ElchElectrode
-   288 TRANSP TET4  6 75 90 38    MAT 1 TYPE ElchElectrode
-   289 TRANSP TET4  52 60 57 56    MAT 1 TYPE ElchElectrode
-   290 TRANSP TET4  1 9 8 7    MAT 1 TYPE ElchElectrode
-   291 TRANSP TET4  98 79 81 78    MAT 1 TYPE ElchElectrode
-   292 TRANSP TET4  73 37 81 75    MAT 1 TYPE ElchElectrode
-   293 TRANSP TET4  8 7 101 5    MAT 1 TYPE ElchElectrode
-   294 TRANSP TET4  6 90 9 38    MAT 1 TYPE ElchElectrode
-   295 TRANSP TET4  11 82 69 84    MAT 1 TYPE ElchElectrode
-   296 TRANSP TET4  52 58 57 55    MAT 1 TYPE ElchElectrode
-   297 TRANSP TET4  88 87 42 56    MAT 1 TYPE ElchElectrode
-   298 TRANSP TET4  54 47 52 46    MAT 1 TYPE ElchElectrode
-   299 TRANSP TET4  42 69 86 58    MAT 1 TYPE ElchElectrode
-   300 TRANSP TET4  56 58 88 57    MAT 1 TYPE ElchElectrode
-   301 TRANSP TET4  42 86 88 58    MAT 1 TYPE ElchElectrode
-   302 TRANSP TET4  41 30 33 59    MAT 1 TYPE ElchElectrode
-   303 TRANSP TET4  37 17 81 38    MAT 1 TYPE ElchElectrode
-   304 TRANSP TET4  35 38 6 9    MAT 1 TYPE ElchElectrode
-   305 TRANSP TET4  2 7 49 71    MAT 1 TYPE ElchElectrode
-   306 TRANSP TET4  62 6 8 5    MAT 1 TYPE ElchElectrode
-   307 TRANSP TET4  52 58 55 43    MAT 1 TYPE ElchElectrode
-   308 TRANSP TET4  10 27 26 15    MAT 1 TYPE ElchElectrode
-   309 TRANSP TET4  46 70 55 100    MAT 1 TYPE ElchElectrode
-   310 TRANSP TET4  26 31 28 27    MAT 1 TYPE ElchElectrode
-   311 TRANSP TET4  33 59 30 34    MAT 1 TYPE ElchElectrode
-   312 TRANSP TET4  67 5 101 68    MAT 1 TYPE ElchElectrode
-   313 TRANSP TET4  56 87 42 41    MAT 1 TYPE ElchElectrode
-   314 TRANSP TET4  7 48 101 5    MAT 1 TYPE ElchElectrode
-   315 TRANSP TET4  2 50 28 49    MAT 1 TYPE ElchElectrode
-   316 TRANSP TET4  73 62 65 77    MAT 1 TYPE ElchElectrode
-   317 TRANSP TET4  9 38 36 35    MAT 1 TYPE ElchElectrode
-   318 TRANSP TET4  79 98 96 102    MAT 1 TYPE ElchElectrode
-   319 TRANSP TET4  54 46 55 100    MAT 1 TYPE ElchElectrode
-   320 TRANSP TET4  7 49 3 2    MAT 1 TYPE ElchElectrode
-   321 TRANSP TET4  62 74 91 67    MAT 1 TYPE ElchElectrode
-   322 TRANSP TET4  70 43 44 55    MAT 1 TYPE ElchElectrode
-   323 TRANSP TET4  52 55 57 53    MAT 1 TYPE ElchElectrode
-   324 TRANSP TET4  46 99 70 100    MAT 1 TYPE ElchElectrode
-   325 TRANSP TET4  3 7 5 48    MAT 1 TYPE ElchElectrode
+   1 TRANSP TET4  1 2 3 4    MAT 1 TYPE ElchElectrodeGrowth
+   2 TRANSP TET4  5 6 7 3    MAT 1 TYPE ElchElectrodeGrowth
+   3 TRANSP TET4  6 7 3 1    MAT 1 TYPE ElchElectrodeGrowth
+   4 TRANSP TET4  1 6 8 9    MAT 1 TYPE ElchElectrodeGrowth
+   5 TRANSP TET4  1 6 7 8    MAT 1 TYPE ElchElectrodeGrowth
+   6 TRANSP TET4  10 11 12 13    MAT 1 TYPE ElchElectrodeGrowth
+   7 TRANSP TET4  10 14 13 15    MAT 1 TYPE ElchElectrodeGrowth
+   8 TRANSP TET4  10 11 14 16    MAT 1 TYPE ElchElectrodeGrowth
+   9 TRANSP TET4  14 17 15 18    MAT 1 TYPE ElchElectrodeGrowth
+   10 TRANSP TET4  18 15 14 19    MAT 1 TYPE ElchElectrodeGrowth
+   11 TRANSP TET4  18 20 21 19    MAT 1 TYPE ElchElectrodeGrowth
+   12 TRANSP TET4  18 22 23 24    MAT 1 TYPE ElchElectrodeGrowth
+   13 TRANSP TET4  18 25 22 24    MAT 1 TYPE ElchElectrodeGrowth
+   14 TRANSP TET4  18 20 23 21    MAT 1 TYPE ElchElectrodeGrowth
+   15 TRANSP TET4  10 26 19 15    MAT 1 TYPE ElchElectrodeGrowth
+   16 TRANSP TET4  26 15 27 28    MAT 1 TYPE ElchElectrodeGrowth
+   17 TRANSP TET4  10 19 26 16    MAT 1 TYPE ElchElectrodeGrowth
+   18 TRANSP TET4  10 12 11 29    MAT 1 TYPE ElchElectrodeGrowth
+   19 TRANSP TET4  26 30 16 19    MAT 1 TYPE ElchElectrodeGrowth
+   20 TRANSP TET4  26 28 31 32    MAT 1 TYPE ElchElectrodeGrowth
+   21 TRANSP TET4  33 31 30 26    MAT 1 TYPE ElchElectrodeGrowth
+   22 TRANSP TET4  34 33 31 30    MAT 1 TYPE ElchElectrodeGrowth
+   23 TRANSP TET4  35 24 25 17    MAT 1 TYPE ElchElectrodeGrowth
+   24 TRANSP TET4  35 36 24 17    MAT 1 TYPE ElchElectrodeGrowth
+   25 TRANSP TET4  35 1 6 37    MAT 1 TYPE ElchElectrodeGrowth
+   26 TRANSP TET4  35 6 38 37    MAT 1 TYPE ElchElectrodeGrowth
+   27 TRANSP TET4  9 35 1 6    MAT 1 TYPE ElchElectrodeGrowth
+   28 TRANSP TET4  11 29 12 39    MAT 1 TYPE ElchElectrodeGrowth
+   29 TRANSP TET4  40 9 38 36    MAT 1 TYPE ElchElectrodeGrowth
+   30 TRANSP TET4  41 42 43 44    MAT 1 TYPE ElchElectrodeGrowth
+   31 TRANSP TET4  35 17 37 38    MAT 1 TYPE ElchElectrodeGrowth
+   32 TRANSP TET4  2 15 45 28    MAT 1 TYPE ElchElectrodeGrowth
+   33 TRANSP TET4  1 4 3 6    MAT 1 TYPE ElchElectrodeGrowth
+   34 TRANSP TET4  44 46 47 29    MAT 1 TYPE ElchElectrodeGrowth
+   35 TRANSP TET4  48 7 49 3    MAT 1 TYPE ElchElectrodeGrowth
+   36 TRANSP TET4  2 49 28 45    MAT 1 TYPE ElchElectrodeGrowth
+   37 TRANSP TET4  2 3 4 50    MAT 1 TYPE ElchElectrodeGrowth
+   38 TRANSP TET4  20 42 51 16    MAT 1 TYPE ElchElectrodeGrowth
+   39 TRANSP TET4  20 21 19 51    MAT 1 TYPE ElchElectrodeGrowth
+   40 TRANSP TET4  52 53 54 55    MAT 1 TYPE ElchElectrodeGrowth
+   41 TRANSP TET4  52 56 57 58    MAT 1 TYPE ElchElectrodeGrowth
+   42 TRANSP TET4  59 41 60 47    MAT 1 TYPE ElchElectrodeGrowth
+   43 TRANSP TET4  41 60 47 52    MAT 1 TYPE ElchElectrodeGrowth
+   44 TRANSP TET4  52 54 61 60    MAT 1 TYPE ElchElectrodeGrowth
+   45 TRANSP TET4  62 63 64 65    MAT 1 TYPE ElchElectrodeGrowth
+   46 TRANSP TET4  62 66 67 8    MAT 1 TYPE ElchElectrodeGrowth
+   47 TRANSP TET4  62 63 5 68    MAT 1 TYPE ElchElectrodeGrowth
+   48 TRANSP TET4  62 6 66 8    MAT 1 TYPE ElchElectrodeGrowth
+   49 TRANSP TET4  44 11 16 69    MAT 1 TYPE ElchElectrodeGrowth
+   50 TRANSP TET4  44 42 43 69    MAT 1 TYPE ElchElectrodeGrowth
+   51 TRANSP TET4  44 11 39 29    MAT 1 TYPE ElchElectrodeGrowth
+   52 TRANSP TET4  52 55 46 44    MAT 1 TYPE ElchElectrodeGrowth
+   53 TRANSP TET4  44 39 70 46    MAT 1 TYPE ElchElectrodeGrowth
+   54 TRANSP TET4  44 55 46 70    MAT 1 TYPE ElchElectrodeGrowth
+   55 TRANSP TET4  1 2 71 7    MAT 1 TYPE ElchElectrodeGrowth
+   56 TRANSP TET4  1 35 15 37    MAT 1 TYPE ElchElectrodeGrowth
+   57 TRANSP TET4  13 72 50 4    MAT 1 TYPE ElchElectrodeGrowth
+   58 TRANSP TET4  12 13 72 50    MAT 1 TYPE ElchElectrodeGrowth
+   59 TRANSP TET4  4 6 37 73    MAT 1 TYPE ElchElectrodeGrowth
+   60 TRANSP TET4  2 4 15 50    MAT 1 TYPE ElchElectrodeGrowth
+   61 TRANSP TET4  2 50 49 3    MAT 1 TYPE ElchElectrodeGrowth
+   62 TRANSP TET4  4 13 37 15    MAT 1 TYPE ElchElectrodeGrowth
+   63 TRANSP TET4  62 74 66 75    MAT 1 TYPE ElchElectrodeGrowth
+   64 TRANSP TET4  62 76 77 73    MAT 1 TYPE ElchElectrodeGrowth
+   65 TRANSP TET4  6 38 37 75    MAT 1 TYPE ElchElectrodeGrowth
+   66 TRANSP TET4  6 7 8 5    MAT 1 TYPE ElchElectrodeGrowth
+   67 TRANSP TET4  6 76 73 3    MAT 1 TYPE ElchElectrodeGrowth
+   68 TRANSP TET4  73 78 79 80    MAT 1 TYPE ElchElectrodeGrowth
+   69 TRANSP TET4  65 77 78 73    MAT 1 TYPE ElchElectrodeGrowth
+   70 TRANSP TET4  44 39 11 70    MAT 1 TYPE ElchElectrodeGrowth
+   71 TRANSP TET4  4 6 73 3    MAT 1 TYPE ElchElectrodeGrowth
+   72 TRANSP TET4  10 16 33 29    MAT 1 TYPE ElchElectrodeGrowth
+   73 TRANSP TET4  26 15 28 32    MAT 1 TYPE ElchElectrodeGrowth
+   74 TRANSP TET4  81 72 4 73    MAT 1 TYPE ElchElectrodeGrowth
+   75 TRANSP TET4  73 75 78 65    MAT 1 TYPE ElchElectrodeGrowth
+   76 TRANSP TET4  6 73 75 37    MAT 1 TYPE ElchElectrodeGrowth
+   77 TRANSP TET4  4 3 73 72    MAT 1 TYPE ElchElectrodeGrowth
+   78 TRANSP TET4  42 16 44 41    MAT 1 TYPE ElchElectrodeGrowth
+   79 TRANSP TET4  41 29 47 33    MAT 1 TYPE ElchElectrodeGrowth
+   80 TRANSP TET4  30 16 42 41    MAT 1 TYPE ElchElectrodeGrowth
+   81 TRANSP TET4  52 56 41 60    MAT 1 TYPE ElchElectrodeGrowth
+   82 TRANSP TET4  2 15 28 50    MAT 1 TYPE ElchElectrodeGrowth
+   83 TRANSP TET4  41 56 58 42    MAT 1 TYPE ElchElectrodeGrowth
+   84 TRANSP TET4  27 13 15 10    MAT 1 TYPE ElchElectrodeGrowth
+   85 TRANSP TET4  52 47 54 60    MAT 1 TYPE ElchElectrodeGrowth
+   86 TRANSP TET4  10 16 14 19    MAT 1 TYPE ElchElectrodeGrowth
+   87 TRANSP TET4  11 13 82 83    MAT 1 TYPE ElchElectrodeGrowth
+   88 TRANSP TET4  11 14 69 82    MAT 1 TYPE ElchElectrodeGrowth
+   89 TRANSP TET4  10 13 12 27    MAT 1 TYPE ElchElectrodeGrowth
+   90 TRANSP TET4  44 11 69 84    MAT 1 TYPE ElchElectrodeGrowth
+   91 TRANSP TET4  44 16 11 29    MAT 1 TYPE ElchElectrodeGrowth
+   92 TRANSP TET4  41 52 47 44    MAT 1 TYPE ElchElectrodeGrowth
+   93 TRANSP TET4  20 16 14 69    MAT 1 TYPE ElchElectrodeGrowth
+   94 TRANSP TET4  20 85 51 86    MAT 1 TYPE ElchElectrodeGrowth
+   95 TRANSP TET4  20 69 85 86    MAT 1 TYPE ElchElectrodeGrowth
+   96 TRANSP TET4  52 46 55 54    MAT 1 TYPE ElchElectrodeGrowth
+   97 TRANSP TET4  41 16 33 30    MAT 1 TYPE ElchElectrodeGrowth
+   98 TRANSP TET4  20 16 51 19    MAT 1 TYPE ElchElectrodeGrowth
+   99 TRANSP TET4  42 87 88 86    MAT 1 TYPE ElchElectrodeGrowth
+   100 TRANSP TET4  42 56 58 88    MAT 1 TYPE ElchElectrodeGrowth
+   101 TRANSP TET4  55 43 44 52    MAT 1 TYPE ElchElectrodeGrowth
+   102 TRANSP TET4  69 16 44 42    MAT 1 TYPE ElchElectrodeGrowth
+   103 TRANSP TET4  41 43 42 58    MAT 1 TYPE ElchElectrodeGrowth
+   104 TRANSP TET4  1 3 2 7    MAT 1 TYPE ElchElectrodeGrowth
+   105 TRANSP TET4  10 15 19 14    MAT 1 TYPE ElchElectrodeGrowth
+   106 TRANSP TET4  10 26 33 16    MAT 1 TYPE ElchElectrodeGrowth
+   107 TRANSP TET4  50 27 13 15    MAT 1 TYPE ElchElectrodeGrowth
+   108 TRANSP TET4  4 37 13 81    MAT 1 TYPE ElchElectrodeGrowth
+   109 TRANSP TET4  13 15 17 37    MAT 1 TYPE ElchElectrodeGrowth
+   110 TRANSP TET4  13 14 17 15    MAT 1 TYPE ElchElectrodeGrowth
+   111 TRANSP TET4  10 11 13 14    MAT 1 TYPE ElchElectrodeGrowth
+   112 TRANSP TET4  4 81 73 37    MAT 1 TYPE ElchElectrodeGrowth
+   113 TRANSP TET4  1 4 37 15    MAT 1 TYPE ElchElectrodeGrowth
+   114 TRANSP TET4  1 15 2 4    MAT 1 TYPE ElchElectrodeGrowth
+   115 TRANSP TET4  11 13 14 82    MAT 1 TYPE ElchElectrodeGrowth
+   116 TRANSP TET4  66 74 89 90    MAT 1 TYPE ElchElectrodeGrowth
+   117 TRANSP TET4  67 74 91 92    MAT 1 TYPE ElchElectrodeGrowth
+   118 TRANSP TET4  62 6 5 76    MAT 1 TYPE ElchElectrodeGrowth
+   119 TRANSP TET4  62 6 76 73    MAT 1 TYPE ElchElectrodeGrowth
+   120 TRANSP TET4  42 69 58 43    MAT 1 TYPE ElchElectrodeGrowth
+   121 TRANSP TET4  90 8 89 66    MAT 1 TYPE ElchElectrodeGrowth
+   122 TRANSP TET4  62 64 91 74    MAT 1 TYPE ElchElectrodeGrowth
+   123 TRANSP TET4  6 90 66 8    MAT 1 TYPE ElchElectrodeGrowth
+   124 TRANSP TET4  41 59 87 30    MAT 1 TYPE ElchElectrodeGrowth
+   125 TRANSP TET4  41 30 87 42    MAT 1 TYPE ElchElectrodeGrowth
+   126 TRANSP TET4  20 14 16 19    MAT 1 TYPE ElchElectrodeGrowth
+   127 TRANSP TET4  20 85 93 23    MAT 1 TYPE ElchElectrodeGrowth
+   128 TRANSP TET4  52 43 41 58    MAT 1 TYPE ElchElectrodeGrowth
+   129 TRANSP TET4  1 71 2 15    MAT 1 TYPE ElchElectrodeGrowth
+   130 TRANSP TET4  6 8 9 90    MAT 1 TYPE ElchElectrodeGrowth
+   131 TRANSP TET4  2 45 15 71    MAT 1 TYPE ElchElectrodeGrowth
+   132 TRANSP TET4  1 15 25 71    MAT 1 TYPE ElchElectrodeGrowth
+   133 TRANSP TET4  1 35 9 25    MAT 1 TYPE ElchElectrodeGrowth
+   134 TRANSP TET4  18 20 19 14    MAT 1 TYPE ElchElectrodeGrowth
+   135 TRANSP TET4  20 14 93 69    MAT 1 TYPE ElchElectrodeGrowth
+   136 TRANSP TET4  20 85 23 21    MAT 1 TYPE ElchElectrodeGrowth
+   137 TRANSP TET4  20 86 42 69    MAT 1 TYPE ElchElectrodeGrowth
+   138 TRANSP TET4  10 11 16 29    MAT 1 TYPE ElchElectrodeGrowth
+   139 TRANSP TET4  35 15 17 25    MAT 1 TYPE ElchElectrodeGrowth
+   140 TRANSP TET4  41 87 59 56    MAT 1 TYPE ElchElectrodeGrowth
+   141 TRANSP TET4  44 70 84 43    MAT 1 TYPE ElchElectrodeGrowth
+   142 TRANSP TET4  18 15 19 22    MAT 1 TYPE ElchElectrodeGrowth
+   143 TRANSP TET4  18 19 21 22    MAT 1 TYPE ElchElectrodeGrowth
+   144 TRANSP TET4  11 12 13 83    MAT 1 TYPE ElchElectrodeGrowth
+   145 TRANSP TET4  18 93 14 17    MAT 1 TYPE ElchElectrodeGrowth
+   146 TRANSP TET4  11 14 16 69    MAT 1 TYPE ElchElectrodeGrowth
+   147 TRANSP TET4  19 51 94 30    MAT 1 TYPE ElchElectrodeGrowth
+   148 TRANSP TET4  10 33 26 27    MAT 1 TYPE ElchElectrodeGrowth
+   149 TRANSP TET4  26 15 32 19    MAT 1 TYPE ElchElectrodeGrowth
+   150 TRANSP TET4  18 20 14 93    MAT 1 TYPE ElchElectrodeGrowth
+   151 TRANSP TET4  26 19 32 94    MAT 1 TYPE ElchElectrodeGrowth
+   152 TRANSP TET4  16 51 19 30    MAT 1 TYPE ElchElectrodeGrowth
+   153 TRANSP TET4  54 53 95 55    MAT 1 TYPE ElchElectrodeGrowth
+   154 TRANSP TET4  96 97 98 79    MAT 1 TYPE ElchElectrodeGrowth
+   155 TRANSP TET4  79 97 98 83    MAT 1 TYPE ElchElectrodeGrowth
+   156 TRANSP TET4  44 69 43 84    MAT 1 TYPE ElchElectrodeGrowth
+   157 TRANSP TET4  12 79 83 39    MAT 1 TYPE ElchElectrodeGrowth
+   158 TRANSP TET4  35 38 36 17    MAT 1 TYPE ElchElectrodeGrowth
+   159 TRANSP TET4  39 46 99 70    MAT 1 TYPE ElchElectrodeGrowth
+   160 TRANSP TET4  54 95 100 55    MAT 1 TYPE ElchElectrodeGrowth
+   161 TRANSP TET4  52 43 44 41    MAT 1 TYPE ElchElectrodeGrowth
+   162 TRANSP TET4  52 41 56 58    MAT 1 TYPE ElchElectrodeGrowth
+   163 TRANSP TET4  97 39 79 96    MAT 1 TYPE ElchElectrodeGrowth
+   164 TRANSP TET4  54 61 95 53    MAT 1 TYPE ElchElectrodeGrowth
+   165 TRANSP TET4  13 14 82 17    MAT 1 TYPE ElchElectrodeGrowth
+   166 TRANSP TET4  8 9 90 40    MAT 1 TYPE ElchElectrodeGrowth
+   167 TRANSP TET4  66 8 89 67    MAT 1 TYPE ElchElectrodeGrowth
+   168 TRANSP TET4  62 8 67 5    MAT 1 TYPE ElchElectrodeGrowth
+   169 TRANSP TET4  8 67 5 101    MAT 1 TYPE ElchElectrodeGrowth
+   170 TRANSP TET4  13 12 81 83    MAT 1 TYPE ElchElectrodeGrowth
+   171 TRANSP TET4  62 73 65 75    MAT 1 TYPE ElchElectrodeGrowth
+   172 TRANSP TET4  11 84 97 83    MAT 1 TYPE ElchElectrodeGrowth
+   173 TRANSP TET4  10 29 27 12    MAT 1 TYPE ElchElectrodeGrowth
+   174 TRANSP TET4  78 102 98 79    MAT 1 TYPE ElchElectrodeGrowth
+   175 TRANSP TET4  12 81 83 79    MAT 1 TYPE ElchElectrodeGrowth
+   176 TRANSP TET4  79 98 81 83    MAT 1 TYPE ElchElectrodeGrowth
+   177 TRANSP TET4  78 79 80 102    MAT 1 TYPE ElchElectrodeGrowth
+   178 TRANSP TET4  78 103 102 80    MAT 1 TYPE ElchElectrodeGrowth
+   179 TRANSP TET4  39 96 97 99    MAT 1 TYPE ElchElectrodeGrowth
+   180 TRANSP TET4  41 60 56 59    MAT 1 TYPE ElchElectrodeGrowth
+   181 TRANSP TET4  6 3 5 76    MAT 1 TYPE ElchElectrodeGrowth
+   182 TRANSP TET4  13 81 72 4    MAT 1 TYPE ElchElectrodeGrowth
+   183 TRANSP TET4  2 45 71 49    MAT 1 TYPE ElchElectrodeGrowth
+   184 TRANSP TET4  14 17 93 82    MAT 1 TYPE ElchElectrodeGrowth
+   185 TRANSP TET4  18 24 23 17    MAT 1 TYPE ElchElectrodeGrowth
+   186 TRANSP TET4  41 47 59 33    MAT 1 TYPE ElchElectrodeGrowth
+   187 TRANSP TET4  44 52 47 46    MAT 1 TYPE ElchElectrodeGrowth
+   188 TRANSP TET4  52 54 53 61    MAT 1 TYPE ElchElectrodeGrowth
+   189 TRANSP TET4  42 87 86 51    MAT 1 TYPE ElchElectrodeGrowth
+   190 TRANSP TET4  52 57 60 61    MAT 1 TYPE ElchElectrodeGrowth
+   191 TRANSP TET4  18 23 20 93    MAT 1 TYPE ElchElectrodeGrowth
+   192 TRANSP TET4  20 85 69 93    MAT 1 TYPE ElchElectrodeGrowth
+   193 TRANSP TET4  20 51 85 21    MAT 1 TYPE ElchElectrodeGrowth
+   194 TRANSP TET4  35 25 24 36    MAT 1 TYPE ElchElectrodeGrowth
+   195 TRANSP TET4  18 93 17 23    MAT 1 TYPE ElchElectrodeGrowth
+   196 TRANSP TET4  20 69 42 16    MAT 1 TYPE ElchElectrodeGrowth
+   197 TRANSP TET4  9 90 40 38    MAT 1 TYPE ElchElectrodeGrowth
+   198 TRANSP TET4  1 25 9 71    MAT 1 TYPE ElchElectrodeGrowth
+   199 TRANSP TET4  24 17 18 25    MAT 1 TYPE ElchElectrodeGrowth
+   200 TRANSP TET4  19 94 21 32    MAT 1 TYPE ElchElectrodeGrowth
+   201 TRANSP TET4  12 79 72 81    MAT 1 TYPE ElchElectrodeGrowth
+   202 TRANSP TET4  26 94 32 31    MAT 1 TYPE ElchElectrodeGrowth
+   203 TRANSP TET4  15 45 28 32    MAT 1 TYPE ElchElectrodeGrowth
+   204 TRANSP TET4  15 19 22 32    MAT 1 TYPE ElchElectrodeGrowth
+   205 TRANSP TET4  51 16 42 30    MAT 1 TYPE ElchElectrodeGrowth
+   206 TRANSP TET4  42 30 87 51    MAT 1 TYPE ElchElectrodeGrowth
+   207 TRANSP TET4  20 42 86 51    MAT 1 TYPE ElchElectrodeGrowth
+   208 TRANSP TET4  15 25 71 45    MAT 1 TYPE ElchElectrodeGrowth
+   209 TRANSP TET4  4 72 50 3    MAT 1 TYPE ElchElectrodeGrowth
+   210 TRANSP TET4  13 12 27 50    MAT 1 TYPE ElchElectrodeGrowth
+   211 TRANSP TET4  26 27 33 31    MAT 1 TYPE ElchElectrodeGrowth
+   212 TRANSP TET4  25 17 18 15    MAT 1 TYPE ElchElectrodeGrowth
+   213 TRANSP TET4  11 39 12 83    MAT 1 TYPE ElchElectrodeGrowth
+   214 TRANSP TET4  13 83 81 82    MAT 1 TYPE ElchElectrodeGrowth
+   215 TRANSP TET4  15 25 22 18    MAT 1 TYPE ElchElectrodeGrowth
+   216 TRANSP TET4  26 30 19 94    MAT 1 TYPE ElchElectrodeGrowth
+   217 TRANSP TET4  19 21 94 51    MAT 1 TYPE ElchElectrodeGrowth
+   218 TRANSP TET4  13 81 17 82    MAT 1 TYPE ElchElectrodeGrowth
+   219 TRANSP TET4  15 32 22 45    MAT 1 TYPE ElchElectrodeGrowth
+   220 TRANSP TET4  14 93 69 82    MAT 1 TYPE ElchElectrodeGrowth
+   221 TRANSP TET4  40 90 8 89    MAT 1 TYPE ElchElectrodeGrowth
+   222 TRANSP TET4  6 75 66 90    MAT 1 TYPE ElchElectrodeGrowth
+   223 TRANSP TET4  35 36 9 25    MAT 1 TYPE ElchElectrodeGrowth
+   224 TRANSP TET4  44 46 29 39    MAT 1 TYPE ElchElectrodeGrowth
+   225 TRANSP TET4  73 72 3 76    MAT 1 TYPE ElchElectrodeGrowth
+   226 TRANSP TET4  73 79 81 72    MAT 1 TYPE ElchElectrodeGrowth
+   227 TRANSP TET4  62 63 91 64    MAT 1 TYPE ElchElectrodeGrowth
+   228 TRANSP TET4  77 62 65 63    MAT 1 TYPE ElchElectrodeGrowth
+   229 TRANSP TET4  63 91 64 104    MAT 1 TYPE ElchElectrodeGrowth
+   230 TRANSP TET4  77 63 65 105    MAT 1 TYPE ElchElectrodeGrowth
+   231 TRANSP TET4  33 16 41 29    MAT 1 TYPE ElchElectrodeGrowth
+   232 TRANSP TET4  18 22 21 23    MAT 1 TYPE ElchElectrodeGrowth
+   233 TRANSP TET4  11 39 83 97    MAT 1 TYPE ElchElectrodeGrowth
+   234 TRANSP TET4  29 16 41 44    MAT 1 TYPE ElchElectrodeGrowth
+   235 TRANSP TET4  70 39 11 97    MAT 1 TYPE ElchElectrodeGrowth
+   236 TRANSP TET4  19 22 32 21    MAT 1 TYPE ElchElectrodeGrowth
+   237 TRANSP TET4  52 61 53 57    MAT 1 TYPE ElchElectrodeGrowth
+   238 TRANSP TET4  15 28 50 27    MAT 1 TYPE ElchElectrodeGrowth
+   239 TRANSP TET4  1 71 9 7    MAT 1 TYPE ElchElectrodeGrowth
+   240 TRANSP TET4  15 22 25 45    MAT 1 TYPE ElchElectrodeGrowth
+   241 TRANSP TET4  13 81 12 72    MAT 1 TYPE ElchElectrodeGrowth
+   242 TRANSP TET4  44 29 47 41    MAT 1 TYPE ElchElectrodeGrowth
+   243 TRANSP TET4  97 70 84 11    MAT 1 TYPE ElchElectrodeGrowth
+   244 TRANSP TET4  1 15 35 25    MAT 1 TYPE ElchElectrodeGrowth
+   245 TRANSP TET4  63 104 68 91    MAT 1 TYPE ElchElectrodeGrowth
+   246 TRANSP TET4  63 65 105 64    MAT 1 TYPE ElchElectrodeGrowth
+   247 TRANSP TET4  64 104 106 105    MAT 1 TYPE ElchElectrodeGrowth
+   248 TRANSP TET4  64 106 91 92    MAT 1 TYPE ElchElectrodeGrowth
+   249 TRANSP TET4  80 76 73 77    MAT 1 TYPE ElchElectrodeGrowth
+   250 TRANSP TET4  62 65 64 74    MAT 1 TYPE ElchElectrodeGrowth
+   251 TRANSP TET4  62 5 63 76    MAT 1 TYPE ElchElectrodeGrowth
+   252 TRANSP TET4  62 65 74 75    MAT 1 TYPE ElchElectrodeGrowth
+   253 TRANSP TET4  62 6 73 75    MAT 1 TYPE ElchElectrodeGrowth
+   254 TRANSP TET4  13 37 17 81    MAT 1 TYPE ElchElectrodeGrowth
+   255 TRANSP TET4  4 13 15 50    MAT 1 TYPE ElchElectrodeGrowth
+   256 TRANSP TET4  37 81 75 38    MAT 1 TYPE ElchElectrodeGrowth
+   257 TRANSP TET4  64 106 104 91    MAT 1 TYPE ElchElectrodeGrowth
+   258 TRANSP TET4  107 106 104 105    MAT 1 TYPE ElchElectrodeGrowth
+   259 TRANSP TET4  26 94 31 30    MAT 1 TYPE ElchElectrodeGrowth
+   260 TRANSP TET4  11 83 82 84    MAT 1 TYPE ElchElectrodeGrowth
+   261 TRANSP TET4  26 33 16 30    MAT 1 TYPE ElchElectrodeGrowth
+   262 TRANSP TET4  73 81 78 75    MAT 1 TYPE ElchElectrodeGrowth
+   263 TRANSP TET4  73 72 80 79    MAT 1 TYPE ElchElectrodeGrowth
+   264 TRANSP TET4  10 27 29 33    MAT 1 TYPE ElchElectrodeGrowth
+   265 TRANSP TET4  83 39 79 97    MAT 1 TYPE ElchElectrodeGrowth
+   266 TRANSP TET4  74 67 89 92    MAT 1 TYPE ElchElectrodeGrowth
+   267 TRANSP TET4  35 15 37 17    MAT 1 TYPE ElchElectrodeGrowth
+   268 TRANSP TET4  63 76 77 62    MAT 1 TYPE ElchElectrodeGrowth
+   269 TRANSP TET4  64 92 91 74    MAT 1 TYPE ElchElectrodeGrowth
+   270 TRANSP TET4  63 105 104 64    MAT 1 TYPE ElchElectrodeGrowth
+   271 TRANSP TET4  62 91 63 68    MAT 1 TYPE ElchElectrodeGrowth
+   272 TRANSP TET4  62 67 68 5    MAT 1 TYPE ElchElectrodeGrowth
+   273 TRANSP TET4  73 77 78 80    MAT 1 TYPE ElchElectrodeGrowth
+   274 TRANSP TET4  95 108 53 61    MAT 1 TYPE ElchElectrodeGrowth
+   275 TRANSP TET4  73 72 76 80    MAT 1 TYPE ElchElectrodeGrowth
+   276 TRANSP TET4  11 70 84 44    MAT 1 TYPE ElchElectrodeGrowth
+   277 TRANSP TET4  62 68 67 91    MAT 1 TYPE ElchElectrodeGrowth
+   278 TRANSP TET4  78 77 103 80    MAT 1 TYPE ElchElectrodeGrowth
+   279 TRANSP TET4  65 77 105 103    MAT 1 TYPE ElchElectrodeGrowth
+   280 TRANSP TET4  39 70 99 97    MAT 1 TYPE ElchElectrodeGrowth
+   281 TRANSP TET4  78 65 103 77    MAT 1 TYPE ElchElectrodeGrowth
+   282 TRANSP TET4  62 6 75 66    MAT 1 TYPE ElchElectrodeGrowth
+   283 TRANSP TET4  74 66 67 62    MAT 1 TYPE ElchElectrodeGrowth
+   284 TRANSP TET4  66 74 67 89    MAT 1 TYPE ElchElectrodeGrowth
+   285 TRANSP TET4  1 37 4 6    MAT 1 TYPE ElchElectrodeGrowth
+   286 TRANSP TET4  79 81 78 73    MAT 1 TYPE ElchElectrodeGrowth
+   287 TRANSP TET4  66 90 75 74    MAT 1 TYPE ElchElectrodeGrowth
+   288 TRANSP TET4  6 75 90 38    MAT 1 TYPE ElchElectrodeGrowth
+   289 TRANSP TET4  52 60 57 56    MAT 1 TYPE ElchElectrodeGrowth
+   290 TRANSP TET4  1 9 8 7    MAT 1 TYPE ElchElectrodeGrowth
+   291 TRANSP TET4  98 79 81 78    MAT 1 TYPE ElchElectrodeGrowth
+   292 TRANSP TET4  73 37 81 75    MAT 1 TYPE ElchElectrodeGrowth
+   293 TRANSP TET4  8 7 101 5    MAT 1 TYPE ElchElectrodeGrowth
+   294 TRANSP TET4  6 90 9 38    MAT 1 TYPE ElchElectrodeGrowth
+   295 TRANSP TET4  11 82 69 84    MAT 1 TYPE ElchElectrodeGrowth
+   296 TRANSP TET4  52 58 57 55    MAT 1 TYPE ElchElectrodeGrowth
+   297 TRANSP TET4  88 87 42 56    MAT 1 TYPE ElchElectrodeGrowth
+   298 TRANSP TET4  54 47 52 46    MAT 1 TYPE ElchElectrodeGrowth
+   299 TRANSP TET4  42 69 86 58    MAT 1 TYPE ElchElectrodeGrowth
+   300 TRANSP TET4  56 58 88 57    MAT 1 TYPE ElchElectrodeGrowth
+   301 TRANSP TET4  42 86 88 58    MAT 1 TYPE ElchElectrodeGrowth
+   302 TRANSP TET4  41 30 33 59    MAT 1 TYPE ElchElectrodeGrowth
+   303 TRANSP TET4  37 17 81 38    MAT 1 TYPE ElchElectrodeGrowth
+   304 TRANSP TET4  35 38 6 9    MAT 1 TYPE ElchElectrodeGrowth
+   305 TRANSP TET4  2 7 49 71    MAT 1 TYPE ElchElectrodeGrowth
+   306 TRANSP TET4  62 6 8 5    MAT 1 TYPE ElchElectrodeGrowth
+   307 TRANSP TET4  52 58 55 43    MAT 1 TYPE ElchElectrodeGrowth
+   308 TRANSP TET4  10 27 26 15    MAT 1 TYPE ElchElectrodeGrowth
+   309 TRANSP TET4  46 70 55 100    MAT 1 TYPE ElchElectrodeGrowth
+   310 TRANSP TET4  26 31 28 27    MAT 1 TYPE ElchElectrodeGrowth
+   311 TRANSP TET4  33 59 30 34    MAT 1 TYPE ElchElectrodeGrowth
+   312 TRANSP TET4  67 5 101 68    MAT 1 TYPE ElchElectrodeGrowth
+   313 TRANSP TET4  56 87 42 41    MAT 1 TYPE ElchElectrodeGrowth
+   314 TRANSP TET4  7 48 101 5    MAT 1 TYPE ElchElectrodeGrowth
+   315 TRANSP TET4  2 50 28 49    MAT 1 TYPE ElchElectrodeGrowth
+   316 TRANSP TET4  73 62 65 77    MAT 1 TYPE ElchElectrodeGrowth
+   317 TRANSP TET4  9 38 36 35    MAT 1 TYPE ElchElectrodeGrowth
+   318 TRANSP TET4  79 98 96 102    MAT 1 TYPE ElchElectrodeGrowth
+   319 TRANSP TET4  54 46 55 100    MAT 1 TYPE ElchElectrodeGrowth
+   320 TRANSP TET4  7 49 3 2    MAT 1 TYPE ElchElectrodeGrowth
+   321 TRANSP TET4  62 74 91 67    MAT 1 TYPE ElchElectrodeGrowth
+   322 TRANSP TET4  70 43 44 55    MAT 1 TYPE ElchElectrodeGrowth
+   323 TRANSP TET4  52 55 57 53    MAT 1 TYPE ElchElectrodeGrowth
+   324 TRANSP TET4  46 99 70 100    MAT 1 TYPE ElchElectrodeGrowth
+   325 TRANSP TET4  3 7 5 48    MAT 1 TYPE ElchElectrodeGrowth
    326 TRANSP TET4  109 110 111 112    MAT 2 TYPE ElchDiffCond
    327 TRANSP TET4  110 113 114 115    MAT 2 TYPE ElchDiffCond
    328 TRANSP TET4  110 111 116 109    MAT 2 TYPE ElchDiffCond
@@ -2940,8 +2913,4 @@ NODE       533 COORD  2.5000000000000001e-03 -8.6602540378443859e-04  0.00000000
    1558 TRANSP TET4  490 485 493 484    MAT 3 TYPE ElchElectrode
    1559 TRANSP TET4  511 504 533 516    MAT 3 TYPE ElchElectrode
    1560 TRANSP TET4  528 469 518 514    MAT 3 TYPE ElchElectrode
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------ACOUSTIC ELEMENTS
----------------------------------------------------CELL ELEMENTS
 ---------------------------------------------------------------END
-//                              END

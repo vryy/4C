@@ -426,7 +426,7 @@ void ScaTraFilter::WriteAllResults(PostField* field)
 \*----------------------------------------------------------------------*/
 void ElchFilter::WriteAllResults(PostField* field)
 {
-  //compute number of dofs per node (ask the first node)
+  // compute number of dofs per node (ask the first node)
   int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
 
   // write results for each transported scalar
@@ -461,8 +461,8 @@ void ElchFilter::WriteAllResults(PostField* field)
   // write displacement field (always 3D)
   writer_->WriteResult("dispnp", "ale-displacement", nodebased, 3);
 
-  // write magnetic field (always 3D)
-  writer_->WriteResult("magnetic_field", "B", nodebased, 3);
+  // write scatra-scatra interface layer thickness
+  writer_->WriteResult("intlayerthickness","thickness_plating",nodebased,1);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);

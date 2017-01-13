@@ -721,6 +721,18 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
 } // SCATRA::ScaTraTimIntImpl::ComputeDensity
 
 
+/*---------------------------------------------------------------------------*
+ | compute time derivatives of discrete state variables           fang 01/17 |
+ *---------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ComputeTimeDerivative()
+{
+  // compute time derivatives of discrete state variables associated with meshtying strategy
+  strategy_->ComputeTimeDerivative();
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | output total and mean values of transported scalars       fang 03/16 |
  *----------------------------------------------------------------------*/
@@ -1157,6 +1169,18 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
 
 
 /*----------------------------------------------------------------------*
+ | output restart information                                fang 01/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputRestart() const
+{
+  // output restart information associated with meshtying strategy
+  strategy_->OutputRestart();
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::OutputRestart()
+
+
+/*----------------------------------------------------------------------*
  |  write mass / heat flux vector to BINIO                   gjb   08/08|
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputFlux(
@@ -1531,6 +1555,18 @@ void SCATRA::ScaTraTimIntImpl::AccessVreman(
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | read restart data                                         fang 01/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
+{
+  // read restart data associated with meshtying strategy
+  strategy_->ReadRestart(step,input);
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::ReadRestart()
 
 
 /*-------------------------------------------------------------------------*
@@ -2353,6 +2389,18 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 } // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol
 
 
+/*------------------------------------------------------------------------------------------------------*
+ | do explicit predictor step to obtain better starting value for Newton-Raphson iteration   fang 01/17 |
+ *------------------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ExplicitPredictor() const
+{
+  // predict discrete solution variables associated with meshtying strategy
+  strategy_->ExplicitPredictor();
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Prepare evaluation of mean scalars                      vuong   04/16|
  *----------------------------------------------------------------------*/
@@ -2489,11 +2537,11 @@ void SCATRA::OutputScalarsStrategyDomain::Init(const ScaTraTimIntImpl* const sca
     dserror("Output of scalars for entire domain not valid for different numbers of DOFs per nodein ScaTra discretization. \n"
         "Use option `by_condition' for the parameter 'OUTPUTSCALARS' in the SCALAR TRANSPORT DYNAMIC section instead!");
 
-  numscal_ = scatratimint->scalarhandler_->NumScal();
+  numdofpernode_ = scatratimint->scalarhandler_->NumDofPerNode();
 
   // initialize result vectors associated with entire domain
-  totalscalars_[-1].resize(numscal_,0.);
-  meanscalars_[-1].resize(numscal_,0.);
+  totalscalars_[-1].resize(numdofpernode_,0.);
+  meanscalars_[-1].resize(numdofpernode_,0.);
 
   return;
 }
@@ -2507,7 +2555,7 @@ void SCATRA::OutputScalarsStrategyDomain::PrintHeaderToFile(
   std::ofstream f;
   f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
   f << " Integral of entire domain |";
-  for(int k=0; k<numscal_; ++k)
+  for(int k=0; k<numdofpernode_; ++k)
   {
     f << " Total value of scalar " << k+1 << " in entire domain |";
     f << " Mean value of scalar " << k+1 << " in entire domain |";
@@ -2534,8 +2582,8 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults(
   int domainid_int(-1);
 
   // initialize result vector
-  // first NumScal() components = scalar integrals, last component = domain integral
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+  // first NumDofPerNode() components = scalar integrals, last component = domain integral
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(numdofpernode_+1));
 
   // perform integration
   scatratimint->discret_->EvaluateScalars(eleparams,scalars);
@@ -2545,10 +2593,10 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults(
     scalars->Scale(4.*PI);
 
   // extract domain integral
-  const double domint = (*scalars)[numscal_];
+  const double domint = (*scalars)[numdofpernode_];
 
   // compute results
-  for(int k=0; k<numscal_; ++k)
+  for(int k=0; k<numdofpernode_; ++k)
   {
     totalscalars_[domainid_int][k] = (*scalars)[k];
     meanscalars_[domainid_int][k] =(*scalars)[k]/domint;
@@ -2561,14 +2609,14 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults(
     std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
     std::ostringstream domainid_string;
     domainid_string << "|  overall  |";
-    for(int k=0; k<numscal_; ++k)
+    for(int k=0; k<numdofpernode_; ++k)
       std::cout << domainid_string.str() << "    " << std::setw(2) << k+1 << "     |    " << std::scientific << std::setprecision(6) << (*scalars)[k] << "    |   " << domint << "  |    " << (*scalars)[k]/domint << "   |" << std::endl;
 
     // file output
     std::ofstream f;
     f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
     f << " " << std::setprecision(9) << domint;
-    for(int k=0; k<numscal_; ++k)
+    for(int k=0; k<numdofpernode_; ++k)
       f << " " << (*scalars)[k] << " " << (*scalars)[k]/domint;
     f.flush();
     f.close();
@@ -2590,8 +2638,8 @@ void SCATRA::OutputScalarsStrategyCondition::Init(const ScaTraTimIntImpl* const 
         "Change the parameter 'OUTPUTSCALARS' in the SCALAR TRANSPORT DYNAMIC section \n"
         "or include 'DESIGN TOTAL AND MEAN SCALAR' conditions!");
 
-  numscalpercondition_.clear();
-  numscalpercondition_.resize(conditions_.size(),0);
+  numdofpernodepercondition_.clear();
+  numdofpernodepercondition_.resize(conditions_.size(),0);
 
   // loop over all conditions
   for(unsigned icond=0; icond<conditions_.size(); ++icond)
@@ -2600,17 +2648,17 @@ void SCATRA::OutputScalarsStrategyCondition::Init(const ScaTraTimIntImpl* const 
     const int condid(conditions_[icond]->GetInt("ConditionID"));
 
     // determine the number of dofs on the current condition
-    const int numscal =
-        scatratimint->scalarhandler_->NumScalInCondition(
+    const int numdofpernode =
+        scatratimint->scalarhandler_->NumDofPerNodeInCondition(
                                             *conditions_[icond],
                                             scatratimint->discret_);
 
     //save the number of dofs on the current condition
-    numscalpercondition_[icond] = numscal;
+    numdofpernodepercondition_[icond] = numdofpernode;
 
     // initialize result vectors associated with current condition
-    totalscalars_[condid].resize(numscal,0.);
-    meanscalars_[condid].resize(numscal,0.);
+    totalscalars_[condid].resize(numdofpernode,0.);
+    meanscalars_[condid].resize(numdofpernode,0.);
   }
 
   return;
@@ -2628,7 +2676,7 @@ void SCATRA::OutputScalarsStrategyCondition::PrintHeaderToFile(
   {
     const int condid(conditions_[icond]->GetInt("ConditionID"));
     f << " Integral of domain " << condid << " |";
-    for(int k=0; k<numscalpercondition_[icond]; ++k)
+    for(int k=0; k<numdofpernodepercondition_[icond]; ++k)
     {
       f << " Total value of scalar " << k+1 << " in domain " << condid << " |";
       f << " Mean value of scalar " << k+1 << " in domain " << condid << " |";
@@ -2659,11 +2707,11 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
     int domainid_int(conditions_[icond]->GetInt("ConditionID"));
 
     // determine the number of dofs on the current condition
-    const int numscal = numscalpercondition_[icond];
+    const int numdofpernode = numdofpernodepercondition_[icond];
 
     // initialize result vector
-    // first NumScal() components = scalar integrals, last component = domain integral
-    Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(numscal+1));
+    // first NumDofPerNode() components = scalar integrals, last component = domain integral
+    Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(numdofpernode+1));
 
     // perform integration
     scatratimint->discret_->EvaluateScalars(eleparams,scalars,"TotalAndMeanScalar",domainid_int);
@@ -2673,10 +2721,10 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
       scalars->Scale(4.*PI);
 
     // extract domain integral
-    const double domint = (*scalars)[numscal];
+    const double domint = (*scalars)[numdofpernode];
 
     // compute results
-    for(int k=0; k<numscal; ++k)
+    for(int k=0; k<numdofpernode; ++k)
     {
       totalscalars_[domainid_int][k] = (*scalars)[k];
       meanscalars_[domainid_int][k] =(*scalars)[k]/domint;
@@ -2688,14 +2736,14 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
       // screen output
       std::ostringstream domainid_string;
       domainid_string << "|    " << std::setw(2) << domainid_int << "     |";
-      for(int k=0; k<numscal; ++k)
+      for(int k=0; k<numdofpernode; ++k)
         std::cout << domainid_string.str() << "    " << std::setw(2) << k+1 << "     |    " << std::scientific << std::setprecision(6) << (*scalars)[k] << "    |   " << domint << "  |    " << (*scalars)[k]/domint << "   |" << std::endl;
 
       // file output
       std::ofstream f;
       f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
       f << " " << std::setprecision(9) << domint;
-      for(int k=0; k<numscal; ++k)
+      for(int k=0; k<numdofpernode; ++k)
         f << " " << (*scalars)[k] << " " << (*scalars)[k]/domint;
       f.flush();
       f.close();

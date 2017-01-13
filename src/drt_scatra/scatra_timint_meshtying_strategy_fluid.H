@@ -62,14 +62,14 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
     //! include Dirichlet conditions into condensation
     void IncludeDirichletInCondensation() const;
 
-    //! setup meshtying objects
-    virtual void SetupMeshtying();
-
     //! initialize meshtying objects
     virtual void InitMeshtying();
 
     //! initialize system matrix
     virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+
+    //! setup meshtying objects
+    void SetupMeshtying();
 
     //! solve resulting linear system of equations
     void Solve(

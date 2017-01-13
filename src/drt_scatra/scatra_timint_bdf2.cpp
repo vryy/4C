@@ -155,6 +155,9 @@ void SCATRA::TimIntBDF2::SetTimeForNeumannEvaluation(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
 {
+  // call base class routine
+  ScaTraTimIntImpl::SetOldPartOfRighthandside();
+
   /*
   BDF2: for variable time step:
 
@@ -190,8 +193,11 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  | perform an explicit predictor step                         gjb 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::ExplicitPredictor()
+void SCATRA::TimIntBDF2::ExplicitPredictor() const
 {
+  // call base class routine
+  ScaTraTimIntImpl::ExplicitPredictor();
+
   if (step_>1) phinp_->Update(-1.0, *phinm_,2.0);
   // for step == 1 phinp_ is already correctly initialized with the
   // initial field phin_
@@ -265,6 +271,9 @@ void SCATRA::TimIntBDF2::DynamicComputationOfCv()
  *--------------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
+  // call base class routine
+  ScaTraTimIntImpl::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
 
@@ -277,6 +286,9 @@ void SCATRA::TimIntBDF2::AddTimeIntegrationSpecificVectors(bool forcedincrementa
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::ComputeTimeDerivative()
 {
+  // call base class routine
+  ScaTraTimIntImpl::ComputeTimeDerivative();
+
   if (step_ == 1)
   {
     // time derivative of phi for first time step:
@@ -309,6 +321,9 @@ void SCATRA::TimIntBDF2::ComputeTimeDerivative()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::Update(const int num)
 {
+  // call base class routine
+  ScaTraTimIntImpl::Update(num);
+
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or calcflux_boundary_ != INPAR::SCATRA::flux_none)
@@ -332,8 +347,11 @@ void SCATRA::TimIntBDF2::Update(const int num)
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::OutputRestart()
+void SCATRA::TimIntBDF2::OutputRestart() const
 {
+  // call base class routine
+  ScaTraTimIntImpl::OutputRestart();
+
   // additional state vectors that are needed for BDF2 restart
   output_->WriteVector("phin", phin_);
   output_->WriteVector("phinm", phinm_);
@@ -347,6 +365,9 @@ void SCATRA::TimIntBDF2::OutputRestart()
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
+  // call base class routine
+  ScaTraTimIntImpl::ReadRestart(step,input);
+
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if(input == Teuchos::null)
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
@@ -363,7 +384,7 @@ void SCATRA::TimIntBDF2::ReadRestart(const int step,Teuchos::RCP<IO::InputContro
   reader->ReadVector(phin_, "phin");
   reader->ReadVector(phinm_,"phinm");
 
-  RestartProblemSpecific(step,*reader);
+  ReadRestartProblemSpecific(step,*reader);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)

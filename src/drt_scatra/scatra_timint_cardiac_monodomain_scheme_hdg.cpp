@@ -83,7 +83,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::Update(const int num)
 /*----------------------------------------------------------------------*
  | write additional data required for restart            hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::OutputRestart()
+void SCATRA::TimIntCardiacMonodomainHDG::OutputRestart() const
 {
 
   // Call function from baseclass

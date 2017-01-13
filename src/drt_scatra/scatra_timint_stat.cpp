@@ -140,6 +140,9 @@ void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
 {
+  // call base class routine
+  ScaTraTimIntImpl::SetOldPartOfRighthandside();
+
   hist_->PutScalar(0.0);
 
   return;
@@ -179,6 +182,9 @@ void SCATRA::TimIntStationary::AVM3Separation()
  *--------------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
+  // call base class routine
+  ScaTraTimIntImpl::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+
   discret_->SetState("hist",hist_);
   discret_->SetState("phinp",phinp_);
 
@@ -191,6 +197,9 @@ void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincr
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
+  // call base class routine
+  ScaTraTimIntImpl::ReadRestart(step,input);
+
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if(input == Teuchos::null)
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
@@ -206,7 +215,7 @@ void SCATRA::TimIntStationary::ReadRestart(const int step,Teuchos::RCP<IO::Input
   // read state vectors that are needed for restart
   reader->ReadVector(phinp_, "phinp");
 
-  RestartProblemSpecific(step,*reader);
+  ReadRestartProblemSpecific(step,*reader);
 
   return;
 }
@@ -217,7 +226,8 @@ void SCATRA::TimIntStationary::ReadRestart(const int step,Teuchos::RCP<IO::Input
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::Update(const int num)
 {
-  // for the stationary scheme there is nothing to do except this:
+  // call base class routine
+  ScaTraTimIntImpl::Update(num);
 
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
@@ -237,8 +247,11 @@ void SCATRA::TimIntStationary::Update(const int num)
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 10/09 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::OutputRestart()
+void SCATRA::TimIntStationary::OutputRestart() const
 {
+  // call base class routine
+  ScaTraTimIntImpl::OutputRestart();
+
   // This feature enables starting a time-dependent simulation from
   // a non-trivial steady-state solution that was calculated before.
   output_->WriteVector("phin", phinp_);  // for OST and BDF2

@@ -57,6 +57,8 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_elch_diffcond_thermo;
   else if(impltype == "ElchElectrode")
     impltype_ = INPAR::SCATRA::impltype_elch_electrode;
+  else if(impltype == "ElchElectrodeGrowth")
+    impltype_ = INPAR::SCATRA::impltype_elch_electrode_growth;
   else if(impltype == "ElchElectrodeThermo")
     impltype_ = INPAR::SCATRA::impltype_elch_electrode_thermo;
   else if(impltype == "ElchNP")

@@ -165,6 +165,11 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     impltypestring = "Electrochemistry for electrodes";
     break;
   }
+  case INPAR::SCATRA::impltype_elch_electrode_growth:
+  {
+    impltypestring = "Electrochemistry for electrodes exhibiting lithium plating and stripping";
+    break;
+  }
   case INPAR::SCATRA::impltype_elch_electrode_thermo:
   {
     impltypestring = "Electrochemistry for electrodes with thermal effects";

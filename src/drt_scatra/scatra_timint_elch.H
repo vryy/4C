@@ -94,8 +94,8 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! problem-specific outputs
   void OutputProblemSpecific();
 
-  //! problem-specific restart reading
-  void RestartProblemSpecific( const int step, IO::DiscretizationReader& reader );
+  //! read problem-specific restart data
+  void ReadRestartProblemSpecific(const int step,IO::DiscretizationReader& reader);
 
   //! output electrode domain status information to screen and file
   void OutputElectrodeInfoDomain();
@@ -132,6 +132,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! output cell voltage to screen
   void OutputCellVoltage();
+
+  //! output restart data
+  virtual void OutputRestart() const;
 
   //! output type of closing equation for electric potential
   INPAR::ELCH::EquPot EquPot() const { return equpot_; }
@@ -243,6 +246,21 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
     Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
   );
 
+  //! apply Dirichlet boundary conditions to state vectors
+  void ApplyDirichletBC(
+      const double                  time,    //!< time
+      Teuchos::RCP<Epetra_Vector>   phinp,   //!< state vector of scalar transport degrees of freedom
+      Teuchos::RCP<Epetra_Vector>   phidt    //!< state vector of time derivatives of scalar transport degrees of freedom
+      );
+
+  //! evaluate Neumann boundary conditions
+  void ApplyNeumannBC(
+      const Teuchos::RCP<Epetra_Vector>&   neumann_loads   //!< Neumann loads
+      );
+
+  //! determine whether there are still time steps to be evaluated
+  bool NotFinished();
+
   /*--- query and output ---------------------------------------------------*/
 
   //! check for negative values of concentrations (ELCH)
@@ -306,6 +324,24 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! cell voltage
   double cellvoltage_;
+
+  //! cell C rate
+  double cellcrate_;
+
+  //! flag indicating whether cell is currently being charged or discharged
+  bool charging_;
+
+  //! flag indicating whether cell is currently being operated in constant-current (CC) or constant-voltage (CV) mode
+  bool cc_;
+
+  //! ID of constant-current constant-voltage (CCCV) half-cycle condition currently in effect
+  int condid_cccv_;
+
+  //! total number of charge and discharge half-cycles
+  int nhalfcycles_;
+
+  //! number of current charge or discharge half-cycle
+  int ihalfcycle_;
 }; // class ScaTraTimIntElch
 
 /*========================================================================*/

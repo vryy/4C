@@ -867,6 +867,9 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
   // flag for spherical coordinates
   eleparams.set<bool>("sphericalcoords",DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS"));
 
+  // add parameters associated with meshtying strategy
+  strategy_->SetElementGeneralParameters(eleparams);
+
   // additional problem-specific parameters for non-standard scalar transport problems (electrochemistry etc.)
   SetElementSpecificScaTraParameters(eleparams);
 
@@ -1175,6 +1178,18 @@ void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(Teuchos::RCP<const Epetra_Ve
 }
 
 
+/*----------------------------------------------------------------------------------------------------------------------------------------------*
+ | compute history vector, i.e., the history part of the right-hand side vector with all contributions from the previous time step   fang 01/17 |
+ *----------------------------------------------------------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetOldPartOfRighthandside()
+{
+  // compute history values associated with meshtying strategy
+  strategy_->SetOldPartOfRHS();
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | Set Pressure Field                                        thon 11/15 |
  *----------------------------------------------------------------------*/
@@ -1352,7 +1367,7 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
   // prepare time loop
   PrepareTimeLoop();
 
-  while ((step_<stepmax_) and ((time_+ EPS12) < maxtime_))
+  while(NotFinished())
   {
     // -------------------------------------------------------------------
     // prepare time step
@@ -1414,6 +1429,20 @@ void SCATRA::ScaTraTimIntImpl::Solve()
   else
     LinearSolve();
   //that's all
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------*
+ | update solution after convergence of the nonlinear Newton-Raphson iteration   fang 01/17 |
+ *------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::Update(
+    const int num   //!< field number
+    )
+{
+  // update quantities associated with meshtying strategy
+  strategy_->Update();
 
   return;
 }
@@ -1502,9 +1531,6 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     // write output to Gmsh postprocessing files
     if (outputgmsh_) OutputToGmsh(step_, time_);
 
-    // add restart data
-    if (step_%uprestart_==0 and step_ !=0) OutputRestart();
-
     // write flux vector field (only writing, calculation was done during Update() call)
     if (calcflux_domain_ != INPAR::SCATRA::flux_none or calcflux_boundary_ != INPAR::SCATRA::flux_none)
     {
@@ -1532,6 +1558,10 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     // problem-specific outputs
     OutputProblemSpecific();
 
+    // add restart data
+    if (step_ % uprestart_ == 0 and step_ != 0)
+      OutputRestart();
+
     // biofilm growth
     if (scfldgrdisp_!=Teuchos::null)
     {
@@ -1543,6 +1573,9 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     {
       output_->WriteVector("scstr_growth_displ", scstrgrdisp_);
     }
+
+    // generate output associated with meshtying strategy
+    strategy_->Output();
   }
 
   // generate output on micro scale if necessary
@@ -2398,10 +2431,9 @@ void SCATRA::ScaTraTimIntImpl::ScalingAndNeumann()
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary conditions                      fang 01/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
-(
-    const Teuchos::RCP<Epetra_Vector>&   neumann_loads //!< Neumann loads
-)
+void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC(
+    const Teuchos::RCP<Epetra_Vector>&   neumann_loads   //!< Neumann loads
+    )
 {
   // prepare load vector
   neumann_loads->PutScalar(0.0);
@@ -2943,6 +2975,18 @@ void SCATRA::ScaTraTimIntImpl::AddDirichCond(const Teuchos::RCP<const Epetra_Map
 } // ScaTraTimIntImpl::AddDirichCond
 
 
+/*----------------------------------------------------------------------------*
+ | add global state vectors specific for time-integration scheme   fang 01/17 |
+ *----------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+{
+  // add global state vectors associated with meshtying strategy
+  strategy_->AddTimeIntegrationSpecificVectors();
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |  remove dirichlet dofs from dbcmaps_                    rauch   04/15|
  *----------------------------------------------------------------------*/
@@ -3122,6 +3166,7 @@ void SCATRA::ScaTraTimIntImpl::CheckIsInit() const
   if (not IsInit())
     dserror("ScaTraTimIntImpl is not initialized. Call Init() first.");
 }
+
 
 /*-----------------------------------------------------------------------------*
  |  check if class is set up                                       rauch 09/16 |

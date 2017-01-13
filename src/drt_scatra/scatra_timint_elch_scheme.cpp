@@ -13,11 +13,12 @@
 </pre>
 */
 /*----------------------------------------------------------------------*/
+#include "scatra_timint_elch_scheme.H"
+#include "scatra_timint_meshtying_strategy_base.H"
 
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 
-#include "scatra_timint_elch_scheme.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
@@ -115,9 +116,13 @@ void SCATRA::ScaTraTimIntElchOST::CalcInitialPotentialField()
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::OutputRestart()
+void SCATRA::ScaTraTimIntElchOST::OutputRestart() const
 {
+  // output restart information associated with one-step-theta time integration scheme
   TimIntOneStepTheta::OutputRestart();
+
+  // output restart information associated with electrochemistry
+  ScaTraTimIntElch::OutputRestart();
 
   // write additional restart data for galvanostatic applications or simulations including a double layer formulation
   if(DRT::INPUT::IntegralValue<int>(*elchparams_,"GALVANOSTATIC") or
@@ -164,6 +169,7 @@ void SCATRA::ScaTraTimIntElchOST::OutputRestart()
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
@@ -226,6 +232,7 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step,Teuchos::RCP<IO::In
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
@@ -272,7 +279,7 @@ void SCATRA::ScaTraTimIntElchOST::ElectrodeKineticsTimeUpdate()
 /*----------------------------------------------------------------------*
  | explicit predictor for nonlinear solver                   fang 10/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::ExplicitPredictor()
+void SCATRA::ScaTraTimIntElchOST::ExplicitPredictor() const
 {
   // call base class routine
   TimIntOneStepTheta::ExplicitPredictor();
@@ -443,9 +450,13 @@ void SCATRA::ScaTraTimIntElchBDF2::CalcInitialPotentialField()
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::OutputRestart()
+void SCATRA::ScaTraTimIntElchBDF2::OutputRestart() const
 {
+  // output restart information associated with BDF2 time integration scheme
   TimIntBDF2::OutputRestart();
+
+  // output restart information associated with electrochemistry
+  ScaTraTimIntElch::OutputRestart();
 
   // write additional restart data for galvanostatic applications
   if (DRT::INPUT::IntegralValue<int>(*elchparams_,"GALVANOSTATIC") or
@@ -770,9 +781,13 @@ void SCATRA::ScaTraTimIntElchGenAlpha::CalcInitialPotentialField()
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::OutputRestart()
+void SCATRA::ScaTraTimIntElchGenAlpha::OutputRestart() const
 {
+  // output restart information associated with generalized-alpha time integration scheme
   TimIntGenAlpha::OutputRestart();
+
+  // output restart information associated with electrochemistry
+  ScaTraTimIntElch::OutputRestart();
 
   // write additional restart data for galvanostatic applications
   if (DRT::INPUT::IntegralValue<int>(*elchparams_,"GALVANOSTATIC") or
@@ -1039,9 +1054,13 @@ void SCATRA::ScaTraTimIntElchStationary::CalcInitialPotentialField()
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::OutputRestart()
+void SCATRA::ScaTraTimIntElchStationary::OutputRestart() const
 {
+  // output restart information associated with stationary time integration scheme
   TimIntStationary::OutputRestart();
+
+  // output restart information associated with electrochemistry
+  ScaTraTimIntElch::OutputRestart();
 
   // write additional restart data for galvanostatic applications
   if (DRT::INPUT::IntegralValue<int>(*elchparams_,"GALVANOSTATIC") or

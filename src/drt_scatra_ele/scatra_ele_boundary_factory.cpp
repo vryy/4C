@@ -20,6 +20,7 @@
 #include "scatra_ele.H"
 #include "scatra_ele_boundary_calc_elch_diffcond.H"
 #include "scatra_ele_boundary_calc_elch_electrode.H"
+#include "scatra_ele_boundary_calc_elch_electrode_growth.H"
 #include "scatra_ele_boundary_calc_elch_electrode_sti_thermo.H"
 #include "scatra_ele_boundary_calc_elch_NP.H"
 #include "scatra_ele_boundary_calc_loma.H"
@@ -156,6 +157,11 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   case INPAR::SCATRA::impltype_thermo_elch_electrode:
   {
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::Instance(numdofpernode,numscal,disname);
+    break;
+  }
+  case INPAR::SCATRA::impltype_elch_electrode_growth:
+  {
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   default:

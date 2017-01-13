@@ -462,6 +462,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     break;
   }
   case INPAR::SCATRA::impltype_elch_electrode:
+  case INPAR::SCATRA::impltype_elch_electrode_growth:
   {
     return DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Instance(numdofpernode,numscal,disname);
     break;

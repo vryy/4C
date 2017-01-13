@@ -270,7 +270,7 @@ void SCATRA::TimIntLomaOST::UpdateThermPressure()
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaOST::OutputRestart()
+void SCATRA::TimIntLomaOST::OutputRestart() const
 {
   // do standard output
   TimIntOneStepTheta::OutputRestart();

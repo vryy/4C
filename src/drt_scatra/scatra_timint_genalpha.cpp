@@ -201,6 +201,9 @@ void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
 {
+  // call base class routine
+  ScaTraTimIntImpl::SetOldPartOfRighthandside();
+
   // calculation of history vector only for non-incremental formulation:
   // (History vector is used in both cases, but in incremental case, it
   // contains time derivatives of scalar, see below.)
@@ -215,8 +218,11 @@ void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
 /*----------------------------------------------------------------------*
  | perform an explicit predictor step                          vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ExplicitPredictor()
+void SCATRA::TimIntGenAlpha::ExplicitPredictor() const
 {
+  // call base class routine
+  ScaTraTimIntImpl::ExplicitPredictor();
+
   // constant predictor
   phinp_->Update(1.0,*phin_,0.0);
   return;
@@ -321,6 +327,9 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
  *--------------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
+  // call base class routine
+  ScaTraTimIntImpl::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
+
   discret_->SetState("phinp",phiaf_);
 
   if (incremental_ or forcedincrementalsolver)
@@ -340,6 +349,9 @@ void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrem
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::ComputeTimeDerivative()
 {
+  // call base class routine
+  ScaTraTimIntImpl::ComputeTimeDerivative();
+
   // time derivative of phi:
   // phidt(n+1) = (phi(n+1)-phi(n)) / (gamma*dt) + (1-(1/gamma))*phidt(n)
   const double fact1 = 1.0/(gamma_*dta_);
@@ -384,6 +396,9 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
   // compute time derivative at time n+1
   ComputeTimeDerivative();
 
+  // call base class routine
+  ScaTraTimIntImpl::Update(num);
+
   // solution of this step becomes most recent solution of last step
   phin_->Update(1.0,*phinp_,0.0);
 
@@ -402,8 +417,11 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
 /*----------------------------------------------------------------------*
  | write additional data required for restart                  vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::OutputRestart()
+void SCATRA::TimIntGenAlpha::OutputRestart() const
 {
+  // call base class routine
+  ScaTraTimIntImpl::OutputRestart();
+
   // additional state vectors that are needed for generalized-alpha restart
   output_->WriteVector("phidtnp",phidtnp_);
   output_->WriteVector("phidtn", phidtn_);
@@ -418,6 +436,9 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
+  // call base class routine
+  ScaTraTimIntImpl::ReadRestart(step,input);
+
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if(input == Teuchos::null)
     reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
@@ -436,7 +457,7 @@ void SCATRA::TimIntGenAlpha::ReadRestart(const int step,Teuchos::RCP<IO::InputCo
   reader->ReadVector(phidtnp_,"phidtnp");
   reader->ReadVector(phidtn_, "phidtn");
 
-  RestartProblemSpecific(step,*reader);
+  ReadRestartProblemSpecific(step,*reader);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)

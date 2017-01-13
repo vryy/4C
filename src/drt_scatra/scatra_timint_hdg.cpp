@@ -355,7 +355,7 @@ void SCATRA::TimIntHDG::OutputState()
 /*----------------------------------------------------------------------*
  | output of solution vector to binio for restart         hoermann 09/15|
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::OutputRestart()
+void SCATRA::TimIntHDG::OutputRestart() const
 {
   SCATRA::TimIntGenAlpha::OutputRestart();
   output_->WriteVector("intphinp",intphinp_);

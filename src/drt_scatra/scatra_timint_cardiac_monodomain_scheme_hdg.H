@@ -56,7 +56,7 @@ class TimIntCardiacMonodomainHDG : public virtual TimIntCardiacMonodomain, publi
 protected:
 
   //! write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
   //! update gating variables
   virtual void ElementMaterialTimeUpdate();

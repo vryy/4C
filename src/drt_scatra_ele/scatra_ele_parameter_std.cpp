@@ -87,6 +87,10 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     fdcheck_(INPAR::SCATRA::fdcheck_none),
     fdcheckeps_(0.),
     fdchecktol_(0.),
+    probnum_(0),
+    semiimplicit_(false),
+    intlayergrowth_convtol_(0.),
+    intlayergrowth_itemax_(0),
     stabtype_(INPAR::SCATRA::stabtype_no_stabilization),
     whichtau_(INPAR::SCATRA::tau_zero),
     charelelength_(INPAR::SCATRA::streamlength),
@@ -97,8 +101,6 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     tau_gp_(false),
     mat_gp_(false),
     tau_value_(0.),
-    probnum_(0),
-    semiimplicit_(false),
     // we have to know the time parameters here to check for illegal combinations
     scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname))
 {
@@ -227,6 +229,12 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
 
   // set evaluation type
   semiimplicit_ = parameters.get<bool>("semiimplicit",false);
+
+  // set local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving interface layer growth
+  intlayergrowth_convtol_ = parameters.get<double>("intlayergrowth_convtol",0.);
+
+  // set maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
+  intlayergrowth_itemax_ = parameters.get<unsigned>("intlayergrowth_itemax",0);
 
   return;
 }

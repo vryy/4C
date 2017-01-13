@@ -292,7 +292,7 @@ void SCATRA::TimIntLomaBDF2::UpdateThermPressure()
 /*----------------------------------------------------------------------*
  | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaBDF2::OutputRestart()
+void SCATRA::TimIntLomaBDF2::OutputRestart() const
 {
   // perform standard output first
   TimIntBDF2::OutputRestart();

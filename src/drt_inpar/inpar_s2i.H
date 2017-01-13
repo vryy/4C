@@ -53,6 +53,20 @@ namespace INPAR
       coupling_nts_standard
     };
 
+    //! type of interface layer growth evaluation
+    enum GrowthEvaluation
+    {
+      growth_evaluation_none,
+      growth_evaluation_monolithic,
+      growth_evaluation_semi_implicit
+    };
+
+    //! models for interface layer growth kinetics
+    enum GrowthKineticModels
+    {
+      growth_kinetics_butlervolmer
+    };
+
     //! models for interface kinetics
     enum KineticModels
     {

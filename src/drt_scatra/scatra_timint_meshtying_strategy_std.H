@@ -47,29 +47,6 @@ class MeshtyingStrategyStd : public MeshtyingStrategyBase
     //! destructor
     virtual ~MeshtyingStrategyStd(){return;};
 
-    //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying();
-
-    //! setup meshtying objects
-    void SetupMeshtying();
-
-    //! init meshtying objects
-    void InitMeshtying();
-
-    //! initialize system matrix
-    virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
-
-    //! solve resulting linear system of equations
-    void Solve(
-        const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
-        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
-        const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
-        const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
-        const int&                                     iteration,      //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
-        ) const;
-
     /*!
     \brief Evaluate a given condition
 
@@ -90,6 +67,29 @@ class MeshtyingStrategyStd : public MeshtyingStrategyBase
         const int condid
         )
       {dserror("EvaluateCondition(...) is not implemented in MeshtyingStrategyStd.");};
+
+    //! compute meshtying residual terms and their linearizations
+    void EvaluateMeshtying();
+
+    //! init meshtying objects
+    void InitMeshtying();
+
+    //! initialize system matrix
+    virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+
+    //! setup meshtying objects
+    void SetupMeshtying();
+
+    //! solve resulting linear system of equations
+    void Solve(
+        const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
+        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
+        const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
+        const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
+        const int&                                     iteration,      //!< number of current Newton-Raphson iteration
+        const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
+        ) const;
 
   protected:
 

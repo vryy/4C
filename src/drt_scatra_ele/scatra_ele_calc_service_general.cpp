@@ -1801,7 +1801,7 @@ const bool                      inverting
       for (int i=0; i<nen_; i++)
       {
         const double fac_funct_i = fac*funct_(i);
-        for (int k = 0; k < numscal_; k++)
+        for (int k = 0; k < numdofpernode_; k++)
         {
           if (std::abs(ephinp_[k](i,0))> EPS14)
             scalars[k] += fac_funct_i/ephinp_[k](i,0);
@@ -1809,7 +1809,7 @@ const bool                      inverting
             dserror("Division by zero");
         }
         // for domain volume
-        scalars[numscal_] += fac_funct_i;
+        scalars[numdofpernode_] += fac_funct_i;
       }
     }
     else
@@ -1817,12 +1817,12 @@ const bool                      inverting
       for (int i=0; i<nen_; i++)
       {
         const double fac_funct_i = fac*funct_(i);
-        for (int k = 0; k < numscal_; k++)
+        for (int k = 0; k < numdofpernode_; k++)
         {
           scalars[k] += fac_funct_i*ephinp_[k](i,0);
         }
         // for domain volume
-        scalars[numscal_] += fac_funct_i;
+        scalars[numdofpernode_] += fac_funct_i;
       }
     }
   } // loop over integration points

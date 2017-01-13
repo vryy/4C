@@ -285,13 +285,17 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   // parameters for finite difference check
   setStringToIntegralParameter<int>("FDCHECK", "none", "flag for finite difference check: none, local, or global",
                                     tuple<std::string>(
-                                      "none",
-                                      "local",    // perform finite difference check on element level
-                                      "global"),  // perform finite difference check on time integrator level
+                                        "none",
+                                        "global",            // perform finite difference check on time integrator level
+                                        "global_extended",   // perform finite difference check on time integrator level for extended system matrix (e.g., involving Lagrange multipliers or interface layer thicknesses)
+                                        "local"              // perform finite difference check on element level
+                                        ),
                                     tuple<int>(
                                         fdcheck_none,
-                                        fdcheck_local,
-                                        fdcheck_global),
+                                        fdcheck_global,
+                                        fdcheck_global_extended,
+                                        fdcheck_local
+                                        ),
                                     &scatradyn);
   DoubleParameter("FDCHECKEPS",1.e-6,"dof perturbation magnitude for finite difference check (1.e-6 seems to work very well, whereas smaller values don't)",&scatradyn);
   DoubleParameter("FDCHECKTOL",1.e-6,"relative tolerance for finite difference check",&scatradyn);

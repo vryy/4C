@@ -80,7 +80,7 @@ public:
 protected:
 
   /// write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
   /// dynamic Smagorinsky model
   void DynamicComputationOfCs();

@@ -142,7 +142,7 @@ protected:
   virtual void SetOldPartOfRighthandside();
 
   /// do explicit predictor step (-> better starting value for nonlinear solver)
-  virtual void ExplicitPredictor();
+  virtual void ExplicitPredictor() const;
 
   /// add actual Neumann loads with time factor
   virtual void AddNeumannToResidual();
@@ -160,7 +160,7 @@ protected:
   virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
 
   /// write additional data required for restart
-  virtual void OutputRestart();
+  virtual void OutputRestart() const;
 
   /// return the right time-scaling-factor for the true residual
   virtual double ResidualScaling() const { return 1.0/(dta_*theta_); }

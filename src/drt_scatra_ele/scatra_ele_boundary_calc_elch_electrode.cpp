@@ -231,7 +231,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       if((*stoichiometries)[0] != -1)
         dserror("Invalid stoichiometric coefficient!");
       const double faraday = INPAR::ELCH::faraday_const;
-      const double invF = 1./faraday;
       const double alphaa = s2icondition.GetDouble("alpha_a");
       const double alphac = s2icondition.GetDouble("alpha_c");
       const double kr = s2icondition.GetDouble("k_r");
@@ -250,7 +249,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       // electrode-electrolyte overpotential at integration point
       const double eta = eslavepotint-emasterpotint-epd;
 
-      const double i0 = kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
+      // Butler-Volmer exchange mass flux density
+      const double j0 = kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
+
+      // exponential Butler-Volmer terms
       const double expterm1 = exp(alphaa*frt*eta);
       const double expterm2 = exp(-alphac*frt*eta);
       const double expterm = expterm1-expterm2;
@@ -259,14 +261,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       if(abs(expterm)>1.e5)
         dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
 
-      // core residual
-      const double i = invF*i0*expterm*timefacrhsfac;
+      // core residual term associated with Butler-Volmer mass flux density
+      const double j = j0*expterm*timefacrhsfac;
 
-      // core linearizations
-      const double di_dc_slave = invF*timefacfac*(kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+i0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2));
-      const double di_dc_master = invF*timefacfac*kr*faraday*alphaa*pow(emasterphiint,alphaa-1.)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac)*expterm;
-      const double di_dpot_slave = invF*timefacfac*i0*(alphaa*frt*expterm1+alphac*frt*expterm2);
-      const double di_dpot_master = -di_dpot_slave;
+      // core linearizations associated with Butler-Volmer mass flux density
+      const double dj_dc_slave = timefacfac*(kr*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+j0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2));
+      const double dj_dc_master = timefacfac*j0*alphaa/emasterphiint*expterm;
+      const double dj_dpot_slave = timefacfac*j0*(alphaa*frt*expterm1+alphac*frt*expterm2);
+      const double dj_dpot_master = -dj_dpot_slave;
 
       if(k_ss.M() and k_sm.M() and r_s.Length())
       {
@@ -280,10 +282,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
             const int col_conc = ui*2;
             const int col_pot = col_conc+1;
 
-            k_ss(row_conc,col_conc) += test_slave(vi)*di_dc_slave*funct_slave(ui);
-            k_ss(row_conc,col_pot) += test_slave(vi)*di_dpot_slave*funct_slave(ui);
-            k_ss(row_pot,col_conc) += nume*test_slave(vi)*di_dc_slave*funct_slave(ui);
-            k_ss(row_pot,col_pot) += nume*test_slave(vi)*di_dpot_slave*funct_slave(ui);
+            k_ss(row_conc,col_conc) += test_slave(vi)*dj_dc_slave*funct_slave(ui);
+            k_ss(row_conc,col_pot) += test_slave(vi)*dj_dpot_slave*funct_slave(ui);
+            k_ss(row_pot,col_conc) += nume*test_slave(vi)*dj_dc_slave*funct_slave(ui);
+            k_ss(row_pot,col_pot) += nume*test_slave(vi)*dj_dpot_slave*funct_slave(ui);
           }
 
           for(int ui=0; ui<nen_master; ++ui)
@@ -291,14 +293,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
             const int col_conc = ui*2;
             const int col_pot = col_conc+1;
 
-            k_sm(row_conc,col_conc) += test_slave(vi)*di_dc_master*funct_master(ui);
-            k_sm(row_conc,col_pot) += test_slave(vi)*di_dpot_master*funct_master(ui);
-            k_sm(row_pot,col_conc) += nume*test_slave(vi)*di_dc_master*funct_master(ui);
-            k_sm(row_pot,col_pot) += nume*test_slave(vi)*di_dpot_master*funct_master(ui);
+            k_sm(row_conc,col_conc) += test_slave(vi)*dj_dc_master*funct_master(ui);
+            k_sm(row_conc,col_pot) += test_slave(vi)*dj_dpot_master*funct_master(ui);
+            k_sm(row_pot,col_conc) += nume*test_slave(vi)*dj_dc_master*funct_master(ui);
+            k_sm(row_pot,col_pot) += nume*test_slave(vi)*dj_dpot_master*funct_master(ui);
           }
 
-          r_s[row_conc] -= test_slave(vi)*i;
-          r_s[row_pot] -= nume*test_slave(vi)*i;
+          r_s[row_conc] -= test_slave(vi)*j;
+          r_s[row_pot] -= nume*test_slave(vi)*j;
         }
       }
       else if(k_ss.M() or k_sm.M() or r_s.Length())
@@ -317,10 +319,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
             const int col_conc = ui*2;
             const int col_pot = col_conc+1;
 
-            k_ms(row_conc,col_conc) -= test_master(vi)*di_dc_slave*funct_slave(ui);
-            k_ms(row_conc,col_pot) -= test_master(vi)*di_dpot_slave*funct_slave(ui);
-            k_ms(row_pot,col_conc) -= nume*test_master(vi)*di_dc_slave*funct_slave(ui);
-            k_ms(row_pot,col_pot) -= nume*test_master(vi)*di_dpot_slave*funct_slave(ui);
+            k_ms(row_conc,col_conc) -= test_master(vi)*dj_dc_slave*funct_slave(ui);
+            k_ms(row_conc,col_pot) -= test_master(vi)*dj_dpot_slave*funct_slave(ui);
+            k_ms(row_pot,col_conc) -= nume*test_master(vi)*dj_dc_slave*funct_slave(ui);
+            k_ms(row_pot,col_pot) -= nume*test_master(vi)*dj_dpot_slave*funct_slave(ui);
           }
 
           for(int ui=0; ui<nen_master; ++ui)
@@ -328,14 +330,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
             const int col_conc = ui*2;
             const int col_pot = col_conc+1;
 
-            k_mm(row_conc,col_conc) -= test_master(vi)*di_dc_master*funct_master(ui);
-            k_mm(row_conc,col_pot) -= test_master(vi)*di_dpot_master*funct_master(ui);
-            k_mm(row_pot,col_conc) -= nume*test_master(vi)*di_dc_master*funct_master(ui);
-            k_mm(row_pot,col_pot) -= nume*test_master(vi)*di_dpot_master*funct_master(ui);
+            k_mm(row_conc,col_conc) -= test_master(vi)*dj_dc_master*funct_master(ui);
+            k_mm(row_conc,col_pot) -= test_master(vi)*dj_dpot_master*funct_master(ui);
+            k_mm(row_pot,col_conc) -= nume*test_master(vi)*dj_dc_master*funct_master(ui);
+            k_mm(row_pot,col_pot) -= nume*test_master(vi)*dj_dpot_master*funct_master(ui);
           }
 
-          r_m[row_conc] += test_master(vi)*i;
-          r_m[row_pot] += nume*test_master(vi)*i;
+          r_m[row_conc] += test_master(vi)*j;
+          r_m[row_pot] += nume*test_master(vi)*j;
         }
       }
       else if(k_ms.M() or k_mm.M() or r_m.Length())

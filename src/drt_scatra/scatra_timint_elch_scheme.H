@@ -62,13 +62,13 @@ protected:
   void CalcInitialPotentialField();
 
   //! write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
   //! update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate();
 
   //! explicit predictor for nonlinear solver
-  void ExplicitPredictor();
+  void ExplicitPredictor() const;
 
   //!  compute scalar time derivate parameters of the input voltage to compute double layer current densities
   void ComputeTimeDerivPot0(const bool init);
@@ -114,7 +114,7 @@ protected:
   void CalcInitialPotentialField();
 
   //! write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
   //! update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate();
@@ -163,7 +163,7 @@ protected:
   void CalcInitialPotentialField();
 
   //! write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
   //! update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate();
@@ -209,7 +209,7 @@ protected:
   void CalcInitialPotentialField();
 
   //! write additional data required for restart
-  void OutputRestart();
+  void OutputRestart() const;
 
   //! update time-dependent electrode state variables at the end of an time step
   void ElectrodeKineticsTimeUpdate(){dserror("Galvanostatic-BC is not implemented for the stationary time-integration scheme"); return;};

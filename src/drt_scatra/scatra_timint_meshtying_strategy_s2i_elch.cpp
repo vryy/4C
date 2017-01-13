@@ -51,6 +51,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying()
   if(DRT::INPUT::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()),"BLOCKPRECOND"))
     dserror("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
 
+  // call base class routine
   SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying();
 
   return;
@@ -192,6 +193,143 @@ void SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy()
 
   return;
 } // SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy
+
+
+/*------------------------------------------------------------------------------------------*
+ | update solution after convergence of the nonlinear Newton-Raphson iteration   fang 01/17 |
+ *------------------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2IElch::Update() const
+{
+  // update scatra-scatra interface layer thicknesses in case of semi-implicit solution approach
+  if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_semi_implicit)
+  {
+    // extract boundary conditions for scatra-scatra interface layer growth
+    std::vector<DRT::Condition*> conditions;
+    scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth",conditions);
+
+    // loop over all conditions
+    for(unsigned icond=0; icond<conditions.size(); ++icond)
+    {
+      // extract current condition
+      const DRT::Condition* const condition = conditions[icond];
+
+      // extract kinetic model from current condition
+      switch(condition->GetInt("kinetic model"))
+      {
+        case INPAR::S2I::growth_kinetics_butlervolmer:
+        {
+          // extract parameters from current condition
+          const double kr = condition->GetDouble("k_r");
+          const double alphaa = condition->GetDouble("alpha_a");
+          const double alphac = condition->GetDouble("alpha_c");
+          const double frt = ElchTimInt()->FRT();
+          const double conductivity_inverse = 1./condition->GetDouble("conductivity");
+
+          // pre-compute integration factor
+          const double integrationfac(condition->GetDouble("molar mass")*scatratimint_->Dt()/(condition->GetDouble("density")*INPAR::ELCH::faraday_const));
+
+          // extract nodal cloud from current condition
+          const std::vector<int>* nodegids = condition->Nodes();
+
+          // loop over all nodes
+          for(unsigned inode=0; inode<nodegids->size(); ++inode)
+          {
+            // extract global ID of current node
+            const int nodegid((*nodegids)[inode]);
+
+            // extract current node
+            const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
+
+            // process only nodes owned by current processor
+            if(scatratimint_->Discretization()->HaveGlobalNode(nodegid) and node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+            {
+              // extract local ID of first scalar transport degree of freedom associated with current node
+              const int doflid_scatra = scatratimint_->Discretization()->DofRowMap()->LID(scatratimint_->Discretization()->Dof(node,0));
+              if(doflid_scatra < 0)
+                dserror("Couldn't extract local ID of scalar transport degree of freedom!");
+
+              // extract local ID of scatra-scatra interface layer thickness variable associated with current node
+              const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(scatratimint_->Discretization()->Dof(2,node,0));
+              if(doflid_growth < 0)
+                dserror("Couldn't extract local ID of scatra-scatra interface layer thickness!");
+
+              // extract slave-side electric potential associated with current node
+              const double slavepot = (*scatratimint_->Phiafnp())[doflid_scatra+1];
+
+              // extract master-side lithium concentration associated with current node
+              const double masterphi = (*imasterphinp_)[doflid_scatra];
+
+              // extract master-side electric potential associated with current node
+              const double masterpot = (*imasterphinp_)[doflid_scatra+1];
+
+              // compute interface layer resistance associated with current node
+              const double resistance = (*growthn_)[doflid_growth]*conductivity_inverse;
+
+              // check existence of interface layer and set Heaviside value accordingly
+              const unsigned heaviside(resistance > 0. ? 1 : 0);
+
+              // compute exchange current density
+              const double i0 = kr*INPAR::ELCH::faraday_const*pow(masterphi,alphaa);
+
+              // compute initial guess of Butler-Volmer current density associated with lithium plating, neglecting overpotential due to resistance of plated lithium
+              double eta = slavepot-masterpot;
+              double i = i0*(heaviside*exp(alphaa*frt*eta)-exp(-alphac*frt*eta));
+
+              // initialize Newton-Raphson iteration counter
+              unsigned iternum(0);
+
+              // apply Newton-Raphson method to compute Butler-Volmer current density associated with lithium plating, involving overpotential due to resistance of plated lithium
+              while(true)
+              {
+                // increment counter
+                ++iternum;
+
+                // compute current Newton-Raphson residual
+                eta = slavepot-masterpot-resistance*i;   // open-circuit potential is zero for lithium plating reaction
+                const double expterm1 = heaviside*exp(alphaa*frt*eta);
+                const double expterm2 = exp(-alphac*frt*eta);
+                const double residual = i0*(expterm1-expterm2)-i;
+
+                // convergence check
+                if(std::abs(residual) < intlayergrowth_convtol_)
+                  break;
+                else if(iternum == intlayergrowth_itemax_)
+                  dserror("Local Newton-Raphson iteration for scatra-scatra interface layer growth did not converge!");
+
+                // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer current density associated with lithium plating
+                const double linearization = -i0*resistance*frt*(alphaa*expterm1+alphac*expterm2)-1.;
+
+                // update Butler-Volmer current density
+                i -= residual/linearization;
+              }
+
+              // enforce plating condition, i.e., consider initial lithium plating only in case of negative overpotential
+              if(!heaviside and eta >= 0.)
+                i = 0.;
+
+              // update lithium plating variable
+              (*growthn_)[doflid_growth] -= i*integrationfac;
+            }
+          } // loop over all nodes
+
+          break;
+        }
+
+        default:
+        {
+          dserror("Kinetic model for scatra-scatra interface layer growth is not yet implemented!");
+          break;
+        }
+      } // kinetic models
+    } // loop over all conditions
+  } // semi-implicit evaluation of scatra-scatra interface layer growth
+
+  else
+    // call base class routine
+    MeshtyingStrategyS2I::Update();
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

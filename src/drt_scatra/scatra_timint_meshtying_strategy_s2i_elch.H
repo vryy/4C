@@ -54,6 +54,9 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying();
 
+    //! update solution after convergence of the nonlinear Newton-Raphson iteration
+    void Update() const;
+
   private:
 
     //! copy constructor

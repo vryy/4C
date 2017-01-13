@@ -269,7 +269,7 @@ void SCATRA::TimIntLomaGenAlpha::UpdateThermPressure()
 /*----------------------------------------------------------------------*
  | write additional data required for restart                  vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::OutputRestart()
+void SCATRA::TimIntLomaGenAlpha::OutputRestart() const
 {
   // write standard fields first
   TimIntGenAlpha::OutputRestart();

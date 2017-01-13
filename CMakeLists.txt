@@ -1281,6 +1281,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_growth.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_sti_thermo.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch_NP.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_loma.cpp

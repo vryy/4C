@@ -14,12 +14,12 @@
 </pre>
 */
 /*----------------------------------------------------------------------*/
-#include "scatra_timint_implicit.H"
-#include "scatra_timint_elch.H"
 #include "scatra_resulttest.H"
+#include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -104,9 +104,10 @@ double SCATRA::ScaTraResultTest::ResultNode(
     std::string k_string = quantity.substr(3);
     char* locator(NULL);
     int k = strtol(k_string.c_str(),&locator,10) - 1;
+
+    // safety checks
     if(locator == k_string.c_str())
       dserror("Couldn't read species ID!");
-
     if(scatratimint_->Discretization()->NumDof(0,node)<=k)
       dserror("Species ID is larger than number of DOFs of node!");
 
@@ -129,11 +130,12 @@ double SCATRA::ScaTraResultTest::ResultNode(
       suffix = quantity.substr(14);
     char* locator(NULL);
     int k = strtol(suffix.c_str(),&locator,10) - 1;
-    if(locator == suffix.c_str())
-      dserror("Couldn't flux domain ID!");
 
+    // safety checks
+    if(locator == suffix.c_str())
+      dserror("Couldn't read species ID!");
     if(scatratimint_->Discretization()->NumDof(0,node)<=k)
-      dserror("Flux domain ID is larger than number of DOFs of node!");
+      dserror("Species ID is larger than number of DOFs of node!");
 
     // read spatial dimension
     ++locator;
@@ -171,6 +173,46 @@ double SCATRA::ScaTraResultTest::ResultNode(
     result = ((*scatratimint_->FldGrowth())[1])[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,0))];
   else if(quantity == "scfld_growth_displz")
     result = ((*scatratimint_->FldGrowth())[2])[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,0))];
+
+  // test scatra-scatra interface layer thickness
+  else if(quantity == "s2ilayerthickness")
+  {
+    // extract scatra-scatra interface meshtying strategy class
+    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint_->Strategy());
+    if(strategy == Teuchos::null)
+      dserror("Couldn't extract scatra-scatra interface meshtying strategy class!");
+
+    // extract state vector of discrete scatra-scatra interface layer thicknesses
+    // depending on whether monolithic or semi-implicit solution approach is used
+    Teuchos::RCP<const Epetra_Vector> s2igrowthvec(Teuchos::null);
+    switch(strategy->IntLayerGrowthEvaluation())
+    {
+      case INPAR::S2I::growth_evaluation_monolithic:
+      {
+        s2igrowthvec = strategy->GrowthVarNp();
+        break;
+      }
+
+      case INPAR::S2I::growth_evaluation_semi_implicit:
+      {
+        s2igrowthvec = strategy->GrowthVarN();
+        break;
+      }
+
+      default:
+      {
+        dserror("Can't test scatra-scatra interface layer thickness!");
+        break;
+      }
+    }
+
+    // safety check
+    if(s2igrowthvec == Teuchos::null)
+      dserror("Couldn't extract state vector of discrete scatra-scatra interface layer thicknesses!");
+
+    // extract result
+    result = (*s2igrowthvec)[scatratimint_->Discretization()->DofRowMap(2)->LID(scatratimint_->Discretization()->Dof(2,node,0))];
+  }
 
   // catch unknown quantity strings
   else

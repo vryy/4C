@@ -66,6 +66,9 @@ namespace DRT
         double FDCheckEps() const {return fdcheckeps_;};
         double FDCheckTol() const {return fdchecktol_;};
         int ProbNum() const {return probnum_;};
+        bool SemiImplicit() const {return semiimplicit_;};
+        double IntLayerGrowthConvTol() const {return intlayergrowth_convtol_;};
+        unsigned IntLayerGrowthIteMax() const {return intlayergrowth_itemax_;};
         //! @}
 
         //! @name return stabilization parameters
@@ -80,7 +83,6 @@ namespace DRT
         bool TauGP() const {return tau_gp_;};
         bool MatGP() const {return mat_gp_;};
         double TauValue() const {return tau_value_;};
-        bool SemiImplicit() const {return semiimplicit_;};
         //! @}
 
       private:
@@ -118,6 +120,18 @@ namespace DRT
 
         //! relative tolerance for finite difference check
         double fdchecktol_;
+
+        //! problem number
+        int probnum_;
+
+        //! evaluation type
+        bool semiimplicit_;
+
+        //! local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving interface layer growth
+        double intlayergrowth_convtol_;
+
+        //! maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
+        unsigned intlayergrowth_itemax_;
         //! @}
 
         //! @name stabilization parameters
@@ -151,12 +165,6 @@ namespace DRT
 
         //! numerical value for stabilization parameter
         double tau_value_;
-
-        //! problem number
-        int probnum_;
-
-        //! evaluation type
-        bool semiimplicit_;
         //! @}
 
         //! parameter class for time integration

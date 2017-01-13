@@ -20,7 +20,7 @@
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
-            089 - 289-15251>
+            089 - 289-15251
 
 *----------------------------------------------------------------------*/
 
@@ -183,7 +183,7 @@ public:
   /*--- set, prepare, and predict ------------------------------------------*/
 
   //! add global state vectors specific for time-integration scheme
-  virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false) = 0;
+  virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
 
   //! prepare time loop
   virtual void PrepareTimeLoop();
@@ -219,8 +219,8 @@ public:
   void SetUpres( const int newupres )
   { upres_=newupres; }
 
-  //! do explicit predictor step (-> better starting value for nonlinear solver)
-  virtual void ExplicitPredictor() = 0;
+  //! do explicit predictor step to obtain better starting value for Newton-Raphson iteration
+  virtual void ExplicitPredictor() const;
 
   //! set the velocity field (zero or field by function)
   virtual void SetVelocityField(const int nds);
@@ -250,7 +250,7 @@ public:
   };
 
   //! read restart data
-  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null) = 0;
+  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
   //! setup natural convection
   virtual void SetupNatConv();
@@ -269,10 +269,10 @@ public:
   //! operator for manipulations after call to \ref Solve() ; May be overridden by subclass.
   virtual void PostSolve(){return;};
 
-  //! update the solution after convergence of the nonlinear iteration.
+  //! update solution after convergence of the nonlinear Newton-Raphson iteration
   virtual void Update(
-      const int            num=0 //!< field number
-  ) = 0;
+      const int num = 0   //!< field number
+      );
 
   //! apply moving mesh data
   void ApplyMeshMovement(
@@ -450,8 +450,11 @@ public:
 
   /*--- calculate and update -----------------------------------------------*/
 
-  //! compute time derivative
-  virtual void ComputeTimeDerivative() = 0;
+  //! call elements to calculate system matrix and rhs and assemble
+  virtual void AssembleMatAndRHS();
+
+  //! compute time derivatives of discrete state variables
+  virtual void ComputeTimeDerivative();
 
   //! compute parameters of the Input voltage to use for the double layer current density
   virtual void ComputeTimeDerivPot0(const bool init) = 0;
@@ -544,7 +547,7 @@ public:
   virtual void OutputProblemSpecific(){return;};
 
   //! problem-specific restart
-  virtual void RestartProblemSpecific( const int step, IO::DiscretizationReader& reader ){return;};
+  virtual void ReadRestartProblemSpecific( const int step, IO::DiscretizationReader& reader ){return;};
 
   //! return time for evaluation of elements
   const double& DtEle() const {return dtele_;};
@@ -657,8 +660,8 @@ protected:
 
   /*--- set, prepare, and predict ------------------------------------------*/
 
-  //! Set the part of the righthandside belonging to the last timestep.
-  virtual void SetOldPartOfRighthandside() = 0;
+  //! compute history vector, i.e., the history part of the right-hand side vector with all contributions from the previous time step
+  virtual void SetOldPartOfRighthandside();
 
   //! create Krylov space projector
   void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
@@ -681,11 +684,14 @@ protected:
   void ApplyDirichletToSystem();
 
   //! Apply Dirichlet boundary conditions on provided state vector
-  void ApplyDirichletBC(
+  virtual void ApplyDirichletBC(
     const double                time,  //!< evaluation time
     Teuchos::RCP<Epetra_Vector> phinp, //!< transported scalar(s) (may be = null)
     Teuchos::RCP<Epetra_Vector> phidt  //!< first time derivative (may be = null)
   );
+
+  //! determine whether there are still time steps to be evaluated
+  virtual bool NotFinished() {return step_ < stepmax_ and time_ + 1.e-12 < maxtime_;};
 
   //! compute outward pointing unit normal vectors at given bc's
   Teuchos::RCP<Epetra_MultiVector> ComputeNormalVectors(
@@ -710,13 +716,10 @@ protected:
   //! add actual Neumann loads multipl. with time factor to the residual
   virtual void AddNeumannToResidual() = 0;
 
-  //! Apply Neumann boundary conditions
-  void ApplyNeumannBC(
-    const Teuchos::RCP<Epetra_Vector>&   neumann_loads //!< Neumann loads
-  );
-
-  //! call elements to calculate system matrix and rhs and assemble
-  virtual void AssembleMatAndRHS();
+  //! evaluate Neumann boundary conditions
+  virtual void ApplyNeumannBC(
+      const Teuchos::RCP<Epetra_Vector>&   neumann_loads   //!< Neumann loads
+      );
 
   //! add parameters depending on the problem, i.e., loma, level-set, ...
   virtual void AddProblemSpecificParametersAndVectors(
@@ -803,7 +806,7 @@ protected:
   ) const;
 
   //! write additional data required for restart
-  virtual void OutputRestart() = 0;
+  virtual void OutputRestart() const;
 
   //! write flux vectors to BINIO
   virtual void OutputFlux(
@@ -1436,7 +1439,7 @@ public:
   /*========================================================================*/
 
   //! Standard Constructor
-  OutputScalarsStrategyDomain():numscal_(0){};
+  OutputScalarsStrategyDomain():numdofpernode_(0){};
 
   //! Destructor
   virtual ~OutputScalarsStrategyDomain(){};
@@ -1455,8 +1458,8 @@ protected:
       Teuchos::ParameterList& eleparams);
 
 private:
-  //! number of transported scalars
-  int numscal_;
+  //! number of degrees of freedom per node
+  int numdofpernode_;
 };
 
 /*========================================================================*/
@@ -1474,7 +1477,7 @@ public:
   //! Standard Constructor
   OutputScalarsStrategyCondition():
     conditions_(),
-    numscalpercondition_()
+    numdofpernodepercondition_()
   {};
 
   //! Destructor
@@ -1497,8 +1500,8 @@ protected:
 private:
   //! vector of 'TotalAndMeanScalar'-conditions
   std::vector<DRT::Condition*> conditions_;
-  //! number of transported scalars per 'TotalAndMeanScalar'-conditions
-  std::vector<int> numscalpercondition_;
+  //! number of degrees of freedom per node per 'TotalAndMeanScalar'-conditions
+  std::vector<int> numdofpernodepercondition_;
 };
 
 /*========================================================================*/

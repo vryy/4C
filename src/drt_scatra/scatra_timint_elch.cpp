@@ -61,7 +61,13 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     electrodeconc_  (Teuchos::null),
     electrodeeta_   (Teuchos::null),
     electrodecurr_  (Teuchos::null),
-    cellvoltage_    (0.)
+    cellvoltage_    (0.),
+    cellcrate_      (0.),
+    charging_       (false),
+    cc_             (false),
+    condid_cccv_    (-1),
+    nhalfcycles_    (-1),
+    ihalfcycle_     (-1)
 {
   // safety check
   if(frt_ <= 0.)
@@ -144,6 +150,72 @@ void SCATRA::ScaTraTimIntElch::Setup()
     electrodeconc_ = Teuchos::rcp(new std::vector<double>(ncond,-1.));
     electrodeeta_ = Teuchos::rcp(new std::vector<double>(ncond,-1.));
     electrodecurr_ = Teuchos::rcp(new std::vector<double>(ncond,-1.));
+  }
+
+  // extract constant-current constant-voltage (CCCV) cell cycling and half-cycle boundary conditions
+  std::vector<Teuchos::RCP<DRT::Condition> > cccvcyclingconditions;
+  discret_->GetCondition("CCCVCycling",cccvcyclingconditions);
+  std::vector<Teuchos::RCP<DRT::Condition> > cccvhalfcycleconditions;
+  discret_->GetCondition("CCCVHalfCycle",cccvhalfcycleconditions);
+
+  switch(cccvcyclingconditions.size())
+  {
+    // no cell cycling intended
+    case 0:
+    {
+      // safety check
+      if(cccvhalfcycleconditions.size())
+        dserror("Found constant-current constant-voltage (CCCV) half-cycle boundary conditions, but no CCCV cell cycling condition!");
+
+      break;
+    }
+
+    // cell cycling intended
+    case 1:
+    {
+      // extract constant-current constant-voltage (CCCV) cell cycling boundary condition
+      const DRT::Condition& cccvcyclingcondition = *cccvcyclingconditions[0];
+
+      // safety checks
+      if(NumDofPerNode() != 2)
+        dserror("Must have exactly two degrees of freedom per node (lithium concentration and electric potential) for lithium-ion cell cycling!");
+      if(!cccvhalfcycleconditions.size())
+        dserror("Found constant-current constant-voltage (CCCV) cell cycling boundary condition, but no CCCV half-cycle boundary conditions!");
+      if(cccvcyclingcondition.GetInt("ConditionIDForCharge") < 0 or cccvcyclingcondition.GetInt("ConditionIDForDischarge") < 0)
+        dserror("Invalid ID of constant-current constant-voltage (CCCV) half-cycle boundary condition specified in CCCV cell cycling boundary condition!");
+      for(unsigned icccvhalfcyclecondition=0; icccvhalfcyclecondition<cccvhalfcycleconditions.size(); ++icccvhalfcyclecondition)
+        if(cccvhalfcycleconditions[icccvhalfcyclecondition]->GetInt("ConditionID") < 0)
+          dserror("Constant-current constant-voltage (CCCV) half-cycle boundary condition has invalid condition ID!");
+
+      // start constant-current constant-voltage (CCCV) cell cycling with constant-current (CC) operating mode
+      cc_ = true;
+
+      // set number of first charge or discharge half-cycle
+      ihalfcycle_ = 1;
+
+      // extract total number of charge and discharge half-cycles
+      nhalfcycles_ = cccvcyclingcondition.GetInt("NumberOfHalfCycles");
+      if(nhalfcycles_ < 1)
+        dserror("Less than one constant-current constant-voltage (CCCV) half-cycle specified in CCCV cell cycling boundary condition!");
+
+      // determine whether simulation starts with charge or discharge half-cycle
+      charging_ = (bool) cccvcyclingcondition.GetInt("BeginWithCharging");
+
+      // extract ID of constant-current constant-voltage (CCCV) half-cycle condition initially in effect
+      if(charging_)
+        condid_cccv_ = cccvcyclingcondition.GetInt("ConditionIDForCharge");
+      else
+        condid_cccv_ = cccvcyclingcondition.GetInt("ConditionIDForDischarge");
+
+      break;
+    }
+
+    // safety check
+    default:
+    {
+      dserror("More than one constant-current constant-voltage (CCCV) cell cycling boundary condition is not allowed!");
+      break;
+    }
   }
 
   return;
@@ -510,15 +582,48 @@ void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
 
 
 /*----------------------------------------------------------------------*
- | problem-specific outputs                                  thon 11/15 |
+ | read problem-specific restart data                        fang 01/17 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::RestartProblemSpecific( const int step, IO::DiscretizationReader& reader )
+void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(const int step,IO::DiscretizationReader& reader)
 {
-  if (isale_)
+  if(isale_)
     reader.ReadVector(trueresidual_, "trueresidual");
 
+  // read states of charge of resolved electrodes if applicable, needed for correct evaluation of cell C rate at the beginning of the first time step after restart
+  if(discret_->GetCondition("ElectrodeSOC"))
+    reader.ReadRedundantDoubleVector(electrodesoc_,"electrodesoc");
+
+  // extract constant-current constant-voltage (CCCV) cell cycling boundary condition if available
+  const DRT::Condition* const cccvcyclingcondition = discret_->GetCondition("CCCVCycling");
+
+  // read restart data associated with constant-current constant-voltage (CCCV) cell cycling if applicable
+  if(cccvcyclingcondition)
+  {
+    // extract number of current charge or discharge half-cycle
+    ihalfcycle_ = reader.ReadInt("ihalfcycle");
+
+    // extract cell voltage
+    cellvoltage_ = reader.ReadDouble("cellvoltage");
+
+    // extract cell C rate
+    cellcrate_ = reader.ReadDouble("cellcrate");
+
+    // check whether number of current charge or discharge half-cycle is even, i.e., whether current half-cycle is opposite to first one w.r.t. charge/discharge
+    if(ihalfcycle_ % 2 == 0)
+    {
+      // flip charging/discharging flag (initialized based on first constant-current constant-voltage (CCCV) half-cycle)
+      charging_ = !charging_;
+
+      // reset ID of constant-current constant-voltage (CCCV) half-cycle condition initially in effect
+      if(charging_)
+        condid_cccv_ = cccvcyclingcondition->GetInt("ConditionIDForCharge");
+      else
+        condid_cccv_ = cccvcyclingcondition->GetInt("ConditionIDForDischarge");
+    }
+  }
+
   return;
-}
+} // SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific
 
 
 /*------------------------------------------------------------------------------*
@@ -943,6 +1048,9 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
   // perform all following operations only if there is at least one condition for electrode state of charge
   if(conditions.size() > 0)
   {
+    // initialize variable for cell C rate
+    cellcrate_ = 0.;
+
     // print header to screen
     if(myrank_ == 0)
     {
@@ -1005,6 +1113,9 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
 
       // update C rate for current electrode
       (*electrodecrates_)[condid] = c_rate;
+
+      // update cell C rate
+      cellcrate_ = std::max(std::abs(c_rate),cellcrate_);
 
       // print results to screen and files
       if(myrank_ == 0)
@@ -1147,6 +1258,32 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
 
 
 /*----------------------------------------------------------------------*
+ | output restart data                                       fang 01/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::OutputRestart() const
+{
+  // output states of charge of resolved electrodes if applicable, needed for correct evaluation of cell C rate at the beginning of the first time step after restart
+  if(discret_->GetCondition("ElectrodeSOC"))
+    output_->WriteRedundantDoubleVector("electrodesoc",electrodesoc_);
+
+  // output restart data associated with constant-current constant-voltage (CCCV) cell cycling if applicable
+  if(discret_->GetCondition("CCCVCycling"))
+  {
+    // output number of current charge or discharge half-cycle
+    output_->WriteInt("ihalfcycle",ihalfcycle_);
+
+    // output cell voltage
+    output_->WriteDouble("cellvoltage",cellvoltage_);
+
+    // output cell C rate
+    output_->WriteDouble("cellcrate",cellcrate_);
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntElch::OutputRestart()
+
+
+/*----------------------------------------------------------------------*
  | perform setup of natural convection                       fang 08/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::SetupNatConv()
@@ -1169,12 +1306,12 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
-  = Teuchos::rcp(new Epetra_SerialDenseVector(NumScal()+1));
+  = Teuchos::rcp(new Epetra_SerialDenseVector(NumDofPerNode()+1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
   // calculate mean concentration
-  const double domint = (*scalars)[NumScal()];
+  const double domint = (*scalars)[NumDofPerNode()];
 
   if (std::abs(domint) < EPS15)
     dserror("Division by zero!");
@@ -2297,6 +2434,242 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   // so much code for a simple check!
   return;
 } // ScaTraTimIntImpl::CheckConcentrationValues
+
+
+/*----------------------------------------------------------------------*
+ | apply Dirichlet boundary conditions to state vectors      fang 01/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
+    const double                  time,    //!< time
+    Teuchos::RCP<Epetra_Vector>   phinp,   //!< state vector of scalar transport degrees of freedom
+    Teuchos::RCP<Epetra_Vector>   phidt    //!< state vector of time derivatives of scalar transport degrees of freedom
+    )
+{
+  // call base class routine
+  ScaTraTimIntImpl::ApplyDirichletBC(time,phinp,phidt);
+
+  // evaluate Dirichlet boundary condition on electric potential arising from constant-current constant-voltage (CCCV) cell cycling boundary condition during constant-voltage (CV) phase
+  if(discret_->GetCondition("CCCVCycling") and not cc_)
+  {
+    // initialize set for global IDs of electric potential degrees of freedom affected by constant-current constant-voltage (CCCV) cell cycling boundary condition
+    std::set<int> dbcgids;
+
+    // extract constant-current constant-voltage (CCCV) half-cycle boundary conditions
+    std::vector<DRT::Condition*> cccvhalfcycleconditions;
+    discret_->GetCondition("CCCVHalfCycle",cccvhalfcycleconditions);
+
+    // loop over all conditions
+    for(unsigned icond=0; icond<cccvhalfcycleconditions.size(); ++icond)
+    {
+      // check relevance of current condition
+      if(cccvhalfcycleconditions[icond]->GetInt("ConditionID") == condid_cccv_)
+      {
+        // extract condition
+        const DRT::Condition& condition = *cccvhalfcycleconditions[icond];
+
+        // extract cutoff voltage from condition and perform safety check
+        const double cutoff_voltage = condition.GetDouble("CutoffVoltage");
+        if(cutoff_voltage < 0.)
+          dserror("Cutoff voltage for constant-current constant-voltage (CCCV) cell cycling must not be negative!");
+
+        // extract nodal cloud of current condition and perform safety check
+        const std::vector<int>* nodegids = cccvhalfcycleconditions[icond]->Nodes();
+        if(!nodegids or !nodegids->size())
+          dserror("Constant-current constant-voltage (CCCV) cell cycling boundary condition does not have a nodal cloud!");
+
+        // loop over all nodes
+        for(unsigned inode=0; inode<nodegids->size(); ++inode)
+        {
+          // extract global ID of current node
+          const int nodegid = (*nodegids)[inode];
+
+          // consider only nodes owned by current processor
+          if(discret_->HaveGlobalNode(nodegid))
+          {
+            // extract global ID of electric potential degree of freedom carried by current node
+            const int gid = discret_->Dof(discret_->gNode(nodegid),1);
+
+            // add global ID to set
+            dbcgids.insert(gid);
+
+            // apply cutoff voltage as Dirichlet boundary condition
+            phinp->ReplaceGlobalValue(gid,0,cutoff_voltage);
+          }
+        } // loop over all nodes
+
+        // leave loop after relevant condition has been processed
+        break;
+      } // relevant condition
+    } // loop over all conditions
+
+    // transform set into vector and then into Epetra map
+    std::vector<int> dbcgidsvec(dbcgids.begin(),dbcgids.end());
+    const Teuchos::RCP<const Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1,dbcgids.size(),&dbcgidsvec[0],DofRowMap()->IndexBase(),DofRowMap()->Comm()));
+
+    // merge map with existing map for Dirichlet boundary conditions
+    AddDirichCond(dbcmap);
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntElch::ApplyDirichletBC
+
+
+/*----------------------------------------------------------------------*
+ | evaluate Neumann boundary conditions                      fang 01/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(
+    const Teuchos::RCP<Epetra_Vector>&   neumann_loads   //!< Neumann loads
+    )
+{
+  // call base class routine
+  ScaTraTimIntImpl::ApplyNeumannBC(neumann_loads);
+
+  // evaluate Neumann boundary condition on electric potential arising from constant-current constant-voltage (CCCV) cell cycling boundary condition during constant-current (CC) phase
+  if(discret_->GetCondition("CCCVCycling") and cc_)
+  {
+    // extract constant-current constant-voltage (CCCV) half-cycle boundary conditions
+    std::vector<DRT::Condition*> cccvhalfcycleconditions;
+    discret_->GetCondition("CCCVHalfCycle",cccvhalfcycleconditions);
+
+    // loop over all conditions
+    for(unsigned icond=0; icond<cccvhalfcycleconditions.size(); ++icond)
+    {
+      // check relevance of current condition
+      if(cccvhalfcycleconditions[icond]->GetInt("ConditionID") == condid_cccv_)
+      {
+        // extract condition
+        DRT::Condition& condition = *cccvhalfcycleconditions[icond];
+
+        // To avoid code redundancy, we evaluate the condition using the element-based algorithm for standard Neumann boundary conditions.
+        // For this purpose, we must provide the condition with some features to make it look like a standard Neumann boundary condition.
+        std::vector<int> onoff(2,0);
+        std::vector<double> val(2,0.);
+        onoff[1] = 1;                              // activate Neumann boundary condition for electric potential degree of freedom
+        val[1] = condition.GetDouble("Current");   // set value of Neumann boundary condition
+        condition.Add("numdof",2);
+        condition.Add("funct",std::vector<int>(2,0));
+        condition.Add("curve",std::vector<int>(2,-1));
+        condition.Add("onoff",onoff);
+        condition.Add("val",val);
+
+        // create parameter list for elements
+        Teuchos::ParameterList params;
+
+        // set action for elements
+        params.set<int>("action",SCATRA::bd_calc_Neumann);
+
+        // loop over all conditioned elements
+        std::map<int,Teuchos::RCP<DRT::Element> >& geometry = condition.Geometry();
+        std::map<int,Teuchos::RCP<DRT::Element> >::iterator iterator;
+        for (iterator=geometry.begin(); iterator!=geometry.end(); ++iterator)
+        {
+          // get location vector of current element
+          std::vector<int> lm;
+          std::vector<int> lmowner;
+          std::vector<int> lmstride;
+          iterator->second->LocationVector(*discret_,lm,lmowner,lmstride);
+
+          // initialize element-based vector of Neumann loads
+          Epetra_SerialDenseVector elevector(lm.size());
+
+          // evaluate Neumann boundary condition
+          iterator->second->EvaluateNeumann(params,*discret_,condition,lm,elevector);
+
+          // assemble element-based vector of Neumann loads into global vector of Neumann loads
+          LINALG::Assemble(*neumann_loads,elevector,lm,lmowner);
+        } // loop over all conditioned elements
+
+        // leave loop after relevant condition has been processed
+        break;
+      } // relevant condition
+    } // loop over all conditions
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntElch::ApplyNeumannBC
+
+
+/*---------------------------------------------------------------------------*
+ | determine whether there are still time steps to be evaluated   fang 01/17 |
+ *---------------------------------------------------------------------------*/
+bool SCATRA::ScaTraTimIntElch::NotFinished()
+{
+  // initialize outcome
+  bool notfinished(true);
+
+  // extract constant-current constant-voltage (CCCV) cell cycling boundary condition
+  const DRT::Condition* const cccvcyclingcondition = discret_->GetCondition("CCCVCycling");
+
+  // call base class routine in case no cell cycling is performed
+  if(!cccvcyclingcondition)
+    notfinished = ScaTraTimIntImpl::NotFinished();
+
+  // control progress of simulation in case cell cycling is performed
+  // note that the maximum number of time steps and the maximum simulation time are ignored in this case
+  else
+  {
+    // extract constant-current constant-voltage (CCCV) half-cycle boundary conditions
+    std::vector<DRT::Condition*> cccvhalfcycleconditions;
+    discret_->GetCondition("CCCVHalfCycle",cccvhalfcycleconditions);
+
+    // initialize variables for cutoff C rate and cutoff voltage
+    double cutoff_c_rate(0.);
+    double cutoff_voltage(0.);
+
+    // loop over all conditions
+    for(unsigned icond=0; icond<cccvhalfcycleconditions.size(); ++icond)
+    {
+      // extract current condition
+      const DRT::Condition& condition = *cccvhalfcycleconditions[icond];
+
+      // extract cutoff C rate and cutoff voltage from relevant condition
+      if(condition.GetInt("ConditionID") == condid_cccv_)
+      {
+        cutoff_c_rate = condition.GetDouble("CutoffCRate");
+        cutoff_voltage = condition.GetDouble("CutoffVoltage");
+
+        // leave loop after relevant condition has been processed
+        break;
+      }
+    }
+
+    // check whether cell is currently being operated in constant-current (CC) or constant-voltage (CV) mode
+    cc_ = (charging_ and cellvoltage_ < cutoff_voltage) or (!charging_ and cellvoltage_ > cutoff_voltage);
+
+    // current charge or discharge half-cycle is not yet over
+    if(cc_ == true or (cc_ == false and cellcrate_ > cutoff_c_rate))
+      notfinished = true;
+
+    // end of current charge or discharge half-cycle has been reached, but there are still half-cycles left
+    // simulation is not finished yet, and the operating mode must be switched from charge to discharge or vice versa
+    else if(ihalfcycle_ < nhalfcycles_)
+    {
+      // flip flag indicating whether cell is currently being charged or discharged
+      charging_ = !charging_;
+
+      // reset flag to constant-current (CC) operating mode
+      cc_ = true;
+
+      // change ID of constant-current constant-voltage (CCCV) half-cycle condition in effect
+      if(charging_)
+        condid_cccv_ = cccvcyclingcondition->GetInt("ConditionIDForCharge");
+      else
+        condid_cccv_ = cccvcyclingcondition->GetInt("ConditionIDForDischarge");
+
+      // update number of current charge or discharge half-cycle
+      ++ihalfcycle_;
+
+      // set outcome
+      notfinished = true;
+    }
+
+    // end of last charge or discharge half-cycle has been reached, simulation is over
+    else
+      notfinished = false;
+  }
+
+  return notfinished;
+}
 
 
 /*----------------------------------------------------------------------*

@@ -124,6 +124,30 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // node-to-segment projection tolerance
   DoubleParameter("NTSPROJTOL",0.0,"node-to-segment projection tolerance",&s2icoupling);
+
+  // flag for evaluation of scatra-scatra interface coupling involving interface layer growth
+  setStringToIntegralParameter<int>(
+      "INTLAYERGROWTH_EVALUATION",
+      "none",
+      "flag for evaluation of scatra-scatra interface coupling involving interface layer growth",
+      tuple<std::string>(
+          "none",
+          "monolithic",
+          "semi-implicit"
+          ),
+      tuple<int>(
+          growth_evaluation_none,
+          growth_evaluation_monolithic,
+          growth_evaluation_semi_implicit
+          ),
+      &s2icoupling
+      );
+
+  // local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving interface layer growth
+  DoubleParameter("INTLAYERGROWTH_CONVTOL",1.e-12,"local Newton-Raphson convergence tolerance for scatra-scatra interface coupling involving interface layer growth",&s2icoupling);
+
+  // maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth
+  IntParameter("INTLAYERGROWTH_ITEMAX",5,"maximum number of local Newton-Raphson iterations for scatra-scatra interface coupling involving interface layer growth",&s2icoupling);
 }
 
 
@@ -197,7 +221,7 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
                   intvectcomp,
                   realsepcomp,
                   realvectcomp
-              )));
+                  )));
 
               kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("ConstantPermeability",constperm,INPAR::S2I::kinetics_constperm)));
             }
@@ -219,7 +243,7 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
                   intvectcomp,
                   realsepcomp,
                   realvectcomp
-              )));
+                  )));
               butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
               butlervolmer.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
               butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
@@ -235,7 +259,7 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
             {
               // Butler-Volmer-Peltier
               std::vector<Teuchos::RCP<ConditionComponent> > butlervolmerpeltier;
-              butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));            // total number of existing scalars
+              butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));     // total number of existing scalars
               std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;
               intsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
               std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                         // string separator in front of integer stoichiometry vector in input file line
@@ -249,7 +273,7 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
                   intvectcomp,
                   realsepcomp,
                   realvectcomp
-              )));
+                  )));
               butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
               butlervolmerpeltier.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
               butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
@@ -310,6 +334,109 @@ void INPAR::S2I::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
     // insert condition definitions into global list of valid condition definitions
     condlist.push_back(s2iline);
     condlist.push_back(s2isurf);
+  }
+
+
+  /*--------------------------------------------------------------------*/
+  // scatra-scatra interface coupling involving interface layer growth
+  {
+    // definition of scatra-scatra interface coupling line condition involving interface layer growth
+    Teuchos::RCP<ConditionDefinition> s2igrowthline =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING GROWTH LINE CONDITIONS",
+                                             "S2ICouplingGrowth",
+                                             "Scatra-scatra line interface coupling involving interface layer growth",
+                                             DRT::Condition::S2ICouplingGrowth,
+                                             true,
+                                             DRT::Condition::Line));
+
+    // definition of scatra-scatra interface coupling surface condition involving interface layer growth
+    Teuchos::RCP<ConditionDefinition> s2igrowthsurf =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I COUPLING GROWTH SURF CONDITIONS",
+                                             "S2ICouplingGrowth",
+                                             "Scatra-scatra surface interface coupling involving interface layer growth",
+                                             DRT::Condition::S2ICouplingGrowth,
+                                             true,
+                                             DRT::Condition::Surface));
+
+    // equip condition definitions with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent> > s2igrowthcomponents;
+    {
+      // interface ID
+      s2igrowthcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+      // kinetic models for scatra-scatra interface coupling involving interface layer growth
+      std::vector<Teuchos::RCP<CondCompBundle> > kineticmodels;
+      {
+        {
+          // Butler-Volmer
+          std::vector<Teuchos::RCP<ConditionComponent> > butlervolmer;
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));            // total number of existing scalars
+          std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;
+          intsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+          std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                         // string separator in front of integer stoichiometry vector in input file line
+          intvectcomp.push_back(Teuchos::rcp(new IntVectorConditionComponent("stoichiometries",0)));   // integer vector of stoichiometric coefficients
+          std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp;                         // empty vector --> no separators for real vectors needed
+          std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp;                       // empty vector --> no real vectors needed
+          butlervolmer.push_back(Teuchos::rcp(new IntRealBundle(
+              "stoichiometries",
+              Teuchos::rcp(new IntConditionComponent("numscal")),
+              intsepcomp,
+              intvectcomp,
+              realsepcomp,
+              realvectcomp
+              )));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+          butlervolmer.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("k_r")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("molmass")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("molar mass")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("density")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("density")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("conductivity")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("conductivity")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("regtype")));
+          butlervolmer.push_back(Teuchos::rcp(new StringConditionComponent(
+              "regularization type",
+              "trigonometrical",
+              Teuchos::tuple<std::string>("none","polynomial","trigonometrical"),
+              Teuchos::tuple<std::string>("none","polynomial","trigonometrical")
+              )));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("regpar")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("regularization parameter")));
+          butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("initthickness")));
+          butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("initial thickness")));
+
+          kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",butlervolmer,INPAR::S2I::growth_kinetics_butlervolmer)));
+        }
+      } // kinetic models for scatra-scatra interface coupling involving interface layer growth
+
+      // insert kinetic models into vector with input file line components
+      s2igrowthcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
+      s2igrowthcomponents.push_back(Teuchos::rcp(new CondCompBundleSelector(
+          "kinetic models for scatra-scatra interface coupling involving interface layer growth",
+          Teuchos::rcp(new StringConditionComponent(
+              "kinetic model",
+              "Butler-Volmer",
+              Teuchos::tuple<std::string>("Butler-Volmer"),
+              Teuchos::tuple<int>(INPAR::S2I::growth_kinetics_butlervolmer))),
+          kineticmodels)));
+    }
+
+    // insert input file line components into condition definitions
+    for (unsigned i=0; i<s2igrowthcomponents.size(); ++i)
+    {
+      s2igrowthline->AddComponent(s2igrowthcomponents[i]);
+      s2igrowthsurf->AddComponent(s2igrowthcomponents[i]);
+    }
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(s2igrowthline);
+    condlist.push_back(s2igrowthsurf);
   }
 
 

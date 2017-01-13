@@ -67,7 +67,7 @@ protected:
   void CalcInitialTimeDerivative();
 
   /// additional predictor not intended for level-set methods
-  void ExplicitPredictor(){return;};
+  void ExplicitPredictor() const {return;};
 
   /// Set the part of the righthandside belonging to the last timestep.
   void SetOldPartOfRighthandside();
