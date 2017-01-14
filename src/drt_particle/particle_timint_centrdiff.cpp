@@ -29,6 +29,7 @@
 #include "../linalg/linalg_utils.H"
 #include "particle_algorithm.H"
 #include "particle_heatSource.H"
+#include "../drt_io/io_control.H"
 /*----------------------------------------------------------------------*/
 /* Constructor */
 PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
@@ -134,6 +135,8 @@ void PARTICLE::TimIntCentrDiff::Init()
     }
     const double deltaSpecEnthalpy = max_QDot * (*dt_)[0]/min_density;
 
+    if(r_max<0.0)
+      dserror("A positive value of r_max is required!");
     double volume = PARTICLE::Utils::Radius2Volume(r_max);
     volume *= inv_CPS * thermalExpansionS * deltaSpecEnthalpy + 1;
     double v_max_thermo = 2*(PARTICLE::Utils::Volume2Radius(volume) - r_max);
@@ -168,6 +171,8 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
     // new velocities \f$V_{n+1/2}\f$
+    //TODO Christoph: check, if the "postponed" subtraction of the accn_ term causes problems for SPH
+    // In DEM, this procedure is known to reduce the temporal convergence order if velocity-propoertional damping terms exist.
     veln_->Update(dthalf, *(*acc_)(0), 1.0);
 
     // new displacements \f$D_{n+1}\f$
@@ -206,7 +211,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
       SetStatesForCollision();
 
       // direct update of the accelerations
-      interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_,specEnthalpyDotn_);
+      interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_, densityapproxn_, specEnthalpyDotn_);
       // clear vectors, keep memory
       interHandler_->Clear();
     }
@@ -222,6 +227,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     {
     case INPAR::PARTICLE::MeshFree :
     {
+      //Explicit Euler for Density
       densityn_->Update(dt, *densityDotn_, 1.0);
     }// no break
     case INPAR::PARTICLE::Normal_DEM_thermo :

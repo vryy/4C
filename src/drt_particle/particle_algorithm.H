@@ -30,6 +30,10 @@
 #include <Epetra_CrsGraph.h>
 #include <vector>
 
+//TODO Christoph: Replace these defines by input parameters
+#define PARTICLE_DIM 3                        //space dimension
+//#define PARTICLE_CONSISTENT_VOLUME 0.2      //Value of problem/domain volume in order to apply SPH-consistent calculation of initial particle mass
+#define PARTICLE_DELTADENSFAC -1.0            //Scale factor for reference density in equation of state
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |

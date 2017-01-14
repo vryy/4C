@@ -20,14 +20,18 @@
  | compute the cubicBspline weight function           cattabiani 08/16  |
  *----------------------------------------------------------------------*/
 
-// The formula can be found in:
-// R1-E9 - Numerical simulation of fluid-structure interaction by SPH, DOI: 10.1016/j.compstruc.2007.01.002
+// The 3D variant can be found in Monaghan2005, Eq. (2.6)
+// [see also Eq. (9) in Antoci2007]
 
 double PARTICLE::WeightFunction_CubicBspline::Weight(
   const double &disRel,
   const double &radius
   )
 {
+
+  //Attention: The support of our kernel functions is (in 3D) defined by a sphere with radius measured by our variable "radius".
+  //In the SLM literature, typically the smoothing length h:=radius/2 is used for defining the kernel functions!!!
+  //rszDisRel=q:=||r_{ij}||/h=2*||r_{ij}||/radius
   const double rszDisRel = RszDisRel(disRel,radius);
 
   double weight = 0;
@@ -53,10 +57,13 @@ double PARTICLE::WeightFunction_CubicBspline::Weight(
 
 // empowered by mathematica:
 // https://www.wolframalpha.com/input/?i=Piecewise+%5B%7B%7B+(6+x+(3+x+-+4))%2F8,+0%3C%3Dx%2F2%3C%3D1%2F2%7D,%7B+-(6+(2+-+x)%5E2)%2F8,1%2F2%3Cx%2F2%3C%3D1%7D%7D%5D
+// See again Monaghan2005, Eq. (2.6)
 
 double PARTICLE::WeightFunction_CubicBspline::WeightDerivative(const double &disRel, const double &radius)
 {
 
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * r_{ij}/||r_{ij}||
+  // Here, we determine weightDerivative = dW/dq * 1/h while the part e_{ij}:=r_{ij}/||r_{ij}|| is multiplied outside!
   const double rszDisRel = RszDisRel(disRel,radius);
 
   double weightDerivative = 0;
@@ -70,7 +77,6 @@ double PARTICLE::WeightFunction_CubicBspline::WeightDerivative(const double &dis
   }
 
   // resizing to have an integral = 1
-  // it is divided by disRel so that DW * rRel is the gradient
   weightDerivative *= Rsz3D(radius);
 
   return weightDerivative;

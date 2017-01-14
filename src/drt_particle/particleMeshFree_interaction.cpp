@@ -106,7 +106,17 @@ if (wallInteractionType_ != INPAR::PARTICLE::Mirror)
     dserror("the value of WALL_FAKE_MASS is unacceptable");
 }
 
-diffusionCoeff_ = 5.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+//Attention: The trace of a tensor as required to derive equation (28) from equation (25) in Espanol2003 depends
+//on the spatial dimension --> SPH approximations of the Laplace operator typically differ for differnt dimensions!
+if(PARTICLE_DIM==3)
+  diffusionCoeff_ = 5.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+else if(PARTICLE_DIM==2)
+  diffusionCoeff_ = 8.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+else if(PARTICLE_DIM==1)
+  diffusionCoeff_ = 11.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+else
+  dserror("Only the problem dimensions 1, 2 and 3 are possible!");
+
 convectionCoeff_ = 5.0 * (extParticleMat->dynamicViscosity_ / 3.0  + extParticleMat->bulkViscosity_);
 
 // checks
@@ -153,7 +163,6 @@ if (surfaceVoidTension_ != 0)
 
 }
 
-
 /*----------------------------------------------------------------------*
  | set up internal variables for future computations       katta 12/16  |
  *----------------------------------------------------------------------*/
@@ -162,6 +171,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
     Teuchos::RCP<const Epetra_Vector> veln,
     Teuchos::RCP<const Epetra_Vector> radiusn,
     Teuchos::RCP<const Epetra_Vector> densityn,
+    Teuchos::RCP<const Epetra_Vector> densityapproxn,
     Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
     Teuchos::RCP<const Epetra_Vector> mass,
     Teuchos::RCP<const Epetra_Vector> temperature,
@@ -170,7 +180,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
   if (particleMeshFreeData_.size() == 0 && neighbouringParticles_.size() ==0)
   {
     // set state vectors
-    SetStateVectors(disn,veln,radiusn,densityn,specEnthalpyn,mass,temperature,pressure);
+    SetStateVectors(disn,veln,radiusn,densityn,densityapproxn,specEnthalpyn,mass,temperature,pressure);
 
     // set neighbours
     SetNeighbours();
@@ -205,6 +215,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVectors(
     Teuchos::RCP<const Epetra_Vector> veln,
     Teuchos::RCP<const Epetra_Vector> radiusn,
     Teuchos::RCP<const Epetra_Vector> densityn,
+    Teuchos::RCP<const Epetra_Vector> densityapproxn,
     Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
     Teuchos::RCP<const Epetra_Vector> mass,
     Teuchos::RCP<const Epetra_Vector> temperature,
@@ -234,6 +245,8 @@ Teuchos::RCP<Epetra_Vector> radiusnCol = LINALG::CreateVector(*discret_->NodeCol
 LINALG::Export(*radiusn,*radiusnCol);
 Teuchos::RCP<Epetra_Vector> densitynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
 LINALG::Export(*densityn,*densitynCol);
+Teuchos::RCP<Epetra_Vector> densityapproxnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+LINALG::Export(*densityapproxn,*densityapproxnCol);
 Teuchos::RCP<Epetra_Vector> specEnthalpynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
 LINALG::Export(*specEnthalpyn,*specEnthalpynCol);
 Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
@@ -350,7 +363,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetNeighbours()
       const int lidNodeCol_i = currentBinParticles[i]->LID();
       const ParticleMeshFreeData& particle_i = particleMeshFreeData_[lidNodeCol_i];
 
-
       SetNeighbours_Particles(particle_i, neighboring_particles);
 
       SetNeighbours_Walls(particle_i, neighboring_walls, walldiscret, walldisn, wallveln);
@@ -380,7 +392,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetNeighbours_Particles(
     // evaluate contact only once
     if(particle_i.gid < particle_j.gid)
     {
-
       // create the data that we have to push_back
       Interaction_Particles data;
 
@@ -700,6 +711,7 @@ const int numcolparticles = discret_->NodeColMap()->NumMyElements();
 void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInteractions(
   const Teuchos::RCP<Epetra_Vector> accn,
   const Teuchos::RCP<Epetra_Vector> densityDotn,
+  const Teuchos::RCP<Epetra_Vector> densityapproxn,
   const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn)
 {
   //checks
@@ -724,7 +736,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::EvaluateParticleMeshFreeInter
 
     CalcNeighboringHeatSourcesContact(particle_i, neighbouringHeatSources_[lidNodeRow_i], specEnthalpyDotn);
 
-    CalcNeighboringParticleMeshFreeInteraction(particle_i, neighbouringParticles_[lidNodeRow_i], accn, densityDotn, specEnthalpyDotn, colorFieldGradientn);
+    CalcNeighboringParticleMeshFreeInteraction(particle_i, neighbouringParticles_[lidNodeRow_i], accn, densityDotn, densityapproxn, specEnthalpyDotn, colorFieldGradientn);
 
     CalcNeighboringWallMeshFreeInteraction(particle_i, neighbouringWalls_[lidNodeRow_i], accn, densityDotn);
   }
@@ -760,6 +772,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
   const std::list<Interaction_Particles> neighbouringParticles,
   Teuchos::RCP<Epetra_Vector> accn,
   Teuchos::RCP<Epetra_Vector> densityDotn,
+  Teuchos::RCP<Epetra_Vector> densityapproxn,
   Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
   Teuchos::RCP<Epetra_Vector> colorFieldGradientn)
 {
@@ -770,7 +783,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
   }
 
   // determine some useful quantities
+  //rhoSquare_i = \rho_i^2
   const double rhoSquare_i = std::pow(particle_i.density,2);
+  //p_Rho2_i = p_i/\rho_i^2
   const double p_Rho2_i = particle_i.pressure/rhoSquare_i;
 
   // loop over the interaction particle list
@@ -782,11 +797,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
 
     // --- extract general data --- //
 
+    //compute distance and relative velocities: rRel=r_i-r_j; relVersor=e_{ij}:=(r_i-r_j)/||r_i-r_j||;
     const double rRelNorm2 = interactionData.rRelNorm2;
     LINALG::Matrix<3,1> rRelVersor_ij(interactionData.rRelVersor_ij);
+    //vRel_ij=v_{ij}:=v_i-v_j
     LINALG::Matrix<3,1> vRel_ij;
     vRel_ij.Update(1.0, particle_i.vel, -1.0, particle_j.vel);
     const double rho2 = particle_i.density * particle_j.density;
+    //rRelVersorDotVrel = e_{ij} \cdot v_{ij}
     const double rRelVersorDotVrel = rRelVersor_ij.Dot(vRel_ij);
 
     // --- density --- //
@@ -794,10 +812,15 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
 
     // --- momentum --- //
     LINALG::Matrix<3,1> momentum_ij;
-      // pressure
+      // compute the pressure term
+      //(based on Monaghan2005, Eq(3.18); this expression differs from the variant in Espanol2003, Eq(22) in the general case m_i \neq m_j.
+      //However, based on a similar derivation as in Espanol2003, Eq(18-22) it has been verified that also this variant can guarantee
+      //for energy conservation of the dissipation-free, time-continous problem, if Monaghan2005, Eq(2.18) is applied for density integration [and not Eq(2.17)!])
     const double rhoSquare_j = std::pow(particle_j.density,2);
     const double gradP_Rho2 = (p_Rho2_i + particle_j.pressure/rhoSquare_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
     momentum_ij.Update(- gradP_Rho2, rRelVersor_ij, 1.0);
+      // The following two viscous terms are taken from Espanol2003, Eq(30) and re-expressed in terms of mass densities in an equivalent manner.
+      // This is necessary since Espanol2003 only specifies the case m_i=m_j=m.
       // diffusion
     const double dC_rho2rRelNorm2 = diffusionCoeff_ / (rho2 * rRelNorm2);
     momentum_ij.Update(dC_rho2rRelNorm2, vRel_ij, 1.0);
@@ -812,6 +835,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
 
     // --- specific enthalpy --- //
     const double deltaT_ij = particle_i.temperature - particle_j.temperature;
+    // compute divT_rho_i (following Monaghan2005, Eq(7.2))
     const double divT_rho_ij = 2 * particle_algorithm_->ExtParticleMat()->thermalConductivity_ *
         deltaT_ij / (rho2 * rRelNorm2);
 
@@ -832,6 +856,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
 
       double densityDotn_ij = generalCoeff_ij * density;
       LINALG::Assemble(*densityDotn, densityDotn_ij, particle_i.gid, particle_i.owner);
+
+      //For comparison reasons: determine approximation for density based on summation formula in Adami2013, Eq.(5):
+      const double weight = PARTICLE::WeightFunction_CubicBspline::Weight(rRelNorm2, particle_i.radius);
+      double densityapprox_i = particle_i.mass * weight;
+      LINALG::Assemble(*densityapproxn, densityapprox_i, particle_i.gid, particle_i.owner);
 
       // --- acceleration --- //
 
@@ -862,8 +891,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::CalcNeighboringParticleMeshFr
 
       // --- density --- //
 
+      // Density integration according to Monaghan2005, Eq(2.18)
       double densityDotn_ji = generalCoeff_ji * density;
       LINALG::Assemble(*densityDotn, densityDotn_ji, particle_j.gid, particle_j.owner);
+
+      //For comparison reasons: determine approximation for density based on summation formula in Adami2013, Eq.(5):
+      const double weight = PARTICLE::WeightFunction_CubicBspline::Weight(rRelNorm2, particle_j.radius);
+      double densityapprox_j = particle_j.mass * weight;
+      LINALG::Assemble(*densityapproxn, densityapprox_j, particle_j.gid, particle_j.owner);
 
       // --- acceleration --- //
 

@@ -27,6 +27,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_FEVector.h>
 #include <Epetra_Time.h>
+#include "../linalg/linalg_fixedsizematrix.H"
 
 #include <string>
 #include <iostream>
@@ -370,6 +371,9 @@ namespace PARTICLE
     //! Extract time derivative densities \f$\dot{\rho}_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityDotnp() { return densityDotn_; }
 
+    //! Extract approximate densities \f${\rho}_{approx,n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityApproxnp() { return densityapproxn_; }
+
     //! Extract specific enthalpies \f$H_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp(){ return specEnthalpyn_; }
 
@@ -485,6 +489,7 @@ namespace PARTICLE
     double kinergy_; //!< kinetic energy
     double intergy_; //!< internal energy
     double extergy_; //!< external energy
+    LINALG::Matrix<3,1> linmomentum_; //!< linear momentum
     //@}
 
     //! @name General control parameters
@@ -537,6 +542,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> radiusn_;
     //! Densities \f${\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityn_;
+    //! Approximated densities \f${\rho}_{approx,n+1}\f$ based on summation formula
+    Teuchos::RCP<Epetra_Vector> densityapproxn_;
     //! Time derivative of densities \f$\dot{\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityDotn_;
     //! Specific enthalpies \f${H}_{n+1}\f$

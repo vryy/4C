@@ -30,6 +30,9 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+//TODO: Remove this include as soon as the defines in particle_algorithm.H are set as input parameters
+#include "particle_algorithm.H"
+
 /*----------------------------------------------------------------------*/
 /* print particle time logo */
 void PARTICLE::TimInt::Logo()
@@ -68,6 +71,10 @@ PARTICLE::TimInt::TimInt
   writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
   energyfile_(Teuchos::null),
   writeorientation_(false),
+  kinergy_(0),
+  intergy_(0),
+  extergy_(0),
+  linmomentum_(LINALG::Matrix<3,1>(true)),
   time_(Teuchos::null),
   timen_(0.0),
   dt_(Teuchos::null),
@@ -94,6 +101,7 @@ PARTICLE::TimInt::TimInt
   angAccn_(Teuchos::null),
   radiusn_(Teuchos::null),
   densityn_(Teuchos::null),
+  densityapproxn_(Teuchos::null),
   densityDotn_(Teuchos::null),
   specEnthalpyn_(Teuchos::null),
   specEnthalpyDotn_(Teuchos::null),
@@ -204,6 +212,7 @@ void PARTICLE::TimInt::Init()
   case INPAR::PARTICLE::MeshFree :
   {
     densityDotn_ = Teuchos::rcp(new Epetra_Vector(*(*densityDot_)(0)));
+    densityapproxn_ = LINALG::CreateVector(*NodeRowMapView(), true);
   }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
@@ -260,7 +269,14 @@ void PARTICLE::TimInt::SetInitialFields()
   (*radius_)(0)->PutScalar(initRadius);
 
   // mass-vector: m = rho * 4/3 * PI *r^3
+  // Also account for a SPH-consistent definition of the density (PARTICLE_CONSISTENT_VOLUME will be replaced by input parameter)
+#ifndef PARTICLE_CONSISTENT_VOLUME
   mass_->PutScalar(initDensity * PARTICLE::Utils::Radius2Volume(initRadius));
+#else
+  const double initVolume=PARTICLE_CONSISTENT_VOLUME;
+  const double num_particles=discret_->NumMyRowNodes();
+  mass_->PutScalar(initDensity * initVolume / num_particles);
+#endif
 
   // -----------------------------------------//
   // set initial radius condition if existing
@@ -410,7 +426,7 @@ void PARTICLE::TimInt::SetInitialFields()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(- restDensity_);
+    deltaDensity->PutScalar(PARTICLE_DELTADENSFAC * restDensity_);
     deltaDensity->Update(1.0, *(*density_)(0), 1.0);
     PARTICLE::Utils::Density2Pressure(deltaDensity, (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true);
   }
@@ -562,6 +578,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(angAccn_);
   UpdateStateVectorMap(radiusn_,true);
   UpdateStateVectorMap(densityn_,true);
+  UpdateStateVectorMap(densityapproxn_,true);
   UpdateStateVectorMap(densityDotn_,true);
   UpdateStateVectorMap(specEnthalpyn_,true);
   UpdateStateVectorMap(specEnthalpyDotn_,true);
@@ -640,6 +657,9 @@ void PARTICLE::TimInt::ReadRestartState()
     // read density
     reader.ReadVector(densityn_, "density");
     density_->UpdateSteps(*densityn_);
+    // read density
+    reader.ReadVector(densityapproxn_, "densityapprox");
+    density_->UpdateSteps(*densityapproxn_);
     // read specEnthalpy
     reader.ReadVector(specEnthalpyn_, "specEnthalpy");
     specEnthalpy_->UpdateSteps(*specEnthalpyn_);
@@ -661,7 +681,7 @@ void PARTICLE::TimInt::ReadRestartState()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(- restDensity_);
+    deltaDensity->PutScalar(PARTICLE_DELTADENSFAC * restDensity_);
     deltaDensity->Update(1.0,*densityn_,1.0);
     PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
   }
@@ -877,7 +897,8 @@ void PARTICLE::TimInt::OutputState
 /* Calculation of internal, external and kinetic energy */
 void PARTICLE::TimInt::DetermineEnergy()
 {
-  if ( writeenergyevery_ and (stepn_%writeenergyevery_ == 0) and collhandler_ != Teuchos::null)
+
+  if ( writeenergyevery_ and (stepn_%writeenergyevery_ == 0))
   {
     LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc();
 
@@ -885,36 +906,96 @@ void PARTICLE::TimInt::DetermineEnergy()
     kinergy_ = 0.0;
 
     int numrownodes = discret_->NodeRowMap()->NumMyElements();
-    for(int i=0; i<numrownodes; ++i)
+
+    //energy for all cases besides SPH
+    if (collhandler_ != Teuchos::null and particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree )
     {
-      double specific_energy = 0.0;
-      double kinetic_energy = 0.0;
-      double rot_energy = 0.0;
-
-      for(int dim=0; dim<3; ++dim)
+      for(int i=0; i<numrownodes; ++i)
       {
-        // gravitation
-        specific_energy -=  gravity_acc(dim) * (*disn_)[i*3+dim];
+        double specific_energy = 0.0;
+        double kinetic_energy = 0.0;
+        double rot_energy = 0.0;
 
-        // kinetic energy
-        kinetic_energy += pow((*veln_)[i*3+dim], 2.0 );
+        for(int dim=0; dim<3; ++dim)
+        {
+          // gravitation
+          specific_energy -=  gravity_acc(dim) * (*disn_)[i*3+dim];
 
-        // rotation
-        rot_energy += pow((*angVeln_)[i*3+dim], 2.0);
+          // kinetic energy
+          kinetic_energy += pow((*veln_)[i*3+dim], 2.0 );
+
+          // rotation
+          rot_energy += pow((*angVeln_)[i*3+dim], 2.0);
+        }
+
+        intergy_ += (*mass_)[i] * specific_energy;
+        kinergy_ += 0.5 * ((*mass_)[i] * kinetic_energy + (*inertia_)[i] * rot_energy);
       }
+      // total external energy not available
+      kinergy_ = 0.0;
+    }//energy for SPH case
+    else if (collhandler_ == Teuchos::null and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree )
+    {
+      // set internal and kinetic energy to zero
+      double specific_energy = 0.0;
+      kinergy_ = 0.0;
+      intergy_ = 0.0;
+      extergy_ = 0.0;
+      linmomentum_.Clear();
 
-      intergy_ += (*mass_)[i] * specific_energy;
-      kinergy_ += 0.5 * ((*mass_)[i] * kinetic_energy + (*inertia_)[i] * rot_energy);
+      // compute speed of sound (only fluids considered so far!)
+      double c0 = particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
+      double c0_square = c0*c0;
+      for(int i=0; i<numrownodes; ++i)
+      {
+        double kinetic_energy = 0.0;
+
+        for(int dim=0; dim<3; ++dim)
+        {
+          // gravitation
+          specific_energy +=  gravity_acc(dim) * (*disn_)[i*3+dim];
+
+          // kinetic energy
+          kinetic_energy += pow((*veln_)[i*3+dim], 2.0 );
+          linmomentum_(dim) +=(*mass_)[i]*(*veln_)[i*3+dim];
+        }
+
+        extergy_ += (*mass_)[i]*specific_energy;
+        kinergy_ += 0.5 * (*mass_)[i] * kinetic_energy;
+
+        // thermodynamic energy E with p=-dE/dV, T=dE/dS (see Espanol2003, Eq.(5))
+        // Attention: currently, only the first, pressure-dependent contribution of the thermodynamic energy is implemented! Thus, it is only valid for isentrop problems, i.e.dE/dS=0!
+        // Furthermore, it is only considered for the fluid phase so far (since SpeedOfSoundL is used)!
+        // From the considered pressure law p_i=c_0^2(rho_i+PARTICLE_DELTADENSFAC*rho_0) and the relation rho_i=m_i/V_i it is possible to gain the energy via integration:
+        // E_i=c_0^2 m_i [ln(rho_i/m_i)-PARTICLE_DELTADENSFAC*rho_0/rho_i]+const.  --> The integration constant const. can be determined following an arbitrary initial condition.
+        //In the following, we choose E_i(rho_i=rho_0)=0 leading to: E_i=c_0^2 m_i [ln(rho_i/rho_0)+PARTICLE_DELTADENSFAC*{1-rho_0/rho_i}]
+        if((*densityn_)[i]>1.0e-10)
+        {
+          double density_frac = (*densityn_)[i]/restDensity_;
+          intergy_ += c0_square * (*mass_)[i] * (log(density_frac)+PARTICLE_DELTADENSFAC*(1.0-1.0/density_frac));
+        }
+        else
+          dserror("Only positive density values admissible!");
+      }
     }
+    else
+      dserror("Energy output only possible for DEM (with collhandler_ == true) or for meshfree interaction (with collhandler_ == false)");
 
-    double global_energy[2] = {0.0, 0.0};
-    double energies[2] = {intergy_, kinergy_};
-    discret_->Comm().SumAll(&energies[0], &global_energy[0], 2);
+    double global_energy[3] = {0.0, 0.0, 0.0};
+    double energies[3] = {intergy_, kinergy_, extergy_};
+    discret_->Comm().SumAll(&energies[0], &global_energy[0], 3);
 
     intergy_ = global_energy[0];
     kinergy_ = global_energy[1];
-    // total external energy not available
-    extergy_ = 0.0;
+    extergy_ = global_energy[2];
+
+    double global_linmomentum[3] = {0.0, 0.0, 0.0};
+    double linmomentum[3] = {linmomentum_(0), linmomentum_(1), linmomentum_(2)};
+    discret_->Comm().SumAll(&linmomentum[0], &global_linmomentum[0], 3);
+
+    linmomentum_(0) = global_linmomentum[0];
+    linmomentum_(1) = global_linmomentum[1];
+    linmomentum_(2) = global_linmomentum[2];
   }
 
   return;
@@ -930,15 +1011,35 @@ void PARTICLE::TimInt::OutputEnergy()
   // the output
   if (myrank_ == 0)
   {
-    *energyfile_ << " " << std::setw(9) << step_
-                 << std::scientific  << std::setprecision(16)
-                 << " " << (*time_)[0]
-                 << " " << totergy
-                 << " " << kinergy_
-                 << " " << intergy_
-                 << " " << extergy_
-                 << " " << collhandler_->GetMaxPenetration()
-                 << std::endl;
+    //energy for all cases besides SPH
+    if (collhandler_ != Teuchos::null and particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree )
+    {
+      *energyfile_ << " " << std::setw(9) << step_
+                   << std::scientific  << std::setprecision(16)
+                   << " " << (*time_)[0]
+                   << " " << totergy
+                   << " " << kinergy_
+                   << " " << intergy_
+                   << " " << extergy_
+                   << " " << collhandler_->GetMaxPenetration()
+                   << std::endl;
+    }//energy for SPH case
+    else if (collhandler_ == Teuchos::null and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree )
+    {
+      *energyfile_ << step_
+                   << std::scientific  << std::setprecision(16)
+                   << " " << (*time_)[0]
+                   << " " << totergy
+                   << " " << kinergy_
+                   << " " << intergy_
+                   << " " << extergy_
+                   << " " << linmomentum_(0)
+                   << " " << linmomentum_(1)
+                   << " " << linmomentum_(2)
+                   << std::endl;
+    }
+    else
+      dserror("Energy output only possible for DEM (with collhandler_ == true) or for meshfree interaction (with collhandler_ == false)");
   }
   return;
 }
@@ -975,13 +1076,29 @@ void PARTICLE::TimInt::AttachEnergyFile()
 {
   if (energyfile_.is_null())
   {
-    std::string energyname
-      = DRT::Problem::Instance()->OutputControlFile()->FileName()
-      + "_particle.energy";
-    energyfile_ = Teuchos::rcp(new std::ofstream(energyname.c_str()));
-    (*energyfile_) << "# timestep time total_energy"
-                   << " kinetic_energy internal_energy external_energy max_particle_penetration"
-                   << std::endl;
+
+    //energy for all cases besides SPH
+    if (collhandler_ != Teuchos::null)
+    {
+      std::string energyname
+        = DRT::Problem::Instance()->OutputControlFile()->FileName()
+        + "_particle.energy";
+      energyfile_ = Teuchos::rcp(new std::ofstream(energyname.c_str()));
+      (*energyfile_) << "# timestep time total_energy"
+                     << " kinetic_energy internal_energy external_energy max_particle_penetration"
+                     << std::endl;
+    }//energy for SPH case
+    else
+    {
+      std::string energyname
+        = DRT::Problem::Instance()->OutputControlFile()->FileName()
+        + "_particle.energy";
+      energyfile_ = Teuchos::rcp(new std::ofstream(energyname.c_str()));
+      (*energyfile_) << "timestep time total_energy"
+                     << " kinetic_energy internal_energy external_energy x_lin_momentum y_lin_momentum z_lin_momentum"
+                     << std::endl;
+    }
+
   }
   return;
 }

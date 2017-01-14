@@ -42,7 +42,9 @@ void PARTICLE::Utils::ComputeInertia(
 
 
 /*----------------------------------------------------------------------*/
-/* compute temperature from the specEnthalpy  */
+/* compute temperature from the specEnthalpy
+ * TODO: (see reference... equation...)
+ * */
 double PARTICLE::Utils::SpecEnthalpy2Temperature(
     const double& specEnthalpy,
     const MAT::PAR::ExtParticleMat* extParticleMat)
@@ -88,7 +90,7 @@ void PARTICLE::Utils::SpecEnthalpy2Temperature(
 }
 
 /*-----------------------------------------------------------------------------*/
-// Compute pressure vector
+// Compute pressure vector (see Antoci2007-E4)
 void PARTICLE::Utils::Density2Pressure(
   const Teuchos::RCP<const Epetra_Vector> deltaDensity,
   const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
@@ -136,6 +138,7 @@ void PARTICLE::Utils::Density2Pressure(
 
 /*-----------------------------------------------------------------------------*/
 // compute the intersection area of two particles that are in contact. It returns 0 if there is no contact
+// TODO: (see reference... equation...)
 double PARTICLE::Utils::IntersectionAreaPvsP(const double& radius1, const double& radius2, const double& dis)
 {
   //checks

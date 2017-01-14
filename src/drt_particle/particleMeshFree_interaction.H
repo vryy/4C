@@ -9,6 +9,14 @@
 \maintainer Alessandro Cattabiani
 */
 
+/*
+ References:
+ Antoci2007: Numerical simulation of fluid–structure interaction by SPH, doi: 10.1016/j.compstruc.2007.01.002.
+ Monaghan2005: Smoothed particle hydrodynamics, doi:10.1088/0034-4885/68/8/R01.
+ Espanol2003: Smoothed dissipative particle dynamics, DOI: 10.1103/PhysRevE.67.026705.
+ Akinci2013: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
+ */
+
 /*----------------------------------------------------------------------*/
 #ifndef SRC_DRT_PARTICLE_PARTICLEMESHFREE_INTERACTION_H_
 #define SRC_DRT_PARTICLE_PARTICLEMESHFREE_INTERACTION_H_
@@ -90,6 +98,7 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> veln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<const Epetra_Vector> densityn,
+        Teuchos::RCP<const Epetra_Vector> densityapproxn,
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> mass,
         Teuchos::RCP<const Epetra_Vector> temperature,
@@ -102,6 +111,7 @@ namespace PARTICLE
     virtual void EvaluateParticleMeshFreeInteractions(
       const Teuchos::RCP<Epetra_Vector> accn,
       const Teuchos::RCP<Epetra_Vector> densityDotn,
+      const Teuchos::RCP<Epetra_Vector> densityapproxn,
       const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
 
     //@}
@@ -114,6 +124,7 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> veln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<const Epetra_Vector> densityn,
+        Teuchos::RCP<const Epetra_Vector> densityapproxn,
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> mass,
         Teuchos::RCP<const Epetra_Vector> temperature,
@@ -153,6 +164,7 @@ namespace PARTICLE
       const std::list<Interaction_Particles> neighboringParticles,
       const Teuchos::RCP<Epetra_Vector> accn,
       const Teuchos::RCP<Epetra_Vector> densityDotn,
+      Teuchos::RCP<Epetra_Vector> densityapproxn,
       const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
       const Teuchos::RCP<Epetra_Vector> colorFieldGradientn);
 
