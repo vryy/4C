@@ -122,6 +122,7 @@ PARTICLE::TimInt::TimInt
   nodemapexporter_(Teuchos::null),
 
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
+  trg_warmStart_(false),
   collhandler_(Teuchos::null),
   interHandler_(Teuchos::null)
 {
@@ -707,6 +708,8 @@ void PARTICLE::TimInt::ReadRestartState()
     // time derivative of radius of each particle for time dependent radius
     reader.ReadVector(radiusDot_, "radiusDot");
   }
+
+  trg_warmStart_ = true;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1264,4 +1267,126 @@ void PARTICLE::TimInt::CheckStateVector(std::string vecName, const Teuchos::RCP<
   if (trg_showVec)
     std::cout << *vec << std::endl;
   std::cin.get();
+}
+
+/*----------------------------------------------------------------------*/
+/* update step */
+void PARTICLE::TimInt::UpdateStepState()
+{
+  // new displacements at t_{n+1} -> t_n
+  //    D_{n} := D_{n+1}, D_{n-1} := D_{n}
+  dis_->UpdateSteps(*disn_);
+  // new velocities at t_{n+1} -> t_n
+  //    V_{n} := V_{n+1}, V_{n-1} := V_{n}
+  vel_->UpdateSteps(*veln_);
+  // new accelerations at t_{n+1} -> t_n
+  //    A_{n} := A_{n+1}, A_{n-1} := A_{n}
+  acc_->UpdateSteps(*accn_);
+
+  switch (particle_algorithm_->ParticleInteractionType())
+  {
+  case INPAR::PARTICLE::MeshFree :
+  {
+    //    \dot{\rho}_{n} := \dot{\rho}_{n+1}, \dot{\rho}_{n-1} := \dot{\rho}_{n}
+    densityDot_->UpdateSteps(*densityDotn_);
+  }// no break
+  case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
+    //    R_{n} := R_{n+1}, R_{n-1} := R_{n}
+    radius_->UpdateSteps(*radiusn_);
+    //    \rho_{n} := \rho_{n+1}, \rho_{n-1} := \rho_{n}
+    density_->UpdateSteps(*densityn_);
+    //    H_{n} := H_{n+1}, H_{n-1} := H_{n}
+    specEnthalpy_->UpdateSteps(*specEnthalpyn_);
+    //    \dot{H}_{n} := \dot{H}_{n+1}, \dot{H}_{n-1} := \dot{H}_{n}
+    specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
+
+    //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
+    UpdateTemperaturenp();
+    break;
+  }
+  default : // do nothing
+    break;
+  }
+
+  // update the pressure
+  // It is here because it is a slave of the density
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+  {
+    Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
+    deltaDensity->PutScalar(- restDensity_);
+    deltaDensity->Update(1.0,*densityn_,1.0);
+    PARTICLE::Utils::Density2Pressure(deltaDensity, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
+  }
+
+  if(collhandler_ != Teuchos::null)
+  {
+    // new angular-velocities at t_{n+1} -> t_n
+    //    ang_V_{n} := ang_V_{n+1}, ang_V_{n-1} := ang_V_{n}
+    angVel_->UpdateSteps(*angVeln_);
+    // new angular-accelerations at t_{n+1} -> t_n
+    //    ang_A_{n} := ang_A_{n+1}, ang_A_{n-1} := ang_A_{n}
+    angAcc_->UpdateSteps(*angAccn_);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* update of vector for visualization of the particle orientation */
+void PARTICLE::TimInt::RotateOrientVector(double dt)
+{
+  int numrownodes = discret_->NodeRowMap()->NumMyElements();
+  for(int i=0; i<numrownodes; ++i)
+  {
+    double angVel[3];
+    double r[3];
+
+    for(int dim=0; dim<3; ++dim)
+    {
+      angVel[dim] = (*angVeln_)[i*3+dim];
+      r[dim] = (*orient_)[i*3+dim];
+    }
+
+    // visualization only valid for 2D when rotating around y-axis
+
+    // simplified/linearized orient vector - just for visualization
+    // delta_r = \Delta t * (ang_vel x r)
+    (*orient_)[i*3]   += dt * (angVel[1] * r[2] - angVel[2] * r[1]);
+    (*orient_)[i*3+1] += dt * (angVel[2] * r[0] - angVel[0] * r[2]);
+    (*orient_)[i*3+2] += dt * (angVel[0] * r[1] - angVel[1] * r[0]);
+    //--------------------------------------------------------------
+
+    //more exactly------------------------------------------------
+//    double d[3];
+//    double norm_ang_vel=0.0;
+//    //norm ang_vel
+//    for(int dim=0; dim<3; ++dim)
+//    {
+//      norm_ang_vel += ang_vel[dim]*ang_vel[dim];
+//    }
+//    norm_ang_vel = sqrt(norm_ang_vel);
+//
+//    if(norm_ang_vel > 1E-10)
+//    {
+//      double scalar = 0.0;
+//      double invnorm_ang_vel = 1.0 / norm_ang_vel;
+//      for(int dim=0; dim<3; ++dim)
+//      {
+//        d[dim] = invnorm_ang_vel * ang_vel[dim];
+//        scalar += d[dim] * r[dim];
+//      }
+//
+//      for(int dim=0; dim<3; ++dim)
+//      {
+//        (*orient_)[i*3+dim] += (1-cos(norm_ang_vel*dt)) * scalar * d[dim] - (1-cos(norm_ang_vel*dt)) * r[dim]
+//              + sin(norm_ang_vel*dt) * ( d[(dim+1)%3] * r[(dim+2)%3] - d[(dim+2)%3] * r[(dim+1)%3] );
+//      }
+//    }
+    //--------------------------------------------------------------
+
+  }
+
+  return;
 }

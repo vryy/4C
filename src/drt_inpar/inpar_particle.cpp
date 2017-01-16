@@ -32,12 +32,27 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   "ExplicitEuler",
                                   "CentrDiff",
                                   "RK2",
-                                  "RK4"),
+                                  "RK4",
+                                  "HybridMeshFreeDivFree",
+                                  "GenAlpha"),
                                 tuple<int>(
                                   INPAR::PARTICLE::dyna_expleuler,
                                   INPAR::PARTICLE::dyna_centrdiff,
                                   INPAR::PARTICLE::dyna_rk2,
-                                  INPAR::PARTICLE::dyna_rk4
+                                  INPAR::PARTICLE::dyna_rk4,
+                                  INPAR::PARTICLE::dyna_hybridMeshFreeDivFree,
+                                  INPAR::PARTICLE::dyna_genAlpha
+                                ),
+                                &particledyn);
+
+   setStringToIntegralParameter<int>("TIMESTEPTYPE","Auto_CFL",
+                                "type of time step choice",
+                                tuple<std::string>(
+                                  "Manual",
+                                  "Auto_CFL"),
+                                tuple<int>(
+                                  INPAR::PARTICLE::Manual,
+                                  INPAR::PARTICLE::Auto_CFL
                                 ),
                                 &particledyn);
 
@@ -122,6 +137,13 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  ),
                                &particledyn);
 
+   DoubleParameter("ERROR_TOLL",1e-6,"tolerance of the error for implicit schemes",&particledyn);
+   IntParameter("ITER_MAX",10,"maximum iteration per time step for implicit schemes",&particledyn);
+   DoubleParameter("ALPHA_MIN",1e-6,"cap of the alpha parameter for the divergence free scheme for meshfree",&particledyn);
+   DoubleParameter("CORRECT_DIVERGENCE_TOLL",1e-6,"tolerance for the iterative divergence corrector, divFree integration scheme, meshFree interaction",&particledyn);
+   IntParameter("CORRECT_DIVERGENCE_ITER",10,"iterations for the iterative divergence corrector, divFree integration scheme, meshFree interaction",&particledyn);
+   DoubleParameter("CORRECT_DENSITY_TOLL",1e-6,"tolerance for the iterative density corrector, divFree integration scheme, meshFree interaction",&particledyn);
+   IntParameter("CORRECT_DENSITY_ITER",10,"iterations for the iterative density corrector, divFree integration scheme, meshFree interaction",&particledyn);
    DoubleParameter("WALL_FAKE_DENSITY",-1.0,"fake density for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
    DoubleParameter("WALL_FAKE_MASS",-1.0,"fake mass of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
    DoubleParameter("WALL_FAKE_PRESSURE",-1.0,"fake pressure of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);

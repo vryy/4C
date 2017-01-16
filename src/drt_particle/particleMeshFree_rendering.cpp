@@ -25,6 +25,7 @@
 PARTICLE::Rendering::Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm) :
   discret_(DRT::Problem::Instance()->GetDis("rendering")),
   particle_algorithm_(particleAlgorithm),
+  weightFunctionHandler_(Teuchos::null),
   trg_writeMesh_(true)
 {
   // --- finalize the discret set up --- //
@@ -59,17 +60,17 @@ PARTICLE::Rendering::Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorit
   {
   case INPAR::PARTICLE::CubicBspline :
   {
-    weight_ = &PARTICLE::WeightFunction_CubicBspline::Weight;
+    weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline);
     break;
   }
   case INPAR::PARTICLE::SqrtHyperbola :
   {
-    weight_ = &PARTICLE::WeightFunction_SqrtHyperbola::Weight;
+    weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_SqrtHyperbola);
     break;
   }
   case INPAR::PARTICLE::HyperbolaNoRsz :
   {
-    weight_ = &PARTICLE::WeightFunction_HyperbolaNoRsz::Weight;
+    weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_HyperbolaNoRsz);
     break;
   }
   }
@@ -167,7 +168,7 @@ void PARTICLE::Rendering::UpdateStateVectors(
         if (rRelNorm2< radius_i)
         {
           // give me the proper weight
-          const double weight = weight_(rRelNorm2, radius_i);
+          const double weight = weightFunctionHandler_->Weight(rRelNorm2, radius_i);
 
           // specify the variables with the particular weight
           LINALG::Matrix<3,1> velWeight_i(vel), accWeight_i(acc);

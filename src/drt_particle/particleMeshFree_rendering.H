@@ -23,6 +23,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "particle_node.H"
+#include "particleMeshFree_weightFunction.H"
 #include "../drt_inpar/inpar_particle.H"
 
 // forward declarations
@@ -81,7 +82,7 @@ namespace PARTICLE
     Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
 
     //! weight function pointer
-    double (*weight_)(const double &, const double &);
+    Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
 
     bool trg_writeMesh_;
 

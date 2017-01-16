@@ -101,7 +101,7 @@ int PARTICLE::TimIntExplEuler::IntegrateStep()
 //    // angular-velocities \f$ang_V_{n}\f$
 //    ang_veln_->Update(1.0, *(*ang_vel_)(0), 0.0);
 
-    SetStatesForCollision();
+    collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
 
     intergy_ = collhandler_->EvaluateParticleContact(dt, disn_, veln_);
   }

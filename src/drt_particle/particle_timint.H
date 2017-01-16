@@ -147,7 +147,7 @@ namespace PARTICLE
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible.
-    virtual void UpdateStepState() = 0;
+    virtual void UpdateStepState();
 
     //! Update time and step counter
     virtual void UpdateStepTime();
@@ -453,6 +453,9 @@ namespace PARTICLE
     //! initialization of vector for visualization of the particle orientation
     virtual void InitializeOrientVector();
 
+    //! update of vector for visualization of the particle orientation
+    virtual void RotateOrientVector(double dt);
+
     //@}
 
     //! @name Protected Compute Methods
@@ -588,6 +591,9 @@ namespace PARTICLE
     //@{
 
     const bool variableradius_;   //!< bool to control whether radius is constant or variable
+
+    /// trigger for warm starts (if it makes sense)
+    bool trg_warmStart_;
 
     //@}
 

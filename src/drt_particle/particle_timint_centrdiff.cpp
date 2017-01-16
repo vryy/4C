@@ -29,7 +29,7 @@
 #include "../linalg/linalg_utils.H"
 #include "particle_algorithm.H"
 #include "particle_heatSource.H"
-#include "../drt_io/io_control.H"
+
 /*----------------------------------------------------------------------*/
 /* Constructor */
 PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
@@ -198,7 +198,14 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
       f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
       m_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
-      SetStatesForCollision();
+      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+      {
+        collhandler_->Init(disn_, veln_, angVeln_, radiusn_, mass_, densityn_, specEnthalpyn_);
+      }
+      else
+      {
+        collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
+      }
 
       intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_);
     }
@@ -208,10 +215,31 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     {
       // the density update scheme is equal to the acceleration update scheme. It can change at your will
 
-      SetStatesForCollision();
+      interHandler_->Init(disn_,veln_,radiusn_,mass_, densityn_,specEnthalpyn_,pressure_, temperature_, densityapproxn_, stepn_);
 
       // direct update of the accelerations
-      interHandler_->EvaluateParticleMeshFreeInteractions(accn_, densityDotn_, densityapproxn_, specEnthalpyDotn_);
+      // pvp interactions
+      interHandler_->Inter_pvp_densityDot(densityDotn_);
+      interHandler_->Inter_pvp_acc(accn_);
+      interHandler_->Inter_pvp_specEnthalpyDot(specEnthalpyDotn_);
+      // pvw interactions
+      interHandler_->Inter_pvw_densityDot(densityDotn_);
+      interHandler_->Inter_pvw_acc(accn_);
+      // pvhs interactions
+      interHandler_->Inter_pvhs_specEnthalpyDot(specEnthalpyDotn_);
+
+      // do we need the second round and the surface tension? here we decide
+      if (particle_algorithm_->ExtParticleMat()->surfaceVoidTension_ != 0)
+      {
+        Teuchos::RCP<Epetra_Vector> colorFieldGradientn = LINALG::CreateVector(*discret_->DofRowMap(),true);
+        // compute the color field gradient
+        interHandler_->Inter_pvp_colorFieldGradient(colorFieldGradientn);
+        // update the ParticleMeshFreeData
+        interHandler_->SetStateVector(colorFieldGradientn, ColorFieldGradient);
+        // compute the surface tension
+        interHandler_->Inter_pvp_surfaceTensionCFG(accn_);
+      }
+
       // clear vectors, keep memory
       interHandler_->Clear();
     }

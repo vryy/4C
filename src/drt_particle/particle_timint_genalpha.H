@@ -1,26 +1,25 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_expl.H
-\brief Particle time integration with explicit time integration
+\file particle_timint_genalpha.H
 
-\level 3
+\brief Implicit particle time integration scheme
+
+\level 2
 
 <pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Alessandro Cattabiani
+
 </pre>
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef PARTICLE_TIMINT_EXPL_H
-#define PARTICLE_TIMINT_EXPL_H
+#ifndef SRC_DRT_PARTICLE_PARTICLE_TIMINT_GENALPHA_H_
+#define SRC_DRT_PARTICLE_PARTICLE_TIMINT_GENALPHA_H_
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "particle_timint.H"
-
+#include "particle_timint_impl.H"
+#include "../drt_inpar/inpar_particle.H"
 
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
@@ -29,16 +28,12 @@ namespace PARTICLE
 
   /*====================================================================*/
   /*!
-   * \brief Front-end for particle dynamics with explicit time integrators
+   * \brief Implicit time integration scheme (backward Euler?)
    *
-   * <h3> About </h3>
-   * This object bridges the gap between the base time integator PARITCLE::TimInt
-   * and the specific implementation of explicit time integrators.
-   *
-   * \author hammerl
-   * \date 12/13
- */
-  class TimIntExpl : public TimInt
+   * \author Cattabiani
+   */
+
+  class TimIntGenAlpha : public TimIntImpl
   {
 
   public:
@@ -47,7 +42,7 @@ namespace PARTICLE
     //@{
 
     //! Constructor
-    TimIntExpl
+    TimIntGenAlpha
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& particledynparams,  //!< input parameters
@@ -57,17 +52,9 @@ namespace PARTICLE
     );
 
     //! Destructor
-    virtual ~TimIntExpl(){ ; }
+    virtual ~TimIntGenAlpha(){ ; }
 
     //@}
-
-    /// update at the end of the time step
-    virtual void Update()
-    {
-      UpdateStepState();
-      UpdateStepTime();
-      return;
-    }
 
     //! @name Actions
     //@{
@@ -76,13 +63,13 @@ namespace PARTICLE
     virtual void Init();
 
     //! Do time integration of single step
-    virtual int IntegrateStep() = 0;
+    virtual int IntegrateStep();
 
     //@}
 
-  };  // class TimIntExpl
+  };  // class TimIntGenAlpha
 
 }  // namespace PARTICLE
 
-/*----------------------------------------------------------------------*/
-#endif  // #ifndef PARTICLE_TIMINT_EXPL_H
+#endif /* SRC_DRT_PARTICLE_PARTICLE_TIMINT_GENALPHA_H_ */
+

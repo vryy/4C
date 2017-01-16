@@ -1,21 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_expl.H
-\brief Particle time integration with explicit time integration
+\file particle_timint_hybrid.H
+\brief Hybrid particle time integration schemes
 
 \level 3
 
 <pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Alessandro Cattabiani
+
 </pre>
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef PARTICLE_TIMINT_EXPL_H
-#define PARTICLE_TIMINT_EXPL_H
+#ifndef PARTICLE_TIMINT_HYBRID_H
+#define PARTICLE_TIMINT_HYBRID_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -29,16 +27,16 @@ namespace PARTICLE
 
   /*====================================================================*/
   /*!
-   * \brief Front-end for particle dynamics with explicit time integrators
+   * \brief Front-end for particle dynamics with hybrid time integrators
    *
    * <h3> About </h3>
    * This object bridges the gap between the base time integator PARITCLE::TimInt
-   * and the specific implementation of explicit time integrators.
+   * and the specific implementation of hybrid time integrators.
    *
-   * \author hammerl
-   * \date 12/13
+   * \author cattabiani
+   * \date 01/17
  */
-  class TimIntExpl : public TimInt
+  class TimIntHybrid : public TimInt
   {
 
   public:
@@ -47,7 +45,7 @@ namespace PARTICLE
     //@{
 
     //! Constructor
-    TimIntExpl
+    TimIntHybrid
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& particledynparams,  //!< input parameters
@@ -57,7 +55,7 @@ namespace PARTICLE
     );
 
     //! Destructor
-    virtual ~TimIntExpl(){ ; }
+    virtual ~TimIntHybrid(){ ; }
 
     //@}
 
@@ -80,9 +78,9 @@ namespace PARTICLE
 
     //@}
 
-  };  // class TimIntExpl
+  };  // class TimIntHybrid
 
 }  // namespace PARTICLE
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef PARTICLE_TIMINT_EXPL_H
+#endif /* SRC_DRT_PARTICLE_PARTICLE_TIMINT_HYBRID_H_ */

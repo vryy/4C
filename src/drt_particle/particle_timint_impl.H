@@ -1,21 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_expl.H
-\brief Particle time integration with explicit time integration
+\file particle_timint_impl.H
+\brief implicit particle time integration schemes
 
 \level 3
 
 <pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Alessandro Cattabiani
+
 </pre>
 */
 
 /*----------------------------------------------------------------------*/
-#ifndef PARTICLE_TIMINT_EXPL_H
-#define PARTICLE_TIMINT_EXPL_H
+#ifndef PARTICLE_TIMINT_IMPL_H
+#define PARTICLE_TIMINT_IMPL_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -29,16 +27,16 @@ namespace PARTICLE
 
   /*====================================================================*/
   /*!
-   * \brief Front-end for particle dynamics with explicit time integrators
+   * \brief Front-end for particle dynamics with implicit time integrators
    *
    * <h3> About </h3>
    * This object bridges the gap between the base time integator PARITCLE::TimInt
-   * and the specific implementation of explicit time integrators.
+   * and the specific implementation of implicit time integrators.
    *
-   * \author hammerl
-   * \date 12/13
+   * \author cattabiani
+   * \date 01/17
  */
-  class TimIntExpl : public TimInt
+  class TimIntImpl : public TimInt
   {
 
   public:
@@ -47,7 +45,7 @@ namespace PARTICLE
     //@{
 
     //! Constructor
-    TimIntExpl
+    TimIntImpl
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& particledynparams,  //!< input parameters
@@ -57,7 +55,7 @@ namespace PARTICLE
     );
 
     //! Destructor
-    virtual ~TimIntExpl(){ ; }
+    virtual ~TimIntImpl(){ ; }
 
     //@}
 
@@ -80,9 +78,17 @@ namespace PARTICLE
 
     //@}
 
-  };  // class TimIntExpl
+  private :
+
+    /// tolerance for the error in the iterative loop
+    const double errToll_;
+
+    /// max number of iterations of the iterative loop
+    const double iterMax_;
+
+  };  // class TimIntimpl
 
 }  // namespace PARTICLE
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef PARTICLE_TIMINT_EXPL_H
+#endif /* SRC_DRT_PARTICLE_PARTICLE_TIMINT_IMPL_H_ */

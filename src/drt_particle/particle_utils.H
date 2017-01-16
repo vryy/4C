@@ -78,6 +78,10 @@ namespace PARTICLE
 
     //! compute the intersection area of two particles that are in contact. It returns 0 if there is no contact
     static double IntersectionAreaPvsP(const double& radius1, const double& radius2, const double& dis);
+
+    //! compute the Courant-Friedrich-Levy condition - meshfree dynamics - http://dx.doi.org/10.1145/2786784.2786796
+    //! section 3.1 - inline equation (no formula number)
+    static double CFLcondition(const double& radiusMin, const double& velocityMax) { return 0.8 * radiusMin / velocityMax; }
   };
 }
 

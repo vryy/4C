@@ -1,26 +1,24 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_expl.cpp
-\brief Particle time integration with explicit time integration
+\file particle_timint_hybrid.cpp
+\brief Hybrid particle time integration
 
 \level 2
 
 <pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Alessandro Cattabiani
+
 </pre>
 */
 
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "particle_timint_expl.H"
+#include "particle_timint_hybrid.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-PARTICLE::TimIntExpl::TimIntExpl(
+PARTICLE::TimIntHybrid::TimIntHybrid(
     const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& particledynparams,
     const Teuchos::ParameterList& xparams,
@@ -41,7 +39,7 @@ PARTICLE::TimIntExpl::TimIntExpl(
 
 /*----------------------------------------------------------------------*/
 /* mostly init of collision handling  */
-void PARTICLE::TimIntExpl::Init()
+void PARTICLE::TimIntHybrid::Init()
 {
   // call base class init
   TimInt::Init();

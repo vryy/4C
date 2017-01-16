@@ -12,6 +12,11 @@
 #ifndef SRC_DRT_PARTICLE_PARTICLE_HEATSOURCE_H_
 #define SRC_DRT_PARTICLE_PARTICLE_HEATSOURCE_H_
 
+/*----------------------------------------------------------------------*/
+/* headers */
+#include "../linalg/linalg_fixedsizematrix.H"
+
+
 namespace PARTICLE
 {
   class HeatSource

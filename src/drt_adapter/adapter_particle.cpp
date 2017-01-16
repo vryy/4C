@@ -19,6 +19,8 @@
  | headers                                                  ghamm 12/13 |
  *----------------------------------------------------------------------*/
 #include "adapter_particle.H"
+#include "../drt_particle/particle_timint_genalpha.H"
+#include "../drt_particle/particle_timint_divfree.H"
 #include "../drt_particle/particle_timint_centrdiff.H"
 #include "../drt_particle/particle_timint_expleuler.H"
 #include "../drt_particle/particle_timint_rk.H"
@@ -56,6 +58,7 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   Teuchos::RCP<DRT::Discretization> actdis
   )
 {
+
   // this is not exactly a one hundred meter race, but we need timing
   Teuchos::RCP<Teuchos::Time> t
     = Teuchos::TimeMonitor::getNewTimer("ADAPTER::ParticleBaseAlgorithm::SetupParticle");
@@ -68,12 +71,14 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
 
   // get input parameter lists and copy them, because a few parameters are overwritten
   const Teuchos::ParameterList& ioflags = DRT::Problem::Instance()->IOParams();
+
   const Teuchos::RCP<Teuchos::ParameterList> partdyn
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ParticleParams()));
 
   // show default parameters of particle parameter list
   if ( (actdis->Comm() ).MyPID() == 0)
     DRT::INPUT::PrintDefaultParameters(IO::cout, *partdyn);
+
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -88,6 +93,7 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   partdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
   // switch to different time integrators
+
   INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(*partdyn,"DYNAMICTYP");
 
   // create marching time integrator
@@ -110,9 +116,21 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
     tmppart = Teuchos::rcp(new PARTICLE::TimIntRK(ioflags, *partdyn, *xparams, actdis, output));
     break;
   }
+  case INPAR::PARTICLE::dyna_hybridMeshFreeDivFree:
+  {
+    tmppart = Teuchos::rcp(new PARTICLE::TimIntDivFree(ioflags, *partdyn, *xparams, actdis, output));
+    break;
+  }
+  case INPAR::PARTICLE::dyna_genAlpha:
+  {
+    tmppart = Teuchos::rcp(new PARTICLE::TimIntGenAlpha(ioflags, *partdyn, *xparams, actdis, output));
+    break;
+  }
   default :
+  {
     dserror("unknown time integration scheme '%s'", timinttype);
     break;
+  }
   }
 
   // store particle field

@@ -1776,9 +1776,13 @@ set(OBJS_POST_DRT_S8CONVERT
 set(OBJS_DRT_PARTICLE
   src/drt_particle/particle_timint.cpp
   src/drt_particle/particle_timint_expl.cpp
+  src/drt_particle/particle_timint_hybrid.cpp
+  src/drt_particle/particle_timint_impl.cpp
   src/drt_particle/particle_timint_centrdiff.cpp
   src/drt_particle/particle_timint_expleuler.cpp
   src/drt_particle/particle_timint_rk.cpp
+  src/drt_particle/particle_timint_divfree.cpp
+  src/drt_particle/particle_timint_genalpha.cpp
   src/drt_particle/particle_handler.cpp
   src/drt_particle/particle_algorithm.cpp
   src/drt_particle/particle_contact.cpp

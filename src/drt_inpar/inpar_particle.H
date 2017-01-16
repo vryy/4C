@@ -29,7 +29,9 @@ namespace INPAR
       dyna_expleuler,                  ///< forward Euler (explicit)
       dyna_centrdiff,                  ///< central differences (explicit)
       dyna_rk2,                        ///< Runge-Kutta 2 (explicit)
-      dyna_rk4                         ///< Runge-Kutta 4 (explicit)
+      dyna_rk4,                        ///< Runge-Kutta 4 (explicit)
+      dyna_hybridMeshFreeDivFree,      ///< divergence-free corrections (hybrid implicit-explicit)
+      dyna_genAlpha                    ///< general alpha scheme (implicit)
     };
 
     /// Contact type for particles
@@ -85,6 +87,13 @@ namespace INPAR
       InitParticle,
       Mirror,
       Custom
+    };
+
+    /// time step choice
+    enum TimeStepType
+    {
+      Manual,      /// dt is the prescribed time step
+      Auto_CFL     /// Replace the prescribed dt with the  CFL condition if it is more strict. Courant-Friedrich-Levy condition: dt = 0.49 * radius_min / str::abs(vel_max)
     };
 
     /// set the particle parameters

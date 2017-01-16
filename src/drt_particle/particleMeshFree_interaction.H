@@ -25,8 +25,11 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_particle.H"
 #include "particle_node.H"
+#include "particle_interData.H"
+#include "particle_particle.H"
+#include "particleMeshFree_weightFunction.H"
 #include "../drt_lib/drt_element.H"
-
+#include <boost/unordered_map.hpp>
 
 // forward declarations
 namespace DRT
@@ -38,16 +41,12 @@ namespace PARTICLE
 {
   class Algorithm;
   class WeightFunctionBase;
-  struct WallContactPoint;
-  struct ParticleMeshFreeData;
-  struct Interaction_Particles;
-  struct Interaction_Walls;
 
   /// struct to store wallMeshFree data for faster access
   struct WallMeshFreeData {
-    double density;
-    double mass;
-    double pressure;
+    double density_;
+    double mass_;
+    double pressure_;
   };
 
   class HeatSource;
@@ -62,6 +61,21 @@ namespace BINSTRATEGY
 /* belongs to particle namespace */
 namespace PARTICLE
 {
+  enum StateVectorType
+  {
+    Dis,
+    Vel,
+    ColorFieldGradient,
+    Radius,
+    Density,
+    DensityDot,
+    SpecEnthalpy,
+    Mass,
+    Pressure,
+    Temperature,
+    Alpha
+  };
+
   /*====================================================================*/
   /*!
    * \brief Interaction handler for particle-meshFree interactions
@@ -97,95 +111,141 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> disn,
         Teuchos::RCP<const Epetra_Vector> veln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
-        Teuchos::RCP<const Epetra_Vector> densityn,
-        Teuchos::RCP<const Epetra_Vector> densityapproxn,
-        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> mass,
+        Teuchos::RCP<const Epetra_Vector> densityn,
+        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
+        Teuchos::RCP<const Epetra_Vector> pressure,
         Teuchos::RCP<const Epetra_Vector> temperature,
-        Teuchos::RCP<const Epetra_Vector> pressure);
+        Teuchos::RCP<const Epetra_Vector> densityapproxn,
+        const int step);
 
-    /// clear content, keep memory
+    //! set up the ColParticles
+    virtual void InitColParticles(
+        Teuchos::RCP<const Epetra_Vector> disn,
+        Teuchos::RCP<const Epetra_Vector> veln,
+        Teuchos::RCP<const Epetra_Vector> radiusn,
+        Teuchos::RCP<const Epetra_Vector> mass,
+        Teuchos::RCP<const Epetra_Vector> densityn,
+        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
+        Teuchos::RCP<const Epetra_Vector> pressure,
+        Teuchos::RCP<const Epetra_Vector> temperature,
+        Teuchos::RCP<const Epetra_Vector> densityapproxn);
+
+    //! add to the neighbour maps the neighbours of the present time step
+    virtual void AddNewNeighbours(const int step);
+
+    //! update weights and distances in all the neighbours (all maps, all the particles, all the walls)
+    //! to speed-up the process the interactions with "step" are skipped. -1 means that nothing is skipped
+    virtual void UpdateWeights(const int step = -1) { UpdateWeights_p(step); UpdateWeights_w(step); }
+
+    //! update neighbour weights
+
+    //! set state vector in ColParticles - color field gradient
+    virtual void SetStateVector(
+        Teuchos::RCP<const Epetra_Vector> colorFieldGradientn,
+        const PARTICLE::StateVectorType svt);
+
+    //! clear content, keep memory
     virtual void Clear();
 
-    /// compute collisions (inter-particle and particle-wall), returns contact energy
-    virtual void EvaluateParticleMeshFreeInteractions(
-      const Teuchos::RCP<Epetra_Vector> accn,
-      const Teuchos::RCP<Epetra_Vector> densityDotn,
-      const Teuchos::RCP<Epetra_Vector> densityapproxn,
-      const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
+    //! clear content, keep memory and keep interactions up to step-memory
+    virtual void Clear(const int step, const int memory);
+
+    //@}
+
+    //! @name interactions
+    //@{
+
+    /// compute the density part of the particle vs particle interactions
+    virtual void Inter_pvp_densityDot(const Teuchos::RCP<Epetra_Vector> densityDotn);
+
+    /// compute the momentum part of the particle vs particle interactions
+    virtual void Inter_pvp_acc(const Teuchos::RCP<Epetra_Vector> accn, const bool trg_pressure = true);
+
+    /// compute the heat of the particle vs particle interactions
+    virtual void Inter_pvp_specEnthalpyDot(const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
+
+    /// compute the colorFieldGradient of the particle vs particle interactions
+    virtual void Inter_pvp_colorFieldGradient(const Teuchos::RCP<Epetra_Vector> colorFieldGradientn);
+
+    /// compute the accn from the color field gradient of the particle vs particle interactions
+    virtual void Inter_pvp_surfaceTensionCFG(const Teuchos::RCP<Epetra_Vector> accn);
+
+    /// compute the density part of the particle vs wall interactions
+    virtual void Inter_pvw_densityDot(const Teuchos::RCP<Epetra_Vector> densityDotn);
+
+    /// compute the momentum part of the particle vs wall interactions
+    virtual void Inter_pvw_acc(const Teuchos::RCP<Epetra_Vector> accn);
+
+    /// compute the heat of the particle vs heat sources interactions
+    virtual void Inter_pvhs_specEnthalpyDot(const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
+
+    /// compute the divergence-free pressure forces adjusting the stiffness parameters
+    /// Steps 6 and 7 (only the third term) of Algorithm 2 in http://dx.doi.org/10.1145/2786784.2786796
+    virtual void Inter_pvp_divFreePressureAcc(
+        const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
+        const double dt);
+
+    /// compute the constant-density pressure forces adjusting the stiffness parameters
+    /// Steps 6 and 7 (only the third term) of Algorithm 3 in http://dx.doi.org/10.1145/2786784.2786796
+    virtual void Inter_pvp_constDensityPressureAcc(
+        const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
+        const double dt);
+
+    //@}
+
+    //! @name mesh free fields
+    //@{
+
+    /// compute density and update colParticles - mesh free sense
+    virtual void MF_density(const Teuchos::RCP<Epetra_Vector> densityn);
+
+    /// compute alpha factors and update colParticles - mesh free sense
+    // http://dx.doi.org/10.1145/2786784.2786796
+    // Equation 8
+    virtual void MF_alpha();
+
+    //@}
+
+    //! @name print methods
+    //@{
+
+    // print interactions
+    void Print_neighbours_p();
 
     //@}
 
   protected:
 
-    //! set state vectors (col type)
-    virtual void SetStateVectors(
-        Teuchos::RCP<const Epetra_Vector> disn,
-        Teuchos::RCP<const Epetra_Vector> veln,
-        Teuchos::RCP<const Epetra_Vector> radiusn,
-        Teuchos::RCP<const Epetra_Vector> densityn,
-        Teuchos::RCP<const Epetra_Vector> densityapproxn,
-        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-        Teuchos::RCP<const Epetra_Vector> mass,
-        Teuchos::RCP<const Epetra_Vector> temperature,
-        Teuchos::RCP<const Epetra_Vector> pressure);
+    //! @name AddNewNeighbours - these functions are collected in AddNewNeighbours for faster search. This is the most modular
+    //! way to compute neighbours that I can think off (without hindering performances) If you have a better idea I am open to suggestions
+    //@{
 
-    //! set state vectors (col type) - second round
-    virtual void SetStateVectors_SecondRound(
-        Teuchos::RCP<const Epetra_Vector> colorFieldGradientn);
+    //! add to the neighbour maps the neighbours of the present time step - particles
+    virtual void AddNewNeighbours_p(
+        const ParticleMF& particle_i,
+        const std::list<DRT::Node*>& neighboring_particles,
+        const int step);
 
-    /// determine the neighbors
-    virtual void SetNeighbours();
-
-    // determine the neighbors - particles
-    void SetNeighbours_Particles(
-        const ParticleMeshFreeData& particle_i,
-        const std::list<DRT::Node*>& neighboring_particles);
-
-    // determine the neighbors - walls
-    void SetNeighbours_Walls(
-        const ParticleMeshFreeData& particle_i,
+    //! add to the neighbour maps the neighbours of the present time step - walls
+    virtual void AddNewNeighbours_w(
+        const ParticleMF& particle_i,
         const std::set<DRT::Element*>& neighboring_walls,
         const Teuchos::RCP<DRT::Discretization>& walldiscret,
         const Teuchos::RCP<const Epetra_Vector>& walldisn,
-        const Teuchos::RCP<const Epetra_Vector>& wallveln);
+        const Teuchos::RCP<const Epetra_Vector>& wallveln,
+        const int step);
 
-    // determine the neighbors - heat sources
-    void SetNeighbours_HeatSources(
-        const ParticleMeshFreeData& particle_i,
+    //! add to the neighbour maps the neighbours of the present time step - heat sources
+    virtual void AddNewNeighbours_hs(
+        const ParticleMF& particle_i,
         const std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>& neighboring_heatSources);
 
-    // print interactions
-    void PrintNeighbouringParticles();
+    virtual void UpdateWeights_p(const int step = -1);
 
-    /// calculate interaction with neighboring particles
-    virtual void CalcNeighboringParticleMeshFreeInteraction(
-      const ParticleMeshFreeData& particle_i,
-      const std::list<Interaction_Particles> neighboringParticles,
-      const Teuchos::RCP<Epetra_Vector> accn,
-      const Teuchos::RCP<Epetra_Vector> densityDotn,
-      Teuchos::RCP<Epetra_Vector> densityapproxn,
-      const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
-      const Teuchos::RCP<Epetra_Vector> colorFieldGradientn);
+    virtual void UpdateWeights_w(const int step = -1);
 
-    /// calculate interaction with neighboring walls
-    virtual void CalcNeighboringWallMeshFreeInteraction(
-      const ParticleMeshFreeData& particle_i,
-      const std::list<Interaction_Walls>& neighbouringWalls,
-      const Teuchos::RCP<Epetra_Vector> accn,
-      const Teuchos::RCP<Epetra_Vector> densityDotn);
-
-    /// calculate interaction with heat sources
-    virtual void CalcNeighboringHeatSourcesContact(
-      const ParticleMeshFreeData& particle_i,
-      const std::list<Teuchos::RCP<HeatSource> > neighboringHeatSources,
-      const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn);
-
-    /// calculate interaction with neighboring particles - second round
-    virtual void CalcNeighboringParticleMeshFreeInteraction_SecondRound(
-      const ParticleMeshFreeData& particle_i,
-      const std::list<Interaction_Particles> neighbouringParticles,
-      const Teuchos::RCP<Epetra_Vector> accn);
+    //@}
 
     //! @name helper classes
     //@{
@@ -205,19 +265,19 @@ namespace PARTICLE
     int myrank_;
 
     /// temporary storage of particleMeshFree data
-    std::vector<ParticleMeshFreeData> particleMeshFreeData_;
+    std::vector<ParticleMF> colParticles_;
 
     /// neighbours - particles
-    std::vector<std::list<Interaction_Particles> > neighbouringParticles_;
+    std::vector<boost::unordered_map<int, InterDataPvP> > neighbours_p_;
 
     /// neighbours - heat sources
-    std::vector<std::list<Teuchos::RCP<HeatSource> > > neighbouringHeatSources_;
+    std::vector<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighbours_hs_;
 
     /// neighbours - heat sources
-    std::vector<std::list<Interaction_Walls> > neighbouringWalls_;
+    std::vector<boost::unordered_map<int, InterDataPvW> > neighbours_w_;
 
-    /// weight function derivative pointer
-    double (*weightDerivative_)(const double &, const double &);
+    /// weight function
+    Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
 
     /// wall interaction type
     const INPAR::PARTICLE::WallInteractionType wallInteractionType_;
@@ -233,6 +293,9 @@ namespace PARTICLE
     /// rest density
     const double restDensity_;
 
+    /// lower cap of the alpha parameter
+    const double alphaMin_;
+
     /// laplacian velocity, diffusion coefficient
     double diffusionCoeff_;
 
@@ -245,61 +308,12 @@ namespace PARTICLE
     /// cohesion surface tension coefficient with the wall
     double surfaceWallTension_;
 
-    // trigger for the second round
-    bool trg_secondRound_;
+    // security trigger in case the color field gradient was not set properly
+    bool trg_updatedColorFieldGradient_;
 
     //@}
 
   };  // class ParticleCollisionHandler
-
-  //! @name Container structs for faster access
-  //@{
-
-  /// struct to store particleMeshFree data for faster access
-  struct ParticleMeshFreeData {
-    LINALG::Matrix<3,1> dis;
-    LINALG::Matrix<3,1> vel;
-    LINALG::Matrix<3,1> colorFieldGradient; //< Between E2 and E3 in http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
-
-    double radius;
-    double density;
-    double specEnthalpy;
-    double mass;
-    double pressure;
-    double temperature;
-    int gid;
-    std::vector<int> lm;
-    int owner;
-  };
-
-  /// struct to store wall contact point and additional information about corresponding wall ele
-  struct WallInteractionPoint {
-   int elemId;
-   LINALG::Matrix<3,1> point;
-   double penetration;
-   std::map<int,LINALG::Matrix<3,1> > nodalCoordinates;
-   std::vector<int> lm;
-   std::vector<int> lmowner;
-  };
-
-  /// struct to store some basic interaction data pvp
-  struct Interaction_Particles {
-    int lidCol_j;
-    LINALG::Matrix<3,1> rRelVersor_ij;
-    double weightDerivative_ij;
-    double weightDerivative_ji;
-    double rRelNorm2;
-  };
-
-  /// struct to store some basic interaction data pvw
-  struct Interaction_Walls {
-    int elemId;
-    LINALG::Matrix<3,1> rRelVersor;
-    double weightDerivative;
-    double rRelNorm2;
-  };
-
-  //@}
 
 }  // namespace PARTICLE
 /*----------------------------------------------------------------------*/

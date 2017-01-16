@@ -26,7 +26,22 @@
 namespace PARTICLE
 {
 
-class WeightFunction_CubicBspline
+class WeightFunction_Base
+{
+public :
+
+  // destructor
+  virtual ~WeightFunction_Base() { ; };
+
+  // weight function
+  virtual double Weight(const double &disRel, const double &radius) = 0;
+
+  // weight function derivative
+  virtual double WeightDerivative(const double &disRel, const double &radius) = 0;
+
+};
+
+class WeightFunction_CubicBspline : public WeightFunction_Base
 {
 public :
 
@@ -34,33 +49,22 @@ public :
    //@{
 
    //! compute the cubicBspline weight function
-   static double Weight(const double &disRel, const double &radius);
+   virtual double Weight(const double &disRel, const double &radius);
 
    //! compute the weight function derivative of the cubicBspline weight function
-   static double WeightDerivative(const double &disRel, const double &radius);
+   virtual double WeightDerivative(const double &disRel, const double &radius);
 
    //@}
 
 private :
 
-   static double RszDisRel(const double& disRel, const double& radius) {return 2 * disRel / radius; }
+   virtual double RszDisRel(const double& disRel, const double& radius) {return 2 * disRel / radius; }
 
-   //Pre-factor of smoothing kernel depends on space dimension (see Monaghan2005)
-   static double Rsz3D(const double& radius)
-   {
-     if(PARTICLE_DIM==3)
-       return 8.0 * M_1_PI / std::pow(radius,3);
-     else if(PARTICLE_DIM==2)
-       return 40.0 * M_1_PI / (7.0*std::pow(radius,2));
-     else if(PARTICLE_DIM==1)
-       return 4.0 / (3.0*radius);
-     else
-       dserror("Only the problem dimensions 1, 2 and 3 are possible!");
-   }
+   virtual double Rsz3D(const double& radius) {return 8 * M_1_PI / std::pow(radius,3); }
 
 };
 
-class WeightFunction_SqrtHyperbola
+class WeightFunction_SqrtHyperbola : public WeightFunction_Base
 {
 public :
 
@@ -68,21 +72,21 @@ public :
    //@{
 
    //! compute the cubicBspline weight function
-   static double Weight(const double &disRel, const double &radius);
+   virtual double Weight(const double &disRel, const double &radius);
 
    //! compute the weight function derivative of the cubicBspline weight function
-   static double WeightDerivative(const double &disRel, const double &radius);
+   virtual double WeightDerivative(const double &disRel, const double &radius);
 
    //@}
 
 private :
 
-   static double Rsz3D(const double& radius) {return 15.0 / (4.0 * M_PI * std::pow(radius,3)); }
+   virtual double Rsz3D(const double& radius) {return 15.0 / (4.0 * M_PI * std::pow(radius,3)); }
 
 };
 
 
-class WeightFunction_HyperbolaNoRsz
+class WeightFunction_HyperbolaNoRsz : public WeightFunction_Base
 {
 public :
 
@@ -90,10 +94,10 @@ public :
    //@{
 
    //! compute the cubicBspline weight function
-   static double Weight(const double &disRel, const double &radius);
+   virtual double Weight(const double &disRel, const double &radius);
 
    //! compute the weight function derivative of the cubicBspline weight function
-   static double WeightDerivative(const double &disRel, const double &radius);
+   virtual double WeightDerivative(const double &disRel, const double &radius);
 
    //@}
 
