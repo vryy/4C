@@ -45,7 +45,7 @@ double PARTICLE::WeightFunction_CubicBspline::Weight(
   }
 
   // resizing to have an integral = 1
-  weight *= Rsz3D(radius);
+  weight *= RszDim(radius);
 
   return weight;
 }
@@ -77,10 +77,30 @@ double PARTICLE::WeightFunction_CubicBspline::WeightDerivative(const double &dis
   }
 
   // resizing to have an integral = 1
-  weightDerivative *= Rsz3D(radius);
+  weightDerivative *= RszDim(radius);
 
   return weightDerivative;
 }
+
+/*-----------------------------------------------------------------------------*
+ | rsz in case of different dimensions                       cattabiani 08/16  |
+ *-----------------------------------------------------------------------------*/
+
+double PARTICLE::WeightFunction_CubicBspline::RszDim(const double &radius)
+{
+  switch (PARTICLE_DIM)
+  {
+  case 3 :
+    return 8.0 * M_1_PI / std::pow(radius,3);
+  case 2 :
+    return 40.0 * M_1_PI / (7.0*std::pow(radius,2));
+  case 1 :
+    return 4.0 / (3.0*radius);
+  default :
+    dserror("Only the problem dimensions 1, 2 and 3 are possible!");
+  }
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -94,7 +114,7 @@ double PARTICLE::WeightFunction_SqrtHyperbola::Weight(
   double weight = 0;
   if (disRel<radius)
   {
-    weight = (std::pow(radius/disRel,0.5) - 1) * Rsz3D(radius);
+    weight = (std::pow(radius/disRel,0.5) - 1) * RszDim(radius);
   }
 
   return weight;
@@ -109,7 +129,7 @@ double PARTICLE::WeightFunction_SqrtHyperbola::WeightDerivative(const double &di
   double weightDerivative = 0;
   if (disRel<radius)
   {
-    weightDerivative = (- std::pow(radius/disRel,0.5) / (2 * disRel) ) * Rsz3D(radius);
+    weightDerivative = (- std::pow(radius/disRel,0.5) / (2 * disRel) ) * RszDim(radius);
   }
 
   return weightDerivative;

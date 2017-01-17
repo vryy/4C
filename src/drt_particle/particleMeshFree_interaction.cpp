@@ -1022,6 +1022,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
 
       LINALG::Matrix<3,1> momentum_ij;
         // pressure
+      // compute the pressure term
+      //(based on Monaghan2005, Eq(3.18); this expression differs from the variant in Espanol2003, Eq(22) in the general case m_i \neq m_j.
+      //However, based on a similar derivation as in Espanol2003, Eq(18-22) it has been verified that also this variant can guarantee
+      //for energy conservation of the dissipation-free, time-continous problem, if Monaghan2005, Eq(2.18) is applied for density integration [and not Eq(2.17)!])
       if (trg_pressure)
       {
         const double rhoSquare_j = std::pow(particle_j.density_,2);
@@ -1029,6 +1033,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
         momentum_ij.Update(- gradP_Rho2, rRelVersor_ij, 1.0);
       }
         // diffusion
+      // The following two viscous terms are taken from Espanol2003, Eq(30) and re-expressed in terms of mass densities in an equivalent manner.
+      // This is necessary since Espanol2003 only specifies the case m_i=m_j=m.
       const double dC_rho2rRelNorm2 = diffusionCoeff_ / (rho2 * rRelNorm2);
       momentum_ij.Update(dC_rho2rRelNorm2, vRel_ij, 1.0);
       // convection

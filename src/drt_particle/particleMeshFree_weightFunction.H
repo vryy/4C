@@ -60,7 +60,7 @@ private :
 
    virtual double RszDisRel(const double& disRel, const double& radius) {return 2 * disRel / radius; }
 
-   virtual double Rsz3D(const double& radius) {return 8 * M_1_PI / std::pow(radius,3); }
+   virtual double RszDim(const double& radius);
 
 };
 
@@ -81,7 +81,7 @@ public :
 
 private :
 
-   virtual double Rsz3D(const double& radius) {return 15.0 / (4.0 * M_PI * std::pow(radius,3)); }
+   virtual double RszDim(const double& radius) {return 15.0 / (4.0 * M_PI * std::pow(radius,3)); }
 
 };
 
