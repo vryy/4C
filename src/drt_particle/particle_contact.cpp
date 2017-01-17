@@ -527,10 +527,10 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     neighboring_particles.clear();
 
     // list of walls that border on the CurrentBin
-    std::set<DRT::Element*> neighboring_walls;
+    boost::unordered_map<int, DRT::Element*> neighboring_walls;
 
     // list of heat sources that border on the CurrentBin
-    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources = Teuchos::rcp(new std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>);
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboring_heatSources = Teuchos::rcp(new boost::unordered_map<int , Teuchos::RCP<HeatSource> >);
 
     particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, neighboring_walls, neighboring_heatSources);
 
@@ -616,21 +616,22 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringHeatSourcesContact(
   DRT::Node* particle_i,
   const ParticleCollData& data_i,
-  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
+  const Teuchos::RCP<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighboring_heatSources,
   const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn)
 {
   double specEnthalpyDot_i = 0.0;
-  std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>::const_iterator hs;
-  for(hs = neighboring_heatSources->begin(); hs != neighboring_heatSources->end();  ++hs)
+  boost::unordered_map<int , Teuchos::RCP<HeatSource> >::const_iterator ii;
+  for(ii = neighboring_heatSources->begin(); ii != neighboring_heatSources->end();  ++ii)
   {
-    if ((*hs)->minVerZone_[0]<=data_i.dis(0) &&
-        (*hs)->minVerZone_[1]<=data_i.dis(1) &&
-        (*hs)->minVerZone_[2]<=data_i.dis(2) &&
-        (*hs)->maxVerZone_[0]>=data_i.dis(0) &&
-        (*hs)->maxVerZone_[1]>=data_i.dis(1) &&
-        (*hs)->maxVerZone_[2]>=data_i.dis(2))
+    const Teuchos::RCP<HeatSource> hs = ii->second;
+    if (hs->minVerZone_[0]<=data_i.dis(0) &&
+        hs->minVerZone_[1]<=data_i.dis(1) &&
+        hs->minVerZone_[2]<=data_i.dis(2) &&
+        hs->maxVerZone_[0]>=data_i.dis(0) &&
+        hs->maxVerZone_[1]>=data_i.dis(1) &&
+        hs->maxVerZone_[2]>=data_i.dis(2))
     {
-      specEnthalpyDot_i += ((*hs)->QDot_)/data_i.density;
+      specEnthalpyDot_i += (hs->QDot_)/data_i.density;
     }
   }
 
@@ -822,7 +823,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
 void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
   DRT::Node* particle_i,
   const ParticleCollData& data_i,
-  const std::set<DRT::Element*>& neighboring_walls,
+  const boost::unordered_map<int, DRT::Element*>& neighboring_walls,
   const double dt,
   const Teuchos::RCP<DRT::Discretization>& walldiscret,
   const Teuchos::RCP<const Epetra_Vector>& walldisn,
@@ -848,9 +849,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
   std::set<int> unusedIds;
 
   // check whether there is contact between particle i and neighboring walls
-  for(std::set<DRT::Element*>::const_iterator w=neighboring_walls.begin(); w!=neighboring_walls.end();  ++w)
+  for(boost::unordered_map<int, DRT::Element*>::const_iterator w=neighboring_walls.begin(); w!=neighboring_walls.end();  ++w)
   {
-    DRT::Element* neighboringwallele = (*w);
+    DRT::Element* neighboringwallele = w->second;
     const int numnodes = neighboringwallele->NumNode();
     std::vector<int> lm_wall;
     lm_wall.reserve(numnodes * 3);
@@ -1146,9 +1147,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
   if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
   {
     //delete those entries in history_wall_ which are no longer in contact with particle_i in current time step
-    for(std::set<DRT::Element*>::const_iterator w=neighboring_walls.begin(); w != neighboring_walls.end(); ++w)
+    for(boost::unordered_map<int, DRT::Element*>::const_iterator w=neighboring_walls.begin(); w != neighboring_walls.end(); ++w)
     {
-      const int gid_wall = (*w)->Id();
+      const int gid_wall = w->first;
       if( unusedIds.find(gid_wall) != unusedIds.end() and history_wall.find(gid_wall) != history_wall.end() )
         history_wall.erase(gid_wall);
     }
@@ -1715,7 +1716,7 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
 
     // gather all particles and walls in the vicinity of currparticle
     std::list<DRT::Node*> neighboring_particles;
-    std::set<DRT::Element*> neighboring_walls;
+    boost::unordered_map<int, DRT::Element*> neighboring_walls;
     particle_algorithm_->GetNeighbouringItems(currparticle, neighboring_particles, neighboring_walls);
 
     // loop over all neighbouring particles and check if the sum of their radii is larger than their distance
@@ -1742,20 +1743,21 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
     }
 
     // test for particle-wall penetration
-    for (std::set<DRT::Element*>::iterator iter=neighboring_walls.begin(); iter!=neighboring_walls.end(); ++iter)
+    for (boost::unordered_map<int, DRT::Element*>::iterator iter=neighboring_walls.begin(); iter!=neighboring_walls.end(); ++iter)
     {
       Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();
       Teuchos::RCP<const Epetra_Vector> walldisnp = walldiscret->GetState("walldisnp");
 
-      DRT::Node** nodes = (*iter)->Nodes();
-      int numnodes = (*iter)->NumNode();
+      DRT::Element* currElem = iter->second;
+      DRT::Node** nodes = currElem->Nodes();
+      int numnodes = currElem->NumNode();
 
       std::vector<int> lm;
       lm.reserve(numnodes*3);
 
       std::vector<int> lmowner;
       std::vector<int> lmstride;
-      (*iter)->LocationVector(*walldiscret, lm, lmowner, lmstride);
+      currElem->LocationVector(*walldiscret, lm, lmowner, lmstride);
 
       std::map<int, LINALG::Matrix<3,1> > wallpositions;
       // nodal position of wall at the end of the time step
@@ -1775,14 +1777,14 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
       }
 
       LINALG::Matrix<3,1> minDistCoords;
-      GEO::nearest3DObjectOnElement(*iter, wallpositions, currposition, minDistCoords);
+      GEO::nearest3DObjectOnElement(currElem, wallpositions, currposition, minDistCoords);
       static LINALG::Matrix<3,1> distance;
       distance.Update(1.0, currposition, -1.0, minDistCoords);
 
       if (distance.Norm2() < (currradius - GEO::TOL14))
       {
         std::cout << "particle " << currparticle->Id() << std::endl;
-        std::cout << "wall element " << (*iter)->Id() << std::endl;
+        std::cout << "wall element " << currElem->Id() << std::endl;
         std::cout << "distance " << distance.Norm2() << std::endl;
         std::cout << "currentradius " << currradius << std::endl;
         std::cout << "particle is penetrating the wall" << std::endl;
@@ -2205,7 +2207,7 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
 
     // remove current content but keep memory
     neighboring_particles.clear();
-    std::set<DRT::Element*> neighbouring_walls;
+    boost::unordered_map<int, DRT::Element*> neighbouring_walls;
     //std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
 
     // gather all neighboring particles and wall elements
@@ -2238,9 +2240,9 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
       }
 
       // loop over all neighbouring wall elements and check if they collide with currparticle
-      for (std::set<DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
+      for (boost::unordered_map<int, DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
       {
-        Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(currnode, *iter, dt);
+        Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(currnode, iter->second, dt);
 
         // insert event into event queue if collision is valid
         if (newevent != Teuchos::null)
@@ -2296,7 +2298,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerMD::UpdatdingEventqueue");
 
   std::list<DRT::Node*> neighbouring_particles;
-  std::set<DRT::Element*> neighbouring_walls;
+  boost::unordered_map<int, DRT::Element*> neighbouring_walls;
   //std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> neighboring_heatSources;
 
   //
@@ -2328,9 +2330,9 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   }
 
   // particle-wall collision
-  for(std::set<DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
+  for(boost::unordered_map<int, DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
   {
-    Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(lastevent->particle_1, *iter, dt);
+    Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(lastevent->particle_1, iter->second, dt);
 
     if (newevent != Teuchos::null)
       eventqueue.insert(newevent);
@@ -2361,9 +2363,9 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     }
 
     // particle-wall collision
-    for(std::set<DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
+    for(boost::unordered_map<int, DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
     {
-      Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(lastevent->particle_2, *iter, dt);
+      Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(lastevent->particle_2, iter->second, dt);
 
       if (newevent != Teuchos::null)
       {

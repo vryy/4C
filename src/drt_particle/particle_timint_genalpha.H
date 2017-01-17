@@ -65,6 +65,9 @@ namespace PARTICLE
     //! Do time integration of single step
     virtual int IntegrateStep();
 
+    //! overload to determine the initial accelerations
+    virtual void DetermineMassDampConsistAccel();
+
     //@}
 
   };  // class TimIntGenAlpha

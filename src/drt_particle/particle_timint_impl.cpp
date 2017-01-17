@@ -33,7 +33,7 @@ PARTICLE::TimIntImpl::TimIntImpl(
     output
   ),
   errToll_(particledynparams.get<double>("ERROR_TOLL")),
-  iterMax_(particledynparams.get<double>("ITER_MAX"))
+  iterMax_(particledynparams.get<int>("ITER_MAX"))
 {
   return;
 }

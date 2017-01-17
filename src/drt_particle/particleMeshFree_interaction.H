@@ -224,13 +224,13 @@ namespace PARTICLE
     //! add to the neighbour maps the neighbours of the present time step - particles
     virtual void AddNewNeighbours_p(
         const ParticleMF& particle_i,
-        const std::list<DRT::Node*>& neighboring_particles,
+        const std::list<DRT::Node*>& neighboursLinf_p,
         const int step);
 
     //! add to the neighbour maps the neighbours of the present time step - walls
     virtual void AddNewNeighbours_w(
         const ParticleMF& particle_i,
-        const std::set<DRT::Element*>& neighboring_walls,
+        const boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
         const Teuchos::RCP<DRT::Discretization>& walldiscret,
         const Teuchos::RCP<const Epetra_Vector>& walldisn,
         const Teuchos::RCP<const Epetra_Vector>& wallveln,
@@ -239,7 +239,7 @@ namespace PARTICLE
     //! add to the neighbour maps the neighbours of the present time step - heat sources
     virtual void AddNewNeighbours_hs(
         const ParticleMF& particle_i,
-        const std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>& neighboring_heatSources);
+        const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > >& neighboring_heatSources);
 
     virtual void UpdateWeights_p(const int step = -1);
 
@@ -271,7 +271,7 @@ namespace PARTICLE
     std::vector<boost::unordered_map<int, InterDataPvP> > neighbours_p_;
 
     /// neighbours - heat sources
-    std::vector<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighbours_hs_;
+    std::vector<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighbours_hs_;
 
     /// neighbours - heat sources
     std::vector<boost::unordered_map<int, InterDataPvW> > neighbours_w_;

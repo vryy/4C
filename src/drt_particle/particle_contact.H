@@ -20,6 +20,7 @@
 #include "particle_node.H"
 #include "../drt_lib/drt_element.H"
 #include <Epetra_FEVector.h>
+#include <boost/unordered_map.hpp>
 
 
 // forward declarations
@@ -255,7 +256,7 @@ namespace PARTICLE
   virtual void CalcNeighboringWallsContact(
     DRT::Node* particle_i,
     const ParticleCollData& data_i,
-    const std::set<DRT::Element*>& neighboring_walls,
+    const boost::unordered_map<int, DRT::Element*>& neighboring_walls,
     const double dt,
     const Teuchos::RCP<DRT::Discretization>& walldiscret,
     const Teuchos::RCP<const Epetra_Vector>& walldisn,
@@ -269,7 +270,7 @@ namespace PARTICLE
   void CalcNeighboringHeatSourcesContact(
     DRT::Node* particle_i,
     const ParticleCollData& data_i,
-    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
+    const Teuchos::RCP<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighboring_heatSources,
     const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn);
 
   /// calculate normal contact force for single contact pair

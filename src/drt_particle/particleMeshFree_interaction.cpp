@@ -467,16 +467,17 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
     // extract the pointer to the particles
     DRT::Node** currentBinParticles = currentBin->Nodes();
 
-    // list of walls that border on the CurrentBin
-    std::set<DRT::Element*> neighboring_walls;
+    // list of particles in Bin
+    std::list<DRT::Node*> neighboursLinf_p;
 
-    std::list<DRT::Node*> neighboring_particles;
+    // list of walls that border on the CurrentBin
+    boost::unordered_map<int, DRT::Element*> neighboursLinf_w;
 
     // list of heat sources that border on the CurrentBin
-    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources = Teuchos::rcp(new std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>);
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::rcp(new boost::unordered_map<int , Teuchos::RCP<HeatSource> >);
 
     // first neighbours_ round
-    particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, neighboring_walls, neighboring_heatSources);
+    particle_algorithm_->GetNeighbouringItems(binId, neighboursLinf_p, neighboursLinf_w, neighboursLinf_hs);
 
     // loop over all particles in CurrentBin
     for(int i=0; i<currentBin->NumNode(); ++i)
@@ -485,11 +486,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
       const int lidNodeCol_i = currentBinParticles[i]->LID();
       const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
 
-      AddNewNeighbours_p(particle_i, neighboring_particles, step);
+      AddNewNeighbours_p(particle_i, neighboursLinf_p, step);
 
-      AddNewNeighbours_w(particle_i, neighboring_walls, walldiscret, walldisn, wallveln, step);
+      AddNewNeighbours_w(particle_i, neighboursLinf_w, walldiscret, walldisn, wallveln, step);
 
-      AddNewNeighbours_hs(particle_i, *neighboring_heatSources);
+      AddNewNeighbours_hs(particle_i, neighboursLinf_hs);
     }
   }
 }
@@ -500,14 +501,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
     const ParticleMF& particle_i,
-    const std::list<DRT::Node*>& neighboring_particles,
+    const std::list<DRT::Node*>& neighboursLinf_p,
     const int step)
 {
   // self-neighbours not allowed
   // insert the interaction only if meaningful
 
   // loop over the neighbours_ particles
-  for(std::list<DRT::Node*>::const_iterator jj=neighboring_particles.begin(); jj!=neighboring_particles.end(); ++jj)
+  for(std::list<DRT::Node*>::const_iterator jj=neighboursLinf_p.begin(); jj!=neighboursLinf_p.end(); ++jj)
   {
     const int lidNodeCol_j = (*jj)->LID();
     const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
@@ -563,7 +564,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
     const ParticleMF& particle_i,
-    const std::set<DRT::Element*>& neighboring_walls,
+    const boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
     const Teuchos::RCP<DRT::Discretization>& walldiscret,
     const Teuchos::RCP<const Epetra_Vector>& walldisn,
     const Teuchos::RCP<const Epetra_Vector>& wallveln,
@@ -577,9 +578,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
   std::set<int> unusedIds;
 
   // check whether there is contact between particle i and neighboring walls
-  for(std::set<DRT::Element*>::const_iterator w=neighboring_walls.begin(); w!=neighboring_walls.end();  ++w)
+  for(boost::unordered_map<int, DRT::Element*>::const_iterator w=neighboursLinf_w.begin(); w!=neighboursLinf_w.end();  ++w)
   {
-    DRT::Element* neighboringwallele = (*w);
+    DRT::Element* neighboringwallele = w->second;
     const int numnodes = neighboringwallele->NumNode();
     std::vector<int> lm_wall;
     lm_wall.reserve(numnodes * 3);
@@ -765,20 +766,21 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_hs(
     const ParticleMF& particle_i,
-    const std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>& neighboring_heatSources)
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > >& neighboursLinf_hs)
 {
-  std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>::const_iterator hs;
-  for(hs = neighboring_heatSources.begin(); hs != neighboring_heatSources.end();  ++hs)
+  boost::unordered_map<int , Teuchos::RCP<HeatSource> >::const_iterator ii;
+  for(ii = neighboursLinf_hs->begin(); ii != neighboursLinf_hs->end();  ++ii)
   {
-    if ((*hs)->minVerZone_[0]<=particle_i.dis_(0) &&
-        (*hs)->minVerZone_[1]<=particle_i.dis_(1) &&
-        (*hs)->minVerZone_[2]<=particle_i.dis_(2) &&
-        (*hs)->maxVerZone_[0]>=particle_i.dis_(0) &&
-        (*hs)->maxVerZone_[1]>=particle_i.dis_(1) &&
-        (*hs)->maxVerZone_[2]>=particle_i.dis_(2))
+    const Teuchos::RCP<HeatSource> hs = ii->second;
+    if (hs->minVerZone_[0]<=particle_i.dis_(0) &&
+        hs->minVerZone_[1]<=particle_i.dis_(1) &&
+        hs->minVerZone_[2]<=particle_i.dis_(2) &&
+        hs->maxVerZone_[0]>=particle_i.dis_(0) &&
+        hs->maxVerZone_[1]>=particle_i.dis_(1) &&
+        hs->maxVerZone_[2]>=particle_i.dis_(2))
     {
       const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid_);
-      neighbours_hs_[lidNodeRow_i].insert(*hs);
+      (neighbours_hs_[lidNodeRow_i])[hs->id_] = hs;
     }
   }
 }
@@ -1520,9 +1522,9 @@ for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidN
 
   double specEnthalpyDot_i = 0.0;
   // loop over the interaction particle list
-  for (std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less>::const_iterator jj = neighbours_hs_[lidNodeRow_i].begin(); jj != neighbours_hs_[lidNodeRow_i].end(); ++jj)
+  for (boost::unordered_map<int, Teuchos::RCP<HeatSource> >::const_iterator jj = neighbours_hs_[lidNodeRow_i].begin(); jj != neighbours_hs_[lidNodeRow_i].end(); ++jj)
   {
-    const Teuchos::RCP<HeatSource> hs = *jj;
+    const Teuchos::RCP<HeatSource> hs = jj->second;
     specEnthalpyDot_i += (hs->QDot_)/particle_i.density_;
   }
   LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDot_i, particle_i.gid_, particle_i.owner_);
@@ -1574,10 +1576,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_density(const Teuchos::RCP
       }
     }
   }
-
-  // update the local ColParticles of the processor
-  SetStateVector(densityn, Density);
-
 }
 
 

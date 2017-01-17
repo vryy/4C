@@ -34,6 +34,7 @@ PARTICLE::TimIntGenAlpha::TimIntGenAlpha(
     Teuchos::RCP<IO::DiscretizationWriter> output
   ) : PARTICLE::TimIntImpl(ioparams, particledynparams, xparams, actdis, output)
 {
+
   return;
 }
 
@@ -51,9 +52,10 @@ void PARTICLE::TimIntGenAlpha::Init()
   // call base class init
   PARTICLE::TimIntImpl::Init();
 
-  // set up the proper interaction handler
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
   interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams, restDensity_));
+
+
 
 }
 
@@ -65,3 +67,14 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
 
   return 0;
 }
+
+/*----------------------------------------------------------------------*/
+// overload to determine the initial accelerations
+void PARTICLE::TimIntGenAlpha::DetermineMassDampConsistAccel()
+{
+  interHandler_->Init(disn_, veln_, radiusn_, mass_, densityn_,specEnthalpyn_,pressure_, temperature_, densityapproxn_,  stepn_);
+  interHandler_->Inter_pvp_acc(accn_);
+
+  return;
+}
+

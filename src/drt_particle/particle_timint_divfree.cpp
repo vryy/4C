@@ -173,6 +173,7 @@ void PARTICLE::TimIntDivFree::CorrectDensityError(const double dt)
   {
     // compute the densityDot (that should converge towards zero)
     interHandler_->MF_density(densityn_);
+    interHandler_->SetStateVector(densityn_, Density);
 
     Teuchos::RCP<Epetra_Vector> densityDiff = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
     densityDiff->PutScalar(- restDensity_);

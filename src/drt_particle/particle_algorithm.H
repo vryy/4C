@@ -29,6 +29,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_CrsGraph.h>
 #include <vector>
+#include <boost/unordered_map.hpp>
 
 //TODO: Replace these defines by input parameters
 #define PARTICLE_DIM 3                        //space dimension
@@ -131,16 +132,16 @@ namespace PARTICLE
     /// get bins in range and call FindNeighbors
     virtual void GetNeighbouringItems(
                     DRT::Node* particle,
-                    std::list<DRT::Node*>& neighboring_particles,
-                    std::set<DRT::Element*>& neighboring_walls,
-                    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources = Teuchos::null);
+                    std::list<DRT::Node*>& neighboursLinf_p,
+                    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
+                    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null);
 
     /// get bins in range and call FindNeighbors (bin version)
     virtual void GetNeighbouringItems(
                     const int binId,
-                    std::list<DRT::Node*>& neighboring_particles,
-                    std::set<DRT::Element*>& neighboring_walls,
-                    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources = Teuchos::null);
+                    std::list<DRT::Node*>& neighboursLinf_p,
+                    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
+                    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null);
 
     /// link to timInt
     virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() { return particles_; }
@@ -218,9 +219,9 @@ namespace PARTICLE
 
     /// get particles and wall elements in given bins
     void GetBinContent(
-      std::list<DRT::Node*>& particles,
-      std::set<DRT::Element*>& walls,
-      const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources,
+      std::list<DRT::Node*>& bin_p,
+      boost::unordered_map<int, DRT::Element*>& bin_w,
+      const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > bin_hs,
       std::vector<int>& binIds);
 
     /// dismember particle using the dismembering radius (it shall be smaller than the oldParticleRadius)
@@ -241,6 +242,9 @@ namespace PARTICLE
 
     /// compute thermodynamic expansion - new densities and radii
     virtual void ThermalExpansion();
+
+    /// set up walls
+    virtual void SetUpWallDiscret();
 
     //! @name particle related stuff
     //@{

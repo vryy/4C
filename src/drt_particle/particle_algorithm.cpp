@@ -266,9 +266,13 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
     // determine consistent initial acceleration for the particles
     if (particleInteractionType_ == INPAR::PARTICLE::MeshFree)
+    {
       CalculateAndApplyAccelerationsToParticles();
+    }
     else
+    {
       CalculateAndApplyForcesToParticles();
+    }
 
     particles_->DetermineMassDampConsistAccel();
 
@@ -389,37 +393,7 @@ void PARTICLE::Algorithm::Integrate()
     CalculateAndApplyForcesToParticles();
   }
 
-  if(particlewalldis_ != Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_Vector> walldisn = Teuchos::null;
-    Teuchos::RCP<Epetra_Vector> walldisnp = Teuchos::null;
-    Teuchos::RCP<Epetra_Vector> wallvelnp = Teuchos::null;
-
-    // solve for structural (wall) problem
-    if(moving_walls_)
-    {
-      structure_->Solve();
-
-      // extract displacement and velocity from full structural field to obtain wall states
-      walldisn = wallextractor_->ExtractCondVector(structure_->Dispn());
-      walldisnp = wallextractor_->ExtractCondVector(structure_->Dispnp());
-      wallvelnp = wallextractor_->ExtractCondVector(structure_->Velnp());
-    }
-    else
-    {
-      walldisn = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-      walldisnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-      wallvelnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-    }
-
-    particlewalldis_->SetState("walldisn", walldisn);
-    particlewalldis_->SetState("walldisnp", walldisnp);
-    particlewalldis_->SetState("wallvelnp", wallvelnp);
-
-    // assign wall elements dynamically to bins
-    if(moving_walls_)
-      AssignWallElesToBins();
-  }
+  SetUpWallDiscret();
 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::Integrate");
 
@@ -1292,16 +1266,16 @@ void PARTICLE::Algorithm::UpdateConnectivity()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetNeighbouringItems(
     DRT::Node* particle,
-    std::list<DRT::Node*>& neighboring_particles,
-    std::set<DRT::Element*>& neighboring_walls,
-    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources)
+    std::list<DRT::Node*>& neighboursLinf_p,
+    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs)
 {
   if (particle->NumElement() != 1)
     dserror("More than one element for this particle");
 
   DRT::Element** CurrentBin = particle->Elements();
 
-  GetNeighbouringItems(CurrentBin[0]->Id(),neighboring_particles,neighboring_walls, neighboring_heatSources);
+  GetNeighbouringItems(CurrentBin[0]->Id(),neighboursLinf_p,neighboursLinf_w, neighboursLinf_hs);
 }
 
 
@@ -1310,16 +1284,16 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetNeighbouringItems(
     const int binId,
-    std::list<DRT::Node*>& neighboring_particles,
-    std::set<DRT::Element*>& neighboring_walls,
-    const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > neighboring_heatSources)
+    std::list<DRT::Node*>& neighboursLinf_p,
+    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs)
 {
   std::vector<int> binIds;
   binIds.reserve(27);
 
   BinStrategy()->GetNeighborAndOwnBinIds(binId,binIds);
 
-  GetBinContent(neighboring_particles, neighboring_walls, neighboring_heatSources, binIds);
+  GetBinContent(neighboursLinf_p, neighboursLinf_w, neighboursLinf_hs, binIds);
 }
 
 
@@ -1327,9 +1301,9 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
  | get particles and wall elements in given bins           ghamm 09/13  |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetBinContent(
-  std::list<DRT::Node*> &particles,
-  std::set<DRT::Element*> &walls,
-  const Teuchos::RCP<std::set<Teuchos::RCP<HeatSource>, BINSTRATEGY::Less> > heatSources,
+    std::list<DRT::Node*>& bin_p,
+    boost::unordered_map<int, DRT::Element*>& bin_w,
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > bin_hs,
   std::vector<int> &binIds)
 {
   // loop over all bins
@@ -1349,20 +1323,21 @@ void PARTICLE::Algorithm::GetBinContent(
 
     // gather particles
     DRT::Node** nodes = neighboringbin->Nodes();
-    particles.insert(particles.end(), nodes, nodes+neighboringbin->NumNode());
+    bin_p.insert(bin_p.end(), nodes, nodes+neighboringbin->NumNode());
 
     // gather wall elements
     DRT::Element** walleles = neighboringbin->AssociatedEles(bin_surfcontent_);
     const int numwalls = neighboringbin->NumAssociatedEle(bin_surfcontent_);
     for(int iwall=0;iwall<numwalls; ++iwall)
-      walls.insert(walleles[iwall]);
-
+    {
+      bin_w[walleles[iwall]->Id()] = walleles[iwall];
+    }
     // gather heat sources
     // it is a set so that there are no repetitions of the heat source
-    if (heatSources != Teuchos::null)
+    if (bin_hs != Teuchos::null)
     {
       for (std::list<Teuchos::RCP<HeatSource> >::iterator iHS = bins2heatSources_[*bin].begin(); iHS != bins2heatSources_[*bin].end(); ++iHS)
-        heatSources->insert(*iHS);
+        (*bin_hs)[(*iHS)->Id()] = (*iHS);
     }
   }
 }
@@ -1747,4 +1722,43 @@ void PARTICLE::Algorithm::ThermalExpansion()
       (*densityn)[lidNode] = (*mass)[lidNode]/volume;
     }
   }
+}
+
+
+/*------------------------------------------------------------------------*
+ | set up wall discretizations                               catta 06/16  |
+ *------------------------------------------------------------------------*/
+void PARTICLE::Algorithm::SetUpWallDiscret()
+{
+if(particlewalldis_ != Teuchos::null)
+{
+  Teuchos::RCP<Epetra_Vector> walldisn = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> walldisnp = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> wallvelnp = Teuchos::null;
+
+  // solve for structural (wall) problem
+  if(moving_walls_)
+  {
+    structure_->Solve();
+
+    // extract displacement and velocity from full structural field to obtain wall states
+    walldisn = wallextractor_->ExtractCondVector(structure_->Dispn());
+    walldisnp = wallextractor_->ExtractCondVector(structure_->Dispnp());
+    wallvelnp = wallextractor_->ExtractCondVector(structure_->Velnp());
+  }
+  else
+  {
+    walldisn = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+    walldisnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+    wallvelnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+  }
+
+  particlewalldis_->SetState("walldisn", walldisn);
+  particlewalldis_->SetState("walldisnp", walldisnp);
+  particlewalldis_->SetState("wallvelnp", wallvelnp);
+
+  // assign wall elements dynamically to bins
+  if(moving_walls_)
+    AssignWallElesToBins();
+}
 }
