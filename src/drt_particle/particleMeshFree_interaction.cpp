@@ -753,7 +753,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
         rRelVersor,
         weightDerivative,
         rRelNorm2,
-        wallcontact.point_,
         step);
     }
   }
@@ -783,6 +782,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_hs(
       (neighbours_hs_[lidNodeRow_i])[hs->id_] = hs;
     }
   }
+}
+
+/*---------------------------------------------------------------------------------*
+ | update weights and distances in all the neighbours                 katta 01/17  |
+ *---------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights(
+    const Teuchos::RCP<DRT::Discretization>& walldiscret,
+    const Teuchos::RCP<const Epetra_Vector>& walldisn,
+    const int step)
+{
+  UpdateWeights_p(step);
+  UpdateWeights_w(walldiscret, walldisn, step);
 }
 
 
@@ -855,7 +866,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int ste
 /*---------------------------------------------------------------------------------*
  | update weights and distances in all the neighbours - particles     katta 01/17  |
  *---------------------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(const int step)
+void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(
+    const Teuchos::RCP<DRT::Discretization>& walldiscret,
+    const Teuchos::RCP<const Epetra_Vector>& walldisn,
+    const int step)
 {
   // loop over the particles (no superpositions)
   for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_w_.size(); ++lidNodeRow_i)
@@ -869,15 +883,44 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(const int ste
     for (boost::unordered_map<int, InterDataPvW>::const_iterator jj = neighbours_w_[lidNodeRow_i].begin(); jj != neighbours_w_[lidNodeRow_i].end(); ++jj)
     {
       // shall I skip?
-      const int& lidNodeCol_j = jj->first;
-      InterDataPvW& interData_ij =(neighbours_w_[lidNodeRow_i])[lidNodeCol_j];
+      const int& wallId_j = jj->first;
+      InterDataPvW& interData_ij =(neighbours_w_[lidNodeRow_i])[wallId_j];
+
       if (step != interData_ij.step_)
       {
         // --- extract and compute general data --- //
 
-        // create the data that we have to insert
+
+        DRT::Element* elem_j = discret_->gElement(wallId_j);
+        const int numnodes = elem_j->NumNode();
+
+        // find point on wall element with smallest distance to particle_i
+        std::vector<int> lm_wall;
+        lm_wall.reserve(numnodes * 3);
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
+        elem_j->LocationVector(*walldiscret,lm_wall,lmowner,lmstride);
+          // nodal displacements
+        std::vector<double> nodal_disp(numnodes * 3);
+        DRT::UTILS::ExtractMyValues(*walldisn,nodal_disp,lm_wall);
+          // get current position of nodes: x = X + u
+        std::map<int,LINALG::Matrix<3,1> > nodeCoord;
+        DRT::Node** wallnodes = elem_j->Nodes();
+        for(int counter=0; counter<numnodes; ++counter)
+        {
+         static LINALG::Matrix<3,1> currpos;
+         const double* X = wallnodes[counter]->X();
+         currpos(0) = X[0] + nodal_disp[counter*3+0];
+         currpos(1) = X[1] + nodal_disp[counter*3+1];
+         currpos(2) = X[2] + nodal_disp[counter*3+2];
+         nodeCoord[wallnodes[counter]->Id()] = currpos;
+        }
+
+        LINALG::Matrix<3,1> nearestPoint;
+        GEO::nearest3DObjectOnElement(elem_j,nodeCoord,particle_i.dis_,nearestPoint);
+
         LINALG::Matrix<3,1> rRel;
-        rRel.Update(1.0, particle_i.dis_, -1.0, interData_ij.contactPoint_); // inward vector
+        rRel.Update(1.0, particle_i.dis_, -1.0, nearestPoint); // inward vector
         const double rRelNorm2 = rRel.Norm2();
         LINALG::Matrix<3,1> rRelVersor(rRel);
         rRelVersor.Scale(1/rRelNorm2);
@@ -888,7 +931,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(const int ste
             rRelVersor,
             weightDerivative,
             rRelNorm2,
-            interData_ij.contactPoint_,
             interData_ij.step_);
       }
     }

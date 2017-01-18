@@ -76,13 +76,11 @@ namespace PARTICLE
     const LINALG::Matrix<3,1> rRelVersor,
     const double weightDerivative,
     const double rRelNorm2,
-    const LINALG::Matrix<3,1> contactPoint,
     const int step
     ) :
       rRelVersor_(rRelVersor),
       weightDerivative_(weightDerivative),
       rRelNorm2_(rRelNorm2),
-      contactPoint_(contactPoint),
       step_(step) {}
 
     InterDataPvW() :
@@ -96,8 +94,6 @@ namespace PARTICLE
     LINALG::Matrix<3,1> rRelVersor_;         ///< versor toward the particle
     double weightDerivative_;                ///< weightDerivative toward the particle
     double rRelNorm2_;                       ///< Norm2
-    LINALG::Matrix<3,1> contactPoint_;       ///< contact point on the wall. It is computed only once per iteration. So, in case
-                                             ///< of implicit methods it can be slightly approximated
     int step_;                               ///< time step of the interaction
 
   }; // InterDataPvW

@@ -136,7 +136,10 @@ namespace PARTICLE
 
     //! update weights and distances in all the neighbours (all maps, all the particles, all the walls)
     //! to speed-up the process the interactions with "step" are skipped. -1 means that nothing is skipped
-    virtual void UpdateWeights(const int step = -1) { UpdateWeights_p(step); UpdateWeights_w(step); }
+    virtual void UpdateWeights(
+        const Teuchos::RCP<DRT::Discretization>& walldiscret,
+        const Teuchos::RCP<const Epetra_Vector>& walldisn,
+        const int step = -1);
 
     //! update neighbour weights
 
@@ -243,7 +246,10 @@ namespace PARTICLE
 
     virtual void UpdateWeights_p(const int step = -1);
 
-    virtual void UpdateWeights_w(const int step = -1);
+    virtual void UpdateWeights_w(
+        const Teuchos::RCP<DRT::Discretization>& walldiscret,
+        const Teuchos::RCP<const Epetra_Vector>& walldisn,
+        const int step = -1);
 
     //@}
 
