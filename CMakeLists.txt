@@ -2390,6 +2390,10 @@ src/drt_tutorial/tutorial_ele/tutorial_ele_calc.cpp
 src/drt_tutorial/tutorial_ele/tutorial_ele.cpp
 )
 
+set(OBJS_DRT_FIBER_LIB
+src/drt_fiber/drt_fiber_node.cpp
+)
+
 ###------------------------------------------------------------------ Element flags
 
 #   all possible elements
@@ -2639,6 +2643,7 @@ add_library(drt_lib_cut ${OBJS_DRT_CUT})
 add_library(drt_lib_statinv_ana ${OBJS_STATINV_ANALYSIS_LIB})
 add_library(drt_lib_immersed ${OBJS_DRT_IMMERSED_LIB})
 add_library(drt_lib_xfem_manag ${OBJS_DRT_XFEM_MANAG_LIB})
+add_library(drt_lib_fiber ${OBJS_DRT_FIBER_LIB})
 
 
 set(SUPPORT_LIBRARIES
@@ -2660,6 +2665,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_meshfree
   drt_lib_statinv_ana
   drt_lib_immersed
+  drt_lib_fiber
   )
 
 # separate library as it does not play well with testing

@@ -22,6 +22,7 @@
 #include "../drt_meshfree_discret/drt_meshfree_node.H"
 #include "../drt_immersed_problem/immersed_node.H"
 #include "../drt_particle/particle_node.H"
+#include "../drt_fiber/drt_fiber_node.H"
 #include "../drt_io/io_pstream.H"
 
 #include <Epetra_Time.h>
@@ -369,6 +370,54 @@ void NodeReader::Read()
             Teuchos::RCP<DRT::Node> particle = Teuchos::rcp(new PARTICLE::ParticleNode(nodeid,coords,myrank));
             diss->AddNode(particle);
 
+            ++bcount;
+            if (block != nblock-1) // last block takes all the rest
+              if (bcount==bsize)   // block is full
+              {
+                ++filecount;
+                break;
+              }
+          }
+          // this is a special node with additional fiber information
+          else if (tmp=="FNODE")
+          {
+            // read fiber node
+            double coords[3];
+            double fiber[3];
+
+            int nodeid;
+            //read in the node coordinates and fiber direction
+            file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
+            //store current position of file reader
+            int length = file.tellg();
+            file >> tmp2;
+            nodeid--;
+            maxnodeid = std::max(maxnodeid, nodeid)+1;
+            std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(nodeid);
+
+            if (tmp2!="FIBER1") //no fiber information
+            {
+              //go back with file reader in order to make the expression in tmp2 available to tmp in the next iteration step
+              file.seekg(length);
+              for (unsigned i=0; i<diss.size(); ++i)
+              {
+                fiber[0] = fiber[1] = fiber[2] = 0.;
+                // create node and add to discretization
+                Teuchos::RCP<DRT::FIBER::FiberNode> node = Teuchos::rcp(new DRT::FIBER::FiberNode(nodeid,coords,fiber,myrank));
+                diss[i]->AddNode(node);
+               }
+            }
+            else //fiber information
+            {
+              //read in the node fiber information
+              file >> fiber[0] >> fiber[1] >> fiber[2];
+              for (unsigned i=0; i<diss.size(); ++i)
+              {
+                // create node and add to discretization
+                Teuchos::RCP<DRT::FIBER::FiberNode> node = Teuchos::rcp(new DRT::FIBER::FiberNode(nodeid,coords,fiber,myrank));
+                diss[i]->AddNode(node);
+              }
+            }
             ++bcount;
             if (block != nblock-1) // last block takes all the rest
               if (bcount==bsize)   // block is full
