@@ -142,6 +142,7 @@ enum GaussRule2D
     intrule_tri_1point,              ///< degree of precision: 1  (open)
     intrule_tri_3point,              ///< degree of precision: 2  (open)   (Hughes, The Finite Element Method)
     intrule_tri_3point_gauss_radau,  ///< degree of precision: 2  (closed) (Hughes, The Finite Element Method)
+    intrule_tri_4point,              ///< degree of precision: 3  (open)   (Hughes, The Finite Element Method)
     intrule_tri_6point,              ///< degree of precision: 4  (open)   (Hughes, The Finite Element Method)
     intrule_tri_7point,              ///< degree of precision: 5  (open)   (Gilbert Strang, George Fix, An Analysis of the Finite Element Method, Cambridge, 1973,ISBN: 096140888X,LC: TA335.S77.)
     intrule_tri_12point,             ///< degree of precision: 6  (open)   (Hughes, The Finite Element Method)

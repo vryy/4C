@@ -3592,6 +3592,24 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     qxg[2][1] = 2.0/3.0;
     break;
   }
+  case intrule_tri_4point:
+  {
+    nquad = 4;
+    qwgt[0]  = -0.28125;
+    qwgt[1]  = 0.2604166666666;
+    qwgt[2]  = 0.2604166666666;
+    qwgt[3]  = 0.2604166666666;
+
+    qxg[0][0] = 1.0/3.0;
+    qxg[0][1] = 1.0/3.0;
+    qxg[1][0] = 0.2;
+    qxg[1][1] = 0.2;
+    qxg[2][0] = 0.2;
+    qxg[2][1] = 0.6;
+    qxg[3][0] = 0.6;
+    qxg[3][1] = 0.2;
+    break;
+  }
   case intrule_tri_6point:
   {
     nquad = 6;
