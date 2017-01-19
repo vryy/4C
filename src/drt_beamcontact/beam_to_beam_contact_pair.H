@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------------*/
 /*!
-\file beam_to_beam_contact.H
+\file beam_to_beam_contact_pair.H
 
 \brief One beam contact pair (two beam elements) consisting of several contact segments
 
@@ -10,11 +10,10 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BEAMTOBEAMCONTACT_H
-#define BEAMTOBEAMCONTACT_H
+#ifndef BEAMTOBEAMCONTACTPAIR_H
+#define BEAMTOBEAMCONTACTPAIR_H
 
-#include "beam_to_beam_interaction.H"
-
+// Todo get rid of header inclusions
 #include "beam3contact_utils.H"
 #include "beam3contact_tangentsmoothing.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -31,6 +30,7 @@
 #include "../drt_lib/standardtypes_cpp.H"
 
 #include <Epetra_SerialDenseVector.h>
+#include "beam_contact_pair.H"
 
 //forward declaration ...
 namespace LINALG {
@@ -46,10 +46,10 @@ namespace BEAMINTERACTION
 {
 
 /*!
- \brief contact element for contact between two 3D beam elements
+ \brief class for contact between two 3D beam elements
  */
 template<unsigned int numnodes, unsigned int numnodalvalues>
-class BeamToBeamContact: public BeamToBeamInteraction
+class BeamToBeamContactPair: public BeamContactPair
 {
 public:
 
@@ -61,18 +61,18 @@ public:
   /*!
   \brief Standard Constructor
   */
-  BeamToBeamContact();
+  BeamToBeamContactPair();
 
   /*!
   \brief Destructor
   */
-  virtual ~BeamToBeamContact() {};
+  virtual ~BeamToBeamContactPair() {};
 
   //! Setup
   virtual void Setup();
   //@}
 
-  //! @name Public evaluation methods
+  //! @name Derived methods from base class
   /*!
   \brief Evaluate this contact element pair, return value indicates whether pair is active,
          i.e. non-zero values for force and stiffmat are returned
@@ -96,7 +96,7 @@ public:
    *
    *  \author grill
    *  \date 05/16 */
-  void Print(std::ostream& out) const;
+  virtual void Print(std::ostream& out) const;
 
 
   /** \brief print this beam contact element pair to screen
@@ -1083,7 +1083,7 @@ private:
 //  void FDCheck( LINALG::SparseMatrix& stiffmatrix,
 //                Epetra_Vector& fint,
 //                const double& pp,
-//                std::map<std::pair<int,int>, Teuchos::RCP<BeamToBeamInteraction> >& contactpairmap,
+//                std::map<std::pair<int,int>, Teuchos::RCP<BeamContactPair> >& contactpairmap,
 //                Teuchos::ParameterList& timeintparams,
 //                bool fdcheck);
 

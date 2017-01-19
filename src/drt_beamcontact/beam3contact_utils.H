@@ -24,6 +24,7 @@
 
 typedef Sacado::Fad::DFad<double> FAD;
 
+// Todo change to BEAMINTERACTION namespace
 namespace BEAMCONTACT
 {
   /*!
@@ -261,6 +262,6 @@ namespace BEAMCONTACT
     return segment_id;
   }
 
-} // namespace BEAMCONTACT
+}
 
-#endif  // #ifndef BEAM3CONTACT_UTILS_H
+#endif

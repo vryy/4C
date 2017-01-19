@@ -28,7 +28,7 @@ namespace INPAR
   {
     submodel_crosslinking,            ///< evaluate the structural model
     submodel_beamcontact,              ///< evaluate the contact model
-    submodel_potential,            ///< evaluate the meshtying model
+    submodel_potential,            ///< evaluate the model for potential-based interactions
     submodel_vague                 ///< undefined model type
   };
 

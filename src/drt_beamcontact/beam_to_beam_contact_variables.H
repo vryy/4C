@@ -14,8 +14,6 @@
 #define BEAMTOBEAMCONTACTVARIABLES_H
 
 
-#include "beam_to_beam_interaction.H"
-
 #include "beam3contact_utils.H"
 #include "beam3contact_tangentsmoothing.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -27,6 +25,7 @@
 
 
 #include "../drt_lib/standardtypes_cpp.H"
+#include "beam_contact_pair.H"
 
 namespace BEAMINTERACTION
 {

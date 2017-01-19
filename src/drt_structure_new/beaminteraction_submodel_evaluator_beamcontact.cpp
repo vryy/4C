@@ -28,8 +28,8 @@
 
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_beam3/beam3_base.H"
+#include "../drt_beamcontact/beam_contact_pair.H"
 #include "../drt_beamcontact/beam_contact_params.H"
-#include "../drt_beamcontact/beam_to_beam_interaction.H"
 
 
 
@@ -51,7 +51,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 {
   CheckInit();
 
-  // init and setup beamt to beam contact data container
+  // init and setup beam to beam contact data container
   beam_contact_params_ptr_ =Teuchos::rcp(new BEAMINTERACTION::BeamContactParams() );
   beam_contact_params_ptr_->Init();
   beam_contact_params_ptr_->Setup();
@@ -60,7 +60,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   // ensure that contact is evaluated correctly at beginning of first time step (initial overlap)
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
-  CreateBeamToBeamContactElementPairs();
+  CreateBeamContactElementPairs();
 
   // set flag
   issetup_ = true;
@@ -72,10 +72,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
 {
   CheckInitSetup();
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator iter;
   for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
     std::vector<const DRT::Element*> element_ptr(2);
 
@@ -137,10 +137,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
   bool pair_is_active = false;
 
 
-  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamToBeamInteraction > >::const_iterator iter;
+  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamContactPair > >::const_iterator iter;
   for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
     pair_is_active = elepairptr->Evaluate(
         &eleforce_centerlineDOFs[0],
@@ -202,10 +202,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
   bool pair_is_active = false;
 
 
-  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamToBeamInteraction > >::const_iterator iter;
+  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamContactPair > >::const_iterator iter;
   for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
     pair_is_active = elepairptr->Evaluate(
         NULL,
@@ -268,10 +268,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
   bool pair_is_active = false;
 
 
-  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamToBeamInteraction > >::const_iterator iter;
+  std::vector< Teuchos::RCP< BEAMINTERACTION::BeamContactPair > >::const_iterator iter;
   for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
   {
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> elepairptr = *iter;
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
     elegids[0] = elepairptr->Element1()->Id();
     elegids[1] = elepairptr->Element2()->Id();
@@ -345,7 +345,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement()
 
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
-  CreateBeamToBeamContactElementPairs();
+  CreateBeamContactElementPairs();
 
 }
 
@@ -449,14 +449,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
     bool toerase = false;
     // 1) ensure each contact only evaluated once (keep in mind that we are
     //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
-    if( not ( currele->Id() < (*eiter)->Id() ) )
+    if ( not ( currele->Id() < (*eiter)->Id() ) )
+    {
       toerase = true;
-
+    }
     // 2) ensure that two elements sharing the same node do not get into contact
-    for ( int i = 0; i < 2; i++ )
-      for ( int j = 0; j < 2 ; j++ )
-        if( (*eiter)->NodeIds()[i] == currele->NodeIds()[j] )
-          toerase = true;
+    else
+    {
+      for ( int i = 0; i < 2; i++ )
+        for ( int j = 0; j < 2 ; j++ )
+          if( (*eiter)->NodeIds()[i] == currele->NodeIds()[j] )
+            toerase = true;
+    }
 
     if( toerase )
       neighbors.erase(eiter++);
@@ -468,7 +472,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
-    CreateBeamToBeamContactElementPairs()
+    CreateBeamContactElementPairs()
 {
   // Todo maybe keep existing pairs and reuse them ?
   BTB_contact_elepairs_.clear();
@@ -492,8 +496,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     {
       const DRT::Element* secondeleptr = *secondeleiter;
 
-      Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> newbeaminteractionpair =
-          BEAMINTERACTION::BeamToBeamInteraction::Create(numnodes_centerline,numnodalvalues);
+      Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
+          BEAMINTERACTION::BeamContactPair::Create(numnodes_centerline,numnodalvalues);
 
       newbeaminteractionpair->Init(
           beam_contact_params_ptr_,
@@ -513,14 +517,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 
 }
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
-    PrintAllBeamToBeamContactElementPairs( std::ostream& out ) const
+    PrintAllBeamContactElementPairs( std::ostream& out ) const
 {
-  out << "\n\nCurrent BeamToBeamContactElementPairs: ";
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
+  out << "\n\nCurrent BeamContactElementPairs: ";
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator iter;
   for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
     (*iter)->Print(out);
 }
@@ -528,12 +531,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
-    PrintActiveBeamToBeamContactSet( std::ostream& out ) const
+    PrintActiveBeamContactSet( std::ostream& out ) const
 {
   out << "\n    Active BeamToBeam Contact Set (PID " << GState().GetMyRank() << "):-----------------------------------------\n";
   out << "    ID1            ID2              T xi       eta      angle    gap         force\n";
 
-  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamToBeamInteraction> >::const_iterator iter;
+  std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator iter;
   for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
     (*iter)->PrintSummaryOneLinePerActiveSegmentPair(out);
 

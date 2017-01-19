@@ -1,11 +1,11 @@
 //
-// \maintainer Maximilian Grill
+// Maintainer: Maximilian Grill
 //
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-two beams snap into contact due to elastostatic attraction
+two beams snap into contact due to electrostatic attraction
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
@@ -19,14 +19,8 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
 FILESTEPS                       1000
+VERBOSITY                       standard
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
@@ -37,7 +31,7 @@ NLNSOL                          fullnewton
 TIMESTEP                        1.0e-4
 NUMSTEP                         40
 MAXTIME                         4.0e-3
-DAMPING                         Material
+DAMPING                         Material   // Todo
 PREDICT                         ConstDis
 TOLRES                          1.0e-8
 TOLDISP                         1.0e-12
@@ -50,40 +44,46 @@ LOADLIN                         Yes
 Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
-Linear Solver Details           = No
-Test Details                    = No
-Debug                           = No
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.9
 ----------------------------------------------------------------BEAM CONTACT
+MODELEVALUATOR                  Standard
 BEAMS_STRATEGY                  Penalty
 BEAMS_BTBPENALTYPARAM           1e+03
 BEAMS_BTBLINEPENALTYPARAM       4e+03
-BEAMS_NEWGAP                    No
 BEAMS_SEGCON                    Yes
-BEAMS_DEBUG                     No
 BEAMS_PERPSHIFTANGLE1           15
 BEAMS_PERPSHIFTANGLE2           20
 BEAMS_PARSHIFTANGLE1            15
 BEAMS_PARSHIFTANGLE2            20
 BEAMS_SEGANGLE                  1.0
 BEAMS_NUMINTEGRATIONINTERVAL    20
-BEAMS_SMOOTHING                 None
 BEAMS_PENALTYLAW                LinPosQuadPen
 BEAMS_PENREGPARAM_G0            0.002
 BEAMS_PENREGPARAM_F0            0.0
 BEAMS_PENREGPARAM_C0            0.0
-BEAMS_MAXDELTADISSCALEFAC       10000
-BEAMS_OCTREE                    octree_spherical
+
+// only needed for old beam_contact_manager
+BEAMS_DEBUG                     No
+BEAMS_MAXDELTADISSCALEFAC       -1   //10000
+BEAMS_OCTREE                    none //octree_spherical
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    0.01
 --------------------------------------------------------------BEAM POTENTIAL
 POT_LAW_PREFACTOR               0.3 0.1
 POT_LAW_EXPONENT                1.0 1.0
 BEAMPOTENTIAL_TYPE              Surface
+
+// only needed for old beam_contact_manager
 BEAMPOT_OCTREE                  none
 CUTOFFRADIUS                    -1
+--------------------------------------------------------------------MESHFREE
+TYPE                            Particle
+DEFINEBINSPER                   cutoff
+CUTOFF_RADIUS                   6
+DEFINEXAABBPER                  input
+BOUNDINGBOX                     -0.5 -0.5 -0.5 5.5 5.5 5.5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym

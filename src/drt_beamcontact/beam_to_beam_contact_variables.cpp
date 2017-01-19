@@ -12,8 +12,6 @@
 
 #include "beam_to_beam_contact_variables.H"
 
-#include "beam_to_beam_contact.H"
-
 #include "beam3contact_defines.H"
 #include "beam3contact_utils.H"
 
@@ -32,6 +30,7 @@
 #include "../drt_beam3/beam3eb.H"
 
 #include "Teuchos_TimeMonitor.hpp"
+#include "beam_to_beam_contact_pair.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|

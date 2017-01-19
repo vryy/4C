@@ -154,6 +154,14 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
   if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
       DRT::Problem::Instance()->BeamContactParams(),"BEAMS_STRATEGY") != INPAR::BEAMCONTACT::bstr_none)
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
+
+  // ---------------------------------------------------------------------------
+  // check for beam potential-based interactions
+  // ---------------------------------------------------------------------------
+  std::vector<DRT::Condition*> beampotconditions(0);
+  Discret().GetCondition("BeamPotentialLineCharge",beampotconditions);
+  if (beampotconditions.size() > 0)
+    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_potential);
 }
 
 /*----------------------------------------------------------------------------*
@@ -462,7 +470,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepState(
   // add the old time factor scaled contributions to the residual
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
 
-  fstructold_ptr->Update( -timefac_n, *force_beaminteraction_, 1.0 );
+  fstructold_ptr->Update(timefac_n, *force_beaminteraction_, 1.0 );
 }
 
 /*----------------------------------------------------------------------------*

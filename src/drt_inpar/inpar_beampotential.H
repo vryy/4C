@@ -34,7 +34,8 @@ namespace INPAR
     enum BeamPotentialType
     {
       beampot_surf,         ///< surface potential
-      beampot_vol           ///< volume potential
+      beampot_vol,          ///< volume potential
+      beampot_vague
     };
 
     /// set the beam potential parameters

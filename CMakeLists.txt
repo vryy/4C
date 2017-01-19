@@ -880,9 +880,12 @@ set(OBJS_FILTER_COMMON
 )
 set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam_contact_params.cpp
-  src/drt_beamcontact/beam_to_beam_interaction.cpp
-  src/drt_beamcontact/beam_to_beam_contact.cpp
+  src/drt_beamcontact/beam_contact_pair.cpp
+  src/drt_beamcontact/beam_to_beam_contact_pair.cpp
   src/drt_beamcontact/beam_to_beam_contact_variables.cpp
+  src/drt_beamcontact/beam_potential_params.cpp
+  src/drt_beamcontact/beam_potential_pair.cpp
+  src/drt_beamcontact/beam_to_beam_potential_pair.cpp
   src/drt_beamcontact/beam3contact_manager.cpp
   src/drt_beamcontact/beam3contact_octtree.cpp
   src/drt_beamcontact/beam3contactnew.cpp
@@ -898,6 +901,7 @@ set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam3tospherepotential.cpp
   src/drt_beamcontact/beam_to_beam_linkage.cpp
   src/drt_beamcontact/beam3r_lin2_linkage.cpp
+  src/drt_beamcontact/beaminteraction_submodel_evaluator_potential.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp

@@ -15,10 +15,10 @@
 #include "beaminteraction_submodel_evaluator_factory.H"
 #include "../drt_inpar/inpar_beaminteraction.H"
 
-// supported model evaluators
+// supported submodel evaluators
 #include "beaminteraction_submodel_evaluator_crosslinking.H"
 #include "beaminteraction_submodel_evaluator_beamcontact.H"
-
+#include "../drt_beamcontact/beaminteraction_submodel_evaluator_potential.H"
 
 // problem types
 #include "../drt_lib/drt_globalproblem.H"
@@ -51,6 +51,9 @@ Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> BEAMINTERACTION::SUBMODE
         break;
       case INPAR::BEAMINTERACTION::submodel_crosslinking:
         (*model_map)[*mt_iter] = Teuchos::rcp(new BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking());
+        break;
+      case INPAR::BEAMINTERACTION::submodel_potential:
+        (*model_map)[*mt_iter] = Teuchos::rcp(new BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential());
         break;
       default:
         dserror("Not yet implemented!");

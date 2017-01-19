@@ -324,6 +324,8 @@ step_(0)
           std::cout << "Potential Type:      Volume" << std::endl;
           break;
         }
+        default:
+          dserror("Potential type not supported!");
       }
 
       std::cout << "Potential Law:       Phi(r) = ";

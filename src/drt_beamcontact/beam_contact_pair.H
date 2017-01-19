@@ -1,16 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file beam_to_beam_interaction.H
+\file beam_contact_pair.H
 
-\brief one interacting pair of beam elements
+\brief one generic (beam-to-?) contact element pair
 
 \level 3
 
 \maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
-#ifndef BEAMTOBEAMINTERACTION_H
-#define BEAMTOBEAMINTERACTION_H
+#ifndef BEAMCONTACTPAIR_H
+#define BEAMCONTACTPAIR_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -33,7 +33,7 @@ class BeamContactParams;
 /*!
  \brief
  */
-class BeamToBeamInteraction
+class BeamContactPair
 {
 public:
 
@@ -43,12 +43,12 @@ public:
 
   //! @name Constructors and destructors and related methods
 
-  BeamToBeamInteraction();
+  BeamContactPair();
 
   /*!
   \brief Destructor
   */
-  virtual ~BeamToBeamInteraction() {}
+  virtual ~BeamContactPair() {}
 
   //! Initialization
   void Init(
@@ -76,9 +76,9 @@ public:
       LINALG::SerialDenseMatrix* stiffmat22)=0;
 
   //! return appropriate internal implementation class (acts as a simple factory)
-  static Teuchos::RCP<BeamToBeamInteraction> Create(
-      const unsigned int numnodes,
-      const unsigned int numnodalvalues);
+  static Teuchos::RCP<BeamContactPair> Create(
+      unsigned int numnodes,
+      unsigned int numnodalvalues);
 
   /*
   \brief Update state of translational nodal DoFs (absolute positions and tangents) of both elements
@@ -149,7 +149,7 @@ public:
 //  virtual std::vector<std::pair<int,int> > GetSegmentIds()=0;
 
   /*!
-  \brief Get flag ndicating whether contact is active (true) or inactive (false)
+  \brief Get flag indicating whether contact is active (true) or inactive (false)
   */
   virtual bool GetContactFlag()=0;
 
@@ -230,7 +230,7 @@ protected:
 
 private:
 
-  //! beam interaction parameter data container
+  //! beam contact parameter data container
   Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_;
 
   //! first element of interacting pair

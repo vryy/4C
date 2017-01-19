@@ -149,6 +149,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::EvaluateForceStiff()
 bool STR::MODELEVALUATOR::BeamInteractionOld::AssembleForce(Epetra_Vector& f,
     const double & timefac_np) const
 {
+  // Todo take care of the minus sign in front of timefac_np
   STR::AssembleVector(1.0,f,-timefac_np,*f_beaminteract_np_ptr_);
   return true;
 }
@@ -212,6 +213,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::UpdateStepState(
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr =
       GState().GetMutableFstructureOld();
 
+  // Todo take care of the minus sign in front of timefac_np
   fstructold_ptr->Update(-timefac_n,*f_beaminteract_np_ptr_,1.0);
 }
 

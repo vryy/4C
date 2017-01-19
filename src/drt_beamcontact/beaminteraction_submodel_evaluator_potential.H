@@ -1,49 +1,50 @@
-/*-----------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beaminteraction_submodel_evaluator_beamcontact.H
+\file beaminteraction_submodel_evaluator_potential.H
 
-\brief class for submodel beam contact
+\brief submodel for potential-based beam interactions
 
-\maintainer Jonas Eichinger, Maximilian Grill
+\maintainer Maximilian Grill
 
 \level 3
-
 */
-/*-----------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_H_
-#define BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_H_
+#ifndef BEAMINTERACTION_SUBMODEL_EVALUATOR_POTENTIAL_H_
+#define BEAMINTERACTION_SUBMODEL_EVALUATOR_POTENTIAL_H_
 
 
-#include "beaminteraction_submodel_evaluator_generic.H"
+#include "../drt_structure_new/beaminteraction_submodel_evaluator_generic.H"
+
 #include "../drt_inpar/inpar_binstrategy.H"
 
 //forward declaration ...
 namespace DRT {
   class Element;
+  class Condition;
 }
 namespace BEAMINTERACTION {
-class BeamContactParams;
-class BeamContactPair;
+class BeamPotentialParams;
+class BeamPotentialPair;
 
 namespace SUBMODELEVALUATOR {
 
-  class BeamContact : public Generic
+  class BeamPotential : public Generic
   {
   public:
     //! constructor
-    BeamContact();
+    BeamPotential();
 
     //! destructor
-    virtual ~BeamContact() {};
+    virtual ~BeamPotential() {};
 
     //! setup class variables
     virtual void Setup();
 
     //! Returns the type of the current submodel evaluator
     INPAR::BEAMINTERACTION::SubModelType Type() const
-    { return INPAR::BEAMINTERACTION::submodel_beamcontact; }
+    { return INPAR::BEAMINTERACTION::submodel_potential; }
 
     //! @name Derived public BEAMINTERACTION::SUBMODELEVALUATOR::Generic methods
     //! @{
@@ -76,43 +77,72 @@ namespace SUBMODELEVALUATOR {
     //! @}
 
   protected:
-    //!@name routines that are not derived and handle beam to beam contact
+    //!@name routines that are not derived and handle beam potential-based interactions
     //! @{
     /// print
-    void PrintAllBeamContactElementPairs(std::ostream& out) const;
+    void PrintAllBeamPotentialElementPairs(std::ostream& out) const;
 
     /// print
-    void PrintActiveBeamContactSet(std::ostream& out) const;
+    void PrintActiveBeamPotentialSet(std::ostream& out) const;
 
     //! @}
 
   private:
-    //!@name routines that are not derived and handle beam to beam contact
+
+    inline BEAMINTERACTION::BeamPotentialParams const& BeamPotentialParams() const
+    {
+      CheckInit();
+      return *beam_potential_params_ptr_;
+    }
+
+    inline BEAMINTERACTION::BeamPotentialParams& BeamPotentialParams()
+    {
+      CheckInit();
+      return *beam_potential_params_ptr_;
+    }
+
+    inline Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> BeamPotentialParamsPtr() const
+    {
+      CheckInit();
+      return beam_potential_params_ptr_;
+    }
+
+    //!@name routines that are not derived and handle beam potential-based interactions
     //! @{
     /// get neighbouring eles in discret
     void FindAndStoreNeighboringElements();
 
     /// exclude certain neighbors from interaction evaluation
-    void SelectElesToBeConsideredForContactEvaluation(
+    void SelectElesToBeConsideredForPotentialEvaluation(
         DRT::Element* currele,
         std::set<DRT::Element*>& neighbors
     ) const;
 
     /// create instances of class BeamContactPair that will be evaluated
     //  to get force and stiffness contributions from beam interactions
-    void CreateBeamContactElementPairs();
+    void CreateBeamPotentialElementPairs();
+
+    void GetBeamPotentialConditionsAppliedToThisElementPair(
+        BEAMINTERACTION::BeamPotentialPair const& elementpair,
+        std::vector<DRT::Condition*>& conditions_element1,
+        std::vector<DRT::Condition*>& conditions_element2) const;
 
     //! @}
 
+    /** \brief print this beam potential-based element pair to screen
+     *
+     *  \author grill */
+    void PrintConsoleWelcomeMessage(std::ostream& out) const;
+
   private:
     //! data container holding all beam contact related parameters
-    Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
+    Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr_;
 
     //! type of eles in bins
     INPAR::BINSTRATEGY::BinContent bin_beamcontent_;
 
      //! interacting pairs of beam elements that might exert forces on each other
-    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> > BTB_contact_elepairs_;
+    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> > beam_potential_element_pairs_;
 
     //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
     std::map<int, std::set<DRT::Element*> > nearby_elements_map_;
