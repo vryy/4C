@@ -28,26 +28,26 @@ namespace PARTICLE
 
     InterDataPvP(
     const LINALG::Matrix<3,1> rRelVersor_ij,
-    const double weightDerivative_ij,
-    const double weightDerivative_ji,
-    const double weight_ij,
-    const double weight_ji,
+    const double dw_ij,
+    const double dw_ji,
+    const double w_ij,
+    const double w_ji,
     const double rRelNorm2,
     const double step
     ) :
       rRelVersor_ij_(rRelVersor_ij),
-      weightDerivative_ij_(weightDerivative_ij),
-      weightDerivative_ji_(weightDerivative_ji),
-      weight_ij_(weight_ij),
-      weight_ji_(weight_ji),
+      dw_ij_(dw_ij),
+      dw_ji_(dw_ji),
+      w_ij_(w_ij),
+      w_ji_(w_ji),
       rRelNorm2_(rRelNorm2),
       step_(step) {}
 
     InterDataPvP() :
-      weightDerivative_ij_(0.0),
-      weightDerivative_ji_(0.0),
-      weight_ij_(0.0),
-      weight_ji_(0.0),
+      dw_ij_(0.0),
+      dw_ji_(0.0),
+      w_ij_(0.0),
+      w_ji_(0.0),
       rRelNorm2_(0.0),
       step_(-1) {}
 
@@ -55,10 +55,10 @@ namespace PARTICLE
 
     /// internal variables
     LINALG::Matrix<3,1> rRelVersor_ij_;        ///< versor i->j
-    double weightDerivative_ij_;               ///< weightDerivative i->j
-    double weightDerivative_ji_;               ///< weightDerivative j->i
-    double weight_ij_;                         ///< weight i->j
-    double weight_ji_;                         ///< weight j->i
+    double dw_ij_;               ///< weightDerivative i->j
+    double dw_ji_;               ///< weightDerivative j->i
+    double w_ij_;                         ///< weight i->j
+    double w_ji_;                         ///< weight j->i
     double rRelNorm2_;                         ///< Norm2
     int step_;                                 ///< time step of the interaction
 

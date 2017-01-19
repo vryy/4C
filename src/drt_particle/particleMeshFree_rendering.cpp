@@ -168,7 +168,7 @@ void PARTICLE::Rendering::UpdateStateVectors(
         if (rRelNorm2< radius_i)
         {
           // give me the proper weight
-          const double weight = weightFunctionHandler_->Weight(rRelNorm2, radius_i);
+          const double weight = weightFunctionHandler_->W(rRelNorm2, radius_i);
 
           // specify the variables with the particular weight
           LINALG::Matrix<3,1> velWeight_i(vel), accWeight_i(acc);

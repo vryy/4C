@@ -34,10 +34,24 @@ public :
   virtual ~WeightFunction_Base() { ; };
 
   // weight function
-  virtual double Weight(const double &disRel, const double &radius) = 0;
+  virtual double W(const double &disRel, const double &radius) = 0;
 
-  // weight function derivative
-  virtual double WeightDerivative(const double &disRel, const double &radius) = 0;
+  // weight function 1 derivative
+  virtual double DW(const double &disRel, const double &radius) = 0;
+
+  // weight function 2 derivative
+  virtual double DDW(const double &disRel, const double &radius) = 0;
+
+  // gradient, r = r_i - r_j
+  virtual LINALG::Matrix<3,1> GradW(const LINALG::Matrix<3,1> &rVersor, const double& dw);
+
+  // hessian, r = r_i - r_j
+  virtual LINALG::Matrix<3,3> HessW(const LINALG::Matrix<3,1> &rVersor, const double& dw, const double& rNorm2, const double& ddw);
+
+private :
+
+  // resizer due to the dimension integral
+  virtual double RszDim(const double& radius) = 0;
 
 };
 
@@ -49,10 +63,13 @@ public :
    //@{
 
    //! compute the cubicBspline weight function
-   virtual double Weight(const double &disRel, const double &radius);
+   virtual double W(const double &disRel, const double &radius);
 
-   //! compute the weight function derivative of the cubicBspline weight function
-   virtual double WeightDerivative(const double &disRel, const double &radius);
+   //! compute the weight function 1 derivative of the cubicBspline weight function
+   virtual double DW(const double &disRel, const double &radius);
+
+   //! compute the weight function 2 derivative of the cubicBspline weight function
+   virtual double DDW(const double &disRel, const double &radius);
 
    //@}
 
@@ -71,17 +88,20 @@ public :
    //! @name Actions
    //@{
 
-   //! compute the cubicBspline weight function
-   virtual double Weight(const double &disRel, const double &radius);
+   //! compute the SqrtHyperbola weight function
+   virtual double W(const double &disRel, const double &radius);
 
-   //! compute the weight function derivative of the cubicBspline weight function
-   virtual double WeightDerivative(const double &disRel, const double &radius);
+   //! compute the weight function 1 derivative of the SqrtHyperbola weight function
+   virtual double DW(const double &disRel, const double &radius);
+
+   //! compute the weight function 2 derivative of the SqrtHyperbola weight function
+   virtual double DDW(const double &disRel, const double &radius);
 
    //@}
 
 private :
 
-   virtual double RszDim(const double& radius) {return 15.0 / (4.0 * M_PI * std::pow(radius,3)); }
+   virtual double RszDim(const double& radius);
 
 };
 
@@ -93,13 +113,20 @@ public :
    //! @name Actions
    //@{
 
-   //! compute the cubicBspline weight function
-   virtual double Weight(const double &disRel, const double &radius);
+   //! compute the HyperbolaNoRsz weight function
+   virtual double W(const double &disRel, const double &radius);
 
-   //! compute the weight function derivative of the cubicBspline weight function
-   virtual double WeightDerivative(const double &disRel, const double &radius);
+   //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function
+   virtual double DW(const double &disRel, const double &radius);
+
+   //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function
+   virtual double DDW(const double &disRel, const double &radius);
 
    //@}
+
+private :
+
+   virtual double RszDim(const double& radius) {return 1; };
 
 };
 

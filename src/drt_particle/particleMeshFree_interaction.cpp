@@ -521,26 +521,26 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
       rRel_ij.Update(1.0, particle_i.dis_, -1.0, particle_j.dis_); // inward vector
       const double rRelNorm2 = rRel_ij.Norm2();
 
-      const double weightDerivative_ij = weightFunctionHandler_->WeightDerivative(rRelNorm2, particle_i.radius_);
-      const double weight_ij = weightFunctionHandler_->Weight(rRelNorm2, particle_i.radius_);
-      double weightDerivative_ji = 0;
-      double weight_ji = 0;
+      const double dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+      const double w_ij = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
+      double dw_ji = 0;
+      double w_ji = 0;
       if (particle_j.owner_ == myrank_)
       {
         if (particle_i.radius_ == particle_j.radius_)
         {
-          weightDerivative_ji = weightDerivative_ij;
-          weight_ji = weight_ij;
+          dw_ji = dw_ij;
+          w_ji = w_ij;
         }
         else
         {
-          weightDerivative_ji = weightFunctionHandler_->WeightDerivative(rRelNorm2, particle_j.radius_);
-          weight_ji = weightFunctionHandler_->Weight(rRelNorm2, particle_j.radius_);
+          dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
+          w_ji = weightFunctionHandler_->W(rRelNorm2, particle_j.radius_);
         }
       }
 
       // push_back
-      if (weightDerivative_ij != 0 || weightDerivative_ji != 0)
+      if (dw_ij != 0 || dw_ji != 0)
       {
         LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
         rRelVersor_ij.Scale(1/rRelNorm2);
@@ -548,10 +548,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
         const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid_);
         (neighbours_p_[lidNodeRow_i])[lidNodeCol_j] = InterDataPvP(
             rRelVersor_ij,
-            weightDerivative_ij,
-            weightDerivative_ji,
-            weight_ij,
-            weight_ji,
+            dw_ij,
+            dw_ji,
+            w_ij,
+            w_ji,
             rRelNorm2,
             step);
       }
@@ -739,7 +739,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
     LINALG::Matrix<3,1> rRel;
     rRel.Update(1.0, particle_i.dis_, -1.0, wallcontact.point_); // inward vector
     const double rRelNorm2 = rRel.Norm2();
-    const double weightDerivative = weightFunctionHandler_->WeightDerivative(rRelNorm2, particle_i.radius_);
+    const double weightDerivative = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
 
     // insert in the set if appropriate
     if (weightDerivative != 0)
@@ -830,31 +830,31 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int ste
         LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
         rRelVersor_ij.Scale(1/rRelNorm2);
 
-        const double weightDerivative_ij = weightFunctionHandler_->WeightDerivative(rRelNorm2, particle_i.radius_);
-        const double weight_ij = weightFunctionHandler_->Weight(rRelNorm2, particle_i.radius_);
-        double weightDerivative_ji = 0;
-        double weight_ji = 0;
+        const double dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+        const double w_ij = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
+        double dw_ji = 0;
+        double w_ji = 0;
         if (particle_j.owner_ == myrank_)
         {
           if (particle_i.radius_ == particle_j.radius_)
           {
-            weightDerivative_ji = weightDerivative_ij;
-            weight_ji = weight_ij;
+            dw_ji = dw_ij;
+            w_ji = w_ij;
           }
           else
           {
-            weightDerivative_ji = weightFunctionHandler_->WeightDerivative(rRelNorm2, particle_j.radius_);
-            weight_ji = weightFunctionHandler_->Weight(rRelNorm2, particle_j.radius_);
+            dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
+            w_ji = weightFunctionHandler_->W(rRelNorm2, particle_j.radius_);
           }
         }
 
         // insert the new weights, do not touch the step
         interData_ij = InterDataPvP(
           rRelVersor_ij,
-          weightDerivative_ij,
-          weightDerivative_ji,
-          weight_ij,
-          weight_ji,
+          dw_ij,
+          dw_ji,
+          w_ij,
+          w_ji,
           rRelNorm2,
           interData_ij.step_);
       }
@@ -924,7 +924,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(
         const double rRelNorm2 = rRel.Norm2();
         LINALG::Matrix<3,1> rRelVersor(rRel);
         rRelVersor.Scale(1/rRelNorm2);
-        const double weightDerivative = weightFunctionHandler_->WeightDerivative(rRelNorm2, particle_i.radius_);
+        const double weightDerivative = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
 
         // insert the new weights, do not touch the step
         interData_ij = InterDataPvW(
@@ -989,30 +989,26 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
 
       // --- extract and compute general data --- //
 
-      LINALG::Matrix<3,1> rRelVersor_ij(interData_ij.rRelVersor_ij_);
       LINALG::Matrix<3,1> vRel_ij;
       vRel_ij.Update(1.0, particle_i.vel_, -1.0, particle_j.vel_);
-      const double rRelVersorDotVrel = rRelVersor_ij.Dot(vRel_ij);
-      const double density = rRelVersorDotVrel;
 
       // write on particle i if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ij_ != 0)
+      if (interData_ij.dw_ij_ != 0)
       {
-        // construct the specific ij coeff
-        const double generalCoeff_ij = interData_ij.weightDerivative_ij_ * particle_j.mass_;
         // assemble and write
-        double densityDotn_ij = generalCoeff_ij * density;
+        LINALG::Matrix<3,1> gradW = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
+        double densityDotn_ij = gradW.Dot(vRel_ij) * particle_j.mass_;
         LINALG::Assemble(*densityDotn, densityDotn_ij, particle_i.gid_, particle_i.owner_);
 
       }
 
       // write on particle j if appropriate specializing the quantities
-      if ( interData_ij.weightDerivative_ji_ != 0)
+      if ( interData_ij.dw_ji_ != 0)
       {
-        // construct the specific ji coeff
-        const double generalCoeff_ji = interData_ij.weightDerivative_ji_ * particle_i.mass_;
         // assemble and write
-        double densityDotn_ji = generalCoeff_ji * density;
+        // actio = - reaction twice... no change in sign required (vRel and rRel both change sign)
+        LINALG::Matrix<3,1> gradW = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ji_);
+        double densityDotn_ji = gradW.Dot(vRel_ij) * particle_i.mass_;
         LINALG::Assemble(*densityDotn, densityDotn_ji, particle_j.gid_, particle_j.owner_);
       }
     }
@@ -1084,10 +1080,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
       momentum_ij.Update(cCrRelVersorDotVrel_rho2rRelNorm2, rRelVersor_ij, 1.0);
 
       // write on particle i if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ij_ != 0)
+      if (interData_ij.dw_ij_ != 0)
       {
         // construct the specific ij coeff
-        const double generalCoeff_ij = interData_ij.weightDerivative_ij_ * particle_j.mass_;
+        const double generalCoeff_ij = interData_ij.dw_ij_ * particle_j.mass_;
         // assemble and write
         LINALG::Matrix<3,1> accn_ij;
         accn_ij.Update(generalCoeff_ij, momentum_ij);
@@ -1095,10 +1091,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
       }
 
       // write on particle j if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ji_ != 0)
+      if (interData_ij.dw_ji_ != 0)
       {
         // construct the specific ji coeff
-        const double generalCoeff_ji = interData_ij.weightDerivative_ji_ * particle_i.mass_;
+        const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
         // assemble and write
         LINALG::Matrix<3,1> accn_ji;
         accn_ji.Update(generalCoeff_ji, momentum_ij);
@@ -1149,10 +1145,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_specEnthalpyDot(
           deltaT_ij / (rho2 * rRelNorm2);
 
       // write on particle i if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ij_ != 0)
+      if (interData_ij.dw_ij_ != 0)
       {
         // construct the specific ij coeff
-        const double generalCoeff_ij = interData_ij.weightDerivative_ij_ * particle_j.mass_;
+        const double generalCoeff_ij = interData_ij.dw_ij_ * particle_j.mass_;
 
         // --- specific enthalpy --- //
 
@@ -1161,10 +1157,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_specEnthalpyDot(
       }
 
       // write on particle j if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ji_ != 0)
+      if (interData_ij.dw_ji_ != 0)
       {
         // construct the specific ji coeff
-        const double generalCoeff_ji = interData_ij.weightDerivative_ji_ * particle_i.mass_;
+        const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
         // assemble and write
         double specEnthalpyDotn_ji = generalCoeff_ji * divT_rho_ij;
         specEnthalpyDotn_ji *= -1.0; // actio = - reactio
@@ -1210,10 +1206,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_colorFieldGradient(
       colorFieldGradientGeneral_ij.Update(particle_i.radius_ / particle_j.density_,rRelVersor_ij);
 
       // write on particle i if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ij_ != 0)
+      if (interData_ij.dw_ij_ != 0)
       {
         // construct the specific ij coeff
-        const double generalCoeff_ij = interData_ij.weightDerivative_ij_ * particle_j.mass_;
+        const double generalCoeff_ij = interData_ij.dw_ij_ * particle_j.mass_;
         // assemble and write
         LINALG::Matrix<3,1> colorFieldGradientn_ij;
         colorFieldGradientn_ij.Update(generalCoeff_ij, colorFieldGradientGeneral_ij);
@@ -1222,10 +1218,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_colorFieldGradient(
       }
 
       // write on particle j if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ji_ != 0)
+      if (interData_ij.dw_ji_ != 0)
       {
         // construct the specific ji coeff
-        const double generalCoeff_ji = interData_ij.weightDerivative_ji_ * particle_i.mass_;
+        const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
         // assemble and write
         LINALG::Matrix<3,1> colorFieldGradientn_ji;
         colorFieldGradientn_ji.Update(generalCoeff_ji, colorFieldGradientGeneral_ij);
@@ -1328,10 +1324,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_divFreePressureAcc(
       momentum_ij.Update(kv_rho,rRelVersor_ij);
 
       // write on particle i if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ij_ != 0)
+      if (interData_ij.dw_ij_ != 0)
       {
         // construct the specific ij coeff
-        const double generalCoeff_ij = interData_ij.weightDerivative_ij_ * particle_j.mass_;
+        const double generalCoeff_ij = interData_ij.dw_ij_ * particle_j.mass_;
         // assemble and write
         LINALG::Matrix<3,1> accn_ij;
         accn_ij.Update(generalCoeff_ij, momentum_ij);
@@ -1339,10 +1335,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_divFreePressureAcc(
       }
 
       // write on particle j if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ji_ != 0)
+      if (interData_ij.dw_ji_ != 0)
       {
         // construct the specific ji coeff
-        const double generalCoeff_ji = interData_ij.weightDerivative_ji_ * particle_i.mass_;
+        const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
         // assemble and write
         LINALG::Matrix<3,1> accn_ji;
         accn_ji.Update(generalCoeff_ji, momentum_ij);
@@ -1396,10 +1392,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_constDensityPressur
       momentum_ij.Update(kv_rho,rRelVersor_ij);
 
       // write on particle i if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ij_ != 0)
+      if (interData_ij.dw_ij_ != 0)
       {
         // construct the specific ij coeff
-        const double generalCoeff_ij = interData_ij.weightDerivative_ij_ * particle_j.mass_;
+        const double generalCoeff_ij = interData_ij.dw_ij_ * particle_j.mass_;
         // assemble and write
         LINALG::Matrix<3,1> accn_ij;
         accn_ij.Update(generalCoeff_ij, momentum_ij);
@@ -1407,10 +1403,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_constDensityPressur
       }
 
       // write on particle j if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ji_ != 0)
+      if (interData_ij.dw_ji_ != 0)
       {
         // construct the specific ji coeff
-        const double generalCoeff_ji = interData_ij.weightDerivative_ji_ * particle_i.mass_;
+        const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
         // assemble and write
         LINALG::Matrix<3,1> accn_ji;
         accn_ji.Update(generalCoeff_ji, momentum_ij);
@@ -1608,18 +1604,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_density(const Teuchos::RCP
       const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
 
       // write on particle i if appropriate specializing the quantities
-      if (interData_ij.weight_ij_ != 0)
+      if (interData_ij.w_ij_ != 0)
       {
         // assemble and write
-        double density_ij = interData_ij.weight_ij_ * particle_j.mass_;
+        double density_ij = interData_ij.w_ij_ * particle_j.mass_;
         LINALG::Assemble(*densityn, density_ij, particle_i.gid_, particle_i.owner_);
       }
 
       // write on particle j if appropriate specializing the quantities
-      if (interData_ij.weight_ji_ != 0)
+      if (interData_ij.w_ji_ != 0)
       {
         // assemble and write
-        double density_ji = interData_ij.weight_ji_ * particle_i.mass_;
+        double density_ji = interData_ij.w_ji_ * particle_i.mass_;
         LINALG::Assemble(*densityn, density_ji, particle_j.gid_, particle_j.owner_);
       }
     }
@@ -1657,10 +1653,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_alpha()
       LINALG::Matrix<3,1> rRelVersor_ij(interData_ij.rRelVersor_ij_);
 
       // write on particle i if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ij_ != 0)
+      if (interData_ij.dw_ij_ != 0)
       {
         // construct the specific ij coeff
-         const double generalCoeff_ij = interData_ij.weightDerivative_ij_ * particle_j.mass_;
+         const double generalCoeff_ij = interData_ij.dw_ij_ * particle_j.mass_;
          // assemble and write dof
          LINALG::Matrix<3,1> alphaDof_ij;
          alphaDof_ij.Update(generalCoeff_ij, rRelVersor_ij);
@@ -1671,10 +1667,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_alpha()
       }
 
       // write on particle j if appropriate specializing the quantities
-      if (interData_ij.weightDerivative_ji_ != 0)
+      if (interData_ij.dw_ji_ != 0)
       {
         // construct the specific ij coeff
-         const double generalCoeff_ji = interData_ij.weightDerivative_ji_ * particle_i.mass_;
+         const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
          // assemble and write dof
          LINALG::Matrix<3,1> alphaDof_ji;
          alphaDof_ji.Update(-generalCoeff_ji, rRelVersor_ij); // actio = - reactio
