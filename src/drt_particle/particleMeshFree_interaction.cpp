@@ -339,6 +339,7 @@ switch (svt)
 case PARTICLE::Dis :
 case PARTICLE::Vel :
 case PARTICLE::ColorFieldGradient :
+case PARTICLE::mGradW :
 {
   stateVectorCol = LINALG::CreateVector(*discret_->DofColMap(),false);
   break;
@@ -415,6 +416,16 @@ for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lid
   case PARTICLE::Alpha :
   {
     data.alpha_ = (*stateVectorCol)[lidNodeCol];
+    break;
+  }
+  case PARTICLE::densityapprox :
+  {
+    data.densityapprox_ = (*stateVectorCol)[lidNodeCol];
+    break;
+  }
+  case PARTICLE::mGradW :
+  {
+    dserror("TODO");
     break;
   }
   }
@@ -548,12 +559,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
         const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid_);
         (neighbours_p_[lidNodeRow_i])[lidNodeCol_j] = InterDataPvP(
             rRelVersor_ij,
-            dw_ij,
-            dw_ji,
+            rRelNorm2,
+            step,
             w_ij,
             w_ji,
-            rRelNorm2,
-            step);
+            dw_ij,
+            dw_ji);
       }
     }
   }
@@ -739,10 +750,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
     LINALG::Matrix<3,1> rRel;
     rRel.Update(1.0, particle_i.dis_, -1.0, wallcontact.point_); // inward vector
     const double rRelNorm2 = rRel.Norm2();
-    const double weightDerivative = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+    const double dw = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
 
     // insert in the set if appropriate
-    if (weightDerivative != 0)
+    if (dw != 0)
     {
       LINALG::Matrix<3,1> rRelVersor(rRel);
       rRelVersor.Scale(1/rRelNorm2);
@@ -751,9 +762,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
       InterDataPvW& interData_ij = (neighbours_w_[lidNodeRow_i])[wallcontact.elemId_];
       interData_ij = InterDataPvW(
         rRelVersor,
-        weightDerivative,
         rRelNorm2,
-        step);
+        step,
+        dw);
     }
   }
 }
@@ -851,12 +862,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int ste
         // insert the new weights, do not touch the step
         interData_ij = InterDataPvP(
           rRelVersor_ij,
-          dw_ij,
-          dw_ji,
+          rRelNorm2,
+          interData_ij.step_,
           w_ij,
           w_ji,
-          rRelNorm2,
-          interData_ij.step_);
+          dw_ij,
+          dw_ji);
       }
     }
   }
@@ -924,14 +935,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(
         const double rRelNorm2 = rRel.Norm2();
         LINALG::Matrix<3,1> rRelVersor(rRel);
         rRelVersor.Scale(1/rRelNorm2);
-        const double weightDerivative = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+        const double dw = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
 
         // insert the new weights, do not touch the step
         interData_ij = InterDataPvW(
             rRelVersor,
-            weightDerivative,
             rRelNorm2,
-            interData_ij.step_);
+            interData_ij.step_,
+            dw);
       }
     }
   }
@@ -1460,7 +1471,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_densityDot(
       const double density = rRelVersorDotVrel;
 
       // construct the specific coeff
-      const double generalCoeff = interData_ij.weightDerivative_ * wallMeshFreeData_.mass_;
+      const double generalCoeff = interData_ij.dw_ * wallMeshFreeData_.mass_;
       // assemble and write
       double densityDotn_ij = generalCoeff * density;
       LINALG::Assemble(*densityDotn, densityDotn_ij, particle_i.gid_, particle_i.owner_);
@@ -1532,7 +1543,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_acc(
        momentum.Update(cCrRelVersorDotVrel_rho2rRelNorm2, rRelVersor, 1.0);
 
        // construct the specific coeff
-       const double generalCoeff = interData_ij.weightDerivative_ * wallMeshFreeData_.mass_;
+       const double generalCoeff = interData_ij.dw_ * wallMeshFreeData_.mass_;
        // assemble and write
        LINALG::Matrix<3,1> accn_ij;
        accn_ij.Update(generalCoeff, momentum);
@@ -1577,14 +1588,14 @@ for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidN
 
 
 /*--------------------------------------------------------------------------*
- | compute density - mesh free style                           katta 01/17  |
+ | compute \sum m * W (usually the density) - mesh free style  katta 01/17  |
  *--------------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::MF_density(const Teuchos::RCP<Epetra_Vector> densityn)
+void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(const Teuchos::RCP<Epetra_Vector> mWn)
 {
   //checks
-  if (densityn == Teuchos::null)
+  if (mWn == Teuchos::null)
   {
-    dserror("densityn is empty");
+    dserror("mWn is empty");
   }
 
   // loop over the particles (no superpositions)
@@ -1608,7 +1619,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_density(const Teuchos::RCP
       {
         // assemble and write
         double density_ij = interData_ij.w_ij_ * particle_j.mass_;
-        LINALG::Assemble(*densityn, density_ij, particle_i.gid_, particle_i.owner_);
+        LINALG::Assemble(*mWn, density_ij, particle_i.gid_, particle_i.owner_);
       }
 
       // write on particle j if appropriate specializing the quantities
@@ -1616,7 +1627,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_density(const Teuchos::RCP
       {
         // assemble and write
         double density_ji = interData_ij.w_ji_ * particle_i.mass_;
-        LINALG::Assemble(*densityn, density_ji, particle_j.gid_, particle_j.owner_);
+        LINALG::Assemble(*mWn, density_ji, particle_j.gid_, particle_j.owner_);
       }
     }
   }
@@ -1699,4 +1710,57 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_alpha()
   // update the local ColParticles
   SetStateVector(alpha, Alpha);
 }
+
+
+/*------------------------------------------------------------------------------*
+ | compute \sum m * gradW - mesh free style                        katta 01/17  |
+ *------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mGradW(const Teuchos::RCP<Epetra_Vector> mGradWn)
+{
+  //checks
+  if (mGradWn == Teuchos::null)
+  {
+    dserror("mGradWn is empty");
+  }
+
+  // loop over the particles (no superpositions)
+  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
+  {
+    // determine the particle_i
+    const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
+    const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+    // loop over the interaction particle list
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
+    {
+      // extract data for faster access
+      const int& lidNodeCol_j = jj->first;
+      const InterDataPvP& interData_ij = jj->second;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+
+      // write on particle i if appropriate specializing the quantities
+
+      if (interData_ij.dw_ij_)
+      {
+        // assemble and write
+        LINALG::Matrix<3,1> mGradW_ij = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
+        mGradW_ij.Scale(particle_j.mass_);
+        LINALG::Assemble(*mGradWn, mGradW_ij, particle_i.lm_, particle_i.owner_);
+      }
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.dw_ji_)
+      {
+        // assemble and write
+        LINALG::Matrix<3,1> mGradW_ji = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ji_);
+        mGradW_ji.Scale(- particle_i.mass_); /// actio = - reaction... we are using the rRelVersor_ij instead of rRelVersor_ji
+        LINALG::Assemble(*mGradWn, mGradW_ji, particle_j.lm_, particle_j.owner_);
+      }
+    }
+  }
+}
+
+
+
 

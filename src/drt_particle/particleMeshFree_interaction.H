@@ -73,7 +73,9 @@ namespace PARTICLE
     Mass,
     Pressure,
     Temperature,
-    Alpha
+    Alpha,
+    densityapprox,
+    mGradW
   };
 
   /*====================================================================*/
@@ -200,13 +202,16 @@ namespace PARTICLE
     //! @name mesh free fields
     //@{
 
-    /// compute density and update colParticles - mesh free sense
-    virtual void MF_density(const Teuchos::RCP<Epetra_Vector> densityn);
+    /// compute density - mesh free sense
+    virtual void MF_mW(const Teuchos::RCP<Epetra_Vector> densityn);
 
     /// compute alpha factors and update colParticles - mesh free sense
     // http://dx.doi.org/10.1145/2786784.2786796
     // Equation 8
     virtual void MF_alpha();
+
+    /// compute m * gradW - mesh free sense
+    virtual void MF_mGradW(const Teuchos::RCP<Epetra_Vector> densityn);
 
     //@}
 
@@ -214,7 +219,7 @@ namespace PARTICLE
     //@{
 
     // print interactions
-    void Print_neighbours_p();
+    virtual void Print_neighbours_p();
 
     //@}
 

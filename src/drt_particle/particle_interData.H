@@ -28,39 +28,66 @@ namespace PARTICLE
 
     InterDataPvP(
     const LINALG::Matrix<3,1> rRelVersor_ij,
-    const double dw_ij,
-    const double dw_ji,
+    const double rRelNorm2,
+    const double step,
     const double w_ij,
     const double w_ji,
-    const double rRelNorm2,
-    const double step
+    const double dw_ij,
+    const double dw_ji,
+    const double ddw_ij,
+    const double ddw_ji
     ) :
       rRelVersor_ij_(rRelVersor_ij),
-      dw_ij_(dw_ij),
-      dw_ji_(dw_ji),
+      rRelNorm2_(rRelNorm2),
+      step_(step),
       w_ij_(w_ij),
       w_ji_(w_ji),
-      rRelNorm2_(rRelNorm2),
-      step_(step) {}
+      dw_ij_(dw_ij),
+      dw_ji_(dw_ji),
+      ddw_ij_(ddw_ij),
+      ddw_ji_(ddw_ji) {}
 
     InterDataPvP() :
-      dw_ij_(0.0),
-      dw_ji_(0.0),
+      rRelNorm2_(0.0),
+      step_(-1),
       w_ij_(0.0),
       w_ji_(0.0),
-      rRelNorm2_(0.0),
-      step_(-1) {}
+      dw_ij_(0.0),
+      dw_ji_(0.0),
+      ddw_ij_(0.0),
+      ddw_ji_(0.0) {}
+
+    InterDataPvP(
+    const LINALG::Matrix<3,1> rRelVersor_ij,
+    const double rRelNorm2,
+    const double step,
+    const double w_ij,
+    const double w_ji,
+    const double dw_ij,
+    const double dw_ji
+    ) :
+      rRelVersor_ij_(rRelVersor_ij),
+      rRelNorm2_(rRelNorm2),
+      step_(step),
+      w_ij_(w_ij),
+      w_ji_(w_ji),
+      dw_ij_(dw_ij),
+      dw_ji_(dw_ji),
+      ddw_ij_(0.0),
+      ddw_ji_(0.0) {}
 
     ~InterDataPvP() {}
 
     /// internal variables
-    LINALG::Matrix<3,1> rRelVersor_ij_;        ///< versor i->j
-    double dw_ij_;               ///< weightDerivative i->j
-    double dw_ji_;               ///< weightDerivative j->i
-    double w_ij_;                         ///< weight i->j
-    double w_ji_;                         ///< weight j->i
-    double rRelNorm2_;                         ///< Norm2
-    int step_;                                 ///< time step of the interaction
+    LINALG::Matrix<3,1> rRelVersor_ij_;       ///< versor i->j
+    double rRelNorm2_;                        ///< Norm2
+    int step_;                                ///< time step of the interaction
+    double w_ij_;                             ///< weight i->j
+    double w_ji_;                             ///< weight j->i
+    double dw_ij_;                            ///< weight 1 derivative i->j
+    double dw_ji_;                            ///< weight 1 derivative j->i
+    double ddw_ij_;                           ///< weight 2 derivative i->j
+    double ddw_ji_;                           ///< weight 2 derivative j->i
 
   }; // InterDataPvP
 
@@ -74,27 +101,50 @@ namespace PARTICLE
 
     InterDataPvW(
     const LINALG::Matrix<3,1> rRelVersor,
-    const double weightDerivative,
     const double rRelNorm2,
-    const int step
+    const int step,
+    const double w,
+    const double dw,
+    const double ddw
     ) :
       rRelVersor_(rRelVersor),
-      weightDerivative_(weightDerivative),
       rRelNorm2_(rRelNorm2),
-      step_(step) {}
+      step_(step),
+      w_(w),
+      dw_(dw),
+      ddw_(ddw) {}
+
+
+    InterDataPvW(
+    const LINALG::Matrix<3,1> rRelVersor,
+    const double rRelNorm2,
+    const int step,
+    const double dw
+    ) :
+      rRelVersor_(rRelVersor),
+      rRelNorm2_(rRelNorm2),
+      step_(step),
+      w_(0.0),
+      dw_(dw),
+      ddw_(0.0) {}
+
 
     InterDataPvW() :
-       weightDerivative_(0.0),
-       rRelNorm2_(0.0),
-       step_(-1) {}
+      rRelNorm2_(0.0),
+      step_(-1),
+      w_(0.0),
+      dw_(0.0),
+      ddw_(0.0) {}
 
     ~InterDataPvW() {}
 
     /// internal variables
-    LINALG::Matrix<3,1> rRelVersor_;         ///< versor toward the particle
-    double weightDerivative_;                ///< weightDerivative toward the particle
-    double rRelNorm2_;                       ///< Norm2
-    int step_;                               ///< time step of the interaction
+    LINALG::Matrix<3,1> rRelVersor_;       ///< versor i->j
+    double rRelNorm2_;                     ///< Norm2
+    int step_;                             ///< time step of the interaction
+    double w_;                             ///< weight
+    double dw_;                            ///< weight 1 derivative
+    double ddw_;                           ///< weight 2 derivative
 
   }; // InterDataPvW
 
