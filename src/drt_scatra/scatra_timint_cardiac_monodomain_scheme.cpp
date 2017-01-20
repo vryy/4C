@@ -300,4 +300,16 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(const int step,Teuchos
   return;
 }
 
+/*--------------------------------------------------------------------------*
+ | add global state vectors specific for time-integration scheme  hoe 12/16 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::TimIntCardiacMonodomainGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
+{
+  // Call function from baseclass
+  TimIntGenAlpha::AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
 
+  if (incremental_ or forcedincrementalsolver)
+    discret_->SetState("phin",phin_);
+
+  return;
+}

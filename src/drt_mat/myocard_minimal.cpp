@@ -245,6 +245,31 @@ double Myocard_Minimal::ReaCoeff(const double phi, const double dt, int gp)
   return reacoeff;
 }
 
+
+double Myocard_Minimal::ReaCoeffN(const double phi, const double dt, int gp)
+{
+  double reacoeff = 0.0;
+  const double p = 1000.0;
+
+    // calculate voltage dependent time constants ([7] page 545)
+
+    double Tau_so = tools_.GatingFunction(Tau_so1_, Tau_so2_, k_so_, phi, u_so_    );
+    double Tau_o  = tools_.GatingFunction(Tau_o1_, Tau_o2_, p   , phi, Theta_o_);
+
+    // calculate currents J_fi, J_so and J_si ([7] page 545)
+    Jfi_[gp] = -tools_.GatingFunction(0.0, v0_[gp]*(phi - Theta_v_)*(u_u_ - phi)/Tau_fi_, p, phi, Theta_v_); // fast inward current
+    Jso_[gp] =  tools_.GatingFunction((phi - u_o_)/Tau_o, 1.0/Tau_so, p, phi, Theta_w_);// slow outward current
+    Jsi_[gp] = -tools_.GatingFunction(0.0, w0_[gp]*s0_[gp]/Tau_si_, p, phi, Theta_w_); // slow inward current
+
+    reacoeff = (Jfi_[gp] + Jso_[gp] + Jsi_[gp]);
+
+
+    // Store necessary variables for mechanical activation and electromechanical coupling
+    mechanical_activation_ = phi;
+
+  return reacoeff;
+}
+
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
  *----------------------------------------------------------------------*/
@@ -292,6 +317,8 @@ void Myocard_Minimal::SetInternalState(const int k, const double val)
  *----------------------------------------------------------------------*/
 void Myocard_Minimal::SetInternalState(const int k, const double val, int gp)
 {
+  if (v0_.size() < (unsigned) gp )
+    dserror("Number of gp does not match");
   switch(k){
     case -1: {mechanical_activation_ = val; break;}
     case 0: {v0_[gp] = val; v_[gp] = val; break;}
@@ -345,3 +372,28 @@ void Myocard_Minimal::Update(const double phi, const double dt)
 
     return;
 }
+
+/*----------------------------------------------------------------------*
+ |  resize internal state variables                      hoermann 12/16 |
+ *----------------------------------------------------------------------*/
+void Myocard_Minimal::ResizeInternalStateVariables(int gp)
+{
+  v0_.resize(gp);
+  w0_.resize(gp);
+  s0_.resize(gp);
+  v_.resize(gp);
+  w_.resize(gp);
+  s_.resize(gp);
+  Jfi_.resize(gp);
+  Jso_.resize(gp);
+  Jsi_.resize(gp);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  get number of Gauss points                           hoermann 12/16 |
+ *----------------------------------------------------------------------*/
+int Myocard_Minimal::GetNumberOfGP() const
+{
+  return v_.size();
+};

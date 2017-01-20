@@ -105,10 +105,12 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Materials(
     dserror("Material type is not supported");
 
   // safety check
-  const Teuchos::RCP<const MAT::Myocard>& actmat = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
-  if(actmat->Parameter()->num_gp != 1 and not my::scatrapara_->MatGP())
-    dserror("Evaluation of material at element center not possible with more Gauss points. Fix your input file!");
-
+  Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(Teuchos::rcp_const_cast<MAT::Material>(material));
+  if(actmat->GetNumberOfGP() != 1 and not my::scatrapara_->MatGP())
+  {
+    actmat->SetGP(1);
+    actmat->ResizeInternalStateVariables();
+  }
   MatMyocard(material,k,densn,densnp,densam,visc,iquad);
 
   return;
@@ -151,9 +153,14 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::MatMyocard(
   {
     // get membrane potential at n at integration point
     const double phin = my::scatravarmanager_->Phin(k);
+    const double phinp = my::scatravarmanager_->Phinp(k);
     // get reaction coefficient
-    advreamanager->AddToReaBodyForce(-actmat->ReaCoeff(phin, my::scatraparatimint_->Dt(),iquad),k);
+    double react = -actmat->ReaCoeffN(phin, my::scatraparatimint_->Dt(),iquad);
+    if (my::scatraparatimint_->IsGenAlpha())
+      react *= my::scatraparatimint_->Dt()/my::scatraparatimint_->TimeFac();
+    advreamanager->AddToReaBodyForce(react,k);
     advreamanager->AddToReaBodyForceDerivMatrix(0.0,k,k);
+    actmat->ReaCoeff(phinp, my::scatraparatimint_->Dt(),iquad);
   }
   else
   {

@@ -134,6 +134,9 @@ public:
   //! read restart data
   void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
+  /// add parameters specific for time-integration scheme
+  void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver=false);
+
 protected:
 
   //! write additional data required for restart

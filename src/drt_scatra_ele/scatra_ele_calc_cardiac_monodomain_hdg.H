@@ -48,6 +48,8 @@ namespace ELEMENTS
 //    typedef ScaTraEleCalcAniso<distype,probdim> aniso;
 //    typedef ScaTraEleCalcAdvReac<distype,probdim> advreac;
 
+    std::vector<Epetra_SerialDenseVector> values_mat_gp_all_;
+
   public:
 
     virtual ~ScaTraEleCalcHDGCardiacMonodomain() {}
@@ -82,25 +84,32 @@ namespace ELEMENTS
     /*========================================================================*/
 
     //! evaluate material
+    virtual void PrepareMaterials(
+      DRT::Element*                             ele,      //!< the element we are dealing with
+      const Teuchos::RCP<const MAT::Material>   material, //!< pointer to current material
+      const int                                 k,        //!< id of current scalar
+      Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >  difftensor
+      );
+
+
+    //! evaluate material
     virtual void Materials(
       const Teuchos::RCP<const MAT::Material>   material, //!< pointer to current material
       const int                                 k,        //!< id of current scalar
-      Epetra_SerialDenseMatrix*                 difftensor,
-      Epetra_SerialDenseVector*                 ivecn,
-      Epetra_SerialDenseVector*                 ivecnp,
-      Epetra_SerialDenseMatrix*                 ivecnpderiv,
-      double*                                   diff1          //!< main diffusivity
+      Epetra_SerialDenseMatrix&                 difftensor,
+      Epetra_SerialDenseVector&                 ivecn,
+      Epetra_SerialDenseVector&                 ivecnp,
+      Epetra_SerialDenseMatrix&                 ivecnpderiv
       );
 
     //! material ScaTra
     void MatMyocard(
       const Teuchos::RCP<const MAT::Material>   material, //!< pointer to current material
       const int                                 k,        //!< id of current scalar
-      Epetra_SerialDenseMatrix*                 difftensor,
-      Epetra_SerialDenseVector*                 ivecn,
-      Epetra_SerialDenseVector*                 ivecnp,
-      Epetra_SerialDenseMatrix*                 ivecnpderiv,
-      double*                                   diff1          //!< main diffusivity
+      Epetra_SerialDenseMatrix&                 difftensor,
+      Epetra_SerialDenseVector&                 ivecn,
+      Epetra_SerialDenseVector&                 ivecnp,
+      Epetra_SerialDenseMatrix&                 ivecnpderiv
       );
 
     //! update time dependent material
@@ -120,6 +129,11 @@ namespace ELEMENTS
       const DRT::Element *              ele,
       Teuchos::ParameterList&           params,
       DRT::Discretization &             discretization
+      );
+
+    //! project material field
+    int ProjectMaterialField(
+      const DRT::Element *              ele
       );
 
     /// polynomial space for element interior for various Gauss Points for the evaluation of the material

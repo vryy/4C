@@ -30,6 +30,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "scatra_ele_calc_utils.H"
 #include "scatra_ele.H"
 
@@ -832,6 +833,18 @@ int DRT::ELEMENTS::Transport::Initialize()
     Teuchos::RCP<MAT::MatListReactions> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(mat);
     actmat->Initialize();
   }
+  else if (mat->MaterialType() == INPAR::MAT::m_myocard)
+  {
+    Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
+    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature(DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(),this->Degree()*3));
+    int gp = quadrature->NumPoints();
+    if(actmat->Parameter() != NULL and !actmat->MyocardMat()) // in case we are not in post-process mode
+    {
+      actmat->SetGP(gp);
+      actmat->Initialize();
+    }
+  }
+
   return 0;
 }
 

@@ -95,6 +95,22 @@ public:
   /// time update for this material
   void Update(const double phi, const double dt);
 
+  /// get number of Gauss points
+  int GetNumberOfGP() const
+  {
+    return r0_.size();
+  };
+
+  /// resize internal state variables if number of Gauss point changes
+  void ResizeInternalStateVariables(int gp)
+  {
+    r0_.resize(gp);
+    r_.resize(gp);
+    J1_.resize(gp);
+    J2_.resize(gp);
+    mechanical_activation_.resize(gp);
+  }
+
 private:
 
   Myocard_Tools tools_;

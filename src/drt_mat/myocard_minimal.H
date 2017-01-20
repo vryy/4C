@@ -66,6 +66,9 @@ public:
   /// compute reaction coefficient for multiple points per element
   double ReaCoeff(const double phi, const double dt, int gp);
 
+  /// compute reaction coefficient for multiple points per element at timestep n
+  double ReaCoeffN(const double phi, const double dt, int gp);
+
   ///  returns number of internal state variables of the material
   int GetNumberOfInternalStateVariables() const;
 
@@ -92,6 +95,13 @@ public:
 
   /// time update for this material
   void Update(const double phi, const double dt);
+
+  /// resize internal state variables if number of Gauss point changes
+  void ResizeInternalStateVariables(int gp);
+
+  /// get number of Gauss points
+  int GetNumberOfGP() const;
+
 
 private:
 

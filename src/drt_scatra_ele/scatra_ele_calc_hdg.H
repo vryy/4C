@@ -147,6 +147,12 @@ namespace ELEMENTS
         DRT::Element::LocationArray&         la
     );
 
+    //! project material field
+    virtual int ProjectMaterialField(
+        const DRT::Element*                  ele
+        )
+    {return 0;};
+
     //! calc p-adaptivity
     int CalcPAdaptivity(
         const DRT::Element*                  ele,
@@ -166,15 +172,27 @@ namespace ELEMENTS
       DRT::Element*   ele   //!< the element we are dealing with
       );
 
+    //! get the material parameters before first timestep
+    virtual void PrepareMaterialParams(
+      DRT::Element*   ele   //!< the element we are dealing with
+      );
+
     //! evaluate material
     virtual void Materials(
       const Teuchos::RCP<const MAT::Material>   material,      //!< pointer to current material
       const int                                 k,             //!< id of current scalar
-      Epetra_SerialDenseMatrix*                 difftensor,    //!< diffusion tensor
-      Epetra_SerialDenseVector*                 ivecn,         //!< reaction term at time n
-      Epetra_SerialDenseVector*                 ivecnp,        //!< reaction term at time n+1
-      Epetra_SerialDenseMatrix*                 ivecnpderiv,   //!< reaction term derivative
-      double*                                   diff1          //!< main diffusivity
+      Epetra_SerialDenseMatrix&                 difftensor,    //!< diffusion tensor
+      Epetra_SerialDenseVector&                 ivecn,         //!< reaction term at time n
+      Epetra_SerialDenseVector&                 ivecnp,        //!< reaction term at time n+1
+      Epetra_SerialDenseMatrix&                 ivecnpderiv    //!< reaction term derivative
+      ) {return;};
+
+    //! evaluate material before first timestep
+    virtual void PrepareMaterials(
+        DRT::Element*                                          ele,           //!< the element we are dealing with
+        const Teuchos::RCP<const MAT::Material>                material,      //!< pointer to current material
+        const int                                              k,             //!< id of current scalar
+        Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >   difftensor     //!< diffusion tensor
       );
 
     //! stores the material internal state in a vector for output and restart
@@ -230,6 +248,9 @@ namespace ELEMENTS
     //! use complete polynomial space
     bool usescompletepoly_;
 
+    //! pointer to general scalar transport parameter class
+    DRT::ELEMENTS::ScaTraEleParameterStd*   scatrapara_;
+
   private:
 
     //! local solver that inverts local problem on an element and can solve with various vectors
@@ -251,9 +272,9 @@ namespace ELEMENTS
           Teuchos::ParameterList&           params,
           Epetra_SerialDenseVector &        elevec,
           Epetra_SerialDenseMatrix &        elemat1,
-          Epetra_SerialDenseVector          interiorPhin,
-          Epetra_SerialDenseVector          tracen,
-          Epetra_SerialDenseVector          tracenp,
+          Epetra_SerialDenseVector &        interiorPhin,
+          Epetra_SerialDenseVector &        tracen,
+          Epetra_SerialDenseVector &        tracenp,
           const DRT::ELEMENTS::ScaTraHDG *  hdgele
                            );
 
@@ -289,14 +310,18 @@ namespace ELEMENTS
       void AddReacMat(Epetra_SerialDenseMatrix&         elemat,
                       const DRT::ELEMENTS::ScaTraHDG*   hdgele);
 
-      //! set matrial parameter
+      //! set material parameter
       void SetMaterialParameter(
           DRT::ELEMENTS::ScaTraHDG*   hdgele,
-          Epetra_SerialDenseMatrix*   difftensor,
-          Epetra_SerialDenseVector*   ivecn,
-          Epetra_SerialDenseVector*   ivecnp,
-          Epetra_SerialDenseMatrix*   ivecnpderiv,
-          double*                     diff1           //!< main diffusivity
+          Epetra_SerialDenseVector&   ivecn,
+          Epetra_SerialDenseVector&   ivecnp,
+          Epetra_SerialDenseMatrix&   ivecnpderiv
+          );
+
+      //! prepare material parameter in first timestep
+      void PrepareMaterialParameter(
+          DRT::ELEMENTS::ScaTraHDG*   hdgele,
+          Epetra_SerialDenseMatrix&   difftensor
           );
 
 

@@ -63,6 +63,22 @@ public:
   /// compute reaction coefficient
   virtual double ReaCoeff(const double phi, const double dt) = 0;
 
+  /// compute reaction coefficient at timestep n
+  virtual double ReaCoeffN(const double phi, const double dt) {return 0;};
+
+  /// compute reaction coefficient for multiple Gauss points at timestep n
+  virtual double ReaCoeffN(const double phi, const double dt, int gp)
+  {
+    if(gp>0)
+  {
+    dserror("Multiple Gauss points only implemented for MV and FHN model");
+    return 0.;
+  }
+
+  else
+    return ReaCoeffN(phi,dt);
+  };
+
   ///  returns number of internal state variables of the material
   virtual int GetNumberOfInternalStateVariables() const = 0;
 
@@ -106,6 +122,19 @@ public:
   {
     dserror("Multiple Gauss Points only implemented for MV and FHN model");
     return 0.;
+  };
+
+  // resize internal state variables if number of Gauss point changes
+  virtual void ResizeInternalStateVariables(int gp)
+  {
+    dserror("Multiple Gauss Points only implemented for MV and FHN model");
+    return ;
+  };
+
+  /// get number of Gauss points
+  virtual int GetNumberOfGP() const
+  {
+    return 1;
   };
 
   /// time update for this material

@@ -44,7 +44,7 @@ MAT::PAR::Myocard::Myocard( Teuchos::RCP<MAT::PAR::Material> matdata )
   model(matdata->Get<std::string>("MODEL")),
   tissue(matdata->Get<std::string>("TISSUE")),
   time_scale(matdata->GetDouble("TIME_SCALE")),
-  num_gp(matdata->GetInt("GP"))
+  num_gp(0)
   {
   }
 
@@ -70,11 +70,11 @@ DRT::ParObject* MAT::MyocardType::Create( const std::vector<char> & data )
  *----------------------------------------------------------------------*/
 MAT::Myocard::Myocard()
   : params_(NULL),
-  difftensor_(true),
+  difftensor_(0),
   nb_state_variables_(0),
-  myocard_mat_(Teuchos::null)
+  myocard_mat_(Teuchos::null),
+  diff_at_ele_center_(false)
 {
-
 }
 
 
@@ -83,11 +83,11 @@ MAT::Myocard::Myocard()
  *----------------------------------------------------------------------*/
 MAT::Myocard::Myocard(MAT::PAR::Myocard* params)
   : params_(params),
-  difftensor_(true)
+  difftensor_(0),
+  nb_state_variables_(0),
+  myocard_mat_(Teuchos::null),
+  diff_at_ele_center_(false)
 {
-  Initialize();
-  nb_state_variables_ = myocard_mat_->GetNumberOfInternalStateVariables();
-
 }
 
 
@@ -106,17 +106,25 @@ void MAT::Myocard::Pack(DRT::PackBuffer& data) const
   // matid
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data,matid);
+    AddtoPack(data,matid);
   AddtoPack(data,nb_state_variables_);
   AddtoPack(data, difftensor_);
+  int num;
+  if(diff_at_ele_center_)
+    num=1;
+  else
+    num=0;
+  AddtoPack(data, num);
+  if (myocard_mat_ != Teuchos::null)
+    AddtoPack(data,myocard_mat_->GetNumberOfGP());
+  else
+    AddtoPack(data,0);
 
   // pack history data
-  if (myocard_mat_ != Teuchos::null && params_ != NULL)
-  {
+  if (myocard_mat_ != Teuchos::null)
     for(int k=-1; k<nb_state_variables_;++k) // Starting from -1 for mechanical activation
-      for(int i=0; i<params_->num_gp; ++i) // loop over Gauss points
+      for(int i=0; i<myocard_mat_->GetNumberOfGP(); ++i) // loop over Gauss points
         AddtoPack(data, myocard_mat_->GetInternalState(k,i));
-  }
 
   return;
 }
@@ -135,9 +143,19 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
 
     // matid
   int matid;
+  int unpack_nb_state_variables;
+  int num_gp;
+  int num;
   ExtractfromPack(position,data,matid);
-  ExtractfromPack(position, data, nb_state_variables_);
+  ExtractfromPack(position, data, unpack_nb_state_variables);
   ExtractfromPack(position, data, difftensor_);
+  ExtractfromPack(position, data, num);
+  if(num)
+    diff_at_ele_center_=true;
+  else
+    diff_at_ele_center_=false;
+  ExtractfromPack(position, data, num_gp);
+
   params_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)  // it does not enter here in postprocessing
   {
@@ -152,8 +170,75 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
 
-      // Initialize material
-      Initialize();
+      // Set number of Gauss points
+      SetGP(num_gp);
+
+      if (num_gp > 0)
+      {
+        // Initialize material
+        Initialize();
+
+        // unpack history data
+        double val;
+        for(int k=-1; k<unpack_nb_state_variables;++k) // Starting from -1 for mechanical activation
+          for(int i=0; i<params_->num_gp; ++i) // loop over Gauss points
+          {
+            ExtractfromPack(position, data, val);
+            myocard_mat_->SetInternalState(k,val,i);
+          }
+
+        if (position != data.size())
+          dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+      }
+    }
+  }
+
+
+}
+
+/*----------------------------------------------------------------------*
+ |  UnpackMaterial                                       hoermann 12/16 |
+ *----------------------------------------------------------------------*/
+void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
+{
+
+  std::vector<char>::size_type position = 0;
+
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  // matid
+  int matid;
+  int num_gp;
+  int num;
+  ExtractfromPack(position,data,matid);
+  ExtractfromPack(position, data, nb_state_variables_);
+  ExtractfromPack(position, data, difftensor_);
+  ExtractfromPack(position, data, num);
+  if(num)
+    diff_at_ele_center_=true;
+  else
+    diff_at_ele_center_=false;
+  ExtractfromPack(position, data, num_gp);
+
+  params_ = NULL;
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)  // it does not enter here in postprocessing
+  {
+    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    {
+      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      if (mat->Type() == MaterialType())
+      {
+        params_ = static_cast<MAT::PAR::Myocard*>(mat);
+      }
+      else
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+
+      // Set number of Gauss points
+      SetGP(myocard_mat_->GetNumberOfGP());
 
       // unpack history data
      double val;
@@ -190,8 +275,12 @@ void MAT::Myocard::Setup(const LINALG::Matrix<2,1>& fiber1)
 void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
 {
   std::vector<double> fiber1(3);
-  linedef->ExtractDoubleVector("FIBER1",fiber1);
-  SetupDiffusionTensor(fiber1);
+  if(linedef->HaveNamed("FIBER1"))
+  {
+    diff_at_ele_center_ = true;
+    linedef->ExtractDoubleVector("FIBER1",fiber1);
+    SetupDiffusionTensor(fiber1);
+  }
 }
 
 
@@ -205,21 +294,26 @@ void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
    const double diff1 = params_->diff1;
    const double diff2  = params_->diff2;
 
+   LINALG::Matrix<3,3> difftensor;
+
    // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: diff2*Id + (diff1-diff2)*fiber1*fiber1'
    // first row
-   difftensor_(0,0)=diff2 + (diff1-diff2)*fiber1[0]*fiber1[0]/fiber1normS;
-   difftensor_(0,1)=(diff1-diff2)*fiber1[0]*fiber1[1]/fiber1normS;
-   difftensor_(0,2)=(diff1-diff2)*fiber1[0]*fiber1[2]/fiber1normS;
+   difftensor(0,0)=diff2 + (diff1-diff2)*fiber1[0]*fiber1[0]/fiber1normS;
+   difftensor(0,1)=(diff1-diff2)*fiber1[0]*fiber1[1]/fiber1normS;
+   difftensor(0,2)=(diff1-diff2)*fiber1[0]*fiber1[2]/fiber1normS;
    // second row
-   difftensor_(1,0)=(diff1-diff2)*fiber1[1]*fiber1[0]/fiber1normS;
-   difftensor_(1,1)=diff2 + (diff1-diff2)*fiber1[1]*fiber1[1]/fiber1normS;
-   difftensor_(1,2)=(diff1-diff2)*fiber1[1]*fiber1[2]/fiber1normS;
+   difftensor(1,0)=(diff1-diff2)*fiber1[1]*fiber1[0]/fiber1normS;
+   difftensor(1,1)=diff2 + (diff1-diff2)*fiber1[1]*fiber1[1]/fiber1normS;
+   difftensor(1,2)=(diff1-diff2)*fiber1[1]*fiber1[2]/fiber1normS;
    // third row
-   difftensor_(2,0)=(diff1-diff2)*fiber1[2]*fiber1[0]/fiber1normS;
-   difftensor_(2,1)=(diff1-diff2)*fiber1[2]*fiber1[1]/fiber1normS;
-   difftensor_(2,2)=diff2 + (diff1-diff2)*fiber1[2]*fiber1[2]/fiber1normS;
+   difftensor(2,0)=(diff1-diff2)*fiber1[2]*fiber1[0]/fiber1normS;
+   difftensor(2,1)=(diff1-diff2)*fiber1[2]*fiber1[1]/fiber1normS;
+   difftensor(2,2)=diff2 + (diff1-diff2)*fiber1[2]*fiber1[2]/fiber1normS;
    // done
+
+   difftensor_.push_back(difftensor);
    return;
+
 
   }
 
@@ -233,20 +327,25 @@ double fiber1normS = fiber1(0)*fiber1(0)+fiber1(1)*fiber1(1)+fiber1(2)*fiber1(2)
  const double diff1 = params_->diff1;
  const double diff2  = params_->diff2;
 
+ LINALG::Matrix<3,3> difftensor;
+
  // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: diff2*Id + (diff1-diff2)*fiber1*fiber1'
  // first row
- difftensor_(0,0)=diff2 + (diff1-diff2)*fiber1(0)*fiber1(0)/fiber1normS;
- difftensor_(0,1)=(diff1-diff2)*fiber1(0)*fiber1(1)/fiber1normS;
- difftensor_(0,2)=(diff1-diff2)*fiber1(0)*fiber1(2)/fiber1normS;
+ difftensor(0,0)=diff2 + (diff1-diff2)*fiber1(0)*fiber1(0)/fiber1normS;
+ difftensor(0,1)=(diff1-diff2)*fiber1(0)*fiber1(1)/fiber1normS;
+ difftensor(0,2)=(diff1-diff2)*fiber1(0)*fiber1(2)/fiber1normS;
  // second row
- difftensor_(1,0)=(diff1-diff2)*fiber1(1)*fiber1(0)/fiber1normS;
- difftensor_(1,1)=diff2 + (diff1-diff2)*fiber1(1)*fiber1(1)/fiber1normS;
- difftensor_(1,2)=(diff1-diff2)*fiber1(1)*fiber1(2)/fiber1normS;
+ difftensor(1,0)=(diff1-diff2)*fiber1(1)*fiber1(0)/fiber1normS;
+ difftensor(1,1)=diff2 + (diff1-diff2)*fiber1(1)*fiber1(1)/fiber1normS;
+ difftensor(1,2)=(diff1-diff2)*fiber1(1)*fiber1(2)/fiber1normS;
  // third row
- difftensor_(2,0)=(diff1-diff2)*fiber1(2)*fiber1(0)/fiber1normS;
- difftensor_(2,1)=(diff1-diff2)*fiber1(2)*fiber1(1)/fiber1normS;
- difftensor_(2,2)=diff2 + (diff1-diff2)*fiber1(2)*fiber1(2)/fiber1normS;
+ difftensor(2,0)=(diff1-diff2)*fiber1(2)*fiber1(0)/fiber1normS;
+ difftensor(2,1)=(diff1-diff2)*fiber1(2)*fiber1(1)/fiber1normS;
+ difftensor(2,2)=diff2 + (diff1-diff2)*fiber1(2)*fiber1(2)/fiber1normS;
  // done
+
+ difftensor_.push_back(difftensor);
+
  return;
 
 }
@@ -261,39 +360,44 @@ double fiber1normS = fiber1(0)*fiber1(0)+fiber1(1)*fiber1(1);
  const double diff1 = params_->diff1;
  const double diff2  = params_->diff2;
 
+ LINALG::Matrix<3,3> difftensor;
+
  // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: diff2*Id + (diff1-diff2)*fiber1*fiber1'
  // first row
- difftensor_(0,0)=diff2 + (diff1-diff2)*fiber1(0)*fiber1(0)/fiber1normS;
- difftensor_(0,1)=(diff1-diff2)*fiber1(0)*fiber1(1)/fiber1normS;
+ difftensor(0,0)=diff2 + (diff1-diff2)*fiber1(0)*fiber1(0)/fiber1normS;
+ difftensor(0,1)=(diff1-diff2)*fiber1(0)*fiber1(1)/fiber1normS;
  // second row
- difftensor_(1,0)=(diff1-diff2)*fiber1(1)*fiber1(0)/fiber1normS;
- difftensor_(1,1)=diff2 + (diff1-diff2)*fiber1(1)*fiber1(1)/fiber1normS;
+ difftensor(1,0)=(diff1-diff2)*fiber1(1)*fiber1(0)/fiber1normS;
+ difftensor(1,1)=diff2 + (diff1-diff2)*fiber1(1)*fiber1(1)/fiber1normS;
  // done
+
+ difftensor_.push_back(difftensor);
+
  return;
 
 }
 
-void MAT::Myocard::Diffusivity(LINALG::Matrix<1,1>& diffus3) const
+void MAT::Myocard::Diffusivity(LINALG::Matrix<1,1>& diffus3, int gp) const
 {
-  diffus3(0,0) = difftensor_(0,0); return;
+  diffus3(0,0) = difftensor_[gp](0,0); return;
 }
 
-void MAT::Myocard::Diffusivity(LINALG::Matrix<2,2>& diffus3) const
+void MAT::Myocard::Diffusivity(LINALG::Matrix<2,2>& diffus3, int gp) const
 {
   for (int i=0; i<2; i++){
     for (int j=0; j<2; j++){
-      diffus3(i,j) = difftensor_(i,j);
+      diffus3(i,j) = difftensor_[gp](i,j);
     }
   }
 
   return;
 }
 
-void MAT::Myocard::Diffusivity(LINALG::Matrix<3,3>& diffus3) const
+void MAT::Myocard::Diffusivity(LINALG::Matrix<3,3>& diffus3, int gp) const
 {
   for (int i=0; i<3; i++){
     for (int j=0; j<3; j++){
-      diffus3(i,j) = difftensor_(i,j);
+      diffus3(i,j) = difftensor_[gp](i,j);
     }
   }
   return;
@@ -320,6 +424,20 @@ double MAT::Myocard::ReaCoeff(const double phi, const double dt, int gp) const
     reacoeff *= myocard_mat_->ReaCoeff(phi,dt*params_->time_scale);
   else
     reacoeff *= myocard_mat_->ReaCoeff(phi,dt*params_->time_scale, gp);
+
+  return reacoeff;
+}
+
+/*----------------------------------------------------------------------*
+ | reaction coefficient at time n                        hoermann 11/16 |
+ *----------------------------------------------------------------------*/
+double MAT::Myocard::ReaCoeffN(const double phi, const double dt, int gp) const
+{
+  double reacoeff = params_->time_scale;
+  if(gp == -1)
+    reacoeff *= myocard_mat_->ReaCoeffN(phi,dt*params_->time_scale);
+  else
+    reacoeff *= myocard_mat_->ReaCoeffN(phi,dt*params_->time_scale, gp);
 
   return reacoeff;
 }
@@ -447,8 +565,19 @@ void MAT::Myocard::Initialize()
   else if (*(params_->model) == "INADA") myocard_mat_ = Teuchos::rcp(new Myocard_Inada(params_->dt_deriv,*(params_->tissue)));
   else if (*(params_->model) == "TNNP") myocard_mat_ = Teuchos::rcp(new Myocard_TenTusscher(params_->dt_deriv,*(params_->tissue)));
   else if (*(params_->model) == "SAN") myocard_mat_ = Teuchos::rcp(new Myocard_SAN_Garny(params_->dt_deriv,*(params_->tissue)));
-  else dserror("Myocard Material type is not supported! (for the moment only MV,FHN,INADA and TNNP)");
+  else dserror("Myocard Material type is not supported! (for the moment only MV,FHN,INADA,TNNP and SAN)");
 
+  nb_state_variables_ = myocard_mat_->GetNumberOfInternalStateVariables();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  resize internal state variables                      hoermann 12/16 |
+ *----------------------------------------------------------------------*/
+void MAT::Myocard::ResizeInternalStateVariables()
+{
+  myocard_mat_->ResizeInternalStateVariables(params_->num_gp);
   return;
 }
 
@@ -462,3 +591,10 @@ void MAT::Myocard::Update(const double phi, const double dt)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  get number of Gauss points                           hoermann 12/16 |
+ *----------------------------------------------------------------------*/
+int MAT::Myocard::GetNumberOfGP() const
+{
+  return myocard_mat_->GetNumberOfGP();
+};

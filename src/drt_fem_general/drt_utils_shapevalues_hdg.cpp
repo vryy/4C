@@ -419,9 +419,17 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
             if (std::abs(quadrature_->Point(r)[0]-point[0]) < 1e-14 &&
                 std::abs(quadrature_->Point(r)[1]-point[1]) < 1e-14)
               break;
-          dsassert(r<nqpoints_, "Quadrature points seem to not be symmetric");
-          for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunct(i,q) = shfunctNoPermute(i,r);
+          if (r<nqpoints_)
+            for (unsigned int i=0; i<nfdofs_; ++i)
+              shfunct(i,q) = shfunctNoPermute(i,r);
+          else
+          {
+            xsi(0) = point[0];
+            xsi(1) = point[1];
+            polySpace_->Evaluate(xsi,faceValues);
+            for (unsigned int i=0; i<nfdofs_; ++i)
+              shfunct(i,q) = faceValues(i);
+          }
         }
       }
       else if (trafomap[0] == 2 &&
@@ -438,9 +446,17 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
             if (std::abs(quadrature_->Point(r)[0]-point[0]) < 1e-14 &&
                 std::abs(quadrature_->Point(r)[1]-point[1]) < 1e-14)
               break;
-          dsassert(r<nqpoints_, "Quadrature points seem to not be symmetric");
-          for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunct(i,q) = shfunctNoPermute(i,r);
+          if (r<nqpoints_)
+            for (unsigned int i=0; i<nfdofs_; ++i)
+              shfunct(i,q) = shfunctNoPermute(i,r);
+          else
+          {
+            xsi(0) = point[0];
+            xsi(1) = point[1];
+            polySpace_->Evaluate(xsi,faceValues);
+            for (unsigned int i=0; i<nfdofs_; ++i)
+              shfunct(i,q) = faceValues(i);
+          }
         }
       }
       else if (trafomap[0] == 0 &&
@@ -456,9 +472,17 @@ DRT::UTILS::ShapeValuesFace<distype>::AdjustFaceOrientation (const DRT::Element 
             if (std::abs(quadrature_->Point(r)[0]-point[0]) < 1e-14 &&
                 std::abs(quadrature_->Point(r)[1]-point[1]) < 1e-14)
               break;
-          dsassert(r<nqpoints_, "Quadrature points seem to not be symmetric");
-          for (unsigned int i=0; i<nfdofs_; ++i)
-            shfunct(i,q) = shfunctNoPermute(i,r);
+          if (r<nqpoints_)
+            for (unsigned int i=0; i<nfdofs_; ++i)
+              shfunct(i,q) = shfunctNoPermute(i,r);
+          else
+          {
+            xsi(0) = point[0];
+            xsi(1) = point[1];
+            polySpace_->Evaluate(xsi,faceValues);
+            for (unsigned int i=0; i<nfdofs_; ++i)
+              shfunct(i,q) = faceValues(i);
+          }
         }
       }
       else

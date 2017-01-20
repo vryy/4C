@@ -23,6 +23,9 @@
 #include "../drt_lib/drt_element.H"
 
 #include "scatra_ele_parameter_timint.H"
+#include "scatra_ele_parameter_std.H"
+
+#include "../drt_fiber/drt_fiber_node.H"
 
 #include "../drt_mat/myocard.H"
 #include "../drt_mat/matlist.H"
@@ -39,7 +42,9 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ScaTraEleCalc
     const int numdofpernode,
     const int numscal,
     const std::string& disname)
-  : DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ScaTraEleCalcHDG(numdofpernode,numscal,disname)
+  :
+    DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ScaTraEleCalcHDG(numdofpernode,numscal,disname),
+    values_mat_gp_all_(0)
 {
 
 }
@@ -89,6 +94,85 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::Done()
   Instance( 0, 0, "", false );
 }
 
+/*----------------------------------------------------------------------*
+ |  prepare material parameter                           hoermann 11/16 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::PrepareMaterials(
+  DRT::Element*                             ele,        //!< the element we are dealing with
+  const Teuchos::RCP<const MAT::Material>   material,   //!< pointer to current material
+  const int                                 k,          //!< id of current scalar
+  Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >  difftensor
+)
+{
+
+  const Teuchos::RCP<MAT::Myocard>& actmat
+    = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+  DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
+
+  if (actmat->DiffusionAtEleCenter())
+  {
+    // get diffusivity at ele center
+    LINALG::Matrix<probdim,probdim> diff(true);
+    actmat->Diffusivity(diff,0);
+    Epetra_SerialDenseMatrix difftensortmp(this->nsd_,this->nsd_);
+    for (unsigned int i=0; i<this->nsd_; ++i)
+      for (unsigned int j=0; j<this->nsd_; ++j)
+        difftensortmp(i,j) = diff(i,j);
+    (*difftensor).push_back(difftensortmp);
+    if (DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode* > (ele->Nodes()[0]))
+      dserror("Fiber direction defined twice (nodes and elements)");
+  }
+  else
+  {
+    actmat->ResetDiffusionTensor();
+
+    // get fiber information at corners of element
+    DRT::Node**   nodes = ele->Nodes();
+    int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    std::vector<Epetra_SerialDenseVector> fibernodes(numnodes,Epetra_SerialDenseVector(3));
+    for (int inode=0; inode<numnodes; ++inode)
+    {
+      DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode* > (nodes[inode]);
+      if(!fnode)
+        dserror("No fiber direction defined on nodes or elements");
+      for (unsigned int j=0; j<this->nsd_; ++j)
+        fibernodes[inode](j) = fnode->Fiber()[j];
+    }
+
+    Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+        1,
+        false,
+        2*hdgele->Degree()));
+
+    shapes->Evaluate(*ele);
+
+    std::vector<LINALG::Matrix<probdim,1> > fibergp(shapes->nqpoints_);
+
+    for(unsigned int i = 0; i<this->nsd_;++i)
+      for(unsigned int q = 0; q<shapes->nqpoints_;++q)
+        for(unsigned int j = 0; j<shapes->ndofs_;++j)
+          fibergp[q](i,0) +=  shapes->funct(j,q) * fibernodes[j](i);
+
+    for(unsigned int q = 0; q<shapes->nqpoints_;++q)
+      actmat->SetupDiffusionTensor(fibergp[q]);
+
+    for(unsigned int q = 0; q<shapes->nqpoints_;++q)
+    {
+      Epetra_SerialDenseMatrix difftensortmp(this->nsd_,this->nsd_);
+      LINALG::Matrix<probdim,probdim> diff(true);
+      actmat->Diffusivity(diff,q);
+      for (unsigned int i=0; i<this->nsd_; ++i)
+        for (unsigned int j=0; j<this->nsd_; ++j)
+          difftensortmp(i,j) = diff(i,j);
+      (*difftensor).push_back(difftensortmp);
+    }
+
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                hoermann 09/15 |
@@ -97,15 +181,14 @@ template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::Materials(
   const Teuchos::RCP<const MAT::Material>   material, //!< pointer to current material
   const int                                 k,        //!< id of current scalar
-  Epetra_SerialDenseMatrix*                 difftensor,
-  Epetra_SerialDenseVector*                 ivecn,
-  Epetra_SerialDenseVector*                 ivecnp,
-  Epetra_SerialDenseMatrix*                 ivecnpderiv,
-  double*                                   diff1          //!< main diffusivity
+  Epetra_SerialDenseMatrix&                 difftensor,
+  Epetra_SerialDenseVector&                 ivecn,
+  Epetra_SerialDenseVector&                 ivecnp,
+  Epetra_SerialDenseMatrix&                 ivecnpderiv
 )
 {
   if (material->MaterialType() == INPAR::MAT::m_myocard)
-    MatMyocard(material,k,difftensor,ivecn,ivecnp,ivecnpderiv,diff1);
+    MatMyocard(material,k,difftensor,ivecn,ivecnp,ivecnpderiv);
   else dserror("Material type is not supported");
 
   return;
@@ -119,25 +202,14 @@ template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyocard(
   const Teuchos::RCP<const MAT::Material>   material,   //!< pointer to current material
   const int                                 k,          //!< id of current scalar
-  Epetra_SerialDenseMatrix*                 difftensor,
-  Epetra_SerialDenseVector*                 ivecn,
-  Epetra_SerialDenseVector*                 ivecnp,
-  Epetra_SerialDenseMatrix*                 ivecnpderiv,
-  double*                                   diff1          //!< main diffusivity
+  Epetra_SerialDenseMatrix&                 difftensor,
+  Epetra_SerialDenseVector&                 ivecn,
+  Epetra_SerialDenseVector&                 ivecnp,
+  Epetra_SerialDenseMatrix&                 ivecnpderiv
   )
 {
   const Teuchos::RCP<const MAT::Myocard>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
-
-  // get constant diffusivity
-  LINALG::Matrix<probdim,probdim> diff(true);
-  actmat->Diffusivity(diff);
-
-  *diff1 = actmat->Parameter()->diff1;
-
-  for (unsigned int i=0; i<this->nsd_; ++i)
-    for (unsigned int j=0; j<this->nsd_; ++j)
-      (*difftensor)(i,j) = diff(i,j);
 
   // coordinate of material gauss points
   LINALG::Matrix<probdim,1> mat_gp_coord(true);
@@ -148,58 +220,80 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
   double imatgpnp(0.);
   double imatgpn(0.);
 
+  ivecn.Scale(0.);
+  ivecnp.Scale(0.);
+  ivecnpderiv.Scale(0.);
+
   // polynomial space to get the value of the shape function at the material gauss points
   DRT::UTILS::PolynomialSpaceParams params(distype,this->shapes_->degree_,this->usescompletepoly_);
   polySpace_ = DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
 
-  Epetra_SerialDenseMatrix ivecnpderiv_gp(this->shapes_->ndofs_,this->shapes_->ndofs_);
-  Epetra_SerialDenseVector ivecnp_gp(this->shapes_->ndofs_);
-  Epetra_SerialDenseVector ivecn_gp(this->shapes_->ndofs_);
+  Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(distype, 3*this->shapes_->degree_));
 
-  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(actmat->Parameter()->num_gp));
+  if (quadrature_->NumPoints() != actmat->GetNumberOfGP())
+    dserror("Number of quadrature points (%d) does not match number of points in material (%d)!",quadrature_->NumPoints(),actmat->GetNumberOfGP());
+
+  if (values_mat_gp_all_.empty() or values_mat_gp_all_.size() !=  (unsigned) actmat->GetNumberOfGP())
+    values_mat_gp_all_.resize(actmat->GetNumberOfGP());
+
+  if(unsigned (values_mat_gp_all_[0].M()) != this->shapes_->ndofs_)
+  {
+    for (int q = 0; q < quadrature_->NumPoints(); ++q)
+    {
+      values_mat_gp_all_[q].Resize(this->shapes_->ndofs_);
+
+      // gaussian points coordinates
+      for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;++idim)
+        mat_gp_coord(idim) = quadrature_->Point(q)[idim];
+
+
+      polySpace_->Evaluate(mat_gp_coord,values_mat_gp_all_[q]);
+    }
+  }
 
   //Jacobian determinant
   double jacdet = this->shapes_->xjm.Determinant();
 
-    for (int q = 0; q < intpoints.IP().nquad; q++)
+  for (int q = 0; q < quadrature_->NumPoints(); ++q)
+  {
+
+    double phinpgp = 0.0;
+    double phingp = 0.0;
+
+    //gaussian weight
+    double gp_mat_alpha = quadrature_->Weight(q);
+
+    // loop over shape functions
+    for (unsigned int i=0; i<this->shapes_->ndofs_; ++i)
     {
-      double phinpgp = 0.0;
-      double phingp = 0.0;
+      phingp += values_mat_gp_all_[q](i)*this->interiorPhin_(i);
+      phinpgp += values_mat_gp_all_[q](i)*this->interiorPhinp_(i);
+    }
 
-      // gaussian points coordinates
-      for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;idim++)
-        mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
+    // Reaction term at material gauss points
 
-      //gaussian weight
-      double gp_mat_alpha = intpoints.IP().qwgt[q];
-
-      polySpace_->Evaluate(mat_gp_coord,values_mat_gp);
-
-      // loop over shape functions
-      for (unsigned int i=0; i<this->shapes_->ndofs_; ++i)
-      {
-        phingp += values_mat_gp(i)*this->interiorPhin_(i);
-        phinpgp += values_mat_gp(i)*this->interiorPhinp_(i);
-      }
-
-      // Reaction term at material gauss points
+    if(!this->scatrapara_->SemiImplicit())
+    {
       imatgpnpderiv = actmat->ReaCoeffDeriv(phinpgp,this->Dt(),q);
-      imatgpn = actmat->ReaCoeff(phingp, this->Dt(),q);
-      imatgpnp = actmat->ReaCoeff(phinpgp, this->Dt(),q);
+    }
 
-      // loop over shape functions
+     imatgpn = actmat->ReaCoeffN(phingp, this->Dt(),q);
+     imatgpnp = actmat->ReaCoeff(phinpgp, this->Dt(),q);
+
+    // loop over shape functions
+    for (unsigned int i=0; i<this->shapes_->ndofs_; ++i)
+    {
+      ivecn(i) += imatgpn*values_mat_gp_all_[q](i)*jacdet*gp_mat_alpha;
+    }
+
+    if(!this->scatrapara_->SemiImplicit())
       for (unsigned int i=0; i<this->shapes_->ndofs_; ++i)
       {
         for (unsigned int j=0; j<this->shapes_->ndofs_; ++j)
-          ivecnpderiv_gp(i,j) += imatgpnpderiv*values_mat_gp(i)*values_mat_gp(j)*jacdet *gp_mat_alpha;
-        ivecnp_gp(i) += imatgpnp*values_mat_gp(i)*jacdet*gp_mat_alpha;
-        ivecn_gp(i) += imatgpn*values_mat_gp(i)*jacdet*gp_mat_alpha;
+          ivecnpderiv(i,j) += imatgpnpderiv*values_mat_gp_all_[q](i)*values_mat_gp_all_[q](j)*jacdet *gp_mat_alpha;
+        ivecnp(i) += imatgpnp*values_mat_gp_all_[q](i)*jacdet*gp_mat_alpha;
       }
-    }
-
-  *ivecnpderiv = ivecnpderiv_gp;
-  *ivecnp = ivecnp_gp;
-  *ivecn = ivecn_gp;
+  }
 
   return;
 } // ScaTraEleCalcHDGCardiacMonodomain<distype>::MatMyocard
@@ -283,7 +377,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::GetMater
       for (int k = 0; k< material->GetNumberOfInternalStateVariables(); ++k)
       {
         double material_state = 0;
-        unsigned int nqpoints = this->shapes_->nqpoints_;
+        unsigned int nqpoints = material->GetNumberOfGP();
         for (unsigned int q = 0; q < nqpoints; ++q)
         {
           material_state += material->GetInternalState(k,q);
@@ -313,7 +407,6 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::SetMater
 {
   // NOTE: add integral values only for elements which are NOT ghosted!
   if (ele->Owner() == discretization.Comm().MyPID())
-//  if (discretization.Comm().MyPID()==0)
   {
     // access the general material
     Teuchos::RCP<MAT::Material> material = ele->Material();
@@ -324,7 +417,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::SetMater
       Teuchos::RCP<MAT::Myocard> material = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
       for (int k = 0; k< material->GetNumberOfInternalStateVariables(); ++k)
       {
-        int nqpoints = this->shapes_->nqpoints_;
+        int nqpoints = material->GetNumberOfGP();
         for (int q = 0; q < nqpoints; ++q)
         {
           Teuchos::RCP<Epetra_Vector> material_internal_state_component = Teuchos::rcp((*material_internal_state)(k*nqpoints+q),false);
@@ -336,6 +429,91 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::SetMater
 
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Project Material Field                               hoermann 12/16 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ProjectMaterialField(
+    const DRT::Element*               ele   //!< the element we are dealing with
+    )
+{
+  const Teuchos::RCP<MAT::Myocard>& actmat
+    = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+
+  DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
+
+  Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+      hdgele->DegreeOld(),
+      this->usescompletepoly_,
+      3*hdgele->Degree()));
+
+  Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_old = Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(
+      hdgele->DegreeOld(),
+      this->usescompletepoly_,
+      3*hdgele->DegreeOld()));
+
+  shapes->Evaluate(*ele);
+  shapes_old->Evaluate(*ele);
+
+  Epetra_SerialDenseMatrix  massPartOld(shapes->ndofs_,shapes_old->nqpoints_);
+  Epetra_SerialDenseMatrix  massPartOldW(shapes->ndofs_,shapes_old->nqpoints_);
+  Epetra_SerialDenseMatrix  massPart(shapes->ndofs_,shapes->nqpoints_);
+  Epetra_SerialDenseMatrix  massPartW(shapes->ndofs_,shapes->nqpoints_);
+  Epetra_SerialDenseMatrix  Mmat(shapes->ndofs_,shapes->ndofs_);
+
+  Epetra_SerialDenseMatrix  state_variables(shapes_old->nqpoints_,actmat->GetNumberOfInternalStateVariables());
+
+  if(shapes->ndofs_ != shapes_old->ndofs_)
+    dserror("Number of shape functions not identical!");
+
+  for (unsigned int i=0; i<shapes->ndofs_; ++i)
+  {
+    for (unsigned int q=0; q<shapes->nqpoints_; ++q)
+    {
+      massPart(i,q) = shapes->shfunct(i, q);
+      massPartW(i,q) = shapes->shfunct(i, q) * shapes->jfac(q);
+    }
+    for (unsigned int q=0; q<shapes_old->nqpoints_; ++q)
+    {
+      massPartOld(i,q) = shapes_old->shfunct(i, q);
+      massPartOldW(i,q) = shapes_old->shfunct(i, q) * shapes_old->jfac(q);
+    }
+
+  }
+
+  Mmat.Multiply('N', 'T', 1.0 , massPartOld, massPartOldW, 0.0);
+
+  for (unsigned int q=0; q<shapes_old->nqpoints_; ++q)
+    for (int k=0; k<actmat->GetNumberOfInternalStateVariables(); ++k)
+      state_variables(q,k) = actmat->GetInternalState(k,q);
+
+  Epetra_SerialDenseMatrix tempMat1(shapes->ndofs_,actmat->GetNumberOfInternalStateVariables());
+  tempMat1.Multiply('N', 'N', 1.0, massPartOldW, state_variables, 0.0);
+
+  Epetra_SerialDenseSolver inverseMat;
+  inverseMat.SetMatrix(Mmat);
+  inverseMat.SetVectors(tempMat1, tempMat1);
+  inverseMat.FactorWithEquilibration(true);
+  int err2 = inverseMat.Factor();
+  int err = inverseMat.Solve();
+  if (err!=0 || err2!=0)
+    dserror("Inversion of matrix failed with errorcode %d",err);
+
+  Epetra_SerialDenseMatrix tempMat2(shapes->nqpoints_,actmat->GetNumberOfInternalStateVariables());
+  tempMat2.Multiply('T','N',1.0,massPart,tempMat1,0.0);
+
+  actmat->SetGP(shapes->nqpoints_);
+  actmat->ResizeInternalStateVariables();
+
+
+  for (unsigned int q=0; q<shapes->nqpoints_; ++q)
+    for (int k=0; k<actmat->GetNumberOfInternalStateVariables(); ++k)
+      actmat->SetInternalState(k,tempMat2(q,k),q);
+
+return 0;
 }
 
 

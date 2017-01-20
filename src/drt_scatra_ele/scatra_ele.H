@@ -422,7 +422,7 @@ public:
 protected:
 
   //! initialize the element
-  int Initialize();
+  virtual int Initialize();
 
   //! the element discretization type (shape)
   DRT::Element::DiscretizationType distype_;

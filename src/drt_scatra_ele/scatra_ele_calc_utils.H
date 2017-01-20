@@ -186,6 +186,9 @@ namespace SCATRA
       case 4:
         return DRT::UTILS::intrule_tet_4point;
         break;
+      case 5:
+        return DRT::UTILS::intrule_tet_5point;
+        break;
       case 10:
         return DRT::UTILS::intrule_tet_10point;
         break;
@@ -193,7 +196,7 @@ namespace SCATRA
         return DRT::UTILS::intrule_tet_24point;
         break;
       default:
-        dserror("Gauss rule only for 1, 4, 10, 24 points for TET elements defined. You specified %d points",gp);
+        dserror("Gauss rule only for 1, 4, 5, 10, 24 points for TET elements defined. You specified %d points",gp);
         return DRT::UTILS::intrule3D_undefined;
         break;
       }
@@ -228,7 +231,7 @@ namespace SCATRA
   {
     static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for WEDGE elements defined. Feel free to add the Gauss rule.");
+      dserror("Gauss rule not for WEDGE elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
     };
   };
@@ -236,7 +239,7 @@ namespace SCATRA
   {
     static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for PYRAMID elements defined. Feel free to add the Gauss rule.");
+      dserror("Gauss rule not for PYRAMID elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
     };
   };
@@ -244,7 +247,7 @@ namespace SCATRA
   {
     static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
     };
   };
@@ -252,7 +255,7 @@ namespace SCATRA
   {
     static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
     };
   };
@@ -343,6 +346,9 @@ namespace SCATRA
       case 3:
         return DRT::UTILS::intrule_tri_3point;
         break;
+      case 4:
+        return DRT::UTILS::intrule_tri_4point;
+        break;
       case 7:
         return DRT::UTILS::intrule_tri_7point;
         break;
@@ -350,7 +356,7 @@ namespace SCATRA
         return DRT::UTILS::intrule_tri_12point;
         break;
       default:
-        dserror("Gauss rule only for 1, 3, 7, 12 points for TRI elements defined. You specified %d points",gp);
+        dserror("Gauss rule only for 1, 3, 4, 7, 12 points for TRI elements defined. You specified %d points",gp);
         return DRT::UTILS::intrule2D_undefined;
         break;
       }
@@ -367,7 +373,7 @@ namespace SCATRA
   {
     static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule2D_undefined;
     };
   };
@@ -375,7 +381,7 @@ namespace SCATRA
   {
     static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule2D_undefined;
     };
   };
@@ -383,15 +389,35 @@ namespace SCATRA
   {
     static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for LINE elements defined. Feel free to add the Gauss rule.");
-      return DRT::UTILS::intrule1D_undefined;
+      switch(gp)
+      {
+      case 1:
+        return DRT::UTILS::intrule_line_1point;
+        break;
+      case 2:
+        return DRT::UTILS::intrule_line_2point;
+        break;
+      case 3:
+        return DRT::UTILS::intrule_line_3point;
+        break;
+      case 4:
+        return DRT::UTILS::intrule_line_4point;
+        break;
+      case 5:
+        return DRT::UTILS::intrule_line_5point;
+        break;
+      default:
+        dserror("Gauss rule only for 1, 2, 3, 4, 5 points for LINE elements defined. You specified %d points",gp);
+        return DRT::UTILS::intrule1D_undefined;
+        break;
+      }
     };
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::line3>
   {
     static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for LINE elements defined. Feel free to add the Gauss rule.");
+      dserror("Gauss rule not for LINE elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;
     };
   };
@@ -399,7 +425,7 @@ namespace SCATRA
   {
     static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;
     };
   };
@@ -407,7 +433,7 @@ namespace SCATRA
   {
     static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
     {
-      dserror("Gauss rule only not for NURBS elements defined. Feel free to add the Gauss rule.");
+      dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;
     };
   };

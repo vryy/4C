@@ -124,6 +124,25 @@ public:
   virtual void Unpack(const std::vector<char>& data);
 
   /*!
+  \brief Pack Material
+
+  \ref PackMaterial and \ref UnpackMaterial are used to adapt material evaluation
+
+  */
+  virtual void PackMaterial(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack Material
+
+  \ref PackMaterial and \ref UnpackMaterial are used to adapt material evaluation
+
+  */
+  virtual void UnpackMaterial(const std::vector<char>& data) const;
+
+  //! initialize the element
+  int Initialize();
+
+  /*!
   \brief Read input for this element
   */
   bool ReadElement(const std::string&          eletype,
@@ -337,7 +356,7 @@ public:
   //! diffusion tensor
   Epetra_SerialDenseMatrix diff_;
   //! inverse diffusion tensor
-  Epetra_SerialDenseMatrix invdiff_;
+  std::vector<Epetra_SerialDenseMatrix> invdiff_;
   //! main diffusivity
   double diff1_;
 

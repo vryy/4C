@@ -58,7 +58,7 @@ ITEMAX                          20
 ABSTOLRES                       1e-12
 CONVTOL                         1e-10
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_myocard DIFF1 1.0e-1 DIFF2 1.0e-2 DIFF3 0.0 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0 GP 64
+MAT 1 MAT_myocard DIFF1 1.0e-1 DIFF2 1.0e-2 DIFF3 0.0 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
@@ -100,6 +100,6 @@ NODE        12 COORD  2.0e-01  1.0e-01  1.0e-01
 1 TRANSPHDG HEX8  1 2 5 4 7 8 11 10    MAT 1 TYPE HdgCardMono DEG 0 SPC 0 FIBER1 1.0 0.0 0.0
 2 TRANSPHDG HEX8  2 3 6 5 8 9 12 11    MAT 1 TYPE HdgCardMono DEG 0 SPC 0 FIBER1 1.0 0.0 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.33926539853047477e+00 TOLERANCE 1E-6
+SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.33941971356808676e+00 TOLERANCE 1E-6
 -------------------------------------------------------------------------END
 // END

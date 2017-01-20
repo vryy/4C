@@ -66,10 +66,22 @@ protected:
       Teuchos::RCP<Epetra_Vector>    interpolatedPhi
        );
 
+  //! adapt material
+  virtual void PackMaterial();
+
+  //! adapt material
+  virtual void UnpackMaterial();
+
+  //! project material field
+  virtual void ProjectMaterial();
+
 private:
 
   //! activation time
   Teuchos::RCP<Epetra_Vector> activation_time_interpol_;
+
+  //! element data
+  Teuchos::RCP<std::vector<char> > data_;
 
 
 }; // class TimIntCardiacMonodomainHDG

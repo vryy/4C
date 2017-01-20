@@ -69,7 +69,7 @@ namespace MAT
       const double time_scale;
 
       /// Number of Gauss Points for evaluating the material, i.e. the nonlinear reaction term
-      const int num_gp;
+      int num_gp;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -138,6 +138,12 @@ public:
 
   //@}
 
+  /// Unpack Material for adaptive methods
+  virtual void UnpackMaterial(const std::vector<char>& data);
+
+  /// init material
+  void SetGP(int gp) {params_->num_gp = gp; };
+
   /// material type
   virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_myocard; }
 
@@ -155,15 +161,28 @@ public:
   void SetupDiffusionTensor(const LINALG::Matrix<2,1>& fiber1);
 
   /// diffusivity
-  void Diffusivity(LINALG::Matrix<1,1>& diffus3) const;
-  void Diffusivity(LINALG::Matrix<2,2>& diffus3) const;
-  void Diffusivity(LINALG::Matrix<3,3>& diffus3) const;
+  void Diffusivity(LINALG::Matrix<1,1>& diffus3) const { Diffusivity(diffus3,0); return;};
+  void Diffusivity(LINALG::Matrix<2,2>& diffus3) const { Diffusivity(diffus3,0); return;};
+  void Diffusivity(LINALG::Matrix<3,3>& diffus3) const { Diffusivity(diffus3,0); return;};
+
+  /// diffusivity
+  void Diffusivity(LINALG::Matrix<1,1>& diffus3, int gp) const;
+  void Diffusivity(LINALG::Matrix<2,2>& diffus3, int gp) const;
+  void Diffusivity(LINALG::Matrix<3,3>& diffus3, int gp) const;
+
+  bool DiffusionAtEleCenter() const {
+    return diff_at_ele_center_;};
+
+  void ResetDiffusionTensor() {difftensor_.clear(); return;};
 
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) const;
 
   /// compute reaction coefficient for multiple points per element
   double ReaCoeff(const double phi, const double dt, int gp) const;
+
+  /// compute reaction coefficient for multiple points per element at timestep n
+  double ReaCoeffN(const double phi, const double dt, int gp) const;
 
   /// compute reaction coefficient derivative
   double ReaCoeffDeriv(const double csnp, const double dt) const;
@@ -204,8 +223,16 @@ public:
   /// initialize internal variables (called by constructors)
   void Initialize();
 
+  /// resize internal state variables
+  void ResizeInternalStateVariables();
+
   /// time update for this material
   void Update(const double phi, const double dt);
+
+  /// get number of Gauss points
+  int GetNumberOfGP() const;
+
+  bool MyocardMat() const {return myocard_mat_ != Teuchos::null;};
 
   /// @name Access material constants
   //@{
@@ -221,13 +248,16 @@ private:
   MAT::PAR::Myocard* params_;
 
   /// conductivity tensor
-  LINALG::Matrix<3,3> difftensor_;
+  std::vector<LINALG::Matrix<3,3> > difftensor_;
 
   /// number of internal state variables
   int nb_state_variables_;
 
   // Type of material model
   Teuchos::RCP<Myocard_General> myocard_mat_;
+
+  /// diffusion at element center
+  bool diff_at_ele_center_;
 
 }; // Myocard
 } // namespace MAT

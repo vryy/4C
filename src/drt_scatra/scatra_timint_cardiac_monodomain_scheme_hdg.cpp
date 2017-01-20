@@ -17,10 +17,13 @@
 
 #include "scatra_timint_cardiac_monodomain_scheme_hdg.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_calc_hdg.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 
+#include "../drt_lib/drt_parobject.H"
+#include "../drt_lib/drt_parobjectfactory.H"
 
 
 /*----------------------------------------------------------------------*
@@ -210,4 +213,75 @@ void SCATRA::TimIntCardiacMonodomainHDG::WriteProblemSpecificOutput(
     }
     output_->WriteVector("activation_time_np_hdg", activation_time_interpol_, IO::DiscretizationWriter::nodevector);
   }
+}
+
+/*----------------------------------------------------------------------*
+ |  pack material                                         hoermann 12/16|
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntCardiacMonodomainHDG::PackMaterial()
+{
+  DRT::PackBuffer buffer;
+
+  // loop over elements
+  for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
+  {
+    DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(discret_->lColElement(iele));
+    hdgele->PackMaterial(buffer);
+  }
+
+  buffer.StartPacking();
+
+  // loop over elements
+  for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
+  {
+    DRT::Element *ele = discret_->lColElement(iele);
+    const DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<const DRT::ELEMENTS::ScaTraHDG*>(ele);
+    hdgele->PackMaterial(buffer);
+  }
+
+  Teuchos::RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>);
+  std::swap( *block, buffer() );
+  data_ = block;
+  return;
+
+}
+
+/*----------------------------------------------------------------------*
+ |  adapt material                                        hoermann 12/16|
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntCardiacMonodomainHDG::UnpackMaterial()
+{
+  std::vector<char>::size_type index = 0;
+  // loop over elements
+  for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
+  {
+    DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(discret_->lColElement(iele));
+    std::vector<char> data;
+    hdgele->ExtractfromPack(index,*data_,data);
+    hdgele->UnpackMaterial(data);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  project material                                      hoermann 12/16|
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntCardiacMonodomainHDG::ProjectMaterial()
+{
+  discret_->ClearState(true);
+  // set action
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action",SCATRA::project_material_field);
+
+  Epetra_SerialDenseMatrix dummyMat;
+  Epetra_SerialDenseVector dummyVec;
+  DRT::Element::LocationArray dummy(1);
+
+  for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
+  {
+    DRT::Element *ele = discret_->lColElement(iele);
+
+    // call routine on elements to project material field
+    ele->Evaluate(eleparams,*discret_,dummy,dummyMat,dummyMat,dummyVec,dummyVec,dummyVec);
+  }
+
 }

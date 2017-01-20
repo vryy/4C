@@ -55,7 +55,8 @@ DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ScaTraEleCalcHDG(const int num
                                                                    const std::string& disname)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
-    usescompletepoly_()
+    usescompletepoly_(),
+    scatrapara_(DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname))
 
 {}
 
@@ -197,7 +198,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::Evaluate(DRT::Element*    
 
 
 /*----------------------------------------------------------------------*
- * Evaluate Service                                      heormann  09/15|
+ * Evaluate Service                                      hoermann  09/15|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::EvaluateService(
@@ -267,6 +268,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::EvaluateService(
       shapes_->Evaluate(*ele);
       ElementInit(ele);
       ReadGlobalVectors(ele, discretization, la);
+      PrepareMaterialParams(ele);
       GetMaterialParams(ele);
       localSolver_->ComputeMatrices(ele);
       localSolver_->CondenseLocalPart(hdgele);
@@ -274,6 +276,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::EvaluateService(
     zeroMatrix(elemat1_epetra);
     localSolver_->AddDiffMat(elemat1_epetra,hdgele);
 
+    break;
+  }
+  case SCATRA::project_material_field:
+  {
+    ProjectMaterialField(ele);
     break;
   }
   case SCATRA::project_field:
@@ -761,6 +768,8 @@ ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG * hdgele)
 
   Epetra_SerialDenseMatrix  massPart(hdgele->ndofs_,shapes_->nqpoints_);
   Epetra_SerialDenseMatrix  massPartW(hdgele->ndofs_,shapes_->nqpoints_);
+  std::vector<Epetra_SerialDenseMatrix> massPartDW(nsd_*nsd_,Epetra_SerialDenseMatrix(hdgele->ndofs_,shapes_->nqpoints_));
+  std::vector<Epetra_SerialDenseMatrix> DW(nsd_*nsd_,Epetra_SerialDenseMatrix(hdgele->ndofs_,hdgele->ndofs_));
 
   // loop over quadrature points
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -771,6 +780,18 @@ ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG * hdgele)
       massPart(i, q) = shapes_->shfunct(i, q);
       massPartW(i, q) = shapes_->shfunct(i, q) * shapes_->jfac(q);
 
+      if (hdgele->invdiff_.size()==1)
+        for (unsigned int d = 0; d < nsd_; ++d)
+          for (unsigned int e = 0; e<nsd_; ++e)
+            massPartDW[d*nsd_+e](i, q) = shapes_->shfunct(i, q) * shapes_->jfac(q) * hdgele->invdiff_[0](d,e);
+      else if (hdgele->invdiff_.size()==shapes_->nqpoints_)
+        for (unsigned int d = 0; d < nsd_; ++d)
+          for (unsigned int e = 0; e<nsd_; ++e)
+            massPartDW[d*nsd_+e](i, q) = shapes_->shfunct(i, q) * shapes_->jfac(q) * hdgele->invdiff_[q](d,e);
+      else
+        dserror("Diffusion tensor not defined properly");
+
+
       for (unsigned int d = 0; d < nsd_; ++d)
       {
         vel(d,q)=0.0;
@@ -780,6 +801,13 @@ ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG * hdgele)
       }
     }
   }
+
+
+
+  for (unsigned int d = 0; d < nsd_; ++d)
+    for (unsigned int e = 0; e<nsd_; ++e)
+      DW[d*nsd_+e].Multiply('N', 'T', 1.0 , massPart, massPartDW[d*nsd_+e], 0.0);
+
 
   // multiply matrices to perform summation over quadrature points
   hdgele->Mmat_.Multiply('N', 'T', 1.0 , massPart, massPartW, 0.0);
@@ -792,7 +820,7 @@ ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG * hdgele)
       for (unsigned int d = 0; d < nsd_; ++d)
       {
         for (unsigned int e = 0; e<nsd_; e++)
-          hdgele->Dmat_(d * hdgele->ndofs_ +i, e * hdgele->ndofs_ + j) = hdgele->invdiff_(d,e) * hdgele->Mmat_(i,j);
+          hdgele->Dmat_(d * hdgele->ndofs_ +i, e * hdgele->ndofs_ + j) = DW[d*nsd_+e](i,j);
         hdgele->BmatMT_(d * hdgele->ndofs_ + i, j) = -1.0 * hdgele->Bmat_(j, d * hdgele->ndofs_ + i);
       }
     }
@@ -808,9 +836,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::ComputeResid
     Teuchos::ParameterList&           params,
     Epetra_SerialDenseVector &        elevec,
     Epetra_SerialDenseMatrix &        elemat1,
-    Epetra_SerialDenseVector          interiorPhin,
-    Epetra_SerialDenseVector          tracen,
-    Epetra_SerialDenseVector          tracenp,
+    Epetra_SerialDenseVector &        interiorPhin,
+    Epetra_SerialDenseVector &        tracen,
+    Epetra_SerialDenseVector &        tracenp,
     const DRT::ELEMENTS::ScaTraHDG *  hdgele
     )
 {
@@ -871,15 +899,6 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::ComputeResid
   for (unsigned int i = 0; i < hdgele->ndofs_*nsd_; i++)
     tempinteriorgradphin(i) = interiorPhin(hdgele->ndofs_+i);
 
-  int onfdofs = elevec.M();
-  Epetra_SerialDenseVector trace_SDV(onfdofs);
-  for (int i = 0; i < onfdofs; ++i)
-    trace_SDV(i) = tracen(i);
-
-  Epetra_SerialDenseVector tracenp_SDV(onfdofs);
-  for (int i = 0; i < onfdofs; ++i)
-    tracenp_SDV(i) = tracenp(i);
-
   double dt = scatraparatimint_->Dt();
   double theta = scatraparatimint_->TimeFac()*(1/dt);
 
@@ -890,7 +909,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::ComputeResid
   {
     tempVec1.Multiply('N', 'N', 1.0, hdgele->Amat_, tempinteriorphin, 0.0);
     tempVec1.Multiply('N', 'N', 1.0, hdgele->Bmat_, tempinteriorgradphin, 1.0);
-    tempVec1.Multiply('N', 'N', 1.0, hdgele->Cmat_, trace_SDV, 1.0); // = (  A U^n + B Q^n + C L^n )
+    tempVec1.Multiply('N', 'N', 1.0, hdgele->Cmat_, tracen, 1.0); // = (  A U^n + B Q^n + C L^n )
     tempVec1.Scale(dt*(1.0-theta));
   }
   tempVec1.Multiply('N', 'N', -1.0, hdgele->Mmat_, tempinteriorphin, 1.0); // = s = -M * U^n + dt*(1-theta) * (  A U^n + B Q^n + C L^n )
@@ -921,7 +940,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::ComputeResid
   {
     tempVec2.Multiply('N', 'N', 1.0, hdgele->BmatMT_, tempinteriorphin, 0.0);
     tempVec2.Multiply('N', 'N', 1.0, hdgele->Dmat_, tempinteriorgradphin, 1.0);
-    tempVec2.Multiply('N', 'N', 1.0, hdgele->Emat_, trace_SDV, 1.0); // = (-B^T U^n  + D Q^n + E L^n )
+    tempVec2.Multiply('N', 'N', 1.0, hdgele->Emat_, tracen, 1.0); // = (-B^T U^n  + D Q^n + E L^n )
     tempVec2.Scale(dt*(1.0-theta));//= t = dt*(1-theta) * (-B^T U^n  + D Q^n + E L^n )
   }
 
@@ -939,14 +958,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::ComputeResid
   {
     elevec.Multiply('N', 'N', 1.0, hdgele->Gmat_, tempinteriorphin, 0.0);
     elevec.Multiply('N', 'N', 1.0, hdgele->EmatT_, tempinteriorgradphin, 1.0);
-    elevec.Multiply('N', 'N', 1.0, hdgele->Hmat_, trace_SDV, 1.0); // = (  G  U^n    + E^T Q^n  + H L^n  )
+    elevec.Multiply('N', 'N', 1.0, hdgele->Hmat_, tracen, 1.0); // = (  G  U^n    + E^T Q^n  + H L^n  )
     elevec.Scale(dt*(1.0-theta));// = dt*(1-theta) * (  G  U^n    + E^T Q^n  + H L^n  )
   }
 
   elevec.Multiply('N', 'N', -1.0, hdgele->Gmat_, tempVec4, 1.0);
   elevec.Multiply('N', 'N', -1.0, hdgele->EmatT_, tempVec3, 1.0); // =  - (G x + E^T y ) +   dt(1-theta) (  G  U    + E^T Q  + H L  )
 
-  elevec.Multiply('N', 'N', 1.0, hdgele->Kmat_, tracenp_SDV, 1.0);
+  elevec.Multiply('N', 'N', 1.0, hdgele->Kmat_, tracenp, 1.0);
 
   return;
 } // ComputeResidual
@@ -1187,6 +1206,47 @@ ComputeNeumannBC(DRT::Element*               ele,
   return;
 }//ComputeNeumannBC
 
+/*----------------------------------------------------------------------*
+ |  prepare material parameter                            hoermann 11/16|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::PrepareMaterialParams(
+  DRT::Element*   ele   //!< the element we are dealing with
+  )
+{
+
+  Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > difftensor = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>);
+
+  // get the material
+  Teuchos::RCP<MAT::Material> material = ele->Material();
+
+  if (material->MaterialType() == INPAR::MAT::m_matlist)
+  {
+    const Teuchos::RCP<const MAT::MatList>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::MatList>(material);
+    if (actmat->NumMat() < numscal_) dserror("Not enough materials in MatList.");
+
+    for (int k = 0;k<numscal_;++k)
+    {
+      int matid = actmat->MatID(k);
+      Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
+
+      for (unsigned int q=0; q<shapes_->nqpoints_; ++q)
+        PrepareMaterials(ele,singlemat,k,difftensor);
+    }
+  }
+  else
+    PrepareMaterials(ele,material,0,difftensor);
+
+  DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
+  for (unsigned int i=0; i<(*difftensor).size(); ++i)
+    localSolver_->PrepareMaterialParameter(hdgele,(*difftensor)[i]);
+
+
+
+  return;
+} //ScaTraEleCalcHDG::GetMaterialParams
+
 
 /*----------------------------------------------------------------------*
  |  get the material parameter                            hoermann 09/15|
@@ -1202,7 +1262,6 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::GetMaterialParams(
   Epetra_SerialDenseVector ivecnp(shapes_->ndofs_);
   Epetra_SerialDenseMatrix ivecnpderiv(shapes_->ndofs_,shapes_->ndofs_);
 
-  double diff1 = 0;
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
@@ -1217,14 +1276,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::GetMaterialParams(
       int matid = actmat->MatID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
-      Materials(singlemat,k,&difftensor,&ivecn,&ivecnp,&ivecnpderiv,&diff1);
+      Materials(singlemat,k,difftensor,ivecn,ivecnp,ivecnpderiv);
     }
   }
   else
-    Materials(material,0,&difftensor,&ivecn,&ivecnp,&ivecnpderiv,&diff1);
+    Materials(material,0,difftensor,ivecn,ivecnp,ivecnpderiv);
 
   DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
-  localSolver_->SetMaterialParameter(hdgele,&difftensor,&ivecn,&ivecnp,&ivecnpderiv,&diff1);
+  localSolver_->SetMaterialParameter(hdgele,ivecn,ivecnp,ivecnpderiv);
 
 
 
@@ -1434,7 +1493,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::SetInitialField(
       Epetra_SerialDenseSolver inverseMass;
       inverseMass.SetMatrix(Mmat);
       inverseMass.SetVectors(localMat, localMat);
-      inverseMass.Solve();
+      inverseMass.FactorWithEquilibration(true);
+      int err2 = inverseMass.Factor();
+      int err = inverseMass.Solve();
+      if (err!=0 || err2!=0)
+        dserror("Inversion of matrix failed with errorcode %d",err);
     }
   }
 
@@ -1481,7 +1544,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::SetInitialField(
     Epetra_SerialDenseSolver inverseMass;
     inverseMass.SetMatrix(mass);
     inverseMass.SetVectors(trVec,trVec);
-    inverseMass.Solve();
+    inverseMass.FactorWithEquilibration(true);
+    int err2 = inverseMass.Factor();
+    int err = inverseMass.Solve();
+    if (err!=0 || err2!=0)
+      dserror("Inversion of matrix failed with errorcode %d",err);
     for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)
       elevec1(nfdofs+i) = trVec(i,0);
 
@@ -1497,14 +1564,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::SetInitialField(
  |  evaluate single material  (protected)                hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::Materials(
-    const Teuchos::RCP<const MAT::Material>   material,      //!< pointer to current material
-    const int                                 k,             //!< id of current scalar
-    Epetra_SerialDenseMatrix*                 difftensor,    //!< diffusion tensor
-    Epetra_SerialDenseVector*                 ivecn,         //!< reaction term at time n
-    Epetra_SerialDenseVector*                 ivecnp,        //!< reaction term at time n+1
-    Epetra_SerialDenseMatrix*                 ivecnpderiv,   //!< reaction term derivative
-    double*                                   diff1          //!< main diffusivity
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::PrepareMaterials(
+    DRT::Element*                                          ele,           //!< the element we are dealing with
+    const Teuchos::RCP<const MAT::Material>                material,      //!< pointer to current material
+    const int                                              k,             //!< id of current scalar
+    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >   difftensor     //!< diffusion tensor
     )
 {
   const Teuchos::RCP<const MAT::ScatraMat>& actmat
@@ -1515,10 +1579,12 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::Materials(
   // get constant diffusivity
   diffscalar = actmat->Diffusivity();
 
-  for (unsigned int i=0; i<nsd_;++i)
-    (*difftensor)(i,i) = diffscalar;
+  Epetra_SerialDenseMatrix difftensortmp(nsd_,nsd_);
 
-  *diff1 = diffscalar;
+  for (unsigned int i=0; i<nsd_;++i)
+    difftensortmp(i,i) = diffscalar;
+
+  (*difftensor).push_back(difftensortmp);
 
   return;
 } //ScaTraEleCalcHDG::Materials
@@ -1530,38 +1596,43 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::Materials(
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::SetMaterialParameter(
     DRT::ELEMENTS::ScaTraHDG *   hdgele,        //!< hdg element
-    Epetra_SerialDenseMatrix*    difftensor,    //!< diffusion tensor
-    Epetra_SerialDenseVector*    ivecn,         //!< reaction term at time n
-    Epetra_SerialDenseVector*    ivecnp,        //!< reaction term at time n+1
-    Epetra_SerialDenseMatrix*    ivecnpderiv,   //!< reaction term derivaitve
-    double*                      diff1          //!< main diffusivity
+    Epetra_SerialDenseVector&    ivecn,         //!< reaction term at time n
+    Epetra_SerialDenseVector&    ivecnp,        //!< reaction term at time n+1
+    Epetra_SerialDenseMatrix&    ivecnpderiv    //!< reaction term derivaitve
     )
 {
 
   // Initialize reaction and diffusion matrices
-  hdgele->diff_.Shape(nsd_,nsd_);
-  hdgele->invdiff_.Shape(nsd_,nsd_);
   hdgele->Ivecn_.Shape(hdgele->ndofs_,1);
   hdgele->Ivecnp_.Shape(hdgele->ndofs_,1);
   hdgele->Imatnpderiv_.Shape(hdgele->ndofs_,hdgele->ndofs_);
 
-  for (unsigned int i=0; i<nsd_; ++i)
-    for (unsigned int j = 0; j < nsd_; ++j)
-    {
-      hdgele->diff_(i,j) = (*difftensor)(i,j);
-      hdgele->invdiff_(i,j) = (*difftensor)(i,j);
-    }
-  hdgele->diff1_ = *diff1;
+
+  hdgele->Ivecn_=ivecn;
+  hdgele->Ivecnp_=ivecnp;
+  hdgele->Imatnpderiv_=ivecnpderiv;
+
+}
+
+/*----------------------------------------------------------------------*
+ |  Prepare material parameter                           hoermann 11/16 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::PrepareMaterialParameter(
+    DRT::ELEMENTS::ScaTraHDG *   hdgele,        //!< hdg element
+    Epetra_SerialDenseMatrix&    difftensor     //!< diffusion tensor
+    )
+{
 
   Epetra_SerialDenseSolver inverseindifftensor;
-  inverseindifftensor.SetMatrix(hdgele->invdiff_);
+  inverseindifftensor.SetMatrix(difftensor);
   int err = inverseindifftensor.Invert();
   if (err != 0)
-    dserror("Inversion of diffusion tensor failed with errorcode %d", err);
+      dserror("Inversion of diffusion tensor failed with errorcode %d", err);
 
-  hdgele->Ivecn_=*ivecn;
-  hdgele->Ivecnp_=*ivecnp;
-  hdgele->Imatnpderiv_=*ivecnpderiv;
+  hdgele->invdiff_.push_back(difftensor);
+
+
 
 }
 
@@ -1590,7 +1661,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ElementInit(
   hdgele->BTAMmat_.Shape(hdgele->ndofs_*nsd_, hdgele->ndofs_);
   hdgele->invCondmat_.Shape(hdgele->ndofs_*nsd_, hdgele->ndofs_*nsd_);
   hdgele->diff_.Shape(nsd_,nsd_);
-  hdgele->invdiff_.Shape(nsd_,nsd_);
+  hdgele->invdiff_.clear();
   hdgele->Ivecn_.Shape(hdgele->ndofs_,1);
   hdgele->Ivecnp_.Shape(hdgele->ndofs_,1);
   hdgele->Imatnpderiv_.Shape(hdgele->ndofs_,hdgele->ndofs_);

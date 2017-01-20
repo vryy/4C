@@ -61,7 +61,7 @@ EVALUATION_TAU                  integration_point
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_myocard DIFF1 0.0001171 DIFF2 0.0001171 DIFF3 0.0001171 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0 GP 64
+MAT 1 MAT_myocard DIFF1 0.0001171 DIFF2 0.0001171 DIFF3 0.0001171 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1.0   t1    0.0 t2    2.0      //2ms activation S1
 CURVE1 on EXPR FUNC 0.0   t1    2.0 t2  350.0

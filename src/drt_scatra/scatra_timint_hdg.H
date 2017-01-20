@@ -152,9 +152,7 @@ protected:
       Teuchos::RCP<Epetra_Vector>                intphi_old,
       int                                        nds_var_old,
       int                                        nds_intvar_old,
-      std::vector<DRT::Element::LocationArray>   la_old,
-      const Teuchos::RCP<Epetra_Map>&            dofrowmap_old,
-      const Teuchos::RCP<Epetra_Map>&            intdofrowmap_old
+      std::vector<DRT::Element::LocationArray>   la_old
       );
 
   //! calculate matrices on element
@@ -165,6 +163,15 @@ protected:
 
   //! contains the assembly process only for rhs
   void AssembleRHS();
+
+  //! pack material
+  virtual void PackMaterial() {return;};
+
+  //! adapt material
+  virtual void UnpackMaterial() {return;};
+
+  //! project material field
+  virtual void ProjectMaterial() {return;};
 
 private:
 

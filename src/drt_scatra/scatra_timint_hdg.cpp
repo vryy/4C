@@ -547,21 +547,20 @@ void SCATRA::TimIntHDG::UpdateInteriorVariables(
   for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
   {
     DRT::Element *ele = discret_->lColElement(iele);
+    if (ele->Owner() != discret_->Comm().MyPID()) continue;
+
     ele->LocationVector(*discret_,la,false);
       updateVec.Shape(discret_->NumDof(nds_intvar_,ele),1);
 
     ele->Evaluate(eleparams,*discret_,la,dummyMat,dummyMat,updateVec,dummyVec,dummyVec);
 
-    if (ele->Owner() == discret_->Comm().MyPID())
+    std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
+    dsassert(localDofs.size() == static_cast<std::size_t>(updateVec.M()), "Internal error");
+    for (unsigned int i=0; i<localDofs.size(); ++i)
     {
-      std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
-      dsassert(localDofs.size() == static_cast<std::size_t>(updateVec.M()), "Internal error");
-      for (unsigned int i=0; i<localDofs.size(); ++i)
-      {
-        localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      }
-      updatevector->ReplaceMyValues(localDofs.size(), updateVec.A(), &localDofs[0]);
+      localDofs[i] = intdofrowmap->LID(localDofs[i]);
     }
+    updatevector->ReplaceMyValues(localDofs.size(), updateVec.A(), &localDofs[0]);
   }
 
   discret_->ClearState(true);
@@ -784,6 +783,8 @@ void SCATRA::TimIntHDG::PrepareTimeLoop()
  void SCATRA::TimIntHDG::CalcMatInitial()
  {
 
+  discret_->ClearState(true);
+
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_mat_initial);
@@ -795,9 +796,23 @@ void SCATRA::TimIntHDG::PrepareTimeLoop()
 
   Teuchos::RCP<Epetra_Vector> dummyVec;
 
-  discret_->Evaluate(eleparams,sysmat_,dummyVec);
+//    // get cpu time
+//    const double tcmatinit = Teuchos::Time::wallTime();
+
+    discret_->Evaluate(eleparams,sysmat_,dummyVec);
+
+//    // end time measurement for element
+//    double dtmatinit=Teuchos::Time::wallTime()-tcmatinit;
+//    std::cout << "Time measurement evaluate: " << dtmatinit << std::endl;
 
   sysmat_->Complete();
+
+  // Output of non-zeros in system matrix
+  if(step_==0 and discret_->Comm().MyPID()==0)
+  {
+    int nummynonzeros = SystemMatrix()->EpetraMatrix()->NumMyNonzeros();
+    std::cout << "Number of non-zeros in system matrix: " <<  nummynonzeros << std::endl;
+  }
 
   return;
 } // SCATRA::TimIntHDG::CalcMatIntitial
@@ -843,6 +858,10 @@ void SCATRA::TimIntHDG::AdaptDegree()
   // get cpu time
 //  const double tccalcerr = Teuchos::Time::wallTime();
 
+
+  // store if degree changes
+  int degchange(0);
+
   // loop over elements
   for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
   {
@@ -879,7 +898,10 @@ void SCATRA::TimIntHDG::AdaptDegree()
       else if(deg > padaptdegreemax_)
         deg = padaptdegreemax_;
 
-      // set degree on element
+      if (hdgele->Degree() != deg)
+        degchange = 1;
+
+        // set degree on element
       hdgele->SetDegree(deg);
 
       // store element degree (only for output)
@@ -888,6 +910,14 @@ void SCATRA::TimIntHDG::AdaptDegree()
         (*elementdegree_)[eleIndex] = deg;
     }
   }
+
+  int degchangeall;
+  discret_->Comm().SumAll(&degchange,&degchangeall,discret_->Comm().NumProc());
+
+  if (!degchangeall)
+    return;
+
+  PackMaterial();
 
 //  // end time measurement for element
 //  double dtcalcerr=Teuchos::Time::wallTime()-tccalcerr;
@@ -957,13 +987,15 @@ void SCATRA::TimIntHDG::AdaptDegree()
   phinp_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
   phin_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
 
-
 //  // end time measurement for element
 //  double dtfillcomplete=Teuchos::Time::wallTime()-tcfillcomplete;
 //  std::cout << "Time measurement fill complete: " << dtfillcomplete << std::endl;
 
 //  // get cpu time
 //  const double tcproject = Teuchos::Time::wallTime();
+
+  // unpack material data
+  UnpackMaterial();
 
   // call element routine to project the old values to the new state vectors
   AdaptVariableVector(
@@ -973,9 +1005,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
       intphin_old,
       nds_var_old,
       nds_intvar_old,
-      la_old,
-      eledofs_old,
-      facedofs_old);
+      la_old);
 
   AdaptVariableVector(
       phinp_,
@@ -984,9 +1014,9 @@ void SCATRA::TimIntHDG::AdaptDegree()
       intphinp_old,
       nds_var_old,
       nds_intvar_old,
-      la_old,
-      eledofs_old,
-      facedofs_old);
+      la_old);
+
+  ProjectMaterial();
 
 //  // end time measurement for element
 //  double dtproject=Teuchos::Time::wallTime()-tcproject;
@@ -1022,9 +1052,7 @@ void SCATRA::TimIntHDG::AdaptVariableVector(
     Teuchos::RCP<Epetra_Vector>                intphi_old,
     int                                        nds_var_old,
     int                                        nds_intvar_old,
-    std::vector<DRT::Element::LocationArray>   la_old,
-    const Teuchos::RCP<Epetra_Map>&            dofrowmap_old,
-    const Teuchos::RCP<Epetra_Map>&            intdofrowmap_old
+    std::vector<DRT::Element::LocationArray>   la_old
     )
 {
 
@@ -1056,6 +1084,9 @@ void SCATRA::TimIntHDG::AdaptVariableVector(
   for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
   {
     DRT::Element *ele = discret_->lColElement(iele);
+
+    //if the element has only ghosted nodes it will not assemble -> skip evaluation
+    if(ele->HasOnlyGhostNodes(discret_->Comm().MyPID())) continue;
 
     // fill location array for adapted dofsets
     ele->LocationVector(*discret_,la_temp,false);
@@ -1162,6 +1193,10 @@ void SCATRA::TimIntHDG::AssembleRHS()
   for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
   {
     DRT::Element *ele = discret_->lColElement(iele);
+
+    //if the element has only ghosted nodes it will not assemble -> skip evaluation
+    if(ele->HasOnlyGhostNodes(discret_->Comm().MyPID())) continue;
+
     ele->LocationVector(*discret_,la,false);
 
     strategy.ClearElementStorage( la[0].Size(), la[0].Size() );

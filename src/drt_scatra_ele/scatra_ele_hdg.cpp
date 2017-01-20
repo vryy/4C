@@ -17,6 +17,9 @@
 #include "scatra_ele_action.H"
 #include "scatra_ele_factory.H"
 #include "scatra_ele_interface.H"
+#include "../drt_mat/matlist.H"
+#include "../drt_mat/myocard.H"
+#include "../drt_fem_general/drt_utils_gausspoints.H"
 
 #include "scatra_ele_hdg_intfaces_calc.H"
 #include "scatra_ele_hdg_boundary_calc.H"
@@ -307,6 +310,61 @@ void DRT::ELEMENTS::ScaTraHDG::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
 
+/*----------------------------------------------------------------------*
+ |  PackMaterial data (public)                           hoermann 12/16 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraHDG::PackMaterial(DRT::PackBuffer& data) const
+{
+  // add material
+  if (Material()!=Teuchos::null)
+  {
+    //pack only first material
+    Material()->Pack(data);
+  }
+  else
+    dserror("No material defined to pack!");
+}
+
+/*----------------------------------------------------------------------*
+ |  UnPackMaterial data (public)                         hoermann 12/16 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraHDG::UnpackMaterial(const std::vector<char>& data) const
+{
+  Teuchos::RCP<MAT::Material> mat = Material();
+  if(mat->MaterialType() == INPAR::MAT::m_myocard)
+  {
+    //Note: We need to do a dynamic_cast here
+    Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
+    actmat->UnpackMaterial(data);
+  }
+  else
+    dserror("No material defined to unpack!");
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element                                     hoermann 12/16 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::ScaTraHDG::Initialize()
+{
+
+  Teuchos::RCP<MAT::Material> mat = Material();
+  // for now, we only need to do something in case of reactions (for the initialization of functions in case
+  // of reactions by function)
+  if (mat->MaterialType() == INPAR::MAT::m_myocard)
+  {
+    //Note: We need to do a dynamic_cast here
+    Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
+    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(),degree_old_*3));
+    int gp = quadrature_->NumPoints();
+    if(actmat->Parameter() != NULL and !actmat->MyocardMat()) // in case we are not in post-process mode
+    {
+      actmat->SetGP(gp);
+      actmat->Initialize();
+    }
+  }
+
+  return 0;
+}
 
 /*----------------------------------------------------------------------*
  |  Read element from input (public)                     hoermann 09/15 |
@@ -319,6 +377,7 @@ bool DRT::ELEMENTS::ScaTraHDG::ReadElement(const std::string&          eletype,
   int degree;
   linedef->ExtractInt("DEG", degree);
   degree_ = degree;
+  degree_old_ = degree_;
 
   if (linedef->HaveNamed("SPC"))
   {
@@ -496,6 +555,7 @@ int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList&    params,
   case SCATRA::interpolate_hdg_to_node:
   case SCATRA::update_interior_variables:
   case SCATRA::project_dirich_field:
+  case SCATRA::project_material_field:
   case SCATRA::project_neumann_field:
   case SCATRA::set_initial_field:
   case SCATRA::time_update_material:

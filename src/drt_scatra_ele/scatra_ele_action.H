@@ -76,6 +76,7 @@ namespace SCATRA
     micro_scale_update,                          // update micro scale in multi-scale simulations
     project_dirich_field,                        // project dirichlet field for hdg
     project_field,                               // project field
+    project_material_field,                      // project material field for hdg
     project_neumann_field,                       // project neumann field for hdg
     recon_curvature_at_nodes,                    // reconstruct curvature at node points through L2-projection
     recon_gradients_at_nodes,                    // reconstruct gradients at node points through L2-projection
