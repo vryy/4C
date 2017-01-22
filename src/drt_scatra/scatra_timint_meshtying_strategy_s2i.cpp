@@ -2287,12 +2287,12 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           growthincrement_ = Teuchos::rcp(new Epetra_Vector(dofrowmap_growth,true));
 
           // initialize global matrix blocks
-          scatragrowthblock_ = Teuchos::rcp(new LINALG::SparseMatrix(*LINALG::MergeMap(*icoup_->SlaveDofMap(),*icoup_->MasterDofMap(),false),81));
+          const Epetra_Map* dofrowmap_scatra = scatratimint_->Discretization()->DofRowMap();
+          scatragrowthblock_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_scatra,81));   // We actually don't really need the entire scalar transport dofrowmap here, but only a submap associated with all (slave-side and master-side) interfacial degrees of freedom. However, this will later cause an error in debug mode when assigning the scatra-growth matrix block to the global system matrix in the Solve() routine.
           growthscatrablock_ = Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap_growth,81));
           growthgrowthblock_ = Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap_growth,81));
 
           // initialize extended map extractor
-          const Epetra_Map* dofrowmap_scatra = scatratimint_->Discretization()->DofRowMap();
           extendedmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*LINALG::MergeMap(*dofrowmap_scatra,dofrowmap_growth,false),scatratimint_->DofRowMap(2),dofrowmap_scatra));
           extendedmaps_->CheckForValidMapExtractor();
         }
@@ -2318,20 +2318,24 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           // extract global ID of current node
           const int nodegid = (*nodegids)[inode];
 
-          // extract current node
-          const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
-
-          // process only nodes owned by current processor
-          if(scatratimint_->Discretization()->HaveGlobalNode(nodegid) and node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+          // process only nodes stored by current processor
+          if(scatratimint_->Discretization()->HaveGlobalNode(nodegid))
           {
-            // extract local ID of scatra-scatra interface layer thickness variable associated with current node
-            const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(scatratimint_->Discretization()->Dof(2,node,0));
-            if(doflid_growth < 0)
-              dserror("Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
+            // extract current node
+            const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
 
-            // set initial value
-            (*growthn_)[doflid_growth] = initthickness;
-          }
+            // process only nodes owned by current processor
+            if(node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+            {
+              // extract local ID of scatra-scatra interface layer thickness variable associated with current node
+              const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(scatratimint_->Discretization()->Dof(2,node,0));
+              if(doflid_growth < 0)
+                dserror("Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
+
+              // set initial value
+              (*growthn_)[doflid_growth] = initthickness;
+            } // nodes owned by current processor
+          } // nodes stored by current processor
         } // loop over all nodes
 
         // copy initial state
@@ -2505,25 +2509,29 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
       // extract global ID of current node
       const int nodegid((*nodegids)[inode]);
 
-      // extract current node
-      const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
-
-      // process only nodes owned by current processor
-      if(scatratimint_->Discretization()->HaveGlobalNode(nodegid) and node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+      // process only nodes stored by current processor
+      if(scatratimint_->Discretization()->HaveGlobalNode(nodegid))
       {
-        // extract local ID of current node
-        const int nodelid = scatratimint_->Discretization()->NodeRowMap()->LID(nodegid);
-        if(nodelid < 0)
-          dserror("Couldn't extract local node ID!");
+        // extract current node
+        const DRT::Node* const node = scatratimint_->Discretization()->gNode(nodegid);
 
-        // extract local ID of scatra-scatra interface layer thickness variable associated with current node
-        const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(scatratimint_->Discretization()->Dof(2,node,0));
-        if(doflid_growth < 0)
-          dserror("Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
+        // process only nodes owned by current processor
+        if(node->Owner() == scatratimint_->Discretization()->Comm().MyPID())
+        {
+          // extract local ID of current node
+          const int nodelid = scatratimint_->Discretization()->NodeRowMap()->LID(nodegid);
+          if(nodelid < 0)
+            dserror("Couldn't extract local node ID!");
 
-        // copy thickness variable into target state vector of discrete scatra-scatra interface layer thicknesses
-        (*intlayerthickness)[nodelid] = growth[doflid_growth];
-      }
+          // extract local ID of scatra-scatra interface layer thickness variable associated with current node
+          const int doflid_growth = scatratimint_->Discretization()->DofRowMap(2)->LID(scatratimint_->Discretization()->Dof(2,node,0));
+          if(doflid_growth < 0)
+            dserror("Couldn't extract local ID of scatra-scatra interface layer thickness variable!");
+
+          // copy thickness variable into target state vector of discrete scatra-scatra interface layer thicknesses
+          (*intlayerthickness)[nodelid] = growth[doflid_growth];
+        } // nodes owned by current processor
+      } // nodes stored by current processor
     }// loop over all nodes
 
     // output target state vector of discrete scatra-scatra interface layer thicknesses

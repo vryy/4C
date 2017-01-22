@@ -2487,7 +2487,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
           if(discret_->HaveGlobalNode(nodegid))
           {
             // extract global ID of electric potential degree of freedom carried by current node
-            const int gid = discret_->Dof(discret_->gNode(nodegid),1);
+            const int gid = discret_->Dof(0,discret_->gNode(nodegid),1);   // Do not remove the zero, i.e., the first function argument, otherwise an error is thrown in debug mode!
 
             // add global ID to set
             dbcgids.insert(gid);
