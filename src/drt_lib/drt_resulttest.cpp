@@ -349,6 +349,15 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
+  DRT::INPUT::LineDefinition sti_special;
+  sti_special
+    .AddTag("STI")
+    .AddTag("SPECIAL")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    ;
+
   DRT::INPUT::LineDefinition red_airway;
   red_airway
     .AddTag("RED_AIRWAY")
@@ -511,6 +520,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(porofluidmultiphase);
   lines->Add(scatra);
   lines->Add(scatra_special);
+  lines->Add(sti_special);
   lines->Add(red_airway);
   lines->Add(red_airway_ele);
   lines->Add(art_net);

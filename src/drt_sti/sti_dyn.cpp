@@ -18,6 +18,7 @@
 
 #include "sti_algorithm.H"
 #include "sti_clonestrategy.H"
+#include "sti_resulttest.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -138,6 +139,7 @@ void sti_dyn(
   Teuchos::TimeMonitor::summarize();
 
   // perform result tests
+  problem->AddFieldTest(Teuchos::rcp<DRT::ResultTest>(new STI::STIResultTest(sti_algorithm)));
   if(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(problem->STIDynamicParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_elch_diffcond)
     problem->AddFieldTest(Teuchos::rcp<DRT::ResultTest>(new SCATRA::ElchResultTest(Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(sti_algorithm->Scatra()))));
   else

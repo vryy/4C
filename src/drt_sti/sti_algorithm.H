@@ -70,6 +70,9 @@ namespace STI
           const Teuchos::ParameterList&   solverparams   //! solver parameter list
          );
 
+      //! return counter for Newton-Raphson iterations
+      const unsigned& Iter() const {return iter_;};
+
       //! read restart data
       void ReadRestart(
           int step   //! time step for restart

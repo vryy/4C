@@ -1363,6 +1363,7 @@ set(OBJS_DRT_STI
   src/drt_sti/sti_algorithm.cpp
   src/drt_sti/sti_clonestrategy.cpp
   src/drt_sti/sti_dyn.cpp
+  src/drt_sti/sti_resulttest.cpp
 )
 set(OBJS_DRT_COMBUST3_LIB
   src/drt_combust/combust_refinementcell.cpp
