@@ -121,8 +121,8 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
       DRT::MESHFREE::MeshfreeMultiBin* currbin =
           dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( BinStrategy()->BinDiscret()->lColElement(lid) );
 
-      DRT::Element** currfluideles = currbin->AssociatedEles(bin_volcontent_);
-      for(int ifluidele=0; ifluidele<currbin->NumAssociatedEle(bin_volcontent_); ++ifluidele)
+      DRT::Element** currfluideles = currbin->AssociatedEles(bin_fluidcontent_);
+      for(int ifluidele=0; ifluidele<currbin->NumAssociatedEle(bin_fluidcontent_); ++ifluidele)
       {
         neighboringfluideles.insert(currfluideles[ifluidele]);
       }
@@ -1508,8 +1508,8 @@ DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
   elecoord.Clear();
   bool insideele = false;
 
-  DRT::Element** fluidelesinbin = currbin->AssociatedEles(bin_volcontent_);
-  int numfluidelesinbin = currbin->NumAssociatedEle(bin_volcontent_);
+  DRT::Element** fluidelesinbin = currbin->AssociatedEles(bin_fluidcontent_);
+  int numfluidelesinbin = currbin->NumAssociatedEle(bin_fluidcontent_);
 
   std::set<int>::const_iterator eleiter;
   // search for underlying fluid element with fast search if desired
@@ -1564,8 +1564,8 @@ DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
   {
     currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->gElement(binIds[b]));
 
-    fluidelesinbin = currbin->AssociatedEles(bin_volcontent_);
-    numfluidelesinbin = currbin->NumAssociatedEle(bin_volcontent_);
+    fluidelesinbin = currbin->AssociatedEles(bin_fluidcontent_);
+    numfluidelesinbin = currbin->NumAssociatedEle(bin_fluidcontent_);
 
     for(int ele=0; ele<numfluidelesinbin; ++ele)
     {

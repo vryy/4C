@@ -24,15 +24,14 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../drt_biopolynet/periodic_boundingbox.H"
-
-
 #include "../drt_structure_new/str_model_evaluator_data.H"
 #include "../drt_structure_new/str_timint_basedatasdyn.H"
 
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+#include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "beam3k.H"
 
 

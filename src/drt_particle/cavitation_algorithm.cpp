@@ -66,7 +66,7 @@ CAVITATION::Algorithm::Algorithm(
   blendingsteps_(0),
   initbubblevelfromfluid_((bool)DRT::INPUT::IntegralValue<int>(params,"INIT_BUBBLEVEL_FROM_FLUID")),
   influencescaling_(params.get<double>("INFLUENCE_SCALING")),
-  bin_volcontent_(INPAR::BINSTRATEGY::Volume),
+  bin_fluidcontent_(BINSTRATEGY::UTILS::Fluid),
   fluiddis_(Teuchos::null),
   fluid_(Teuchos::null),
   ele_volume_(Teuchos::null),
@@ -1883,7 +1883,7 @@ DRT::Element* CAVITATION::Algorithm::GetUnderlyingFluidEleData(
     int bubbleBinId = BinStrategy()->ConvertPosToGid(tmpposition);
 
     std::cout << "particle is in binId: " << bubbleBinId << " while currbin->Id() is " << currbin->Id() <<
-        " . The following number of fluid eles is in this bin:" << currbin->NumAssociatedEle(bin_volcontent_) << std::endl;
+        " . The following number of fluid eles is in this bin:" << currbin->NumAssociatedEle(bin_fluidcontent_) << std::endl;
 
     // leave here because no underlying element found
     return targetfluidele;
@@ -3035,7 +3035,7 @@ void CAVITATION::Algorithm::SetupGhosting(
   // 1st and 2nd step
   //--------------------------------------------------------------------
 
-  PARTICLE::Algorithm::SetupGhosting(binrowmap);
+  PARTICLE::ParticleHandler::SetupGhosting(binrowmap);
 
 
   //--------------------------------------------------------------------
@@ -3051,7 +3051,7 @@ void CAVITATION::Algorithm::SetupGhosting(
   // 4th step: assign fluid elements to bins which are necessary for the coupling to particles
   // not necessarily all ghost fluid elements are inserted here
   //--------------------------------------------------------------------
-  BinStrategy()->AssignElesToBins(fluiddis_,extendedfluidghosting,bin_volcontent_);
+  BinStrategy()->AssignElesToBins( fluiddis_, extendedfluidghosting );
 
 #ifdef DEBUG
   // check whether each particle has an underlying fluid element
@@ -3112,15 +3112,15 @@ void CAVITATION::Algorithm::BuildElementToBinPointers(bool wallpointer)
   {
     DRT::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
     DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
-    const int numfluidele = actbin->NumAssociatedEle(bin_volcontent_);
-    const int* fluideleids = actbin->AssociatedEleIds(bin_volcontent_);
+    const int numfluidele = actbin->NumAssociatedEle(bin_fluidcontent_);
+    const int* fluideleids = actbin->AssociatedEleIds(bin_fluidcontent_);
     std::vector<DRT::Element*> fluidelements(numfluidele);
     for(int iele=0; iele<numfluidele; ++iele)
     {
       const int fluideleid = fluideleids[iele];
       fluidelements[iele] = fluiddis_->gElement(fluideleid);
     }
-    actbin->BuildElePointers(bin_volcontent_,&fluidelements[0]);
+    actbin->BuildElePointers(bin_fluidcontent_,&fluidelements[0]);
   }
 
   return;
@@ -3441,9 +3441,9 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
           continue;
         DRT::MESHFREE::MeshfreeMultiBin *currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lColElement(lid));
 
-        DRT::Element** currfluideles = currbin->AssociatedEles(bin_volcontent_);
+        DRT::Element** currfluideles = currbin->AssociatedEles(bin_fluidcontent_);
 
-        for(int ifluidele=0; ifluidele<currbin->NumAssociatedEle(bin_volcontent_); ++ifluidele)
+        for(int ifluidele=0; ifluidele<currbin->NumAssociatedEle(bin_fluidcontent_); ++ifluidele)
         {
           neighboringfluideles.insert(currfluideles[ifluidele]);
         }

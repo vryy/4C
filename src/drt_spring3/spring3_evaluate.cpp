@@ -12,7 +12,7 @@
 
 #include "spring3.H"
 #include "../drt_beam3/beam3eb.H"
-#include "../drt_beamcontact/beam3contact_utils.H"
+#include "../drt_beaminteraction/beam3contact_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"

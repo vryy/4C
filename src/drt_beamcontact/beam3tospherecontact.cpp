@@ -11,7 +11,6 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beam3tospherecontact.H"
-#include "beam3contact_defines.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_discret.H"
@@ -24,6 +23,7 @@
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
+#include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 
 /*----------------------------------------------------------------------*

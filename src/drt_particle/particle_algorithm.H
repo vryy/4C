@@ -21,7 +21,7 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "particle_handler.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_inpar/inpar_binstrategy.H"
+#include "../drt_particle/binning_strategy_utils.H"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
@@ -277,7 +277,7 @@ namespace PARTICLE
 
     const MAT::PAR::ExtParticleMat* extParticleMat_;  ///< pointer to the extParticleMat material
 
-    INPAR::BINSTRATEGY::BinContent bin_surfcontent_;
+    BINSTRATEGY::UTILS::BinContentType bin_wallcontent_;
 
     Teuchos::RCP<Rendering> rendering_; /// handler of the rendering discretization (used for meshFree dynamics)
 

@@ -12,11 +12,12 @@
 #ifndef BEAMTOSPHEREC_H
 #define BEAMTOSPHEREC_H
 
-#include "beam3contact_defines.H"
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
+
+#include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../drt_lib/drt_condition.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"

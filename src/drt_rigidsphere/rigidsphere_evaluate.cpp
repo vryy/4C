@@ -96,21 +96,6 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myvel(lm.size());
       myvel.clear();
 
-      const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-      // damping terms will only be evaluated in StatMech environment
-      // => only if random numbers for Brownian dynamics are passed to element, get element velocities
-      if(params.get< Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
-      {
-        vel  = discretization.GetState("velocity");
-        if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-        DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-      }
-      else if (sdyn.get<std::string>("DAMPING") == "Material")
-      {
-//        dserror("Rigidsphere: damping on element level (DAMPING==Material) only implemented for StatMech applications!");
-      }
-
       if (act == ELEMENTS::struct_calc_nlnstiffmass or act == ELEMENTS::struct_calc_nlnstifflmass or act == ELEMENTS::struct_calc_linstiffmass)
       {
         nlnstiffmass(params, myvel, mydisp, &elemat1, &elemat2, &elevec1);
@@ -126,6 +111,31 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
 
     }
     break;
+
+    case ELEMENTS::struct_calc_brownianforce:
+    case ELEMENTS::struct_calc_brownianstiff:
+    {
+      // get element displacements
+      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      // get element velocity
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+      std::vector<double> myvel(lm.size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+
+      if (act == ELEMENTS::struct_calc_brownianforce)
+        CalcBrownianForcesAndStiff(params,myvel,mydisp,NULL,&elevec1);
+      else if (act == ELEMENTS::struct_calc_brownianstiff)
+        CalcBrownianForcesAndStiff(params,myvel,mydisp,&elemat1,&elevec1);
+      else
+        dserror("You shouldn't be here.");
+
+      break;
+    }
 
     case ELEMENTS::struct_calc_stress:
       dserror("No stress output implemented for beam3 elements");
@@ -177,39 +187,35 @@ void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
       (*massmatrix)(i,i) = rho_*4.0/3.0*PI*pow(radius_,3);
   }
 
-  //only if random numbers for Brownian dynamics are passed to element:
-  // => viscous damping terms will be evaluated
-  if(params.get< Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
-  {
-    CalcDragForce(params, vel, disp, stiffmatrix, force);
-  }
-
-  //only if random numbers for Brownian dynamics are passed to element
-  if (params.get< Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
-  {
-    CalcStochasticForce(params, vel, disp, stiffmatrix, force);
-  }
-
   return;
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ | calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics      grill 03/14|
+ *------------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Rigidsphere::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
+                                                       std::vector<double>&         vel,
+                                                       std::vector<double>&         disp,
+                                                       Epetra_SerialDenseMatrix*    stiffmatrix,
+                                                       Epetra_SerialDenseVector*    force)
+{
+  CalcDragForce(params, vel, disp, stiffmatrix, force);
+  CalcStochasticForce(params, vel, disp, stiffmatrix, force);
 }
 
 /*------------------------------------------------------------------------------------------------------------*
  | compute drag forces and contribution to stiffness matrix  (private)                             grill 03/14|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
-    const std::vector<double>&       vel,  //!< element velocity vector
-    const std::vector<double>&      disp,        //!< element displacement vector
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force) //!< element internal force vector
+    const std::vector<double>& vel,  //!< element velocity vector
+    const std::vector<double>& disp,        //!< element displacement vector
+    Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+    Epetra_SerialDenseVector*  force) //!< element internal force vector
 {
-  dserror("Rigidsphere::CalcDragForce is deprecated; if needed adapt parameter handling according to parameter"
-      "interface pointer first! Furthermore introduce own action types struct_calc_brownianforce and struct_calc_brownianstiff");
-
-  double gamma = MyDampingConstant(params);
-
+  double gamma = MyDampingConstant();
 
   //get time step size
-  double dt = params.get<double>("delta time",0.0);
+  double dt =  ParamsInterface().GetDeltaTime();;
 
   //velocity and gradient of background velocity field
   LINALG::Matrix<3,1> velbackground;
@@ -230,16 +236,10 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
   if(stiffmatrix != NULL)
   {
     // StatMech: Backward Euler
-    if( params.get< Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
+    for(int l=0; l<3; l++)
     {
-      for(int l=0; l<3; l++)
-      {
-        (*stiffmatrix)(l,l) += gamma / dt;
-      }
+      (*stiffmatrix)(l,l) += gamma / dt;
     }
-    else
-      dserror("How did you get here? Rigidsphere damping forces should only be evaluated in StatMech environment!."
-              " Also rigid sphere needs to be transferred to new structural time integration ");
   }
 
   return;
@@ -306,13 +306,10 @@ void DRT::ELEMENTS::Rigidsphere::MyBackgroundVelocity(Teuchos::ParameterList& pa
 /*-----------------------------------------------------------------------------------------------------------*
  | computes damping coefficient                                             (private)           grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Rigidsphere::MyDampingConstant(Teuchos::ParameterList& params)
+double DRT::ELEMENTS::Rigidsphere::MyDampingConstant()
 {
-  // this only works with StatMech environment parameters
-  if (!params.isParameter("ETA")) dserror("No parameter ETA (viscosity of surrounding fluid) in parameter list.");
-
   // (dynamic) viscosity of background fluid
-  double eta = params.get<double>("ETA",0.0);
+  double eta = ParamsInterface().GetBrownianDynParamInterface()->GetViscosity();
 
   // damping/friction coefficient of a rigid sphere (Stokes' law for very small Reynolds numbers)
   return 6*PI*eta*radius_;
@@ -337,15 +334,12 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(Teuchos::ParameterList& par
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
-  dserror("Rigidsphere::CalcStochasticForce is deprecated; if needed adapt parameter handling according to parameter"
-      "interface pointer first! Furthermore introduce own action types struct_calc_brownianforce and struct_calc_brownianstiff");
-
   //damping coefficient
-  double gamma = MyDampingConstant(params);
+  double gamma = MyDampingConstant();
 
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic forces with zero mean
    * and standard deviation (2*kT / dt)^0.5*/
-  Teuchos::RCP<Epetra_MultiVector> randomnumbers = params.get< Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null);
+  Teuchos::RCP<Epetra_MultiVector> randomnumbers = ParamsInterface().GetBrownianDynParamInterface()->GetRandomForces();
 
   for(int k=0; k<3; k++)
     if(force != NULL)
@@ -365,10 +359,10 @@ void DRT::ELEMENTS::Rigidsphere::EvaluatePTC(Teuchos::ParameterList& params,
   dserror("Rigidsphere::EvaluatePTC is deprecated; if needed adapt parameter handling according to parameter interface pointer first!");
 
   // damping constant
-  double gamma = MyDampingConstant(params);
+  double gamma = MyDampingConstant();
 
   // get time step size
-  double dt = params.get<double>("delta time",0.0);
+  double dt =  ParamsInterface().GetDeltaTime();;
 
   //isotropic artificial stiffness for translational degrees of freedom
   for(int k=0; k<3; k++)

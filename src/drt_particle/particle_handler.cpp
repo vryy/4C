@@ -2,7 +2,7 @@
 /*!
 \file particle_handler.cpp
 
-\brief Algorithm to control particle simulations
+\brief Handler to control particle simulations
 
 \level 2
 
@@ -65,7 +65,7 @@ void PARTICLE::ParticleHandler::DistributeParticlesToBins(
   }
 
   // start round robin loop to fill particles into their correct bins
-  FillParticlesIntoBinsRoundRobin(homelessparticles);
+  FillParticlesIntoBinsRoundRobin( homelessparticles );
 }
 
 /*----------------------------------------------------------------------*
@@ -439,23 +439,16 @@ bool PARTICLE::ParticleHandler::PlaceNodeCorrectly(
         }
         else // ghost node becomes row node and node from outside is trashed
         {
-//          std::cout << "on proc: " << myrank_ << " existingnode ghost node " << existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added to element: " << currbin->Id() << " after setting ownership" << std::endl;
-
-          // change owner of the node to this proc
-          existingnode->SetOwner(myrank_);
-
-          // received node is no longer needed, X() of former ghost node has to be updated for output reasons
-          {
-            std::vector<double> update(3,0.0);
-            const double* refposparticle = existingnode->X();
-            for(int dim=0; dim<3; dim++)
-              update[dim] = currpos[dim] - refposparticle[dim];
-            // change X() of existing node
-            existingnode->ChangePos(update);
-          }
-
+          // delete existing node
+          binstrategy_->BinDiscret()->DeleteNode(existingnode->Id());
+          // update ownership
+          node->SetOwner(myrank_);
+          // add node
+          binstrategy_->BinDiscret()->AddNode(node);
           // assign node to the correct bin
-          currbin->AddNode(existingnode);
+          currbin->AddNode(node.get());
+
+//        std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to the discretization and assigned to element: " << currbin->Id() << std::endl;
         }
       }
       else // fill newly received node into discretization
@@ -576,12 +569,14 @@ void PARTICLE::ParticleHandler::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap
   return;
 }
 
-/*----------------------------------------------------------------------*
- | particles are checked and transferred if necessary       ghamm 10/12 |
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ | particles are checked and transferred if necessary              ghamm 10/12 |
+ *-----------------------------------------------------------------------------*/
 Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::
     TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
+
   // set of homeless particles
   std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
 
@@ -589,13 +584,13 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::
   // check in each bin whether particles have moved out
   // first run over particles and then process whole bin in which particle is located
   // until all particles have been checked
-  const int numrownodes = binstrategy_->BinDiscret()->NodeRowMap()->NumMyElements();
-  for(int i=0; i<numrownodes; ++i)
+  const int numrownodes = binstrategy_->BinDiscret()->NumMyRowNodes();
+  for( int i = 0; i < numrownodes; ++i )
   {
     DRT::Node *currparticle = binstrategy_->BinDiscret()->lRowNode(i);
 
 #ifdef DEBUG
-    if(currparticle->NumElement() != 1)
+    if( currparticle->NumElement() != 1)
       dserror("ERROR: A particle is assigned to more than one bin!");
 #endif
 
@@ -617,31 +612,34 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::
 
     // now all particles in this bin are processed
 #ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
-    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+    DRT::MESHFREE::MeshfreeMultiBin* test =
+        dynamic_cast< DRT::MESHFREE::MeshfreeMultiBin* >( currele[0] );
+    if( test == NULL )
+      dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
+
     DRT::Node** particles = currbin->Nodes();
     std::vector<int> tobemoved(0);
-    for(int iparticle=0; iparticle<currbin->NumNode(); iparticle++)
+    for( int iparticle = 0; iparticle < currbin->NumNode(); ++iparticle )
     {
       // get current node
       DRT::Node* currnode = particles[iparticle];
 
       // get current position
       std::vector<double> pos(3,0.0);
-      if(disnp!=Teuchos::null)
+      if( disnp != Teuchos::null )
       {
         // get the first gid of a node and convert it into a LID
         const int gid = binstrategy_->BinDiscret()->Dof(currnode, 0);
         const int lid = disnp->Map().LID(gid);
-        if(lid<0)
+        if( lid < 0 )
           dserror("displacement for node %d not stored on this proc: %d",gid,myrank_);
 
         // we need to adapt the state vector consistent with periodic boundary conditions
-        if(binstrategy_->HavePBC())
+        if( binstrategy_->HavePBC() )
         {
-          for(int dim=0; dim<3; dim++)
-            binstrategy_->PeriodicBoundaryShift1D((*disnp)[lid+dim],dim);
+          for( int dim = 0; dim < 3; dim++ )
+            binstrategy_->PeriodicBoundaryShift1D( (*disnp)[lid+dim], dim );
         }
 
         for(int dim=0; dim<3; ++dim)
@@ -711,7 +709,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::
   // 1st step: exploiting bounding box idea for scatra elements and bins
   //--------------------------------------------------------------------
 
-  binstrategy_->DistributeElesToBins(underlyingdis, rowelesinbin);
+  binstrategy_->DistributeElesToBinsUsingEleXAABB(underlyingdis, rowelesinbin);
 
   //--------------------------------------------------------------------
   // 2nd step: decide which proc will be owner of each bin
@@ -805,40 +803,30 @@ Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::
   return Teuchos::rcp(new Epetra_Map(-1,(int)rowbins.size(),&rowbins[0],0,binstrategy_->BinDiscret()->Comm()));
 }
 
-/*----------------------------------------------------------------------*
- | get elements in given bins                              ghamm 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleHandler::GetBinContent(
-  std::set<DRT::Element*>        &eles,
-  INPAR::BINSTRATEGY::BinContent bincontent,
-  std::vector<int>&              binIds,
-  bool                           roweles
-  )
+/*-----------------------------------------------------------------------------*
+ | build reduced bin col map based on boundary row bins       eichinger 01/17  |
+ *-----------------------------------------------------------------------------*/
+void PARTICLE::ParticleHandler::GetNeighbouringBinsOfParticleContainingBoundaryRowBins(
+    std::set<int>& colbins) const
 {
-  // loop over all bins
-  for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
+  colbins.clear();
+
+  std::list<DRT::Element*> const boundaryrowbins = binstrategy_->BoundaryRowBins();
+
+  if( boundaryrowbins.size() == 0 )
+    binstrategy_->DetermineBoundaryRowBins();
+
+  // loop over boundary row bins and add neighbors of filled row bins
+  std::list<DRT::Element*>::const_iterator it;
+  for( it = boundaryrowbins.begin(); it != boundaryrowbins.end(); ++it )
   {
-    // extract bins from discretization after checking on existence
-    const int lid = binstrategy_->BinDiscret()->ElementColMap()->LID(*bin);
-    if(lid<0)
-      continue;
-
-#ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lColElement(lid));
-    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-#endif
-    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
-        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(binstrategy_->BinDiscret()->lColElement(lid));
-
-    // gather wall elements
-    DRT::Element** elements = neighboringbin->AssociatedEles(bincontent);
-    const int numeles = neighboringbin->NumAssociatedEle(bincontent);
-    for(int iele=0;iele<numeles; ++iele)
+    if( (*it)->NumNode() != 0)
     {
-      if(roweles && elements[iele]->Owner() != myrank_)
-        continue;
-      eles.insert(elements[iele]);
+      std::vector<int> binvec;
+      binvec.reserve(26);
+      // get neighboring bins
+      binstrategy_->GetNeighborBinIds( (*it)->Id(), binvec );
+      colbins.insert( binvec.begin(), binvec.end() );
     }
   }
 }
-

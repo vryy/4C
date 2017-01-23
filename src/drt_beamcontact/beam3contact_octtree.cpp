@@ -11,7 +11,6 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beam3contact_octtree.H"
-#include "beam3contact_defines.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
@@ -35,6 +34,7 @@
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
+#include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "beam3contact_manager.H"
 

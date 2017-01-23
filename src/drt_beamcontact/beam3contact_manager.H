@@ -20,7 +20,8 @@
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
 #include "Epetra_Comm.h"
-#include "beam3contact_defines.H"
+
+#include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "beam3contactnew.H"
 #include "beam3contact.H"

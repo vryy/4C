@@ -68,7 +68,7 @@ PARTICLE::Algorithm::Algorithm(
   particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION")),
   particleMat_(NULL),
   extParticleMat_(NULL),
-  bin_surfcontent_(INPAR::BINSTRATEGY::Surface),
+  bin_wallcontent_(BINSTRATEGY::UTILS::BELE3),
   rendering_(Teuchos::null)
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
@@ -315,15 +315,15 @@ void PARTICLE::Algorithm::BuildElementToBinPointers(bool wallpointer)
     {
       DRT::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
       DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
-      const int numwallele = actbin->NumAssociatedEle(bin_surfcontent_);
-      const int* walleleids = actbin->AssociatedEleIds(bin_surfcontent_);
+      const int numwallele = actbin->NumAssociatedEle(bin_wallcontent_);
+      const int* walleleids = actbin->AssociatedEleIds(bin_wallcontent_);
       std::vector<DRT::Element*> wallelements(numwallele);
       for(int iwall=0; iwall<numwallele; ++iwall)
       {
         const int wallid = walleleids[iwall];
         wallelements[iwall] = particlewalldis_->gElement(wallid);
       }
-      actbin->BuildElePointers(bin_surfcontent_,&wallelements[0]);
+      actbin->BuildElePointers(bin_wallcontent_,&wallelements[0]);
     }
   }
   return;
@@ -839,7 +839,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
 void PARTICLE::Algorithm::AssignWallElesToBins()
 {
   // remove assigned wall elements
-  BinStrategy()->RemoveElesFromBins(bin_surfcontent_);
+  BinStrategy()->RemoveSpecificElesFromBins(bin_wallcontent_);
 
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
   if(moving_walls_)
@@ -993,7 +993,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
     // assign wall element to remaining bins
     {
       for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
-        dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->gElement(*biniter))->AddAssociatedEle(bin_surfcontent_,wallele->Id(), wallele);
+        dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->gElement(*biniter))->AddAssociatedEle(bin_wallcontent_,wallele->Id(), wallele);
     }
 
   } // end lid
@@ -1326,8 +1326,8 @@ void PARTICLE::Algorithm::GetBinContent(
     bin_p.insert(bin_p.end(), nodes, nodes+neighboringbin->NumNode());
 
     // gather wall elements
-    DRT::Element** walleles = neighboringbin->AssociatedEles(bin_surfcontent_);
-    const int numwalls = neighboringbin->NumAssociatedEle(bin_surfcontent_);
+    DRT::Element** walleles = neighboringbin->AssociatedEles(bin_wallcontent_);
+    const int numwalls = neighboringbin->NumAssociatedEle(bin_wallcontent_);
     for(int iwall=0;iwall<numwalls; ++iwall)
     {
       bin_w[walleles[iwall]->Id()] = walleles[iwall];

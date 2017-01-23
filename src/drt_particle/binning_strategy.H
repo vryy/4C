@@ -20,7 +20,7 @@
  *----------------------------------------------------------------------*/
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_particle.H"
-#include "../drt_inpar/inpar_binstrategy.H"
+#include "../drt_particle/binning_strategy_utils.H"
 
 
 #include "Epetra_MpiComm.h"
@@ -36,6 +36,7 @@
 namespace DRT
 {
   class Discretization;
+  class Element;
   class Node;
 }
 
@@ -88,8 +89,23 @@ namespace BINSTRATEGY
     /// fill bins into bin discretization
     virtual void FillBinsIntoBinDiscretization( Teuchos::RCP<Epetra_Map> const& rowbins);
 
-    /// get binning discretization ( nodes = particles, elements = bins)
+    /// get binning discretization pointer (nodes = particles, elements = bins)
     virtual inline Teuchos::RCP<DRT::Discretization>& BinDiscret() {return bindis_;}
+
+    /// get const binning discretization pointer (nodes = particles, elements = bins)
+    virtual inline Teuchos::RCP<DRT::Discretization> const& BinDiscret() const {return bindis_;}
+
+    /// get list of boundary row bins
+    virtual inline std::list<DRT::Element*>& BoundaryRowBins() {return boundaryrowbins_;}
+
+    /// get const list with boundary row bins
+    virtual inline std::list<DRT::Element*> const& BoundaryRowBins() const {return boundaryrowbins_;}
+
+    /// get list of boundary col bins
+    virtual inline std::set< int >& BoundaryColBinsIds() {return boundarycolbins_;}
+
+    /// get const list with boundary col bins
+    virtual inline std::set< int > const& BoundaryColBinsIds() const {return boundarycolbins_;}
 
     /// get dimension of particle problem
     virtual inline INPAR::PARTICLE::ParticleDim const& ParticleDim() const {return particle_dim_;}
@@ -119,31 +135,60 @@ namespace BINSTRATEGY
       bool isslave   ///< decide whether slave or master side is processed
       ) const;
 
-    /// elements from the underlying discretization are assigned to bins
-    virtual void DistributeElesToBins(
-      Teuchos::RCP<DRT::Discretization> discret,           ///< discret of which the elements are distributed to bins
-      std::map<int, std::set<int> >& rowelesinbin,         ///< map of bins and assigned row elements
-      Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null    ///< statevector holding current displacements of discret's nodes
+    /// beams (considering cut elements according to  are assigned to bins
+    virtual void DistributeElesToBinsUsingEleXAABB(
+        Teuchos::RCP<DRT::Discretization> const& discret,           ///< discret of which the elements are distributed to bins
+        std::map<int, std::set<int> >& bintorowelemap,         ///< map of bins and assigned row elements
+        Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null    ///< statevector holding current displacements of discret's nodes
       ) const;
 
-    /// beams (considering cut elements according to  are assigned to bins
-    virtual void DistributeCutElesToBins(
-      Teuchos::RCP<DRT::Discretization> const& discret,           ///< discret of which the elements are distributed to bins
-      std::map<int, std::set<int> >& rowelesinbin,         ///< map of bins and assigned row elements
-      Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null    ///< statevector holding current displacements of discret's nodes
+    /// number of bins in ijk range
+    virtual int GetNumberOfBinsInijkRange( int const ijk_range[6] ) const;
+
+    /// get ijk of node with a current position
+    virtual void DistributeNodeToijk(
+        Teuchos::RCP<DRT::Discretization> const& discret,
+        DRT::Node const * const node,
+        Teuchos::RCP< Epetra_Vector> const& disnp,
+        int ijk[3]
+      ) const;
+
+    /// add ijk to a given axis aligned ijk range
+    virtual void AddijkToAxisAlignedijkRange(
+        int const ijk[3],
+        int ijk_range[6]
+      ) const;
+
+    /// build axis aligned element bounding box for one noded rigid sphere element
+    virtual void BuildAxisAlignedijkRangeForRigidSphere(
+        Teuchos::RCP< DRT::Discretization> const& discret,
+        DRT::Element const *const sphereele,
+        Teuchos::RCP< Epetra_Vector > const& disnp,
+        int ijk[3],
+        int ijk_range[6]
       ) const;
 
     /// elements from the underlying discretization are assigned to bins
     virtual void AssignElesToBins(
       Teuchos::RCP<DRT::Discretization> fielddis,
-      std::map<int, std::set<int> > extendedfieldghosting,
-      INPAR::BINSTRATEGY::BinContent bincontent
+      std::map<int, std::set<int> > extendedfieldghosting
       ) const;
 
-    /// elements from the underlying discretization are assigned to bins
-    virtual void RemoveElesFromBins(
-      INPAR::BINSTRATEGY::BinContent bincontent
-      ) const;
+    /// get elements of type bincontent in given bins
+    void GetBinContent(
+        std::set<DRT::Element*> &eles,
+        std::vector< BINSTRATEGY::UTILS::BinContentType> bincontent,
+        std::vector<int>& binIds,
+        bool roweles = false
+    );
+
+    /// remove elements of specific kinds from bins
+    virtual void RemoveSpecificElesFromBins(
+      BINSTRATEGY::UTILS::BinContentType bincontent
+      );
+
+    /// remove elements of all kinds from bins
+    virtual void RemoveAllElesFromBins();
 
     /// nodes are assigned to bins
     virtual void DistributeNodesToBins(
@@ -168,6 +213,12 @@ namespace BINSTRATEGY
       bool repartition = false
       ) const;
 
+    /// determine boundary row bins
+    virtual void DetermineBoundaryRowBins();
+
+    /// determine boundary col bins
+    virtual void DetermineBoundaryColBinsIds();
+
     /// element map with extended ghosting for master side of mortar problem is returned
     virtual Teuchos::RCP<Epetra_Map> ExtendGhosting(
       DRT::Discretization& mortardis,   ///< mortar interface discretization
@@ -184,7 +235,7 @@ namespace BINSTRATEGY
       ) const;
 
     /// extend ghosting according to bin distribution
-    Teuchos::RCP<Epetra_Map> ExtendGhosting(
+    virtual Teuchos::RCP<Epetra_Map> ExtendGhosting(
       const Epetra_Map*              initial_elecolmap,
       std::map<int, std::set<int> >& binelemap,
       std::map<int, std::set<int> >& ext_bintoele_ghosting,
@@ -192,29 +243,33 @@ namespace BINSTRATEGY
       Teuchos::RCP<Epetra_Map>       bincolmap = Teuchos::null
       ) const;
 
+    virtual void ExtendBinToEleMap(
+      std::map<int, std::set<int> > & bintoelemap,
+      std::map<int, std::set<int> > & extbintoelemap,
+      Teuchos::RCP<Epetra_Map>        rowbins = Teuchos::null
+    ) const;
+
     /// extend ghosting according to bin distribution
     virtual void ExtendDiscretizationGhosting(
         Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<Epetra_Map>          rowbins,
-        Teuchos::RCP<Epetra_Vector>       disnp,
-        std::map<int, std::set<int> >&    bintoelemap,
-        std::map<int, std::set<int> >&    extbintoelemap
+        Teuchos::RCP<Epetra_Map> const&   extendedelecolmap,
+        bool assigndegreesoffreedom = true
      ) const;
 
     /// extend ghosting according to bin distribution
     virtual void ExtendBinGhosting(
-        Teuchos::RCP<Epetra_Map>              rowbins,
-        std::map<int, std::set<int> > const & bintoelemap,
-        bool                                  particle_ghosting = false
+        Teuchos::RCP<Epetra_Map> rowbins,
+        std::set< int > const&   colbins,
+        bool assigndegreesoffreedom = true
      );
 
+    /// do standard ghosting on problem discretization
     virtual void StandardDiscretizationGhosting(
-      Teuchos::RCP<DRT::Discretization> const& discret,
-      Teuchos::RCP<Epetra_Map> const&          rowbins,
-      Teuchos::RCP<Epetra_Vector>&             disnp,
-      Teuchos::RCP<Epetra_Map>&                stdelecolmap,
-      Teuchos::RCP<Epetra_Map>&                stdnodecolmap,
-      std::map<int, std::vector<int> >         nodesinbin
+      Teuchos::RCP<DRT::Discretization> & discret,
+      Teuchos::RCP<Epetra_Map> const&     rowbins,
+      Teuchos::RCP<Epetra_Vector>&        disnp,
+      Teuchos::RCP<Epetra_Map>&           stdelecolmap,
+      Teuchos::RCP<Epetra_Map>&           stdnodecolmap
       ) const;
 
     virtual void ExtendGhosting(
@@ -314,14 +369,6 @@ namespace BINSTRATEGY
       const int binId   ///< bin id of which centroid is calculated
       ) const;
 
-    /// centroid position for given bin id is returned
-    virtual void GetCurrentNodePos(
-      Teuchos::RCP<DRT::Discretization> disret,
-      const DRT::Node* node,
-      Teuchos::RCP<Epetra_Vector> disnp,
-      double* currpos
-      ) const;
-
     virtual void RevertExtendedGhosting(std::vector<Teuchos::RCP<DRT::Discretization> > dis,
         std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
         std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap) const;
@@ -352,7 +399,7 @@ namespace BINSTRATEGY
       Teuchos::RCP<DRT::Discretization> dis   ///< underlying discret which can be used to compute bounding box
     );
 
-    virtual void WriteBinOutput(int step, double time);
+    virtual void WriteBinOutput(int const step, double const time);
 
     /// shift current particle positions in case periodic boundary conditions are applied
     virtual void PeriodicBoundaryShift1D(double& currpos, int dim) const;
@@ -380,6 +427,10 @@ namespace BINSTRATEGY
     Teuchos::RCP<DRT::Discretization> bindis_;     ///< particle discretization with bins
 
     Teuchos::RCP<DRT::Discretization> visbindis_;     ///< visualization discretization for bins
+
+    std::list<DRT::Element*> boundaryrowbins_;   ///< list of boundary row bins
+
+    std::set< int > boundarycolbins_;   ///< list of boundary col bins (one full layer)
 
     double cutoff_radius_;    ///< maximum influence radius
 

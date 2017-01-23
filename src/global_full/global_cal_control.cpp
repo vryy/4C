@@ -62,6 +62,7 @@ void ntacal()
   switch (DRT::Problem::Instance()->ProblemType())
   {
     case prb_structure:
+    case prb_polymernetwork:
       caldyn_drt();
       break;
     case prb_fluid:

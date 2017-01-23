@@ -24,7 +24,8 @@
 #include "../linalg/linalg_solver.H"
 
 #include <Epetra_Time.h>
-#include "../drt_biopolynet/periodic_boundingbox.H"
+
+#include "../drt_beaminteraction/periodic_boundingbox.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

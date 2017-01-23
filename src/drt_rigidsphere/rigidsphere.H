@@ -332,6 +332,13 @@ private:
 
   //! @name Internal calculation methods
 
+  //! calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics
+  void CalcBrownianForcesAndStiff(Teuchos::ParameterList&   params,
+                                  std::vector<double>&      vel,
+                                  std::vector<double>&      disp,
+                                  Epetra_SerialDenseMatrix* stiffmatrix,
+                                  Epetra_SerialDenseVector* force);
+
   //!calculation of drag force and corresponding stiffness contribution
   void CalcDragForce( Teuchos::ParameterList&   params,
                       const std::vector<double>&      vel,
@@ -359,7 +366,7 @@ private:
                             LINALG::Matrix<3,3>& velbackgroundgrad);
 
   //! computes damping coefficient
-  double MyDampingConstant(Teuchos::ParameterList& params);
+  double MyDampingConstant();
 
   //! Compute artificial damping contribution for PTC
   void EvaluatePTC(Teuchos::ParameterList& params,

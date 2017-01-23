@@ -13,12 +13,10 @@
 #ifndef BEAM3C_H
 #define BEAM3C_H
 
-#include "beam3contact_utils.H"
+#include "../drt_beaminteraction/beam3contact_utils.H"
 #include "beam3contactvariables.H"
-#include "beam3contact_tangentsmoothing.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "beam3contact_defines.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "Sacado.hpp"
 #include "../headers/FAD_utils.H"
@@ -26,6 +24,8 @@
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_beam3/beam3_base.H"
+#include "../drt_beaminteraction/beam3contact_defines.H"
+#include "../drt_beaminteraction/beam3contact_tangentsmoothing.H"
 
 #include "../drt_lib/standardtypes_cpp.H"
 

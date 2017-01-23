@@ -95,7 +95,7 @@ namespace ELEMENTS {
 
     //! @name Model specific interfaces
     //! @{
-    virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface() const = 0;
+    virtual const Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface() const = 0;
 
     //! get pointer to special parameter interface for beam elements
     virtual const Teuchos::RCP<BeamParamsInterface> GetBeamParamsInterfacePtr() const = 0;

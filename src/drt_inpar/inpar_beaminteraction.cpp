@@ -26,11 +26,21 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   Teuchos::Array<std::string> yesnotuple = tuple<std::string>("Yes","No","yes","no","YES","NO");
   Teuchos::Array<int> yesnovalue = tuple<int>(true,false,true,false,true,false);
 
-  Teuchos::ParameterList& beaminteraction = list->sublist("BEAMINTERACTION",false,"");
+  Teuchos::ParameterList& beaminteraction = list->sublist("BEAM INTERACTION",false,"");
 
-  setStringToIntegralParameter<int>("BROWNDYNPROB","No",
-                                 "Statistical mechanics problem",
-                                 yesnotuple,yesnovalue,&beaminteraction);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for one-step-theta structural integrator */
+
+  Teuchos::ParameterList& contraccells = beaminteraction.sublist("CONTRACTILE CELLS",false,"");
+
+
+  setStringToIntegralParameter<int>("CONTRACTILECELLS","No",
+                                 "Contractile cells in problem",
+                                 yesnotuple,yesnovalue,&contraccells);
+
+  //number of overall crosslink molecules in the boundary volume
+  IntParameter("NUMCELLS",0,"number of contracting cells in simulation volume",&contraccells);
 
 
 

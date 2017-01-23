@@ -457,10 +457,10 @@ void STR::TIMINT::Base::OutputState()
 {
   CheckInitSetup();
   IO::DiscretizationWriter& iowriter = *(dataio_->GetMutableOutputPtr());
-  int_ptr_->OutputStepState(iowriter);
   // owner of elements is just written once because it does not change during simulation (so far)
   iowriter.WriteElementData(dataio_->IsFirstOutputOfRun());
   iowriter.WriteNodeData(dataio_->IsFirstOutputOfRun());
+  int_ptr_->OutputStepState(iowriter);
   dataio_->SetFirstOutputOfRun(false);
 
 }

@@ -15,6 +15,10 @@
 
 
 #include "str_model_evaluator_factory.H"
+
+#include "../drt_beamcontact/str_model_evaluator_beaminteraction_old.H"
+#include "../drt_beaminteraction/str_model_evaluator_beaminteraction.H"
+#include "../drt_browniandyn/str_model_evaluator_browniandyn.H"
 #include "../drt_inpar/inpar_structure.H"
 
 // supported model evaluators
@@ -23,13 +27,10 @@
 #include "str_model_evaluator_springdashpot.H"
 #include "str_model_evaluator_contact.H"
 #include "str_model_evaluator_lagpenconstraint.H"
-#include "str_model_evaluator_browniandyn.H"
-#include "str_model_evaluator_beaminteraction.H"
 #include "../drt_struct_ale/struct_ale_str_model_evaluator.H"
 
 // problem types
 #include "../drt_lib/drt_globalproblem.H"
-#include "str_model_evaluator_beaminteraction_old.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

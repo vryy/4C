@@ -11,8 +11,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "beam3tobeampotential.H"
-#include "beam3contact_defines.H"
-#include "beam3contact_utils.H"
+#include "../drt_beaminteraction/beam3contact_utils.H"
 #include "../drt_inpar/inpar_beampotential.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_discret.H"
@@ -29,6 +28,7 @@
 #include "../headers/FAD_utils.H"
 
 #include "Teuchos_TimeMonitor.hpp"
+#include "../drt_beaminteraction/beam3contact_defines.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     grill 09/14|

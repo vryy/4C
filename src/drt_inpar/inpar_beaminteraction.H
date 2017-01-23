@@ -26,14 +26,15 @@ namespace INPAR
   /// Type of the used submodel for beaminteraction
   enum SubModelType
   {
-    submodel_crosslinking,            ///< evaluate the structural model
-    submodel_beamcontact,              ///< evaluate the contact model
+    submodel_crosslinking,         ///< evaluate the structural model
+    submodel_beamcontact,          ///< evaluate the contact model
     submodel_potential,            ///< evaluate the model for potential-based interactions
+    submodel_contractilecells,     ///< evaluate model for cell filament interactions
     submodel_vague                 ///< undefined model type
   };
 
-    /// set the beaminteraction parameters
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  /// set the beaminteraction parameters
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
   }
 

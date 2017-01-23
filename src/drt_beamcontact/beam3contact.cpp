@@ -11,9 +11,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beam3contact.H"
-#include "beam3contact_defines.H"
-#include "beam3contact_utils.H"
-#include "beam3contact_tangentsmoothing.H"
+#include "../drt_beaminteraction/beam3contact_utils.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_discret.H"
@@ -30,6 +28,9 @@
 #include "../drt_beam3/beam3eb.H"
 
 #include "Teuchos_TimeMonitor.hpp"
+
+#include "../drt_beaminteraction/beam3contact_defines.H"
+#include "../drt_beaminteraction/beam3contact_tangentsmoothing.H"
 //TODO: Abfangen, dass Kontaktpunkte am Elementübergang zweimal ausgewertet werden!!!
 
 /*----------------------------------------------------------------------*

@@ -21,7 +21,7 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_levelset/levelset_algorithm.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
-#include "../drt_inpar/inpar_binstrategy.H"
+#include "../drt_particle/binning_strategy_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -56,7 +56,7 @@ PARTICLE::ScatraParticleCoupling::ScatraParticleCoupling(
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
   Teuchos::RCP<Teuchos::ParameterList> params
   ) : PARTICLE::Algorithm(scatra->Discretization()->Comm(),*params),
-  bin_volcontent_(INPAR::BINSTRATEGY::Volume),
+  bin_transpcontent_(BINSTRATEGY::UTILS::Scatra),
   scatra_(scatra),
   scatradis_(scatra->Discretization()),
   params_(params),
@@ -288,7 +288,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
 
     // get pointer to associated scatra elements
-    DRT::Element** scatraelesinbin = actbin->AssociatedEles(bin_volcontent_);
+    DRT::Element** scatraelesinbin = actbin->AssociatedEles(bin_transpcontent_);
     // check for null-pointer in case of holes in the domain
     if (scatraelesinbin == NULL)
       continue;
@@ -300,7 +300,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
     bool next_bin = false;
 
     // loop all elements in bin
-    for(int iele = 0; iele < actbin->NumAssociatedEle(bin_volcontent_); iele++)
+    for(int iele = 0; iele < actbin->NumAssociatedEle(bin_transpcontent_); iele++)
     {
       DRT::Element* scatraele = scatraelesinbin[iele];
       if (scatraele->Shape() != DRT::Element::hex8)
@@ -1479,7 +1479,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
     DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
 
     // get pointer to associated scatra elements
-    DRT::Element** scatraelesinbin = actbin->AssociatedEles(bin_volcontent_);
+    DRT::Element** scatraelesinbin = actbin->AssociatedEles(bin_transpcontent_);
     // check for null-pointer in case of holes in the domain
     if (scatraelesinbin == NULL)
       continue;
@@ -1528,7 +1528,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
     bool found_ele = false;
 
     // search for underlying scatra element
-    for(int iele=0; iele<actbin->NumAssociatedEle(bin_volcontent_); ++iele)
+    for(int iele=0; iele<actbin->NumAssociatedEle(bin_transpcontent_); ++iele)
     {
       DRT::Element* scatraele = scatraelesinbin[iele];
       if (scatraele->Shape() != DRT::Element::hex8)
@@ -2947,8 +2947,8 @@ DRT::Element* PARTICLE::ScatraParticleCoupling::GetEleCoordinates(
   if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
   DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
-  DRT::Element** scatraelesinbin = currbin->AssociatedEles(bin_volcontent_);
-  int numscatraelesinbin = currbin->NumAssociatedEle(bin_volcontent_);
+  DRT::Element** scatraelesinbin = currbin->AssociatedEles(bin_transpcontent_);
+  int numscatraelesinbin = currbin->NumAssociatedEle(bin_transpcontent_);
 
   // search for underlying scatra element with standard search in case nothing was found
   for(int ele=0; ele<numscatraelesinbin; ++ele)
@@ -3024,8 +3024,8 @@ DRT::Element* PARTICLE::ScatraParticleCoupling::GetEleCoordinatesFromPosition(
   DRT::Element* targetscatraele = NULL;
   elecoord.Clear();
 
-  DRT::Element** scatraelesinbin = currbin->AssociatedEles(bin_volcontent_);
-  int numscatraelesinbin = currbin->NumAssociatedEle(bin_volcontent_);
+  DRT::Element** scatraelesinbin = currbin->AssociatedEles(bin_transpcontent_);
+  int numscatraelesinbin = currbin->NumAssociatedEle(bin_transpcontent_);
 
   // search for underlying scatra element with standard search in case nothing was found
   for(int ele=0; ele<numscatraelesinbin; ++ele)
@@ -3320,7 +3320,7 @@ void PARTICLE::ScatraParticleCoupling::SetupGhosting(Teuchos::RCP<Epetra_Map> bi
       for(std::set<int>::const_iterator scatraeleiter=biniter->second.begin(); scatraeleiter!=biniter->second.end(); ++scatraeleiter)
       {
         int scatraeleid = *scatraeleiter;
-        currbin->AddAssociatedEle(bin_volcontent_,scatraeleid, scatradis_->gElement(scatraeleid));
+        currbin->AddAssociatedEle(bin_transpcontent_,scatraeleid, scatradis_->gElement(scatraeleid));
 //          cout << "in bin with id:" << currbin->Id() << " is fluid ele with id" << fluideleid << "with pointer" << fluiddis_->gElement(fluideleid) << endl;
       }
     }
@@ -3341,15 +3341,15 @@ void PARTICLE::ScatraParticleCoupling::BuildElementToBinPointers()
   {
     DRT::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
     DRT::MESHFREE::MeshfreeMultiBin* actbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele);
-    const int numfluidele = actbin->NumAssociatedEle(bin_volcontent_);
-    const int* fluideleids = actbin->AssociatedEleIds(bin_volcontent_);
+    const int numfluidele = actbin->NumAssociatedEle(bin_transpcontent_);
+    const int* fluideleids = actbin->AssociatedEleIds(bin_transpcontent_);
     std::vector<DRT::Element*> fluidelements(numfluidele);
     for(int iele=0; iele<numfluidele; ++iele)
     {
       const int fluideleid = fluideleids[iele];
       fluidelements[iele] = scatradis_->gElement(fluideleid);
     }
-    actbin->BuildElePointers(bin_volcontent_,&fluidelements[0]);
+    actbin->BuildElePointers(bin_transpcontent_,&fluidelements[0]);
   }
 
   return;

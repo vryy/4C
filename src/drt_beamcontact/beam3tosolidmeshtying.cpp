@@ -13,13 +13,13 @@
 *----------------------------------------------------------------------*/
 
 #include "beam3tosolidmeshtying.H"
-#include "beam3contact_defines.H"
-#include "beam3contact_utils.H"
+#include "../drt_beaminteraction/beam3contact_utils.H"
 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3k.H"
 #include "../drt_beam3/beam3eb.H"
+#include "../drt_beaminteraction/beam3contact_defines.H"
 
 
 /*----------------------------------------------------------------------*

@@ -16,7 +16,7 @@
 #include "../drt_meshfree_discret/drt_meshfree_bin.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
-#include "../drt_inpar/inpar_binstrategy.H"
+#include "../drt_particle/binning_strategy_utils.H"
 
 namespace DRT
 {
@@ -177,7 +177,7 @@ public:
    * \brief Return number of associated  elements to this bin
    *///                                                  (public) ghamm 04/13
   /*------------------------------------------------------------------------*/
-  inline int NumAssociatedEle(INPAR::BINSTRATEGY::BinContent bin_content) const
+  inline int NumAssociatedEle(BINSTRATEGY::UTILS::BinContentType bin_content) const
   {
     return associatedeleid_[bin_content].size();
   }
@@ -187,7 +187,7 @@ public:
    * \brief Return id's of associated  elements to this bin
    *///                                                  (public) ghamm 04/13
   /*------------------------------------------------------------------------*/
-  inline const int* AssociatedEleIds(INPAR::BINSTRATEGY::BinContent bin_content) const
+  inline const int* AssociatedEleIds(BINSTRATEGY::UTILS::BinContentType bin_content) const
   {
     if (associatedeleid_[bin_content].size()) return &associatedeleid_[bin_content][0];
     else return NULL;
@@ -201,7 +201,7 @@ public:
    *      Returns NULL if pointers to not exist.
    *///                                                  (public) ghamm 04/13
   /*------------------------------------------------------------------------*/
-  inline virtual Element** AssociatedEles(INPAR::BINSTRATEGY::BinContent bin_content)
+  inline virtual Element** AssociatedEles(BINSTRATEGY::UTILS::BinContentType bin_content)
   {
     if (associatedeleid_[bin_content].size()) return &associatedele_[bin_content][0];
     else return NULL;
@@ -213,7 +213,7 @@ public:
    *///                                                  (public) ghamm 04/13
   /*------------------------------------------------------------------------*/
   inline virtual void AddAssociatedEle(
-    INPAR::BINSTRATEGY::BinContent bin_content,   //!< (in): type of element to be added
+    BINSTRATEGY::UTILS::BinContentType bin_content,   //!< (in): type of element to be added
     const int                      gid,           //!< (in): global id of element to be added
     DRT::Element*                  eleptr         //!< (in): pointer to element to be added
   )
@@ -230,17 +230,25 @@ public:
    * vectors associatedeleid_ and associatedele_
    *///                                                  (public) ghamm 04/13
   /*------------------------------------------------------------------------*/
-  virtual void DeleteAssociatedEle(INPAR::BINSTRATEGY::BinContent bin_content, //!< (in): type of element to be deleteted
+  virtual void DeleteAssociatedEle(BINSTRATEGY::UTILS::BinContentType bin_content, //!< (in): type of element to be deleteted
                                    int                            gid          //!< (in): global id of element to be deleted
     );
 
   /*------------------------------------------------------------------------*/
   /*!
-   * \brief Remove all associated elements from this bin
+   * \brief Remove all associated elements of specific kind from this bin
 
    *///                                                  (public) ghamm 09/13
   /*------------------------------------------------------------------------*/
-  void RemoveAssociatedEles(INPAR::BINSTRATEGY::BinContent bin_content);
+  void RemoveSpecificAssociatedEles(BINSTRATEGY::UTILS::BinContentType bin_content);
+
+  /*------------------------------------------------------------------------*/
+  /*!
+   * \brief Remove all associated elements of all kind from this bin
+
+   *///                                                  (public) ghamm 09/13
+  /*------------------------------------------------------------------------*/
+  void RemoveAllAssociatedEles();
 
   /*!
   \brief Build pointer vector from vector of element pointers
@@ -252,7 +260,7 @@ public:
                     is implicitly expected to be of length NumAssociatedEle() and contain
                     pointers to elements in the correct element local ordering scheme.
   */
-  bool BuildElePointers(INPAR::BINSTRATEGY::BinContent bin_content, DRT::Element** eles);
+  bool BuildElePointers(BINSTRATEGY::UTILS::BinContentType bin_content, DRT::Element** eles);
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -302,10 +310,10 @@ public:
 private:
 
   //! \brief element ids contained in this bin
-  std::vector<int> associatedeleid_[INPAR::BINSTRATEGY::enumsize];
+  std::vector<int> associatedeleid_[BINSTRATEGY::UTILS::enumsize];
 
   //! \brief pointers to elements contained in this bin
-  std::vector<DRT::Element*> associatedele_[INPAR::BINSTRATEGY::enumsize];
+  std::vector<DRT::Element*> associatedele_[BINSTRATEGY::UTILS::enumsize];
 
 
 }; // class MeshfreeMultiBin

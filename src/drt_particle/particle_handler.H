@@ -2,7 +2,7 @@
 /*!
 \file particle_handler.H
 
-\brief Algorithm to control particle simulations
+\brief Handler to control particle simulations
 
 \level 2
 
@@ -57,6 +57,8 @@ namespace PARTICLE
     /// get binning strategy
     virtual inline Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategy() {return binstrategy_;}
 
+    virtual inline BINSTRATEGY::BinningStrategy const& BinStrategy() const {return *binstrategy_;}
+
     /// initial distribution of particles ( more general nodes of bindis_ ) to bins
     virtual void DistributeParticlesToBins(Teuchos::RCP<Epetra_Map> const& particlerowmap);
 
@@ -69,14 +71,6 @@ namespace PARTICLE
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
     virtual Teuchos::RCP<std::list<int> > TransferParticles(Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null);
-
-    /// get particles and elements in given bins
-    void GetBinContent(
-      std::set<DRT::Element*>        &eles,
-      INPAR::BINSTRATEGY::BinContent bincontent,
-      std::vector<int>&              binIds,
-      bool                           roweles = false
-      );
 
     /// node is placed into the correct row bin or put into the list of homeless particles
     virtual bool PlaceNodeCorrectly(
@@ -97,6 +91,11 @@ namespace PARTICLE
     virtual void SetupGhosting(
       Teuchos::RCP<Epetra_Map> binrowmap  ///< rowmap of bins
       );
+
+    /// get neighbouring bins of particle containing boundary row bins
+    virtual void GetNeighbouringBinsOfParticleContainingBoundaryRowBins(
+        std::set<int>& colbins
+      ) const;
 
   protected:
 

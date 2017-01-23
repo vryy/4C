@@ -17,8 +17,9 @@
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_Vector.h"
+
+#include "../drt_beaminteraction/beam3contact_defines.H"
 #include "beam3contactnew.H"
-#include "beam3contact_defines.H"
 
 
 using namespace CONTACT;

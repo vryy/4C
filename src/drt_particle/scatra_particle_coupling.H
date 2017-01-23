@@ -164,7 +164,7 @@ namespace PARTICLE
         return false;
     };
 
-    INPAR::BINSTRATEGY::BinContent bin_volcontent_;
+    BINSTRATEGY::UTILS::BinContentType bin_transpcontent_;
 
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;     ///< underlying scatra time integrator
 

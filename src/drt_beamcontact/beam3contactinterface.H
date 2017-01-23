@@ -12,11 +12,11 @@
 #ifndef BEAM3CIF_H
 #define BEAM3CIF_H
 
-//#include "beam3contact_utils.H"
+//#include "../drt_beaminteraction/beam3contact_utils.H"
 //#include "beam3contact_tangentsmoothing.H"
+#include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "beam3contact_defines.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 //#include "Sacado.hpp"
 

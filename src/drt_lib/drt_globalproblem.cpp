@@ -250,6 +250,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS", *list);
   reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING/RESPIRATORY PARAMETERS", *list);
   reader.ReadGidSection("--FLUCTUATING HYDRODYNAMICS", *list);
+  reader.ReadGidSection("--BEAM INTERACTION", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/CONTRACTILE CELLS", *list);
   reader.ReadGidSection("--BROWNIAN DYNAMICS", *list);
   reader.ReadGidSection("--CROSSLINKING", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC", *list);
@@ -1062,6 +1064,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> acoudis         = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> celldis         = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> renderingdis    = Teuchos::null; // simple and general rendering discretization for particleMeshFree simulations
+  Teuchos::RCP<DRT::Discretization> pboxdis         = Teuchos::null;
 
   // decide which kind of spatial representation is required
   std::string distype = SpatialApproximation();
@@ -1547,6 +1550,25 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
         DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(),"GEOMETRY"), 0);
+
+    break;
+  }
+
+  case prb_polymernetwork:
+  {
+    // create empty discretizations
+    structdis     = Teuchos::rcp(new DRT::Discretization( "structure", reader.Comm() ) );
+    pboxdis  = Teuchos::rcp(new DRT::Discretization( "boundingbox" , reader.Comm() ) );
+
+    // create discretization writer - in constructor set into and owned by corresponding discret
+    structdis->SetWriter( Teuchos::rcp( new IO::DiscretizationWriter( structdis ) ) );
+    pboxdis->SetWriter( Teuchos::rcp( new IO::DiscretizationWriter( pboxdis ) ) );
+
+    AddDis( "structure", structdis );
+    AddDis( "boundingbox", pboxdis );
+
+    nodereader.AddElementReader( Teuchos::rcp( new DRT::INPUT::ElementReader( structdis, reader, "--STRUCTURE ELEMENTS") ) );
+    nodereader.AddElementReader( Teuchos::rcp( new DRT::INPUT::ElementReader( pboxdis, reader, "--PERIODIC BOUNDINGBOX ELEMENTS" ) ) );
 
     break;
   }

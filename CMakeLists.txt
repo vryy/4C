@@ -879,29 +879,31 @@ set(OBJS_FILTER_COMMON
   src/filter_common/filter_evaluation.cpp
 )
 set(OBJS_DRT_BEAMCONTACT_LIB
-  src/drt_beamcontact/beam_contact_params.cpp
-  src/drt_beamcontact/beam_contact_pair.cpp
-  src/drt_beamcontact/beam_to_beam_contact_pair.cpp
-  src/drt_beamcontact/beam_to_beam_contact_variables.cpp
-  src/drt_beamcontact/beam_potential_params.cpp
-  src/drt_beamcontact/beam_potential_pair.cpp
-  src/drt_beamcontact/beam_to_beam_potential_pair.cpp
   src/drt_beamcontact/beam3contact_manager.cpp
   src/drt_beamcontact/beam3contact_octtree.cpp
   src/drt_beamcontact/beam3contactnew.cpp
   src/drt_beamcontact/beam3contactinterface.cpp
   src/drt_beamcontact/beam3contact.cpp
   src/drt_beamcontact/beam3contactvariables.cpp
-  src/drt_beamcontact/beam3contact_utils.cpp
-  src/drt_beamcontact/beam3contact_tangentsmoothing.cpp
   src/drt_beamcontact/beam3tospherecontact.cpp
   src/drt_beamcontact/beam3tosolidcontact.cpp
   src/drt_beamcontact/beam3tosolidmeshtying.cpp
   src/drt_beamcontact/beam3tobeampotential.cpp
   src/drt_beamcontact/beam3tospherepotential.cpp
-  src/drt_beamcontact/beam_to_beam_linkage.cpp
-  src/drt_beamcontact/beam3r_lin2_linkage.cpp
-  src/drt_beamcontact/beaminteraction_submodel_evaluator_potential.cpp
+  src/drt_beamcontact/str_model_evaluator_beaminteraction_old.cpp
+)
+set(OBJS_DRT_BEAMINTERACTION_LIB
+  src/drt_beaminteraction/beam3contact_utils.cpp
+  src/drt_beaminteraction/beam3contact_tangentsmoothing.cpp
+  src/drt_beaminteraction/beam_contact_params.cpp
+  src/drt_beaminteraction/beam_contact_pair.cpp
+  src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
+  src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
+  src/drt_beaminteraction/beam_potential_params.cpp
+  src/drt_beaminteraction/beam_potential_pair.cpp
+  src/drt_beaminteraction/beam_to_beam_potential_pair.cpp
+  src/drt_beaminteraction/beam_to_beam_linkage.cpp
+  src/drt_beaminteraction/beam3r_lin2_linkage.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp
@@ -1033,6 +1035,7 @@ set(OBJS_DRT_COMM
 )
 
 set(OBJS_DRT_UTILS
+  src/drt_particle/binning_strategy_utils.cpp
   src/drt_particle/binning_strategy.cpp
   src/drt_fem_general/debug_nan.cpp
   src/drt_fem_general/drt_utils_boundary_integration.cpp
@@ -1495,8 +1498,8 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
 set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_fem_general/drt_utils_maxent_basisfunctions.cpp
   src/drt_meshfree_discret/drt_meshfree_node.cpp
-  src/drt_biopolynet/crosslinker_node.cpp
-  src/drt_biopolynet/periodic_boundingbox.cpp
+  src/drt_beaminteraction/crosslinker_node.cpp
+  src/drt_beaminteraction/periodic_boundingbox.cpp
   src/drt_particle/particle_node.cpp
   src/drt_meshfree_discret/drt_meshfree_bin.cpp
   src/drt_meshfree_discret/drt_meshfree_multibin.cpp
@@ -1714,7 +1717,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/stru_resulttest.cpp
   src/drt_structure_new/str_utils.cpp
   src/drt_structure_new/str_dbc.cpp
-#  src/drt_structure_new/str_dbc_biopolynet.cpp
+#  src/drt_beaminteraction/str_dbc_biopolynet.cpp
   src/drt_structure_new/str_resulttest.cpp
   src/drt_structure_new/str_factory.cpp
   src/drt_structure_new/str_impl_generic.cpp
@@ -1726,10 +1729,10 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_integrator.cpp
   src/drt_structure_new/str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_data.cpp
-  src/drt_structure_new/str_model_evaluator_beamdata.cpp
+  src/drt_beaminteraction/str_model_evaluator_beamdata.cpp
   src/drt_structure_new/str_model_evaluator_contactdata.cpp
-  src/drt_structure_new/str_model_evaluator_browniandyn.cpp
-  src/drt_structure_new/str_model_evaluator_browniandyndata.cpp
+  src/drt_browniandyn/str_model_evaluator_browniandyn.cpp
+  src/drt_browniandyn/str_model_evaluator_browniandyndata.cpp
   src/drt_structure_new/str_model_evaluator_factory.cpp
   src/drt_structure_new/str_model_evaluator_generic.cpp
   src/drt_structure_new/str_model_evaluator_structure.cpp
@@ -1738,16 +1741,17 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
-  src/drt_structure_new/str_model_evaluator_beaminteraction_old.cpp
-  src/drt_structure_new/str_model_evaluator_beaminteraction.cpp
-  src/drt_structure_new/str_model_evaluator_beaminteraction_datastate.cpp
-  src/drt_structure_new/beaminteraction_submodel_evaluator_factory.cpp
-  src/drt_structure_new/beaminteraction_submodel_evaluator_generic.cpp
-  src/drt_structure_new/beaminteraction_submodel_evaluator_beamcontact.cpp
-  src/drt_biopolynet/biopolynet_calc_utils.cpp
-  src/drt_structure_new/crosslinking_params.cpp
-  src/drt_structure_new/beaminteraction_submodel_evaluator_crosslinking.cpp
-  src/drt_structure_new/beaminteraction_submodel_evaluator_beamcontact.cpp
+  src/drt_beaminteraction/str_model_evaluator_beaminteraction.cpp
+  src/drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_factory.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
+  src/drt_beaminteraction/biopolynet_calc_utils.cpp
+  src/drt_beaminteraction/crosslinking_params.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.cpp
+  src/drt_beaminteraction/contractilecells_params.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_contractilecells.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
   src/drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
@@ -2629,6 +2633,7 @@ add_library(drt_lib ${OBJS_DRT_LIB})
 add_library(drt_lib_inpar ${OBJS_DRT_INPAR})
 add_library(drt_lib_constraint ${OBJS_DRT_CONSTRAINT_LIB})
 add_library(drt_lib_contact ${OBJS_DRT_CONTACT_LIB} ${OBJS_DRT_BEAMCONTACT_LIB})
+add_library(drt_lib_beaminteraction ${OBJS_DRT_BEAMINTERACTION_LIB})
 add_library(drt_lib_xfem ${OBJS_DRT_XFEM})
 add_library(drt_lib_xfem_combust ${OBJS_DRT_XFEM_COMBUST})
 add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
@@ -2655,6 +2660,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_mortar
   drt_lib_constraint
   drt_lib_contact
+  drt_lib_beaminteraction
   # Libraries needed by elements
   drt_lib_surfstress
   drt_lib_xfem

@@ -26,7 +26,7 @@
 #include "../drt_inpar/inpar_structure.H"
 #include <Epetra_CrsMatrix.h>
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_beamcontact/beam3contact_utils.H"
+#include "../drt_beaminteraction/beam3contact_utils.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
 #include <Sacado.hpp>

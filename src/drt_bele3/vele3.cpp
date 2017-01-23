@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
 \file vele3.cpp
-\brief
+\brief volume element
 
-<pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Ursula Mayer
+
+\level 3
 
 *----------------------------------------------------------------------*/
 
@@ -15,6 +12,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils_factory.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::Vele3Type DRT::ELEMENTS::Vele3Type::instance_;
 
@@ -60,6 +58,14 @@ void DRT::ELEMENTS::Vele3Type::ComputeNullSpace( DRT::Discretization & dis, std:
 {
 }
 
+void DRT::ELEMENTS::Vele3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["VELE3"];
+
+  defs["HEX8"]
+    .AddIntVector("HEX8",8)
+    ;
+}
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3SurfaceType::Create( const int id, const int owner )
 {
@@ -249,3 +255,11 @@ DRT::UTILS::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(const DRT::Ele
   return rule;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Vele3::ReadElement(const std::string& eletype,
+                                       const std::string& distype,
+                                       DRT::INPUT::LineDefinition* linedef)
+{
+  return true;
+}

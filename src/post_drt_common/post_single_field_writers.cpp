@@ -538,6 +538,7 @@ void ParticleFilter::WriteAllResults(PostField* field)
 
   // crosslinker stuff
   writer_->WriteResult("numbond", "numbond", nodebased, 1);
+  writer_->WriteResult("owner", "owner", nodebased, 1);
 }
 
 /*----------------------------------------------------------------------*/

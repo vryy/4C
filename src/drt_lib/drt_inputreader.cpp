@@ -973,6 +973,7 @@ void DatFileReader::ReadDat()
   exclude.push_back("--ACOUSTIC DOMAIN");
   exclude.push_back("--PARTICLE DOMAIN");
   exclude.push_back("--MESHFREE RENDERING DOMAIN");
+  exclude.push_back("--PERIODIC BOUNDINGBOX ELEMENTS");
   exclude.push_back("--CELL ELEMENTS");
   exclude.push_back("--CELL DOMAIN");
   exclude.push_back("--CELLSCATRA ELEMENTS");

@@ -1,13 +1,12 @@
-/*!
- * \file vele3.H
- *
- * <pre>
- * Maintainer: Ursula Mayer
- *             mayer@lnm.mw.tum.de
- *             http://www.lnm.mw.tum.de
- *             089 - 289-15257
- * </pre>
- */
+/*!----------------------------------------------------------------------
+\file vele3.H
+\brief volume element
+
+\maintainer Ursula Mayer
+
+\level 3
+
+*----------------------------------------------------------------------*/
 
 #ifndef VELE3_H
 #define VELE3_H
@@ -53,6 +52,8 @@ public:
   virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
 
   virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
 
 private:
 
@@ -248,7 +249,10 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-
+  /// Read input for this element
+  virtual bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
 
 private:
 

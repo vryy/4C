@@ -156,7 +156,7 @@ namespace MODELEVALUATOR {
     virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const;
 
     //! get Interface to brownian dyn data [derived]
-    virtual inline Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface() const
+    virtual inline const Teuchos::RCP<BROWNIANDYN::ParamsInterface> GetBrownianDynParamInterface() const
     {
       CheckInitSetup();
       return browniandyn_data_ptr_;

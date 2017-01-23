@@ -60,6 +60,9 @@ void INPAR::CROSSLINKING::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList
   DoubleParameter("K_ON",0.0,"crosslinker on-rate ",&crosslinking);
   //Reading double parameter for crosslinker off-rate
   DoubleParameter("K_OFF",0.0,"crosslinker off-rate ",&crosslinking);
+  // deltaD in Bell's equation for forcedependent off rate
+  DoubleParameter("DELTABELLEQ",0.0,"bells factor for force dependent off-rate ",&crosslinking);
+
 
 
 

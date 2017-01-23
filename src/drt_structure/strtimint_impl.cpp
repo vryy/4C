@@ -37,7 +37,7 @@
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
-#include "../drt_beamcontact/beam3contact_defines.H"
+#include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"

@@ -13,9 +13,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_biopolynet/periodic_boundingbox.H"
-
 #include <Sacado.hpp>
+#include "../drt_beaminteraction/periodic_boundingbox.H"
 
 
 /*----------------------------------------------------------------------*
@@ -28,7 +27,7 @@ browndyn_interface_ptr_(Teuchos::null)
   // todo: this is a temporary hack, should of course be set from outside
   for (unsigned int i=0; i<1; ++i)
   {
-    bspotposxi_.push_back(0.0);
+    bspotposxi_.push_back(0);
     bspotstatus_[i] = -1;
   }
   // empty
@@ -193,6 +192,9 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3,1>& gamma
   gamma(0) = 2*PI*BrownianDynParamsInterface().GetViscosity();
   gamma(1) = 4*PI*BrownianDynParamsInterface().GetViscosity();
   gamma(2) = 4*PI*BrownianDynParamsInterface().GetViscosity() * std::sqrt(4*this->Iyy()/PI);
+
+  // huge convergence improvement in case of artificial factor 4000
+//  gamma(2) = 4*PI*BrownianDynParamsInterface().GetViscosity() * std::sqrt(4*this->Iyy()/PI)*4000;
 }
 
 /*----------------------------------------------------------------------*
