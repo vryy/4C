@@ -43,7 +43,7 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::CardiovascularRespira
 {
 
   Teuchos::ParameterList artvensyspulpar =
-        DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS");
+        DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("SYS-PUL CIRCULATION PARAMETERS");
 
   num_dof_cardio_ = 34;
   num_dof_respir_ = 48;
@@ -142,7 +142,7 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::CardiovascularRespira
 
   // now set the parameters for the 0D respiratory model
   Teuchos::ParameterList respirpar =
-          DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR RESPIRATORY 0D PARAMETERS");
+          DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("RESPIRATORY PARAMETERS");
 
   // set number of degrees of freedom
   switch (respiratory_model_)
@@ -3131,10 +3131,10 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
   std::vector<double> initvals(num_dof_);
 
   Teuchos::ParameterList artvensyspulpar =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS");
+      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("SYS-PUL CIRCULATION PARAMETERS");
 
   Teuchos::ParameterList respirpar =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR RESPIRATORY 0D PARAMETERS");
+      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("RESPIRATORY PARAMETERS");
 
   initvals[0]  = artvensyspulpar.get("p_at_l_0",0.0);
   initvals[1]  = artvensyspulpar.get("q_vin_l_0",0.0);

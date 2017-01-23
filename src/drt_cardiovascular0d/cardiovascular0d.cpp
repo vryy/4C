@@ -74,13 +74,13 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
 
     // set model used for atria - just needed for CARDIOVASCULAR 0D SYS-PUL CIRCULATION or CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION model
     Teuchos::ParameterList artvensyspulpar =
-        DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS");
+        DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("SYS-PUL CIRCULATION PARAMETERS");
     atrium_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtrimModel>(artvensyspulpar,"ATRIUM_MODEL");
     ventricle_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(artvensyspulpar,"VENTRICLE_MODEL");
 
     // set respiratory model - just needed for CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION model
     Teuchos::ParameterList respirpar =
-            DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR RESPIRATORY 0D PARAMETERS");
+            DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("RESPIRATORY PARAMETERS");
     respiratory_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel>(respirpar,"RESPIRATORY_MODEL");
 
     std::vector<int> wkID(cardiovascular0dcond_.size());

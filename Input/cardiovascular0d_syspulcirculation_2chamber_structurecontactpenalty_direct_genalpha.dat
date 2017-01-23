@@ -84,7 +84,7 @@ SOLALGORITHM                    direct
 RESTART_WITH_CARDVASC0D         No
 LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
--------CARDIOVASCULAR 0D-STRUCTURE COUPLING/CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS
+-------CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS
 R_arvalve_max_l                 1.0e3
 R_arvalve_min_l                 1.0e-6
 R_atvalve_max_l                 1.0e3

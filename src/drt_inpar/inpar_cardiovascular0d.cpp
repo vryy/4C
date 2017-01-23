@@ -59,7 +59,7 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
 
 
 
-  Teuchos::ParameterList& cardvasc0dsyspulcirc = cardvasc0dstruct.sublist("CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS",false,"");
+  Teuchos::ParameterList& cardvasc0dsyspulcirc = cardvasc0dstruct.sublist("SYS-PUL CIRCULATION PARAMETERS",false,"");
 
   DoubleParameter("R_arvalve_max_l",0.0,"maximal left arterial (semilunar) valve resistance",&cardvasc0dsyspulcirc);
   DoubleParameter("R_arvalve_min_l",0.0,"minimal left arterial (semilunar) valve resistance",&cardvasc0dsyspulcirc);
@@ -221,7 +221,7 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
 
 
 
-  Teuchos::ParameterList& cardvascrespir0d = cardvasc0dstruct.sublist("CARDIOVASCULAR RESPIRATORY 0D PARAMETERS",false,"");
+  Teuchos::ParameterList& cardvascrespir0d = cardvasc0dstruct.sublist("RESPIRATORY PARAMETERS",false,"");
 
   setStringToIntegralParameter<int>("RESPIRATORY_MODEL","None","",
                                  tuple<std::string>(

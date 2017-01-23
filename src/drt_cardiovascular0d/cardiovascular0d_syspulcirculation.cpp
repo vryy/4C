@@ -43,7 +43,7 @@ UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(Teuc
 {
 
   Teuchos::ParameterList artvensyspulpar =
-        DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS");
+        DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("SYS-PUL CIRCULATION PARAMETERS");
 
   // set all 0D model parameters
   R_arvalve_max_l_ = artvensyspulpar.get("R_arvalve_max_l",0.0);
@@ -683,7 +683,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(
 
 
   Teuchos::ParameterList artvensyspulpar =
-      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS");
+      DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("SYS-PUL CIRCULATION PARAMETERS");
 
   const double p_at_l_0 = artvensyspulpar.get("p_at_l_0",0.0);
   const double q_vin_l_0 = artvensyspulpar.get("q_vin_l_0",0.0);

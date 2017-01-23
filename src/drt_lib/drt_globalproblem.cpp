@@ -247,8 +247,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CONTACT DYNAMIC", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED", *list);
   reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING", *list);
-  reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING/CARDIOVASCULAR 0D SYS-PUL CIRCULATION PARAMETERS", *list);
-  reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING/CARDIOVASCULAR RESPIRATORY 0D PARAMETERS", *list);
+  reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS", *list);
+  reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING/RESPIRATORY PARAMETERS", *list);
   reader.ReadGidSection("--FLUCTUATING HYDRODYNAMICS", *list);
   reader.ReadGidSection("--BROWNIAN DYNAMICS", *list);
   reader.ReadGidSection("--CROSSLINKING", *list);
