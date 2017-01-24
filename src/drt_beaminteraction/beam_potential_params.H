@@ -87,8 +87,6 @@ namespace BEAMINTERACTION {
     //! type of applied potential (volume, surface)
     enum INPAR::BEAMPOTENTIAL::BeamPotentialType potential_type_;
 
-
-
   };
 
 }

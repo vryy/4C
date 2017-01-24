@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam_contact_params.cpp
 
@@ -8,16 +8,15 @@
 
 \maintainer Maximilian Grill
 */
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 #include "beam_contact_params.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-//#include "str_timint_base.H"
 
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamContactParams::BeamContactParams()
 : isinit_(false),
   issetup_(false),
@@ -36,13 +35,14 @@ BEAMINTERACTION::BeamContactParams::BeamContactParams()
   segangle_(-1.0),
   num_integration_intervals_(0),
   BTB_basicstiff_gap_(-1.0),
-  BTB_endpoint_penalty_(false)
+  BTB_endpoint_penalty_(false),
+  BTSPH_penalty_param_(-1.0)
 {
   // empty constructor
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactParams::Init()
 {
   issetup_ = false;
@@ -166,6 +166,20 @@ void BEAMINTERACTION::BeamContactParams::Init()
       DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_ENDPOINTPENALTY");
 
 
+
+  // ********** Fixme: this needs to go to BeamToSphereContactParams ******************
+  if ( DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_BTSPH") )
+  {
+    BTSPH_penalty_param_ =
+        beam_contact_params_list.get<double>("BEAMS_BTSPH_PENALTYPARAM");
+
+    if (BTSPH_penalty_param_ < 0.0)
+      dserror("beam-to-sphere penalty parameter must not be negative!");
+  }
+  // ***********************************************************************************
+
+
+
   /****************************************************************************/
   // safety checks for currently unsupported parameter settings
   /****************************************************************************/
@@ -189,11 +203,9 @@ void BEAMINTERACTION::BeamContactParams::Init()
   /****************************************************************************/
   if (DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_BTSOLMT") or
       DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_BTSOL") or
-      DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_BTSPH") or
       beam_contact_params_list.get<double>("BEAMS_BTSMTPENALTYPARAM") != 0.0 or
-      beam_contact_params_list.get<double>("BEAMS_BTSPENALTYPARAM") != 0.0 or
-      beam_contact_params_list.get<double>("BEAMS_BTSPH_PENALTYPARAM") != 0.0 )
-    dserror("currently only beam-to-BEAM contact supported!");
+      beam_contact_params_list.get<double>("BEAMS_BTSPENALTYPARAM") != 0.0 )
+    dserror("currently only beam-to-(BEAM/SPHERE) contact supported!");
 
   /****************************************************************************/
   if (DRT::INPUT::IntegralValue<int>(beam_contact_params_list,"BEAMS_SMOOTHING") != INPAR::BEAMCONTACT::bsm_none)
@@ -229,8 +241,8 @@ void BEAMINTERACTION::BeamContactParams::Init()
   isinit_ = true;
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactParams::Setup()
 {
   CheckInit();

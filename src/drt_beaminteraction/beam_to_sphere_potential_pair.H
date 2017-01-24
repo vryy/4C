@@ -1,31 +1,30 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file beam_to_beam_potential_pair.H
+\file beam_to_sphere_potential_pair.H
 
-\brief One beam-to-beam potential-based interacting pair (two beam elements)
+\brief One beam-to-sphere potential-based interacting pair
 
 \level 3
 
 \maintainer Maximilian Grill
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef BEAMTOBEAMPOTENTIALPAIR_H
-#define BEAMTOBEAMPOTENTIALPAIR_H
+
+#ifndef BEAMTOSPHEREPOTENTIALPAIR_H
+#define BEAMTOSPHEREPOTENTIALPAIR_H
 
 #include "../drt_beaminteraction/beam_potential_pair.H"
 
 // Todo get rid of header inclusions
-#include "beam3contact_utils.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "Sacado.hpp"
+#include <Sacado.hpp>
 
-
+#include "../drt_beaminteraction/beam3contact_defines.H"
+#include "../drt_beaminteraction/beam3contact_tangentsmoothing.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "beam3contact_defines.H"
-#include "beam3contact_tangentsmoothing.H"
 
 // forward declarations
 namespace LINALG {
@@ -34,6 +33,7 @@ namespace LINALG {
 }
 namespace DRT {
 namespace ELEMENTS {
+  class Rigidsphere;
   class Beam3Base;
 }
 }
@@ -42,10 +42,11 @@ namespace BEAMINTERACTION
 {
 
 /*!
- \brief class for potential-based interaction between two 3D beam elements
+ \brief class for potential-based interaction of a 3D beam element and a rigid sphere
  */
+
 template<unsigned int numnodes, unsigned int numnodalvalues>
-class BeamToBeamPotentialPair: public BeamPotentialPair
+class BeamToSpherePotentialPair: public BEAMINTERACTION::BeamPotentialPair
 {
 public:
 
@@ -57,12 +58,12 @@ public:
   /*!
   \brief Standard Constructor
   */
-  BeamToBeamPotentialPair();
+  BeamToSpherePotentialPair();
 
   /*!
   \brief Destructor
   */
-  virtual ~BeamToBeamPotentialPair() {};
+  virtual ~BeamToSpherePotentialPair() {};
 
   //! Setup
   virtual void Setup();
@@ -104,14 +105,14 @@ public:
 
   //! @name Access methods
   /*!
-  \brief Get ptr to first beam element
+  \brief Get first element (beam)
   */
-  inline const DRT::ELEMENTS::Beam3Base* BeamElement1() { return beam_element1_;};
+  inline const DRT::ELEMENTS::Beam3Base* BeamElement() { return beam_element_;};
 
   /*!
-  \brief Get ptr to second beam element
+  \brief Get second element (sphere)
   */
-  inline const DRT::ELEMENTS::Beam3Base* BeamElement2() { return beam_element2_;};
+  inline const DRT::ELEMENTS::Rigidsphere* SphereElement() { return sphere_element_;};
   //@}
 
 private:
@@ -119,39 +120,38 @@ private:
   //! @name member variables
 
   //! first element of pair
-  DRT::ELEMENTS::Beam3Base const* beam_element1_;
+  DRT::ELEMENTS::Beam3Base const* beam_element_;
 
   //! second element of pair
-  DRT::ELEMENTS::Beam3Base const* beam_element2_;
+  DRT::ELEMENTS::Rigidsphere const* sphere_element_;
 
-  //! line charge conditions
-  std::vector<DRT::Condition*> linechargeconds_;
+  //! line and point charge condition
+  std::vector<DRT::Condition*> chargeconds_;
 
-  //! current node coordinates of the two elements
+  //! current absolute Dof values of the two elements
   LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> ele1pos_;
-  LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> ele2pos_;
+  LINALG::TMatrix<TYPE,3,1> ele2pos_;
 
   //! parameters of the applied (point-point) potential law Phi(r)=k_ * r^(-m_)
   double k_;
   double m_;
 
-  //! initial element lengths
-  double ele1length_;
-  double ele2length_;
+  //! beam element arc-length in stress-free reference configuration
+  double beamele_reflength_;
 
-  //! Cross-section radius of beam 1
+  //! Cross-section radius of beam
   double radius1_;
 
-  //! Cross-section radius of beam 2
+  //! Cross-section radius of sphere
   double radius2_;
 
   //! resulting forces on element 1 and 2
   LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1> fpot1_;
-  LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 1> fpot2_;
+  LINALG::TMatrix<TYPE, 3, 1> fpot2_;
 
   //! stiffness contributions
-  LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 2*3*numnodes*numnodalvalues> stiffpot1_;
-  LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 2*3*numnodes*numnodalvalues> stiffpot2_;
+  LINALG::TMatrix<TYPE, 3*numnodes*numnodalvalues, 3*numnodes*numnodalvalues+3> stiffpot1_;
+  LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues+3> stiffpot2_;
 
   //@}
 
@@ -164,17 +164,15 @@ private:
 
   /*!
   \brief Calculate shape function values for given parameter values
-  Todo call more general utils method
+      Todo call more general utils method
   */
   void GetShapeFunctions( std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i,
-                          std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N2_i,
                           std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N1_i_xi,
-                          std::vector<LINALG::Matrix<1, numnodes*numnodalvalues> >& N2_i_xi,
                           DRT::UTILS::IntegrationPoints1D& gausspoints);
 
   /*!
   \brief Compute coordinates of centreline points from the discretization
-    Todo call more general utils method
+      Todo call more general utils method
   */
   void ComputeCoords(LINALG::TMatrix<TYPE,3,1>& r,
                      const LINALG::Matrix<1,numnodes*numnodalvalues>& N_i,

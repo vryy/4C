@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------     */
 /*!
 \file beam_potential_pair.H
 
@@ -8,7 +8,7 @@
 
 \maintainer Maximilian Grill
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------     */
 #ifndef BEAMPOTENTIALPAIR_H
 #define BEAMPOTENTIALPAIR_H
 
@@ -44,6 +44,9 @@ public:
 
   //! @name Constructors and destructors and related methods
 
+  /*!
+  \brief Constructor
+  */
   BeamPotentialPair();
 
   /*!
@@ -59,6 +62,11 @@ public:
 
   //! Setup
   virtual void Setup();
+
+  //! return appropriate derived (templated) class (acts as a simple factory)
+  static Teuchos::RCP<BeamPotentialPair> Create(
+      unsigned int numnodes,
+      unsigned int numnodalvalues);
 
   //@}
 
@@ -78,11 +86,6 @@ public:
       const std::vector<DRT::Condition*> linechargeconds,
       const double k,
       const double m)=0;
-
-  //! return appropriate internal implementation class (acts as a simple factory)
-  static Teuchos::RCP<BeamPotentialPair> Create(
-      unsigned int numnodes,
-      unsigned int numnodalvalues);
 
   /*
   \brief Update state of translational nodal DoFs (absolute positions and tangents) of both elements
@@ -134,6 +137,8 @@ protected:
 
   //! Check the init and setup state
   void CheckInitSetup() const;
+
+  //@}
 
 protected:
   //! @name member variables

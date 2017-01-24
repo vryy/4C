@@ -899,9 +899,11 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
+  src/drt_beaminteraction/beam_to_sphere_contact_pair
   src/drt_beaminteraction/beam_potential_params.cpp
   src/drt_beaminteraction/beam_potential_pair.cpp
   src/drt_beaminteraction/beam_to_beam_potential_pair.cpp
+  src/drt_beaminteraction/beam_to_sphere_potential_pair.cpp
   src/drt_beaminteraction/beam_to_beam_linkage.cpp
   src/drt_beaminteraction/beam3r_lin2_linkage.cpp
 )

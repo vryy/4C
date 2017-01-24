@@ -12,6 +12,9 @@
 
 #include "beam_to_beam_potential_pair.H"
 
+#include "beam_potential_params.H"
+
+// Todo get rid of outdated header inclusions
 #include "beam3contact_utils.H"
 #include "../drt_inpar/inpar_beampotential.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -20,9 +23,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-//#include "../drt_lib/drt_globalproblem.H"
 
-//#include "../drt_structure/strtimint_impl.H"
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
@@ -34,7 +35,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "Teuchos_TimeMonitor.hpp"
-#include "../drt_beaminteraction/beam_potential_params.H"
+#include "beam_potential_params.H"
 #include "beam3contact_defines.H"
 
 /*-----------------------------------------------------------------------------------------------*
@@ -42,6 +43,8 @@
 template<unsigned int numnodes, unsigned int numnodalvalues>
 BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::BeamToBeamPotentialPair():
     BeamPotentialPair(),
+    beam_element1_(NULL),
+    beam_element2_(NULL),
     k_(0.0),
     m_(0.0),
     ele1length_(0.0),
@@ -122,13 +125,13 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::Evaluat
    stiffpot1_.Clear();
    stiffpot2_.Clear();
 
-  unsigned int dim1 = 3*numnodes*numnodalvalues;
-  unsigned int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   // set class variables
   if (linechargeconds.size() == 2)
   {
-    for (int i=0; i<2; ++i)
+    for (unsigned int i=0; i<2; ++i)
     {
       if (linechargeconds[i]->Type() == DRT::Condition::BeamPotential_LineChargeDensity)
         linechargeconds_.push_back(linechargeconds[i]);
@@ -145,10 +148,10 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::Evaluat
   // prepare FAD
 #ifdef AUTOMATICDIFF
   // The 2*3*numnodes*numnodalvalues primary DoFs are the components of the nodal positions / tangents.
-  for (int i=0;i<3*numnodes*numnodalvalues;i++)
+  for (unsigned int i=0;i<3*numnodes*numnodalvalues;i++)
     ele1pos_(i).diff(i,2*3*numnodes*numnodalvalues);
 
-  for (int i=0;i<3*numnodes*numnodalvalues;i++)
+  for (unsigned int i=0;i<3*numnodes*numnodalvalues;i++)
     ele2pos_(i).diff(3*numnodes*numnodalvalues+i,2*3*numnodes*numnodalvalues);
 #endif
 
@@ -252,10 +255,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::Evaluat
   switch ( Params()->PotentialType() )
   {
   case INPAR::BEAMPOTENTIAL::beampot_surf:
-    prefactor *= 4 * radius1_ * radius2_ * pow(M_PI,2);
+    prefactor *= 4 * radius1_ * radius2_ * std::pow(M_PI,2);
     break;
   case INPAR::BEAMPOTENTIAL::beampot_vol:
-    prefactor *= pow(radius1_,2) * pow(radius2_,2) * pow(M_PI,2);
+    prefactor *= std::pow(radius1_,2) * std::pow(radius2_,2) * std::pow(M_PI,2);
     break;
   default:
     dserror("No valid BEAMPOTENTIAL_TYPE specified. Choose either Surface or Volume in input file!");
@@ -282,26 +285,29 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::Evaluat
       TYPE norm_dist_exp1 = 0.0;
       if(norm_dist !=0.0)
       {
-        norm_dist_exp1 = pow(norm_dist,-m_-2);
+        norm_dist_exp1 = std::pow(norm_dist,-m_-2);
       }
       else
       {
-        dserror("\n|r1-r2|=0 ! Interacting points are identical! Potential law not defined in this case! Think about shifting nodes in unconverged state?!");
+        dserror("\n|r1-r2|=0 ! Interacting points are identical! Potential law not defined in this case!"
+            " Think about shifting nodes in unconverged state?!");
       }
 
-      double q1q2_JacFac_GaussWeights = q1 * q2 * jacobifac1 * BeamElement2()->GetJacobiFacAtXi(gausspoints.qxg[gp2][0]) * gausspoints.qwgt[gp1] * gausspoints.qwgt[gp2];
+      double q1q2_JacFac_GaussWeights =
+          q1 * q2 * jacobifac1 * BeamElement2()->GetJacobiFacAtXi(gausspoints.qxg[gp2][0]) * gausspoints.qwgt[gp1] * gausspoints.qwgt[gp2];
 
       // compute fpot_tmp here, same for both element forces
-      for (int i=0; i<3; ++i) fpot_tmp(i) = q1q2_JacFac_GaussWeights * norm_dist_exp1 * dist(i);
+      for (unsigned int i=0; i<3; ++i)
+        fpot_tmp(i) = q1q2_JacFac_GaussWeights * norm_dist_exp1 * dist(i);
 
       //********************************************************************
       // calculate fpot1: force on element 1
       //********************************************************************
       // sum up the contributions of all nodes (in all dimensions)
-      for (int i=0; i<(numnodes*numnodalvalues); ++i)
+      for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
       {
         // loop over dimensions
-        for (int j=0; j<3; ++j)
+        for (unsigned int j=0; j<3; ++j)
         {
           fpot1_(3*i+j) -= N1_i[gp1](i)*fpot_tmp(j);
         }
@@ -311,10 +317,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::Evaluat
       // calculate fpot2: force on element 2
       //********************************************************************
       // sum up the contributions of all nodes (in all dimensions)
-      for (int i=0; i<(numnodes*numnodalvalues); ++i)
+      for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
       {
         // loop over dimensions
-        for (int j=0; j<3; ++j)
+        for (unsigned int j=0; j<3; ++j)
         {
           fpot2_(3*i+j) += N2_i[gp2](i)*fpot_tmp(j);
         }
@@ -324,48 +330,52 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::Evaluat
       // calculate stiffpot1
       //********************************************************************
       // auxiliary variables (same for both elements)
-      TYPE norm_dist_exp2 = (m_+2) * pow(norm_dist,-m_-4);
+      TYPE norm_dist_exp2 = (m_+2) * std::pow(norm_dist,-m_-4);
 
       LINALG::TMatrix<TYPE, 3, 3> dist_dist_T(true);
 
-      for (int i=0; i<3; ++i)
+      for (unsigned int i=0; i<3; ++i)
       {
-        for (int j=0; j<=i; ++j)
+        for (unsigned int j=0; j<=i; ++j)
         {
           dist_dist_T(i,j) = dist(i) * dist(j);
           if(i!=j) dist_dist_T(j,i) = dist_dist_T(i,j);
         }
       }
 
-      for (int i=0; i<(numnodes*numnodalvalues); ++i)
+      for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
       {
 
         // d (Res_1) / d (d_1)
-        for (int j=0; j<(numnodes*numnodalvalues); ++j)
+        for (unsigned int j=0; j<(numnodes*numnodalvalues); ++j)
         {
 
-          for (int idim=0; idim<3; ++idim)
+          for (unsigned int idim=0; idim<3; ++idim)
           {
-            stiffpot1_(3*i+idim,3*j+idim) -= norm_dist_exp1 * N1_i[gp1](i)*N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
+            stiffpot1_(3*i+idim,3*j+idim) -=
+                norm_dist_exp1 * N1_i[gp1](i)*N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
 
-            for (int jdim=0; jdim<3; ++jdim)
+            for (unsigned int jdim=0; jdim<3; ++jdim)
             {
-              stiffpot1_(3*i+idim,3*j+jdim) += norm_dist_exp2 * N1_i[gp1](i) * dist_dist_T(idim,jdim) * N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
+              stiffpot1_(3*i+idim,3*j+jdim) +=
+                  norm_dist_exp2 * N1_i[gp1](i) * dist_dist_T(idim,jdim) * N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
             }
           }
         }
 
         // d (Res_1) / d (d_2)
-        for (int j=0; j<(numnodes*numnodalvalues); ++j)
+        for (unsigned int j=0; j<(numnodes*numnodalvalues); ++j)
         {
 
-          for (int idim=0; idim<3; ++idim)
+          for (unsigned int idim=0; idim<3; ++idim)
           {
-            stiffpot1_(3*i+idim,3*(numnodes*numnodalvalues+j)+idim) += norm_dist_exp1 * N1_i[gp1](i)*N2_i[gp2](j) *  q1q2_JacFac_GaussWeights;
+            stiffpot1_(3*i+idim,3*(numnodes*numnodalvalues+j)+idim) +=
+                norm_dist_exp1 * N1_i[gp1](i)*N2_i[gp2](j) *  q1q2_JacFac_GaussWeights;
 
-            for (int jdim=0; jdim<3; ++jdim)
+            for (unsigned int jdim=0; jdim<3; ++jdim)
             {
-              stiffpot1_(3*i+idim,3*(numnodes*numnodalvalues+j)+jdim) -= norm_dist_exp2 * N1_i[gp1](i) * dist_dist_T(idim,jdim) * N2_i[gp2](j) *  q1q2_JacFac_GaussWeights;
+              stiffpot1_(3*i+idim,3*(numnodes*numnodalvalues+j)+jdim) -=
+                  norm_dist_exp2 * N1_i[gp1](i) * dist_dist_T(idim,jdim) * N2_i[gp2](j) *  q1q2_JacFac_GaussWeights;
             }
           }
         }
@@ -375,35 +385,39 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::Evaluat
       //********************************************************************
       // calculate stiffpot2
       //********************************************************************
-      for (int i=0; i<(numnodes*numnodalvalues); ++i)
+      for (unsigned int i=0; i<(numnodes*numnodalvalues); ++i)
       {
 
         // d (Res_2) / d (d_1)
-        for (int j=0; j<(numnodes*numnodalvalues); ++j)
+        for (unsigned int j=0; j<(numnodes*numnodalvalues); ++j)
         {
 
-          for (int idim=0; idim<3; ++idim)
+          for (unsigned int idim=0; idim<3; ++idim)
           {
-            stiffpot2_(3*i+idim,3*j+idim) += norm_dist_exp1 * N2_i[gp2](i)*N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
+            stiffpot2_(3*i+idim,3*j+idim) +=
+                norm_dist_exp1 * N2_i[gp2](i)*N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
 
-            for (int jdim=0; jdim<3; ++jdim)
+            for (unsigned int jdim=0; jdim<3; ++jdim)
             {
-              stiffpot2_(3*i+idim,3*j+jdim) -= norm_dist_exp2 * N2_i[gp2](i) * dist_dist_T(idim,jdim) * N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
+              stiffpot2_(3*i+idim,3*j+jdim) -=
+                  norm_dist_exp2 * N2_i[gp2](i) * dist_dist_T(idim,jdim) * N1_i[gp1](j) *  q1q2_JacFac_GaussWeights;
             }
           }
         }
 
         // d (Res_2) / d (d_2)
-        for (int j=0; j<(numnodes*numnodalvalues); ++j)
+        for (unsigned int j=0; j<(numnodes*numnodalvalues); ++j)
         {
 
-          for (int idim=0; idim<3; ++idim)
+          for (unsigned int idim=0; idim<3; ++idim)
           {
-            stiffpot2_(3*i+idim,3*(numnodes*numnodalvalues+j)+idim) -= norm_dist_exp1 * N2_i[gp2](i)*N2_i[gp2](j) *  q1q2_JacFac_GaussWeights;
+            stiffpot2_(3*i+idim,3*(numnodes*numnodalvalues+j)+idim) -=
+                norm_dist_exp1 * N2_i[gp2](i)*N2_i[gp2](j) *  q1q2_JacFac_GaussWeights;
 
-            for (int jdim=0; jdim<3; ++jdim)
+            for (unsigned int jdim=0; jdim<3; ++jdim)
             {
-              stiffpot2_(3*i+idim,3*(numnodes*numnodalvalues+j)+jdim) += norm_dist_exp2 * N2_i[gp2](i) * dist_dist_T(idim,jdim) * N2_i[gp2](j) *  q1q2_JacFac_GaussWeights;
+              stiffpot2_(3*i+idim,3*(numnodes*numnodalvalues+j)+jdim) +=
+                  norm_dist_exp2 * N2_i[gp2](i) * dist_dist_T(idim,jdim) * N2_i[gp2](j) *  q1q2_JacFac_GaussWeights;
             }
           }
         }
@@ -505,9 +519,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::Compute
   r.Clear();
 
   // compute output variable
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<numnodes*numnodalvalues;j++)
+    for (unsigned int j=0;j<numnodes*numnodalvalues;j++)
     {
       r(i)+=N_i(j)*elepos(3*j+i);
     }
@@ -529,7 +543,6 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues>::ResetSt
       ele2pos_(i) = centerline_dofvec_ele2[i];
   }
 
-  return;
 }
 
 

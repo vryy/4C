@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam_to_beam_contact_pair.H
 
@@ -8,10 +8,12 @@
 
 \maintainer Maximilian Grill
 */
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 #ifndef BEAMTOBEAMCONTACTPAIR_H
 #define BEAMTOBEAMCONTACTPAIR_H
+
+#include "beam_contact_pair.H"
 
 // Todo get rid of header inclusions
 #include "beam3contact_utils.H"
@@ -29,7 +31,6 @@
 
 #include <Epetra_SerialDenseVector.h>
 
-#include "../drt_beaminteraction/beam_contact_pair.H"
 #include "beam3contact_defines.H"
 #include "beam3contact_tangentsmoothing.H"
 
@@ -38,13 +39,11 @@ namespace LINALG {
   class SerialDenseVector;
   class SerialDenseMatrix;
 }
-namespace BEAMINTERACTION {
-template <unsigned int numnodes, unsigned int numnodalvalues>
-class BeamToBeamContactVariables;
-}
-
 namespace BEAMINTERACTION
 {
+
+template <unsigned int numnodes, unsigned int numnodalvalues>
+class BeamToBeamContactVariables;
 
 /*!
  \brief class for contact between two 3D beam elements
@@ -108,230 +107,6 @@ public:
   //@}
 
   //! @name Access methods
-//  /*!
-//  \brief Get problem discretization
-//  */
-//  inline const DRT::Discretization& ProblemDiscret() const { return pdiscret_;};
-//
-//  /*!
-//  \brief Get beam contact discretization
-//  */
-//  inline const DRT::Discretization& ContactDiscret() const { return cdiscret_;};
-//
-//  /*!
-//  \brief Get offset of dofs between cdiscret and pdiscret
-//  */
-//  inline const std::map<int,int>& DofOffset() const { return dofoffsetmap_;};
-//
-//  /*!
-//  \brief Get first element
-//  */
-//  inline const DRT::Element* Element1() { return element1_;};
-//
-//  /*!
-//  \brief Get first element
-//  */
-//  inline const DRT::Element* Element2() { return element2_;};
-//
-//  /*!
-//  \brief Get number of standard large angle/small angle/endpoint contact points on this element pair
-//  */
-//  int GetNumCps()
-//  {
-//    return cpvariables_.size();
-//  };
-//
-//  int GetNumGps()
-//  {
-//    return gpvariables_.size();
-//  };
-//
-//  int GetNumEps()
-//  {
-//    return epvariables_.size();
-//  };
-//
-//  /*!
-//  \brief Get vector of type declarations (0=closest point contact, 1=gauss point contact, 2= end point contact) of all contact pairs
-//  */
-//  std::vector<int> GetContactType()
-//  {
-//    int size1=cpvariables_.size();
-//    int size2=gpvariables_.size();
-//    int size3=epvariables_.size();
-//    std::vector<int > types(size1+size2+size3, 0);
-//
-//    for (int i=0;i<size1;i++)
-//    {
-//      types[i] = 0;
-//    }
-//
-//    for (int i=size1;i<size2+size1;i++)
-//    {
-//      types[i] = 1;
-//    }
-//
-//    for (int i=size1+size2;i<size1+size2+size3;i++)
-//    {
-//      types[i] = 2;
-//    }
-//
-//    return types;
-//  };
-//
-//  /*!
-//  \brief Get vector of all gaps of this contact pair
-//  */
-//  std::vector<double> GetGap()
-//  {
-//    int size1=cpvariables_.size();
-//    int size2=gpvariables_.size();
-//    int size3=epvariables_.size();
-//    std::vector<double > gaps(size1+size2+size3, 0.0);
-//
-//    for (int i=0;i<size1;i++)
-//    {
-//      gaps[i] = FADUTILS::CastToDouble(cpvariables_[i]->GetGap());
-//    }
-//
-//    for (int i=size1;i<size2+size1;i++)
-//    {
-//      gaps[i] = FADUTILS::CastToDouble(gpvariables_[i-size1]->GetGap());
-//    }
-//
-//    for (int i=size1+size2;i<size1+size2+size3;i++)
-//    {
-//      gaps[i] = FADUTILS::CastToDouble(epvariables_[i-size1-size2]->GetGap());
-//    }
-//
-//    return gaps;
-//  };
-//
-//  /*!
-//  \brief Get vector of all contact forces of this contact pair
-//  */
-//  std::vector<double> GetContactForce()
-//  {
-//    int size1=cpvariables_.size();
-//    int size2=gpvariables_.size();
-//    int size3=epvariables_.size();
-//    std::vector<double > f(size1+size2+size3, 0.0);
-//
-//    for (int i=0;i<size1;i++)
-//    {
-//      f[i] = FADUTILS::CastToDouble(cpvariables_[i]->Getfp()*cpvariables_[i]->GetPPfac());
-//    }
-//
-//    for (int i=size1;i<size2+size1;i++)
-//    {
-//      f[i] = FADUTILS::CastToDouble(gpvariables_[i-size1]->Getfp()*gpvariables_[i-size1]->GetPPfac());
-//    }
-//
-//    for (int i=size1+size2;i<size1+size2+size3;i++)
-//    {
-//      f[i] = FADUTILS::CastToDouble(epvariables_[i-size1-size2]->Getfp()*epvariables_[i-size1-size2]->GetPPfac());
-//    }
-//
-//    return f;
-//  };
-//
-//  /*!
-//  \brief Get vector of all contact angles of this contact pair
-//  */
-//  std::vector<double> GetContactAngle()
-//  {
-//    int size1=cpvariables_.size();
-//    int size2=gpvariables_.size();
-//    int size3=epvariables_.size();
-//    std::vector<double > angles(size1+size2+size3, 0.0);
-//
-//    for (int i=0;i<size1;i++)
-//    {
-//      angles[i] = FADUTILS::CastToDouble(cpvariables_[i]->GetAngle());
-//    }
-//
-//    for (int i=size1;i<size2+size1;i++)
-//    {
-//      angles[i] = FADUTILS::CastToDouble(gpvariables_[i-size1]->GetAngle());
-//    }
-//
-//    for (int i=size1+size2;i<size1+size2+size3;i++)
-//    {
-//      angles[i] = FADUTILS::CastToDouble(epvariables_[i-size1-size2]->GetAngle());
-//    }
-//
-//    return angles;
-//  };
-//
-//  /*!
-//  \brief Get vector of all closest points of this contact pair
-//  */
-//  std::vector<std::pair<double,double> > GetClosestPoint()
-//  {
-//    int size1=cpvariables_.size();
-//    int size2=gpvariables_.size();
-//    int size3=epvariables_.size();
-//    std::vector<std::pair<double,double> > cps(size1+size2+size3,std::make_pair(0.0,0.0));
-//
-//    for (int i=0;i<size1;i++)
-//    {
-//      double xi=FADUTILS::CastToDouble(cpvariables_[i]->GetCP().first);
-//      double eta=FADUTILS::CastToDouble(cpvariables_[i]->GetCP().second);
-//      cps[i]=std::make_pair(xi,eta);
-//    }
-//
-//    for (int i=size1;i<size2+size1;i++)
-//    {
-//      double xi=FADUTILS::CastToDouble(gpvariables_[i-size1]->GetCP().first);
-//      double eta=FADUTILS::CastToDouble(gpvariables_[i-size1]->GetCP().second);
-//      cps[i]=std::make_pair(xi,eta);
-//    }
-//
-//    for (int i=size1+size2;i<size1+size2+size3;i++)
-//    {
-//      double xi=FADUTILS::CastToDouble(epvariables_[i-size1-size2]->GetCP().first);
-//      double eta=FADUTILS::CastToDouble(epvariables_[i-size1-size2]->GetCP().second);
-//      cps[i]=std::make_pair(xi,eta);
-//    }
-//
-//    return cps;
-//  };
-//
-//  /*!
-//  \brief Return number of individual contact segments on element pair
-//  */
-//  std::pair<int,int> GetNumSegments()
-//  {
-//    return std::make_pair(numseg1_,numseg2_);
-//  };
-//
-//  /*!
-//  \brief Return ids of active segments
-//  */
-//  std::vector<std::pair<int,int> > GetSegmentIds()
-//  {
-//    int size1=cpvariables_.size();
-//    int size2=gpvariables_.size();
-//    int size3=epvariables_.size();
-//    std::vector<std::pair<int,int> > ids(size1+size2+size3,std::make_pair(1,1));
-//
-//    for (int i=0;i<size1;i++)
-//    {
-//      ids[i]=cpvariables_[i]->GetSegIds();
-//    }
-//
-//    for (int i=size1;i<size2+size1;i++)
-//    {
-//      ids[i]=gpvariables_[i-size1]->GetSegIds();
-//    }
-//
-//    for (int i=size1+size2;i<size1+size2+size3;i++)
-//    {
-//      ids[i]=epvariables_[i-size1-size2]->GetSegIds();
-//    }
-//
-//    return ids;
-//  };
 
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
@@ -341,187 +116,6 @@ public:
     //The element pair is assumed to be active when we have at least one active contact point
     return (cpvariables_.size()+gpvariables_.size()+epvariables_.size());
   };
-
-//  /*!
-//  \brief Get coordinates of contact point of element1
-//  */
-//  const std::vector<LINALG::Matrix<3,1> > GetX1()
-//  {
-//    int size1=cpvariables_.size();
-//    int size2=gpvariables_.size();
-//    int size3=epvariables_.size();
-//    std::vector<LINALG::Matrix<3,1> > r1(size1+size2+size3, LINALG::Matrix<3,1>(true));
-//
-//    for (int i=0;i<size1;i++)
-//    {
-//      TYPE eta1 = cpvariables_[i]->GetCP().first;
-//      for(int j=0;j<3;j++)
-//        r1[i](j) = FADUTILS::CastToDouble(r(eta1,element1_)(j));
-//    }
-//
-//    for (int i=size1;i<size2+size1;i++)
-//    {
-//      TYPE eta1 = gpvariables_[i-size1]->GetCP().first;
-//      for(int j=0;j<3;j++)
-//        r1[i](j) = FADUTILS::CastToDouble(r(eta1,element1_)(j));
-//    }
-//
-//    for (int i=size1+size2;i<size1+size2+size3;i++)
-//    {
-//      TYPE eta1 = epvariables_[i-size1-size2]->GetCP().first;
-//      for(int j=0;j<3;j++)
-//        r1[i](j) = FADUTILS::CastToDouble(r(eta1,element1_)(j));
-//    }
-//
-//    return r1;
-//  };
-//
-//  /*!
-//  \brief Get coordinates of contact point of element2
-//  */
-//  const std::vector<LINALG::Matrix<3,1> > GetX2()
-//  {
-//    int size1=cpvariables_.size();
-//    int size2=gpvariables_.size();
-//    int size3=epvariables_.size();
-//    std::vector<LINALG::Matrix<3,1> > r2(size1+size2+size3, LINALG::Matrix<3,1>(true));
-//
-//    for (int i=0;i<size1;i++)
-//    {
-//      TYPE eta2 = cpvariables_[i]->GetCP().second;
-//      for(int j=0;j<3;j++)
-//        r2[i](j) = FADUTILS::CastToDouble(r(eta2,element2_)(j));
-//    }
-//
-//    for (int i=size1;i<size2+size1;i++)
-//    {
-//      TYPE eta2 = gpvariables_[i-size1]->GetCP().second;
-//      for(int j=0;j<3;j++)
-//        r2[i](j) = FADUTILS::CastToDouble(r(eta2,element2_)(j));
-//    }
-//
-//    for (int i=size1+size2;i<size1+size2+size3;i++)
-//    {
-//      TYPE eta2 = epvariables_[i-size1-size2]->GetCP().second;
-//      for(int j=0;j<3;j++)
-//        r2[i](j) = FADUTILS::CastToDouble(r(eta2,element2_)(j));
-//    }
-//
-//    return r2;
-//  };
-//
-//
-//  //TODO:
-//  /*!
-//  \brief Get normal vector
-//  */
-//  const Epetra_SerialDenseVector GetNormal()
-//  {
-//    Epetra_SerialDenseVector normal(3);
-//
-//    for(int i=0;i<3;i++)
-//      normal(i)=0.0;
-//
-//    return normal;
-//  }
-//
-//  /*!
-//  \brief Get flag indicating whether the nodal values of one element had been shifted due to r1=r2
-//         Since this is only possible for beam3contactnew elements but not for beam3contact elements
-//         we always return false within this class.
-//  */
-//  bool GetShiftStatus() {return false;};
-//
-//  /*!
-//    \Check, if there is a difference between the result of the new and old gap definition, i.e. if the beams centerlines have already crossed or not.
-//    Since this is only possible for beam3contactnew elements but not for beam3contact elements
-//    we always return false within this class.
-//  */
-//  bool GetNewGapStatus()
-//  {
-//    return false;
-//  };
-//  //@}
-//
-//  /*!
-//    \Get energy of penalty contact.
-//  */
-//  double GetEnergy()
-//  {
-//    if(     DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp
-//        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp
-//        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
-//      dserror("Contact Energy calculation not implemented for the chosen penalty law!");
-//
-//
-//    double energy=0.0;
-//
-//    for (int i=0;i<(int)cpvariables_.size();i++)
-//    {
-//      double ppfac = FADUTILS::CastToDouble(cpvariables_[i]->GetPPfac());
-//      double e = -cpvariables_[i]->GetIntegratedEnergy();
-//      energy += ppfac*e;
-//    }
-//
-//    for (int i=0;i<(int)gpvariables_.size();i++)
-//    {
-//      double ppfac = FADUTILS::CastToDouble(gpvariables_[i]->GetPPfac());
-//      double e = -gpvariables_[i]->GetIntegratedEnergy();
-//      energy += ppfac*e;
-//    }
-//
-//    for (int i=0;i<(int)epvariables_.size();i++)
-//    {
-//      double ppfac = FADUTILS::CastToDouble(epvariables_[i]->GetPPfac());
-//      double e = -epvariables_[i]->GetIntegratedEnergy();
-//      energy += ppfac*e;
-//    }
-//
-//    return energy;
-//  };
-//
-//  /*!
-//    \Get energy of perp penalty contact without transition factor contribution.
-//  */
-//  double GetUnscaledPerpEnergy()
-//  {
-//    if(     DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp
-//        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp
-//        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
-//      dserror("Contact Energy calculation not implemented for the chosen penalty law!");
-//
-//
-//    double energy=0.0;
-//
-//    for (int i=0;i<(int)cpvariables_.size();i++)
-//    {
-//      double e = -cpvariables_[i]->GetIntegratedEnergy();
-//      energy += e;
-//    }
-//
-//    return energy;
-//  };
-//
-//  /*!
-//    \Get energy of parallel penalty contact without transition factor contribution.
-//  */
-//  double GetUnscaledParallelEnergy()
-//  {
-//    if(     DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lp
-//        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_qp
-//        and DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(bcparams_,"BEAMS_PENALTYLAW") != INPAR::BEAMCONTACT::pl_lpqp)
-//      dserror("Contact Energy calculation not implemented for the chosen penalty law!");
-//
-//    double energy=0.0;
-//
-//    for (int i=0;i<(int)gpvariables_.size();i++)
-//    {
-//      double e = -gpvariables_[i]->GetIntegratedEnergy();
-//      energy += e;
-//    }
-//
-//    return energy;
-//  };
 
   //@}
 

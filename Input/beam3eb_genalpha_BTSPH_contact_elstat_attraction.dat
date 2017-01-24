@@ -1,5 +1,5 @@
 //
-// \maintainer Maximilian Grill
+// Maintainer: Maximilian Grill
 //
 ==================================================================
 General Data File CCARAT
@@ -19,14 +19,8 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
 FILESTEPS                       1000
+VERBOSITY                       standard
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
@@ -46,13 +40,6 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         25
 LOADLIN                         Yes
----------------------------------------------------------STRUCT NOX/Printing
-Outer Iteration                 = Yes
-Inner Iteration                 = Yes
-Outer Iteration StatusTest      = No
-Linear Solver Details           = No
-Test Details                    = No
-Debug                           = No
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.9
@@ -75,6 +62,10 @@ BEAMPOT_BTSPH                   Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym
+---------------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = Yes
+Outer Iteration StatusTest      = No
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          2

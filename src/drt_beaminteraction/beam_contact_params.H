@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam_contact_params.H
 
@@ -8,17 +8,15 @@
 
 \maintainer Maximilian Grill
 */
-/*---------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 #ifndef BEAMCONTACTPARAMS_H
 #define BEAMCONTACTPARAMS_H
 
-#include "../drt_lib/drt_dserror.H"
-//#include <NOX_Abstract_Vector.H>
-//#include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 
-// forward declaration
+#include "../drt_lib/drt_dserror.H"
+
 namespace BEAMINTERACTION {
 
   /*!
@@ -140,6 +138,13 @@ namespace BEAMINTERACTION {
       return BTB_endpoint_penalty_;
     }
 
+    // ********** Fixme: this needs to go to BeamToSphereContactParams ******************
+    inline double BeamToSpherePenaltyParam() const
+    {
+      return BTSPH_penalty_param_;
+    }
+    // ***********************************************************************************
+
   private:
 
     bool isinit_;
@@ -188,6 +193,13 @@ namespace BEAMINTERACTION {
     //! flag indicating if the integration should take special care of physical
     //  end points of beams in order to avoid strong discontinuities
     bool BTB_endpoint_penalty_;
+
+    // ********** Fixme: this needs to go to BeamToSphereContactParams ******************
+
+    //! beam-to-sphere penalty parameter
+    double BTSPH_penalty_param_;
+
+    // ***********************************************************************************
 
   };
 

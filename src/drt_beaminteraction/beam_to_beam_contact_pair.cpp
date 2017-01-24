@@ -12,7 +12,13 @@
 
 #include "beam_to_beam_contact_pair.H"
 
+#include "beam_contact_pair.H"
+#include "beam_contact_params.H"
+#include "beam_to_beam_contact_variables.H"
+#include "beam3contact_defines.H"
 #include "beam3contact_utils.H"
+
+// Todo check and get rid of outdated header inclusions
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_discret.H"
@@ -35,10 +41,6 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "../drt_beaminteraction/beam_contact_pair.H"
-#include "../drt_beaminteraction/beam_contact_params.H"
-#include "beam_to_beam_contact_variables.H"
-#include "beam3contact_defines.H"
 #include "beam3contact_tangentsmoothing.H"
 
 //TODO: Abfangen, dass Kontaktpunkte am Elementübergang zweimal ausgewertet werden!!!
@@ -2885,8 +2887,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
     dserror("This is no possible combination of the parameters cpp, gp, fixedendpointxi and fixedendpointeta!");
 
   // get dimensions for vectors fc1 and fc2
-  const int dim1 = 3*numnodes*numnodalvalues;
-  const int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   // temporary vectors for contact forces, DOF-GIDs and owning procs
   LINALG::TMatrix<TYPE, dim1, 1> fc1(true);
@@ -2915,9 +2917,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
     //The variable intfac represents the integration factor containing the
     //Gauss weight and the jacobian. This factor is only necessary for the
     //small-angle formulation and is set to 1.0 otherwise!
-    for (int i=0;i<dim1;++i)
+    for (unsigned int i=0;i<dim1;++i)
     {
-      for (int j=0;j<3;++j)
+      for (unsigned int j=0;j<3;++j)
       {
         fc1(i) +=  N1(j,i)*normal(j)*fp*ppfac*intfac;
       }
@@ -2929,9 +2931,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
     //The variable intfac represents the integration factor containing the
     //Gauss weight and the jacobian. This factor is only necessary for the
     //small-angle formulation and is set to 1.0 otherwise!
-    for (int i=0;i<dim2;++i)
+    for (unsigned int i=0;i<dim2;++i)
     {
-      for (int j=0;j<3;++j)
+      for (unsigned int j=0;j<3;++j)
       {
         fc2(i) +=  -N2(j,i)*normal(j)*fp*ppfac*intfac;
       }
@@ -2979,9 +2981,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
     //The variable intfac represents the integration factor containing the
     //Gauss weight and the jacobian. This factor is only necessary for the
     //small-angle formulation and is set to 1.0 otherwise!
-    for (int i=0;i<dim1;++i)
+    for (unsigned int i=0;i<dim1;++i)
     {
-      for (int j=0;j<3;++j)
+      for (unsigned int j=0;j<3;++j)
       {
         fc1(i) +=  (N1(j,i)*normal(j)*fp*ppfac)*intfac;
       }
@@ -2994,9 +2996,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
     //The variable intfac represents the integration factor containing the
     //Gauss weight and the jacobian. This factor is only necessary for the
     //small-angle formulation and is set to 1.0 otherwise!
-    for (int i=0;i<dim2;++i)
+    for (unsigned int i=0;i<dim2;++i)
     {
-      for (int j=0;j<3;++j)
+      for (unsigned int j=0;j<3;++j)
       {
         fc2(i) +=  (-N2(j,i)*normal(j)*fp*ppfac)*intfac;
       }
@@ -3009,11 +3011,11 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
   #ifdef AUTOMATICDIFF
   if (fc1_FAD != NULL and fc2_FAD != NULL)
   {
-    for (int i=0;i<dim1;++i)
+    for (unsigned int i=0;i<dim1;++i)
     {
         (*fc1_FAD)(i) = fc1(i);
     }
-    for (int i=0;i<dim2;++i)
+    for (unsigned int i=0;i<dim2;++i)
     {
         (*fc2_FAD)(i) = fc2(i);
     }
@@ -3025,14 +3027,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
   //**********************************************************************
   if (not DoNotAssemble)
   {
-    for (int i=0;i<dim1;++i)
+    for (unsigned int i=0;i<dim1;++i)
       forcevec1(i) += FADUTILS::CastToDouble(fc1(i));
 
-    for (int i=0;i<dim2;++i)
+    for (unsigned int i=0;i<dim2;++i)
       forcevec2(i) += FADUTILS::CastToDouble(fc2(i));
   }
 
-  return;
 }
 /*----------------------------------------------------------------------*
  |  end: Compute contact forces
@@ -3067,8 +3068,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
     bool fixedendpointeta)
 {
   // get dimensions for vectors fc1 and fc2
-  const int dim1 = 3*numnodes*numnodalvalues;
-  const int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
   LINALG::TMatrix<TYPE, dim1, dim1+dim2> stiffc1(true);
@@ -3162,10 +3163,10 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
 
     #ifdef FADCHECKS
     std::cout << "delta_xi: " << std::endl;
-      for (int i=0;i<dim1+dim2;i++)
+      for (unsigned int i=0;i<dim1+dim2;i++)
         std::cout << delta_xi(i).val() << "  ";
       std::cout << std::endl << "delta_eta: " << std::endl;
-      for (int i=0;i<dim1+dim2;i++)
+      for (unsigned int i=0;i<dim1+dim2;i++)
         std::cout << delta_eta(i).val() << "  ";
       std::cout << std::endl;
       FADCheckLinXiAndLinEta(delta_r,r1_xi,r2_xi,r1_xixi,r2_xixi,N1,N2,N1_xi,N2_xi);
@@ -3186,16 +3187,16 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
     //********************************************************************
 
     LINALG::TMatrix<TYPE,dim1,1> N1T_normal(true);
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
-      for (int j=0;j<dim1;j++)
+      for (unsigned int j=0;j<dim1;j++)
       {
         N1T_normal(j)+=N1(i,j)*normal(i);
       }
     }
-    for (int i=0;i<dim1;i++)
+    for (unsigned int i=0;i<dim1;i++)
     {
-      for (int j=0;j<dim1+dim2;j++)
+      for (unsigned int j=0;j<dim1+dim2;j++)
       {
         stiffc1(i,j) += basicstiffweightfac * N1T_normal(i) * ( ppfac * dfp * delta_gap(j) + dppfac * fp * delta_coscontactangle(j) );
       }
@@ -3207,11 +3208,11 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
       //********************************************************************
       // part II - geometric stiffness 1
       //********************************************************************
-      for  (int i=0;i<3;i++)
+      for  (unsigned int i=0;i<3;i++)
       {
-        for (int j=0;j<dim1;j++)
+        for (unsigned int j=0;j<dim1;j++)
         {
-          for (int k=0;k<dim1+dim2;k++)
+          for (unsigned int k=0;k<dim1+dim2;k++)
           {
               stiffc1(j,k) += ppfac*fp*N1(i,j)*delta_n(i,k);
           }
@@ -3221,17 +3222,17 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
       // part III - geometric stiffness 2
       //********************************************************************
       LINALG::TMatrix<TYPE,dim1,1> N1xiT_normal(true);
-      for (int i=0;i<3;i++)
+      for (unsigned int i=0;i<3;i++)
       {
-        for (int j=0;j<dim1;j++)
+        for (unsigned int j=0;j<dim1;j++)
         {
           N1xiT_normal(j) += N1_xi(i,j)*normal(i);
         }
       }
 
-      for (int i=0;i<dim1;i++)
+      for (unsigned int i=0;i<dim1;i++)
       {
-        for (int j=0;j<dim1+dim2;j++)
+        for (unsigned int j=0;j<dim1+dim2;j++)
         {
           stiffc1(i,j) += ppfac*fp*N1xiT_normal(i)*delta_xi(j);
         }
@@ -3246,16 +3247,16 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
     // part I
     //********************************************************************
     LINALG::TMatrix<TYPE,dim2,1> N2T_normal(true);
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
-      for (int j=0;j<dim2;j++)
+      for (unsigned int j=0;j<dim2;j++)
       {
         N2T_normal(j)+=N2(i,j)*normal(i);
       }
     }
-    for (int i=0;i<dim2;i++)
+    for (unsigned int i=0;i<dim2;i++)
     {
-      for (int j=0;j<dim1+dim2;j++)
+      for (unsigned int j=0;j<dim1+dim2;j++)
       {
         stiffc2(i,j) += -basicstiffweightfac * N2T_normal(i) * ( ppfac * dfp * delta_gap(j) + dppfac * fp * delta_coscontactangle(j) );
       }
@@ -3266,11 +3267,11 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
       //********************************************************************
       // part II
       //********************************************************************
-      for  (int i=0;i<3;i++)
+      for  (unsigned int i=0;i<3;i++)
       {
-        for (int j=0;j<dim2;j++)
+        for (unsigned int j=0;j<dim2;j++)
         {
-          for (int k=0;k<dim1+dim2;k++)
+          for (unsigned int k=0;k<dim1+dim2;k++)
           {
               stiffc2(j,k) += -ppfac*fp*N2(i,j)*delta_n(i,k);
           }
@@ -3280,17 +3281,17 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
       // part III
       //********************************************************************
       LINALG::TMatrix<TYPE,dim1,1> N2xiT_normal(true);
-      for (int i=0;i<3;i++)
+      for (unsigned int i=0;i<3;i++)
       {
-        for (int j=0;j<dim2;j++)
+        for (unsigned int j=0;j<dim2;j++)
         {
           N2xiT_normal(j) += N2_xi(i,j)*normal(i);
         }
       }
 
-      for (int i=0;i<dim2;i++)
+      for (unsigned int i=0;i<dim2;i++)
       {
-        for (int j=0;j<dim1+dim2;j++)
+        for (unsigned int j=0;j<dim1+dim2;j++)
         {
           stiffc2(i,j) += -ppfac*fp*N2xiT_normal(i)*delta_eta(j);
         }
@@ -3303,47 +3304,49 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
 
     // automatic differentiation for debugging
     #ifdef AUTOMATICDIFF
+    dserror("check implementation of AUTOMATICDIFF for BeamToBeamContactPair before using it!");
+
       LINALG::TMatrix<TYPE, dim1, 1> fc1_FAD(true);
       LINALG::TMatrix<TYPE, dim2, 1> fc2_FAD(true);
       EvaluateFcContact(NULL, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, variables, intfac, cpp, gp, fixedendpointxi, fixedendpointeta, &fc1_FAD, &fc2_FAD);
 
       if(cpp)  //in case of large-angle-contact (standard closest-point-projection), we need delta_xi and delta_eta.
       {
-        for (int j=0;j<dim1+dim2;j++)
+        for (unsigned int j=0;j<dim1+dim2;j++)
         {
-          for (int i=0;i<dim1;i++)
+          for (unsigned int i=0;i<dim1;i++)
             stiffc1_FAD(i,j) = (fc1_FAD(i).dx(j)+fc1_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc1_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
-          for (int i=0;i<dim2;i++)
+          for (unsigned int i=0;i<dim2;i++)
             stiffc2_FAD(i,j) = (fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*delta_xi(j)+fc2_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
         }
       }
       else if(gp or (fixedendpointxi and !fixedendpointeta)) //in case of small-angle-contact (xi remains fixed), we only need delta_eta, delta_xi remains zero (this does not hold in case of ENDPOINTSEGMENTATION)
       {                                                      //this also holds in case of ENDPOINTPENALTY when the endpoint xi is fixed and the endpoint eta not!
-        for (int j=0;j<dim1+dim2;j++)
+        for (unsigned int j=0;j<dim1+dim2;j++)
         {
-          for (int i=0;i<dim1;i++)
+          for (unsigned int i=0;i<dim1;i++)
             stiffc1_FAD(i,j) = (fc1_FAD(i).dx(j)+fc1_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
-          for (int i=0;i<dim2;i++)
+          for (unsigned int i=0;i<dim2;i++)
             stiffc2_FAD(i,j) = (fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2+1)*delta_eta(j));
         }
       }
       else if(fixedendpointeta and !fixedendpointxi) //In case of ENDPOINTPENALTY when the endpoint eta is fixed and the endpoint xi not...
       {
-        for (int j=0;j<dim1+dim2;j++)
+        for (unsigned int j=0;j<dim1+dim2;j++)
         {
-          for (int i=0;i<dim1;i++)
+          for (unsigned int i=0;i<dim1;i++)
             stiffc1_FAD(i,j) = (fc1_FAD(i).dx(j)+fc1_FAD(i).dx(dim1+dim2)*delta_xi(j));
-          for (int i=0;i<dim2;i++)
+          for (unsigned int i=0;i<dim2;i++)
             stiffc2_FAD(i,j) = (fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*delta_xi(j));
         }
       }
       else if(fixedendpointeta and fixedendpointxi) //In case of ENDPOINTPENALTY when the endpoint eta is fixed and the endpoint xi is fixed...
       {
-        for (int j=0;j<dim1+dim2;j++)
+        for (unsigned int j=0;j<dim1+dim2;j++)
         {
-          for (int i=0;i<dim1;i++)
+          for (unsigned int i=0;i<dim1;i++)
             stiffc1_FAD(i,j) = (fc1_FAD(i).dx(j));
-          for (int i=0;i<dim2;i++)
+          for (unsigned int i=0;i<dim2;i++)
             stiffc2_FAD(i,j) = (fc2_FAD(i).dx(j));
         }
       }
@@ -3351,9 +3354,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
 //      std::cout << "Pair: " << Element1()->Id() << " / " << Element2()->Id() << std::endl;
 
 //      std::cout << "stiffc1: " << std::endl;
-      for (int i=0;i<dim1;i++)
+      for (unsigned int i=0;i<dim1;i++)
       {
-        for (int j=0;j<dim1+dim2;j++)
+        for (unsigned int j=0;j<dim1+dim2;j++)
         {
 //          std::cout << stiffc1(i,j).val() << " ";
           if(fabs(stiffc1(i,j).val())>1.0e-7 and fabs((stiffc1(i,j).val()-stiffc1_FAD(i,j).val())/stiffc1(i,j).val())>1.0e-7)
@@ -3366,9 +3369,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
       }
 //      std::cout << std::endl;
 //      std::cout << "stiffc1_FAD: " << std::endl;
-//      for (int i=0;i<dim1;i++)
+//      for (unsigned int i=0;i<dim1;i++)
 //      {
-//        for (int j=0;j<dim1+dim2;j++)
+//        for (unsigned int j=0;j<dim1+dim2;j++)
 //        {
 //          std::cout << stiffc1_FAD(i,j).val() << " ";
 //        }
@@ -3376,9 +3379,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
 //      }
 //      std::cout << std::endl;
 //      std::cout << "stiffc2: " << std::endl;
-      for (int i=0;i<dim1;i++)
+      for (unsigned int i=0;i<dim1;i++)
       {
-        for (int j=0;j<dim1+dim2;j++)
+        for (unsigned int j=0;j<dim1+dim2;j++)
         {
 //          std::cout << stiffc2(i,j).val() << " ";
           if(fabs(stiffc2(i,j).val())>1.0e-7 and fabs((stiffc2(i,j).val()-stiffc2_FAD(i,j).val())/stiffc2(i,j).val())>1.0e-7)
@@ -3391,9 +3394,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
       }
 //      std::cout << std::endl;
 //      std::cout << "stiffc2_FAD: " << std::endl;
-//      for (int i=0;i<dim1;i++)
+//      for (unsigned int i=0;i<dim1;i++)
 //      {
-//        for (int j=0;j<dim1+dim2;j++)
+//        for (unsigned int j=0;j<dim1+dim2;j++)
 //        {
 //          std::cout << stiffc2_FAD(i,j).val() << " ";
 //        }
@@ -3416,33 +3419,33 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
   if (not DoNotAssemble)
   {
     #ifndef AUTOMATICDIFF
-      for (int j=0;j<dim1;j++)
+      for (unsigned int j=0;j<dim1;j++)
       {
-        for (int i=0;i<dim1;i++)
+        for (unsigned int i=0;i<dim1;i++)
           stiffmat11(i,j) += -FADUTILS::CastToDouble(stiffc1(i,j));
-        for (int i=0;i<dim2;i++)
+        for (unsigned int i=0;i<dim2;i++)
           stiffmat21(i,j) += -FADUTILS::CastToDouble(stiffc2(i,j));
       }
-      for (int j=0;j<dim2;j++)
+      for (unsigned int j=0;j<dim2;j++)
       {
-        for (int i=0;i<dim1;i++)
+        for (unsigned int i=0;i<dim1;i++)
           stiffmat12(i,j) += -FADUTILS::CastToDouble(stiffc1(i,dim1+j));
-        for (int i=0;i<dim2;i++)
+        for (unsigned int i=0;i<dim2;i++)
           stiffmat22(i,j) += -FADUTILS::CastToDouble(stiffc2(i,dim1+j));
       }
     #else
-      for (int j=0;j<dim1;j++)
+      for (unsigned int j=0;j<dim1;j++)
       {
-        for (int i=0;i<dim1;i++)
+        for (unsigned int i=0;i<dim1;i++)
           stiffmat11(i,j) += -FADUTILS::CastToDouble(stiffc1_FAD(i,j));
-        for (int i=0;i<dim2;i++)
+        for (unsigned int i=0;i<dim2;i++)
           stiffmat21(i,j) += -FADUTILS::CastToDouble(stiffc2_FAD(i,j));
       }
-      for (int j=0;j<dim2;j++)
+      for (unsigned int j=0;j<dim2;j++)
       {
-        for (int i=0;i<dim1;i++)
+        for (unsigned int i=0;i<dim1;i++)
           stiffmat12(i,j) += -FADUTILS::CastToDouble(stiffc1_FAD(i,dim1+j));
-        for (int i=0;i<dim2;i++)
+        for (unsigned int i=0;i<dim2;i++)
           stiffmat22(i,j) += -FADUTILS::CastToDouble(stiffc2_FAD(i,dim1+j));
       }
     #endif
@@ -3482,8 +3485,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
   #endif
 
   // get dimensions for vectors fc1 and fc2
-  const int dim1 = 3*numnodes*numnodalvalues;
-  const int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
   LINALG::TMatrix<TYPE, dim1, dim1+dim2> stiffc1_FAD(true);
@@ -3587,13 +3590,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
     TYPE fac2(0.0);
     fac2=-FADUTILS::ScalarProduct(r2_xi, r2_xi) + FADUTILS::ScalarProduct(delta_r, r2_xixi);
     fac1=FADUTILS::ScalarProduct(r2_xi, r1_xi);
-    for (int j=0;j<dim1+dim2;j++)
+    for (unsigned int j=0;j<dim1+dim2;j++)
     {
-      for (int i=0;i<dim1;i++)
+      for (unsigned int i=0;i<dim1;i++)
         stiffc1_FAD(i,j) = fc1_FAD(i).dx(j)+fc1_FAD(i).dx(dim1+dim2)*d_xi_ele_d_xi_bound*delta_xi_bound(j) +fc1_FAD(i).dx(dim1+dim2+1)*(delta_eta(j)-fac1/fac2*d_xi_ele_d_xi_bound*delta_xi_bound(j))+fc1_FAD(i).val()/(2.0*signed_jacobi_interval)*delta_xi_bound(j);
                         // d(f)/d(disp)    +d(f)/d(xi,GP)           *d(xi,GP)/d(disp)                      +d(f)/d(eta,GP)            *d(eta,GP)/d(disp)                                             +d(f)/d(xi,Bound)*d(xi,Bound)/d(disp)
 
-      for (int i=0;i<dim2;i++)
+      for (unsigned int i=0;i<dim2;i++)
         stiffc2_FAD(i,j) = fc2_FAD(i).dx(j)+fc2_FAD(i).dx(dim1+dim2)*d_xi_ele_d_xi_bound*delta_xi_bound(j) +fc2_FAD(i).dx(dim1+dim2+1)*(delta_eta(j)-fac1/fac2*d_xi_ele_d_xi_bound*delta_xi_bound(j))+fc2_FAD(i).val()/(2.0*signed_jacobi_interval)*delta_xi_bound(j);
     }
     #endif
@@ -3613,11 +3616,11 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
     #ifndef AUTOMATICDIFF
       dserror("This method only works with AUTOMATICDIFF");
     #else
-      for (int j=0;j<dim1+dim2;j++)
+      for (unsigned int j=0;j<dim1+dim2;j++)
       {
-        for (int i=0;i<dim1;i++)
+        for (unsigned int i=0;i<dim1;i++)
           stiffcontact1(i,j) = -FADUTILS::CastToDouble(stiffc1_FAD(i,j));
-        for (int i=0;i<dim2;i++)
+        for (unsigned int i=0;i<dim2;i++)
           stiffcontact2(i,j) = -FADUTILS::CastToDouble(stiffc2_FAD(i,j));
       }
     #endif
@@ -3664,8 +3667,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   //
   //**********************************************************************
 
-  const int dim1 = 3*numnodes*numnodalvalues;
-  const int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   // matrices to compute Lin_Xi and Lin_Eta
   LINALG::TMatrix<TYPE,2,2> L(true);
@@ -3687,18 +3690,18 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   L_inv(1,0) = -L(1,0) / det_L;
   L_inv(1,1) =  L(0,0) / det_L;
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim1;j++)
+    for (unsigned int j=0;j<dim1;j++)
     {
       B(0,j)+= -delta_r(i)*N1_xi(i,j) - r1_xi(i)*N1(i,j);
       B(1,j)+= - r2_xi(i)*N1(i,j);
     }
   }
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim2;j++)
+    for (unsigned int j=0;j<dim2;j++)
     {
       B(0,j+dim1)+= r1_xi(i)*N2(i,j);
       B(1,j+dim1)+= -delta_r(i)*N2_xi(i,j) + r2_xi(i)*N2(i,j);
@@ -3709,7 +3712,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   D.Multiply(L_inv, B);
 
   // finally the linearizations / directional derivatives
-  for (int i=0;i<dim1+dim2;i++)
+  for (unsigned int i=0;i<dim1+dim2;i++)
   {
     delta_xi(i) = D(0,i);
     delta_eta(i) = D(1,i);
@@ -3735,8 +3738,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
     const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi)
 {
 
-  const int dim1 = 3*numnodes*numnodalvalues;
-  const int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   // matrices to compute Lin_Xi and Lin_Eta
   TYPE L=0.0;
@@ -3751,24 +3754,24 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   if (fabs(FADUTILS::CastToDouble(L)) < COLINEARTOL)
       dserror("Linearization of point to line projection is zero, choose tighter search boxes!");
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim1;j++)
+    for (unsigned int j=0;j<dim1;j++)
     {
       B(0,j)+= - r2_xi(i)*N1(i,j);
     }
   }
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim2;j++)
+    for (unsigned int j=0;j<dim2;j++)
     {
       B(0,j+dim1)+= -delta_r(i)*N2_xi(i,j) + r2_xi(i)*N2(i,j);
     }
   }
 
   // finally the linearizations / directional derivatives
-  for (int i=0;i<dim1+dim2;i++)
+  for (unsigned int i=0;i<dim1+dim2;i++)
   {
     delta_eta(i) = 1.0/L*B(0,i);
   }
@@ -3793,8 +3796,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
     const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1_xi)
 {
 
-  const int dim1 = 3*numnodes*numnodalvalues;
-  const int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   // matrices to compute Lin_Xi and Lin_Eta
   TYPE L=0.0;
@@ -3806,24 +3809,24 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   if (fabs(FADUTILS::CastToDouble(L)) < COLINEARTOL)
       dserror("Linearization of point to line projection is zero, choose tighter search boxes!");
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim1;j++)
+    for (unsigned int j=0;j<dim1;j++)
     {
       B(0,j)+= -delta_r(i)*N1_xi(i,j) - r1_xi(i)*N1(i,j);
     }
   }
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim2;j++)
+    for (unsigned int j=0;j<dim2;j++)
     {
       B(0,j+dim1)+= r1_xi(i)*N2(i,j);
     }
   }
 
   // finally the linearizations / directional derivatives
-  for (int i=0;i<dim1+dim2;i++)
+  for (unsigned int i=0;i<dim1+dim2;i++)
   {
     delta_xi(i) = 1.0/L*B(0,i);
   }
@@ -3868,8 +3871,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
 
     delta_r=FADUTILS::DiffVector(r1,r2);
 
-    const int dim1 = 3*numnodes*numnodalvalues;
-    const int dim2 = 3*numnodes*numnodalvalues;
+    const unsigned int dim1 = 3*numnodes*numnodalvalues;
+    const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
     // matrices to compute Lin_Xi and Lin_Eta
     TYPE a_11(0.0);
@@ -3883,18 +3886,18 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
     #endif
 
 
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
-      for (int j=0;j<dim1;j++)
+      for (unsigned int j=0;j<dim1;j++)
       {
         B(0,j)+= -delta_r(i)*N1_xi(i,j) - r1_xi(i)*N1(i,j);
         B(1,j)+= - r2_xi(i)*N1(i,j);
       }
     }
 
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
-      for (int j=0;j<dim2;j++)
+      for (unsigned int j=0;j<dim2;j++)
       {
         B(0,j+dim1)+= r1_xi(i)*N2(i,j);
         B(1,j+dim1)+= -delta_r(i)*N2_xi(i,j) + r2_xi(i)*N2(i,j);
@@ -3903,13 +3906,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
 
     #ifndef CHANGEENDPOINTPROJECTION
       // finally the linearizations / directional derivatives in case the orthogonality condition is fulfilled on beam1
-      for (int i=0;i<dim1+dim2;i++)
+      for (unsigned int i=0;i<dim1+dim2;i++)
       {
         delta_xi_bound(i) = B(0,i)/a_11;
       }
     #else
       // finally the linearizations / directional derivatives in case the orthogonality condition is fulfilled on beam2
-      for (int i=0;i<dim1+dim2;i++)
+      for (unsigned int i=0;i<dim1+dim2;i++)
       {
         delta_xi_bound(i) = B(1,i)/a_21;
       }
@@ -3936,41 +3939,41 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
     const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
     const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2)
 {
-  const int dim1 = 3*numnodes*numnodalvalues;
-  const int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   // delta g := delta_r/||delta_r||*auxiliary_matri1 delta d, with auxiliary_matri1 = (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
 
   LINALG::TMatrix<TYPE,3,dim1+dim2>  auxiliary_matrix1(true);
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim1+dim2;j++)
+    for (unsigned int j=0;j<dim1+dim2;j++)
     {
       auxiliary_matrix1(i,j)+=r1_xi(i)*delta_xi(j)-r2_xi(i)*delta_eta(j);
     }
   }
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim1;j++)
+    for (unsigned int j=0;j<dim1;j++)
     {
       auxiliary_matrix1(i,j)+= N1(i,j);
     }
   }
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim2;j++)
+    for (unsigned int j=0;j<dim2;j++)
     {
       auxiliary_matrix1(i,j+dim1)+= -N2(i,j);
     }
   }
 
   // compute linearization of gap
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim1+dim2;j++)
+    for (unsigned int j=0;j<dim1+dim2;j++)
     {
       delta_gap(j) +=  delta_r(i) * auxiliary_matrix1(i,j)/norm_delta_r;
     }
@@ -3997,8 +4000,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
     const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1_xi,
     const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2_xi)
 {
-  const int dim1 = 3*numnodes*numnodalvalues;
-  const int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   TYPE norm_r1xi = FADUTILS::VectorNorm<3>(r1_xi);
   TYPE norm_r2xi = FADUTILS::VectorNorm<3>(r2_xi);
@@ -4024,9 +4027,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   LINALG::TMatrix<TYPE, 3, dim1+dim2> delta_r1_xi(true);
   LINALG::TMatrix<TYPE, 3, dim1+dim2> delta_r2_xi(true);
 
-  for(int i=0;i<3;i++)
+  for(unsigned int i=0;i<3;i++)
   {
-    for(int j=0;j<dim1+dim2;j++)
+    for(unsigned int j=0;j<dim1+dim2;j++)
     {
       delta_r1_xi(i,j)=r1_xixi(i)*delta_xi(j);
 
@@ -4035,9 +4038,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
     }
   }
 
-  for(int i=0;i<3;i++)
+  for(unsigned int i=0;i<3;i++)
   {
-    for(int j=0;j<dim1+dim2;j++)
+    for(unsigned int j=0;j<dim1+dim2;j++)
     {
       delta_r2_xi(i,j)=r2_xixi(i)*delta_eta(j);
 
@@ -4051,7 +4054,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   v1_delta_r1_xi.MultiplyTN(v1,delta_r1_xi);
   v2_delta_r2_xi.MultiplyTN(v2,delta_r2_xi);
 
-  for (int j=0;j<dim1+dim2;j++)
+  for (unsigned int j=0;j<dim1+dim2;j++)
   {
     delta_coscontactangle(j)= modulus_factor*(v1_delta_r1_xi(j)+v2_delta_r2_xi(j));
   }
@@ -4076,8 +4079,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
     const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N1,
     const LINALG::TMatrix<TYPE, 3, 3*numnodes*numnodalvalues>& N2)
 {
-  const int dim1 = 3*numnodes*numnodalvalues;
-  const int dim2 = 3*numnodes*numnodalvalues;
+  const unsigned int dim1 = 3*numnodes*numnodalvalues;
+  const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
   //delta n := auxiliary_matri2*auxiliary_matrix1* delta d, with auxiliary_matri2 = (I-nxn)/||r1-r2||
   //and auxiliary_matri1 = (r1_xi*delta_xi-r2_xi*delta_eta + (N1, -N2))
@@ -4090,44 +4093,44 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeLi
   LINALG::TMatrix<TYPE,3,3>  auxiliary_matrix2(true);
 
   //compute auxiliary_matrix1
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim1+dim2;j++)
+    for (unsigned int j=0;j<dim1+dim2;j++)
     {
       auxiliary_matrix1(i,j)+=r1_xi(i)*delta_xi(j)-r2_xi(i)*delta_eta(j);
     }
   }
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim1;j++)
+    for (unsigned int j=0;j<dim1;j++)
     {
       auxiliary_matrix1(i,j)+= N1(i,j);
     }
   }
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
-    for (int j=0;j<dim2;j++)
+    for (unsigned int j=0;j<dim2;j++)
     {
       auxiliary_matrix1(i,j+dim1)+= -N2(i,j);
     }
   }
 
   //compute auxiliary_matrix2
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
     auxiliary_matrix2(i,i)+= 1.0/norm_delta_r;
-    for (int j=0;j<3;j++)
+    for (unsigned int j=0;j<3;j++)
     {
       auxiliary_matrix2(i,j)+= -normal(i)*normal(j)/norm_delta_r;
     }
   }
 
   // compute linearization of normal vector
-  for (int i=0;i<3;i++)
-    for (int j=0;j<3;j++)
-      for (int k=0;k<dim1+dim2;k++)
+  for (unsigned int i=0;i<3;i++)
+    for (unsigned int j=0;j<3;j++)
+      for (unsigned int k=0;k<dim1+dim2;k++)
         delta_normal(i,k) +=  auxiliary_matrix2(i,j) * auxiliary_matrix1(j,k);
 
   return;
@@ -4291,14 +4294,14 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::AssembleS
 {
   //assembly_N is just an array to help assemble the matrices of the shape functions
   //it determines, which shape function is used in which column of N
-  int assembly_N[3][3*numnodes*numnodalvalues];
+  unsigned int assembly_N[3][3*numnodes*numnodalvalues];
 
   //Initialize to zero
   for (unsigned int i=0;i<3*numnodes*numnodalvalues;i++)
   {
-    for (int j=0;j<3; j++)
+    for (unsigned int j=0;j<3; j++)
     {
-      assembly_N[j][i]=0.0;
+      assembly_N[j][i]=0;
     }
   }
 
@@ -4325,7 +4328,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::AssembleS
   //Assemble the matrices of the shape functions
   for (unsigned int i=0; i<3*numnodes*numnodalvalues; i++)
   {
-    for (int j=0; j<3; j++)
+    for (unsigned int j=0; j<3; j++)
     {
       if(assembly_N[j][i]==0)
       {
@@ -4355,14 +4358,14 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::AssembleS
 {
   //assembly_N is just an array to help assemble the matrices of the shape functions
   //it determines, which shape function is used in which column of N
-  int assembly_N[3][3*numnodes*numnodalvalues];
+  unsigned int assembly_N[3][3*numnodes*numnodalvalues];
 
   //Initialize to zero
   for (unsigned int i=0;i<3*numnodes*numnodalvalues;i++)
   {
-    for (int j=0;j<3; j++)
+    for (unsigned int j=0;j<3; j++)
     {
-      assembly_N[j][i]=0.0;
+      assembly_N[j][i]=0;
     }
   }
 
@@ -4389,7 +4392,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::AssembleS
   //Assemble the matrices of the shape functions
   for (unsigned int i=0; i<3*numnodes*numnodalvalues; i++)
   {
-    for (int j=0; j<3; j++)
+    for (unsigned int j=0; j<3; j++)
     {
       if(assembly_N[j][i]==0)
       {
@@ -4425,7 +4428,7 @@ LINALG::TMatrix<TYPE,3,1> BEAMINTERACTION::BeamToBeamContactPair<numnodes, numno
   if(ele->Id()==Element1()->Id())
   {
     // compute output variable
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
       for (unsigned int j=0;j<3*numnodes*numnodalvalues;j++)
       {
@@ -4436,7 +4439,7 @@ LINALG::TMatrix<TYPE,3,1> BEAMINTERACTION::BeamToBeamContactPair<numnodes, numno
   else if(ele->Id()==Element2()->Id())
   {
     // compute output variable
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
       for (unsigned int j=0;j<3*numnodes*numnodalvalues;j++)
       {
@@ -4469,7 +4472,7 @@ LINALG::TMatrix<TYPE,3,1> BEAMINTERACTION::BeamToBeamContactPair<numnodes, numno
   if(ele->Id()==Element1()->Id())
   {
     // compute output variable
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
       for (unsigned int j=0;j<3*numnodes*numnodalvalues;j++)
       {
@@ -4480,7 +4483,7 @@ LINALG::TMatrix<TYPE,3,1> BEAMINTERACTION::BeamToBeamContactPair<numnodes, numno
   else if(ele->Id()==Element2()->Id())
   {
     // compute output variable
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
       for (unsigned int j=0;j<3*numnodes*numnodalvalues;j++)
       {
@@ -4527,7 +4530,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeCo
 #endif
 
   // compute output variable
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
     for (unsigned int j=0;j<3*numnodes*numnodalvalues;j++)
     {
@@ -4562,7 +4565,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateO
   // reset f
   f.Clear();
 
-  for (int i=0;i<3;i++)
+  for (unsigned int i=0;i<3;i++)
   {
     f(0) += delta_r(i)*r1_xi(i) / norm_delta_r;
     f(1) += -delta_r(i)*r2_xi(i) / norm_delta_r;
@@ -4600,7 +4603,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateL
 
   // evaluate df
   // see Wriggers, Computational Contact Mechanics, equation (12.7)
-  for(int i=0;i<3;i++)
+  for(unsigned int i=0;i<3;i++)
   {
     df(0,0) += (r1_xi(i)*r1_xi(i) + delta_r(i)*r1_xixi(i)) / norm_delta_r;
     df(0,1) += -r1_xi(i)*r2_xi(i) / norm_delta_r;
@@ -4664,14 +4667,14 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateP
   // evaluate f
   if(orthogonalprojection==false)//standard case
   {
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
       f += -delta_r(i)*r2_xi(i) / norm_delta_r;
     }
   }
   else
   {
-    for (int i=0;i<3;i++)
+    for (unsigned int i=0;i<3;i++)
     {
       f += -delta_r(i)*r1_xi(i) / norm_delta_r;
     }
@@ -4704,14 +4707,14 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateL
   // evaluate df
   if(orthogonalprojection==false)//standard case
   {
-    for(int i=0;i<3;i++)
+    for(unsigned int i=0;i<3;i++)
     {
       df += (r2_xi(i)*r2_xi(i) - delta_r(i)*r2_xixi(i)) / norm_delta_r;
     }
   }
   else
   {
-    for(int i=0;i<3;i++)
+    for(unsigned int i=0;i<3;i++)
     {
       df += r1_xi(i)*r2_xi(i) / norm_delta_r;
     }
@@ -5058,8 +5061,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PrintSumm
     //
     //**********************************************************************
 
-    const int dim1 = 3*numnodes*numnodalvalues;
-    const int dim2 = 3*numnodes*numnodalvalues;
+    const unsigned int dim1 = 3*numnodes*numnodalvalues;
+    const unsigned int dim2 = 3*numnodes*numnodalvalues;
 
     // matrices to compute Lin_Xi and Lin_Eta
     LINALG::TMatrix<TYPE,2,2> L(true);
@@ -5081,7 +5084,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PrintSumm
     L_inv(1,0) = -L(1,0) / det_L;
     L_inv(1,1) =  L(0,0) / det_L;
 
-    for (int j=0;j<dim1+dim2;j++)
+    for (unsigned int j=0;j<dim1+dim2;j++)
     {
       B(0,j)= -f(0).dx(j);
       B(1,j)= -f(1).dx(j);
@@ -5117,9 +5120,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PrintSumm
 
     LINALG::TMatrix<TYPE,2,2>df(true);
 
-    for (int i=0;i<2;i++)
+    for (unsigned int i=0;i<2;i++)
     {
-      for (int j=0;j<2;j++)
+      for (unsigned int j=0;j<2;j++)
       {
         df(i,j)=f(i).dx(2*3*numnodes*numnodalvalues+j);
       }
