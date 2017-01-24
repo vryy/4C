@@ -4,11 +4,11 @@
 
 \brief Input parameters for thermo problems
 
-\level 3
+\level 1
 
 <pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
+\maintainer Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
 */
