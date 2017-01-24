@@ -80,10 +80,12 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                    INPAR::CARDIOVASCULAR0D::atr_structure_3d,
                                    INPAR::CARDIOVASCULAR0D::atr_prescribed),
                                  &cardvasc0dsyspulcirc);
-  IntParameter("Atrium_act_curve_l",-1,"left atrial activation curve (ONLY for 0D atria!)",&cardvasc0dsyspulcirc);
-  IntParameter("Atrium_act_curve_r",-1,"right atrial activation curve (ONLY for 0D atria!)",&cardvasc0dsyspulcirc);
-  IntParameter("Atrium_prescr_curve_l",-1,"left atrial volume prescription curve (ONLY for prescribed atrial volumes!)",&cardvasc0dsyspulcirc);
-  IntParameter("Atrium_prescr_curve_r",-1,"right atrial volume prescription curve (ONLY for prescribed atrial volumes!)",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_act_curve_l",-1,"left atrial activation curve (ONLY for ATRIUM_MODEL '0D'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_act_curve_r",-1,"right atrial activation curve (ONLY for ATRIUM_MODEL '0D'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_prescr_V_curve_l",-1,"left atrial volume prescription curve (ONLY for ATRIUM_MODEL 'prescribed'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_prescr_V_curve_r",-1,"right atrial volume prescription curve (ONLY for ATRIUM_MODEL 'prescribed'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_prescr_p_curve_l",-1,"left atrial pressure prescription curve (ONLY for ATRIUM_MODEL 'prescribed'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Atrium_prescr_p_curve_r",-1,"right atrial pressure prescription curve (ONLY for ATRIUM_MODEL 'prescribed'!)",&cardvasc0dsyspulcirc);
   DoubleParameter("E_at_max_l",0.0,"0D maximum left atrial elastance",&cardvasc0dsyspulcirc);
   DoubleParameter("E_at_min_l",0.0,"0D baseline left atrial elastance",&cardvasc0dsyspulcirc);
   DoubleParameter("E_at_max_r",0.0,"0D maximum right atrial elastance",&cardvasc0dsyspulcirc);
@@ -99,10 +101,12 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                    INPAR::CARDIOVASCULAR0D::ventr_elastance_0d,
                                    INPAR::CARDIOVASCULAR0D::ventr_prescribed),
                                  &cardvasc0dsyspulcirc);
-  IntParameter("Ventricle_act_curve_l",-1,"left ventricular activation curve (ONLY for 0D ventricles!)",&cardvasc0dsyspulcirc);
-  IntParameter("Ventricle_act_curve_r",-1,"right ventricular activation curve (ONLY for 0D ventricles!)",&cardvasc0dsyspulcirc);
-  IntParameter("Ventricle_prescr_curve_l",-1,"left ventricular volume prescription curve (ONLY for prescribed ventricular volumes!)",&cardvasc0dsyspulcirc);
-  IntParameter("Ventricle_prescr_curve_r",-1,"right ventricular volume prescription curve (ONLY for prescribed ventricular volumes!)",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_act_curve_l",-1,"left ventricular activation curve (ONLY for VENTRICLE_MODEL '0D'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_act_curve_r",-1,"right ventricular activation curve (ONLY for VENTRICLE_MODEL '0D'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_prescr_V_curve_l",-1,"left ventricular volume prescription curve (ONLY for VENTRICLE_MODEL 'prescribed'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_prescr_V_curve_r",-1,"right ventricular volume prescription curve (ONLY for VENTRICLE_MODEL 'prescribed'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_prescr_p_curve_l",-1,"left ventricular pressure prescription curve (ONLY for VENTRICLE_MODEL 'prescribed'!)",&cardvasc0dsyspulcirc);
+  IntParameter("Ventricle_prescr_p_curve_r",-1,"right ventricular pressure prescription curve (ONLY for VENTRICLE_MODEL 'prescribed'!)",&cardvasc0dsyspulcirc);
   DoubleParameter("E_v_max_l",0.0,"0D maximum left ventricular elastance",&cardvasc0dsyspulcirc);
   DoubleParameter("E_v_min_l",0.0,"0D baseline left ventricular elastance",&cardvasc0dsyspulcirc);
   DoubleParameter("E_v_max_r",0.0,"0D maximum right ventricular elastance",&cardvasc0dsyspulcirc);

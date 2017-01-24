@@ -54,14 +54,18 @@ UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(Teuc
   R_arvalve_min_r_ = artvensyspulpar.get("R_arvalve_min_r",0.0);
   R_atvalve_max_r_ = artvensyspulpar.get("R_atvalve_max_r",0.0);
   R_atvalve_min_r_ = artvensyspulpar.get("R_atvalve_min_r",0.0);
-  Atrium_act_curve_l_ = artvensyspulpar.get("Atrium_act_curve_l",-1); // left atrial activation curve (ONLY for 0D atria!)
-  Atrium_act_curve_r_ = artvensyspulpar.get("Atrium_act_curve_r",-1); // right atrial activation curve (ONLY for 0D atria!)
-  Ventricle_act_curve_l_ = artvensyspulpar.get("Ventricle_act_curve_l",-1); // left ventricular activation curve (ONLY for 0D ventricles!)
-  Ventricle_act_curve_r_ = artvensyspulpar.get("Ventricle_act_curve_r",-1); // right ventricular activation curve (ONLY for 0D ventricles!)
-  Atrium_prescr_curve_l_ = artvensyspulpar.get("Atrium_prescr_curve_l",-1); // left atrial volume prescription curve (ONLY for prescribed atrial volumes!)
-  Atrium_prescr_curve_r_ = artvensyspulpar.get("Atrium_prescr_curve_r",-1); // right atrial volume prescription curve (ONLY for prescribed atrial volumes!)
-  Ventricle_prescr_curve_l_ = artvensyspulpar.get("Ventricle_prescr_curve_l",-1); // left ventricular volume prescription curve (ONLY for prescribed ventricular volumes!)
-  Ventricle_prescr_curve_r_ = artvensyspulpar.get("Ventricle_prescr_curve_r",-1); // right ventricular volume prescription curve (ONLY for prescribed ventricular volumes!)
+  Atrium_act_curve_l_ = artvensyspulpar.get("Atrium_act_curve_l",-1); // left atrial activation curve (ONLY for ATRIUM_MODEL "0D"!)
+  Atrium_act_curve_r_ = artvensyspulpar.get("Atrium_act_curve_r",-1); // right atrial activation curve (ONLY for ATRIUM_MODEL "0D"!)
+  Ventricle_act_curve_l_ = artvensyspulpar.get("Ventricle_act_curve_l",-1); // left ventricular activation curve (ONLY for VENTRICLE_MODEL "0D"!)
+  Ventricle_act_curve_r_ = artvensyspulpar.get("Ventricle_act_curve_r",-1); // right ventricular activation curve (ONLY for VENTRICLE_MODEL "0D"!)
+  Atrium_prescr_V_curve_l_ = artvensyspulpar.get("Atrium_prescr_V_curve_l",-1); // left atrial volume prescription curve (ONLY for ATRIUM_MODEL "prescribed"!)
+  Atrium_prescr_V_curve_r_ = artvensyspulpar.get("Atrium_prescr_V_curve_r",-1); // right atrial volume prescription curve (ONLY for ATRIUM_MODEL "prescribed"!)
+  Atrium_prescr_p_curve_l_ = artvensyspulpar.get("Atrium_prescr_p_curve_l",-1); // left atrial pressure prescription curve (ONLY for ATRIUM_MODEL "prescribed"!)
+  Atrium_prescr_p_curve_r_ = artvensyspulpar.get("Atrium_prescr_p_curve_r",-1); // right atrial pressure prescription curve (ONLY for ATRIUM_MODEL "prescribed"!)
+  Ventricle_prescr_V_curve_l_ = artvensyspulpar.get("Ventricle_prescr_V_curve_l",-1); // left ventricular volume prescription curve (ONLY for VENTRICLE_MODEL "prescribed"!)
+  Ventricle_prescr_V_curve_r_ = artvensyspulpar.get("Ventricle_prescr_V_curve_r",-1); // right ventricular volume prescription curve (ONLY for VENTRICLE_MODEL "prescribed"!)
+  Ventricle_prescr_p_curve_l_ = artvensyspulpar.get("Ventricle_prescr_p_curve_l",-1); // left ventricular pressure prescription curve (ONLY for VENTRICLE_MODEL "prescribed"!)
+  Ventricle_prescr_p_curve_r_ = artvensyspulpar.get("Ventricle_prescr_p_curve_r",-1); // right ventricular pressure prescription curve (ONLY for VENTRICLE_MODEL "prescribed"!)
   E_at_max_l_ = artvensyspulpar.get("E_at_max_l",0.0);
   E_at_min_l_ = artvensyspulpar.get("E_at_min_l",0.0);
   E_at_max_r_ = artvensyspulpar.get("E_at_max_r",0.0);
@@ -181,18 +185,32 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
   // prescribed atrial volumes - NOT used when we have 3D or 0D atria!
   double V_at_l_prescr_np = 0.0;
   double V_at_r_prescr_np = 0.0;
-  if (Atrium_prescr_curve_l_>=0 && usetime)
-    V_at_l_prescr_np = DRT::Problem::Instance()->Curve(Atrium_prescr_curve_l_-1).f(tim);
-  if (Atrium_prescr_curve_r_>=0 && usetime)
-    V_at_r_prescr_np = DRT::Problem::Instance()->Curve(Atrium_prescr_curve_r_-1).f(tim);
-
+  if (Atrium_prescr_V_curve_l_>=0 && usetime)
+    V_at_l_prescr_np = DRT::Problem::Instance()->Curve(Atrium_prescr_V_curve_l_-1).f(tim);
+  if (Atrium_prescr_V_curve_r_>=0 && usetime)
+    V_at_r_prescr_np = DRT::Problem::Instance()->Curve(Atrium_prescr_V_curve_r_-1).f(tim);
   // prescribed ventricular volumes - NOT used when we have 3D or 0D ventricles!
   double V_v_l_prescr_np = 0.0;
   double V_v_r_prescr_np = 0.0;
-  if (Ventricle_prescr_curve_l_>=0 && usetime)
-    V_v_l_prescr_np = DRT::Problem::Instance()->Curve(Ventricle_prescr_curve_l_-1).f(tim);
-  if (Ventricle_prescr_curve_r_>=0 && usetime)
-    V_v_r_prescr_np = DRT::Problem::Instance()->Curve(Ventricle_prescr_curve_r_-1).f(tim);
+  if (Ventricle_prescr_V_curve_l_>=0 && usetime)
+    V_v_l_prescr_np = DRT::Problem::Instance()->Curve(Ventricle_prescr_V_curve_l_-1).f(tim);
+  if (Ventricle_prescr_V_curve_r_>=0 && usetime)
+    V_v_r_prescr_np = DRT::Problem::Instance()->Curve(Ventricle_prescr_V_curve_r_-1).f(tim);
+
+  // prescribed atrial pressures - NOT used when we have 3D or 0D atria!
+  double p_at_l_prescr_np = 0.0;
+  double p_at_r_prescr_np = 0.0;
+  if (Atrium_prescr_p_curve_l_>=0 && usetime)
+    p_at_l_prescr_np = DRT::Problem::Instance()->Curve(Atrium_prescr_p_curve_l_-1).f(tim);
+  if (Atrium_prescr_p_curve_r_>=0 && usetime)
+    p_at_r_prescr_np = DRT::Problem::Instance()->Curve(Atrium_prescr_p_curve_r_-1).f(tim);
+  // prescribed ventricular pressures - NOT used when we have 3D or 0D ventricles!
+  double p_v_l_prescr_np = 0.0;
+  double p_v_r_prescr_np = 0.0;
+  if (Ventricle_prescr_p_curve_l_>=0 && usetime)
+    p_v_l_prescr_np = DRT::Problem::Instance()->Curve(Ventricle_prescr_p_curve_l_-1).f(tim);
+  if (Ventricle_prescr_p_curve_r_>=0 && usetime)
+    p_v_r_prescr_np = DRT::Problem::Instance()->Curve(Ventricle_prescr_p_curve_r_-1).f(tim);
 
   // Cardiovascular0D stiffness
   Epetra_SerialDenseMatrix wkstiff(16,16);
@@ -276,8 +294,8 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
       break;
       case INPAR::CARDIOVASCULAR0D::atr_prescribed:
       {
-        df_np[0]  = V_at_l_prescr_np;
-        df_np[8]  = V_at_r_prescr_np;
+        df_np[0]  = (V_at_l_prescr_np/p_at_l_prescr_np)*p_at_l_np;
+        df_np[8]  = (V_at_r_prescr_np/p_at_r_prescr_np)*p_at_r_np;
       }
       break;
     }
@@ -298,8 +316,8 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
       break;
       case INPAR::CARDIOVASCULAR0D::ventr_prescribed:
       {
-        df_np[2]  = V_v_l_prescr_np;
-        df_np[10] = V_v_r_prescr_np;
+        df_np[2]  = (V_v_l_prescr_np/p_v_l_prescr_np)*p_v_l_np;
+        df_np[10] = (V_v_r_prescr_np/p_v_r_prescr_np)*p_v_r_np;
       }
       break;
     }
@@ -370,8 +388,8 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
         wkstiff(8,8) = 0.;
       break;
       case INPAR::CARDIOVASCULAR0D::atr_prescribed:
-        wkstiff(0,0) = 0.;
-        wkstiff(8,8) = 0.;
+        wkstiff(0,0) = V_at_l_prescr_np/(p_at_l_prescr_np*ts_size);
+        wkstiff(8,8) = V_at_r_prescr_np/(p_at_r_prescr_np*ts_size);
       break;
     }
 
@@ -387,8 +405,8 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
         wkstiff(10,11) = 1./(E_v_r_np*ts_size);
       break;
       case INPAR::CARDIOVASCULAR0D::ventr_prescribed:
-        wkstiff(2,3) = 0.;
-        wkstiff(10,11) = 0.;
+        wkstiff(2,3) = V_v_l_prescr_np/(p_v_l_prescr_np*ts_size);
+        wkstiff(10,11) = V_v_r_prescr_np/(p_v_r_prescr_np*ts_size);
       break;
     }
 
@@ -531,9 +549,9 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
     if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_prescribed)
     {
       // prescribed left atrial volume
-      (*sysvec5)[0] = V_at_l_prescr_np;
+      (*sysvec5)[0] = (V_at_l_prescr_np/p_at_l_prescr_np)*p_at_l_np + V_at_l_u_;
       // prescribed right atrial volume
-      (*sysvec5)[8] = V_at_r_prescr_np;
+      (*sysvec5)[8] = (V_at_r_prescr_np/p_at_r_prescr_np)*p_at_r_np + V_at_r_u_;
     }
     if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
     {
@@ -545,9 +563,9 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
     if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_prescribed)
     {
       // prescribed left ventricular volume
-      (*sysvec5)[2] = V_v_l_prescr_np;
+      (*sysvec5)[2] = (V_v_l_prescr_np/p_v_l_prescr_np)*p_v_l_np + V_v_l_u_;
       // prescribed right ventricular volume
-      (*sysvec5)[10] = V_v_r_prescr_np;
+      (*sysvec5)[10] = (V_v_r_prescr_np/p_v_r_prescr_np)*p_v_r_np + V_v_r_u_;
     }
     // systemic arterial compartment volume
     (*sysvec5)[4] = C_ar_sys_ * (p_ar_sys_np - Z_ar_sys_ * q_vout_l_np) + V_ar_sys_u_;
