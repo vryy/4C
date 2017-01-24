@@ -186,6 +186,28 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   INPAR::PARTICLE::particle_2Dy,
                                   INPAR::PARTICLE::particle_2Dz),
                                 &particledyn);
+
+   /*----------------------------------------------------------------------*/
+   /* parameters for generalised-alpha integrator */
+   Teuchos::ParameterList& genalpha = particledyn.sublist("GENALPHA",false,"");
+
+   setStringToIntegralParameter<int>("GENAVG","TrLike",
+                                "mid-average type of internal forces",
+                                tuple<std::string>(
+                                  "Vague",
+                                  "ImrLike",
+                                  "TrLike"),
+                                tuple<int>(
+                                  midavg_vague,
+                                  midavg_imrlike,
+                                  midavg_trlike),
+                                &genalpha);
+
+   DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&genalpha);
+   DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&genalpha);
+   DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
+   DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
+   DoubleParameter("RHO_INF",-1.0,"Generalised-alpha factor in [0,1]",&genalpha);
 }
 
 

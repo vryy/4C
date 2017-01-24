@@ -68,7 +68,47 @@ namespace PARTICLE
     //! overload to determine the initial accelerations
     virtual void DetermineMassDampConsistAccel();
 
+    //! verify if given coefficients are in admissible range;
+    //! prints also info to STDOUT
+    void VerifyCoeff();
+
+    //! calculate coefficients from given spectral radius
+    void CalcCoeff();
+
     //@}
+
+  protected:
+
+    //! Evaluate mid-state vectors by averaging end-point vectors
+    void EvaluateMidState();
+
+    //! mid-average type more at MidAverageEnum
+    enum INPAR::PARTICLE::MidAverageEnum midavg_;
+    //@}
+
+    //! @name Key coefficients
+    //! Please note, to obtain a second-order accurate scheme, you need
+    //! to follow the following formulas in which \f$\rho_\infty\f$ is the
+    //! spectral radius.
+    //! \f[ \alpha_m = (2*\rho_\infty - 1)/(\rho_\infty + 1) \f]
+    //! \f[ \alpha_f = \rho_\infty/(\rho_\infty + 1) \f]
+    //! \f[ \beta = 1/4*(1 - \alpha_m + \alpha_f)^2 \mbox{(max. damp. of high-freq. modes)} \f]
+    //! \f[ \gamma = 1/2 - \alpha_m + \alpha_f \f]
+    //! The spectral radius is responsible for the magnitude of
+    //! numerical dissipation introduced.
+    //! For instance
+    //! Without numerical dissipation at \f$\rho_\infty=1\f$
+    //! \f[ \beta=0.25, \gamma=0.5, \alpha_m=0.5, \alpha_f=0.5 \f]
+    //! Medium dissipation at \f$\rho_\infty=0.8\f$
+    //! \f[ \beta=25/81, \gamma=11/18, \alpha_m=1/3, \alpha_f=4/9  \f]
+    //! Strong numerical dissipation at \f$\rho_\infty=0.5\f$
+    //! \f[ \beta=4/9, \gamma=10/12, \alpha_m=0, \alpha_f=1/3 \f]
+    //@{
+    double beta_;  //!< factor (0,1/2]
+    double gamma_;  //!< factor (0,1]
+    double alphaf_;  //!< factor [0,1)
+    double alpham_;  //!< factor [-1,1)
+    double rho_inf_; //!< factor[0,1]
 
   };  // class TimIntGenAlpha
 

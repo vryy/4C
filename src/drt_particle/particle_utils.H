@@ -19,6 +19,7 @@
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
 #include <math.h>
+#include "../linalg/linalg_utils.H"
 
 //! forward declarations
 namespace MAT
@@ -82,6 +83,51 @@ namespace PARTICLE
     //! compute the Courant-Friedrich-Levy condition - meshfree dynamics - http://dx.doi.org/10.1145/2786784.2786796
     //! section 3.1 - inline equation (no formula number)
     static double CFLcondition(const double& radiusMin, const double& velocityMax) { return 0.8 * radiusMin / velocityMax; }
+
+    //! small wrapping template to store matrices into MultiVector
+    template <class matrix>
+    static void Assemble(Epetra_MultiVector& V, matrix& Mele, const std::vector<int>& lm, const std::vector<int>& lmowner)
+    {
+      // check
+      if (Mele.N() != (unsigned)V.NumVectors() || lm.size() != Mele.M())
+      {
+        dserror("Received matrix of wrong size!");
+      }
+      if (lm.size() != lmowner.size())
+      {
+        dserror("lm and lmowner sizes missmatch!");
+      }
+
+      // build up the assembler
+      for (size_t ii = 0; ii < Mele.N(); ++ii)
+      {
+        const Epetra_SerialDenseVector Vele(::View, &(Mele(0,ii)), Mele.M());
+        LINALG::Assemble(V, ii, Vele, lm, lmowner);
+      }
+
+      return;
+    }
+
+    //! small wrapping template to read matrices from MultiVector
+    template <class matrix>
+    static void ExtractMyValues(const Epetra_MultiVector& global, matrix& local, const std::vector<int>& lm)
+    {
+      /// safety checks
+      if (local.N() != (unsigned)global.NumVectors() || lm.size() != local.M())
+      {
+        dserror("Received matrix of wrong size!");
+      }
+      // loop over the rows
+      for (size_t ii=0; ii<local.M(); ++ii)
+      {
+        const int lid = global.Map().LID(lm[ii]);
+        // loop over the columns
+        for (size_t jj=0; jj<local.N(); ++jj)
+        {
+          local(ii,jj) = (global[jj])[lid];
+        }
+      }
+    }
   };
 }
 

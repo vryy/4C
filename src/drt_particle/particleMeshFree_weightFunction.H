@@ -46,7 +46,13 @@ public :
   virtual LINALG::Matrix<3,1> GradW(const LINALG::Matrix<3,1> &rVersor, const double& dw);
 
   // hessian, r = r_i - r_j
-  virtual LINALG::Matrix<3,3> HessW(const LINALG::Matrix<3,1> &rVersor, const double& dw, const double& rNorm2, const double& ddw);
+  virtual LINALG::Matrix<3,3> HessW(const LINALG::Matrix<3,1> &rVersor, const double& dw, const double& rNorm2, const double& ddw);\
+
+  // weight function in 0 (auto-interactions)
+  virtual double W0(const double& radius) = 0;
+
+  // weight function type
+  virtual INPAR::PARTICLE::WeightFunction Name() = 0;
 
 private :
 
@@ -70,6 +76,12 @@ public :
 
    //! compute the weight function 2 derivative of the cubicBspline weight function
    virtual double DDW(const double &disRel, const double &radius);
+
+   // weight function in 0 (auto-interactions)
+   virtual inline double W0(const double& radius) { return 2.0/3.0 * RszDim(radius); }
+
+   // weight function type
+   virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::CubicBspline; }
 
    //@}
 
@@ -97,6 +109,12 @@ public :
    //! compute the weight function 2 derivative of the SqrtHyperbola weight function
    virtual double DDW(const double &disRel, const double &radius);
 
+   // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
+   virtual inline double W0(const double& radius) { return 0.0; }
+
+   // weight function type
+   virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::SqrtHyperbola; }
+
    //@}
 
 private :
@@ -121,6 +139,12 @@ public :
 
    //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function
    virtual double DDW(const double &disRel, const double &radius);
+
+   // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
+   virtual inline double W0(const double& radius) { return 0.0; }
+
+   // weight function type
+   virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::HyperbolaNoRsz; }
 
    //@}
 

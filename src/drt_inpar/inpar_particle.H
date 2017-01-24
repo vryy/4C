@@ -96,6 +96,41 @@ namespace INPAR
       Auto_CFL     /// Replace the prescribed dt with the  CFL condition if it is more strict. Courant-Friedrich-Levy condition: dt = 0.49 * radius_min / str::abs(vel_max)
     };
 
+    enum MidAverageEnum
+    {
+      midavg_vague,
+      midavg_imrlike,  ///< alphaf-mid-averaging is done IMR-like, i.e.
+                       ///< \f$F_{int,m}\f$
+                       ///< \f$= F_{int}(D_m)\f$
+                       ///< \f$= F_{int}( (1-\alpha_f)*D_{n+1} + \alpha_f*D_n )\f$
+                       ///< (IMR means implicit mid-point rule.)
+      midavg_trlike    ///< alphaf-mid-averaging is done TR-like, i.e.
+                       ///< \f$F_{int,m}\f$
+                       ///< \f$= (1-\alpha_f)*F_{int,n+1} + \alpha_f*F_{int,n}\f$
+                       ///<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
+                       ///<  (TR means trapezoidal rule.)
+    };
+
+    /// Map mid-averaging to std::string
+    static inline const std::string MidAverageString
+    (
+      const enum MidAverageEnum name  ///< enum to convert
+    )
+    {
+      switch (name)
+      {
+        break;
+      case midavg_imrlike :
+        return "IMR-like";
+      case midavg_trlike :
+        return "TR-like";
+        break;
+      default :
+        dserror("Cannot make std::string for time integrator %d", name);
+        return "";
+      }
+    }
+
     /// set the particle parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

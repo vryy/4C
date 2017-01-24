@@ -234,7 +234,6 @@ namespace PARTICLE
       const LINALG::Matrix<3,1> colorFieldGradient,
       const double pressure,
       const double temperature,
-      const double densityapprox,
       const double densityDot,
       const double alpha,
       const LINALG::Matrix<3,1> mGradW,
@@ -246,12 +245,11 @@ namespace PARTICLE
         ParticleMFmGradHessWbase(mGradW, mHessW),
         pressure_(pressure),
         temperature_(temperature),
-        densityapprox_(densityapprox),
         densityDot_(densityDot),
         alpha_(alpha) {}
 
   ParticleMF() : ParticleBase(), ParticleThermoBase(), ParticleSurfTensionBase(), ParticleMFmGradHessWbase(),
-      pressure_(-1), temperature_(-1), densityapprox_(-1), densityDot_(-1), alpha_(-1) {}
+      pressure_(-1), temperature_(-1), densityDot_(-1), alpha_(-1) {}
 
   ParticleMF(
       const int gid,
@@ -264,7 +262,6 @@ namespace PARTICLE
         ParticleMFmGradHessWbase(),
         pressure_(-1),
         temperature_(-1),
-        densityapprox_(-1),
         densityDot_(-1),
         alpha_(-1) {}
 
@@ -279,8 +276,7 @@ namespace PARTICLE
       const double density,
       const double specEnthalpy,
       const double pressure,
-      const double temperature,
-      const double densityapprox
+      const double temperature
       ) :
         ParticleBase(gid, owner, lm, dis, vel, radius, mass, density),
         ParticleThermoBase(specEnthalpy),
@@ -288,7 +284,6 @@ namespace PARTICLE
         ParticleMFmGradHessWbase(),
         pressure_(pressure),
         temperature_(temperature),
-        densityapprox_(density),
         densityDot_(-1),
         alpha_(-1) {}
 
@@ -296,7 +291,6 @@ namespace PARTICLE
 
   double pressure_;
   double temperature_;
-  double densityapprox_;
   double densityDot_;
   double alpha_;
 

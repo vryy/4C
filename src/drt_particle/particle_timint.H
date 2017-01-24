@@ -28,6 +28,7 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_Time.h>
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_io/io.H"
 
 #include <string>
 #include <iostream>
@@ -371,9 +372,6 @@ namespace PARTICLE
     //! Extract time derivative densities \f$\dot{\rho}_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityDotnp() { return densityDotn_; }
 
-    //! Extract approximate densities \f${\rho}_{approx,n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityApproxnp() { return densityapproxn_; }
-
     //! Extract specific enthalpies \f$H_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp(){ return specEnthalpyn_; }
 
@@ -444,17 +442,38 @@ namespace PARTICLE
     /* Update state vector with the new map from discret_*/
     virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVector, bool trg_nodeVectorType = false);
 
+    /* Wrapper update state multi vector with the new map from discret_*/
+    virtual void UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &stateVector, bool trg_nodeVectorType = false);
+
     //! Read-only temperatures \f$T_{n}\f$
     virtual void UpdateTemperaturen();
 
     //! Read-only temperatures \f$T_{n+1}\f$
     virtual void UpdateTemperaturenp();
 
+    //! Read-only temperatures \f$P_{n+1}\f$
+    virtual void UpdatePressure();
+
     //! initialization of vector for visualization of the particle orientation
     virtual void InitializeOrientVector();
 
     //! update of vector for visualization of the particle orientation
     virtual void RotateOrientVector(double dt);
+
+    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
+    virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_Vector> vec, const bool isdof = true);
+
+    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
+    virtual void WriteVector(const std::string name, Teuchos::RCP<Epetra_MultiVector> vec, const bool isdof = true);
+
+    //! wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
+    virtual void WriteVector(const std::string name, Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vec, const bool isdof = true);
+
+    //! smart wrapper, the update happens only when vectors exist
+    inline virtual void UpdateStateVector(const Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> >& stateVector,
+        const Teuchos::RCP<Epetra_Vector>& stateVectorn)
+    { if (stateVector != Teuchos::null && stateVectorn != Teuchos::null) { stateVector->UpdateSteps(*stateVectorn); } }
+
 
     //@}
 
@@ -545,8 +564,6 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> radiusn_;
     //! Densities \f${\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityn_;
-    //! Approximated densities \f${\rho}_{approx,n+1}\f$ based on summation formula
-    Teuchos::RCP<Epetra_Vector> densityapproxn_;
     //! Time derivative of densities \f$\dot{\rho}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> densityDotn_;
     //! Specific enthalpies \f${H}_{n+1}\f$
@@ -571,6 +588,17 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> temperature_;
     //! Pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> pressure_;
+    //! m * grad(weightFunction) for meshfree methods
+    Teuchos::RCP<Epetra_Vector> mGradW_;
+    //! m * hess(weightFunction) for meshfree methods
+    Teuchos::RCP<Epetra_MultiVector> mHessW_;
+    //! Displacements \f${D}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
+    Teuchos::RCP<Epetra_Vector> dism_;
+    //! Velocities \f${V}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
+    Teuchos::RCP<Epetra_Vector> velm_;
+    //! Accelerations \f${A}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
+    Teuchos::RCP<Epetra_Vector> accm_;
+
 
     //! rest density for meshFree-pressure dynamics
     double restDensity_;

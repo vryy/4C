@@ -337,6 +337,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
   reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
+  reader.ReadGidSection("--PARTICLE DYNAMIC/GENALPHA", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/PARTICLE", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/REINITIALIZATION", *list);

@@ -262,7 +262,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityDotnp() = 0;
 
     //! Extract approximate densities \f$\dot{\rho}_{approx,n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityApproxnp() = 0;
+    //virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensityApproxnp() = 0;
 
     //! Extract specific enthalpies \f$H_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessSpecEnthalpynp() = 0;

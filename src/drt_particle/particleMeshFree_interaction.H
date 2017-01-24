@@ -27,6 +27,7 @@
 #include "particle_node.H"
 #include "particle_interData.H"
 #include "particle_particle.H"
+#include "particle_stateVectors.H"
 #include "particleMeshFree_weightFunction.H"
 #include "../drt_lib/drt_element.H"
 #include <boost/unordered_map.hpp>
@@ -61,23 +62,6 @@ namespace BINSTRATEGY
 /* belongs to particle namespace */
 namespace PARTICLE
 {
-  enum StateVectorType
-  {
-    Dis,
-    Vel,
-    ColorFieldGradient,
-    Radius,
-    Density,
-    DensityDot,
-    SpecEnthalpy,
-    Mass,
-    Pressure,
-    Temperature,
-    Alpha,
-    densityapprox,
-    mGradW
-  };
-
   /*====================================================================*/
   /*!
    * \brief Interaction handler for particle-meshFree interactions
@@ -118,7 +102,6 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> pressure,
         Teuchos::RCP<const Epetra_Vector> temperature,
-        Teuchos::RCP<const Epetra_Vector> densityapproxn,
         const int step);
 
     //! set up the ColParticles
@@ -130,8 +113,7 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> densityn,
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> pressure,
-        Teuchos::RCP<const Epetra_Vector> temperature,
-        Teuchos::RCP<const Epetra_Vector> densityapproxn);
+        Teuchos::RCP<const Epetra_Vector> temperature);
 
     //! add to the neighbour maps the neighbours of the present time step
     virtual void AddNewNeighbours(const int step);
@@ -145,10 +127,13 @@ namespace PARTICLE
 
     //! update neighbour weights
 
-    //! set state vector in ColParticles - color field gradient
+    //! set state vector in ColParticles
     virtual void SetStateVector(
         Teuchos::RCP<const Epetra_Vector> colorFieldGradientn,
         const PARTICLE::StateVectorType svt);
+
+    //! set state vector in ColParticles - for multiVector
+    virtual void SetStateVector(Teuchos::RCP<const Epetra_MultiVector> stateVector);
 
     //! clear content, keep memory
     virtual void Clear();
@@ -165,7 +150,7 @@ namespace PARTICLE
     virtual void Inter_pvp_densityDot(const Teuchos::RCP<Epetra_Vector> densityDotn);
 
     /// compute the momentum part of the particle vs particle interactions
-    virtual void Inter_pvp_acc(const Teuchos::RCP<Epetra_Vector> accn, const bool trg_pressure = true);
+    virtual void Inter_pvp_acc(const Teuchos::RCP<Epetra_Vector> accn, const bool clcPressure = true);
 
     /// compute the heat of the particle vs particle interactions
     virtual void Inter_pvp_specEnthalpyDot(const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);

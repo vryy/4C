@@ -70,7 +70,7 @@ int PARTICLE::TimIntDivFree::IntegrateStep()
   if (trg_warmStart_)
   {
     interHandler_->Clear();
-    interHandler_->Init(disn_,veln_,radiusn_,mass_, densityn_,specEnthalpyn_,pressure_, temperature_, densityapproxn_,  stepn_);
+    interHandler_->Init(disn_,veln_,radiusn_,mass_, densityn_,specEnthalpyn_,pressure_, temperature_,  stepn_);
     trg_warmStart_ = false;
   }
 
@@ -102,7 +102,7 @@ int PARTICLE::TimIntDivFree::IntegrateStep()
   interHandler_->Clear();
 
   // distribute to ParticleMeshFreeData and find neighbours
-  interHandler_->Init(disn_,veln_,radiusn_,mass_, densityn_,specEnthalpyn_,pressure_, temperature_, densityapproxn_,  stepn_);
+  interHandler_->Init(disn_,veln_,radiusn_,mass_, densityn_,specEnthalpyn_,pressure_, temperature_,  stepn_);
 
   // correct divergence error
   CorrectDivergenceError(dt);
@@ -172,6 +172,7 @@ void PARTICLE::TimIntDivFree::CorrectDensityError(const double dt)
   for (ii = 0; ii < correctDensityIter_; ++ii)
   {
     // compute the densityDot (that should converge towards zero)
+    densityn_->PutScalar(0.0);
     interHandler_->MF_mW(densityn_);
     interHandler_->SetStateVector(densityn_, Density);
 

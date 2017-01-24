@@ -457,7 +457,6 @@ void PARTICLE::Algorithm::CalculateAndApplyAccelerationsToParticles(bool init)
   particles_->WriteAccessAccnp()->Update(1.0,*accelerations,0);
   // there are no external density sources
   particles_->WriteAccessDensityDotnp()->PutScalar(0);
-  particles_->WriteAccessDensityApproxnp()->PutScalar(0);
   particles_->WriteAccessSpecEnthalpyDotnp()->PutScalar(0);
 }
 

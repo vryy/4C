@@ -163,6 +163,9 @@ namespace PARTICLE
 
     virtual Teuchos::RCP<Rendering> GetRendering() { return rendering_; }
 
+    /// set up walls
+    virtual void SetUpWallDiscret();
+
   protected:
 
     /// prepare time step
@@ -242,9 +245,6 @@ namespace PARTICLE
 
     /// compute thermodynamic expansion - new densities and radii
     virtual void ThermalExpansion();
-
-    /// set up walls
-    virtual void SetUpWallDiscret();
 
     //! @name particle related stuff
     //@{

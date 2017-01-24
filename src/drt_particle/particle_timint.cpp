@@ -19,7 +19,6 @@
 #include "particleMeshFree_interaction.H"
 #include "particleMeshFree_weightFunction.H"
 #include "particleMeshFree_rendering.H"
-#include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_discret.H"
@@ -101,7 +100,6 @@ PARTICLE::TimInt::TimInt
   angAccn_(Teuchos::null),
   radiusn_(Teuchos::null),
   densityn_(Teuchos::null),
-  densityapproxn_(Teuchos::null),
   densityDotn_(Teuchos::null),
   specEnthalpyn_(Teuchos::null),
   specEnthalpyDotn_(Teuchos::null),
@@ -115,6 +113,9 @@ PARTICLE::TimInt::TimInt
   inertia_(Teuchos::null),
   temperature_(Teuchos::null),
   pressure_(Teuchos::null),
+  mGradW_(Teuchos::null),
+  mHessW_(Teuchos::null),
+
 
   restDensity_(-1.0),
 
@@ -213,7 +214,6 @@ void PARTICLE::TimInt::Init()
   case INPAR::PARTICLE::MeshFree :
   {
     densityDotn_ = Teuchos::rcp(new Epetra_Vector(*(*densityDot_)(0)));
-    densityapproxn_ = LINALG::CreateVector(*NodeRowMapView(), true);
   }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
@@ -256,7 +256,6 @@ void PARTICLE::TimInt::Init()
 /* Set intitial fields in structure (e.g. initial velocities) */
 void PARTICLE::TimInt::SetInitialFields()
 {
-
   // -----------------------------------------//
   // set material properties
   // -----------------------------------------//
@@ -579,7 +578,6 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(angAccn_);
   UpdateStateVectorMap(radiusn_,true);
   UpdateStateVectorMap(densityn_,true);
-  UpdateStateVectorMap(densityapproxn_,true);
   UpdateStateVectorMap(densityDotn_,true);
   UpdateStateVectorMap(specEnthalpyn_,true);
   UpdateStateVectorMap(specEnthalpyDotn_,true);
@@ -593,6 +591,8 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(inertia_,true);
   UpdateStateVectorMap(temperature_,true);
   UpdateStateVectorMap(pressure_,true);
+  UpdateStateVectorMap(mGradW_);
+  UpdateStateVectorMap(mHessW_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -658,9 +658,6 @@ void PARTICLE::TimInt::ReadRestartState()
     // read density
     reader.ReadVector(densityn_, "density");
     density_->UpdateSteps(*densityn_);
-    // read density
-    reader.ReadVector(densityapproxn_, "densityapprox");
-    density_->UpdateSteps(*densityapproxn_);
     // read specEnthalpy
     reader.ReadVector(specEnthalpyn_, "specEnthalpy");
     specEnthalpy_->UpdateSteps(*specEnthalpyn_);
@@ -760,6 +757,7 @@ void PARTICLE::TimInt::OutputRestart
   bool& datawritten
 )
 {
+  std::cout << "puppa-1\n";
   // Yes, we are going to write...
   datawritten = true;
 
@@ -767,48 +765,39 @@ void PARTICLE::TimInt::OutputRestart
   output_->ParticleOutput(step_, (*time_)[0], true);
   output_->NewStep(step_, (*time_)[0]);
 
-  output_->WriteVector("displacement", (*dis_)(0));
-  output_->WriteVector("velocity", (*vel_)(0));
-  output_->WriteVector("acceleration", (*acc_)(0));
+  WriteVector("displacement", dis_);
+  WriteVector("velocity", vel_);
+  WriteVector("acceleration", acc_);
 
-  output_->WriteVector("radius", (*radius_)(0), output_->nodevector);
-  output_->WriteVector("mass", mass_, output_->nodevector);
+  WriteVector("radius", radius_, false);
+  WriteVector("mass", mass_, false);
 
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::MeshFree :
-  {
-    output_->WriteVector("densityDot", (*densityDot_)(0), output_->nodevector);
-    output_->WriteVector("pressure", pressure_, output_->nodevector);
-  }// no break
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    output_->WriteVector("density", (*density_)(0), output_->nodevector);
-    output_->WriteVector("specEnthalpy", (*specEnthalpy_)(0), output_->nodevector);
-    output_->WriteVector("specEnthalpyDot", (*specEnthalpyDot_)(0), output_->nodevector);
-    output_->WriteVector("temperature", temperature_, output_->nodevector);
-    break;
-  }
-  default : // do nothing
-    break;
-  }
+  WriteVector("densityDot", densityDot_, false);
+  WriteVector("pressure", pressure_, false);
+
+  WriteVector("density", density_, false);
+  WriteVector("specEnthalpy", specEnthalpy_, false);
+  WriteVector("specEnthalpyDot", specEnthalpyDot_, false);
+  WriteVector("temperature", temperature_, false);
+  WriteVector("mGradW", mGradW_);
+  WriteVector("mHessW", mHessW_);
 
   if(variableradius_)
   {
-    output_->WriteVector("radius0", radius0_, output_->nodevector);
-    output_->WriteVector("radiusDot", radiusDot_, output_->nodevector);
+    WriteVector("radius0", radius0_, false);
+    WriteVector("radiusDot", radiusDot_, false);
   }
 
   if(collhandler_ != Teuchos::null)
   {
     if(angVeln_ != Teuchos::null)
     {
-      output_->WriteVector("ang_velocity", (*angVel_)(0));
-      output_->WriteVector("ang_acceleration", (*angAcc_)(0));
+      WriteVector("ang_velocity", (*angVel_)(0));
+      WriteVector("ang_acceleration", (*angAcc_)(0));
     }
 
     if(writeorientation_)
-      output_->WriteVector("orientation", orient_);
+      WriteVector("orientation", orient_);
   }
 
   // maps are rebuild in every step so that reuse is not possible
@@ -854,35 +843,26 @@ void PARTICLE::TimInt::OutputState
   output_->ParticleOutput(step_, (*time_)[0], false);
   output_->NewStep(step_, (*time_)[0]);
 
-  output_->WriteVector("displacement", (*dis_)(0));
-  output_->WriteVector("velocity", (*vel_)(0));
+  WriteVector("displacement", dis_);
+  WriteVector("velocity", vel_);
+  WriteVector("radius", radius_, false);
+
   if(writevelacc_)
-    output_->WriteVector("acceleration", (*acc_)(0));
-
-  output_->WriteVector("radius", (*radius_)(0), output_->nodevector);
-  switch (particle_algorithm_->ParticleInteractionType())
   {
-  case INPAR::PARTICLE::MeshFree :
-  {
-    if(writevelacc_)
-      output_->WriteVector("densityDot", (*densityDot_)(0), output_->nodevector);
-
-    output_->WriteVector("pressure", pressure_, output_->nodevector);
-  }// no break
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    output_->WriteVector("density", (*density_)(0), output_->nodevector);
-    output_->WriteVector("specEnthalpy", (*specEnthalpy_)(0), output_->nodevector);
-    output_->WriteVector("temperature", temperature_, output_->nodevector);
-    if(writevelacc_)
-      output_->WriteVector("specEnthalpyDot", (*specEnthalpyDot_)(0), output_->nodevector);
-    break;
+    WriteVector("acceleration", acc_);
+    WriteVector("densityDot", densityDot_, false);
+    WriteVector("specEnthalpyDot", specEnthalpyDot_, false);
   }
-  default : //do nothing
-    break;
-  }
+  WriteVector("pressure", pressure_, false);
+  //WriteVector("densityapprox", densityapproxn_, false);
+  WriteVector("density", density_, false);
+  WriteVector("specEnthalpy", specEnthalpy_, false);
+  WriteVector("temperature", temperature_, false);
+  WriteVector("mGradW", mGradW_);
+  WriteVector("mHessW", mHessW_);
+
   if(collhandler_ != Teuchos::null and writeorientation_)
-    output_->WriteVector("orientation", orient_);
+    WriteVector("orientation", orient_);
   // maps are rebuild in every step so that reuse is not possible
   // keeps memory usage bounded
   output_->ClearMapCache();
@@ -1225,6 +1205,22 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVe
   }
 }
 
+/*-----------------------------------------------------------------------------*/
+/* Update TimIntMStep state vector with the new dof map from discret_*/
+void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &stateVector, bool trg_nodeVectorType)
+{
+  if (stateVector != Teuchos::null)
+  {
+    const int numcol = stateVector->NumVectors();
+    for (int ii = 0; ii < numcol; ++ii)
+    {
+      Teuchos::RCP<Epetra_Vector> colVec = Teuchos::rcp((*stateVector)(ii));
+      UpdateStateVectorMap(colVec, trg_nodeVectorType);
+    }
+
+  }
+}
+
 /*----------------------------------------------------------------------*/
 /* initialization of vector for visualization of the particle orientation */
 void PARTICLE::TimInt::InitializeOrientVector()
@@ -1249,7 +1245,23 @@ void PARTICLE::TimInt::UpdateTemperaturen()
 //! update temperatures \f$T_{n+1}\f$
 void PARTICLE::TimInt::UpdateTemperaturenp()
 {
-  PARTICLE::Utils::SpecEnthalpy2Temperature(temperature_,specEnthalpyn_, particle_algorithm_->ExtParticleMat());
+  if (temperature_ != Teuchos::null && specEnthalpyn_ != Teuchos::null)
+  {
+    PARTICLE::Utils::SpecEnthalpy2Temperature(temperature_,specEnthalpyn_, particle_algorithm_->ExtParticleMat());
+  }
+}
+
+/*----------------------------------------------------------------------*/
+//! update temperatures \f$T_{n+1}\f$
+void PARTICLE::TimInt::UpdatePressure()
+{
+  if (pressure_ != Teuchos::null && specEnthalpyn_ != Teuchos::null && densityn_ != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
+    deltaDensity->PutScalar(- restDensity_);
+    deltaDensity->Update(1.0,*densityn_,1.0);
+    PARTICLE::Utils::Density2Pressure(deltaDensity, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -1273,65 +1285,33 @@ void PARTICLE::TimInt::CheckStateVector(std::string vecName, const Teuchos::RCP<
 /* update step */
 void PARTICLE::TimInt::UpdateStepState()
 {
-  // new displacements at t_{n+1} -> t_n
-  //    D_{n} := D_{n+1}, D_{n-1} := D_{n}
-  dis_->UpdateSteps(*disn_);
-  // new velocities at t_{n+1} -> t_n
-  //    V_{n} := V_{n+1}, V_{n-1} := V_{n}
-  vel_->UpdateSteps(*veln_);
-  // new accelerations at t_{n+1} -> t_n
-  //    A_{n} := A_{n+1}, A_{n-1} := A_{n}
-  acc_->UpdateSteps(*accn_);
+  // new state vectors at t_{n+1} -> t_n
+  //    SV_{n} := SV_{n+1}, SV_{n-1} := SV_{n}
+  UpdateStateVector(dis_, disn_);
+  UpdateStateVector(vel_, veln_);
+  UpdateStateVector(acc_, accn_);
+  UpdateStateVector(radius_, radiusn_);
+  UpdateStateVector(density_, densityn_);
+  UpdateStateVector(densityDot_, densityDotn_);
+  UpdateStateVector(specEnthalpy_, specEnthalpyn_);
+  UpdateStateVector(specEnthalpyDot_, specEnthalpyDotn_);
 
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::MeshFree :
-  {
-    //    \dot{\rho}_{n} := \dot{\rho}_{n+1}, \dot{\rho}_{n-1} := \dot{\rho}_{n}
-    densityDot_->UpdateSteps(*densityDotn_);
-  }// no break
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    //    R_{n} := R_{n+1}, R_{n-1} := R_{n}
-    radius_->UpdateSteps(*radiusn_);
-    //    \rho_{n} := \rho_{n+1}, \rho_{n-1} := \rho_{n}
-    density_->UpdateSteps(*densityn_);
-    //    H_{n} := H_{n+1}, H_{n-1} := H_{n}
-    specEnthalpy_->UpdateSteps(*specEnthalpyn_);
-    //    \dot{H}_{n} := \dot{H}_{n+1}, \dot{H}_{n-1} := \dot{H}_{n}
-    specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
+  UpdateTemperaturenp();
+  UpdatePressure();
 
-    //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
-    UpdateTemperaturenp();
-    break;
-  }
-  default : // do nothing
-    break;
-  }
-
-  // update the pressure
-  // It is here because it is a slave of the density
-  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
-  {
-    Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(- restDensity_);
-    deltaDensity->Update(1.0,*densityn_,1.0);
-    PARTICLE::Utils::Density2Pressure(deltaDensity, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
-  }
-
+  // legacy... we can probably erase this if (not what is inside tho!) but... whatever
   if(collhandler_ != Teuchos::null)
   {
     // new angular-velocities at t_{n+1} -> t_n
     //    ang_V_{n} := ang_V_{n+1}, ang_V_{n-1} := ang_V_{n}
-    angVel_->UpdateSteps(*angVeln_);
+    UpdateStateVector(angVel_, angVeln_);
     // new angular-accelerations at t_{n+1} -> t_n
     //    ang_A_{n} := ang_A_{n+1}, ang_A_{n-1} := ang_A_{n}
-    angAcc_->UpdateSteps(*angAccn_);
+    UpdateStateVector(angAcc_, angAccn_);
   }
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /* update of vector for visualization of the particle orientation */
@@ -1390,3 +1370,66 @@ void PARTICLE::TimInt::RotateOrientVector(double dt)
 
   return;
 }
+
+/*----------------------------------------------------------------------*/
+// wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
+void PARTICLE::TimInt::WriteVector(const std::string name,
+                                           Teuchos::RCP<Epetra_Vector> vec,
+                                           const bool isdof)
+{
+  if (vec != Teuchos::null)
+  {
+    if (isdof)
+    {
+      output_->WriteVector(name, vec, IO::DiscretizationWriter::dofvector);
+    }
+    else
+    {
+      output_->WriteVector(name, vec, IO::DiscretizationWriter::nodevector);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+// wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
+void PARTICLE::TimInt::WriteVector(const std::string name,
+                                           Teuchos::RCP<Epetra_MultiVector> vec,
+                                           const bool isdof)
+{
+  if (vec != Teuchos::null)
+  {
+    if (isdof)
+    {
+      output_->WriteVector(name, vec, IO::DiscretizationWriter::dofvector);
+    }
+    else
+    {
+      output_->WriteVector(name, vec, IO::DiscretizationWriter::nodevector);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+// wrapper. On top of the output_->WriteVector() it checks that the pointer is not null. In case, it does not write
+void PARTICLE::TimInt::WriteVector(const std::string name,
+                                   Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vec,
+                                   const bool isdof)
+{
+  if (vec != Teuchos::null && (*vec)(0) != Teuchos::null)
+  {
+    if (isdof)
+    {
+      output_->WriteVector(name, (*vec)(0), IO::DiscretizationWriter::dofvector);
+    }
+    else
+    {
+      output_->WriteVector(name, (*vec)(0), IO::DiscretizationWriter::nodevector);
+    }
+  }
+}
+
+
+
+
+
+
