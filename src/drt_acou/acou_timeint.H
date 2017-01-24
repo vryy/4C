@@ -118,6 +118,7 @@ public:
   double Time()  { return time_; }
   int    Step()  { return step_; }
   int    UpRes() { return upres_; }
+  double TimeStep() { return dtp_; }
 
   /// create result test for encapsulated structure algorithm
   virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();

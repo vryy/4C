@@ -101,13 +101,15 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                    "patopti",
                    "patoptisplit",
                    "patoptisplitacousplit",
-                   "patoptisplitacouident"),
+                   "patoptisplitacouident",
+                   "patreduction"),
                  tuple<int>(
                    pat_none,
                    pat_opti,
                    pat_optisplit,
                    pat_optisplitacousplit,
-                   pat_optisplitacouident),
+                   pat_optisplitacouident,
+                   pat_reduction),
                  &acousticdyn);
 
   // PML
@@ -181,6 +183,7 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("IMPULSERESPONSE_DT",0.0,"time step with which impulse response is recorded",&acou_inv);
   StringParameter("IMPULSERESPONSE","none.impresp","Filename of file containing the impulse response",&acou_inv);
   BoolParameter("ACOUIDENT_AVG","No","should acoustical properties set according to their two closest?",&acou_inv);
+  DoubleParameter("REDUCTIONCUTTIME",0.0,"the new monitor file shall only have values until this time",&acou_inv);
 }
 
 

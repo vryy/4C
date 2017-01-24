@@ -199,6 +199,7 @@ void acoustics_drt()
     params->set<bool>("invana",false);
     params->set<bool>("adjoint",false);
     params->set<bool>("acouopt",false);
+    params->set<bool>("reduction",false);
   }
 
   // set restart step if we do not perform inverse analysis
@@ -371,8 +372,8 @@ void acoustics_drt()
     // ensure that all dofs are assigned in the right order
     scatradis->FillComplete();
 
-    if ( scatradis->NumGlobalElements() == 0 )
-      dserror("you said you want to do photoacoustics but you did not supply TRANSP elements");
+    //if ( scatradis->NumGlobalElements() == 0 )
+    //  dserror("you said you want to do photoacoustics but you did not supply TRANSP elements");
 
     // add proxy of velocity related degrees of freedom to scatra discretization
     Teuchos::RCP<DRT::DofSetInterface> dofsetaux =
@@ -416,6 +417,9 @@ void acoustics_drt()
     break;
     case INPAR::ACOU::pat_optisplitacouident:
       myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouIdent(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+    break;
+    case INPAR::ACOU::pat_reduction:
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionReduction(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
     break;
     default:
       dserror("other pat types not listed");

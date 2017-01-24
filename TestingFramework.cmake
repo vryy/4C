@@ -1738,6 +1738,7 @@ baci_test(acou_sol_conv10 1 "")
 baci_test(acou_2d_lsrk33reg2 2 "")
 baci_test(acou_2d_ssprk 2 "")
 baci_test(acou_pat_2d_classrk4 2 "")
+baci_test(acou_pat_trac_pml 2 "")
 endif (HAVE_DEAL_II)
 
 # statmech and particle test cases using random numbers from Boost Random libraries

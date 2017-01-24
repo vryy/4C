@@ -1112,13 +1112,12 @@ local_apply_domain(const MatrixFree<dim,value_type>                             
       }
       else
       {
-        dserror("pml not yet implemented for adjoint run");
-        velocity.submit_value(rho*c_sq*pressure_gradient,q);
+        velocity.submit_value(rho*c_sq*pressure_gradient-aux_quota_velocity,q);
+        pressure.submit_value(c_sq*rhs+rho_inv*aux_quota_pressure,q);
         pressure.submit_gradient(-rho_inv*velocity_value,q);
-        pressure.submit_value(c_sq*rhs,q);
+        auxiliary.submit_value(-aux_quota_auxiliary, q);
       }
     }
-
 
     velocity.integrate (true, false);
     velocity.distribute_local_to_global (dst, 0);
@@ -1227,6 +1226,135 @@ local_apply_face (const MatrixFree<dim,value_type> &,
     phi_neighbor.distribute_local_to_global(dst, 0);
   }
 }
+
+
+template <int dim, int fe_degree, typename Number>
+void
+WaveEquationOperationAcousticWavePML<dim,fe_degree,Number>::
+local_apply_face (const MatrixFree<dim,value_type> &,
+  std::vector<parallel::distributed::Vector<value_type> >        &dst,
+  const std::vector<parallel::distributed::Vector<value_type> >  &src,
+  const std::pair<unsigned int,unsigned int>                     &face_range) const
+{
+  // There is some overhead in the methods in FEEvaluation, so it is faster
+  // to combine pressure and velocity in the same object and just combine
+  // them at the level of quadrature points
+  FEFaceEvaluation<dim,fe_degree,fe_degree+1,dim+1,value_type> phi(this->data, true, 0, 0, 0, true);
+  FEFaceEvaluation<dim,fe_degree,fe_degree+1,dim+1,value_type> phi_neighbor(this->data, false, 0, 0, 0 , true);
+
+  Point<dim> point;
+  std::vector<value_type> node_values(GeometryInfo<dim>::vertices_per_face);
+  std::vector<std::vector<value_type> > node_coords(GeometryInfo<dim>::vertices_per_face);
+  for(unsigned int n=0; n<GeometryInfo<dim>::vertices_per_face; ++n)
+    node_coords[n].resize(dim);
+
+  for (unsigned int face=face_range.first; face<face_range.second; face++)
+  {
+    phi.reinit(face);
+    phi.read_dof_values(src, 0);
+    phi.evaluate(true,false);
+    const VectorizedArray<value_type> rho_plus = phi.read_cell_data(this->densities);
+    const VectorizedArray<value_type> rho_inv_plus = 1./rho_plus;
+    const VectorizedArray<value_type> c_plus = phi.read_cell_data(this->speeds);
+    const VectorizedArray<value_type> c_sq_plus = c_plus * c_plus;
+    const VectorizedArray<value_type> tau_plus = 1./c_plus/rho_plus;
+
+    phi_neighbor.reinit(face);
+    phi_neighbor.read_dof_values(src, 0);
+    phi_neighbor.evaluate(true,false);
+    const VectorizedArray<value_type> rho_minus = phi_neighbor.read_cell_data(this->densities);
+    const VectorizedArray<value_type> rho_inv_minus = 1./rho_minus;
+    const VectorizedArray<value_type> c_minus = phi_neighbor.read_cell_data(this->speeds);
+    const VectorizedArray<value_type> c_sq_minus = c_minus * c_minus;
+    const VectorizedArray<value_type> tau_minus = 1./c_minus/rho_minus;
+
+    const VectorizedArray<value_type> tau_inv = 1./(tau_plus + tau_minus);
+
+    AssertDimension(phi.n_q_points, data.get_n_q_points_face(0));
+
+    for (unsigned int q=0; q<phi.n_q_points; ++q)
+    {
+      Point<dim,VectorizedArray<value_type> > q_point = phi.quadrature_point(q);
+      Tensor<1,dim+1,VectorizedArray<value_type> > val_plus = phi.get_value(q);
+      Tensor<1,dim+1,VectorizedArray<value_type> > val_minus = phi_neighbor.get_value(q);
+      Tensor<1,dim,VectorizedArray<value_type> > normal = phi.get_normal_vector(q);
+      VectorizedArray<value_type> normal_v_plus = val_plus[0] *normal[0];
+      VectorizedArray<value_type> normal_v_minus = -val_minus[0]*normal[0];
+      for (unsigned int d=1; d<dim; ++d)
+      {
+        normal_v_plus += val_plus[d] * normal[d];
+        normal_v_minus -= val_minus[d] * normal[d];
+      }
+
+      VectorizedArray<value_type> lambda;
+      VectorizedArray<value_type> pres_diff_plus;
+      VectorizedArray<value_type> pres_diff_minus;
+      if(this->adjoint_eval==false)
+      {
+        lambda = tau_inv*(normal_v_plus + normal_v_minus + tau_plus*val_plus[dim] + tau_minus*val_minus[dim]);
+        pres_diff_plus  = (val_plus[dim] - lambda)  * rho_inv_plus;
+        pres_diff_minus = (val_minus[dim] - lambda) * rho_inv_minus;
+      }
+      else
+      {
+        if(this->source_adjoint_meas!=Teuchos::null) // second query required for intermediate integration
+        {
+          lambda = tau_inv*(rho_inv_plus*normal_v_plus + rho_inv_minus*normal_v_minus - tau_plus*rho_plus*c_sq_plus*val_plus[dim] - tau_minus*rho_minus*c_sq_minus*val_minus[dim]);
+
+          if(inner_face_monitored[face].any())
+          {
+            for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements && this->data.faces[face].left_cell[v] != numbers::invalid_unsigned_int; ++v)
+              if(inner_face_monitored[face][v])
+              {
+                for (unsigned int d=0; d<dim; ++d)
+                  point[d] = q_point[d][v];
+
+                for(unsigned int n=0; n<GeometryInfo<dim>::vertices_per_face; ++n)
+                {
+                  for(unsigned int d=0; d<dim; ++d)
+                    node_coords[n][d] = this->table_node_coords(face,v,n,d);
+                  int gid = this->table_node_ids(face,v,n);
+                  int lid = this->source_adjoint_meas->Map().LID(gid);
+                  node_values[n] =  this->source_adjoint_meas->operator ()(this->timestep_source_number)->operator [](lid);
+                }
+                lambda[v] -= tau_inv[v] * this->evaluate_source_adjoint(point,node_coords,node_values);
+                //lambda[v] -= 2. * tau_inv[v] * this->evaluate_source_adjoint(point,node_coords,node_values);
+              }
+          }
+        }
+
+
+        pres_diff_plus  = -rho_plus*c_sq_plus*val_plus[dim] - lambda ;
+        pres_diff_minus = -rho_minus*c_sq_minus*val_minus[dim] - lambda;
+      }
+
+      for (unsigned int d=0; d<dim; ++d)
+      {
+        val_plus[d] = pres_diff_plus*normal[d];
+        val_minus[d] = -pres_diff_minus*normal[d];
+      }
+      if(this->adjoint_eval==false)
+      {
+        val_plus[dim] = -c_sq_plus * rho_plus * (normal_v_plus + tau_plus * (val_plus[dim] - lambda));
+        val_minus[dim] = -c_sq_minus * rho_minus * (normal_v_minus + tau_minus * (val_minus[dim] - lambda));
+      }
+      else
+      {
+        val_plus[dim] = -(-rho_inv_plus*normal_v_plus + tau_plus * (c_sq_plus*rho_plus*val_plus[dim] + lambda));
+        val_minus[dim] = -(-rho_inv_minus*normal_v_minus + tau_minus * (c_sq_minus*rho_minus*val_minus[dim] + lambda));
+      }
+      phi.submit_value(val_plus, q);
+      phi_neighbor.submit_value(val_minus, q);
+    }
+
+    phi.integrate(true,false);
+    phi.distribute_local_to_global(dst, 0);
+
+    phi_neighbor.integrate(true,false);
+    phi_neighbor.distribute_local_to_global(dst, 0);
+  }
+}
+
 template <int dim, int fe_degree, typename Number>
 void WaveEquationOperationAcousticWave<dim,fe_degree,Number>::
 local_apply_domain (const MatrixFree<dim,value_type> &data,
@@ -1555,6 +1683,84 @@ WaveEquationOperationAcousticWavePML(const DoFHandler<dim> &dof_handler,
       }
     }
   }
+
+  if(this->source_adjoint_meas!= Teuchos::null)
+  {
+    // create TableIndices with lengths for table rows and columns
+    TableIndices<3> table_indices_ids(this->data.n_macro_inner_faces(),VectorizedArray<value_type>::n_array_elements,GeometryInfo<dim>::vertices_per_face);
+    TableIndices<4> table_indices_coords(this->data.n_macro_inner_faces(),VectorizedArray<value_type>::n_array_elements,GeometryInfo<dim>::vertices_per_face,dim);
+
+    // resize (or init) the tables
+    this->table_node_ids.reinit(table_indices_ids);
+    this->table_node_coords.reinit(table_indices_coords);
+
+    inner_face_monitored.resize(this->data.n_macro_inner_faces());
+
+    for (unsigned int f=0; f<this->data.n_macro_inner_faces(); ++f)
+    {
+      for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements && this->data.faces[f].left_cell[v] != numbers::invalid_unsigned_int; ++v)
+      {
+        const unsigned int left_cell_index_non_vectorized = this->data.faces[f].left_cell[v];
+        const int left_element_index = this->data.get_cell_iterator(left_cell_index_non_vectorized / VectorizedArray<value_type>::n_array_elements,
+            left_cell_index_non_vectorized % VectorizedArray<value_type>::n_array_elements)->index();
+        const unsigned int right_cell_index_non_vectorized = this->data.faces[f].right_cell[v];
+        const int right_element_index = this->data.get_cell_iterator(right_cell_index_non_vectorized / VectorizedArray<value_type>::n_array_elements,
+            right_cell_index_non_vectorized % VectorizedArray<value_type>::n_array_elements)->index();
+
+        DRT::Element* leftele = discret->lColElement(left_element_index);
+        DRT::Element* rightele = discret->lColElement(right_element_index);
+
+        // find the nodes they share
+        std::vector<int> sharednodes;
+        for(int n=0; n<leftele->NumNode(); ++n)
+        {
+          int nodeid = leftele->NodeIds()[n];
+          for(int m=0; m<rightele->NumNode(); ++m)
+          {
+            if(nodeid == rightele->NodeIds()[m])
+              sharednodes.push_back(nodeid);
+          }
+        }
+        if(sharednodes.size()!=GeometryInfo<dim>::vertices_per_face)
+          dserror("two neighboring elements share less nodes than they should");
+
+        // are all shared nodes part of monitor?
+        unsigned int nodepartofmon = 0;
+        for(unsigned int i=0; i<sharednodes.size(); ++i)
+          if(this->source_adjoint_meas->Map().LID(int(sharednodes[i]))>=0)
+            nodepartofmon++;
+        unsigned int count = 0;
+        if(sharednodes.size() == nodepartofmon)
+        {
+          for(unsigned int i=0; i<sharednodes.size(); ++i)
+          {
+            this->table_node_ids(f,v,count) = sharednodes[i];
+            for(unsigned int d=0; d<dim; ++d)
+              this->table_node_coords(f,v,count,d) = discret->gNode(sharednodes[i])->X()[d];
+            count++;
+            inner_face_monitored[f][v] = true;
+          }
+        }
+
+
+//        unsigned int count = 0;
+//        for(int n=0; n<discret->lColElement(element_index)->NumNode(); ++n)
+//        {
+//          unsigned int global_node_id = discret->lColElement(element_index)->NodeIds()[n];
+//          if(this->source_adjoint_meas->Map().LID(int(global_node_id))>=0)
+//          {
+//            this->table_node_ids(f,v,count) = global_node_id;
+//            for(unsigned int d=0; d<dim; ++d)
+//              this->table_node_coords(f,v,count,d) = discret->lColElement(element_index)->Nodes()[n]->X()[d];
+//            count++;
+//            inner_face_monitored[f][v] = true;
+//          }
+//        }
+      }
+    }
+  }
+
+
 }
 
 

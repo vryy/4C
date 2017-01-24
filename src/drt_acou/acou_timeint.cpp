@@ -1018,8 +1018,20 @@ void ACOU::AcouTimeInt::FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount
   std::vector<DRT::Condition*> pressuremon;
   discret_->GetCondition(condname,pressuremon);
 
-  std::vector<unsigned char> touchCount(touchcount->MyLength());
 
+
+//  for(unsigned int i=0; i<pressuremon.size(); ++i)
+//  {
+//    std::vector<int> nodes = *pressuremon[i]->Nodes();
+//    for(unsigned int n=0; n<pressuremon[i]->Nodes()->size(); ++n)
+//    {
+//      int nodeid = nodes[n];
+//      int lid = discret_->gNode(nodeid)->LID();
+//      if(lid>=0)
+//        touchcount->ReplaceGlobalValue(nodeid,0,1.0/(discret_->gNode(nodeid)->NumElement()));
+//    }
+//  }
+  std::vector<unsigned char> touchCount(touchcount->MyLength());
   for(unsigned int i=0; i<pressuremon.size(); ++i)
   {
     std::map<int,Teuchos::RCP<DRT::Element> >& geom = pressuremon[i]->Geometry();
@@ -1037,7 +1049,7 @@ void ACOU::AcouTimeInt::FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount
         touchCount[localIndex]++;
       }
     }
-  }
+    }
   for (int i=0; i<touchcount->MyLength(); ++i)
     (*touchcount)[i] = 1.0/touchCount[i];
 
@@ -1066,15 +1078,17 @@ void ACOU::AcouTimeInt::InitMonitorFile()
     std::string condname="PressureMonitor";
     std::vector<DRT::Condition*>pressuremon;
     discret_->GetCondition(condname,pressuremon);
-    if(pressuremon.size()>1) dserror("write of monitor file only implemented for one pressure monitor condition");
-    const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
+
+    //if(pressuremon.size()>1) dserror("write of monitor file only implemented for one pressure monitor condition");
+    unsigned int last = pressuremon.size()-1;
+    const std::vector<int> pressuremonmics = *(pressuremon[last]->Nodes());
 
     int mics=pressuremonmics.size();
     int steps=0;
     if(dtp_*stepmax_<maxtime_)
       steps=stepmax_;
     else
-      steps=maxtime_/dtp_+3; // first, last and int cut off
+      steps=maxtime_/dtp_+1;//+3; // first, last and int cut off
 
     if(myrank_ == 0)
     {
@@ -1134,7 +1148,8 @@ void ACOU::AcouTimeInt::FillMonitorFile(Teuchos::RCP<Epetra_Vector> ip)
     std::string condname="PressureMonitor";
     std::vector<DRT::Condition*>pressuremon;
     discret_->GetCondition(condname,pressuremon);
-    const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
+    unsigned int last = pressuremon.size()-1;
+    const std::vector<int> pressuremonmics = *(pressuremon[last]->Nodes());
     int mics=pressuremonmics.size();
 
     if(myrank_==0) fprintf(fp,"%e ",time_);

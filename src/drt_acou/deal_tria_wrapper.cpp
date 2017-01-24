@@ -59,6 +59,7 @@ namespace dealii
     std::vector<Point<dim> >    vertices(discret->NumGlobalNodes());
 
     int minallelegid = discret->ElementRowMap()->MinAllGID();
+    int minallnodegid = discret->NodeRowMap()->MinAllGID();
     if(discret->Comm().MyPID()==0)
     {
       // create the cells
@@ -67,11 +68,10 @@ namespace dealii
       {
         for(unsigned int i=0; i<GeometryInfo<dim>::vertices_per_cell; ++i)
         {
-          cells[proc0elemap->GID(cell)-minallelegid].vertices[i] = proc0elenodeids->operator ()(i)->operator [](cell);
+          cells[proc0elemap->GID(cell)-minallelegid].vertices[i] = proc0elenodeids->operator ()(i)->operator [](cell)-minallnodegid;
         }
       }
       // create the vertices
-      int minallnodegid = discret->NodeRowMap()->MinAllGID();
       for (int node=0; node<discret->NumGlobalNodes(); ++node)
       {
         for (unsigned int d=0; d<dim; ++d)

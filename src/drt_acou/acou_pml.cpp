@@ -952,13 +952,13 @@ void AttenuationPML<dim,Number>::read_pml_definition(std::string filename)
         orthogonality[j][i] = orthogonality[i][j];
 
     // debug -> write out the orthogonality map
-    std::cout << "orthogonality: " << std::endl;
+    /*std::cout << "orthogonality: " << std::endl;
     for (unsigned int i = 0; i < n_layer; ++i)
     {
       for (unsigned int j = 0; j < n_layer; ++j)
         std::cout << orthogonality[i][j] << "  ";
       std::cout << std::endl;
-    }
+    }*/
 
     inputfile.close();
   }

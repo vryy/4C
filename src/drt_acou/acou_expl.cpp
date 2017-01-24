@@ -534,7 +534,8 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   adjoint(params->get<bool>("adjoint")),
   acouopt(params->get<bool>("acouopt")),
   timereversal(params->get<bool>("timereversal")),
-  solid((DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(*params,"PHYSICAL_TYPE"))==INPAR::ACOU::acou_solid)
+  solid((DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(*params,"PHYSICAL_TYPE"))==INPAR::ACOU::acou_solid),
+  reduction(params->get<bool>("reduction"))
 {
   make_grid_and_dofs(discret,bacitimeint->AdjointSourceVec());
 
@@ -833,7 +834,21 @@ void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::Discr
             for(unsigned v=0;  v<GeometryInfo<dim>::vertices_per_face; ++v)
               is_pmon += int(pressmonBC[pmon]->ContainsNode(nodeids[v]));
           }
-          if(is_pmon >= GeometryInfo<dim>::vertices_per_face && timereversal)
+          if(reduction)
+          {
+            bool is_pmon0 = false;
+            bool is_pmon1 = false;
+            for(unsigned v=0;  v<GeometryInfo<dim>::vertices_per_face; ++v)
+              is_pmon0 = is_pmon0 || pressmonBC[0]->ContainsNode(nodeids[v]);
+            for(unsigned v=0;  v<GeometryInfo<dim>::vertices_per_face; ++v)
+              is_pmon1 = is_pmon1 || pressmonBC[1]->ContainsNode(nodeids[v]);
+            if(is_pmon0)
+              cell->face(f)->set_boundary_id(4); // first is where the values are read
+            if(is_pmon1)
+              cell->face(f)->set_boundary_id(2); // second pmon condition is at the inner ring (write into new monitor file)
+            break;
+          }
+          else if(is_pmon >= GeometryInfo<dim>::vertices_per_face && timereversal)
           {
             cell->face(f)->set_boundary_id(4);
             break;

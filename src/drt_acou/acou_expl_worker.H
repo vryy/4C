@@ -312,11 +312,16 @@ namespace ACOU
                              std::vector<parallel::distributed::Vector<value_type> >        &dst,
                              const std::vector<parallel::distributed::Vector<value_type> >  &src,
                              const std::pair<unsigned int,unsigned int>                &cell_range) const;
-
+    void local_apply_face (const MatrixFree<dim,value_type>       &data,
+                                  std::vector<parallel::distributed::Vector<value_type> >         &dst,
+                                  const std::vector<parallel::distributed::Vector<value_type> >   &src,
+                                  const std::pair<unsigned int,unsigned int>                 &cell_range) const;
     virtual void local_apply_mass_matrix(const MatrixFree<dim,value_type>                             &data,
                                  std::vector<parallel::distributed::Vector<value_type> >       &dst,
                                  const std::vector<parallel::distributed::Vector<value_type> > &src,
                                  const std::pair<unsigned int,unsigned int>               &cell_range) const;
+
+    std::vector<std::bitset<WaveEquationOperation<dim,fe_degree,Number>::n_vectorization> > inner_face_monitored;
   };
 
 

@@ -342,6 +342,27 @@ protected:
 
 };
 
+class PatImageReconstructionReduction: public PatImageReconstruction
+{
+public:
+  //! standard constructor
+  PatImageReconstructionReduction(
+    Teuchos::RCP<DRT::Discretization>      scatradis,
+    Teuchos::RCP<DRT::DiscretizationHDG>   acoudis,
+    Teuchos::RCP<Teuchos::ParameterList>   scatrapara,
+    Teuchos::RCP<Teuchos::ParameterList>   acoupara,
+    Teuchos::RCP<LINALG::Solver>           scatrasolv,
+    Teuchos::RCP<LINALG::Solver>           acousolv,
+    Teuchos::RCP<IO::DiscretizationWriter> scatraout,
+    Teuchos::RCP<IO::DiscretizationWriter> acouout);
+
+  //! iterative optimization loop
+  virtual void Optimize();
+
+private:
+  double reductioncuttime_;
+};
+
 class PatImageReconstructionOptiSplit : public PatImageReconstruction
 {
 public:

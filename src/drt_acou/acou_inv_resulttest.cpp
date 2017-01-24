@@ -50,7 +50,7 @@ void ACOU::AcouInvResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& 
   int haveelement(dis_->HaveGlobalElement(element));
   int iselementofanybody(0);
   dis_->Comm().SumAll(&haveelement,&iselementofanybody,1);
-  mysol_->Print(std::cout);
+
   if (iselementofanybody==0)
   {
     dserror("Element %d does not belong to discretization %s",element+1,dis_->Name().c_str());

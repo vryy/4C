@@ -84,6 +84,7 @@ overwrite_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE
 {
   // set time reversal to false
   acouparams_->set<bool>("timereversal",false);
+  acouparams_->set<bool>("reduction",false);
 
   // create necessary extra parameter list for scatra
   //{
@@ -508,6 +509,16 @@ void ACOU::PatImageReconstruction::EvaluateReacGrad()
     reac_regula_->EvaluateGradient(reac_vals_,reac_objgrad_);
 
   ConvertGradient(scatra_discret_,reac_objgrad_);
+
+  reac_objgrad_->Print(std::cout);
+
+    std::string soutname = name_;
+    soutname.append("_reac_grad");
+    scatraoutput_->NewResultFile(soutname,0);
+    scatraoutput_->WriteMesh(0,0.0);
+    scatraoutput_->NewStep(1,1.0);
+    scatraoutput_->WriteElementData(true);
+    scatraoutput_->WriteVector("rea_coeff",reac_objgrad_);
 
   return;
 }
@@ -3418,6 +3429,153 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::ComputeParameterError()
 }
 
 /*----------------------------------------------------------------------*/
+ACOU::PatImageReconstructionReduction::PatImageReconstructionReduction(
+  Teuchos::RCP<DRT::Discretization>      scatradis,
+  Teuchos::RCP<DRT::DiscretizationHDG>   acoudis,
+  Teuchos::RCP<Teuchos::ParameterList>   scatrapara,
+  Teuchos::RCP<Teuchos::ParameterList>   acoupara,
+  Teuchos::RCP<LINALG::Solver>           scatrasolv,
+  Teuchos::RCP<LINALG::Solver>           acousolv,
+  Teuchos::RCP<IO::DiscretizationWriter> scatraout,
+  Teuchos::RCP<IO::DiscretizationWriter> acouout)
+: PatImageReconstruction(scatradis,acoudis,scatrapara,acoupara,scatrasolv,acousolv,scatraout,acouout),
+  reductioncuttime_(acoupara->sublist("PA IMAGE RECONSTRUCTION").get<double>("REDUCTIONCUTTIME"))
+{
+  if(reductioncuttime_==0.0)
+    dserror("if you want to reduce domain and choose patreduction, set REDUCTIONCUTTIME to a reasonable non-zero value, thanks");
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstructionReduction::Optimize()
+{
+  // set parameter indicating that not the adjoint problem is solved
+  acouparams_->set<bool>("adjoint",false);
+  acouparams_->set<bool>("timereversal",true);
+  acouparams_->set<bool>("reduction",true);
+
+  // set parameter for acoustic time integration
+  acouparams_->set<bool>("acouopt",false);
+
+  Teuchos::RCP<Epetra_MultiVector> tempvec = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_map_,acou_rhsm_->NumVectors(),true));
+  acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",acou_rhsm_);
+
+  // create time integrator
+  switch(dyna_)
+  {
+  case INPAR::ACOU::acou_impleuler:
+  {
+    acoualgo_ = Teuchos::rcp(new ACOU::TimIntImplEuler(acou_discret_,acousolver_,acouparams_,acououtput_));
+    break;
+  }
+  case INPAR::ACOU::acou_expleuler:
+  case INPAR::ACOU::acou_classrk4:
+  case INPAR::ACOU::acou_lsrk45reg2:
+  case INPAR::ACOU::acou_lsrk33reg2:
+  case INPAR::ACOU::acou_lsrk45reg3:
+  case INPAR::ACOU::acou_ssprk:
+  {
+    acoualgo_ = Teuchos::rcp(new ACOU::AcouExplicitTimeInt(acou_discret_,acousolver_,acouparams_,acououtput_));
+    break;
+  }
+  default:
+    dserror("Unknown time integration scheme for problem type Acoustics");
+    break;
+  }
+  // initialize all quantities to zero
+  acoualgo_->SetInitialZeroField();
+
+  // do the time integration
+  acoualgo_->Integrate(acou_rhs_);
+
+  // now read the values from the newly written monitor file, return them in time and overwrite the monitor file!
+  if(myrank_==0)
+  {
+    std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    name.append(".monitor");
+    FILE* file = fopen(name.c_str(), "r");
+    if (file==NULL) dserror("Could not open monitor file %s",name.c_str());
+
+    char buffer[150000];
+    fgets(buffer,150000,file);
+    char* foundit = NULL;
+
+    // read steps
+    unsigned int nsteps = 0;
+    foundit = strstr(buffer,"steps"); foundit += strlen("steps");
+    nsteps = strtol(foundit,&foundit,10);
+    std::vector<double> timesteps(nsteps);
+
+    // read mics
+    unsigned int nmics = 0;
+    foundit = strstr(buffer,"mics"); foundit += strlen("mics");
+    nmics = strtol(foundit,&foundit,10);
+
+    // read measurement coordinates for every microphone
+    std::vector<std::vector<double> > meascoords(nmics);
+    for (unsigned int i=0; i<nmics; ++i)
+    {
+      meascoords[i].resize(3);
+      fgets(buffer,150000,file);
+      foundit = buffer;
+      for(int j=0; j<3; ++j)
+        meascoords[i][j] = strtod(foundit,&foundit);
+    }
+
+    // read in measured curve
+    //{
+      Epetra_SerialDenseVector mcurve(nmics*nsteps);
+
+      // read comment lines
+      foundit = buffer;
+      fgets(buffer,150000,file);
+      while(strstr(buffer,"#"))
+        fgets(buffer,150000,file);
+
+      // read in the values for each node
+      unsigned int count = 0;
+      for (unsigned int i=0; i<nsteps; ++i)
+      {
+        // read the time step
+        timesteps[i] = strtod(foundit,&foundit);
+        for (unsigned int j=0; j<nmics; ++j)
+          mcurve[count++] = strtod(foundit,&foundit);
+        fgets(buffer,150000,file);
+        foundit = buffer;
+      }
+      if (count != nmics*nsteps) dserror("Number of measured pressure values wrong on input");
+    //}
+    fclose(file);
+
+    // open the file to overwrite
+    file = fopen(name.c_str(), "w");
+    fprintf(file,"steps %d ",nsteps);
+    fprintf(file,"mics %d\n",nmics);
+
+    for(unsigned int n=0; n<nmics; ++n)
+      fprintf(file,"%e %e %e \n",meascoords[n][0],meascoords[n][1],meascoords[n][2]);
+    fprintf(file,"#\n#\n#\n");
+
+    double finaltime = acoualgo_->Time();
+    double dt = acoualgo_->TimeStep();
+    for(unsigned int i=0; i<nsteps; ++i)
+    {
+      double time = finaltime-(nsteps-1-i)*dt;
+      if(time<1e-3*dt)
+        time = 0.0;
+      fprintf(file,"%e ",time);
+      for(unsigned int m=0; m<nmics; ++m)
+        fprintf(file,"%e ",mcurve(m+(nsteps-1-i)*nmics));
+      fprintf(file,"\n");
+      if(time>reductioncuttime_)
+        break;
+    }
+    fclose(file);
+
+  } // if(myrank_==0)
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ACOU::PatImageReconstruction::CreateFieldTest()
 {
   return Teuchos::rcp(new AcouInvResultTest(*this));
@@ -3557,6 +3715,7 @@ void ACOU::PatImageReconstruction::ReadMonitor(std::string monitorfilename, doub
     }
     if (count != nmics*nsteps) dserror("Number of measured pressure values wrong on input");
   }
+  fclose(file);
 
   // interpolation
   // vector for the interpolated data
@@ -4058,6 +4217,7 @@ void ACOU::PatImageReconstruction::SolveAdjointScatra()
   // create the right hand side vector for the adjoint optical problem
   Teuchos::RCP<Epetra_Vector> rhsvec = LINALG::CreateVector(*(scatra_discret_->DofRowMap()),true);
   rhsvec = CalculateAdjointOptiRhsvec(adjoint_psi_);
+
   for(int i=0; i<node_reac_->MyLength(); ++i)
   {
     double mu_a = node_reac_->operator [](i);
@@ -4428,6 +4588,7 @@ Teuchos::RCP<Epetra_Vector> ACOU::PatImageReconstruction::CalculateAdjointOptiRh
   if(meshconform_)
   {
     int minscatranodegid = scatra_discret_->NodeRowMap()->MinAllGID();
+    int minacounodegid = acou_discret_->NodeRowMap()->MinAllGID();
     for(int nd=0; nd<acou_discret_->NumGlobalNodes(); ++nd)
     {
       // get node and owner
@@ -4445,9 +4606,9 @@ Teuchos::RCP<Epetra_Vector> ACOU::PatImageReconstruction::CalculateAdjointOptiRh
         continue;
 
       double loc_value = 0.0;
-      if(acou_discret_->NodeRowMap()->LID(nd)>-1)
+      if(acou_discret_->NodeRowMap()->LID(nd+minacounodegid)>-1)
       {
-        loc_value = adjoint_psi_->operator [](acou_discret_->NodeRowMap()->LID(nd));
+        loc_value = adjoint_psi_->operator [](acou_discret_->NodeRowMap()->LID(nd+minacounodegid));
       }
       double glo_value = 0.0;
       acou_discret_->Comm().SumAll(&loc_value,&glo_value,1);
