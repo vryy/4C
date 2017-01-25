@@ -598,6 +598,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> velm_;
     //! Accelerations \f${A}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
     Teuchos::RCP<Epetra_Vector> accm_;
+    //! Acceleration residue \f${R}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
+    Teuchos::RCP<Epetra_Vector> resAcc_;
 
 
     //! rest density for meshFree-pressure dynamics

@@ -178,68 +178,88 @@ case INPAR::PARTICLE::HyperbolaNoRsz :
  | set up internal variables for future computations       katta 12/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
+    const int step,
     Teuchos::RCP<const Epetra_Vector> disn,
     Teuchos::RCP<const Epetra_Vector> veln,
     Teuchos::RCP<const Epetra_Vector> radiusn,
     Teuchos::RCP<const Epetra_Vector> mass,
-    Teuchos::RCP<const Epetra_Vector> densityn,
     Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-    Teuchos::RCP<const Epetra_Vector> pressure,
-    Teuchos::RCP<const Epetra_Vector> temperature,
-    const int step)
+    Teuchos::RCP<const Epetra_Vector> temperature)
 {
   // check
   if (colParticles_.size() != 0)
   {
     dserror("you did not call Clear before Init, colParticles_ is not empty");
   }
-  // set up the local data storage and fill it with the state vectors
-  InitColParticles(disn, veln, radiusn, mass, densityn, specEnthalpyn, pressure, temperature);
-
-  // set neighbours
-  AddNewNeighbours(step);
 
   // security block
   trg_updatedColorFieldGradient_ = false;
 
-  //Printneighbours_p();
+  // set up the local data storage and fill it with the state vectors
+  InitColParticles();
+
+  // set up positions and radii to set up the neighbours
+  SetStateVector(disn, Dis);
+  SetStateVector(radiusn, Radius);
+
+  // set up the neighbours
+  AddNewNeighbours(step);
+
+  // keep going with the remaining state vectors
+  SetStateVector(veln, Vel);
+  SetStateVector(mass, Mass);
+  SetStateVector(specEnthalpyn, SpecEnthalpy);
+  SetStateVector(temperature, Temperature);
+}
+
+/*----------------------------------------------------------------------*
+ | set up internal variables for future computations       katta 12/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
+    const int step,
+    Teuchos::RCP<const Epetra_Vector> disn,
+    Teuchos::RCP<const Epetra_Vector> veln,
+    Teuchos::RCP<const Epetra_Vector> radiusn,
+    Teuchos::RCP<const Epetra_Vector> mass,
+    Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
+    Teuchos::RCP<const Epetra_Vector> temperature,
+    Teuchos::RCP<const Epetra_Vector> densityn,
+    Teuchos::RCP<const Epetra_Vector> pressure)
+{
+  Init(step, disn, veln, radiusn, mass, specEnthalpyn, temperature);
+
+  // set the other state vectors
+  SetStateVector(densityn, Density);
+  SetStateVector(pressure, Pressure);
 }
 
 
 /*----------------------------------------------------------------------*
  | set all the neighbours                                  katta 12/16  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(
-    Teuchos::RCP<const Epetra_Vector> disn,
-    Teuchos::RCP<const Epetra_Vector> veln,
-    Teuchos::RCP<const Epetra_Vector> radiusn,
-    Teuchos::RCP<const Epetra_Vector> mass,
-    Teuchos::RCP<const Epetra_Vector> densityn,
-    Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-    Teuchos::RCP<const Epetra_Vector> pressure,
-    Teuchos::RCP<const Epetra_Vector> temperature)
+void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles()
 {
   // row to col vectors
     // dof-based vectors
-  Teuchos::RCP<Epetra_Vector> disnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-  Teuchos::RCP<Epetra_Vector> velnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+  //Teuchos::RCP<Epetra_Vector> disnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+  //Teuchos::RCP<Epetra_Vector> velnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
     // node-based vectors
-  Teuchos::RCP<Epetra_Vector> radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  Teuchos::RCP<Epetra_Vector> densitynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  Teuchos::RCP<Epetra_Vector> specEnthalpynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  Teuchos::RCP<Epetra_Vector> pressureCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  Teuchos::RCP<Epetra_Vector> temperatureCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  //Teuchos::RCP<Epetra_Vector> radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  //Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  //Teuchos::RCP<Epetra_Vector> densitynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  //Teuchos::RCP<Epetra_Vector> specEnthalpynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  //Teuchos::RCP<Epetra_Vector> pressureCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+  //Teuchos::RCP<Epetra_Vector> temperatureCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
   //Teuchos::RCP<Epetra_Vector> densityapproxCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
     // exports
-  LINALG::Export(*disn ,*disnCol);
-  LINALG::Export(*veln ,*velnCol);
-  LINALG::Export(*radiusn ,*radiusnCol);
-  LINALG::Export(*mass ,*massCol);
-  LINALG::Export(*densityn ,*densitynCol);
-  LINALG::Export(*specEnthalpyn ,*specEnthalpynCol);
-  LINALG::Export(*pressure ,*pressureCol);
-  LINALG::Export(*temperature ,*temperatureCol);
+  //LINALG::Export(*disn ,*disnCol);
+  //LINALG::Export(*veln ,*velnCol);
+  //LINALG::Export(*radiusn ,*radiusnCol);
+  //LINALG::Export(*mass ,*massCol);
+  //LINALG::Export(*densityn ,*densitynCol);
+  //LINALG::Export(*specEnthalpyn ,*specEnthalpynCol);
+  //LINALG::Export(*pressure ,*pressureCol);
+  //LINALG::Export(*temperature ,*temperatureCol);
   //LINALG::Export(*densityapproxn ,*densityapproxCol);
 
   const int numcolelements = discret_->NodeColMap()->NumMyElements();
@@ -253,20 +273,19 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(
     discret_->Dof(particle, lm);
 
     // dof-based vectors
-    LINALG::Matrix<3,1> dis, vel;
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disnCol, dis, lm);
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velnCol, vel, lm);
+    //LINALG::Matrix<3,1> dis, vel;
+    //DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disnCol, dis, lm);
+    //DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velnCol, vel, lm);
     // node-based vectors
-    const double radius = (*radiusnCol)[lidNodeCol];
-    const double mass = (*massCol)[lidNodeCol];
-    const double density = (*densitynCol)[lidNodeCol];
-    const double specEnthalpy = (*specEnthalpynCol)[lidNodeCol];
-    const double pressure = (*pressureCol)[lidNodeCol];
-    const double temperature = (*temperatureCol)[lidNodeCol];
+    //const double radius = (*radiusnCol)[lidNodeCol];
+    //const double mass = (*massCol)[lidNodeCol];
+    //const double density = (*densitynCol)[lidNodeCol];
+    //const double specEnthalpy = (*specEnthalpynCol)[lidNodeCol];
+    //const double pressure = (*pressureCol)[lidNodeCol];
+    //const double temperature = (*temperatureCol)[lidNodeCol];
     //const double densityapprox = (*densityapproxCol)[lidNodeCol];
     // set up the particles
-    colParticles_[lidNodeCol] = ParticleMF(particle->Id(), particle->Owner(), lm,
-        dis, vel, radius, mass, density, specEnthalpy, pressure, temperature);
+    colParticles_[lidNodeCol] = ParticleMF(particle->Id(), particle->Owner(), lm);
   }
 }
 
@@ -984,25 +1003,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(
 }
 
 
-/*----------------------------------------------------------------------*
- | print interactions                                      katta 12/16  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::Print_neighbours_p()
-{
-  std::cout << "\n\n particle - particle interactions\n\n";
-  //bool trg_interactions = false;
-  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
-  {
-    std::cout << discret_->NodeRowMap()->GID(lidNodeRow_i) << " |";
 
-    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
-    {
-      std::cout << " " << colParticles_[jj->first].gid_;
-      //trg_interactions = true;
-    }
-    std::cout << std::endl;
-  }
-}
 
 
 /*----------------------------------------------------------------------*
@@ -1620,7 +1621,7 @@ if (specEnthalpyDotn == Teuchos::null)
 }
 
 // loop over the particles (no superpositions)
-for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
+for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_hs_.size(); ++lidNodeRow_i)
 {
   // determine the particle_i
   const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);

@@ -20,6 +20,7 @@
 #include "Teuchos_RCP.hpp"
 #include <math.h>
 #include "../linalg/linalg_utils.H"
+#include <boost/unordered_map.hpp>
 
 //! forward declarations
 namespace MAT
@@ -126,6 +127,26 @@ namespace PARTICLE
         {
           local(ii,jj) = (global[jj])[lid];
         }
+      }
+    }
+
+    //! template to print neighbours
+    template <typename obj>
+    static void PrintNeighbours(std::vector< boost::unordered_map<int, obj> > neighbours)
+    {
+      std::cout << "\n\n interactions\n\n";
+      //bool trg_interactions = false;
+      for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours.size(); ++lidNodeRow_i)
+      {
+        std::cout << "lid " << lidNodeRow_i << " | ";
+
+        typename boost::unordered_map<int, obj >::const_iterator jj;
+        for (jj = neighbours[lidNodeRow_i].begin(); jj != neighbours[lidNodeRow_i].end(); ++jj)
+        {
+          std::cout << " " << jj->first;
+          //trg_interactions = true;
+        }
+        std::cout << std::endl;
       }
     }
   };

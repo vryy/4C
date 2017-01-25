@@ -115,7 +115,10 @@ PARTICLE::TimInt::TimInt
   pressure_(Teuchos::null),
   mGradW_(Teuchos::null),
   mHessW_(Teuchos::null),
-
+  dism_(Teuchos::null),
+  velm_(Teuchos::null),
+  accm_(Teuchos::null),
+  resAcc_(Teuchos::null),
 
   restDensity_(-1.0),
 
@@ -593,6 +596,11 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(pressure_,true);
   UpdateStateVectorMap(mGradW_);
   UpdateStateVectorMap(mHessW_);
+
+  UpdateStateVectorMap(dism_);
+  UpdateStateVectorMap(velm_);
+  UpdateStateVectorMap(accm_);
+  UpdateStateVectorMap(resAcc_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -641,6 +649,7 @@ void PARTICLE::TimInt::ReadRestartState()
   acc_->UpdateSteps(*accn_);
 
   reader.ReadVector(mass_, "mass");
+
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
@@ -757,7 +766,6 @@ void PARTICLE::TimInt::OutputRestart
   bool& datawritten
 )
 {
-  std::cout << "puppa-1\n";
   // Yes, we are going to write...
   datawritten = true;
 
@@ -779,8 +787,6 @@ void PARTICLE::TimInt::OutputRestart
   WriteVector("specEnthalpy", specEnthalpy_, false);
   WriteVector("specEnthalpyDot", specEnthalpyDot_, false);
   WriteVector("temperature", temperature_, false);
-  WriteVector("mGradW", mGradW_);
-  WriteVector("mHessW", mHessW_);
 
   if(variableradius_)
   {

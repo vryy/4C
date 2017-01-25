@@ -59,11 +59,7 @@ void PARTICLE::TimIntGenAlpha::Init()
   PARTICLE::TimIntImpl::Init();
 
   // initialize the additional state vectors
-  mGradW_ = LINALG::CreateVector(*DofRowMapView(), true);
-  mHessW_ = Teuchos::rcp(new Epetra_MultiVector(*DofRowMapView(), 3, true));
-  accm_ = LINALG::CreateVector(*DofRowMapView(), true);
-  velm_ = LINALG::CreateVector(*DofRowMapView(), true);
-  dism_ = LINALG::CreateVector(*DofRowMapView(), true);
+  SetupStateVectors();
 
   // initialize the interaction handler
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
@@ -101,11 +97,13 @@ void PARTICLE::TimIntGenAlpha::DetermineMassDampConsistAccel()
   particle_algorithm_->SetUpWallDiscret();
 
   // set up connections and the local state vectors in the interaction handler
-  interHandler_->Init(disn_, veln_, radiusn_, mass_, densityn_, specEnthalpyn_, pressure_, temperature_,  stepn_);
+  interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_);
 
   // compute and replace the density
   interHandler_->MF_mW(densityn_);
-  interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+  interHandler_->SetStateVector(densityn_, Density);
+  UpdatePressure();
+  interHandler_->SetStateVector(pressure_, Density);
 
   interHandler_->Inter_pvp_acc(accn_);
   interHandler_->Inter_pvw_acc(accn_);
@@ -191,5 +189,62 @@ void PARTICLE::TimIntGenAlpha::CalcCoeff()
     beta_   = 0.25*(1.0-alpham_+alphaf_)*(1.0-alpham_+alphaf_);
     gamma_  = 0.5-alpham_+alphaf_;
   }
+}
+
+/*----------------------------------------------------------------------*/
+/* Consistent predictor with constant displacements
+ * and consistent velocities and displacements */
+void PARTICLE::TimIntGenAlpha::EvaluateNewState(const bool disAreEqual)
+{
+  if (disAreEqual)
+  {
+    veln_->PutScalar(0.0);
+    accn_->PutScalar(0.0);
+  }
+  else
+  {
+    // constant predictor : displacement in domain
+    disn_->Update(1.0, *(*dis_)(0), 0.0);
+    veln_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
+    accn_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
+  }
+
+  // consistent velocities following Newmark formulas
+  veln_->Update((beta_-gamma_)/beta_, *(*vel_)(0),
+                (2.*beta_-gamma_)*(*dt_)[0]/(2.*beta_), *(*acc_)(0),
+                gamma_/(beta_*(*dt_)[0]));
+
+  // consistent accelerations following Newmark formulas
+  accn_->Update(-1./(beta_*(*dt_)[0]), *(*vel_)(0),
+                (2.*beta_-1.)/(2.*beta_), *(*acc_)(0),
+                1./(beta_*(*dt_)[0]*(*dt_)[0]));
+
+  // watch out
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart state - overload */
+void PARTICLE::TimIntGenAlpha::ReadRestartState()
+{
+  // call the base function
+  TimInt::ReadRestartState();
+
+  // reset to zero the additional state vectors
+  SetupStateVectors();
+
+}
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart state - overload */
+void PARTICLE::TimIntGenAlpha::SetupStateVectors()
+{
+  mGradW_ = LINALG::CreateVector(*DofRowMapView(), true);
+  mHessW_ = Teuchos::rcp(new Epetra_MultiVector(*DofRowMapView(), 3, true));
+  accm_ = LINALG::CreateVector(*DofRowMapView(), true);
+  velm_ = LINALG::CreateVector(*DofRowMapView(), true);
+  dism_ = LINALG::CreateVector(*DofRowMapView(), true);
+  resAcc_ = LINALG::CreateVector(*DofRowMapView(), true);
 }
 

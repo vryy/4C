@@ -278,6 +278,8 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
     // set up Heat Sources in a map
     SetUpHeatSources();
+    UpdateHeatSourcesConnectivity(false);
+
   }
   else
   {
@@ -294,7 +296,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
   DRT::UTILS::PrintParallelDistribution(*BinStrategy()->BinDiscret());
 
   // update connectivity
-  UpdateHeatSourcesConnectivity(true);
+  //UpdateHeatSourcesConnectivity(true);
 
   if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RENDERING"))
   {
@@ -504,6 +506,8 @@ void PARTICLE::Algorithm::ReadRestart(int restart)
   // now, correct map layouts are available and states can be read
   particles_->ReadRestart(restart);
   SetTimeStep(particles_->TimeOld(),restart);
+
+  UpdateHeatSourcesConnectivity(true);
 
   // read restart for walls
   if(structure_ != Teuchos::null)
@@ -1192,10 +1196,6 @@ void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
     if (trg_forceRestart)
       (*iHS)->active_ = false;
 
-    // skip in case the heat source is active because it is already linked (and for now, it can't move)
-    if ((*iHS)->active_ == true)
-      continue;
-
     // map assignment
     if ((*iHS)->Tstart_<=Time() && (*iHS)->Tend_>=Time() && (*iHS)->active_ == false)
     {
@@ -1335,7 +1335,8 @@ void PARTICLE::Algorithm::GetBinContent(
     // it is a set so that there are no repetitions of the heat source
     if (bin_hs != Teuchos::null)
     {
-      for (std::list<Teuchos::RCP<HeatSource> >::iterator iHS = bins2heatSources_[*bin].begin(); iHS != bins2heatSources_[*bin].end(); ++iHS)
+      std::list<Teuchos::RCP<HeatSource> >::const_iterator iHS;
+      for (iHS = bins2heatSources_[*bin].begin(); iHS != bins2heatSources_[*bin].end(); ++iHS)
         (*bin_hs)[(*iHS)->Id()] = (*iHS);
     }
   }

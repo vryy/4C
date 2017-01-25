@@ -68,19 +68,28 @@ namespace PARTICLE
     //! overload to determine the initial accelerations
     virtual void DetermineMassDampConsistAccel();
 
-    //! verify if given coefficients are in admissible range;
-    //! prints also info to STDOUT
-    void VerifyCoeff();
-
-    //! calculate coefficients from given spectral radius
-    void CalcCoeff();
+    //! Read and set restart state
+    virtual void ReadRestartState();
 
     //@}
 
   protected:
 
+    //! verify if given coefficients are in admissible range;
+    //! prints also info to STDOUT
+    virtual void VerifyCoeff();
+
+    //! calculate coefficients from given spectral radius
+    virtual void CalcCoeff();
+
     //! Evaluate mid-state vectors by averaging end-point vectors
-    void EvaluateMidState();
+    virtual void EvaluateMidState();
+
+    //! Evaluate new-state vectors by Newmark's formulae
+    virtual void EvaluateNewState(const bool disAreEqual = false);
+
+    //! Set up the additional state vectors required in the genAlpha algorithm
+    virtual void SetupStateVectors();
 
     //! mid-average type more at MidAverageEnum
     enum INPAR::PARTICLE::MidAverageEnum midavg_;

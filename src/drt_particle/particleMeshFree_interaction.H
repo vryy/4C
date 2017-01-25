@@ -94,26 +94,27 @@ namespace PARTICLE
 
     //! set up the object for the interaction computations
     virtual void Init(
+        const int step,
         Teuchos::RCP<const Epetra_Vector> disn,
         Teuchos::RCP<const Epetra_Vector> veln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<const Epetra_Vector> mass,
-        Teuchos::RCP<const Epetra_Vector> densityn,
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-        Teuchos::RCP<const Epetra_Vector> pressure,
+        Teuchos::RCP<const Epetra_Vector> temperature);
+
+    virtual void Init(
+        const int step,
+        Teuchos::RCP<const Epetra_Vector> disn,
+        Teuchos::RCP<const Epetra_Vector> veln,
+        Teuchos::RCP<const Epetra_Vector> radiusn,
+        Teuchos::RCP<const Epetra_Vector> mass,
+        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> temperature,
-        const int step);
+        Teuchos::RCP<const Epetra_Vector> densityn,
+        Teuchos::RCP<const Epetra_Vector> pressure);
 
     //! set up the ColParticles
-    virtual void InitColParticles(
-        Teuchos::RCP<const Epetra_Vector> disn,
-        Teuchos::RCP<const Epetra_Vector> veln,
-        Teuchos::RCP<const Epetra_Vector> radiusn,
-        Teuchos::RCP<const Epetra_Vector> mass,
-        Teuchos::RCP<const Epetra_Vector> densityn,
-        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-        Teuchos::RCP<const Epetra_Vector> pressure,
-        Teuchos::RCP<const Epetra_Vector> temperature);
+    virtual void InitColParticles();
 
     //! add to the neighbour maps the neighbours of the present time step
     virtual void AddNewNeighbours(const int step);
@@ -197,14 +198,6 @@ namespace PARTICLE
 
     /// compute m * gradW - mesh free sense
     virtual void MF_mGradW(const Teuchos::RCP<Epetra_Vector> densityn);
-
-    //@}
-
-    //! @name print methods
-    //@{
-
-    // print interactions
-    virtual void Print_neighbours_p();
 
     //@}
 

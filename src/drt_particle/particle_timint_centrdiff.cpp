@@ -215,7 +215,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     {
       // the density update scheme is equal to the acceleration update scheme. It can change at your will
 
-      interHandler_->Init(disn_,veln_,radiusn_,mass_, densityn_,specEnthalpyn_,pressure_, temperature_, stepn_);
+      interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_);
 
       // direct update of the accelerations
       // pvp interactions
