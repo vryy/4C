@@ -86,6 +86,8 @@ public:
     */
   virtual void Setup(bool redistributed, bool init);
 
+  virtual void UpdateTraceIneqEtimates();
+
   /*! \brief Get dirichlet B.C. status and store into CoNodes
 
    This is called once at the beginning of the simulation
@@ -94,8 +96,8 @@ public:
    \param dbcmaps (in): MapExtractor carrying global dbc map */
   virtual void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps)
   {/* we don't care about dirichlet for now */};
-  virtual void Update(Teuchos::RCP<const Epetra_Vector> dis)
-  {/* nothing stored in nitsche strategy that would require an update */};
+  virtual void Update(Teuchos::RCP<const Epetra_Vector> dis);
+  virtual void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec);
   virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
         bool forcedrestart = false) const
   {/* nothing stored in nitsche strategy that would need to be written */};

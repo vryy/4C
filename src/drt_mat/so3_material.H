@@ -74,22 +74,17 @@ namespace MAT
                               const int eleGID)
     { dserror("Material does not support evaluation for GEMM"); };
 
-    /// evaluate Cauchy stress with given left Cauchy--Green tensor
-    virtual void EvaluateCauchy(const LINALG::Matrix<3,3>& b,
-                                LINALG::Matrix<3,3>& s,
-                                LINALG::Matrix<6,6>& dsdb,
-                                const int eleGID)
-    {dserror("EvaluateCauchy not implementend for this material");return;}
-
-    /// evaluate Cauchy stress with given left Cauchy--Green tensor
     virtual void EvaluateCauchy(
         const LINALG::Matrix<3,3>& b,
         const LINALG::Matrix<3,1>& n,
-        double& snn,
-        LINALG::Matrix<6,1>& dsnndb,
-        LINALG::Matrix<6,6>& d2snndb2,
-        LINALG::Matrix<6,3>& d2snnDbDn,
-        LINALG::Matrix<3,1>& dsnndn,
+        const LINALG::Matrix<3,1>& t,
+        double& snt,
+        LINALG::Matrix<6,1>* dsntdb,
+        LINALG::Matrix<6,6>* d2sntdb2,
+        LINALG::Matrix<6,3>* d2sntDbDn,
+        LINALG::Matrix<6,3>* d2sntDbDt,
+        LINALG::Matrix<3,1>* dsntdn,
+        LINALG::Matrix<3,1>* dsntdt,
         const int eleGID)
     {dserror("EvaluateCauchy not implementend for this material");return;}
 

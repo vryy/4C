@@ -605,7 +605,6 @@ CONTACT::CoManager::CoManager(
           if (faceele->ParentElement()==NULL) dserror("face parent does not exist");
           if (Discret().ElementColMap()->LID(faceele->ParentElement()->Id())==-1) dserror("vol dis does not have parent ele");
           cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
-          cele->EstimateNitscheTraceMaxEigenvalue(faceele,discret);
         }
 
         //------------------------------------------------------------------

@@ -991,7 +991,7 @@ public:
    for frictional contact we need history values (relative velocity) and
    therefore we store the nodal entries of mortar matrices (reference
    configuration) before the first time step */
-  void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec);
+  virtual void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec);
 
   void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel);
 

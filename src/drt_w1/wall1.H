@@ -188,11 +188,6 @@ public:
   /// Destructor
   virtual ~Wall1();
 
-  /// get Cauchy stress
-  virtual void GetCauchyAtXi(const LINALG::Matrix<2,1>& xi,
-        const std::vector<double>& disp,
-        LINALG::Matrix<2,2>& cauchy,
-        Epetra_SerialDenseMatrix& dsdd);
   //@}
 
   /// @name Acess methods

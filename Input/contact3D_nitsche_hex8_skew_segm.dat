@@ -52,10 +52,11 @@ STRATEGY             Nitsche
 PENALTYPARAM         1e-1
 NITSCHE_THETA        -1.0
 NITSCHE_WEIGHTING    slave
+NITSCHE_PENALTY_ADAPTIVE yes
 -------------------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
 SEARCH_PARAM         0.3e1
-NUMGP_PER_DIM        3
+NUMGP_PER_DIM        7
 PARALLEL_REDIST      none
 LM_SHAPEFCN          std
 ----------------------------------------------------------SOLVER 1
@@ -426,8 +427,8 @@ NODE       150 COORD  5.0000000000000000e+00  5.0000000000000000e+00 -1.40000000
 ---------------------------------------------------CELLSCATRA ELEMENTS
 
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE 1.58950669889470087e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 124 QUANTITY dispy VALUE -1.67003276442682209e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 124 QUANTITY dispz VALUE -1.18911300774955084e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE 1.68786358678906043e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispy VALUE -1.79756659108649551e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispz VALUE -1.21518134433872188e-01 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END

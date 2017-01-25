@@ -21,6 +21,10 @@
 #include "../drt_fluid_ele/fluid_ele_boundary_parent_calc.H"
 #include "../drt_contact/contact_nitsche_utils.H"
 
+#include "../drt_so3/so_surface.H"
+#include <Teuchos_RCP.hpp>
+
+
 
 MORTAR::MortarElementType MORTAR::MortarElementType::instance_;
 
@@ -232,7 +236,7 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,static_cast<int>(physicaltype_));
 
   // mesh size
-  AddtoPack(data,traceH_);
+  AddtoPack(data,traceHE_);
 
   return;
 }
@@ -295,7 +299,7 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
   physicaltype_ = (PhysicalType)(ExtractInt(position,data));
 
   // mesh size
-  traceH_ = ExtractDouble(position,data);
+  traceHE_ = ExtractDouble(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -1838,26 +1842,38 @@ void MORTAR::MortarElement::NodeLinearization(std::vector<std::vector<GEN::paire
 }
 
 /*----------------------------------------------------------------------*
- |                                                           seitz 10/16|
+ |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalue(
-    Teuchos::RCP<DRT::FaceElement> faceele,
-    DRT::Discretization& discret)
+void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalueCombined()
 {
-  Teuchos::ParameterList params;
-  std::vector<int> lm(0);
-  Teuchos::RCP<std::map<int,double> > ele_to_max_eigenvalue =  Teuchos::rcp(new std::map<int,double> ());
-  params.set<Teuchos::RCP<std::map<int,double > > >("trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue);
-  Epetra_SerialDenseMatrix      elemat;
-  Epetra_SerialDenseVector      elevec;
-  DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(&*faceele)->EstimateNitscheTraceMaxEigenvalue(
-      &*faceele,
-      params,
-      discret,
-      lm,
-      elemat,
-      elevec);
-  traceH_= 1./ele_to_max_eigenvalue->at(faceele->Id());
+  if (ParentElement()->Faces()==NULL)
+  {
+    if (Dim()==3)
+      ParentElement()->SetFace(FaceParentNumber(),Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ParentElement()->Surfaces()[FaceParentNumber()]));
+    else if (Dim()==2)
+      ParentElement()->SetFace(FaceParentNumber(),Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ParentElement()->Lines()[FaceParentNumber()]));
+    else
+      dserror("unknown dimension");
+  }
+  if (ParentElement()->Faces()[FaceParentNumber()]==Teuchos::null)
+  {
+    if (Dim()==3)
+      ParentElement()->SetFace(FaceParentNumber(),Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ParentElement()->Surfaces()[FaceParentNumber()]));
+    else if (Dim()==2)
+      ParentElement()->SetFace(FaceParentNumber(),Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ParentElement()->Lines()[FaceParentNumber()]));
+    else
+      dserror("unknown dimension");
+  }
+
+  double maxeigenvalue = 0.;
+  if (Dim()==3)
+    maxeigenvalue = dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(
+        ParentElement()->Faces()[FaceParentNumber()].get())
+        ->EstimateNitscheTraceMaxEigenvalueCombined(MoData().ParentDisp());
+  else
+    dserror("not implemented for this spatial dimension");
+
+  traceHE_=1./maxeigenvalue;
 }
 
 

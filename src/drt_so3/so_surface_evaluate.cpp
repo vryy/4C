@@ -502,7 +502,8 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(std::vector<double>& n
 
   // compute dXYZ / drs
   LINALG::SerialDenseMatrix dxyzdrs(2,3);
-  dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
+  if (dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0))
+    dserror("multiply failed");
 
   normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
   normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
@@ -522,7 +523,8 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA,
 
   // compute dXYZ / drs
   LINALG::SerialDenseMatrix dxyzdrs(2,3);
-  dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
+  if (dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0))
+    dserror("multiply failed");
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |

@@ -973,6 +973,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_shw6_input.cpp
   src/drt_so3/so_surface.cpp
   src/drt_so3/so_surface_evaluate.cpp
+  src/drt_so3/so_surface_traceestimate.cpp
   src/drt_so3/so_tet10.cpp
   src/drt_so3/so_tet10_evaluate.cpp
   src/drt_so3/so_tet10_input.cpp

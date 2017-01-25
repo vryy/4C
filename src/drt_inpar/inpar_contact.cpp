@@ -240,6 +240,10 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       &scontact
       );
 
+  setStringToIntegralParameter<int>("NITSCHE_PENALTY_ADAPTIVE","yes",
+      "adapt penalty parameter after each converged time step",
+      yesnotuple,yesnovalue,&scontact);
+
 }
 
 

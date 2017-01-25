@@ -375,22 +375,18 @@ public:
   /// evaluate Cauchy stress at given point in parameter space
   virtual void GetCauchyAtXi(
       const LINALG::Matrix<3,1>& xi,
-      std::vector<double>& disp,
-      LINALG::Matrix<3,1> n,
-      double& sigma_nn,
-      Epetra_SerialDenseMatrix& dsnndd,
-      Epetra_SerialDenseMatrix& d2snndd2,
-      Epetra_SerialDenseMatrix& d2snnDdDn,
-      Epetra_SerialDenseMatrix& d2snnDdDpxi,
-      LINALG::Matrix<3,1>& dsnndn,
-      LINALG::Matrix<3,1>& dsnndpxi);
-
-  /// evaluate Cauchy stress at given point in parameter space
-  virtual void GetCauchyAtXi(const LINALG::Matrix<3,1>& xi,
-      std::vector<double>& disp,
-      LINALG::Matrix<3,3>& cauchy,
-      Epetra_SerialDenseMatrix& dsdd,
-      LINALG::Matrix<6,3>& dspxi);
+      const std::vector<double>& disp,
+      const LINALG::Matrix<3,1>& n,
+      const LINALG::Matrix<3,1>& t,
+      double& sigma_nt,
+      Epetra_SerialDenseMatrix* dsntdd,
+      Epetra_SerialDenseMatrix* d2sntdd2,
+      Epetra_SerialDenseMatrix* d2sntDdDn,
+      Epetra_SerialDenseMatrix* d2sntDdDt,
+      Epetra_SerialDenseMatrix* d2sntDdDpxi,
+      LINALG::Matrix<3,1>* dsntdn,
+      LINALG::Matrix<3,1>* dsntdt,
+      LINALG::Matrix<3,1>* dsntdpxi);
 
   //@}
 

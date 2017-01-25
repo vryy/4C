@@ -117,7 +117,6 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
     dserror("dimension inconsistency");
 
     double pen = ppn_;
-    pen/=std::min(dynamic_cast<CONTACT::CoElement&>(sele).TraceH(),dynamic_cast<CONTACT::CoElement&>(mele).TraceH());
 
   if (stype_==INPAR::CONTACT::solution_nitsche)
   {
@@ -151,15 +150,20 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
     double wm=0.;
     switch(nit_wgt_)
     {
-    case INPAR::CONTACT::NitWgt_slave : ws=1.;wm=0.;break;
-    case INPAR::CONTACT::NitWgt_master: ws=0.;wm=1.;break;
+    case INPAR::CONTACT::NitWgt_slave :
+      ws=1.;wm=0.;
+      pen/=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
+      break;
+    case INPAR::CONTACT::NitWgt_master:
+      ws=0.;wm=1.;
+      pen/=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      break;
     case INPAR::CONTACT::NitWgt_harmonic:
-      ws=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceH()
-      *mmat->GetYoung();
-      wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceH()
-            *smat->GetYoung();
+      ws=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
       ws/=(ws+wm);
       wm=1.-ws;
+      pen/=ws*dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
       break;
     default: dserror("unknown Nitsche weighting"); break;
     }
@@ -169,7 +173,7 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
 
     if (gap+cauchy_nn_weighted_average/pen>=0.)
     {
-      if (abs(theta_)>1.e-12)
+       if (abs(theta_)>1.e-12)
         IntegrateNormalAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
       if (abs(theta_)>1.e-12)
         IntegrateNormalAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
@@ -281,8 +285,10 @@ void CONTACT::CoIntegratorNitsche::SoEleCauchy(
   Epetra_SerialDenseMatrix dsnndd , d2snndd2 , d2snnDdDn, d2snnDdDpxi;
   LINALG::Matrix<dim,1> dsnndn,dsnndpxi;
   dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())->GetCauchyAtXi(
-      pxsi,moEle.MoData().ParentDisp(),normal,sigma_nn,dsnndd,d2snndd2,d2snnDdDn,d2snnDdDpxi,dsnndn,dsnndpxi
+      pxsi,moEle.MoData().ParentDisp(),normal,normal,sigma_nn,&dsnndd,&d2snndd2,&d2snnDdDn,NULL,&d2snnDdDpxi,&dsnndn,NULL,&dsnndpxi
       );
+  d2snnDdDn.Scale(2.);
+  dsnndn.Scale(2.);
 
   cauchy_nn += w*sigma_nn;
 

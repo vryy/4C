@@ -885,18 +885,16 @@ public:
   PhysicalType& PhysType(){return physicaltype_;};
 
   /*!
-  \brief Estimate mesh size parameter h via Eigenvalues of the trace inequality.
+  \brief Estimate mesh size and stiffness parameter h/E via Eigenvalues of the trace inequality.
          For Nitsche contact formulations
     */
-  virtual void EstimateNitscheTraceMaxEigenvalue(
-      Teuchos::RCP<DRT::FaceElement> faceele,
-      DRT::Discretization& discret);
+  void EstimateNitscheTraceMaxEigenvalueCombined();
 
   /*!
-  \brief Estimated mesh size parameter h via Eigenvalues of the trace inequality.
+  \brief Estimated mesh size and stiffness parameter h/E via Eigenvalues of the trace inequality.
          For Nitsche contact formulations
     */
-  virtual double& TraceH() {return traceH_;}
+  virtual double& TraceHE() {return traceHE_;}
 
   /*!
   \brief Get Nitsche data container
@@ -924,8 +922,8 @@ protected:
   //h.Willmann
   PhysicalType                                  physicaltype_; //physical type
 
-  // approximation of mesh size from inverse trace inequality
-  double traceH_;
+  // approximation of mesh size and stiffness from inverse trace inequality (h/E)
+  double traceHE_;
 
   // data container for element matrices in Nitsche contact
   Teuchos::RCP<MORTAR::MortarElementNitscheContainer> nitsche_container_;

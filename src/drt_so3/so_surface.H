@@ -18,6 +18,7 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_node.H"
 
 
@@ -206,6 +207,10 @@ public:
                        Epetra_SerialDenseVector& elevector1,
                        Epetra_SerialDenseVector& elevector2,
                        Epetra_SerialDenseVector& elevector3);
+
+  //! Evaluate trace inequality and return the maximal eigenvalue
+  virtual double EstimateNitscheTraceMaxEigenvalueCombined(
+      std::vector<double>& parent_disp);
 
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::Element* ParentElement() const
@@ -424,6 +429,64 @@ private:
 
   //! Set Gaussrule dependent on shape of the structural surface
   void SetGaussrule();
+
+
+  /// @name private methods for calculation of trace inequality matrices
+  //@{
+
+  //! Templated version: parent and surface discretization type
+  template<
+  DRT::Element::DiscretizationType dt_vol,
+  DRT::Element::DiscretizationType dt_surf>
+  double EstimateNitscheTraceMaxEigenvalueCombined(
+        std::vector<double>& parent_disp);
+
+  //! the volume stiffness matrix
+  //! unlike the "full" stiffness matrix we don't use the geometric term here
+  template<DRT::Element::DiscretizationType dt_vol>
+  void TraceEstimateVolMatrix(
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xrefe,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xcurr,
+      LINALG::Matrix<
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3,
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3>& vol);
+
+  //! the surface stiffness matrix
+  template<
+  DRT::Element::DiscretizationType dt_vol,
+  DRT::Element::DiscretizationType dt_surf>
+  void TraceEstimateSurfMatrix(
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xrefe,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xcurr,
+      LINALG::Matrix<
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3,
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3>& surf);
+
+  //! evaluate the kinematics
+  template<DRT::Element::DiscretizationType dt_vol>
+  void Strains(
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xrefe,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xcurr,
+      const LINALG::Matrix<3,1>& xi,
+      double& jac,
+      LINALG::Matrix<3,3>& defgrd,
+      LINALG::Matrix<6,1>& glstrain,
+      LINALG::Matrix<3,3>& rcg,
+      LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3>& bop);
+
+
+  //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
+  template<DRT::Element::DiscretizationType dt_vol>
+  void SubspaceProjector(
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xcurr,
+      LINALG::Matrix<
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*DRT::UTILS::DisTypeToDim<dt_vol>::dim,
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*DRT::UTILS::DisTypeToDim<dt_vol>::dim-
+      DRT::UTILS::DisTypeToDim<dt_vol>::dim*(DRT::UTILS::DisTypeToDim<dt_vol>::dim+1)/2
+      >& proj);
+
+  //@}
+
 }; // class StructuralSurface : public DRT::Element
 
 

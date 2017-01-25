@@ -93,6 +93,9 @@ void CONTACT::CoNitscheStrategy::DoReadRestart(
   for (int i = 0; i < (int) interface_.size(); ++i)
     interface_[i]->Initialize();
 
+  if (DRT::INPUT::IntegralValue<int>(Params(),"NITSCHE_PENALTY_ADAPTIVE"))
+    UpdateTraceIneqEtimates();
+
   return;
 }
 
@@ -265,6 +268,41 @@ void CONTACT::CoNitscheStrategy::Setup(bool redistributed, bool init)
 {
   if (isselfcontact_)
     dserror("no self contact with Nitsche yet");
-  // no data structure for the Strategy needs to be set up
 }
 
+void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
+{
+  INPAR::CONTACT::NitscheWeighting NitWgt =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(),"NITSCHE_WEIGHTING");
+  for (int i=0;i<(int)interface_.size();++i)
+    for (int e=0;e<interface_[i]->Discret().ElementColMap()->NumMyElements();++e)
+    {
+      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(
+          interface_[i]->Discret().gElement(
+              interface_[i]->Discret().ElementColMap()->GID(e)));
+      if (NitWgt==INPAR::CONTACT::NitWgt_slave && mele->IsSlave()==false)
+        continue;
+      if (NitWgt==INPAR::CONTACT::NitWgt_master && mele->IsSlave()==true)
+        continue;
+      mele->EstimateNitscheTraceMaxEigenvalueCombined();
+    }
+  return;
+}
+
+void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
+{
+  if (DRT::INPUT::IntegralValue<int>(Params(),"NITSCHE_PENALTY_ADAPTIVE"))
+  {
+    SetState(MORTAR::state_new_displacement,*dis);
+    UpdateTraceIneqEtimates();
+  }
+
+  return;
+}
+
+void CONTACT::CoNitscheStrategy::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
+{
+  SetState(MORTAR::state_new_displacement,*dis);
+  UpdateTraceIneqEtimates();
+  return;
+}

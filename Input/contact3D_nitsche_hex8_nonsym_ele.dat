@@ -35,7 +35,7 @@ DYNAMICTYP   Statics
 RESULTSEVRY  1
 RESTARTEVRY  1
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP     0.2
+TIMESTEP     0.3
 NUMSTEP      2
 MAXTIME      1.0
 TOLRES       1.0E-6
@@ -47,10 +47,11 @@ MAXITER      700
 MINITER      0
 PREDICT     TangDis
 -------------------------------------------------------------CONTACT DYNAMIC
-LINEAR_SOLVER        2
-STRATEGY             Nitsche
-PENALTYPARAM         2
-NITSCHE_THETA        0.0
+LINEAR_SOLVER             2
+STRATEGY                  Nitsche
+PENALTYPARAM              2
+NITSCHE_THETA             0.0
+NITSCHE_PENALTY_ADAPTIVE  yes
 -------------------------------------------------------------MORTAR COUPLING
 ALGORITHM            gpts
 SEARCH_PARAM         0.3e1
@@ -426,8 +427,8 @@ NODE       150 COORD  5.0000000000000000e+00  5.0000000000000000e+00 -1.40000000
 ---------------------------------------------------CELLSCATRA ELEMENTS
 
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE 1.63963115915731548e-03  TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 124 QUANTITY dispy VALUE -1.66897582724057363e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 124 QUANTITY dispz VALUE -1.16489808750119522e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE 1.29790077499955126e-02  TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispy VALUE -1.30272809181390756e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispz VALUE -2.38214925864396576e-01 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END
