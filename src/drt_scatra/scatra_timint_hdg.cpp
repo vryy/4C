@@ -810,8 +810,8 @@ void SCATRA::TimIntHDG::PrepareTimeLoop()
   // Output of non-zeros in system matrix
   if(step_==0 and discret_->Comm().MyPID()==0)
   {
-    int nummynonzeros = SystemMatrix()->EpetraMatrix()->NumMyNonzeros();
-    std::cout << "Number of non-zeros in system matrix: " <<  nummynonzeros << std::endl;
+    int numglobalnonzeros = SystemMatrix()->EpetraMatrix()->NumGlobalNonzeros();
+    std::cout << "Number of non-zeros in system matrix: " <<  numglobalnonzeros << std::endl;
   }
 
   return;

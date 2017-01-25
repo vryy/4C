@@ -120,7 +120,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::PrepareM
       for (unsigned int j=0; j<this->nsd_; ++j)
         difftensortmp(i,j) = diff(i,j);
     (*difftensor).push_back(difftensortmp);
-    if (DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode* > (ele->Nodes()[0]))
+    DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode* > (ele->Nodes()[0]);
+    if (fnode)
       dserror("Fiber direction defined twice (nodes and elements)");
   }
   else
