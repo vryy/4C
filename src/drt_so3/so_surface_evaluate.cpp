@@ -2436,12 +2436,15 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
           for (int dim2=0; dim2<numdf; dim2++)
             N_otimes_N(node*numdf+dim1,node*numdf+dim2) = elevector2[node*numdf+dim1]*elevector2[node*numdf+dim2];
 
+      // displacement offset, only take the first one and use this as the one in refsurfnormal
+      const double ref_disploff = (*disploffset)[0];
+
       // (N \otimes N) disp, (N \otimes N) velo
       for (int node=0; node<numnode; ++node)
         for (int dim1=0; dim1<numdim; dim1++)
           for (int dim2=0; dim2<numdim; dim2++)
           {
-            mydisp_refnormal[node*numdf+dim1] += N_otimes_N(node*numdf+dim1,node*numdf+dim2) * mydisp[node*numdf+dim2];
+            mydisp_refnormal[node*numdf+dim1] += N_otimes_N(node*numdf+dim1,node*numdf+dim2) * (mydisp[node*numdf+dim2] - ref_disploff);
             myvelo_refnormal[node*numdf+dim1] += N_otimes_N(node*numdf+dim1,node*numdf+dim2) * myvelo[node*numdf+dim2];
             myoffprestr_refnormal[node*numdf+dim1] += N_otimes_N(node*numdf+dim1,node*numdf+dim2) * myoffprestr[node*numdf+dim2];
           }
@@ -2539,7 +2542,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
         const double ref_stiff = (*springstiff)[0];
         const double ref_visco = (*dashpotvisc)[0];
-        const double ref_disploff = (*disploffset)[0];
 
         const double fac_d = intpoints.qwgt[gp] * detA * ref_stiff;
         const double fac_v = intpoints.qwgt[gp] * detA * ref_visco;
@@ -2559,7 +2561,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
           for (int node=0; node<numnode; ++node)
             elevector1[node*numdf+dim] +=
-                funct[node] * (fac_d * (dispnp_refnormal_gp-ref_disploff+offprestrn_refnormal_gp) + fac_v * velonp_refnormal_gp);
+                funct[node] * (fac_d * (dispnp_refnormal_gp+offprestrn_refnormal_gp) + fac_v * velonp_refnormal_gp);
         }
 
         for (int dim1=0 ; dim1<numdim; dim1++)
