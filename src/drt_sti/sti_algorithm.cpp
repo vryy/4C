@@ -455,6 +455,214 @@ void STI::Algorithm::Output()
 }
 
 
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------*
+ | output matrix to *.csv file for debugging purposes, with global row and column IDs of matrix components in ascending order across all processors   fang 01/17 |
+ *---------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+void STI::Algorithm::OutputMatrixToFile(
+    const Teuchos::RCP<const LINALG::SparseOperator>   sparseoperator,   //!< sparse or block sparse matrix to be output
+    const int                                          precision,        //!< output precision
+    const double                                       tolerance         //!< output omission tolerance
+    )
+{
+  // safety check
+  if(!sparseoperator->Filled())
+    dserror("Sparse operator must be filled for output!");
+
+  // extract communicator
+  const Epetra_Comm& comm = sparseoperator->Comm();
+
+  // determine whether sparse matrix or block sparse matrix should be output
+  const Teuchos::RCP<const LINALG::SparseMatrix> sparsematrix = Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(sparseoperator);
+  const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blocksparsematrix = Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(sparseoperator);
+  if(sparsematrix == Teuchos::null and blocksparsematrix == Teuchos::null)
+    dserror("Unknown type of sparse operator!");
+
+  // extract row map
+  const Epetra_Map& rowmap = sparsematrix != Teuchos::null ? sparsematrix->RowMap() : blocksparsematrix->FullRowMap();
+
+  // safety check
+  if(!rowmap.UniqueGIDs())
+    dserror("Row map of matrix must be non-overlapping!");
+
+  // copy global IDs of matrix rows stored on current processor into vector
+  std::vector<int> myrowgids(rowmap.NumMyElements(),0);
+  int* myglobalelements = rowmap.MyGlobalElements();
+  std::copy(myglobalelements,myglobalelements+rowmap.NumMyElements(),&myrowgids[0]);
+
+  // communicate global IDs
+  std::vector<int> rowgids(0,0);
+  LINALG::AllreduceVector(myrowgids,rowgids,comm);
+
+  // retain communicated global IDs only on processor with ID 0
+  if(comm.MyPID())
+    rowgids.clear();
+
+  // create full row map on processor with ID 0
+  const Epetra_Map fullrowmap(-1,rowgids.size(),rowgids.size() ? &rowgids[0] : NULL,0,comm);
+
+  // import matrix to processor with ID 0
+  Epetra_CrsMatrix crsmatrix(Copy,fullrowmap,0);
+  if(sparsematrix != Teuchos::null)
+  {
+    if(crsmatrix.Import(*sparsematrix->EpetraMatrix(),Epetra_Import(fullrowmap,rowmap),Insert))
+      dserror("Matrix import failed!");
+  }
+  else
+  {
+    for(int i=0; i<blocksparsematrix->Rows(); ++i)
+      for(int j=0; j<blocksparsematrix->Cols(); ++j)
+        if(crsmatrix.Import(*blocksparsematrix->Matrix(i,j).EpetraMatrix(),Epetra_Import(fullrowmap,blocksparsematrix->RangeMap(i)),Insert))
+          dserror("Matrix import failed!");
+  }
+
+  // let processor with ID 0 output matrix to file
+  if(comm.MyPID() == 0)
+  {
+    // set file name
+    std::ostringstream nproc;
+    nproc << comm.NumProc();
+    const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".matrix_"+nproc.str()+"proc.csv");
+
+    // open file and write header at beginning
+    std::ofstream file;
+    file.open(filename.c_str(),std::fstream::trunc);
+    file << std::setprecision(precision) << std::scientific << "RowGIDs,ColumnGIDs,Values" << std::endl;
+
+    // write matrix to file
+    for(int rowlid=0; rowlid<crsmatrix.NumMyRows(); ++rowlid)
+    {
+      // extract global ID of current matrix row
+      const int rowgid = fullrowmap.GID(rowlid);
+
+      // extract current matrix row
+      int numentries;
+      double* values;
+      int* indices;
+      if(crsmatrix.ExtractGlobalRowView(rowgid,numentries,values,indices))
+        dserror("Cannot extract matrix row with global ID %d!",rowgid);
+
+      // sort entries in current matrix row in ascending order of column global ID via map
+      std::map<int,double> entries;
+
+      // loop over all entries in current matrix row
+      for(int j=0; j<numentries; ++j)
+        // add current matrix entry to map
+        entries[indices[j]] = values[j];
+
+      // loop over all sorted entries in current matrix row
+      for(std::map<int,double>::iterator j=entries.begin(); j!=entries.end(); ++j)
+        // write current matrix entry to file
+        if(std::abs(j->second) > tolerance)
+          file << rowgid << "," << j->first << "," << j->second << std::endl;
+    }
+
+    // close file
+    file.close();
+  }
+
+  // wait until output is complete
+  comm.Barrier();
+
+  // throw error to abort simulation for debugging
+  dserror("Matrix was output to *.csv file!");
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------*
+ | output vector to *.csv file for debugging purposes, with global IDs of vector components in ascending order across all processors   fang 01/17 |
+ *------------------------------------------------------------------------------------------------------------------------------------------------*/
+void STI::Algorithm::OutputVectorToFile(
+    const Epetra_MultiVector&   vector,      //!< vector to be output
+    const int                   precision,   //!< output precision
+    const double                tolerance    //!< output omission tolerance
+    )
+{
+  // extract communicator
+  const Epetra_Comm& comm = vector.Comm();
+
+  // extract vector map
+  const Epetra_BlockMap& map = vector.Map();
+
+  // safety check
+  if(!map.UniqueGIDs())
+    dserror("Vector output to *.csv file currently only works for non-overlapping vector maps!");
+
+  // copy global IDs of vector components stored on current processor into vector
+  std::vector<int> mygids(map.NumMyElements(),0);
+  int* myglobalelements = map.MyGlobalElements();
+  std::copy(myglobalelements,myglobalelements+map.NumMyElements(),&mygids[0]);
+
+  // communicate global IDs
+  std::vector<int> gids(0,0);
+  LINALG::AllreduceVector(mygids,gids,comm);
+
+  // retain communicated global IDs only on processor with ID 0
+  if(comm.MyPID())
+    gids.clear();
+
+  // create full vector map on processor with ID 0
+  const Epetra_Map fullmap(-1,gids.size(),gids.size() ? &gids[0] : NULL,0,comm);
+
+  // export vector to processor with ID 0
+  Epetra_MultiVector fullvector(fullmap,vector.NumVectors(),true);
+  LINALG::Export(vector,fullvector);
+
+  // let processor with ID 0 output vector to file
+  if(comm.MyPID() == 0)
+  {
+    // set file name
+    std::ostringstream nproc;
+    nproc << comm.NumProc();
+    const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".vector_"+nproc.str()+"proc.csv");
+
+    // open file and write header at beginning
+    std::ofstream file;
+    file.open(filename.c_str(),std::fstream::trunc);
+    file << std::setprecision(precision) << std::scientific << "GIDs,Values" << std::endl;
+
+    // write vector to file
+    for(int lid=0; lid<fullvector.MyLength(); ++lid)
+    {
+      // inner loop index
+      int j(-1);
+
+      // check output omission tolerance
+      for(j=0; j<fullvector.NumVectors(); ++j)
+        if(std::abs(fullvector[j][lid]) > tolerance)
+          break;
+
+      // perform output if applicable
+      if(j<fullvector.NumVectors())
+      {
+        // write global ID of current vector component
+        file << fullmap.GID(lid);
+
+        // loop over all subvectors
+        for(j=0; j<fullvector.NumVectors(); ++j)
+          // write current vector component to file
+          file << "," << fullvector[j][lid];
+
+        // output line break
+        file << std::endl;
+      }
+    }
+
+    // close file
+    file.close();
+  }
+
+  // wait until output is complete
+  comm.Barrier();
+
+  // throw error to abort simulation for debugging
+  dserror("Vector was output to *.csv file!");
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | prepare time step                                         fang 04/15 |
  *----------------------------------------------------------------------*/

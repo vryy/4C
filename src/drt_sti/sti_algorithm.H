@@ -23,6 +23,7 @@
 
 // forward declarations
 class Epetra_Map;
+class Epetra_MultiVector;
 class Epetra_Time;
 class Epetra_Vector;
 
@@ -72,6 +73,20 @@ namespace STI
 
       //! return counter for Newton-Raphson iterations
       const unsigned& Iter() const {return iter_;};
+
+      //! output matrix to *.csv file for debugging purposes, with global row and column IDs of matrix components in ascending order across all processors
+      static void OutputMatrixToFile(
+          const Teuchos::RCP<const LINALG::SparseOperator>   sparseoperator,   //!< sparse or block sparse matrix to be output
+          const int                                          precision = 16,   //!< output precision
+          const double                                       tolerance = -1.   //!< output omission tolerance
+          );
+
+      //! output vector to *.csv file for debugging purposes, with global IDs of vector components in ascending order across all processors
+      static void OutputVectorToFile(
+          const Epetra_MultiVector&   vector,           //!< vector to be output
+          const int                   precision = 16,   //!< output precision
+          const double                tolerance = -1.   //!< output omission tolerance
+          );
 
       //! read restart data
       void ReadRestart(
