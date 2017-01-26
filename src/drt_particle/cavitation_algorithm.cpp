@@ -930,7 +930,7 @@ void CAVITATION::Algorithm::InitCavitation()
     InitBubbleVelFromFluidVel();
 
   // determine consistent initial acceleration for the particles
-  CalculateAndApplyForcesToParticles(true);
+  particles_->UpdateExtActions(true);
   particles_->DetermineMassDampConsistAccel();
 
   if(computeradiusRPbased_ == true)
@@ -1749,7 +1749,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
       (*bubbleforces)[i*dim_+2] = 0.0;
   }
 
-  particles_->SetExternalDerivativeChangers(bubbleforces);
+  particles_->WriteAccessFifc()->Update(1.0, *bubbleforces, 0.0);
 
   // leave here because nothing to add to fluid in certain cases
   if( not timeforcalcfluidforces || coupalgo_ == INPAR::CAVITATION::OneWay || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)

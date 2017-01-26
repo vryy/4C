@@ -68,6 +68,10 @@ namespace PARTICLE
     //! Do time integration of single step
     virtual int IntegrateStep();
 
+    //! Equilibrate the initial state by identifying the consistent
+    //! initial accelerations (overload)
+    virtual void DetermineMassDampConsistAccel();
+
     //@}
 
   private:

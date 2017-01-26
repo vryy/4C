@@ -166,6 +166,8 @@ namespace PARTICLE
     /// set up walls
     virtual void SetUpWallDiscret();
 
+    inline virtual void CalculateAndApplyForcesToParticles(bool init) { ; };
+
   protected:
 
     /// prepare time step
@@ -173,12 +175,6 @@ namespace PARTICLE
 
     /// solve the current particle time step
     virtual void Integrate();
-
-    /// force on particles is calculated and applied
-    virtual void CalculateAndApplyForcesToParticles(bool init = false);
-
-    /// accelerations on particleMeshFree are calculated and applied
-    virtual void CalculateAndApplyAccelerationsToParticles(bool init = false);
 
     /// update the current time step
     virtual void Update();

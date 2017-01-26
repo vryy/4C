@@ -68,6 +68,9 @@ namespace PARTICLE
     //! overload to determine the initial accelerations
     virtual void DetermineMassDampConsistAccel();
 
+    //! State vectors are updated according to the new distribution of particles (overload)
+    virtual void UpdateStatesAfterParticleTransfer();
+
     //! Read and set restart state
     virtual void ReadRestartState();
 
@@ -83,10 +86,13 @@ namespace PARTICLE
     virtual void CalcCoeff();
 
     //! Evaluate mid-state vectors by averaging end-point vectors
-    virtual void EvaluateMidState();
+    virtual void MidState();
 
     //! Evaluate new-state vectors by Newmark's formulae
-    virtual void EvaluateNewState(const bool disAreEqual = false);
+    virtual void NewState(const bool disAreEqual = false);
+
+    //! Evaluate the residual (acceleration)
+    virtual void ResidualAcc();
 
     //! Set up the additional state vectors required in the genAlpha algorithm
     virtual void SetupStateVectors();
@@ -118,6 +124,18 @@ namespace PARTICLE
     double alphaf_;  //!< factor [0,1)
     double alpham_;  //!< factor [-1,1)
     double rho_inf_; //!< factor[0,1]
+
+    Teuchos::RCP<Epetra_Vector> mGradW_;
+    //! m * hess(weightFunction) for meshfree methods
+    Teuchos::RCP<Epetra_MultiVector> mHessW_;
+    //! Displacements \f${D}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
+    Teuchos::RCP<Epetra_Vector> dism_;
+    //! Velocities \f${V}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
+    Teuchos::RCP<Epetra_Vector> velm_;
+    //! Accelerations \f${A}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
+    Teuchos::RCP<Epetra_Vector> accm_;
+    //! Acceleration residue \f${R}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
+    Teuchos::RCP<Epetra_Vector> resAcc_;
 
   };  // class TimIntGenAlpha
 

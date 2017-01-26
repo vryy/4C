@@ -38,7 +38,13 @@ PARTICLE::TimIntGenAlpha::TimIntGenAlpha(
   gamma_(particledynparams.sublist("GENALPHA").get<double>("GAMMA")),
   alphaf_(particledynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
   alpham_(particledynparams.sublist("GENALPHA").get<double>("ALPHA_M")),
-  rho_inf_(particledynparams.sublist("GENALPHA").get<double>("RHO_INF"))
+  rho_inf_(particledynparams.sublist("GENALPHA").get<double>("RHO_INF")),
+  mGradW_(Teuchos::null),
+  mHessW_(Teuchos::null),
+  dism_(Teuchos::null),
+  velm_(Teuchos::null),
+  accm_(Teuchos::null),
+  resAcc_(Teuchos::null)
 {
 
   return;
@@ -114,7 +120,7 @@ void PARTICLE::TimIntGenAlpha::DetermineMassDampConsistAccel()
 
 /*----------------------------------------------------------------------*/
 /* evaluate mid-state vectors by averaging end-point vectors */
-void PARTICLE::TimIntGenAlpha::EvaluateMidState()
+void PARTICLE::TimIntGenAlpha::MidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
@@ -194,7 +200,7 @@ void PARTICLE::TimIntGenAlpha::CalcCoeff()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void PARTICLE::TimIntGenAlpha::EvaluateNewState(const bool disAreEqual)
+void PARTICLE::TimIntGenAlpha::NewState(const bool disAreEqual)
 {
   if (disAreEqual)
   {
@@ -248,3 +254,32 @@ void PARTICLE::TimIntGenAlpha::SetupStateVectors()
   resAcc_ = LINALG::CreateVector(*DofRowMapView(), true);
 }
 
+
+/*----------------------------------------------------------------------*/
+/* State vectors are updated according to the new distribution of particles */
+
+void PARTICLE::TimIntGenAlpha::UpdateStatesAfterParticleTransfer()
+{
+  // call base function
+  TimInt::UpdateStatesAfterParticleTransfer();
+
+  UpdateStateVectorMap(mGradW_);
+  UpdateStateVectorMap(mHessW_);
+
+  UpdateStateVectorMap(dism_);
+  UpdateStateVectorMap(velm_);
+  UpdateStateVectorMap(accm_);
+  UpdateStateVectorMap(resAcc_);
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Consistent predictor with constant displacements
+ * and consistent velocities and displacements */
+void PARTICLE::TimIntGenAlpha::ResidualAcc()
+{
+  // reset the residual vector and stuff it with accm;
+  resAcc_->Update(1.0, *accm_, 0.0);
+
+
+}

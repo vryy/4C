@@ -393,8 +393,8 @@ namespace PARTICLE
     //! Extract pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressure() { return pressure_; }
 
-    //! Set forces and dots vector due to interface loads, the force is expected external-force-like
-    virtual void SetExternalDerivativeChangers(Teuchos::RCP<Epetra_MultiVector> iforce);  ///< the force on interface
+    //! Forces \f$F_{n}\f$ or \f$F_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessFifc() { return fifc_; }
 
     //@}
 
@@ -425,6 +425,13 @@ namespace PARTICLE
 
     //! Get time step size \f$\Delta t_n\f$
     virtual double Dt() const { return (*dt_)[0]; }
+
+    //! overloadable function to apply external actions (i.e. forces, accelerations, etc) and to erase outdated vectors
+    virtual void UpdateExtActions(bool init = false);
+
+    virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector);
+
+    virtual void GravityAcc(Teuchos::RCP<Epetra_Vector> stateVector);
 
     //@}
 
@@ -589,18 +596,6 @@ namespace PARTICLE
     //! Pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> pressure_;
     //! m * grad(weightFunction) for meshfree methods
-    Teuchos::RCP<Epetra_Vector> mGradW_;
-    //! m * hess(weightFunction) for meshfree methods
-    Teuchos::RCP<Epetra_MultiVector> mHessW_;
-    //! Displacements \f${D}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
-    Teuchos::RCP<Epetra_Vector> dism_;
-    //! Velocities \f${V}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
-    Teuchos::RCP<Epetra_Vector> velm_;
-    //! Accelerations \f${A}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
-    Teuchos::RCP<Epetra_Vector> accm_;
-    //! Acceleration residue \f${R}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
-    Teuchos::RCP<Epetra_Vector> resAcc_;
-
 
     //! rest density for meshFree-pressure dynamics
     double restDensity_;
@@ -621,9 +616,6 @@ namespace PARTICLE
     //@{
 
     const bool variableradius_;   //!< bool to control whether radius is constant or variable
-
-    /// trigger for warm starts (if it makes sense)
-    bool trg_warmStart_;
 
     //@}
 

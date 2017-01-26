@@ -93,9 +93,6 @@ namespace ADAPTER
     //! output results
     virtual void OutputStep(bool forced_writerestart = false) = 0;
 
-    /// apply interface loads
-    virtual void SetExternalDerivativeChangers(Teuchos::RCP<Epetra_MultiVector> iforce) = 0;
-
     //! State vectors are updated according to the new distribution of particles
     virtual void UpdateStatesAfterParticleTransfer() = 0;
 
@@ -285,6 +282,9 @@ namespace ADAPTER
     //! Extract pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressure() = 0;
 
+    //! Forces \f$F_{n}\f$ or \f$F_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessFifc() = 0;
+
     //@}
 
     //! @name Time step helpers
@@ -307,6 +307,13 @@ namespace ADAPTER
 
     /// Get time step size \f$\Delta t_n\f$
     virtual double Dt() const = 0;
+
+    //! overloadable function to apply external actions (i.e. forces, accelerations, etc) and to erase outdated vectors
+    virtual void UpdateExtActions(bool init = false) = 0;
+
+    virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector) = 0;
+
+    virtual void GravityAcc(Teuchos::RCP<Epetra_Vector> stateVector)= 0;
 
     //@}
 

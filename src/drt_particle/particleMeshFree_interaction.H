@@ -148,40 +148,59 @@ namespace PARTICLE
     //@{
 
     /// compute the density part of the particle vs particle interactions
-    virtual void Inter_pvp_densityDot(const Teuchos::RCP<Epetra_Vector> densityDotn);
+    virtual void Inter_pvp_densityDot(
+        const Teuchos::RCP<Epetra_Vector> densityDotn,
+        const double extMulti = 1.0);
 
     /// compute the momentum part of the particle vs particle interactions
-    virtual void Inter_pvp_acc(const Teuchos::RCP<Epetra_Vector> accn, const bool clcPressure = true);
+    virtual void Inter_pvp_acc(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        const double extMulti = 1.0,
+        const bool clcPressure = true);
 
     /// compute the heat of the particle vs particle interactions
-    virtual void Inter_pvp_specEnthalpyDot(const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
+    virtual void Inter_pvp_specEnthalpyDot(
+        const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
+        const double extMulti = 1.0);
 
     /// compute the colorFieldGradient of the particle vs particle interactions
-    virtual void Inter_pvp_colorFieldGradient(const Teuchos::RCP<Epetra_Vector> colorFieldGradientn);
+    virtual void Inter_pvp_colorFieldGradient(
+        const Teuchos::RCP<Epetra_Vector> colorFieldGradientn,
+        const double extMulti = 1.0);
 
     /// compute the accn from the color field gradient of the particle vs particle interactions
-    virtual void Inter_pvp_surfaceTensionCFG(const Teuchos::RCP<Epetra_Vector> accn);
+    virtual void Inter_pvp_surfaceTensionCFG(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        const double extMulti = 1.0);
 
     /// compute the density part of the particle vs wall interactions
-    virtual void Inter_pvw_densityDot(const Teuchos::RCP<Epetra_Vector> densityDotn);
+    virtual void Inter_pvw_densityDot(
+        const Teuchos::RCP<Epetra_Vector> densityDotn,
+        const double extMulti = 1.0);
 
     /// compute the momentum part of the particle vs wall interactions
-    virtual void Inter_pvw_acc(const Teuchos::RCP<Epetra_Vector> accn);
+    virtual void Inter_pvw_acc(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        const double extMulti = 1.0);
 
     /// compute the heat of the particle vs heat sources interactions
-    virtual void Inter_pvhs_specEnthalpyDot(const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
+    virtual void Inter_pvhs_specEnthalpyDot(
+        const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
+        const double extMulti = 1.0);
 
     /// compute the divergence-free pressure forces adjusting the stiffness parameters
     /// Steps 6 and 7 (only the third term) of Algorithm 2 in http://dx.doi.org/10.1145/2786784.2786796
     virtual void Inter_pvp_divFreePressureAcc(
         const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
-        const double dt);
+        const double dt,
+        const double extMulti = 1.0);
 
     /// compute the constant-density pressure forces adjusting the stiffness parameters
     /// Steps 6 and 7 (only the third term) of Algorithm 3 in http://dx.doi.org/10.1145/2786784.2786796
     virtual void Inter_pvp_constDensityPressureAcc(
         const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
-        const double dt);
+        const double dt,
+        const double extMulti = 1.0);
 
     //@}
 
@@ -189,7 +208,9 @@ namespace PARTICLE
     //@{
 
     /// compute density - mesh free sense
-    virtual void MF_mW(const Teuchos::RCP<Epetra_Vector> densityn);
+    virtual void MF_mW(
+        const Teuchos::RCP<Epetra_Vector> densityn,
+        const double extMulti = 1.0);
 
     /// compute alpha factors and update colParticles - mesh free sense
     // http://dx.doi.org/10.1145/2786784.2786796
@@ -197,7 +218,34 @@ namespace PARTICLE
     virtual void MF_alpha();
 
     /// compute m * gradW - mesh free sense
-    virtual void MF_mGradW(const Teuchos::RCP<Epetra_Vector> densityn);
+    virtual void MF_mGradW(
+        const Teuchos::RCP<Epetra_Vector> densityn,
+        const double extMulti = 1.0);
+
+    //@}
+
+    //! @name mesh free debug tools
+    //@{
+
+    /// template to print neighbours
+    template <typename obj>
+    static void PrintNeighbours(std::vector< boost::unordered_map<int, obj> > neighbours)
+    {
+      std::cout << "\n\n interactions\n\n";
+      //bool trg_interactions = false;
+      for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours.size(); ++lidNodeRow_i)
+      {
+        std::cout << "lid " << lidNodeRow_i << " | ";
+
+        typename boost::unordered_map<int, obj >::const_iterator jj;
+        for (jj = neighbours[lidNodeRow_i].begin(); jj != neighbours[lidNodeRow_i].end(); ++jj)
+        {
+          std::cout << " " << jj->first;
+          //trg_interactions = true;
+        }
+        std::cout << std::endl;
+      }
+    }
 
     //@}
 

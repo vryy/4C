@@ -1010,7 +1010,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(
  | evaluate density - pvp                                  katta 10/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
-    const Teuchos::RCP<Epetra_Vector> densityDotn)
+    const Teuchos::RCP<Epetra_Vector> densityDotn,
+    const double extMulti)
 {
   //checks
   if (densityDotn == Teuchos::null)
@@ -1045,6 +1046,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
         // assemble and write
         LINALG::Matrix<3,1> gradW = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
         double densityDotn_ij = gradW.Dot(vRel_ij) * particle_j.mass_;
+        densityDotn_ij *= extMulti;
         LINALG::Assemble(*densityDotn, densityDotn_ij, particle_i.gid_, particle_i.owner_);
 
       }
@@ -1056,6 +1058,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
         // actio = - reaction twice... no change in sign required (vRel and rRel both change sign)
         LINALG::Matrix<3,1> gradW = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ji_);
         double densityDotn_ji = gradW.Dot(vRel_ij) * particle_i.mass_;
+        densityDotn_ji *= extMulti;
         LINALG::Assemble(*densityDotn, densityDotn_ji, particle_j.gid_, particle_j.owner_);
       }
     }
@@ -1068,6 +1071,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
     const Teuchos::RCP<Epetra_Vector> accn,
+    const double extMulti,
     const bool clcPressure)
 {
   //checks
@@ -1139,6 +1143,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
         // assemble and write
         LINALG::Matrix<3,1> accn_ij;
         accn_ij.Update(generalCoeff_ij, momentum_ij);
+        accn_ij.Scale(extMulti);
         LINALG::Assemble(*accn, accn_ij, particle_i.lm_, particle_i.owner_);
       }
 
@@ -1150,7 +1155,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
         // assemble and write
         LINALG::Matrix<3,1> accn_ji;
         accn_ji.Update(generalCoeff_ji, momentum_ij);
-        accn_ji.Scale(-1.0); // actio = - reactio
+        accn_ji.Scale(-extMulti); // actio = - reactio
         LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
       }
     }
@@ -1162,7 +1167,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
  | evaluate specEnthalpyDot - pvp                          katta 10/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_specEnthalpyDot(
-    const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn)
+    const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
+    const double extMulti)
 {
   //checks
   if (specEnthalpyDotn == Teuchos::null)
@@ -1209,6 +1215,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_specEnthalpyDot(
         // --- specific enthalpy --- //
 
         double specEnthalpyDotn_ij = generalCoeff_ij * divT_rho_ij;
+        specEnthalpyDotn_ij *= extMulti;
         LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDotn_ij, particle_i.gid_, particle_i.owner_);
       }
 
@@ -1219,7 +1226,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_specEnthalpyDot(
         const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
         // assemble and write
         double specEnthalpyDotn_ji = generalCoeff_ji * divT_rho_ij;
-        specEnthalpyDotn_ji *= -1.0; // actio = - reactio
+        specEnthalpyDotn_ji *= -extMulti; // actio = - reactio
         LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDotn_ji, particle_j.gid_, particle_j.owner_);
       }
     }
@@ -1231,7 +1238,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_specEnthalpyDot(
  | evaluate color field gradient - pvp                     katta 10/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_colorFieldGradient(
-    const Teuchos::RCP<Epetra_Vector> colorFieldGradientn)
+    const Teuchos::RCP<Epetra_Vector> colorFieldGradientn,
+    const double extMulti)
 {
   //checks
   if (colorFieldGradientn == Teuchos::null)
@@ -1270,6 +1278,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_colorFieldGradient(
         // assemble and write
         LINALG::Matrix<3,1> colorFieldGradientn_ij;
         colorFieldGradientn_ij.Update(generalCoeff_ij, colorFieldGradientGeneral_ij);
+        colorFieldGradientn_ij.Scale(extMulti);
         LINALG::Assemble(*colorFieldGradientn, colorFieldGradientn_ij, particle_i.lm_, particle_i.owner_);
 
       }
@@ -1282,7 +1291,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_colorFieldGradient(
         // assemble and write
         LINALG::Matrix<3,1> colorFieldGradientn_ji;
         colorFieldGradientn_ji.Update(generalCoeff_ji, colorFieldGradientGeneral_ij);
-        colorFieldGradientn_ji.Scale(-1.0); // actio = - reactio
+        colorFieldGradientn_ji.Scale(-extMulti); // actio = - reactio
         LINALG::Assemble(*colorFieldGradientn, colorFieldGradientn_ji, particle_j.lm_, particle_j.owner_);
       }
     }
@@ -1294,7 +1303,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_colorFieldGradient(
  | evaluate interactions                                   katta 10/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_surfaceTensionCFG(
-  const Teuchos::RCP<Epetra_Vector> accn)
+  const Teuchos::RCP<Epetra_Vector> accn,
+  const double extMulti)
 {
   //checks
   if (accn == Teuchos::null)
@@ -1331,12 +1341,13 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_surfaceTensionCFG(
       // rescaling and assembpling
       LINALG::Matrix<3,1> acc_ij;
       acc_ij.Update(1.0, particle_i.colorFieldGradient_, -1.0, particle_j.colorFieldGradient_);
-      acc_ij.Scale(- densityCorrectiveTerm * surfaceVoidTension_);
+      acc_ij.Scale(- extMulti * densityCorrectiveTerm * surfaceVoidTension_);
+
       LINALG::Assemble(*accn, acc_ij, particle_i.lm_, particle_i.owner_);
 
       // rescaling and assembpling
       LINALG::Matrix<3,1> acc_ji;
-      acc_ji.Update(-1.0,acc_ij); // actio = - reaction
+      acc_ji.Update(-1.0, acc_ij); // actio = - reaction
       LINALG::Assemble(*accn, acc_ji, particle_j.lm_, particle_j.owner_);
     }
   }
@@ -1348,7 +1359,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_surfaceTensionCFG(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_divFreePressureAcc(
     const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
-    const double dt)
+    const double dt,
+    const double extMulti)
 {
   //checks
   if (divFreePressureAcc == Teuchos::null)
@@ -1393,6 +1405,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_divFreePressureAcc(
         // assemble and write
         LINALG::Matrix<3,1> accn_ij;
         accn_ij.Update(generalCoeff_ij, momentum_ij);
+        accn_ij.Scale(extMulti);
         LINALG::Assemble(*divFreePressureAcc, accn_ij, particle_i.lm_, particle_i.owner_);
       }
 
@@ -1404,7 +1417,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_divFreePressureAcc(
         // assemble and write
         LINALG::Matrix<3,1> accn_ji;
         accn_ji.Update(generalCoeff_ji, momentum_ij);
-        accn_ji.Scale(-1.0); // actio = - reactio
+        accn_ji.Scale(-extMulti); // actio = - reactio
         LINALG::Assemble(*divFreePressureAcc, accn_ji, particle_j.lm_, particle_j.owner_);
       }
     }
@@ -1417,7 +1430,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_divFreePressureAcc(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_constDensityPressureAcc(
     const Teuchos::RCP<Epetra_Vector> constDensityPressureAcc,
-    const double dt)
+    const double dt,
+    const double extMulti)
 {
   //checks
   if (constDensityPressureAcc == Teuchos::null)
@@ -1462,6 +1476,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_constDensityPressur
         // assemble and write
         LINALG::Matrix<3,1> accn_ij;
         accn_ij.Update(generalCoeff_ij, momentum_ij);
+        accn_ij.Scale(extMulti);
         LINALG::Assemble(*constDensityPressureAcc, accn_ij, particle_i.lm_, particle_i.owner_);
       }
 
@@ -1473,7 +1488,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_constDensityPressur
         // assemble and write
         LINALG::Matrix<3,1> accn_ji;
         accn_ji.Update(generalCoeff_ji, momentum_ij);
-        accn_ji.Scale(-1.0); // actio = - reactio
+        accn_ji.Scale(-extMulti); // actio = - reactio
         LINALG::Assemble(*constDensityPressureAcc, accn_ji, particle_j.lm_, particle_j.owner_);
       }
     }
@@ -1485,7 +1500,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_constDensityPressur
  | evaluate density - pvw                                  katta 10/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_densityDot(
-    const Teuchos::RCP<Epetra_Vector> densityDotn)
+    const Teuchos::RCP<Epetra_Vector> densityDotn,
+    const double extMulti)
 {
   //checks
   if (densityDotn == Teuchos::null)
@@ -1526,6 +1542,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_densityDot(
       const double generalCoeff = interData_ij.dw_ * wallMeshFreeData_.mass_;
       // assemble and write
       double densityDotn_ij = generalCoeff * density;
+      densityDotn_ij *= extMulti;
       LINALG::Assemble(*densityDotn, densityDotn_ij, particle_i.gid_, particle_i.owner_);
     }
   }
@@ -1536,7 +1553,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_densityDot(
  | evaluate acceleration - pvw                             katta 10/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_acc(
-    const Teuchos::RCP<Epetra_Vector> accn)
+    const Teuchos::RCP<Epetra_Vector> accn,
+    const double extMulti)
 {
   //checks
   if (accn == Teuchos::null)
@@ -1601,6 +1619,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_acc(
        // assemble and write
        LINALG::Matrix<3,1> accn_ij;
        accn_ij.Update(generalCoeff, momentum);
+       accn_ij.Scale(extMulti);
        LINALG::Assemble(*accn, accn_ij, particle_i.lm_, particle_i.owner_);
     }
   }
@@ -1612,7 +1631,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_acc(
  | evaluate specEnthalpyDot - pvhs                             katta 10/16  |
  *--------------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvhs_specEnthalpyDot(
-    const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn)
+    const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
+    const double extMulti)
 {
 //checks
 if (specEnthalpyDotn == Teuchos::null)
@@ -1638,6 +1658,7 @@ for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_hs_.size(); ++lid
     const Teuchos::RCP<HeatSource> hs = jj->second;
     specEnthalpyDot_i += (hs->QDot_)/density_i;
   }
+  specEnthalpyDot_i *= extMulti;
   LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDot_i, particle_i.gid_, particle_i.owner_);
 }
 }
@@ -1646,7 +1667,9 @@ for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_hs_.size(); ++lid
 /*--------------------------------------------------------------------------*
  | compute \sum m * W (usually the density) - mesh free style  katta 01/17  |
  *--------------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(const Teuchos::RCP<Epetra_Vector> mWn)
+void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
+    const Teuchos::RCP<Epetra_Vector> mWn,
+    const double extMulti)
 {
   //checks
   if (mWn == Teuchos::null)
@@ -1668,8 +1691,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(const Teuchos::RCP<Epet
     // auto-interaction
     if (weightFunctionHandler_->Name() == INPAR::PARTICLE::CubicBspline)
     {
-      double density_ii = weightFunctionHandler_->W0(particle_i.radius_) * particle_i.mass_;
-      LINALG::Assemble(*mWn, density_ii, particle_i.gid_, particle_i.owner_);
+      double mW_ii = weightFunctionHandler_->W0(particle_i.radius_) * particle_i.mass_;
+      mW_ii *= extMulti;
+      LINALG::Assemble(*mWn, mW_ii, particle_i.gid_, particle_i.owner_);
     }
 
     // loop over the interaction particle list
@@ -1684,16 +1708,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(const Teuchos::RCP<Epet
       if (interData_ij.w_ij_ != 0)
       {
         // assemble and write
-        double density_ij = interData_ij.w_ij_ * particle_j.mass_;
-        LINALG::Assemble(*mWn, density_ij, particle_i.gid_, particle_i.owner_);
+        double mW_ij = interData_ij.w_ij_ * particle_j.mass_;
+        mW_ij *= extMulti;
+        LINALG::Assemble(*mWn, mW_ij, particle_i.gid_, particle_i.owner_);
       }
 
       // write on particle j if appropriate specializing the quantities
       if (interData_ij.w_ji_ != 0)
       {
         // assemble and write
-        double density_ji = interData_ij.w_ji_ * particle_i.mass_;
-        LINALG::Assemble(*mWn, density_ji, particle_j.gid_, particle_j.owner_);
+        double mW_ji = interData_ij.w_ji_ * particle_i.mass_;
+        mW_ji *= extMulti;
+        LINALG::Assemble(*mWn, mW_ji, particle_j.gid_, particle_j.owner_);
       }
     }
   }
@@ -1781,7 +1807,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_alpha()
 /*------------------------------------------------------------------------------*
  | compute \sum m * gradW - mesh free style                        katta 01/17  |
  *------------------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mGradW(const Teuchos::RCP<Epetra_Vector> mGradWn)
+void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mGradW(
+    const Teuchos::RCP<Epetra_Vector> mGradWn,
+    const double extMulti)
 {
   //checks
   if (mGradWn == Teuchos::null)
@@ -1812,6 +1840,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mGradW(const Teuchos::RCP<
         // assemble and write
         LINALG::Matrix<3,1> mGradW_ij = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
         mGradW_ij.Scale(particle_j.mass_);
+        mGradW_ij.Scale(extMulti);
         LINALG::Assemble(*mGradWn, mGradW_ij, particle_i.lm_, particle_i.owner_);
       }
 
@@ -1821,6 +1850,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mGradW(const Teuchos::RCP<
         // assemble and write
         LINALG::Matrix<3,1> mGradW_ji = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ji_);
         mGradW_ji.Scale(- particle_i.mass_); /// actio = - reaction... we are using the rRelVersor_ij instead of rRelVersor_ji
+        mGradW_ji.Scale(extMulti);
         LINALG::Assemble(*mGradWn, mGradW_ji, particle_j.lm_, particle_j.owner_);
       }
     }

@@ -218,14 +218,14 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
       interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_);
 
       // direct update of the accelerations
-      // pvp interactions
+      // mass balance
       interHandler_->Inter_pvp_densityDot(densityDotn_);
-      interHandler_->Inter_pvp_acc(accn_);
-      interHandler_->Inter_pvp_specEnthalpyDot(specEnthalpyDotn_);
-      // pvw interactions
       interHandler_->Inter_pvw_densityDot(densityDotn_);
+      // momentum balance
+      interHandler_->Inter_pvp_acc(accn_);
       interHandler_->Inter_pvw_acc(accn_);
-      // pvhs interactions
+      // heat balance
+      interHandler_->Inter_pvp_specEnthalpyDot(specEnthalpyDotn_);
       interHandler_->Inter_pvhs_specEnthalpyDot(specEnthalpyDotn_);
 
       // do we need the second round and the surface tension? here we decide

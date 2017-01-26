@@ -38,7 +38,6 @@ PARTICLE::TimIntDivFree::TimIntDivFree(
   correctDensityToll_(particledynparams.get<double>("CORRECT_DENSITY_TOLL")),
   correctDensityIter_(particledynparams.get<int>("CORRECT_DENSITY_ITER"))
 {
-  trg_warmStart_ = true;
   return;
 }
 
@@ -66,13 +65,6 @@ void PARTICLE::TimIntDivFree::Init()
 /* Integrate step */
 int PARTICLE::TimIntDivFree::IntegrateStep()
 {
-  // call init for a warm start
-  if (trg_warmStart_)
-  {
-    interHandler_->Clear();
-    interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_);
-    trg_warmStart_ = false;
-  }
 
   // set the time step size
   const double dt = SetDt();
@@ -81,7 +73,7 @@ int PARTICLE::TimIntDivFree::IntegrateStep()
   // for the first iteration loop it has already been called
 
   // pvp interactions (no pvp pressures)
-  interHandler_->Inter_pvp_acc(accn_, false);
+  interHandler_->Inter_pvp_acc(accn_, 1.0, false);
 
   // pvw interactions
   interHandler_->Inter_pvw_densityDot(densityDotn_);
@@ -259,7 +251,14 @@ double PARTICLE::TimIntDivFree::SetDt()
   return dt;
 }
 
+/*----------------------------------------------------------------------*/
+// overload to determine the initial accelerations
+void PARTICLE::TimIntDivFree::DetermineMassDampConsistAccel()
+{
+  interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_);
 
+  return;
+}
 
 
 

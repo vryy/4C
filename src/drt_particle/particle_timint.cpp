@@ -113,12 +113,6 @@ PARTICLE::TimInt::TimInt
   inertia_(Teuchos::null),
   temperature_(Teuchos::null),
   pressure_(Teuchos::null),
-  mGradW_(Teuchos::null),
-  mHessW_(Teuchos::null),
-  dism_(Teuchos::null),
-  velm_(Teuchos::null),
-  accm_(Teuchos::null),
-  resAcc_(Teuchos::null),
 
   restDensity_(-1.0),
 
@@ -126,7 +120,6 @@ PARTICLE::TimInt::TimInt
   nodemapexporter_(Teuchos::null),
 
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
-  trg_warmStart_(false),
   collhandler_(Teuchos::null),
   interHandler_(Teuchos::null)
 {
@@ -573,7 +566,6 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(densityDot_,true);
   UpdateStateVectorMap(specEnthalpy_,true);
   UpdateStateVectorMap(specEnthalpyDot_,true);
-
   UpdateStateVectorMap(disn_);
   UpdateStateVectorMap(veln_);
   UpdateStateVectorMap(accn_);
@@ -594,13 +586,6 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(inertia_,true);
   UpdateStateVectorMap(temperature_,true);
   UpdateStateVectorMap(pressure_,true);
-  UpdateStateVectorMap(mGradW_);
-  UpdateStateVectorMap(mHessW_);
-
-  UpdateStateVectorMap(dism_);
-  UpdateStateVectorMap(velm_);
-  UpdateStateVectorMap(accm_);
-  UpdateStateVectorMap(resAcc_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -714,8 +699,6 @@ void PARTICLE::TimInt::ReadRestartState()
     // time derivative of radius of each particle for time dependent radius
     reader.ReadVector(radiusDot_, "radiusDot");
   }
-
-  trg_warmStart_ = true;
 }
 
 /*----------------------------------------------------------------------*/
@@ -864,8 +847,6 @@ void PARTICLE::TimInt::OutputState
   WriteVector("density", density_, false);
   WriteVector("specEnthalpy", specEnthalpy_, false);
   WriteVector("temperature", temperature_, false);
-  WriteVector("mGradW", mGradW_);
-  WriteVector("mHessW", mHessW_);
 
   if(collhandler_ != Teuchos::null and writeorientation_)
     WriteVector("orientation", orient_);
@@ -1033,30 +1014,7 @@ void PARTICLE::TimInt::OutputEnergy()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* Set forces and dots vector due to interface loads, the force is expected external-force-like */
-void PARTICLE::TimInt::SetExternalDerivativeChangers
-(
-  Teuchos::RCP<Epetra_MultiVector> iforce  ///< the force on interface
-)
-{
-  fifc_->Update(1.0, *iforce, 0.0);
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::MeshFree :
-  {
-    densityDotn_->PutScalar(0);
-  }// no break
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    specEnthalpyDotn_->PutScalar(0);
-    break;
-  }
-  default : // do nothing
-    break;
-  }
-  return;
-}
+
 
 
 /*----------------------------------------------------------------------*/
@@ -1435,7 +1393,91 @@ void PARTICLE::TimInt::WriteVector(const std::string name,
 }
 
 
+/*----------------------------------------------------------------------*
+ | calculate forces on particle and apply it               ghamm 02/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimInt::UpdateExtActions(bool init)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::UpdateExtActions");
+
+  LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc();
+
+  // forces/accelerations
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+  {
+    accn_->PutScalar(0.0);
+    GravityAcc(accn_);
+  }
+  else if (fifc_ != Teuchos::null)
+  {
+    fifc_->PutScalar(0.0);
+    GravityForces(fifc_);
+  }
+
+  // densityDot, in case it exists
+  if (densityDotn_ != Teuchos::null)
+  {
+    densityDotn_->PutScalar(0);
+  }
+
+  // specEnthalpyDot, in case it exists
+  if (specEnthalpyDotn_ != Teuchos::null)
+  {
+    specEnthalpyDotn_->PutScalar(0);
+  }
+
+  particle_algorithm_->CalculateAndApplyForcesToParticles(init);
+
+  return;
+}
 
 
+/*----------------------------------------------------------------------*
+ | calculate and ADD gravity forces (no reset)             katta 01/17  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force)
+{
+  if (force != Teuchos::null)
+  {
+    LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc();
+    for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); ++i)
+    {
+      /*------------------------------------------------------------------*/
+      //// gravity acc = mass_p * g
+      for(int dim=0; dim<3; ++dim)
+      {
+        (*force)[i*3+dim] = (*mass_)[i] * gravity_acc(dim);
+      }
+      /*------------------------------------------------------------------*/
+    }
+  }
+  else
+  {
+    dserror("You are trying to apply gravity forces to a null pointer");
+  }
+}
 
-
+/*----------------------------------------------------------------------*
+ | calculate and ADD gravity forces (no reset)             katta 01/17  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc)
+{
+  if (acc != Teuchos::null)
+  {
+    LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc();
+    for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); ++i)
+    {
+      /*------------------------------------------------------------------*/
+      //// gravity acc = mass_p * g
+      for(int dim=0; dim<3; ++dim)
+      {
+        (*acc)[i*3+dim] = gravity_acc(dim);
+      }
+      /*------------------------------------------------------------------*/
+    }
+  }
+  else
+  {
+    dserror("You are trying to apply gravity accelerations to a null pointer");
+  }
+}

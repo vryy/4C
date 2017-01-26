@@ -265,14 +265,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
       TransferParticles(true, true);
 
     // determine consistent initial acceleration for the particles
-    if (particleInteractionType_ == INPAR::PARTICLE::MeshFree)
-    {
-      CalculateAndApplyAccelerationsToParticles();
-    }
-    else
-    {
-      CalculateAndApplyForcesToParticles();
-    }
+    particles_->UpdateExtActions();
 
     particles_->DetermineMassDampConsistAccel();
 
@@ -386,14 +379,7 @@ void PARTICLE::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Integrate()
 {
-  if (particleInteractionType_ == INPAR::PARTICLE::MeshFree)
-  {
-    CalculateAndApplyAccelerationsToParticles();
-  }
-  else
-  {
-    CalculateAndApplyForcesToParticles();
-  }
+  particles_->UpdateExtActions();
 
   SetUpWallDiscret();
 
@@ -402,64 +388,6 @@ void PARTICLE::Algorithm::Integrate()
   particles_->IntegrateStep();
 
   return;
-}
-
-
-/*----------------------------------------------------------------------*
- | calculate forces on particle and apply it               ghamm 02/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::CalculateAndApplyForcesToParticles(bool init)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::CalculateAndApplyForcesToParticles");
-
-  // vector to be filled with forces
-  Teuchos::RCP<Epetra_Vector> particleforces = LINALG::CreateVector(*BinStrategy()->BinDiscret()->DofRowMap(),true);
-
-  // mass of particles
-  Teuchos::RCP<const Epetra_Vector> mass_p = particles_->Mass();
-
-  // all row particles are evaluated
-  const int numrownodes = BinStrategy()->BinDiscret()->NumMyRowNodes();
-  for (int i=0; i<numrownodes; ++i)
-  {
-    /*------------------------------------------------------------------*/
-    //// gravity forces = mass_p * g
-    for(int dim=0; dim<3; ++dim)
-    {
-      (*particleforces)[i*3+dim] = (*mass_p)[i] * gravity_acc_(dim);
-    }
-    /*------------------------------------------------------------------*/
-  }
-
-  // apply forces to particles
-  particles_->SetExternalDerivativeChangers(particleforces);
-
-  return;
-}
-
-
-/*-------------------------------------------------------------------------------------*
- | calculate accelerations on particleMeshFree and apply it               katta 10/16  |
- *-------------------------------------------------------------------------------------*/
-void PARTICLE::Algorithm::CalculateAndApplyAccelerationsToParticles(bool init)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::CalculateAndApplyAccelerationsToParticles");
-
-  // vector to be filled with forces
-  Teuchos::RCP<Epetra_Vector> accelerations = LINALG::CreateVector(*BinStrategy()->BinDiscret()->DofRowMap(),true);
-
-  // all row particles are evaluated
-  const int numrownodes = BinStrategy()->BinDiscret()->NumMyRowNodes();
-
-  for (int i=0; i<numrownodes; ++i)
-    for(int dim=0; dim<3; ++dim)
-      (*accelerations)[i*3+dim] = gravity_acc_(dim);
-
-  // apply forces to particles
-  particles_->WriteAccessAccnp()->Update(1.0,*accelerations,0);
-  // there are no external density sources
-  particles_->WriteAccessDensityDotnp()->PutScalar(0);
-  particles_->WriteAccessSpecEnthalpyDotnp()->PutScalar(0);
 }
 
 
