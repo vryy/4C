@@ -8,13 +8,6 @@
 
 \maintainer Martin Kronbichler
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
 */
 /*----------------------------------------------------------------------*/
 
@@ -65,7 +58,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   int printparobjecttypes = 0;
 
   CLP.throwExceptions(false);
-  CLP.setOption("filter",&filter_,"filter to run [ensight, gid, vtu, vti]");
+  CLP.setOption("filter",&filter_,"filter to run [ensight, gid, vtu, vtu_node_based, vti]");
   CLP.setOption("start",&start_,"first time step to read");
   CLP.setOption("end",&end_,"last time step to read");
   CLP.setOption("step",&step_,"number of time steps to jump");
@@ -82,7 +75,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("structvelacc",&struct_vel_acc_,"structural velocity and acceleration output [yes]");
   CLP.setOption("structmatdisp",&struct_mat_disp_,"material displacement output output [yes]");
   CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
-
+  CLP.setOption("outputtype",&outputtype_,"binary (bin) or ascii (ascii) output, option works for vtu filter only");
   Teuchos::CommandLineProcessor::EParseCommandLineReturn
     parseReturn = CLP.parse(argc,argv);
 
@@ -132,6 +125,11 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   if (tempgradtype_=="")
   {
     tempgradtype_ = "none";
+  }
+
+  if (outputtype_=="")
+  {
+    outputtype_ = "bin";
   }
 
   result_group_ = std::vector<MAP*>();

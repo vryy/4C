@@ -120,10 +120,6 @@ void StructureFilter::WriteAllResults(PostField* field)
   //additional output for tsi (non-matching grid)
   writer_->WriteResult("struct_temperature", "struct_temperature", nodebased, 1);
 
-  // Write element and node owners
-  WriteElementResults(field);
-//  WriteNod eResults(field); // Uncomment to visualize owner proc on a nodal basis
-
   //additional output for cell migration simulation
   writer_->WriteResult("cell_penalty_traction", "penalty_traction", dofbased, field->problem()->num_dim());
   writer_->WriteResult("cell_penalty_gap", "cell_penalty_gap", dofbased, field->problem()->num_dim());
@@ -154,6 +150,10 @@ void StructureFilter::WriteAllResults(PostField* field)
     PostStress("gauss_pl_GL_strains_xyz", straintype_);
     PostStress("gauss_pl_EA_strains_xyz", straintype_);
   }
+
+  // Write element and node owners
+  WriteElementResults(field);
+  //  WriteNod eResults(field); // Uncomment to visualize owner proc on a nodal basis
 }
 
 /*----------------------------------------------------------------------*/

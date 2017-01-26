@@ -4,12 +4,10 @@
 
 \brief drt binary filter library
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+\maintainer Martin Kronbichler
+
+\level 2
+
 
 The drt binary filter library contains classes to open and read binary
 files. Based on these different filter applications can be written.
@@ -160,6 +158,10 @@ public:
   std::string struct_mat_disp() { return struct_mat_disp_; }
   //@}
 
+  //! returns outputtype_
+  std::string outputtype() { return outputtype_; }
+  //@}
+
   //! read in new mesh for given step and field
   void re_read_mesh(int fieldpos, std::string fieldname, int step);
 
@@ -233,12 +235,16 @@ private:
   //! material displacement output optionally set by command line argument
   std::string struct_mat_disp_;
 
+  //! output to be written in binary of ascii format optionally set by commend line argument
+  std::string outputtype_;
+
   //! MAP pointers into the control file map.
   // We don't own these pointers, so no reference counting.
   std::vector<MAP*> result_group_;
 
   std::string input_dir_;
   Teuchos::RCP<Epetra_Comm> comm_;
+
 };
 
 

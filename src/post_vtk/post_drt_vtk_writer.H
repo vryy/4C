@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_vtk.H
+\file post_drt_vtk_writer.H
 
 \brief VTK filter
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
+\maintainer Martin Kronbichler
 
+\level 2
 */
 /*----------------------------------------------------------------------*/
 #ifndef POST_DRT_VTK_H
@@ -278,6 +274,9 @@ protected:
 
   //! Current cycle step (e.g. in nonlinear iteration, not used yet)
   int cycle_;
+
+  //! toggle between text and binary output
+  bool write_binary_output_;
 };
 
 #endif

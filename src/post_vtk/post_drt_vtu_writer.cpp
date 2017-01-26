@@ -28,8 +28,6 @@
 
 #include "../drt_beam3/beam3_base.H"
 
-// deactivate for ascii output. Only do this for debugging.
-#define BIN_VTK_OUT
 
 namespace
 {
@@ -49,58 +47,13 @@ namespace
 }
 
 
-
-/*----------------------------------------------------------------------*/
-/*
- \brief Converts between our element types and the VTK numbers and the respective numbering of degrees of freedom
- */
-/*----------------------------------------------------------------------*/
-std::pair<uint8_t,std::vector<int> > vtk_element_types [] =
-{
-    // the VTK element types are from the documentation of vtkCellType,
-    // e.g. at http://www.vtk.org/doc/nightly/html/vtkCellType_8h.html
-    // this list must be kept in sync with the element types since we use this
-    // for index translation
-    std::pair<uint8_t,std::vector<int> > (0, std::vector<int>()),                                                    // dis_none
-    std::pair<uint8_t,std::vector<int> > (9, make_vector<int>() << 0 << 1 << 2 << 3),                                // quad4
-    std::pair<uint8_t,std::vector<int> > (30, make_vector<int>() << 0 << 1 << 4 << 3 << 2 << 5),                     // quad6
-    std::pair<uint8_t,std::vector<int> > (23, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7),           // quad8
-    std::pair<uint8_t,std::vector<int> > (28, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8),      // quad9
-    std::pair<uint8_t,std::vector<int> > (5, make_vector<int>() << 0 << 1 << 2),                                     // tri3
-    std::pair<uint8_t,std::vector<int> > (22, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5),                     // tri6
-    std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7),           // hex8
-    std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 8 << 9 << 10 << 11),         // hex16
-    std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 9 << 10 << 11 << 12),        // hex18
-    std::pair<uint8_t,std::vector<int> > (25, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8        // hex20
-                                          << 9 << 10 << 11 << 16 << 17 << 18 << 19 << 12 << 13 << 14 << 15),
-    std::pair<uint8_t,std::vector<int> > (29, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8        // hex27
-                                          << 9 << 10 << 11 << 16 << 17 << 18 << 19 << 12 << 13 << 14 << 15
-                                          << 24 << 22 << 21 << 23 << 20 << 25 << 26),
-    std::pair<uint8_t,std::vector<int> > (10, make_vector<int>() << 0 << 1 << 2 << 3),                               // tet4
-    std::pair<uint8_t,std::vector<int> > (24, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 << 9), // tet10
-    std::pair<uint8_t,std::vector<int> > (13, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5),                     // wedge6
-    std::pair<uint8_t,std::vector<int> > (26, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8        // wedge15
-                                          << 12 << 13 << 14 << 9 << 10 << 11),
-    std::pair<uint8_t,std::vector<int> > (14, make_vector<int>() << 0 << 1 << 2 << 3 << 4), // pyramid5
-    std::pair<uint8_t,std::vector<int> > (3, make_vector<int>() << 0 << 1),                 // line2
-    std::pair<uint8_t,std::vector<int> > (21, make_vector<int>() << 0 << 1 << 2),           // line3
-    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line4
-    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line5 -> mapped onto line4
-    std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3),      // line6 -> mapped onto line4
-    std::pair<uint8_t,std::vector<int> > (1, make_vector<int>() << 0),                      // point1
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs2, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs3, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs4, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs9, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>()),    // nurbs8, not yet implemented
-    std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>())     // nurbs27, not yet implemented
-};
-
 VtuWriter::VtuWriter(PostField* field, const std::string &filename) :
     VtkWriter(field, filename)
 {
-  BOOST_STATIC_ASSERT_MSG((ssize_t)(sizeof(vtk_element_types)/sizeof(std::pair<uint8_t,std::vector<int> >) == (ssize_t)DRT::Element::max_distype), "The number of element types defined by DRT::Element::DiscretizationType does not match the number of element types supported by the post vtu filter.") BACI_ATTRIBUTE_UNUSED;
+  BOOST_STATIC_ASSERT_MSG( 29 == DRT::Element::max_distype, "The number of element types defined by DRT::Element::DiscretizationType does not match the number of element types supported by the post vtu filter.") BACI_ATTRIBUTE_UNUSED;
+
 }
+
 
 
 const std::string& VtuWriter::WriterString() const
@@ -186,8 +139,8 @@ VtuWriter::WriteGeo()
     }
     else
     {
-      celltypes.push_back(vtk_element_types[ele->Shape()].first);
-      const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
+      celltypes.push_back(GetVtkElementType(ele->Shape()).first);
+      const std::vector<int> &numbering = GetVtkElementType(ele->Shape()).second;
       const DRT::Node* const* nodes = ele->Nodes();
       for (int n=0; n<ele->NumNode(); ++n)
         for (int d=0; d<3; ++d)
@@ -204,15 +157,25 @@ VtuWriter::WriteGeo()
       << "  <Points>\n"
       << "    <DataArray type=\"Float64\" NumberOfComponents=\"3\"";
 
-#ifdef BIN_VTK_OUT
-  currentout_ << " format=\"binary\">\n";
-  LIBB64:: writeCompressedBlock(coordinates, currentout_);
-#else
-  currentout_ << " format=\"ascii\">\n";
-  for (std::vector<double>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
-    currentout_ << std::setprecision(15) << std::scientific << *it << " ";
-  currentout_ << std::resetiosflags(std::ios::scientific);
-#endif
+  if(write_binary_output_)
+  {
+    currentout_ << " format=\"binary\">\n";
+    LIBB64:: writeCompressedBlock(coordinates, currentout_);
+  }
+  else
+  {
+    currentout_ << " format=\"ascii\">\n";
+    int counter = 1;
+    for (std::vector<double>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
+    {
+      currentout_ << std::setprecision(15) << std::scientific << *it << " ";
+      // dimension is hard coded to three, thus
+      if(counter%3==0)
+        currentout_ << '\n';
+      counter++;
+    }
+    currentout_ << std::resetiosflags(std::ios::scientific);
+  }
 
 
   currentout_ << "    </DataArray>\n"
@@ -228,48 +191,56 @@ VtuWriter::WriteGeo()
   // in this format, so fill the vector only here
   currentout_ << "  <Cells>\n"
               << "    <DataArray type=\"Int32\" Name=\"connectivity\"";
-#ifdef BIN_VTK_OUT
-  currentout_ << " format=\"binary\">\n";
-#else
+  if(write_binary_output_)
+    currentout_ << " format=\"binary\">\n";
+  else
   currentout_ << " format=\"ascii\">\n";
-#endif
+
   {
     std::vector<int32_t> connectivity;
     connectivity.reserve(outNodeId);
     for (int i=0; i<outNodeId; ++i)
       connectivity.push_back(i);
-#ifdef BIN_VTK_OUT
-    LIBB64::writeCompressedBlock(connectivity, currentout_);
-#else
-  for (std::vector<int32_t>::const_iterator it = connectivity.begin(); it != connectivity.end(); ++it)
-    currentout_ << *it << " ";
-#endif
+    if(write_binary_output_)
+      LIBB64::writeCompressedBlock(connectivity, currentout_);
+    else
+    {
+      for (std::vector<int32_t>::const_iterator it = connectivity.begin(); it != connectivity.end(); ++it)
+        currentout_ << *it << " ";
+    }
 
   }
   currentout_ << "    </DataArray>\n";
 
   // step 3: write start indices for individual cells
   currentout_ << "    <DataArray type=\"Int32\" Name=\"offsets\"";
-#ifdef BIN_VTK_OUT
-  currentout_ << " format=\"binary\">\n";
-  LIBB64::writeCompressedBlock(celloffset, currentout_);
-#else
-  currentout_ << " format=\"ascii\">\n";
-  for (std::vector<int32_t>::const_iterator it = celloffset.begin(); it != celloffset.end(); ++it)
-    currentout_ << *it << " ";
-#endif
+  if(write_binary_output_)
+  {
+    currentout_ << " format=\"binary\">\n";
+    LIBB64::writeCompressedBlock(celloffset, currentout_);
+  }
+  else
+  {
+    currentout_ << " format=\"ascii\">\n";
+    for (std::vector<int32_t>::const_iterator it = celloffset.begin(); it != celloffset.end(); ++it)
+      currentout_ << *it << " ";
+  }
+
   currentout_ << "    </DataArray>\n";
 
   // step 4: write cell types
   currentout_ << "    <DataArray type=\"UInt8\" Name=\"types\"";
-#ifdef BIN_VTK_OUT
-  currentout_ << " format=\"binary\">\n";
-  LIBB64::writeCompressedBlock(celltypes, currentout_);
-#else
-  currentout_ << " format=\"ascii\">\n";
-  for (std::vector<uint8_t>::const_iterator it = celltypes.begin(); it != celltypes.end(); ++it)
-    currentout_ << (unsigned int)*it << " ";
-#endif
+  if(write_binary_output_)
+  {
+    currentout_ << " format=\"binary\">\n";
+    LIBB64::writeCompressedBlock(celltypes, currentout_);
+  }
+  else
+  {
+    currentout_ << " format=\"ascii\">\n";
+    for (std::vector<uint8_t>::const_iterator it = celltypes.begin(); it != celltypes.end(); ++it)
+      currentout_ << (unsigned int)*it << " ";
+  }
   currentout_ << "    </DataArray>\n";
 
   currentout_ << "  </Cells>\n\n";
@@ -362,7 +333,7 @@ VtuWriter::WriteDofResultStep(
     }
     else
     {
-      const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
+      const std::vector<int> &numbering = GetVtkElementType(ele->Shape()).second;
       for (int n=0; n<ele->NumNode(); ++n)
       {
         nodedofs.clear();
@@ -447,6 +418,7 @@ VtuWriter::WriteNodalResultStep(
   if (numdf > 1 && numdf == field_->problem()->num_dim())
     ncomponents = 3;
 
+
   // count number of nodes and number of elements for each processor
   int nnodes = 0;
   for (int e=0; e<dis->NumMyRowElements(); ++e)
@@ -457,33 +429,34 @@ VtuWriter::WriteNodalResultStep(
 
   for (int e=0; e<dis->NumMyRowElements(); ++e)
   {
-    const DRT::Element* ele = dis->lRowElement(e);
+  const DRT::Element* ele = dis->lRowElement(e);
 
-    if (ele->IsNurbsElement()==false)
+  if (ele->IsNurbsElement()==false)
+  {
+    const std::vector<int> &numbering = GetVtkElementType(ele->Shape()).second;
+    for (int n=0; n<ele->NumNode(); ++n)
     {
-      const std::vector<int> &numbering = vtk_element_types[ele->Shape()].second;
-      for (int n=0; n<ele->NumNode(); ++n)
-      {
-        for (int idf=0; idf<numdf; ++idf)
-        {
-          Epetra_Vector* column = (*ghostedData)(idf);
+    for (int idf=0; idf<numdf; ++idf)
+    {
+      Epetra_Vector* column = (*ghostedData)(idf);
 
-          int lid = ghostedData->Map().LID(ele->Nodes()[numbering[n]]->Id());
+      int lid = ghostedData->Map().LID(ele->Nodes()[numbering[n]]->Id());
 
-          if (lid > -1)
-            solution.push_back((*column)[lid]);
-          else {
-            dserror("received illegal node local id: %d", lid);
-          }
-        }
-        for (int d=numdf; d<ncomponents; ++d)
-          solution.push_back(0.);
+      if (lid > -1)
+      solution.push_back((*column)[lid]);
+      else {
+      dserror("received illegal node local id: %d", lid);
       }
     }
-    else
-      WriteNodalResultStepNurbsEle(ele,ncomponents,numdf,solution,ghostedData);
+    for (int d=numdf; d<ncomponents; ++d)
+      solution.push_back(0.);
+    }
+  }
+  else
+    WriteNodalResultStepNurbsEle(ele,ncomponents,numdf,solution,ghostedData);
   } // loop over all elements
   dsassert((int)solution.size() == ncomponents*nnodes, "internal error");
+
 
   // start the scalar fields that will later be written
   if (currentPhase_ == INIT)
@@ -597,9 +570,9 @@ VtuWriter::WriteGeoNurbsEle(const DRT::Element* ele,std::vector<uint8_t>& cellty
   {
   case DRT::Element::nurbs27:
   {
-    const std::vector<int> &numbering = vtk_element_types[DRT::Element::hex27].second;
+    const std::vector<int> &numbering = GetVtkElementType(DRT::Element::hex27).second;
 
-    celltypes.push_back(vtk_element_types[DRT::Element::hex27].first);
+    celltypes.push_back(GetVtkElementType(DRT::Element::hex27).first);
 
     LINALG::Matrix<27,1> weights;
     const DRT::Node* const* nodes = ele->Nodes();
@@ -665,7 +638,7 @@ VtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
                            std::vector<double>& coordinates)
 {
   /* visualize the beam centerline as a sequence of straight line segments (POLY_LINE)
-   * which is supported as vtkCellType number 4 (see also list vtk_element_types above) */
+   * which is supported as vtkCellType number 4 (see also list in GetVtkElementType) */
   celltypes.push_back(4);
 
   /* loop over the chosen visualization points (equidistant distribution in the element
@@ -700,7 +673,7 @@ VtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,c
   {
   case DRT::Element::nurbs27:
   {
-    const std::vector<int> &numbering = vtk_element_types[DRT::Element::hex27].second;
+    const std::vector<int> &numbering = GetVtkElementType(DRT::Element::hex27).second;
 
     LINALG::Matrix<27,1> weights;
     const DRT::Node* const* nodes = ele->Nodes();
@@ -810,7 +783,7 @@ VtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
   }
 
   /* visualize the beam centerline as a sequence of straight line segments (POLY_LINE)
-   * which is supported as vtkCellType number 4 (see also list vtk_element_types above)
+   * which is supported as vtkCellType number 4 (see also list in GetVtkElementType)
    * loop over the chosen visualization points (equidistant distribution in the element
    * parameter space xi \in [-1,1] ) and determine their interpolated initial positions r */
   LINALG::Matrix<3,1> pos, refpos;
@@ -841,7 +814,7 @@ VtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents
   {
   case DRT::Element::nurbs27:
   {
-  const std::vector<int> &numbering = vtk_element_types[DRT::Element::hex27].second;
+  const std::vector<int> &numbering = GetVtkElementType(DRT::Element::hex27).second;
 
   LINALG::Matrix<27,1> weights;
   const DRT::Node* const* nodes = ele->Nodes();
@@ -907,4 +880,83 @@ VtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents
     break;
   } // end switch ele shape
   return;
+}
+
+std::pair<uint8_t,std::vector<int> >
+VtuWriter::GetVtkElementType(int bacieletype)
+{
+  // the VTK element types are from the documentation of vtkCellType,
+  // e.g. at http://www.vtk.org/doc/nightly/html/vtkCellType_8h.html
+  // this list must be kept in sync with the element types since we use this
+  // for index translation
+  switch (bacieletype){
+  case 0: // dis_none
+    return  std::pair<uint8_t,std::vector<int> > (0, std::vector<int>());
+  case 1: // quad4
+    return  std::pair<uint8_t,std::vector<int> > (9, make_vector<int>() << 0 << 1 << 2 << 3);
+  case 2: // quad6
+    return  std::pair<uint8_t,std::vector<int> > (30, make_vector<int>() << 0 << 1 << 4 << 3 << 2 << 5);
+  case 3: // quad8
+    return  std::pair<uint8_t,std::vector<int> > (23, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7);
+  case 4: // quad9
+    return  std::pair<uint8_t,std::vector<int> > (28, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8);
+  case 5: // tri3
+    return  std::pair<uint8_t,std::vector<int> > (5, make_vector<int>() << 0 << 1 << 2);
+  case 6: // tri6
+    return  std::pair<uint8_t,std::vector<int> > (22, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5);
+  case 7: // hex8
+    return  std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7);
+  case 8: // hex16
+    return  std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 8 << 9 << 10 << 11);
+  case 9: // hex18
+    return  std::pair<uint8_t,std::vector<int> > (12, make_vector<int>() << 0 << 1 << 2 << 3 << 9 << 10 << 11 << 12);
+  case 10: // hex20
+    return  std::pair<uint8_t,std::vector<int> > (25, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8
+        << 9 << 10 << 11 << 16 << 17 << 18 << 19 << 12 << 13 << 14 << 15);
+  case 11: // hex27
+    return  std::pair<uint8_t,std::vector<int> > (29, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8
+        << 9 << 10 << 11 << 16 << 17 << 18 << 19 << 12 << 13 << 14 << 15
+        << 24 << 22 << 21 << 23 << 20 << 25 << 26);
+  case 12: // tet4
+    return  std::pair<uint8_t,std::vector<int> > (10, make_vector<int>() << 0 << 1 << 2 << 3);
+  case 13: // tet10
+    return  std::pair<uint8_t,std::vector<int> > (24, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 << 9);
+  case 14: // wedge6
+    return  std::pair<uint8_t,std::vector<int> > (13, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5);
+  case 15: // wedge15
+    return  std::pair<uint8_t,std::vector<int> > (26, make_vector<int>() << 0 << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8
+        << 12 << 13 << 14 << 9 << 10 << 11);
+  case 16: // pyramid5
+    return  std::pair<uint8_t,std::vector<int> > (14, make_vector<int>() << 0 << 1 << 2 << 3 << 4);
+  case 17: // line2
+    return  std::pair<uint8_t,std::vector<int> > (3, make_vector<int>() << 0 << 1);
+  case 18: // line3
+    return  std::pair<uint8_t,std::vector<int> > (21, make_vector<int>() << 0 << 1 << 2);
+  case 19: // line4
+    return  std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3);
+  case 20: // line5 -> mapped onto line4
+    return  std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3);
+  case 21: // line6 -> mapped onto line4
+    return  std::pair<uint8_t,std::vector<int> > (35, make_vector<int>() << 0 << 1 << 2 << 3);
+  case 22: // point1
+    return  std::pair<uint8_t,std::vector<int> > (1, make_vector<int>() << 0);
+  case 23: // nurbs2, not yet implemented
+    return  std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>());
+  case 24: // nurbs3, not yet implemented
+    return  std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>());
+  case 25: // nurbs4, not yet implemented
+    return  std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>());
+  case 26: // nurbs9, not yet implemented
+    return  std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>());
+  case 27: // nurbs8, not yet implemented
+    return  std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>());
+  case 28: // nurbs27, not yet implemented
+    return  std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>());
+  case -1: // return the number of available element types +1
+    return  std::pair<uint8_t,std::vector<int> > (29, make_vector<int>() << 0);
+  default:
+    dserror("Unknown element type");
+    return std::pair<uint8_t,std::vector<int> > (static_cast<uint8_t>(-1), std::vector<int>());
+}
+
 }

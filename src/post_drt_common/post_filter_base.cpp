@@ -1,22 +1,22 @@
-/*
- \file post_drt_filter_base.cpp
+/*-----------------------------------------------------------*/
+/*!
+\file post_filter_base.cpp
 
- \brief contains base class for a generic output filter (ensight and vtk are derived from this class)
+\brief contains base class for a generic output filter (ensight and vtk are derived from this class)
 
- <pre>
- Maintainer: Martin Kronbichler
- kronbichler@lnm.mw.tum.de
- http://www.lnm.mw.tum.de/
- 089 - 289-15235
- </pre>
- */
+\maintainer Martin Kronbichler
 
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "post_filter_base.H"
 #include "post_writer_base.H"
 #include "post_drt_common.H"
 #include "../post_ensight/post_drt_ensight_writer.H"
 #include "../post_vtk/post_drt_vtu_writer.H"
+#include "../post_vtk/post_drt_vtu_writer_node_based.H"
 #include "../post_vtk/post_drt_vti_writer.H"
 
 
@@ -36,6 +36,8 @@ PostFilterBase::PostFilterBase(PostField *field,
     writer_ = Teuchos::rcp(new VtuWriter(field, name));
   else if (field->problem()->filter() == "vti")
     writer_ = Teuchos::rcp(new VtiWriter(field, name));
+  else if (field->problem()->filter() == "vtu_node_based")
+    writer_ = Teuchos::rcp(new VtuWriterNode(field, name));
   else
     dserror("Unsupported filter");
 }

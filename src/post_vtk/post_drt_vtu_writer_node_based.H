@@ -1,19 +1,19 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_vtu_writer.H
+\file post_drt_vtu_writer_node_based.H
 
-\brief VTU filter
+\brief node based VTU filter
 
-\level 2
+\level 3
 
 \maintainer Martin Kronbichler
 */
 /*----------------------------------------------------------------------*/
-#ifndef POST_DRT_VTU_H
-#define POST_DRT_VTU_H
+#ifndef POST_DRT_VTU_NODE_H
+#define POST_DRT_VTU_NODE_H
 
 
-#include "post_drt_vtk_writer.H"
+#include "post_drt_vtu_writer.H"
 
 #include <string>
 #include <map>
@@ -38,20 +38,20 @@ namespace ELEMENTS
 
 
 /*
- \brief Base class for VTU output generation
+ \brief Base class for VTU node based output generation
 
- \author kronbichler
- \date 03/14
+ \author biehler
+ \date 12/16
 */
-class VtuWriter : public VtkWriter
+class VtuWriterNode : public VtuWriter
 {
 public:
   //! constructor. Initializes the writer to a certain field.
-  VtuWriter (PostField* field,
+  VtuWriterNode (PostField* field,
              const std::string &name);
 
   //! destructor
-  virtual ~VtuWriter()
+  virtual ~VtuWriterNode()
   {}
 
 protected:
@@ -145,10 +145,6 @@ protected:
   virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
       std::vector<double>& solution,Teuchos::RCP<Epetra_MultiVector> ghostedData);
 
-  virtual std::pair<uint8_t,std::vector<int> > GetVtkElementType(int bacieletype);
-
 };
-
-
 
 #endif

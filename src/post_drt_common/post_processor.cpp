@@ -911,7 +911,7 @@ int main(
 
     PostProblem problem(My_CLP, argc, argv);
 
-    if (filter == "ensight" || filter == "vtu" || filter == "vti")
+    if (filter == "ensight" || filter == "vtu" || filter == "vtu_node_based" || filter == "vti")
       runEnsightVtuFilter(problem);
     else
       dserror("Unknown filter %s given, supported filters: [ensight|vtu|vti]", filter.c_str());

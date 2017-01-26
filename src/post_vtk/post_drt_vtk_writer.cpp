@@ -4,6 +4,8 @@
 
 \brief VTK filter
 
+\level 2
+
 \maintainer Martin Kronbichler
 *-----------------------------------------------------------------------*/
 
@@ -19,7 +21,7 @@
 
 
 // deactivate for ascii output. Only do this for debugging.
-#define BIN_VTK_OUT
+//#define BIN_VTK_OUT
 
 
 namespace LIBB64
@@ -209,7 +211,13 @@ VtkWriter::VtkWriter(PostField* field,
     time_ (std::numeric_limits<double>::min()),
     timestep_ (0),
     cycle_ (std::numeric_limits<int>::max())
-{}
+{
+  if(field->problem()->outputtype() == "bin")
+    write_binary_output_ = true; ///< write binary output
+  else
+    write_binary_output_ = false;
+
+}
 
 
 
@@ -380,15 +388,24 @@ VtkWriter::WriteSolutionVector (const std::vector<double> &solution,
   file << "    <DataArray type=\"Float64\" Name=\"" << name << "\"";
   if (ncomponents > 1)
     file << " NumberOfComponents=\"" << ncomponents << "\"";
-#ifdef BIN_VTK_OUT
-  file << " format=\"binary\">\n";
-  LIBB64::writeCompressedBlock(solution, file);
-#else
-  file << " format=\"ascii\">\n";
-  for (std::vector<double>::const_iterator it = solution.begin(); it != solution.end(); ++it)
-    file << std::setprecision(15) << std::scientific << *it << " ";
-  file << std::resetiosflags(std::ios::scientific);
-#endif
+  if(write_binary_output_)
+  {
+    file << " format=\"binary\">\n";
+    LIBB64::writeCompressedBlock(solution, file);
+  }
+  else
+  {
+    file << " format=\"ascii\">\n";
+    int counter=1;
+    for (std::vector<double>::const_iterator it = solution.begin(); it != solution.end(); ++it)
+    {
+      file << std::setprecision(15) << std::scientific << *it << " ";
+      if (counter%ncomponents==0)
+        file << '\n';
+      counter++;
+    }
+    file << std::resetiosflags(std::ios::scientific);
+  }
 
   file << "    </DataArray>\n";
 

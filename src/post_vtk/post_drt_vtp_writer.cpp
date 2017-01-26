@@ -4,6 +4,8 @@
 
 \brief VTP filter specialized for particle output
 
+\level 2
+
 \maintainer Georg Hammerl
 *-----------------------------------------------------------------------*/
 
@@ -18,8 +20,6 @@ extern "C" {
 #include "../pss_full/pss_table.h"
 }
 
-// deactivate for ascii output. Only do this for debugging.
-#define BIN_VTK_OUT
 
 namespace
 {
@@ -139,15 +139,18 @@ VtpWriter::WriteGeo()
       << "  <Points>\n"
       << "    <DataArray type=\"Float64\" NumberOfComponents=\"3\"";
 
-#ifdef BIN_VTK_OUT
-  currentout_ << " format=\"binary\">\n";
-  LIBB64:: writeCompressedBlock(coordinates, currentout_);
-#else
-  currentout_ << " format=\"ascii\">\n";
-  for (std::vector<double>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
-    currentout_ << std::setprecision(15) << std::scientific << *it << " ";
-  currentout_ << std::resetiosflags(std::ios::scientific);
-#endif
+  if(!write_binary_output_)
+  {
+    currentout_ << " format=\"binary\">\n";
+    LIBB64:: writeCompressedBlock(coordinates, currentout_);
+  }
+  else
+  {
+    currentout_ << " format=\"ascii\">\n";
+    for (std::vector<double>::const_iterator it = coordinates.begin(); it != coordinates.end(); ++it)
+      currentout_ << std::setprecision(15) << std::scientific << *it << " ";
+    currentout_ << std::resetiosflags(std::ios::scientific);
+  }
   currentout_ << "    </DataArray>\n"
       << "  </Points>\n\n";
 
