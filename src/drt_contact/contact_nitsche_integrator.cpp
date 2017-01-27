@@ -98,7 +98,6 @@ void CONTACT::CoIntegratorNitsche::IntegrateGP_2D(
 }
 
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
@@ -116,14 +115,14 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
   if (dim!=Dim())
     dserror("dimension inconsistency");
 
-    double pen = ppn_;
+  double pen = ppn_;
+
+  const LINALG::Matrix<dim,1> normal(gpn,true);
 
   if (stype_==INPAR::CONTACT::solution_nitsche)
   {
     double cauchy_nn_weighted_average=0.;
     GEN::pairedvector<int,double> cauchy_nn_weighted_average_deriv(sele.NumNode()*3*12+sele.MoData().ParentDisp().size()+mele.MoData().ParentDisp().size());
-
-    const LINALG::Matrix<dim,1> normal(gpn,true);
 
     LINALG::SerialDenseVector normal_adjoint_test_slave(sele.MoData().ParentDof().size());
     GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_normal_adjoint_test_slave(
@@ -174,27 +173,33 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
     if (gap+cauchy_nn_weighted_average/pen>=0.)
     {
        if (abs(theta_)>1.e-12)
-        IntegrateNormalAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
+         IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
       if (abs(theta_)>1.e-12)
-        IntegrateNormalAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
+        IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
     }
 
     else
     {
       // test in normal contact direction
-      IntegrateNormalTest<dim>(pen,sele,mele,sval,sderiv,dsxi,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap                       ,dgapgp                          ,gpn,dnmap_unit);
-      IntegrateNormalTest<dim>(1.0,sele,mele,sval,sderiv,dsxi,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,gpn,dnmap_unit);
+      IntegrateTest<dim>(+pen,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
+      IntegrateTest<dim>(-pen,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
+
+      IntegrateTest<dim>(+1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal,dnmap_unit);
+      IntegrateTest<dim>(-1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal,dnmap_unit);
 
       if (abs(theta_)>1.e-12)
-        IntegrateNormalAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
+        IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
       if (abs(theta_)>1.e-12)
-        IntegrateNormalAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
+        IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
     }
   }
   else if (stype_==INPAR::CONTACT::solution_penalty)
   {
     if (gap<0.)
-      IntegrateNormalTest<dim>(pen,sele,mele,sval,sderiv,dsxi,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap                       ,dgapgp                          ,gpn,dnmap_unit);
+    {
+      IntegrateTest<dim>(+pen,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
+      IntegrateTest<dim>(-pen,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
+    }
   }
   else
     dserror("unknown algorithm");
@@ -313,68 +318,53 @@ void CONTACT::CoIntegratorNitsche::SoEleCauchy(
   return;
 }
 
-
 template <int dim>
-void CONTACT::CoIntegratorNitsche::IntegrateNormalTest(
+void CONTACT::CoIntegratorNitsche::IntegrateTest(
     const double fac,
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-    const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,const std::vector<GEN::pairedvector<int,double> >& dsxi,
-    const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
+    MORTAR::MortarElement& ele,
+    const LINALG::SerialDenseVector& shape,
+    const LINALG::SerialDenseMatrix& deriv,
+    const std::vector<GEN::pairedvector<int,double> >& dxi,
     const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
-    const double gap, const GEN::pairedvector<int,double>& dgapgp,
-    double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit)
+    const double test_val, const GEN::pairedvector<int,double>& test_deriv,
+    const LINALG::Matrix<dim,1>& test_dir, const std::vector<GEN::pairedvector<int,double> >& test_dir_deriv
+    )
 {
-
   for (int d=0;d<Dim();++d)
   {
-    double gp_force = fac * jac*wgt*gap*gpn[d];
+    double val = fac*jac*wgt*test_val*test_dir(d);
 
-    for (int s=0;s<sele.NumNode();++s)
-      *(sele.GetNitscheContainer().rhs(
-          DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(sele.ParentElement()->Shape(),sele.FaceParentNumber(),s)*dim+d))+=gp_force*sval(s);
-    for (int m=0;m<sele.NumNode();++m)
-      *(mele.GetNitscheContainer().rhs(
-          DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(mele.ParentElement()->Shape(),mele.FaceParentNumber(),m)*dim+d))+=-gp_force*mval(m);
+    for (int s=0;s<ele.NumNode();++s)
+      *(ele.GetNitscheContainer().rhs(
+          DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),ele.FaceParentNumber(),s)*dim+d))+=val*shape(s);
 
-    std::map<int,double> deriv_gp_force;
+
+    std::map<int,double> val_deriv;
 
     for (GEN::pairedvector<int,double>::const_iterator p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-      deriv_gp_force[p->first]+=fac * p->second * wgt*gap*gpn[d];
-    for (GEN::pairedvector<int,double>::const_iterator p=dgapgp.begin();p!=dgapgp.end();++p)
-      deriv_gp_force[p->first]+=fac*jac*wgt*gpn[d]*p->second;
-    for (GEN::pairedvector<int,double>::const_iterator p=dnmap_unit[d].begin();p!=dnmap_unit[d].end();++p)
-      deriv_gp_force[p->first]+=fac * jac*wgt*gap*p->second;
+      val_deriv[p->first]+=fac * p->second * wgt*test_val*test_dir(d);
+    for (GEN::pairedvector<int,double>::const_iterator p=test_deriv.begin();p!=test_deriv.end();++p)
+      val_deriv[p->first]+=fac*jac*wgt*test_dir(d)*p->second;
+    for (GEN::pairedvector<int,double>::const_iterator p=test_dir_deriv[d].begin();p!=test_dir_deriv[d].end();++p)
+      val_deriv[p->first]+=fac * jac*wgt*test_val*p->second;
 
-    for (std::map<int,double>::const_iterator p=deriv_gp_force.begin();p!=deriv_gp_force.end();++p)
+    for (std::map<int,double>::const_iterator p=val_deriv.begin();p!=val_deriv.end();++p)
     {
-      double* srow = sele.GetNitscheContainer().k(p->first);
-      double* mrow = mele.GetNitscheContainer().k(p->first);
-      for (int s=0;s<sele.NumNode();++s)
-        srow[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(sele.ParentElement()->Shape(),sele.FaceParentNumber(),s)*dim+d]
-             +=-p->second*sval(s);
-      for (int m=0;m<mele.NumNode();++m)
-        mrow[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(mele.ParentElement()->Shape(),mele.FaceParentNumber(),m)*dim+d]
-             +=p->second*mval(m);
+      double* row = ele.GetNitscheContainer().k(p->first);
+      for (int s=0;s<ele.NumNode();++s)
+        row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),ele.FaceParentNumber(),s)*dim+d]
+             +=-p->second*shape(s);
     }
 
     for (int e=0;e<Dim()-1;++e)
-      for (GEN::pairedvector<int,double>::const_iterator p=dsxi[e].begin();p!=dsxi[e].end();++p)
+      for (GEN::pairedvector<int,double>::const_iterator p=dxi[e].begin();p!=dxi[e].end();++p)
       {
-        double* srow = sele.GetNitscheContainer().k(p->first);
-        for (int s=0;s<sele.NumNode();++s)
-          srow[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(sele.ParentElement()->Shape(),sele.FaceParentNumber(),s)*dim+d]
-               +=-gp_force*sderiv(s,e)*p->second;
-      }
-    for (int e=0;e<Dim()-1;++e)
-      for (GEN::pairedvector<int,double>::const_iterator p=dmxi[e].begin();p!=dmxi[e].end();++p)
-      {
-        double* mrow = mele.GetNitscheContainer().k(p->first);
-        for (int m=0;m<mele.NumNode();++m)
-          mrow[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(mele.ParentElement()->Shape(),mele.FaceParentNumber(),m)*dim+d]
-               +=gp_force*mderiv(m,e)*p->second;
+        double* row = ele.GetNitscheContainer().k(p->first);
+        for (int s=0;s<ele.NumNode();++s)
+          row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),ele.FaceParentNumber(),s)*dim+d]
+               +=-val*deriv(s,e)*p->second;
       }
   }
-  return;
 }
 
 template <int dim>
@@ -423,7 +413,7 @@ void CONTACT::CoIntegratorNitsche::BuildNormalAdjointTest(
 
 
 template <int dim>
-void CONTACT::CoIntegratorNitsche::IntegrateNormalAdjointTest(
+void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest(
         const double fac,
         const double jac, const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
         const double test, const GEN::pairedvector<int,double>& deriv_test,

@@ -135,16 +135,6 @@ public:
         const double gap, const GEN::pairedvector<int,double>& dgapgp,
         double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,double* sxi, double* mxi);
 
-    template <int dim>
-    void IntegrateNormalTest(
-        const double fac,
-        MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,const std::vector<GEN::pairedvector<int,double> >& dsxi,
-        const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
-        const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
-        const double gap, const GEN::pairedvector<int,double>& dgapgp,
-        double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit);
-
     template<int dim>
         void BuildNormalAdjointTest(
         MORTAR::MortarElement& moEle,
@@ -159,8 +149,20 @@ public:
         LINALG::SerialDenseVector& adjoint_test,
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test);
 
+    template <int dim>
+    void IntegrateTest(
+        const double fac,
+        MORTAR::MortarElement& ele,
+        const LINALG::SerialDenseVector& shape,
+        const LINALG::SerialDenseMatrix& deriv,
+        const std::vector<GEN::pairedvector<int,double> >& dxi,
+        const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
+        const double test_val, const GEN::pairedvector<int,double>& test_deriv,
+        const LINALG::Matrix<dim,1>& test_dir, const std::vector<GEN::pairedvector<int,double> >& test_dir_deriv
+        );
+
     template<int dim>
-    void IntegrateNormalAdjointTest(
+    void IntegrateAdjointTest(
         const double fac,
         const double jac, const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
         const double test, const GEN::pairedvector<int,double>& deriv_test,
