@@ -46,7 +46,6 @@ lagmultquad_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LM_
 nodalscale_(DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")),
 gpslip_(DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")),
 algo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_,"ALGORITHM")),
-ppn_(imortar_.get<double>("PENALTYPARAM")),
 stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(imortar_,"STRATEGY")),
 cppnormal_(DRT::INPUT::IntegralValue<int>(imortar_,"CPP_NORMALS")),
 wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(imortar_,"WEARLAW")),

@@ -1064,7 +1064,6 @@ protected:
     bool                                             nodalscale_;  // flag for nodal scaling
     bool                                             gpslip_;      // gp-wise evaluated slip increment
     INPAR::MORTAR::AlgorithmType                     algo_;        // contact algorithm
-    double                                           ppn_;         // penalty param in normal direction (needed for gpts)
     INPAR::CONTACT::SolvingStrategy                  stype_;       // solution stratety
     bool                                             cppnormal_;   // flag for closest point normal -> change in linsize
 

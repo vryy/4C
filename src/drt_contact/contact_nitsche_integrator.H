@@ -53,7 +53,10 @@ public:
         fc_(params.get<Teuchos::RCP<Epetra_FEVector> >("GLOBAL_CONTACT_FORCE",Teuchos::null)),
         kc_(params.get<Teuchos::RCP<LINALG::SparseMatrix> >("GLOBAL_CONTACT_STIFF",Teuchos::null)),
         theta_(params.get<double>("NITSCHE_THETA")),
-        nit_wgt_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(params,"NITSCHE_WEIGHTING")){}
+        nit_wgt_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(params,"NITSCHE_WEIGHTING")),
+        ppn_(imortar_.get<double>("PENALTYPARAM")),
+        ppt_(imortar_.get<double>("PENALTYPARAMTAN"))
+   {}
 
   /*!
    \brief Destructor
@@ -198,6 +201,8 @@ protected:
     Teuchos::RCP<LINALG::SparseMatrix> kc_;
     double theta_;
     INPAR::CONTACT::NitscheWeighting nit_wgt_;
+    double ppn_;
+    double ppt_;
 };
 }
 #endif // CONTACT_INTEGRATOR_NITSCHE_H
