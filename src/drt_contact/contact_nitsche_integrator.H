@@ -136,16 +136,18 @@ public:
         double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,double* sxi, double* mxi);
 
     template<int dim>
-        void BuildNormalAdjointTest(
+        void BuildAdjointTest(
         MORTAR::MortarElement& moEle,
         const double fac,
-        const Epetra_SerialDenseMatrix& dsnndd,
-        const Epetra_SerialDenseMatrix& d2snndd2,
-        const Epetra_SerialDenseMatrix& d2snnDdDn,
-        const Epetra_SerialDenseMatrix& d2snnDdDpxi,
+        const Epetra_SerialDenseMatrix& dsntdd,
+        const Epetra_SerialDenseMatrix& d2sntdd2,
+        const Epetra_SerialDenseMatrix& d2sntDdDn,
+        const Epetra_SerialDenseMatrix& d2sntDdDt,
+        const Epetra_SerialDenseMatrix& d2sntDdDpxi,
         const std::vector<GEN::pairedvector<int,double> > boundary_gpcoord_lin,
         LINALG::Matrix<dim,dim> derivtravo_slave,
-        const std::vector<GEN::pairedvector<int,double> >& contactN_deriv,
+        const std::vector<GEN::pairedvector<int,double> >& normal_deriv,
+        const std::vector<GEN::pairedvector<int,double> >& direction_deriv,
         LINALG::SerialDenseVector& adjoint_test,
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test);
 
@@ -188,12 +190,13 @@ public:
         double* boundary_gpcoord,
         std::vector<GEN::pairedvector<int,double> > boundary_gpcoord_lin,
         const double gp_wgt,
-        const double* contactN,
-        std::vector<GEN::pairedvector<int,double> >& contactN_deriv,
-        const bool useEleN,
+        const LINALG::Matrix<dim,1>& normal,
+        std::vector<GEN::pairedvector<int,double> >& normal_deriv,
+        const LINALG::Matrix<dim,1>& direction,
+        std::vector<GEN::pairedvector<int,double> >& direction_deriv,
         const double w,
-        double& cauchy_nn,
-        GEN::pairedvector<int,double>& deriv_sigma_nn,
+        double& cauchy_nt,
+        GEN::pairedvector<int,double>& deriv_sigma_nt,
         LINALG::SerialDenseVector& adjoint_test,
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test);
 

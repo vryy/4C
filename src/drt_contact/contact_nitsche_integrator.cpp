@@ -167,15 +167,23 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
     default: dserror("unknown Nitsche weighting"); break;
     }
 
-    SoEleCauchy<dim>(sele,sxi,dsxi,wgt,gpn,dnmap_unit,false,ws,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
-    SoEleCauchy<dim>(mele,mxi,dmxi,wgt,gpn,dnmap_unit,false,wm,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
+    SoEleCauchy<dim>(sele,sxi,dsxi,wgt,normal,dnmap_unit,normal,dnmap_unit,ws,
+        cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
+        normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
+    SoEleCauchy<dim>(mele,mxi,dmxi,wgt,normal,dnmap_unit,normal,dnmap_unit,wm,
+        cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
+        normal_adjoint_test_master,deriv_normal_adjoint_test_master);
 
     if (gap+cauchy_nn_weighted_average/pen>=0.)
     {
        if (abs(theta_)>1.e-12)
-         IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
+         IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
+             cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
+             sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
       if (abs(theta_)>1.e-12)
-        IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
+        IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
+            cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
+            mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
     }
 
     else
@@ -247,17 +255,16 @@ void CONTACT::CoIntegratorNitsche::SoEleCauchy(
     double* boundary_gpcoord,
     std::vector<GEN::pairedvector<int,double> > boundary_gpcoord_lin,
     const double gp_wgt,
-    const double* contactN,
-    std::vector<GEN::pairedvector<int,double> >& contactN_deriv,
-    const bool useEleN,
+    const LINALG::Matrix<dim,1>& normal,
+    std::vector<GEN::pairedvector<int,double> >& normal_deriv,
+    const LINALG::Matrix<dim,1>& direction,
+    std::vector<GEN::pairedvector<int,double> >& direction_deriv,
     const double w,
-    double& cauchy_nn,
-    GEN::pairedvector<int,double>& deriv_sigma_nn,
+    double& cauchy_nt,
+    GEN::pairedvector<int,double>& deriv_sigma_nt,
     LINALG::SerialDenseVector& adjoint_test,
     GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test)
 {
-  if (useEleN)
-    dserror("not supported for now");
 
   LINALG::Matrix<dim,1> pxsi(true);
   LINALG::Matrix<dim,dim> derivtravo_slave;
@@ -283,37 +290,37 @@ void CONTACT::CoIntegratorNitsche::SoEleCauchy(
     dserror("Nitsche contact not implemented for used (bulk) elements");
   }
 
-  LINALG::Matrix<dim,1> normal(contactN,false);
-
-  double sigma_nn;
+  double sigma_nt;
   Epetra_SerialDenseMatrix dsdd;
-  Epetra_SerialDenseMatrix dsnndd , d2snndd2 , d2snnDdDn, d2snnDdDpxi;
-  LINALG::Matrix<dim,1> dsnndn,dsnndpxi;
+  Epetra_SerialDenseMatrix dsntdd , d2sntdd2 , d2sntDdDn, d2sntDdDt, d2sntDdDpxi;
+  LINALG::Matrix<dim,1> dsntdn,dsntdt,dsntdpxi;
   dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())->GetCauchyAtXi(
-      pxsi,moEle.MoData().ParentDisp(),normal,normal,sigma_nn,&dsnndd,&d2snndd2,&d2snnDdDn,NULL,&d2snnDdDpxi,&dsnndn,NULL,&dsnndpxi
+      pxsi,moEle.MoData().ParentDisp(),normal,direction,sigma_nt,&dsntdd,&d2sntdd2,&d2sntDdDn,&d2sntDdDt,&d2sntDdDpxi,&dsntdn,&dsntdt,&dsntdpxi
       );
-  d2snnDdDn.Scale(2.);
-  dsnndn.Scale(2.);
 
-  cauchy_nn += w*sigma_nn;
+  cauchy_nt += w*sigma_nt;
 
   for (int i=0;i<moEle.ParentElement()->NumNode()*dim;++i)
-    deriv_sigma_nn[moEle.MoData().ParentDof().at(i)] += w*dsnndd(i,0);
+    deriv_sigma_nt[moEle.MoData().ParentDof().at(i)] += w*dsntdd(i,0);
 
   for (int i=0;i<dim-1;++i)
     for (GEN::pairedvector<int,double>::const_iterator p=boundary_gpcoord_lin[i].begin();p!=boundary_gpcoord_lin[i].end();++p)
     {
-      double& ref=deriv_sigma_nn[p->first];
+      double& ref=deriv_sigma_nt[p->first];
       for (int k=0;k<dim;++k)
-        ref+=dsnndpxi(k)*derivtravo_slave(k,i)*p->second*w;
+        ref+=dsntdpxi(k)*derivtravo_slave(k,i)*p->second*w;
     }
 
   for (int d=0;d<dim;++d)
-    for (GEN::pairedvector<int,double>::const_iterator p=contactN_deriv[d].begin();p!=contactN_deriv[d].end();++p)
-      deriv_sigma_nn[p->first]+=dsnndn(d)*p->second*w;
+    for (GEN::pairedvector<int,double>::const_iterator p=normal_deriv[d].begin();p!=normal_deriv[d].end();++p)
+      deriv_sigma_nt[p->first]+=dsntdn(d)*p->second*w;
+
+  for (int d=0;d<dim;++d)
+    for (GEN::pairedvector<int,double>::const_iterator p=direction_deriv[d].begin();p!=direction_deriv[d].end();++p)
+      deriv_sigma_nt[p->first]+=dsntdt(d)*p->second*w;
 
   if (abs(theta_)>1.e-12)
-    BuildNormalAdjointTest<dim>(moEle,w,dsnndd,d2snndd2,d2snnDdDn,d2snnDdDpxi,boundary_gpcoord_lin,derivtravo_slave,contactN_deriv,adjoint_test,deriv_adjoint_test);
+    BuildAdjointTest<dim>(moEle,w,dsntdd,d2sntdd2,d2sntDdDn,d2sntDdDt,d2sntDdDpxi,boundary_gpcoord_lin,derivtravo_slave,normal_deriv,direction_deriv,adjoint_test,deriv_adjoint_test);
 
   return;
 }
@@ -368,39 +375,49 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(
 }
 
 template <int dim>
-void CONTACT::CoIntegratorNitsche::BuildNormalAdjointTest(
+void CONTACT::CoIntegratorNitsche::BuildAdjointTest(
     MORTAR::MortarElement& moEle,
     const double fac,
-    const Epetra_SerialDenseMatrix& dsnndd,
-    const Epetra_SerialDenseMatrix& d2snndd2,
-    const Epetra_SerialDenseMatrix& d2snnDdDn,
-    const Epetra_SerialDenseMatrix& d2snnDdDpxi,
+    const Epetra_SerialDenseMatrix& dsntdd,
+    const Epetra_SerialDenseMatrix& d2sntdd2,
+    const Epetra_SerialDenseMatrix& d2sntDdDn,
+    const Epetra_SerialDenseMatrix& d2sntDdDt,
+    const Epetra_SerialDenseMatrix& d2sntDdDpxi,
     const std::vector<GEN::pairedvector<int,double> > boundary_gpcoord_lin,
     LINALG::Matrix<dim,dim> derivtravo_slave,
-    const std::vector<GEN::pairedvector<int,double> >& contactN_deriv,
+    const std::vector<GEN::pairedvector<int,double> >& normal_deriv,
+    const std::vector<GEN::pairedvector<int,double> >& direction_deriv,
     LINALG::SerialDenseVector& adjoint_test,
     GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test)
 {
   for (int i=0;i<moEle.ParentElement()->NumNode()*dim;++i)
   {
-    adjoint_test(i) = fac*dsnndd(i,0);
+    adjoint_test(i) = fac*dsntdd(i,0);
     LINALG::SerialDenseVector& at=deriv_adjoint_test[moEle.MoData().ParentDof().at(i)];
     for (int j=0;j<moEle.ParentElement()->NumNode()*dim;++j)
-      at(j)+=fac*d2snndd2(i,j);
+      at(j)+=fac*d2sntdd2(i,j);
   }
 
   for (int d=0;d<dim;++d)
-    for (GEN::pairedvector<int,double>::const_iterator p=contactN_deriv[d].begin();p!=contactN_deriv[d].end();++p)
+    for (GEN::pairedvector<int,double>::const_iterator p=normal_deriv[d].begin();p!=normal_deriv[d].end();++p)
     {
       LINALG::SerialDenseVector& at=deriv_adjoint_test[p->first];
       for (int i=0;i<moEle.ParentElement()->NumNode()*dim;++i)
-        at(i)+=fac*d2snnDdDn(i,d)*p->second;
+        at(i)+=fac*d2sntDdDn(i,d)*p->second;
+    }
+
+  for (int d=0;d<dim;++d)
+    for (GEN::pairedvector<int,double>::const_iterator p=direction_deriv[d].begin();p!=direction_deriv[d].end();++p)
+    {
+      LINALG::SerialDenseVector& at=deriv_adjoint_test[p->first];
+      for (int i=0;i<moEle.ParentElement()->NumNode()*dim;++i)
+        at(i)+=fac*d2sntDdDt(i,d)*p->second;
     }
 
   Epetra_SerialDenseMatrix tmp(moEle.ParentElement()->NumNode()*dim,dim,false);
   Epetra_SerialDenseMatrix deriv_trafo(::View,derivtravo_slave.A(),
       derivtravo_slave.Rows(),derivtravo_slave.Rows(),derivtravo_slave.Columns());
-  if (tmp.Multiply('N','N',1.,d2snnDdDpxi,deriv_trafo,0.)) dserror("multiply failed");
+  if (tmp.Multiply('N','N',1.,d2sntDdDpxi,deriv_trafo,0.)) dserror("multiply failed");
   for (int d=0;d<dim-1;++d)
     for (GEN::pairedvector<int,double>::const_iterator p=boundary_gpcoord_lin[d].begin();p!=boundary_gpcoord_lin[d].end();++p)
     {
