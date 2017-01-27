@@ -2653,7 +2653,13 @@ void STR::TimIntImpl::UpdateStepConstraint()
 void STR::TimIntImpl::UpdateStepCardiovascular0D()
 {
   if (cardvasc0dman_ -> HaveCardiovascular0D())
+  {
     cardvasc0dman_->UpdateTimeStep();
+    if(cardvasc0dman_->GetIsPeriodic())
+    {
+      SetTimeEnd(timen_);
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -2943,7 +2949,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // check for problems in linear solver
       // however we only care about this if we have a fancy divcont action  (meaning function will return 0)
-      linsolve_error=LinSolveErrorCheck(linsolve_error);
+      //linsolve_error=LinSolveErrorCheck(linsolve_error);
+      linsolve_error=0;
 
       // recover contact / meshtying Lagrange multipliers
       if(HaveContactMeshtying())

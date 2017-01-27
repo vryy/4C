@@ -39,6 +39,7 @@ namespace DRT
 namespace DRT
 {
   class Discretization;
+  class Structure;
 }
 
 namespace LINALG
@@ -125,6 +126,16 @@ namespace UTILS
          \brief Update cardiovascular0d dofs
     */
     void UpdateTimeStep();
+
+    /*!
+         \brief check periodic state of cardiovascular model
+    */
+    void CheckPeriodic();
+
+
+    bool IsRealtiveEqualTo(const double A, const double B, const double Ref);
+
+    bool ModuloIsRealtiveZero(const double value, const double modulo, const double Ref);
 
     /*!
          \brief Update cardiovascular0d dofs
@@ -347,6 +358,11 @@ namespace UTILS
       return cardvascrespir0d_syspulperiphcirculation_;
     }
 
+    bool GetIsPeriodic() const
+    {
+      return is_periodic_;
+    };
+
   private:
 
     // don't want = operator, cctor and destructor
@@ -369,6 +385,12 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> v_np_; ///< vol vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> v_m_; ///< vol vector at mid-point
     Teuchos::RCP<Epetra_Vector> cardvasc0d_res_m_; ///< Cardiovascular0D full rhs vector, at t_{n+theta}
+
+    Teuchos::RCP<Epetra_Vector> cv0ddof_T_N_; ///< cvdof vector at periodic time T_{N}
+    Teuchos::RCP<Epetra_Vector> cv0ddof_T_NP_; ///< cvdof vector at periodic time T_{N+1}
+    double T_period_; ///< periodic time
+    double eps_periodic_; ///< tolerance for periodic state
+    bool is_periodic_; ///< true, if periodic state is reached, false otherwise
 
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_n_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_np_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n+1}
@@ -408,6 +430,7 @@ namespace UTILS
     Teuchos::ParameterList strparams_; ///< structure input parameters
     Teuchos::ParameterList cv0dparams_; ///< 0D cardiovascular input parameters
     INPAR::STR::IntegrationStrategy intstrat_; ///< structural time-integration strategy (old vs. standard)
+
   }; //class
 }
 #endif /*CARDIOVASCULAR0D_MANAGER_H*/

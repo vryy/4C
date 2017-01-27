@@ -57,6 +57,9 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                    INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_direct),
                                  &cardvasc0dstruct);
 
+  DoubleParameter("T_PERIOD",-1.0,"periodic time",&cardvasc0dstruct);
+  DoubleParameter("EPS_PERIODIC",1.0e-16,"tolerance for periodic state",&cardvasc0dstruct);
+
 
 
   Teuchos::ParameterList& cardvasc0dsyspulcirc = cardvasc0dstruct.sublist("SYS-PUL CIRCULATION PARAMETERS",false,"");

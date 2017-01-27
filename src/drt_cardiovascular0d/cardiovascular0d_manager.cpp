@@ -95,6 +95,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   Cardiovascular0DID_=0;
   offsetID_=10000;
 
+//  totaltime_ = 0.0;
+
   cardvasc0d_model_=Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(actdisc_,"",currentID));
   //Check what kind of Cardiovascular0D boundary conditions there are
   cardvasc0d_4elementwindkessel_=Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(actdisc_,"Cardiovascular0D4ElementWindkesselStructureCond",currentID));
@@ -186,6 +188,9 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     v_np_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     v_m_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
 
+    cv0ddof_T_N_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
+    cv0ddof_T_NP_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
+
     cardvasc0d_res_m_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
 
     cardvasc0d_df_n_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
@@ -212,6 +217,12 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     cardvasc0d_f_n_->PutScalar(0.0);
     cardvasc0d_f_np_->PutScalar(0.0);
     cardvasc0d_f_m_->PutScalar(0.0);
+
+    cv0ddof_T_N_->PutScalar(0.0);
+    cv0ddof_T_NP_->PutScalar(0.0);
+    T_period_ = cv0dparams.get("T_PERIOD",-1.0);
+    eps_periodic_ = cv0dparams.get("EPS_PERIODIC",1.0e-16);
+    is_periodic_ = false;
 
     cardiovascular0dstiffness_->Zero();
 
@@ -251,6 +262,9 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     cardvasc0d_df_n_->Export(*cardvasc0d_df_n_red,*cardvasc0dimpo_,Insert);
     cardvasc0d_f_n_->PutScalar(0.0);
     cardvasc0d_f_n_->Export(*cardvasc0d_f_n_red,*cardvasc0dimpo_,Insert);
+
+    cv0ddof_T_N_->Update(1.0,*cv0ddof_np_,0.0);
+    cv0ddof_T_NP_->Update(1.0,*cv0ddof_np_,0.0);
 
     strparams_ = strparams;
     cv0dparams_ = cv0dparams;
@@ -360,15 +374,69 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
 
 void UTILS::Cardiovascular0DManager::UpdateTimeStep()
 {
+  if ( T_period_ > 0.0 and ModuloIsRealtiveZero(totaltime_,T_period_,totaltime_) )
+  {
+    cv0ddof_T_NP_->Update(1.0,*cv0ddof_np_,0.0);
+    CheckPeriodic();
+    cv0ddof_T_N_->Update(1.0,*cv0ddof_T_NP_,0.0);
+  }
+
   cv0ddof_n_->Update(1.0,*cv0ddof_np_,0.0);
   v_n_->Update(1.0,*v_np_,0.0);
 
   cardvasc0d_df_n_->Update(1.0,*cardvasc0d_df_np_,0.0);
   cardvasc0d_f_n_->Update(1.0,*cardvasc0d_f_np_,0.0);
 
+  if(is_periodic_)
+  {
+    if (actdisc_->Comm().MyPID()==0)
+      std::cout << "============ PERIODIC STATE REACHED ! ============"<< std::endl;
+  }
+
   return;
 
 }
+
+void UTILS::Cardiovascular0DManager::CheckPeriodic()
+{
+  Teuchos::RCP<Epetra_Vector> cv0ddof_T_N_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
+  Teuchos::RCP<Epetra_Vector> cv0ddof_T_NP_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
+  LINALG::Export(*cv0ddof_T_N_,*cv0ddof_T_N_red);
+  LINALG::Export(*cv0ddof_T_NP_,*cv0ddof_T_NP_red);
+
+  std::vector<double> vals(numCardiovascular0DID_);
+  for (int j = 0; j < numCardiovascular0DID_; j++)
+  {
+    vals[j] = fabs( ((*cv0ddof_T_NP_red)[j]-(*cv0ddof_T_N_red)[j])/fmax(1.0,fabs((*cv0ddof_T_N_red)[j])) );
+  }
+
+  if(*std::max_element(vals.begin(),vals.end()) <= eps_periodic_)
+    is_periodic_ = true;
+  else
+    is_periodic_ = false;
+
+  return;
+
+}
+
+
+/*----------------------------------------------------------------------*
+ | Compare if two doubles are relatively equal               Thon 08/15 |
+ *----------------------------------------------------------------------*/
+bool UTILS::Cardiovascular0DManager::IsRealtiveEqualTo(const double A, const double B, const double Ref)
+{
+  return ( (fabs(A-B)/Ref) < 1e-12 );
+}
+
+/*----------------------------------------------------------------------*
+ | Compare if A mod B is relatively equal to zero            Thon 08/15 |
+ *----------------------------------------------------------------------*/
+bool UTILS::Cardiovascular0DManager::ModuloIsRealtiveZero(const double value, const double modulo, const double Ref)
+{
+  return IsRealtiveEqualTo(fmod(value+modulo/2,modulo)-modulo/2,0.0,Ref);
+}
+
+
 
 void UTILS::Cardiovascular0DManager::ResetStep()
 {
