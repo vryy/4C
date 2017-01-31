@@ -429,9 +429,9 @@ namespace PARTICLE
     //! overloadable function to apply external actions (i.e. forces, accelerations, etc) and to erase outdated vectors
     virtual void UpdateExtActions(bool init = false);
 
-    virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector);
+    virtual void GravityForces(Teuchos::RCP<Epetra_Vector> stateVector, const double extMulti = 1.0);
 
-    virtual void GravityAcc(Teuchos::RCP<Epetra_Vector> stateVector);
+    virtual void GravityAcc(Teuchos::RCP<Epetra_Vector> stateVector, const double extMulti = 1.0);
 
     //@}
 

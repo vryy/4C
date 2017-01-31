@@ -37,10 +37,8 @@ LINALG::Matrix<3,3> PARTICLE::WeightFunction_Base::HessW(const LINALG::Matrix<3,
   // compute the resized first derivative
   const double dw_r = dw / rNorm2;
   // diadic product
-  LINALG::Matrix<1,3> rVersorT;
-  rVersorT.UpdateT(rVersor);
   LINALG::Matrix<3,3> rVersor2;
-  rVersor2.MultiplyNN(rVersor, rVersorT);
+  rVersor2.MultiplyNT(rVersor, rVersor);
   // create the hessian and add the various terms
   LINALG::Matrix<3,3> hessW;
   for (int ii = 0; ii<3; ++ii)

@@ -107,12 +107,6 @@ void PARTICLE::Utils::Density2Pressure(
   if (specEnthalpy == Teuchos::null)
     dserror("specEnthalpy is a null pointer!");
 
-  //extract the interesting parameters
-  const double specEnthalpyST = extParticleMat->SpecEnthalpyST();
-  const double specEnthalpyTL = extParticleMat->SpecEnthalpyTL();
-  const double speedOfSoundS = extParticleMat->SpeedOfSoundS();
-  const double speedOfSoundL = extParticleMat->SpeedOfSoundL();
-
   // rebuild the pressure vector
   if (trg_createPressureVector || pressure == Teuchos::null)
   {
@@ -122,16 +116,8 @@ void PARTICLE::Utils::Density2Pressure(
   // compute inertia for every particle
   for (int lidNode = 0; lidNode < deltaDensity->MyLength(); ++lidNode)
   {
-    const double deltaDensity_i = (*deltaDensity)[lidNode];
-    if ((*specEnthalpy)[lidNode] <= specEnthalpyST)
-      (*pressure)[lidNode] = Density2Pressure(speedOfSoundS, deltaDensity_i);
-    else if ((*specEnthalpy)[lidNode] >= specEnthalpyTL)
-      (*pressure)[lidNode] = Density2Pressure(speedOfSoundL, deltaDensity_i);
-    else
-    {
-      const double speedOfSoundT = extParticleMat->SpeedOfSoundT((*specEnthalpy)[lidNode]);
-      (*pressure)[lidNode] = Density2Pressure(speedOfSoundT, deltaDensity_i);
-    }
+    const double speedOfSound = SpeedOfSound((*specEnthalpy)[lidNode], extParticleMat);
+    (*pressure)[lidNode] = Density2Pressure(speedOfSound, (*deltaDensity)[lidNode]);
   }
 }
 
@@ -152,4 +138,24 @@ double PARTICLE::Utils::IntersectionAreaPvsP(const double& radius1, const double
                  - radius2 * radius2 * radius2 * radius2 / (4 * dis * dis)
                  + 0.5 * ( radius1 * radius1 + radius2 * radius2 + radius1 * radius1 * radius2 * radius2));
 
+}
+
+/*-----------------------------------------------------------------------------*/
+// Provide the correct speed of sound
+double PARTICLE::Utils::SpeedOfSound(
+    const double &specEnthalpy,
+    const MAT::PAR::ExtParticleMat* extParticleMat)
+{
+  if (specEnthalpy <= extParticleMat->SpecEnthalpyST())
+  {
+    return extParticleMat->SpeedOfSoundS();
+  }
+  else if (specEnthalpy >= extParticleMat->SpecEnthalpyTL())
+  {
+    return extParticleMat->SpeedOfSoundL();
+  }
+  else
+  {
+    return extParticleMat->SpeedOfSoundT(specEnthalpy);
+  }
 }

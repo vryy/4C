@@ -86,13 +86,19 @@ namespace PARTICLE
     virtual void CalcCoeff();
 
     //! Evaluate mid-state vectors by averaging end-point vectors
-    virtual void MidState();
+    virtual void PredictMidState();
 
     //! Evaluate new-state vectors by Newmark's formulae
-    virtual void NewState(const bool disAreEqual = false);
+    virtual void PredictNewState(const bool disAreEqual = false);
 
     //! Evaluate the residual (acceleration)
-    virtual void ResidualAcc();
+    virtual void ResAcc();
+
+    //! Evaluate the gradient of the residual (acceleration)
+    virtual void GradResAcc(const double dt);
+
+    //! Compute deltaDis and update disn - Newton-Rhapson iteration
+    virtual void CorrectDis();
 
     //! Set up the additional state vectors required in the genAlpha algorithm
     virtual void SetupStateVectors();
@@ -124,6 +130,10 @@ namespace PARTICLE
     double alphaf_;  //!< factor [0,1)
     double alpham_;  //!< factor [-1,1)
     double rho_inf_; //!< factor[0,1]
+    const double tol_; //! gen-alpha residual tollerance
+    const int maxIt_; //! gen-alpha maximum number of iterations
+
+
 
     Teuchos::RCP<Epetra_Vector> mGradW_;
     //! m * hess(weightFunction) for meshfree methods
@@ -136,6 +146,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> accm_;
     //! Acceleration residue \f${R}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
     Teuchos::RCP<Epetra_Vector> resAcc_;
+    //! Gradient of the acceleration residue \f$\grad{R}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
+    Teuchos::RCP<Epetra_MultiVector> gradResAcc_;
 
   };  // class TimIntGenAlpha
 

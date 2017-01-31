@@ -392,7 +392,7 @@ void PARTICLE::TimInt::SetInitialFields()
   case INPAR::PARTICLE::MeshFree :
   {
     // set the rest density used for pressure-related dynamics
-    restDensity_ = initDensity;
+    restDensity_ = PARTICLE_DELTADENSFAC * initDensity;
   }// no break
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
@@ -422,8 +422,8 @@ void PARTICLE::TimInt::SetInitialFields()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(PARTICLE_DELTADENSFAC * restDensity_);
-    deltaDensity->Update(1.0, *(*density_)(0), 1.0);
+    deltaDensity->PutScalar(restDensity_);
+    deltaDensity->Update(1.0, *(*density_)(0), -1.0);
     PARTICLE::Utils::Density2Pressure(deltaDensity, (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true);
   }
 }
@@ -673,8 +673,8 @@ void PARTICLE::TimInt::ReadRestartState()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(PARTICLE_DELTADENSFAC * restDensity_);
-    deltaDensity->Update(1.0,*densityn_,1.0);
+    deltaDensity->PutScalar(restDensity_);
+    deltaDensity->Update(1.0,*densityn_,-1.0);
     PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
   }
 
@@ -1173,16 +1173,17 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVe
 /* Update TimIntMStep state vector with the new dof map from discret_*/
 void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &stateVector, bool trg_nodeVectorType)
 {
+  std::cout << "puppa in posa\n";
   if (stateVector != Teuchos::null)
   {
-    const int numcol = stateVector->NumVectors();
-    for (int ii = 0; ii < numcol; ++ii)
-    {
-      Teuchos::RCP<Epetra_Vector> colVec = Teuchos::rcp((*stateVector)(ii));
-      UpdateStateVectorMap(colVec, trg_nodeVectorType);
-    }
+    Teuchos::RCP<Epetra_MultiVector> old = stateVector;
+    stateVector = Teuchos::rcp(new Epetra_MultiVector(*DofRowMapView(), old->NumVectors(), true));
+    int err = stateVector->Export(*old, *dofmapexporter_, Insert);
+    if (err)
+      dserror("Export using exporter returned err=%d", err);
 
   }
+  std::cout << "fatto\n";
 }
 
 /*----------------------------------------------------------------------*/
@@ -1222,8 +1223,8 @@ void PARTICLE::TimInt::UpdatePressure()
   if (pressure_ != Teuchos::null && specEnthalpyn_ != Teuchos::null && densityn_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(- restDensity_);
-    deltaDensity->Update(1.0,*densityn_,1.0);
+    deltaDensity->PutScalar(restDensity_);
+    deltaDensity->Update(1.0,*densityn_,-1.0);
     PARTICLE::Utils::Density2Pressure(deltaDensity, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
   }
 }
@@ -1435,7 +1436,7 @@ void PARTICLE::TimInt::UpdateExtActions(bool init)
 /*----------------------------------------------------------------------*
  | calculate and ADD gravity forces (no reset)             katta 01/17  |
  *----------------------------------------------------------------------*/
-void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force)
+void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force, const double extMulti)
 {
   if (force != Teuchos::null)
   {
@@ -1446,7 +1447,7 @@ void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force)
       //// gravity acc = mass_p * g
       for(int dim=0; dim<3; ++dim)
       {
-        (*force)[i*3+dim] = (*mass_)[i] * gravity_acc(dim);
+        (*force)[i*3+dim] = extMulti * (*mass_)[i] * gravity_acc(dim);
       }
       /*------------------------------------------------------------------*/
     }
@@ -1460,7 +1461,7 @@ void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force)
 /*----------------------------------------------------------------------*
  | calculate and ADD gravity forces (no reset)             katta 01/17  |
  *----------------------------------------------------------------------*/
-void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc)
+void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc, const double extMulti)
 {
   if (acc != Teuchos::null)
   {
@@ -1471,7 +1472,7 @@ void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc)
       //// gravity acc = mass_p * g
       for(int dim=0; dim<3; ++dim)
       {
-        (*acc)[i*3+dim] = gravity_acc(dim);
+        (*acc)[i*3+dim] = extMulti * gravity_acc(dim);
       }
       /*------------------------------------------------------------------*/
     }

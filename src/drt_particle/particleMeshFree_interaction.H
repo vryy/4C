@@ -99,6 +99,14 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> veln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<const Epetra_Vector> mass,
+        Teuchos::RCP<const Epetra_Vector> specEnthalpyn);
+
+    virtual void Init(
+        const int step,
+        Teuchos::RCP<const Epetra_Vector> disn,
+        Teuchos::RCP<const Epetra_Vector> veln,
+        Teuchos::RCP<const Epetra_Vector> radiusn,
+        Teuchos::RCP<const Epetra_Vector> mass,
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> temperature);
 
@@ -121,10 +129,7 @@ namespace PARTICLE
 
     //! update weights and distances in all the neighbours (all maps, all the particles, all the walls)
     //! to speed-up the process the interactions with "step" are skipped. -1 means that nothing is skipped
-    virtual void UpdateWeights(
-        const Teuchos::RCP<DRT::Discretization>& walldiscret,
-        const Teuchos::RCP<const Epetra_Vector>& walldisn,
-        const int step = -1);
+    virtual void UpdateWeights(const int step = -1);
 
     //! update neighbour weights
 
@@ -173,6 +178,27 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> accn,
         const double extMulti = 1.0);
 
+    /// compute the divergence-free pressure forces adjusting the stiffness parameters
+    /// Steps 6 and 7 (only the third term) of Algorithm 2 in http://dx.doi.org/10.1145/2786784.2786796
+    virtual void Inter_pvp_divFreePressureAcc(
+        const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
+        const double dt,
+        const double extMulti = 1.0);
+
+    /// compute the constant-density pressure forces adjusting the stiffness parameters
+    /// Steps 6 and 7 (only the third term) of Algorithm 3 in http://dx.doi.org/10.1145/2786784.2786796
+    virtual void Inter_pvp_constDensityPressureAcc(
+        const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
+        const double dt,
+        const double extMulti = 1.0);
+
+    /// compute the gradient of the momentum part of the particle vs particle interactions
+    /// if you change this function you need to touch the pressure definition too!
+    virtual void Inter_pvp_gradAccP(
+        const Teuchos::RCP<Epetra_MultiVector> gradAccP,
+        const double &restDensity,
+        const double extMulti = 1.0);
+
     /// compute the density part of the particle vs wall interactions
     virtual void Inter_pvw_densityDot(
         const Teuchos::RCP<Epetra_Vector> densityDotn,
@@ -188,18 +214,9 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
         const double extMulti = 1.0);
 
-    /// compute the divergence-free pressure forces adjusting the stiffness parameters
-    /// Steps 6 and 7 (only the third term) of Algorithm 2 in http://dx.doi.org/10.1145/2786784.2786796
-    virtual void Inter_pvp_divFreePressureAcc(
-        const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
-        const double dt,
-        const double extMulti = 1.0);
-
-    /// compute the constant-density pressure forces adjusting the stiffness parameters
-    /// Steps 6 and 7 (only the third term) of Algorithm 3 in http://dx.doi.org/10.1145/2786784.2786796
-    virtual void Inter_pvp_constDensityPressureAcc(
-        const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
-        const double dt,
+    virtual void Inter_pvw_gradAccP(
+        const Teuchos::RCP<Epetra_MultiVector> gradAccP,
+        const double &restDensity,
         const double extMulti = 1.0);
 
     //@}
@@ -207,19 +224,24 @@ namespace PARTICLE
     //! @name mesh free fields
     //@{
 
-    /// compute density - mesh free sense
-    virtual void MF_mW(
-        const Teuchos::RCP<Epetra_Vector> densityn,
-        const double extMulti = 1.0);
-
     /// compute alpha factors and update colParticles - mesh free sense
     // http://dx.doi.org/10.1145/2786784.2786796
     // Equation 8
     virtual void MF_alpha();
 
+    /// compute density - mesh free sense
+    virtual void MF_mW(
+        const Teuchos::RCP<Epetra_Vector> densityn,
+        const double extMulti = 1.0);
+
     /// compute m * gradW - mesh free sense
     virtual void MF_mGradW(
         const Teuchos::RCP<Epetra_Vector> densityn,
+        const double extMulti = 1.0);
+
+    /// compute m * hessW - mesh free sense
+    virtual void MF_mHessW(
+        const Teuchos::RCP<Epetra_MultiVector> densityn,
         const double extMulti = 1.0);
 
     //@}
@@ -265,9 +287,6 @@ namespace PARTICLE
     virtual void AddNewNeighbours_w(
         const ParticleMF& particle_i,
         const boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
-        const Teuchos::RCP<DRT::Discretization>& walldiscret,
-        const Teuchos::RCP<const Epetra_Vector>& walldisn,
-        const Teuchos::RCP<const Epetra_Vector>& wallveln,
         const int step);
 
     //! add to the neighbour maps the neighbours of the present time step - heat sources
@@ -277,10 +296,7 @@ namespace PARTICLE
 
     virtual void UpdateWeights_p(const int step = -1);
 
-    virtual void UpdateWeights_w(
-        const Teuchos::RCP<DRT::Discretization>& walldiscret,
-        const Teuchos::RCP<const Epetra_Vector>& walldisn,
-        const int step = -1);
+    virtual void UpdateWeights_w(const int step = -1);
 
     //@}
 

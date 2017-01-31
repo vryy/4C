@@ -56,16 +56,22 @@ namespace PARTICLE
       bool trg_createInertiaVector = false);
 
     //! Compute the pressure from the proper speed of sound and the density (small density variation hypotesis)
+    /// if you change this function you need to touch Inter_pvp_gradAccP too!
     static double Density2Pressure(const double& speedOfSound, const double& deltaDensity)
       { return speedOfSound * speedOfSound * deltaDensity; };
 
     //! Compute pressure for the entire vector
+    /// if you change this function you need to touch Inter_pvp_gradAccP too!
     static void Density2Pressure(
         const Teuchos::RCP<const Epetra_Vector> deltaDensity,
         const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
         Teuchos::RCP<Epetra_Vector> &pressure,
         const MAT::PAR::ExtParticleMat* extParticleMat,
         bool trg_createPressureVector = false);
+
+    static double SpeedOfSound(
+        const double& specEnthalpy,
+        const MAT::PAR::ExtParticleMat* extParticleMat);
 
     //! Compute the temperature from the specEnthalpy
     static double SpecEnthalpy2Temperature(

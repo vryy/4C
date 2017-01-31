@@ -57,25 +57,6 @@ namespace PARTICLE
       ddw_ij_(0.0),
       ddw_ji_(0.0) {}
 
-    InterDataPvP(
-    const LINALG::Matrix<3,1> rRelVersor_ij,
-    const double rRelNorm2,
-    const double step,
-    const double w_ij,
-    const double w_ji,
-    const double dw_ij,
-    const double dw_ji
-    ) :
-      rRelVersor_ij_(rRelVersor_ij),
-      rRelNorm2_(rRelNorm2),
-      step_(step),
-      w_ij_(w_ij),
-      w_ji_(w_ji),
-      dw_ij_(dw_ij),
-      dw_ji_(dw_ji),
-      ddw_ij_(0.0),
-      ddw_ji_(0.0) {}
-
     ~InterDataPvP() {}
 
     /// internal variables
@@ -113,21 +94,6 @@ namespace PARTICLE
       w_(w),
       dw_(dw),
       ddw_(ddw) {}
-
-
-    InterDataPvW(
-    const LINALG::Matrix<3,1> rRelVersor,
-    const double rRelNorm2,
-    const int step,
-    const double dw
-    ) :
-      rRelVersor_(rRelVersor),
-      rRelNorm2_(rRelNorm2),
-      step_(step),
-      w_(0.0),
-      dw_(dw),
-      ddw_(0.0) {}
-
 
     InterDataPvW() :
       rRelNorm2_(0.0),

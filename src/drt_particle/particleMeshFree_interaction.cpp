@@ -183,8 +183,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
     Teuchos::RCP<const Epetra_Vector> veln,
     Teuchos::RCP<const Epetra_Vector> radiusn,
     Teuchos::RCP<const Epetra_Vector> mass,
-    Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-    Teuchos::RCP<const Epetra_Vector> temperature)
+    Teuchos::RCP<const Epetra_Vector> specEnthalpyn)
 {
   // check
   if (colParticles_.size() != 0)
@@ -196,7 +195,15 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
   trg_updatedColorFieldGradient_ = false;
 
   // set up the local data storage and fill it with the state vectors
+  if (!neighbours_p_.empty() || !neighbours_w_.empty() || !neighbours_hs_.empty())
+  {
+    std::cout << "The neighbours have memory (They are not empty)!\n";
+    std::cout << "However, lid row/col ids were not updated (because not yet updated). It is safe only when not parallel\n";
+    std::cin.get();
+  }
   InitColParticles();
+
+
 
   // set up positions and radii to set up the neighbours
   SetStateVector(disn, Dis);
@@ -209,7 +216,24 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
   SetStateVector(veln, Vel);
   SetStateVector(mass, Mass);
   SetStateVector(specEnthalpyn, SpecEnthalpy);
-  SetStateVector(temperature, Temperature);
+}
+
+/*----------------------------------------------------------------------*
+ | set up internal variables for future computations       katta 12/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
+    const int step,
+    Teuchos::RCP<const Epetra_Vector> disn,
+    Teuchos::RCP<const Epetra_Vector> veln,
+    Teuchos::RCP<const Epetra_Vector> radiusn,
+    Teuchos::RCP<const Epetra_Vector> mass,
+    Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
+    Teuchos::RCP<const Epetra_Vector> temperature)
+{
+  Init(step, disn, veln, radiusn, mass, specEnthalpyn);
+
+  // set the other state vectors
+  SetStateVector(temperature, StateVectorType::Temperature);
 }
 
 /*----------------------------------------------------------------------*
@@ -498,16 +522,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
   neighbours_w_.resize(numRowParticles);
   neighbours_hs_.resize(numRowParticles);
 
-  // get wall discretization and states for particles
-  Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();
-  Teuchos::RCP<const Epetra_Vector> walldisn(Teuchos::null);
-  Teuchos::RCP<const Epetra_Vector> wallveln(Teuchos::null);
-  if(walldiscret != Teuchos::null)
-  {
-    walldisn = walldiscret->GetState("walldisnp");
-    wallveln = walldiscret->GetState("wallvelnp");
-  }
-
   // bin checker
   std::set<int> examinedbins;
 
@@ -553,7 +567,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
 
       AddNewNeighbours_p(particle_i, neighboursLinf_p, step);
 
-      AddNewNeighbours_w(particle_i, neighboursLinf_w, walldiscret, walldisn, wallveln, step);
+      AddNewNeighbours_w(particle_i, neighboursLinf_w, step);
 
       AddNewNeighbours_hs(particle_i, neighboursLinf_hs);
     }
@@ -586,40 +600,46 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
       rRel_ij.Update(1.0, particle_i.dis_, -1.0, particle_j.dis_); // inward vector
       const double rRelNorm2 = rRel_ij.Norm2();
 
-      const double dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+
       const double w_ij = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
-      double dw_ji = 0;
+      const double dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+      const double ddw_ij = weightFunctionHandler_->DDW(rRelNorm2, particle_i.radius_);
+
       double w_ji = 0;
+      double dw_ji = 0;
+      double ddw_ji = 0;
+
       if (particle_j.owner_ == myrank_)
       {
         if (particle_i.radius_ == particle_j.radius_)
         {
-          dw_ji = dw_ij;
-          w_ji = w_ij;
+            w_ji = w_ij;
+           dw_ji = dw_ij;
+          ddw_ji = ddw_ij;
         }
         else
         {
-          dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
-          w_ji = weightFunctionHandler_->W(rRelNorm2, particle_j.radius_);
+            w_ji = weightFunctionHandler_->W(rRelNorm2, particle_j.radius_);
+           dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
+          ddw_ji = weightFunctionHandler_->DDW(rRelNorm2, particle_j.radius_);
         }
       }
 
       // push_back
-      if (dw_ij != 0 || dw_ji != 0)
-      {
-        LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
-        rRelVersor_ij.Scale(1/rRelNorm2);
+      LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
+      rRelVersor_ij.Scale(1/rRelNorm2);
 
-        const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid_);
-        (neighbours_p_[lidNodeRow_i])[lidNodeCol_j] = InterDataPvP(
-            rRelVersor_ij,
-            rRelNorm2,
-            step,
-            w_ij,
-            w_ji,
-            dw_ij,
-            dw_ji);
-      }
+      const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid_);
+      (neighbours_p_[lidNodeRow_i])[lidNodeCol_j] = InterDataPvP(
+          rRelVersor_ij,
+          rRelNorm2,
+          step,
+          w_ij,
+          w_ji,
+          dw_ij,
+          dw_ji,
+          ddw_ij,
+          ddw_ji);
     }
   }
 }
@@ -630,11 +650,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
 void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
     const ParticleMF& particle_i,
     const boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
-    const Teuchos::RCP<DRT::Discretization>& walldiscret,
-    const Teuchos::RCP<const Epetra_Vector>& walldisn,
-    const Teuchos::RCP<const Epetra_Vector>& wallveln,
     const int step)
 {
+  // get wall discretization and states for particles
+  Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();
+  Teuchos::RCP<const Epetra_Vector> walldisn(Teuchos::null);
+  Teuchos::RCP<const Epetra_Vector> wallveln(Teuchos::null);
+  if(walldiscret != Teuchos::null)
+  {
+    walldisn = walldiscret->GetState("walldisnp");
+    wallveln = walldiscret->GetState("wallvelnp");
+  }
+
   // evaluate contact with walls first
   std::vector<WallInteractionPoint> surfaces;
   std::vector<WallInteractionPoint> lines;
@@ -804,7 +831,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
     LINALG::Matrix<3,1> rRel;
     rRel.Update(1.0, particle_i.dis_, -1.0, wallcontact.point_); // inward vector
     const double rRelNorm2 = rRel.Norm2();
+    const double w = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
     const double dw = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+    const double ddw = weightFunctionHandler_->DDW(rRelNorm2, particle_i.radius_);
 
     // insert in the set if appropriate
     if (dw != 0)
@@ -818,7 +847,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
         rRelVersor,
         rRelNorm2,
         step,
-        dw);
+        w,
+        dw,
+        ddw);
     }
   }
 }
@@ -853,12 +884,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_hs(
  | update weights and distances in all the neighbours                 katta 01/17  |
  *---------------------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights(
-    const Teuchos::RCP<DRT::Discretization>& walldiscret,
-    const Teuchos::RCP<const Epetra_Vector>& walldisn,
     const int step)
 {
   UpdateWeights_p(step);
-  UpdateWeights_w(walldiscret, walldisn, step);
+  UpdateWeights_w(step);
 }
 
 
@@ -895,21 +924,28 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int ste
         LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
         rRelVersor_ij.Scale(1/rRelNorm2);
 
-        const double dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+
         const double w_ij = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
-        double dw_ji = 0;
+        const double dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+        const double ddw_ij = weightFunctionHandler_->DDW(rRelNorm2, particle_i.radius_);
+
         double w_ji = 0;
+        double dw_ji = 0;
+        double ddw_ji = 0;
+
         if (particle_j.owner_ == myrank_)
         {
           if (particle_i.radius_ == particle_j.radius_)
           {
-            dw_ji = dw_ij;
             w_ji = w_ij;
+            dw_ji = dw_ij;
+            ddw_ji = ddw_ij;
           }
           else
           {
-            dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
             w_ji = weightFunctionHandler_->W(rRelNorm2, particle_j.radius_);
+            dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
+            ddw_ji = weightFunctionHandler_->DDW(rRelNorm2, particle_j.radius_);
           }
         }
 
@@ -921,7 +957,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int ste
           w_ij,
           w_ji,
           dw_ij,
-          dw_ji);
+          dw_ji,
+          ddw_ij,
+          ddw_ji);
       }
     }
   }
@@ -931,11 +969,17 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int ste
 /*---------------------------------------------------------------------------------*
  | update weights and distances in all the neighbours - particles     katta 01/17  |
  *---------------------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(
-    const Teuchos::RCP<DRT::Discretization>& walldiscret,
-    const Teuchos::RCP<const Epetra_Vector>& walldisn,
-    const int step)
+void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(const int step)
 {
+
+  // get wall discretization and states for particles
+  Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();
+  Teuchos::RCP<const Epetra_Vector> walldisn(Teuchos::null);
+  if(walldiscret != Teuchos::null)
+  {
+    walldisn = walldiscret->GetState("walldisnp");
+  }
+
   // loop over the particles (no superpositions)
   for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_w_.size(); ++lidNodeRow_i)
   {
@@ -989,14 +1033,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(
         const double rRelNorm2 = rRel.Norm2();
         LINALG::Matrix<3,1> rRelVersor(rRel);
         rRelVersor.Scale(1/rRelNorm2);
+        const double w = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
         const double dw = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+        const double ddw = weightFunctionHandler_->DDW(rRelNorm2, particle_i.radius_);
 
         // insert the new weights, do not touch the step
         interData_ij = InterDataPvW(
             rRelVersor,
             rRelNorm2,
             interData_ij.step_,
-            dw);
+            w,
+            dw,
+            ddw);
       }
     }
   }
@@ -1497,6 +1545,112 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_constDensityPressur
 
 
 /*----------------------------------------------------------------------*
+ | evaluate acceleration gradient - pvp                    katta 01/17  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP(
+    const Teuchos::RCP<Epetra_MultiVector> gradAccP,
+    const double &restDensity,
+    const double extMulti)
+{
+  //checks
+  if (gradAccP == Teuchos::null)
+  {
+    dserror("gradAccP is empty");
+  }
+
+  // loop over the particles (no superpositions)
+  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
+  {
+    // determine the particle_i
+    const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
+    const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+    //const double density_i = useDensityApprox ? particle_i.densityapprox_ : particle_i.density_;
+    const double density_i = particle_i.density_;
+    const double speedOfSound_i = PARTICLE::Utils::SpeedOfSound(particle_i.specEnthalpy_, particle_algorithm_->ExtParticleMat());
+
+    // useful i variables
+    const double coeff1_i = std::pow(speedOfSound_i,2) * (2 * restDensity - density_i) / std::pow(density_i,3);
+    const double rhoSquare_i = std::pow(density_i,2);
+    const double p_Rho2_i = particle_i.pressure_/rhoSquare_i;
+
+    // diadic product mGradW_i * mGradW_i^T
+    LINALG::Matrix<3,3> mGradWmGradW_ii;
+    mGradWmGradW_ii.MultiplyNT(particle_i.mGradW_, particle_i.mGradW_);
+
+    // loop over the interaction particle list
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
+    {
+      // extract data for faster access
+      const int& lidNodeCol_j = jj->first;
+      const InterDataPvP& interData_ij = jj->second;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      //const double density_j = useDensityApprox ? particle_j.densityapprox_ : particle_j.density_;
+      const double density_j = particle_j.density_;
+      const double speedOfSound_j = PARTICLE::Utils::SpeedOfSound(particle_j.specEnthalpy_, particle_algorithm_->ExtParticleMat());
+
+      // useful j variables
+      const double coeff1_j = std::pow(speedOfSound_j,2) * (2 * restDensity - density_j) / std::pow(density_j,3);
+      const double rhoSquare_j = std::pow(density_j,2);
+      const double p_Rho2_j = particle_j.pressure_/rhoSquare_j;
+
+      // diadic product mGradW_i * mGradW_j^T
+      LINALG::Matrix<3,3> mGradWmGradW_ij;
+      mGradWmGradW_ij.MultiplyNT(particle_i.mGradW_, particle_j.mGradW_);
+
+      // diadic product mGradW_j * mGradW_i^T
+      LINALG::Matrix<3,3> mGradWmGradW_ji;
+      mGradWmGradW_ji.UpdateT(mGradWmGradW_ij);
+
+      // diadic product mGradW_ju * mGradW_j^T
+      LINALG::Matrix<3,3> mGradWmGradW_jj;
+      mGradWmGradW_jj.MultiplyNT(particle_j.mGradW_, particle_j.mGradW_);
+
+      // write on particle i if appropriate specializing the quantities
+      if (interData_ij.dw_ij_ != 0 || interData_ij.ddw_ij_ != 0)
+      {
+        // assemble
+        LINALG::Matrix<3,3> gradAccP_ij;
+          // 1-term
+        gradAccP_ij.Update(coeff1_i, mGradWmGradW_ii, 1.0);
+          // 2-term
+        gradAccP_ij.Update(p_Rho2_i, particle_i.mHessW_, 1.0);
+          // 3-term
+        gradAccP_ij.Update(coeff1_j, mGradWmGradW_ij, 1.0);
+          // 4-term
+        gradAccP_ij.Update(p_Rho2_j, particle_i.mHessW_, 1.0);
+        // scale
+        gradAccP_ij.Scale(extMulti);
+        // write
+        std::vector<int> lmowner(3, particle_i.owner_);
+        PARTICLE::Utils::Assemble(*gradAccP, gradAccP_ij, particle_i.lm_, lmowner);
+      }
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.dw_ji_ != 0 || interData_ij.ddw_ji_ != 0)
+      {
+        // assemble
+        LINALG::Matrix<3,3> gradAccP_ji;
+          // 1-term
+        gradAccP_ji.Update(coeff1_j, mGradWmGradW_jj, 1.0);
+          // 2-term
+        gradAccP_ji.Update(p_Rho2_j, particle_j.mHessW_, 1.0);
+          // 3-term
+        gradAccP_ji.Update(coeff1_i, mGradWmGradW_ji, 1.0);
+          // 4-term
+        gradAccP_ji.Update(p_Rho2_i, particle_j.mHessW_, 1.0);
+        // scale
+        gradAccP_ji.Scale(extMulti);
+        // write
+        std::vector<int> lmowner(3, particle_j.owner_);
+        PARTICLE::Utils::Assemble(*gradAccP, gradAccP_ji, particle_j.lm_, lmowner);
+      }
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*
  | evaluate density - pvw                                  katta 10/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_densityDot(
@@ -1538,12 +1692,15 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_densityDot(
       const double rRelVersorDotVrel = rRelVersor.Dot(vRel);
       const double density = rRelVersorDotVrel;
 
-      // construct the specific coeff
-      const double generalCoeff = interData_ij.dw_ * wallMeshFreeData_.mass_;
-      // assemble and write
-      double densityDotn_ij = generalCoeff * density;
-      densityDotn_ij *= extMulti;
-      LINALG::Assemble(*densityDotn, densityDotn_ij, particle_i.gid_, particle_i.owner_);
+      if (interData_ij.dw_ != 0)
+      {
+        // construct the specific coeff
+        const double generalCoeff = interData_ij.dw_ * wallMeshFreeData_.mass_;
+        // assemble and write
+        double densityDotn_ij = generalCoeff * density;
+        densityDotn_ij *= extMulti;
+        LINALG::Assemble(*densityDotn, densityDotn_ij, particle_i.gid_, particle_i.owner_);
+      }
     }
   }
 }
@@ -1614,18 +1771,19 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_acc(
        const double cCrRelVersorDotVrel_rho2rRelNorm2 = convectionCoeff_ * rRelVersorDotVrel / (rho2 * rRelNorm2);
        momentum.Update(cCrRelVersorDotVrel_rho2rRelNorm2, rRelVersor, 1.0);
 
-       // construct the specific coeff
-       const double generalCoeff = interData_ij.dw_ * wallMeshFreeData_.mass_;
-       // assemble and write
-       LINALG::Matrix<3,1> accn_ij;
-       accn_ij.Update(generalCoeff, momentum);
-       accn_ij.Scale(extMulti);
-       LINALG::Assemble(*accn, accn_ij, particle_i.lm_, particle_i.owner_);
+       if (interData_ij.dw_ != 0)
+       {
+         // construct the specific coeff
+         const double generalCoeff = interData_ij.dw_ * wallMeshFreeData_.mass_;
+         // assemble and write
+         LINALG::Matrix<3,1> accn_ij;
+         accn_ij.Update(generalCoeff, momentum);
+         accn_ij.Scale(extMulti);
+         LINALG::Assemble(*accn, accn_ij, particle_i.lm_, particle_i.owner_);
+       }
     }
   }
 }
-
-
 
 /*--------------------------------------------------------------------------*
  | evaluate specEnthalpyDot - pvhs                             katta 10/16  |
@@ -1663,22 +1821,19 @@ for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_hs_.size(); ++lid
 }
 }
 
-
-/*--------------------------------------------------------------------------*
- | compute \sum m * W (usually the density) - mesh free style  katta 01/17  |
- *--------------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
-    const Teuchos::RCP<Epetra_Vector> mWn,
+/*----------------------------------------------------------------------*
+ | evaluate acceleration gradient - pvp                    katta 01/17  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_gradAccP(
+    const Teuchos::RCP<Epetra_MultiVector> gradAccP,
+    const double &restDensity,
     const double extMulti)
 {
   //checks
-  if (mWn == Teuchos::null)
+  if (gradAccP == Teuchos::null)
   {
-    dserror("mWn is empty");
+    dserror("gradAccP is empty");
   }
-
-  // erase the vector
-  mWn->PutScalar(0.0);
 
   // loop over the particles (no superpositions)
   for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -1687,39 +1842,43 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
     const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
     const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
     const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+    //const double density_i = useDensityApprox ? particle_i.densityapprox_ : particle_i.density_;
+    const double density_i = particle_i.density_;
+    const double speedOfSound_i = PARTICLE::Utils::SpeedOfSound(particle_i.specEnthalpy_, particle_algorithm_->ExtParticleMat());
 
-    // auto-interaction
-    if (weightFunctionHandler_->Name() == INPAR::PARTICLE::CubicBspline)
-    {
-      double mW_ii = weightFunctionHandler_->W0(particle_i.radius_) * particle_i.mass_;
-      mW_ii *= extMulti;
-      LINALG::Assemble(*mWn, mW_ii, particle_i.gid_, particle_i.owner_);
-    }
+    // useful i variables
+    const double coeff1_i = std::pow(speedOfSound_i,2) * (2 * restDensity - density_i) / std::pow(density_i,3);
+    const double rhoSquare_i = std::pow(density_i,2);
+    const double p_Rho2_i = particle_i.pressure_/rhoSquare_i;
+
+    // diadic product mGradW_i * mGradW_i^T
+    LINALG::Matrix<3,3> mGradWmGradW_ii;
+    mGradWmGradW_ii.MultiplyNT(particle_i.mGradW_, particle_i.mGradW_);
 
     // loop over the interaction particle list
-    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
+    for (boost::unordered_map<int, InterDataPvW>::const_iterator jj = neighbours_w_[lidNodeRow_i].begin(); jj != neighbours_w_[lidNodeRow_i].end(); ++jj)
     {
       // extract data for faster access
-      const int& lidNodeCol_j = jj->first;
-      const InterDataPvP& interData_ij = jj->second;
-      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      const InterDataPvW& interData_ij = jj->second;
 
       // write on particle i if appropriate specializing the quantities
-      if (interData_ij.w_ij_ != 0)
+      if (interData_ij.dw_ != 0 || interData_ij.ddw_ != 0)
       {
-        // assemble and write
-        double mW_ij = interData_ij.w_ij_ * particle_j.mass_;
-        mW_ij *= extMulti;
-        LINALG::Assemble(*mWn, mW_ij, particle_i.gid_, particle_i.owner_);
-      }
-
-      // write on particle j if appropriate specializing the quantities
-      if (interData_ij.w_ji_ != 0)
-      {
-        // assemble and write
-        double mW_ji = interData_ij.w_ji_ * particle_i.mass_;
-        mW_ji *= extMulti;
-        LINALG::Assemble(*mWn, mW_ji, particle_j.gid_, particle_j.owner_);
+        // assemble
+        LINALG::Matrix<3,3> gradAccP_ij;
+          // 1-term
+        gradAccP_ij.Update(coeff1_i, mGradWmGradW_ii, 1.0);
+          // 2-term
+        gradAccP_ij.Update(p_Rho2_i, particle_i.mHessW_, 1.0);
+        if (wallInteractionType_ == INPAR::PARTICLE::Mirror)
+        {
+          gradAccP_ij.Scale(2.0);
+        }
+        // scale
+        gradAccP_ij.Scale(extMulti);
+        // write
+        std::vector<int> lmowner(3, particle_i.owner_);
+        PARTICLE::Utils::Assemble(*gradAccP, gradAccP_ij, particle_i.lm_, lmowner);
       }
     }
   }
@@ -1803,19 +1962,83 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_alpha()
   SetStateVector(alpha, Alpha);
 }
 
+/*--------------------------------------------------------------------------*
+ | compute \sum m * W (usually the density) - mesh free style  katta 01/17  |
+ *--------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
+    const Teuchos::RCP<Epetra_Vector> mW,
+    const double extMulti)
+{
+  //checks
+  if (mW == Teuchos::null)
+  {
+    dserror("mW is empty");
+  }
+
+  // erase the vector
+  mW->PutScalar(0.0);
+
+  // loop over the particles (no superpositions)
+  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
+  {
+    // determine the particle_i
+    const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
+    const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+    // auto-interaction
+    if (weightFunctionHandler_->Name() == INPAR::PARTICLE::CubicBspline)
+    {
+      double mW_ii = weightFunctionHandler_->W0(particle_i.radius_) * particle_i.mass_;
+      mW_ii *= extMulti;
+      LINALG::Assemble(*mW, mW_ii, particle_i.gid_, particle_i.owner_);
+    }
+
+    // loop over the interaction particle list
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
+    {
+      // extract data for faster access
+      const int& lidNodeCol_j = jj->first;
+      const InterDataPvP& interData_ij = jj->second;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+
+      // write on particle i if appropriate specializing the quantities
+      if (interData_ij.w_ij_ != 0)
+      {
+        // assemble and write
+        double mW_ij = interData_ij.w_ij_ * particle_j.mass_;
+        mW_ij *= extMulti;
+        LINALG::Assemble(*mW, mW_ij, particle_i.gid_, particle_i.owner_);
+      }
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.w_ji_ != 0)
+      {
+        // assemble and write
+        double mW_ji = interData_ij.w_ji_ * particle_i.mass_;
+        mW_ji *= extMulti;
+        LINALG::Assemble(*mW, mW_ji, particle_j.gid_, particle_j.owner_);
+      }
+    }
+  }
+}
+
 
 /*------------------------------------------------------------------------------*
  | compute \sum m * gradW - mesh free style                        katta 01/17  |
  *------------------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mGradW(
-    const Teuchos::RCP<Epetra_Vector> mGradWn,
+    const Teuchos::RCP<Epetra_Vector> mGradW,
     const double extMulti)
 {
   //checks
-  if (mGradWn == Teuchos::null)
+  if (mGradW == Teuchos::null)
   {
-    dserror("mGradWn is empty");
+    dserror("mGradW is empty");
   }
+
+  // erase the vector
+  mGradW->PutScalar(0.0);
 
   // loop over the particles (no superpositions)
   for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -1841,7 +2064,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mGradW(
         LINALG::Matrix<3,1> mGradW_ij = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
         mGradW_ij.Scale(particle_j.mass_);
         mGradW_ij.Scale(extMulti);
-        LINALG::Assemble(*mGradWn, mGradW_ij, particle_i.lm_, particle_i.owner_);
+        LINALG::Assemble(*mGradW, mGradW_ij, particle_i.lm_, particle_i.owner_);
       }
 
       // write on particle j if appropriate specializing the quantities
@@ -1851,7 +2074,68 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mGradW(
         LINALG::Matrix<3,1> mGradW_ji = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ji_);
         mGradW_ji.Scale(- particle_i.mass_); /// actio = - reaction... we are using the rRelVersor_ij instead of rRelVersor_ji
         mGradW_ji.Scale(extMulti);
-        LINALG::Assemble(*mGradWn, mGradW_ji, particle_j.lm_, particle_j.owner_);
+        LINALG::Assemble(*mGradW, mGradW_ji, particle_j.lm_, particle_j.owner_);
+      }
+    }
+  }
+}
+
+
+/*------------------------------------------------------------------------------*
+ | compute \sum m * hessW - mesh free style                        katta 01/17  |
+ *------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mHessW(
+    const Teuchos::RCP<Epetra_MultiVector> mHessW,
+    const double extMulti)
+{
+  //checks
+  if (mHessW == Teuchos::null)
+  {
+    dserror("mHessW is empty");
+  }
+
+  // erase the vector
+  mHessW->PutScalar(0.0);
+
+  // loop over the particles (no superpositions)
+  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
+  {
+    // determine the particle_i
+    const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
+    const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+    // loop over the interaction particle list
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
+    {
+      // extract data for faster access
+      const int& lidNodeCol_j = jj->first;
+      const InterDataPvP& interData_ij = jj->second;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+
+      // write on particle i if appropriate specializing the quantities
+
+      if (interData_ij.dw_ij_ || interData_ij.ddw_ij_)
+      {
+        // assemble and write
+        LINALG::Matrix<3,3> mHessW_ij = weightFunctionHandler_->HessW(interData_ij.rRelVersor_ij_,
+            interData_ij.dw_ij_, interData_ij.rRelNorm2_, interData_ij.ddw_ij_);
+        mHessW_ij.Scale(particle_j.mass_);
+        mHessW_ij.Scale(extMulti);
+        std::vector<int> lmowner(3, particle_i.owner_);
+        PARTICLE::Utils::Assemble(*mHessW, mHessW_ij, particle_i.lm_, lmowner);
+      }
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.dw_ji_!=0 || interData_ij.ddw_ji_!=0 )
+      {
+        // assemble and write
+        LINALG::Matrix<3,3> mHessW_ji = weightFunctionHandler_->HessW(interData_ij.rRelVersor_ij_,
+            interData_ij.dw_ji_, interData_ij.rRelNorm2_, interData_ij.ddw_ji_);
+        mHessW_ji.Scale(- particle_i.mass_); /// actio = - reaction... we are using the rRelVersor_ij instead of rRelVersor_ji
+        mHessW_ji.Scale(extMulti);
+        std::vector<int> lmowner(3, particle_i.owner_);
+        PARTICLE::Utils::Assemble(*mHessW, mHessW_ji, particle_j.lm_, lmowner);
       }
     }
   }

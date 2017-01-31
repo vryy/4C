@@ -219,8 +219,7 @@ namespace PARTICLE
   {
   public:
 
-  /// constructors
-
+  /// constructor: full
   ParticleMF(
       const int gid,
       const int owner,
@@ -248,9 +247,11 @@ namespace PARTICLE
         densityDot_(densityDot),
         alpha_(alpha) {}
 
+  /// constructor: empty
   ParticleMF() : ParticleBase(), ParticleThermoBase(), ParticleSurfTensionBase(), ParticleMFmGradHessWbase(),
       pressure_(-1), temperature_(-1), densityDot_(-1), alpha_(-1) {}
 
+  // contructor: only identifiers
   ParticleMF(
       const int gid,
       const int owner,
@@ -265,6 +266,7 @@ namespace PARTICLE
         densityDot_(-1),
         alpha_(-1) {}
 
+  /// constructor: only the first round
   ParticleMF(
       const int gid,
       const int owner,

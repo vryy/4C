@@ -33,12 +33,16 @@ PARTICLE::TimIntGenAlpha::TimIntGenAlpha(
     Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<IO::DiscretizationWriter> output
   ) : PARTICLE::TimIntImpl(ioparams, particledynparams, xparams, actdis, output),
+
+
   midavg_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::MidAverageEnum>(particledynparams.sublist("GENALPHA"),"GENAVG")),
   beta_(particledynparams.sublist("GENALPHA").get<double>("BETA")),
   gamma_(particledynparams.sublist("GENALPHA").get<double>("GAMMA")),
   alphaf_(particledynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
   alpham_(particledynparams.sublist("GENALPHA").get<double>("ALPHA_M")),
   rho_inf_(particledynparams.sublist("GENALPHA").get<double>("RHO_INF")),
+  tol_(particledynparams.sublist("GENALPHA").get<double>("TOL")),
+  maxIt_(particledynparams.sublist("GENALPHA").get<int>("MAXIT")),
   mGradW_(Teuchos::null),
   mHessW_(Teuchos::null),
   dism_(Teuchos::null),
@@ -80,6 +84,9 @@ void PARTICLE::TimIntGenAlpha::Init()
   {
     dserror("Genalpha is still unable to address the diffusion and convection terms");
   }
+  // we do not need these vectors
+  densityDotn_ = Teuchos::null;
+  densityDot_ = Teuchos::null;
 
 }
 
@@ -87,10 +94,91 @@ void PARTICLE::TimIntGenAlpha::Init()
 /* Integrate step */
 int PARTICLE::TimIntGenAlpha::IntegrateStep()
 {
+  const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
+
+  // update the interaction handler
+  interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_);
+
+  // heat balance
+  interHandler_->Inter_pvp_specEnthalpyDot(specEnthalpyDotn_);
+  interHandler_->Inter_pvhs_specEnthalpyDot(specEnthalpyDotn_);
+  specEnthalpyn_->Update(dt, *specEnthalpyDotn_, 1.0);
+
+  // compute densities and pressures
+  interHandler_->MF_mW(densityn_);
+  interHandler_->SetStateVector(densityn_, StateVectorType::Density);
+  UpdatePressure();
+  interHandler_->SetStateVector(pressure_, StateVectorType::Pressure);
+
+  //-- genAlpha can start --//
+
+  // predict new state
+  PredictNewState(true);
+  // predict mid state
+  PredictMidState();
+  // compute the residual
+
+  ResAcc();
+
+  // set up the error
+  double resAccNorm2;
+
+  // newton - rhapson iteration
+  int nri = 0;
+  bool notConverged = true;
+  for (; nri<maxIt_; ++ nri)
+  {
+    // Is convergence reached?
+    resAcc_->Norm2(&resAccNorm2);
+    std::cout << "Iteration: " << nri << "/" << maxIt_ << std::endl;
+    std::cout << "Residual: " << resAccNorm2 << std::endl;
+    std::cout << "Required residual: " << tol_ << std::endl;
+    if (resAccNorm2 <= tol_)
+    {
+      std::cout << "--- Converged! ---\n";
+      notConverged = false;
+      break;
+    }
 
 
-  interHandler_->Clear(step_,1);
-  dserror("IntegrateStep is still in the todo list");
+    // update gradient and hessian (necessary for gradResAcc)
+    interHandler_->MF_mGradW(mGradW_);
+    interHandler_->SetStateVector(mGradW_, StateVectorType::mGradW);
+    interHandler_->MF_mHessW(mHessW_);
+    interHandler_->SetStateVector(mHessW_);
+
+    // compute the gradient of the residual acceleration
+    GradResAcc(dt);
+
+    // compute deltaDis and update disn - Newton-Rhapson iteration
+    CorrectDis();
+
+    // update the interaction handler
+    interHandler_->SetStateVector(disn_, StateVectorType::Dis);
+    // update weights
+    interHandler_->UpdateWeights(step_);
+
+    interHandler_->MF_mW(densityn_);
+    interHandler_->SetStateVector(densityn_, StateVectorType::Density);
+    UpdatePressure();
+    interHandler_->SetStateVector(pressure_, StateVectorType::Pressure);
+    // predict new state
+    PredictNewState();
+    // predict mid state
+    PredictMidState();
+    // compute the residual
+    ResAcc();
+  }
+
+  if (notConverged)
+  {
+    std::cout << "Warning! The required tolerance was not reached!\n";
+  }
+
+
+  // erase the handler, information are outdated
+  interHandler_->Clear();
+  //dserror("IntegrateStep is still in the todo list");
 
   return 0;
 }
@@ -103,24 +191,25 @@ void PARTICLE::TimIntGenAlpha::DetermineMassDampConsistAccel()
   particle_algorithm_->SetUpWallDiscret();
 
   // set up connections and the local state vectors in the interaction handler
-  interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_);
+  interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_);
 
-  // compute and replace the density
+  // compute and replace density and pressure
   interHandler_->MF_mW(densityn_);
-  interHandler_->SetStateVector(densityn_, Density);
+  interHandler_->SetStateVector(densityn_, StateVectorType::Density);
   UpdatePressure();
-  interHandler_->SetStateVector(pressure_, Density);
+  interHandler_->SetStateVector(pressure_, StateVectorType::Pressure);
 
   interHandler_->Inter_pvp_acc(accn_);
   interHandler_->Inter_pvw_acc(accn_);
   acc_->UpdateSteps(*accn_);
 
+  interHandler_->Clear();
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /* evaluate mid-state vectors by averaging end-point vectors */
-void PARTICLE::TimIntGenAlpha::MidState()
+void PARTICLE::TimIntGenAlpha::PredictMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
@@ -200,7 +289,7 @@ void PARTICLE::TimIntGenAlpha::CalcCoeff()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void PARTICLE::TimIntGenAlpha::NewState(const bool disAreEqual)
+void PARTICLE::TimIntGenAlpha::PredictNewState(const bool disAreEqual)
 {
   if (disAreEqual)
   {
@@ -209,8 +298,6 @@ void PARTICLE::TimIntGenAlpha::NewState(const bool disAreEqual)
   }
   else
   {
-    // constant predictor : displacement in domain
-    disn_->Update(1.0, *(*dis_)(0), 0.0);
     veln_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
     accn_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
   }
@@ -252,34 +339,101 @@ void PARTICLE::TimIntGenAlpha::SetupStateVectors()
   velm_ = LINALG::CreateVector(*DofRowMapView(), true);
   dism_ = LINALG::CreateVector(*DofRowMapView(), true);
   resAcc_ = LINALG::CreateVector(*DofRowMapView(), true);
+  gradResAcc_ = Teuchos::rcp(new Epetra_MultiVector(*DofRowMapView(), 3, true));
 }
 
 
 /*----------------------------------------------------------------------*/
 /* State vectors are updated according to the new distribution of particles */
-
 void PARTICLE::TimIntGenAlpha::UpdateStatesAfterParticleTransfer()
 {
+  std::cout << "puppa\n";
+
   // call base function
   TimInt::UpdateStatesAfterParticleTransfer();
 
-  UpdateStateVectorMap(mGradW_);
-  UpdateStateVectorMap(mHessW_);
+  std::cout << "puppa\n";
 
+  UpdateStateVectorMap(mGradW_);
+
+  std::cout << "puppa\n";
+  UpdateStateVectorMap(mHessW_);
+  std::cout << "puppa\n";
   UpdateStateVectorMap(dism_);
+  std::cout << "puppa\n";
   UpdateStateVectorMap(velm_);
+  std::cout << "puppa\n";
   UpdateStateVectorMap(accm_);
+  std::cout << "puppa\n";
   UpdateStateVectorMap(resAcc_);
+  std::cout << "puppa\n";
+  UpdateStateVectorMap(gradResAcc_);
+  std::cout << "puppa\n";
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Compute the residual (acceleration) */
+void PARTICLE::TimIntGenAlpha::ResAcc()
+{
+  // erase the vector
+  resAcc_->PutScalar(0.0);
+  // build -resAcc
+  GravityAcc(resAcc_);
+  interHandler_->Inter_pvp_acc(resAcc_);
+  interHandler_->Inter_pvw_acc(resAcc_);
+  resAcc_->Update(-1.0, *accm_, 1.0);
+  // reverse it
+  resAcc_->Scale(-1.0);
 }
 
 
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void PARTICLE::TimIntGenAlpha::ResidualAcc()
+void PARTICLE::TimIntGenAlpha::GradResAcc(const double dt)
 {
-  // reset the residual vector and stuff it with accm;
-  resAcc_->Update(1.0, *accm_, 0.0);
+  // erase the vector
+  gradResAcc_->PutScalar(0.0);
+  // build
+  interHandler_->Inter_pvp_gradAccP(gradResAcc_, restDensity_);
+  interHandler_->Inter_pvw_gradAccP(gradResAcc_, restDensity_);
 
+  // add the acceleration part (in a collocation method is quite straight forward)
+  const double accCoeff = (1 - alpham_) / (beta_ * dt * dt);
+
+  for (int ii = 0; ii < discret_->DofRowMap()->NumMyElements(); ++ii)
+  {
+    ((*gradResAcc_)[ii%3])[ii] += accCoeff;
+  }
 
 }
+
+/*----------------------------------------------------------------------*/
+/* Consistent predictor with constant displacements
+ * and consistent velocities and displacements */
+void PARTICLE::TimIntGenAlpha::CorrectDis()
+{
+  for (int lidRowNode = 0; lidRowNode < discret_->NodeRowMap()->NumMyElements(); ++lidRowNode)
+  {
+    // indexes
+    DRT::Node *particle = discret_->lRowNode(lidRowNode);
+    std::vector<int> lm;
+    lm.reserve(3);
+    discret_->Dof(particle, lm);
+
+
+    LINALG::Matrix<3,3> gradResAcc_i;
+    PARTICLE::Utils::ExtractMyValues(*gradResAcc_, gradResAcc_i, lm);
+    LINALG::Matrix<3,1> resAcc_i;
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*resAcc_, resAcc_i, lm);
+    gradResAcc_i.Invert();
+
+    LINALG::Matrix<3,1> deltaDis;
+    deltaDis.MultiplyNN(gradResAcc_i, resAcc_i);
+    deltaDis.Scale(-1.0);
+
+    LINALG::Assemble(*disn_, deltaDis, lm, myrank_);
+  }
+}
+
