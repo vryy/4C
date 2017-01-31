@@ -547,8 +547,8 @@ void MAT::GrowthRemodel_ElastHyper::EvaluatePrestretch(LINALG::Matrix<3,3> const
   if( potsumeliso_.size() != 1 )
     dserror("So far, the prestretching routine does only work with ONE 3D isochoric elastin material");
 
-  Teuchos::RCP<MAT::ELASTIC::IsoNeoHooke> matiso(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::VolSussmanBathe> matvol(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::IsoNeoHooke> matiso;
+  Teuchos::RCP<MAT::ELASTIC::VolSussmanBathe> matvol;
   matiso = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::IsoNeoHooke>(potsumeliso_[0]);
   matvol = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::VolSussmanBathe>(potsumelpenalty_);
   double R = 1.0;
@@ -1362,7 +1362,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateStressCmatMembrane(LINALG::Matrix<3,
   iFinAorthgriFinTM_fad.MultiplyNT(1.0,tmp_fad,iFinM_fad,0.0);
 
   double mue_el_mem = 0.0;
-  Teuchos::RCP<MAT::ELASTIC::IsoNeoHooke> matmem(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::IsoNeoHooke> matmem;
   for(unsigned k=0;k<potsumelmem_.size();++k) {
     matmem = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::IsoNeoHooke>(potsumelmem_[k]);
     mue_el_mem += matmem->Mue();
