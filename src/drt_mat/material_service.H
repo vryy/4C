@@ -259,9 +259,10 @@ namespace MAT
    *                       \; C^{-1}_{12} \; C^{-1}_{23} \; C^{-1}_{31}]\f$
    * \param scalar (in)  : scalar, corresponding to \f$\delta_7\f$ in Holzapfel [1], p.261
    */
-  void AddtoCmatHolzapfelProduct(LINALG::Matrix<6,6>& cmat,
-                                 const LINALG::Matrix<6,1>& invc,
-                                 const double scalar);
+  template < typename T >
+  void AddtoCmatHolzapfelProduct(LINALG::TMatrix<T,6,6>& cmat,
+                                 const LINALG::TMatrix<T,6,1>& invc,
+                                 const T scalar);
 
 
   /*! \brief Put apart the volumetric and isochoric part
@@ -350,6 +351,39 @@ namespace MAT
       const LINALG::Matrix<3,3>& A,
       const LINALG::Matrix<3,3>& B,
       double fac);
+
+  /// in index notation this does:
+  /// out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{JK} * B_{IL} )
+  /// Note that the result is symmetric within the first two indices
+  /// Thus the first two indices are stored in stress-like Voigt notation.
+  /// The 2nd index pair has no symmetries and is therefore stored as 9-vector
+  /// Be aware that this is NOT symmetric w.r.t. A and B !!!
+  template< typename T >
+  void AddRightNonSymmetricHolzapfelProduct(LINALG::TMatrix<T,6,9> & out,
+                                            LINALG::TMatrix<T,3,3> const& A,
+                                            LINALG::TMatrix<T,3,3> const& B,
+                                            T const fac);
+
+  /// in index notation this does:
+  /// out_{IJKL} += fac*( A_{IK} * B_{JL} + A_{IL} * B_{JK} )
+  /// Note that the result is symmetric within the second two indices
+  /// Thus the second two indices are stored in stress-like Voigt notation.
+  /// The 1st index pair has no symmetries and is therefore stored as 9-vector
+  /// Be aware that this is NOT symmetric w.r.t. A and B !!!
+  void AddLeftNonSymmetricHolzapfelProduct(LINALG::Matrix<9,6> & out,
+                                           LINALG::Matrix<3,3> const& A,
+                                           LINALG::Matrix<3,3> const& B,
+                                           double const fac);
+
+  /// This function adds the following contribution to the matrix X_ABCD (9x9)
+  /// in index notation this method does:
+  /// X_ABCD = fac*( A_AC * B_DB )
+  /// There are no symmetries and the matrix is therefore stored in a 9x9 matrix
+  /// A and B are not required to be symmetric!!!
+  void AddNonSymmetricProduct(double const& fac,                    ///< Scalar factor
+                              LINALG::Matrix<3,3> const& A,         ///< Matrix in the above mentioned equation
+                              LINALG::Matrix<3,3> const& B,         ///< Matrix in the above mentioned equation
+                              LINALG::Matrix<9,9> & out);           ///< Output
 }
 
 #endif

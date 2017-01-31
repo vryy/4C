@@ -80,9 +80,6 @@ namespace MAT
       /// material mass density
       const double density_;
 
-      /// time of prestressing
-      const double t_prestress_;
-
       /// circumferential prestretch of elastin matrix
       const double lamb_prestretch_cir_;
 
@@ -106,6 +103,9 @@ namespace MAT
 
       /// flag to decide what type of local time integration scheme is used: 1: Backward Euler Method; 0: Forward Euler Method
       const int loctimeint_;
+
+      /// Indicator whether Hex or Membrane elements are used ( Membrane: 1, Hex: Everything else )
+      const int membrane_;
 
       //@}
 
@@ -199,35 +199,28 @@ private:
                           Teuchos::ParameterList& params,     ///< Container for additional information
                           LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
                           LINALG::Matrix<6,6>* cmat,          ///< Constitutive matrix
-                          const int eleGID                    ///< Element ID
-                          );
+                          const int eleGID);                  ///< Element ID
+
 
     /// setup
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    virtual void Setup(int const numgp,DRT::INPUT::LineDefinition* linedef);
 
     /// update
-    virtual void Update(const LINALG::Matrix<3,3> defgrd,     ///< Deformation gradient
-                        const int gp,                         ///< Current Gauß-Point
+    virtual void Update(LINALG::Matrix<3,3> const& defgrd,    ///< Deformation gradient
+                        int const gp,                         ///< Current Gauß-Point
                         Teuchos::ParameterList& params,       ///< Container for additional information
-                        const int eleGID);                    ///< Element ID
-
-    virtual void UpdateMembrane(const LINALG::Matrix<3,3> defgrd_loc,    ///< Deformation gradient in local coordinates
-                                const LINALG::Matrix<3,3> Q_trafo,       ///< Transformation matrix between local and global coordinate system
-                                const int gp,                            ///< Current Gauß-Point
-                                Teuchos::ParameterList& params,          ///< Container for additional information
-                                const int eleGID);                       ///< Element ID
+                        int const eleGID);                    ///< Element ID
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     /// hyperelastic stress response plus elasticity tensor for membrane element (membrane formulation)
-    virtual void EvaluateMembrane(LINALG::Matrix<3,3>& defgrd_local,       ///< Deformation gradient in local coordinates
-                                  LINALG::Matrix<3,3>& cauchygreen_local,  ///< right Cauchy-Green in local coordinates
-                                  LINALG::Matrix<3,3>& Q_trafo,            ///< transformation matrix from local to global system
-                                  Teuchos::ParameterList& params,          ///< Container for additional information
-                                  LINALG::Matrix<3,1>* stress,             ///< 2nd Piola-Kirchhoff stresses in membrane coordinates
-                                  LINALG::Matrix<3,3>* cmat,               ///< Constitutive matrix in membrane coordinates
-                                  const int eleGID);                       ///< Element ID
+    void EvaluateMembrane(LINALG::Matrix<3,3> const& defgrd_glob,  ///< Deformation gradient in global coordinates
+                          double & rcg33,                          ///< Adapted stretch in thickness direction
+                          Teuchos::ParameterList& params,          ///< Container for additional information
+                          LINALG::Matrix<3,3> & pk2M_glob,         ///< 2nd Piola-Kirchhoff stress global coordinates
+                          LINALG::Matrix<6,6> & cmat_glob,         ///< Elasticity tensor in global coordinates
+                          const int eleGID);                       ///< Element ID
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string,int>& names);
@@ -235,54 +228,70 @@ private:
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
-  protected:
-
-    /// Setup transformation matrices between the global frame and an orthogonal frame on the cylinder surface
-    void SetupTrafoMatrices(LINALG::Matrix<3,3> Q_trafo);
-
+  private:
     /// Setup circumferential, radial and axial structural tensor
     void SetupAxiCirRadStructuralTensor(DRT::INPUT::LineDefinition* linedef);
 
     /// Read AXI CIR RAD direction
-    void ReadDir(
-        DRT::INPUT::LineDefinition* linedef,
-        std::string specifier,
-        LINALG::Matrix<3,1>& dir);
+    void ReadDir(DRT::INPUT::LineDefinition* linedef,
+                 std::string specifier,
+                 LINALG::Matrix<3,1>& dir);
 
-    virtual void EvaluateKinQuantElast(
-        const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<3,3> iFin,
-        const int gp,
-        LINALG::Matrix<6,1>& iCin,
-        LINALG::Matrix<6,1>& iCinCiCin,
-        LINALG::Matrix<6,1>& iC,
-        LINALG::Matrix<3,3>& iCinC,
-        LINALG::Matrix<3,3>& iFinCe,
-        LINALG::Matrix<9,1>& CiFin,
-        LINALG::Matrix<9,1>& CiFinCe,
-        LINALG::Matrix<9,1>& CiFiniCe,
-        LINALG::Matrix<3,1>& prinv);
+    /// Evaluate Prestretches
+    void EvaluatePrestretch(LINALG::Matrix<3,3> const * const defgrd,
+                            int const gp,
+                            int const eleGID);
+
+    /// Internal Newton to implicitly solve for current mass density and inelastic remodeling stretch of each fiber family
+    void SolveForRhoLambr(LINALG::SerialDenseMatrix & K_T,            ///< Tangent stiffness matrix of internal Newton
+                          LINALG::Matrix<3,3> & FgM,                  ///< Growth deformation gradient
+                          LINALG::Matrix<3,3> & iFgM,                 ///< Inverse growth deformation gradient
+                          LINALG::Matrix<3,3> & dFgdrhoM,             ///< Derivative of growth deformation gradient w.r.t. the mass density
+                          LINALG::Matrix<3,3> & diFgdrhoM,            ///< Derivative of inverse growth deformation gradient w.r.t. the mass density
+                          LINALG::Matrix<3,3> const * const defgrd,   ///< Deformation gradient
+                          double const& dt,                           ///< Time step size
+                          int const gp,                               ///< Current Gauß-Point
+                          int const eleGID);                          ///< Element ID
+
+    /// Internal Newton to implicitly solve for current mass density and inelastic remodeling stretch of each fiber family
+    void SolveFordrhodCdlambrdC(std::vector<LINALG::Matrix<1,6> > & drhodC,     ///< Derivative of collagen mass density w.r.t. right Cauchy Green tensor
+                                std::vector<LINALG::Matrix<1,6> > & dlambrdC,   ///< Derivative of inelastic remodel stretch w.r.t. right Cauchy Green tensor
+                                LINALG::Matrix<1,6> & sum_drhodC,               ///< Sum of derivatives of all collagen mass density w.r.t. right Cauchy Green tensor
+                                LINALG::SerialDenseMatrix & K_T,                ///< Tangent stiffness matrix of internal Newton
+                                LINALG::Matrix<3,3> const& iFgM,                ///< Inverse growth deformation gradient
+                                LINALG::Matrix<3,3> const * const defgrd,       ///< Deformation gradient
+                                double const& dt,                               ///< Time step size
+                                int const gp,                                   ///< Current Gauß-Point
+                                int const eleGID) const;                        ///< Element ID
+
+    /// Evaluates some kinematic quantities which are used in stress and elasticity tensor calculation
+    void EvaluateKinQuantElast(LINALG::Matrix<3,3> const* const defgrd,   ///< Deformation gradient
+                               LINALG::Matrix<3,3> const& iFinM,          ///< Inverse inelastic deformation gradient
+                               LINALG::Matrix<6,1> & iCinv,               ///< Inverse inelastic right Cauchy-Green tensor
+                               LINALG::Matrix<6,1> & iCinCiCinv,          ///< C_{in}^{-1} * C * C_{in}^{-1}
+                               LINALG::Matrix<6,1> & iCv,                 ///< Inverse right Cauchy-Green tensor
+                               LINALG::Matrix<3,3> & iCinCM,              ///< C_{in}^{-1} * C
+                               LINALG::Matrix<3,3> & iFinCeM,             ///< F_{in}^{-1} * C_e
+                               LINALG::Matrix<9,1> & CiFin9x1,            ///< C * F_{in}^{-1}
+                               LINALG::Matrix<9,1> & CiFinCe9x1,          ///< C * F_{in}^{-1} * C_e
+                               LINALG::Matrix<9,1> & CiFiniCe9x1,         ///< C * F_{in}^{-1} * C_e^{-1}
+                               LINALG::Matrix<3,1> & prinv,               ///< Principal invariants of elastic right Cauchy-Green tensor
+                               int const gp) const;                       ///< Current Gauß-Point
 
     /// calculate principal invariants
-    virtual void InvariantsPrincipal(
-      LINALG::Matrix<3,1>& prinv,              ///< principal invariants
-      const LINALG::Matrix<6,1>& C_strain      ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
-      );
+    void InvariantsPrincipal(LINALG::Matrix<3,1> & prinv,                 ///< principal invariants
+                             LINALG::Matrix<6,1> const& C_strain) const;  ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
 
     /// calculate modified invariants
-    virtual void InvariantsModified(
-      LINALG::Matrix<3,1>& modinv,           ///< modified invariants
-      const LINALG::Matrix<3,1>& prinv       ///< principal invariants
-      );
+    void InvariantsModified(LINALG::Matrix<3,1> & modinv,             ///< modified invariants
+                            LINALG::Matrix<3,1> const& prinv) const;  ///< principal invariants
 
     /// calculates the derivatives of the hyperelastic laws with respect to the (modified) invariants
-    virtual void EvaluateInvariantDerivatives(
-        const LINALG::Matrix<3,1>& prinv,               ///< principal invariants of right Cauchy-Green tensor
-        const int& gp,                                  ///< current Gauß-point
-        LINALG::Matrix<3,1>& dPI,                       ///< first derivative with respect to invariants weighted with the corresponding volume fraction
-        LINALG::Matrix<6,1>& ddPII,                     ///< second derivative with respect to invariants weighted with the corresponding volume fraction
-        int eleGID                                      ///< Element ID
-        );
+    void EvaluateInvariantDerivatives(LINALG::Matrix<3,1> const& prinv,   ///< Principal invariants of right Cauchy-Green tensor
+                                      LINALG::Matrix<3,1> & dPIw,         ///< First derivative with respect to invariants weighted with the corresponding volume fraction
+                                      LINALG::Matrix<6,1> & ddPIIw,       ///< Second derivative with respect to invariants weighted with the corresponding volume fraction
+                                      int const gp,                       ///< Current Gauß-Point
+                                      int const eleGID) const;            ///< Element ID
 
     /// converts the derivatives with respect to the modified invariants in derivatives with respect to principal invariants.
     /// Uses the following conversions:
@@ -295,58 +304,43 @@ private:
     ///\f[
     ///  J = \sqrt{III_{\boldsymbol{C}}}
     ///\f]
-    virtual void ConvertModToPrinc(
-        const LINALG::Matrix<3,1>& prinv,         ///< principal invariants of right Cauchy-Green tensor
-        const LINALG::Matrix<3,1>& dPmodI,        ///< first derivative with respect to modified invariants
-        const LINALG::Matrix<6,1>& ddPmodII,      ///< second derivative with respect to modified invariants
-        LINALG::Matrix<3,1>& dPI,                 ///< first derivative with respect to invariants
-        LINALG::Matrix<6,1>& ddPII                ///< second derivative with respect to invariants
-        );
-
-    /// calculates the isotropic stress and elasticity tensor
-    virtual void EvaluateIsotropicStressCmat(
-        LINALG::Matrix<6,1>& stress,              ///< 2nd Piola Kirchhoff stress
-        LINALG::Matrix<6,6>& cmat,                ///< elasticity tensor
-        LINALG::Matrix<6,1> C_strain,             ///< right Cauchy green in strain-like 6-Voigt Voigt notation
-        LINALG::Matrix<6,1> id,                   ///< Cartesian identity 2-tensor I_{AB}
-        LINALG::Matrix<6,1> iC_stress,            ///< inverse right Cauchy-Green tensor stress-like 6-Voigt Voigt notation
-        LINALG::Matrix<6,6> id4sharp,             ///< Cartesian identity 4-tensor in 6x6-matrix notation (stress-like)
-        LINALG::Matrix<3,1> prinv,                ///< principal invariants of right Cauchy-Green tensor
-        LINALG::Matrix<3,1> dPI,                  ///< first derivative with respect to invariants
-        LINALG::Matrix<6,1> ddPII                 ///< second derivative with respect to invariants
-        );
+    void ConvertModToPrinc(LINALG::Matrix<3,1> const& prinv,    ///< principal invariants of right Cauchy-Green tensor
+                           LINALG::Matrix<3,1> const& dPmodI,   ///< first derivative with respect to modified invariants
+                           LINALG::Matrix<6,1> const& ddPmodII, ///< second derivative with respect to modified invariants
+                           LINALG::Matrix<3,1> & dPI,           ///< first derivative with respect to invariants
+                           LINALG::Matrix<6,1> & ddPII) const;  ///< second derivative with respect to invariants
 
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
-    virtual void EvaluateIsotropicPrincElast(
-        LINALG::Matrix<6,1>& stressisoprinc,
-        LINALG::Matrix<6,6>& cmatisoprinc,
-        LINALG::Matrix<6,1> iCg,
-        LINALG::Matrix<6,1> iCgCiCg,
-        LINALG::Matrix<6,1> iC,
-        LINALG::Matrix<3,1> gamma,
-        LINALG::Matrix<8,1> delta
-        );
+    void EvaluateIsotropicPrincElast(LINALG::Matrix<6,1> & stressisoprinc,    ///< 2nd Piola Kirchhoff stress
+                                     LINALG::Matrix<6,6> & cmatisoprinc,      ///< Elasticity tensor
+                                     LINALG::Matrix<6,1> const& iCinv,        ///< Inverse inelastic right Cauchy-Green tensor
+                                     LINALG::Matrix<6,1> const& iCinCiCinv,   ///< C_{in}^{-1} * C * C_{in}^{-1}
+                                     LINALG::Matrix<6,1> const& iCv,          ///< Inverse right Cauchy-Green tensor
+                                     LINALG::Matrix<3,1> const& gamma,        ///< Factors for stress calculation
+                                     LINALG::Matrix<8,1> const& delta) const; ///< Factors for elasticity tensor calculation
 
-    /// Evaluate additional terms for for the elasticity tensor
+    /// Evaluate derivative of 2nd Piola Kirchhoff stress w.r.t. the inelastic deformation gradient
+    void EvaluatedSdiFg(LINALG::Matrix<6,9> & dSdiFg,               ///< Output
+                        LINALG::Matrix<3,1> const& gamma,           ///< Factors for stress calculation
+                        LINALG::Matrix<8,1> const& delta,           ///< Factors for elasticity tensor calculation
+                        LINALG::Matrix<3,3> const& iFinM,           ///< Inverse inelastic deformation gradient
+                        LINALG::Matrix<3,3> const& iCinCM,          ///< C_{in}^{-1} * C
+                        LINALG::Matrix<6,1> const& iCinv,           ///< Inverse inelastic right Cauchy-Green tensor
+                        LINALG::Matrix<9,1> const& CiFin9x1,        ///< C * F_{in}^{-1}
+                        LINALG::Matrix<9,1> const& CiFinCe9x1,      ///< C * F_{in}^{-1} * C_e
+                        LINALG::Matrix<6,1> const& iCinCiCinv,      ///< C_{in}^{-1} * C * C_{in}^{-1}
+                        LINALG::Matrix<9,1> const& CiFiniCe9x1,     ///< C * F_{in}^{-1} * C_e^{-1}
+                        LINALG::Matrix<6,1> const& iCv,             ///< Inverse right Cauchy-Green tensor
+                        LINALG::Matrix<3,3> const& iFinCeM,         ///< F_{in}^{-1} * C_e
+                        int const gp) const;                        ///< Current Gauß-Point
+
+    /// Evaluate additional terms for the elasticity tensor
     /// Additional terms are caused by implicit implementation of the evolution equation
-    virtual void EvaluateAdditionalTermsCmat(
-        LINALG::Matrix<6,6>& cmatadd,                   ///< additional elasticity tensor
-        LINALG::Matrix<3,1> gamma,                      ///< factors for stress calculation
-        LINALG::Matrix<8,1> delta,                      ///< factors for elasticity tensor calculation
-        double v,                                       ///< current volume change
-        int gp,                                         ///< current gp
-        LINALG::Matrix<3,3> AgM,                        ///< structural tensor of growth direction
-        LINALG::Matrix<1,6> sum_drhoC,                  ///< sum over all fiber families of the derivatives of the individual mass density w.r.t. right Cauchy Green tensor weighted with the corresponding initial mass fraction,k_sig,dt and 1/sig_pre
-        LINALG::Matrix<3,3> iFg,
-        LINALG::Matrix<3,3> iCgC,
-        LINALG::Matrix<3,3> iFgCe,
-        LINALG::Matrix<6,1> iCg,
-        LINALG::Matrix<9,1> CiFg,
-        LINALG::Matrix<9,1> CiFgCe,
-        LINALG::Matrix<6,1> iCgCiCg,
-        LINALG::Matrix<9,1> CiFgiCe,
-        LINALG::Matrix<6,1> iC
-    );
+    void EvaluateAdditionalCmat(LINALG::Matrix<6,6> & cmatadd,         ///< Additional elasticity tensor
+                                LINALG::Matrix<3,3> const& diFgdrhoM,  ///< Derivative of inverse growth deformation gradient w.r.t. the mass density
+                                LINALG::Matrix<1,6> const& sum_drhoC,  ///< Sum over all fiber families of the derivatives of the individual mass density w.r.t. right Cauchy Green tensor
+                                LINALG::Matrix<6,9> const& dSdiFg,     ///< Derivative of 2nd Piola Kirchhoff stress w.r.t. the inverse inelastic growth deformation gradient
+                                int const gp) const;                   ///< Current Gauß-Point
 
     /// calculate coefficients gamma and delta from partial derivatives w.r.t. invariants.
     /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
@@ -414,194 +408,149 @@ private:
     ///\f[
     /// \delta_8 = -4 \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
     ///\f]
-    virtual void CalculateGammaDelta(
-        LINALG::Matrix<3,1>& gamma,             ///< factors for stress calculation
-        LINALG::Matrix<8,1>& delta,             ///< factors for elasticity tensor calculation
-        const LINALG::Matrix<3,1>& prinv,       ///< principal invariants of right Cauchy-Green tensor
-        const LINALG::Matrix<3,1>& dPI,         ///< first derivative with respect to invariants
-        const LINALG::Matrix<6,1>& ddPII        ///< second derivative with respect to invariants
-        );
+    void CalculateGammaDelta(LINALG::Matrix<3,1> & gamma,             ///< factors for stress calculation
+                             LINALG::Matrix<8,1> & delta,             ///< factors for elasticity tensor calculation
+                             LINALG::Matrix<3,1> const& prinv,        ///< principal invariants of right Cauchy-Green tensor
+                             LINALG::Matrix<3,1> const& dPI,          ///< first derivative with respect to invariants
+                             LINALG::Matrix<6,1> const& ddPII) const; ///< second derivative with respect to invariants
 
     /// Evaluate current individual volume of elastin
-    virtual void EvaluateElastinDamage();
-
-    /// add a contribution to the derivative of the second Piola Kirchhoff stress with respect to the growth deformation gradient
-    /// in index notation this method does:
-    /// dPK2dFginv_IJKL += fac*( A_IK * B_JL + A_JK * B_IL )
-    /// Note that the result is symmetric within the first two indices
-    /// Thus the first two indices are stored in stress-like Voigt notation.
-    /// The 2nd index pair has no symmetries and is therefore stored as 9-vector
-    /// Be aware that this is NOT symmetric w.r.t. A and B !!!
-    void AddtodPK2diFin(LINALG::Matrix<6,9>& dPK2diFin,
-        LINALG::Matrix<3,3> A,
-        LINALG::Matrix<3,3> B,
-        double fac);
-
-    /// This function adds the following contribution to the matrix X_ABCD (9x9)
-    /// in index notation this method does:
-    /// X_ABCD = fac*( A_AC * B_BD )
-    /// There are no symmetries and the matrix is therefore stored in a 9x9 matrix
-    /// A and B are not required to be symmetric!!!
-    virtual void AddtoMatrixCrossProduct(const double& fac,                    ///< scalar factor
-                                         const LINALG::Matrix<3,3>& A,         ///< Matrix in the above mentioned equation
-                                         const LINALG::Matrix<3,3>& B,         ///< Matrix in the above mentioned equation
-                                         LINALG::Matrix<9,9>& X_ABCD);         ///< Output (see EvaluateInelasticDefGrad)
+    void EvaluateElastinDamage(double const& dt_pre);   ///< time step size of first time step in simulation (initialization and prestretching)
 
     /// build growth deformation gradient
-    void EvaluateGrowthDefGrad(LINALG::Matrix<3,3>& FgM,        ///< Growth deformation gradient
-                               LINALG::Matrix<3,3>& iFgM,       ///< Inverse growth deformation gradient
-                               const int gp);                   ///< Current Gauß-Point
+    void EvaluateGrowthDefGrad(LINALG::Matrix<3,3> & FgM,        ///< Growth deformation gradient
+                               LINALG::Matrix<3,3> & iFgM,       ///< Inverse growth deformation gradient
+                               LINALG::Matrix<3,3> & dFgdrhoM,   ///< Derivative of growth deformation gradient w.r.t. the mass density
+                               LINALG::Matrix<3,3> & diFgdrhoM,  ///< Derivative of inverse growth deformation gradient w.r.t. the mass density
+                               const int gp);                    ///< Current Gauß-Point
 
-    /// convert non-symmetric 2-tensor to 9x1 vector
-    void Matrix3x3to9x1(LINALG::Matrix<3,3> A, LINALG::Matrix<9,1>& Out);
+    /// Evaluates stress and cmat during prestressing
+    void EvaluateStressCmatIso(LINALG::Matrix<3,3> const* const defgrd,     ///< Deformation gradient
+                               LINALG::Matrix<3,3> const& iFinM,            ///< Inverse inelastic deformation gradient
+                               LINALG::Matrix<6,1> & stressiso,             ///< Isotropic stress tensor
+                               LINALG::Matrix<6,6> & cmatiso,               ///< Isotropic stiffness matrix
+                               LINALG::Matrix<6,9> & dSdiFg,                ///< Derivative of 2nd Piola Kirchhoff stress w.r.t. the inverse inelastic growth deformation gradient
+                               int const gp,                                ///< Current Gauß-Point
+                               int const eleGID) const;                     ///< Element ID
 
-    /// convert stress and cmat to global coordinate system
-    void ConvertStressCmatLoctoGlob(LINALG::Matrix<3,1> stress_loc,     /// 2nd Piola Kirchhoff stress in local coordinates
-                                    LINALG::Matrix<3,3> cmat_loc,       /// Stiffness tensor in local coordinates
-                                    LINALG::Matrix<6,1>& stress_glob,   /// 2nd Piola Kirchhoff stress in global coordinates
-                                    LINALG::Matrix<6,6>& cmat_glob);    /// Stiffness tensor in global coordinates
-
-    /// evaluates stress and cmat during prestressing
-    void EvaluateStressCmat(const LINALG::Matrix<3,3>* defgrd,     ///< Deformation gradient
-                            const LINALG::Matrix<3,3> Finel,       ///< Inelastic deformation gradient
-                            const int gp,                          ///< Current Gauß-Point
-                            LINALG::Matrix<6,1>& stressiso,        ///< Isotropic stress tensor
-                            LINALG::Matrix<6,6>& cmatiso,          ///< Isotropic stiffness matrix
-                            const int eleGID                       ///< Element ID
-                            );
-
-    /// evaluate isotropic and anisotropic stress and cmat (membrane formulation)
-    void EvaluateStressCmatMembrane(
-        LINALG::Matrix<3,3>&              C_loc,
-        const LINALG::Matrix<3,3>&        iFin_loc,
-        LINALG::Matrix<3,1>&              stress_loc,
-        LINALG::Matrix<3,3>&              cmat_loc,
-        const int                         gp,
-        const int                         eleGID
-        );
-
-    /// evaluate kinematic elastic quantities (membrane formulation)
-    void EvaluateKinQuantElastMembrane(
-        const LINALG::Matrix<3,3>& iFin_loc,
-        LINALG::Matrix<3,1>& prinv,
-        LINALG::Matrix<3,1>& iC_loc,
-        LINALG::Matrix<3,1>& iCrg_loc,
-        LINALG::Matrix<3,1>& iCrgCiCrg_loc,
-        LINALG::Matrix<3,3>& C_loc,
-        double& rcg_e_33
-        );
-
-    /// calculates the derivatives of the hyperelastic laws with respect to the (modified) invariants for the special case of an
-    /// incompressible membrane formulation
-    virtual void EvaluateInvariantDerivativesMembrane(
-        const LINALG::Matrix<3,1>& prinv,               ///< principal invariants of right Cauchy-Green tensor
-        const int& gp,                                  ///< current Gauß-point
-        LINALG::Matrix<3,1>& dPI,                       ///< first derivative with respect to invariants weighted with the corresponding volume fraction
-        LINALG::Matrix<6,1>& ddPII,                     ///< second derivative with respect to invariants weighted with the corresponding volume fraction
-        int eleGID);                                    ///< Element ID
-
-    /// gamma and delta from partial derivatives w.r.t. invariants (membrane formulation)
-    void CalculateGammaDeltaMembrane(
-        LINALG::Matrix<3,1>& gamma_mem,              ///< factors for stress calculation
-        LINALG::Matrix<8,1>& delta_mem,              ///< factors for elasticity tensor calculation
-        const LINALG::Matrix<3,1>& prinv,            ///< principal invariants of right Cauchy-Green tensor
-        const LINALG::Matrix<3,1>& dPI,              ///< first derivative with respect to invariants
-        const LINALG::Matrix<6,1>& ddPII,            ///< second derivative with respect to invariants
-        const double& rcg33);                        ///< entry of cauchygreen tensor in thickness direction
-
-    /// isotropic stress and elasticity tensor for coupled configuration (membrane formulation)
-    void EvaluateIsotropicPrincElastMembrane(
-        LINALG::Matrix<3,1>& stress_mem,
-        LINALG::Matrix<3,3>& cmat_mem,
-        LINALG::Matrix<3,1>& iCrg,
-        LINALG::Matrix<3,1>& iCrgCiCrg,
-        LINALG::Matrix<3,1>& iC,
-        LINALG::Matrix<3,1>& gamma_mem,
-        LINALG::Matrix<8,1>& delta_mem
-        );
+    /// Contribution of membrane material to 2nd Piola-Kirchhoff stress and elasticity tensor
+    void EvaluateStressCmatMembrane(LINALG::Matrix<3,3> const& CM,         ///< Right Cauchy Green tensor
+                                    LINALG::Matrix<3,3> const& iFgM,       ///< Inelastic growth deformation gradient
+                                    LINALG::Matrix<6,1> & stress,          ///< 2nd Piola-Kirchhoff stress
+                                    LINALG::Matrix<6,6> & cmat,            ///< Elasticity tensor
+                                    LINALG::Matrix<6,9> & dSdiFg,          ///< Derivative of 2nd Piola Kirchhoff stress w.r.t. the inelastic growth deformation gradient
+                                    const int gp,                          ///< Current Gauß-Point
+                                    const int eleGID) const;               ///< Element ID
 
     /// Convert matrix to "stress-like" Voigt notation
-    void MatrixtoStressLikeVoigtNotation(LINALG::Matrix<3,3> A,
-                                         LINALG::Matrix<6,1>& B);
+    template< typename T >
+    inline void MatrixtoStressLikeVoigtNotation(LINALG::TMatrix<T,3,3> const& in,
+                                                LINALG::TMatrix<T,6,1> & out) const {
+      for(int i=0;i<3;++i)
+        out(i) = in(i,i);
+      out(3) = 0.5*(in(0,1)+in(1,0));
+      out(4) = 0.5*(in(1,2)+in(2,1));
+      out(5) = 0.5*(in(0,2)+in(2,0));
+    };
+
+    /// Convert matrix to "stress-like" Voigt notation
+    inline void MatrixtoStrainLikeVoigtNotation(LINALG::Matrix<3,3> const& in,
+                                                LINALG::Matrix<6,1> & out) const {
+      for(int i=0;i<3;++i)
+        out(i) = in(i,i);
+      out(3) = in(0,1)+in(1,0);
+      out(4) = in(1,2)+in(2,1);
+      out(5) = in(0,2)+in(2,0);
+    };
 
     /// Convert "stress-like" Voigt notation to matrix
-    void StressLikeVoigtNotationtoMatrix(LINALG::Matrix<6,1> A,
-                                         LINALG::Matrix<3,3>& B);
+    inline void StressLikeVoigtNotationtoMatrix(LINALG::Matrix<6,1> const& in,
+                                                LINALG::Matrix<3,3> & out) const {
+      for(int i=0;i<3;++i)
+        out(i,i) = in(i);
+      out(0,1) = out(1,0) = in(3);
+      out(1,2) = out(2,1) = in(4);
+      out(0,2) = out(2,0) = in(5);
+    };
 
-    /// Evaluate Prestretches
-    void EvaluatePrestretch(const LINALG::Matrix<3,3>* defgrd,
-                            const int gp,
-                            const int eleGID);
+    /// convert non-symmetric 2-tensor to 9x1 vector
+    inline void Matrix3x3to9x1(LINALG::Matrix<3,3> const& in,
+                               LINALG::Matrix<9,1> & out) const {
+      for(int i=0;i<3;++i) out(i) = in(i,i);
+      out(3) = in(0,1);
+      out(4) = in(1,2);
+      out(5) = in(0,2);
+      out(6) = in(1,0);
+      out(7) = in(2,1);
+      out(8) = in(2,0);
+    };
 
 
-    /// my material parameters
+    /// My material parameters
     MAT::PAR::GrowthRemodel_ElastHyper* params_;
 
-    /// map to remodelfiber material summands
+    /// Map to remodelfiber material summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::RemodelFiber> > potsumrf_;
 
-    /// map to elastin 3d matrix material summands
+    /// Map to elastin 3d matrix material summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsumeliso_;
 
-    /// map to membrane elastin material summands
+    /// Map to membrane elastin material summands
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsumelmem_;
 
-    /// map to penalty elastin matrix material summands
+    /// Map to penalty elastin matrix material summands
     Teuchos::RCP<MAT::ELASTIC::Summand> potsumelpenalty_;
 
-    /// current individual mass density of elastin
+    /// Current individual mass density of elastin
     std::vector<double> cur_rho_el_;
 
-    /// initial individual mass density of elastin
+    /// Initial individual mass density of elastin
     std::vector<double> init_rho_el_;
 
-    /// current volume change induced by growth
+    /// Current volume change induced by growth
     std::vector<double> v_;
 
-    /// circumferential structural tensor
+    /// Circumferential structural tensor
     LINALG::Matrix<3,3> AcirM_;
 
-    /// axial structural tensor
+    /// Axial structural tensor
     LINALG::Matrix<3,3> AaxM_;
 
-    /// radial structural tensor
+    /// Radial structural tensor
     LINALG::Matrix<3,3> AradM_;
 
-    /// radial structural tensor in "stress-like" Voigt notation
+    /// Radial structural tensor in "stress-like" Voigt notation
     LINALG::Matrix<6,1> Aradv_;
 
-    /// prestretch of elastin matrix in axial, circumferential and radial direction (used for prestressing)
+    /// Prestretch of elastin matrix in axial, circumferential and radial direction (used for prestressing)
     std::vector<LINALG::Matrix<3,3> > GM_;
 
-    /// total simulation time
+    /// Total simulation time
     double t_tot_;
 
-    /// cylinder coordinates (axi, circ, rad)
+    /// Total number of remodel fibers
+    double nr_rf_tot_;
+
+    /// Cylinder coordinates (axi, circ, rad)
     std::vector<LINALG::Matrix<1,3> > cylcoords_;
 
-    /// axial coordinate of each Gauß-Point
+    /// Axial coordinate of each Gauß-Point
     std::vector<double> gp_ax_;
 
-    /// radial coordinate of each Gauß-Point
+    /// Radial coordinate of each Gauß-Point
     std::vector<double> gp_rad_;
 
-    /// structural tensor of growth direction
+    /// Structural tensor of growth direction
     LINALG::Matrix<3,3> AgM_;
 
-    /// structural tensor of the plane in which all fibers are located
+    /// Structural tensor of the plane in which all fibers are located
     LINALG::Matrix<3,3> AplM_;
 
-    /// projection to local coordinates
-    LINALG::Matrix<6,6> Q_proj_loc_;
-
-    /// projection to global coordinates
-    LINALG::Matrix<6,6> Q_proj_glob_;
-
-    /// fraction of 2D material parameter of elastin
+    /// Fraction of 2D material parameter of elastin
     std::vector<double> mue_frac_;
 
-    /// first call of Evaluate()
-    std::vector<int> first_;
+    /// First call of Evaluate()
+    std::vector<int> prestretch_;
   };
 
 }

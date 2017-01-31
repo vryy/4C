@@ -24,6 +24,11 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_parobject.H"
 
+// needed for automatic differentiation
+#include <Sacado.hpp>
+typedef Sacado::Fad::DFad<double> FAD;
+
+
 // forward declarations
 
 namespace DRT
@@ -112,7 +117,7 @@ namespace MAT
         double& psi,                      ///< strain energy functions
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
-        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain in strain like Voigt notation
         const int eleGID                   ///< element GID
         )
       { dserror("Summand does not support calculation of strain energy"); };
@@ -298,55 +303,6 @@ namespace MAT
       virtual void Add3rdVolDeriv(const LINALG::Matrix<3,1>& modinv, double& d3PsiVolDJ3)
       {
         return; // do nothing
-      };
-
-      /// retrieve coefficients of first, second and third derivative
-      /// of summand with respect to anisotropic invariants
-      ///
-      /// The derivatives of the summand \f$\Psi(IV_{\boldsymbol{C},\boldsymbol{a}},V_{\boldsymbol{C},\boldsymbol{a}})\f$
-      /// in which the principal anisotropic invariants are the arguments are defined as following:
-      ///
-      /// First derivatives:
-      ///
-      ///\f[
-      /// dPI_{0,aniso} = \frac{\partial \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}} ;
-      ///\f]
-      ///\f[
-      /// dPI_{1,aniso} = \frac{\partial \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
-      ///\f]
-      /// Second derivatives:
-      ///\f[
-      /// ddPII_{0,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}^2} ;
-      ///\f]
-      ///\f[
-      /// ddPII_{1,aniso} = \frac{\partial^2 \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}^2} ;
-      ///\f]
-      ///\f[
-      /// ddPII_{2,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
-      /// \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
-      ///\f]
-      /// Third derivatives:
-      ///\f[
-      /// dddPIII_{0,aniso} = \frac{\partial^3 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
-      /// \partial IV_{\boldsymbol{C},\boldsymbol{a}} \partial IV_{\boldsymbol{C},\boldsymbol{a}}} ;
-      ///\f]
-      /// dddPIII_{1,aniso} = \frac{\partial^3 \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}
-      /// \partial V_{\boldsymbol{C},\boldsymbol{a}} \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
-      ///\f]
-      /// dddPIII_{2,aniso} = \frac{\partial^3 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
-      /// \partial IV_{\boldsymbol{C},\boldsymbol{a}} \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
-      ///\f]
-      /// dddPIII_{3,aniso} = \frac{\partial^3 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
-      /// \partial V_{\boldsymbol{C},\boldsymbol{a}} \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
-      ///\f]
-      virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,               ///< first derivative with respect to invariants
-                                       LINALG::Matrix<3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
-                                       LINALG::Matrix<4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
-                                       LINALG::Matrix<3,3> rcg,                      ///< right Cauchy-Green tensor
-                                       const int eleGID)                             ///< element GID
-      {
-        dserror("Not implemented for this material. Use Elast_CoupAnisoExpo/Active or implement for desired material!");
-        return;
       };
 
       /// retrieve coefficients of first and second derivative

@@ -21,6 +21,9 @@
 #include "matpar_parameter.H"
 #include "matpar_bundle.H"
 
+#include <Sacado.hpp>
+
+typedef Sacado::Fad::DFad<double> FAD;
 
 /*----------------------------------------------------------------------*
  |  Add 'Holzapfel product' contribution to constitutive tensor         |
@@ -129,9 +132,10 @@ void MAT::AddtoCmatHolzapfelProduct(Epetra_SerialDenseMatrix& cmat,
  For more details see Holzapfel p. 254
 
  */
-void MAT::AddtoCmatHolzapfelProduct(LINALG::Matrix<6,6>& cmat,
-                                    const LINALG::Matrix<6,1>& invc,
-                                    const double scalar)
+template < typename T >
+void MAT::AddtoCmatHolzapfelProduct(LINALG::TMatrix<T,6,6>& cmat,
+                                    const LINALG::TMatrix<T,6,1>& invc,
+                                    const T scalar)
 {
 #ifdef DEBUG
   if (cmat.M()!=6 or cmat.N()!=6 or invc.M()!=6)
@@ -810,3 +814,274 @@ void MAT::AddSymmetricHolzapfelProduct(LINALG::Matrix<6,6>& X,
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template< typename T >
+void MAT::AddRightNonSymmetricHolzapfelProduct(LINALG::TMatrix<T,6,9> & out,
+                                               LINALG::TMatrix<T,3,3> const& A,
+                                               LINALG::TMatrix<T,3,3> const& B,
+                                               T const fac)
+{
+  out(0,0) += 2 * fac * A(0,0) * B(0,0);
+  out(0,3) += 2 * fac * A(0,0) * B(0,1);
+  out(0,5) += 2 * fac * A(0,0) * B(0,2);
+  out(0,6) += 2 * fac * A(0,1) * B(0,0);
+  out(0,1) += 2 * fac * A(0,1) * B(0,1);
+  out(0,4) += 2 * fac * A(0,1) * B(0,2);
+  out(0,8) += 2 * fac * A(0,2) * B(0,0);
+  out(0,7) += 2 * fac * A(0,2) * B(0,1);
+  out(0,2) += 2 * fac * A(0,2) * B(0,2);
+
+  out(1,0) += 2 * fac * A(1,0) * B(1,0);
+  out(1,3) += 2 * fac * A(1,0) * B(1,1);
+  out(1,5) += 2 * fac * A(1,0) * B(1,2);
+  out(1,6) += 2 * fac * A(1,1) * B(1,0);
+  out(1,1) += 2 * fac * A(1,1) * B(1,1);
+  out(1,4) += 2 * fac * A(1,1) * B(1,2);
+  out(1,8) += 2 * fac * A(1,2) * B(1,0);
+  out(1,7) += 2 * fac * A(1,2) * B(1,1);
+  out(1,2) += 2 * fac * A(1,2) * B(1,2);
+
+  out(2,0) += 2 * fac * A(2,0) * B(2,0);
+  out(2,3) += 2 * fac * A(2,0) * B(2,1);
+  out(2,5) += 2 * fac * A(2,0) * B(2,2);
+  out(2,6) += 2 * fac * A(2,1) * B(2,0);
+  out(2,1) += 2 * fac * A(2,1) * B(2,1);
+  out(2,4) += 2 * fac * A(2,1) * B(2,2);
+  out(2,8) += 2 * fac * A(2,2) * B(2,0);
+  out(2,7) += 2 * fac * A(2,2) * B(2,1);
+  out(2,2) += 2 * fac * A(2,2) * B(2,2);
+
+  out(3,0) += fac * (A(0,0) * B(1,0) + A(1,0) * B(0,0));
+  out(3,3) += fac * (A(0,0) * B(1,1) + A(1,0) * B(0,1));
+  out(3,5) += fac * (A(0,0) * B(1,2) + A(1,0) * B(0,2));
+  out(3,6) += fac * (A(0,1) * B(1,0) + A(1,1) * B(0,0));
+  out(3,1) += fac * (A(0,1) * B(1,1) + A(1,1) * B(0,1));
+  out(3,4) += fac * (A(0,1) * B(1,2) + A(1,1) * B(0,2));
+  out(3,8) += fac * (A(0,2) * B(1,0) + A(1,2) * B(0,0));
+  out(3,7) += fac * (A(0,2) * B(1,1) + A(1,2) * B(0,1));
+  out(3,2) += fac * (A(0,2) * B(1,2) + A(1,2) * B(0,2));
+
+  out(4,0) += fac * (A(1,0) * B(2,0) + A(2,0) * B(1,0));
+  out(4,3) += fac * (A(1,0) * B(2,1) + A(2,0) * B(1,1));
+  out(4,5) += fac * (A(1,0) * B(2,2) + A(2,0) * B(1,2));
+  out(4,6) += fac * (A(1,1) * B(2,0) + A(2,1) * B(1,0));
+  out(4,1) += fac * (A(1,1) * B(2,1) + A(2,1) * B(1,1));
+  out(4,4) += fac * (A(1,1) * B(2,2) + A(2,1) * B(1,2));
+  out(4,8) += fac * (A(1,2) * B(2,0) + A(2,2) * B(1,0));
+  out(4,7) += fac * (A(1,2) * B(2,1) + A(2,2) * B(1,1));
+  out(4,2) += fac * (A(1,2) * B(2,2) + A(2,2) * B(1,2));
+
+  out(5,0) += fac * (A(0,0) * B(2,0) + A(2,0) * B(0,0));
+  out(5,3) += fac * (A(0,0) * B(2,1) + A(2,0) * B(0,1));
+  out(5,5) += fac * (A(0,0) * B(2,2) + A(2,0) * B(0,2));
+  out(5,6) += fac * (A(0,1) * B(2,0) + A(2,1) * B(0,0));
+  out(5,1) += fac * (A(0,1) * B(2,1) + A(2,1) * B(0,1));
+  out(5,4) += fac * (A(0,1) * B(2,2) + A(2,1) * B(0,2));
+  out(5,8) += fac * (A(0,2) * B(2,0) + A(2,2) * B(0,0));
+  out(5,7) += fac * (A(0,2) * B(2,1) + A(2,2) * B(0,1));
+  out(5,2) += fac * (A(0,2) * B(2,2) + A(2,2) * B(0,2));
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::AddLeftNonSymmetricHolzapfelProduct(LINALG::Matrix<9,6> & out,
+                                              LINALG::Matrix<3,3> const& A,
+                                              LINALG::Matrix<3,3> const& B,
+                                              double const fac)
+{
+  out(0,0) += fac * 2 * A(0,0) * B(0,0);
+  out(0,3) += fac * (A(0,0) * B(0,1) + A(0,1) * B(0,0));
+  out(0,5) += fac * (A(0,0) * B(0,2) + A(0,2) * B(0,0));
+  out(0,1) += fac * 2 * A(0,1) * B(0,1);
+  out(0,4) += fac * (A(0,1) * B(0,2) + A(0,2) * B(0,1));
+  out(0,2) += fac * 2 * A(0,2) * B(0,2);
+
+  out(3,0) += fac * 2 * A(0,0) * B(1,0);
+  out(3,3) += fac * (A(0,0) * B(1,1) + A(0,1) * B(1,0));
+  out(3,5) += fac * (A(0,0) * B(1,2) + A(0,2) * B(1,0));
+  out(3,1) += fac * 2 * A(0,1) * B(1,1);
+  out(3,4) += fac * (A(0,1) * B(1,2) + A(0,2) * B(1,1));
+  out(3,2) += fac * 2 * A(0,2) * B(1,2);
+
+  out(5,0) += fac * 2 * A(0,0) * B(2,0);
+  out(5,3) += fac * (A(0,0) * B(2,1) + A(0,1) * B(2,0));
+  out(5,5) += fac * (A(0,0) * B(2,2) + A(0,2) * B(2,0));
+  out(5,1) += fac * 2 * A(0,1) * B(2,1);
+  out(5,4) += fac * (A(0,1) * B(2,2) + A(0,2) * B(2,1));
+  out(5,2) += fac * 2 * A(0,2) * B(2,2);
+
+  out(6,0) += fac * 2 * A(1,0) * B(0,0);
+  out(6,3) += fac * (A(1,0) * B(0,1) + A(1,1) * B(0,0));
+  out(6,5) += fac * (A(1,0) * B(0,2) + A(1,2) * B(0,0));
+  out(6,1) += fac * 2 * A(1,1) * B(0,1);
+  out(6,4) += fac * (A(1,1) * B(0,2) + A(1,2) * B(0,1));
+  out(6,2) += fac * 2 * A(1,2) * B(0,2);
+
+  out(1,0) += fac * 2 * A(1,0) * B(1,0);
+  out(1,3) += fac * (A(1,0) * B(1,1) + A(1,1) * B(1,0));
+  out(1,5) += fac * (A(1,0) * B(1,2) + A(1,2) * B(1,0));
+  out(1,1) += fac * 2 * A(1,1) * B(1,1);
+  out(1,4) += fac * (A(1,1) * B(1,2) + A(1,2) * B(1,1));
+  out(1,2) += fac * 2 * A(1,2) * B(1,2);
+
+  out(4,0) += fac * 2 * A(1,0) * B(2,0);
+  out(4,3) += fac * (A(1,0) * B(2,1) + A(1,1) * B(2,0));
+  out(4,5) += fac * (A(1,0) * B(2,2) + A(1,2) * B(2,0));
+  out(4,1) += fac * 2 * A(1,1) * B(2,1);
+  out(4,4) += fac * (A(1,1) * B(2,2) + A(1,2) * B(2,1));
+  out(4,2) += fac * 2 * A(1,2) * B(2,2);
+
+  out(8,0) += fac * 2 * A(2,0) * B(0,0);
+  out(8,3) += fac * (A(2,0) * B(0,1) + A(2,1) * B(0,0));
+  out(8,5) += fac * (A(2,0) * B(0,2) + A(2,2) * B(0,0));
+  out(8,1) += fac * 2 * A(2,1) * B(0,1);
+  out(8,4) += fac * (A(2,1) * B(0,2) + A(2,2) * B(0,1));
+  out(8,2) += fac * 2 * A(2,2) * B(0,2);
+
+  out(7,0) += fac * 2 * A(2,0) * B(1,0);
+  out(7,3) += fac * (A(2,0) * B(1,1) + A(2,1) * B(1,0));
+  out(7,5) += fac * (A(2,0) * B(1,2) + A(2,2) * B(1,0));
+  out(7,1) += fac * 2 * A(2,1) * B(1,1);
+  out(7,4) += fac * (A(2,1) * B(1,2) + A(2,2) * B(1,1));
+  out(7,2) += fac * 2 * A(2,2) * B(1,2);
+
+  out(2,0) += fac * 2 * A(2,0) * B(2,0);
+  out(2,3) += fac * (A(2,0) * B(2,1) + A(2,1) * B(2,0));
+  out(2,5) += fac * (A(2,0) * B(2,2) + A(2,2) * B(2,0));
+  out(2,1) += fac * 2 * A(2,1) * B(2,1);
+  out(2,4) += fac * (A(2,1) * B(2,2) + A(2,2) * B(2,1));
+  out(2,2) += fac * 2 * A(2,2) * B(2,2);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::AddNonSymmetricProduct(double const& fac,
+                                 LINALG::Matrix<3,3> const& A,
+                                 LINALG::Matrix<3,3> const& B,
+                                 LINALG::Matrix<9,9> & out)
+{
+  out(0,0) += fac * A(0,0) * B(0,0);
+  out(0,3) += fac * A(0,0) * B(1,0);
+  out(0,5) += fac * A(0,0) * B(2,0);
+  out(0,6) += fac * A(0,1) * B(0,0);
+  out(0,1) += fac * A(0,1) * B(1,0);
+  out(0,4) += fac * A(0,1) * B(2,0);
+  out(0,8) += fac * A(0,2) * B(0,0);
+  out(0,7) += fac * A(0,2) * B(1,0);
+  out(0,2) += fac * A(0,2) * B(2,0);
+
+  out(3,0) += fac * A(0,0) * B(0,1);
+  out(3,3) += fac * A(0,0) * B(1,1);
+  out(3,5) += fac * A(0,0) * B(2,1);
+  out(3,6) += fac * A(0,1) * B(0,1);
+  out(3,1) += fac * A(0,1) * B(1,1);
+  out(3,4) += fac * A(0,1) * B(2,1);
+  out(3,8) += fac * A(0,2) * B(0,1);
+  out(3,7) += fac * A(0,2) * B(1,1);
+  out(3,2) += fac * A(0,2) * B(2,1);
+
+  out(5,0) += fac * A(0,0) * B(0,2);
+  out(5,3) += fac * A(0,0) * B(1,2);
+  out(5,5) += fac * A(0,0) * B(2,2);
+  out(5,6) += fac * A(0,1) * B(0,2);
+  out(5,1) += fac * A(0,1) * B(1,2);
+  out(5,4) += fac * A(0,1) * B(2,2);
+  out(5,8) += fac * A(0,2) * B(0,2);
+  out(5,7) += fac * A(0,2) * B(1,2);
+  out(5,2) += fac * A(0,2) * B(2,2);
+
+  out(6,0) += fac * A(1,0) * B(0,0);
+  out(6,3) += fac * A(1,0) * B(1,0);
+  out(6,5) += fac * A(1,0) * B(2,0);
+  out(6,6) += fac * A(1,1) * B(0,0);
+  out(6,1) += fac * A(1,1) * B(1,0);
+  out(6,4) += fac * A(1,1) * B(2,0);
+  out(6,8) += fac * A(1,2) * B(0,0);
+  out(6,7) += fac * A(1,2) * B(1,0);
+  out(6,2) += fac * A(1,2) * B(2,0);
+
+  out(1,0) += fac * A(1,0) * B(0,1);
+  out(1,3) += fac * A(1,0) * B(1,1);
+  out(1,5) += fac * A(1,0) * B(2,1);
+  out(1,6) += fac * A(1,1) * B(0,1);
+  out(1,1) += fac * A(1,1) * B(1,1);
+  out(1,4) += fac * A(1,1) * B(2,1);
+  out(1,8) += fac * A(1,2) * B(0,1);
+  out(1,7) += fac * A(1,2) * B(1,1);
+  out(1,2) += fac * A(1,2) * B(2,1);
+
+  out(4,0) += fac * A(1,0) * B(0,2);
+  out(4,3) += fac * A(1,0) * B(1,2);
+  out(4,5) += fac * A(1,0) * B(2,2);
+  out(4,6) += fac * A(1,1) * B(0,2);
+  out(4,1) += fac * A(1,1) * B(1,2);
+  out(4,4) += fac * A(1,1) * B(2,2);
+  out(4,8) += fac * A(1,2) * B(0,2);
+  out(4,7) += fac * A(1,2) * B(1,2);
+  out(4,2) += fac * A(1,2) * B(2,2);
+
+  out(8,0) += fac * A(2,0) * B(0,0);
+  out(8,3) += fac * A(2,0) * B(1,0);
+  out(8,5) += fac * A(2,0) * B(2,0);
+  out(8,6) += fac * A(2,1) * B(0,0);
+  out(8,1) += fac * A(2,1) * B(1,0);
+  out(8,4) += fac * A(2,1) * B(2,0);
+  out(8,8) += fac * A(2,2) * B(0,0);
+  out(8,7) += fac * A(2,2) * B(1,0);
+  out(8,2) += fac * A(2,2) * B(2,0);
+
+  out(7,0) += fac * A(2,0) * B(0,1);
+  out(7,3) += fac * A(2,0) * B(1,1);
+  out(7,5) += fac * A(2,0) * B(2,1);
+  out(7,6) += fac * A(2,1) * B(0,1);
+  out(7,1) += fac * A(2,1) * B(1,1);
+  out(7,4) += fac * A(2,1) * B(2,1);
+  out(7,8) += fac * A(2,2) * B(0,1);
+  out(7,7) += fac * A(2,2) * B(1,1);
+  out(7,2) += fac * A(2,2) * B(2,1);
+
+  out(2,0) += fac * A(2,0) * B(0,2);
+  out(2,3) += fac * A(2,0) * B(1,2);
+  out(2,5) += fac * A(2,0) * B(2,2);
+  out(2,6) += fac * A(2,1) * B(0,2);
+  out(2,1) += fac * A(2,1) * B(1,2);
+  out(2,4) += fac * A(2,1) * B(2,2);
+  out(2,8) += fac * A(2,2) * B(0,2);
+  out(2,7) += fac * A(2,2) * B(1,2);
+  out(2,2) += fac * A(2,2) * B(2,2);
+
+  return;
+}
+
+
+// explicit instantiation of template functions
+template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(LINALG::TMatrix<double,6,9> &,
+                                                                LINALG::TMatrix<double,3,3> const&,
+                                                                LINALG::TMatrix<double,3,3> const&,
+                                                                double const);
+template void MAT::AddRightNonSymmetricHolzapfelProduct<FAD>(LINALG::TMatrix<FAD,6,9> &,
+                                                             LINALG::TMatrix<FAD,3,3> const&,
+                                                             LINALG::TMatrix<FAD,3,3> const&,
+                                                             FAD const);
+template void MAT::AddtoCmatHolzapfelProduct<double>(LINALG::TMatrix<double,6,6>&,
+                                                     const LINALG::TMatrix<double,6,1>&,
+                                                     const double scalar);
+template void MAT::AddtoCmatHolzapfelProduct<FAD>(LINALG::TMatrix<FAD,6,6>&,
+                                                  const LINALG::TMatrix<FAD,6,1>&,
+                                                  const FAD scalar);
+
+
+
+
+
+
+

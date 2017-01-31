@@ -2303,6 +2303,8 @@ void STR::TimInt::OutputRestart
       output_->WriteVector("material_displacement", (*dismat_)(0));
     output_->WriteVector("velocity", (*vel_)(0));
     output_->WriteVector("acceleration", (*acc_)(0));
+    output_->WriteElementData(firstoutputofrun_);
+    output_->WriteNodeData(firstoutputofrun_);
     WriteRestartForce(output_);
   }
   // owner of elements is just written once because it does not change during simulation (so far)

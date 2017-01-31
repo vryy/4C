@@ -7,9 +7,7 @@
 \level 1
 
 <pre>
-\maintainer Susanna Tinkl
-            tinkl@lnm.mw.tum.de
-            089/289 15265
+\maintainer Fabian Braeu
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -18,6 +16,7 @@
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
+
 
 namespace MAT
 {
@@ -135,11 +134,49 @@ namespace ELASTIC
 
     /// retrieve coefficients of first, second and third derivative
     /// of summand with respect to anisotropic invariants
-    virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,               ///< first derivative with respect to invariants
-                                     LINALG::Matrix<3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
-                                     LINALG::Matrix<4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
-                                     LINALG::Matrix<3,3> rcg,                      ///< right Cauchy-Green tensor
-                                     const int eleGID);                            ///< element GID
+    ///
+    /// The derivatives of the summand \f$\Psi(IV_{\boldsymbol{C},\boldsymbol{a}},V_{\boldsymbol{C},\boldsymbol{a}})\f$
+    /// in which the principal anisotropic invariants are the arguments are defined as following:
+    ///
+    /// First derivatives:
+    ///
+    ///\f[
+    /// dPI_{0,aniso} = \frac{\partial \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}} ;
+    ///\f]
+    ///\f[
+    /// dPI_{1,aniso} = \frac{\partial \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+    ///\f]
+    /// Second derivatives:
+    ///\f[
+    /// ddPII_{0,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}^2} ;
+    ///\f]
+    ///\f[
+    /// ddPII_{1,aniso} = \frac{\partial^2 \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}^2} ;
+    ///\f]
+    ///\f[
+    /// ddPII_{2,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+    /// \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+    ///\f]
+    /// Third derivatives:
+    ///\f[
+    /// dddPIII_{0,aniso} = \frac{\partial^3 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+    /// \partial IV_{\boldsymbol{C},\boldsymbol{a}} \partial IV_{\boldsymbol{C},\boldsymbol{a}}} ;
+    ///\f]
+    /// dddPIII_{1,aniso} = \frac{\partial^3 \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}
+    /// \partial V_{\boldsymbol{C},\boldsymbol{a}} \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+    ///\f]
+    /// dddPIII_{2,aniso} = \frac{\partial^3 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+    /// \partial IV_{\boldsymbol{C},\boldsymbol{a}} \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+    ///\f]
+    /// dddPIII_{3,aniso} = \frac{\partial^3 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+    /// \partial V_{\boldsymbol{C},\boldsymbol{a}} \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+    ///\f]
+    template< typename T >
+    void GetDerivativesAniso(LINALG::TMatrix<T,2,1>& dPI_aniso,               ///< first derivative with respect to invariants
+                             LINALG::TMatrix<T,3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
+                             LINALG::TMatrix<T,4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
+                             LINALG::TMatrix<T,3,3> const& rcg,               ///< right Cauchy-Green tensor
+                             const int eleGID) const;                         ///< element GID
 
     /// Add anisotropic principal stresses
     virtual void AddStressAnisoPrincipal(
@@ -150,14 +187,21 @@ namespace ELASTIC
         const int eleGID                ///< element GID
         );
 
-    // add strain energy
+    /// add strain energy
     virtual void AddStrainEnergy(
       double& psi,                      ///< strain energy functions
       const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
       const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
-      const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
+      const LINALG::Matrix<6,1>& glstrain,///< Green-Lagrange strain in strain like Voigt notation
       const int eleGID                   ///< element GID
       );
+
+    /// Evaluates strain energy for automatic differentiation with FAD
+    template< typename T >
+    void EvaluateFunc(T& psi,                               ///< strain energy functions
+                      LINALG::TMatrix<T,3,3> const& rcg,    ///< Right Cauchy-Green tensor
+                      int const eleGID) const;              ///< element GID
+
 
     /// @name Access methods
     //@{

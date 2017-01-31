@@ -1903,24 +1903,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                              "growth and remodeling",
                                              INPAR::MAT::m_growthremodel_elasthyper));
 
-     AddNamedInt(m,"NUMMATRF","number of remodelfiber materials in list",0,false);
+     AddNamedInt(m,"NUMMATRF","number of remodelfiber materials in list",false);
      AddNamedInt(m,"NUMMATEL3D","number of 3d elastin matrix materials/potentials in list",0,true);
-     AddNamedInt(m,"NUMMATEL2D","number of 2d elastin matrix materials/potentials in list",0,true);
-     AddNamedIntVector(m,"MATIDSRF","the list remodelfiber material IDs","NUMMATRF",-1,true);
+     AddNamedInt(m,"NUMMATEL2D","number of 2d elastin matrix materials/potentials in list",false);
+     AddNamedIntVector(m,"MATIDSRF","the list remodelfiber material IDs","NUMMATRF",false);
      AddNamedIntVector(m,"MATIDSEL3D","the list 3d elastin matrix material/potential IDs","NUMMATEL3D",-1,true);
-     AddNamedIntVector(m,"MATIDSEL2D","the list 2d elastin matrix material/potential IDs","NUMMATEL2D",-1,true);
+     AddNamedIntVector(m,"MATIDSEL2D","the list 2d elastin matrix material/potential IDs","NUMMATEL2D",false);
      AddNamedInt(m,"MATIDELPENALTY","penalty material ID",-1,true);
-     AddNamedReal(m,"ELMASSFRAC","initial mass fraction of elastin matrix in constraint mixture",0.0, false);
-     AddNamedReal(m,"DENS","material mass density");
-     AddNamedReal(m,"PRESTRESSTIME","time of prestressing",false);
+     AddNamedReal(m,"ELMASSFRAC","initial mass fraction of elastin matrix in constraint mixture",false);
+     AddNamedReal(m,"DENS","material mass density",false);
      AddNamedReal(m,"PRESTRETCHELASTINCIR","circumferential prestretch of elastin matrix",false);
      AddNamedReal(m,"PRESTRETCHELASTINAX","axial prestretch of elastin matrix",false);
-     AddNamedReal(m,"THICKNESS","reference wall thickness of the idealized cylindrical aneurysm [m]",false);
-     AddNamedReal(m,"MEANPRESSURE","mean blood pressure [Pa]",false);
-     AddNamedReal(m,"RADIUS","inner radius of the idealized cylindrical aneurysm [m]",false);
+     AddNamedReal(m,"THICKNESS","reference wall thickness of the idealized cylindrical aneurysm [m]",-1,true);
+     AddNamedReal(m,"MEANPRESSURE","mean blood pressure [Pa]",-1.0,true);
+     AddNamedReal(m,"RADIUS","inner radius of the idealized cylindrical aneurysm [m]",-1.0,true);
      AddNamedInt(m,"DAMAGE","1: elastin damage after prestressing,0: no elastin damage",false);
      AddNamedInt(m,"GROWTHTYPE","flag to decide what type of collagen growth is used: 1: anisotropic growth; 0: isotropic growth",false);
      AddNamedInt(m,"LOCTIMEINT","flag to decide what type of local time integration scheme is used: 1: Backward Euler Method; 0: Forward Euler Method",false);
+     AddNamedInt(m,"MEMBRANE","Flag whether Hex or Membrane elements are used ( Membrane: 1, Hex: Everything else )",-1,true);
      AppendMaterialDefinition(matlist,m);
    }
 

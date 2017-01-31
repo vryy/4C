@@ -1,3 +1,7 @@
+//
+// Maintainer: Fabian Bräu
+// braeu@lnm.mw.tum.de
+//
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
@@ -243,7 +247,7 @@ SIMPLE_DAMPING                  1
 AMGNXN_TYPE                     AMG(BGS)
 AMGNXN_XML_FILE                 none
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_GrowthRemodel_ElastHyper NUMMATRF 2 MATIDSRF 11 21 NUMMATEL2D 1 MATIDSEL2D 41 ELMASSFRAC 0.23 DENS 1050 PRESTRESSTIME 10.0 PRESTRETCHELASTINCIR 1.34 PRESTRETCHELASTINAX 1.25 THICKNESS 1.4099822832e-3 MEANPRESSURE 13332.2668 RADIUS 1e-2 DAMAGE 1 GROWTHTYPE 1 LOCTIMEINT 0
+MAT 1 MAT_GrowthRemodel_ElastHyper NUMMATRF 2 MATIDSRF 11 21 NUMMATEL2D 1 MATIDSEL2D 41 ELMASSFRAC 0.23 DENS 1050 PRESTRETCHELASTINCIR 1.34 PRESTRETCHELASTINAX 1.25 THICKNESS 1.4099822832e-3 MEANPRESSURE 13332.2668 RADIUS 1e-2 DAMAGE 1 GROWTHTYPE 1 LOCTIMEINT 0 MEMBRANE 1
 MAT 11 ELAST_RemodelFiber NUMMAT 4 MATIDS 111 112 113 114 TDECAY 101.0 GROWTHFAC 4.951051289713897e-04 COLMASSFRAC 0.062 0.248 0.248 0.062 DEPOSITIONSTRETCH 1.062
 MAT 111 ELAST_CoupAnisoExpo K1 568.0 K2 11.2 GAMMA 0.0 K1COMP 568.0 K2COMP 11.2 ADAPT_ANGLE No
 MAT 112 ELAST_CoupAnisoExpo K1 568.0 K2 11.2 GAMMA 45.0 K1COMP 568.0 K2COMP 11.2 ADAPT_ANGLE No
@@ -251,7 +255,7 @@ MAT 113 ELAST_CoupAnisoExpo K1 568.0 K2 11.2 GAMMA -45.0 K1COMP 568.0 K2COMP 11.
 MAT 114 ELAST_CoupAnisoExpo K1 568.0 K2 11.2 GAMMA 90.0 K1COMP 568.0 K2COMP 11.2 ADAPT_ANGLE No
 MAT 21 ELAST_RemodelFiber NUMMAT 1 MATIDS 121 TDECAY 101.0 GROWTHFAC 4.951051289713897e-04 COLMASSFRAC 0.15 DEPOSITIONSTRETCH 1.10
 MAT 121 ELAST_CoupAnisoExpoActive K1 7.6 K2 11.4 GAMMA 0.0 K1COMP 7.6 K2COMP 11.4 ADAPT_ANGLE No S 54000.0 LAMBDAMAX 1.4 LAMBDA0 0.8 DENS 1050
-MAT 41 ELAST_CoupNeoHooke YOUNG 144.0 NUE 0.0
+MAT 41 ELAST_IsoNeoHooke MUE 72.0
 --------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------CURVE1
 CURVE 1 on EXPR FUNC 0.1*t t1 0.0 t2 10.0
@@ -263,7 +267,7 @@ CURVE 1 on EXPR FUNC 0.1*t t1 0.0 t2 10.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1609 QUANTITY dispy VALUE -3.41110162350597300e-05 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1609 QUANTITY dispy VALUE -3.36250169344546430e-05 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2

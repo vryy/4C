@@ -145,11 +145,12 @@ namespace ELASTIC
     /// retrieve coefficients of first, second and third derivative
     /// of summand with respect to anisotropic invariants
     /// ATTENTION: this is only the passive contribution of the fiber!
-    virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,               ///< first derivative with respect to invariants
-                                     LINALG::Matrix<3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
-                                     LINALG::Matrix<4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
-                                     LINALG::Matrix<3,3> rcg,                      ///< right Cauchy-Green tensor
-                                     const int eleGID);                            ///< element GID
+    template< typename T >
+    void GetDerivativesAniso(LINALG::TMatrix<T,2,1>& dPI_aniso,        ///< first derivative with respect to invariants
+                             LINALG::TMatrix<T,3,1>& ddPII_aniso,      ///< second derivative with respect to invariants
+                             LINALG::TMatrix<T,4,1>& dddPIII_aniso,    ///< third derivative with respect to invariants
+                             LINALG::TMatrix<T,3,3> const& rcg,        ///< right Cauchy-Green tensor
+                             const int eleGID) const;                  ///< element GID
 
     /// Add anisotropic principal stresses
     /// ATTENTION: this is only the passive contribution of the fiber!
@@ -161,21 +162,26 @@ namespace ELASTIC
         const int eleGID                ///< element GID
         );
 
+    /// Evaluates strain energy for automatic differentiation with FAD
+    template< typename T >
+    void EvaluateFunc(T& psi,                               ///< strain energy functions
+                      LINALG::TMatrix<T,3,3> const& rcg,    ///< Right Cauchy-Green tensor
+                      int const eleGID) const;              ///< element GID
+
     /// evaluate stress and cmat
     /// ATTENTION: this is only the active contribution of the fiber!
-    virtual void EvaluateActiveStressCmatAniso(
-        const LINALG::Matrix<3,3> CM,        ///< rigtht Cauchy Green tensor
-        LINALG::Matrix<6,6>& cmat,           ///< material stiffness matrix
-        LINALG::Matrix<6,1>& stress,         ///< 2nd PK-stress
-        const int eleGID                     ///< element GID
-        );
+    template < typename T >
+    void EvaluateActiveStressCmatAniso(LINALG::TMatrix<T,3,3> const& CM,   ///< rigtht Cauchy Green tensor
+                                       LINALG::TMatrix<T,6,6> & cmat,      ///< material stiffness matrix
+                                       LINALG::TMatrix<T,6,1> & stress,    ///< 2nd PK-stress
+                                       const int eleGID) const;            ///< element GID
 
     // add strain energy
     virtual void AddStrainEnergy(
       double& psi,                      ///< strain energy functions
       const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
       const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
-      const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
+      const LINALG::Matrix<6,1>& glstrain,///< Green-Lagrange strain in strain like Voigt notation
       const int eleGID                   ///< element GID
       );
 
@@ -185,6 +191,12 @@ namespace ELASTIC
     double K2() const { return params_->k2_; }
     double K1COMP() const { return params_->k1comp_; }
     double K2COMP() const { return params_->k2comp_; }
+
+    template < typename T >
+    inline void GetDerivativeAnisoActive(T & dPIact) const {
+      dPIact = dPIact_;
+      return;
+    };
 
     //@}
 

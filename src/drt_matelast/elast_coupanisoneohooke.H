@@ -1,17 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupanisoneohooke.H
-\brief
-This file contains the routines required for the anisotropic material
-using a neo-Hooke material according to
+\brief This file contains the routines required for the anisotropic material using a neo-Hooke material
+
+\level 3
 
 <pre>
-Maintainer: Susanna Tinkl
-            tinkl@lnm.mw.tum.de
-            089/289 15265
+\maintainer Fabian Braeu
+            braeu@lnm.mw.tum.de
+            089/289 15236
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISONEOHOOKE_H_
 #define ELAST_COUPANISONEOHOOKE_H_
 
