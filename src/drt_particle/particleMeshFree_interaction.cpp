@@ -233,7 +233,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
   Init(step, disn, veln, radiusn, mass, specEnthalpyn);
 
   // set the other state vectors
-  SetStateVector(temperature, StateVectorType::Temperature);
+  SetStateVector(temperature, PARTICLE::Temperature);
 }
 
 /*----------------------------------------------------------------------*

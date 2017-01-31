@@ -106,9 +106,9 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
 
   // compute densities and pressures
   interHandler_->MF_mW(densityn_);
-  interHandler_->SetStateVector(densityn_, StateVectorType::Density);
+  interHandler_->SetStateVector(densityn_, PARTICLE::Density);
   UpdatePressure();
-  interHandler_->SetStateVector(pressure_, StateVectorType::Pressure);
+  interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
 
   //-- genAlpha can start --//
 
@@ -143,7 +143,7 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
 
     // update gradient and hessian (necessary for gradResAcc)
     interHandler_->MF_mGradW(mGradW_);
-    interHandler_->SetStateVector(mGradW_, StateVectorType::mGradW);
+    interHandler_->SetStateVector(mGradW_, PARTICLE::mGradW);
     interHandler_->MF_mHessW(mHessW_);
     interHandler_->SetStateVector(mHessW_);
 
@@ -154,14 +154,14 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
     CorrectDis();
 
     // update the interaction handler
-    interHandler_->SetStateVector(disn_, StateVectorType::Dis);
+    interHandler_->SetStateVector(disn_, PARTICLE::Dis);
     // update weights
     interHandler_->UpdateWeights(step_);
 
     interHandler_->MF_mW(densityn_);
-    interHandler_->SetStateVector(densityn_, StateVectorType::Density);
+    interHandler_->SetStateVector(densityn_, PARTICLE::Density);
     UpdatePressure();
-    interHandler_->SetStateVector(pressure_, StateVectorType::Pressure);
+    interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
     // predict new state
     PredictNewState();
     // predict mid state
@@ -195,9 +195,9 @@ void PARTICLE::TimIntGenAlpha::DetermineMassDampConsistAccel()
 
   // compute and replace density and pressure
   interHandler_->MF_mW(densityn_);
-  interHandler_->SetStateVector(densityn_, StateVectorType::Density);
+  interHandler_->SetStateVector(densityn_, PARTICLE::Density);
   UpdatePressure();
-  interHandler_->SetStateVector(pressure_, StateVectorType::Pressure);
+  interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
 
   interHandler_->Inter_pvp_acc(accn_);
   interHandler_->Inter_pvw_acc(accn_);
@@ -436,4 +436,3 @@ void PARTICLE::TimIntGenAlpha::CorrectDis()
     LINALG::Assemble(*disn_, deltaDis, lm, myrank_);
   }
 }
-
