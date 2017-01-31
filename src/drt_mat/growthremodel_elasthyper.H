@@ -529,7 +529,7 @@ private:
     double t_tot_;
 
     /// Total number of remodel fibers
-    double nr_rf_tot_;
+    unsigned nr_rf_tot_;
 
     /// Cylinder coordinates (axi, circ, rad)
     std::vector<LINALG::Matrix<1,3> > cylcoords_;

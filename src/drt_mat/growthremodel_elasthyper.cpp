@@ -800,11 +800,11 @@ void MAT::GrowthRemodel_ElastHyper::SolveForRhoLambr(LINALG::SerialDenseMatrix &
                                                      int const eleGID)
 {
   // allocate some variables (allocate variables only once, therefore static)
-  static std::vector<std::vector<double> > dWdrho(nr_rf_tot_,std::vector<double>(nr_rf_tot_,0.0));
-  static std::vector<std::vector<double> > dWdlambr(nr_rf_tot_,std::vector<double>(nr_rf_tot_,0.0));
+  static std::vector<std::vector<double> > dWdrho(nr_rf_tot_, std::vector<double> (nr_rf_tot_,0.0));
+  static std::vector<std::vector<double> > dWdlambr(nr_rf_tot_, std::vector<double> (nr_rf_tot_,0.0));
   static std::vector<double> W(nr_rf_tot_,0.0);
-  static std::vector<std::vector<double> > dEdrho(nr_rf_tot_,std::vector<double>(nr_rf_tot_,0.0));
-  static std::vector<std::vector<double> > dEdlambr(nr_rf_tot_,std::vector<double>(nr_rf_tot_,0.0));
+  static std::vector<std::vector<double> > dEdrho(nr_rf_tot_, std::vector<double> (nr_rf_tot_,0.0));
+  static std::vector<std::vector<double> > dEdlambr(nr_rf_tot_, std::vector<double> (nr_rf_tot_,0.0));
   static std::vector<double> E(nr_rf_tot_,0.0);
   static Epetra_SerialDenseSolver solver;
   // residual vector of assembled system of equation
@@ -1370,7 +1370,7 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateStressCmatMembrane(LINALG::Matrix<3,
 
   FAD X_det = XM_fad(0,0)*(XM_fad(1,1)*XM_fad(2,2) - XM_fad(1,2)*XM_fad(2,1)) - XM_fad(0,1)*
       (XM_fad(1,0)*XM_fad(2,2) - XM_fad(1,2)*XM_fad(2,0)) + XM_fad(0,2)*(XM_fad(1,0)*XM_fad(2,1) -
-      XM_fad(1,1)*XM_fad(2,0));;
+      XM_fad(1,1)*XM_fad(2,0));
 
   static LINALG::FADMatrix<3,3> iXM_fad(true);
   iXM_fad.Invert(XM_fad);

@@ -196,8 +196,8 @@ void MAT::ELASTIC::RemodelFiber::Setup(int numgp,double rho_tot,DRT::INPUT::Line
   LINALG::Matrix<3,3> CpreM(true);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
 
   // identity matrix
   LINALG::Matrix<3,3> id(true);
@@ -336,7 +336,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(LINALG::Matri
 
     for(int l=0;l<nr_grf_tot;++l) {
       dEdrho[nr_grf_proc+k][l] = dEidrho;
-      if(l == (k+nr_grf_proc))
+      if(l == (int)(k+nr_grf_proc))
         dWdrho[nr_grf_proc+k][l] = dWidrhoi;
       else
         dWdrho[nr_grf_proc+k][l] = dWidrhoj;
@@ -397,8 +397,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateAdditionalGrowthRemodelCmat(LINALG::Mat
   for(unsigned k=0;k<potsumfiber_.size();++k) {
     EvaluateDerivatives2ndPiolaKirchhoffGrowthRemodel(dSidrhoi,dSidrhoj,dSdlambr,CM,iFgM,diFgdrhoM,*(potsumfiber_[k]),gp,eleGID);
 
-    for(int l=0;l<drhodC.size();++l) {
-      if(l == nr_grf_proc+k)
+    for(unsigned l=0;l<drhodC.size();++l) {
+      if(l == (nr_grf_proc+k))
         cmat.MultiplyNN(2.0,dSidrhoi,drhodC[l],1.0);
       else
         cmat.MultiplyNN(2.0,dSidrhoj,drhodC[l],1.0);
@@ -599,8 +599,8 @@ void MAT::ELASTIC::RemodelFiber::AddStressCmat(LINALG::Matrix<3,3> const& CM,
   iFinM.MultiplyNN(1.0,iFgM,fiberdat.iFrM[gp],0.0);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
 
   static LINALG::Matrix<3,3> firstderivM(true);
   static LINALG::Matrix<6,1> firstderivv(true);
@@ -638,8 +638,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateLocalCauchyStress(LINALG::TMatrix<T,3,3
                                                            T & sig) const
 {
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
 
   static LINALG::TMatrix<T,3,3> tmp(true);
   static LINALG::TMatrix<T,3,3> CeM(true);
@@ -682,8 +682,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCe(LINALG::TMatrix<T,3,3> const& C
   dsigdCe.Clear();
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
 
   static LINALG::TMatrix<T,3,3> tmp(true);
   static LINALG::TMatrix<T,3,3> CeM(true);
@@ -776,8 +776,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCedC(LINALG::Matrix<3,3> const& CM
   dsigdCedC.Clear();
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
 
   static LINALG::Matrix<3,3> tmp(true);
   static LINALG::Matrix<3,3> CeM(true);
@@ -907,8 +907,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGrowth(LINALG::Matrix<
   CeM.MultiplyTN(1.0,iFinM,tmp,0.0);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
 
   static LINALG::Matrix<2,1> dPIe(true);
   static LINALG::Matrix<3,1> ddPIIe(true);
@@ -1049,8 +1049,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyRemodel(LINALG::Matrix
   CeM.MultiplyTN(1.0,iFinM,tmp1,0.0);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
   static LINALG::Matrix<2,1> dPIe(true);
   static LINALG::Matrix<3,1> ddPIIe(true);
   static LINALG::Matrix<4,1> dddPIIIe(true);
@@ -1138,8 +1138,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdC(LINALG::TMatrix<T,3,3> const& CM
   dsigdC.Clear();
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
 
   static LINALG::TMatrix<T,3,3> FinM(true);
   FinM.Invert(iFinM);
@@ -1413,8 +1413,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivatives2ndPiolaKirchhoffGrowthRemod
   AM_fad = fiberdat.AM;
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
 
   static LINALG::FADMatrix<3,3> firstderivM_fad(true);
   static LINALG::Matrix<6,1> Sactv(true);
@@ -1510,8 +1510,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivatives2ndPiolaKirchhoffGrowthRemod
   CeM.MultiplyTN(1.0,iFinM,tmp,0.0);
 
   // temporary pointers to check the type of the remodelfiber (active or passive)
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1(nullptr);
-  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2(nullptr);
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
 
   static LINALG::Matrix<2,1> dPIe(true);
   static LINALG::Matrix<3,1> ddPIIe(true);
