@@ -4,8 +4,10 @@
 
 \brief evaluation of ScaTra boundary elements for heat transport within electrodes
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -82,7 +84,10 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::ScaTraEleBoundaryCalc
     const std::string& disname
     ) :
     // constructor of base class
-    my::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname)
+    my::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname),
+
+    // initialize member variable
+    eelchnp_(2,LINALG::Matrix<my::nen_,1>(true))
 {
   return;
 }
@@ -111,43 +116,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
   if(matsoret == Teuchos::null or matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
 
-  // get global and interface state vectors
-  Teuchos::RCP<const Epetra_Vector> thermo = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> scatra = discretization.GetState(2,"scatra");
-  Teuchos::RCP<const Epetra_Vector> imasterscatra = discretization.GetState(2,"imasterscatra");
-  if(thermo == Teuchos::null or scatra == Teuchos::null or imasterscatra == Teuchos::null)
-    dserror("Cannot get state vector \"phinp\" or \"scatra\" or \"imasterscatra\"!");
-
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  LINALG::Matrix<my::nen_,1> ethermo(true);
-  std::vector<LINALG::Matrix<my::nen_,1> > eslavescatra(2,LINALG::Matrix<my::nen_,1>(true));
+  ExtractNodeValues(discretization,la);
   std::vector<LINALG::Matrix<my::nen_,1> > emasterscatra(2,LINALG::Matrix<my::nen_,1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*thermo,ethermo,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*scatra,eslavescatra,la[2].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterscatra,emasterscatra,la[2].lm_);
+  my::ExtractNodeValues(emasterscatra,discretization,la,"imasterscatra",2);
 
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
   if(s2icondition == Teuchos::null)
     dserror("Cannot access scatra-scatra interface coupling condition!");
 
-  // access input parameters associated with current condition
-  const double faraday = INPAR::ELCH::faraday_const;
-  const double alphaa = s2icondition->GetDouble("alpha_a");
-  const double alphac = s2icondition->GetDouble("alpha_c");
-  const double kr = s2icondition->GetDouble("k_r");
-  if(kr < 0.)
-    dserror("Charge transfer constant k_r is negative!");
-  const double cmax = matelectrode->CMax();
-  if(cmax < 1.e-12)
-    dserror("Saturation value c_max of intercalated Lithium concentration is too small!");
-  const double peltier = s2icondition->GetDouble("peltier");
-
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
+  for(int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid);
@@ -158,60 +141,120 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
     if (timefacfac < 0. or timefacrhsfac < 0.)
       dserror("Integration factor is negative!");
 
-    // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
-    const double etempint = my::funct_.Dot(ethermo);
-    const double eslavephiint = my::funct_.Dot(eslavescatra[0]);
-    const double eslavepotint = my::funct_.Dot(eslavescatra[1]);
-    const double emasterphiint = my::funct_.Dot(emasterscatra[0]);
-    const double emasterpotint = my::funct_.Dot(emasterscatra[1]);
-
-    // evaluate factor F/RT
-    const double frt = faraday/(INPAR::ELCH::gas_const*etempint);
-
-    // evaluate factor F/RT²
-    const double frtt = frt/etempint;
-
-    // equilibrium electric potential difference at electrode surface
-    const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
-
-    // electrode-electrolyte overpotential at integration point
-    const double eta = eslavepotint-emasterpotint-epd;
-
-    // compute matrix and vector contributions according to kinetic model for current scatra-scatra interface coupling condition
-    switch(s2icondition->GetInt("kinetic model"))
-    {
-      // Butler-Volmer-Peltier kinetics
-      case INPAR::S2I::kinetics_butlervolmerpeltier:
-      {
-        const double i0 = kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
-        const double expterm1 = exp(alphaa*frt*eta);
-        const double expterm2 = exp(-alphac*frt*eta);
-        const double expterm = expterm1-expterm2;
-
-        // safety check
-        if(abs(expterm)>1.e5)
-          dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
-
-        for(int vi=0; vi<my::nen_; ++vi)
-        {
-          for(int ui=0; ui<my::nen_; ++ui)
-            eslavematrix(vi,ui) += timefacfac*i0*frtt*eta*(alphaa*expterm1+alphac*expterm2)*(eta+peltier)*my::funct_(vi)*my::funct_(ui);
-          eslaveresidual[vi] += timefacrhsfac*my::funct_(vi)*i0*expterm*(eta+peltier);
-        }
-
-        break;
-      }
-
-      default:
-      {
-        dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
-        break;
-      }
-    } // switch(s2icondition->GetInt("kinetic model"))
+    EvaluateS2ICouplingAtIntegrationPoint<distype>(
+        *s2icondition,
+        matelectrode,
+        my::ephinp_[0],
+        eelchnp_,
+        emasterscatra,
+        my::funct_,
+        my::funct_,
+        timefacfac,
+        timefacrhsfac,
+        eslavematrix,
+        eslaveresidual
+        );
   } // loop over integration points
 
   return;
-}
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupling
+
+
+/*---------------------------------------------------------------------------------------*
+ | evaluate scatra-scatra interface coupling condition at integration point   fang 01/17 |
+ *---------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype_master>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICouplingAtIntegrationPoint(
+    DRT::Condition&                                                                                                s2icondition,    //!< scatra-scatra interface coupling condition
+    const Teuchos::RCP<const MAT::Electrode>&                                                                      matelectrode,    //!< electrode material
+    const LINALG::Matrix<my::nen_,1>&                                                                              eslavetempnp,    //!< thermo state variables at slave-side nodes
+    const std::vector<LINALG::Matrix<my::nen_,1> >&                                                                eslavephinp,     //!< scatra state variables at slave-side nodes
+    const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1> >&   emasterphinp,    //!< scatra state variables at master-side nodes
+    const LINALG::Matrix<my::nen_,1>&                                                                              funct_slave,     //!< slave-side shape function values
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&                 funct_master,    //!< master-side shape function values
+    const double                                                                                                   timefacfac,      //!< time-integration factor times domain-integration factor
+    const double                                                                                                   timefacrhsfac,   //!< time-integration factor for right-hand side times domain-integration factor
+    Epetra_SerialDenseMatrix&                                                                                      k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseVector&                                                                                      r_s              //!< slave-side residual vector
+    )
+{
+  // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
+  const double eslavetempint = funct_slave.Dot(eslavetempnp);
+  if(eslavetempint <= 0.)
+    dserror("Temperature is non-positive!");
+  const double eslavephiint = funct_slave.Dot(eslavephinp[0]);
+  const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
+  const double emasterphiint = funct_master.Dot(emasterphinp[0]);
+  const double emasterpotint = funct_master.Dot(emasterphinp[1]);
+
+  // compute matrix and vector contributions according to kinetic model for current scatra-scatra interface coupling condition
+  switch(s2icondition.GetInt("kinetic model"))
+  {
+    // Butler-Volmer-Peltier kinetics
+    case INPAR::S2I::kinetics_butlervolmerpeltier:
+    {
+      // access input parameters associated with current condition
+      const double faraday = INPAR::ELCH::faraday_const;
+      const double alphaa = s2icondition.GetDouble("alpha_a");
+      const double alphac = s2icondition.GetDouble("alpha_c");
+      const double kr = s2icondition.GetDouble("k_r");
+      if(kr < 0.)
+        dserror("Charge transfer constant k_r is negative!");
+      const double peltier = s2icondition.GetDouble("peltier");
+
+      // extract saturation value of intercalated lithium concentration from electrode material
+      const double cmax = matelectrode->CMax();
+      if(cmax < 1.e-12)
+        dserror("Saturation value c_max of intercalated lithium concentration is too small!");
+
+      // evaluate factor F/RT
+      const double frt = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*eslavetempint);
+
+      // equilibrium electric potential difference at electrode surface
+      const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
+
+      // electrode-electrolyte overpotential at integration point
+      const double eta = eslavepotint-emasterpotint-epd;
+
+      // Butler-Volmer exchange current density
+      const double i0 = kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
+
+      // exponential Butler-Volmer terms
+      const double expterm1 = exp(alphaa*frt*eta);
+      const double expterm2 = exp(-alphac*frt*eta);
+      const double expterm = expterm1-expterm2;
+
+      // safety check
+      if(abs(expterm)>1.e5)
+        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
+
+      // core residual term
+      const double residual = timefacrhsfac*i0*expterm*(eta+peltier);
+
+      // core linearization w.r.t. temperature
+      const double linearization = -timefacfac*i0*frt/eslavetempint*eta*(alphaa*expterm1+alphac*expterm2)*(eta+peltier);
+
+      // compute matrix and vector contributions
+      for(int vi=0; vi<my::nen_; ++vi)
+      {
+        for(int ui=0; ui<my::nen_; ++ui)
+          k_ss(vi,ui) -= funct_slave(vi)*linearization*funct_slave(ui);
+        r_s[vi] += funct_slave(vi)*residual;
+      }
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
+      break;
+    }
+  } // select kinetic model
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICouplingAtIntegrationPoint
 
 
 /*---------------------------------------------------------------------------------------------------------------------------*
@@ -237,129 +280,160 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICoupl
   if(matsoret == Teuchos::null or matelectrode == Teuchos::null)
    dserror("Invalid electrode material for scatra-scatra interface coupling!");
 
-  // get global and interface state vectors
-  Teuchos::RCP<const Epetra_Vector> thermo = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> scatra = discretization.GetState(2,"scatra");
-  Teuchos::RCP<const Epetra_Vector> imasterscatra = discretization.GetState(2,"imasterscatra");
-  if(thermo == Teuchos::null or scatra == Teuchos::null or imasterscatra == Teuchos::null)
-    dserror("Cannot get state vector \"phinp\" or \"scatra\" or \"imasterscatra\"!");
-
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  LINALG::Matrix<my::nen_,1> ethermo(true);
-  std::vector<LINALG::Matrix<my::nen_,1> > eslavescatra(2,LINALG::Matrix<my::nen_,1>(true));
+  ExtractNodeValues(discretization,la);
   std::vector<LINALG::Matrix<my::nen_,1> > emasterscatra(2,LINALG::Matrix<my::nen_,1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*thermo,ethermo,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*scatra,eslavescatra,la[2].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterscatra,emasterscatra,la[2].lm_);
+  my::ExtractNodeValues(emasterscatra,discretization,la,"imasterscatra",2);
 
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
   if(s2icondition == Teuchos::null)
-   dserror("Cannot access scatra-scatra interface coupling condition!");
-
-  // access input parameters associated with current condition
-  const double faraday = INPAR::ELCH::faraday_const;
-  const double alphaa = s2icondition->GetDouble("alpha_a");
-  const double alphac = s2icondition->GetDouble("alpha_c");
-  const double kr = s2icondition->GetDouble("k_r");
-  if(kr < 0.)
-   dserror("Charge transfer constant k_r is negative!");
-  const double cmax = matelectrode->CMax();
-  if(cmax < 1.e-12)
-   dserror("Saturation value c_max of intercalated Lithium concentration is too small!");
-  const double peltier = s2icondition->GetDouble("peltier");
+    dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
-  for (int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
+  for(int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndIntFac(intpoints,gpid);
 
-    // evaluate overall integration factors
+    // evaluate overall integration factor
     const double timefacfac = my::scatraparamstimint_->TimeFac()*fac;
-    const double timefacrhsfac = my::scatraparamstimint_->TimeFacRhs()*fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.)
+    if (timefacfac < 0.)
      dserror("Integration factor is negative!");
 
-    // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
-    const double etempint = my::funct_.Dot(ethermo);
-    const double eslavephiint = my::funct_.Dot(eslavescatra[0]);
-    const double eslavepotint = my::funct_.Dot(eslavescatra[1]);
-    const double emasterphiint = my::funct_.Dot(emasterscatra[0]);
-    const double emasterpotint = my::funct_.Dot(emasterscatra[1]);
-
-    // evaluate factor F/RT
-    const double frt = faraday/(INPAR::ELCH::gas_const*etempint);
-
-    // equilibrium electric potential difference and its derivative w.r.t. concentration at electrode surface
-    const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
-    const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotential(eslavephiint,faraday,frt);
-
-    // electrode-electrolyte overpotential at integration point
-    const double eta = eslavepotint-emasterpotint-epd;
-
-    // compute derivatives of scatra-scatra interface coupling residuals w.r.t. concentration and electric potential according to kinetic model for current thermo-thermo interface coupling condition
-    switch(s2icondition->GetInt("kinetic model"))
-    {
-      // Butler-Volmer-Peltier kinetics
-      case INPAR::S2I::kinetics_butlervolmerpeltier:
-      {
-        const double i0 = kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
-        const double di0_dcs = kr*faraday*pow(emasterphiint,alphaa)*(alphac*pow(eslavephiint,alphac-1.)*pow(cmax-eslavephiint,alphaa)-alphaa*pow(eslavephiint,alphac)*pow(cmax-eslavephiint,alphaa-1.));
-        const double di0_dce = kr*faraday*alphaa*pow(emasterphiint,alphaa-1.)*pow(eslavephiint,alphac)*pow(cmax-eslavephiint,alphaa);
-
-        const double expterm1 = exp(alphaa*frt*eta);
-        const double dexpterm1_dcs = -epdderiv*alphaa*frt*expterm1;
-
-        const double expterm2 = exp(-alphac*frt*eta);
-        const double dexpterm2_dcs = epdderiv*alphac*frt*expterm2;
-
-        const double expterm = expterm1-expterm2;
-        if(abs(expterm)>1.e5)
-         dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
-        const double dexpterm_dcs = dexpterm1_dcs-dexpterm2_dcs;
-
-        const double di_dcs = di0_dcs*expterm+i0*dexpterm_dcs;
-        const double di_dce = di0_dce*expterm;
-        const double di_dphis = i0*(alphaa*frt*expterm1+alphac*frt*expterm2);
-        const double di_dphie = -1.*di_dphis;
-
-        for (int vi=0; vi<my::nen_; ++vi)
-          for (int ui=0; ui<my::nen_; ++ui)
-          {
-            // recurring indices
-            const int colconc(ui*2);
-            const int colpot(colconc+1);
-
-            // linearizations w.r.t. concentration on slave side
-            eslavematrix(vi,colconc) += -timefacfac*(di_dcs*(eta+peltier)-i0*expterm*epdderiv)*my::funct_(vi)*my::funct_(ui);
-
-            // linearizations w.r.t. electric potential on slave side
-            eslavematrix(vi,colpot) += -timefacfac*(di_dphis*(eta+peltier)+i0*expterm)*my::funct_(vi)*my::funct_(ui);
-
-            // linearizations w.r.t. concentration on master side
-            emastermatrix(vi,colconc) += -timefacfac*di_dce*(eta+peltier)*my::funct_(vi)*my::funct_(ui);
-
-            // linearizations w.r.t. electric potential on master side
-            emastermatrix(vi,colpot) += -timefacfac*(di_dphie*(eta+peltier)-i0*expterm)*my::funct_(vi)*my::funct_(ui);
-          }
-
-        break;
-      }
-
-      default:
-      {
-        dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
-        break;
-      }
-    } // switch(s2icondition->GetInt("kinetic model"))
+    EvaluateS2ICouplingODAtIntegrationPoint<distype>(
+        *s2icondition,
+        matelectrode,
+        my::ephinp_[0],
+        eelchnp_,
+        emasterscatra,
+        my::funct_,
+        my::funct_,
+        timefacfac,
+        eslavematrix,
+        emastermatrix
+        );
   } // loop over integration points
 
   return;
 }
+
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------*
+ | evaluate off-diagonal system matrix contributions associated with scatra-scatra interface coupling condition at integration point   fang 01/17 |
+ *------------------------------------------------------------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype_master>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICouplingODAtIntegrationPoint(
+    DRT::Condition&                                                                                                s2icondition,    //!< scatra-scatra interface coupling condition
+    const Teuchos::RCP<const MAT::Electrode>&                                                                      matelectrode,    //!< electrode material
+    const LINALG::Matrix<my::nen_,1>&                                                                              eslavetempnp,    //!< thermo state variables at slave-side nodes
+    const std::vector<LINALG::Matrix<my::nen_,1> >&                                                                eslavephinp,     //!< scatra state variables at slave-side nodes
+    const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1> >&   emasterphinp,    //!< scatra state variables at master-side nodes
+    const LINALG::Matrix<my::nen_,1>&                                                                              funct_slave,     //!< slave-side shape function values
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&                 funct_master,    //!< master-side shape function values
+    const double                                                                                                   timefacfac,      //!< time-integration factor times domain-integration factor
+    Epetra_SerialDenseMatrix&                                                                                      k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseMatrix&                                                                                      k_sm             //!< linearizations of slave-side residuals w.r.t. master-side dofs
+    )
+{
+  // number of nodes of master-side element
+  const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
+
+  // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
+  const double eslavetempint = funct_slave.Dot(eslavetempnp);
+  if(eslavetempint <= 0.)
+    dserror("Temperature is non-positive!");
+  const double eslavephiint = funct_slave.Dot(eslavephinp[0]);
+  const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
+  const double emasterphiint = funct_master.Dot(emasterphinp[0]);
+  const double emasterpotint = funct_master.Dot(emasterphinp[1]);
+
+  // compute derivatives of scatra-scatra interface coupling residuals w.r.t. concentration and electric potential according to kinetic model for current thermo-thermo interface coupling condition
+  switch(s2icondition.GetInt("kinetic model"))
+  {
+    // Butler-Volmer-Peltier kinetics
+    case INPAR::S2I::kinetics_butlervolmerpeltier:
+    {
+      // access input parameters associated with current condition
+      const double faraday = INPAR::ELCH::faraday_const;
+      const double alphaa = s2icondition.GetDouble("alpha_a");
+      const double alphac = s2icondition.GetDouble("alpha_c");
+      const double kr = s2icondition.GetDouble("k_r");
+      if(kr < 0.)
+        dserror("Charge transfer constant k_r is negative!");
+      const double peltier = s2icondition.GetDouble("peltier");
+
+      // extract saturation value of intercalated lithium concentration from electrode material
+      const double cmax = matelectrode->CMax();
+      if(cmax < 1.e-12)
+        dserror("Saturation value c_max of intercalated lithium concentration is too small!");
+
+      // evaluate factor F/RT
+      const double frt = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*eslavetempint);
+
+      // equilibrium electric potential difference at electrode surface and its derivative w.r.t. concentration at electrode surface
+      const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
+      const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotential(eslavephiint,faraday,frt);
+
+      // electrode-electrolyte overpotential at integration point
+      const double eta = eslavepotint-emasterpotint-epd;
+
+      // Butler-Volmer exchange current density
+      const double i0 = kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
+
+      // exponential Butler-Volmer terms
+      const double expterm1 = exp(alphaa*frt*eta);
+      const double expterm2 = exp(-alphac*frt*eta);
+      const double expterm = expterm1-expterm2;
+
+      // safety check
+      if(abs(expterm)>1.e5)
+        dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
+
+      // core linearizations w.r.t. master-side and slave-side concentrations and electric potentials
+      const double dres_dc_slave = timefacfac*((kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+i0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2))*(eta+peltier)-i0*expterm*epdderiv);
+      const double dres_dc_master = timefacfac*i0*alphaa/emasterphiint*expterm*(eta+peltier);
+      const double dres_dpot_slave = timefacfac*(i0*frt*(alphaa*expterm1+alphac*expterm2)*(eta+peltier)+i0*expterm);
+      const double dres_dpot_master = -dres_dpot_slave;
+
+      // compute matrix contributions associated with slave-side residuals
+      for(int vi=0; vi<my::nen_; ++vi)
+      {
+        for(int ui=0; ui<my::nen_; ++ui)
+        {
+          // compute linearizations w.r.t. slave-side concentrations
+          k_ss(vi,ui*2) -= funct_slave(vi)*dres_dc_slave*funct_slave(ui);
+
+          // compute linearizations w.r.t. slave-side electric potentials
+          k_ss(vi,ui*2+1) -= funct_slave(vi)*dres_dpot_slave*funct_slave(ui);
+        }
+
+        for (int ui=0; ui<nen_master; ++ui)
+        {
+          // compute linearizations w.r.t. master-side concentrations
+          k_sm(vi,ui*2) -= funct_slave(vi)*dres_dc_master*funct_master(ui);
+
+          // compute linearizations w.r.t. master-side electric potentials
+          k_sm(vi,ui*2+1) -= funct_slave(vi)*dres_dpot_master*funct_master(ui);
+        }
+      }
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Kinetic model for scatra-scatra interface coupling is not yet implemented!");
+      break;
+    }
+  } // select kinetic model
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateS2ICouplingODAtIntegrationPoint
 
 
 /*----------------------------------------------------------------------*
@@ -416,6 +490,25 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::EvaluateAction(
 }
 
 
+/*-----------------------------------------------------------------------------*
+ | extract nodal state variables associated with boundary element   fang 01/17 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::ExtractNodeValues(
+    const DRT::Discretization&     discretization,  //!< discretization
+    DRT::Element::LocationArray&   la               //!< location array
+    )
+{
+  // call base class routine
+  my::ExtractNodeValues(discretization,la);
+
+  // extract nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
+  my::ExtractNodeValues(eelchnp_,discretization,la,"scatra",2);
+
+  return;
+}
+
+
 // template classes
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::quad4>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::quad8>;
@@ -426,3 +519,13 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::li
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::line3>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::nurbs3>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::nurbs9>;
+
+// explicit instantiation of template methods
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::quad4>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(DRT::Condition&,const Teuchos::RCP<const MAT::Electrode>&,const LINALG::Matrix<my::nen_,1>&,const std::vector<LINALG::Matrix<my::nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1> >&,const LINALG::Matrix<my::nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const double,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseVector&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::quad4>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(DRT::Condition&,const Teuchos::RCP<const MAT::Electrode>&,const LINALG::Matrix<my::nen_,1>&,const std::vector<LINALG::Matrix<my::nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1> >&,const LINALG::Matrix<my::nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const double,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseVector&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(DRT::Condition&,const Teuchos::RCP<const MAT::Electrode>&,const LINALG::Matrix<my::nen_,1>&,const std::vector<LINALG::Matrix<my::nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1> >&,const LINALG::Matrix<my::nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const double,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseVector&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(DRT::Condition&,const Teuchos::RCP<const MAT::Electrode>&,const LINALG::Matrix<my::nen_,1>&,const std::vector<LINALG::Matrix<my::nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1> >&,const LINALG::Matrix<my::nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const double,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseVector&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::quad4>::EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::quad4>(DRT::Condition&,const Teuchos::RCP<const MAT::Electrode>&,const LINALG::Matrix<my::nen_,1>&,const std::vector<LINALG::Matrix<my::nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1> >&,const LINALG::Matrix<my::nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::quad4>::EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::tri3>(DRT::Condition&,const Teuchos::RCP<const MAT::Electrode>&,const LINALG::Matrix<my::nen_,1>&,const std::vector<LINALG::Matrix<my::nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1> >&,const LINALG::Matrix<my::nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::tri3>::EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::quad4>(DRT::Condition&,const Teuchos::RCP<const MAT::Electrode>&,const LINALG::Matrix<my::nen_,1>&,const std::vector<LINALG::Matrix<my::nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1> >&,const LINALG::Matrix<my::nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<DRT::Element::tri3>::EvaluateS2ICouplingODAtIntegrationPoint<DRT::Element::tri3>(DRT::Condition&,const Teuchos::RCP<const MAT::Electrode>&,const LINALG::Matrix<my::nen_,1>&,const std::vector<LINALG::Matrix<my::nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1> >&,const LINALG::Matrix<my::nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const double,Epetra_SerialDenseMatrix&,Epetra_SerialDenseMatrix&);

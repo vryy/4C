@@ -82,13 +82,13 @@ namespace DRT
 
       //! process an electrode kinetics boundary condition
       void CalcElchBoundaryKinetics(
-          DRT::FaceElement*           ele,              ///< current element
-          Teuchos::ParameterList&     params,           ///< parameter list
-          DRT::Discretization&        discretization,   ///< discretization
-          std::vector<int>&           lm,               ///< location vector
-          Epetra_SerialDenseMatrix&   elemat1_epetra,   ///< element matrix
-          Epetra_SerialDenseVector&   elevec1_epetra,   ///< element right-hand side vector
-          const double                scalar            ///< scaling factor for element matrix and right-hand side contributions
+          DRT::FaceElement*              ele,              ///< current element
+          Teuchos::ParameterList&        params,           ///< parameter list
+          DRT::Discretization&           discretization,   ///< discretization
+          DRT::Element::LocationArray&   la,               ///< location array
+          Epetra_SerialDenseMatrix&      elemat1_epetra,   ///< element matrix
+          Epetra_SerialDenseVector&      elevec1_epetra,   ///< element right-hand side vector
+          const double                   scalar            ///< scaling factor for element matrix and right-hand side contributions
           );
 
       //! evaluate electrode kinetics status information
@@ -113,7 +113,7 @@ namespace DRT
           DRT::FaceElement*                 ele,
           Teuchos::ParameterList&           params,
           DRT::Discretization&              discretization,
-          std::vector<int>&                 lm,
+          DRT::Element::LocationArray&      la,
           Epetra_SerialDenseMatrix&         elemat1_epetra,
           Epetra_SerialDenseVector&         elevec1_epetra
       );
@@ -123,7 +123,7 @@ namespace DRT
           const DRT::Element*               ele,              //!< the element we are dealing with
           Teuchos::ParameterList&           params,           //!< parameter list
           DRT::Discretization&              discretization,   //!< discretization
-          const std::vector<int>&           lm,               //!< location vector
+          DRT::Element::LocationArray&      la,               //!< location array
           Epetra_SerialDenseVector&         scalars           //!< result vector for scalar integrals to be computed
       );
 

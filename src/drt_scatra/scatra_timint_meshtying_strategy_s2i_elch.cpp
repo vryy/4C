@@ -18,10 +18,13 @@
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_mat/electrode.H"
+#include "../drt_mat/soret.H"
 
 #include "../drt_mortar/mortar_element.H"
 
 #include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.H"
+#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_sti_thermo.H"
+#include "../drt_scatra_ele/scatra_ele_boundary_calc_sti_electrode.H"
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
@@ -345,24 +348,47 @@ SCATRA::MortarCellCalcElch<distypeS,distypeM>* SCATRA::MortarCellCalcElch<distyp
     const INPAR::S2I::InterfaceSides&   lmside,                 //!< flag for interface side underlying Lagrange multiplier definition
     const int&                          numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
     const int&                          numdofpernode_master,   //!< number of master-side degrees of freedom per node
-    bool                                create                  //!< creation flag
+    const std::string&                  disname,                //!< name of mortar discretization
+    const MortarCellCalcElch*           delete_me               //!< pointer to instance to be deleted
     )
 {
-  static MortarCellCalcElch<distypeS,distypeM>* instance;
+  // static map assigning mortar discretization names to class instances
+  static std::map<std::string,MortarCellCalcElch<distypeS,distypeM>*> instances;
 
-  if(create)
+  // create new instance or return existing one
+  if(!delete_me)
   {
-    if(instance == NULL)
-      instance = new MortarCellCalcElch<distypeS,distypeM>(couplingtype,lmside,numdofpernode_slave,numdofpernode_master);
+    // create new instance if not yet available
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new MortarCellCalcElch<distypeS,distypeM>(couplingtype,lmside,numdofpernode_slave,numdofpernode_master);
   }
 
-  else if(instance != NULL)
+  // delete existing instance
+  else
   {
-    delete instance;
-    instance = NULL;
+    // loop over all existing instances
+    for(typename std::map<std::string,MortarCellCalcElch<distypeS,distypeM>* >::iterator i=instances.begin(); i!=instances.end(); ++i)
+    {
+      // check whether current instance should be deleted
+      if(i->second == delete_me)
+      {
+        // delete current instance
+        delete i->second;
+
+        // remove deleted instance from map
+        instances.erase(i);
+
+        // return null pointer
+        return NULL;
+      }
+    }
+
+    // catch internal error
+    dserror("Instance to be deleted couldn't be found in static map!");
   }
 
-  return instance;
+  // return existing instance
+  return instances[disname];
 }
 
 
@@ -373,14 +399,14 @@ template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationT
 void SCATRA::MortarCellCalcElch<distypeS,distypeM>::Done()
 {
   // delete singleton
-  Instance(INPAR::S2I::coupling_undefined,INPAR::S2I::side_undefined,0,0,false);
+  Instance(INPAR::S2I::coupling_undefined,INPAR::S2I::side_undefined,0,0,"",this);
 
   return;
 }
 
 
 /*----------------------------------------------------------------------*
- | private constructor for singletons                        fang 01/16 |
+ | protected constructor for singletons                      fang 01/16 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
 SCATRA::MortarCellCalcElch<distypeS,distypeM>::MortarCellCalcElch(
@@ -400,18 +426,19 @@ SCATRA::MortarCellCalcElch<distypeS,distypeM>::MortarCellCalcElch(
  *---------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
-    DRT::Condition&                                          condition,       //!< scatra-scatra interface coupling condition
-    MORTAR::IntCell&                                         cell,            //!< mortar integration cell
-    MORTAR::MortarElement&                                   slaveelement,    //!< slave-side mortar element
-    MORTAR::MortarElement&                                   masterelement,   //!< master-side mortar element
-    const std::vector<LINALG::Matrix<my::nen_slave_,1> >&    ephinp_slave,    //!< state variables at slave-side nodes
-    const std::vector<LINALG::Matrix<my::nen_master_,1> >&   ephinp_master,   //!< state variables at master-side nodes
-    Epetra_SerialDenseMatrix&                                k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&                                k_sm,            //!< linearizations of slave-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseMatrix&                                k_ms,            //!< linearizations of master-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&                                k_mm,            //!< linearizations of master-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseVector&                                r_s,             //!< slave-side residual vector
-    Epetra_SerialDenseVector&                                r_m              //!< master-side residual vector
+    const DRT::Discretization&      idiscret,        //!< interface discretization
+    MORTAR::IntCell&                cell,            //!< mortar integration cell
+    MORTAR::MortarElement&          slaveelement,    //!< slave-side mortar element
+    MORTAR::MortarElement&          masterelement,   //!< master-side mortar element
+    DRT::Element::LocationArray&    la_slave,        //!< slave-side location array
+    DRT::Element::LocationArray&    la_master,       //!< master-side location array
+    const Teuchos::ParameterList&   params,          //!< parameter list
+    Epetra_SerialDenseMatrix&       k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseMatrix&       k_sm,            //!< linearizations of slave-side residuals w.r.t. master-side dofs
+    Epetra_SerialDenseMatrix&       k_ms,            //!< linearizations of master-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseMatrix&       k_mm,            //!< linearizations of master-side residuals w.r.t. master-side dofs
+    Epetra_SerialDenseVector&       r_s,             //!< slave-side residual vector
+    Epetra_SerialDenseVector&       r_m              //!< master-side residual vector
     )
 {
   // safety checks
@@ -420,10 +447,18 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
   if(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() != INPAR::ELCH::equpot_divi)
     dserror("Invalid closing equation for electric potential!");
 
+  // extract condition from parameter list
+  DRT::Condition* condition = params.get<DRT::Condition*>("condition");
+  if(condition == NULL)
+    dserror("Cannot access scatra-scatra interface coupling condition!");
+
   // access material of slave element
-  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(condition.Geometry()[slaveelement.Id()])->ParentElement()->Material());
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(condition->Geometry()[slaveelement.Id()])->ParentElement()->Material());
   if(matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
+
+  // extract nodal state variables associated with slave and master elements
+  this->ExtractNodeValues(idiscret,la_slave,la_master);
 
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
@@ -441,17 +476,17 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
       dserror("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(
-        condition,
+        *condition,
         matelectrode,
-        ephinp_slave,
-        ephinp_master,
+        my::ephinp_slave_,
+        my::ephinp_master_,
         my::funct_slave_,
         my::funct_master_,
         my::test_lm_slave_,
         my::test_lm_master_,
         timefacfac,
         timefacrhsfac,
-        DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(),
+        GetFRT(),
         k_ss,
         k_sm,
         k_ms,
@@ -529,8 +564,614 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateConditionNTS(
 }
 
 
+/*----------------------------------------------------------------------*
+ | evaluate factor F/RT                                      fang 01/17 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+double SCATRA::MortarCellCalcElch<distypeS,distypeM>::GetFRT() const
+{
+  // fetch factor F/RT from electrochemistry parameter list
+  return DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
+};
+
+
+/*----------------------------------------------------------------------*
+ | singleton access method                                   fang 01/17 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+SCATRA::MortarCellCalcElchSTIThermo<distypeS,distypeM>* SCATRA::MortarCellCalcElchSTIThermo<distypeS,distypeM>::Instance(
+    const INPAR::S2I::CouplingType&      couplingtype,           //!< flag for meshtying method
+    const INPAR::S2I::InterfaceSides&    lmside,                 //!< flag for interface side underlying Lagrange multiplier definition
+    const int&                           numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
+    const int&                           numdofpernode_master,   //!< number of master-side degrees of freedom per node
+    const std::string&                   disname,                //!< name of mortar discretization
+    const MortarCellCalcElchSTIThermo*   delete_me               //!< pointer to instance to be deleted
+    )
+{
+  // static map assigning mortar discretization names to class instances
+  static std::map<std::string,MortarCellCalcElchSTIThermo<distypeS,distypeM>*> instances;
+
+  // create new instance or return existing one
+  if(!delete_me)
+  {
+    // create new instance if not yet available
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new MortarCellCalcElchSTIThermo<distypeS,distypeM>(couplingtype,lmside,numdofpernode_slave,numdofpernode_master);
+  }
+
+  // delete existing instance
+  else
+  {
+    // loop over all existing instances
+    for(typename std::map<std::string,MortarCellCalcElchSTIThermo<distypeS,distypeM>* >::iterator i=instances.begin(); i!=instances.end(); ++i)
+    {
+      // check whether current instance should be deleted
+      if(i->second == delete_me)
+      {
+        // delete current instance
+        delete i->second;
+
+        // remove deleted instance from map
+        instances.erase(i);
+
+        // return null pointer
+        return NULL;
+      }
+    }
+
+    // catch internal error
+    dserror("Instance to be deleted couldn't be found in static map!");
+  }
+
+  // return existing instance
+  return instances[disname];
+}
+
+/*----------------------------------------------------------------------*
+ | singleton destruction                                     fang 01/17 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcElchSTIThermo<distypeS,distypeM>::Done()
+{
+  // delete singleton
+  Instance(INPAR::S2I::coupling_undefined,INPAR::S2I::side_undefined,0,0,"",this);
+
+  return;
+};
+
+
+/*----------------------------------------------------------------------*
+ | private constructor for singletons                        fang 01/17 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+SCATRA::MortarCellCalcElchSTIThermo<distypeS,distypeM>::MortarCellCalcElchSTIThermo(
+    const INPAR::S2I::CouplingType&     couplingtype,          //!< flag for meshtying method
+    const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
+    const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
+    const int&                          numdofpernode_master   //!< number of master-side degrees of freedom per node
+    ) :
+    // call base class constructor
+    myelch::MortarCellCalcElch(couplingtype,lmside,numdofpernode_slave,numdofpernode_master),
+
+    // initialize member variable
+    etempnp_slave_(true)
+{
+  return;
+}
+
+
+/*--------------------------------------------------------------------------------------------------------------------*
+ | evaluate single mortar integration cell of particular slave-side and master-side discretization types   fang 01/17 |
+ *--------------------------------------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcElchSTIThermo<distypeS,distypeM>::Evaluate(
+    const DRT::Discretization&      idiscret,        //!< interface discretization
+    MORTAR::IntCell&                cell,            //!< mortar integration cell
+    MORTAR::MortarElement&          slaveelement,    //!< slave-side mortar element
+    MORTAR::MortarElement&          masterelement,   //!< master-side mortar element
+    DRT::Element::LocationArray&    la_slave,        //!< slave-side location array
+    DRT::Element::LocationArray&    la_master,       //!< master-side location array
+    const Teuchos::ParameterList&   params,          //!< parameter list
+    Epetra_SerialDenseMatrix&       cellmatrix1,     //!< cell matrix 1
+    Epetra_SerialDenseMatrix&       cellmatrix2,     //!< cell matrix 2
+    Epetra_SerialDenseMatrix&       cellmatrix3,     //!< cell matrix 3
+    Epetra_SerialDenseMatrix&       cellmatrix4,     //!< cell matrix 4
+    Epetra_SerialDenseVector&       cellvector1,     //!< cell vector 1
+    Epetra_SerialDenseVector&       cellvector2      //!< cell vector 2
+    )
+{
+  // extract and evaluate action
+  switch(DRT::INPUT::get<INPAR::S2I::EvaluationActions>(params,"action"))
+  {
+    // evaluate and assemble off-diagonal interface linearizations
+    case INPAR::S2I::evaluate_condition_od:
+    {
+      EvaluateConditionOD(
+          idiscret,
+          cell,
+          slaveelement,
+          masterelement,
+          la_slave,
+          la_master,
+          params,
+          cellmatrix1,
+          cellmatrix3
+          );
+
+      break;
+    }
+
+    // call base class routine
+    default:
+    {
+      my::Evaluate(
+          idiscret,
+          cell,
+          slaveelement,
+          masterelement,
+          la_slave,
+          la_master,
+          params,
+          cellmatrix1,
+          cellmatrix2,
+          cellmatrix3,
+          cellmatrix4,
+          cellvector1,
+          cellvector2
+          );
+
+      break;
+    }
+  }
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------*
+ | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
+ *---------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcElchSTIThermo<distypeS,distypeM>::EvaluateConditionOD(
+    const DRT::Discretization&      idiscret,        //!< interface discretization
+    MORTAR::IntCell&                cell,            //!< mortar integration cell
+    MORTAR::MortarElement&          slaveelement,    //!< slave-side mortar element
+    MORTAR::MortarElement&          masterelement,   //!< master-side mortar element
+    DRT::Element::LocationArray&    la_slave,        //!< slave-side location array
+    DRT::Element::LocationArray&    la_master,       //!< master-side location array
+    const Teuchos::ParameterList&   params,          //!< parameter list
+    Epetra_SerialDenseMatrix&       k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseMatrix&       k_ms             //!< linearizations of master-side residuals w.r.t. slave-side dofs
+    )
+{
+  // safety checks
+  if(my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
+    dserror("Invalid number of degrees of freedom per node!");
+  if(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() != INPAR::ELCH::equpot_divi)
+    dserror("Invalid closing equation for electric potential!");
+
+  // extract condition from parameter list
+  DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
+  if(s2icondition == NULL)
+    dserror("Cannot access scatra-scatra interface coupling condition!");
+
+  // access material of slave element
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])->ParentElement()->Material());
+  if(matelectrode == Teuchos::null)
+    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+
+  // extract nodal state variables associated with slave and master elements
+  ExtractNodeValues(idiscret,la_slave,la_master);
+
+  // determine quadrature rule
+  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
+
+  // loop over integration points
+  for(int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = my::EvalShapeFuncAndDomIntFacAtIntPoint(slaveelement,masterelement,cell,intpoints,gpid);
+
+    // evaluate overall integration factor
+    const double timefacfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac()*fac;
+    if(timefacfac < 0.)
+      dserror("Integration factor is negative!");
+
+    DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(
+        *s2icondition,
+        matelectrode,
+        my::ephinp_slave_,
+        etempnp_slave_,
+        my::ephinp_master_,
+        my::funct_slave_,
+        my::funct_master_,
+        my::test_lm_slave_,
+        my::test_lm_master_,
+        timefacfac,
+        k_ss,
+        k_ms
+    );
+  } // loop over integration points
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------*
+ | extract nodal state variables associated with mortar integration cell   fang 01/17 |
+ *------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcElchSTIThermo<distypeS,distypeM>::ExtractNodeValues(
+    const DRT::Discretization&     idiscret,   //!< interface discretization
+    DRT::Element::LocationArray&   la_slave,   //!< slave-side location array
+    DRT::Element::LocationArray&   la_master   //!< master-side location array
+    )
+{
+  // call base class routine
+  my::ExtractNodeValues(idiscret,la_slave,la_master);
+
+  // extract nodal temperature variables associated with mortar integration cell
+  my::ExtractNodeValues(etempnp_slave_,idiscret,la_slave,"thermo",1);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | evaluate factor F/RT                                      fang 01/17 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+double SCATRA::MortarCellCalcElchSTIThermo<distypeS,distypeM>::GetFRT() const
+{
+  // evaluate local temperature value
+  const double temperature = my::funct_slave_.Dot(etempnp_slave_);
+
+  // safety check
+  if(temperature <= 0.)
+    dserror("Temperature is non-positive!");
+
+  // evaluate factor F/RT
+  return INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const*temperature);
+}
+
+
+/*----------------------------------------------------------------------*
+ | singleton access method                                   fang 01/17 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+SCATRA::MortarCellCalcSTIElch<distypeS,distypeM>* SCATRA::MortarCellCalcSTIElch<distypeS,distypeM>::Instance(
+    const INPAR::S2I::CouplingType&      couplingtype,           //!< flag for meshtying method
+    const INPAR::S2I::InterfaceSides&    lmside,                 //!< flag for interface side underlying Lagrange multiplier definition
+    const int&                           numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
+    const int&                           numdofpernode_master,   //!< number of master-side degrees of freedom per node
+    const std::string&                   disname,                //!< name of mortar discretization
+    const MortarCellCalcSTIElch*         delete_me               //!< pointer to instance to be deleted
+    )
+{
+  // static map assigning mortar discretization names to class instances
+  static std::map<std::string,MortarCellCalcSTIElch<distypeS,distypeM>*> instances;
+
+  // create new instance or return existing one
+  if(!delete_me)
+  {
+    // create new instance if not yet available
+    if(instances.find(disname) == instances.end())
+      instances[disname] = new MortarCellCalcSTIElch<distypeS,distypeM>(couplingtype,lmside,numdofpernode_slave,numdofpernode_master);
+  }
+
+  // delete existing instance
+  else
+  {
+    // loop over all existing instances
+    for(typename std::map<std::string,MortarCellCalcSTIElch<distypeS,distypeM>* >::iterator i=instances.begin(); i!=instances.end(); ++i)
+    {
+      // check whether current instance should be deleted
+      if(i->second == delete_me)
+      {
+        // delete current instance
+        delete i->second;
+
+        // remove deleted instance from map
+        instances.erase(i);
+
+        // return null pointer
+        return NULL;
+      }
+    }
+
+    // catch internal error
+    dserror("Instance to be deleted couldn't be found in static map!");
+  }
+
+  // return existing instance
+  return instances[disname];
+}
+
+
+/*----------------------------------------------------------------------*
+ | singleton destruction                                     fang 01/17 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcSTIElch<distypeS,distypeM>::Done()
+{
+  // delete singleton
+  Instance(INPAR::S2I::coupling_undefined,INPAR::S2I::side_undefined,0,0,"",this);
+
+  return;
+};
+
+
+/*----------------------------------------------------------------------*
+ | private constructor for singletons                        fang 01/17 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+SCATRA::MortarCellCalcSTIElch<distypeS,distypeM>::MortarCellCalcSTIElch(
+    const INPAR::S2I::CouplingType&     couplingtype,          //!< flag for meshtying method
+    const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
+    const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
+    const int&                          numdofpernode_master   //!< number of master-side degrees of freedom per node
+    ) :
+    // call base class constructor
+    my::MortarCellCalc(couplingtype,lmside,numdofpernode_slave,numdofpernode_master),
+
+    // initialize member variables
+    eelchnp_slave_(2,LINALG::Matrix<my::nen_slave_,1>(true)),
+    eelchnp_master_(2,LINALG::Matrix<my::nen_master_,1>(true))
+{
+  return;
+}
+
+
+/*--------------------------------------------------------------------------------------------------------------------*
+ | evaluate single mortar integration cell of particular slave-side and master-side discretization types   fang 01/17 |
+ *--------------------------------------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcSTIElch<distypeS,distypeM>::Evaluate(
+    const DRT::Discretization&      idiscret,        //!< interface discretization
+    MORTAR::IntCell&                cell,            //!< mortar integration cell
+    MORTAR::MortarElement&          slaveelement,    //!< slave-side mortar element
+    MORTAR::MortarElement&          masterelement,   //!< master-side mortar element
+    DRT::Element::LocationArray&    la_slave,        //!< slave-side location array
+    DRT::Element::LocationArray&    la_master,       //!< master-side location array
+    const Teuchos::ParameterList&   params,          //!< parameter list
+    Epetra_SerialDenseMatrix&       cellmatrix1,     //!< cell matrix 1
+    Epetra_SerialDenseMatrix&       cellmatrix2,     //!< cell matrix 2
+    Epetra_SerialDenseMatrix&       cellmatrix3,     //!< cell matrix 3
+    Epetra_SerialDenseMatrix&       cellmatrix4,     //!< cell matrix 4
+    Epetra_SerialDenseVector&       cellvector1,     //!< cell vector 1
+    Epetra_SerialDenseVector&       cellvector2      //!< cell vector 2
+    )
+{
+  // extract and evaluate action
+  switch(DRT::INPUT::get<INPAR::S2I::EvaluationActions>(params,"action"))
+  {
+    // evaluate and assemble interface linearizations and residuals
+    case INPAR::S2I::evaluate_condition:
+    {
+      EvaluateCondition(
+          idiscret,
+          cell,
+          slaveelement,
+          masterelement,
+          la_slave,
+          la_master,
+          params,
+          cellmatrix1,
+          cellvector1
+          );
+
+      break;
+    }
+
+    // evaluate and assemble off-diagonal interface linearizations
+    case INPAR::S2I::evaluate_condition_od:
+    {
+      EvaluateConditionOD(
+          idiscret,
+          cell,
+          slaveelement,
+          masterelement,
+          la_slave,
+          la_master,
+          params,
+          cellmatrix1,
+          cellmatrix2
+          );
+
+      break;
+    }
+
+    // call base class routine
+    default:
+    {
+      my::Evaluate(
+          idiscret,
+          cell,
+          slaveelement,
+          masterelement,
+          la_slave,
+          la_master,
+          params,
+          cellmatrix1,
+          cellmatrix2,
+          cellmatrix3,
+          cellmatrix4,
+          cellvector1,
+          cellvector2
+          );
+
+      break;
+    }
+  }
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------*
+ | evaluate and assemble interface linearizations and residuals   fang 01/17 |
+ *---------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcSTIElch<distypeS,distypeM>::EvaluateCondition(
+    const DRT::Discretization&      idiscret,        //!< interface discretization
+    MORTAR::IntCell&                cell,            //!< mortar integration cell
+    MORTAR::MortarElement&          slaveelement,    //!< slave-side mortar element
+    MORTAR::MortarElement&          masterelement,   //!< master-side mortar element
+    DRT::Element::LocationArray&    la_slave,        //!< slave-side location array
+    DRT::Element::LocationArray&    la_master,       //!< master-side location array
+    const Teuchos::ParameterList&   params,          //!< parameter list
+    Epetra_SerialDenseMatrix&       k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseVector&       r_s              //!< slave-side residual vector
+    )
+{
+  // safety check
+  if(my::numdofpernode_slave_ != 1 or my::numdofpernode_master_ != 1)
+    dserror("Invalid number of degrees of freedom per node!");
+
+  // extract condition from parameter list
+  DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
+  if(s2icondition == NULL)
+    dserror("Cannot access scatra-scatra interface coupling condition!");
+
+  // access primary and secondary materials of slave element
+  const Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])->ParentElement()->Material());
+  const Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])->ParentElement()->Material(1));
+  if(matsoret == Teuchos::null or matelectrode == Teuchos::null)
+    dserror("Invalid electrode material for scatra-scatra interface coupling!");
+
+  // extract nodal state variables associated with slave and master elements
+  ExtractNodeValues(idiscret,la_slave,la_master);
+
+  // determine quadrature rule
+  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
+
+  // loop over integration points
+  for(int gpid=0; gpid<intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = my::EvalShapeFuncAndDomIntFacAtIntPoint(slaveelement,masterelement,cell,intpoints,gpid);
+
+    // evaluate overall integration factors
+    const double timefacfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac()*fac;
+    const double timefacrhsfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFacRhs()*fac;
+    if (timefacfac < 0. or timefacrhsfac < 0.)
+      dserror("Integration factor is negative!");
+
+    DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(
+        *s2icondition,
+        matelectrode,
+        my::ephinp_slave_[0],
+        eelchnp_slave_,
+        eelchnp_master_,
+        my::funct_slave_,
+        my::funct_master_,
+        timefacfac,
+        timefacrhsfac,
+        k_ss,
+        r_s
+        );
+  } // loop over integration points
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------*
+ | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
+ *---------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcSTIElch<distypeS,distypeM>::EvaluateConditionOD(
+    const DRT::Discretization&      idiscret,        //!< interface discretization
+    MORTAR::IntCell&                cell,            //!< mortar integration cell
+    MORTAR::MortarElement&          slaveelement,    //!< slave-side mortar element
+    MORTAR::MortarElement&          masterelement,   //!< master-side mortar element
+    DRT::Element::LocationArray&    la_slave,        //!< slave-side location array
+    DRT::Element::LocationArray&    la_master,       //!< master-side location array
+    const Teuchos::ParameterList&   params,          //!< parameter list
+    Epetra_SerialDenseMatrix&       k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseMatrix&       k_sm             //!< linearizations of slave-side residuals w.r.t. master-side dofs
+    )
+{
+  // safety check
+  if(my::numdofpernode_slave_ != 1 or my::numdofpernode_master_ != 1)
+    dserror("Invalid number of degrees of freedom per node!");
+
+  // extract condition from parameter list
+  DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
+  if(s2icondition == NULL)
+    dserror("Cannot access scatra-scatra interface coupling condition!");
+
+  // access primary and secondary materials of parent element
+  Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])->ParentElement()->Material());
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(s2icondition->Geometry()[slaveelement.Id()])->ParentElement()->Material(1));
+  if(matsoret == Teuchos::null or matelectrode == Teuchos::null)
+    dserror("Invalid electrode or soret material for scatra-scatra interface coupling!");
+
+  // extract nodal state variables associated with slave and master elements
+  ExtractNodeValues(idiscret,la_slave,la_master);
+
+  // determine quadrature rule
+  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
+
+  // loop over all integration points
+  for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // evaluate shape functions and domain integration factor at current integration point
+    const double fac = my::EvalShapeFuncAndDomIntFacAtIntPoint(slaveelement,masterelement,cell,intpoints,iquad);
+
+    // overall integration factors
+    const double timefacfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("thermo")->TimeFac()*fac;
+    if(timefacfac < 0.)
+      dserror("Integration factor is negative!");
+
+    DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(
+        *s2icondition,
+        matelectrode,
+        my::ephinp_slave_[0],
+        eelchnp_slave_,
+        eelchnp_master_,
+        my::funct_slave_,
+        my::funct_master_,
+        timefacfac,
+        k_ss,
+        k_sm
+        );
+  } // loop over integration points
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------*
+ | extract nodal state variables associated with mortar integration cell   fang 01/17 |
+ *------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+void SCATRA::MortarCellCalcSTIElch<distypeS,distypeM>::ExtractNodeValues(
+    const DRT::Discretization&     idiscret,   //!< interface discretization
+    DRT::Element::LocationArray&   la_slave,   //!< slave-side location array
+    DRT::Element::LocationArray&   la_master   //!< master-side location array
+    )
+{
+  // extract nodal temperature variables associated with slave element
+  my::ExtractNodeValues(my::ephinp_slave_[0],idiscret,la_slave);
+
+  // extract nodal electrochemistry variables associated with mortar integration cell
+  my::ExtractNodeValues(eelchnp_slave_,eelchnp_master_,idiscret,la_slave,la_master,"scatra",1);
+
+  return;
+}
+
+
 // forward declarations
 template class SCATRA::MortarCellCalcElch<DRT::Element::tri3,DRT::Element::tri3>;
 template class SCATRA::MortarCellCalcElch<DRT::Element::tri3,DRT::Element::quad4>;
 template class SCATRA::MortarCellCalcElch<DRT::Element::quad4,DRT::Element::tri3>;
 template class SCATRA::MortarCellCalcElch<DRT::Element::quad4,DRT::Element::quad4>;
+template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::tri3,DRT::Element::tri3>;
+template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::tri3,DRT::Element::quad4>;
+template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::quad4,DRT::Element::tri3>;
+template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::quad4,DRT::Element::quad4>;
+template class SCATRA::MortarCellCalcSTIElch<DRT::Element::tri3,DRT::Element::tri3>;
+template class SCATRA::MortarCellCalcSTIElch<DRT::Element::tri3,DRT::Element::quad4>;
+template class SCATRA::MortarCellCalcSTIElch<DRT::Element::quad4,DRT::Element::tri3>;
+template class SCATRA::MortarCellCalcSTIElch<DRT::Element::quad4,DRT::Element::quad4>;

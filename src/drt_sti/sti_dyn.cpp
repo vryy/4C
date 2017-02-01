@@ -94,12 +94,12 @@ void sti_dyn(
   // clone thermo discretization from scatra discretization, using clone strategy for scatra-thermo interaction
   DRT::UTILS::CloneDiscretization<STI::ScatraThermoCloneStrategy>(scatradis,thermodis);
   thermodis->FillComplete(false,true,true);
+
   // add proxy of scalar transport degrees of freedom to thermo discretization and vice versa
   if(thermodis->AddDofSet(scatradis->GetDofSetProxy()) != 2)
     dserror("Thermo discretization has illegal number of dofsets!");
   if(scatradis->AddDofSet(thermodis->GetDofSetProxy()) != 2)
     dserror("Scatra discretization has illegal number of dofsets!");
-
   thermodis->FillComplete(true,false,false);
   scatradis->FillComplete(true,false,false);
 

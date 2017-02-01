@@ -98,6 +98,7 @@ namespace INPAR
     {
       evaluate_condition,
       evaluate_condition_nts,
+      evaluate_condition_od,
       evaluate_mortar_matrices,
       evaluate_nodal_area_fractions
     };

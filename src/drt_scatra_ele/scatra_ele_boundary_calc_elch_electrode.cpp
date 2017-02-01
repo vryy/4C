@@ -114,17 +114,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   if(matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
 
-  // get global and interface state vectors
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> imasterphinp = discretization.GetState("imasterphinp");
-  if (phinp == Teuchos::null or imasterphinp == Teuchos::null)
-    dserror("Cannot get state vector \"phinp\" or \"imasterphinp\"!");
-
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  std::vector<LINALG::Matrix<my::nen_,1> > eslavephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+  this->ExtractNodeValues(discretization,la);
   std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,eslavephinp,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterphinp,emasterphinp,la[0].lm_);
+  my::ExtractNodeValues(emasterphinp,discretization,la,"imasterphinp");
 
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -150,13 +143,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     if (timefacfac < 0. or timefacrhsfac < 0.)
       dserror("Integration factor is negative!");
 
-    // evaluate factor F/RT
-    const double frt = GetFRT(discretization,la);
-
     EvaluateS2ICouplingAtIntegrationPoint<distype>(
         *s2icondition,
         matelectrode,
-        eslavephinp,
+        my::ephinp_,
         emasterphinp,
         my::funct_,
         my::funct_,
@@ -164,7 +154,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         my::funct_,
         timefacfac,
         timefacrhsfac,
-        frt,
+        GetFRT(),
         eslavematrix,
         emastermatrix,
         dummymatrix,
@@ -377,10 +367,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetValence(
  | evaluate factor F/RT                                      fang 08/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetFRT(
-    DRT::Discretization&           discretization,   ///< discretization
-    DRT::Element::LocationArray&   la                ///< location array
-) const
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetFRT() const
 {
   // fetch factor F/RT from electrochemistry parameter list in isothermal case
   return myelch::elchparams_->FRT();

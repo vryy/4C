@@ -108,6 +108,12 @@ namespace DRT
           Epetra_SerialDenseMatrix&      eslavematrix      ///< element matrix for slave side
           );
 
+      //! extract nodal state variables associated with boundary element
+      void ExtractNodeValues(
+          const DRT::Discretization&     discretization,  //!< discretization
+          DRT::Element::LocationArray&   la               //!< location array
+          );
+
       //! compute Butler-Volmer current density via Newton-Raphson iteration
       double GetButlerVolmerCurrentDensity(
           const double&   i0,           //!< exchange current density
@@ -132,6 +138,9 @@ namespace DRT
           const double&                         thickness,   //!< scatra-scatra interface layer thickness
           const Teuchos::RCP<DRT::Condition>&   condition    //!< scatra-scatra interface coupling condition
           ) const;
+
+      //! nodal growth variables
+      LINALG::Matrix<my::nen_,1> egrowth_;
     }; // class ScaTraEleBoundaryCalcElchElectrodeGrowth
   } // namespace ELEMENTS
 } // namespace DRT

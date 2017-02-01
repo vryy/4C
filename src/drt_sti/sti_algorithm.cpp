@@ -34,6 +34,7 @@
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
+#include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
@@ -130,10 +131,6 @@ STI::Algorithm::Algorithm(
   if(thermo_->NumScal() != 1)
     dserror("Thermo field must involve exactly one transported scalar!");
 
-  // extract meshtying strategies for scatra-scatra interface coupling from scatra and thermo time integrators
-  strategyscatra_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(scatra_->Strategy());
-  strategythermo_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(thermo_->Strategy());
-
   // initialize global map extractor
   maps_ = Teuchos::rcp(new LINALG::MapExtractor(
       *LINALG::MergeMap(
@@ -191,27 +188,90 @@ STI::Algorithm::Algorithm(
   // initialize scatra-thermo block of global system matrix
   scatrathermoblock_ = Teuchos::rcp(new LINALG::SparseMatrix(
          *scatra_->Discretization()->DofRowMap(),
-         81,
-         true,
+         27,
+         false,
          true
          ));
 
   // initialize thermo-scatra block of global system matrix
   thermoscatrablock_ = Teuchos::rcp(new LINALG::SparseMatrix(
          *thermo_->Discretization()->DofRowMap(),
-         81,
-         true,
+         27,
+         false,
          true
          ));
-
-  // initialize coupling adapter
-  icoupscatra_ = strategyscatra_->CouplingAdapter();
-  icoupthermo_ = strategythermo_->CouplingAdapter();
 
   // initialize transformation operators
   islavetomasterrowtransformscatraod_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
   islavetomastercoltransformthermood_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
   imastertoslaverowtransformthermood_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+
+  // exchange secondary dofsets between meshtying strategies for STI mortar coupling
+  if(scatra_->S2ICoupling())
+  {
+    // safety check
+    if(!thermo_->S2ICoupling())
+      dserror("Can't evaluate scatra-scatra interface coupling in scatra field, but not in thermo field!");
+
+    // extract meshtying strategies for scatra-scatra interface coupling from scatra and thermo time integrators
+    strategyscatra_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(scatra_->Strategy());
+    strategythermo_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(thermo_->Strategy());
+
+    // perform initializations depending on type of meshtying method
+    switch(strategyscatra_->CouplingType())
+    {
+      case INPAR::S2I::coupling_matching_nodes:
+      {
+        // safety check
+        if(strategythermo_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
+          dserror("Must have matching nodes at scatra-scatra coupling interfaces in both the scatra and the thermo fields!");
+
+        // extract coupling adapters
+        icoupscatra_ = strategyscatra_->CouplingAdapter();
+        icoupthermo_ = strategythermo_->CouplingAdapter();
+
+        break;
+      }
+
+      case INPAR::S2I::coupling_mortar_standard:
+      {
+        // safety check
+        if(strategythermo_->CouplingType() != INPAR::S2I::coupling_mortar_condensed_bubnov)
+          dserror("Invalid type of scatra-scatra interface coupling for thermo field!");
+
+        // extract scatra-scatra interface coupling conditions
+        std::vector<DRT::Condition*> conditions;
+        scatra_->Discretization()->GetCondition("S2ICoupling",conditions);
+
+        // loop over all conditions
+        for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+          // consider conditions for slave side only
+          if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+          {
+            // extract ID of current condition
+            const int condid = conditions[icondition]->GetInt("ConditionID");
+            if(condid < 0)
+              dserror("Invalid condition ID!");
+
+            // extract mortar discretizations associated with current condition
+            DRT::Discretization& scatradis = strategyscatra_->MortarDiscretization(condid);
+            DRT::Discretization& thermodis = strategythermo_->MortarDiscretization(condid);
+
+            // exchange dofsets between discretizations
+            scatradis.AddDofSet(thermodis.GetDofSetProxy());
+            thermodis.AddDofSet(scatradis.GetDofSetProxy());
+          }
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Invalid type of scatra-scatra interface coupling!");
+        break;
+      }
+    }
+  }
 
   return;
 } // STI::Algorithm::Algorithm
@@ -229,7 +289,7 @@ void STI::Algorithm::AssembleMatAndRHS()
   scatra_->PrepareLinearSolve();
 
   // pass master-side scatra degrees of freedom to thermo discretization for evaluation of scatra-scatra interface coupling
-  if(thermo_->S2ICoupling())
+  if(thermo_->S2ICoupling() and strategythermo_->CouplingType() == INPAR::S2I::coupling_matching_nodes)
     thermo_->Discretization()->SetState(2,"imasterscatra",strategyscatra_->MasterPhinp());
 
   // build system matrix and residual for thermo field
@@ -311,6 +371,37 @@ void STI::Algorithm::ExchangeStateVectors()
   // pass scatra degrees of freedom to thermo discretization and vice versa
   scatra_->Discretization()->SetState(2,"thermo",thermo_->Phiafnp());
   thermo_->Discretization()->SetState(2,"scatra",scatra_->Phiafnp());
+
+  // exchange state vectors for evaluation of scatra-scatra interface coupling
+  if(scatra_->S2ICoupling() and strategyscatra_->CouplingType() == INPAR::S2I::coupling_mortar_standard)
+  {
+    // extract scatra-scatra interface coupling conditions
+    std::vector<DRT::Condition*> conditions;
+    scatra_->Discretization()->GetCondition("S2ICoupling",conditions);
+
+    // loop over all conditions
+    for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+      // consider conditions for slave side only
+      if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+      {
+        // extract ID of current condition
+        const int condid = conditions[icondition]->GetInt("ConditionID");
+        if(condid < 0)
+          dserror("Invalid condition ID!");
+
+        // extract mortar discretizations associated with current condition
+        DRT::Discretization& scatradis = strategyscatra_->MortarDiscretization(condid);
+        DRT::Discretization& thermodis = strategythermo_->MortarDiscretization(condid);
+
+        // pass interfacial scatra degrees of freedom to thermo discretization and vice versa
+        const Teuchos::RCP<Epetra_Vector> scatra = Teuchos::rcp(new Epetra_Vector(*thermodis.DofRowMap(1)));
+        LINALG::Export(*scatra_->Phiafnp(),*scatra);
+        thermodis.SetState(1,"scatra",scatra);
+        const Teuchos::RCP<Epetra_Vector> thermo = Teuchos::rcp(new Epetra_Vector(*scatradis.DofRowMap(1)));
+        LINALG::Export(*thermo_->Phiafnp(),*thermo);
+        scatradis.SetState(1,"thermo",thermo);
+      }
+  }
 
   return;
 } // STI::Algorithm::ExchangeStateVectors()
@@ -432,9 +523,21 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
   fieldparameters_->set<std::string>("INITIALFIELD",stiparameters_->get<std::string>("THERMO_INITIALFIELD"));
   fieldparameters_->set<int>("INITFUNCNO",stiparameters_->get<int>("THERMO_INITFUNCNO"));
 
-  // set flag in thermo meshtying strategy for evaluation of interface linearizations and residuals on slave side only
+  // perform additional manipulations associated with scatra-scatra interface coupling
   if(scatra_->S2ICoupling())
+  {
+    // set flag in thermo meshtying strategy for evaluation of interface linearizations and residuals on slave side only
     fieldparameters_->sublist("S2I COUPLING").set<std::string>("SLAVEONLY","Yes");
+
+    // adapt type of meshtying method for thermo field
+    if(fieldparameters_->sublist("S2I COUPLING").get<std::string>("COUPLINGTYPE") == "StandardMortar")
+      fieldparameters_->sublist("S2I COUPLING").set<std::string>("COUPLINGTYPE","CondensedMortar_Bubnov");
+    else if(fieldparameters_->sublist("S2I COUPLING").get<std::string>("COUPLINGTYPE") != "MatchingNodes")
+      dserror("Invalid type of scatra-scatra interface coupling!");
+
+    // make sure that interface side underlying Lagrange multiplier definition is slave side
+    fieldparameters_->sublist("S2I COUPLING").set<std::string>("LMSIDE","slave");
+  }
 
   return;
 } // STI::Algorithm::ModifyFieldParametersForThermoField()
@@ -688,7 +791,7 @@ void STI::Algorithm::PrepareTimeStep()
     ExchangeStateVectors();
 
     // pass master-side scatra degrees of freedom to thermo discretization for evaluation of scatra-scatra interface coupling
-    if(thermo_->S2ICoupling())
+    if(thermo_->S2ICoupling() and strategythermo_->CouplingType() == INPAR::S2I::coupling_matching_nodes)
       thermo_->Discretization()->SetState(2,"imasterscatra",strategyscatra_->MasterPhinp());
   }
 
@@ -834,52 +937,135 @@ void STI::Algorithm::AssembleODBlockScatraThermo()
   // provide scatra-thermo matrix block with contributions from scatra-scatra interface coupling if applicable
   if(scatra_->S2ICoupling())
   {
-    // initialize auxiliary system matrix for linearizations of slave-side scatra fluxes w.r.t. slave-side thermo dofs
-    strategyscatra_->SlaveMatrix()->Zero();
+    // differentiate between different meshtying methods
+    switch(strategyscatra_->CouplingType())
+    {
+      case INPAR::S2I::coupling_matching_nodes:
+      {
+        // initialize auxiliary system matrix for linearizations of slave-side scatra fluxes w.r.t. slave-side thermo dofs
+        strategyscatra_->SlaveMatrix()->Zero();
 
-    // create parameter list for element evaluation
-    Teuchos::ParameterList condparams;
+        // create parameter list for element evaluation
+        Teuchos::ParameterList condparams;
 
-    // action for elements
-    condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_od);
+        // action for elements
+        condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_od);
 
-    // add state vector containing master-side scatra degrees of freedom to scatra discretization
-    scatra_->Discretization()->SetState("imasterphinp",strategyscatra_->MasterPhinp());
+        // add state vector containing master-side scatra degrees of freedom to scatra discretization
+        scatra_->Discretization()->SetState("imasterphinp",strategyscatra_->MasterPhinp());
 
-    // create strategy for assembly of auxiliary system matrix
-    DRT::AssembleStrategy strategyscatrathermos2i(
-        0,                                // row assembly based on number of dofset associated with scatra dofs on scatra discretization
-        2,                                // column assembly based on number of dofset associated with thermo dofs on scatra discretization
-        strategyscatra_->SlaveMatrix(),   // auxiliary system matrix
-        Teuchos::null,                    // no additional matrices of vectors
-        Teuchos::null,
-        Teuchos::null,
-        Teuchos::null
-        );
+        // create strategy for assembly of auxiliary system matrix
+        DRT::AssembleStrategy strategyscatrathermos2i(
+            0,                                // row assembly based on number of dofset associated with scatra dofs on scatra discretization
+            2,                                // column assembly based on number of dofset associated with thermo dofs on scatra discretization
+            strategyscatra_->SlaveMatrix(),   // auxiliary system matrix
+            Teuchos::null,                    // no additional matrices of vectors
+            Teuchos::null,
+            Teuchos::null,
+            Teuchos::null
+            );
 
-    // evaluate scatra-scatra interface coupling
-    std::vector<DRT::Condition*> conditions;
-    scatra_->Discretization()->GetCondition("S2ICoupling",conditions);
-    for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
-      if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
-        scatra_->Discretization()->EvaluateCondition(condparams,strategyscatrathermos2i,"S2ICoupling",conditions[icondition]->GetInt("ConditionID"));
+        // evaluate scatra-scatra interface coupling
+        std::vector<DRT::Condition*> conditions;
+        scatra_->Discretization()->GetCondition("S2ICoupling",conditions);
+        for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+          if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+            scatra_->Discretization()->EvaluateCondition(condparams,strategyscatrathermos2i,"S2ICoupling",conditions[icondition]->GetInt("ConditionID"));
 
-    // finalize auxiliary system matrix
-    strategyscatra_->SlaveMatrix()->Complete(*maps_->Map(1),*maps_->Map(0));
+        // finalize auxiliary system matrix
+        strategyscatra_->SlaveMatrix()->Complete(*maps_->Map(1),*maps_->Map(0));
 
-    // assemble linearizations of slave-side scatra fluxes w.r.t. slave-side thermo dofs into scatra-thermo matrix block
-    scatrathermoblock_->Add(*strategyscatra_->SlaveMatrix(),false,1.,1.);
+        // assemble linearizations of slave-side scatra fluxes w.r.t. slave-side thermo dofs into scatra-thermo matrix block
+        scatrathermoblock_->Add(*strategyscatra_->SlaveMatrix(),false,1.,1.);
 
-    // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs and assemble into scatra-thermo matrix block
-    (*islavetomasterrowtransformscatraod_)(
-        *strategyscatra_->SlaveMatrix(),
-        -1.,
-        ADAPTER::CouplingSlaveConverter(*icoupscatra_),
-        *scatrathermoblock_,
-        true
-        );
+        // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs and assemble into scatra-thermo matrix block
+        (*islavetomasterrowtransformscatraod_)(
+            *strategyscatra_->SlaveMatrix(),
+            -1.,
+            ADAPTER::CouplingSlaveConverter(*icoupscatra_),
+            *scatrathermoblock_,
+            true
+            );
 
-    // linearizations of scatra fluxes w.r.t. master-side thermo dofs are not needed, since these dofs will be condensed out later
+        // linearizations of scatra fluxes w.r.t. master-side thermo dofs are not needed, since these dofs will be condensed out later
+
+        break;
+      }
+
+      case INPAR::S2I::coupling_mortar_standard:
+      {
+        // initialize auxiliary system matrices for linearizations of slave-side and master-side scatra fluxes w.r.t. slave-side thermo dofs
+        strategyscatra_->SlaveMatrix()->Zero();
+        strategyscatra_->MasterMatrix()->Zero();
+
+        // create parameter list for element evaluation
+        Teuchos::ParameterList condparams;
+
+        // action for elements
+        condparams.set<int>("action",INPAR::S2I::evaluate_condition_od);
+
+        // create strategy for assembly of auxiliary system matrices
+        SCATRA::MortarCellAssemblyStrategy strategyscatrathermos2i(
+            strategyscatra_->SlaveMatrix(),
+            INPAR::S2I::side_slave,
+            INPAR::S2I::side_slave,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            INPAR::S2I::side_undefined,
+            strategyscatra_->MasterMatrix(),
+            INPAR::S2I::side_master,
+            INPAR::S2I::side_slave,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            INPAR::S2I::side_undefined,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            0,
+            1
+            );
+
+        // extract scatra-scatra interface coupling conditions
+        std::vector<DRT::Condition*> conditions;
+        scatra_->Discretization()->GetCondition("S2ICoupling",conditions);
+
+        // loop over all conditions
+        for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+        {
+          // extract current condition
+          DRT::Condition& condition = *conditions[icondition];
+
+          // consider conditions for slave side only
+          if(condition.GetInt("interface side") == INPAR::S2I::side_slave)
+          {
+            // add condition to parameter list
+            condparams.set<DRT::Condition*>("condition",&condition);
+
+            // evaluate mortar integration cells
+            strategyscatra_->EvaluateMortarCells(strategyscatra_->MortarDiscretization(condition.GetInt("ConditionID")),condparams,strategyscatrathermos2i);
+          }
+        }
+
+        // finalize auxiliary system matrices
+        strategyscatra_->SlaveMatrix()->Complete(*maps_->Map(1),*maps_->Map(0));
+        strategyscatra_->MasterMatrix()->Complete(*maps_->Map(1),*maps_->Map(0));
+
+        // assemble linearizations of slave-side and master-side scatra fluxes w.r.t. slave-side thermo dofs into scatra-thermo matrix block
+        scatrathermoblock_->Add(*strategyscatra_->SlaveMatrix(),false,1.,1.);
+        scatrathermoblock_->Add(*strategyscatra_->MasterMatrix(),false,1.,1.);
+
+        // linearizations of scatra fluxes w.r.t. master-side thermo dofs are not needed, since these dofs will be condensed out later
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Invalid type of scatra-scatra interface coupling!");
+        break;
+      }
+    }
   }
 
   // finalize scatra-thermo matrix block
@@ -935,94 +1121,206 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
   // provide thermo-scatra matrix block with contributions from scatra-scatra interface coupling if applicable
   if(thermo_->S2ICoupling())
   {
-    // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes w.r.t. slave-side scatra dofs
-    strategythermo_->SlaveMatrix()->Zero();
-
-    // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs
-    strategythermo_->MasterMatrix()->Zero();
-
-    // create parameter list for element evaluation
-    Teuchos::ParameterList condparams;
-
-    // action for elements
-    condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_od);
-
-    // create strategy for assembly of auxiliary system matrices
-    DRT::AssembleStrategy strategythermoscatras2i(
-        0,                                // row assembly based on number of dofset associated with thermo dofs on thermo discretization
-        2,                                // column assembly based on number of dofset associated with scatra dofs on thermo discretization
-        strategythermo_->SlaveMatrix(),   // auxiliary system matrices
-        strategythermo_->MasterMatrix(),
-        Teuchos::null,                    // no additional matrices of vectors
-        Teuchos::null,
-        Teuchos::null
-        );
-
-    // evaluate scatra-scatra interface coupling
-    std::vector<DRT::Condition*> conditions;
-    thermo_->Discretization()->GetCondition("S2ICoupling",conditions);
-    for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
-      if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
-        thermo_->Discretization()->EvaluateCondition(condparams,strategythermoscatras2i,"S2ICoupling",conditions[icondition]->GetInt("ConditionID"));
-
-    // finalize auxiliary system matrices
-    strategythermo_->SlaveMatrix()->Complete(*icoupscatra_->SlaveDofMap(),*icoupthermo_->SlaveDofMap());
-    strategythermo_->MasterMatrix()->Complete(*icoupscatra_->SlaveDofMap(),*icoupthermo_->SlaveDofMap());
-
-    // assemble linearizations of slave-side thermo fluxes w.r.t. slave-side scatra dofs into thermo-scatra matrix block
-    thermoscatrablock_->Add(*strategythermo_->SlaveMatrix(),false,1.,1.);
-
-    // derive linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs and assemble into thermo-scatra matrix block
-    (*islavetomastercoltransformthermood_)(
-        strategythermo_->MasterMatrix()->RowMap(),
-        strategythermo_->MasterMatrix()->ColMap(),
-        *strategythermo_->MasterMatrix(),
-        1.,
-        ADAPTER::CouplingSlaveConverter(*icoupscatra_),
-        *thermoscatrablock_,
-        true,
-        true
-        );
-
-    // linearizations of master-side thermo fluxes w.r.t. scatra dofs are not needed, since thermo fluxes are source terms and thus only evaluated once on slave side
-
-    if(!thermo_->Discretization()->GetCondition("PointCoupling"))
+    // differentiate between different meshtying methods
+    switch(strategythermo_->CouplingType())
     {
-      // initialize temporary matrix for master-side rows of thermo-scatra matrix block
-      LINALG::SparseMatrix thermoscatrarowsmaster(*icoupthermo_->MasterDofMap(),81);
-
-      // loop over all master-side rows of thermo-scatra matrix block
-      for(int masterdoflid=0; masterdoflid<icoupthermo_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+      case INPAR::S2I::coupling_matching_nodes:
       {
-        // determine global ID of current matrix row
-        const int masterdofgid = icoupthermo_->MasterDofMap()->GID(masterdoflid);
-        if(masterdofgid < 0)
-          dserror("Couldn't find local ID %d in map!",masterdoflid);
+        // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes w.r.t. slave-side scatra dofs
+        strategythermo_->SlaveMatrix()->Zero();
 
-        // extract current matrix row from thermo-scatra matrix block
-        const int length = thermoscatrablock_->EpetraMatrix()->NumGlobalEntries(masterdofgid);
-        int numentries(0);
-        std::vector<double> values(length,0.);
-        std::vector<int> indices(length,0);
-        if(thermoscatrablock_->EpetraMatrix()->ExtractGlobalRowCopy(masterdofgid,length,numentries,&values[0],&indices[0]) != 0)
-          dserror("Cannot extract matrix row with global ID %d from thermo-scatra matrix block!",masterdofgid);
+        // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs
+        strategythermo_->MasterMatrix()->Zero();
 
-        // copy current matrix row of thermo-scatra matrix block into temporary matrix
-        if(thermoscatrarowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,numentries,&values[0],&indices[0]) < 0)
-          dserror("Cannot insert matrix row with global ID %d into temporary matrix!",masterdofgid);
+        // create parameter list for element evaluation
+        Teuchos::ParameterList condparams;
+
+        // action for elements
+        condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_od);
+
+        // create strategy for assembly of auxiliary system matrices
+        DRT::AssembleStrategy strategythermoscatras2i(
+            0,                                // row assembly based on number of dofset associated with thermo dofs on thermo discretization
+            2,                                // column assembly based on number of dofset associated with scatra dofs on thermo discretization
+            strategythermo_->SlaveMatrix(),   // auxiliary system matrices
+            strategythermo_->MasterMatrix(),
+            Teuchos::null,                    // no additional matrices of vectors
+            Teuchos::null,
+            Teuchos::null
+            );
+
+        // evaluate scatra-scatra interface coupling
+        std::vector<DRT::Condition*> conditions;
+        thermo_->Discretization()->GetCondition("S2ICoupling",conditions);
+        for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+          if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+            thermo_->Discretization()->EvaluateCondition(condparams,strategythermoscatras2i,"S2ICoupling",conditions[icondition]->GetInt("ConditionID"));
+
+        // finalize auxiliary system matrices
+        strategythermo_->SlaveMatrix()->Complete(*icoupscatra_->SlaveDofMap(),*icoupthermo_->SlaveDofMap());
+        strategythermo_->MasterMatrix()->Complete(*icoupscatra_->SlaveDofMap(),*icoupthermo_->SlaveDofMap());
+
+        // assemble linearizations of slave-side thermo fluxes w.r.t. slave-side scatra dofs into thermo-scatra matrix block
+        thermoscatrablock_->Add(*strategythermo_->SlaveMatrix(),false,1.,1.);
+
+        // derive linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs and assemble into thermo-scatra matrix block
+        (*islavetomastercoltransformthermood_)(
+            strategythermo_->MasterMatrix()->RowMap(),
+            strategythermo_->MasterMatrix()->ColMap(),
+            *strategythermo_->MasterMatrix(),
+            1.,
+            ADAPTER::CouplingSlaveConverter(*icoupscatra_),
+            *thermoscatrablock_,
+            true,
+            true
+            );
+
+        // linearizations of master-side thermo fluxes w.r.t. scatra dofs are not needed, since thermo fluxes are source terms and thus only evaluated once on slave side
+
+        // standard meshtying algorithm with Lagrange multipliers condensed out
+        if(!thermo_->Discretization()->GetCondition("PointCoupling"))
+        {
+          // initialize temporary matrix for master-side rows of thermo-scatra matrix block
+          LINALG::SparseMatrix thermoscatrarowsmaster(*icoupthermo_->MasterDofMap(),27);
+
+          // loop over all master-side rows of thermo-scatra matrix block
+          for(int masterdoflid=0; masterdoflid<icoupthermo_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+          {
+            // determine global ID of current matrix row
+            const int masterdofgid = icoupthermo_->MasterDofMap()->GID(masterdoflid);
+            if(masterdofgid < 0)
+              dserror("Couldn't find local ID %d in map!",masterdoflid);
+
+            // extract current matrix row from thermo-scatra matrix block
+            const int length = thermoscatrablock_->EpetraMatrix()->NumGlobalEntries(masterdofgid);
+            int numentries(0);
+            std::vector<double> values(length,0.);
+            std::vector<int> indices(length,0);
+            if(thermoscatrablock_->EpetraMatrix()->ExtractGlobalRowCopy(masterdofgid,length,numentries,&values[0],&indices[0]) != 0)
+              dserror("Cannot extract matrix row with global ID %d from thermo-scatra matrix block!",masterdofgid);
+
+            // copy current matrix row of thermo-scatra matrix block into temporary matrix
+            if(thermoscatrarowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,numentries,&values[0],&indices[0]) < 0)
+              dserror("Cannot insert matrix row with global ID %d into temporary matrix!",masterdofgid);
+          }
+
+          // finalize temporary matrix with master-side rows of thermo-scatra matrix block
+          thermoscatrarowsmaster.Complete(*maps_->Map(0),*icoupthermo_->MasterDofMap());
+
+          // add master-side rows of thermo-scatra matrix block to corresponding slave-side rows
+          (*imastertoslaverowtransformthermood_)(
+              thermoscatrarowsmaster,
+              1.,
+              ADAPTER::CouplingMasterConverter(*icoupthermo_),
+              *thermoscatrablock_,
+              true
+              );
+        }
+
+        break;
       }
 
-      // finalize temporary matrix with master-side rows of thermo-scatra matrix block
-      thermoscatrarowsmaster.Complete(*maps_->Map(0),*icoupthermo_->MasterDofMap());
+      case INPAR::S2I::coupling_mortar_condensed_bubnov:
+      {
+        // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes w.r.t. slave-side and master-side scatra dofs
+        strategythermo_->SlaveMatrix()->Zero();
 
-      // add master-side rows of thermo-scatra matrix block to corresponding slave-side rows
-      (*imastertoslaverowtransformthermood_)(
-          thermoscatrarowsmaster,
-          1.,
-          ADAPTER::CouplingMasterConverter(*icoupthermo_),
-          *thermoscatrablock_,
-          true
-          );
+        // create parameter list for element evaluation
+        Teuchos::ParameterList condparams;
+
+        // action for elements
+        condparams.set<int>("action",INPAR::S2I::evaluate_condition_od);
+
+        // create strategy for assembly of auxiliary system matrix
+        SCATRA::MortarCellAssemblyStrategy strategythermoscatras2i(
+            strategythermo_->SlaveMatrix(),
+            INPAR::S2I::side_slave,
+            INPAR::S2I::side_slave,
+            strategythermo_->SlaveMatrix(),
+            INPAR::S2I::side_slave,
+            INPAR::S2I::side_master,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            INPAR::S2I::side_undefined,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            INPAR::S2I::side_undefined,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            Teuchos::null,
+            INPAR::S2I::side_undefined,
+            0,
+            1
+            );
+
+        // extract scatra-scatra interface coupling conditions
+        std::vector<DRT::Condition*> conditions;
+        thermo_->Discretization()->GetCondition("S2ICoupling",conditions);
+
+        // loop over all conditions
+        for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+        {
+          // extract current condition
+          DRT::Condition& condition = *conditions[icondition];
+
+          // consider conditions for slave side only
+          if(condition.GetInt("interface side") == INPAR::S2I::side_slave)
+          {
+            // add condition to parameter list
+            condparams.set<DRT::Condition*>("condition",&condition);
+
+            // evaluate mortar integration cells
+            strategythermo_->EvaluateMortarCells(strategythermo_->MortarDiscretization(condition.GetInt("ConditionID")),condparams,strategythermoscatras2i);
+          }
+        }
+
+        // finalize auxiliary system matrix
+        strategythermo_->SlaveMatrix()->Complete(*maps_->Map(0),*maps_->Map(1));
+
+        // assemble linearizations of slave-side thermo fluxes w.r.t. slave-side and master-side scatra dofs into thermo-scatra matrix block
+        thermoscatrablock_->Add(*strategythermo_->SlaveMatrix(),false,1.,1.);
+
+        // linearizations of master-side thermo fluxes w.r.t. scatra dofs are not needed, since thermo fluxes are source terms and thus only evaluated once on slave side
+
+        // standard meshtying algorithm with Lagrange multipliers condensed out
+        // initialize temporary matrix for slave-side rows of thermo-scatra matrix block
+        LINALG::SparseMatrix thermoscatrarowsslave(*strategythermo_->InterfaceMaps()->Map(1),27);
+
+        // loop over all slave-side rows of thermo-scatra system matrix
+        for(int slavedoflid=0; slavedoflid<strategythermo_->InterfaceMaps()->Map(1)->NumMyElements(); ++slavedoflid)
+        {
+          // determine global ID of current matrix row
+          const int slavedofgid = strategythermo_->InterfaceMaps()->Map(1)->GID(slavedoflid);
+          if(slavedofgid < 0)
+            dserror("Couldn't find local ID %d in map!",slavedoflid);
+
+          // extract current matrix row from thermo-scatra system matrix
+          const int length = thermoscatrablock_->EpetraMatrix()->NumGlobalEntries(slavedofgid);
+          int numentries(0);
+          std::vector<double> values(length,0.);
+          std::vector<int> indices(length,0);
+          if(thermoscatrablock_->EpetraMatrix()->ExtractGlobalRowCopy(slavedofgid,length,numentries,&values[0],&indices[0]))
+            dserror("Cannot extract matrix row with global ID %d from thermo-scatra matrix block!",slavedofgid);
+
+          // copy current matrix row of thermo-scatra system matrix into temporary matrix
+          if(thermoscatrarowsslave.EpetraMatrix()->InsertGlobalValues(slavedofgid,numentries,&values[0],&indices[0]) < 0)
+            dserror("Cannot insert matrix row with global ID %d into temporary matrix!",slavedofgid);
+        }
+
+        // finalize temporary matrix with slave-side rows of thermo-scatra matrix block
+        thermoscatrarowsslave.Complete(*maps_->Map(0),*strategythermo_->InterfaceMaps()->Map(1));
+
+        // add projected slave-side rows of thermo-scatra matrix block to corresponding master-side rows
+        thermoscatrablock_->Add(*LINALG::MLMultiply(*strategythermo_->P(),true,thermoscatrarowsslave,false,false,false,true),false,1.,1.);
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Invalid type of scatra-scatra interface coupling!");
+        break;
+      }
     }
   }
 
@@ -1032,10 +1330,37 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
   // apply Dirichlet boundary conditions to scatra-thermo matrix block
   thermoscatrablock_->ApplyDirichlet(*thermo_->DirichMaps()->CondMap(),false);
 
-  if(thermo_->S2ICoupling() and !thermo_->Discretization()->GetCondition("PointCoupling"))
-    // zero out master-side rows of thermo-scatra matrix block after having added them to the
-    // corresponding slave-side rows to finalize condensation of master-side thermo dofs
-    thermoscatrablock_->ApplyDirichlet(*icoupthermo_->MasterDofMap(),false);
+  // final manipulation depending on type of meshtying method
+  if(thermo_->S2ICoupling())
+  {
+    switch(strategythermo_->CouplingType())
+    {
+      case INPAR::S2I::coupling_matching_nodes:
+      {
+        // zero out master-side rows of thermo-scatra matrix block after having added them to the
+        // corresponding slave-side rows to finalize condensation of master-side thermo dofs
+        if(!thermo_->Discretization()->GetCondition("PointCoupling"))
+          thermoscatrablock_->ApplyDirichlet(*icoupthermo_->MasterDofMap(),false);
+
+        break;
+      }
+
+      case INPAR::S2I::coupling_mortar_condensed_bubnov:
+      {
+        // zero out slave-side rows of thermo-scatra matrix block after having added them to the
+        // corresponding master-side rows to finalize condensation of slave-side thermo dofs
+        thermoscatrablock_->ApplyDirichlet(*(strategythermo_->InterfaceMaps()->Map(1)),false);
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Invalid type of scatra-scatra interface coupling!");
+        break;
+      }
+    }
+  }
 
   // remove state vectors from thermo discretization
   thermo_->Discretization()->ClearState();

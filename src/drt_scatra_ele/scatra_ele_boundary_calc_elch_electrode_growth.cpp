@@ -84,7 +84,10 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ScaTraEleBound
     const std::string&   disname
     )
   : // constructor of base class
-    myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode,numscal,disname)
+    myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode,numscal,disname),
+
+    // initialize member variable
+    egrowth_(true)
 {
   return;
 }
@@ -117,20 +120,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
   if (matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
 
-  // get global and interface state vectors
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> imasterphinp = discretization.GetState("imasterphinp");
-  Teuchos::RCP<const Epetra_Vector> growth = discretization.GetState(2,"growth");
-  if(phinp == Teuchos::null or imasterphinp == Teuchos::null or growth == Teuchos::null)
-    dserror("Cannot get state vector \"phinp\", \"imasterphinp\", or \"growth\"!");
-
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  std::vector<LINALG::Matrix<my::nen_,1> > eslavephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+  ExtractNodeValues(discretization,la);
   std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-  LINALG::Matrix<my::nen_,1> eslavegrowth(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,eslavephinp,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterphinp,emasterphinp,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*growth,eslavegrowth,la[2].lm_);
+  my::ExtractNodeValues(emasterphinp,discretization,la,"imasterphinp");
 
   // get scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -187,12 +180,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
       dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT(discretization,la);
+    const double frt = myelectrode::GetFRT();
 
     // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
-    const double eslavephiint = my::funct_.Dot(eslavephinp[0]);
-    const double eslavepotint = my::funct_.Dot(eslavephinp[1]);
-    const double eslavegrowthint = my::funct_.Dot(eslavegrowth);
+    const double eslavephiint = my::funct_.Dot(my::ephinp_[0]);
+    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.Dot(egrowth_);
     const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
     const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
 
@@ -383,20 +376,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
   if (matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
 
-  // get global and interface state vectors
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> imasterphinp = discretization.GetState("imasterphinp");
-  Teuchos::RCP<const Epetra_Vector> growth = discretization.GetState(2,"growth");
-  if(phinp == Teuchos::null or imasterphinp == Teuchos::null or growth == Teuchos::null)
-    dserror("Cannot get state vector \"phinp\", \"imasterphinp\", or \"growth\"!");
-
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  std::vector<LINALG::Matrix<my::nen_,1> > eslavephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+  ExtractNodeValues(discretization,la);
   std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-  LINALG::Matrix<my::nen_,1> eslavegrowth(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,eslavephinp,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterphinp,emasterphinp,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*growth,eslavegrowth,la[2].lm_);
+  my::ExtractNodeValues(emasterphinp,discretization,la,"imasterphinp");
 
   // get scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -453,12 +436,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
       dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT(discretization,la);
+    const double frt = myelectrode::GetFRT();
 
     // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
-    const double eslavephiint = my::funct_.Dot(eslavephinp[0]);
-    const double eslavepotint = my::funct_.Dot(eslavephinp[1]);
-    const double eslavegrowthint = my::funct_.Dot(eslavegrowth);
+    const double eslavephiint = my::funct_.Dot(my::ephinp_[0]);
+    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.Dot(egrowth_);
     const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
     const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
 
@@ -546,20 +529,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
   if (matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
 
-  // get global and interface state vectors
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> imasterphinp = discretization.GetState("imasterphinp");
-  Teuchos::RCP<const Epetra_Vector> growth = discretization.GetState(2,"growth");
-  if(phinp == Teuchos::null or imasterphinp == Teuchos::null or growth == Teuchos::null)
-    dserror("Cannot get state vector \"phinp\", \"imasterphinp\", or \"growth\"!");
-
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  std::vector<LINALG::Matrix<my::nen_,1> > eslavephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+  ExtractNodeValues(discretization,la);
   std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-  LINALG::Matrix<my::nen_,1> eslavegrowth(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,eslavephinp,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterphinp,emasterphinp,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*growth,eslavegrowth,la[2].lm_);
+  my::ExtractNodeValues(emasterphinp,discretization,la,"imasterphinp");
 
   // get scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -607,11 +580,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
       dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT(discretization,la);
+    const double frt = myelectrode::GetFRT();
 
     // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
-    const double eslavepotint = my::funct_.Dot(eslavephinp[1]);
-    const double eslavegrowthint = my::funct_.Dot(eslavegrowth);
+    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.Dot(egrowth_);
     const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
     const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
 
@@ -692,23 +665,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
   if (matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
 
-  // get global and interface state vectors
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  Teuchos::RCP<const Epetra_Vector> imasterphinp = discretization.GetState("imasterphinp");
-  Teuchos::RCP<const Epetra_Vector> growth = discretization.GetState(2,"growth");
-  Teuchos::RCP<const Epetra_Vector> growthhist = discretization.GetState(2,"growthhist");
-  if(phinp == Teuchos::null or imasterphinp == Teuchos::null or growth == Teuchos::null or growthhist == Teuchos::null)
-    dserror("Cannot get state vector \"phinp\", \"imasterphinp\", \"growth\", or \"growthhist\"!");
-
   // extract local nodal values on present and opposite side of scatra-scatra interface
-  std::vector<LINALG::Matrix<my::nen_,1> > eslavephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+  ExtractNodeValues(discretization,la);
   std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-  LINALG::Matrix<my::nen_,1> eslavegrowth(true);
   LINALG::Matrix<my::nen_,1> eslavegrowthhist(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,eslavephinp,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterphinp,emasterphinp,la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*growth,eslavegrowth,la[2].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*growthhist,eslavegrowthhist,la[2].lm_);
+  my::ExtractNodeValues(emasterphinp,discretization,la,"imasterphinp");
+  my::ExtractNodeValues(eslavegrowthhist,discretization,la,"growthhist",2);
 
   // get scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -761,11 +723,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
       dserror("Integration factor is negative!");
 
     // evaluate factor F/RT
-    const double frt = myelectrode::GetFRT(discretization,la);
+    const double frt = myelectrode::GetFRT();
 
     // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
-    const double eslavepotint = my::funct_.Dot(eslavephinp[1]);
-    const double eslavegrowthint = my::funct_.Dot(eslavegrowth);
+    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.Dot(egrowth_);
     const double eslavegrowthhistint = my::funct_.Dot(eslavegrowthhist);
     const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
     const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
@@ -818,6 +780,25 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
       }
     } // if(std::abs(i) > 1.e-16)
   } // loop over integration points
+
+  return;
+}
+
+
+/*-----------------------------------------------------------------------------*
+ | extract nodal state variables associated with boundary element   fang 01/17 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNodeValues(
+    const DRT::Discretization&     discretization,  //!< discretization
+    DRT::Element::LocationArray&   la               //!< location array
+    )
+{
+  // call base class routine
+  my::ExtractNodeValues(discretization,la);
+
+  // extract nodal growth variables associated with boundary element
+  my::ExtractNodeValues(egrowth_,discretization,la,"growth",2);
 
   return;
 }

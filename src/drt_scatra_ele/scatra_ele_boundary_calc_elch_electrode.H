@@ -96,10 +96,7 @@ namespace DRT
           ) const;
 
       //! evaluate factor F/RT
-      virtual double GetFRT(
-          DRT::Discretization&           discretization,   ///< discretization
-          DRT::Element::LocationArray&   la                ///< location array
-          ) const;
+      virtual double GetFRT() const;
     }; // class ScaTraEleBoundaryCalcElchElectrode
   } // namespace ELEMENTS
 } // namespace DRT

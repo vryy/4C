@@ -4,8 +4,10 @@
 
 \brief evaluation of ScaTra boundary elements for Nernst-Planck formulation
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -104,7 +106,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchNP<distype>::EvaluateAction(
         ele,
         params,
         discretization,
-        la[0].lm_,
+        la,
         elemat1_epetra,
         elevec1_epetra,
         1.

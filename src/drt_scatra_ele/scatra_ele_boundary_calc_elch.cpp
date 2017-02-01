@@ -61,26 +61,32 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
     Epetra_SerialDenseVector&      elevec3_epetra    //!< element right-hand side vector 3
     )
 {
-  std::vector<int>&                 lm = la[0].lm_;
-
   // determine and evaluate action
   switch(action)
   {
   case SCATRA::bd_calc_elch_linearize_nernst:
   {
-    CalcNernstLinearization(ele,
+    CalcNernstLinearization(
+        ele,
         params,
         discretization,
-        lm,
+        la,
         elemat1_epetra,
-        elevec1_epetra);
+        elevec1_epetra
+        );
 
     break;
   }
 
   case SCATRA::bd_calc_elch_cell_voltage:
   {
-    CalcCellVoltage(ele,params,discretization,lm,elevec1_epetra);
+    CalcCellVoltage(
+        ele,
+        params,
+        discretization,
+        la,
+        elevec1_epetra
+        );
 
     break;
   }
@@ -113,30 +119,19 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics(
-    DRT::FaceElement*           ele,              ///< current element
-    Teuchos::ParameterList&     params,           ///< parameter list
-    DRT::Discretization&        discretization,   ///< discretization
-    std::vector<int>&           lm,               ///< location vector
-    Epetra_SerialDenseMatrix&   elemat1_epetra,   ///< element matrix
-    Epetra_SerialDenseVector&   elevec1_epetra,   ///< element right-hand side vector
-    const double                scalar            ///< scaling factor for element matrix and right-hand side contributions
+    DRT::FaceElement*              ele,              ///< current element
+    Teuchos::ParameterList&        params,           ///< parameter list
+    DRT::Discretization&           discretization,   ///< discretization
+    DRT::Element::LocationArray&   la,               ///< location array
+    Epetra_SerialDenseMatrix&      elemat1_epetra,   ///< element matrix
+    Epetra_SerialDenseVector&      elevec1_epetra,   ///< element right-hand side vector
+    const double                   scalar            ///< scaling factor for element matrix and right-hand side contributions
     )
 {
-  // get actual values of transported scalars
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if(phinp == Teuchos::null)
-    dserror("Cannot get state vector 'phinp'");
-
-  // get history variable (needed for double layer modeling)
-  Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
-  if(phinp == Teuchos::null)
-    dserror("Cannot get state vector 'hist'");
-
   // state and history variables at element nodes
-  std::vector<LINALG::Matrix<my::nen_,1> > ephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
+  my::ExtractNodeValues(discretization,la);
   std::vector<LINALG::Matrix<my::nen_,1> > ehist(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,ephinp,lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*hist,ehist,lm);
+  my::ExtractNodeValues(ehist,discretization,la,"hist");
 
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -215,7 +210,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
           ele,
           elemat1_epetra,
           elevec1_epetra,
-          ephinp,
+          my::ephinp_,
           ehist,
           timefac,
           ele->ParentElement()->Material(),
@@ -237,13 +232,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
   }
   else
   {
-    // get actual values of transported scalars
-    Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
-    if(phidtnp == Teuchos::null)
-      dserror("Cannot get state vector 'phidtnp'");
     // extract local values from the global vector
     std::vector<LINALG::Matrix<my::nen_,1> > ephidtnp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phidtnp,ephidtnp,lm);
+    my::ExtractNodeValues(ephidtnp,discretization,la,"phidtnp");
 
     if(not is_stationary)
     {
@@ -260,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
         elevec1_epetra,
         params,
         cond,
-        ephinp,
+        my::ephinp_,
         ephidtnp,
         kinetics,
         *stoich,
@@ -284,7 +275,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
     DRT::FaceElement*                 ele,
     Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
-    std::vector<int>&                 lm,
+    DRT::Element::LocationArray&      la,
     Epetra_SerialDenseMatrix&         elemat1_epetra,
     Epetra_SerialDenseVector&         elevec1_epetra
     )
@@ -297,13 +288,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
   // Nernst-BC
   if(kinetics == INPAR::ELCH::nernst)
   {
-    // get actual values of transported scalars
-    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-
     // extract local values from the global vector
-    std::vector<LINALG::Matrix<my::nen_,1> > ephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,ephinp,lm);
+    my::ExtractNodeValues(discretization,la);
 
     // access parameters of the condition
     double       pot0 = cond->GetDouble("pot");
@@ -356,10 +342,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
         // elch-specific values at integration point:
         // concentration is evaluated at all GP since some reaction models depend on all concentrations
         for(int kk=0;kk<my::numscal_;++kk)
-          conint[kk] = my::funct_.Dot(ephinp[kk]);
+          conint[kk] = my::funct_.Dot(my::ephinp_[kk]);
 
         // el. potential at integration point
-        const double potint = my::funct_.Dot(ephinp[my::numscal_]);
+        const double potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
 
         if (c0 < EPS12) dserror("reference concentration is too small (c0 < 1.0E-12) : %f",c0);
 
@@ -388,18 +374,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcCellVoltage(
     const DRT::Element*               ele,              //!< the element we are dealing with
     Teuchos::ParameterList&           params,           //!< parameter list
     DRT::Discretization&              discretization,   //!< discretization
-    const std::vector<int>&           lm,               //!< location vector
+    DRT::Element::LocationArray&      la,               //!< location array
     Epetra_SerialDenseVector&         scalars           //!< result vector for scalar integrals to be computed
     )
 {
-  // get global state vector
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if(phinp == Teuchos::null)
-    dserror("Cannot get state vector \"phinp\"!");
-
   // extract local nodal values of electric potential from global state vector
-  std::vector<LINALG::Matrix<my::nen_,1> > ephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,ephinp,lm);
+  my::ExtractNodeValues(discretization,la);
 
   // initialize variables for electric potential and domain integrals
   double intpotential(0.);
@@ -417,7 +397,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcCellVoltage(
     // calculate potential and domain integrals
     for (int vi=0; vi<my::nen_; ++vi)
       // potential integral
-      intpotential += ephinp[my::numscal_](vi,0)*my::funct_(vi)*fac;
+      intpotential += my::ephinp_[my::numscal_](vi,0)*my::funct_(vi)*fac;
 
     // domain integral
     intdomain += fac;

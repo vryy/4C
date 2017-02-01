@@ -81,9 +81,6 @@ class ScaTraEleBoundaryCalc: public ScaTraBoundaryInterface
 {
 public:
 
-  //! Constructor
-  ScaTraEleBoundaryCalc(const int numdofpernode, const int numscal, const std::string& disname);
-
   //! number of element nodes (nomenclature: T. Hughes, The finite element method)
   static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
@@ -225,6 +222,9 @@ public:
 
   protected:
 
+  //! Constructor
+  ScaTraEleBoundaryCalc(const int numdofpernode, const int numscal, const std::string& disname);
+
   //! calculate normal vectors
   void CalcNormalVectors(
       Teuchos::ParameterList&            params,
@@ -248,6 +248,30 @@ public:
       Epetra_SerialDenseMatrix&      emastermatrix,    ///< element matrix for master side
       Epetra_SerialDenseVector&      eslaveresidual    ///< element residual for slave side
   );
+
+  //! extract nodal state variables associated with boundary element
+  virtual void ExtractNodeValues(
+      const DRT::Discretization&     discretization,  //!< discretization
+      DRT::Element::LocationArray&   la               //!< location array
+      );
+
+  //! extract nodal state variables associated with boundary element
+  void ExtractNodeValues(
+      LINALG::Matrix<nen_,1>&        estate,                //!< nodal state variables
+      const DRT::Discretization&     discretization,        //!< discretization
+      DRT::Element::LocationArray&   la,                    //!< location array
+      const std::string&             statename = "phinp",   //!< name of relevant state
+      const int&                     nds = 0                //!< number of relevant dofset
+      ) const;
+
+  //! extract nodal state variables associated with boundary element
+  void ExtractNodeValues(
+      std::vector<LINALG::Matrix<nen_,1> >&   estate,                //!< nodal state variables
+      const DRT::Discretization&              discretization,        //!< discretization
+      DRT::Element::LocationArray&            la,                    //!< location array
+      const std::string&                      statename = "phinp",   //!< name of relevant state
+      const int&                              nds = 0                //!< number of relevant dofset
+      ) const;
 
   //! calculate boundary integral, i.e., surface area of boundary element
   void CalcBoundaryIntegral(
@@ -430,6 +454,8 @@ public:
   std::vector<Epetra_SerialDenseVector> mypknots_;
   //! for nurbs elements the normal vector is multiplied with normalfac_!
   double normalfac_;
+  //! nodal state variables associated with time t_{n+1} or t_{n+alpha_f}
+  std::vector<LINALG::Matrix<nen_,1> > ephinp_;
   //! nodal displacement values for ALE
   LINALG::Matrix<nsd_+1,nen_> edispnp_;
   //! diffusivity / diffusivities (in case of systems) / thermal conductivity

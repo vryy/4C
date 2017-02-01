@@ -100,9 +100,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateAction(
     Epetra_SerialDenseVector&      elevec3_epetra    //!< element right-hand side vector 3
 )
 {
-  // extract location vector associated with primary dofset
-  std::vector<int>& lm = la[0].lm_;
-
   // determine and evaluate action
   switch(action)
   {
@@ -136,7 +133,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateAction(
         ele,
         params,
         discretization,
-        lm,
+        la,
         elemat1_epetra,
         elevec1_epetra,
         dmedc_->GetPhasePoro(0)

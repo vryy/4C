@@ -4,8 +4,10 @@
 
 \brief evaluation of ScaTra boundary elements for heat transport within electrodes
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -16,6 +18,12 @@ Maintainer: Rui Fang
 #define SCATRA_ELE_BOUNDARY_CALC_STI_ELECTRODE_H
 
 #include "../drt_scatra_ele/scatra_ele_boundary_calc.H"
+
+// forward declaration
+namespace MAT
+{
+  class Electrode;
+}
 
 namespace DRT
 {
@@ -44,6 +52,37 @@ namespace DRT
 
       //! singleton destruction
       virtual void Done();
+
+      //! evaluate scatra-scatra interface coupling condition at integration point
+      template<DRT::Element::DiscretizationType distype_master>
+      static void EvaluateS2ICouplingAtIntegrationPoint(
+          DRT::Condition&                                                                                                s2icondition,    //!< scatra-scatra interface coupling condition
+          const Teuchos::RCP<const MAT::Electrode>&                                                                      matelectrode,    //!< electrode material
+          const LINALG::Matrix<my::nen_,1>&                                                                              eslavetempnp,    //!< thermo state variables at slave-side nodes
+          const std::vector<LINALG::Matrix<my::nen_,1> >&                                                                eslavephinp,     //!< scatra state variables at slave-side nodes
+          const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1> >&   emasterphinp,    //!< scatra state variables at master-side nodes
+          const LINALG::Matrix<my::nen_,1>&                                                                              funct_slave,     //!< slave-side shape function values
+          const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&                 funct_master,    //!< master-side shape function values
+          const double                                                                                                   timefacfac,      //!< time-integration factor times domain-integration factor
+          const double                                                                                                   timefacrhsfac,   //!< time-integration factor for right-hand side times domain-integration factor
+          Epetra_SerialDenseMatrix&                                                                                      k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+          Epetra_SerialDenseVector&                                                                                      r_s              //!< slave-side residual vector
+          );
+
+      //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface coupling condition at integration point
+      template<DRT::Element::DiscretizationType distype_master>
+      static void EvaluateS2ICouplingODAtIntegrationPoint(
+          DRT::Condition&                                                                                                s2icondition,    //!< scatra-scatra interface coupling condition
+          const Teuchos::RCP<const MAT::Electrode>&                                                                      matelectrode,    //!< electrode material
+          const LINALG::Matrix<my::nen_,1>&                                                                              eslavetempnp,    //!< thermo state variables at slave-side nodes
+          const std::vector<LINALG::Matrix<my::nen_,1> >&                                                                eslavephinp,     //!< scatra state variables at slave-side nodes
+          const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1> >&   emasterphinp,    //!< scatra state variables at master-side nodes
+          const LINALG::Matrix<my::nen_,1>&                                                                              funct_slave,     //!< slave-side shape function values
+          const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&                 funct_master,    //!< master-side shape function values
+          const double                                                                                                   timefacfac,      //!< time-integration factor times domain-integration factor
+          Epetra_SerialDenseMatrix&                                                                                      k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+          Epetra_SerialDenseMatrix&                                                                                      k_sm             //!< linearizations of slave-side residuals w.r.t. master-side dofs
+          );
 
     private:
 
@@ -87,6 +126,15 @@ namespace DRT
           Epetra_SerialDenseVector&      elevec2_epetra,   //!< element right-hand side vector 2
           Epetra_SerialDenseVector&      elevec3_epetra    //!< element right-hand side vector 3
           );
+
+      //! extract nodal state variables associated with boundary element
+      void ExtractNodeValues(
+          const DRT::Discretization&     discretization,  //!< discretization
+          DRT::Element::LocationArray&   la               //!< location array
+          );
+
+      //! nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
+      std::vector<LINALG::Matrix<my::nen_,1> > eelchnp_;
     }; // class ScaTraEleBoundaryCalcSTIElectrode
   } // namespace ELEMENTS
 } // namespace DRT
