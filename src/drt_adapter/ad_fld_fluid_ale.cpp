@@ -19,7 +19,10 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "adapter_coupling.H"
 #include "adapter_coupling_volmortar.H"
+#include "adapter_coupling_mortar.H"
 #include "../drt_inpar/inpar_fsi.H"
+
+#include "../drt_fsi/fsi_dirichletneumann_volcoupl.H"
 
 #include "../drt_io/io.H"
 
@@ -102,13 +105,49 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
   FluidField()->Init();
   fluid->SetInitialFlowField(DRT::Problem::Instance()->FluidDynamicParams()); //call from base algorithm
 
-  icoupfa_ = Teuchos::rcp(new Coupling());
-  icoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
-                                    FluidField()->Interface()->FSICondMap(),
-                                   *AleField()->Discretization(),
-                                    AleField()->Interface()->FSICondMap(),
-                                   condname,
-                                   ndim);
+
+  if(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->FSIDynamicParams(),"MATCHGRID_STRUCTALE") )
+  {
+    Teuchos::RCP<Coupling> icoupfa = Teuchos::rcp(new Coupling());
+    icoupfa->SetupConditionCoupling(*FluidField()->Discretization(),
+                                      FluidField()->Interface()->FSICondMap(),
+                                     *AleField()->Discretization(),
+                                      AleField()->Interface()->FSICondMap(),
+                                     condname,
+                                     ndim);
+    icoupfa_ = icoupfa;
+  }
+  else
+  {
+    Teuchos::RCP<MortarVolCoupl> icoupfa = Teuchos::rcp(new MortarVolCoupl());
+
+    //couple displacement dofs of ale and velocity dofs of fluid
+
+    //projection ale -> fluid : all ndim dofs (displacements)
+    std::vector<int> coupleddof12 = std::vector<int>(ndim,1);
+
+    //projection fluid -> ale : ndim dofs (only velocity, no pressure)
+    std::vector<int> coupleddof21 = std::vector<int>(ndim+1,1);
+    // unmark pressure dof
+    coupleddof21[ndim]=0;
+
+    //define dof sets to be coupled for both projections
+    std::pair<int,int> dofsets12(0,0);
+    std::pair<int,int> dofsets21(0,0);
+
+    icoupfa->Init( DRT::Problem::Instance()->GetDis("fluid"),
+                    DRT::Problem::Instance()->GetDis("ale"),
+                    &coupleddof12,
+                    &coupleddof21,
+                    &dofsets12,
+                    &dofsets21,
+                    Teuchos::null,
+                    false);
+
+    icoupfa->Setup();
+
+    icoupfa_=icoupfa;
+  }
 
   fscoupfa_ = Teuchos::rcp(new Coupling());
   fscoupfa_->SetupConditionCoupling(*FluidField()->Discretization(),
@@ -237,6 +276,58 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 
   AleField()->Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
+  FluidField()->ApplyMeshDisplacement(fluiddisp);
+
+  // no computation of fluid velocities in case only structure and ALE are to compute
+  if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
+  {
+    FluidField()->Solve();
+  }
+}
+
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void ADAPTER::FluidAle::NonlinearSolveVolCoupl(Teuchos::RCP<Epetra_Vector> idisp,
+    Teuchos::RCP<Epetra_Vector> ivel,
+    Teuchos::RCP<FSI::InterfaceCorrector> icorrector)
+{
+
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  if (idisp!=Teuchos::null)
+  {
+    AleField()->ApplyInterfaceDisplacements(AleField()->Interface()->ExtractFSICondVector(idisp));
+    if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
+    {
+      FluidField()->ApplyInterfaceVelocities(ivel);
+    }
+  }
+
+  // Update the ale update part
+  if (FluidField()->Interface()->AUCondRelevant())
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
+    Teuchos::RCP<Epetra_Vector> audispnp = FluidField()->Interface()->ExtractAUCondVector(dispnp);
+    AleField()->ApplyAleUpdateDisplacements(aucoupfa_->MasterToSlave(audispnp));
+  }
+
+  // Update the free-surface part
+  if (FluidField()->Interface()->FSCondRelevant())
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = FluidField()->Dispnp();
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField()->Interface()->ExtractFSCondVector(dispnp);
+    AleField()->ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
+  }
+
+  // Note: We do not look for moving ale boundaries (outside the coupling
+  // interface) on the fluid side. Thus if you prescribe time variable ale
+  // Dirichlet conditions the according fluid Dirichlet conditions will not
+  // notice.
+
+  AleField()->Solve();
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField()->Dispnp());
+
+  icorrector->CorrectInterfaceDisplacements(fluiddisp,FluidField()->Interface());
   FluidField()->ApplyMeshDisplacement(fluiddisp);
 
   // no computation of fluid velocities in case only structure and ALE are to compute

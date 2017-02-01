@@ -169,6 +169,12 @@ protected:
   /// extract idispn_ iveln_
   virtual void ExtractPreviousInterfaceSolution();
 
+  /// interface displacement from time step begin
+  Teuchos::RCP<Epetra_Vector> idispn_;
+
+  /// interface velocity from time step begin
+  Teuchos::RCP<Epetra_Vector> iveln_;
+
   /// setup list with default parameters
   virtual void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
@@ -184,12 +190,6 @@ private:
   /// create convergence tests including testing framework
   Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(Teuchos::ParameterList& nlParams,
                                                         Teuchos::RCP<NOX::Epetra::Group> grp);
-
-  /// interface displacement from time step begin
-  Teuchos::RCP<Epetra_Vector> idispn_;
-
-  /// interface velocity from time step begin
-  Teuchos::RCP<Epetra_Vector> iveln_;
 
   //! connection of interface dofs for finite differences
   Teuchos::RCP<Epetra_CrsGraph> rawGraph_;

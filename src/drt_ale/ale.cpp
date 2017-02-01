@@ -438,6 +438,10 @@ void ALE::Ale::Output()
     OutputState(datawritten);
   }
 
+  // write domain decomposition for visualization
+  if ((step_==writeresultsevery_ or step_ == 0) )
+    output_->WriteElementData(true);
+
   return;
 }
 

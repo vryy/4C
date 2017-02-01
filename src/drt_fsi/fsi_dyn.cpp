@@ -21,6 +21,7 @@
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
 #include "fsi_dirichletneumannslideale.H"
+#include "fsi_dirichletneumann_volcoupl.H"
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_lungmonolithic.H"
@@ -76,6 +77,8 @@
 
 #include "../drt_lib/drt_discret_combust.H"
 #include "../drt_lib/drt_discret_xfem.H"
+
+#include "../drt_particle/binning_strategy.H"
 
 #include "../drt_poroelast/poro_utils_clonestrategy.H"
 #include "../drt_poroelast/poroelast_utils_setup.H"
@@ -331,7 +334,8 @@ void fsi_ale_drt()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
+  const Epetra_Comm& comm = structdis->Comm();
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
@@ -340,7 +344,7 @@ void fsi_ale_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  problem->GetDis("structure")->FillComplete();
+  structdis->FillComplete();
 
   if (DRT::INPUT::IntegralValue<bool>((problem->XFluidDynamicParams().sublist("GENERAL")),"XFLUIDFLUID"))
   {
@@ -371,6 +375,27 @@ void fsi_ale_drt()
       dserror("Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
+
+    if(    (not DRT::INPUT::IntegralValue<bool>(problem->FSIDynamicParams(),"MATCHGRID_FLUIDALE"))
+        or (not DRT::INPUT::IntegralValue<bool>(problem->FSIDynamicParams(),"MATCHGRID_STRUCTALE")) )
+    {
+      // create vector of discr.
+      std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+      dis.push_back(structdis);
+      dis.push_back(fluiddis);
+      dis.push_back(aledis);
+
+      std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+      std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+
+      // redistribute discr. with help of binning strategy
+      if(structdis->Comm().NumProc()>1)
+      {
+        /// binning strategy is created and parallel redistribution is performed
+        Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+            Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+      }
+    }
   }
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
@@ -624,6 +649,11 @@ void fsi_ale_drt()
       {
         fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
         Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi,true)->Setup();
+      }
+      else if (method==INPAR::FSI::DirichletNeumannVolCoupl)
+      {
+        fsi = Teuchos::rcp(new FSI::DirichletNeumannVolCoupl(comm));
+        Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannVolCoupl>(fsi,true)->Setup();
       }
       else
         dserror("unsupported partitioned FSI scheme");

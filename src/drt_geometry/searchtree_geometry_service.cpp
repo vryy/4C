@@ -3,11 +3,13 @@
 
  \brief provides geometry methods for a search tree
 
+ \level 1
+
  <pre>
- Maintainer: Andy Wirtz
- wirtz@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15270
+\maintainer  Andy Wirtz
+              wirtz@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-15270
  </pre>
  */
 
@@ -33,10 +35,7 @@ LINALG::Matrix<3, 2> GEO::getXAABBofDis(const DRT::Discretization& dis,
     return XAABB;
 
   if (dis.NumMyColElements() == 0)
-  {
-    dserror(
-        "boundary should be ghosted and xfem discretization balanced, such that there are at least some xfem elements!");
-  }
+    return XAABB;
 
   // initialize XAABB as rectangle around the first point of dis
   const int nodeid = dis.lColElement(0)->Nodes()[0]->Id();

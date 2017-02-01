@@ -50,9 +50,9 @@ void runEnsightVtuFilter(PostProblem    &problem)
         FluidFilter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
 
-        //PostField* alefield = problem.get_discretization(2);
-        //AleFilter alewriter(alefield, basename);
-        //alewriter.WriteFiles();
+        PostField* alefield = problem.get_discretization(2);
+        AleFilter alewriter(alefield, basename);
+        alewriter.WriteFiles();
 #ifdef D_ARTNET
         // 1d artery
         if (problem.num_discr()== 4)

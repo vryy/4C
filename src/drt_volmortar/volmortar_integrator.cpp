@@ -43,6 +43,9 @@ VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBased(Te
 {
   // get type of quadratic modification
   dualquad_ = DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params,"DUALQUAD");
+
+  // get type of quadratic modification
+  shape_ = DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::Shapefcn>(params,"SHAPEFCN");
 }
 
 /*----------------------------------------------------------------------*
@@ -335,6 +338,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -361,6 +365,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -387,6 +392,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -413,6 +419,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -439,6 +446,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -467,6 +475,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -493,6 +502,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -519,6 +529,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -545,6 +556,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -571,6 +583,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -597,6 +610,7 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             AuxXi,
             globgp,
             dualquad_,
+            shape_,
             D,
             M,
             Adis,
@@ -662,6 +676,7 @@ bool VOLMORTAR::VolMortarEleBasedGP(
     double* AuxXi,
     double* globgp,
     INPAR::VOLMORTAR::DualQuad& dq,
+    INPAR::VOLMORTAR::Shapefcn& shape,
     LINALG::SparseMatrix& D,
     LINALG::SparseMatrix& M,
     Teuchos::RCP<const DRT::Discretization> Adis,
@@ -731,93 +746,95 @@ bool VOLMORTAR::VolMortarEleBasedGP(
 
     const int nsdof=Adis->NumDof(dofseta,cnode);
 
-//    if (true)//(shapefcn_ == INPAR::MORTAR::shape_standard)
-//    {
-//      for (int j=0; j<ns_; ++j)
-//      {
-//        DRT::Node* cnode = sele.Nodes()[j];
-//        int nsdof=Adis->NumDof(dofseta,cnode);
-//
-//        //loop over slave dofs
-//        for (int jdof=0;jdof<nsdof;++jdof)
-//        {
-//          int row = Adis->Dof(dofseta,cnode,jdof);
-//
-//          ////////////////////////////////////////
-//          // integrate M
-//          for (int k=0; k<nm_; ++k)
-//          {
-//            DRT::Node* mnode = mele->Nodes()[k];
-//            int nmdof=Bdis->NumDof(dofsetb,mnode);
-//
-//            for (int kdof=0;kdof<nmdof;++kdof)
-//            {
-//              int col = Bdis->Dof(dofsetb,mnode,kdof);
-//
-//              // multiply the two shape functions
-//              double prod = sval_A(j)*mval_A(k)*jac*wgt;
-//
-//              // dof to dof
-//              if (jdof==kdof)
-//              {
-//                if(abs(prod)>VOLMORTARINTTOL) M.Assemble(prod, row, col);
-//              }
-//            }
-//          }
-//
-//          ////////////////////////////////////////
-//          // integrate D
-//          for (int k=0; k<ns_; ++k)
-//          {
-//            DRT::Node* snode = sele.Nodes()[k];
-//            int nddof=Adis->NumDof(dofseta,snode);
-//
-//            for (int kdof=0;kdof<nddof;++kdof)
-//            {
-//              int col = Adis->Dof(dofseta,snode,kdof);
-//
-//              // multiply the two shape functions
-//              double prod = sval_A(j)*sval_A(k)*jac*wgt;
-//
-//              // dof to dof
-//              if (jdof==kdof)
-//              {
-//                if(abs(prod)>VOLMORTARINTTOL) D.Assemble(prod, row, col);
-//              }
-//            }
-//          }
-//        }
-//      }
-//    }
-
-    //loop over slave dofs
-    for (int jdof=0;jdof<nsdof;++jdof)
+    if (shape == INPAR::VOLMORTAR::shape_std)
     {
-      const int row = Adis->Dof(dofseta,cnode,jdof);
-
-      if(not PAB_dofrowmap->MyGID(row))
-        continue;
-
-      // integrate D
-      const double prod2 = lmval_A(j)*sval_A(j)*jac*wgt;
-      if (abs(prod2)>VOLMORTARINTTOL)
-        D.Assemble(prod2, row, row);
-
-      // integrate M
-      for (int k=0; k<nm_; ++k)
+      for (int j=0; j<ns_; ++j)
       {
-        DRT::Node* mnode = mele->Nodes()[k];
-        const int col = Bdis->Dof(dofsetb,mnode,jdof);
+        DRT::Node* cnode = sele.Nodes()[j];
+        int nsdof=Adis->NumDof(dofseta,cnode);
 
-        if(not PAB_dofcolmap->MyGID(col))
+        //loop over slave dofs
+        for (int jdof=0;jdof<nsdof;++jdof)
+        {
+          int row = Adis->Dof(dofseta,cnode,jdof);
+
+          // integrate M
+          for (int k=0; k<nm_; ++k)
+          {
+            DRT::Node* mnode = mele->Nodes()[k];
+            int nmdof=Bdis->NumDof(dofsetb,mnode);
+
+            for (int kdof=0;kdof<nmdof;++kdof)
+            {
+              int col = Bdis->Dof(dofsetb,mnode,kdof);
+
+              // multiply the two shape functions
+              double prod = sval_A(j)*mval_A(k)*jac*wgt;
+
+              // dof to dof
+              if (jdof==kdof)
+              {
+                if(abs(prod)>VOLMORTARINTTOL) M.Assemble(prod, row, col);
+              }
+            }
+          }
+
+          // integrate D
+          for (int k=0; k<ns_; ++k)
+          {
+            DRT::Node* snode = sele.Nodes()[k];
+            int nddof=Adis->NumDof(dofseta,snode);
+
+            for (int kdof=0;kdof<nddof;++kdof)
+            {
+              // multiply the two shape functions
+              double prod = sval_A(j)*sval_A(k)*jac*wgt;
+
+              // dof to dof
+              if (jdof==kdof)
+              {
+                if(abs(prod)>VOLMORTARINTTOL) D.Assemble(prod, row, row);
+              }
+            }
+          }
+        }
+      }
+    }
+    else if (shape == INPAR::VOLMORTAR::shape_dual)
+    {
+      //loop over slave dofs
+      for (int jdof=0;jdof<nsdof;++jdof)
+      {
+        const int row = Adis->Dof(dofseta,cnode,jdof);
+
+        if(not PAB_dofrowmap->MyGID(row))
           continue;
 
-        // multiply the two shape functions
-        const double prod = lmval_A(j)*mval_A(k)*jac*wgt;
+        // integrate D
+        const double prod2 = lmval_A(j)*sval_A(j)*jac*wgt;
+        if (abs(prod2)>VOLMORTARINTTOL)
+          D.Assemble(prod2, row, row);
 
-        if (abs(prod)>VOLMORTARINTTOL)
-          M.Assemble(prod, row, col);
+        // integrate M
+        for (int k=0; k<nm_; ++k)
+        {
+          DRT::Node* mnode = mele->Nodes()[k];
+          const int col = Bdis->Dof(dofsetb,mnode,jdof);
+
+          if(not PAB_dofcolmap->MyGID(col))
+            continue;
+
+          // multiply the two shape functions
+          const double prod = lmval_A(j)*mval_A(k)*jac*wgt;
+
+          if (abs(prod)>VOLMORTARINTTOL)
+            M.Assemble(prod, row, col);
+        }
       }
+    }
+    else
+    {
+      dserror("ERROR: Uknown shape!");
     }
   }
 
@@ -880,6 +897,9 @@ VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::VolMortarIntegrator(Teuchos::
 {
   // get type of quadratic modification
   dualquad_ = DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::DualQuad>(params,"DUALQUAD");
+
+  // get type of quadratic modification
+  shape_ = DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::Shapefcn>(params,"SHAPEFCN");
 
   // define gp rule
   InitializeGP();
@@ -1105,12 +1125,15 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
 
     // compute segment D/M matrix ****************************************
     // standard shape functions
-    if (false)//(shapefcn_ == INPAR::MORTAR::shape_standard)
+    if (shape_ == INPAR::VOLMORTAR::shape_std)
     {
       for (int j=0; j<ns_; ++j)
       {
         DRT::Node* cnode = sele.Nodes()[j];
         int nsdof=slavedis->NumDof(sdofset,cnode);
+
+        if (cnode->Owner() != slavedis->Comm().MyPID())
+          continue;
 
         //loop over slave dofs
         for (int jdof=0;jdof<nsdof;++jdof)
@@ -1129,7 +1152,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
               int col = masterdis->Dof(mdofset,mnode,kdof);
 
               // multiply the two shape functions
-              double prod = lmval(j)*mval(k)*jac*wgt;
+              double prod = sval(j)*mval(k)*jac*wgt;
 
               // dof to dof
               if (jdof==kdof)
@@ -1148,22 +1171,22 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
 
             for (int kdof=0;kdof<nddof;++kdof)
             {
-              int col = slavedis->Dof(sdofset,snode,kdof);
+              //int col = slavedis->Dof(sdofset,snode,kdof);
 
               // multiply the two shape functions
-              double prod = lmval(j)*sval(k)*jac*wgt;
+              double prod = sval(j)*sval(k)*jac*wgt;
 
               // dof to dof
               if (jdof==kdof)
               {
-                if(abs(prod)>VOLMORTARINTTOL) dmatrix.Assemble(prod, row, col);
+                if(abs(prod)>VOLMORTARINTTOL) dmatrix.Assemble(prod, row, row);
               }
             }
           }
         }
       }
     }
-    else  // DUAL
+    else if(shape_ == INPAR::VOLMORTAR::shape_dual)
     {
       for (int j=0;j<ns_;++j)
       {
@@ -1205,6 +1228,10 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
         }
       }
     }
+    else
+    {
+      dserror("ERROR: Unknown shape function!");
+    }
   }//end gp loop
 
   return;
@@ -1230,6 +1257,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
     int sdofset_B,
     int mdofset_B)
 {
+  if(shape_ == INPAR::VOLMORTAR::shape_std)
+    dserror("ERORR: std. shape functions not supported");
+
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> sval_A;
   LINALG::Matrix<nm_,1> mval_A;
@@ -1377,6 +1407,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
     int sdofset_B,
     int mdofset_B)
 {
+  if(shape_ == INPAR::VOLMORTAR::shape_std)
+    dserror("ERORR: std. shape functions not supported");
+
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> sval_A;
   LINALG::Matrix<nm_,1> mval_A;
@@ -1523,6 +1556,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
     int dofsetA,
     int dofsetB)
 {
+  if(shape_ == INPAR::VOLMORTAR::shape_std)
+    dserror("ERORR: std. shape functions not supported");
+
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> sval_A;
   LINALG::Matrix<nm_,1> mval_A;
@@ -1654,6 +1690,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
     int dofsetA,
     int dofsetB)
 {
+  if(shape_ == INPAR::VOLMORTAR::shape_std)
+    dserror("ERORR: std. shape functions not supported");
+
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> mval_A;
   LINALG::Matrix<nm_,1> sval_B;
@@ -1792,6 +1831,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
      int sdofset_B,
      int mdofset_B)
 {
+  if(shape_ == INPAR::VOLMORTAR::shape_std)
+    dserror("ERORR: std. shape functions not supported");
+
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> sval_A;
   LINALG::Matrix<nm_,1> mval_A;

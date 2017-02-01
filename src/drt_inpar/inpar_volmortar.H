@@ -1,10 +1,13 @@
 /*-------------------------------------------------------------------------
+/*!
 \file inpar_volmortar.H
 
 \brief
 
+\level 1
+
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -50,6 +53,13 @@ namespace INPAR
   {
     couplingtype_volmortar,  ///< volmortar
     couplingtype_coninter    ///< consist. interpolation
+  };
+
+  // Type of coupling
+  enum Shapefcn
+  {
+    shape_dual,  ///< dual shape functions
+    shape_std    ///< std. shape functions --> lumped
   };
 
   /// set the volmortar parameters

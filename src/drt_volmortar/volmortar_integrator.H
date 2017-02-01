@@ -199,6 +199,7 @@ protected:
 
   // input parameter
   INPAR::VOLMORTAR::DualQuad    dualquad_;    // type of quadratic weighting interpolation
+  INPAR::VOLMORTAR::Shapefcn    shape_;       // type of test function
 
 };
 
@@ -258,6 +259,7 @@ protected:
 
   // input parameter
   INPAR::VOLMORTAR::DualQuad    dualquad_;    // type of quadratic weighting interpolation
+  INPAR::VOLMORTAR::Shapefcn    shape_;       // type of test function
 };
 
 /*----------------------------------------------------------------------*
@@ -412,6 +414,7 @@ bool VolMortarEleBasedGP(
       double& jac, double& wgt, double& gpdist,
       double* Axi, double* AuxXi, double* globgp,
       INPAR::VOLMORTAR::DualQuad& dq,
+      INPAR::VOLMORTAR::Shapefcn& shape,
       LINALG::SparseMatrix& dmatrix_A,
       LINALG::SparseMatrix& mmatrix_A,
       Teuchos::RCP<const DRT::Discretization> Adis,

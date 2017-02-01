@@ -4,8 +4,10 @@
 
 \brief Input parameters for volmortar
 
+\level 1
+
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -47,6 +49,14 @@ void INPAR::VOLMORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
         couplingtype_volmortar, couplingtype_volmortar,
         couplingtype_coninter, couplingtype_coninter),
     &volmortar);
+
+  setStringToIntegralParameter<int>("SHAPEFCN","Dual","Type of employed set of shape functions",
+        tuple<std::string>("Dual", "dual",
+                           "Standard", "standard", "std"),
+        tuple<int>(
+                shape_dual, shape_dual,
+                shape_std, shape_std, shape_std),
+        &volmortar);
 
   setStringToIntegralParameter<int>("CUTTYPE","dd","Type of cut procedure/ integration point calculation",
     tuple<std::string>("dd","directdivergence","DirectDivergence",

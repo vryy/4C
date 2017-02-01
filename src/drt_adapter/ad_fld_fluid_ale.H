@@ -4,6 +4,8 @@
 
 \brief Solver for fluid field on a moving ALE mesh
 
+\level 1
+
 \maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
@@ -31,6 +33,13 @@ namespace ADAPTER
 
 #include "ad_fld_moving_boundary.H"
 #include "ad_fld_base_algorithm.H"
+
+//#include "../drt_fsi/fsi_dirichletneumann_volcoupl.H"
+
+namespace FSI
+{
+ class InterfaceCorrector;
+}
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -72,6 +81,11 @@ namespace ADAPTER
         );
 
     virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,Teuchos::RCP<Epetra_Vector> ivel);
+
+    virtual void NonlinearSolveVolCoupl(
+        Teuchos::RCP<Epetra_Vector> idisp,
+        Teuchos::RCP<Epetra_Vector> ivel,
+        Teuchos::RCP<FSI::InterfaceCorrector> icorrector);
 
     virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel);
 
@@ -119,8 +133,8 @@ namespace ADAPTER
     /// coupling of fluid and ale (whole field)
     Teuchos::RCP<CouplingBase> coupfa_;
 
-    /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Coupling> icoupfa_;
+    /// coupling of fluid and ale (interface or volume...)
+    Teuchos::RCP<CouplingBase> icoupfa_;
 
     /// coupling of fluid and ale at the free surface
     Teuchos::RCP<Coupling> fscoupfa_;

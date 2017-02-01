@@ -90,6 +90,9 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("MATCHGRID_FLUIDALE", "Yes", "is matching grid (fluid-ale)",
       &fsidyn);
 
+  BoolParameter("MATCHGRID_STRUCTALE", "Yes", "is matching grid (structure-ale)",
+      &fsidyn);
+
   BoolParameter("MATCHALL", "Yes", "is matching grid (fluid-ale) and is full fluid-ale (without euler part)",
       &fsidyn);
 
@@ -500,11 +503,13 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Coupling strategies for partitioned FSI solvers.",
       tuple<std::string>(
        "DirichletNeumann",
-       "DirichletNeumannSlideALE"
+       "DirichletNeumannSlideALE",
+       "DirichletNeumannVolCoupl"
        ),
       tuple<int>(
        INPAR::FSI::DirichletNeumann,
-       INPAR::FSI::DirichletNeumannSlideale
+       INPAR::FSI::DirichletNeumannSlideale,
+       INPAR::FSI::DirichletNeumannVolCoupl
        ),
       &fsipart);
 

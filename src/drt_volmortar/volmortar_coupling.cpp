@@ -6,7 +6,7 @@
 \level 1
 
  <pre>
-\maintainer Philipp Farah
+\maintainer  Philipp Farah
              farah@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15257
@@ -101,14 +101,15 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
   BuildMaps(
       dis1,
       P12_dofrowmap_,
-      coupleddof12,
+      coupleddof21,
       rownodes1,
       numrownode1,
       dofset12_.first);
+
   BuildMaps(
       dis2,
       P21_dofrowmap_,
-      coupleddof21,
+      coupleddof12,
       rownodes2,
       numrownode2,
       dofset21_.first);
@@ -1132,6 +1133,11 @@ void VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
       == INPAR::VOLMORTAR::inttype_segments)
   {
     dserror("ERROR: MeshInit only for ele-based integration!!!");
+  }
+
+  if(DRT::INPUT::IntegralValue<int>(volmortar, "SHAPEFCN") == INPAR::VOLMORTAR::shape_std)
+  {
+    std::cout << "WARNING: Standard shape functions are employed! D is lumped!" << std::endl;
   }
 
   // merge to global parameter list

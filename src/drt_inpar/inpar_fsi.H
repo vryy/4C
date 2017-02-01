@@ -71,7 +71,8 @@ namespace INPAR
     enum PartitionedCouplingMethod
     {
       DirichletNeumannSlideale,
-      DirichletNeumann
+      DirichletNeumann,
+      DirichletNeumannVolCoupl
     };
 
     /// Linear preconditioning algorithm for monolithic block system

@@ -3,11 +3,13 @@
 
  \brief provides a class with search tree
 
+ \level 1
+
  <pre>
- Maintainer: Andy Wirtz
- wirtz@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15270
+\maintainer  Andy Wirtz
+              wirtz@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-15270
  </pre>
  */
 
@@ -426,7 +428,7 @@ void GEO::SearchTree::searchCollisions(
   if (!treeRoot_->getElementList().empty())
     treeRoot_->searchCollisions(currentKDOPs, queryKDOP, label, contactEleIds);
   else
-    dserror("element list is empty");
+    return;
 
   return;
 }
