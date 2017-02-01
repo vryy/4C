@@ -49,6 +49,7 @@ namespace ELEMENTS
 //    typedef ScaTraEleCalcAdvReac<distype,probdim> advreac;
 
     std::vector<Epetra_SerialDenseVector> values_mat_gp_all_;
+    std::vector<double> gp_mat_alpha_;
 
   public:
 
@@ -136,19 +137,19 @@ namespace ELEMENTS
       const DRT::Element *              ele
       );
 
+    //! project material field
+    int ProjectMaterialFieldAll(
+      const DRT::Element *              ele
+      );
+
+    //! project material field for Tet elements, because quadrature not working for higher order polynomials with Intrepid
+    int ProjectMaterialFieldTet(
+      const DRT::Element *              ele
+      );
+
     /// polynomial space for element interior for various Gauss Points for the evaluation of the material
     Teuchos::RCP<DRT::UTILS::PolynomialSpace<probdim> > polySpace_;
 
-
-    //!  Get Gauss Rule 2D
-    DRT::UTILS::GaussRule2D GetGaussRule2D(
-        const Teuchos::RCP<const MAT::Material>   material   //!< pointer to current material
-        );
-
-    //!  Get Gauss Rule 2D
-    DRT::UTILS::GaussRule3D GetGaussRule3D(
-        const Teuchos::RCP<const MAT::Material>   material   //!< pointer to current material
-        );
   };
 
 }

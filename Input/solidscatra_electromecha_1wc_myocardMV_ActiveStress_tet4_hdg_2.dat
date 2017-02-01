@@ -5812,7 +5812,7 @@ NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.37433303930192
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of a points on top of the cylinder
-STRUCTURE DIS structure NODE 659 QUANTITY dispx VALUE 7.96263630883579498e-05 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 659 QUANTITY phi VALUE 1.76460020702384601e+00 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 659 QUANTITY dispx VALUE 7.33413950428895829e-05 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 659 QUANTITY phi VALUE 1.93841538200907126e+00 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END

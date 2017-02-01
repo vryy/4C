@@ -83,42 +83,52 @@ namespace SCATRA
   struct DisTypeToMatGaussRule {};
   template<> struct DisTypeToMatGaussRule<DRT::Element::hex8>
   {
-    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_hex_1point;
         break;
-      case 8:
+      case 2:
+      case 3:
         return DRT::UTILS::intrule_hex_8point;
         break;
-      case 27:
+      case 4:
+      case 5:
         return DRT::UTILS::intrule_hex_27point;
         break;
-      case 64:
+      case 6:
+      case 7:
         return DRT::UTILS::intrule_hex_64point;
         break;
-      case 125:
+      case 8:
+      case 9:
         return DRT::UTILS::intrule_hex_125point;
         break;
-      case 216:
+      case 10:
+      case 11:
         return DRT::UTILS::intrule_hex_216point;
         break;
-      case 343:
+      case 12:
+      case 13:
         return DRT::UTILS::intrule_hex_343point;
         break;
-      case 512:
+      case 14:
+      case 15:
         return DRT::UTILS::intrule_hex_512point;
         break;
-      case 729:
+      case 16:
+      case 17:
         return DRT::UTILS::intrule_hex_729point;
         break;
-      case 1000:
+      case 18:
+      case 19:
         return DRT::UTILS::intrule_hex_1000point;
         break;
       default:
-        dserror("Gauss rule only for 1, 8, 27, 64, 125, 216, 343, 512, 729, 1000 points for HEX8 elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 19 for HEX elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule3D_undefined;
         break;
       }
@@ -126,24 +136,52 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::hex20>
   {
-    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_hex_1point;
         break;
-      case 8:
+      case 2:
+      case 3:
         return DRT::UTILS::intrule_hex_8point;
         break;
-      case 27:
+      case 4:
+      case 5:
         return DRT::UTILS::intrule_hex_27point;
         break;
-      case 64:
+      case 6:
+      case 7:
         return DRT::UTILS::intrule_hex_64point;
         break;
+      case 8:
+      case 9:
+        return DRT::UTILS::intrule_hex_125point;
+        break;
+      case 10:
+      case 11:
+        return DRT::UTILS::intrule_hex_216point;
+        break;
+      case 12:
+      case 13:
+        return DRT::UTILS::intrule_hex_343point;
+        break;
+      case 14:
+      case 15:
+        return DRT::UTILS::intrule_hex_512point;
+        break;
+      case 16:
+      case 17:
+        return DRT::UTILS::intrule_hex_729point;
+        break;
+      case 18:
+      case 19:
+        return DRT::UTILS::intrule_hex_1000point;
+        break;
       default:
-        dserror("Gauss rule only for 1, 8, 27, 64 points for HEX elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 19 for HEX elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule3D_undefined;
         break;
       }
@@ -151,24 +189,52 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::hex27>
   {
-    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_hex_1point;
         break;
-      case 8:
+      case 2:
+      case 3:
         return DRT::UTILS::intrule_hex_8point;
         break;
-      case 27:
+      case 4:
+      case 5:
         return DRT::UTILS::intrule_hex_27point;
         break;
-      case 64:
+      case 6:
+      case 7:
         return DRT::UTILS::intrule_hex_64point;
         break;
+      case 8:
+      case 9:
+        return DRT::UTILS::intrule_hex_125point;
+        break;
+      case 10:
+      case 11:
+        return DRT::UTILS::intrule_hex_216point;
+        break;
+      case 12:
+      case 13:
+        return DRT::UTILS::intrule_hex_343point;
+        break;
+      case 14:
+      case 15:
+        return DRT::UTILS::intrule_hex_512point;
+        break;
+      case 16:
+      case 17:
+        return DRT::UTILS::intrule_hex_729point;
+        break;
+      case 18:
+      case 19:
+        return DRT::UTILS::intrule_hex_1000point;
+        break;
       default:
-        dserror("Gauss rule only for 1, 8, 27, 64 points for HEX elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 19 for HEX elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule3D_undefined;
         break;
       }
@@ -176,27 +242,49 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::tet4>
   {
-    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_tet_1point;
         break;
-      case 4:
+      case 2:
         return DRT::UTILS::intrule_tet_4point;
         break;
-      case 5:
+      case 3:
         return DRT::UTILS::intrule_tet_5point;
         break;
-      case 10:
-        return DRT::UTILS::intrule_tet_10point;
+      case 4:
+        return DRT::UTILS::intrule_tet_11point;
         break;
-      case 24:
+      case 5:
+        return DRT::UTILS::intrule_tet_15point;
+        break;
+      case 6:
         return DRT::UTILS::intrule_tet_24point;
         break;
+      case 7:
+      case 8:
+        return DRT::UTILS::intrule_tet_45point;
+        break;
+      case 9:
+        return DRT::UTILS::intrule_tet_125point_peano;
+        break;
+      case 10:
+      case 11:
+      case 12:
+      case 13:
+        return DRT::UTILS::intrule_tet_343point_peano;
+        break;
+      case 14:
+      case 15:
+      case 16:
+        return DRT::UTILS::intrule_tet_729point_peano;
+        break;
       default:
-        dserror("Gauss rule only for 1, 4, 5, 10, 24 points for TET elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 16 for TET elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule3D_undefined;
         break;
       }
@@ -204,24 +292,49 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::tet10>
   {
-    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_tet_1point;
         break;
-      case 4:
+      case 2:
         return DRT::UTILS::intrule_tet_4point;
         break;
-      case 10:
-        return DRT::UTILS::intrule_tet_10point;
+      case 3:
+        return DRT::UTILS::intrule_tet_5point;
         break;
-      case 24:
+      case 4:
+        return DRT::UTILS::intrule_tet_11point;
+        break;
+      case 5:
+        return DRT::UTILS::intrule_tet_15point;
+        break;
+      case 6:
         return DRT::UTILS::intrule_tet_24point;
         break;
+      case 7:
+      case 8:
+        return DRT::UTILS::intrule_tet_45point;
+        break;
+      case 9:
+        return DRT::UTILS::intrule_tet_125point_peano;
+        break;
+      case 10:
+      case 11:
+      case 12:
+      case 13:
+        return DRT::UTILS::intrule_tet_343point_peano;
+        break;
+      case 14:
+      case 15:
+      case 16:
+        return DRT::UTILS::intrule_tet_729point_peano;
+        break;
       default:
-        dserror("Gauss rule only for 1, 4, 10, 24 points for TET elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 16 for TET elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule3D_undefined;
         break;
       }
@@ -229,7 +342,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::wedge6>
   {
-    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int degree)
     {
       dserror("Gauss rule not for WEDGE elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
@@ -237,7 +350,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::pyramid5>
   {
-    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int degree)
     {
       dserror("Gauss rule not for PYRAMID elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
@@ -245,7 +358,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs8>
   {
-    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int degree)
     {
       dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
@@ -253,7 +366,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs27>
   {
-    static DRT::UTILS::GaussRule3D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule3D GetGaussRule(int degree)
     {
       dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule3D_undefined;
@@ -261,24 +374,52 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::quad4>
   {
-    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_quad_1point;
         break;
-      case 4:
+      case 2:
+      case 3:
         return DRT::UTILS::intrule_quad_4point;
         break;
-      case 9:
+      case 4:
+      case 5:
         return DRT::UTILS::intrule_quad_9point;
         break;
-      case 16:
+      case 6:
+      case 7:
         return DRT::UTILS::intrule_quad_16point;
         break;
+      case 8:
+      case 9:
+        return DRT::UTILS::intrule_quad_25point;
+        break;
+      case 10:
+      case 11:
+        return DRT::UTILS::intrule_quad_36point;
+        break;
+      case 12:
+      case 13:
+        return DRT::UTILS::intrule_quad_49point;
+        break;
+      case 14:
+      case 15:
+        return DRT::UTILS::intrule_quad_64point;
+        break;
+      case 16:
+      case 17:
+        return DRT::UTILS::intrule_quad_81point;
+        break;
+      case 18:
+      case 19:
+        return DRT::UTILS::intrule_quad_100point;
+        break;
       default:
-        dserror("Gauss rule only for 1, 4, 9, 16 points for QUAD elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 19 for QUAD elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule2D_undefined;
         break;
       }
@@ -286,24 +427,52 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::quad8>
   {
-    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_quad_1point;
         break;
-      case 4:
+      case 2:
+      case 3:
         return DRT::UTILS::intrule_quad_4point;
         break;
-      case 9:
+      case 4:
+      case 5:
         return DRT::UTILS::intrule_quad_9point;
         break;
-      case 16:
+      case 6:
+      case 7:
         return DRT::UTILS::intrule_quad_16point;
         break;
+      case 8:
+      case 9:
+        return DRT::UTILS::intrule_quad_25point;
+        break;
+      case 10:
+      case 11:
+        return DRT::UTILS::intrule_quad_36point;
+        break;
+      case 12:
+      case 13:
+        return DRT::UTILS::intrule_quad_49point;
+        break;
+      case 14:
+      case 15:
+        return DRT::UTILS::intrule_quad_64point;
+        break;
+      case 16:
+      case 17:
+        return DRT::UTILS::intrule_quad_81point;
+        break;
+      case 18:
+      case 19:
+        return DRT::UTILS::intrule_quad_100point;
+        break;
       default:
-        dserror("Gauss rule only for 1, 4, 9, 16 points for QUAD elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 19 for QUAD elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule2D_undefined;
         break;
       }
@@ -311,24 +480,52 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::quad9>
   {
-    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_quad_1point;
         break;
-      case 4:
+      case 2:
+      case 3:
         return DRT::UTILS::intrule_quad_4point;
         break;
-      case 9:
+      case 4:
+      case 5:
         return DRT::UTILS::intrule_quad_9point;
         break;
-      case 16:
+      case 6:
+      case 7:
         return DRT::UTILS::intrule_quad_16point;
         break;
+      case 8:
+      case 9:
+        return DRT::UTILS::intrule_quad_25point;
+        break;
+      case 10:
+      case 11:
+        return DRT::UTILS::intrule_quad_36point;
+        break;
+      case 12:
+      case 13:
+        return DRT::UTILS::intrule_quad_49point;
+        break;
+      case 14:
+      case 15:
+        return DRT::UTILS::intrule_quad_64point;
+        break;
+      case 16:
+      case 17:
+        return DRT::UTILS::intrule_quad_81point;
+        break;
+      case 18:
+      case 19:
+        return DRT::UTILS::intrule_quad_100point;
+        break;
       default:
-        dserror("Gauss rule only for 1, 4, 9, 16 points for QUAD elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 19 for QUAD elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule2D_undefined;
         break;
       }
@@ -336,27 +533,46 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::tri3>
   {
-    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_tri_1point;
         break;
-      case 3:
+      case 2:
         return DRT::UTILS::intrule_tri_3point;
         break;
-      case 4:
+      case 3:
         return DRT::UTILS::intrule_tri_4point;
         break;
-      case 7:
+      case 4:
+        return DRT::UTILS::intrule_tri_6point;
+        break;
+      case 5:
         return DRT::UTILS::intrule_tri_7point;
         break;
-      case 12:
+      case 6:
         return DRT::UTILS::intrule_tri_12point;
         break;
+      case 7:
+      case 8:
+        return DRT::UTILS::intrule_tri_16point;
+        break;
+      case 9:
+      case 10:
+      case 11:
+      case 12:
+      case 13:
+        return DRT::UTILS::intrule_tri_37point;
+        break;
+      case 14:
+      case 15:
+        return DRT::UTILS::intrule_tri_64point;
+        break;
       default:
-        dserror("Gauss rule only for 1, 3, 4, 7, 12 points for TRI elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 15 for TRI elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule2D_undefined;
         break;
       }
@@ -364,14 +580,14 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::tri6>
   {
-    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int degree)
     {
       return DRT::UTILS::intrule_tri_16point;
     };
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs4>
   {
-    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int degree)
     {
       dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule2D_undefined;
@@ -379,7 +595,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs9>
   {
-    static DRT::UTILS::GaussRule2D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule2D GetGaussRule(int degree)
     {
       dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule2D_undefined;
@@ -387,27 +603,52 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::line2>
   {
-    static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule1D GetGaussRule(int degree)
     {
-      switch(gp)
+      switch(degree)
       {
+      case 0:
       case 1:
         return DRT::UTILS::intrule_line_1point;
         break;
       case 2:
+      case 3:
         return DRT::UTILS::intrule_line_2point;
         break;
-      case 3:
+      case 4:
+      case 5:
         return DRT::UTILS::intrule_line_3point;
         break;
-      case 4:
+      case 6:
+      case 7:
         return DRT::UTILS::intrule_line_4point;
         break;
-      case 5:
+      case 8:
+      case 9:
         return DRT::UTILS::intrule_line_5point;
         break;
+      case 10:
+      case 11:
+        return DRT::UTILS::intrule_line_6point;
+        break;
+      case 12:
+      case 13:
+        return DRT::UTILS::intrule_line_7point;
+        break;
+      case 14:
+      case 15:
+        return DRT::UTILS::intrule_line_8point;
+        break;
+      case 16:
+      case 17:
+        return DRT::UTILS::intrule_line_9point;
+        break;
+      case 18:
+      case 19:
+        return DRT::UTILS::intrule_line_10point;
+        break;
       default:
-        dserror("Gauss rule only for 1, 2, 3, 4, 5 points for LINE elements defined. You specified %d points",gp);
+        dserror("Integration rule only until degree 19 for LINE elements defined. You used a degree of %d",degree);
         return DRT::UTILS::intrule1D_undefined;
         break;
       }
@@ -415,7 +656,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::line3>
   {
-    static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule1D GetGaussRule(int degree)
     {
       dserror("Gauss rule not for LINE elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;
@@ -423,7 +664,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs2>
   {
-    static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule1D GetGaussRule(int degree)
     {
       dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;
@@ -431,7 +672,7 @@ namespace SCATRA
   };
   template<> struct DisTypeToMatGaussRule<DRT::Element::nurbs3>
   {
-    static DRT::UTILS::GaussRule1D GetGaussRule(int gp)
+    static DRT::UTILS::GaussRule1D GetGaussRule(int degree)
     {
       dserror("Gauss rule not for NURBS elements defined. Feel free to add the Gauss rule.");
       return DRT::UTILS::intrule1D_undefined;

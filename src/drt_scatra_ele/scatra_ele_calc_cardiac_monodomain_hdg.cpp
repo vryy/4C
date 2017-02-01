@@ -44,7 +44,8 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ScaTraEleCalc
     const std::string& disname)
   :
     DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::ScaTraEleCalcHDG(numdofpernode,numscal,disname),
-    values_mat_gp_all_(0)
+    values_mat_gp_all_(0),
+    gp_mat_alpha_(0)
 {
 
 }
@@ -229,40 +230,75 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
   DRT::UTILS::PolynomialSpaceParams params(distype,this->shapes_->degree_,this->usescompletepoly_);
   polySpace_ = DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
 
-  Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(distype, 3*this->shapes_->degree_));
+  int nqpoints;
 
-  if (quadrature_->NumPoints() != actmat->GetNumberOfGP())
-    dserror("Number of quadrature points (%d) does not match number of points in material (%d)!",quadrature_->NumPoints(),actmat->GetNumberOfGP());
-
-  if (values_mat_gp_all_.empty() or values_mat_gp_all_.size() !=  (unsigned) actmat->GetNumberOfGP())
-    values_mat_gp_all_.resize(actmat->GetNumberOfGP());
-
-  if(unsigned (values_mat_gp_all_[0].M()) != this->shapes_->ndofs_)
+  if (distype == DRT::Element::tet4)
   {
-    for (int q = 0; q < quadrature_->NumPoints(); ++q)
+    const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(3*this->shapes_->degree_));
+    nqpoints = intpoints.IP().nquad;
+
+    if (nqpoints != actmat->GetNumberOfGP())
+      dserror("Number of quadrature points (%d) does not match number of points in material (%d)!",nqpoints,actmat->GetNumberOfGP());
+
+    if (values_mat_gp_all_.empty() or values_mat_gp_all_.size() !=  (unsigned) actmat->GetNumberOfGP())
     {
-      values_mat_gp_all_[q].Resize(this->shapes_->ndofs_);
+      values_mat_gp_all_.resize(actmat->GetNumberOfGP());
+      gp_mat_alpha_.resize(actmat->GetNumberOfGP());
+    }
 
-      // gaussian points coordinates
-      for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;++idim)
-        mat_gp_coord(idim) = quadrature_->Point(q)[idim];
+    if(unsigned (values_mat_gp_all_[0].M()) != this->shapes_->ndofs_)
+    {
+      for (int q = 0; q < nqpoints; ++q)
+      {
+        values_mat_gp_all_[q].Size(this->shapes_->ndofs_);
 
+        gp_mat_alpha_[q]= intpoints.IP().qwgt[q];
+        // gaussian points coordinates
+        for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;++idim)
+          mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
-      polySpace_->Evaluate(mat_gp_coord,values_mat_gp_all_[q]);
+        polySpace_->Evaluate(mat_gp_coord,values_mat_gp_all_[q]);
+      }
+    }
+  }
+  else
+  {
+    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(distype,3*this->shapes_->degree_));
+    nqpoints = quadrature_->NumPoints();
+
+    if (nqpoints != actmat->GetNumberOfGP())
+      dserror("Number of quadrature points (%d) does not match number of points in material (%d)!",nqpoints,actmat->GetNumberOfGP());
+
+    if (values_mat_gp_all_.empty() or values_mat_gp_all_.size() !=  (unsigned) actmat->GetNumberOfGP())
+    {
+      values_mat_gp_all_.resize(actmat->GetNumberOfGP());
+      gp_mat_alpha_.resize(actmat->GetNumberOfGP());
+    }
+
+    if(unsigned (values_mat_gp_all_[0].M()) != this->shapes_->ndofs_)
+    {
+      for (int q = 0; q < nqpoints; ++q)
+      {
+        values_mat_gp_all_[q].Size(this->shapes_->ndofs_);
+
+        gp_mat_alpha_[q]= quadrature_->Weight(q);
+        // gaussian points coordinates
+        for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;++idim)
+          mat_gp_coord(idim) = quadrature_->Point(q)[idim];
+
+        polySpace_->Evaluate(mat_gp_coord,values_mat_gp_all_[q]);
+      }
     }
   }
 
   //Jacobian determinant
   double jacdet = this->shapes_->xjm.Determinant();
 
-  for (int q = 0; q < quadrature_->NumPoints(); ++q)
+  for (int q = 0; q < nqpoints; ++q)
   {
 
     double phinpgp = 0.0;
     double phingp = 0.0;
-
-    //gaussian weight
-    double gp_mat_alpha = quadrature_->Weight(q);
 
     // loop over shape functions
     for (unsigned int i=0; i<this->shapes_->ndofs_; ++i)
@@ -284,15 +320,15 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::MatMyoca
     // loop over shape functions
     for (unsigned int i=0; i<this->shapes_->ndofs_; ++i)
     {
-      ivecn(i) += imatgpn*values_mat_gp_all_[q](i)*jacdet*gp_mat_alpha;
+      ivecn(i) += imatgpn*values_mat_gp_all_[q](i)*jacdet*gp_mat_alpha_[q];
     }
 
     if(!this->scatrapara_->SemiImplicit())
       for (unsigned int i=0; i<this->shapes_->ndofs_; ++i)
       {
         for (unsigned int j=0; j<this->shapes_->ndofs_; ++j)
-          ivecnpderiv(i,j) += imatgpnpderiv*values_mat_gp_all_[q](i)*values_mat_gp_all_[q](j)*jacdet *gp_mat_alpha;
-        ivecnp(i) += imatgpnp*values_mat_gp_all_[q](i)*jacdet*gp_mat_alpha;
+          ivecnpderiv(i,j) += imatgpnpderiv*values_mat_gp_all_[q](i)*values_mat_gp_all_[q](j)*jacdet *gp_mat_alpha_[q];
+        ivecnp(i) += imatgpnp*values_mat_gp_all_[q](i)*jacdet*gp_mat_alpha_[q];
       }
   }
 
@@ -432,12 +468,26 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::SetMater
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Project Material Field                               hoermann 01/17 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ProjectMaterialField(
+    const DRT::Element*               ele   //!< the element we are dealing with
+    )
+{
+  if (distype == DRT::Element::tet4)
+    return ProjectMaterialFieldTet(ele);
+  else
+    return ProjectMaterialFieldAll(ele);
+}
+
 
 /*----------------------------------------------------------------------*
  |  Project Material Field                               hoermann 12/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ProjectMaterialField(
+int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ProjectMaterialFieldAll(
     const DRT::Element*               ele   //!< the element we are dealing with
     )
 {
@@ -516,6 +566,115 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ProjectMa
 
 return 0;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  Project Material Field for Tet                       hoermann 01/17 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::ProjectMaterialFieldTet(
+    const DRT::Element*               ele   //!< the element we are dealing with
+    )
+{
+  const Teuchos::RCP<MAT::Myocard>& actmat
+    = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+
+  DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
+
+  // polynomial space to get the value of the shape function at the material gauss points
+  DRT::UTILS::PolynomialSpaceParams params(distype,hdgele->DegreeOld(),this->usescompletepoly_);
+  Teuchos::RCP<DRT::UTILS::PolynomialSpace<probdim> > polySpace = DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
+
+  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints_old(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(3*hdgele->DegreeOld()));
+  const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(3*hdgele->Degree()));
+
+
+  std::vector<Epetra_SerialDenseVector> shape_gp_old(intpoints_old.IP().nquad);
+  std::vector<Epetra_SerialDenseVector> shape_gp(intpoints.IP().nquad);
+
+  // coordinate of material gauss points
+  LINALG::Matrix<probdim,1> mat_gp_coord(true);
+
+  for (int q = 0; q < intpoints_old.IP().nquad; ++q)
+  {
+    shape_gp_old[q].Size(polySpace->Size());
+
+    // gaussian points coordinates
+    for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;++idim)
+      mat_gp_coord(idim) = intpoints_old.IP().qxg[q][idim];
+    polySpace->Evaluate(mat_gp_coord,shape_gp_old[q]);
+  }
+
+  for (int q = 0; q < intpoints.IP().nquad; ++q)
+  {
+    shape_gp[q].Size(polySpace->Size());
+
+    // gaussian points coordinates
+    for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;++idim)
+      mat_gp_coord(idim) = intpoints.IP().qxg[q][idim];
+    polySpace->Evaluate(mat_gp_coord,shape_gp[q]);
+  }
+
+  this->shapes_->Evaluate(*ele);
+  //Jacobian determinant
+  double jacdet = this->shapes_->xjm.Determinant();
+
+
+
+  Epetra_SerialDenseMatrix  massPartOld(polySpace->Size(),shape_gp_old.size());
+  Epetra_SerialDenseMatrix  massPartOldW(polySpace->Size(),shape_gp_old.size());
+  Epetra_SerialDenseMatrix  massPart(polySpace->Size(),shape_gp.size());
+  Epetra_SerialDenseMatrix  massPartW(polySpace->Size(),shape_gp.size());
+  Epetra_SerialDenseMatrix  Mmat(polySpace->Size(),polySpace->Size());
+
+  Epetra_SerialDenseMatrix  state_variables(shape_gp_old.size(),actmat->GetNumberOfInternalStateVariables());
+
+  for (unsigned int i=0; i<polySpace->Size(); ++i)
+  {
+    for (unsigned int q=0; q<shape_gp.size(); ++q)
+    {
+      massPart(i,q) = shape_gp[q](i);
+      massPartW(i,q) = shape_gp[q](i) * jacdet * intpoints.IP().qwgt[q];
+    }
+    for (unsigned int q=0; q<shape_gp_old.size(); ++q)
+    {
+      massPartOld(i,q) = shape_gp_old[q](i);
+      massPartOldW(i,q) = shape_gp_old[q](i) * jacdet * intpoints_old.IP().qwgt[q];
+    }
+  }
+
+  Mmat.Multiply('N', 'T', 1.0 , massPartOld, massPartOldW, 0.0);
+
+  for (unsigned int q=0; q<shape_gp_old.size(); ++q)
+    for (int k=0; k<actmat->GetNumberOfInternalStateVariables(); ++k)
+      state_variables(q,k) = actmat->GetInternalState(k,q);
+
+  Epetra_SerialDenseMatrix tempMat1(polySpace->Size(),actmat->GetNumberOfInternalStateVariables());
+  tempMat1.Multiply('N', 'N', 1.0, massPartOldW, state_variables, 0.0);
+
+  Epetra_SerialDenseSolver inverseMat;
+  inverseMat.SetMatrix(Mmat);
+  inverseMat.SetVectors(tempMat1, tempMat1);
+  inverseMat.FactorWithEquilibration(true);
+  int err2 = inverseMat.Factor();
+  int err = inverseMat.Solve();
+  if (err!=0 || err2!=0)
+    dserror("Inversion of matrix failed with errorcode %d",err);
+
+  Epetra_SerialDenseMatrix tempMat2(shape_gp.size(),actmat->GetNumberOfInternalStateVariables());
+  tempMat2.Multiply('T','N',1.0,massPart,tempMat1,0.0);
+
+  actmat->SetGP(shape_gp.size());
+  actmat->ResizeInternalStateVariables();
+
+
+  for (unsigned int q=0; q<shape_gp.size(); ++q)
+    for (int k=0; k<actmat->GetNumberOfInternalStateVariables(); ++k)
+      actmat->SetInternalState(k,tempMat2(q,k),q);
+
+return 0;
+}
+
 
 
 // template classes

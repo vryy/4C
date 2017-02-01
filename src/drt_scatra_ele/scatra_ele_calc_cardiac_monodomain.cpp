@@ -207,9 +207,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::Sysmat(
   // calculation of material at integration points (different number of integration points possible)
   else
   {
-    const Teuchos::RCP<const MAT::Myocard>& actmat
-      = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(ele->Material());
-    const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(actmat->Parameter()->num_gp));
+    const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(3*ele->Degree()));
 
     //loop over integration points
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)

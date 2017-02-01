@@ -352,10 +352,42 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
   // of reactions by function)
   if (mat->MaterialType() == INPAR::MAT::m_myocard)
   {
+    int gp;
     //Note: We need to do a dynamic_cast here
     Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);
-    Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(),degree_old_*3));
-    int gp = quadrature_->NumPoints();
+    if (this->Shape() == DRT::Element::tet4)
+    {
+      switch(3*degree_old_)
+      {
+      case 0:
+        gp = 1;
+        break;
+      case 3:
+        gp = 5;
+        break;
+      case 6:
+        gp = 24;
+        break;
+      case 9:
+        gp = 125;
+        break;
+      case 12:
+        gp = 343;
+        break;
+      case 15:
+        gp = 729;
+        break;
+      default:
+        dserror("Integration rule for TET elements only until polynomial order 5 for TET defined. You specified a degree of %d ",degree_old_);
+        gp = 0;
+        break;
+      }
+    }
+    else
+    {
+      Teuchos::RCP<DRT::UTILS::GaussPoints> quadrature_(DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(),degree_old_*3));
+      gp = quadrature_->NumPoints();
+    }
     if(actmat->Parameter() != NULL and !actmat->MyocardMat()) // in case we are not in post-process mode
     {
       actmat->SetGP(gp);
