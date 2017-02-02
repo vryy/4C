@@ -20,7 +20,6 @@ MAT 11 ELAST_RemodelFiber NUMMAT 2 MATIDS 111 112 TDECAY 101.0 GROWTHFAC 4.95105
 #include "../linalg/linalg_utils.H"
 #include "Epetra_SerialDenseSolver.h"
 
-#include "elast_utils_autodiff.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

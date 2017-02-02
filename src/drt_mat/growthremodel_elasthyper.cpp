@@ -6,8 +6,8 @@
 
 The input line should read
 MAT 1 MAT_GrowthRemodel_ElastHyper NUMMATRF 2 MATIDSRF 11 21 NUMMATEL3D 1 MATIDSEL3D 31 NUMMATEL2D 1 MATIDSEL2D 41
-MATIDELPENALTY 51 ELMASSFRAC 0.23 DENS 1050 PRESTRESSTIME 10.0 PRESTRETCHELASTINCIR 1.34 PRESTRETCHELASTINAX 1.25
-THICKNESS 1.4099822832e-3 MEANPRESSURE 13332.2668 RADIUS 1e-2 DAMAGE 1 GROWTHTYPE 1 LOCTIMEINT 1
+MATIDELPENALTY 51 ELMASSFRAC 0.23 DENS 1050 PRESTRETCHELASTINCIR 1.34 PRESTRETCHELASTINAX 1.25
+THICKNESS 1.4099822832e-3 MEANPRESSURE 13332.2668 RADIUS 1e-2 DAMAGE 1 GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 
 \level 3
 
@@ -19,7 +19,6 @@ THICKNESS 1.4099822832e-3 MEANPRESSURE 13332.2668 RADIUS 1e-2 DAMAGE 1 GROWTHTYP
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_matelast/elast_summand.H"
 #include "../drt_matelast/elast_remodelfiber.H"
-#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -27,8 +26,6 @@ THICKNESS 1.4099822832e-3 MEANPRESSURE 13332.2668 RADIUS 1e-2 DAMAGE 1 GROWTHTYP
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_matelast/elast_isoneohooke.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
-
-#include "../drt_matelast/elast_utils_autodiff.H"
 
 
 /*----------------------------------------------------------------------*/

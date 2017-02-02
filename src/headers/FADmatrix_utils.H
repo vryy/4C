@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_utils_autodiff.H
+\file FADmatrix_utils.H
 \brief A collection of helper methods and classes using automatic differentiation with FAD;
 
 \level 3
@@ -10,9 +10,12 @@
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_UTILS_AUTODIFF_H_
-#define ELAST_UTILS_AUTODIFF_H_
+#ifndef FADMATRIX_UTILS_H_
+#define FADMATRIX_UTILS_H_
 
+#include "../linalg/linalg_utils.H"
+#include <Sacado.hpp>
+typedef Sacado::Fad::DFad<double> FAD;
 
 namespace LINALG
 {
@@ -89,10 +92,6 @@ public:
 } // namespace LINALG
 
 
-namespace MAT
-{
-namespace ELASTIC
-{
 /// Save first derivatives in a 3x3 double matrix
 template < typename T >
 inline void FirstDerivToMatrix(FAD const& r_fad,                     ///< FAD function
@@ -106,7 +105,5 @@ inline void FirstDerivToMatrix(FAD const& r_fad,                     ///< FAD fu
   out(2,1) = r_fad.dx(7);
   out(2,0) = r_fad.dx(8);
 };
-}   // namespace ELASTIC
-}   // namespace MAT
 
-#endif  // ELAST_UTILS_H_
+#endif  // FADMATRIX_UTILS_H_

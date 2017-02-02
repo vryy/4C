@@ -1,15 +1,16 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file constraintmixture_history.H
-\brief
-This file contains the history class of the constraintmixture material
+\brief This file contains the history class of the constraintmixture material
 
-<pre>
-Maintainer: Susanna Tinkl
-            tinkl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15265
-</pre>
-*----------------------------------------------------------------------*/
+
+\level 2
+
+\maintainer Fabian Braeu
+            braeu@lnm.mw.tum.de
+
+*/
+/*----------------------------------------------------------------------------*/
 
 #ifndef CONSTRAINTMIXTURE_HISTORY_H_
 #define CONSTRAINTMIXTURE_HISTORY_H_

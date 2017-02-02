@@ -1,7 +1,7 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file constraintmixture.cpp
-\brief
-This file contains routines for constraint mixture growth and remodeling.
+\brief This file contains routines for constraint mixture growth and remodeling.
 example input line
 MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 NUE 0.49 PHIE 0.08
 PREELA 1.0 K1 1.0 K2 1.0 NUMHOM 1 PRECOLL 1.06 DAMAGE 1.5 K1M 1.0 K2M 1.0
@@ -17,14 +17,13 @@ For a detailed description see:
   adaptations to a sustained step change in blood flow,
   Biomechanics and Modeling in Mechanobiology, 2003, 2, 109-126
 
-<pre>
-\maintainer Susanna Tinkl
-            tinkl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15265
-</pre>
-*----------------------------------------------------------------------*/
+\level 2
 
+\maintainer Fabian Braeu
+            braeu@lnm.mw.tum.de
+
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "constraintmixture.H"
 #include "constraintmixture_history.H"

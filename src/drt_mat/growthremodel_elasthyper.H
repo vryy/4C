@@ -13,7 +13,7 @@
 #define GROWTHREMODEL_ELASTHYPER_H
 
 
-
+#include "../headers/FADmatrix_utils.H"
 #include "matpar_parameter.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"

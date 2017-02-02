@@ -23,11 +23,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "../drt_inpar/inpar_material.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_parobject.H"
-
-// needed for automatic differentiation
-#include <Sacado.hpp>
-typedef Sacado::Fad::DFad<double> FAD;
-
+#include "../headers/FADmatrix_utils.H"
 
 // forward declarations
 
