@@ -289,6 +289,12 @@ namespace ELEMENTS
       //! compute interior matrices
       void ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG * hdgele);
 
+      //! compute interior matrices for Tet elements
+      void ComputeInteriorMatricesTet(DRT::ELEMENTS::ScaTraHDG * hdgele);
+
+      //! compute interior matrices
+      void ComputeInteriorMatricesAll(DRT::ELEMENTS::ScaTraHDG * hdgele);
+
       //! calls local solver to compute matrices: internal and face
       void ComputeMatrices( DRT::Element*   ele
                            );

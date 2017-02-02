@@ -99,7 +99,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::Done()
  |  prepare material parameter                           hoermann 11/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::PrepareMaterials(
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::PrepareMaterialsAll(
   DRT::Element*                             ele,        //!< the element we are dealing with
   const Teuchos::RCP<const MAT::Material>   material,   //!< pointer to current material
   const int                                 k,          //!< id of current scalar
@@ -170,6 +170,114 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::PrepareM
       (*difftensor).push_back(difftensortmp);
     }
 
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  prepare material parameter                           hoermann 01/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::PrepareMaterials(
+  DRT::Element*                             ele,        //!< the element we are dealing with
+  const Teuchos::RCP<const MAT::Material>   material,   //!< pointer to current material
+  const int                                 k,          //!< id of current scalar
+  Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >  difftensor
+)
+{
+  if (distype == DRT::Element::tet4)
+    PrepareMaterialsTet(ele,material,k,difftensor);
+  else
+    PrepareMaterialsAll(ele,material,k,difftensor);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  prepare material parameter                           hoermann 01/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,probdim>::PrepareMaterialsTet(
+  DRT::Element*                             ele,        //!< the element we are dealing with
+  const Teuchos::RCP<const MAT::Material>   material,   //!< pointer to current material
+  const int                                 k,          //!< id of current scalar
+  Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >  difftensor
+)
+{
+
+  const Teuchos::RCP<MAT::Myocard>& actmat
+    = Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
+  DRT::ELEMENTS::ScaTraHDG * hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
+
+  if (actmat->DiffusionAtEleCenter())
+  {
+    // get diffusivity at ele center
+    LINALG::Matrix<probdim,probdim> diff(true);
+    actmat->Diffusivity(diff,0);
+    Epetra_SerialDenseMatrix difftensortmp(this->nsd_,this->nsd_);
+    for (unsigned int i=0; i<this->nsd_; ++i)
+      for (unsigned int j=0; j<this->nsd_; ++j)
+        difftensortmp(i,j) = diff(i,j);
+    (*difftensor).push_back(difftensortmp);
+    DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode* > (ele->Nodes()[0]);
+    if (fnode)
+      dserror("Fiber direction defined twice (nodes and elements)");
+  }
+  else
+  {
+    actmat->ResetDiffusionTensor();
+
+    // get fiber information at corners of element
+    DRT::Node**   nodes = ele->Nodes();
+    int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    std::vector<Epetra_SerialDenseVector> fibernodes(numnodes,Epetra_SerialDenseVector(3));
+    for (int inode=0; inode<numnodes; ++inode)
+    {
+      DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode* > (nodes[inode]);
+      if(!fnode)
+        dserror("No fiber direction defined on nodes or elements");
+      for (unsigned int j=0; j<this->nsd_; ++j)
+        fibernodes[inode](j) = fnode->Fiber()[j];
+    }
+
+    const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2*hdgele->Degree()));
+    unsigned int nqpoints = intpoints.IP().nquad;
+
+    // coordinate of gauss points
+    LINALG::Matrix<probdim,1> gp_coord(true);
+    LINALG::SerialDenseMatrix funct(this->nen_, nqpoints);
+
+    for (int q = 0; q < intpoints.IP().nquad; ++q)
+    {
+      // gaussian points coordinates
+      for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;++idim)
+        gp_coord(idim) = intpoints.IP().qxg[q][idim];
+
+      LINALG::Matrix<4,1> myfunct(funct.A()+q*this->nen_,true);
+      DRT::UTILS::shape_function<distype>(gp_coord,myfunct);
+    }
+
+    std::vector<LINALG::Matrix<probdim,1> > fibergp(nqpoints);
+
+    for(unsigned int i = 0; i<this->nsd_;++i)
+      for(unsigned int q = 0; q<nqpoints;++q)
+        for(unsigned int j = 0; j<this->nen_;++j)
+          fibergp[q](i,0) +=  funct(j,q) * fibernodes[j](i);
+
+    for(unsigned int q = 0; q<nqpoints;++q)
+      actmat->SetupDiffusionTensor(fibergp[q]);
+
+    for(unsigned int q = 0; q<nqpoints;++q)
+    {
+      Epetra_SerialDenseMatrix difftensortmp(this->nsd_,this->nsd_);
+      LINALG::Matrix<probdim,probdim> diff(true);
+      actmat->Diffusivity(diff,q);
+      for (unsigned int i=0; i<this->nsd_; ++i)
+        for (unsigned int j=0; j<this->nsd_; ++j)
+          difftensortmp(i,j) = diff(i,j);
+      (*difftensor).push_back(difftensortmp);
+    }
   }
 
   return;

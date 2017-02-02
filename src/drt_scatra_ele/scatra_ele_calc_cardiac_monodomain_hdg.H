@@ -92,6 +92,22 @@ namespace ELEMENTS
       Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >  difftensor
       );
 
+    //! evaluate material
+    virtual void PrepareMaterialsAll(
+      DRT::Element*                             ele,      //!< the element we are dealing with
+      const Teuchos::RCP<const MAT::Material>   material, //!< pointer to current material
+      const int                                 k,        //!< id of current scalar
+      Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >  difftensor
+      );
+
+    //! evaluate material
+    virtual void PrepareMaterialsTet(
+      DRT::Element*                             ele,      //!< the element we are dealing with
+      const Teuchos::RCP<const MAT::Material>   material, //!< pointer to current material
+      const int                                 k,        //!< id of current scalar
+      Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> >  difftensor
+      );
+
 
     //! evaluate material
     virtual void Materials(

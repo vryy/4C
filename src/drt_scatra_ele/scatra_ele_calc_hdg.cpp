@@ -753,13 +753,135 @@ ComputeFaceMatrices (const int                    face,
   return;
 } // ComputeFaceMatrices
 
+/*----------------------------------------------------------------------*
+ * ComputeInteriorMatricesTet                             hoermann 01/17|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::
+ComputeInteriorMatricesTet(DRT::ELEMENTS::ScaTraHDG * hdgele)
+{
+
+  Epetra_SerialDenseMatrix vel(nsd_,shapes_->nqpoints_);
+  Epetra_SerialDenseMatrix gradPart(hdgele->ndofs_*nsd_, shapes_->nqpoints_);
+  Epetra_SerialDenseMatrix gradPartVel(hdgele->ndofs_,shapes_->nqpoints_);
+
+  Epetra_SerialDenseMatrix  massPart(hdgele->ndofs_,shapes_->nqpoints_);
+  Epetra_SerialDenseMatrix  massPartW(hdgele->ndofs_,shapes_->nqpoints_);
+  std::vector<Epetra_SerialDenseMatrix> DW(nsd_*nsd_,Epetra_SerialDenseMatrix(hdgele->ndofs_,hdgele->ndofs_));
+
+
+  // polynomial space to get the value of the shape function at the material gauss points
+   DRT::UTILS::PolynomialSpaceParams params(distype,hdgele->Degree(),shapes_->usescompletepoly_);
+   Teuchos::RCP<DRT::UTILS::PolynomialSpace<probdim> > polySpace = DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params);
+
+   const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2*hdgele->Degree()));
+
+   std::vector<Epetra_SerialDenseVector> shape_gp(intpoints.IP().nquad);
+   std::vector<Epetra_SerialDenseMatrix> massPartDW(nsd_*nsd_,Epetra_SerialDenseMatrix(hdgele->ndofs_,intpoints.IP().nquad));
+
+
+   // coordinate of gauss points
+   LINALG::Matrix<probdim,1> gp_coord(true);
+
+   for (int q = 0; q < intpoints.IP().nquad; ++q)
+   {
+     shape_gp[q].Size(polySpace->Size());
+
+     // gaussian points coordinates
+     for (int idim=0;idim<DRT::UTILS::DisTypeToDim<distype>::dim;++idim)
+       gp_coord(idim) = intpoints.IP().qxg[q][idim];
+     polySpace->Evaluate(gp_coord,shape_gp[q]);
+   }
+
+   double jacdet = shapes_->xjm.Determinant();
+
+   Epetra_SerialDenseMatrix  massPartD(hdgele->ndofs_,shape_gp.size());
+
+   // loop over quadrature points
+   for (unsigned int q = 0; q < shape_gp.size(); ++q)
+   {
+     // loop over shape functions
+     for (unsigned int i = 0; i < hdgele->ndofs_; ++i)
+     {
+       massPartD(i, q) = shape_gp[q](i);
+
+       if (hdgele->invdiff_.size()==1)
+         for (unsigned int d = 0; d < nsd_; ++d)
+           for (unsigned int e = 0; e<nsd_; ++e)
+             massPartDW[d*nsd_+e](i, q) = shape_gp[q](i) * jacdet * intpoints.IP().qwgt[q] * hdgele->invdiff_[0](d,e);
+       else if (hdgele->invdiff_.size()==shape_gp.size())
+         for (unsigned int d = 0; d < nsd_; ++d)
+           for (unsigned int e = 0; e<nsd_; ++e)
+             massPartDW[d*nsd_+e](i, q) = shape_gp[q](i) * jacdet * intpoints.IP().qwgt[q] * hdgele->invdiff_[q](d,e);
+       else
+         dserror("Diffusion tensor not defined properly");
+     }
+   }
+
+  // loop over quadrature points
+  for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
+  {
+    // loop over shape functions
+    for (unsigned int i = 0; i < hdgele->ndofs_; ++i)
+    {
+      massPart(i, q) = shapes_->shfunct(i, q);
+      massPartW(i, q) = shapes_->shfunct(i, q) * shapes_->jfac(q);
+
+      for (unsigned int d = 0; d < nsd_; ++d)
+      {
+        vel(d,q)=0.0;
+        gradPart(d * hdgele->ndofs_ + i, q) = shapes_->shderxy(i * nsd_ + d, q);
+
+        gradPartVel(i,q) += shapes_->shderxy(i * nsd_ + d, q) * vel(d,q);
+      }
+    }
+  }
+
+  for (unsigned int d = 0; d < nsd_; ++d)
+    for (unsigned int e = 0; e<nsd_; ++e)
+      DW[d*nsd_+e].Multiply('N', 'T', 1.0 , massPartD, massPartDW[d*nsd_+e], 0.0);
+
+
+  // multiply matrices to perform summation over quadrature points
+  hdgele->Mmat_.Multiply('N', 'T', 1.0 , massPart, massPartW, 0.0);
+  hdgele->Amat_.Multiply('N', 'T', -1.0 , gradPartVel, massPartW, 0.0); // first part of A matrix (only if velocity field not zero)
+  hdgele->Bmat_.Multiply('N', 'T', -1.0, massPartW, gradPart, 0.0);
+
+  for (unsigned int j = 0; j < hdgele->ndofs_; ++j)
+    for (unsigned int i = 0; i < hdgele->ndofs_; ++i)
+    {
+      for (unsigned int d = 0; d < nsd_; ++d)
+      {
+        for (unsigned int e = 0; e<nsd_; e++)
+          hdgele->Dmat_(d * hdgele->ndofs_ +i, e * hdgele->ndofs_ + j) = DW[d*nsd_+e](i,j);
+        hdgele->BmatMT_(d * hdgele->ndofs_ + i, j) = -1.0 * hdgele->Bmat_(j, d * hdgele->ndofs_ + i);
+      }
+    }
+
+  return;
+}//ComputeInteriorMatricesTet
+
+/*----------------------------------------------------------------------*
+ * ComputeInteriorMatrices                                hoermann 01/17|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::
+ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG * hdgele)
+{
+  if (distype == DRT::Element::tet4)
+    ComputeInteriorMatricesTet(hdgele);
+  else
+    ComputeInteriorMatricesAll(hdgele);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  * ComputeInteriorMatrices                                hoermann 09/15|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::LocalSolver::
-ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG * hdgele)
+ComputeInteriorMatricesAll(DRT::ELEMENTS::ScaTraHDG * hdgele)
 {
 
   Epetra_SerialDenseMatrix vel(nsd_,shapes_->nqpoints_);
