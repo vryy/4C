@@ -223,6 +223,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     T_period_ = cv0dparams.get("T_PERIOD",-1.0);
     eps_periodic_ = cv0dparams.get("EPS_PERIODIC",1.0e-16);
     is_periodic_ = false;
+    cycle_error_=1.0;
 
     cardiovascular0dstiffness_->Zero();
 
@@ -387,6 +388,9 @@ void UTILS::Cardiovascular0DManager::UpdateTimeStep()
   cardvasc0d_df_n_->Update(1.0,*cardvasc0d_df_np_,0.0);
   cardvasc0d_f_n_->Update(1.0,*cardvasc0d_f_np_,0.0);
 
+  if (T_period_ > 0.0)
+    printf("Cycle error (error in periodicity): %10.6e \n",cycle_error_);
+
   if(is_periodic_)
   {
     if (actdisc_->Comm().MyPID()==0)
@@ -404,13 +408,18 @@ void UTILS::Cardiovascular0DManager::CheckPeriodic()
   LINALG::Export(*cv0ddof_T_N_,*cv0ddof_T_N_red);
   LINALG::Export(*cv0ddof_T_NP_,*cv0ddof_T_NP_red);
 
-  std::vector<double> vals(numCardiovascular0DID_);
+  std::vector<double> vals;
   for (int j = 0; j < numCardiovascular0DID_; j++)
   {
-    vals[j] = fabs( ((*cv0ddof_T_NP_red)[j]-(*cv0ddof_T_N_red)[j])/fmax(1.0,fabs((*cv0ddof_T_N_red)[j])) );
+//    if(j<34 or j>53) // exclude oscillatory lung dofs
+      vals.push_back( fabs( ((*cv0ddof_T_NP_red)[j]-(*cv0ddof_T_N_red)[j])/fmax(1.0,fabs((*cv0ddof_T_N_red)[j])) ) );
+//      vals.push_back( fabs( ((*cv0ddof_T_NP_red)[j]-(*cv0ddof_T_N_red)[j])/fabs((*cv0ddof_T_N_red)[j]) ) );
   }
 
-  if(*std::max_element(vals.begin(),vals.end()) <= eps_periodic_)
+  cycle_error_ = *std::max_element(vals.begin(),vals.end());
+
+
+  if(cycle_error_ <= eps_periodic_)
     is_periodic_ = true;
   else
     is_periodic_ = false;
@@ -809,12 +818,11 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
           printf("SO2_ar_pul: %10.16e \n",(*v_m_red)[49]);
           printf("SO2_ar_sys: %10.16e \n",(*v_m_red)[59]);
         }
-
       }
 
     }
-
     printf("total time: %10.16e \n",totaltime_);
+
   }
 
   return;

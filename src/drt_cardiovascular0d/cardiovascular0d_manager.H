@@ -391,6 +391,7 @@ namespace UTILS
     double T_period_; ///< periodic time
     double eps_periodic_; ///< tolerance for periodic state
     bool is_periodic_; ///< true, if periodic state is reached, false otherwise
+    double cycle_error_; ///< perdiodicity error
 
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_n_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_np_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n+1}

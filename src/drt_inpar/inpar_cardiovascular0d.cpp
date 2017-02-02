@@ -255,8 +255,13 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
 
   // should be 22.4 liters per mol !
   // however we specify it as an input parameter since its decimal power depends on the system of units your whole model is specified in!
-  // i.e. if you have kg - mm - s - mmol, its 22.4e3 mm^3 / mmol
+  // i.e. if you have kg - mm - s - mmol, it's 22.4e3 mm^3 / mmol
   DoubleParameter("V_m_gas",22.4e3,"molar volume of an ideal gas",&cardvascrespir0d);
+
+  // should be 47.1 mmHg = 6.279485 kPa !
+  // however we specify it as an input parameter since its decimal power depends on the system of units your whole model is specified in!
+  // i.e. if you have kg - mm - s - mmol, it's 6.279485 kPa
+  DoubleParameter("p_vap_water_37",6.279485,"vapor pressure of water at 37 °C",&cardvascrespir0d);
 
   DoubleParameter("alpha_CO2",0.0,"CO2 solubility constant, in molar value / (volume * pressure)",&cardvascrespir0d);
   DoubleParameter("alpha_O2",0.0,"O2 solubility constant, in molar value / (volume * pressure)",&cardvascrespir0d);

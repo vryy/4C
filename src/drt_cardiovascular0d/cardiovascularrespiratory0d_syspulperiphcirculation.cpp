@@ -173,8 +173,14 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::CardiovascularRespira
 
   // should be 22.4 liters per mol !
   // however we specify it as an input parameter since its decimal power depends on the system of units your whole model is specified in!
-  // i.e. if you have kg - mm - s - mmol, its 22.4e3 mm^3 / mmol
+  // i.e. if you have kg - mm - s - mmol, it's 22.4e3 mm^3 / mmol
   V_m_gas_ = respirpar.get("V_m_gas",22.4e3); // molar volume of an ideal gas
+
+  // should be 47.1 mmHg = 6.279485 kPa !
+  // however we specify it as an input parameter since its decimal power depends on the system of units your whole model is specified in!
+  // i.e. if you have kg - mm - s - mmol, it's 6.279485 kPa
+  p_vap_water_37_ = respirpar.get("p_vap_water_37",6.279485); // vapor pressure of water at 37 °C
+
 
   kappa_CO2_ = respirpar.get("kappa_CO2",0.0); // diffusion coefficient for CO2 across the hemato-alveolar membrane, in molar value / (time * pressure)
   kappa_O2_ = respirpar.get("kappa_O2",0.0); // diffusion coefficient for CO2 across the hemato-alveolar membrane, in molar value / (time * pressure)
@@ -1204,7 +1210,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
   df_np[36] = p_alv_np;
   f_np[34] = -q_alv_np;
   f_np[35] = R_alv_ * q_alv_np + E_alv_*(V_alv_np-V_lung_u_) - p_alv_np + U_t;
-  f_np[36] = -(1./V_alv_np) * (U_m_ * ((U_m_-p_alv_np)/R_alv_ + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) - p_alv_np * q_alv_np);
+  f_np[36] = -(1./V_alv_np) * (U_m_ * ((U_m_-p_alv_np)/R_alv_ + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_)) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) - p_alv_np * q_alv_np);
 
   double fCO2_insp = 0.;
   double fO2_insp = 0.;
@@ -1215,10 +1221,15 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
   if(V_lung_tidal_ >= V_lung_dead_) fO2_insp = (fO2_alv_np * V_lung_dead_ + fO2_ext_ * (V_lung_tidal_-V_lung_dead_)) / V_lung_tidal_;
   if(V_lung_tidal_ < V_lung_dead_) fO2_insp = fO2_alv_np;
 
+  double q_insp = 0.;
+
+  if((U_m_-p_alv_np)/R_alv_ > 0.) q_insp = (U_m_-p_alv_np)/R_alv_;
+  if((U_m_-p_alv_np)/R_alv_ <= 0.) q_insp = 0.;
+
   df_np[37] = fCO2_alv_np;
   df_np[38] = fO2_alv_np;
-  f_np[37] = -(1./V_alv_np) * ( V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np) + (fCO2_insp - fCO2_alv_np)*(U_m_-p_alv_np)/R_alv_ - fCO2_alv_np*(V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np) + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)));
-  f_np[38] = -(1./V_alv_np) * ( V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np) + (fO2_insp - fO2_alv_np)*(U_m_-p_alv_np)/R_alv_ - fO2_alv_np*(V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)));
+  f_np[37] = -(1./V_alv_np) * ( V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np) + (fCO2_insp - fCO2_alv_np)*q_insp - fCO2_alv_np*(V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_)) + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))));
+  f_np[38] = -(1./V_alv_np) * ( V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np) + (fO2_insp - fO2_alv_np)*q_insp - fO2_alv_np*(V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_)) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))));
 
   df_np[39] = C_arspl_sys_ * p_arperi_sys_np;
   df_np[40] = C_arespl_sys_ * p_arperi_sys_np;
@@ -1464,11 +1475,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
     wkstiff(35,35) = L_alv_/ts_size + theta * R_alv_;
     wkstiff(35,36) = -theta;
 
-    wkstiff(36,34) = theta * ( (1./(V_alv_np*V_alv_np)) * (U_m_ * ((U_m_-p_alv_np)/R_alv_ + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) - p_alv_np * q_alv_np) );
+    wkstiff(36,34) = theta * ( (1./(V_alv_np*V_alv_np)) * (U_m_ * ((U_m_-p_alv_np)/R_alv_ + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_)) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) - p_alv_np * q_alv_np) );
     wkstiff(36,35) = theta * ( (1./V_alv_np) * p_alv_np );
     wkstiff(36,36) = 1./ts_size + theta * ( -(1./V_alv_np) * (U_m_ * ((-1.)/R_alv_ + V_m_gas_*kappa_CO2_*(-fCO2_alv_np) + V_m_gas_*kappa_O2_*(-fO2_alv_np)) - q_alv_np) );
-    wkstiff(36,37) = theta * ( (1./V_alv_np) * U_m_ * V_m_gas_*kappa_CO2_*p_alv_np );
-    wkstiff(36,38) = theta * ( (1./V_alv_np) * U_m_ * V_m_gas_*kappa_O2_*p_alv_np );
+    wkstiff(36,37) = theta * ( (1./V_alv_np) * U_m_ * V_m_gas_*kappa_CO2_*(p_alv_np-p_vap_water_37_) );
+    wkstiff(36,38) = theta * ( (1./V_alv_np) * U_m_ * V_m_gas_*kappa_O2_*(p_alv_np-p_vap_water_37_) );
     wkstiff(36,50) = theta * ( -(1./V_alv_np) * U_m_ * V_m_gas_*kappa_CO2_ );
     wkstiff(36,51) = theta * ( -(1./V_alv_np) * U_m_ * V_m_gas_*kappa_O2_ );
 
@@ -1481,17 +1492,22 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
     if(V_lung_tidal_ >= V_lung_dead_) dfO2_insp = V_lung_dead_/V_lung_tidal_;
     if(V_lung_tidal_ < V_lung_dead_) dfO2_insp = 1.0;
 
-    wkstiff(37,34) = theta * ( (1./(V_alv_np*V_alv_np)) * ( V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np) + (fCO2_insp - fCO2_alv_np)*(U_m_-p_alv_np)/R_alv_ - fCO2_alv_np*(V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np) + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np))) );
-    wkstiff(37,36) = theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_CO2_*(-fCO2_alv_np) + (fCO2_insp - fCO2_alv_np)*(-1.)/R_alv_ - fCO2_alv_np*(V_m_gas_*kappa_O2_*(-fO2_alv_np) + V_m_gas_*kappa_CO2_*(-fCO2_alv_np))) );
-    wkstiff(37,37) = 1./ts_size + theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_CO2_*(-p_alv_np) + (dfCO2_insp - 1.)*(U_m_-p_alv_np)/R_alv_ - 1.*(V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np) + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) - fCO2_alv_np*(V_m_gas_*kappa_CO2_*(-p_alv_np))) );
-    wkstiff(37,38) = theta * ( -(1./V_alv_np) * (-fCO2_alv_np*(V_m_gas_*kappa_O2_*(-p_alv_np))) );
+    double dq_insp = 0.;
+
+    if((U_m_-p_alv_np)/R_alv_ > 0.) dq_insp = -1./R_alv_;
+    if((U_m_-p_alv_np)/R_alv_ <= 0.) dq_insp = 0.;
+
+    wkstiff(37,34) = theta * ( (1./(V_alv_np*V_alv_np)) * ( V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np) + (fCO2_insp - fCO2_alv_np)*q_insp - fCO2_alv_np*(V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_)) + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_)))) );
+    wkstiff(37,36) = theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_CO2_*(-fCO2_alv_np) + (fCO2_insp - fCO2_alv_np)*dq_insp - fCO2_alv_np*(V_m_gas_*kappa_O2_*(-fO2_alv_np) + V_m_gas_*kappa_CO2_*(-fCO2_alv_np))) );
+    wkstiff(37,37) = 1./ts_size + theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_CO2_*(-(p_alv_np-p_vap_water_37_)) + (dfCO2_insp - 1.)*q_insp - 1.*(V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_)) + V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) - fCO2_alv_np*(V_m_gas_*kappa_CO2_*(-(p_alv_np-p_vap_water_37_)))) );
+    wkstiff(37,38) = theta * ( -(1./V_alv_np) * (-fCO2_alv_np*(V_m_gas_*kappa_O2_*(-(p_alv_np-p_vap_water_37_)))) );
     wkstiff(37,50) = theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_CO2_*(1.) - fCO2_alv_np*(V_m_gas_*kappa_CO2_*(1.))) );
     wkstiff(37,51) = theta * ( -(1./V_alv_np) * (-fCO2_alv_np*(V_m_gas_*kappa_O2_*(1.))) );
 
-    wkstiff(38,34) = theta * ( (1./(V_alv_np*V_alv_np)) * ( V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np) + (fO2_insp - fO2_alv_np)*(U_m_-p_alv_np)/R_alv_ - fO2_alv_np*(V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np))) );
-    wkstiff(38,36) = theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_O2_*(-fO2_alv_np) + (fO2_insp - fO2_alv_np)*(-1.)/R_alv_ - fO2_alv_np*(V_m_gas_*kappa_CO2_*(-fCO2_alv_np) + V_m_gas_*kappa_O2_*(-fO2_alv_np))) );
-    wkstiff(38,37) = theta * ( -(1./V_alv_np) * (-fO2_alv_np*(V_m_gas_*kappa_CO2_*(-p_alv_np))) );
-    wkstiff(38,38) = 1./ts_size + theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_O2_*(-p_alv_np) + (dfO2_insp - 1.)*(U_m_-p_alv_np)/R_alv_ - 1.*(V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) - fO2_alv_np*(V_m_gas_*kappa_O2_*(-p_alv_np))) );
+    wkstiff(38,34) = theta * ( (1./(V_alv_np*V_alv_np)) * ( V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_)) + (fO2_insp - fO2_alv_np)*q_insp - fO2_alv_np*(V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_)) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_)))) );
+    wkstiff(38,36) = theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_O2_*(-fO2_alv_np) + (fO2_insp - fO2_alv_np)*dq_insp - fO2_alv_np*(V_m_gas_*kappa_CO2_*(-fCO2_alv_np) + V_m_gas_*kappa_O2_*(-fO2_alv_np))) );
+    wkstiff(38,37) = theta * ( -(1./V_alv_np) * (-fO2_alv_np*(V_m_gas_*kappa_CO2_*(-(p_alv_np-p_vap_water_37_)))) );
+    wkstiff(38,38) = 1./ts_size + theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_O2_*(-(p_alv_np-p_vap_water_37_)) + (dfO2_insp - 1.)*q_insp - 1.*(V_m_gas_*kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_)) + V_m_gas_*kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) - fO2_alv_np*(V_m_gas_*kappa_O2_*(-(p_alv_np-p_vap_water_37_)))) );
     wkstiff(38,50) = theta * ( -(1./V_alv_np) * (-fO2_alv_np*(V_m_gas_*kappa_CO2_*(1.))) );
     wkstiff(38,51) = theta * ( -(1./V_alv_np) * ( V_m_gas_*kappa_O2_*(1.) - fO2_alv_np*(V_m_gas_*kappa_O2_*(1.))) );
 

@@ -313,8 +313,13 @@ namespace UTILS
 
     // should be 22.4 liters per mol !
     // however we specify it as an input parameter since its decimal power depends on the system of units your whole model is specified in!
-    // i.e. if you have kg - mm - s - mmol, its 22.4e3 mm^3 / mmol
+    // i.e. if you have kg - mm - s - mmol, it's 22.4e3 mm^3 / mmol
     double V_m_gas_; ///< molar volume of an ideal gas
+
+    // should be 47.1 mmHg = 6.279485 kPa !
+    // however we specify it as an input parameter since its decimal power depends on the system of units your whole model is specified in!
+    // i.e. if you have kg - mm - s - mmol, it's 6.279485 kPa
+    double p_vap_water_37_; ///< vapor pressure of water at 37 °C
 
     double kappa_CO2_; ///< diffusion coefficient for CO2 across the hemato-alveolar membrane, in molar value / (time * pressure)
     double kappa_O2_; ///< diffusion coefficient for O2 across the hemato-alveolar membrane, in molar value / (time * pressure)
