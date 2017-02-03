@@ -104,6 +104,8 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
   {
     std::stringstream name;
     name << filename_ << ".control";
+    if (controlfile_.is_open())
+      controlfile_.close();
     controlfile_.open(name.str().c_str(),std::ios_base::out);
     if (not controlfile_)
       dserror("could not open control file '%s' for writing", name.str().c_str());
