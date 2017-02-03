@@ -1319,12 +1319,12 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
 
   // pulmonary capillaries CO2
   f_np[50] = (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-      ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) -
-        dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) );
+      ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) -
+        dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) );
   // pulmonary capillaries O2
   f_np[51] = (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-      ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) -
-        dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) );
+      ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) -
+        dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) );
 
   // pulmonary veins CO2
   f_np[52] = (1./V_ven_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_ven_pul_np,ppO2_ven_pul_np)*dcbO2_dppO2(ppCO2_ven_pul_np,ppO2_ven_pul_np) - dcbO2_dppCO2(ppCO2_ven_pul_np,ppO2_ven_pul_np)*dcbCO2_dppO2(ppCO2_ven_pul_np,ppO2_ven_pul_np) ),-1.) *
@@ -1367,16 +1367,17 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
   // systemic splanchnic arteries CO2
   f_np[60] = (1./V_arspl_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) + (V_tissspl_/V_arspl_sys_np)*dctCO2_dppCO2(ppCO2_arspl_sys_np))*(dcbO2_dppO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) + (V_tissspl_/V_arspl_sys_np)*dctO2_dppO2(ppO2_arspl_sys_np)) - dcbO2_dppCO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np)*dcbCO2_dppO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) ),-1.) *
       ( (dcbO2_dppO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) + (V_tissspl_/V_arspl_sys_np)*dctO2_dppO2(ppO2_arspl_sys_np)) * (q_arspl_sys_in_np * (cbCO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) - cbCO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) - M_CO2_arspl_) -
-        dcbCO2_dppO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) * (q_arspl_sys_in_np * (cbO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np))) + M_O2_arspl_);
+        dcbCO2_dppO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) * (q_arspl_sys_in_np * (cbO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_arspl_) );
   // systemic splanchnic arteries O2
   f_np[61] = (1./V_arspl_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) + (V_tissspl_/V_arspl_sys_np)*dctCO2_dppCO2(ppCO2_arspl_sys_np))*(dcbO2_dppO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) + (V_tissspl_/V_arspl_sys_np)*dctO2_dppO2(ppO2_arspl_sys_np)) - dcbO2_dppCO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np)*dcbCO2_dppO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) ),-1.) *
       ( (dcbCO2_dppCO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) + (V_tissspl_/V_arspl_sys_np)*dctCO2_dppCO2(ppCO2_arspl_sys_np)) * (q_arspl_sys_in_np * (cbO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_arspl_) -
         dcbO2_dppCO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) * (q_arspl_sys_in_np * (cbCO2(ppCO2_arspl_sys_np,ppO2_arspl_sys_np) - cbCO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) - M_CO2_arspl_) );
 
+
   // systemic extra-esplanchnic arteries CO2
   f_np[62] = (1./V_arespl_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) + (V_tissespl_/V_arespl_sys_np)*dctCO2_dppCO2(ppCO2_arespl_sys_np))*(dcbO2_dppO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) + (V_tissespl_/V_arespl_sys_np)*dctO2_dppO2(ppO2_arespl_sys_np)) - dcbO2_dppCO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np)*dcbCO2_dppO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) ),-1.) *
       ( (dcbO2_dppO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) + (V_tissespl_/V_arespl_sys_np)*dctO2_dppO2(ppO2_arespl_sys_np)) * (q_arespl_sys_in_np * (cbCO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) - cbCO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) - M_CO2_arespl_) -
-        dcbCO2_dppO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) * (q_arespl_sys_in_np * (cbO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np))) + M_O2_arespl_);
+        dcbCO2_dppO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) * (q_arespl_sys_in_np * (cbO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_arespl_) );
   // systemic exrta-splanchnic arteries O2
   f_np[63] = (1./V_arespl_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) + (V_tissespl_/V_arespl_sys_np)*dctCO2_dppCO2(ppCO2_arespl_sys_np))*(dcbO2_dppO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) + (V_tissespl_/V_arespl_sys_np)*dctO2_dppO2(ppO2_arespl_sys_np)) - dcbO2_dppCO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np)*dcbCO2_dppO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) ),-1.) *
       ( (dcbCO2_dppCO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) + (V_tissespl_/V_arespl_sys_np)*dctCO2_dppCO2(ppCO2_arespl_sys_np)) * (q_arespl_sys_in_np * (cbO2(ppCO2_arespl_sys_np,ppO2_arespl_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_arespl_) -
@@ -1385,7 +1386,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
   // systemic muscular arteries CO2
   f_np[64] = (1./V_armsc_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) + (V_tissmsc_/V_armsc_sys_np)*dctCO2_dppCO2(ppCO2_armsc_sys_np))*(dcbO2_dppO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) + (V_tissmsc_/V_armsc_sys_np)*dctO2_dppO2(ppO2_armsc_sys_np)) - dcbO2_dppCO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np)*dcbCO2_dppO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) ),-1.) *
       ( (dcbO2_dppO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) + (V_tissmsc_/V_armsc_sys_np)*dctO2_dppO2(ppO2_armsc_sys_np)) * (q_armsc_sys_in_np * (cbCO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) - cbCO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) - M_CO2_armsc_) -
-        dcbCO2_dppO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) * (q_armsc_sys_in_np * (cbO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np))) + M_O2_armsc_);
+        dcbCO2_dppO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) * (q_armsc_sys_in_np * (cbO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_armsc_) );
   // systemic muscular arteries O2
   f_np[65] = (1./V_armsc_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) + (V_tissmsc_/V_armsc_sys_np)*dctCO2_dppCO2(ppCO2_armsc_sys_np))*(dcbO2_dppO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) + (V_tissmsc_/V_armsc_sys_np)*dctO2_dppO2(ppO2_armsc_sys_np)) - dcbO2_dppCO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np)*dcbCO2_dppO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) ),-1.) *
       ( (dcbCO2_dppCO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) + (V_tissmsc_/V_armsc_sys_np)*dctCO2_dppCO2(ppCO2_armsc_sys_np)) * (q_armsc_sys_in_np * (cbO2(ppCO2_armsc_sys_np,ppO2_armsc_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_armsc_) -
@@ -1394,7 +1395,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
   // systemic cerebral arteries CO2
   f_np[66] = (1./V_arcer_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) + (V_tisscer_/V_arcer_sys_np)*dctCO2_dppCO2(ppCO2_arcer_sys_np))*(dcbO2_dppO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) + (V_tisscer_/V_arcer_sys_np)*dctO2_dppO2(ppO2_arcer_sys_np)) - dcbO2_dppCO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np)*dcbCO2_dppO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) ),-1.) *
       ( (dcbO2_dppO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) + (V_tisscer_/V_arcer_sys_np)*dctO2_dppO2(ppO2_arcer_sys_np)) * (q_arcer_sys_in_np * (cbCO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) - cbCO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) - M_CO2_arcer_) -
-        dcbCO2_dppO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) * (q_arcer_sys_in_np * (cbO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np))) + M_O2_arcer_);
+        dcbCO2_dppO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) * (q_arcer_sys_in_np * (cbO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_arcer_) );
   // systemic cerebral arteries O2
   f_np[67] = (1./V_arcer_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) + (V_tisscer_/V_arcer_sys_np)*dctCO2_dppCO2(ppCO2_arcer_sys_np))*(dcbO2_dppO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) + (V_tisscer_/V_arcer_sys_np)*dctO2_dppO2(ppO2_arcer_sys_np)) - dcbO2_dppCO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np)*dcbCO2_dppO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) ),-1.) *
       ( (dcbCO2_dppCO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) + (V_tisscer_/V_arcer_sys_np)*dctCO2_dppCO2(ppCO2_arcer_sys_np)) * (q_arcer_sys_in_np * (cbO2(ppCO2_arcer_sys_np,ppO2_arcer_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_arcer_) -
@@ -1403,7 +1404,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
   // systemic coronary arteries CO2
   f_np[68] = (1./V_arcor_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) + (V_tisscor_/V_arcor_sys_np)*dctCO2_dppCO2(ppCO2_arcor_sys_np))*(dcbO2_dppO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) + (V_tisscor_/V_arcor_sys_np)*dctO2_dppO2(ppO2_arcor_sys_np)) - dcbO2_dppCO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np)*dcbCO2_dppO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) ),-1.) *
       ( (dcbO2_dppO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) + (V_tisscor_/V_arcor_sys_np)*dctO2_dppO2(ppO2_arcor_sys_np)) * (q_arcor_sys_in_np * (cbCO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) - cbCO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) - M_CO2_arcor_) -
-        dcbCO2_dppO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) * (q_arcor_sys_in_np * (cbO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np))) + M_O2_arcor_);
+        dcbCO2_dppO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) * (q_arcor_sys_in_np * (cbO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_arcor_) );
   // systemic coronary arteries O2
   f_np[69] = (1./V_arcor_sys_np) * pow(( (dcbCO2_dppCO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) + (V_tisscor_/V_arcor_sys_np)*dctCO2_dppCO2(ppCO2_arcor_sys_np))*(dcbO2_dppO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) + (V_tisscor_/V_arcor_sys_np)*dctO2_dppO2(ppO2_arcor_sys_np)) - dcbO2_dppCO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np)*dcbCO2_dppO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) ),-1.) *
       ( (dcbCO2_dppCO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) + (V_tisscor_/V_arcor_sys_np)*dctCO2_dppCO2(ppCO2_arcor_sys_np)) * (q_arcor_sys_in_np * (cbO2(ppCO2_arcor_sys_np,ppO2_arcor_sys_np) - cbO2(ppCO2_ar_sys_np,ppO2_ar_sys_np)) + M_O2_arcor_) -
@@ -1778,8 +1779,8 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
     //////// pulmonary capillaries CO2
     // w.r.t. mech. pressure
     wkstiff(50,30) = theta * (  C_cap_pul_ * (-1./(V_cap_pul_np*V_cap_pul_np)) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-       ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) -
-         dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) ) );
+       ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) -
+         dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) ) );
     // w.r.t. upstream flux
     wkstiff(50,31) = theta * (  (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
        ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * 1.0 * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) -
@@ -1790,10 +1791,10 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
           dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_O2_*(-fO2_alv_np)) ) );
     // w.r.t. alveolar CO2 fraction fCO2_alv
     wkstiff(50,37) = theta * ( (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-        ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_CO2_*(-p_alv_np)) ) );
+        ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_CO2_*(-(p_alv_np-p_vap_water_37_))) ) );
     // w.r.t. alveolar O2 fraction fO2_alv
     wkstiff(50,38) = theta * ( (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-       ( -dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_O2_*(-p_alv_np)) ) );
+       ( -dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_O2_*(-(p_alv_np-p_vap_water_37_))) ) );
     // w.r.t. upstream ppCO2
     wkstiff(50,48) = theta * (  -(1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
        ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbCO2_dppCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np) - dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbO2_dppCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) );
@@ -1803,23 +1804,23 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
     // w.r.t. ppCO2
     wkstiff(50,50) = 1./ts_size + theta * (  -(1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-2.) *
        ( d2cbCO2_dppCO22(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*d2cbO2_dppO2dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - d2cbO2_dppCO22(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*d2cbCO2_dppCO2dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ) *
-       ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) - dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np))) +
+       ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) - dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_)))) +
        (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-       ( d2cbO2_dppO2dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) + dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + kappa_CO2_) -
-       d2cbCO2_dppCO2dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) - dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) )  );
+       ( d2cbO2_dppO2dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) + dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + kappa_CO2_) -
+       d2cbCO2_dppCO2dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) - dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) )  );
     // w.r.t. ppO2
     wkstiff(50,51) = theta * (  -(1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-2.) *
        ( d2cbCO2_dppCO2dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*d2cbO2_dppO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) - d2cbO2_dppO2dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*d2cbCO2_dppO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) ) *
-       ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) - dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np))) +
+       ( dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) - dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_)))) +
        (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-       ( d2cbO2_dppO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) + dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) -
-       d2cbCO2_dppO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) - dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + kappa_O2_))  );
+       ( d2cbO2_dppO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) + dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) -
+       d2cbCO2_dppO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) - dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + kappa_O2_))  );
 
     //////// pulmonary capillaries O2
     // w.r.t. mech. pressure
     wkstiff(51,30) = theta * (  C_cap_pul_ * (-1./(V_cap_pul_np*V_cap_pul_np)) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-       ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) -
-         dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) ) );
+       ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) -
+         dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) ) );
     // w.r.t. upstream flux
     wkstiff(51,31) = theta * (  (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
        ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * 1.0 * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) -
@@ -1830,10 +1831,10 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
           dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_CO2_*(-fCO2_alv_np)) ) );
     // w.r.t. alveolar CO2 fraction fCO2_alv
     wkstiff(51,37) = theta * ( (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-       ( -dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_CO2_*(-p_alv_np)) ) );
+       ( -dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_CO2_*(-(p_alv_np-p_vap_water_37_))) ) );
     // w.r.t. alveolar O2 fraction fO2_alv
     wkstiff(51,38) = theta * ( (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-       ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_O2_*(-p_alv_np)) ) );
+       ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (kappa_O2_*(-(p_alv_np-p_vap_water_37_))) ) );
     // w.r.t. upstream ppCO2
     wkstiff(51,48) = theta * (  -(1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
        ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbO2_dppCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbCO2_dppCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) );
@@ -1843,17 +1844,17 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
     // w.r.t. ppCO2
     wkstiff(51,50) = theta * (  -(1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-2.) *
        ( d2cbCO2_dppCO22(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*d2cbO2_dppO2dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - d2cbO2_dppCO22(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*d2cbCO2_dppCO2dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ) *
-       ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np))) +
+       ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_)))) +
        (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-       ( d2cbCO2_dppCO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) + dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) -
-       d2cbO2_dppCO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + kappa_CO2_) )  );
+       ( d2cbCO2_dppCO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) + dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) -
+       d2cbO2_dppCO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + kappa_CO2_) )  );
     // w.r.t. ppO2
     wkstiff(51,51) = 1./ts_size + theta * (  -(1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-2.) *
        ( d2cbCO2_dppCO2dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*d2cbO2_dppO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) - d2cbO2_dppO2dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*d2cbCO2_dppO22(ppCO2_cap_pul_np,ppO2_cap_pul_np) ) *
-       ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np))) +
+       ( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_)))) +
        (1./V_cap_pul_np) * pow(( dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np)*dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) ),-1.) *
-       ( d2cbCO2_dppCO2dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*p_alv_np)) + dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + kappa_O2_) -
-       d2cbO2_dppO2dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*p_alv_np)) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) )  );
+       ( d2cbCO2_dppCO2dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_O2_*(ppO2_cap_pul_np - fO2_alv_np*(p_alv_np-p_vap_water_37_))) + dcbCO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * dcbO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) + kappa_O2_) -
+       d2cbO2_dppO2dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * (q_ar_pul_np * (cbCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) - cbCO2(ppCO2_ar_pul_np,ppO2_ar_pul_np)) + kappa_CO2_*(ppCO2_cap_pul_np - fCO2_alv_np*(p_alv_np-p_vap_water_37_))) - dcbO2_dppCO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) * q_ar_pul_np * dcbCO2_dppO2(ppCO2_cap_pul_np,ppO2_cap_pul_np) )  );
 
 
 
@@ -2975,6 +2976,7 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::SO2(double ppC
   const double n = 2.7;
   const double ppO2_50 = 26.8/7.500615; // 26.8 mmHg -> convert to kPa!
   // with Hill oxygen dissociation curve - simplest form, independent of CO2 and pH !
+
   const double SO2_val = pow((ppO2/ppO2_50),n) / (1. + pow((ppO2/ppO2_50),n));
 
   return SO2_val;
