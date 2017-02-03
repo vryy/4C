@@ -303,6 +303,8 @@ void ElementReader::Partition()
           {
             // let the factory create a matching empty element
             Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(eletype,distype,elenumber,0);
+            if (ele.is_null())
+              dserror("element creation failed");
 
             // For the time being we support old and new input facilities. To
             // smooth transition.
