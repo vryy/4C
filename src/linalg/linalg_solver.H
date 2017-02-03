@@ -368,6 +368,11 @@ public:
   */
    inline std::string Name() const { return params_->get<std::string>("name"); }
 
+   /*!
+   \brief Return number of iterations performed by solver
+   */
+   inline int getNumIters() const;
+
 private:
    //! @name BuildSolver methods
 

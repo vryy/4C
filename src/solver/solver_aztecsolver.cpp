@@ -55,7 +55,8 @@
 LINALG::SOLVER::AztecSolver::AztecSolver( const Epetra_Comm & comm,
                                             Teuchos::ParameterList & params,
                                             FILE * outfile )
-  : KrylovSolver(comm,params,outfile)
+  : KrylovSolver(comm,params,outfile),
+    numiters_(-1)
 {
   ncall_ = 0;
 }
@@ -308,6 +309,9 @@ int LINALG::SOLVER::AztecSolver::Solve()
   //------------------------------- just do it----------------------------------------
   aztec.Iterate(iter,tol);
   //----------------------------------------------------------------------------------
+
+  // store number of iterations
+  numiters_ = aztec.NumIters();
 
   preconditioner_->Finish( &*A_, &*x_, &*b_ );
 

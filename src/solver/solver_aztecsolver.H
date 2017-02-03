@@ -58,16 +58,21 @@ namespace LINALG
 
       virtual int Solve();
 
+      //! return number of iterations
+      int getNumIters() const { return numiters_; };
+
       private:
 
       //! the Krylov projector
       Teuchos::RCP<LINALG::KrylovProjector> projector_;
-      //! an aztex maxiter status test
+      //! an aztec maxiter status test
       Teuchos::RCP<AztecOO_StatusTestMaxIters>       aztest_maxiter_;
       //! an aztec projected residual 2-norm convergence test
       Teuchos::RCP<AztecOO_StatusTestProjResNorm>    aztest_norm2_;
-      // ! a test combination (for norm2 and maxiter)
+      //! a test combination (for norm2 and maxiter)
       Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo_;
+      //! number of iterations
+      int numiters_;
 
     };
   }

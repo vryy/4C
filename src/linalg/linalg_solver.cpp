@@ -144,6 +144,16 @@ void LINALG::Solver::Print(std::ostream& os) const
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ | return number of iterations performed by solver           fang 02/17 |
+ *----------------------------------------------------------------------*/
+int LINALG::Solver::getNumIters() const
+{
+  return solver_->getNumIters();
+}
+
+
 /*----------------------------------------------------------------------*
  |  adapt tolerance (public)                                 mwgee 02/08|
  *----------------------------------------------------------------------*/

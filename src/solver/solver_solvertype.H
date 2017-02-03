@@ -43,6 +43,9 @@ namespace LINALG
 
       /// preconditioner used within this solver
       virtual PreconditionerType * Preconditioner() = 0;
+
+      /// return number of iterations performed by solver
+      virtual int getNumIters() const { dserror("Not implemented in base class!"); return -1; };
     };
   }
 }
