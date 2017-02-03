@@ -551,9 +551,11 @@ class SparseMatrix : public SparseMatrixBase
      */
     void Split2x2(BlockSparseMatrixBase& Abase) const;
 
-    //! split SparseMatrix into an NxN BlockSparseMatrix with square main diagonal blocks
-    //! used by public function "Split" and does not call Complete() on resulting BlockSparseMatrix
-    void SplitNxN(BlockSparseMatrixBase& Abase) const;
+    /// Split matrix in MxN blocks
+    /*!
+       Used by public Split, does not call Complete() on output matrix.
+     */
+    void SplitMxN(BlockSparseMatrixBase& Abase) const;
 
     /// saved graph (if any)
     Teuchos::RCP<Epetra_CrsGraph> graph_;
@@ -620,22 +622,18 @@ LINALG::SparseMatrix::Split(
     const MultiMapExtractor& domainmaps,
     const MultiMapExtractor& rangemaps) const
 {
-  // safety check
-  if(domainmaps.NumMaps() != rangemaps.NumMaps())
-    dserror("Must have equal number of range and domain maps for matrix splitting!");
-
   // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because
   // all entries will be inserted at once anyway
   Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA =
     Teuchos::rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps,0,explicitdirichlet_,savegraph_));
 
   // perform matrix splitting
-  if(domainmaps.NumMaps() == 2)
+  if(domainmaps.NumMaps() == 2 && rangemaps.NumMaps() == 2)
     this->Split2x2(*blockA);
-  else if(domainmaps.NumMaps() > 2)
-    this->SplitNxN(*blockA);
+  else if(domainmaps.NumMaps() > 0 && rangemaps.NumMaps() > 0)
+    this->SplitMxN(*blockA);
   else
-    dserror("Invalid number %d of matrix blocks for splitting operation!",domainmaps.NumMaps());
+    dserror("Invalid number %d of row blocks or %d of column blocks for splitting operation!",rangemaps.NumMaps(),domainmaps.NumMaps());
 
   // return resulting BlockSparseMatrix
   return blockA;

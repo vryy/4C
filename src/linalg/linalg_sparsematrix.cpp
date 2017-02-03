@@ -1728,46 +1728,30 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
 }
 
 
-/*------------------------------------------------------------------------------------------------*
- | split SparseMatrix into an NxN BlockSparseMatrix with square main diagonal blocks   fang 05/15 |
- *------------------------------------------------------------------------------------------------*/
-void LINALG::SparseMatrix::SplitNxN(BlockSparseMatrixBase& ABlock) const
+/*--------------------------------------------------------------------------*
+ | split SparseMatrix into an MxN BlockSparseMatrixBase          fang 02/17 |
+ *--------------------------------------------------------------------------*/
+void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
 {
   // timing
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::SplitNxN");
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::SplitMxN");
+
+  // extract number of row/column blocks
+  const unsigned M = ABlock.Rows();
+  const unsigned N = ABlock.Cols();
 
   // safety checks
   if(!Filled())
     dserror("SparseMatrix must be filled before splitting!");
-  if(ABlock.Rows() != ABlock.Cols())
-    dserror("SparseMatrix can only be split into BlockSparseMatrix with equal number of row and column blocks!");
-
-  // extract number of row/column blocks
-  const unsigned N = ABlock.Rows();
-
-  // extract Epetra matrices
-  Teuchos::RCP<Epetra_CrsMatrix> A = EpetraMatrix();
-  std::vector<std::vector<Teuchos::RCP<Epetra_CrsMatrix> > > ABlocks(N,std::vector<Teuchos::RCP<Epetra_CrsMatrix> >(N));
-  for(unsigned m=0; m<N; ++m)
-  {
+  for(unsigned m=0; m<M; ++m)
     for(unsigned n=0; n<N; ++n)
-    {
-      ABlocks[m][n] = ABlock(m,n).EpetraMatrix();
-      if(ABlocks[m][n]->Filled())
-        dserror("BlockSparseMatrix must not be filled before splitting!");
-    }
-  }
+      if(ABlock(m,n).EpetraMatrix()->Filled())
+        dserror("BlockSparseMatrixBase must not be filled before splitting!");
 
-  // extract range and domain maps of BlockSparseMatrix
-  std::vector<const Epetra_Map*> rangemaps(N,NULL);
-  std::vector<const Epetra_Map*> domainmaps(N,NULL);
-  for(unsigned m=0; m<N; ++m)
-  {
-    rangemaps[m] = &ABlock.RangeMap(m);
-    domainmaps[m] = &ABlock.DomainMap(m);
-  }
+  // extract EpetraMatrix
+  const Epetra_CrsMatrix& A = *EpetraMatrix();
 
-  // associate each global column ID of SparseMatrix with corresponding block ID of BlockSparseMatrix
+  // associate each global column ID of SparseMatrix with corresponding block ID of BlockSparseMatrixBase
   // this is done via an Epetra_Vector which is filled using domain map information and then exported to column map
   Epetra_Vector dselector(DomainMap());
   for(int collid=0; collid<dselector.MyLength(); ++collid)
@@ -1777,44 +1761,44 @@ void LINALG::SparseMatrix::SplitNxN(BlockSparseMatrixBase& ABlock) const
     if(colgid < 0)
       dserror("Couldn't find local column ID %d in domain map!",collid);
 
-    // determine block ID of BlockSparseMatrix associated with current column
-    unsigned m(0);
-    for(m=0; m<N; ++m)
+    // determine block ID of BlockSparseMatrixBase associated with current column
+    unsigned n(0);
+    for(n=0; n<N; ++n)
     {
-      if(domainmaps[m]->MyGID(colgid))
+      if(ABlock.DomainMap(n).MyGID(colgid))
       {
-        dselector[collid] = m;
+        dselector[collid] = n;
         break;
       }
     }
 
     // safety check
-    if(m == N)
-      dserror("Matrix column was not found in BlockSparseMatrix!");
+    if(n == N)
+      dserror("Matrix column was not found in BlockSparseMatrixBase!");
   }
-  Epetra_Vector selector(A->ColMap());
+  Epetra_Vector selector(A.ColMap());
   LINALG::Export(dselector,selector);
 
   // allocate vectors storing global column indexes and values of matrix entries in a given row, separated by blocks
   // allocation is done outside loop over all rows for efficiency
   // to be on the safe side, we allocate more memory than we need for most rows
-  std::vector<std::vector<int> > colgids(N,std::vector<int>(A->MaxNumEntries()));
-  std::vector<std::vector<double> > rowvalues(N,std::vector<double>(A->MaxNumEntries()));
+  std::vector<std::vector<int> > colgids(N,std::vector<int>(A.MaxNumEntries(),-1));
+  std::vector<std::vector<double> > rowvalues(N,std::vector<double>(A.MaxNumEntries(),0.));
 
-  // fill blocks of BlockSparseMatrix
-  for(int rowlid=0; rowlid<A->NumMyRows(); ++rowlid)
+  // fill blocks of BlockSparseMatrixBase
+  for(int rowlid=0; rowlid<A.NumMyRows(); ++rowlid)
   {
     // extract current row of SparseMatrix
     int numentries(0);
     double* values(NULL);
     int* indices(NULL);
-    if(A->ExtractMyRowView(rowlid,numentries,values,indices))
+    if(A.ExtractMyRowView(rowlid,numentries,values,indices))
       dserror("Row of SparseMatrix couldn't be extracted during splitting!");
 
     // initialize counters for number of matrix entries in current row, separated by blocks
     std::vector<unsigned> counters(N,0);
 
-    // assign matrix entries in current row to associated blocks of BlockSparseMatrix
+    // assign matrix entries in current row to associated blocks of BlockSparseMatrixBase
     for(int j=0; j<numentries; ++j)
     {
       // extract local column ID of current matrix entry
@@ -1822,38 +1806,31 @@ void LINALG::SparseMatrix::SplitNxN(BlockSparseMatrixBase& ABlock) const
       if(collid >= selector.MyLength())
         dserror("Invalid local column ID %d!",collid);
 
-      // extract global column index of current matrix entry
-      const int colgid = A->ColMap().GID(collid);
-
-      // assign current matrix entry to associated block of BlockSparseMatrix
+      // assign current matrix entry to associated block of BlockSparseMatrixBase
       const int blockid = selector[collid];
-      colgids[blockid][counters[blockid]] = colgid;
+      colgids[blockid][counters[blockid]] = A.ColMap().GID(collid);
       rowvalues[blockid][counters[blockid]++] = values[j];
     }
 
     // extract global index of current matrix row
-    const int rowgid = A->GRID(rowlid);
+    const int rowgid = A.GRID(rowlid);
 
-    // fill current row of BlockSparseMatrix by copying row entries of SparseMatrix
+    // fill current row of BlockSparseMatrixBase by copying row entries of SparseMatrix
     unsigned m(0);
-    for(m=0; m<N; ++m)
-    {
-      if(rangemaps[m]->MyGID(rowgid))
+    for(m=0; m<M; ++m)
+      if(ABlock.RangeMap(m).MyGID(rowgid))
       {
         for(unsigned n=0; n<N; ++n)
-        {
           if(counters[n])
-            if(ABlocks[m][n]->InsertGlobalValues(rowgid,counters[n],&rowvalues[n][0],&colgids[n][0]))
-              dserror("Couldn't insert matrix entries into BlockSparseMatrix!");
-        }
+            if(ABlock(m,n).EpetraMatrix()->InsertGlobalValues(rowgid,counters[n],&rowvalues[n][0],&colgids[n][0]))
+              dserror("Couldn't insert matrix entries into BlockSparseMatrixBase!");
         break;
       }
-    }
 
     // safety check
-    if(m == N)
-      dserror("Matrix row was not found in BlockSparseMatrix!");
-  } // for(int i=0; i<A->NumMyRows(); ++i)
+    if(m == M)
+      dserror("Matrix row was not found in BlockSparseMatrixBase!");
+  } // loop over matrix rows
 
   return;
 }
