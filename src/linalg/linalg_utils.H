@@ -28,6 +28,8 @@
 #include "../drt_lib/drt_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
+class Epetra_IntVector;
+
 namespace IO
 {
 class DiscretizationWriter;

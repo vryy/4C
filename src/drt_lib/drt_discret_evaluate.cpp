@@ -9,6 +9,7 @@
 
 *----------------------------------------------------------------------*/
 
+#include "drt_utils_discret.H"
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
 #include "drt_dserror.H"
@@ -170,21 +171,6 @@ void DRT::Discretization::Evaluate(
 }
 
 
-
-/*----------------------------------------------------------------------*
- |  evaluate Neumann conditions (public)                     mwgee 08/09|
- *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList&              params,
-                                          Teuchos::RCP<Epetra_Vector>          systemvector,
-                                          Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
-{
-  if (systemmatrix==Teuchos::null)
-    EvaluateNeumann(params,*systemvector);
-  else
-    EvaluateNeumann(params,*systemvector,systemmatrix.get());
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
@@ -219,8 +205,9 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     if (fool->first != (std::string)"PointNeumann") continue;
     if (assemblemat && !systemvector.Comm().MyPID())
-      std::cout << "WARNING: System matrix handed in but no linearization of PointNeumann conditions implemented. "
-                   "Did you set the LOADLIN-flag accidentally?" << std::endl;
+      std::cout << "WARNING: System matrix handed in but no linearization of "
+          "PointNeumann conditions implemented. Did you set the LOADLIN-flag "
+          "accidentally?\n";
     DRT::Condition& cond = *(fool->second);
     const std::vector<int>* nodeids = cond.Nodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
@@ -366,434 +353,17 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                  rauch 06/16 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
-                                            Teuchos::RCP<Epetra_Vector> systemvector,
-                                            Teuchos::RCP<Epetra_Vector> systemvectord,
-                                            Teuchos::RCP<Epetra_Vector> systemvectordd,
-                                            Teuchos::RCP<Epetra_Vector> toggle,
-                                            Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
-{
-  if (!Filled()) dserror("FillComplete() was not called");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
-
-  // get the current time
-  bool usetime = true;
-  const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-
-  // vector of DOF-IDs which are Dirichlet BCs
-  Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
-  if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
-
-  // If no toggle vector is provided we have to create a temporary one,
-  // i.e. we create a temporary toggle if Teuchos::null.
-  // We need this to assess the entity hierarchy and to determine which
-  // dof has a Dirichlet BC in the end. The highest entity defined for
-  // a certain dof in the input file overwrites the corresponding entry
-  // in the toggle vector. The entity hierarchy is:
-  // point>line>surface>volume
-  Teuchos::RCP<Epetra_Vector> toggleaux = Teuchos::null;
-  if(toggle!=Teuchos::null)
-    toggleaux = toggle;
-  else
-  {
-    if(systemvector!=Teuchos::null) {
-      toggleaux=Teuchos::rcp(new Epetra_Vector(systemvector->Map()));}
-    else if(systemvectord!=Teuchos::null){
-      if(toggleaux==Teuchos::null)
-        toggleaux=Teuchos::rcp(new Epetra_Vector(systemvectord->Map()));}
-    else if(systemvectordd!=Teuchos::null){
-      if(toggleaux==Teuchos::null)
-        toggleaux=Teuchos::rcp(new Epetra_Vector(systemvectordd->Map()));}
-    else if (systemvector==Teuchos::null and systemvectord==Teuchos::null and systemvectordd==Teuchos::null)
-      dserror("At least one systemvector must be provided. Otherwise, calling this method makes no sense.");
-  }
-
-  std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
-  //--------------------------------------------------------
-  // loop through Dirichlet conditions and evaluate them
-  //--------------------------------------------------------
-  // Note that this method does not sum up but 'sets' values in systemvector.
-  // For this reason, Dirichlet BCs are evaluated hierarchical meaning
-  // in this order:
-  //                VolumeDirichlet
-  //                SurfaceDirichlet
-  //                LineDirichlet
-  //                PointDirichlet
-  // This way, lower entities override higher ones which is
-  // equivalent to inheritance of dirichlet BCs as done in the old
-  // ccarat discretization with design          (mgee 1/07)
-  //
-  // Lower entities MUST NOT set dof values in systemvector before
-  // we know if higher entities also prescribe/release Dirichlet BCs
-  // for the same dofs!
-  //
-  // Therefore, we first have to assess the full hierarchy and
-  // set the toggle vector for a dof to 1 if an entity prescribes a
-  // dirichlet BC and we have to set it to 0 again if a higher entity
-  // does NOT prescribe a dirichlet BC for the same dof. This is done
-  // in ReadDirichletCondition(...). We do this for each type of entity,
-  // starting with volume DBCs.
-  //
-  // Only then we call DoDirichletCondition(...) for each type of entity,
-  // starting with volume DBCs.
-  //
-  // This way, it is guaranteed, that the highest entity defined in
-  // the input file determines if the systemvector for the corresponding
-  // dofs is actually touched, or not, irrespective of the dirichlet BC
-  // definition of a lower entity.              (rauch 06/16)
-  //
-
-  // Gather VolumeDirichlet dbcgids first
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first != "Dirichlet") continue;
-    if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
-    ReadDirichletCondition(*(fool->second),toggleaux,dbcgids);
-  }
-  // Gather SurfaceDirichlet dbcgids
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first != "Dirichlet") continue;
-    if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
-    ReadDirichletCondition(*(fool->second),toggleaux,dbcgids);
-  }
-  // Gather LineDirichlet dbcgids
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first != "Dirichlet") continue;
-    if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
-    ReadDirichletCondition(*(fool->second),toggleaux,dbcgids);
-  }
-  // Gather PointDirichlet dbcgids
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first != "Dirichlet") continue;
-    if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
-    ReadDirichletCondition(*(fool->second),toggleaux,dbcgids);
-  }
-
-  // Now, as we know from the toggle vector which dofs actually have
-  // Dirichlet BCs, we can assign the values to the system vectors.
-  // Assign VolumeDirichlet dbcgids first
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first != "Dirichlet") continue;
-    if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
-    DoDirichletCondition(*(fool->second),usetime,time,
-                         systemvector,systemvectord,systemvectordd,
-                         toggleaux);
-  }
-  // Assign SurfaceDirichlet dbcgids
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first != "Dirichlet") continue;
-    if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
-    DoDirichletCondition(*(fool->second),usetime,time,
-                         systemvector,systemvectord,systemvectordd,
-                         toggleaux);
-  }
-  // Assign LineDirichlet dbcgids
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first != "Dirichlet") continue;
-    if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
-    DoDirichletCondition(*(fool->second),usetime,time,
-                         systemvector,systemvectord,systemvectordd,
-                         toggleaux);
-  }
-  // Assign PointDirichlet dbcgids
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first != "Dirichlet") continue;
-    if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
-    DoDirichletCondition(*(fool->second),usetime,time,
-                         systemvector,systemvectord,systemvectordd,
-                         toggleaux);
-  }
-
-
-  // create DBC and free map and build their common extractor
-  if (dbcmapextractor != Teuchos::null)
-  {
-    // build map of Dirichlet DOFs
-    int nummyelements = 0;
-    int* myglobalelements = NULL;
-    std::vector<int> dbcgidsv;
-    if (dbcgids->size() > 0)
-    {
-      dbcgidsv.reserve(dbcgids->size());
-      dbcgidsv.assign(dbcgids->begin(),dbcgids->end());
-      nummyelements = dbcgidsv.size();
-      myglobalelements = &(dbcgidsv[0]);
-    }
-    Teuchos::RCP<Epetra_Map> dbcmap
-      = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements, DofRowMap()->IndexBase(), DofRowMap()->Comm()));
-    // build the map extractor of Dirichlet-conditioned and free DOFs
-    *dbcmapextractor = LINALG::MapExtractor(*(DofRowMap()), dbcmap);
-  }
-
-  return;
-}
-
-
-/*--------------------------------------------------------------------------*
- |  read Dirichlet conditions, set toggle, set dbc map (public) rauch 06/16 |
- *--------------------------------------------------------------------------*/
-void DRT::Discretization::ReadDirichletCondition(
-  DRT::Condition&                    cond,
-  const Teuchos::RCP<Epetra_Vector>& toggle,
-  Teuchos::RCP<std::set<int> >       dbcgids)
-{
-  // safety check first
-  if(toggle==Teuchos::null){dserror("toggle must be provided to DoDirichletCondition.");}
-
-  // get ids of conditioned nodes
-  const std::vector<int>* nodeids = cond.Nodes();
-  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
-  // determine number of conditioned nodes
-  const int nnode = (*nodeids).size();
-  // get onoff toggles from condition
-  const std::vector<int>* onoff  = cond.Get<std::vector<int> >("onoff");
-
-  // loop nodes to identify spatial distributions of Dirichlet boundary conditions
-  for (int i=0; i<nnode; ++i)
-  {
-    // do only nodes in my row map
-    int nlid = this->NodeRowMap()->LID((*nodeids)[i]);
-    if (nlid < 0) continue;
-    DRT::Node* actnode = this->lRowNode( nlid );
-
-    // call explicitly the main dofset, i.e. the first column
-    std::vector<int> dofs = this->Dof(0,actnode);
-    const unsigned total_numdf = dofs.size();
-
-    // only continue if there are node dofs
-    if (total_numdf == 0) continue;
-
-    // Get native number of dofs at this node. There might be multiple dofsets
-    // (in xfem cases), thus the size of the dofs vector might be a multiple
-    // of this.
-    const int numele = actnode->NumElement();
-    const DRT::Element * const * myele = actnode->Elements();
-    int numdf = 0;
-    for (int j=0; j<numele; ++j)
-      numdf = std::max(numdf,myele[j]->NumDofPerNode(*actnode));
-
-    if ( ( total_numdf % numdf ) != 0 )
-      dserror( "illegal dof set number" );
-
-    // loop over dofs of current nnode
-    for (unsigned j=0; j<total_numdf; ++j)
-    {
-      // get dof gid
-      const int gid = dofs[j];
-      // get corresponding lid
-      const int lid = toggle->Map().LID(gid);
-      if (lid<0)
-        dserror("Global id %d not on this proc %d in system vector", dofs[j],
-            comm_->MyPID());
-      // get position of label for this dof in condition line
-      int onesetj = j % numdf;
-
-      if ((*onoff)[onesetj]==0)
-      {
-        // no DBC on this dof, set toggle zero
-        if (toggle!=Teuchos::null)
-          (*toggle)[lid] = 0.0;
-        // get rid of entry in DBC map - if it exists
-        if (dbcgids != Teuchos::null)
-          (*dbcgids).erase(gid);
-        continue;
-      }
-      else // if ((*onoff)[onesetj]==1)
-      {
-        // dof has DBC, set toggle vector one
-        if (toggle != Teuchos::null)
-          (*toggle)[lid] = 1.0;
-        // amend vector of DOF-IDs which are dirichlet BCs
-        if (dbcgids != Teuchos::null)
-          (*dbcgids).insert(gid);
-      }
-
-    }  // loop over nodal DOFs
-  }  // loop over nodes
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  apply Dirichlet conditions to system vectors (public)   rauch 06/16 |
- *----------------------------------------------------------------------*/
-void DRT::Discretization::DoDirichletCondition(
-  DRT::Condition&              cond,
-  const bool                   usetime,
-  const double                 time,
-  Teuchos::RCP<Epetra_Vector>  systemvector,
-  Teuchos::RCP<Epetra_Vector>  systemvectord,
-  Teuchos::RCP<Epetra_Vector>  systemvectordd,
-  const Teuchos::RCP<const Epetra_Vector>& toggle)
-{
-  // safety checks first
-  if(toggle==Teuchos::null){dserror("toggle must be provided to DoDirichletCondition.");}
-  if(systemvector   == Teuchos::null and
-     systemvectord  == Teuchos::null and
-     systemvectordd == Teuchos::null)
-  {dserror("At least one systemvector must be provided. Otherwise, calling this method makes no sense.");}
-
-  // get ids of conditioned nodes
-  const std::vector<int>* nodeids = cond.Nodes();
-  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
-  // determine number of conditioned nodes
-  const int nnode = (*nodeids).size();
-  // get curve, funct, and val from condition
-  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
-  const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
-  const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
-
-  // determine highest degree of time derivative
-  // and first existent system vector to apply DBC to
-  unsigned deg = 0;  // highest degree of requested time derivative
-  Teuchos::RCP<Epetra_Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
-  if (systemvector != Teuchos::null)
-  {
-    deg = 0;
-    systemvectoraux = systemvector;
-  }
-  if (systemvectord != Teuchos::null)
-  {
-    deg = 1;
-    if (systemvectoraux == Teuchos::null)
-      systemvectoraux = systemvectord;
-  }
-  if (systemvectordd != Teuchos::null)
-  {
-    deg = 2;
-    if (systemvectoraux == Teuchos::null)
-      systemvectoraux = systemvectordd;
-  }
-
-  // loop nodes to identify and evaluate load curves and spatial distributions
-  // of Dirichlet boundary conditions
-  for (int i=0; i<nnode; ++i)
-  {
-    // do only nodes in my row map
-    int nlid = this->NodeRowMap()->LID((*nodeids)[i]);
-    if (nlid < 0) continue;
-    DRT::Node* actnode = this->lRowNode( nlid );
-
-    // call explicitly the main dofset, i.e. the first column
-    std::vector<int> dofs = this->Dof(0,actnode);
-    const unsigned total_numdf = dofs.size();
-
-    // only continue if there are node dofs
-    if (total_numdf == 0) continue;
-
-    // Get native number of dofs at this node. There might be multiple dofsets
-    // (in xfem cases), thus the size of the dofs vector might be a multiple
-    // of this.
-    const int numele = actnode->NumElement();
-    const DRT::Element * const * myele = actnode->Elements();
-    int numdf = 0;
-    for (int j=0; j<numele; ++j)
-      numdf = std::max(numdf,myele[j]->NumDofPerNode(*actnode));
-
-    if ( ( total_numdf % numdf ) != 0 )
-      dserror( "illegal dof set number" );
-
-    // loop over dofs of current nnode
-    for (unsigned j=0; j<total_numdf; ++j)
-    {
-      // get dof gid
-      const int gid = dofs[j];
-      // get corresponding lid
-      const int lid = toggle->Map().LID(gid);
-      if (lid<0)
-        dserror("Global id %d not on this proc %d in system vector", dofs[j],
-            comm_->MyPID());
-      // get position of label for this dof in condition line
-      int onesetj = j % numdf;
-
-      // check whether dof gid is a dbc gid
-      if (abs((*toggle)[lid]-1.0)>1e-13) continue;
-
-      std::vector<double> value(deg+1,(*val)[onesetj]);
-
-      // factor given by time curve
-      std::vector<double> curvefac(deg+1, 1.0);
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[onesetj];
-      if (curvenum>=0 && usetime)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
-      else
-        for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
-
-      // factor given by spatial function
-      double functfac = 1.0;
-      int funct_num = -1;
-      if (funct)
-      {
-        funct_num = (*funct)[onesetj];
-        if (funct_num>0)
-          functfac =
-              DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(onesetj,
-                  actnode->X(),
-                  time,
-                  this);
-      }
-
-      // apply factors to Dirichlet value
-      for (unsigned i=0; i<deg+1; ++i)
-      {
-        value[i] *= functfac * curvefac[i];
-      }
-
-      // assign value
-      if (systemvector != Teuchos::null)
-        (*systemvector)[lid] = value[0];
-      if (systemvectord != Teuchos::null)
-        (*systemvectord)[lid] = value[1];
-      if (systemvectordd != Teuchos::null)
-        (*systemvectordd)[lid] = value[2];
-
-    }  // loop over nodal DOFs
-  }  // loop over nodes
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  evaluate a condition (public)                               tk 07/07|
- |  calls more general method                                           |
- *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateCondition
-(
+void DRT::Discretization::EvaluateDirichlet(
   Teuchos::ParameterList& params,
   Teuchos::RCP<Epetra_Vector> systemvector,
-  const std::string& condstring,
-  const int condid
-)
+  Teuchos::RCP<Epetra_Vector> systemvectord,
+  Teuchos::RCP<Epetra_Vector> systemvectordd,
+  Teuchos::RCP<Epetra_Vector> toggle,
+  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
 {
-  EvaluateCondition(params,Teuchos::null,Teuchos::null,systemvector,Teuchos::null,Teuchos::null,condstring,condid);
-  return;
+  DRT::UTILS::EvaluateDirichlet(*this,params,systemvector,systemvectord,
+      systemvectordd,toggle,dbcmapextractor);
 }
-
-/*----------------------------------------------------------------------*
- |  evaluate a condition (public)                               tk 07/07|
- |  calls more general method                                           |
- *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateCondition
-(
-  Teuchos::ParameterList& params,
-  const std::string& condstring,
-  const int condid
-)
-{
-  EvaluateCondition(params,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring,condid);
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  |  evaluate a condition (public)                               tk 02/08|
@@ -810,7 +380,8 @@ void DRT::Discretization::EvaluateCondition
   const int condid
 )
 {
-  DRT::AssembleStrategy strategy( 0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3 );
+  DRT::AssembleStrategy strategy( 0, 0, systemmatrix1, systemmatrix2,
+      systemvector1, systemvector2, systemvector3 );
   EvaluateCondition( params, strategy,condstring,condid );
 
   return;
@@ -910,9 +481,11 @@ void DRT::Discretization::EvaluateCondition
           if (err) dserror("error while evaluating elements");
 
           // assembly
-          //If BlockMatrixes are used, the decision which assemble strategy is used, is based on the element id.
-          //As this id is compared to a list of conditioned volume elements, always the volume element id should
-          //be given to the Assembling! (comment: eid is not used by sysmat.assemble(...,eid,...))
+          /* If BlockMatrixes are used, the decision which assemble strategy is
+           * used, is based on the element id. As this id is compared to a list
+           * of conditioned volume elements, always the volume element id should
+           * be given to the Assembling! (comment: eid is not used by
+           * sysmat.assemble(...,eid,...))*/
           int eid;
           if (DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(curr->second.get()))
             eid = faceele->ParentElement()->Id();

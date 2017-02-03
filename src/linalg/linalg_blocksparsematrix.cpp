@@ -48,6 +48,31 @@ LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+bool LINALG::BlockSparseMatrixBase::Destroy()
+{
+  /// destroy matrix blocks
+  for (std::vector<SparseMatrix>::iterator it=blocks_.begin();
+      it!=blocks_.end();++it)
+    it->Destroy();
+
+  /// destroy full matrix row map
+  if (fullrowmap_.strong_count() > 1)
+    dserror("fullrowmap_ cannot be finally deleted - any RCP (%i>1) still "
+        "points to it", fullrowmap_.strong_count());
+  fullrowmap_ = Teuchos::null;
+
+  /// destroy full matrix column map
+  if (fullcolmap_.strong_count() > 1)
+    dserror("fullrowmap_ cannot be finally deleted - any RCP (%i>1) still "
+        "points to it", fullrowmap_.strong_count());
+  fullcolmap_ = Teuchos::null;
+
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge(bool explicitdirichlet) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::BlockSparseMatrixBase::Merge");

@@ -24,6 +24,7 @@ namespace LINALG
 namespace DRT
 {
   class Discretization;
+  class DiscretizationInterface;
 } // namespace DRT
 
 /*----------------------------------------------------------------------------*/
@@ -290,8 +291,8 @@ namespace ADAPTER
      *  \param permslavenodemap  (i) permuted node map of the slave side
      *  \param numdof            (i) number of dofs per node to be coupled
      */
-    void SetupCoupling(const DRT::Discretization& masterdis,
-        const DRT::Discretization& slavedis,
+    void SetupCoupling(const DRT::DiscretizationInterface& masterdis,
+        const DRT::DiscretizationInterface& slavedis,
         const Epetra_Map& masternodemap,
         const Epetra_Map& slavenodemap,
         const Epetra_Map& permslavenodemap,
@@ -434,8 +435,8 @@ namespace ADAPTER
 
   protected:
     virtual void BuildDofMaps(
-        const DRT::Discretization& masterdis,
-        const DRT::Discretization& slavedis,
+        const DRT::DiscretizationInterface& masterdis,
+        const DRT::DiscretizationInterface& slavedis,
         const Teuchos::RCP<const Epetra_Map>& masternodemap,
         const Teuchos::RCP<const Epetra_Map>& slavenodemap,
         const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
@@ -466,8 +467,8 @@ namespace ADAPTER
         const double tolerance);
 
     /// build slave to master permutation and dof all maps
-    void FinishCoupling(const DRT::Discretization& masterdis,
-        const DRT::Discretization& slavedis,
+    void FinishCoupling(const DRT::DiscretizationInterface& masterdis,
+        const DRT::DiscretizationInterface& slavedis,
         Teuchos::RCP<Epetra_Map> masternodemap,
         Teuchos::RCP<Epetra_Map> slavenodemap,
         Teuchos::RCP<Epetra_Map> permslavenodemap,
@@ -478,7 +479,7 @@ namespace ADAPTER
       \note It is assumed that the first ndim dofs of each
       node are of interest.
      */
-    void BuildDofMaps(const DRT::Discretization& dis,
+    void BuildDofMaps(const DRT::DiscretizationInterface& dis,
         Teuchos::RCP<const Epetra_Map> nodemap,
         Teuchos::RCP<const Epetra_Map> permnodemap,
         Teuchos::RCP<const Epetra_Map>& dofmap,

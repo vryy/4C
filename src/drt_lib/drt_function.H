@@ -45,7 +45,7 @@ namespace Sacado
 
 namespace DRT {
 
-  class Discretization;
+  class DiscretizationInterface;
   class Condition;
   class Problem;
 
@@ -88,7 +88,7 @@ namespace UTILS {
                      function will be evaluated
 
     */
-    virtual double Evaluate(int index, const double* x, double t, DRT::Discretization* dis) = 0;
+    virtual double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis) = 0;
 
     /*!
 
@@ -104,7 +104,7 @@ namespace UTILS {
     \param dis   (i) discretization
 
     */
-    virtual std::vector<double> FctDer(int index, const double* x, const double t, DRT::Discretization* dis)
+    virtual std::vector<double> FctDer(int index, const double* x, const double t, const DRT::DiscretizationInterface* dis)
       {
         return std::vector<double>(0);
       };
@@ -173,7 +173,7 @@ namespace UTILS {
                        evaluated
 
      */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -215,7 +215,7 @@ namespace UTILS {
                        evaluated
 
      */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -256,7 +256,7 @@ namespace UTILS {
                        evaluated
 
      */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -299,7 +299,7 @@ namespace UTILS {
                        evaluated
 
      */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -369,7 +369,7 @@ namespace UTILS {
                      function will be evaluated
 
     */
-    virtual double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    virtual double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -385,7 +385,7 @@ namespace UTILS {
     \param dis   (i) discretization
 
     */
-    virtual std::vector<double> FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
+    virtual std::vector<double> FctDer(int index, const double* x, const double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -515,7 +515,7 @@ namespace UTILS {
                      function will be evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -557,7 +557,7 @@ namespace UTILS {
     \param dis   (i) discretization
 
     */
-    std::vector<double> FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
+    std::vector<double> FctDer(int index, const double* x, const double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -631,7 +631,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -663,7 +663,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -695,7 +695,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -727,7 +727,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -764,7 +764,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -805,7 +805,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -845,7 +845,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -880,7 +880,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -913,7 +913,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
   };
 
@@ -928,7 +928,7 @@ namespace UTILS {
 
 
     // evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
     // Bessel Functions of the first kind and order 0 or 1 for a complex argument
     std::complex<double> BesselJ01(std::complex<double> z, bool order);
     // perform a discrete fourier transformation on given array
@@ -1012,7 +1012,7 @@ namespace UTILS {
                      evaluated
 
     */
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     /*!
 
@@ -1053,7 +1053,7 @@ namespace UTILS {
     ControlledRotationFunction(std::string fileName, std::string type, double origin_x, double origin_y, double origin_z);
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
   private:
     // Condition type: STRUCTURE=1, FLUID=2
@@ -1096,7 +1096,7 @@ namespace UTILS {
     AccelerationProfileFunction(std::string fileName);
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
   private:
     // Time of previous time step (at t-deltaT)
@@ -1124,7 +1124,7 @@ namespace UTILS {
     RampToValueFunction(double value, double startTime, double duration, std::string type);
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
   private:
     // Time of previous time step (at t-deltaT)
@@ -1154,7 +1154,7 @@ namespace UTILS {
     NodeNormalFunction(std::string type, std::vector<double>* origin, double radius, double cylinderHeight, std::vector<double>* orientation, double CassiniA);
 
     /// Evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     // Determine node normal of a sphere
     double NodeNormalSphere(int index, const double* xp, std::vector<double> origin);
@@ -1198,7 +1198,7 @@ namespace UTILS {
     RotationVectorForNormalSystemFunction(int geoFunct);
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
   private:
     // Problem dimension (2D or 3D, i.e. 2 or 3)

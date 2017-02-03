@@ -222,3 +222,14 @@ void DRT::DiscretizationXFEM::SetInitialState(unsigned nds,const std::string& na
   }
   return;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool DRT::DiscretizationXFEM::IsEqualXDofSet( int nds, const XFEM::XFEMDofSet & xdofset_new ) const
+{
+  const XFEM::XFEMDofSet * xdofset_old = dynamic_cast<XFEM::XFEMDofSet * >( dofsets_[ nds ].get() );
+  if ( not xdofset_old )
+    return false;
+
+  return ( ( *xdofset_old ) == xdofset_new );
+}

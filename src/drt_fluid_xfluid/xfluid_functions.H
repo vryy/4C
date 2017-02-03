@@ -23,7 +23,7 @@
 
 namespace DRT
 {
-  class Discretization;
+  class DiscretizationInterface;
 
   namespace INPUT {
     class LineDefinition;
@@ -45,7 +45,7 @@ namespace DRT
       GerstenbergerForwardfacingStep();
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
     };
 
 
@@ -65,7 +65,7 @@ namespace DRT
           std::vector<double>* direction, double distance, double maxspeed);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     private:
 
@@ -217,7 +217,7 @@ namespace DRT
                           double rotramptime);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     };
 
@@ -238,7 +238,7 @@ namespace DRT
                           double rotramptime);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
       /*
       \brief Return the number of components of this spatial function
@@ -272,7 +272,7 @@ namespace DRT
                           int slipfunct);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     private:
 
@@ -300,9 +300,9 @@ namespace DRT
           double viscosity);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
-      std::vector<double> FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
+      std::vector<double> FctDer(int index, const double* x, const double t, const DRT::DiscretizationInterface* dis);
 
     private:
 
@@ -342,10 +342,10 @@ namespace DRT
               std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
       //Derivative
-      std::vector<double> FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
+      std::vector<double> FctDer(int index, const double* x, const double t, const DRT::DiscretizationInterface* dis);
 
     protected:
 
@@ -379,7 +379,7 @@ namespace DRT
               std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     };
 
@@ -400,7 +400,7 @@ namespace DRT
               std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
 
     };
 
@@ -414,7 +414,7 @@ namespace DRT
       SlipLengthLevelSetManipulator();
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
     };
 
 

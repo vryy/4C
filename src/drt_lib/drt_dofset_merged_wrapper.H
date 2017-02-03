@@ -20,6 +20,8 @@
 
 #include "drt_discret.H"
 
+#include <Epetra_IntVector.h>
+
 namespace DRT
 {
 /*!

@@ -23,6 +23,9 @@
 \brief DRT: namespace of the baci discretization module
 
 */
+namespace XFEM {
+  class XFEMDofSet;
+} // namespace XFEM
 namespace DRT
 {
 
@@ -217,6 +220,24 @@ public:
   */
   virtual void SetInitialState(unsigned nds,const std::string& name,Teuchos::RCP<const Epetra_Vector> state);
 
+  /** \brief Get number of standard (w/o enrichment) dofs for given node.
+   *
+   *  For the XFEM discretization the number of elements of the first
+   *  nodal dof set is returned.
+   *
+   *  \param nds  (in) : number of dofset
+   *  \param node (in) : the node those number of dofs are requested
+   *
+   *  \author hiermeier \date 10/16 */
+  virtual int NumStandardDof(const unsigned & nds, const Node* node) const
+  {
+    std::vector<int> dofs(0);
+    // get the first dofs of the node (not enriched)
+    Dof(dofs,node,nds,0,NULL);
+    return static_cast<int>(dofs.size());
+  }
+
+  bool IsEqualXDofSet( int nds, const XFEM::XFEMDofSet & xdofset_new ) const;
 
 private:
 

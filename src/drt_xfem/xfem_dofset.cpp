@@ -27,13 +27,14 @@ the number of dofs per node when multiple sets of degrees of freedom per node ha
 /*----------------------------------------------------------------------*
  |  Get the gid of all dofs of a node                      schott 12/14 |
  *----------------------------------------------------------------------*/
-void XFEM::XFEMDofSet::Dof(std::vector<int>& dofs, const DRT::Node* node,unsigned nds) const
+void XFEM::XFEMDofSet::Dof(std::vector<int>& dofs, const DRT::Node* node,
+    unsigned nodal_dofset_id) const
 {
   const int lid = node->LID();
   if (lid==-1)
     return;
   int numdf = DRT::DofSet::NumDofPerNode( *node );
-  const int idx = (*idxcolnodes_)[lid] + nds*numdf;
+  const int idx = (*idxcolnodes_)[lid] + nodal_dofset_id*numdf;
   dofs.reserve( numdf );
   for ( int i=0; i<numdf; ++i )
   {

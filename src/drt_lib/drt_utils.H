@@ -25,6 +25,11 @@
 #include "drt_node.H"
 #include "drt_element.H"
 
+#include "../drt_inpar/inpar_scatra.H"
+
+namespace LINALG {
+  class SparseMatrix;
+}
 
 namespace DRT
 {
@@ -231,11 +236,64 @@ namespace UTILS
    */
   Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
       Teuchos::RCP<DRT::Discretization> dis,   ///< underlying discretization
-      const std::string statename,             ///< name of state which will be set
-      const int numvec,                        ///< number of entries per node to project
+      const std::string & statename,           ///< name of state which will be set
+      const int & numvec,                      ///< number of entries per node to project
       Teuchos::ParameterList& params,          ///< parameter list that contains the element action
-      const int solvernumber                   ///< solver number for solving the resulting global system
+      const int & solvernumber,                ///< solver number for solving the resulting global system
+      const enum INPAR::SCATRA::L2ProjectionSystemType & l2_proj_type = INPAR::SCATRA::l2_proj_system_std
     );
+
+  Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
+      Discretization & dis,
+      const Epetra_Map & noderowmap,
+      const Epetra_Map & elecolmap,
+      const std::string & statename,
+      const int & numvec,
+      Teuchos::ParameterList& params,
+      const int & solvernumber,
+      const enum INPAR::SCATRA::L2ProjectionSystemType & l2_proj_type,
+      const Epetra_Map * fullnoderowmap = NULL,
+      const std::map<int,int> * slavetomastercolnodesmap = NULL,
+      Epetra_Vector * const sys_mat_diagonal_ptr = NULL );
+
+  Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
+      Discretization & dis,
+      const Epetra_Map & noderowmap,
+      DRT::Element * const * coleles,
+      const unsigned & numcolele,
+      const std::string & statename,
+      const int & numvec,
+      Teuchos::ParameterList& params,
+      const int & solvernumber,
+      const enum INPAR::SCATRA::L2ProjectionSystemType & l2_proj_type,
+      const Epetra_Map * fullnoderowmap = NULL,
+      const std::map<int,int> * slavetomastercolnodesmap = NULL,
+      Epetra_Vector * const sys_mat_diagonal_ptr = NULL );
+
+  Teuchos::RCP<Epetra_MultiVector> SolveDiagonalNodalL2Projection(
+      LINALG::SparseMatrix & massmatrix,
+      Epetra_MultiVector & rhs,
+      const int & numvec,
+      const Epetra_Map & noderowmap,
+      const Epetra_Map * fullnoderowmap = NULL,
+      const std::map<int,int> * slavetomastercolnodesmap = NULL,
+      Epetra_Vector * const sys_mat_diagonal_ptr = NULL );
+
+  Teuchos::RCP<Epetra_MultiVector> SolveNodalL2Projection(
+      LINALG::SparseMatrix & massmatrix,
+      Epetra_MultiVector & rhs,
+      const Epetra_Comm & comm,
+      const int & numvec,
+      const int & solvernumber,
+      const Epetra_Map & noderowmap,
+      const Epetra_Map * fullnoderowmap = NULL,
+      const std::map<int,int> * slavetomastercolnodesmap = NULL );
+
+  Teuchos::RCP<Epetra_MultiVector> PostSolveNodalL2Projection(
+      const Teuchos::RCP<Epetra_MultiVector> & nodevec,
+      const Epetra_Map & noderowmap,
+      const Epetra_Map * fullnoderowmap,
+      const std::map<int,int> * slavetomastercolnodesmap);
 
   /*!
     \brief reconstruct nodal values via superconvergent patch recovery

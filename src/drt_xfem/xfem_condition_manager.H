@@ -26,6 +26,8 @@ xfluid class and the cut-library
 #include "xfem_coupling_mesh.H"
 #include "xfem_coupling_fpi_mesh.H"
 
+#include <Epetra_IntVector.h>
+
 namespace GEO
 {
 namespace CUT

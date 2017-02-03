@@ -873,13 +873,21 @@ private:
  /// clone target discretization from a given condition of the source discretization
  template <class CloneStrategy>
  void CloneDiscretizationFromCondition(
-     const DRT::Discretization&           sourcedis, ///< source discretization
-     DRT::Discretization&                 targetdis, ///< target discretization
+     const DRT::DiscretizationInterface &   sourcedis, ///< source discretization
+     DRT::DiscretizationInterface &         targetdis, ///< target discretization
      const std::vector<DRT::Condition*> & conds      ///< source conditions to clone from
  )
  {
+   const DRT::Discretization * sourcedis_ptr =
+       dynamic_cast<const DRT::Discretization*>(&sourcedis);
+   if (sourcedis_ptr==NULL)
+     dserror("Cast of the source discretization failed!");
+   DRT::Discretization * targetdis_ptr = dynamic_cast<DRT::Discretization*>(&targetdis);
+   if (targetdis_ptr==NULL)
+     dserror("Cast of the target discretization failed!");
+
    // access the communicator for time measurement
-   const Epetra_Comm& comm = sourcedis.Comm();
+   const Epetra_Comm& comm = sourcedis_ptr->Comm();
    Epetra_Time time(comm);
 
    // create target discretization using a given clone strategy
@@ -888,17 +896,18 @@ private:
          Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<CloneStrategy>() );
 
      std::map<int,int> matmap;
-     clonewizard->CreateCloneFieldMatMap(matmap,sourcedis,targetdis);
+     clonewizard->CreateCloneFieldMatMap(matmap,*sourcedis_ptr,*targetdis_ptr);
 
-     clonewizard->CreateMatchingDiscretizationFromCondition(sourcedis,conds,targetdis,matmap);
+     clonewizard->CreateMatchingDiscretizationFromCondition(*sourcedis_ptr,conds,
+         *targetdis_ptr,matmap);
    }
    if (comm.MyPID()==0)
    {
-     IO::cout << "Created discretization " << targetdis.Name()
+     IO::cout << "Created discretization " << targetdis_ptr->Name()
               << " as a clone from the condition(s) with ID(s)=";
      for (unsigned int i=0; i<conds.size(); ++i)
        IO::cout << " " << conds[i]->Id();
-     IO::cout << " of the discretization " << sourcedis.Name()
+     IO::cout << " of the discretization " << sourcedis_ptr->Name()
               << " in...." << time.ElapsedTime() << " secs\n\n";
    }
    return;

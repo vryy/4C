@@ -153,7 +153,18 @@ double gaussElimination(
   }
 }
 
-
+template
+double gaussElimination<true, 1>(
+  LINALG::Matrix<1, 1>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<1, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<1, 1>   & x   ///< (out)   : solution vector
+  );
+template
+double gaussElimination<false, 1>(
+  LINALG::Matrix<1, 1>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<1, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<1, 1>   & x   ///< (out)   : solution vector
+  );
 template
 double gaussElimination<true, 2>(
   LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix

@@ -56,6 +56,9 @@ namespace LINALG
     /// create an uninitialized (empty) extractor
     MultiMapExtractor();
 
+    /// destructor
+    virtual ~MultiMapExtractor() {};
+
     /// create an extractor from fullmap to the given set of maps
     MultiMapExtractor(const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
@@ -178,7 +181,7 @@ namespace LINALG
       \param block number of vector to extract
       \param partial vector to fill
      */
-    void ExtractVector(const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const;
+    virtual void ExtractVector(const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const;
 
     /// extract a partial vector from a full vector
     /*!
@@ -246,7 +249,7 @@ namespace LINALG
       \param block number of partial vector
       \param full vector to copy into
      */
-    void InsertVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const;
+    virtual void InsertVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const;
 
     /// Put a partial vector into a full vector
     /*!
@@ -269,7 +272,7 @@ namespace LINALG
       \param full vector to copy into
       \param scale scaling factor for partial vector
      */
-    void AddVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale=1.0) const;
+    virtual void AddVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale=1.0) const;
 
     /// Put a partial vector into a full vector
     /*!
@@ -295,7 +298,7 @@ namespace LINALG
     /// Scale one block only
     void Scale( Epetra_MultiVector& full, int block, double scalar ) const;
 
-  private:
+  protected:
 
     /// the full row map
     Teuchos::RCP<const Epetra_Map> fullmap_;
@@ -375,8 +378,14 @@ namespace LINALG
   {
   public:
 
+    /** \brief empty constructor
+     *
+     *  You have to call a Setup() routine of your choice. */
     MapExtractor();
 
+    /** \brief  constructor
+     *
+     *  Calls Setup() from known maps */
     MapExtractor
     (
       const Epetra_Map& fullmap,
@@ -384,10 +393,10 @@ namespace LINALG
       Teuchos::RCP<const Epetra_Map> othermap
     );
 
-    /// constructor builds non-overlapping othermap/condmap which is complementary to condmap/othermap
-    /// with respect to fullmap depending on boolean 'iscondmap'
-    /// \author bborn
-    /// \date 10/08
+    /** \brief constructor
+     *
+     *  Calls Setup() to create non-overlapping othermap/condmap which is complementary
+     *  to condmap/othermap with respect to fullmap depending on boolean 'iscondmap'  */
     MapExtractor
     (
       const Epetra_Map& fullmap,                  //< full map
@@ -399,7 +408,17 @@ namespace LINALG
     //@{
 
     /// setup from known maps
-    void Setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap, Teuchos::RCP<const Epetra_Map> othermap);
+    void Setup(const Epetra_Map& fullmap,
+        const Teuchos::RCP<const Epetra_Map> & condmap,
+        const Teuchos::RCP<const Epetra_Map> & othermap);
+
+    /// setup creates non-overlapping othermap/condmap which is complementary to condmap/othermap
+    /// with respect to fullmap depending on boolean 'iscondmap'
+    /// \author bborn
+    /// \date 10/08
+    void Setup(const Epetra_Map& fullmap,
+        const Teuchos::RCP<const Epetra_Map> & partialmap,
+        bool iscondmap = true);
 
     //@}
 

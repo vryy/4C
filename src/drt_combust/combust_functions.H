@@ -18,15 +18,13 @@
 #ifndef COMBUST_FUNCTION_H
 #define COMBUST_FUNCTION_H
 
-namespace DRT
-{
+namespace DRT {
   class Discretization;
+namespace INPUT {
+  class LineDefinition;
+} // namespace INPUT
+} // namespace DRT
 
-  namespace INPUT {
-    class LineDefinition;
-  }
-
-}
 
 namespace COMBUST
 {
@@ -43,7 +41,7 @@ namespace COMBUST
     BubbleFunction();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// special implementation for a level set test function
@@ -55,7 +53,7 @@ namespace COMBUST
     ZalesaksDiskFunction();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// special implementation for a combustion test function
@@ -67,7 +65,7 @@ namespace COMBUST
     CircularFlame2Function();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// special implementation for a combustion test function
@@ -79,7 +77,7 @@ namespace COMBUST
     CircularFlame3Function();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// special implementation for a combustion test function
@@ -91,7 +89,7 @@ namespace COMBUST
     CircularFlame4Function();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// initial level-set field for dam break with obstacle
@@ -103,7 +101,7 @@ namespace COMBUST
     DamBreakObstacle();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// special implementation two-phase flow test case
@@ -115,7 +113,7 @@ namespace COMBUST
     CollapsingWaterColumnFunction();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// special implementation two-phase flow test case
@@ -127,7 +125,7 @@ namespace COMBUST
     CollapsingWaterColumnFunctionCoarse();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// special implementation for the G-function in the ORACLES problem
@@ -139,7 +137,7 @@ namespace COMBUST
     ORACLESGFunction();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// special implementation for a level set test function
@@ -151,7 +149,7 @@ namespace COMBUST
     RotatingConeFunction();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// special implementation for a xfem test function
@@ -163,7 +161,7 @@ namespace COMBUST
     LevelSetCutTestFunction();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
   /// initial level-set field for impact of drop
@@ -175,7 +173,7 @@ namespace COMBUST
     ImpactFunction();
 
     /// evaluate function at given position in space
-    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+    double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
   };
 
 } // namespace COMBUST

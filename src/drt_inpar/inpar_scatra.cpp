@@ -275,6 +275,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // linear solver id used for scalar transport/elch problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for scalar transport/elch...",&scatradyn);
+  // linear solver id used for l2 projection problems (e.g. gradient projections)
+  IntParameter("L2_PROJ_LINEAR_SOLVER",-1,"number of linear solver used for l2-projection sub-problems",&scatradyn);
   //IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&scatradyn);
 
   // parameters for natural convection effects

@@ -16,7 +16,7 @@
 
 
 #include <Sacado.hpp>
-#include "drt_discret.H"
+#include "drt_discret_interface.H"
 #include "drt_function.H"
 #include "drt_globalproblem.H"
 #include "standardtypes_cpp.H"
@@ -933,7 +933,8 @@ void DRT::UTILS::ExprFunction::AddExpr(std::string buf,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x, double t, DRT::Discretization* dis)
+double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   // single expression for all components. Reset index to 0!
   if(expr_.size()==1)
@@ -985,7 +986,8 @@ double DRT::UTILS::ExprFunction::Evaluate(int index, const double* x, double t, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> DRT::UTILS::ExprFunction::FctDer(int index, const double* x, const double t, DRT::Discretization* dis)
+std::vector<double> DRT::UTILS::ExprFunction::FctDer(int index,
+    const double* x, const double t, const DRT::DiscretizationInterface* dis)
 {
   // single expression for all components. Reset index to 0!
   if(expr_.size()==1)
@@ -1296,7 +1298,8 @@ std::vector<double> DRT::UTILS::VariableExprFunction::FctDer(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::VariableExprFunction::Evaluate(int index, const double* x, double t, DRT::Discretization* dis)
+double DRT::UTILS::VariableExprFunction::Evaluate(int index, const double* x,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   std::vector<std::pair<std::string,double> > variables;
   variables.reserve(dim_);
@@ -1331,7 +1334,7 @@ std::vector<double> DRT::UTILS::VariableExprFunction::FctDer(
     int                  index,
     const double*        x,
     const double         t,
-    DRT::Discretization* dis)
+    const DRT::DiscretizationInterface* dis)
 {
   std::vector<std::pair<std::string,double> > variables(4);
 
@@ -1345,7 +1348,8 @@ std::vector<double> DRT::UTILS::VariableExprFunction::FctDer(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::BeltramiFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::BeltramiFunction::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   double a = M_PI/4.0;
   double d = M_PI/2.0;
@@ -1380,7 +1384,8 @@ double DRT::UTILS::BeltramiFunction::Evaluate(int index, const double* xp, doubl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   double a = 2.0;
 
@@ -1400,7 +1405,8 @@ double DRT::UTILS::KimMoinFunction::Evaluate(int index, const double* xp, double
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::BochevUPFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::BochevUPFunction::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   switch (index)
   {
@@ -1418,7 +1424,8 @@ double DRT::UTILS::BochevUPFunction::Evaluate(int index, const double* xp, doubl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::BochevRHSFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::BochevRHSFunction::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   switch (index)
   {
@@ -1482,7 +1489,8 @@ kinviscosity_(-999.0e99)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::BeltramiUP::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::BeltramiUP::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
 
   double x = xp[0];
@@ -1561,7 +1569,8 @@ kinviscosity_(-999.0e99)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::BeltramiGradU::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::BeltramiGradU::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
 
   double x = xp[0];
@@ -1630,7 +1639,8 @@ is_stokes_(is_stokes)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::BeltramiRHS::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::BeltramiRHS::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
 
   double x = xp[0];
@@ -1706,7 +1716,8 @@ is_stationary_(is_stationary)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::UTILS::KimMoinUP::KimMoinUP( Teuchos::RCP<MAT::Material> & mat, bool is_stationary) :
+DRT::UTILS::KimMoinUP::KimMoinUP( Teuchos::RCP<MAT::Material> & mat,
+    bool is_stationary) :
 Function(),
 density_(-999.0e99),
 kinviscosity_(-999.0e99),
@@ -1730,7 +1741,8 @@ is_stationary_(is_stationary)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::KimMoinUP::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::KimMoinUP::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
 
   double x = xp[0];
@@ -1817,7 +1829,8 @@ is_stationary_(is_stationary)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::KimMoinGradU::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::KimMoinGradU::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   //double visc = 1.0;
 
@@ -1871,7 +1884,8 @@ double DRT::UTILS::KimMoinGradU::Evaluate(int index, const double* xp, double t,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::UTILS::KimMoinRHS::KimMoinRHS(int mat_id, bool is_stationary, bool is_stokes) :
+DRT::UTILS::KimMoinRHS::KimMoinRHS(int mat_id, bool is_stationary,
+    bool is_stokes) :
 Function(),
 kinviscosity_(-999.0e99),
 is_stationary_(is_stationary),
@@ -1894,7 +1908,8 @@ is_stokes_(is_stokes)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::KimMoinRHS::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::KimMoinRHS::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   double x = xp[0];
   double y = xp[1];
@@ -1956,7 +1971,8 @@ double DRT::UTILS::KimMoinRHS::Evaluate(int index, const double* xp, double t, D
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   switch (index)
   {
@@ -2029,7 +2045,8 @@ double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp, d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index,
+    const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
   double randomnumber = 0.0;
   double noise = 0.0;
@@ -2160,7 +2177,8 @@ double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index,
+    const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
   double randomnumber;
   double noise;
@@ -2274,7 +2292,8 @@ double DRT::UTILS::JefferyHamelFlowFunction::RadialVelocity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::JefferyHamelFlowFunction::Evaluate(int index, const double* xp, double, DRT::Discretization*)
+double DRT::UTILS::JefferyHamelFlowFunction::Evaluate(int index, const double* xp,
+    double, const DRT::DiscretizationInterface*)
 {
 
   const double x = xp[0];
@@ -2306,7 +2325,8 @@ double DRT::UTILS::JefferyHamelFlowFunction::Evaluate(int index, const double* x
 /*----------------------------------------------------------------------*
  | constructor                                            mueller  04/10|
  *----------------------------------------------------------------------*/
-DRT::UTILS::WomersleyFunction::WomersleyFunction(bool locsys, int e, int mat, int curve, bool fsi) :
+DRT::UTILS::WomersleyFunction::WomersleyFunction(bool locsys, int e,
+    int mat, int curve, bool fsi) :
 Function(),
 isinit_(false),
 locsys_(locsys),
@@ -2322,7 +2342,8 @@ locsyscond_(NULL)
 /*----------------------------------------------------------------------*
  |Evaluate Womersley Function                             mueller 04/10 |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   /* DESCRIPTION:
    *
@@ -2948,7 +2969,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
 /*----------------------------------------------------------------------*
  |  Womersley: Bessel functions of order 0 and 1          mueller 04/10 |
  *----------------------------------------------------------------------*/
-std::complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(std::complex<double> z, bool order)
+std::complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(
+    std::complex<double> z, bool order)
 {
   // DESCRIPTION:
   // Bessel functions of order 0 (order==false) or 1 (order==true) are calculated for
@@ -2989,7 +3011,8 @@ std::complex<double> DRT::UTILS::WomersleyFunction::BesselJ01(std::complex<doubl
 /*----------------------------------------------------------------------*
  |  Womersley: Discrete Fourier Transfomation             mueller 04/10 |
  *----------------------------------------------------------------------*/
-void DRT::UTILS::WomersleyFunction::DFT(std::vector<double> *data, std::vector< std::complex<double> > *resdata, const int N)
+void DRT::UTILS::WomersleyFunction::DFT(std::vector<double> *data,
+    std::vector< std::complex<double> > *resdata, const int N)
 {
   // DESCRIPTION:
   // a given vector data undergoes the DFT. The result is written back to resdata. N is the number
@@ -3017,7 +3040,9 @@ void DRT::UTILS::WomersleyFunction::DFT(std::vector<double> *data, std::vector< 
 /*----------------------------------------------------------------------*
  | Constructor of ControlledRotation                         hahn 04/13 |
  *----------------------------------------------------------------------*/
-DRT::UTILS::ControlledRotationFunction::ControlledRotationFunction(std::string fileName, std::string type, double origin_x, double origin_y, double origin_z) :
+DRT::UTILS::ControlledRotationFunction::ControlledRotationFunction(
+    std::string fileName, std::string type, double origin_x,
+    double origin_y, double origin_z) :
 Function(), NUMMANEUVERCELLS_(4)
 {
     // Initialize variables
@@ -3130,7 +3155,8 @@ Function(), NUMMANEUVERCELLS_(4)
  | displacement and for fluids the current velocity of the respective   |
  | node for the given index.                                 hahn 04/13 |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::ControlledRotationFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::ControlledRotationFunction::Evaluate(int index,
+    const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
     // Check, if a restart has been performed
     // *****************************************************************************
@@ -3355,7 +3381,8 @@ Function(), NUMACCELERATIONCELLS_(4)
  | Evaluate AccelerationProfile and return the respective acceleration |
  | of the node for the given index.                         hahn 09/13 |
  *---------------------------------------------------------------------*/
-double DRT::UTILS::AccelerationProfileFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::AccelerationProfileFunction::Evaluate(int index,
+    const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
     // Determine time difference
     double deltaT = t - timeOld_;
@@ -3391,7 +3418,8 @@ double DRT::UTILS::AccelerationProfileFunction::Evaluate(int index, const double
 /*----------------------------------------------------------------------*
  | Constructor of RampToValueFunction                        hahn 08/14 |
  *----------------------------------------------------------------------*/
-DRT::UTILS::RampToValueFunction::RampToValueFunction(double value, double startTime, double duration, std::string type) :
+DRT::UTILS::RampToValueFunction::RampToValueFunction(double value,
+    double startTime, double duration, std::string type) :
 Function()
 {
   // Initialize time of previous time step (at t-deltaT)
@@ -3425,7 +3453,8 @@ Function()
  | sinusoidal (smooth) profile, which reaches the desired value in    |
  | the desired duration.                                   hahn 08/14 |
  *--------------------------------------------------------------------*/
-double DRT::UTILS::RampToValueFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::RampToValueFunction::Evaluate(int index,
+    const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
   // Calculate time difference since last time step
   double deltaT = t - timeOld_;
@@ -3464,8 +3493,9 @@ double DRT::UTILS::RampToValueFunction::Evaluate(int index, const double* xp, do
 /*----------------------------------------------------------------------*
  | Constructor of NodeNormal                                 hahn 12/13 |
  *----------------------------------------------------------------------*/
-DRT::UTILS::NodeNormalFunction::NodeNormalFunction(std::string type, std::vector<double>* origin, double radius,
-                           double cylinderHeight, std::vector<double>* orientation, double CassiniA) :
+DRT::UTILS::NodeNormalFunction::NodeNormalFunction(std::string type,
+    std::vector<double>* origin, double radius, double cylinderHeight,
+    std::vector<double>* orientation, double CassiniA) :
 Function()
 {
   // Initialize geometry type
@@ -3524,7 +3554,8 @@ Function()
  | Evaluate NodeNormal and return the resp. unit normal vector of the  |
  | given node on the given geometry with the given index.   hahn 12/13 |
  *---------------------------------------------------------------------*/
-double DRT::UTILS::NodeNormalFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::NodeNormalFunction::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
   double result = 0.0;
 
@@ -3624,7 +3655,8 @@ double DRT::UTILS::NodeNormalFunction::Evaluate(int index, const double* xp, dou
 /*----------------------------------------------------------------------*
  | Calculate node normals of a sphere                        hahn 12/13 |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::NodeNormalFunction::NodeNormalSphere(int index, const double* xp, std::vector<double> origin)
+double DRT::UTILS::NodeNormalFunction::NodeNormalSphere(int index,
+    const double* xp, std::vector<double> origin)
 {
   // Calculate node vector length
   double nodeVecLength = 0;
@@ -3654,7 +3686,8 @@ double DRT::UTILS::NodeNormalFunction::NodeNormalSphere(int index, const double*
 /*----------------------------------------------------------------------*
  | Calculate node normals of a Cassini volume                hahn 12/13 |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::NodeNormalFunction::NodeNormalCassini(int index, const double* xp, std::vector<double> origin)
+double DRT::UTILS::NodeNormalFunction::NodeNormalCassini(int index,
+    const double* xp, std::vector<double> origin)
 {
   // Determine relative positions
   const double x = xp[0] - origin[0];
@@ -3689,7 +3722,8 @@ double DRT::UTILS::NodeNormalFunction::NodeNormalCassini(int index, const double
 /*----------------------------------------------------------------------*
  | Constructor of RotationVectorForNormalSystem              hahn 12/13 |
  *----------------------------------------------------------------------*/
-DRT::UTILS::RotationVectorForNormalSystemFunction::RotationVectorForNormalSystemFunction(int geoFunct) :
+DRT::UTILS::RotationVectorForNormalSystemFunction::RotationVectorForNormalSystemFunction(
+    int geoFunct) :
 Function()
 {
   // Get problem dimension (2D or 3D)
@@ -3706,7 +3740,8 @@ Function()
  | the local coordinate system of the node into the 'normal system'.   |
  |                                                          hahn 01/14 |
  *---------------------------------------------------------------------*/
-double DRT::UTILS::RotationVectorForNormalSystemFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::RotationVectorForNormalSystemFunction::Evaluate(
+    int index, const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
   // Determine normal vector for the given geometry and node
   double nodeNormal[3];

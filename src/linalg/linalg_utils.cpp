@@ -19,11 +19,12 @@
 #include "../headers/compiler_definitions.h" /* access to fortran routines */
 #include "linalg_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "EpetraExt_Transpose_RowMatrix.h"
-#include "EpetraExt_MatrixMatrix.h"
-#include "Epetra_SerialDenseSolver.h"
-#include "Epetra_RowMatrixTransposer.h"
-#include "Ifpack_AdditiveSchwarz.h"
+#include <EpetraExt_Transpose_RowMatrix.h>
+#include <EpetraExt_MatrixMatrix.h>
+#include <Epetra_SerialDenseSolver.h>
+#include <Epetra_RowMatrixTransposer.h>
+#include <Ifpack_AdditiveSchwarz.h>
+#include <Epetra_IntVector.h>
 
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix  (public)                      mwgee 12/06|

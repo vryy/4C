@@ -192,17 +192,153 @@ void DRT::UTILS::DisBasedLocationVector(
  |          .                                               ghamm 06/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
-  Teuchos::RCP<DRT::Discretization> dis,
-  const std::string statename,
-  const int numvec,
-  Teuchos::ParameterList& params,
-  const int solvernumber
-  )
+    Discretization & dis,
+    const Epetra_Map & noderowmap,
+    const Epetra_Map & elecolmap,
+    const std::string & statename,
+    const int & numvec,
+    Teuchos::ParameterList& params,
+    const int & solvernumber,
+    const enum INPAR::SCATRA::L2ProjectionSystemType & l2_proj_type,
+    const Epetra_Map * fullnoderowmap,
+    const std::map<int,int> * slavetomastercolnodesmap,
+    Epetra_Vector * const sys_mat_diagonal_ptr )
+{
+  // extract the desired element pointers
+  std::vector<DRT::Element * > coleles( elecolmap.NumMyElements(), NULL );
+  for ( int elid = 0; elid < elecolmap.NumMyElements(); ++elid )
+    coleles[ elid ] = dis.gElement( elecolmap.GID( elid ) );
+
+  return ComputeNodalL2Projection( dis, noderowmap, &coleles[0], coleles.size(),
+      statename, numvec, params, solvernumber, l2_proj_type, fullnoderowmap,
+      slavetomastercolnodesmap, sys_mat_diagonal_ptr );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
+    Discretization & dis,
+    const Epetra_Map & noderowmap,
+    DRT::Element * const * coleleptr,
+    const unsigned & numcolele,
+    const std::string & statename,
+    const int & numvec,
+    Teuchos::ParameterList& params,
+    const int & solvernumber,
+    const enum INPAR::SCATRA::L2ProjectionSystemType & l2_proj_type,
+    const Epetra_Map * fullnoderowmap,
+    const std::map<int,int> * slavetomastercolnodesmap,
+    Epetra_Vector * const sys_mat_diagonal_ptr )
+{
+  // set l2-projection type
+  params.set<INPAR::SCATRA::L2ProjectionSystemType>( "l2 proj system",
+      l2_proj_type );
+
+  // create empty matrix
+  Teuchos::RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp(new LINALG::SparseMatrix(noderowmap,108,false,true));
+  // create empty right hand side
+  Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(noderowmap,numvec));
+
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+  DRT::Element::LocationArray la(dis.NumDofSets());
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  // loop column elements
+  for (unsigned i=0; i<numcolele; ++i)
+  {
+    DRT::Element* actele = coleleptr[i];
+    const int numnode = actele->NumNode();
+
+    actele->LocationVector(dis,la,false);
+    lmowner=la[0].lmowner_;
+    lmstride=la[0].stride_;
+    lm=la[0].lm_;
+
+    // Reshape element matrices and vectors and initialize to zero
+    elevector1.Size(numnode);
+    elematrix1.Shape(numnode,numnode);
+    elematrix2.Shape(numnode,numvec);
+
+    // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
+    int err = actele->Evaluate(params,dis,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+    if (err) dserror("Element %d returned err=%d",actele->Id(),err);
+
+    // get element location vector for nodes
+    lm.resize(numnode);
+    lmowner.resize(numnode);
+
+    DRT::Node** nodes = actele->Nodes();
+    for(int n=0; n<numnode; ++n)
+    {
+      const int nodeid = nodes[n]->Id();
+
+      if ( slavetomastercolnodesmap )
+      {
+        std::map<int,int>::const_iterator slavemasterpair =
+            slavetomastercolnodesmap->find(nodeid);
+        if(slavemasterpair != slavetomastercolnodesmap->end())
+          lm[n] = slavemasterpair->second;
+        else
+          lm[n] = nodeid;
+      }
+      else
+        lm[n] = nodeid;
+
+      // owner of pbc master and slave nodes are identical
+      lmowner[n] = nodes[n]->Owner();
+    }
+
+    // mass matrix assembling into node map
+    massmatrix->Assemble(actele->Id(),elematrix1,lm,lmowner);
+    // assemble numvec entries sequentially
+    for(int n=0; n<numvec; ++n)
+    {
+      // copy results into Serial_DenseVector for assembling
+      for(int inode=0; inode<numnode; ++inode)
+        elevector1(inode) = elematrix2(inode,n);
+      // assemble into nth vector of MultiVector
+      LINALG::Assemble(*rhs,n,elevector1,lm,lmowner);
+    }
+  } //end element loop
+
+  // finalize the matrix
+  massmatrix->Complete();
+
+  if ( l2_proj_type != INPAR::SCATRA::l2_proj_system_std )
+    return SolveDiagonalNodalL2Projection( *massmatrix, *rhs, numvec,
+        noderowmap, fullnoderowmap, slavetomastercolnodesmap, sys_mat_diagonal_ptr );
+
+  return SolveNodalL2Projection( *massmatrix, *rhs, dis.Comm(), numvec,
+      solvernumber, noderowmap, fullnoderowmap, slavetomastercolnodesmap );
+}
+
+/*----------------------------------------------------------------------*
+ | compute node based L2 projection originating from a dof based        |
+ | state vector                                                         |
+ | WARNING: Make sure to pass down a discretization with a SetState     |
+ |          .                                               ghamm 06/14 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
+    Teuchos::RCP<DRT::Discretization> dis,
+    const std::string & statename,
+    const int & numvec,
+    Teuchos::ParameterList& params,
+    const int & solvernumber,
+    const enum INPAR::SCATRA::L2ProjectionSystemType & l2_proj_type )
 {
 
   // check if the statename has been set
   if(! dis->HasState(statename))
-    dserror("The discretization does not know about this statename. Please review how you call this function.");
+    dserror("The discretization does not know about this statename. Please "
+        "review how you call this function.");
 
   // check whether action type is set
   if(params.getEntryRCP("action") == Teuchos::null)
@@ -243,89 +379,65 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
   // build node row map which does not include slave pbc nodes
   Epetra_Map noderowmap(-1,(int)reducednoderowmap.size(),&reducednoderowmap[0],0,fullnoderowmap->Comm());
 
-  // create empty matrix
-  Teuchos::RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp(new LINALG::SparseMatrix(noderowmap,108,false,true));
-  // create empty right hand side
-  Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(noderowmap,numvec));
+  // use fast access methods
+  const int numcolele = dis->NumMyColElements();
+  DRT::Element * const * coleleptr = dis->lColElements();
 
-  std::vector<int> lm;
-  std::vector<int> lmowner;
-  std::vector<int> lmstride;
-  DRT::Element::LocationArray la(dis->NumDofSets());
+  return ComputeNodalL2Projection( *dis, noderowmap, coleleptr, numcolele,
+      statename, numvec, params, solvernumber, l2_proj_type, fullnoderowmap,
+      & slavetomastercolnodesmap );
+}
 
-  // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveDiagonalNodalL2Projection(
+    LINALG::SparseMatrix & massmatrix,
+    Epetra_MultiVector & rhs,
+    const int & numvec,
+    const Epetra_Map & noderowmap,
+    const Epetra_Map * fullnoderowmap,
+    const std::map<int,int> * slavetomastercolnodesmap,
+    Epetra_Vector * const sys_mat_diagonal_ptr )
+{
+  // extract diagonal
+  Epetra_Vector mass_diagonal( rhs.Map() );
+  massmatrix.ExtractDiagonalCopy( mass_diagonal );
 
-  // get number of elements
-  const int numele = dis->NumMyColElements();
-
-  // loop column elements
-  for (int i=0; i<numele; ++i)
+  // store the diagonal ( optional )
+  if ( sys_mat_diagonal_ptr != NULL )
   {
-    DRT::Element* actele = dis->lColElement(i);
-    const int numnode = actele->NumNode();
+    sys_mat_diagonal_ptr->Scale( 1.0, mass_diagonal );
+  }
 
-    actele->LocationVector(*dis,la,false);
-    lmowner=la[0].lmowner_;
-    lmstride=la[0].stride_;
-    lm=la[0].lm_;
+  // solution vector based on reduced node row map
+  Teuchos::RCP<Epetra_MultiVector> nodevec =
+      Teuchos::rcp(new Epetra_MultiVector(noderowmap,numvec));
 
-    // Reshape element matrices and vectors and initialize to zero
-    elevector1.Size(numnode);
-    elematrix1.Shape(numnode,numnode);
-    elematrix2.Shape(numnode,numvec);
+  nodevec->ReciprocalMultiply( 1.0, mass_diagonal, rhs, 0.0 );
 
-    // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
-    int err = actele->Evaluate(params,*dis,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
-    if (err) dserror("Element %d returned err=%d",actele->Id(),err);
+  return PostSolveNodalL2Projection( nodevec, noderowmap, fullnoderowmap,
+      slavetomastercolnodesmap );
+}
 
-    // get element location vector for nodes
-    lm.resize(numnode);
-    lmowner.resize(numnode);
-
-    DRT::Node** nodes = actele->Nodes();
-    for(int n=0; n<numnode; ++n)
-    {
-      const int nodeid = nodes[n]->Id();
-
-      std::map<int,int>::iterator slavemasterpair = slavetomastercolnodesmap.find(nodeid);
-      if(slavemasterpair != slavetomastercolnodesmap.end())
-        lm[n] = slavemasterpair->second;
-      else
-        lm[n] = nodeid;
-
-      // owner of pbc master and slave nodes are identical
-      lmowner[n] = nodes[n]->Owner();
-    }
-
-    // mass matrix assembling into node map
-    massmatrix->Assemble(actele->Id(),elematrix1,lm,lmowner);
-    // assemble numvec entries sequentially
-    for(int n=0; n<numvec; ++n)
-    {
-      // copy results into Serial_DenseVector for assembling
-      for(int inode=0; inode<numnode; ++inode)
-        elevector1(inode) = elematrix2(inode,n);
-      // assemble into nth vector of MultiVector
-      LINALG::Assemble(*rhs,n,elevector1,lm,lmowner);
-    }
-  } //end element loop
-
-  // finalize the matrix
-  massmatrix->Complete();
-
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
+    LINALG::SparseMatrix & massmatrix,
+    Epetra_MultiVector & rhs,
+    const Epetra_Comm & comm,
+    const int & numvec,
+    const int & solvernumber,
+    const Epetra_Map & noderowmap,
+    const Epetra_Map * fullnoderowmap,
+    const std::map<int,int> * slavetomastercolnodesmap)
+{
   // get solver parameter list of linear solver
   const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(solvernumber);
   const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
   Teuchos::RCP<LINALG::Solver> solver =
-                                  Teuchos::rcp(new LINALG::Solver(solverparams,
-                                  dis->Comm(),
-                                  DRT::Problem::Instance()->ErrorFile()->Handle()));
+      Teuchos::rcp( new LINALG::Solver( solverparams,
+          comm, DRT::Problem::Instance()->ErrorFile()->Handle() ) );
 
   // skip setup of preconditioner in case of a direct solver
   if(solvertype != INPAR::SOLVER::umfpack and solvertype != INPAR::SOLVER::superlu)
@@ -394,26 +506,45 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
     case INPAR::SOLVER::belos:
     {
       // solve for numvec rhs at the same time using Belos solver
-      solver->Solve(massmatrix->EpetraOperator(), nodevec, rhs, true, true);
+      solver->Solve(massmatrix.EpetraOperator(), nodevec, Teuchos::rcpFromRef(rhs), true, true);
       break;
     }
     default:
     {
-      if(numvec != 1 and dis->Comm().MyPID()==0)
+      if(numvec != 1 and comm.MyPID()==0)
         std::cout << "Think about using a Belos solver which can handle several rhs vectors at the same time" << std::endl;
 
       // solve for numvec rhs iteratively
       for(int i=0; i<numvec; i++)
       {
-        solver->Solve(massmatrix->EpetraOperator(), Teuchos::rcp(((*nodevec)(i)),false), Teuchos::rcp(((*rhs)(i)),false), true, true);
+        solver->Solve(massmatrix.EpetraOperator(), Teuchos::rcp(((*nodevec)(i)),false),
+            Teuchos::rcp((rhs(i)),false), true, true);
       }
       break;
     }
   }
 
+  return PostSolveNodalL2Projection( nodevec, noderowmap, fullnoderowmap,
+      slavetomastercolnodesmap );
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::PostSolveNodalL2Projection(
+    const Teuchos::RCP<Epetra_MultiVector> & nodevec,
+    const Epetra_Map & noderowmap,
+    const Epetra_Map * fullnoderowmap,
+    const std::map<int,int> * slavetomastercolnodesmap)
+{
+  const int numvec = nodevec->NumVectors();
+
   // if no pbc are involved leave here
-  if(noderowmap.PointSameAs(*fullnoderowmap))
+  if( fullnoderowmap == NULL or noderowmap.PointSameAs(*fullnoderowmap) )
     return nodevec;
+
+  if ( slavetomastercolnodesmap == NULL )
+    dserror("You have to provide a \"slavetomastercolnodesmap\" for the PBC handling!");
 
   // solution vector based on full row map in which the solution of the master node is inserted into slave nodes
   Teuchos::RCP<Epetra_MultiVector> fullnodevec = Teuchos::rcp(new Epetra_MultiVector(*fullnoderowmap,numvec));
@@ -422,8 +553,9 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
   {
     const int nodeid = fullnoderowmap->GID(i);
 
-    std::map<int,int>::iterator slavemasterpair = slavetomastercolnodesmap.find(nodeid);
-    if(slavemasterpair != slavetomastercolnodesmap.end())
+    std::map<int,int>::const_iterator slavemasterpair =
+        slavetomastercolnodesmap->find(nodeid);
+    if(slavemasterpair != slavetomastercolnodesmap->end())
     {
       const int mastergid = slavemasterpair->second;
       const int masterlid = noderowmap.LID(mastergid);
@@ -440,6 +572,10 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
 
   return fullnodevec;
 }
+
+/*----------------------------------------------------------------------*
+ *
+ */
 
 /*----------------------------------------------------------------------*
  | compute superconvergent patch recovery by polynomial of degree p = 1 |

@@ -245,6 +245,14 @@ namespace INPAR
       coupling_volmortar
     };
 
+    /// system type for the l2-projection
+    enum L2ProjectionSystemType
+    {
+      l2_proj_system_std,
+      l2_proj_system_lumped,
+      l2_proj_system_dual
+    };
+
     /// set the scatra parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

@@ -15,13 +15,13 @@
 #ifndef DISCRET_H
 #define DISCRET_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_Comm.h"
-#include "Epetra_Map.h"
-#include "Epetra_Vector.h"
-#include "Epetra_CrsGraph.h"
-#include "Epetra_IntVector.h"
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Epetra_CrsGraph.h>
 
+#include "drt_discret_interface.H"
 #include "drt_element.H"
 #include "drt_node.H"
 #include "drt_dofset_interface.H"
@@ -49,6 +49,7 @@ namespace DRT
   class DofSetProxy;
 
 /*!
+\brief A class to manage a discretization in parallel
 
 A discretization describes a discretized physical domain including any
 boundary conditions. This is a huge concept that includes four different parts:
@@ -117,10 +118,34 @@ The \ref DRT::Discretization class supports the ostream& operator <<
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class Discretization
+class Discretization : public DiscretizationInterface
 {
 public:
+  /** \brief Overriding base class overloaded functions
+   *
+   * "This is a common 'gotcha' in C++. Once a name match is found in a
+   *  class scope, the compiler doesn't look further up the inheritance tree
+   *  for overloads. By specifying the 'using' declaration, you bring all of
+   *  the overloads of a function 'A()' from the base class into the scope
+   *  of the derived class. Then overloading works properly.
+   *
+   *  Keep in mind that if there is existing code using the base class, its
+   *  meaning could be changed by the additional overloads. Or the additional
+   *  overloads could introduce ambiguity and the code will fail to compile.
+   *  This is pointed out in James Hopkin's answer."
+   *
+   *  See also http://stackoverflow.com/questions/888235/overriding-a-bases-overloaded-function-in-c
+   *  for further information.
+   *
+   *  \author hiermeier */
+  using DiscretizationInterface::Dof;
+  using DiscretizationInterface::NumDof;
+  using DiscretizationInterface::SetState;
+  using DiscretizationInterface::GetState;
+  using DiscretizationInterface::EvaluateCondition;
+  using DiscretizationInterface::EvaluateNeumann;
 
+public:
   /*!
   \brief Standard Constructor
 
@@ -169,17 +194,6 @@ public:
   /// @name Dof query methods for single dof set discretizations
 
   /*!
-  \brief Get number of dofs for given node.
-
-  Ask the current DofSet for the number of dofs of this node.
-  There is a variable number of DofSets and one is currently selected.
-  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
-  \param node (in)      : the node those number of dofs are requested
-  */
-  virtual int NumDof(const Node* node) const
-  { dsassert(dofsets_.size()==1,"expect just one dof set"); return NumDof(0,node); }
-
-  /*!
   \brief Get number of dofs for given element.
 
   Ask the current DofSet for the number of dofs of this element.
@@ -189,18 +203,6 @@ public:
   */
   virtual int NumDof(const Element* element) const
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return NumDof(0,element); }
-
-  /*!
-  \brief Get the gid of a dof for given node.
-
-  Ask the current DofSet for the gid of the dof of this node.
-  There is a variable number of DofSets and one is currently selected.
-  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
-  \param node (in)      : the node
-  \param dof (in)       : the node local dof number
-  */
-  virtual int Dof(const Node* node, const int dof) const
-  { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,node,dof); }
 
   /*!
   \brief Get the gid of a dof for given element.
@@ -215,18 +217,6 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,element,dof); }
 
   /*!
-  \brief Get the gid of all dofs of a node.
-
-  Ask the current DofSet for the gids of the dofs of this node. The
-  required vector is created and filled on the fly. So better keep it
-  if you need more than one dof gid.
-  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
-  \param node (in)      : the node
-  */
-  virtual std::vector<int> Dof(const Node* node) const
-  { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,node); }
-
-  /*!
   \brief Get the gid of all dofs of a element.
 
   Ask the current DofSet for the gids of the dofs of this element. The
@@ -237,19 +227,6 @@ public:
   */
   virtual std::vector<int> Dof(const Element* element) const
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,element); }
-
-  /*!
-  \brief Get the gid of all dofs of a node.
-
-  Ask the current DofSet for the gids of the dofs of this node. The
-  required vector is created and filled on the fly. So better keep it
-  if you need more than one dof gid.
-  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
-  \param node (in)      : the node
-  \param lm (in/out)    : lm vector the dofs are appended to
-  */
-  virtual void Dof(const Node* node, std::vector<int>& lm) const
-  { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof((unsigned)0,node,lm); }
 
   /*!
   \brief Get the gid of all dofs of a node.
@@ -336,6 +313,21 @@ public:
   virtual int NumDof(unsigned nds, const Element* element) const
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->NumDof(element); }
 
+  /** \brief Get number of standard (w/o enrichment) dofs for given node.
+   *
+   *  In the default case, we can use the NumDof() routine. This method
+   *  gives you only for enriched nodes a different result!
+   *  ( see DRT::DiscretizationXFEM )
+   *
+   *  \param nds (in)       : number of dofset
+   *  \param node (in)      : the node those number of DoF's are requested
+   *
+   *  \author hiermeier \date 10/16 */
+  virtual int NumStandardDof(const unsigned & nds, const Node* node) const
+  {
+    return NumDof(nds,node);
+  }
+
   /*!
   \brief Get the gid of a dof for given node.
 
@@ -390,13 +382,14 @@ public:
   Additional input nodal dof set: If the node contains more than one set of dofs, which can be
   evaluated, the number of the set needs to be given. Currently only the case for XFEM.
 
-  \param dof (in)         : vector of dof gids (to be filled)
-  \param nds (in)         : number of dofset
+  \param dof         (out): vector of dof gids (to be filled)
+  \param node        (in) : the node
+  \param nds         (in) : number of dofset
   \param nodaldofset (in) : number of nodal dofset
-  \param node (in)        : the node
-  \param element (in)     : the element (optionally)
+  \param element     (in) : the element (optionally)
   */
-  virtual void Dof(std::vector<int>& dof, const Node* node ,unsigned nds, unsigned nodaldofset, const Element* element = NULL) const
+  virtual void Dof(std::vector<int>& dof, const Node* node ,unsigned nds,
+      unsigned nodaldofset, const Element* element = NULL) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     dsassert(havedof_,"no dofs assigned");
@@ -404,14 +397,14 @@ public:
   }
 
   /*!
-  \brief Get the gid of all dofs of a element.
+  \brief Get the GID of all dofs of a element.
 
   Ask the current DofSet for the gids of the dofs of this element. The
   required vector is created and filled on the fly. So better keep it
   if you need more that one dof gid.
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
-  \param nds (in)       : number of dofset
-  \param element (in)      : the element
+  \param nds     (in) : number of dofset
+  \param element (in) : the element
   */
   virtual std::vector<int> Dof(unsigned nds, const Element* element) const
   {
@@ -482,7 +475,8 @@ public:
   \brief Replace the dofset associated with the discretisation by a new dofset.
                  Sets havedof_ to false.
   */
-  virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets = false);
+  virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSetInterface> newdofset,
+      bool replaceinstatdofsets = false);
 
   /*!
   \brief Add a new dofset to the discretisation.
@@ -665,6 +659,14 @@ public:
     return elecolptr_[lid];
   }
 
+  inline DRT::Element * const * lColElements() const
+  {
+  #ifdef DEBUG
+    if (!Filled()) dserror("DRT::Discretization::lColElement: Filled() != true");
+  #endif
+    return & elecolptr_[0];
+  }
+
   /*!
   \brief Query whether a Node with global id gid is stored on this proc
          (Filled()==true NOT prerequisite)
@@ -717,6 +719,15 @@ public:
         dserror("DRT::Discretization::lRowNode: Filled() != true");
     #endif
     return nodecolptr_[lid];
+  }
+
+  inline DRT::Node * const * lColNodes() const
+  {
+    #ifdef DEBUG
+      if (!Filled())
+        dserror("DRT::Discretization::lRowNode: Filled() != true");
+    #endif
+    return & nodecolptr_[0];
   }
 
   //@}
@@ -947,6 +958,18 @@ public:
 
   */
   virtual void SetCondition(const std::string& name,Teuchos::RCP<Condition> cond);
+
+  /*!
+  \brief Replace a condition with a certain name (Filled()==false on exit)
+
+  First we look up if there are already conditions with the given name, and if
+  yes we delete them. Afterwards we set the new conditions with the given name.
+
+  \param name : name of the condition
+  \param cond : vector of new conditions
+
+  \author hiermeier \date 11/16 */
+  void ReplaceConditions(const std::string& name, const std::vector<Teuchos::RCP<Condition> >& conds);
 
   /*!
   \brief Get all conditions with a certain name
@@ -1347,39 +1370,6 @@ public:
   }
 
   /*!
-  \brief Set a reference to a data vector
-
-  Using this method, a reference to a vector can
-  be supplied to the discretization. The elements can access
-  this vector by using the name of that vector.
-  The method expects state to be either of dof row map or of
-  dof column map.
-  If the vector is supplied in DofColMap() a reference to it will be stored.
-  If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
-   a vector with column map is allocated and the supplied vector is exported to it.
-  Everything is stored/referenced using Teuchos::RCP.
-
-  \param name (in): Name of data
-  \param state (in): vector of some data
-
-  \note This class will not take ownership or in any way modify the solution vector.
-  */
-  virtual void SetState(const std::string& name,Teuchos::RCP<const Epetra_Vector> state) { SetState(0,name,state); }
-
-  /*!
-  \brief Get a reference to a data vector
-
-  Providing a name of a solution state, get a reference to the solution vector.
-  If a vector under the provided name does not exist, the method will throw
-  a lethal error message.
-
-  \param name (in): Name of solution state
-
-  \return Reference to solution state
-  */
-  virtual Teuchos::RCP<const Epetra_Vector> GetState(const std::string& name) const { return GetState(0,name); }
-
-  /*!
     \brief Tell whether a state vector has been set
     \param name (in): Name of solution state
    */
@@ -1460,7 +1450,7 @@ public:
 
   /// Call elements to evaluate
   virtual void Evaluate( Teuchos::ParameterList & params,
-                         DRT::AssembleStrategy & strategy );
+                         DRT::AssembleStrategy &  strategy );
 
   /// Call elements to evaluate
   /*!
@@ -1527,31 +1517,6 @@ public:
                                LINALG::SparseOperator* systemmatrix = NULL);
 
   /*!
-  \brief Evaluate Neumann boundary conditions
-
-  Loop all Neumann conditions attached to the discretization and evaluate them.
-  This method considers all conditions in condition_ with the names
-  "PointNeumann", LineNeumann", "SurfaceNeumann" and "VolumeNeumann".
-  It takes a current time from the parameter list params named "total time"
-  and evaluates the appropiate time curves at that time for each
-  Neumann condition separately. If "total time" is not included
-  in the parameters, no time curves are used.
-  Parameters recognized by this method:
-  \code
-    params.set("total time",acttime); // current total time
-  \endcode
-
-  \param params (in): List of parameters
-  \param systemvector (out): Vector to assemble Neumann BCs to.
-                             The vector is NOT initialized to zero by this method.
-  \param systemvector (out): Optional matrix to assemble linearization of Neumann BCs to.
-  */
-  virtual void EvaluateNeumann(
-          Teuchos::ParameterList&              params,
-          Teuchos::RCP<Epetra_Vector>          systemvector,
-          Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::null);
-
-  /*!
   \brief Evaluate Dirichlet boundary conditions
 
   Loop all Dirichlet conditions attached to the discretization and evaluate them.
@@ -1589,39 +1554,6 @@ public:
                                  Teuchos::RCP<Epetra_Vector> systemvectordd,
                                  Teuchos::RCP<Epetra_Vector> toggle,
                                  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
-
-  /*!
-  \brief Evaluate a specified condition
-
-  Loop all conditions attached to the discretization and evaluate them.
-  This method considers all conditions in condition_ with the names
-  matching the user-provided string condstring.
-  Calls more general EvaluateCondition method, see below.
-
-  */
-  virtual void EvaluateCondition
-  (
-    Teuchos::ParameterList& params,  ///< List of parameters for use at element level
-    Teuchos::RCP<Epetra_Vector> systemvector1, ///< Vector to assemble BCs to.(NOT initialized to zero by this method)
-    const std::string& condstring, ///< Name of condition to be evaluated
-    const int condid=-1  ///< condition ID
-  );
-
-  /*!
-  \brief Evaluate a specified condition
-
-  Loop all conditions attached to the discretization and evaluate them.
-  This method considers all conditions in condition_ with the names
-  matching the user-provided string condstring.
-  Calls more general EvaluateCondition method, see below.
-
-  */
-  virtual void EvaluateCondition
-  (
-    Teuchos::ParameterList& params, ///< List of parameters for use at element level
-    const std::string& condstring,  ///< Name of condition to be evaluated
-    const int condid=-1  ///< condidition ID
-  );
 
   /// Evaluate a specific condition using assemble strategy
    void EvaluateCondition
@@ -1733,8 +1665,9 @@ public:
    *
    * \author bborn \date 08/08
    */
-  void EvaluateScalars(Teuchos::ParameterList&                params,  /*!< parameters */
-                       Teuchos::RCP<Epetra_SerialDenseVector> scalars  /*!< (out) scalars */
+  virtual void EvaluateScalars(
+      Teuchos::ParameterList&                params,  /*!< parameters */
+      Teuchos::RCP<Epetra_SerialDenseVector> scalars  /*!< (out) scalars */
   );
 
   /*!
@@ -2027,74 +1960,8 @@ protected:
   );
 
   /*!
-  \brief Determine dofs subject to Dirichlet condition from input file
-
-  \param cond     (in)  :  The condition object
-  \param toggle   (out) :  Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
-  \param dbcgids  (out) :  Map containing DOFs subjected to Dirichlet boundary conditions
-
-  \remark If you want to be sure which Dirichlet values are set, look at the highest entity for a certain node in
-          your input file.
-          The corresponding condition, e.g.:
-             ---------DESIGN LINE DIRICH CONDITIONS
-             DSURF  1
-             // example_line
-             E 1 - NUMDOF 6 ONOFF 0 1 1 VAL 0.0 1.0 1.0 CURVE none none none FUNCT 1 0 0
-
-          tells you which dofs are actually conditioned. In the example given above, the highest entity which contains
-          a certain node is a LINE. The first dof has an ONOFF-toggle of ZERO. This means, that the nodes in LINE 'E 1'
-          definitely DO NOT HAVE a dirichlet BC on their first dof. No matter what is defined in a condition line of lower
-          priority. The corresponding entries in the systemvectors remain untouched.
-
-  \date 06/16
-
-  */
-  virtual void ReadDirichletCondition(
-    DRT::Condition&              cond,
-    const Teuchos::RCP<Epetra_Vector>&  toggle,
-    Teuchos::RCP<std::set<int> > dbcgids);
-
-  /*!
-  \brief Apply the Dirichlet values to the system vectors
-
-  \param cond            (in)  : The condition object
-  \param usetime         (in)  :
-  \param time            (in)  :  Evaluation time
-  \param systemvector    (out) :  Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
-  \param systemvectord   (out) :  First time derivative of DBCs
-  \param systemvectordd  (out) :  Second time derivative of DBCs
-  \param toggle          (in)  :  Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
-
-  \remark If you want to be sure which Dirichlet values are set, look at the highest entity for a certain node in
-          your input file.
-          The corresponding condition, e.g.:
-             ---------DESIGN LINE DIRICH CONDITIONS
-             DSURF  1
-             // example_line
-             E 1 - NUMDOF 6 ONOFF 0 1 1 VAL 0.0 1.0 1.0 CURVE none none none FUNCT 1 0 0
-
-          tells you which dofs are actually conditioned. In the example given above, the highest entity which contains
-          a certain node is a LINE. The first dof has an ONOFF-toggle of ZERO. This means, that the nodes in LINE 'E 1'
-          definitely DO NOT HAVE a dirichlet BC on their first dof. No matter what is defined in a condition line of lower
-          priority. The corresponding entries in the systemvectors remain untouched.
-
-  \date original mwgee 02/08
-
-  \version rauch 06/2016
-           Shifted and rearranged parts of the former implementation to ReadDirichletCondition(...).
-           This fixes inconsistency in hierarchy handling. Now, the Dirichlet conditions are first read by
-           ReadDirichletCondition(...). Then, they are applied by DoDirichletCondition(...).
-  */
-  virtual void DoDirichletCondition(
-    DRT::Condition&              cond,
-    const bool                   usetime,
-    const double                 time,
-    Teuchos::RCP<Epetra_Vector>  systemvector,
-    Teuchos::RCP<Epetra_Vector>  systemvectord,
-    Teuchos::RCP<Epetra_Vector>  systemvectordd,
-    const Teuchos::RCP<const Epetra_Vector>& toggle);
-
-  /*! \brief Helper method
+   *  A helper function for BuildSurfacesinCondition,
+   *  BuildLinesinCondition, BuildInternalFaces, etc.
    *
    *  A helper method for BuildLinesinCondition and
    *  BuildSurfacesinCondition, below.

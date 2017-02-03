@@ -19,6 +19,7 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"
 
+#include <Epetra_IntVector.h>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -253,8 +254,8 @@ void ADAPTER::Coupling::SetupCoupling(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::SetupCoupling(
-    const DRT::Discretization& masterdis,
-    const DRT::Discretization& slavedis,
+    const DRT::DiscretizationInterface& masterdis,
+    const DRT::DiscretizationInterface& slavedis,
     const Epetra_Map& masternodemap,
     const Epetra_Map& slavenodemap,
     const Epetra_Map& permslavenodemap,
@@ -360,8 +361,8 @@ void ADAPTER::Coupling::MatchNodes(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::FinishCoupling(
-    const DRT::Discretization& masterdis,
-    const DRT::Discretization& slavedis,
+    const DRT::DiscretizationInterface& masterdis,
+    const DRT::DiscretizationInterface& slavedis,
     Teuchos::RCP<Epetra_Map> masternodemap,
     Teuchos::RCP<Epetra_Map> slavenodemap,
     Teuchos::RCP<Epetra_Map> permslavenodemap,
@@ -406,8 +407,8 @@ void ADAPTER::Coupling::FinishCoupling(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::BuildDofMaps(
-    const DRT::Discretization& masterdis,
-    const DRT::Discretization& slavedis,
+    const DRT::DiscretizationInterface& masterdis,
+    const DRT::DiscretizationInterface& slavedis,
     const Teuchos::RCP<const Epetra_Map>& masternodemap,
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
@@ -424,7 +425,7 @@ void ADAPTER::Coupling::BuildDofMaps(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::BuildDofMaps(
-    const DRT::Discretization& dis,
+    const DRT::DiscretizationInterface& dis,
     Teuchos::RCP<const Epetra_Map> nodemap,
     Teuchos::RCP<const Epetra_Map> permnodemap,
     Teuchos::RCP<const Epetra_Map>& dofmap,

@@ -39,15 +39,15 @@ namespace NURBS
 */
 template <class WG>
 bool GetMyNurbsKnotsAndWeights(
-    DRT::Discretization&                      dis,
+    const DRT::DiscretizationInterface&         dis,
     DRT::Element*                             ele,
     std::vector<Epetra_SerialDenseVector>&    myknots,
     WG&                                       weights
 )
 {
   // try to cast dis to a nurbs discretisation
-  DRT::NURBS::NurbsDiscretization* nurbsdis
-  = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+  const DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(dis));
   if(nurbsdis==NULL)
     dserror("Received discretization which is not Nurbs!");
 
@@ -118,17 +118,17 @@ bool GetKnotVectorAndWeightsForNurbsBoundary(
     DRT::Element*                               boundaryele,
     const int                                   localsurfaceid,
     const int                                   parenteleid,
-    DRT::Discretization&                        discretization,
+    const DRT::DiscretizationInterface&           discretization,
     std::vector<Epetra_SerialDenseVector>&      mypknots,
     std::vector<Epetra_SerialDenseVector>&      myknots,
     WG&                                         weights,
     double&                                     normalfac)
 {
   // get knotvector(s)
-  DRT::NURBS::NurbsDiscretization* nurbsdis
-  = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  const DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+  Teuchos::RCP<const DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
 
   bool zero_size = knots->GetBoundaryEleAndParentKnots(mypknots     ,
       myknots      ,
@@ -179,7 +179,7 @@ bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(
     DRT::Element*                               parentele,
     DRT::Element*                               boundaryele,
     const int                                   localsurfaceid,
-    DRT::Discretization&                        discretization,
+    const DRT::DiscretizationInterface&           discretization,
     std::vector<Epetra_SerialDenseVector>&      mypknots,
     std::vector<Epetra_SerialDenseVector>&      myknots,
     WG&                                         pweights,
@@ -187,10 +187,10 @@ bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(
     double&                                     normalfac)
 {
   // get knotvector(s)
-  DRT::NURBS::NurbsDiscretization* nurbsdis
-  = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  const DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
+  Teuchos::RCP<const DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
 
   bool zero_size = knots->GetBoundaryEleAndParentKnots(mypknots     ,
       myknots      ,

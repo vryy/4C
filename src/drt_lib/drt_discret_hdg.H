@@ -16,6 +16,7 @@
 #ifndef DISCRET_HDG_H
 #define DISCRET_HDG_H
 
+#include "drt_utils_discret.H"
 #include "drt_discret_faces.H"
 #include "drt_dserror.H"
 
@@ -105,45 +106,6 @@ public:
                    bool doboundaryconditions = true);
 
   /*!
-  \brief Determine Dirichlet condition
-
-  \param cond    (in)  :  The condition object
-  \param toggle  (out) :  Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
-  \param dbcgids (out) :  Map containing DOFs subjected to Dirichlet boundary conditions
-
-  \date 06/16
-  */
-  virtual void ReadDirichletCondition(
-    DRT::Condition&              cond,
-    const Teuchos::RCP<Epetra_Vector>& toggle,
-    Teuchos::RCP<std::set<int> > dbcgids);
-
-  /*!
-  \brief Determine Dirichlet condition at given time and apply its
-         values to a system vector
-
-  \param cond            The condition object
-  \param usetime
-  \param time            Evaluation time
-  \param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
-  \param systemvectord   First time derivative of DBCs
-  \param systemvectordd  Second time derivative of DBCs
-  \param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
-  \param dbcgids         Map containing DOFs subjected to Dirichlet boundary conditions
-
-  \date 02/08
-  */
-  virtual void DoDirichletCondition(
-    DRT::Condition&             cond,
-    const bool                  usetime,
-    const double                time,
-    Teuchos::RCP<Epetra_Vector> systemvector,
-    Teuchos::RCP<Epetra_Vector> systemvectord,
-    Teuchos::RCP<Epetra_Vector> systemvectordd,
-    const Teuchos::RCP<const Epetra_Vector>& toggle);
-
-
-  /*!
    * this function has the same functionality as the function in the base class,
    * additionally, the degree of the elements is communicated, such that ghosted elements
    * also have full knowledge about the face degrees. This is necessary for discretizations
@@ -168,6 +130,69 @@ public:
   void AddElementGhostLayer();
 
 }; // class DiscretizationHDG
+
+namespace UTILS {
+  /** \brief Specialized Dbc evaluation class for HDG discretizations
+   *
+   *  \author hiermeier \date 10/16 */
+  class DbcHDG : public Dbc
+  {
+  public:
+    /// constructor
+    DbcHDG() {};
+
+    /// destructor
+    virtual ~DbcHDG() {};
+
+  protected:
+    /** \brief Determine Dirichlet condition
+     *
+     *  \param cond    (in)  :  The condition object
+     *  \param toggle  (out) :  Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
+     *  \param dbcgids (out) :  Map containing DOFs subjected to Dirichlet boundary conditions
+     *
+     *  \author kronbichler \date 06/16 */
+    virtual void ReadDirichletCondition(
+        const DRT::DiscretizationInterface &   discret,
+        const DRT::Condition &               cond,
+        Epetra_Vector &                      toggle,
+        const Teuchos::RCP<std::set<int> > * dbcgids) const;
+    void ReadDirichletCondition(
+        const DRT::DiscretizationFaces &     discret,
+        const DRT::Condition &               cond,
+        Epetra_Vector &                      toggle,
+        const Teuchos::RCP<std::set<int> > * dbcgids) const;
+
+    /** \brief Determine Dirichlet condition at given time and apply its
+     *         values to a system vector
+     *
+     *  \param cond            The condition object
+     *  \param usetime
+     *  \param time            Evaluation time
+     *  \param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
+     *  \param systemvectord   First time derivative of DBCs
+     *  \param systemvectordd  Second time derivative of DBCs
+     *  \param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
+     *  \param dbcgids         Map containing DOFs subjected to Dirichlet boundary conditions
+     *
+     *  \author kronbichler \date 02/08 */
+    virtual void DoDirichletCondition(
+        const DRT::DiscretizationInterface &  discret,
+        const DRT::Condition &              cond,
+        const bool &                        usetime,
+        const double &                      time,
+        const Teuchos::RCP<Epetra_Vector> * systemvectors,
+        const Epetra_Vector&                toggle,
+        const Teuchos::RCP<std::set<int> > * dbcgids) const;
+    void DoDirichletCondition(
+        const DRT::DiscretizationFaces &    discret,
+        const DRT::Condition &              cond,
+        const bool &                        usetime,
+        const double &                      time,
+        const Teuchos::RCP<Epetra_Vector> * systemvectors,
+        const Epetra_Vector&                toggle) const;
+  };  // class DbcHDG
+} // namespace UTILS
 } // namespace DRT
 
 /// << operator

@@ -115,6 +115,18 @@ public:
     return;
   }
 
+  /// get the number of reserved DoF's (see also NumMyReservedDofsPerNode())
+  int NumMyReservedDofs() const
+  {
+    return numMyReservedDofs_;
+  }
+
+  /// get the number of reserved DoF's per node
+  int NumMyReservedDofsPerNode() const
+  {
+    return numMyReservedDofsperNode_;
+  }
+
   /// minimal global dof id
   int minGID_ ;
 

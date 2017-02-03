@@ -43,15 +43,17 @@ namespace XFEM
   public:
 
     /// constructor
-    XFEMDofSet( GEO::CutWizard& wizard, int numMyReservedDofsperNode, DRT::Discretization& dis)
-      : FixedSizeDofSet(numMyReservedDofsperNode,dis.NumGlobalNodes()),
-        wizard_( wizard ),
-        dis_(dis)
+    XFEMDofSet( GEO::CutWizard& wizard,
+        int numMyReservedDofsperNode,
+        DRT::Discretization& dis )
+        : FixedSizeDofSet(numMyReservedDofsperNode,dis.NumGlobalNodes()),
+          wizard_( wizard ),
+          dis_(dis)
     {
     }
 
     /// equality relational operator for two XFEM::DofSets based on the number of nodal dofsets for all nodes
-    bool operator==(XFEMDofSet const& other)
+    bool operator==(XFEMDofSet const& other) const
     {
       const int numnode = dis_.NumMyRowNodes();
       for(int lid=0; lid<numnode; lid++)
@@ -66,7 +68,7 @@ namespace XFEM
     }
 
     /// equality relational operator for two XFEM::DofSets based on the number of dofsets for all nodes
-    bool operator!=(XFEMDofSet const& other)
+    bool operator!=(XFEMDofSet const& other) const
     {
       return !(*this==other);
     }
@@ -79,15 +81,15 @@ namespace XFEM
     if you need more than one dof gid.
     - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
 
-    Additional input nodal dof set: If the node contains more than one set of dofs, which can be
-    evaluated, the number of the set needs to be given. Currently only the case for XFEM.
+    Additional input nodal_dof_set_id: If the node contains more than one set of dofs, which can be
+    evaluated, the ID of the set needs to be given. Currently only the case for XFEM.
 
-    \param dof (in)         : vector of dof gids (to be filled)
-    \param nds (in)         : number of dofset
-    \param nodaldofset (in) : number of nodal dofset
-    \param node (in)        : the node
+    \param dof             (out): vector of dof gids (to be filled)
+    \param node            (in) : the node
+    \param nodal_dofset_id (in) : id of the nodal dofset
     */
-    virtual void Dof(std::vector<int>& dofs, const DRT::Node* node,unsigned nodaldofset) const;
+    virtual void Dof(std::vector<int>& dofs, const DRT::Node* node,
+        unsigned nodal_dofset_id) const;
 
   protected:
 

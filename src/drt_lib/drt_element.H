@@ -1526,6 +1526,9 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     return s;
 }
 
+  /// translate shards::key to enum
+  DRT::Element::DiscretizationType ShardsKeyToDisType(const unsigned& key);
+
   /// translate distype string to enum
   DRT::Element::DiscretizationType StringToDistype(std::string name);
 

@@ -169,7 +169,7 @@ class SparseOperator : public Epetra_Operator
     /*!
 
       This is an individual call.
-      Will only assemble locally and will never do any commmunication.
+      Will only assemble locally and will never do any communication.
       All values that can not be assembled locally will be ignored.
       Will use the communicator and rowmap from matrix A to determine ownerships.
       Local matrix Aele may be \b square or \b rectangular.

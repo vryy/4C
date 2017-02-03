@@ -3085,6 +3085,9 @@ private:
   /// whether we are a view to some other matrix
   bool isview_;
 
+  /// only in combination with isview_. Pure read access to the underlying data.
+  bool isreadonly_;
+
 public:
 
   typedef value_type scalar_type;
@@ -3169,13 +3172,34 @@ public:
    */
   TMatrix(const TMatrix<value_type,rows,cols>& source);
 
+  /// Copy constructor
+  /*!
+    Constructs a new Matrix from \e source. If
+    \e view==false the data is copied, otherwise a read-only view to
+    it is constructed.
+
+    \param source
+      matrix to take data from
+    \param view
+      whether the data is to be viewed or copied
+
+    \note This constructor sets the readonly_ flag, if \e view==true.
+          In this case I recommend to use the copy constructor in combination
+          with a const qualifier!
+   */
+  TMatrix(const TMatrix<value_type,rows,cols>& source, bool view);
+
   /// Deconstructor
   ~TMatrix();
 
   /// Return the value_type* holding the data.
   inline const value_type* A() const { return data_; }
   /// Return the value_type* holding the data.
-  inline value_type* A() { return data_; }
+  inline value_type* A()
+  {
+    dsassert( (not isreadonly_), "No write access to read-only data!" );
+    return data_;
+  }
   /// Return the number of rows
   static inline unsigned int Rows() { return rows; }
   /// Return the number of columns
@@ -3197,7 +3221,7 @@ public:
     false you must construct a view to NULL, because the default
     constructor already allocates memory.
    */
-  inline bool IsInitialized() const { return data_!=NULL; }
+  inline bool IsInitialized() const { return A()!=NULL; }
 
   /// Set view
   /*!
@@ -3226,7 +3250,7 @@ public:
     \param data
       memory to copy
    */
-  void SetCopy(value_type* data);
+  void SetCopy(const value_type* data);
 
   /// Set copy
   /*!
@@ -3239,7 +3263,7 @@ public:
     \param source
       matrix to copy from
    */
-  void SetCopy(TMatrix<value_type,rows,cols>& source);
+  void SetCopy(const TMatrix<value_type,rows,cols>& source);
 
 
   /// Calculate determinant
@@ -3272,7 +3296,7 @@ public:
     PutScalar(0.0), but it should be faster.
    */
   inline void Clear()
-    { DENSEFUNCTIONS::clearMatrix<value_type,rows,cols>(data_); }
+    { DENSEFUNCTIONS::clearMatrix<value_type,rows,cols>(A()); }
 
   // Epetra-style Functions
   /// Fill with scalar
@@ -3283,7 +3307,7 @@ public:
       value to fill matrix with
    */
   inline void PutScalar(const value_type scalar)
-    { DENSEFUNCTIONS::putScalar<value_type, rows, cols>(scalar, data_); }
+    { DENSEFUNCTIONS::putScalar<value_type, rows, cols>(scalar, A()); }
 
   /// Dot product
   /*!
@@ -3294,7 +3318,7 @@ public:
     \return dot product
    */
   inline value_type Dot(const TMatrix<value_type,rows,cols>& other) const
-    { return DENSEFUNCTIONS::dot<value_type, rows, cols>(data_, other.data_); }
+    { return DENSEFUNCTIONS::dot<value_type, rows, cols>(A(), other.A()); }
 
   /// Cross product
   /*!
@@ -3306,7 +3330,7 @@ public:
    */
   inline void CrossProduct(const TMatrix<value_type,rows,cols>& left,
     const TMatrix<value_type,rows,cols>& right)
-    { DENSEFUNCTIONS::crossproduct<value_type, rows, cols>(data_, left.data_, right.data_); }
+    { DENSEFUNCTIONS::crossproduct<value_type, rows, cols>(A(), left.A(), right.A()); }
 
   /// Compute absolute value
   /*!
@@ -3316,7 +3340,7 @@ public:
       matrix to read values from
    */
   inline void Abs(const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::abs<value_type, rows, cols>(data_, other.data_); }
+    { DENSEFUNCTIONS::abs<value_type, rows, cols>(A(), other.A()); }
 
   /// Compute reciprocal value
   /*!
@@ -3326,7 +3350,7 @@ public:
       matrix to read values from
    */
   inline void Reciprocal(const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::reciprocal<value_type, rows, cols>(data_, other.data_); }
+    { DENSEFUNCTIONS::reciprocal<value_type, rows, cols>(A(), other.A()); }
 
   /// Scale
   /*!
@@ -3336,7 +3360,7 @@ public:
       scaling factor
    */
   inline void Scale(const value_type scalar)
-    { DENSEFUNCTIONS::scaleMatrix<value_type,rows,cols>(scalar, data_); }
+    { DENSEFUNCTIONS::scaleMatrix<value_type,rows,cols>(scalar, A()); }
 
   /// Copy: \e this = \e other
   /*!
@@ -3346,7 +3370,7 @@ public:
       matrix to copy
    */
   inline void Update(const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::update<value_type,rows,cols>(data_,other.data_); }
+    { DENSEFUNCTIONS::update<value_type,rows,cols>(A(),other.A()); }
 
   /// Scaled copy: \e this = \e scalarOther * \e other
   /*!
@@ -3358,7 +3382,7 @@ public:
       matrix to read from
    */
   inline void Update(const value_type scalarOther, const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::update<value_type, rows,cols>(data_,scalarOther,other.data_); }
+    { DENSEFUNCTIONS::update<value_type, rows,cols>(A(),scalarOther,other.A()); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
   /*!
@@ -3373,7 +3397,7 @@ public:
    */
   inline void Update(const value_type scalarOther, const TMatrix<value_type,rows,cols>& other,
                      const value_type scalarThis)
-    { DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, data_, scalarOther, other.data_); }
+    { DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, A(), scalarOther, other.A()); }
 
   /// Add: \e this = \e left + \e right
   /*!
@@ -3386,7 +3410,7 @@ public:
    */
   inline void Update(const TMatrix<value_type,rows,cols>& left,
                      const TMatrix<value_type,rows,cols>& right)
-    { DENSEFUNCTIONS::update<value_type, rows, cols>(data_, left.data_, right.data_); }
+    { DENSEFUNCTIONS::update<value_type, rows, cols>(A(), left.A(), right.A()); }
 
   /// Add: \e this = \e scalarLeft * \e left + \e scalarRight * \e right
   /*!
@@ -3403,7 +3427,7 @@ public:
    */
   inline void Update(const value_type scalarLeft, const TMatrix<value_type,rows,cols>& left,
                      const value_type scalarRight, const TMatrix<value_type,rows,cols>& right)
-    { DENSEFUNCTIONS::update<value_type, rows, cols>(data_, scalarLeft, left.data_, scalarRight, right.data_); }
+    { DENSEFUNCTIONS::update<value_type, rows, cols>(A(), scalarLeft, left.A(), scalarRight, right.A()); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarLeft * \e left + \e scalarRight * \e right
   /*!
@@ -3423,7 +3447,7 @@ public:
   inline void Update(const value_type scalarLeft, const TMatrix<value_type,rows,cols>& left,
                      const value_type scalarRight, const TMatrix<value_type,rows,cols>& right,
                      const value_type scalarThis)
-    { DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, data_, scalarLeft, left.data_, scalarRight, right.data_); }
+    { DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, A(), scalarLeft, left.A(), scalarRight, right.A()); }
 
   /// Transposed copy: \e this = \e other^T
   /*!
@@ -3433,7 +3457,7 @@ public:
       matrix to copy
    */
   inline void UpdateT(const TMatrix<value_type, cols, rows>& other)
-    { DENSEFUNCTIONS::updateT<value_type,rows,cols>(data_,other.A()); }
+    { DENSEFUNCTIONS::updateT<value_type,rows,cols>(A(),other.A()); }
 
   /// Scaled transposed copy: \e this = \e scalarOther * \e other^T
   /*!
@@ -3445,7 +3469,7 @@ public:
       matrix to read from
    */
   inline void UpdateT(const value_type scalarOther, const TMatrix<value_type, cols, rows>& other)
-    { DENSEFUNCTIONS::updateT<value_type,rows,cols>(data_,scalarOther,other.A()); }
+    { DENSEFUNCTIONS::updateT<value_type,rows,cols>(A(),scalarOther,other.A()); }
 
   /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
   /*!
@@ -3460,7 +3484,7 @@ public:
    */
   inline void UpdateT(const value_type scalarOther, const TMatrix<value_type, cols, rows>& other,
                       const value_type scalarThis)
-    { DENSEFUNCTIONS::updateT<value_type, rows, cols>(scalarThis, data_, scalarOther, other.A()); }
+    { DENSEFUNCTIONS::updateT<value_type, rows, cols>(scalarThis, A(), scalarOther, other.A()); }
 
   /// Multiply element-wise: \e this(m,n) *= \e other(m,n)
   /*!
@@ -3470,7 +3494,7 @@ public:
       factor
    */
   inline void EMultiply(const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(data_,other.data_); }
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(A(),other.A()); }
 
   /// Multiply element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
   /*!
@@ -3482,7 +3506,7 @@ public:
       factor
    */
   inline void EMultiply(const value_type scalar, const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(scalar,data_,other.data_); }
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(scalar,A(),other.A()); }
 
   /// Multiply element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
   /*!
@@ -3494,7 +3518,7 @@ public:
       second factor
    */
   inline void EMultiply(const TMatrix<value_type,rows,cols>& left, const TMatrix<value_type,rows,cols>& right)
-    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(data_,left.data_,right.data_); }
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(A(),left.A(),right.A()); }
 
   /// Multiply element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
   /*!
@@ -3509,7 +3533,7 @@ public:
       second factor
    */
   inline void EMultiply(const value_type scalarOther, const TMatrix<value_type,rows,cols>& left, const TMatrix<value_type,rows,cols>& right)
-    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(data_, scalarOther, left.data_, right.data_); }
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(A(), scalarOther, left.A(), right.A()); }
 
   /// Multiply element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e left(m,n)*\e right(m,n)
   /*!
@@ -3526,7 +3550,7 @@ public:
    */
   inline void EMultiply(const value_type scalarOther, const TMatrix<value_type,rows,cols>& left,
                          const TMatrix<value_type,rows,cols>& right, const value_type scalarThis)
-    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
+    { DENSEFUNCTIONS::eMultiply<value_type,rows,cols>(scalarThis, A(), scalarOther, left.A(), right.A()); }
 
   /// Divide element-wise: \e this(m,n) *= \e other(m,n)
   /*!
@@ -3536,7 +3560,7 @@ public:
       factor
    */
   inline void EDivide(const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(data_,other.data_); }
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(A(),other.A()); }
 
   /// Divide element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
   /*!
@@ -3548,7 +3572,7 @@ public:
       factor
    */
   inline void EDivide(const value_type scalar, const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(scalar,data_,other.data_); }
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(scalar,A(),other.A()); }
 
   /// Divide element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
   /*!
@@ -3560,7 +3584,7 @@ public:
       divisor
    */
   inline void EDivide(const TMatrix<value_type,rows,cols>& left, const TMatrix<value_type,rows,cols>& right)
-    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(data_,left.data_,right.data_); }
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(A(),left.A(),right.A()); }
 
   /// Divide element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
   /*!
@@ -3575,7 +3599,7 @@ public:
       divisor
    */
   inline void EDivide(const value_type scalarOther, const TMatrix<value_type,rows,cols>& left, const TMatrix<value_type,rows,cols>& right)
-    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(data_, scalarOther, left.data_, right.data_); }
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(A(), scalarOther, left.A(), right.A()); }
 
   /// Divide element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e left(m,n)/\e right(m,n)
   /*!
@@ -3592,7 +3616,7 @@ public:
    */
   inline void EDivide(const value_type scalarOther, const TMatrix<value_type,rows,cols>& left,
                          const TMatrix<value_type,rows,cols>& right, const value_type scalarThis)
-    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(scalarThis, data_, scalarOther, left.data_, right.data_); }
+    { DENSEFUNCTIONS::eDivide<value_type,rows,cols>(scalarThis, A(), scalarOther, left.A(), right.A()); }
 
 
   /// Calculate 1-norm
@@ -3602,14 +3626,14 @@ public:
     \return 1-norm
    */
   inline value_type Norm1() const
-    { return DENSEFUNCTIONS::norm1<value_type, rows, cols>(data_); }
+    { return DENSEFUNCTIONS::norm1<value_type, rows, cols>(A()); }
 
   /// Calculate 2-norm (Euclidean norm)
   /*!
     \return 2-norm
    */
   inline value_type Norm2() const
-    { return DENSEFUNCTIONS::norm2<value_type, rows, cols>(data_); }
+    { return DENSEFUNCTIONS::norm2<value_type, rows, cols>(A()); }
 
   /// Calculate inf-norm
   /*!
@@ -3618,28 +3642,28 @@ public:
     \return inf-norm
    */
   inline value_type NormInf() const
-    { return DENSEFUNCTIONS::normInf<value_type, rows, cols>(data_); }
+    { return DENSEFUNCTIONS::normInf<value_type, rows, cols>(A()); }
 
   /// Calculate minimum value
   /*!
     \return minimum value
    */
   inline value_type MinValue() const
-    { return DENSEFUNCTIONS::minValue<value_type, rows, cols>(data_); }
+    { return DENSEFUNCTIONS::minValue<value_type, rows, cols>(A()); }
 
   /// Calculate maximum value
   /*!
     \return maximum value
    */
   inline value_type MaxValue() const
-    { return DENSEFUNCTIONS::maxValue<value_type, rows, cols>(data_); }
+    { return DENSEFUNCTIONS::maxValue<value_type, rows, cols>(A()); }
 
   /// Calculate mean value
   /*!
     \return mean value
    */
   inline value_type MeanValue() const
-    { return DENSEFUNCTIONS::meanValue<value_type, rows, cols>(data_); }
+    { return DENSEFUNCTIONS::meanValue<value_type, rows, cols>(A()); }
 
   /// Multiply: \e this = \e left*right
   /*!
@@ -3653,7 +3677,7 @@ public:
   template <unsigned int inner>
   inline void Multiply(const TMatrix<value_type, rows, inner>& left,
                        const TMatrix<value_type, inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(A(),left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right
   /*!
@@ -3665,7 +3689,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNN(const TMatrix<value_type, rows, inner>& left,
                          const TMatrix<value_type, inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(A(),left.A(),right.A()); }
 
   /// Multiply: \e this = \e left*right^T
   /*!
@@ -3677,7 +3701,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNT(const TMatrix<value_type, rows, inner>& left,
                          const TMatrix<value_type, cols, inner>& right)
-    { DENSEFUNCTIONS::multiplyNT<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyNT<value_type,rows,inner,cols>(A(),left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right
   /*!
@@ -3689,7 +3713,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTN(const TMatrix<value_type, inner, rows>& left,
                          const TMatrix<value_type, inner, cols>& right)
-    { DENSEFUNCTIONS::multiplyTN<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTN<value_type,rows,inner,cols>(A(),left.A(),right.A()); }
 
   /// Multiply: \e this = \e left^T*right^T
   /*!
@@ -3701,7 +3725,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTT(const TMatrix<value_type, inner, rows>& left,
                          const TMatrix<value_type, cols, inner>& right)
-    { DENSEFUNCTIONS::multiplyTT<value_type,rows,inner,cols>(data_,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTT<value_type,rows,inner,cols>(A(),left.A(),right.A()); }
 
 
   /// Multiply: \e this = \e scalarOthers * \e left*right
@@ -3716,7 +3740,7 @@ public:
   template <unsigned int inner>
   inline void Multiply(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
                        const TMatrix<value_type, inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(A(),scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right
   /*!
@@ -3732,7 +3756,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNN(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
                          const TMatrix<value_type, inner, cols>& right)
-    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(A(),scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left*right^T
   /*!
@@ -3746,7 +3770,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNT(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
                          const TMatrix<value_type, cols, inner>& right)
-    { DENSEFUNCTIONS::multiplyNT<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyNT<value_type,rows,inner,cols>(A(),scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right
   /*!
@@ -3760,7 +3784,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTN(const value_type scalarOthers, const TMatrix<value_type, inner, rows>& left,
                          const TMatrix<value_type, inner, cols>& right)
-    { DENSEFUNCTIONS::multiplyTN<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTN<value_type,rows,inner,cols>(A(),scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarOthers * \e left^T*right^T
   /*!
@@ -3774,7 +3798,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTT(const value_type scalarOthers, const TMatrix<value_type, inner, rows>& left,
                          const TMatrix<value_type, cols, inner>& right)
-    { DENSEFUNCTIONS::multiplyTT<value_type,rows,inner,cols>(data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTT<value_type,rows,inner,cols>(A(),scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
   /*!
@@ -3792,7 +3816,7 @@ public:
   template <unsigned int inner>
   inline void Multiply(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
                        const TMatrix<value_type, inner, cols>& right, const value_type scalarThis)
-    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(scalarThis,A(),scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
   /*!
@@ -3808,7 +3832,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNN(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
                          const TMatrix<value_type, inner, cols>& right, const value_type scalarThis)
-    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiply<value_type,rows,inner,cols>(scalarThis,A(),scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right^T
   /*!
@@ -3824,7 +3848,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyNT(const value_type scalarOthers, const TMatrix<value_type, rows, inner>& left,
                          const TMatrix<value_type, cols, inner>& right, const value_type scalarThis)
-    { DENSEFUNCTIONS::multiplyNT<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyNT<value_type,rows,inner,cols>(scalarThis,A(),scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right
   /*!
@@ -3840,7 +3864,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTN(const value_type scalarOthers, const TMatrix<value_type, inner, rows>& left,
                          const TMatrix<value_type, inner, cols>& right, const value_type scalarThis)
-    { DENSEFUNCTIONS::multiplyTN<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTN<value_type,rows,inner,cols>(scalarThis,A(),scalarOthers,left.A(),right.A()); }
 
   /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right^T
   /*!
@@ -3856,7 +3880,7 @@ public:
   template <unsigned int inner>
   inline void MultiplyTT(const value_type scalarOthers, const TMatrix<value_type, inner, rows>& left,
                          const TMatrix<value_type, cols, inner>& right, const value_type scalarThis)
-    { DENSEFUNCTIONS::multiplyTT<value_type,rows,inner,cols>(scalarThis,data_,scalarOthers,left.A(),right.A()); }
+    { DENSEFUNCTIONS::multiplyTT<value_type,rows,inner,cols>(scalarThis,A(),scalarOthers,left.A(),right.A()); }
 
   /// Write \e this to \e out
   /*!
@@ -3911,7 +3935,7 @@ public:
       matrix to add
    */
   inline TMatrix<value_type,rows,cols>& operator+=(const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::update<value_type,rows,cols>(1.0, data_, 1.0, other.data_); return *this; }
+    { DENSEFUNCTIONS::update<value_type,rows,cols>(1.0, A(), 1.0, other.A()); return *this; }
 
   /// -= operator
   /*!
@@ -3921,7 +3945,7 @@ public:
       matrix to subtract
    */
   inline TMatrix<value_type,rows,cols>& operator-=(const TMatrix<value_type,rows,cols>& other)
-    { DENSEFUNCTIONS::update<value_type,rows,cols>(1.0, data_, -1.0, other.data_); return *this; }
+    { DENSEFUNCTIONS::update<value_type,rows,cols>(1.0, A(), -1.0, other.A()); return *this; }
 
   /// Access data
   /*!
@@ -3972,7 +3996,8 @@ std::ostream& operator<<(std::ostream& out, const TMatrix<value_type,rows,cols>&
 // Constructors
 
 template<class value_type, unsigned int rows, unsigned int cols>
-TMatrix<value_type,rows,cols>::TMatrix(bool setzero) : data_(0), isview_(false)
+TMatrix<value_type,rows,cols>::TMatrix(bool setzero)
+    : data_(0), isview_(false), isreadonly_(false)
 {
   DENSEERROR::Checker<(rows != 0) and (cols != 0)>::Matrix_dimensions_cannot_be_zero();
   if (allocatesmemory_)
@@ -3984,8 +4009,8 @@ TMatrix<value_type,rows,cols>::TMatrix(bool setzero) : data_(0), isview_(false)
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
-TMatrix<value_type,rows,cols>::TMatrix(value_type* d, bool view) :
-    data_(0), isview_(view)
+TMatrix<value_type,rows,cols>::TMatrix(value_type* d, bool view)
+    : data_(0), isview_(view), isreadonly_(false)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
   if (isview_) {
@@ -4001,13 +4026,13 @@ TMatrix<value_type,rows,cols>::TMatrix(value_type* d, bool view) :
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
-TMatrix<value_type,rows,cols>::TMatrix(const value_type* d, bool view) :
-    data_(0), isview_(view)
+TMatrix<value_type,rows,cols>::TMatrix(const value_type* d, bool view)
+    : data_(0), isview_(view), isreadonly_(false)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
   if (isview_) {
-    dserror("you cannot make a view on a const double pointer");
-    //data_ = d;
+    isreadonly_ = true;
+    data_ = const_cast<double * >(d);
   }
   else {
     if (allocatesmemory_)
@@ -4019,8 +4044,8 @@ TMatrix<value_type,rows,cols>::TMatrix(const value_type* d, bool view) :
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
-TMatrix<value_type,rows,cols>::TMatrix(Epetra_SerialDenseMatrix& d, bool view) :
-    data_(0), isview_(view)
+TMatrix<value_type,rows,cols>::TMatrix(Epetra_SerialDenseMatrix& d, bool view)
+    : data_(0), isview_(view), isreadonly_(false)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
   if (d.A()==0)
@@ -4040,8 +4065,8 @@ TMatrix<value_type,rows,cols>::TMatrix(Epetra_SerialDenseMatrix& d, bool view) :
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
-TMatrix<value_type,rows,cols>::TMatrix(TMatrix<value_type,rows,cols>& source, bool view) :
-    data_(0), isview_(view)
+TMatrix<value_type,rows,cols>::TMatrix(TMatrix<value_type,rows,cols>& source, bool view)
+    : data_(0), isview_(view), isreadonly_(false)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
   if (isview_) {
@@ -4057,8 +4082,8 @@ TMatrix<value_type,rows,cols>::TMatrix(TMatrix<value_type,rows,cols>& source, bo
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
-TMatrix<value_type,rows,cols>::TMatrix(const TMatrix<value_type,rows,cols>& source) :
-  data_(0), isview_(false)
+TMatrix<value_type,rows,cols>::TMatrix(const TMatrix<value_type,rows,cols>& source)
+    : data_(0), isview_(false), isreadonly_(false)
 {
   DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
   if (allocatesmemory_)
@@ -4066,6 +4091,24 @@ TMatrix<value_type,rows,cols>::TMatrix(const TMatrix<value_type,rows,cols>& sour
   else
     data_ = &datafieldsmall_[0];
   std::copy(source.data_,source.data_+rows*cols,data_);
+}
+
+template<class value_type, unsigned int rows, unsigned int cols>
+TMatrix<value_type,rows,cols>::TMatrix(const TMatrix<value_type,rows,cols>& source, bool view)
+    : data_(0), isview_(view), isreadonly_(false)
+{
+  DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
+  if (isview_) {
+    isreadonly_ = true;
+    data_ = const_cast<double * >( source.A() );
+  }
+  else {
+    if (allocatesmemory_)
+      data_ = new value_type[rows*cols];
+    else
+      data_ = &datafieldsmall_[0];
+    std::copy(source.data_,source.data_+rows*cols,data_);
+  }
 }
 
 // Destructor
@@ -4099,7 +4142,7 @@ void TMatrix<value_type,rows,cols>::SetView(TMatrix<value_type,rows,cols>& sourc
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
-void TMatrix<value_type,rows,cols>::SetCopy(value_type* data)
+void TMatrix<value_type,rows,cols>::SetCopy(const value_type* data)
 {
   if (isview_) {
     if (allocatesmemory_)
@@ -4112,16 +4155,9 @@ void TMatrix<value_type,rows,cols>::SetCopy(value_type* data)
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
-void TMatrix<value_type,rows,cols>::SetCopy(TMatrix<value_type,rows,cols>& source)
+void TMatrix<value_type,rows,cols>::SetCopy(const TMatrix<value_type,rows,cols>& source)
 {
-  if (isview_) {
-    if (allocatesmemory_)
-      data_ = new value_type[rows*cols];
-    else
-      data_ = &datafieldsmall_[0];
-    isview_ = false;
-  }
-  std::copy(source.data_,source.data_+rows*cols,data_);
+  SetCopy( source.A() );
 }
 
 // Determinant
@@ -4129,7 +4165,7 @@ template<class value_type, unsigned int rows, unsigned int cols>
 inline value_type TMatrix<value_type,rows,cols>::Determinant() const
 {
   DENSEERROR::Checker<rows == cols>::Cannot_compute_determinant_of_nonsquare_matrix();
-  return DENSEFUNCTIONS::determinant<value_type, rows, cols>(data_);
+  return DENSEFUNCTIONS::determinant<value_type, rows, cols>(A());
 }
 
 // Invert
@@ -4137,14 +4173,14 @@ template<class value_type, unsigned int rows, unsigned int cols>
 inline value_type TMatrix<value_type,rows,cols>::Invert()
 {
   DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
-  return DENSEFUNCTIONS::invert<value_type, rows, cols>(data_);
+  return DENSEFUNCTIONS::invert<value_type, rows, cols>(A());
 }
 
 template <class value_type, unsigned int rows,  unsigned int cols>
 inline value_type TMatrix<value_type,rows,cols>::Invert(const TMatrix<value_type,rows,cols>& other)
 {
   DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
-  return DENSEFUNCTIONS::invert<value_type, rows, cols>(data_, other.data_);
+  return DENSEFUNCTIONS::invert<value_type, rows, cols>(A(), other.A());
 }
 
 template <class value_type, unsigned int rows,  unsigned int cols>
@@ -4152,7 +4188,8 @@ void TMatrix<value_type,rows,cols>::Print(std::ostream& out) const
 {
   out << "Matrix<" << rows << ',' << cols << '>';
   if (isview_) out << " (view to memory only)";
-  if (data_ == NULL) {
+  if (isreadonly_) out << "\n (read only)";
+  if (A() == NULL) {
     out << " with data_==NULL!\n";
     return;
   }
@@ -4162,7 +4199,7 @@ void TMatrix<value_type,rows,cols>::Print(std::ostream& out) const
     for (unsigned int i = 0; i < rows; ++i) {
       if (i!=0) out << ' ';
       for (unsigned int j = 0; j < cols; ++j) {
-        out << data_[i+rows*j];
+        out << A()[i+rows*j];
         if (j+1 < cols) out << ", ";
       }
       if (i+1 < rows) out << ",\n";
@@ -4174,7 +4211,7 @@ void TMatrix<value_type,rows,cols>::Print(std::ostream& out) const
     out << "[";
     for (unsigned int i = 0; i < rows; ++i) {
       if (i!=0) out << ' ';
-      out << data_[i];
+      out << A()[i];
     }
     out << "]\n";
   }
@@ -4196,7 +4233,7 @@ template<class value_type, unsigned int rows, unsigned int cols>
 inline TMatrix<value_type,rows,cols> &
 TMatrix<value_type,rows,cols>::operator=(const TMatrix<value_type,rows,cols>& other)
 {
-  DENSEFUNCTIONS::update<value_type, rows,cols>(data_, other.data_);
+  DENSEFUNCTIONS::update<value_type, rows,cols>(A(), other.A());
   return *this;
 }
 
@@ -4204,7 +4241,7 @@ template<class value_type, unsigned int rows, unsigned int cols>
 inline TMatrix<value_type,rows,cols> &
 TMatrix<value_type,rows,cols>::operator=(const value_type other)
 {
-  DENSEFUNCTIONS::putScalar<value_type, rows,cols>(other, data_);
+  DENSEFUNCTIONS::putScalar<value_type, rows,cols>(other, A());
   return *this;
 }
 
@@ -4212,11 +4249,11 @@ template<class value_type, unsigned int rows, unsigned int cols>
 inline bool
 TMatrix<value_type,rows,cols>::operator==(const TMatrix<value_type,rows,cols>& other) const
 {
-  if (data_ == other.data_) return true;
+  if (A() == other.A()) return true;
   // unfortunately memcmp does not work, because +0 and -0 are
   // different in memory...
   for (unsigned int c = 0; c < rows*cols; ++c)
-    if (data_[c] != other.data_[c]) return false;
+    if (A()[c] != other.A()[c]) return false;
   return true;
 }
 
@@ -4236,7 +4273,7 @@ inline value_type& TMatrix<value_type,rows,cols>::operator()(unsigned int r, uns
     if (r >= rows or c >= cols)
       dserror("Indices %i,%i out of range in TMatrix<%i,%i>.",r,c,rows,cols);
 #endif
-  return data_[r+c*rows];
+  return A()[r+c*rows];
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
@@ -4246,7 +4283,7 @@ inline const value_type& TMatrix<value_type,rows,cols>::operator()(unsigned int 
     if (r >= rows or c >= cols)
       dserror("Indices %i,%i out of range in TMatrix<%i,%i>.",r,c,rows,cols);
 #endif
-  return data_[r+c*rows];
+  return A()[r+c*rows];
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
@@ -4257,7 +4294,7 @@ inline value_type& TMatrix<value_type,rows,cols>::operator()(unsigned int r)
     if (r >= (cols == 1 ? rows : cols))
       dserror("Index %i out of range in TMatrix<%i,%i>.",r,rows,cols);
 #endif
-  return data_[r];
+  return A()[r];
 }
 
 template<class value_type, unsigned int rows, unsigned int cols>
@@ -4268,7 +4305,7 @@ inline const value_type& TMatrix<value_type,rows,cols>::operator()(unsigned int 
     if (r >= (cols == 1 ? rows : cols))
       dserror("Index %i out of range in TMatrix<%i,%i>.",r,rows,cols);
 #endif
-    return data_[r];
+    return A()[r];
 }
 
 

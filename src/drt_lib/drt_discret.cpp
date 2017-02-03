@@ -28,12 +28,13 @@
  |  ctor (public)                                            mwgee 11/06|
  |  comm             (in)  a communicator object                        |
  *----------------------------------------------------------------------*/
-DRT::Discretization::Discretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm) :
-name_(name),
-comm_(comm),
-writer_(Teuchos::null),
-filled_(false),
-havedof_(false)
+DRT::Discretization::Discretization(const std::string name,
+    Teuchos::RCP<Epetra_Comm> comm)
+    : name_(name),
+      comm_(comm),
+      writer_(Teuchos::null),
+      filled_(false),
+      havedof_(false)
 {
   dofsets_.push_back(Teuchos::rcp(new DofSet()));
 }
@@ -518,9 +519,11 @@ const Epetra_Map* DRT::Discretization::DofColMap(unsigned nds) const
 /*----------------------------------------------------------------------*
  |  replace the dofset of the discretisation (public)        gammi 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets)
+void DRT::Discretization::ReplaceDofSet(unsigned nds,
+    Teuchos::RCP<DofSetInterface> newdofset,
+    bool replaceinstatdofsets)
 {
-  dsassert(nds<dofsets_.size(),"undefined dof set");
+  dsassert( nds<dofsets_.size(), "undefined dof set" );
   // if we already have our dofs here and we add a properly filled (proxy)
   // DofSet, we do not need (and do not want) to refill.
   havedof_ = havedof_ and newdofset->Filled() and nds!=0;
@@ -671,10 +674,31 @@ void DRT::Discretization::SetCondition(const std::string& name,Teuchos::RCP<Cond
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::ReplaceConditions(const std::string& name,
+    const std::vector<Teuchos::RCP<Condition> >& conds)
+{
+  if (condition_.count(name)>0)
+    condition_.erase(name);
+
+  std::vector<Teuchos::RCP<Condition> >::const_iterator cit;
+  for (cit=conds.begin();cit!=conds.end();++cit)
+  {
+    // skip null pointers (these conditions will be deleted only and
+    // therefore may disappear completely from this discretization)
+    if ( not cit->is_null() )
+      condition_.insert(std::pair<std::string,Teuchos::RCP<Condition> >(name,*cit));
+  }
+  filled_ = false;
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::GetCondition(const std::string& name,std::vector<DRT::Condition*>& out) const
+void DRT::Discretization::GetCondition(const std::string& name,
+    std::vector<DRT::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);

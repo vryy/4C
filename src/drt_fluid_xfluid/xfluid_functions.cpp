@@ -17,7 +17,7 @@
 
 
 #include "xfluid_functions.H"
-#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_discret_interface.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
 
@@ -36,7 +36,9 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of xfluid level set test case             winter    09/14 |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(int index,
+    const double* xp, double t,
+    const DRT::DiscretizationInterface* dis)
 {
   //  //cube_Gerstenberger:
   //  //1.6x1.6
@@ -111,7 +113,8 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of xfluid level set test case             winter    09/14 |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::SlipLengthLevelSetManipulator::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::SlipLengthLevelSetManipulator::Evaluate(int index,
+    const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
 
   double x_cut = 0.4;
@@ -174,7 +177,8 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of xfluid level set test case             winter    10/15 |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::MovingLevelSetCylinder::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::MovingLevelSetCylinder::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
 
   // d = L/2 * sin(f*t-PI/2)
@@ -334,7 +338,8 @@ MovingLSTorus(origin,orientationvec_torus,radius,radius_tube,direction,distance,
  | Moving and rotating 3D Torus, returns level set value                |
  |                                                        winter 04/16  |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::MovingLevelSetTorus::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::MovingLevelSetTorus::Evaluate(int index, const double* xp, double t,
+    const DRT::DiscretizationInterface* dis)
 {
 
   // d = L/2 * sin(f*t-PI/2)
@@ -457,7 +462,8 @@ MovingLSTorus(origin,orientationvec_torus,radius,radius_tube,direction,distance,
  | Evaluate velocity                                                    |
  |   3D Torus                                             winter 04/16  |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(int index,
+    const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -584,7 +590,8 @@ slipfunct_(slipfunct)
  | Evaluate sliplength                                                  |
  |   3D Torus                                             winter 04/16  |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(int index,
+    const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
 
   //coefficient for sinus.
@@ -772,7 +779,8 @@ Function()
 /*----------------------------------------------------------------------*
  | evaluation of Taylor-Couette analytical solution     winter    10/15 |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
 
   double radius = sqrt(xp[0]*xp[0] + xp[1]*xp[1]);
@@ -798,7 +806,8 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp, doub
   return 1.0;
 }
 
-std::vector<double> DRT::UTILS::TaylorCouetteFlow::FctDer(int index, const double* xp, const double t, DRT::Discretization* dis)
+std::vector<double> DRT::UTILS::TaylorCouetteFlow::FctDer(int index,
+    const double* xp, const double t, const DRT::DiscretizationInterface* dis)
 {
   //u_x = -(c1_*r + c2_/r)*y/r = -(c1_*y + c2_*y/(x^2+y^2))
   //d u_x /dx = c2_ * 2*x*y/((x^2+y^2)^2)
@@ -910,7 +919,8 @@ c2_(lincomb[1])
   (rotvector_[1])[1] =  cos(rotation_);
 }
 
-double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
 //CASE 1:
   //  u =
@@ -1061,7 +1071,8 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp, double 
 }
 
 
-std::vector<double> DRT::UTILS::UrquizaBoxFlow::FctDer(int index, const double* xp, const double t, DRT::Discretization* dis)
+std::vector<double> DRT::UTILS::UrquizaBoxFlow::FctDer(int index,
+    const double* xp, const double t, const DRT::DiscretizationInterface* dis)
 {
   //  CASE 1:
   //  du_i/dx_j =
@@ -1172,7 +1183,8 @@ DRT::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(
 }
 
 
-double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp,
+    double t, const DRT::DiscretizationInterface* dis)
 {
  double x=xp[0];
  double y=xp[1];
@@ -1322,7 +1334,8 @@ DRT::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(
 }
 
 
-double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(int index,
+    const double* xp, double t, const DRT::DiscretizationInterface* dis)
 {
   double tol=1e-13;
 

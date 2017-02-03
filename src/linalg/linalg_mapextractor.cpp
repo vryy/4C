@@ -385,7 +385,9 @@ LINALG::MapExtractor::MapExtractor(const Epetra_Map& fullmap,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::MapExtractor::Setup(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap, Teuchos::RCP<const Epetra_Map> othermap)
+void LINALG::MapExtractor::Setup(const Epetra_Map& fullmap,
+    const Teuchos::RCP<const Epetra_Map> & condmap,
+    const Teuchos::RCP<const Epetra_Map> & othermap)
 {
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back(othermap);
@@ -393,3 +395,33 @@ void LINALG::MapExtractor::Setup(const Epetra_Map& fullmap, Teuchos::RCP<const E
   MultiMapExtractor::Setup(fullmap,maps);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::MapExtractor::Setup(const Epetra_Map& fullmap,
+    const Teuchos::RCP<const Epetra_Map> & partialmap,
+    bool iscondmap)
+{
+  // initialise other DOFs by inserting all DOFs of full map
+  std::set<int> othergids;
+  const int* fullgids = fullmap.MyGlobalElements();
+  copy(fullgids,fullgids+fullmap.NumMyElements(),
+       inserter(othergids,othergids.begin()));
+
+  // throw away all DOFs which are in condmap
+  if (partialmap->NumMyElements() > 0)
+  {
+    const int* condgids = partialmap->MyGlobalElements();
+    for (int lid=0; lid<partialmap->NumMyElements(); ++lid)
+      othergids.erase(condgids[lid]);
+  }
+
+  // create (non-overlapping) othermap for non-condmap DOFs
+  Teuchos::RCP<Epetra_Map> othermap
+    = LINALG::CreateMap(othergids, fullmap.Comm());
+
+  // create the extractor based on choice 'iscondmap'
+  if (iscondmap)
+    Setup(fullmap, partialmap, othermap);
+  else
+    Setup(fullmap, othermap, partialmap);
+}
