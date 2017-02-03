@@ -743,6 +743,52 @@ namespace UTILS
       const DRT::Element::DiscretizationType distype  ///< element-discretization type
     );
 
+//  /*!
+//  \brief    Returns the Shards::Key based on its discretization-type
+//            Template version
+//  */
+//  template<DRT::Element::DiscretizationType DISTYPE>
+//  struct DisTypeToShardsKey {};
+//  template<> struct DisTypeToShardsKey<DRT::Element::point1>   { static const unsigned shardsKey = shards::Particle::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::line2>    { static const unsigned shardsKey = shards::Line<2>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::line3>    { static const unsigned shardsKey = shards::Line<3>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::quad4>    { static const unsigned shardsKey = shards::Quadrilateral<4>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::quad8>    { static const unsigned shardsKey = shards::Quadrilateral<8>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::quad9>    { static const unsigned shardsKey = shards::Quadrilateral<9>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::tri3>     { static const unsigned shardsKey = shards::Triangle<3>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::tri6>     { static const unsigned shardsKey = shards::Triangle<6>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::hex8>     { static const unsigned shardsKey = shards::Hexahedron<8>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::hex20>    { static const unsigned shardsKey = shards::Hexahedron<20>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::hex27>    { static const unsigned shardsKey = shards::Hexahedron<27>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::tet4>     { static const unsigned shardsKey = shards::Tetrahedron<4>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::tet10>    { static const unsigned shardsKey = shards::Tetrahedron<10>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::wedge6>   { static const unsigned shardsKey = shards::Wedge<6>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::wedge15>  { static const unsigned shardsKey = shards::Wedge<15>::key; };
+//  template<> struct DisTypeToShardsKey<DRT::Element::pyramid5> { static const unsigned shardsKey = shards::Pyramid<5>::key; };
+//
+//  /*!
+//  \brief    Returns the discretization-type based on its Shards::Key
+//            Template version
+//  */
+//  template<unsigned SHARDSKEY>
+//  struct ShardsKeyToDisType {};
+//  template<> struct ShardsKeyToDisType<shards::Particle::key>         { static const DRT::Element::DiscretizationType disType = DRT::Element::point1; };
+//  template<> struct ShardsKeyToDisType<shards::Line<2>::key>          { static const DRT::Element::DiscretizationType disType = DRT::Element::line2; };
+//  template<> struct ShardsKeyToDisType<shards::Line<3>::key>          { static const DRT::Element::DiscretizationType disType = DRT::Element::line3; };
+//  template<> struct ShardsKeyToDisType<shards::Quadrilateral<4>::key> { static const DRT::Element::DiscretizationType disType = DRT::Element::quad4; };
+//  template<> struct ShardsKeyToDisType<shards::Quadrilateral<8>::key> { static const DRT::Element::DiscretizationType disType = DRT::Element::quad8; };
+//  template<> struct ShardsKeyToDisType<shards::Quadrilateral<9>::key> { static const DRT::Element::DiscretizationType disType = DRT::Element::quad9; };
+//  template<> struct ShardsKeyToDisType<shards::Triangle<3>::key>      { static const DRT::Element::DiscretizationType disType = DRT::Element::tri3; };
+//  template<> struct ShardsKeyToDisType<shards::Triangle<6>::key>      { static const DRT::Element::DiscretizationType disType = DRT::Element::tri6; };
+//  template<> struct ShardsKeyToDisType<shards::Hexahedron<8>::key>    { static const DRT::Element::DiscretizationType disType = DRT::Element::hex8; };
+//  template<> struct ShardsKeyToDisType<shards::Hexahedron<20>::key>   { static const DRT::Element::DiscretizationType disType = DRT::Element::hex20; };
+//  template<> struct ShardsKeyToDisType<shards::Hexahedron<27>::key>   { static const DRT::Element::DiscretizationType disType = DRT::Element::hex27; };
+//  template<> struct ShardsKeyToDisType<shards::Tetrahedron<4>::key>   { static const DRT::Element::DiscretizationType disType = DRT::Element::tet4; };
+//  template<> struct ShardsKeyToDisType<shards::Tetrahedron<10>::key>  { static const DRT::Element::DiscretizationType disType = DRT::Element::tet10; };
+//  template<> struct ShardsKeyToDisType<shards::Wedge<6>::key>         { static const DRT::Element::DiscretizationType disType = DRT::Element::wedge6; };
+//  template<> struct ShardsKeyToDisType<shards::Wedge<15>::key>        { static const DRT::Element::DiscretizationType disType = DRT::Element::wedge15; };
+//  template<> struct ShardsKeyToDisType<shards::Pyramid<5>::key>       { static const DRT::Element::DiscretizationType disType = DRT::Element::pyramid5; };
+
   /*!
   \brief    Returns the dimension of an element based on its discretization-type
             Template version

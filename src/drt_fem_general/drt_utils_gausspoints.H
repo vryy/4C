@@ -398,7 +398,7 @@ public:
   template <DRT::Element::DiscretizationType distype>
   static Teuchos::RCP<GaussPoints> CreateProjected(
     const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-                         DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
+    DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
     int degree )
   {
 
@@ -414,11 +414,11 @@ public:
 
   /// Project the given Gauss points in local coordinate system of the element to its global coordinate system
   template <DRT::Element::DiscretizationType distype>
-  static void ProjectGaussPointsLocalToGlobal( const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-                                        DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
-                                  GaussIntegration& intpoints,
-                                  Teuchos::RCP<CollectedGaussPoints>& cgp
-                                )
+  static void ProjectGaussPointsLocalToGlobal(
+      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
+      DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
+      GaussIntegration& intpoints,
+      Teuchos::RCP<CollectedGaussPoints>& cgp )
   {
 
     const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -455,9 +455,10 @@ public:
 
   /// Project the given Gauss points in global coordinate system of the element to its local coordinate system
   template <DRT::Element::DiscretizationType distype>
-  static Teuchos::RCP<GaussPoints> ProjectGaussPointsGlobalToLocal( const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
-                                                                    DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
-                                                                    GaussIntegration& intpoints )
+  static Teuchos::RCP<GaussPoints> ProjectGaussPointsGlobalToLocal(
+      const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
+      DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
+      GaussIntegration& intpoints )
   {
     const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
     const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -469,11 +470,11 @@ public:
     LINALG::Matrix<nsd,1> xi;
 
     Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new
-                                    DRT::UTILS::CollectedGaussPoints( intpoints.NumPoints() ) );
+        DRT::UTILS::CollectedGaussPoints( intpoints.NumPoints() ) );
 
     for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin();
-              iquad!=intpoints.end();
-              ++iquad )
+          iquad!=intpoints.end();
+          ++iquad )
     {
       LINALG::Matrix<nsd,1> glo( iquad.Point() );
 

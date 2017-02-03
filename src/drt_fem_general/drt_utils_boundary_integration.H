@@ -661,14 +661,16 @@ void ComputeMetricTensorForSurface(
   double*                         sqrtdetg
   );
 
-//! compute kovariant metric tensor for surface/line element and optionally, the normalized normal vector at the Gausspoint (template)
+//! compute covariant metric tensor for surface/line element and optionally, the normalized normal vector at the Gausspoint (template)
 template<DRT::Element::DiscretizationType DISTYPE, int probdim>
 void ComputeMetricTensorForBoundaryEle(
-  const LINALG::Matrix< probdim, DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>&  xyze,
-  const LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,  DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>&  deriv,
-  LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,        DRT::UTILS::DisTypeToDim<DISTYPE>::dim>&                    metrictensor,
-  double&  sqrtdetg,
-  LINALG::Matrix<probdim,        1>* normalvec = NULL
+  const LINALG::Matrix< probdim, DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement > & xyze,
+  const LINALG::Matrix< DRT::UTILS::DisTypeToDim<DISTYPE>::dim, DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement > & deriv,
+  LINALG::Matrix< DRT::UTILS::DisTypeToDim<DISTYPE>::dim, DRT::UTILS::DisTypeToDim<DISTYPE>::dim > & metrictensor,
+  double &                       sqrtdetg,
+  LINALG::Matrix< probdim, 1 > * normalvec   = NULL,
+  const bool &                   unit_normal = true,
+  const bool &                   throw_error = true
   )
 {
   /* 2D boundary Element
@@ -703,7 +705,7 @@ void ComputeMetricTensorForBoundaryEle(
   |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
    */
   LINALG::Matrix<DRT::UTILS::DisTypeToDim<DISTYPE>::dim,probdim> dxyzdrs;
-  dxyzdrs.MultiplyNT(deriv,xyze);
+  dxyzdrs.MultiplyNT( deriv, xyze );
 
   /* 2D boundary Element
   |
@@ -726,7 +728,7 @@ void ComputeMetricTensorForBoundaryEle(
    */
 
   metrictensor.Clear();
-  metrictensor.MultiplyNT(dxyzdrs,dxyzdrs);
+  metrictensor.MultiplyNT( dxyzdrs, dxyzdrs );
 
   /*
                             +--------------+
@@ -734,48 +736,76 @@ void ComputeMetricTensorForBoundaryEle(
              sqrtdetg =   /  g11*g22-g12^2
                         \/
   */
-  sqrtdetg = sqrt(metrictensor.Determinant());
+  sqrtdetg = metrictensor.Determinant();
+  if ( sqrtdetg > 0.0 )
+    sqrtdetg = std::sqrt( sqrtdetg );
+  else if ( throw_error )
+  {
+    std::ostringstream err_msg;
+    err_msg << "--- ERROR DETECTED ---\n";
+    err_msg << "xyze = \n" << xyze;
+    err_msg << "The determinant of the metric-tensor is equal zero or negative! ( det( g ) = "
+        << sqrtdetg << " )";
+    dserror( err_msg.str().c_str() );
+  }
 
   // Calculate outward pointing unit normal vector
-  if (normalvec != NULL)
+  if ( normalvec )
   {
-    if (probdim == 3 and DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 2)
+    if ( probdim == 3 and DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 2 )
     {
-      (*normalvec)(0) = dxyzdrs(0,1)*dxyzdrs(1,2)-dxyzdrs(1,1)*dxyzdrs(0,2);
-      (*normalvec)(1) = dxyzdrs(0,2)*dxyzdrs(1,0)-dxyzdrs(1,2)*dxyzdrs(0,0);
-      (*normalvec)(2) = dxyzdrs(0,0)*dxyzdrs(1,1)-dxyzdrs(1,0)*dxyzdrs(0,1);
+      (*normalvec)(0) = dxyzdrs( 0, 1 )*dxyzdrs( 1, 2 )-dxyzdrs( 1, 1 )*dxyzdrs( 0, 2 );
+      (*normalvec)(1) = dxyzdrs( 0, 2 )*dxyzdrs( 1, 0 )-dxyzdrs( 1, 2 )*dxyzdrs( 0, 0 );
+      (*normalvec)(2) = dxyzdrs( 0, 0 )*dxyzdrs( 1, 1 )-dxyzdrs( 1, 0 )*dxyzdrs( 0, 1 );
       // compute unit normal (outward pointing)
-      const double norm2 = normalvec->Norm2();
-      normalvec->Scale(1/norm2);
-
-    }
-    else if (probdim == 2 and DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
-    {
-      (*normalvec)(0) = dxyzdrs(0,1);
-      (*normalvec)(1) = -dxyzdrs(0,0);
-      // compute unit normal (outward pointing)
-      const double norm2 = normalvec->Norm2();
-      normalvec->Scale(1/norm2);
-    }
-    else if (probdim == 3 and DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1)
-    {
-      if ( std::abs(dxyzdrs(0,0))>1.0e-6 or
-           std::abs(dxyzdrs(0,1))>1.0e-6 )
+      if ( unit_normal )
       {
-        (*normalvec)(0) = dxyzdrs(0,1);
-        (*normalvec)(1) = -dxyzdrs(0,0);
-        (*normalvec)(2) = 0.0;
+        const double norm2 = normalvec->Norm2();
+        if ( norm2 < 0.0 )
+          dserror( "The l2-norm of the normal vector is smaller than 0.0!"
+              " ( norm2 = %e )", norm2 );
+        normalvec->Scale( 1.0 / norm2 );
+      }
+    }
+    else if ( probdim == 2 and DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1 )
+    {
+      (*normalvec)( 0 ) = dxyzdrs(0,1);
+      (*normalvec)( 1 ) = -dxyzdrs(0,0);
+      // compute unit normal (outward pointing)
+      if ( unit_normal )
+      {
+        const double norm2 = normalvec->Norm2();
+        if ( norm2 < 0.0 )
+          dserror( "The l2-norm of the normal vector is smaller than 0.0!"
+              " ( norm2 = %e )", norm2 );
+        normalvec->Scale( 1.0 / norm2 );
+      }
+    }
+    else if ( probdim == 3 and DRT::UTILS::DisTypeToDim<DISTYPE>::dim == 1 )
+    {
+      if ( std::abs( dxyzdrs( 0, 0 ) )>1.0e-6 or
+           std::abs( dxyzdrs( 0, 1 ) )>1.0e-6 )
+      {
+        (*normalvec)( 0 ) = dxyzdrs( 0, 1 );
+        (*normalvec)( 1 ) = -dxyzdrs( 0, 0 );
+        (*normalvec)( 2 ) = 0.0;
       }
       else
       {
-        (*normalvec)(0)= 0.0;
-        (*normalvec)(1)=-dxyzdrs(0,2);
-        (*normalvec)(2)= dxyzdrs(0,1);
+        (*normalvec)( 0 )= 0.0;
+        (*normalvec)( 1 )=-dxyzdrs( 0, 2 );
+        (*normalvec)( 2 )= dxyzdrs( 0, 1 );
       }
 
       // compute unit normal (outward pointing)
-      const double norm2 = normalvec->Norm2();
-      normalvec->Scale(1/norm2);
+      if ( unit_normal )
+      {
+        const double norm2 = normalvec->Norm2();
+        if ( norm2 < 0.0 )
+          dserror( "The l2-norm of the normal vector is smaller than 0.0!"
+              " ( norm2 = %e )", norm2 );
+        normalvec->Scale( 1.0 / norm2 );
+      }
     }
     else
       dserror("There are only 2D and 1D boundary elements");
