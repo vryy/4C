@@ -15,6 +15,7 @@
 #include <mpi.h>
 #include <string.h>
 #include <sstream>
+#include <stdexcept>
 
 #ifdef THROWELEMENTERRORS
 
