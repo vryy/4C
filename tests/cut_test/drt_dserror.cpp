@@ -1,20 +1,20 @@
 /*!----------------------------------------------------------------------
-\file drt_dserror.cpp
-
-\brief
-
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
-
-*----------------------------------------------------------------------*/
+ * \file drt_dserror.cpp
+ *
+ * \brief printing error messages
+ *
+ * \level 2
+ *
+ * \maintainer Martin Kronbichler
+ *             http://www.lnm.mw.tum.de
+ *             089 - 289-15235
+ *
+ *----------------------------------------------------------------------*/
 
 #include "drt_dserror.H"
 #include <mpi.h>
 #include <string.h>
+#include <sstream>
 
 #ifdef THROWELEMENTERRORS
 
@@ -62,6 +62,8 @@ void ElementError(int ele, const std::string& err)
 
 static int         latest_line = -1;
 static std::string latest_file = "{dserror_func call without prototype}";
+static std::string latest_func = "{dummy latest function name}";
+static int           err_count = 0;
 /*----------------------------------------------------------------------*
  |  assert function                                          mwgee 11/06|
  | used by macro dsassert in dserror.H                                  |
@@ -212,3 +214,54 @@ void cpp_dserror_func(const std::string text, ...)
 #endif
   }
 } /* end of dserror_func */
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void run_time_error_latest(const std::string file, const std::string func, const int line)
+{
+  latest_file = file;
+  unsigned l = func.find("(",0);
+  latest_func = func.substr(0,l);
+  latest_line = line;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void run_time_error_func(const std::string& errorMsg, const bool & is_catch)
+{
+  if (not is_catch)
+    err_count = 0;
+
+  int myrank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
+  std::ostringstream msg_0;
+  msg_0 << "[" << err_count << "] " << "PROC " << myrank <<
+      " ERROR in " << latest_file << ", line " << latest_line << ":\n";
+
+  std::ostringstream msg;
+  msg << msg_0.str() << "    " << latest_func
+      << " - " << errorMsg;
+
+  // increase level counter
+  ++err_count;
+
+  throw std::runtime_error(msg.str().c_str());
+};
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void run_time_error_func( const std::string& errorMsg, const std::runtime_error & e )
+{
+  std::ostringstream msg;
+  msg << errorMsg << "\n" << e.what();
+
+  run_time_error_func( msg.str(), true );
+};
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void run_time_error_func( const std::runtime_error & e )
+{
+  run_time_error_func( "Caught runtime_error:", e );
+}
