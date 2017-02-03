@@ -371,7 +371,7 @@ public:
    /*!
    \brief Return number of iterations performed by solver
    */
-   inline int getNumIters() const;
+   int getNumIters() const;
 
 private:
    //! @name BuildSolver methods
