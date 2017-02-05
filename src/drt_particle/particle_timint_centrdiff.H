@@ -69,6 +69,9 @@ namespace PARTICLE
     //! Do time integration of single step
     virtual int IntegrateStep();
 
+    //! Overload
+    virtual void ReadRestartState();
+
     //@}
 
   };  // class TimIntCentrDiff

@@ -98,7 +98,7 @@ namespace PARTICLE
     virtual void GradResAcc(const double dt);
 
     //! Compute deltaDis and update disn - Newton-Rhapson iteration
-    virtual void CorrectDis();
+    virtual void CorrectDis(bool checkDis);
 
     //! Set up the additional state vectors required in the genAlpha algorithm
     virtual void SetupStateVectors();

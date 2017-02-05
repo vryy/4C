@@ -93,14 +93,21 @@ namespace PARTICLE
 
     //! small wrapping template to store matrices into MultiVector
     template <class matrix>
-    static void Assemble(Epetra_MultiVector& V, matrix& Mele, const std::vector<int>& lm, const std::vector<int>& lmowner)
+    static void Assemble(Epetra_MultiVector& V, matrix& Mele, const std::vector<int>& lm, const double& lmowner, const double& myrank)
     {
+      if (lmowner != myrank)
+      {
+        return;
+      }
+
+      const std::vector<int> lmownerV(3,lmowner);
+
       // check
       if (Mele.N() != (unsigned)V.NumVectors() || lm.size() != Mele.M())
       {
         dserror("Received matrix of wrong size!");
       }
-      if (lm.size() != lmowner.size())
+      if (lm.size() != lmownerV.size())
       {
         dserror("lm and lmowner sizes missmatch!");
       }
@@ -109,7 +116,7 @@ namespace PARTICLE
       for (size_t ii = 0; ii < Mele.N(); ++ii)
       {
         const Epetra_SerialDenseVector Vele(::View, &(Mele(0,ii)), Mele.M());
-        LINALG::Assemble(V, ii, Vele, lm, lmowner);
+        LINALG::Assemble(V, ii, Vele, lm, lmownerV);
       }
 
       return;
@@ -135,6 +142,9 @@ namespace PARTICLE
         }
       }
     }
+
+    //! node * dof multiplication vector (usually to multiply the mass for the acceleration)
+    //static void MultiplyND(const double coeff, const Epetra_Vector& nodeSV, Epetra_MultiVector& dofSV);
 
   };
 }

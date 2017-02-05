@@ -159,3 +159,4 @@ double PARTICLE::Utils::SpeedOfSound(
     return extParticleMat->SpeedOfSoundT(specEnthalpy);
   }
 }
+

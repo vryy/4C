@@ -209,7 +209,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
    DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
    DoubleParameter("RHO_INF",-1.0,"Generalised-alpha factor in [0,1]",&genalpha);
-   DoubleParameter("TOL",1e-6,"Generalised-alpha tollerance",&genalpha);
+   DoubleParameter("TOL",1e-5,"Generalised-alpha tollerance",&genalpha);
    IntParameter("MAXIT",10,"Generalised-alpha max number of iterations",&genalpha);
 }
 

@@ -78,7 +78,7 @@ int PARTICLE::TimIntDivFree::IntegrateStep()
   // pvw interactions
   interHandler_->Inter_pvw_densityDot(densityDotn_);
   densityn_->Update(dt, *densityDotn_, 1.0);
-  interHandler_->SetStateVector(densityn_, Density);
+  interHandler_->SetStateVector(densityn_, PARTICLE::Density);
   interHandler_->Inter_pvw_acc(accn_);
 
   // first guess on the velocity field
@@ -139,7 +139,7 @@ void PARTICLE::TimIntDivFree::CorrectDivergenceError(const double dt)
     //std::cin.get();
 
     // update the local ParticleMeshFreeData of the processor
-    interHandler_->SetStateVector(densityDotn_, DensityDot);
+    interHandler_->SetStateVector(densityDotn_, PARTICLE::DensityDot);
 
     // create and compute the divergence free pressure field
     Teuchos::RCP<Epetra_Vector> divFreePressureAcc = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
@@ -166,7 +166,7 @@ void PARTICLE::TimIntDivFree::CorrectDensityError(const double dt)
     // compute the densityDot (that should converge towards zero)
     densityn_->PutScalar(0.0);
     interHandler_->MF_mW(densityn_);
-    interHandler_->SetStateVector(densityn_, Density);
+    interHandler_->SetStateVector(densityn_, PARTICLE::Density);
 
     Teuchos::RCP<Epetra_Vector> densityDiff = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
     densityDiff->PutScalar(- restDensity_);

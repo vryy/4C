@@ -235,7 +235,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
         // compute the color field gradient
         interHandler_->Inter_pvp_colorFieldGradient(colorFieldGradientn);
         // update the ParticleMeshFreeData
-        interHandler_->SetStateVector(colorFieldGradientn, ColorFieldGradient);
+        interHandler_->SetStateVector(colorFieldGradientn, PARTICLE::ColorFieldGradient);
         // compute the surface tension
         interHandler_->Inter_pvp_surfaceTensionCFG(accn_);
       }
@@ -280,4 +280,53 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
 
     return 0;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart state */
+void PARTICLE::TimIntCentrDiff::ReadRestartState()
+{
+  // call the base class
+  TimInt::ReadRestartState();
+
+  IO::DiscretizationReader reader(discret_, step_);
+
+  switch (particle_algorithm_->ParticleInteractionType())
+  {
+  case INPAR::PARTICLE::MeshFree :
+  {
+    // read densityDot
+    reader.ReadVector(densityDotn_, "densityDot");
+    densityDot_->UpdateSteps(*densityDotn_);
+  }// no break
+  case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
+    // read radius
+    reader.ReadVector(radiusn_, "radius");
+    radius_->UpdateSteps(*radiusn_);
+    // read density
+    reader.ReadVector(densityn_, "density");
+    density_->UpdateSteps(*densityn_);
+    // read specEnthalpy
+    reader.ReadVector(specEnthalpyn_, "specEnthalpy");
+    specEnthalpy_->UpdateSteps(*specEnthalpyn_);
+    // read specEnthalpyDot
+    reader.ReadVector(specEnthalpyDotn_, "specEnthalpyDot");
+    specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
+    break;
+  }
+  default :
+  {
+    break;
+  }
+  }
+
+  if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+  {
+    Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
+    deltaDensity->PutScalar(restDensity_);
+    deltaDensity->Update(1.0,*densityn_,-1.0);
+    PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
+  }
 }

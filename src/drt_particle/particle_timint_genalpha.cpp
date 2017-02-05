@@ -24,6 +24,7 @@
 #include "../linalg/linalg_utils.H"
 #include "particle_algorithm.H"
 #include "particle_heatSource.H"
+
 /*----------------------------------------------------------------------*/
 /* Constructor */
 PARTICLE::TimIntGenAlpha::TimIntGenAlpha(
@@ -107,6 +108,7 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
   // compute densities and pressures
   interHandler_->MF_mW(densityn_);
   interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+
   UpdatePressure();
   interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
 
@@ -116,30 +118,37 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
   PredictNewState(true);
   // predict mid state
   PredictMidState();
-  // compute the residual
 
+  // compute the residual
   ResAcc();
 
   // set up the error
-  double resAccNorm2;
+  double resAccAvgNorm2;
 
   // newton - rhapson iteration
-  int nri = 0;
   bool notConverged = true;
+  int nri = 0;
   for (; nri<maxIt_; ++ nri)
   {
+
+
     // Is convergence reached?
-    resAcc_->Norm2(&resAccNorm2);
-    std::cout << "Iteration: " << nri << "/" << maxIt_ << std::endl;
-    std::cout << "Residual: " << resAccNorm2 << std::endl;
-    std::cout << "Required residual: " << tol_ << std::endl;
-    if (resAccNorm2 <= tol_)
+    resAcc_->Norm2(&resAccAvgNorm2);
+
+    resAccAvgNorm2 /= discret_->NodeRowMap()->NumGlobalElements();
+    if (myrank_ == 0)
     {
-      std::cout << "--- Converged! ---\n";
+      std::cout << "Iteration: " << nri << "/" << maxIt_ << " and residual: " << resAccAvgNorm2 << "\n";
+    }
+    if (resAccAvgNorm2 <= tol_)
+    {
+      if (myrank_ == 0)
+      {
+        std::cout << "--- Converged! ---\n";
+      }
       notConverged = false;
       break;
     }
-
 
     // update gradient and hessian (necessary for gradResAcc)
     interHandler_->MF_mGradW(mGradW_);
@@ -150,8 +159,8 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
     // compute the gradient of the residual acceleration
     GradResAcc(dt);
 
-    // compute deltaDis and update disn - Newton-Rhapson iteration
-    CorrectDis();
+    // compute deltaDis and update disn - Newton-Rhapson iteration. Check dis every nn iterations
+    CorrectDis((10 * nri) % maxIt_ == 0);
 
     // update the interaction handler
     interHandler_->SetStateVector(disn_, PARTICLE::Dis);
@@ -159,26 +168,38 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
     interHandler_->UpdateWeights(step_);
 
     interHandler_->MF_mW(densityn_);
+
     interHandler_->SetStateVector(densityn_, PARTICLE::Density);
     UpdatePressure();
+
     interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
     // predict new state
     PredictNewState();
+
     // predict mid state
     PredictMidState();
+
     // compute the residual
     ResAcc();
   }
 
   if (notConverged)
   {
-    std::cout << "Warning! The required tolerance was not reached!\n";
+    if (myrank_ == 0)
+    {
+      double maxValue, minValue;
+      resAcc_->MaxValue(&maxValue);
+      resAcc_->MinValue(&minValue);
+      std::cout << "\nWarning! The required tolerance was not reached! Final residual: " << resAccAvgNorm2 << "\n";
+      std::cout << "Final residual extremes: " << maxValue << " " << minValue << "\n";
+    }
+    std::cin.get();
   }
-
 
   // erase the handler, information are outdated
   interHandler_->Clear();
   //dserror("IntegrateStep is still in the todo list");
+
 
   return 0;
 }
@@ -201,6 +222,7 @@ void PARTICLE::TimIntGenAlpha::DetermineMassDampConsistAccel()
 
   interHandler_->Inter_pvp_acc(accn_);
   interHandler_->Inter_pvw_acc(accn_);
+
   acc_->UpdateSteps(*accn_);
 
   interHandler_->Clear();
@@ -324,6 +346,26 @@ void PARTICLE::TimIntGenAlpha::ReadRestartState()
   // call the base function
   TimInt::ReadRestartState();
 
+  IO::DiscretizationReader reader(discret_, step_);
+  // read radius
+  reader.ReadVector(radiusn_, "radius");
+  radius_->UpdateSteps(*radiusn_);
+  // read density
+  reader.ReadVector(densityn_, "density");
+  density_->UpdateSteps(*densityn_);
+  // read specEnthalpy
+  reader.ReadVector(specEnthalpyn_, "specEnthalpy");
+  specEnthalpy_->UpdateSteps(*specEnthalpyn_);
+  // read specEnthalpyDot
+  reader.ReadVector(specEnthalpyDotn_, "specEnthalpyDot");
+  specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
+
+  // set up the pressure
+  Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
+  deltaDensity->PutScalar(restDensity_);
+  deltaDensity->Update(1.0,*densityn_,-1.0);
+  PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
+
   // reset to zero the additional state vectors
   SetupStateVectors();
 
@@ -347,28 +389,16 @@ void PARTICLE::TimIntGenAlpha::SetupStateVectors()
 /* State vectors are updated according to the new distribution of particles */
 void PARTICLE::TimIntGenAlpha::UpdateStatesAfterParticleTransfer()
 {
-  std::cout << "puppa\n";
-
   // call base function
   TimInt::UpdateStatesAfterParticleTransfer();
 
-  std::cout << "puppa\n";
-
   UpdateStateVectorMap(mGradW_);
-
-  std::cout << "puppa\n";
   UpdateStateVectorMap(mHessW_);
-  std::cout << "puppa\n";
   UpdateStateVectorMap(dism_);
-  std::cout << "puppa\n";
   UpdateStateVectorMap(velm_);
-  std::cout << "puppa\n";
   UpdateStateVectorMap(accm_);
-  std::cout << "puppa\n";
   UpdateStateVectorMap(resAcc_);
-  std::cout << "puppa\n";
   UpdateStateVectorMap(gradResAcc_);
-  std::cout << "puppa\n";
 }
 
 
@@ -406,14 +436,19 @@ void PARTICLE::TimIntGenAlpha::GradResAcc(const double dt)
   {
     ((*gradResAcc_)[ii%3])[ii] += accCoeff;
   }
-
 }
 
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void PARTICLE::TimIntGenAlpha::CorrectDis()
+void PARTICLE::TimIntGenAlpha::CorrectDis(bool checkDis)
 {
+  Teuchos::RCP<Epetra_Vector> deltaDisNorms2 = Teuchos::null;
+  if (checkDis)
+  {
+    deltaDisNorms2 = LINALG::CreateVector(*NodeRowMapView(), true);
+  }
+
   for (int lidRowNode = 0; lidRowNode < discret_->NodeRowMap()->NumMyElements(); ++lidRowNode)
   {
     // indexes
@@ -430,9 +465,25 @@ void PARTICLE::TimIntGenAlpha::CorrectDis()
     gradResAcc_i.Invert();
 
     LINALG::Matrix<3,1> deltaDis;
+    if (checkDis)
+    {
+      (*deltaDisNorms2)[lidRowNode] = deltaDis.Norm2();
+    }
     deltaDis.MultiplyNN(gradResAcc_i, resAcc_i);
     deltaDis.Scale(-1.0);
 
     LINALG::Assemble(*disn_, deltaDis, lm, myrank_);
+  }
+
+  if (checkDis)
+  {
+    double maxDeltaDisNorms2 = 0;
+    double minRadius = 0;
+    deltaDisNorms2->MaxValue(&maxDeltaDisNorms2);
+    radiusn_->MinValue(&minRadius);
+    if (2 * maxDeltaDisNorms2 > minRadius)
+    {
+      dserror("Particles go too fast! They can bypass each other. Reduce the time step");
+    }
   }
 }

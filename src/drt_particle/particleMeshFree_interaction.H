@@ -22,15 +22,16 @@
 #define SRC_DRT_PARTICLE_PARTICLEMESHFREE_INTERACTION_H_
 /*----------------------------------------------------------------------*/
 /* headers */
+#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_particle.H"
 #include "particle_node.H"
 #include "particle_interData.H"
 #include "particle_particle.H"
-#include "particle_stateVectors.H"
 #include "particleMeshFree_weightFunction.H"
 #include "../drt_lib/drt_element.H"
 #include <boost/unordered_map.hpp>
+#include "particle_enums.H"
 
 // forward declarations
 namespace DRT
@@ -232,16 +233,19 @@ namespace PARTICLE
     /// compute density - mesh free sense
     virtual void MF_mW(
         const Teuchos::RCP<Epetra_Vector> densityn,
+        const bool withWalls = true,
         const double extMulti = 1.0);
 
     /// compute m * gradW - mesh free sense
     virtual void MF_mGradW(
-        const Teuchos::RCP<Epetra_Vector> densityn,
+        const Teuchos::RCP<Epetra_Vector> mGradW,
+        const bool withWalls = true,
         const double extMulti = 1.0);
 
     /// compute m * hessW - mesh free sense
     virtual void MF_mHessW(
-        const Teuchos::RCP<Epetra_MultiVector> densityn,
+        const Teuchos::RCP<Epetra_MultiVector> mHessW,
+        const bool withWalls = true,
         const double extMulti = 1.0);
 
     //@}
@@ -249,25 +253,8 @@ namespace PARTICLE
     //! @name mesh free debug tools
     //@{
 
-    /// template to print neighbours
-    template <typename obj>
-    static void PrintNeighbours(std::vector< boost::unordered_map<int, obj> > neighbours)
-    {
-      std::cout << "\n\n interactions\n\n";
-      //bool trg_interactions = false;
-      for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours.size(); ++lidNodeRow_i)
-      {
-        std::cout << "lid " << lidNodeRow_i << " | ";
-
-        typename boost::unordered_map<int, obj >::const_iterator jj;
-        for (jj = neighbours[lidNodeRow_i].begin(); jj != neighbours[lidNodeRow_i].end(); ++jj)
-        {
-          std::cout << " " << jj->first;
-          //trg_interactions = true;
-        }
-        std::cout << std::endl;
-      }
-    }
+    /// wrapper for the template
+    void PrintNeighbours(const PARTICLE::NeighbourType& nt);
 
     //@}
 
@@ -294,9 +281,33 @@ namespace PARTICLE
         const ParticleMF& particle_i,
         const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > >& neighboring_heatSources);
 
+    //! update the neighbours_p_ map
     virtual void UpdateWeights_p(const int step = -1);
 
+    //! update the neighbours_w_ map
     virtual void UpdateWeights_w(const int step = -1);
+
+    /// template to print neighbours
+    template <typename obj>
+    void PrintNeighbours(const std::vector< boost::unordered_map<int, obj> >& neighbours)
+    {
+      std::cout << "\n\n interactions\n\n";
+      //bool trg_interactions = false;
+      for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours.size(); ++lidNodeRow_i)
+      {
+        const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
+
+        std::cout << "gid " << gid_i << " | ";
+
+        typename boost::unordered_map<int, obj >::const_iterator jj;
+        for (jj = neighbours[lidNodeRow_i].begin(); jj != neighbours[lidNodeRow_i].end(); ++jj)
+        {
+          std::cout << " " << jj->first;
+          //trg_interactions = true;
+        }
+        std::cout << std::endl;
+      }
+    }
 
     //@}
 

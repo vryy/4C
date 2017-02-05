@@ -636,38 +636,13 @@ void PARTICLE::TimInt::ReadRestartState()
   reader.ReadVector(mass_, "mass");
 
 
-  switch (particle_algorithm_->ParticleInteractionType())
-  {
-  case INPAR::PARTICLE::MeshFree :
-  {
-    // read densityDot
-    reader.ReadVector(densityDotn_, "densityDot");
-    densityDot_->UpdateSteps(*densityDotn_);
-  }// no break
-  case INPAR::PARTICLE::Normal_DEM_thermo :
-  {
-    // read radius
-    reader.ReadVector(radiusn_, "radius");
-    radius_->UpdateSteps(*radiusn_);
-    // read density
-    reader.ReadVector(densityn_, "density");
-    density_->UpdateSteps(*densityn_);
-    // read specEnthalpy
-    reader.ReadVector(specEnthalpyn_, "specEnthalpy");
-    specEnthalpy_->UpdateSteps(*specEnthalpyn_);
-    // read specEnthalpyDot
-    reader.ReadVector(specEnthalpyDotn_, "specEnthalpyDot");
-    specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
-    break;
-  }
-  default :
+  if (particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::MeshFree ||
+      particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM_thermo)
   {
     // create a dummy vector to extract the radius vector (radiusn_ does not exist)
     Teuchos::RCP<Epetra_Vector> radius = LINALG::CreateVector(*discret_->NodeRowMap(), true);
     reader.ReadVector(radius, "radius");
     radius_->UpdateSteps(*radius);
-    break;
-  }
   }
 
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
@@ -1173,7 +1148,6 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_Vector> &stateVe
 /* Update TimIntMStep state vector with the new dof map from discret_*/
 void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &stateVector, bool trg_nodeVectorType)
 {
-  std::cout << "puppa in posa\n";
   if (stateVector != Teuchos::null)
   {
     Teuchos::RCP<Epetra_MultiVector> old = stateVector;
@@ -1183,7 +1157,6 @@ void PARTICLE::TimInt::UpdateStateVectorMap(Teuchos::RCP<Epetra_MultiVector> &st
       dserror("Export using exporter returned err=%d", err);
 
   }
-  std::cout << "fatto\n";
 }
 
 /*----------------------------------------------------------------------*/
@@ -1469,7 +1442,7 @@ void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc, const double 
     for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); ++i)
     {
       /*------------------------------------------------------------------*/
-      //// gravity acc = mass_p * g
+      //// gravity acc = g
       for(int dim=0; dim<3; ++dim)
       {
         (*acc)[i*3+dim] = extMulti * gravity_acc(dim);

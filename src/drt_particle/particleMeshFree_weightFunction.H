@@ -110,7 +110,7 @@ public :
    virtual double DDW(const double &disRel, const double &radius);
 
    // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
-   virtual inline double W0(const double& radius) { return 0.0; }
+   virtual inline double W0(const double& radius) { return RszDim(radius); }
 
    // weight function type
    virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::SqrtHyperbola; }
@@ -141,7 +141,7 @@ public :
    virtual double DDW(const double &disRel, const double &radius);
 
    // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
-   virtual inline double W0(const double& radius) { return 0.0; }
+   virtual inline double W0(const double& radius) { return RszDim(radius); }
 
    // weight function type
    virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::HyperbolaNoRsz; }
