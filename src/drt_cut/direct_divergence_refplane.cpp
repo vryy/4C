@@ -15,6 +15,7 @@ coordinate system
  *------------------------------------------------------------------------------------------------*/
 #include "direct_divergence_refplane.H"
 #include "cut_kernel.H"
+#include "cut_side.H"
 
 /*-----------------------------------------------------------------------------------*
  * Perform all the operations related to computing reference plane           sudhakar 06/15

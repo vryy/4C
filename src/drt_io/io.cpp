@@ -25,6 +25,19 @@
 
 #include "../pss_full/pss_cpp.h" // access to legacy parser module
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+IO::DiscretizationReader::DiscretizationReader()         /* [PROTECTED] */
+    : dis_(Teuchos::null),
+      input_(Teuchos::null),
+      restart_step_(NULL),
+      reader_(Teuchos::null),
+      meshreader_(Teuchos::null)
+{
+  // intentionally left blank
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
@@ -50,7 +63,8 @@ IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::string name)
+void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_MultiVector> vec,
+    std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   int columns;
@@ -64,8 +78,9 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata,
-                                                     std::string name)
+void IO::DiscretizationReader::ReadSerialDenseMatrix(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata,
+    std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
@@ -76,11 +91,12 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, 
     columns = 1;
   }
   if (columns != 1)
-    dserror("got multivector with name '%s', std::vector<char> expected", name.c_str());
+    dserror("got multivector with name '%s', std::vector<char> expected",
+        name.c_str());
 
   Teuchos::RCP<Epetra_Map> elemap;
-  Teuchos::RCP<std::vector<char> > data = reader_->ReadResultDataVecChar(id_path, value_path, columns,
-                                                                        dis_->Comm(), elemap);
+  Teuchos::RCP<std::vector<char> > data = reader_->ReadResultDataVecChar(
+      id_path, value_path, columns, Comm(), elemap);
 
   std::vector<char>::size_type position=0;
   for (int i=0;i<elemap->NumMyElements();++i)
@@ -94,7 +110,9 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
+void IO::DiscretizationReader::ReadMultiVector(
+    Teuchos::RCP<Epetra_MultiVector> vec,
+    std::string name)
 {
   // check if vec is a null pointer
   if (vec == Teuchos::null)
@@ -110,9 +128,11 @@ void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> 
   {
     columns = 1;
   }
-  Teuchos::RCP<Epetra_MultiVector> nv = reader_->ReadResultData(id_path, value_path, columns, dis_->Comm());
+  Teuchos::RCP<Epetra_MultiVector> nv = reader_->ReadResultData(id_path,
+      value_path, columns, Comm());
   if(nv->GlobalLength() != vec->GlobalLength())
-    dserror("Length of source and target (Multi-) Vector does (globally) not match! Data loss !?!");
+    dserror("Length of source and target (Multi-) Vector does (globally)"
+        " not match! Data loss !?!");
   LINALG::Export(*nv, *vec);
 }
 
@@ -128,10 +148,10 @@ void IO::DiscretizationReader::ReadMesh(int step)
   FindMeshGroup(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char> > nodedata =
-    meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+    meshreader_->ReadNodeData(step,Comm().NumProc(),Comm().MyPID());
 
   Teuchos::RCP<std::vector<char> > elementdata =
-    meshreader_->ReadElementData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+    meshreader_->ReadElementData(step,Comm().NumProc(),Comm().MyPID());
 
   // unpack nodes and elements and redistributed to current layout
   // take care --- we are just adding elements to the discretisation
@@ -158,7 +178,7 @@ void IO::DiscretizationReader::ReadNodesOnly(int step)
   FindMeshGroup(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char> > nodedata =
-    meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+    meshreader_->ReadNodeData(step,Comm().NumProc(),Comm().MyPID());
 
   // unpack nodes; FillComplete() has to be called manually
   dis_->UnPackMyNodes(nodedata);
@@ -174,10 +194,10 @@ void IO::DiscretizationReader::ReadHistoryData(int step)
   FindMeshGroup(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char> > nodedata =
-    meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+    meshreader_->ReadNodeData(step,Comm().NumProc(),Comm().MyPID());
 
   Teuchos::RCP<std::vector<char> > elementdata =
-    meshreader_->ReadElementData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+    meshreader_->ReadElementData(step,Comm().NumProc(),Comm().MyPID());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*dis_->NodeRowMap()));
@@ -200,12 +220,13 @@ void IO::DiscretizationReader::ReadHistoryData(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vector<double> >& doublevec,
-                const std::string name)
+void IO::DiscretizationReader::ReadRedundantDoubleVector(
+    Teuchos::RCP<std::vector<double> >& doublevec,
+    const std::string name)
 {
   int length;
 
-  if (dis_->Comm().MyPID() == 0)
+  if (Comm().MyPID() == 0)
   {
     // only proc0 reads the vector entities
     MAP* result = map_read_map(restart_step_, name.c_str());
@@ -217,13 +238,13 @@ void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vect
   }
 
   // communicate the length of the vector to come
-  dis_->Comm().Broadcast(&length,1,0);
+  Comm().Broadcast(&length,1,0);
 
   // make vector having the correct length on all procs
   doublevec->resize(length);
 
   // now distribute information to all procs
-  dis_->Comm().Broadcast ( &((*doublevec)[0]), length, 0 );
+  Comm().Broadcast ( &((*doublevec)[0]), length, 0 );
   return;
 }
 
@@ -234,7 +255,7 @@ void IO::DiscretizationReader::ReadRedundantIntVector( Teuchos::RCP<std::vector<
 {
   int length;
 
-  if (dis_->Comm().MyPID() == 0)
+  if (Comm().MyPID() == 0)
   {
     // only proc0 reads the vector entities
     MAP* result = map_read_map(restart_step_, name.c_str());
@@ -246,13 +267,13 @@ void IO::DiscretizationReader::ReadRedundantIntVector( Teuchos::RCP<std::vector<
   }
 
   // communicate the length of the vector to come
-  dis_->Comm().Broadcast(&length,1,0);
+  Comm().Broadcast(&length,1,0);
 
   // make vector having the correct length on all procs
   intvec->resize(length);
 
   // now distribute information to all procs
-  dis_->Comm().Broadcast ( &((*intvec)[0]), length, 0 );
+  Comm().Broadcast ( &((*intvec)[0]), length, 0 );
   return;
 }
 
@@ -274,18 +295,18 @@ double IO::DiscretizationReader::ReadDouble(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::FindGroup(int step,
-                                         MAP* file,
-                                         const char* caption,
-                                         const char* filestring,
-                                         MAP*& result_info,
-                                         MAP*& file_info)
+void IO::DiscretizationReader::FindGroup(
+    int step,
+    MAP* file,
+    const char* caption,
+    const char* filestring,
+    MAP*& result_info,
+    MAP*& file_info)
 {
 
   SYMBOL *symbol;
 
-  /*
-   * Iterate all symbols under the name "result" and get the one that
+  /* Iterate all symbols under the name "result" and get the one that
    * matches the given step. Note that this iteration starts from the
    * last result group and goes backward. */
 
@@ -318,7 +339,7 @@ void IO::DiscretizationReader::FindGroup(int step,
   /* open file to read */
 
   /* We have a symbol and its map that corresponds to the step we are
-   * interessted in. Now we need to continue our search to find the
+   * interested in. Now we need to continue our search to find the
    * step that defines the output file used for our step. */
 
   while (symbol != NULL)
@@ -368,6 +389,12 @@ void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
 
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Epetra_Comm& IO::DiscretizationReader::Comm() const
+{
+  return dis_->Comm();
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -411,9 +438,8 @@ IO::DiscretizationReader::OpenFiles(const char* filestring,
 
   const std::string filename = map_read_string(result_step, filestring);
 
-  const Epetra_Comm& comm = dis_->Comm();
   Teuchos::RCP<HDFReader> reader = Teuchos::rcp(new HDFReader(dirname));
-  reader->Open(filename,numoutputproc,comm.NumProc(),comm.MyPID());
+  reader->Open(filename,numoutputproc,Comm().NumProc(),Comm().MyPID());
   return reader;
 }
 
@@ -436,23 +462,41 @@ int IO::DiscretizationReader::GetNumOutputProc(int step)
   return numoutputproc;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+IO::DiscretizationWriter::DiscretizationWriter()           /* PROTECTED */
+    : dis_(Teuchos::null),
+      step_(0),
+      time_(0),
+      meshfile_(-1),
+      resultfile_(-1),
+      meshfilename_(),
+      resultfilename_(),
+      meshgroup_(-1),
+      resultgroup_(-1),
+      resultfile_changed_(-1),
+      meshfile_changed_(-1),
+      output_(Teuchos::null),
+      binio_(false)
+{
+  // intentionally left blank
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis)
-  :
-  dis_(Teuchos::rcp(dis.get(),false)), // no ownership to break circle discretization<>writer
-  step_(0),
-  time_(0),
-  meshfile_(-1),
-  resultfile_(-1),
-  meshfilename_(),
-  resultfilename_(),
-  meshgroup_(-1),
-  resultgroup_(-1),
-  resultfile_changed_(-1),
-  meshfile_changed_(-1),
-  output_(DRT::Problem::Instance()->OutputControlFile())
+    : dis_(Teuchos::rcp(dis.get(),false)), // no ownership to break circle discretization<>writer
+      step_(0),
+      time_(0),
+      meshfile_(-1),
+      resultfile_(-1),
+      meshfilename_(),
+      resultfilename_(),
+      meshgroup_(-1),
+      resultgroup_(-1),
+      resultfile_changed_(-1),
+      meshfile_changed_(-1),
+      output_(DRT::Problem::Instance()->OutputControlFile())
 {
   if (output_!=Teuchos::null)
     binio_ = output_->BinIO();
@@ -504,6 +548,12 @@ IO::DiscretizationWriter::~DiscretizationWriter()
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Epetra_Comm& IO::DiscretizationWriter::Comm() const
+{
+  return dis_->Comm();
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -520,9 +570,9 @@ void IO::DiscretizationWriter::CreateMeshFile(const int step)
            << ".s" << step
     ;
     meshfilename_ = meshname.str();
-    if (dis_->Comm().NumProc() > 1) {
+    if (Comm().NumProc() > 1) {
     meshname << ".p"
-             << dis_->Comm().MyPID();
+             << Comm().MyPID();
     }
 
     if (meshfile_ != -1)
@@ -556,10 +606,10 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
                << ".s" << step;
 
     resultfilename_ = resultname.str();
-    if (dis_->Comm().NumProc() > 1)
+    if (Comm().NumProc() > 1)
     {
       resultname << ".p"
-                 << dis_->Comm().MyPID();
+                 << Comm().MyPID();
     }
     if (resultfile_ != -1)
     {
@@ -599,7 +649,8 @@ void IO::DiscretizationWriter::NewResultFile(int numb_run)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::NewResultFile(std::string name_appendix, int numb_run)
+void IO::DiscretizationWriter::NewResultFile(std::string name_appendix,
+    int numb_run)
 {
   if(binio_)
   {
@@ -653,7 +704,7 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
     if (resultgroup_ < 0)
     dserror("Failed to write HDF-group in resultfile");
 
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       output_->ControlFile()
         << "result:\n"
@@ -663,10 +714,10 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 
     if (write_file)
     {
-      if (dis_->Comm().NumProc() > 1)
+      if (Comm().NumProc() > 1)
       {
         output_->ControlFile()
-          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
+          << "    num_output_proc = " << Comm().NumProc() << "\n";
       }
       std::string filename;
       const std::string::size_type pos = resultfilename_.find_last_of('/');
@@ -690,11 +741,12 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 /*----------------------------------------------------------------------*/
 /*write double to control file                                  tk 04/08*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteDouble(const std::string name, const double value)
+void IO::DiscretizationWriter::WriteDouble(const std::string name,
+    const double value)
 {
   if(binio_)
   {
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       // using a local stringstream we make sure that we do not change
       // the output formatting of control file permanently
@@ -714,8 +766,7 @@ void IO::DiscretizationWriter::WriteInt(const std::string name, const int value)
 {
   if(binio_)
   {
-
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       output_->ControlFile()
         << "    " << name << " = " << value << "\n\n" << std::flush;
@@ -727,7 +778,7 @@ void IO::DiscretizationWriter::WriteInt(const std::string name, const int value)
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteVector(const std::string name,
                                            Teuchos::RCP<const Epetra_MultiVector> vec,
-                                           IO::DiscretizationWriter::VectorType vt)
+                                           IO::VectorType vt)
 {
   if(binio_)
   {
@@ -794,22 +845,24 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
       // remember where we put the map
       mapcache_[mapdata] = idname;
 
-      // Make a copy of the map. This is a Teuchos::RCP copy internally. We just make
-      // sure here the map stays alive as long as we keep our cache. Otherwise
-      // subtle errors could occur.
+      /* Make a copy of the map. This is a Teuchos::RCP copy internally. We
+       * just make sure here the map stays alive as long as we keep our cache.
+       * Otherwise subtle errors could occur. */
       mapstack_.push_back(vec->Map());
-      // BUT: If a problem relies on FillComplete()-calls in every time step, new maps are created in
-      // every time step. Storing all old maps in mapstack_ leads to an unbounded increase in
-      // memory consumption which has to be strictly avoided.
-      // Remedy: ClearMapCache() can be called to get rid of old maps when too many are stored.
-      // The following limit of 20 is somehow arbitrary and could be increased. The basic idea is:
-      // 3 maps (dofrow, noderow and elerow) per field involved in the problem plus some more in
-      // case mapstack_ is not cleared after each time step
+      /* BUT: If a problem relies on FillComplete()-calls in every time step,
+       * new maps are created in every time step. Storing all old maps in
+       * mapstack_ leads to an unbounded increase in memory consumption which
+       * has to be strictly avoided.
+       * Remedy: ClearMapCache() can be called to get rid of old maps when too
+       * many are stored. The following limit of 20 is somehow arbitrary and
+       * could be increased. The basic idea is: 3 maps (dofrow, noderow and
+       * elerow) per field involved in the problem plus some more in case mapstack_
+       * is not cleared after each time step */
       if(mapstack_.size() > 20)
         dserror("Careful! Due to repeated FillComplete()-calls many maps are stored in the output process.");
     }
 
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       std::string vectortype;
       switch (vt)
@@ -849,7 +902,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
 void IO::DiscretizationWriter::WriteVector(const std::string name,
                                            const std::vector<char>& vec,
                                            const Epetra_Map& elemap,
-                                           IO::DiscretizationWriter::VectorType vt)
+                                           IO::VectorType vt)
 {
   if(binio_)
   {
@@ -907,22 +960,25 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
       // remember where we put the map
       mapcache_[mapdata] = idname;
 
-      // Make a copy of the map. This is a Teuchos::RCP copy internally. We just make
-      // sure here the map stays alive as long as we keep our cache. Otherwise
-      // subtle errors could occur.
+      /* Make a copy of the map. This is a Teuchos::RCP copy internally. We
+       * just make sure here the map stays alive as long as we keep our cache.
+       * Otherwise subtle errors could occur. */
       mapstack_.push_back(elemap);
-      // BUT: If a problem relies on FillComplete()-calls in every time step, new maps are created in
-      // every time step. Storing all old maps in mapstack_ leads to an unbounded increase in
-      // memory consumption which has to be strictly avoided.
-      // Remedy: ClearMapCache() can be called to get rid of old maps when too many are stored.
-      // The following limit of 20 is somehow arbitrary and could be increased. The basic idea is:
-      // 3 maps (dofrow, noderow and elerow) per field involved in the problem plus some more in
-      // case mapstack_ is not cleared after each time step
+      /* BUT: If a problem relies on FillComplete()-calls in every time step,
+       * new maps are created in every time step. Storing all old maps in
+       * mapstack_ leads to an unbounded increase in memory consumption which
+       * has to be strictly avoided.
+       * Remedy: ClearMapCache() can be called to get rid of old maps when too
+       * many are stored. The following limit of 20 is somehow arbitrary and
+       * could be increased. The basic idea is: 3 maps (dofrow, noderow and
+       * elerow) per field involved in the problem plus some more in case mapstack_
+       * is not cleared after each time step */
       if(mapstack_.size() > 20)
-        dserror("Careful! Due to repeated FillComplete()-calls many maps are stored in the output process.");
+        dserror("Careful! Due to repeated FillComplete()-calls many maps are "
+            "stored in the output process.");
     }
 
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       std::string vectortype;
       switch (vt)
@@ -971,7 +1027,7 @@ void IO::DiscretizationWriter::WriteCondition(const std::string condname) const
     // which means it is not used -> so no dserror() here
     if(!block->empty())
     {
-      if (dis_->Comm().MyPID() == 0)
+      if (Comm().MyPID() == 0)
         output_->ControlFile() << "    condition = \"" << condname << "\"\n";
 
       hsize_t dim = static_cast<hsize_t>(block->size());
@@ -1010,15 +1066,18 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     hsize_t dim = static_cast<hsize_t>(elementdata->size());
     if (dim != 0)
     {
-      const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,&dim,&((*elementdata)[0]));
+      const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",
+          1,&dim,&((*elementdata)[0]));
       if (element_status < 0)
         dserror("Failed to create dataset in HDF-meshfile");
     }
     else
     {
-      const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",0,&dim,&((*elementdata)[0]));
+      const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",
+          0,&dim,&((*elementdata)[0]));
       if (element_status < 0)
-        dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row elements", dis_->Comm().MyPID());
+        dserror("Failed to create dataset in HDF-meshfile on proc %d which does"
+            " not have row elements", Comm().MyPID());
     }
 
     // only procs with row nodes need to write data
@@ -1026,21 +1085,24 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
     dim = static_cast<hsize_t>(nodedata->size());
     if (dim != 0)
     {
-      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
+      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,
+          &dim,&((*nodedata)[0]));
       if (node_status < 0)
         dserror("Failed to create dataset in HDF-meshfile");
     }
     else
     {
-      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,&dim,&((*nodedata)[0]));
+      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,
+          &dim,&((*nodedata)[0]));
       if (node_status < 0)
-        dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row nodes", dis_->Comm().MyPID());
+        dserror("Failed to create dataset in HDF-meshfile on proc %d which"
+            " does not have row nodes", Comm().MyPID());
     }
 
     int max_nodeid = dis_->NodeRowMap()->MaxAllGID();
 
     // ... write other mesh informations
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       output_->ControlFile()
         << "field:\n"
@@ -1059,10 +1121,10 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
       // knotvectors for nurbs-discretisation
       WriteKnotvector();
 
-      if (dis_->Comm().NumProc() > 1)
+      if (Comm().NumProc() > 1)
       {
         output_->ControlFile()
-          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
+          << "    num_output_proc = " << Comm().NumProc() << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1089,12 +1151,13 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteMesh(const int step, const double time, std::string name_base_file )
+void IO::DiscretizationWriter::WriteMesh(const int step, const double time,
+    std::string name_base_file )
 {
   if(binio_)
   {
     // ... write other mesh informations
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       output_->ControlFile()
         << "field:\n"
@@ -1117,10 +1180,10 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time, std:
       meshname << name_base_file << ".mesh." << dis_->Name() << ".s" << step;
       meshfilename_ = meshname.str();
 
-      if (dis_->Comm().NumProc() > 1)
+      if (Comm().NumProc() > 1)
       {
         output_->ControlFile()
-          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
+          << "    num_output_proc = " << Comm().NumProc() << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1163,28 +1226,32 @@ void IO::DiscretizationWriter::ParticleOutput(const int step,
       hsize_t dim = static_cast<hsize_t>(nodedata->size());
       if (dim != 0)
       {
-        const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
+        const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",
+            1,&dim,&((*nodedata)[0]));
         if (node_status < 0)
           dserror("Failed to create dataset in HDF-meshfile");
       }
       else
       {
-        const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,&dim,&((*nodedata)[0]));
+        const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",
+            0,&dim,&((*nodedata)[0]));
         if (node_status < 0)
-          dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row nodes", dis_->Comm().MyPID());
+          dserror("Failed to create dataset in HDF-meshfile on proc %d which "
+              "does not have row nodes", Comm().MyPID());
       }
     }
 
-    // nodes do not have to be written for standard output; only number of nodes is important
-    // more exactly: the maximum nodal id is used to determine number of particles during output
-    // unused particles are located at the origin and are waiting for activation
+    /* nodes do not have to be written for standard output; only number of
+     * nodes is important more exactly: the maximum nodal id is used to
+     * determine number of particles during output unused particles are
+     * located at the origin and are waiting for activation */
     int max_nodeid = dis_->NodeRowMap()->MaxAllGID();
 
     // ... write other mesh informations
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
-      // number of nodes and elements is set to zero to suppress reading of nodes during post-processing
-      // only maxnodeid is important
+      /* number of nodes and elements is set to zero to suppress reading of
+       * nodes during post-processing only maxnodeid is important */
       output_->ControlFile()
         << "field:\n"
         << "    field = \"" << dis_->Name() << "\"\n"
@@ -1196,11 +1263,12 @@ void IO::DiscretizationWriter::ParticleOutput(const int step,
         << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
         ;
 
-      // name of the output file must be specified for changing geometries in each time step
-      if (dis_->Comm().NumProc() > 1)
+      /* name of the output file must be specified for changing geometries in
+       * each time step */
+      if (Comm().NumProc() > 1)
       {
         output_->ControlFile()
-          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
+          << "    num_output_proc = " << Comm().NumProc() << "\n";
       }
       std::string filename;
       std::string::size_type pos = meshfilename_.find_last_of('/');
@@ -1247,17 +1315,20 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
     }
 
 //#ifdef DEBUG // rauch 07/14
-    // for debugging purposes of immersed method; recognized background elements and boundary elements
-    // become visible in post processing
+    // for debugging purposes of immersed method; recognized background
+    // elements and boundary elements become visible in post processing
     if ((int)elerowmap->NumMyElements() >= 1)
     {
+
       if(dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(0)) != NULL)
       { // if dynamic cast is successful write those data
         for (int i=0; i<elerowmap->NumMyElements(); ++i)
         {
           // write information fo immersed method
-          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))->VisIsImmersed(names);
-          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(i))->VisIsBoundaryImmersed(names);
+          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(
+              dis_->lRowElement(i))->VisIsImmersed(names);
+          dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(
+              dis_->lRowElement(i))->VisIsBoundaryImmersed(names);
         }
       }
     }
@@ -1271,7 +1342,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
 
     // By applying GatherAll we get the combined map including all elemental values
     // which where found by VisNames
-    const Epetra_Comm& comm = dis_->Comm();
+    const Epetra_Comm& comm = Comm();
     LINALG::GatherAll(names, comm);
 
     // make sure there's no name with a dimension of less than 1
@@ -1299,7 +1370,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
         for (int j=0; j<dimension; ++j) (*sysdata(j))[i] = eledata[j];
       }
 
-      WriteVector(fool->first, Teuchos::rcp(&sysdata,false), IO::DiscretizationWriter::elementvector);
+      WriteVector(fool->first, Teuchos::rcp(&sysdata,false),elementvector);
 
     } // for (fool = names.begin(); fool!= names.end(); ++fool)
   }
@@ -1334,7 +1405,7 @@ void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
     /* By applying GatherAll we get the combined map including all nodal values
      * which where found by VisNames
      */
-    const Epetra_Comm& comm = dis_->Comm();
+    const Epetra_Comm& comm = Comm();
     LINALG::GatherAll(names, comm);
 
     // make sure there's no name with a dimension of less than 1
@@ -1365,7 +1436,8 @@ void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
           (*sysdata(j))[i] = nodedata[j];
       }
 
-      WriteVector(fool->first, Teuchos::rcp(&sysdata,false), IO::DiscretizationWriter::nodevector);
+      WriteVector(fool->first, Teuchos::rcp(&sysdata,false),
+          IO::nodevector);
 
     } // for (fool = names.begin(); fool!= names.end(); ++fool)
   }
@@ -1379,9 +1451,8 @@ void IO::DiscretizationWriter::WriteKnotvector() const
   if(binio_)
   {
     // try a dynamic cast of the discretisation to a nurbs discretisation
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-      =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis_));
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(dis_.get());
 
     if(nurbsdis!=NULL)
     {
@@ -1426,7 +1497,7 @@ void IO::DiscretizationWriter::WriteRedundantDoubleVector(
 {
   if(binio_)
   {
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       // only proc0 writes the vector entities to the binary data
       // an appropriate name has to be provided
@@ -1434,13 +1505,15 @@ void IO::DiscretizationWriter::WriteRedundantDoubleVector(
       const hsize_t size = doublevec->size();
       if (size != 0)
       {
-        const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,&((*doublevec)[0]));
+        const herr_t make_status = H5LTmake_dataset_double(resultgroup_,
+            valuename.c_str(),1,&size,&((*doublevec)[0]));
         if (make_status < 0)
           dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
       else
       {
-        const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),0,&size,&((*doublevec)[0]));
+        const herr_t make_status = H5LTmake_dataset_double(resultgroup_,
+            valuename.c_str(),0,&size,&((*doublevec)[0]));
         if (make_status < 0)
           dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
@@ -1478,7 +1551,7 @@ void IO::DiscretizationWriter::WriteRedundantIntVector(
 {
   if(binio_)
   {
-    if (dis_->Comm().MyPID() == 0)
+    if (Comm().MyPID() == 0)
     {
       // only proc0 writes the entities to the binary data
       // an appropriate name has to be provided
@@ -1486,15 +1559,18 @@ void IO::DiscretizationWriter::WriteRedundantIntVector(
       const hsize_t size = vectorint->size();
       if (size != 0)
       {
-        const herr_t make_status = H5LTmake_dataset_int(resultgroup_,valuename.c_str(),1,&size,&((*vectorint)[0]));
+        const herr_t make_status = H5LTmake_dataset_int(resultgroup_,
+            valuename.c_str(),1,&size,&((*vectorint)[0]));
         if (make_status < 0)
           dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
       else
       {
-        const herr_t make_status = H5LTmake_dataset_int(resultgroup_,valuename.c_str(),0,&size,&((*vectorint)[0]));
+        const herr_t make_status = H5LTmake_dataset_int(resultgroup_,
+            valuename.c_str(),0,&size,&((*vectorint)[0]));
         if (make_status < 0)
-          dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+          dserror("Failed to create dataset in HDF-resultfile. status=%d",
+              make_status);
       }
 
       // do I need the following naming stuff?
@@ -1557,19 +1633,14 @@ void IO::MeshfreeDiscretizationWriter::WriteMesh(
       // cast needed to ask dis for its Points and NumState
       Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> dis
         = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(dis_);
-      if (dis==Teuchos::null) dserror("Could not cast 'dis_' to MeshfreeDiscretization.");
+      if (dis==Teuchos::null)
+        dserror("Could not cast 'dis_' to MeshfreeDiscretization.");
 
       //------------------------------------------------------------------------
       // created temporary discretization for post-filter output
       //------------------------------------------------------------------------
-      // This const_cast-rcpFromRef business is not nice, I know. But
-      // Epetra_Comm has const-methods only anyhow. (Except for the destructor
-      // which won't be called since 'dis_' still holds an Teuchos::RCP on it)
-      // Do you have a better idea?
-      DRT::Discretization postfilter_discret(
-        dis_->Name(),
-        Teuchos::rcpFromRef(const_cast<Epetra_Comm&>(dis_->Comm()))
-        );
+      DRT::Discretization postfilter_discret(dis_->Name(),
+        Teuchos::rcp<Epetra_Comm>(Comm().Clone()));
 
       //------------------------------------------------------------------------
       // fill temporary discretization with elements from original discretization
@@ -1578,7 +1649,8 @@ void IO::MeshfreeDiscretizationWriter::WriteMesh(
       for (int i=0; i<numrowele; ++i)
       {
         // get geometry information of cell
-        DRT::MESHFREE::Cell<DRT::Element>* oldcell = dynamic_cast<DRT::MESHFREE::Cell<DRT::Element>*>(dis_->lRowElement(i));
+        DRT::MESHFREE::Cell<DRT::Element>* oldcell =
+            dynamic_cast<DRT::MESHFREE::Cell<DRT::Element>*>(dis_->lRowElement(i));
         if (oldcell==NULL) dserror("Could not cast element to meshfree Cell.");
         const int numpseudonodes = oldcell->NumPoint();
         const int* pseudonodeids = oldcell->PointIds();
@@ -1593,7 +1665,8 @@ void IO::MeshfreeDiscretizationWriter::WriteMesh(
       }
 
       //------------------------------------------------------------------------
-      // add nodes to temporary discretization which are points in the original discretization
+      // add nodes to temporary discretization which are points in the original
+      // discretization
       //------------------------------------------------------------------------
       const int numrowpoints = dis->NumMyRowPoints();
       // loop over row-points and add as node to temporary discretization
@@ -1624,7 +1697,8 @@ void IO::MeshfreeDiscretizationWriter::WriteMesh(
     // this is restart-prep output
     else
     {
-      dserror("No restart capability of meshfree discretizations, yet. Feel free to implement!!!");
+      dserror("No restart capability of meshfree discretizations, yet. Feel free "
+          "to implement!!!");
     }
   }
 }

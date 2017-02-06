@@ -45,14 +45,30 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Problem::Problem(
+    const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData)
+    : isinit_(false),
+      isjac_(false),
+      noxNlnGlobalData_(noxNlnGlobalData),
+      xVector_(Teuchos::null),
+      jac_(Teuchos::null),
+      precMat_(Teuchos::null),
+      scalingObject_(Teuchos::null)
+{
+  /* intentionally left blank */
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::Problem::Problem(
     const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
     const Teuchos::RCP<NOX::Epetra::Vector>& x,
-    const Teuchos::RCP<LINALG::SparseOperator>& A) :
-  noxNlnGlobalData_(noxNlnGlobalData),
-  xVector_(Teuchos::null),
-  jac_(Teuchos::null),
-  precMat_(Teuchos::null),
-  scalingObject_(Teuchos::null)
+    const Teuchos::RCP<LINALG::SparseOperator>& A)
+    : isinit_(false),
+      noxNlnGlobalData_(noxNlnGlobalData),
+      xVector_(Teuchos::null),
+      jac_(Teuchos::null),
+      precMat_(Teuchos::null),
+      scalingObject_(Teuchos::null)
 {
   Initialize(x,A);
 }
@@ -65,8 +81,14 @@ void NOX::NLN::Problem::Initialize(
 {
   // in the standard case, we use the input rhs and matrix
   // ToDo Check if CreateView is sufficient
+  if ( x.is_null() )
+    dserror("You have to provide a state vector pointer unequal Teuchos::null!");
+
   xVector_ = x;
+  isjac_   = ( not A.is_null() );
   jac_     = A;
+
+  isinit_ = true;
 }
 
 /*----------------------------------------------------------------------------*
@@ -74,8 +96,13 @@ void NOX::NLN::Problem::Initialize(
 Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem()
     const
 {
+  CheckInit();
+  if ( not IsJac() )
+    dserror("You have to set a jacobian first, before you can create a "
+        "linear system!");
+
   const NOX::NLN::LinSystem::LinearSystemType linsystype =
-      NOX::NLN::AUX::GetLinearSystemType(noxNlnGlobalData_->GetLinSolvers());
+      NOX::NLN::AUX::GetLinearSystemType( noxNlnGlobalData_->GetLinSolvers() );
   // build the linear system --> factory call
   return NOX::NLN::LinSystem::BuildLinearSystem(
       linsystype,*noxNlnGlobalData_,jac_,xVector_,precMat_,scalingObject_);
@@ -87,6 +114,7 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
     const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys
     ) const
 {
+  CheckInit();
   Teuchos::RCP<NOX::Abstract::Group> noxgrp = Teuchos::null;
 
   Teuchos::ParameterList& params = noxNlnGlobalData_->GetNlnParameterList();
@@ -110,19 +138,29 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::CreateStatusTests(
-    Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
-    Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const
+void NOX::NLN::Problem::CreateOuterStatusTest(
+    Teuchos::RCP<NOX::StatusTest::Generic>& outerTests) const
 {
   Teuchos::ParameterList& p = noxNlnGlobalData_->GetNlnParameterList();
 
   // A "Outer Status Test" has to be supplied by the user
   Teuchos::ParameterList& oParams =
       p.sublist("Status Test",true).sublist("Outer Status Test",true);
-  outerTests = NOX::NLN::StatusTest::BuildOuterStatusTests(oParams, noxNlnGlobalData_->GetNoxUtils());
+  outerTests = NOX::NLN::StatusTest::BuildOuterStatusTests(oParams,
+      noxNlnGlobalData_->GetNoxUtils());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::Problem::CreateStatusTests(
+    Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
+    Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const
+{
+  CreateOuterStatusTest(outerTests);
 
   // A "Inner Status Test" is optional in some cases.
   // Check if there is a "Inner Status Test" sublist and if it is filled.
+  Teuchos::ParameterList& p = noxNlnGlobalData_->GetNlnParameterList();
   if (p.sublist("Status Test",true).isSublist("Inner Status Test")
       and p.sublist("Status Test").sublist("Inner Status Test").numParams() != 0)
   {
@@ -141,23 +179,10 @@ void NOX::NLN::Problem::CheckFinalStatus(
 {
   if (finalStatus != NOX::StatusTest::Converged)
   {
-    throwError("CheckFinalStatus()",
-        "The nonlinear solver did not converge!");
+    dserror( "The nonlinear solver did not converge!" );
   }
 
   return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::throwError(
-    const std::string& functionName,
-    const std::string& errorMsg) const
-{
-  std::ostringstream msg;
-  msg << "ERROR - NOX::NLN::NoxProblem::" << functionName
-      << " - " << errorMsg << std::endl;
-  dserror(msg.str());
 }
 
 #endif /* NOX_NLN_PROBLEM_CPP_ */

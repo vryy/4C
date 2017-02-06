@@ -370,13 +370,15 @@ bool XFEM::MeshProjector::CheckPositionAndProject(
   }
 
   // compute node position w.r.t. embedded element
-  GEO::CUT::Position<distype> pos(src_xyze,node_xyz);
-  bool inside = pos.Compute();
+  Teuchos::RCP<GEO::CUT::Position> pos =
+        GEO::CUT::PositionFactory::BuildPosition<3,distype>(src_xyze,node_xyz);
+  bool inside = pos->Compute();
 
   if (inside)
   {
     // node position in covering element's local coordinates
-    LINALG::Matrix<3,1> xsi = pos.LocalCoordinates();
+    LINALG::Matrix<3,1> xsi;
+    pos->LocalCoordinates(xsi);
 
     // Evaluate elements shape function at this point and fill values
     LINALG::SerialDenseVector shp(src_numnodes);

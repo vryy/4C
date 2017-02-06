@@ -108,9 +108,10 @@ void SCATRA::LevelSetTimIntOneStepTheta::PrintTimeStepInfo()
 }
 
 
-/*-----------------------------------------------------------------------------------------------------------*
- | calculate consistent initial scalar time derivatives in compliance with initial scalar field   fang 09/15 |
- *-----------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------- *
+ | calculate consistent initial scalar time derivatives in compliance with    |
+ | initial scalar field                                            fang 09/15 |
+ *----------------------------------------------------------------------------*/
 void SCATRA::LevelSetTimIntOneStepTheta::CalcInitialTimeDerivative()
 {
   if (not switchreinit_)
@@ -262,7 +263,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::UpdateReinit()
  | Redistribute the scatra discretization and vectors according to nodegraph  rasthofer 07/11 |
  |                                                                            DA wichmann     |
  *--------------------------------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> & nodegraph)
 {
   // let the base class do the basic redistribution and transfer of the base class members
   LevelSetAlgorithm::Redistribute(nodegraph);
@@ -306,7 +307,8 @@ void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(const int step,Teuchos::RCP
 /*----------------------------------------------------------------------*
  | interpolate phi to intermediate time level n+theta   rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phinptheta(const double theta_inter)
+Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phinptheta(
+    const double theta_inter)
 {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     Teuchos::RCP< Epetra_Vector> phi_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
@@ -318,7 +320,8 @@ Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phinptheta(const
 /*----------------------------------------------------------------------*
  | interpolate phidt to intermediate time level n+theta rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phidtnptheta(const double theta_inter)
+Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetTimIntOneStepTheta::Phidtnptheta(
+    const double theta_inter)
 {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     Teuchos::RCP< Epetra_Vector> phidt_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));

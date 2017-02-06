@@ -21,9 +21,14 @@
 
 // forward declaration ...
 class Epetra_Vector;
+namespace Teuchos {
+  class ParameterList;
+} // namespace Teuchos
 class Epetra_Map;
 namespace DRT {
+  class DiscretizationInterface;
   class Discretization;
+  class Condition;
 namespace UTILS {
   class LocsysManager;
 } // namespace UTILS
@@ -47,7 +52,7 @@ namespace TIMINT {
     virtual ~Dbc() {};
 
     //! Initialize class variables
-    virtual void Init(const Teuchos::RCP<DRT::Discretization>& discret,
+    virtual void Init(const Teuchos::RCP<DRT::DiscretizationInterface>& discret,
         const Teuchos::RCP<Epetra_Vector>& freact,
         const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
@@ -127,7 +132,7 @@ namespace TIMINT {
     void CheckInitSetup() const;
 
     //! Get discretization pointer
-    Teuchos::RCP<DRT::Discretization>& DiscretPtr();
+    Teuchos::RCP<DRT::Discretization> DiscretPtr();
 
     /*! Rotate the system matrix from a global to a local coordinate system,
      *  if the locsysman_ is defined.
@@ -173,7 +178,7 @@ namespace TIMINT {
     bool islocsys_;
 
     //! Discretization pointer
-    Teuchos::RCP<DRT::Discretization> discret_ptr_;
+    Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
 
     //! Reaction force
     Teuchos::RCP<Epetra_Vector> freact_ptr_;

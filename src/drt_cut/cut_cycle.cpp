@@ -43,14 +43,14 @@ bool GEO::CUT::Cycle::MakeCycle( const point_line_set & lines, Cycle & cycle )
   std::vector<int> done( lines.size(), false );
 
   unsigned pos = 0;
-  while ( not done[pos] )
+  while ( not done[ pos ] )
   {
     cycle.push_back( frompoints[pos] );
     done[pos] = true;
     std::vector<Point*>::iterator i = std::find( frompoints.begin(), frompoints.end(), topoints[pos] );
     if ( i==frompoints.end() )
     {
-      throw std::runtime_error( "no cycle: to point not in from list" );
+      run_time_error( "no cycle: \"to point\" not in \"from list\"" );
     }
     pos = std::distance( frompoints.begin(), i );
   }
@@ -251,5 +251,16 @@ void GEO::CUT::Cycle::GnuplotDump( std::ostream & stream ) const
 void GEO::CUT::Cycle::reverse()
 {
   std::reverse( points_.begin(), points_.end() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Cycle::Print() const
+{
+  std::cout << "--- Cycle ---" << std::endl;
+  for ( std::vector<Point*>::const_iterator cit = points_.begin();
+        cit != points_.end(); ++cit )
+    std::cout << "Point " << (*cit) << "\n";
+  std::cout << std::endl;
 }
 

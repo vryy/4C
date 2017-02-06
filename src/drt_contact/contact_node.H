@@ -190,6 +190,27 @@ public:
   */
   virtual std::map<int,std::map<int,double> >& GetVarWGapLinMa() {return varWGapLinMa_; }
 
+  //! @name Extended contact
+  //! @{
+
+  //! Return the constraint residuum of this node
+  virtual double& GetWcLm() {return Wc_lm_;}
+
+  //! Return linearization of this node (slave part)
+  virtual GEN::pairedvector<int, double>& GetWcSuLm() {return Wc_su_lm_;}
+
+  //! Return linearization of this node (master part)
+  virtual std::map<int, double>& GetWcMuLm() {return Wc_mu_lm_;}
+
+  //! Return linearization of this node (slave part)
+  virtual std::map<int, std::map<int, double> >& GetWcSuU() {return Wc_su_u_;}
+
+  //! Return linearization of this node (master part)
+  virtual std::map<int, std::map<int, double> >& GetWcMuU() {return Wc_mu_u_;}
+
+
+  //! @}
+
   /*!
   \brief Return contact status of last converged state n (active=true)
 
@@ -417,6 +438,29 @@ protected:
   // *** Penalty-related quantities **************************
   double kappa_;                               // gap-scaling factor kappa
   std::vector<std::map<int, double> > derivz_; // direction derivative of nodal z-matrix value
+
+
+  //! @name Extended contact formulation
+  //! @{
+
+  // TODO: Create own data container (or avoid storing in nodes) for XContact formulation
+
+  //! Contact potential varied after Lagrange multiplier (constraint residuum vector)
+  double Wc_lm_;
+
+  //! Contact potential varied after slave displacements and linearized after Lagrange multipliers
+  GEN::pairedvector<int, double> Wc_su_lm_;
+
+  //! Contact potential varied after master displacements and linearized after Lagrange multipliers
+  std::map<int, double> Wc_mu_lm_;
+
+  //! Contact potential varied after slave displacements and linearized after all displacements
+  std::map<int, std::map<int, double> > Wc_su_u_;
+
+  //! Contact potential varied after master displacements and linearized after all displacements
+  std::map<int, std::map<int, double> > Wc_mu_u_;
+
+  //! @}
 };
 // class CoNodeDataContainer
 
@@ -865,6 +909,21 @@ public:
   \param val : value to be added
   */
   void AddVarWGapMa(int& col, int& gid, double& val);
+
+  /*!
+  \brief TODO
+  */
+  void AddWcLm(const double& val);
+
+  /*!
+  \brief TODO
+  */
+  void AddWcSuLm(const int& col, const double& val);
+
+  /*!
+  \brief TODO
+  */
+  void AddWcMuLm(const int& col, const double& val);
 
   /*!
   \brief Add a value to the map of LM derivatives of this node

@@ -47,6 +47,8 @@ namespace SCATRA
     calc_mass_center_smoothingfunct,             // calculate mass center of minus domain, using the smoothing function. (Interface thickness required)
     calc_mass_matrix,                            // calculate mass matrix
     calc_mat_and_rhs,                            // calc_condif_systemmat_and_residual,
+    calc_rhs,                                    // calc_condif_residual
+    calc_mat,                                    // calc_condif_systemmat
     calc_mat_and_rhs_lsreinit_correction_step,   // level-set action: setup of system for correction step
     calc_mat_initial,                            // calc initial mat for hdg
     calc_mean_Cai,                               // calc_mean_Cai (multifractal subgrid-scales)

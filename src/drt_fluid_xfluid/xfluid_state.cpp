@@ -30,12 +30,11 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
+#include "../drt_xfem/xfield_state_utils.H"
 #include "../drt_fluid/fluid_utils.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
-
-#include "xfluid_utils.H"
 
 #include "xfluid_state.H"
 
@@ -75,9 +74,9 @@ void FLD::XFluidState::CouplingState::ZeroCouplingMatricesAndRhs()
   if(!is_active_) return;
 
   // zero all coupling matrices and rhs vectors
-  ZeroMatrix(C_xs_);
-  ZeroMatrix(C_sx_);
-  ZeroMatrix(C_ss_);
+  XFEM::ZeroMatrix(C_xs_);
+  XFEM::ZeroMatrix(C_sx_);
+  XFEM::ZeroMatrix(C_ss_);
 
   rhC_s_->PutScalar(0.0);
   rhC_s_col_->PutScalar(0.0);
@@ -120,12 +119,12 @@ void FLD::XFluidState::CouplingState::Destroy(bool throw_exception)
 {
   if(!is_active_) return;
 
-  DestroyMatrix(C_xs_, throw_exception);
-  DestroyMatrix(C_sx_, throw_exception);
-  DestroyMatrix(C_ss_, throw_exception);
+  XFEM::DestroyMatrix(C_xs_, throw_exception);
+  XFEM::DestroyMatrix(C_sx_, throw_exception);
+  XFEM::DestroyMatrix(C_ss_, throw_exception);
 
-  DestroyRCPObject(rhC_s_, throw_exception);
-  DestroyRCPObject(rhC_s_col_, throw_exception);
+  XFEM::DestroyRCPObject(rhC_s_, throw_exception);
+  XFEM::DestroyRCPObject(rhC_s_col_, throw_exception);
 
   is_active_ = false;
 }
@@ -340,7 +339,7 @@ void FLD::XFluidState::CompleteCouplingMatricesAndRhs(
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::ZeroSystemMatrixAndRhs()
 {
-  ZeroMatrix(sysmat_);
+  XFEM::ZeroMatrix(sysmat_);
 
   // zero residual vectors
   residual_col_->PutScalar(0.0);
@@ -377,7 +376,7 @@ void FLD::XFluidState::SetupMapExtractors(
 bool FLD::XFluidState::Destroy()
 {
   // destroy system matrix (destroy after coupling matrices, as for twophase problems the coupling matrices are identical to the system matrix)
-  DestroyMatrix(sysmat_);
+  XFEM::DestroyMatrix(sysmat_);
 
   // destroy all coupling system matrices and rhs vectors (except for levelset coupling objects
   for(std::map<int, Teuchos::RCP<CouplingState> >::iterator i = coup_state_.begin();
@@ -393,37 +392,37 @@ bool FLD::XFluidState::Destroy()
   }
 
   // destroy dofrowmap and dofcolmap
-  DestroyRCPObject(xfluiddofrowmap_);
-  DestroyRCPObject(xfluiddofcolmap_);
+  XFEM::DestroyRCPObject(xfluiddofrowmap_);
+  XFEM::DestroyRCPObject(xfluiddofcolmap_);
 
   // destroy state vectors
-  DestroyRCPObject(velnp_);
-  DestroyRCPObject(veln_);
-  DestroyRCPObject(velnm_);
-  DestroyRCPObject(velaf_);
+  XFEM::DestroyRCPObject(velnp_);
+  XFEM::DestroyRCPObject(veln_);
+  XFEM::DestroyRCPObject(velnm_);
+  XFEM::DestroyRCPObject(velaf_);
 
-  DestroyRCPObject(accnp_);
-  DestroyRCPObject(accn_);
-  DestroyRCPObject(accam_);
+  XFEM::DestroyRCPObject(accnp_);
+  XFEM::DestroyRCPObject(accn_);
+  XFEM::DestroyRCPObject(accam_);
 
-  DestroyRCPObject(scaaf_);
-  DestroyRCPObject(scaam_);
+  XFEM::DestroyRCPObject(scaaf_);
+  XFEM::DestroyRCPObject(scaam_);
 
-  DestroyRCPObject(hist_);
-  DestroyRCPObject(neumann_loads_);
+  XFEM::DestroyRCPObject(hist_);
+  XFEM::DestroyRCPObject(neumann_loads_);
 
-  DestroyRCPObject(residual_);
-  DestroyRCPObject(trueresidual_);
+  XFEM::DestroyRCPObject(residual_);
+  XFEM::DestroyRCPObject(trueresidual_);
 
-  DestroyRCPObject(zeros_);
-  DestroyRCPObject(incvel_);
+  XFEM::DestroyRCPObject(zeros_);
+  XFEM::DestroyRCPObject(incvel_);
 
-  DestroyRCPObject(dispnp_);
-  DestroyRCPObject(gridvnp_);
+  XFEM::DestroyRCPObject(dispnp_);
+  XFEM::DestroyRCPObject(gridvnp_);
 
 
   // destroy velpressplitter_
-  DestroyRCPObject(velpressplitter_);
+  XFEM::DestroyRCPObject(velpressplitter_);
 
   // wizard, dofset and conditionmanager keep RCPs pointing to them and cannot be destroyed as they are further used in xfluid-class
   // decrease at least the strong reference counter

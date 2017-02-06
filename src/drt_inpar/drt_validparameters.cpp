@@ -78,6 +78,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_browniandyn.H"
 #include "inpar_crosslinking.H"
 #include "inpar_cardiovascular0d.H"
+#include "inpar_contact_xcontact.H"
 #include "inpar_plasticity.H"
 
 
@@ -630,6 +631,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::MLMC::SetValidParameters(list);
   INPAR::MORTAR::SetValidParameters(list);
   INPAR::CONTACT::SetValidParameters(list);
+  INPAR::XCONTACT::SetValidParameters(list);
   INPAR::VOLMORTAR::SetValidParameters(list);
   INPAR::WEAR::SetValidParameters(list);
   INPAR::BEAMCONTACT::SetValidParameters(list);

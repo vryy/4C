@@ -30,6 +30,9 @@ namespace GEO
   //! shortcut for a vector of BoundaryIntCells
   typedef std::vector<GEO::BoundaryIntCell > BoundaryIntCells;
 
+  //! shortcut for a vector of BoundaryCell pointers
+  typedef std::vector< Teuchos::RCP<GEO::BoundaryIntCell> > BoundaryIntCellPtrs;
+
   //! shortcut for a vector of DomainIntCells
   typedef std::vector<GEO::DomainIntCell > DomainIntCells;
 

@@ -115,7 +115,7 @@ namespace GEO
 
         void TestFacets();
 
-        void Print();
+        void Print() const;
 
         plain_int_set & at( int p ) { return graph_[p]; }
 
@@ -165,7 +165,7 @@ namespace GEO
         int color_split_;
       };
 
-      /// One graph that represents the outside facets of one ore more volumes
+      /// One graph that represents the outside facets of one or more volumes
       class Cycle
       {
         friend class CycleListIterator;
@@ -181,7 +181,7 @@ namespace GEO
           cycle_.Swap( cycle );
         }
 
-        void Print();
+        void Print() const;
 
         void Split( Graph & used, plain_int_set & free, Graph & connection, const std::vector<int> & split_trace, Graph & c1, Graph & c2 )
         { cycle_.Split( used, free, connection, split_trace, c1, c2 ); }
@@ -245,7 +245,7 @@ namespace GEO
                         plain_int_set & free,
                         const std::vector<std::pair<Point*, Point*> > & all_lines );
 
-        void Print();
+        void Print() const;
 
         unsigned size() const { return cycles_.size(); }
 

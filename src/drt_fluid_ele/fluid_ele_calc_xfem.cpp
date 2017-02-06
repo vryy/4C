@@ -33,6 +33,8 @@
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_cut.H"
 
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
@@ -1046,9 +1048,10 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
         }
 
         // find element local position of gauss point
-        GEO::CUT::Position<distype> pos( my::xyze_, x_gp_lin );
-        pos.Compute();
-        rst = pos.LocalCoordinates();
+        Teuchos::RCP<GEO::CUT::Position> pos =
+            GEO::CUT::PositionFactory::BuildPosition<my::nsd_,distype>(my::xyze_,x_gp_lin);
+        pos->Compute();
+        pos->LocalCoordinates(rst);
 
         //        if (!levelset_cut)
         //        {
@@ -1811,9 +1814,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
         }
 
         // find element local position of gauss point
-        GEO::CUT::Position<distype> pos( my::xyze_, x_gp_lin );
-        pos.Compute();
-        rst = pos.LocalCoordinates();
+        Teuchos::RCP<GEO::CUT::Position> pos =
+              GEO::CUT::PositionFactory::BuildPosition<my::nsd_,distype>(my::xyze_,x_gp_lin);
+        pos->Compute();
+        pos->LocalCoordinates(rst);
 
         //TODO unify ProjectOnSide and Evaluate for different spatial dimensions of boundary slave element and volumetric slave element
         if (is_mesh_coupling_side)
@@ -3514,9 +3518,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GEO::CUT::Position");
 
           // find element local position of gauss point
-          GEO::CUT::Position<distype> pos( my::xyze_, x_gp_lin_ );
-          pos.Compute();
-          rst_ = pos.LocalCoordinates();
+          Teuchos::RCP<GEO::CUT::Position> pos =
+                GEO::CUT::PositionFactory::BuildPosition<my::nsd_,distype>( my::xyze_, x_gp_lin_ );
+          pos->Compute();
+          pos->LocalCoordinates(rst_);
         }
 
         if (is_mesh_coupling_side)

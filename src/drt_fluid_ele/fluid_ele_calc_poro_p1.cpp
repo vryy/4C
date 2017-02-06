@@ -948,8 +948,8 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 
     //------------------------------------ build F^-T as vector 9x1
     static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec(false);
-    for(int i=0; i<my::nsd_; i++)
-      for(int j=0; j<my::nsd_; j++)
+    for (int i=0; i<my::nsd_; i++)
+      for (int j=0; j<my::nsd_; j++)
         defgrd_IT_vec(i*my::nsd_+j) = defgrd_inv(j,i);
 
     // dF/dx
@@ -1283,7 +1283,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 
         for (int vi=0; vi<my::nen_; ++vi)
           for (int ui=0; ui<my::nen_; ++ui)
-            for(int idim=0;idim<my::nsd_;++idim)
+            for (int idim=0;idim<my::nsd_;++idim)
                 temp(vi,ui) += my::derxy_(idim,vi)*lin_resM_Dphi(idim,ui);
 
         for (int ui=0; ui<my::nen_; ++ui)
@@ -1315,7 +1315,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
         {
           const double v = reac_tau*my::funct_(vi);
 
-          for(int idim=0;idim<my::nsd_;++idim)
+          for (int idim=0;idim<my::nsd_;++idim)
           {
             const int fvi_p_idim = my::nsd_*vi+idim;
 
@@ -1406,14 +1406,14 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(
     dFinvdus_dFdx.Clear();
     for (int i=0; i<my::nsd_; i++)
       for (int n =0; n<my::nen_; n++)
-        for(int j=0; j<my::nsd_; j++)
+        for (int j=0; j<my::nsd_; j++)
         {
           const int gid = my::nsd_ * n +j;
           const double defgrd_inv_ij = defgrd_inv(i,j);
           for (int k=0; k<my::nsd_; k++)
           {
             const double derxy_kn = my::derxy_(k,n);
-            for(int p=0; p<my::nsd_; p++)
+            for (int p=0; p<my::nsd_; p++)
               dFinvdus_dFdx(p, gid) += -defgrd_inv_ij * derxy_kn * F_x(k*my::nsd_+i,p);
           }
         }
@@ -1423,21 +1423,21 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::ComputeLinearizationOD(
     FinvT_dFx_dus.Clear();
 
     for (int n =0; n<my::nen_; n++)
-      for(int j=0; j<my::nsd_; j++)
+      for (int j=0; j<my::nsd_; j++)
       {
         const int gid = my::nsd_ * n +j;
-        for(int p=0; p<my::nsd_; p++)
+        for (int p=0; p<my::nsd_; p++)
         {
           double val = 0.0;
           const double derxy_p_n = my::derxy_(p,n);
-          for(int k=0; k<my::nsd_; k++)
+          for (int k=0; k<my::nsd_; k++)
           {
             const double defgrd_inv_kj = defgrd_inv(k,j);
             const double defgrd_inv_kp = defgrd_inv(k,p);
-            for(int i=0; i<my::nsd_; i++)
+            for (int i=0; i<my::nsd_; i++)
             {
               val +=   defgrd_inv(i,j) * my::N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv_kp ;
-              for(int l=0; l<my::nsd_; l++)
+              for (int l=0; l<my::nsd_; l++)
                 val += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv_kj * derxy_p_n ;
             }
           }

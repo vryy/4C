@@ -5116,6 +5116,9 @@ bool CONTACT::CoInterface::MortarCoupling(
     std::vector<MORTAR::MortarElement*> mele,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
+  // do stuff before the actual coupling is going to be evaluated
+  PreMortarCoupling(sele,mele,mparams_ptr);
+
   // increase counter of slave/master pairs
   smpairs_ += (int)mele.size();
 
@@ -5176,6 +5179,9 @@ bool CONTACT::CoInterface::MortarCoupling(
   else
     dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
   // *********************************************************************
+
+  // do stuff after the coupling evaluation
+  PostMortarCoupling(sele,mele,mparams_ptr);
 
   return true;
 }

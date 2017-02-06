@@ -142,10 +142,10 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetInternalVariablesForMa
   ////////////////////////////////////////////////////////////////////////////////////////////////
   const double epsilon= 1.0e-8;
 
-  for (int i=0;i<3;i++)
+  for (unsigned i=0;i<3;i++)
   {
     LINALG::Matrix<my::nsd_,my::nen_> xyze_epsilon(my::xyze_);
-    for (int j=0; j<my::nen_; ++j)
+    for (unsigned j=0; j<my::nen_; ++j)
       xyze_epsilon(i,j)=xyze_epsilon(i,j)+epsilon;
 
     LINALG::Matrix<my::nsd_,my::nsd_> xjm_epsilon(true);
@@ -181,19 +181,19 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
   LINALG::Matrix<my::nsd_,my::nsd_> Diff_tens(C_inv_);
   Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
 
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const int fui = ui*my::numdofpernode_+k;
 
       double laplawf = 0.0;
 //      GetLaplacianWeakForm(laplawf,Diff_tens,vi,ui);
-      for (int j = 0; j<my::nsd_; j++)
+      for (unsigned j = 0; j<my::nsd_; j++)
       {
-        for (int i = 0; i<my::nsd_; i++)
+        for (unsigned i = 0; i<my::nsd_; i++)
         {
           laplawf += my::derxy_(j, vi)*Diff_tens(j,i)*my::derxy_(i, ui);
         }
@@ -208,20 +208,20 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
   LINALG::Matrix<my::nsd_,my::nsd_> Diff_tens2(C_inv_);
   Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k)/J_);
 
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
 
     double laplawf2 = 0.0;
-    for (int j = 0; j<my::nsd_; j++)
+    for (unsigned j = 0; j<my::nsd_; j++)
     {
-      for (int i = 0; i<my::nsd_; i++)
+      for (unsigned i = 0; i<my::nsd_; i++)
       {
         laplawf2 += my::derxy_(j,vi)*Diff_tens2(j,i)*dJdX_(i);
       }
     }
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const int fui = ui*my::numdofpernode_+k;
 
@@ -250,15 +250,15 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
 
   const LINALG::Matrix<my::nsd_,1>&  gradphi = my::scatravarmanager_->GradPhi(k);
 
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
 
     double laplawf(0.0);
 //    GetLaplacianWeakFormRHS(laplawf,Diff_tens,gradphi,vi);
-    for (int j = 0; j<my::nsd_; j++)
+    for (unsigned j = 0; j<my::nsd_; j++)
     {
-      for (int i = 0; i<my::nsd_; i++)
+      for (unsigned i = 0; i<my::nsd_; i++)
       {
         laplawf += my::derxy_(j,vi)*Diff_tens(j,i)*gradphi(i);
       }
@@ -273,15 +273,15 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
   LINALG::Matrix<my::nsd_,my::nsd_> Diff_tens2(C_inv_);
   Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k)/J_*my::scatravarmanager_->Phinp(k));
 
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
 
     double laplawf2(0.0);
 //    GetLaplacianWeakFormRHS(laplawf2,Diff_tens2,dJdX_,vi);
-    for (int j = 0; j<my::nsd_; j++)
+    for (unsigned j = 0; j<my::nsd_; j++)
     {
-      for (int i = 0; i<my::nsd_; i++)
+      for (unsigned i = 0; i<my::nsd_; i++)
       {
         laplawf2 += my::derxy_(j,vi)*Diff_tens2(j,i)*dJdX_(i);
       }

@@ -89,11 +89,13 @@ MORTAR::MortarInterface::MortarInterface(
     {
       // adapt flags in meshfree params
       Teuchos::RCP<Teuchos::ParameterList> meshfreeparams
-        = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->MeshfreeParams()));
+        = Teuchos::rcp(new Teuchos::ParameterList(
+            DRT::Problem::Instance()->MeshfreeParams()));
       meshfreeparams->set("TYPE", "GeoDecoupled");
 
       idiscret_ = Teuchos::rcp(
-          new DRT::MESHFREE::MeshfreeDiscretization((std::string) "mortar interface", com, *meshfreeparams));
+          new DRT::MESHFREE::MeshfreeDiscretization(
+              (std::string) "mortar interface", com, *meshfreeparams));
     }
   }
   else
@@ -1506,22 +1508,22 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
       }
     }
 
-    snoderowmap_ = Teuchos::rcp(
+    snoderowmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) sr.size(), &sr[0], 0, Comm()));
-    snodecolmap_ = Teuchos::rcp(
+    snodecolmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) sc.size(), &sc[0], 0, Comm()));
-    mnoderowmap_ = Teuchos::rcp(
+    mnoderowmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) mr.size(), &mr[0], 0, Comm()));
-    mnodecolmap_ = Teuchos::rcp(
+    mnodecolmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) mc.size(), &mc[0], 0, Comm()));
 
-    snoderowmapbound_ = Teuchos::rcp(
+    snoderowmapbound_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) srb.size(), &srb[0], 0, Comm()));
-    snodecolmapbound_ = Teuchos::rcp(
+    snodecolmapbound_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) scb.size(), &scb[0], 0, Comm()));
-    mnoderowmapnobound_ = Teuchos::rcp(
+    mnoderowmapnobound_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) mrb.size(), &mrb[0], 0, Comm()));
-    mnodecolmapnobound_ = Teuchos::rcp(
+    mnodecolmapnobound_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) mcb.size(), &mcb[0], 0, Comm()));
   }
 
@@ -1556,13 +1558,13 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
       }
     }
 
-    selerowmap_ = Teuchos::rcp(
+    selerowmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) sr.size(), &sr[0], 0, Comm()));
-    selecolmap_ = Teuchos::rcp(
+    selecolmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) sc.size(), &sc[0], 0, Comm()));
-    melerowmap_ = Teuchos::rcp(
+    melerowmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) mr.size(), &mr[0], 0, Comm()));
-    melecolmap_ = Teuchos::rcp(
+    melecolmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) mc.size(), &mc[0], 0, Comm()));
   }
 
@@ -1604,13 +1606,13 @@ void MORTAR::MortarInterface::UpdateMasterSlaveSets()
       }
     }
 
-    sdofrowmap_ = Teuchos::rcp(
+    sdofrowmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) sr.size(), &sr[0], 0, Comm()));
-    sdofcolmap_ = Teuchos::rcp(
+    sdofcolmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) sc.size(), &sc[0], 0, Comm()));
-    mdofrowmap_ = Teuchos::rcp(
+    mdofrowmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) mr.size(), &mr[0], 0, Comm()));
-    mdofcolmap_ = Teuchos::rcp(
+    mdofcolmap_ = Teuchos::rcp<Epetra_Map>(
         new Epetra_Map(-1, (int) mc.size(), &mc[0], 0, Comm()));
   }
 
@@ -2313,10 +2315,15 @@ void MORTAR::MortarInterface::EvaluateSTS(
   // loop over all slave col elements
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
   {
-    int gid1 = selecolmap_->GID(i);
+    const int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1)
-      dserror("ERROR: Cannot find slave element with gid %", gid1);
+      dserror("ERROR: Cannot find slave element with gid %d", gid1);
+    /* skip elements with only ghost nodes, since they will not contribute
+     * to the assemble procedure */
+    if (ele1->HasOnlyGhostNodes(Comm().MyPID()))
+      continue;
+
     MortarElement* selement = dynamic_cast<MortarElement*>(ele1);
 
     // skip zero-sized nurbs elements (slave)
@@ -2333,7 +2340,7 @@ void MORTAR::MortarInterface::EvaluateSTS(
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2)
-        dserror("ERROR: Cannot find master element with gid %", gid2);
+        dserror("ERROR: Cannot find master element with gid %d", gid2);
       MortarElement* melement = dynamic_cast<MortarElement*>(ele2);
 
       // skip zero-sized nurbs elements (master)
@@ -3072,6 +3079,8 @@ bool MORTAR::MortarInterface::MortarCoupling(
     std::vector<MORTAR::MortarElement*> mele,
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
+  PreMortarCoupling(sele,mele,mparams_ptr);
+
   // check if quadratic interpolation is involved
   bool quadratic = false;
   if (sele->IsQuad())
@@ -3118,6 +3127,8 @@ bool MORTAR::MortarInterface::MortarCoupling(
   else
     dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
   // *********************************************************************
+
+  PostMortarCoupling(sele,mele,mparams_ptr);
 
   return true;
 }

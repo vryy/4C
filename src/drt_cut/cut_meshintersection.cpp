@@ -13,6 +13,7 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
+#include <mpi.h>
 
 #include "cut_selfcut.H"
 #include "cut_meshintersection.H"
@@ -63,26 +64,30 @@ GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement(
   return NULL;
 }
 
-/*-----------------------------------------------------------------------------------------*
- * add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for quadratic sides)
- *-----------------------------------------------------------------------------------------*/
-GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
-                                                               const std::vector<int> & nids,
-                                                               DRT::Element::DiscretizationType distype,
-                                                               int mi )
+/*----------------------------------------------------------------------------*
+ * add a side of the cut mesh and return the sidehandle (e.g. quadratic
+ * sidehandle for quadratic sides)
+ *----------------------------------------------------------------------------*/
+GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide(
+    int sid,
+    const std::vector<int> & nids,
+    DRT::Element::DiscretizationType distype,
+    int mi )
 {
   // create side
   return cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
-/*-----------------------------------------------------------------------------------------*
- * add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for quadratic sides)
- *-----------------------------------------------------------------------------------------*/
-GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
-                                                               const std::vector<int> & nids,
-                                                               const Epetra_SerialDenseMatrix & xyz,
-                                                               DRT::Element::DiscretizationType distype,
-                                                               int mi )
+/*----------------------------------------------------------------------------*
+ * add a side of the cut mesh and return the sidehandle (e.g. quadratic
+ * sidehandle for quadratic sides)
+ *----------------------------------------------------------------------------*/
+GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide(
+    int sid,
+    const std::vector<int> & nids,
+    const Epetra_SerialDenseMatrix & xyz,
+    DRT::Element::DiscretizationType distype,
+    int mi )
 {
   Mesh & cut_mesh = CutMesh( mi );
 
@@ -154,32 +159,125 @@ void GEO::CUT::MeshIntersection::CutTest_Cut(
     bool screenoutput,
     bool do_Cut_Positions_Dofsets)
 {
+  int mypid = 0;
+  int mpi_is_running = 0;
+  MPI_Initialized( & mpi_is_running );
+  if ( mpi_is_running )
+  {
+    MPI_Comm_rank(MPI_COMM_WORLD, &mypid);
+  }
+
   Status();
 
   // build the static search tree for the collision detection in the self cut
+  if ( mypid == 0 )
+  {
+    std::cout << "Build self cut tree..............";
+    fflush(stdout);
+  }
+
   BuildSelfCutTree();
 
+
+  if ( mypid == 0 )
+  {
+    std::cout << "success\n";
+    fflush(stdout);
+  }
+
   // build the static search tree for the collision detection
+  if ( mypid == 0 )
+  {
+    std::cout << "Build static search tree.........";
+    fflush(stdout);
+  }
+
   BuildStaticSearchTree();
 
+  if ( mypid == 0 )
+  {
+    std::cout << "success\n";
+    fflush(stdout);
+  }
+
   // handles cut sides which cut each other
+  if ( mypid == 0 )
+  {
+    std::cout << "Perform self cut.................";
+    fflush(stdout);
+  }
+
   Cut_SelfCut( include_inner, screenoutput);
 
+  if ( mypid == 0 )
+  {
+    std::cout << "success\n";
+    fflush(stdout);
+  }
+
   // detects if a side of the cut mesh possibly collides with an element of the background mesh
+  if ( mypid == 0 )
+  {
+    std::cout << "Collision detection..............";
+    fflush(stdout);
+  }
+
   Cut_CollisionDetection( include_inner, screenoutput);
 
+  if ( mypid == 0 )
+  {
+    std::cout << "success\n";
+    fflush(stdout);
+  }
+
   // cut the mesh and create cutlines, facets, volumecells
+  if ( mypid == 0 )
+  {
+    std::cout << "Mesh intersection................";
+    fflush(stdout);
+  }
+
   Cut_MeshIntersection( screenoutput);
+
+  if ( mypid == 0 )
+  {
+    std::cout << "success\n";
+    fflush(stdout);
+  }
 
   // determine inside-outside position and dofset-data, parallel communication if required
   // if false, position of the volumecell will be evaluated in direct divergence algorithm as it is just required there for a cut test!
   if (do_Cut_Positions_Dofsets)//for most of the cuttest this will not work (still no error is thrown!), as there is no enclosed cut boundary!!!
   {
+    if ( mypid == 0 )
+    {
+      std::cout << "Positions dof-sets...............";
+      fflush(stdout);
+    }
+
     Cut_Positions_Dofsets( include_inner, screenoutput );
+
+    if ( mypid == 0 )
+    {
+      std::cout << "success\n";
+      fflush(stdout);
+    }
   }
 
   // create integration points and/or subtetrahedralization
+  if ( mypid == 0 )
+  {
+    std::cout << "Finalize.........................";
+    fflush(stdout);
+  }
+
   Cut_Finalize( include_inner, VCellgausstype, BCellgausstype, tetcellsonly, screenoutput);
+
+  if ( mypid == 0 )
+  {
+    std::cout << "success\n";
+    fflush(stdout);
+  }
 
   // DumpGmshVolumeCells("CUT_vc", true);
   // DumpGmshIntegrationCells("CUT_intcells");

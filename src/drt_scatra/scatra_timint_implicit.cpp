@@ -2925,7 +2925,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
         (*convel_multi)[idim][inode] = (*convel)[convel->Map().LID(discret_->Dof(nds_vel_,node,idim))];
     }
 
-    output_->WriteVector("convec_velocity", convel_multi, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("convec_velocity", convel_multi, IO::nodevector);
   }
 
   // displacement field
@@ -2944,7 +2944,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
         (*dispnp_multi)[idim][inode] = (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_,node,idim))];
     }
 
-    output_->WriteVector("dispnp", dispnp_multi, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
   }
 
   return;

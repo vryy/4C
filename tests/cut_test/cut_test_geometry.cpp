@@ -1,8 +1,20 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file cut_test_geometry.cpp
+
+\brief cut test cpp file
+
+\level 1
+
+\maintainer Benedikt Schott, Christoph Ager
+
+*/
+/*---------------------------------------------------------------------------*/
 
 #include <iostream>
 
 #include "../../src/drt_cut/cut_kernel.H"
-#include "../../src/drt_cut/cut_position2d.H"
+#include "../../src/drt_cut/cut_position.H"
 
 void test_geometry_schleifend1()
 {
@@ -38,7 +50,7 @@ void test_geometry_schleifend1()
   LINALG::Matrix<3,1> xsi;
 
   //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
-  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci( xsi );
+  GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::line2, DRT::Element::tri3> ci( xsi );
 
   if ( ci( tri3, line ) )
   {
@@ -62,7 +74,7 @@ void test_geometry_parallel1()
   LINALG::Matrix<3,1> xsi;
 
   //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
-  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci( xsi );
+  GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::line2, DRT::Element::tri3> ci( xsi );
 
   if ( ci( tri3, line ) )
   {
@@ -83,8 +95,8 @@ void test_geometry_distance()
   LINALG::Matrix<3,3> xyze( xyze_data );
   LINALG::Matrix<3,1> xyz( xyz_data );
 
-  GEO::CUT::Position2d<DRT::Element::tri3> pos( xyze, xyz );
-  if ( pos.Compute() )
+  Teuchos::RCP<GEO::CUT::Position> pos = GEO::CUT::Position::Create( xyze, xyz, DRT::Element::tri3 );
+  if ( pos->Compute() )
   {
   }
 }
@@ -107,8 +119,8 @@ void test_geometry_distance2()
     }
   }
 
-  GEO::CUT::Position2d<DRT::Element::quad4> pos( xyze, xyz );
-  if ( pos.Compute() )
+  Teuchos::RCP<GEO::CUT::Position> pos = GEO::CUT::Position::Create( xyze, xyz, DRT::Element::quad4 );
+  if ( pos->Compute() )
   {
   }
 }
@@ -131,8 +143,8 @@ void test_geometry_distance3()
     }
   }
 
-  GEO::CUT::Position2d<DRT::Element::quad4> pos( xyze, xyz );
-  if ( pos.Compute() )
+  Teuchos::RCP<GEO::CUT::Position> pos = GEO::CUT::Position::Create( xyze, xyz, DRT::Element::quad4 );
+  if ( pos->Compute() )
   {
   }
   else

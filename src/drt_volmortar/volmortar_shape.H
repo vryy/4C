@@ -52,14 +52,14 @@ void volmortar_shape_function_3D_deriv(
   );
 
 template<DRT::Element::DiscretizationType distype>
-bool LocalToGlobal(DRT::Element&           ele,     ///< element which is considered
+bool LocalToGlobal(const DRT::Element&     ele,     ///< element which is considered
                    const double*           xi,      ///< para. coordinates
                    double*                 globcoord);
 
 template<DRT::Element::DiscretizationType distype>
 double Jacobian(
     const double*                          xi,      ///< para. coordinates
-    DRT::Element&                          ele);    ///< element which is considered
+    const DRT::Element&                    ele);    ///< element which is considered
 
 template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
 double nurbs_Jacobian(
@@ -67,7 +67,7 @@ double nurbs_Jacobian(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                      ele      ///< element which is considered
   );
 
 template<class V>
@@ -133,7 +133,7 @@ void volmortar_shape_function_3D_modified(
 template<DRT::Element::DiscretizationType distype, class V, class T>
 void volmortar_dualshape_function_1D(
     V&                                       funct,   ///< to be filled with shape function values
-    DRT::Element&                            ele,     ///< element which is considered
+    const DRT::Element&                      ele,     ///< element which is considered
     const T*                                 xi,      ///< para. coordinates
     INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
     );
@@ -145,13 +145,13 @@ void volmortar_nurbs_dualshape_function_1D(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                      ele      ///< element which is considered
   );
 
 template<DRT::Element::DiscretizationType distype, class V, class T>
 void volmortar_dualshape_function_2D(
   V&                                       funct,   ///< to be filled with shape function values
-  DRT::Element&                            ele,     ///< element which is considered
+  const DRT::Element&                      ele,     ///< element which is considered
   const T*                                 xi,      ///< para. coordinates
   INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
   );
@@ -163,13 +163,13 @@ void volmortar_nurbs_dualshape_function_2D(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                      ele      ///< element which is considered
   );
 
 template<DRT::Element::DiscretizationType distype, class V, class T>
 void volmortar_dualshape_function_3D(
   V&                                       funct,   ///< to be filled with shape function values
-  DRT::Element&                            ele,     ///< element which is considered
+  const DRT::Element&                      ele,     ///< element which is considered
   const T*                                 xi,      ///< para. coordinates
   INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
   );
@@ -181,7 +181,7 @@ void volmortar_nurbs_dualshape_function_3D(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                      ele      ///< element which is considered
   );
 
 // general evaluation routine for std shape functions
@@ -196,7 +196,7 @@ template<DRT::Element::DiscretizationType distype, class V, class T>
 void dual_shape_function(
     V&                                     f,       ///< to be filled with shape function values
     const T&                               xi,      ///< para. coordinates
-    DRT::Element&                          ele,     ///< element which is considered
+    const DRT::Element&                    ele,     ///< element which is considered
     INPAR::VOLMORTAR::DualQuad             dualquad = INPAR::VOLMORTAR::dualquad_no_mod);
 
 template<DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
@@ -215,7 +215,7 @@ void nurbs_dualshape_function(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                      ele      ///< element which is considered
   );
 //=====================================================================================
 //=====================================================================================
@@ -292,7 +292,7 @@ template<DRT::Element::DiscretizationType distype>
  |  Evaluate Jacobian determinant                            farah 01/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-double Jacobian(const double* xi, DRT::Element& ele)
+double Jacobian(const double* xi, const DRT::Element& ele)
 {
   //! nn_: number of master element nodes
   static const int nn = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -399,7 +399,7 @@ double Jacobian(const double* xi, DRT::Element& ele)
     LINALG::Matrix<nn,ndim> xrefe;
     for (int i=0; i<nn; ++i)
     {
-      DRT::Node** nodes=ele.Nodes();
+      const DRT::Node * const * nodes=ele.Nodes();
       if(!nodes) dserror("Nodes() returned null pointer");
 
       xrefe(i,0) = nodes[i]->X()[0];
@@ -434,7 +434,7 @@ double nurbs_Jacobian(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                            ele      ///< element which is considered
   )
 {
   //! nn_: number of master element nodes
@@ -507,7 +507,7 @@ double nurbs_Jacobian(
     LINALG::Matrix<nn,ndim> xrefe;
     for (int i=0; i<nn; ++i)
     {
-      DRT::Node** nodes=ele.Nodes();
+      const DRT::Node* const * nodes=ele.Nodes();
       if(!nodes) dserror("Nodes() returned null pointer");
 
       xrefe(i,0) = nodes[i]->X()[0];
@@ -1043,7 +1043,7 @@ void volmortar_shape_function_3D_modified(
 template<DRT::Element::DiscretizationType distype, class V, class T>
 void volmortar_dualshape_function_1D(
     V&                                       funct,   ///< to be filled with shape function values
-    DRT::Element&                            ele,     ///< element which is considered
+    const DRT::Element&                      ele,     ///< element which is considered
     const T*                                 xi,      ///< para. coordinates
     INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
     )
@@ -1134,7 +1134,7 @@ void volmortar_nurbs_dualshape_function_1D(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                      ele      ///< element which is considered
   )
 {
   switch (distype)
@@ -1214,7 +1214,7 @@ void volmortar_nurbs_dualshape_function_1D(
 template<DRT::Element::DiscretizationType distype, class V, class T>
 void volmortar_dualshape_function_2D(
     V&                                       funct,   ///< to be filled with shape function values
-    DRT::Element&                            ele,     ///< element which is considered
+    const DRT::Element&                      ele,     ///< element which is considered
     const T*                                 xi,      ///< para. coordinates
     INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
     )
@@ -1307,7 +1307,7 @@ void volmortar_nurbs_dualshape_function_2D(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                      ele      ///< element which is considered
   )
 {
   switch (distype)
@@ -1389,7 +1389,7 @@ void volmortar_nurbs_dualshape_function_2D(
 template<DRT::Element::DiscretizationType distype, class V, class T>
 void volmortar_dualshape_function_3D(
     V&                                       funct,   ///< to be filled with shape function values
-    DRT::Element&                            ele,     ///< element which is considered
+    const DRT::Element&                            ele,     ///< element which is considered
     const T*                                 xi,      ///< para. coordinates
     INPAR::VOLMORTAR::DualQuad               quadtype ///< type of quadratic element modification
     )
@@ -1484,7 +1484,7 @@ void volmortar_nurbs_dualshape_function_3D(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                            ele      ///< element which is considered
   )
 {
   switch (distype)
@@ -1777,9 +1777,10 @@ void volmortar_shape_function_3D_deriv(
  |  Get global coords for given local coords (ref pos)       farah 01/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-bool LocalToGlobal(DRT::Element& ele,
-                   const double* xi,
-                   double* globcoord)
+bool LocalToGlobal(
+    const DRT::Element& ele,
+    const double* xi,
+    double* globcoord)
 {
   // check input
   if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
@@ -1789,7 +1790,7 @@ bool LocalToGlobal(DRT::Element& ele,
   static const int n    = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
 
-  DRT::Node** mynodes = ele.Nodes();
+  const DRT::Node * const * mynodes = ele.Nodes();
   if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
 
   for (int i=0;i<ndim;++i)
@@ -1901,7 +1902,7 @@ template<DRT::Element::DiscretizationType distype, class V, class T>
 void dual_shape_function(
     V&                             f,
     const T&                       xi,
-    DRT::Element&                  ele,
+    const DRT::Element&            ele,
     INPAR::VOLMORTAR::DualQuad     dualquad)
 {
   switch (DRT::UTILS::DisTypeToDim<distype>::dim)
@@ -1938,7 +1939,7 @@ void nurbs_dualshape_function(
   const U*                                 xi,      ///< xi coordinates
   T&                                       weights, ///< control point weights
   std::vector<Epetra_SerialDenseVector>&   knots,   ///< knot vectors
-  DRT::Element&                            ele      ///< element which is considered
+  const DRT::Element&                      ele      ///< element which is considered
   )
 {
   switch (DRT::UTILS::DisTypeToDim<distype>::dim)

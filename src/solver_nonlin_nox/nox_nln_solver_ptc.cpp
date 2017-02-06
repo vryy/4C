@@ -778,9 +778,9 @@ void NOX::NLN::Solver::PseudoTransient::throwError(
  *----------------------------------------------------------------------*/
 NOX::NLN::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
     Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
-    const NOX::NLN::Solver::PseudoTransient& ptcsolver)
-    : ptcsolver_(ptcsolver),
-      scalingDiagOpPtr_(scalingDiagOpPtr)
+    const NOX::NLN::Solver::PseudoTransient& ptcsolver )
+    : ptcsolver_( ptcsolver ),
+      scalingDiagOpPtr_( scalingDiagOpPtr )
 {
   // empty constructor
 }
@@ -797,12 +797,12 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::
     return;
 
   // get the type of the jacobian
-  const enum NOX::NLN::LinearSystem::OperatorType& jactype =
+  const enum NOX::NLN::LinSystem::OperatorType& jactype =
       linsys.getJacobianOperatorType();
 
   switch (jactype)
   {
-    case NOX::NLN::LinearSystem::LinalgSparseMatrix:
+    case NOX::NLN::LinSystem::LinalgSparseMatrix:
     {
       // First cast the LINALG::SparseOperator and do an additional sanity
       // check.
@@ -818,7 +818,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::
     default:
     {
       dserror("Unsupported jacobian operator type: %s",
-          NOX::NLN::LinearSystem::OperatorType2String(jactype).c_str());
+          NOX::NLN::LinSystem::OperatorType2String(jactype).c_str());
       break;
     }
   }

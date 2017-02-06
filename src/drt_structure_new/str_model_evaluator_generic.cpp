@@ -138,7 +138,7 @@ const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret()
+DRT::DiscretizationInterface& STR::MODELEVALUATOR::Generic::Discret()
 {
   CheckInit();
   return *discret_ptr_;
@@ -146,7 +146,7 @@ DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization>& STR::MODELEVALUATOR::Generic::DiscretPtr()
+Teuchos::RCP<DRT::DiscretizationInterface>& STR::MODELEVALUATOR::Generic::DiscretPtr()
 {
   CheckInit();
   return discret_ptr_;
@@ -154,7 +154,7 @@ Teuchos::RCP<DRT::Discretization>& STR::MODELEVALUATOR::Generic::DiscretPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const DRT::Discretization& STR::MODELEVALUATOR::Generic::Discret() const
+const DRT::DiscretizationInterface& STR::MODELEVALUATOR::Generic::Discret() const
 {
   CheckInit();
   return *discret_ptr_;

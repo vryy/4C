@@ -421,6 +421,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     if( problem != INPAR::SCATRA::impltype_std and
         problem != INPAR::SCATRA::impltype_cardiac_monodomain and
         problem != INPAR::SCATRA::impltype_advreac and
+        problem != INPAR::SCATRA::impltype_lsreinit and
         problem != INPAR::SCATRA::impltype_bondreac)
       dserror("ImplType '%s' not implemented for transport on manifolds!",SCATRA::ImplTypeToString(problem).c_str());
 
@@ -448,7 +449,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   }
   case INPAR::SCATRA::impltype_lsreinit:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::Instance(numdofpernode,numscal,disname);
+    return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype,probdim>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_loma:

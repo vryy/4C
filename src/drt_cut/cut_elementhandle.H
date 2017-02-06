@@ -1,16 +1,19 @@
-/*!----------------------------------------------------------------------
-\file cut_elementhandle.cpp
+/*----------------------------------------------------------------------*/
+/**
+\file cut_elementhandle.H
 \brief Outside world interface to element. Converts quadratic to linear element. This provides the
   Gaussian rules generated from the cut
 
 <pre>
-Maintainer:  Benedikt Schott
+\maintainer  Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
 </pre>
 
-*----------------------------------------------------------------------*/
+\level 2
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef CUT_ELEMENTHANDLE_H
 #define CUT_ELEMENTHANDLE_H
@@ -51,7 +54,8 @@ public:
     /*!
    \brief returns true in case that any cut-side cut with the element produces cut points,
           i.e. also for touched cases (at points, edges or sides),
-          or when an element side has more than one facet or is touched by fully/partially by the cut side
+          or when an element side has more than one facet or is touched by fully/partially
+          by the cut side
      */
     virtual bool IsCut() = 0;
 
@@ -210,7 +214,26 @@ public:
          bool include_inner
      );
 
+     void GetBoundaryCellSets(
+         const std::vector<GEO::CUT::Point::PointPosition> & desired_positions,
+         std::vector<plain_boundarycell_set> & bcellsets );
 
+     void GetBoundaryCellSets(
+         GEO::CUT::Point::PointPosition desired_position,
+         std::vector<plain_boundarycell_set> & bcellsets )
+     {
+       const std::vector<GEO::CUT::Point::PointPosition> desired_positions( 1, desired_position );
+       GetBoundaryCellSets( desired_positions, bcellsets );
+     }
+
+protected:
+     /// fill the derived class internal boundary cell sets
+     virtual void BoundaryCellSet( Point::PointPosition position ) = 0;
+
+     /// access the class internal boundary cells sets
+     virtual const std::vector<plain_boundarycell_set> & GetBoundaryCellSet( Point::PointPosition position ) = 0;
+
+public:
      //! get the element's sets of volume-cells with inside position
      virtual const std::vector<plain_volumecell_set> & GetVcSetsInside() = 0;
 
@@ -276,13 +299,15 @@ public:
 
   LinearElementHandle()
   : element_( NULL ),
-    cells_set_ ( false )
+    cells_set_ ( false ),
+    bcell_sets_ ( 0 )
   {
   }
 
   explicit LinearElementHandle( Element * e )
   : element_( e ),
-    cells_set_ ( false )
+    cells_set_ ( false ),
+    bcell_sets_ ( 0 )
   {
     // set also the parent element Id which is trivial the same as the element Id
     element_->ParentId(e->Id());
@@ -372,12 +397,38 @@ public:
   //TODO note which ones???
   virtual void GetBoundaryCells( plain_boundarycell_set & bcells )
   {
+    dserror( "Deprecated function! Use the GetBoundaryCellSet( Point::PointPosition ), "
+        "instead!" );
     element_->GetBoundaryCells( bcells );
   }
+protected:
+
+  /** \brief Get the boundary cell sets with given position
+   *
+   *  \param position (in) : desired position of the boundary cell
+   *
+   *  \author hiermeier \date 01/17 */
+  virtual const std::vector<plain_boundarycell_set> & GetBoundaryCellSet(
+      Point::PointPosition position )
+  {
+    BoundaryCellSet( position );
+    return bcell_sets_.at( position );
+  }
+
+  /** \brief Fill the class internal boundary sets for the given position
+   *
+   *  This function does a direct return, if the boundary cells have been already
+   *  extracted, otherwise we extract the boundary cells from the volume cells
+   *  and add them.
+   *
+   *  \param position (in) : desired position of the boundary cell
+   *
+   *  \author hiermeier \date 01/17 */
+  virtual void BoundaryCellSet( Point::PointPosition position );
 
   //@}
 
-
+public:
   //--------------------------------------------------------------------------//
   //! @name access to the element's sets of volume-cells, nds-vectors and integration points
 
@@ -410,6 +461,9 @@ protected:
   std::vector<plain_volumecell_set> vc_sets_inside_;     ///< connected sets of volume-cells with inside position
   std::vector<plain_volumecell_set> vc_sets_outside_;    ///< connected sets of volume-cells with outside position
 
+
+  GEN::pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set> > bcell_sets_;
+
 };
 
 
@@ -423,7 +477,8 @@ class QuadraticElementHandle : public ElementHandle
 {
 public:
   QuadraticElementHandle()
-    : cells_connected_ ( false )
+    : cells_connected_ ( false ),
+      connected_bcell_sets_ ( 0 )
   {
   }
 
@@ -474,6 +529,12 @@ public:
       plain_volumecell_set & cells_outside
   );
 
+  //! Collect volume-cells belonging to this element with the given position
+  void CollectVolumeCells(
+      Point::PointPosition position,
+      plain_volumecell_set & evolcells_position ) const;
+
+
   //@}
 
   //--------------------------------------------------------------------------//
@@ -501,16 +562,65 @@ public:
   //--------------------------------------------------------------------------//
   //! @name access to the element's interface integration specific quantities
 
+  /// @{
+
   //! get all the quadratic element's boundary integration cells
   //TODO note which ones???
   virtual void GetBoundaryCells( plain_boundarycell_set & bcells );
 
-  //@}
+protected:
 
+  /** \brief Fill the class internal connected boundary sets for the given position
+   *
+   *  This function does a direct return, if the connected boundary cells have been
+   *  already created, otherwise we extract the boundary cells from the connected
+   *  volume cells and add them.
+   *
+   *  \param position (in) : desired position of the boundary cell
+   *
+   *  \author hiermeier \date 01/17 */
+  virtual void BoundaryCellSet( Point::PointPosition position );
 
+  /** \brief Get the connected boundary cell sets with given position
+   *  ( read access )
+   *
+   *  \param position (in) : desired position of the boundary cell
+   *
+   *  \author hiermeier \date 01/17 */
+  virtual const std::vector<plain_boundarycell_set> & GetBoundaryCellSet(
+      Point::PointPosition position )
+  {
+    BoundaryCellSet( position );
+    return connected_bcell_sets_.at( position );
+  }
+
+private:
+
+  /** \brief Connect volume cells first and start to create the corresponding
+   *  boundary cells afterwards.
+   *
+   *  \param position (in) : desired position of the boundary cell
+   *
+   *  \author hiermeier \date 01/17 */
+  void ConnectBoundaryCells( Point::PointPosition position );
+
+  /** \brief After the volume cells have been connected, the connected boundary
+   *  cells are build
+   *
+   *  \param connected_vcell_set (in)  : connected volume cell sets
+   *  \param connected_bcell_set (out) : connected boundary cell sets
+   *
+   *  \author hiermeier \date 01/17 */
+  void BuildBoundaryCellSets(
+      const std::vector<plain_volumecell_set> & connected_vcell_set,
+      std::vector<plain_boundarycell_set> & connected_bcell_set ) const;
+
+  /// @}
+
+public:
   //--------------------------------------------------------------------------//
   //! @name access to the element's sets of volume-cells, nds-vectors and integration points
-
+  /// @{
   //! get the element's sets of volume-cells ordered by inside/outside position
   virtual void VolumeCellSets();
 
@@ -528,7 +638,7 @@ public:
     return connected_vc_sets_outside_;
   };
 
-  //@}
+  /// @}
 
 
   //--------------------------------------------------------------------------//
@@ -547,6 +657,8 @@ protected:
   bool                              cells_connected_;             ///< have the volume-cells been already connected between sub-elements?
   std::vector<plain_volumecell_set> connected_vc_sets_inside_;    ///< connected volume-cells with inside position
   std::vector<plain_volumecell_set> connected_vc_sets_outside_;   ///< connected volume-cells with outside position
+
+  GEN::pairedvector<Point::PointPosition, std::vector<plain_boundarycell_set> > connected_bcell_sets_;
 
   std::vector<Element*> subelements_;                             ///< the quadratic element's linear sub-elements
   std::vector<Node*>    nodes_;                                   ///< the quadratic element's nodes

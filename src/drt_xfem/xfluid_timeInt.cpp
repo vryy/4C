@@ -1860,13 +1860,13 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 
   if(!successful_check) return successful_check;
 
-
-  GEO::CUT::Position<space_time_distype> pos( xyze_st, n_coord );
-  within_space_time_side = pos.Compute();
+  Teuchos::RCP<GEO::CUT::Position> pos =
+        GEO::CUT::PositionFactory::BuildPosition<3,space_time_distype>(xyze_st,n_coord);
+  within_space_time_side = pos->Compute();
 
 #ifdef DEBUG_TIMINT
   LINALG::Matrix<3,1> rst(true); // local coordinates w.r.t space time element (r,s,t !!!)
-  rst = pos.LocalCoordinates();
+  pos->LocalCoordinates(rst);
 
   if(within_space_time_side)
   {

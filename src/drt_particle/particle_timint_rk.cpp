@@ -201,8 +201,8 @@ void PARTICLE::TimIntRK::OutputRestart
   output_->ParticleOutput(step_, (*time_)[0], true);
   output_->NewStep(step_, (*time_)[0]);
   output_->WriteVector("displacement", disn_);
-  output_->WriteVector("radius", (*radius_)(0), output_->nodevector);
-  output_->WriteVector("sign", sign_, output_->nodevector);
+  output_->WriteVector("radius", (*radius_)(0), IO::nodevector);
+  output_->WriteVector("sign", sign_, IO::nodevector);
 
   // maps are rebuild in every step so that reuse is not possible
   // keeps memory usage bounded
@@ -242,8 +242,8 @@ void PARTICLE::TimIntRK::OutputState
   output_->NewStep(step_, (*time_)[0]);
   output_->WriteVector("displacement", disn_);
 
-  output_->WriteVector("radius", (*radius_)(0), output_->nodevector);
-  output_->WriteVector("sign", sign_, output_->nodevector);
+  output_->WriteVector("radius", (*radius_)(0), IO::nodevector);
+  output_->WriteVector("sign", sign_, IO::nodevector);
 
   // maps are rebuild in every step so that reuse is not possible
   // keeps memory usage bounded

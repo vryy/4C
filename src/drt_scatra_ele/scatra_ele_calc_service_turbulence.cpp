@@ -93,7 +93,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_apply_box_filter(
 
   // perform integrations, i.e., convolution
   // ---------------------------------------------
-  for (int rr=0;rr<nsd_;++rr)
+  for (unsigned rr=0;rr<nsd_;++rr)
   {
     double tmp=convelint(rr)*volume;
 
@@ -107,7 +107,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_apply_box_filter(
     (*densveltemp_hat)[rr] += densnp*phinp*tmp;
   }
 
-  for (int rr=0;rr<nsd_;++rr)
+  for (unsigned rr=0;rr<nsd_;++rr)
   {
     double tmp=gradphi(rr)*volume;
     // add contribution to integral over dens times rate of strain times phi gradient
@@ -131,12 +131,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_apply_box_filter(
       double hk2=pow(volume,(2.0/3.0));
 
 
-      for (int nn=0;nn<nsd_;++nn)
+      for (unsigned nn=0;nn<nsd_;++nn)
       {
-        for (int rr=0;rr<nsd_;++rr)
+        for (unsigned rr=0;rr<nsd_;++rr)
         {
           vderxy(nn,rr)=derxy_(rr,0)*evelnp_(nn,0);
-          for (int mm=1;mm<nen_;++mm)
+          for (unsigned mm=1;mm<nen_;++mm)
           {
             vderxy(nn,rr)+=derxy_(rr,mm)*evelnp_(nn,mm);
           }
@@ -160,9 +160,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_apply_box_filter(
       else
         (phiexpression_hat) = (phi2_hat) * sqrt(bbeta/alpha2);
 
-      for (int nn=0;nn<nsd_;++nn)
+      for (unsigned nn=0;nn<nsd_;++nn)
       {
-        for (int rr=0;rr<nsd_;++rr)
+        for (unsigned rr=0;rr<nsd_;++rr)
         {
           (*alphaijsc_hat)[rr][nn]*=volume;
         }
@@ -261,7 +261,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_calc_smag_const_LkMk_
   xcenter = 0.0;
   ycenter = 0.0;
   zcenter = 0.0;
-  for(int inode=0;inode<nen_;inode++)
+  for (unsigned inode=0;inode<nen_;inode++)
   {
     // xyze_ has been initialized at the beginning of Impl()
     xcenter+=xyze_(0,inode);
@@ -336,7 +336,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_calc_smag_const_LkMk_
   //
   double denstempint_hat = 0.0;
 //  double tempint_hat = 0.0;
-  for (int mm=0;mm<nen_;++mm)
+  for (unsigned mm=0;mm<nen_;++mm)
   {
     densint_hat += funct_(mm,0)*edens_hat(0,mm);
     denstempint_hat += funct_(mm,0)*edenstemp_hat(0,mm);
@@ -357,7 +357,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_calc_smag_const_LkMk_
   LINALG::Matrix<nsd_,1> L_k;
   LINALG::Matrix<nsd_,1> M_k;
 
-  for(int rr=0;rr<nsd_;rr++)
+  for (unsigned rr=0;rr<nsd_;rr++)
   {
     L_k(rr,0) = densveltempint_hat(rr,0) - densvelint_hat(rr,0) * denstempint_hat / densint_hat;
     M_k(rr,0) = densstraintempint_hat(rr,0) - filterwidthratio * filterwidthratio * densint_hat * rateofstrain * gradtemp_hat(rr,0);
@@ -366,7 +366,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_calc_smag_const_LkMk_
   // perform contraction via dot product
   LkMk =0.0;
   MkMk =0.0;
-  for(int rr=0;rr<nsd_;rr++)
+  for (unsigned rr=0;rr<nsd_;rr++)
   {
     LkMk += L_k(rr,0) * M_k(rr,0);
     MkMk += M_k(rr,0) * M_k(rr,0);
@@ -411,21 +411,21 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_calc_vreman_dt(
   phi_hat.Multiply(ephi_hat,funct_);
   phi2_hat.Multiply(ephi2_hat,funct_);
   phiexpression_hat.Multiply(ephiexpression_hat,funct_);
-  for (int nn=0;nn<3;++nn)
+  for (unsigned nn=0;nn<3;++nn)
   {
-    for (int rr=0;rr<3;++rr)
+    for (unsigned rr=0;rr<3;++rr)
     {
       int index = 3*nn+rr;
       alphaijsc_hat(nn,rr)=funct_(0)*ealphaijsc_hat(index,0);
 
-      for (int mm=1;mm<nen_;++mm)
+      for (unsigned mm=1;mm<nen_;++mm)
       {
         alphaijsc_hat(nn,rr)+=funct_(mm)*ealphaijsc_hat(index,mm);
       }
     }
   }
 
-  for (int rr=0;rr<nsd_;++rr)
+  for (unsigned rr=0;rr<nsd_;++rr)
   {
     phi_hat2+=phi_hat(rr,0)*phi_hat(rr,0);
   }
@@ -446,9 +446,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_calc_vreman_dt(
     double alpha2=0.0;
     double phiexpressionf_hat=0.0;
 
-    for (int nn=0;nn<nsd_;++nn)
+    for (unsigned nn=0;nn<nsd_;++nn)
     {
-      for (int rr=0;rr<nsd_;++rr)
+      for (unsigned rr=0;rr<nsd_;++rr)
       {
         alpha2 += alphaijsc_hat(nn,rr)*alphaijsc_hat(nn,rr);
       }
@@ -508,7 +508,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetMeanPrtOfHomogenousDirect
     double xcenter = 0.0;
     double ycenter = 0.0;
     double zcenter = 0.0;
-    for(int inode=0;inode<nen_;inode++)
+    for (unsigned inode=0;inode<nen_;inode++)
     {
       xcenter += xyze_( 0, inode );
       ycenter += xyze_( 1, inode );
@@ -820,7 +820,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcFineScaleSubgrDiff(
     sgdiff = (DSQR(h)*mk*DSQR(vel_norm)*DSQR(densnp))/(2.0*diffus*xi);
 
     // compute entries of (fine-scale) subgrid-diffusivity-scaling vector
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
     {
       subgrdiff(vi) = sgdiff/ele->Nodes()[vi]->NumElement();
     }
@@ -930,7 +930,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBAndDForMultifracSubgrid
   if (not turbparams_->Calc_N())
   {
     // yes, store value
-    for (int rr=1;rr<3;rr++)
+    for (unsigned rr=1;rr<3;rr++)
       Nvel[rr] = turbparams_->N_Vel();
   }
   else //no, so we calculate N from Re
@@ -990,7 +990,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBAndDForMultifracSubgrid
       dserror("Something went wrong when calculating N!");
 
     // store calculated N
-    for (int i=0; i<nsd_; i++)
+    for (unsigned i=0; i<nsd_; i++)
       Nvel[i] = N_re;
   }
 
@@ -1040,7 +1040,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBAndDForMultifracSubgrid
   //  B = Csgs * kappa  * 2 ^ (-2*N/3) * | 2 ^ (4*N/3) - 1 |
   //                                     |                 |
   //
-  for (int dim=0; dim<nsd_; dim++)
+  for (unsigned dim=0; dim<nsd_; dim++)
   {
     B_mfs(dim,0) = Csgs_vel_nw * sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1.0));
 //    if (eid_ == 100)
@@ -1249,12 +1249,12 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRefLength(
       */
       LINALG::Matrix<nsd_,nsd_> G(true);
 
-      for (int nn=0;nn<nsd_;++nn)
+      for (unsigned nn=0;nn<nsd_;++nn)
       {
-        for (int rr=0;rr<nsd_;++rr)
+        for (unsigned rr=0;rr<nsd_;++rr)
         {
           G(nn,rr) = xij_(nn,0)*xij_(rr,0);
-          for (int mm=1;mm<nsd_;++mm)
+          for (unsigned mm=1;mm<nsd_;++mm)
           {
             G(nn,rr) += xij_(nn,mm)*xij_(rr,mm);
           }
@@ -1269,9 +1269,9 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRefLength(
                  i,j
      */
      double normG = 0.0;
-     for (int nn=0;nn<nsd_;++nn)
+     for (unsigned nn=0;nn<nsd_;++nn)
      {
-       for (int rr=0;rr<nsd_;++rr)
+       for (unsigned rr=0;rr<nsd_;++rr)
        {
          normG+=G(nn,rr)*G(nn,rr);
        }
@@ -1287,10 +1287,10 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRefLength(
     if (nsd_ != 3) dserror("Turbulence is 3d!");
     LINALG::Matrix<nsd_,1> normed_velgrad;
 
-    for (int rr=0;rr<nsd_;++rr)
+    for (unsigned rr=0;rr<nsd_;++rr)
     {
       double val = 0.0;
-      for (int idim = 0; idim < nsd_; idim ++)
+      for (unsigned idim = 0; idim < nsd_; idim ++)
          val += convderxy(idim,rr)*convderxy(idim,rr);
 
       normed_velgrad(rr) = std::sqrt(val);
@@ -1306,7 +1306,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRefLength(
     // normed gradient
     if (norm>1e-6)
     {
-      for (int rr=0;rr<nsd_;++rr)
+      for (unsigned rr=0;rr<nsd_;++rr)
       {
         normed_velgrad(rr)/=norm;
       }
@@ -1314,7 +1314,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRefLength(
     else
     {
       normed_velgrad(0) = 1.;
-      for (int rr=1;rr<nsd_;++rr)
+      for (unsigned rr=1;rr<nsd_;++rr)
       {
         normed_velgrad(rr)=0.0;
       }
@@ -1322,10 +1322,10 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRefLength(
 
     // get length in this direction
     double val = 0.0;
-    for (int rr=0;rr<nen_;++rr) /* loop element nodes */
+    for (unsigned rr=0;rr<nen_;++rr) /* loop element nodes */
     {
       double loc = 0.0;
-      for (int idim = 0; idim < nsd_; idim ++)
+      for (unsigned idim = 0; idim < nsd_; idim ++)
         loc += normed_velgrad(idim)*derxy_(idim,rr);
 
       val += fabs(loc);
@@ -1490,8 +1490,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
 
   // construct location vector for velocity related dofs
   std::vector<int> lmvel(nsd_*nen_,-1);
-  for (int inode=0; inode<nen_; ++inode)
-    for (int idim=0; idim<nsd_; ++idim)
+  for (unsigned inode=0; inode<nen_; ++inode)
+    for (unsigned idim=0; idim<nsd_; ++idim)
       lmvel[inode*nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
   // extract local values of convective velocity field from global state vector
@@ -1519,7 +1519,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
 
     // construct location vector for pressure dofs
     std::vector<int> lmpre(nen_,-1);
-    for (int inode=0; inode<nen_; ++inode)
+    for (unsigned inode=0; inode<nen_; ++inode)
       lmpre[inode] = la[ndsvel].lm_[inode*numveldofpernode+nsd_];
 
     // extract local values of pressure field from global state vector
@@ -1573,7 +1573,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
   //this will be the y-coordinate of a point in the element interior
   double center = 0.0;
   // get node coordinates of element
-  for(int inode=0;inode<nen_;inode++)
+  for (unsigned inode=0;inode<nen_;inode++)
     center+=xyze_(1,inode);
 
   center/=nen_;
@@ -1806,7 +1806,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
         CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,0,densnp[0],diffmanager_->GetIsotropicDiff(0),visc,convelint,fsvelint);
 
       // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
-      for (int idim=0; idim<nsd_; idim++)
+      for (unsigned idim=0; idim<nsd_; idim++)
         mfsgvelint(idim,0) = fsvelint(idim,0) * B_mfs(idim,0);
       // required for conservative formulation in the context of passive scalar transport
       if (turbparams_->MfsConservative() or scatrapara_->IsConservative())
@@ -1814,7 +1814,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
         // get divergence of subgrid-scale velocity
         LINALG::Matrix<nsd_,nsd_> mfsvderxy;
         mfsvderxy.MultiplyNT(efsvel_,derxy_);
-        for (int idim = 0; idim<nsd_; idim++)
+        for (unsigned idim = 0; idim<nsd_; idim++)
           mfsvdiv += mfsvderxy(idim,idim) * B_mfs(idim,0);
       }
 

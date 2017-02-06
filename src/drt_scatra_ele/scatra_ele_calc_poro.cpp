@@ -283,11 +283,11 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
   const int numveldofpernode = la[ndsvel].lm_.size()/my::nen_;
 
   // extract pressure if applicable
-  if(numveldofpernode > my::nsd_)
+  if( static_cast<unsigned>( numveldofpernode ) > my::nsd_)
   {
     // construct location vector for pressure dofs
     std::vector<int> lmpre(my::nen_,-1);
-    for (int inode=0; inode<my::nen_; ++inode)
+    for (unsigned inode=0; inode<my::nen_; ++inode)
       lmpre[inode] = la[ndsvel].lm_[inode*numveldofpernode+my::nsd_];
 
     // extract local values of pressure field from global state vector
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
       std::vector<double> mydisp(la[ndsdisp].lm_.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,la[ndsdisp].lm_);
 
-      for (int inode=0; inode<my::nen_; ++inode)  // number of nodes
+      for (unsigned inode=0; inode<my::nen_; ++inode)  // number of nodes
         eporosity_(inode,0) = mydisp[my::nsd_+(inode*(my::nsd_+1))];
     }
     else
@@ -551,7 +551,7 @@ const bool                      inverting
     // calculate integrals of (inverted) scalar(s) and domain
     if (inverting)
     {
-      for (int i=0; i<my::nen_; i++)
+      for (unsigned i=0; i<my::nen_; i++)
       {
         const double fac_funct_i = fac*my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)
@@ -568,7 +568,7 @@ const bool                      inverting
     }
     else
     {
-      for (int i=0; i<my::nen_; i++)
+      for (unsigned i=0; i<my::nen_; i++)
       {
         const double fac_funct_i = fac*my::funct_(i);
         for (int k = 0; k < my::numscal_; k++)

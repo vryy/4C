@@ -34,7 +34,6 @@ namespace Teuchos {
 namespace LINALG {
   class BlockSparseMatrixBase;
 } // namespace LINALG
-
 namespace STR {
   class ModelEvaluator;
   class Dbc;
@@ -103,11 +102,10 @@ namespace TIMINT {
     /// @name General access methods
     ///@{
     /// Access discretization (structure only)
-    virtual Teuchos::RCP<DRT::Discretization> Discretization()
-    {
-      CheckInit();
-      return dataglobalstate_->GetMutableDiscret();
-    }
+    virtual Teuchos::RCP<DRT::Discretization> Discretization();
+
+    /// Access generic discretization pointer
+    virtual Teuchos::RCP<DRT::DiscretizationInterface> DiscretizationInterface();
 
     /// Access to pointer to DoF row map of the discretization (structure only)
     virtual const Epetra_Map* DofRowMapView()
@@ -134,9 +132,16 @@ namespace TIMINT {
     /// Access linear structural solver
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
     {
-      CheckInitSetup();
+      CheckInit();
       return datasdyn_->GetMutableLinSolvers()[INPAR::STR::model_structure];
     }
+
+    /// Return MapExtractor for Dirichlet boundary conditions
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;
+
+    //! Return locsys manager
+    virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager();
 
     //! Return the desired model evaluator (read-only)
     virtual const STR::MODELEVALUATOR::Generic& ModelEvaluator(
@@ -145,13 +150,6 @@ namespace TIMINT {
     //! Return the desired model evaluator (read and write)
     virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(
         const INPAR::STR::ModelType& mtype);
-
-    /// Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
-    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;
-
-    //! Return locsys manager
-    virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager();
 
     ///@}
 
@@ -178,77 +176,77 @@ namespace TIMINT {
     /// unknown displacements at \f$t_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> DispNp() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetDisNp();
     }
 
     /// write access to displacements at \f$t^{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispNp()
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetMutableDisNp();
     }
 
     /// known displacements at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> DispN() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetDisN();
     }
 
     /// write access to displacements at \f$t^{n}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispN()
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetMutableDisN();
     }
 
     /// unknown velocities at \f$t_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> VelNp() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetVelNp();
     }
 
     /// write access to velocities at \f$t^{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelNp()
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetMutableVelNp();
     }
 
     /// unknown velocities at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> VelN() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetVelN();
     }
 
     /// write access to velocities at \f$t^{n}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelN()
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetMutableVelN();
     }
 
     /// known velocities at \f$t_{n-1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> VelNm() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetVelNm();
     }
 
     /// unknown accelerations at \f$t_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AccNp() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetAccNp();
     }
 
     //! known accelerations at \f$t_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AccN() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetAccN();
     }
     ///@}
@@ -297,56 +295,56 @@ namespace TIMINT {
     /// Return current time \f$t_{n}\f$ (derived)
     virtual double GetTimeN() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetTimeN();
     }
 
     /// Sets the current time \f$t_{n}\f$ (derived)
     virtual void SetTimeN(const double time_n)
     {
-      CheckInitSetup();
+      CheckInit();
       dataglobalstate_->GetMutableTimeN() = time_n;
     }
 
     /// Return target time \f$t_{n+1}\f$ (derived)
     virtual double GetTimeNp() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetTimeNp();
     }
 
     /// Sets the target time \f$t_{n+1}\f$ of this time step (derived)
     virtual void SetTimeNp(const double time_np)
     {
-      CheckInitSetup();
+      CheckInit();
       dataglobalstate_->GetMutableTimeNp() = time_np;
     }
 
     /// Get upper limit of time range of interest (derived)
     virtual double GetTimeEnd() const
     {
-      CheckInitSetup();
+      CheckInit();
       return datasdyn_->GetTimeMax();
     }
 
     /// Get upper limit of time range of interest (derived)
     virtual void SetTimeEnd(double timemax)
     {
-      CheckInitSetup();
+      CheckInit();
       datasdyn_->GetMutableTimeMax() = timemax;
     }
 
     /// Get time step size \f$\Delta t_n\f$
     virtual double GetDeltaTime() const
     {
-      CheckInitSetup();
+      CheckInit();
       return (*dataglobalstate_->GetDeltaTime())[0];
     }
 
     /// Set time step size \f$\Delta t_n\f$
     virtual void SetDeltaTime(const double dt)
     {
-      CheckInitSetup();
+      CheckInit();
       (*dataglobalstate_->GetMutableDeltaTime())[0] = dt;
     }
 
@@ -356,21 +354,21 @@ namespace TIMINT {
     /// Return current step number \f$n\f$
     virtual int GetStepN() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetStepN();
     }
 
     /// Sets the current step \f$n\f$
     virtual void SetStepN(int step_n)
     {
-      CheckInitSetup();
+      CheckInit();
       dataglobalstate_->GetMutableStepN() =step_n;
     }
 
     /// Return current step number $n+1$
     virtual int GetStepNp() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataglobalstate_->GetStepNp();
     }
 
@@ -384,7 +382,7 @@ namespace TIMINT {
     //! Get number of time steps
     virtual int GetStepEnd() const
     {
-      CheckInitSetup();
+      CheckInit();
       return datasdyn_->GetStepMax();
     }
 
@@ -590,6 +588,13 @@ namespace TIMINT {
 
     /// Get TimIntBase data for global state quantities (read access)
     Teuchos::RCP<const BaseDataGlobalState> GetDataGlobalStatePtr() const
+    {
+      CheckInit();
+      return dataglobalstate_;
+    };
+
+    /// Get TimIntBase data for global state quantities (read & write access)
+    Teuchos::RCP<BaseDataGlobalState>& GetMutableDataGlobalStatePtr()
     {
       CheckInit();
       return dataglobalstate_;

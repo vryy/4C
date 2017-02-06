@@ -36,6 +36,8 @@
 
 #include "../drt_mat/scatra_mat_multiscale.H"
 
+#include "../drt_volmortar/volmortar_shape.H"
+
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
@@ -120,8 +122,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     // construct location vector for velocity related dofs
     std::vector<int> lmvel(nsd_*nen_,-1);
-    for (int inode=0; inode<nen_; ++inode)
-      for (int idim=0; idim<nsd_; ++idim)
+    for (unsigned inode=0; inode<nen_; ++inode)
+      for (unsigned idim=0; idim<nsd_; ++idim)
         lmvel[inode*nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
     // extract local values of (convective) velocity field from global state vector
@@ -153,7 +155,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
       eflux.Clear();
       CalculateFlux(eflux,ele,fluxtype,k);
       // assembly
-      for (int inode=0;inode<nen_;inode++)
+      for (unsigned inode=0;inode<nen_;inode++)
       {
         const int fvi = inode*numdofpernode_+k;
         elevec1_epetra[fvi]+=eflux(0,inode);
@@ -358,8 +360,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     // construct location vector for velocity related dofs
     std::vector<int> lmvel(nsd_*nen_,-1);
-    for (int inode=0; inode<nen_; ++inode)
-      for (int idim=0; idim<nsd_; ++idim)
+    for (unsigned inode=0; inode<nen_; ++inode)
+      for (unsigned idim=0; idim<nsd_; ++idim)
         lmvel[inode*nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
     // extract local values of convective velocity field from global state vector
@@ -517,6 +519,10 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
   case SCATRA::recon_gradients_at_nodes:
   {
+    const INPAR::SCATRA::L2ProjectionSystemType systemtype =
+        params.get<INPAR::SCATRA::L2ProjectionSystemType>(  "l2 proj system",
+            INPAR::SCATRA::l2_proj_system_std );
+
     // need current scalar vector
     // -> extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -524,7 +530,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
 //    CalcGradientAtNodes(ele, elemat1_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
-    CalcGradientAtNodes(ele, elemat1_epetra, elemat2_epetra);
+    CalcGradientAtNodes( ele, elemat1_epetra, elemat2_epetra, systemtype );
 
     break;
   }
@@ -559,7 +565,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
       std::vector<LINALG::Matrix<nen_,nsd_> > egradphinp(numscal_);
 
       // fill all element arrays
-      for (int i=0;i<nen_;++i)
+      for (unsigned i=0;i<nen_;++i)
       {
         for (int k = 0; k< numscal_; ++k)
         {
@@ -617,11 +623,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
       double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
-      for (int vi=0; vi<nen_; ++vi)
+      for (unsigned vi=0; vi<nen_; ++vi)
       {
         const double v = fac*funct_(vi); // no density required here
 
-        for (int ui=0; ui<nen_; ++ui)
+        for (unsigned ui=0; ui<nen_; ++ui)
         {
           mass(vi,ui) += v*funct_(ui);
         }
@@ -658,7 +664,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     double segregationconst=params.get<double>("segregation_constant");
 
     // assembly
-    for (int inode=0;inode<nen_;inode++)
+    for (unsigned inode=0;inode<nen_;inode++)
     {
       const int fvi = inode*numdofpernode_ + scalartoprovidwithsource;
       elevec1_epetra[fvi]+=segregationconst;
@@ -797,7 +803,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
         double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
         // loop over nodes
-        for (int inode=0;inode<nen_;inode++)
+        for (unsigned inode=0;inode<nen_;inode++)
         {
           const int fvi = inode*numdofpernode_ + NumPhiROCK;
           const int fviActin = inode*numdofpernode_ + NumPhiActin;
@@ -1071,8 +1077,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateService(
 
     // construct location vector for displacement related dofs
     std::vector<int> lmdisp(nsd_*nen_,-1);
-    for (int inode=0; inode<nen_; ++inode)
-      for (int idim=0; idim<nsd_; ++idim)
+    for (unsigned inode=0; inode<nen_; ++inode)
+      for (unsigned idim=0; idim<nsd_; ++idim)
         lmdisp[inode*nsd_+idim] = la[ndsdisp].lm_[inode*numdispdofpernode+idim];
 
     // extract local values of displacement field from global state vector
@@ -1130,8 +1136,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcGradientAtNodes(
     LINALG::Matrix<3,1> grad_phi(true);
 
     // Get gradient of phi at Gauss point
-    for (int node = 0; node< nen_; node++)
-      for (int idim = 0; idim< nsd_; idim++)
+    for (unsigned node = 0; node< nen_; node++)
+      for (unsigned idim = 0; idim< nsd_; idim++)
         grad_phi(idim,0) += ephinp_[k](node,0)*derxy_(idim,node);
 
 
@@ -1143,7 +1149,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcGradientAtNodes(
     CalcMatMass(elemat1,k,fac,1.0);
 
     // Compute element vectors. For L2-Projection
-    for (int node_i=0;node_i<nen_;node_i++)
+    for (unsigned node_i=0;node_i<nen_;node_i++)
     {
       elevec1[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(0,0);
       elevec2[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(1,0);
@@ -1164,9 +1170,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcGradientAtNodes(
  *-------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcGradientAtNodes(
-  const DRT::Element*             ele,
-  Epetra_SerialDenseMatrix&       elemat1,
-  Epetra_SerialDenseMatrix&       elemat2
+  const DRT::Element *            ele,
+  Epetra_SerialDenseMatrix &      elemat1,
+  Epetra_SerialDenseMatrix &      elemat2,
+  const INPAR::SCATRA::L2ProjectionSystemType &  systemtype
   )
 {
   // integration points and weights
@@ -1175,34 +1182,97 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcGradientAtNodes(
    // Loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
-    // Get integration factor and evaluate shape func and its derivatives at the integration points.
-    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
+    /* Get integration factor and evaluate solution shape func and its
+     * derivatives at the integration points. */
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint( intpoints, gpid );
+    // evaluate test functions
+    switch ( systemtype )
+    {
+      case INPAR::SCATRA::l2_proj_system_std :
+      case INPAR::SCATRA::l2_proj_system_lumped :
+      {
+        dual_funct_.SetView( funct_.A() );
+        break;
+      }
+      case INPAR::SCATRA::l2_proj_system_dual :
+      {
+        if ( diffmanager_->GetIsotropicDiff( 0 ) != 0.0 )
+          dserror("The dual shape function do not support an "
+              "additional diffusive term!");
+
+        VOLMORTAR::UTILS::dual_shape_function<distype>( dual_funct_, xsi_.A(),
+            *ele, INPAR::VOLMORTAR::dualquad_no_mod );
+        break;
+      }
+    }
+
     // Loop over degrees of freedom
     for (int k=0; k<numdofpernode_; k++)
     {
-    LINALG::Matrix<3,1> grad_phi(true);
+      LINALG::Matrix<3,1> grad_phi(true);
 
-    // Get gradient of phi at Gauss point
-    for (int node = 0; node< nen_; node++)
-      for (int idim = 0; idim< nsd_; idim++)
-        grad_phi(idim,0) += ephinp_[k](node,0)*derxy_(idim,node);
+      // Get gradient of phi at Gauss point
+      for (unsigned node = 0; node< nen_; node++)
+        for (unsigned idim = 0; idim< nsd_; idim++)
+          grad_phi(idim,0) += ephinp_[k](node,0)*derxy_(idim,node);
 
+      //const double eta_smooth=0.0; //Option for smoothing factor, currently not used.
+      //diffmanager_->SetIsotropicDiff(eta_smooth,k);
 
-    //const double eta_smooth=0.0; //Option for smoothing factor, currently not used.
-    //diffmanager_->SetIsotropicDiff(eta_smooth,k);
+      // Compute element matrix. For L2-projection
+      CalcMatDiff(elemat1,k,fac);
+      CalcMatMass(elemat1,k,fac,1.0, funct_, dual_funct_ );
 
-    // Compute element matrix. For L2-projection
-    CalcMatDiff(elemat1,k,fac);
-    CalcMatMass(elemat1,k,fac,1.0);
-
-    // Compute element vectors. For L2-Projection
-    for (int node_i=0;node_i<nen_;node_i++)
-    {
-      for (int j=0;j<nsd_;j++)
+      switch ( systemtype )
       {
-        elemat2(node_i,numdofpernode_*k+j) += funct_(node_i) * fac * grad_phi(j,0);
+        case INPAR::SCATRA::l2_proj_system_dual :
+        {
+          for ( unsigned vi=0; vi<nen_; ++vi )
+          {
+            const int fvi = vi*numdofpernode_+k;
+            // loop all columns
+            for ( unsigned ui=0; ui<nen_; ++ui )
+            {
+              const int fui = ui*numdofpernode_+k;
+              // zeroise off-diagonal entries
+              elemat1(fvi,fui) *= static_cast<double>( ( fui == fvi ) );
+            }
+          }
+          break;
+        }
+        case INPAR::SCATRA::l2_proj_system_lumped :
+        {
+          for ( unsigned vi=0; vi<nen_; ++vi )
+          {
+            const int fvi = vi*numdofpernode_+k;
+
+            double sum = 0.0;
+            // loop all columns
+            for ( unsigned ui=0; ui<nen_; ++ui )
+            {
+              const int fui = ui*numdofpernode_+k;
+              sum += elemat1(fvi,fui);
+              // reset
+              elemat1(fvi,fui) = 0.0;
+            }
+            elemat1(fvi,fvi) = sum;
+          }
+          break;
+        }
+        default:
+          // do nothing
+          break;
       }
-    }
+
+      // Compute element vectors. For L2-Projection
+      for (unsigned node_i=0;node_i<nen_;node_i++)
+      {
+        for (unsigned j=0;j<nsd_;j++)
+        {
+          elemat2(node_i,numdofpernode_*k+j) +=
+              dual_funct_(node_i) * fac * grad_phi(j,0);
+        }
+      }
 
     } //loop over degrees of freedom
 
@@ -1239,9 +1309,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcCurvatureAtNodes(
       // Get gradient of phi at Gauss point
       LINALG::Matrix<3,1> grad_phi(true);
       grad_phi.Clear();
-      for (int rr=0; rr<nsd_; rr ++)
+      for (unsigned rr=0; rr<nsd_; rr ++)
       {
-        for(int inode = 0; inode < nen_; inode++)
+        for (unsigned inode = 0; inode < nen_; inode++)
           grad_phi(rr) += egradphinp[k](inode,rr) *funct_(inode);
       }
 
@@ -1250,7 +1320,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcCurvatureAtNodes(
       static LINALG::Matrix<9,1> grad2_phi;
       grad2_phi.Clear();
 
-      for(int inode = 0; inode < nen_; inode++)
+      for (unsigned inode = 0; inode < nen_; inode++)
       {
         grad2_phi(0) += derxy_(0,inode)*egradphinp[k](inode,0); // ,xx
         grad2_phi(1) += derxy_(1,inode)*egradphinp[k](inode,1); // ,yy
@@ -1310,7 +1380,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcCurvatureAtNodes(
 
       // Compute rhs vector.
       // element matrix and rhs
-      for (int vi=0; vi<nen_; ++vi) // loop rows  (test functions)
+      for (unsigned vi=0; vi<nen_; ++vi) // loop rows  (test functions)
       {
         elevec1(vi) += fac*funct_(vi)*curvature_gp;
       }
@@ -1355,8 +1425,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBoxFilter(
 
   // construct location vector for velocity related dofs
   std::vector<int> lmvel(nsd_*nen_,-1);
-  for (int inode=0; inode<nen_; ++inode)
-    for (int idim=0; idim<nsd_; ++idim)
+  for (unsigned inode=0; inode<nen_; ++inode)
+    for (unsigned idim=0; idim<nsd_; ++idim)
       lmvel[inode*nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
   // extract local values of convective velocity field from global state vector
@@ -1546,7 +1616,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
         CalcMatMassStab(emat,k,fac_tau,densam[k],densnp[k],sgconv,diff);
 
         // remove convective stabilization of inertia term
-        for (int vi=0; vi<nen_; ++vi)
+        for (unsigned vi=0; vi<nen_; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;
           erhs(fvi)+=fac_tau*densnp[k]*conv(vi)*densnp[k]*phiint;
@@ -1619,7 +1689,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::IntegrateShapeFunctions(
     {
       if (dofids[k] >= 0)
       {
-        for (int node=0;node<nen_;node++)
+        for (unsigned node=0;node<nen_;node++)
         {
           elevec1[node*numdofpernode_+k] += funct_(node) * fac;
         }
@@ -1721,9 +1791,9 @@ const int                       k
     // q at integration point
 
     // integrate and assemble everything into the "flux" vector
-    for (int vi=0; vi < nen_; vi++)
+    for (unsigned vi=0; vi < nen_; vi++)
     {
-      for (int idim=0; idim<nsd_ ;idim++)
+      for (unsigned idim=0; idim<nsd_ ;idim++)
       {
         flux(idim,vi) += fac*funct_(vi)*q(idim);
       } // idim
@@ -1732,9 +1802,9 @@ const int                       k
   } // integration loop
 
   //set zeros for unused space dimensions
-  for (int idim=nsd_; idim<3; idim++)
+  for (unsigned idim=nsd_; idim<3; idim++)
   {
-    for (int vi=0; vi < nen_; vi++)
+    for (unsigned vi=0; vi < nen_; vi++)
     {
       flux(idim,vi) = 0.0;
     }
@@ -1766,7 +1836,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDomainIntegral(
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
     // add contribution from current integration point to domain integral
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
       domainintegral += funct_(vi)*fac;
   } // loop over integration points
 
@@ -1798,7 +1868,7 @@ const bool                      inverting
     // calculate integrals of (inverted) scalar(s) and domain
     if (inverting)
     {
-      for (int i=0; i<nen_; i++)
+      for (unsigned i=0; i<nen_; i++)
       {
         const double fac_funct_i = fac*funct_(i);
         for (int k = 0; k < numdofpernode_; k++)
@@ -1814,7 +1884,7 @@ const bool                      inverting
     }
     else
     {
-      for (int i=0; i<nen_; i++)
+      for (unsigned i=0; i<nen_; i++)
       {
         const double fac_funct_i = fac*funct_(i);
         for (int k = 0; k < numdofpernode_; k++)
@@ -1857,13 +1927,13 @@ const double                    interface_thickness
     //fac*funct at GP
     double fac_funct = 0.0;
 
-    for (int i=0; i<nen_; i++)
+    for (unsigned i=0; i<nen_; i++)
     {
       // Levelset function (first scalar stored [0]) at gauss point
       ephi_gp += funct_(i)*ephinp_[0](i,0);
 
       //Coordinate * shapefunction to get the coordinate value of the gausspoint.
-      for(int idim=0; idim<nsd_; idim++)
+      for (unsigned idim=0; idim<nsd_; idim++)
       {
         gpcoord[idim] += funct_(i)*(ele->Nodes()[i]->X()[idim]);
       }
@@ -1886,7 +1956,7 @@ const double                    interface_thickness
 
 
     // add momentum vector and volume
-    for(int idim=0; idim<nsd_; idim++)
+    for (unsigned idim=0; idim<nsd_; idim++)
     {
       momandvol(idim)+=gpcoord[idim]*(1.0-heavyside_epsilon)*fac_funct;
     }
@@ -1954,7 +2024,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::FDCheck(
   // make a copy of state variables to undo perturbations later
   std::vector<LINALG::Matrix<nen_,1> > ephinp_original(numscal_);
   for(int k=0; k<numscal_; ++k)
-    for(int i=0; i<nen_; ++i)
+    for (unsigned i=0; i<nen_; ++i)
       ephinp_original[k](i,0) = ephinp_[k](i,0);
 
   // generalized-alpha time integration requires a copy of history variables as well
@@ -1962,7 +2032,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::FDCheck(
   if(scatraparatimint_->IsGenAlpha())
   {
     for(int k=0; k<numscal_; ++k)
-      for(int i=0; i<nen_; ++i)
+      for (unsigned i=0; i<nen_; ++i)
         ehist_original[k](i,0)  = ehist_[k](i,0);
   }
 
@@ -1979,7 +2049,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::FDCheck(
   double maxrelerr(0.);
 
   // loop over columns of element matrix by first looping over nodes and then over dofs at each node
-  for(int inode=0; inode<nen_; ++inode)
+  for (unsigned inode=0; inode<nen_; ++inode)
   {
     for(int idof=0; idof<numdofpernode_; ++idof)
     {
@@ -1993,11 +2063,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::FDCheck(
 
       // fill state vectors with original state variables
       for(int k=0; k<numscal_; ++k)
-        for(int i=0; i<nen_; ++i)
+        for (unsigned i=0; i<nen_; ++i)
           ephinp_[k](i,0) = ephinp_original[k](i,0);
       if(scatraparatimint_->IsGenAlpha())
         for(int k=0; k<numscal_; ++k)
-          for(int i=0; i<nen_; ++i)
+          for (unsigned i=0; i<nen_; ++i)
             ehist_[k](i,0)  = ehist_original[k](i,0);
 
       // impose perturbation
@@ -2026,7 +2096,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::FDCheck(
 
       // Note that we still need to evaluate the first comparison as well. For small entries in the element
       // matrix, the second comparison might yield good agreement in spite of the entries being wrong!
-      for(int row=0; row<numdofpernode_*nen_; ++row)
+      for(unsigned row=0; row<static_cast<unsigned>(numdofpernode_*nen_); ++row)
       {
         // get current entry in original element matrix
         const double entry = emat(row,col);
@@ -2111,11 +2181,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::FDCheck(
 
   // undo perturbations of state variables
   for(int k=0; k<numscal_; ++k)
-    for(int i=0; i<nen_; ++i)
+    for (unsigned i=0; i<nen_; ++i)
       ephinp_[k](i,0) = ephinp_original[k](i,0);
   if(scatraparatimint_->IsGenAlpha())
     for(int k=0; k<numscal_; ++k)
-      for(int i=0; i<nen_; ++i)
+      for (unsigned i=0; i<nen_; ++i)
         ehist_[k](i,0)  = ehist_original[k](i,0);
 
   return;
@@ -2171,7 +2241,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
       // function evaluation requires a 3D position vector!!
       double position[3]={0.0,0.0,0.0};
 
-      for (int dim=0; dim<nsd_; ++dim)
+      for (unsigned dim=0; dim<nsd_; ++dim)
         position[dim] = xyzint(dim);
 
       for(int k=0;k<numdofpernode_;++k)
@@ -2188,7 +2258,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
         if(gradphi_exact_vec.size())
         {
           if(nsd_==nsd_ele_)
-            for (int dim=0; dim<nsd_; ++dim)
+            for (unsigned dim=0; dim<nsd_; ++dim)
               gradphi_exact(dim)=gradphi_exact_vec[dim];
           else
           {

@@ -1,15 +1,19 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*-----------------------------------------------------------------------------------------------*/
+/**
 \file cut_parentintersection.H
 
 \brief provides the basic functionality for cutting a mesh
 
 <pre>
-Maintainer: Benedikt Schott and Magnus Winter
+\maintainer Benedikt Schott and Magnus Winter
             schott@lnm.mw.tum.de, winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
- *------------------------------------------------------------------------------------------------*/
+
+\level 2
+*/
+/*------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_PARENTINTERSECTION_H
 #define CUT_PARENTINTERSECTION_H
@@ -123,6 +127,10 @@ public:
 
   /// set the option if positions have to be determined or not
   void SetNodalDofSetStrategy( INPAR::CUT::NodalDofSetStrategy nodal_dofset_strategy) { options_.SetNodalDofSetStrategy( nodal_dofset_strategy ); }
+
+  /// Set the position for the boundary cell creation
+  void SetGenBoundaryCellPosition( INPAR::CUT::BoundaryCellPosition gen_bcell_position )
+  { options_.SetGenBoundaryCellPosition( gen_bcell_position ); }
 
   /// get the options
   void GetOptions(Options & options){options = options_;};

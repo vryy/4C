@@ -1,15 +1,20 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*-----------------------------------------------------------------------------------------------*/
+/**
 \file cut_combintersection.H
 
-\brief provides the basic functionality for cutting a mesh with a level set function
+\brief provides the basic functionality for cutting a mesh with a level set function and/or a
+       mesh
 
 <pre>
-Maintainer: Benedikt Schott
-            schott@lnm.mw.tum.de
+\maintainer Benedikt Schott and Magnus Winter
+            schott@lnm.mw.tum.de, winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
- *------------------------------------------------------------------------------------------------*/
+
+\level 2
+*/
+/*------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_COMBINTERSECTION_H
 #define CUT_COMBINTERSECTION_H
@@ -29,7 +34,6 @@ namespace CUT
   class Edge;
   class Side;
   class Element;
-  class LevelSetSide;
 
   /*!
   \brief Interface class for the level set cut.

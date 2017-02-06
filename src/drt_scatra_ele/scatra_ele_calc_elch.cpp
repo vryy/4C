@@ -189,9 +189,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcMatPotEquENC(
     const double                alphaf    //!< time factor for ENC
 )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // linearization of the transference number in the conduction term (transport equation)
       //
@@ -217,7 +217,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcRhsPotEquENC(
     const double                conint    //!< concentration at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
     // electroneutrality condition
     // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
     erhs[vi*my::numdofpernode_+my::numscal_] -= DiffManager()->GetValence(k)*fac*my::funct_(vi)*conint;

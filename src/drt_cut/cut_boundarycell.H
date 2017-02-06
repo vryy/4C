@@ -17,43 +17,38 @@
 #ifndef CUT_BOUNDARYCELL_H
 #define CUT_BOUNDARYCELL_H
 
-#include "cut_cycle.H"
-#include "cut_element.H"
+#include "cut_tolerance.H"
 #include "cut_kernel.H"
-
 
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
 
-namespace GEO
-{
-namespace CUT
-{
-  class Facet;
-  class Element;
-  class VolumeCell;
-  class Mesh;
-  class Point;
+namespace GEO {
+namespace CUT {
 
-  /*!
-  \brief Base class for boundary cells. Boundary cells are used to represent the cut surface. Each volume cell has its own boundary cells
-   at any cut surface with outward normals.
- */
+class Facet;
+class Element;
+class VolumeCell;
+class Mesh;
+class Point;
+class Cycle;
+
+/*----------------------------------------------------------------------------*/
+/*! \brief Base class for boundary cells. Boundary cells are used to represent
+ *  the cut surface. Each volume cell has its own boundary cells
+ *  at any cut surface with outward normals. */
 class BoundaryCell
 {
 public:
+  /// constructor
+  BoundaryCell( const Epetra_SerialDenseMatrix & xyz,
+      Facet * facet,
+      const std::vector<Point*> & points );
 
-  BoundaryCell( const Epetra_SerialDenseMatrix & xyz, Facet * facet, const std::vector<Point*> & points )
-    : xyz_( xyz ),
-      facet_( facet ),
-      points_( points )
-  {
-  }
-
+  /// destructor
   virtual ~BoundaryCell() {}
 
   /*!
@@ -62,15 +57,16 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const = 0;
 
-  /*!
-  \brief Returns the cubature degree to generate quadrature rule for the cell
-   */
+  /*! \brief Returns the cubature degree to generate quadrature rule for the cell
+   *
+   *  This is the maximal polynomial degree which is integrate exactly by the used
+   *  gaussion quadrature rule. */
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const = 0;
 
   /*!
   \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
    */
-  virtual void DumpGmsh( std::ofstream & file, int * value=NULL ) = 0;
+  void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   /*!
   \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
@@ -95,34 +91,38 @@ public:
   /*!
   \brief Get the corner points of the boundarycell in Cylce for geometrical operations
    */
-  const Cycle & PointCycle() const { return points_; }
+  const Cycle & PointCycle() const { return *points_; }
 
   /*!
   \brief Get the corner points of the boundarycell as vector of Points
    */
-  const std::vector<Point*> & Points() const { return points_(); }
+  const std::vector<Point*> & Points() const;
 
   /*!
   \brief Get the coodinates of the corner points of boundarycell
    */
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
 
-  /*!
-  \brief Get the coodinates of the corner points of boundarycell
-   */
-  const std::vector<std::vector<double> > CoordinatesV();
+  /*! \brief Get the coodinates of the corner points of boundarycell
+   *
+   *  To make it easier with DD data structures (should be removed at some point)
+   *
+   *  \author winter
+   *  \date 07/15 */
+  std::vector<std::vector<double> > CoordinatesV();
 
   /*!
   \brief Get the Facet which represent the boundarycell
    */
   Facet * GetFacet() { return facet_; }
+  const Facet * GetFacet() const { return facet_; }
 
   /*!
   \brief Delete all the points of this boundarycell
    */
-  void Clear() { points_.clear(); }
+  void Clear();
 
-  bool IsValid() const { return points_.size() > 0; }
+  bool IsValid() const;
 
   /*!
   \brief Function to test if the distance between points is within point tolerance.
@@ -139,10 +139,18 @@ public:
    */
   virtual LINALG::Matrix<3,1> GetNormalVector()=0;
 
-  /*!
-  \brief Print the corner points on screen
+  /*! \brief Print the corner points on screen
+   *
+   *  just for debugging
+   *
+   *  \author sudhakar
+   *  \date 10/14
    */
-  void Print();
+  void Print( std::ostream & stream );
+  void Print()
+  {
+    Print( std::cout );
+  }
 
   /*!
   \brief Computes the location of Gauss points on the boundarycell (x_gp_lin) from the standard Gauss point location (eta)
@@ -156,7 +164,7 @@ public:
                   double                    & drs)
   {
       const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
-      LINALG::Matrix<3,numnodes> xyze( this->xyz_, true );
+      LINALG::Matrix<3,numnodes> xyze( xyz_, true );
 
       LINALG::Matrix<numnodes,1> funct(false);
       LINALG::Matrix<2,numnodes> deriv(false);
@@ -167,13 +175,14 @@ public:
       if(celldistype != DRT::Element::tri3)
       {
         DRT::UTILS::shape_function_2D_deriv1( deriv, eta(0), eta(1), celldistype );
-        DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>( xyze, deriv, metrictensor, drs, &normal );
+        DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>( xyze, deriv,
+            metrictensor, drs, &normal );
       }
       else
       {
         //For Tri's this method of determining the area and thus the gp-weights is more robust.
         //  It is needed for TRI's which are small/ill-conditioned but large enough to affect the simulation.
-        drs = 2.0*(CUT::KERNEL::getAreaTri(this->Points(), &normal));
+        drs = 2.0*( CUT::KERNEL::getAreaTri( Points(), &normal ) );
       }
 
       x_gp_lin.Multiply(xyze, funct);
@@ -191,45 +200,7 @@ public:
                              LINALG::Matrix<3,1>       & x_gp_lin,
                              LINALG::Matrix<3,1>       & normal,
                              double                    & drs,
-                             bool                      shadow = false )
-  {
-    //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::BoundaryCell::TransformLocalCoords" );
-
-
-    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
-    LINALG::Matrix<3,numnodes> xyzeGlo( this->xyz_, true ), xyze;
-
-    for(int i=0;i<numnodes;i++)
-    {
-      LINALG::Matrix<3,1> glo (&xyzeGlo(0,i)),loc;
-
-      // map w.r to linear shadow element
-      if( not shadow )
-      {
-        elem1->LocalCoordinates(glo,loc);
-      }
-      // map w.r to parent quad element
-      else
-      {
-        if( not elem1->isShadow() )
-          elem1->LocalCoordinates(glo,loc);
-        else
-          elem1->LocalCoordinatesQuad( glo, loc );
-      }
-      xyze(0,i)=loc(0);xyze(1,i)=loc(1);xyze(2,i)=loc(2);
-    }
-    LINALG::Matrix<numnodes,1> funct;
-    LINALG::Matrix<2,numnodes> deriv;
-    LINALG::Matrix<2,2> metrictensor;
-
-    DRT::UTILS::shape_function_2D( funct, eta(0), eta(1), celldistype );
-    DRT::UTILS::shape_function_2D_deriv1( deriv, eta(0), eta(1), celldistype );
-    DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>( xyze, deriv, metrictensor, drs, &normal );
-
-    x_gp_lin.Multiply(xyze, funct);
-
-    return;
-  }
+                             bool                      shadow = false );
 
 protected:
 
@@ -254,31 +225,113 @@ protected:
       double * eta = intpoints.qxg[i];
       DRT::UTILS::shape_function_2D( funct, eta[0], eta[1], distype );
       DRT::UTILS::shape_function_2D_deriv1( deriv, eta[0], eta[1], distype );
-      DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>( xyze, deriv, metrictensor, drs, NULL );
+      DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>( xyze, deriv,
+          metrictensor, drs, NULL );
       if ( not std::isnan( drs ) )
         area += intpoints.qwgt[i] * drs;
     }
     return area;
   }
 
-  /*-------------------------------------------------------------------------------------*
-  | To calculate the element center of a boundary cell                   shahmiri 07/12
-  *--------------------------------------------------------------------------------------*/
+  /** \brief To calculate the element center of a boundary cell
+   *
+   *  \author shahmiri
+   *  \date 07/12 */
   template <DRT::Element::DiscretizationType distype>
   void MyElementCenter(LINALG::Matrix<3,1> & center, LINALG::Matrix<3,1> & midpoint)
   {
     const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     LINALG::Matrix<3,numnodes> xyze( this->xyz_, true );
     LINALG::Matrix<numnodes,1> funct;
-    DRT::UTILS::shape_function_2D( funct, center(0,0), center(1,0), distype );
+    DRT::UTILS::shape_function<distype>( center, funct );
     midpoint.Multiply(xyze,funct);
   }
 
   Epetra_SerialDenseMatrix xyz_;
   Facet * facet_;
-  Cycle points_;
+  Teuchos::RCP<Cycle> points_;
 };
 
+/*----------------------------------------------------------------------------*/
+/// point1 boundary cell
+class Point1BoundaryCell : public BoundaryCell
+{
+public:
+
+  Point1BoundaryCell(
+      const Epetra_SerialDenseMatrix & xyz,
+      Facet * facet,
+      const std::vector<Point*> & points )
+      : BoundaryCell( xyz, facet, points )
+  {
+    /* intentionally left blank */
+  }
+
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::point1; }
+
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 0; }
+
+  virtual void DumpGmshNormal( std::ofstream & file );
+
+  virtual double Area()
+  {
+    return 0.0;
+  };
+
+  virtual void ElementCenter(LINALG::Matrix<3,1> & midpoint);
+
+  virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
+
+  virtual DRT::UTILS::GaussIntegration gaussRule();
+
+  virtual LINALG::Matrix<3,1> GetNormalVector();
+
+  virtual bool IsValidBoundaryCell() { return true; };
+
+protected:
+
+  virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule2D_undefined; }
+};
+
+/*----------------------------------------------------------------------------*/
+/// point1 boundary cell
+class Line2BoundaryCell : public BoundaryCell
+{
+public:
+
+  Line2BoundaryCell(
+      const Epetra_SerialDenseMatrix & xyz,
+      Facet * facet,
+      const std::vector<Point*> & points )
+      : BoundaryCell( xyz, facet, points )
+  {
+    /* intentionally left blank */
+  }
+
+  virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::line2; }
+
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 4; }
+
+  virtual void DumpGmshNormal( std::ofstream & file );
+
+  virtual double Area();
+
+  virtual void ElementCenter(LINALG::Matrix<3,1> & midpoint);
+
+  virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
+
+  virtual DRT::UTILS::GaussIntegration gaussRule();
+
+  virtual LINALG::Matrix<3,1> GetNormalVector();
+
+  virtual bool IsValidBoundaryCell()  { return ( Area() > REF_AREA_BCELL ); };
+
+protected:
+
+  virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule2D_undefined; }
+};
+
+/*----------------------------------------------------------------------------*/
 /// tri3 boundary cell
 class Tri3BoundaryCell : public BoundaryCell
 {
@@ -293,11 +346,9 @@ public:
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 20; }
 
-  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
-
   virtual void DumpGmshNormal( std::ofstream & file );
 
-  virtual double Area() { return MyAreaTri(); }//MyArea<DRT::Element::tri3>(); }
+  virtual double Area();
 
   virtual void ElementCenter(LINALG::Matrix<3,1> & midpoint);
 
@@ -307,22 +358,18 @@ public:
 
   virtual LINALG::Matrix<3,1> GetNormalVector();
 
+  /** \brief  A first step to validate if a boundary cell is valid.
+   *
+   *  \author winter
+   *  \date 11/15 */
   virtual bool IsValidBoundaryCell();
-
-  double MyAreaTri()
-  {
-    const std::vector<Point*> points = this->Points();
-    //double area=CUT::KERNEL::getAreaTri(points);
-
-    //Get the Area of this Tri through calculation with cross product.
-    return CUT::KERNEL::getAreaTri(points);
-  }
 
 protected:
 
   virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_tri_3point; }
 };
 
+/*----------------------------------------------------------------------------*/
 /// quad4 boundary cell
 class Quad4BoundaryCell : public BoundaryCell
 {
@@ -336,8 +383,6 @@ public:
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 20; }
-
-  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   virtual void DumpGmshNormal( std::ofstream & file );
 
@@ -360,6 +405,7 @@ protected:
   virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_quad_4point; }
 };
 
+/*----------------------------------------------------------------------------*/
 /// Irregular boundary cell generated during the cut
 class ArbitraryBoundaryCell : public BoundaryCell
 {
@@ -376,8 +422,6 @@ public:
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::dis_none; }
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const {  return 0; }
-
-  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   virtual void DumpGmshNormal( std::ofstream & file );
 

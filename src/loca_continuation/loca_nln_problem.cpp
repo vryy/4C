@@ -49,6 +49,8 @@ LOCA::NLN::Problem::Problem(
 Teuchos::RCP<NOX::Abstract::Group> LOCA::NLN::Problem::CreateGroup(
     const Teuchos::RCP<NOX::Epetra::LinearSystem>& linsys) const
 {
+  CheckInit();
+
   Teuchos::RCP<NOX::Abstract::Group> locagrp = Teuchos::null;
   Teuchos::ParameterList& pnox = noxNlnGlobalData_->GetNlnParameterList();
   Teuchos::RCP<LOCA::NLN::Interface::Required> ireq =

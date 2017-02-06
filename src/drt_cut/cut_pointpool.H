@@ -47,7 +47,7 @@ class OctTreeNode
 public:
 
   /// empty constructor
-  OctTreeNode( double norm ) : norm_( norm ) {}
+  OctTreeNode( double norm ) : bb_( Teuchos::rcp( BoundingBox::Create() ) ), norm_( norm ) {}
 
   /*========================================================================*/
   //! @name create and get points
@@ -132,7 +132,7 @@ private:
   RCPPointSet points_;
 
   /// bounding box related to this tree-node
-  BoundingBox bb_;
+  Teuchos::RCP<BoundingBox> bb_;
 
   /// point coordinates where the current bounding box is split into 8 children bboxes
   LINALG::Matrix<3,1> splitpoint_;

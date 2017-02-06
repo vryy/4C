@@ -403,7 +403,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
   if (my::use2ndderiv_)
     my::GetLaplacianStrongForm(laplace);
 
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     // compute effective convective stabilization operator
     double conv_eff_vi = conv(vi);
@@ -414,7 +414,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
     const double timetaufac_conv_eff_vi = timetaufac*conv_eff_vi;
     const double timetaufac_conv_eff_vi_conint_k_frt_valence_k = timetaufac_conv_eff_vi*conint*frt*myelch::DiffManager()->GetValence(k);
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // matrix entries
       double matvalconc = 0.;
@@ -495,12 +495,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
   )
 {
   const double timefacfac_diffus_valence_k = timefacfac * myelch::DiffManager()->GetIsotropicDiff(k) * myelch::DiffManager()->GetValence(k);
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const double v = timefacfac_diffus_valence_k*migconv(vi);
     const int fvi = vi*my::numdofpernode_+k;
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const int fui = ui*my::numdofpernode_+k;
 
@@ -531,14 +531,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDE(
   const double                              conint        //!< concentration at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int pvi = vi*my::numdofpernode_+my::numscal_;
 
     // Inclusion of time integration factor results in a matrix with better condition number
     const double timefacfac_diffus_valence_k_mig_vi = timefacfac*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*migconv(vi);
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const int fui = ui*my::numdofpernode_+k;
 
@@ -571,7 +571,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDEElim(
   const double                              conint        //!< concentration at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int pvi = vi*my::numdofpernode_+my::numscal_;
 
@@ -579,7 +579,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDEElim(
     const double timefacfac_diffus_valence_k_mig_vi = timefacfac*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*migconv(vi);
     const double timefacfac_diffus_valence_m_mig_vi = timefacfac*myelch::DiffManager()->GetIsotropicDiff(my::numscal_)*myelch::DiffManager()->GetValence(my::numscal_)*migconv(vi);
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // matrix entries
       double matvalconc = 0.;
@@ -628,12 +628,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquPoisson(
   const double                              faraday    //!< Faraday constant
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int pvi = vi*my::numdofpernode_+my::numscal_;
     const double alphaF_valence_k_fac_funct_vi = my::scatraparatimint_->AlphaF()*myelch::DiffManager()->GetValence(k)*fac*my::funct_(vi);
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // We have a loop over the species index k around. So prevent that the potential term is added more than once!
       if (k==0)
@@ -667,11 +667,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquLaplace(
   const double                              fac        //!< domain-integration factor
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int pvi = vi*my::numdofpernode_+my::numscal_;
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const int pui = ui*my::numdofpernode_+my::numscal_;
 
@@ -698,7 +698,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvAddCons(
     const double                              vdiv      //!< velocity divergence
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
     erhs[vi*my::numdofpernode_+k] -= rhsfac*my::funct_(vi)*conint*vdiv;
 
   return;
@@ -718,7 +718,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvStab(
   const double                              residual     //!< residual of Nernst-Planck equation in strong form
   )
 {
-  for (int vi=0; vi< my::nen_; ++vi)
+  for (unsigned vi=0; vi< my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
 
@@ -746,7 +746,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsMigr(
 {
   const double rhsfac_con_diffus_valence_k = rhsfac*conint*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k);
 
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
     erhs[vi*my::numdofpernode_+k] += rhsfac_con_diffus_valence_k*migconv(vi);
 
   return;
@@ -766,7 +766,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDE(
   const LINALG::Matrix<my::nsd_,1>&                 gradphi    //!< gradient of concentration at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     double laplawf(0.);
     my::GetLaplacianWeakFormRHS(laplawf,gradphi,vi);
@@ -793,7 +793,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDEElim(
   const LINALG::Matrix<my::nsd_,1>&                 gradphi    //!< gradient of concentration at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int pvi = vi*my::numdofpernode_+my::numscal_;
 
@@ -828,7 +828,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquPoisson(
   const LINALG::Matrix<my::nsd_,1>&         gradpot    //!< gradient of potential at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int pvi = vi*my::numdofpernode_+my::numscal_;
 
@@ -861,7 +861,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquLaplace(
   const LINALG::Matrix<my::nsd_,1>&         gradpot    //!< gradient of potential at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int pvi = vi*my::numdofpernode_+my::numscal_;
 
@@ -894,7 +894,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CorrectionForFluxAcrossDC(
     DRT::UTILS::ExtractMyValues(*dctoggle,mydctoggle,lm);
 
     double val = 0.;
-    for (int vi=0; vi<my::nen_; ++vi)
+    for (unsigned vi=0; vi<my::nen_; ++vi)
     {
       for (int k=0; k<my::numscal_; ++k)
       {
@@ -914,7 +914,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CorrectionForFluxAcrossDC(
           erhs[vi*my::numdofpernode_+my::numscal_] += myelch::DiffManager()->GetValence(k)*(-val);
 
           // corresponding linearization
-          for (int ui=0; ui<my::nen_; ++ui)
+          for (unsigned ui=0; ui<my::nen_; ++ui)
           {
             val = emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
             emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)+=myelch::DiffManager()->GetValence(k)*(-val);
@@ -1101,16 +1101,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcTauDerPotTaylorHughesZarin
   // Compute entries of covariant metric tensor
   double G;
   const double dens_sqr = densnp*densnp;
-  for (int nn=0; nn<my::nsd_; ++nn)
+  for (unsigned nn=0; nn<my::nsd_; ++nn)
   {
-    for (int rr=0; rr<my::nsd_; ++rr)
+    for (unsigned rr=0; rr<my::nsd_; ++rr)
     {
       G = my::xij_(nn,0)*my::xij_(rr,0);
 
-      for(int tt=1; tt<my::nsd_; ++tt)
+      for (unsigned tt=1; tt<my::nsd_; ++tt)
         G += my::xij_(nn,tt)*my::xij_(rr,tt);
 
-      for (int jj=0; jj<my::nen_; ++jj)
+      for (unsigned jj=0; jj<my::nen_; ++jj)
         tauderpot(jj) += dens_sqr*frt*diffusvalence*((my::derxy_(nn,jj)*G*veleff(rr,0))+(veleff(nn,0)*G*my::derxy_(rr,jj)));
     }
   }

@@ -2513,7 +2513,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   // write output
   visbindis_->Writer()->WriteMesh( step, time );
   visbindis_->Writer()->NewStep( step, time );
-  visbindis_->Writer()->WriteVector( "owner0ghost1", ownedghostsvec, visbindis_->Writer()->elementvector );
+  visbindis_->Writer()->WriteVector( "owner0ghost1", ownedghostsvec, IO::elementvector );
   visbindis_->Writer()->WriteElementData( true );
 
   visbindis_->ClearDiscret();

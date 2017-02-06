@@ -1,8 +1,20 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file cut_test_simple.cpp
+
+\brief cut test cpp file
+
+\level 1
+
+\maintainer Benedikt Schott, Christoph Ager
+
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_options.H"
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_element.H"
-#include "../../src/drt_cut/cut_position2d.H"
+#include "../../src/drt_cut/cut_position.H"
 #include "cut_test_utils.H"
 #include "../../src/drt_cut/cut_triangulateFacet.H"
 
@@ -1605,6 +1617,7 @@ void test_position2d()
   side_xyze.Scale( scale );
   xyz.Scale( scale );
 
-  GEO::CUT::Position2d<DRT::Element::tri3> pos( side_xyze, xyz );
-  pos.Compute();
+  Teuchos::RCP<GEO::CUT::Position> pos =
+      GEO::CUT::Position::Create( side_xyze, xyz, DRT::Element::tri3 );
+  pos->Compute();
 }

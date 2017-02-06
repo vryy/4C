@@ -131,9 +131,10 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
               xyznode(2) = x[2];
 
               LINALG::Matrix<3,1> xsi;
-              GEO::CUT::Position<DRT::Element::hex8> pos(xyze,xyznode);
-              pos.Compute();
-              xsi = pos.LocalCoordinates();
+              Teuchos::RCP<GEO::CUT::Position> pos =
+                  GEO::CUT::Position::Create(xyze,xyznode,DRT::Element::hex8);
+              pos->Compute();
+              pos->LocalCoordinates(xsi);
               // fill array
               xicoord[inode][0] = xsi(0);
               xicoord[inode][1] = xsi(1);
@@ -535,9 +536,10 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                     xyznode(2) = x[2];
 
                     LINALG::Matrix<3,1> xsi;
-                    GEO::CUT::Position<DRT::Element::hex8> pos(xyze,xyznode);
-                    pos.Compute();
-                    xsi = pos.LocalCoordinates();
+                    Teuchos::RCP<GEO::CUT::Position> pos =
+                        GEO::CUT::PositionFactory::BuildPosition<3,DRT::Element::hex8>(xyze,xyznode);
+                    pos->Compute();
+                    pos->LocalCoordinates(xsi);
                     // fill array
                     xicoord(0,inode) = xsi(0);
                     xicoord(1,inode) = xsi(1);
@@ -608,9 +610,10 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                 xyznode(2) = x[2];
 
                 LINALG::Matrix<3,1> xsi;
-                GEO::CUT::Position<DRT::Element::hex8> pos(xyze,xyznode);
-                pos.Compute();
-                xsi = pos.LocalCoordinates();
+                Teuchos::RCP<GEO::CUT::Position> pos =
+                    GEO::CUT::Position::Create(xyze,xyznode,DRT::Element::hex8);
+                pos->Compute();
+                pos->LocalCoordinates(xsi);
                 // fill array
                 xicoord(0,inode) = xsi(0);
                 xicoord(1,inode) = xsi(1);

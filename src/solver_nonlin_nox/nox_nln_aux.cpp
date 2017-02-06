@@ -22,6 +22,8 @@
 #include "nox_nln_statustest_normupdate.H"
 #include "nox_nln_statustest_normwrms.H"
 
+#include "../linalg/linalg_blocksparsematrix.H"
+
 #include <Epetra_Vector.h>
 
 #include <NOX_Abstract_ImplicitWeighting.H>
@@ -37,28 +39,28 @@ void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox,
   DRT::INPUT::BoolifyValidInputParameters(p_nox);
 
   // adjust printing parameter list
-  Teuchos::ParameterList& printParams = p_nox.sublist("Printing");
-  printParams.set<int>("MyPID", comm.MyPID());
-  printParams.set<int>("Output Precision", 5);
-  printParams.set<int>("Output Processor", 0);
+  Teuchos::ParameterList& printParams = p_nox.sublist( "Printing" );
+  printParams.set<int>( "MyPID", comm.MyPID() );
+  printParams.set<int>( "Output Precision", 5 );
+  printParams.set<int>( "Output Processor", 0 );
   int outputinformationlevel = NOX::Utils::Error;  // NOX::Utils::Error==0
-  if (printParams.get<bool>("Error"))
+  if ( printParams.get<bool>( "Error", true ) )
     outputinformationlevel += NOX::Utils::Error;
-  if (printParams.get<bool>("Warning"))
+  if ( printParams.get<bool>( "Warning", true ) )
     outputinformationlevel += NOX::Utils::Warning;
-  if (printParams.get<bool>("Outer Iteration"))
+  if ( printParams.get<bool>( "Outer Iteration", true ) )
     outputinformationlevel += NOX::Utils::OuterIteration;
-  if (printParams.get<bool>("Inner Iteration"))
+  if ( printParams.get<bool>( "Inner Iteration",true ) )
     outputinformationlevel += NOX::Utils::InnerIteration;
-  if (printParams.get<bool>("Parameters"))
+  if ( printParams.get<bool>( "Parameters", false ) )
     outputinformationlevel += NOX::Utils::Parameters;
-  if (printParams.get<bool>("Details"))
+  if ( printParams.get<bool>( "Details", false ) )
     outputinformationlevel += NOX::Utils::Details;
-  if (printParams.get<bool>("Outer Iteration StatusTest"))
+  if ( printParams.get<bool>( "Outer Iteration StatusTest", true ) )
     outputinformationlevel += NOX::Utils::OuterIterationStatusTest;
-  if (printParams.get<bool>("Linear Solver Details"))
+  if ( printParams.get<bool>( "Linear Solver Details", false ) )
     outputinformationlevel += NOX::Utils::LinearSolverDetails;
-  if (printParams.get<bool>("Test Details"))
+  if ( printParams.get<bool>( "Test Details", false ) )
     outputinformationlevel += NOX::Utils::TestDetails;
   /*  // for LOCA
   if (printParams.get<bool>("Stepper Iteration"))
@@ -68,11 +70,37 @@ void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox,
   if (printParams.get<bool>("Stepper Parameters"))
     outputinformationlevel += NOX::Utils::StepperParameters;
   */
-  if (printParams.get<bool>("Debug"))
+  if ( printParams.get<bool>( "Debug", false) )
     outputinformationlevel += NOX::Utils::Debug;
   printParams.set("Output Information", outputinformationlevel);
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::LinSystem::OperatorType NOX::NLN::AUX::GetOperatorType(
+    const LINALG::SparseOperator& op)
+{
+  const Epetra_Operator* testOperator = 0;
+
+  // Is it a LINALG_BlockSparseMatrix
+  testOperator = dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&op);
+  if (testOperator != 0)
+    return NOX::NLN::LinSystem::LinalgBlockSparseMatrix;
+
+  // Is it a LINALG_SparseMatrix?
+  testOperator = dynamic_cast<const LINALG::SparseMatrix*>(&op);
+  if (testOperator != 0)
+    return NOX::NLN::LinSystem::LinalgSparseMatrix;
+
+  // Is it a LINALG_SparseMatrixBase?
+  testOperator = dynamic_cast<const LINALG::SparseMatrixBase*>(&op);
+  if (testOperator != 0)
+    return NOX::NLN::LinSystem::LinalgSparseMatrixBase;
+
+  // Otherwise it must be a LINALG_SparseOperator
+  return NOX::NLN::LinSystem::LinalgSparseOperator;
 }
 
 /*----------------------------------------------------------------------------*
@@ -84,23 +112,58 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
   const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >::const_iterator
       ci_end = linsolvers.end();
 
-  // --- Pure structural case (+ spring dashpot)
-  if (num_ls == 1 and linsolvers.find(NOX::NLN::sol_structure)!=ci_end)
-    return NOX::NLN::LinSystem::linear_system_structure;
-  // --- Structure/Contact case (+ spring dashpot)
-  else if (num_ls == 2 and (linsolvers.find(NOX::NLN::sol_structure)!=ci_end
-      and linsolvers.find(NOX::NLN::sol_contact)!=ci_end))
-    return NOX::NLN::LinSystem::linear_system_structure_contact;
-  else if (num_ls == 2 and (linsolvers.find(NOX::NLN::sol_structure)!=ci_end
-      and linsolvers.find(NOX::NLN::sol_cardiovascular0d)!=ci_end))
-    return NOX::NLN::LinSystem::linear_system_structure_cardiovascular0d;
-  else if (num_ls == 2 and (linsolvers.find(NOX::NLN::sol_structure)!=ci_end
-      and linsolvers.find(NOX::NLN::sol_lag_pen_constraint)!=ci_end))
-    return NOX::NLN::LinSystem::linear_system_structure_lag_pen_constraint;
-  // --- ToDo has to be extended
-  else
-    dserror("There is no capable linear system type for the given linear "
-        "solver combination!");
+  switch ( num_ls )
+  {
+    case 1:
+    {
+      // --- Pure structural case (+ spring dashpot)
+      if ( linsolvers.find( NOX::NLN::sol_structure ) != ci_end)
+      {
+        return NOX::NLN::LinSystem::linear_system_structure;
+      }
+      else if ( linsolvers.find( NOX::NLN::sol_scatra ) != ci_end)
+      {
+        return NOX::NLN::LinSystem::linear_system_scatra;
+      }
+      // --- ToDo has to be extended
+
+      dserror("There is no capable linear system type for the given linear "
+          "solver combination! ( 1 linear solver )");
+      exit(EXIT_FAILURE);
+    }
+    case 2:
+    {
+      // --- Structure/Contact case (+ spring dashpot)
+      if ( linsolvers.find( NOX::NLN::sol_structure ) != ci_end and
+           linsolvers.find( NOX::NLN::sol_contact )   != ci_end )
+      {
+        return NOX::NLN::LinSystem::linear_system_structure_contact;
+      }
+      // --- Structure/CardioVascular0D case (+ spring dashpot)
+      else if ( linsolvers.find( NOX::NLN::sol_structure )        != ci_end and
+                linsolvers.find( NOX::NLN::sol_cardiovascular0d ) != ci_end )
+      {
+        return NOX::NLN::LinSystem::linear_system_structure_cardiovascular0d;
+      }
+      // --- Structure/Lagrange|Penalty Constaint case (+ spring dashpot)
+      else if ( linsolvers.find( NOX::NLN::sol_structure )          != ci_end and
+                linsolvers.find( NOX::NLN::sol_lag_pen_constraint ) != ci_end)
+      {
+        return NOX::NLN::LinSystem::linear_system_structure_lag_pen_constraint;
+      }
+      // --- ToDo has to be extended
+
+      dserror("There is no capable linear system type for the given linear "
+          "solver combination ( 2 linear solvers )!");
+      exit(EXIT_FAILURE);
+    }
+    default:
+    {
+      dserror("There is no capable linear system type for the given linear "
+          "solver combination!");
+      exit(EXIT_FAILURE);
+    }
+  }
 
   return NOX::NLN::LinSystem::linear_system_undefined;
 }

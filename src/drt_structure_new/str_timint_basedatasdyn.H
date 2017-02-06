@@ -30,19 +30,20 @@
 class Epetra_Time;
 namespace LINALG {
   class Solver;
-}
+} // namespace LINALG
 namespace DRT {
+  class DiscretizationInterface;
   class Discretization;
-}
-namespace GEO{
-namespace MESHFREE{
+} // namespace DRT
+namespace GEO {
+namespace MESHFREE {
   class BoundingBox;
-}
-}
+} // namespace MESHFREE
+} // namespace GEO
 namespace STR {
 namespace MODELEVALUATOR {
   class Generic;
-}
+} // namespace MODELEVALUATOR
 namespace TIMINT {
 
   /** \brief Structural dynamics data container for the structural (time) integration
@@ -64,7 +65,7 @@ namespace TIMINT {
 
     /// initialize class variables (already existing)
     virtual void Init(
-            const Teuchos::RCP<DRT::Discretization> discret,
+            const Teuchos::RCP<DRT::DiscretizationInterface> discret,
             const Teuchos::ParameterList& sDynParams,
             const Teuchos::ParameterList& xparams,
             const Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes,

@@ -560,10 +560,10 @@ void FLD::TimIntHDG::Output()
     getNodeVectorsHDG(*discret_, intvelnp_, velnp_,
                       params_->get<int>("number of velocity degrees of freedom"),
                       interpolatedVelocity_, interpolatedPressure_, traceVel, cellPres);
-    output_->WriteVector("velnp_hdg",interpolatedVelocity_, IO::DiscretizationWriter::nodevector);
-    output_->WriteVector("pressure_hdg",interpolatedPressure_, IO::DiscretizationWriter::nodevector);
-    output_->WriteVector("tracevel_hdg",traceVel, IO::DiscretizationWriter::nodevector);
-    output_->WriteVector("pressure_avg",cellPres, IO::DiscretizationWriter::elementvector);
+    output_->WriteVector("velnp_hdg",interpolatedVelocity_, IO::nodevector);
+    output_->WriteVector("pressure_hdg",interpolatedPressure_, IO::nodevector);
+    output_->WriteVector("tracevel_hdg",traceVel, IO::nodevector);
+    output_->WriteVector("pressure_avg",cellPres, IO::elementvector);
 
     if (step_==upres_ or step_ == 0) output_->WriteElementData(true);
 

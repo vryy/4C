@@ -392,9 +392,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondOhm(
   const LINALG::Matrix<my::nsd_,1>&       gradpot       //!< gradient of potential at GP
 )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       double laplawf(0.0);
       my::GetLaplacianWeakForm(laplawf,ui,vi); // compute once, reuse below!
@@ -451,9 +451,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondConc(
   if(k!=0)
     dserror("Material Newman is only valid for one scalar (binary electrolyte utilizing the ENC)");
 
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       double laplawf(0.0);
       my::GetLaplacianWeakForm(laplawf,ui,vi);
@@ -517,13 +517,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCond(
   const LINALG::Matrix<my::nsd_,1>&       curint        //!< current at GP
 )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
-      for (int idim=0; idim<my::nsd_; ++idim)
+      for (unsigned idim=0; idim<my::nsd_; ++idim)
       {
         const int fui = ui*my::numdofpernode_+(my::numscal_+1)+idim;
 
@@ -560,9 +560,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondDiff(
   const std::vector<LINALG::Matrix<my::nsd_,1> >&   gradphi       //!< gradient of concentration at GP
 )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // compute once, reuse below!
       double laplawf(0.0);
@@ -629,9 +629,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
   const double                                    conintinv       //!< inverted concentration at GP
 )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       double laplawf(0.0);
       my::GetLaplacianWeakForm(laplawf,ui,vi);
@@ -699,11 +699,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDivi(
   const double               invf        //!< 1/F
 )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
    {
-     for (int ui=0; ui<my::nen_; ++ui)
+     for (unsigned ui=0; ui<my::nen_; ++ui)
      {
-       for (int idim = 0; idim <my::nsd_; ++idim)
+       for (unsigned idim = 0; idim <my::nsd_; ++idim)
        {
          const int fvi = my::numdofpernode_*vi+my::numscal_;
          const int fui = my::numdofpernode_*ui+(my::numscal_+1)+idim;
@@ -748,11 +748,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquCur(
 )
 {
   // (v, i)
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
-      for (int idim=0; idim<my::nsd_; ++idim)
+      for (unsigned idim=0; idim<my::nsd_; ++idim)
       {
         const int fvi = vi*my::numdofpernode_+(my::numscal_+1)+idim;
         const int fui = ui*my::numdofpernode_+(my::numscal_+1)+idim;
@@ -778,11 +778,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquOhm(
 )
 {
   // (v, kappa grad phi)
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
-      for (int idim=0; idim<my::nsd_; ++idim)
+      for (unsigned idim=0; idim<my::nsd_; ++idim)
       {
         const int fvi = vi*my::numdofpernode_+(my::numscal_+1)+idim;
         const int fui = ui*my::numdofpernode_+my::numscal_;
@@ -819,13 +819,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquConc(
   const std::vector<double>&               conintinv       //!< inverted concentration at GP
 )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // diffusive term
       // (grad w, D grad c)
-      for (int idim = 0; idim < my::nsd_; ++idim)
+      for (unsigned idim = 0; idim < my::nsd_; ++idim)
       {
         for (int k=0; k < my::numscal_; ++k)
         {
@@ -907,7 +907,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondOhm(
   const LINALG::Matrix<my::nsd_,1>&       gradpot   //!< gradient of potenial at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     // diffusive term
     double laplawfrhs_gradpot=0.0;
@@ -934,7 +934,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondConc(
   const std::vector<double>&              conintinv //!< inverted concentration at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     for(int iscal=0; iscal<my::numscal_;++iscal)
     {
@@ -968,7 +968,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCond(
   const LINALG::Matrix<my::nsd_,1>&       curint    //!< current at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     double laplawfrhs_cur=0.0;
     my::GetLaplacianWeakFormRHS(laplawfrhs_cur,curint,vi);
@@ -991,7 +991,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondDiff(
   const std::vector< LINALG::Matrix<my::nsd_,1> >&  gradphi   //!< gradient of concentration at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     for (int iscal=0; iscal <my::numscal_; ++iscal)
     {
@@ -1032,7 +1032,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviConc(
   const double                            conintinv //!< inverted concentration at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     if(diffcondmat_==INPAR::ELCH::diffcondmat_ion)
     {
@@ -1074,7 +1074,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDivi(
   const LINALG::Matrix<my::nsd_,1>&  curint    //!< current at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     double laplawf=0.0;
     // version a: (grad phi,  Di)
@@ -1099,9 +1099,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquCur(
     const LINALG::Matrix<my::nsd_,1> &      curint    //!< current at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int idim = 0; idim <my::nsd_; ++idim)
+    for (unsigned idim = 0; idim <my::nsd_; ++idim)
     {
       // (v, i)
       erhs[vi*my::numdofpernode_+(my::numscal_+1)+idim]-=rhsfac*invf*my::funct_(vi)*curint(idim);
@@ -1122,9 +1122,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquOhm(
   const LINALG::Matrix<my::nsd_,1>&       gradpot   //!< gradient of potenial at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int idim = 0; idim <my::nsd_; ++idim)
+    for (unsigned idim = 0; idim <my::nsd_; ++idim)
     {
       // (v, kappa grad phi)
       erhs[vi*my::numdofpernode_+(my::numscal_+1)+idim]-=rhsfac*invf*DiffManager()->GetPhasePoroTort(0)*my::funct_(vi)*DiffManager()->GetCond()*gradpot(idim);
@@ -1151,9 +1151,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquConc(
   const std::vector<double>&                       conintinv //!< inverted concentration at GP
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int idim = 0; idim <my::nsd_; ++idim)
+    for (unsigned idim = 0; idim <my::nsd_; ++idim)
     {
       for (int k=0; k < my::numscal_; ++k)
       {
@@ -1200,7 +1200,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
   DRT::UTILS::ExtractMyValues(*dctoggle,mydctoggle,lm);
 
   double val=0.0;
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     for (int k=0; k<my::numscal_; ++k)
     {
@@ -1216,7 +1216,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
         val = erhs[fvi];
         erhs[vi*my::numdofpernode_+my::numscal_] += DiffManager()->GetValence(k)*(-val);
         // corresponding linearization
-        for (int ui=0; ui<my::nen_; ++ui)
+        for (unsigned ui=0; ui<my::nen_; ++ui)
         {
           val = emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k)+=DiffManager()->GetValence(k)*(-val);
@@ -1247,7 +1247,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
           val = erhs[fvi];
           erhs[vi*my::numdofpernode_+k] += 1.0/DiffManager()->GetValence(k)*(-val);
           // corresponding linearization
-          for (int ui=0; ui<my::nen_; ++ui)
+          for (unsigned ui=0; ui<my::nen_; ++ui)
           {
             val = emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k);
             emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k) += 1.0/DiffManager()->GetValence(k)*(-val);

@@ -72,8 +72,8 @@ void NOX::NLN::Solver::LineSearchBased::printUpdate()
   double normStep = 0;
 
   // Print the status test parameters at each iteration if requested
-  if ((status == NOX::StatusTest::Unconverged) &&
-      (utilsPtr->isPrintType(NOX::Utils::OuterIterationStatusTest)))
+  if ( ( status == NOX::StatusTest::Unconverged ) and
+       ( utilsPtr->isPrintType( NOX::Utils::OuterIterationStatusTest ) ) )
   {
     utilsPtr->out() << NOX::Utils::fill(72) << "\n";
     utilsPtr->out() << "-- Status Test Results --\n";
@@ -90,9 +90,8 @@ void NOX::NLN::Solver::LineSearchBased::printUpdate()
 
   // ...But only the print process actually prints the result.
   // ------ standard output ------------------------------------------
-  if (utilsPtr->isPrintType(NOX::Utils::OuterIteration)
-      and (utilsPtr->isPrintType(NOX::Utils::OuterIterationStatusTest)
-      or utilsPtr->isPrintType(NOX::Utils::InnerIteration)))
+  if ( utilsPtr->isPrintType( NOX::Utils::OuterIteration )
+      and utilsPtr->isPrintType( NOX::Utils::OuterIterationStatusTest ) )
   {
     utilsPtr->out() << "\n" << NOX::Utils::fill(72) << "\n";
     utilsPtr->out() << "-- Nonlinear Solver Step " << nIter << " -- \n";
@@ -106,7 +105,7 @@ void NOX::NLN::Solver::LineSearchBased::printUpdate()
     utilsPtr->out() << "\n" << NOX::Utils::fill(72) << "\n" << std::endl;
   }
   // ------ short output ---------------------------------------------
-  else if (utilsPtr->isPrintType(NOX::Utils::OuterIteration))
+  else if ( utilsPtr->isPrintType( NOX::Utils::OuterIteration ) )
   {
     // print the head line
     if (nIter==0)
@@ -129,8 +128,9 @@ void NOX::NLN::Solver::LineSearchBased::printUpdate()
   }
 
   // Print the final parameter values of the status test
-  if ((status != NOX::StatusTest::Unconverged) &&
-      (utilsPtr->isPrintType(NOX::Utils::OuterIterationStatusTest)))
+  if ( ( status != NOX::StatusTest::Unconverged ) and
+       ( utilsPtr->isPrintType( NOX::Utils::OuterIteration ) or
+         utilsPtr->isPrintType( NOX::Utils::OuterIterationStatusTest ) ) )
   {
     utilsPtr->out() << NOX::Utils::fill(72) << "\n";
     utilsPtr->out() << "-- Final Status Test Results --\n";

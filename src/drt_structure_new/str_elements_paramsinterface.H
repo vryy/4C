@@ -151,7 +151,8 @@ namespace ELEMENTS {
         const double& step_length,
         const int&    owner) = 0;
 
-    //! collects and calculates the solution norm of the previous accepted Newton step on the current proc
+    /*! collects and calculates the solution norm of the previous accepted Newton
+     *  step on the current proc */
     virtual void SumIntoMyPreviousSolNorm(
         const enum    NOX::NLN::StatusTest::QuantityType& qtype,
         const int&    numentries,

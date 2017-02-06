@@ -258,7 +258,7 @@ public:
   /// @name Parameters read from file
 
   /// Set parameters from a parameter list and return with default values.
-  void setParameterList(Teuchos::RCP< Teuchos::ParameterList > const &paramList);
+  virtual void setParameterList(Teuchos::RCP< Teuchos::ParameterList > const &paramList);
 
   /// Return a const parameter list of all of the valid parameters that this->setParameterList(...) will accept.
   Teuchos::RCP<const Teuchos::ParameterList> getValidParameters() const;
@@ -300,6 +300,7 @@ public:
   const Teuchos::ParameterList& MultiLevelMonteCarloParams() const { return getParameterList()->sublist("MULTI LEVEL MONTE CARLO"); }
   const Teuchos::ParameterList& MortarCouplingParams() const { return getParameterList()->sublist("MORTAR COUPLING"); }
   const Teuchos::ParameterList& ContactDynamicParams() const { return getParameterList()->sublist("CONTACT DYNAMIC"); }
+  const Teuchos::ParameterList& XContactDynamicParams() const { return getParameterList()->sublist("XCONTACT DYNAMIC"); }
   const Teuchos::ParameterList& FluctuatingHydrodynamicsParams() const { return getParameterList()->sublist("FLUCTUATING HYDRODYNAMICS"); }
   const Teuchos::ParameterList& BeamInteractionParams() const { return getParameterList()->sublist("BEAM INTERACTION"); }
   const Teuchos::ParameterList& BrownianDynamicsParams() const { return getParameterList()->sublist("BROWNIAN DYNAMICS"); }

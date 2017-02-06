@@ -4,12 +4,13 @@
 \brief A collection of methods to modify patient specific geometries
 
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
 </pre>
 
+\level 2
 *----------------------------------------------------------------------*/
 
 #ifndef PATSPEC_H

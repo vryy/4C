@@ -96,7 +96,7 @@ void STR::TIMINT::Base::Setup()
    * unfortunately this wasn't considered during the implementation of the
    * discretization routines. Therefore many methods need a slight modification
    * (most times adding a "const" should fix the problem).          hiermeier */
-  Teuchos::RCP<DRT::Discretization> discret_ptr =
+  Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr =
       DataGlobalState().GetMutableDiscret();
   dbc_ptr_->Init(discret_ptr,DataGlobalState().GetMutableFreactNp(),
       Teuchos::rcp(this,false));
@@ -201,6 +201,22 @@ Teuchos::RCP<DRT::UTILS::LocsysManager> STR::TIMINT::Base::LocsysManager()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+const STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
+    const INPAR::STR::ModelType& mtype) const
+{
+  return Integrator().ModelEval().Evaluator(mtype);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
+    const INPAR::STR::ModelType& mtype)
+{
+  return Integrator().ModelEval().Evaluator(mtype);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 double STR::TIMINT::Base::TimIntParam() const
 {
   CheckInitSetup();
@@ -292,8 +308,11 @@ void STR::TIMINT::Base::GetRestartData(
   disnp = Teuchos::rcp(new Epetra_Vector(*dataglobalstate_->GetDisNp()));
   velnp = Teuchos::rcp(new Epetra_Vector(*dataglobalstate_->GetVelNp()));
   accnp = Teuchos::rcp(new Epetra_Vector(*dataglobalstate_->GetAccNp()));
-  *elementdata = *(dataglobalstate_->GetDiscret()->PackMyElements());
-  *nodedata = *(dataglobalstate_->GetDiscret()->PackMyNodes());
+  Teuchos::RCP<const DRT::Discretization> discret_ptr =
+      Teuchos::rcp_dynamic_cast<const DRT::Discretization>(
+          dataglobalstate_->GetDiscret());
+  *elementdata = *(discret_ptr->PackMyElements());
+  *nodedata = *(discret_ptr->PackMyNodes());
 
   // get restart data is only for simple structure problems
   // hence if the model set is large than one, we throw an error
@@ -462,7 +481,6 @@ void STR::TIMINT::Base::OutputState()
   iowriter.WriteNodeData(dataio_->IsFirstOutputOfRun());
   int_ptr_->OutputStepState(iowriter);
   dataio_->SetFirstOutputOfRun(false);
-
 }
 
 /*----------------------------------------------------------------------------*
@@ -494,7 +512,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         break;
     }
     output_ptr->WriteVector(text, evaldata.StressData(),
-        *(Discretization()->ElementRowMap()));
+        *(DiscretizationInterface()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.MutableStressDataPtr() = Teuchos::null;
@@ -545,7 +563,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         break;
     }
     output_ptr->WriteVector(text, evaldata.StrainData(),
-        *(Discretization()->ElementRowMap()));
+        *(DiscretizationInterface()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.MutableStrainDataPtr() = Teuchos::null;
@@ -569,7 +587,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         break;
     }
     output_ptr->WriteVector(text, evaldata.PlasticStrainData(),
-        *(Discretization()->ElementRowMap()));
+        *(DiscretizationInterface()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.MutablePlasticStrainDataPtr() = Teuchos::null;
@@ -695,7 +713,7 @@ void STR::TIMINT::Base::writeGmshStrucOutputStep()
   // add 'View' to Gmsh postprocessing file
   gmshfilecontent << "View \" " << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  IO::GMSH::VectorFieldDofBasedToGmsh(dataglobalstate_->GetMutableDiscret(),
+  IO::GMSH::VectorFieldDofBasedToGmsh(Discretization(),
       Dispn(),gmshfilecontent,0,true);
   gmshfilecontent << "};" << std::endl;
 }
@@ -709,8 +727,7 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
   isrestarting_ = true;
 
   // create an input/output reader
-  IO::DiscretizationReader ioreader(dataglobalstate_->GetMutableDiscret(),
-      stepn);
+  IO::DiscretizationReader ioreader(Discretization(),stepn);
   dataglobalstate_->GetMutableStepN() = stepn;
   dataglobalstate_->GetMutableStepNp() = stepn + 1;
   dataglobalstate_->GetMutableMultiTime() =
@@ -758,16 +775,19 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
-    const INPAR::STR::ModelType& mtype) const
+Teuchos::RCP<DRT::Discretization> STR::TIMINT::Base::Discretization()
 {
-  return Integrator().ModelEval().Evaluator(mtype);
+  CheckInit();
+  Teuchos::RCP<DRT::Discretization> discret =
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>(
+          dataglobalstate_->GetMutableDiscret(),true);
+  return discret;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
-    const INPAR::STR::ModelType& mtype)
+Teuchos::RCP<DRT::DiscretizationInterface> STR::TIMINT::Base::DiscretizationInterface()
 {
-  return Integrator().ModelEval().Evaluator(mtype);
+  CheckInit();
+  return dataglobalstate_->GetMutableDiscret();
 }

@@ -63,7 +63,8 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
   noxinterface_prec_ptr_->Init(GStatePtr());
   noxinterface_prec_ptr_->Setup();
 
-  Teuchos::RCP<DRT::Discretization> dis = GState().GetMutableDiscret();
+  Teuchos::RCP<DRT::Discretization> dis =
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(),true);
 
   // setup the displacement pointer
   disnp_ptr_ = GState().GetDisNp();

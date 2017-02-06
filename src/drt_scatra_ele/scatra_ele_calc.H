@@ -173,11 +173,11 @@ namespace ELEMENTS
      /*========================================================================*/
 
      //! number of element nodes (nomenclature: T. Hughes, The finite element method)
-     static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+     static const unsigned nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
      //! number of space dimensions
-     static const int nsd_ = probdim;
-     static const int nsd_ele_ = DRT::UTILS::DisTypeToDim<distype>::dim;
+     static const unsigned nsd_ = probdim;
+     static const unsigned nsd_ele_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
      //! element-type specific flag if second derivatives are needed
      static const bool use2ndderiv_ = SCATRA::Use2ndDerivs<distype>::use;
@@ -186,7 +186,7 @@ namespace ELEMENTS
      // 1 component  for nsd=1:  (N,xx)
      // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
      // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
-     static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+     static const unsigned numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
      typedef ScaTraEleInternalVariableManager<nsd_,nen_> varmanager;
 
@@ -353,7 +353,8 @@ namespace ELEMENTS
     virtual void CalcGradientAtNodes(
       const DRT::Element*             ele,       //!< the element we are dealing with
       Epetra_SerialDenseMatrix&       elemat1,   //!< element matrix, to be filled
-      Epetra_SerialDenseMatrix&       elemat2   //!< element RHS vector (x-direction)
+      Epetra_SerialDenseMatrix&       elemat2,   //!< element RHS vector (x-direction)
+      const INPAR::SCATRA::L2ProjectionSystemType &  systemtype  //!< system type
       );
 
     //! calculate/reconstruct gradient(s) at nodes using L2-projection.
@@ -721,17 +722,17 @@ namespace ELEMENTS
       //          +-                                 -+
       //
       LINALG::Matrix<nsd_,nsd_> two_epsilon;
-      for(int rr=0;rr<nsd_;++rr)
+      for (unsigned rr=0;rr<nsd_;++rr)
       {
-        for(int mm=0;mm<nsd_;++mm)
+        for (unsigned mm=0;mm<nsd_;++mm)
         {
           two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
         }
       }
 
-      for(int rr=0;rr<nsd_;rr++)
+      for (unsigned rr=0;rr<nsd_;rr++)
       {
-        for(int mm=0;mm<nsd_;mm++)
+        for (unsigned mm=0;mm<nsd_;mm++)
         {
           rateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
         }
@@ -748,7 +749,7 @@ namespace ELEMENTS
     )
     {
       val = 0.0;
-      for (int j = 0; j<nsd_; j++)
+      for (unsigned j = 0; j<nsd_; j++)
       {
         val += derxy_(j, vi)*derxy_(j, ui);
       }
@@ -764,9 +765,9 @@ namespace ELEMENTS
     )
     {
       val = 0.0;
-      for (int j = 0; j<nsd_; j++)
+      for (unsigned j = 0; j<nsd_; j++)
       {
-        for (int i = 0; i<nsd_; i++)
+        for (unsigned i = 0; i<nsd_; i++)
         {
           val += derxy_(j, vi)*diffus3(j,i)*derxy_(i, ui);
         }
@@ -782,7 +783,7 @@ namespace ELEMENTS
     )
     {
       val = 0.0;
-      for (int j = 0; j<nsd_; j++)
+      for (unsigned j = 0; j<nsd_; j++)
       {
         val += derxy_(j,vi)*gradphi(j);
       }
@@ -831,13 +832,23 @@ namespace ELEMENTS
       const LINALG::Matrix<nen_,1>& diff         //!< laplace term
     );
 
-    //! calculation of mass element matrix
+    //! calculation of mass element matrix (standard shape functions)
     void CalcMatMass(
-      Epetra_SerialDenseMatrix&     emat,        //!< element matrix to be filled
-      const int                     k,           //!< index of current scalar
-      const double                  fac,         //!< domain-integration factor
-      const double                  densam       //!< density at time_(n+am)
+      Epetra_SerialDenseMatrix &     emat,        //!< element matrix to be filled
+      const int &                    k,           //!< index of current scalar
+      const double &                 fac,         //!< domain-integration factor
+      const double &                 densam       //!< density at time_(n+am)
     );
+
+    //! calculation of mass element matrix (dual shape functions)
+    void CalcMatMass(
+      Epetra_SerialDenseMatrix &     emat,        //!< element matrix to be filled
+      const int &                    k,           //!< index of current scalar
+      const double &                 fac,         //!< domain-integration factor
+      const double &                 densam,      //!< density at time_(n+am)
+      const LINALG::Matrix<nen_,1> & sfunct,      //!< solution function values
+      const LINALG::Matrix<nen_,1> & tfunct       //!< test function values
+      ) const;
 
     //! calculation of stabilization mass element matrix
     void CalcMatMassStab(
@@ -1159,6 +1170,8 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,nen_> xyze_;
     //! array for shape functions
     LINALG::Matrix<nen_,1> funct_;
+    //! array for dual shape functions
+    LINALG::Matrix<nen_,1> dual_funct_;
     //! array for shape function derivatives w.r.t r,s,t
     LINALG::Matrix<nsd_,nen_> deriv_;
     //! array for second derivatives of shape function w.r.t r,s,t
@@ -1215,9 +1228,9 @@ namespace ELEMENTS
     virtual ~ScaTraEleDiffManager(){};
 
     //! Set the isotropic diffusion coefficient
-    virtual void SetIsotropicDiff(const double diff, const int k)
+    virtual void SetIsotropicDiff(const double & diff, const int & k)
     {
-      if (diff < 0.0) dserror("negative (physical) diffusivity: %f",0,diff);
+//      if (diff < 0.0) dserror("negative (physical) diffusivity: %f",0,diff);
 
       diff_[k] = diff;
       return;

@@ -181,7 +181,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
         if (err!= 0) dserror("error while inserting a value into tempnp_");
       } // for lnodid
 
-      StructureField()->DiscWriter()->WriteVector("struct_temperature",tempnp_,IO::DiscretizationWriter::nodevector);
+      StructureField()->DiscWriter()->WriteVector("struct_temperature",tempnp_,IO::nodevector);
     }
 
   //========================
@@ -209,7 +209,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
             StructureField()->Discretization()
             );
 
-        ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
+        ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::nodevector);
       }
       else
       {
@@ -250,7 +250,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
           }
         } // for lnodid
 
-        ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
+        ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::nodevector);
       }
     }
 

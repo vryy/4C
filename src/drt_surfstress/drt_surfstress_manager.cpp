@@ -125,9 +125,9 @@ void UTILS::SurfStressManager::WriteResults(const int istep, const double timen)
   LINALG::Export(*con_current_, *con_row);
   LINALG::Export(*gamma_current_, *gamma_row);
 
-  surfoutput_->WriteVector("gamma", gamma_row, IO::DiscretizationWriter::elementvector);
-  surfoutput_->WriteVector("Gamma", con_row, IO::DiscretizationWriter::elementvector);
-  surfoutput_->WriteVector("Area", A_row, IO::DiscretizationWriter::elementvector);
+  surfoutput_->WriteVector("gamma", gamma_row, IO::elementvector);
+  surfoutput_->WriteVector("Gamma", con_row, IO::elementvector);
+  surfoutput_->WriteVector("Area", A_row, IO::elementvector);
 }
 
 

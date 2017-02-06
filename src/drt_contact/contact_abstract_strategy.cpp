@@ -465,8 +465,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
         false);
 
     // store initial element col map for binning strategy
-    initial_elecolmap_.push_back(
-        Teuchos::rcp(
+    initial_elecolmap_.push_back(Teuchos::rcp<Epetra_Map>(
             new Epetra_Map(*interface_[i]->Discret().ElementColMap())));
 
     // ****************************************************
@@ -2918,6 +2917,11 @@ void CONTACT::CoAbstractStrategy::Evaluate(
   const enum MORTAR::ActionType& act = cparams.GetActionType();
   switch(act)
   {
+    case MORTAR::eval_weighted_gap:
+    {
+      EvalWeightedGap(cparams);
+      break;
+    }
     // -------------------------------------------------------------------
     // evaluate only the contact forces / contact right hand side
     // -------------------------------------------------------------------
@@ -2985,6 +2989,15 @@ void CONTACT::CoAbstractStrategy::Evaluate(
   PostEvaluate(cparams);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::EvalWeightedGap(
+    CONTACT::ParamsInterface& cparams)
+{
+  dserror("Not yet implemented! See the XCONTACT::Strategy for an "
+      "example.");
 }
 
 /*----------------------------------------------------------------------*

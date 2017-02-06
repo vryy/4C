@@ -38,8 +38,6 @@ Literature:
 
 #include "../drt_inpar/inpar_fluid.H"
 
-#include "../drt_cut/cut_position.H"
-
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
 

@@ -31,8 +31,8 @@ template<int NSD> class ScaTraEleDiffManagerLsReinit;
 template<int NSD, int NEN> class ScaTraEleInternalVariableManagerLsReinit;
 class ScaTraEleParameterLsReinit;
 
-template<DRT::Element::DiscretizationType distype>
-class ScaTraEleCalcLsReinit : public ScaTraEleCalc<distype>
+template<DRT::Element::DiscretizationType distype, unsigned probDim>
+class ScaTraEleCalcLsReinit : public ScaTraEleCalc<distype,probDim>
 {
 private:
     //! private constructor for singletons
@@ -42,14 +42,14 @@ private:
         const std::string& disname
         );
 
-    typedef ScaTraEleCalc<distype> my;
+    typedef ScaTraEleCalc<distype,probDim> my;
 
 public:
 
   virtual ~ScaTraEleCalcLsReinit() {}
 
   //! Singleton access method
-  static ScaTraEleCalcLsReinit<distype> * Instance(
+  static ScaTraEleCalcLsReinit<distype, probDim> * Instance(
       const int numdofpernode,
       const int numscal,
       const std::string& disname,
@@ -100,12 +100,58 @@ protected:
 
   //! calculate matrix and rhs. Here the whole thing is hidden. Ellipitic reinit.
   void SysmatElliptic(
-    Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
-    const GEO::BoundaryIntCells&          boucell    //!< interface for penalty term
+    Epetra_SerialDenseMatrix&         emat,      //!< element matrix to calculate
+    Epetra_SerialDenseVector&         erhs,      //!< element rhs to calculate
+    const GEO::BoundaryIntCellPtrs &  bcell    //!< interface for penalty term
   );
 
+  /** \brief Evaluate the system matrix and right-hand-side for the ellipitic
+   *  reinitialization
+   *
+   *  Build the system for a Newton Raphson scheme.
+   *
+   *  \param emat  (out) : element matrix (part of the tangential matrix)
+   *  \param erhs  (out) : element right-hand-side vector (part of the residual vector)
+   *  \param bcell (in)  : boundary integration cell (necessary for the penalty term)
+   *
+   *  \author hiermeier \date 12/16 */
+  void EllipticNewtonSystem(
+      Epetra_SerialDenseMatrix *             emat,
+      Epetra_SerialDenseVector *             erhs,
+      const LINALG::Matrix<my::nen_,1> &     el2sysmat_diag_inv,
+      const GEO::BoundaryIntCellPtrs &       bcell );
+
 private:
+
+  /*========================================================================*/
+  //! @name general evaluation methods
+  /*========================================================================*/
+
+  void EvalReinitialization(
+      const Epetra_Vector &          phinp,
+      const std::vector<int> &       lm,
+      DRT::Element *                 ele,
+      Teuchos::ParameterList &       params,
+      DRT::Discretization &          discretization,
+      Epetra_SerialDenseMatrix &     elemat1_epetra,
+      Epetra_SerialDenseVector &     elevec1_epetra);
+
+  void EvalReinitializationEmbedded(
+      const std::vector<int> &       lm,
+      DRT::Element *                 ele,
+      Teuchos::ParameterList &       params,
+      DRT::Discretization &          discretization,
+      Epetra_SerialDenseMatrix &     elemat1_epetra,
+      Epetra_SerialDenseVector &     elevec1_epetra);
+
+  void EvalReinitializationStd(
+      const Epetra_Vector &          phinp,
+      const std::vector<int> &       lm,
+      DRT::Element *                 ele,
+      Teuchos::ParameterList &       params,
+      DRT::Discretization &          discretization,
+      Epetra_SerialDenseMatrix &     elemat1_epetra,
+      Epetra_SerialDenseVector &     elevec1_epetra);
 
   /*========================================================================*/
   //! @name overloaded methods for evaluation of individual terms
@@ -180,19 +226,33 @@ private:
 
   //! calculation of interface penalty term for elliptic reinitialization
   void EvaluateInterfaceTerm(
-    Epetra_SerialDenseMatrix&             emat,     //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,     //!< element vector to calculate
-    const GEO::BoundaryIntCells&          boucell   //!< interface for penalty term
+    Epetra_SerialDenseMatrix *             emat,     //!< element matrix to calculate
+    Epetra_SerialDenseVector *             erhs,     //!< element vector to calculate
+    const GEO::BoundaryIntCellPtrs &       boucell   //!< interface for penalty term
   );
 
   //! calculation of interface penalty term for elliptic reinitialization (gauss loop)
   template <DRT::Element::DiscretizationType celldistype>
   void CalcPenaltyTerm(
-    Epetra_SerialDenseMatrix&             emat,     //!< element matrix to calculate
-    Epetra_SerialDenseVector&             erhs,     //!< element vector to calculate
-    const GEO::BoundaryIntCell          cell      //!< interface cell
+    Epetra_SerialDenseMatrix &             emat,     //!< element matrix to calculate
+    Epetra_SerialDenseVector &             erhs,     //!< element vector to calculate
+    const GEO::BoundaryIntCell &           cell      //!< interface cell
   );
 
+
+  /** \brief calculation of interface penalty term for elliptic reinitialization
+   *         (special variant for the 0-D case)
+   *
+   *  \param emat (out) : element matrix to calculate
+   *  \param erhs (out) : element vector to calculate
+   *  \param cell (in)  : interface boundary integration cell
+   *
+   *  \author hiermeier \date 11/16 */
+  void CalcPenaltyTerm_0D(
+      Epetra_SerialDenseMatrix *            emat,
+      Epetra_SerialDenseVector *            erhs,
+      const GEO::BoundaryIntCell &          cell
+      );
 
   /*========================================================================*/
   //! @name additional service routines
@@ -327,14 +387,21 @@ class ScaTraEleInternalVariableManagerLsReinit : public ScaTraEleInternalVariabl
 
   virtual ~ScaTraEleInternalVariableManagerLsReinit(){};
 
-  // compute and set internal variables
+  /** \brief compute and set internal variables
+   *
+   * \param funct      (in) : array for shape functions
+   * \param derxy      (in) : global derivatives of shape functions w.r.t x,y,z
+   * \param ephinp     (in) : scalar at t_(n+1) or t_(n+alpha_F)
+   * \param ephin      (in) : scalar at t_(n)
+   * \param econvelnp  (in) : nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+   * \param ehist      (in) : history vector of transported scalars */
   void SetInternalVariables(
-      const LINALG::Matrix<NEN,1>&                 funct,       //! array for shape functions
-      const LINALG::Matrix<NSD,NEN>&               derxy,       //! global derivatives of shape functions w.r.t x,y,z
-      const std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //! scalar at t_(n+1) or t_(n+alpha_F)
-      const std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //! scalar at t_(n)
-      const LINALG::Matrix<NSD,NEN>&               econvelnp,   //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-      const std::vector<LINALG::Matrix<NEN,1> >&   ehist        //! history vector of transported scalars
+      const LINALG::Matrix<NEN,1>&                 funct,
+      const LINALG::Matrix<NSD,NEN>&               derxy,
+      const std::vector<LINALG::Matrix<NEN,1> >&   ephinp,
+      const std::vector<LINALG::Matrix<NEN,1> >&   ephin,
+      const LINALG::Matrix<NSD,NEN>&               econvelnp,
+      const std::vector<LINALG::Matrix<NEN,1> >&   ehist
       )
   {
     dserror("Setting all members at once is not allowed for reinitialization!");
@@ -344,9 +411,11 @@ class ScaTraEleInternalVariableManagerLsReinit : public ScaTraEleInternalVariabl
   /*========================================================================*/
   //! @name set methods for internal variables
   /*========================================================================*/
-  // Here, it is explicitly required to set the variables of the manager, since, for instance, gradients my be obtained
-  // by using the derivative of the shape functions or by interpolation of nodal gradient values computed based on
-  // projections. Likewise the velocity of the reinitialization equation according to Sussman requires special care.
+  /* Here, it is explicitly required to set the variables of the manager,
+   * since, for instance, gradients my be obtained by using the derivative of
+   * the shape functions or by interpolation of nodal gradient values computed
+   * based on projections. Likewise the velocity of the reinitialization
+   * equation according to Sussman requires special care. */
 
   //! set current scalar value
   void SetPhinp(const int k,double phinp) {my::phinp_[k] = phinp; return;};

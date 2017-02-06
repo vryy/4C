@@ -4,11 +4,13 @@
 \brief handle that holds the mesh specific information
 
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
+
+\level 2
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef CUT_MESHHANDLE_H

@@ -4,11 +4,13 @@
 \brief handle that holds the mesh specific information
 
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
+
+\level 2
  *------------------------------------------------------------------------------------------------*/
 
 #include "cut_meshhandle.H"
@@ -55,34 +57,38 @@ GEO::CUT::SideHandle * GEO::CUT::MeshHandle::CreateSide( int sid, const std::vec
     QuadraticSideHandle * qsh = NULL;
     switch ( distype )
     {
-    case DRT::Element::quad4:
-    {
-      qsh = new Quad4SideHandle( mesh_, sid, nids );
-      break;
-    }
-    case DRT::Element::quad8:
-    {
-      qsh = new Quad8SideHandle( mesh_, sid, nids );
-      break;
-    }
-    case DRT::Element::quad9:
-    {
-      qsh = new Quad9SideHandle( mesh_, sid, nids );
-      break;
-    }
-    case DRT::Element::tri6:
-    {
-      qsh = new Tri6SideHandle( mesh_, sid, nids );
-      break;
-    }
-    default:
-      throw std::runtime_error( "unsupported distype" );
+      case DRT::Element::quad4:
+      {
+        qsh = new Quad4SideHandle( mesh_, sid, nids );
+        break;
+      }
+      case DRT::Element::quad8:
+      {
+        qsh = new Quad8SideHandle( mesh_, sid, nids );
+        break;
+      }
+      case DRT::Element::quad9:
+      {
+        qsh = new Quad9SideHandle( mesh_, sid, nids );
+        break;
+      }
+      case DRT::Element::tri6:
+      {
+        qsh = new Tri6SideHandle( mesh_, sid, nids );
+        break;
+      }
+      default:
+        dserror( "unsupported distype ( distype = %s )",
+            DRT::DistypeToString( distype ).c_str() );
+        exit( EXIT_FAILURE );
     }
     quadraticsides_[sid] = Teuchos::rcp( qsh );
     return qsh;
   }
   default:
-    throw std::runtime_error( "unsupported distype" );
+    dserror( "unsupported distype ( distype = %s )",
+        DRT::DistypeToString( distype ).c_str() );
+    exit( EXIT_FAILURE );
   }
 }
 
@@ -545,7 +551,9 @@ void GEO::CUT::MeshHandle::CreateElementSides(const std::vector<int> & nids, DRT
     break;
   }
   default:
-    throw std::runtime_error( "unsupported distype" );
+    dserror( "unsupported distype ( distype = %s )",
+        DRT::DistypeToString( distype ).c_str() );
+    exit( EXIT_FAILURE );
   }
 
 }
@@ -564,6 +572,9 @@ GEO::CUT::ElementHandle * GEO::CUT::MeshHandle::CreateElement( int eid, const st
 #endif
   switch ( distype )
   {
+  case DRT::Element::line2:
+  case DRT::Element::tri3:
+  case DRT::Element::quad4:
   case DRT::Element::hex8:
   case DRT::Element::tet4:
   case DRT::Element::pyramid5:
@@ -611,14 +622,18 @@ GEO::CUT::ElementHandle * GEO::CUT::MeshHandle::CreateElement( int eid, const st
     }
     case DRT::Element::wedge15:
     default:
-      throw std::runtime_error( "unsupported distype" );
+      dserror( "unsupported distype ( distype = %s )",
+          DRT::DistypeToString( distype ).c_str() );
+      exit( EXIT_FAILURE );
     }
     quadraticelements_[eid] = Teuchos::rcp( qeh );
     CreateElementSides(nids, distype);
     return qeh;
   }
   default:
-    throw std::runtime_error( "unsupported distype" );
+    dserror( "unsupported distype ( distype = %s )",
+        DRT::DistypeToString( distype ).c_str() );
+    exit( EXIT_FAILURE );
   }
 }
 

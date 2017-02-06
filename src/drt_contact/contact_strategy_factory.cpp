@@ -19,6 +19,7 @@
 #include "friction_node.H"
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -35,17 +36,18 @@
 
 #include <Teuchos_ParameterList.hpp>
 
+#include "contact_utils.H"
+
 // supported interfaces
 #include "contact_wear_interface.H"
 #include "contact_tsi_interface.H"
 #include "../drt_contact_aug/contact_augmented_interface.H"
-
-// supported startegies
 #include "../drt_contact_aug/contact_augmented_strategy.H"
+#include "../drt_contact_xcontact/xcontact_interface.H"
+#include "../drt_contact_xcontact/xcontact_strategy.H"
 #include "contact_poro_lagrange_strategy.H"
 #include "contact_lagrange_strategy.H"
 #include "contact_nitsche_strategy.H"
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -89,15 +91,20 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
   const int dim       = DRT::Problem::Instance()->NDim();
 
   // in case just System type system_condensed_lagmult
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") == INPAR::CONTACT::system_condensed_lagmult)
-    dserror("For Contact anyway just the lagrange multiplier can be condensed, choose SYSTEM = Condensed.");
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") ==
+      INPAR::CONTACT::system_condensed_lagmult)
+    dserror("For Contact anyway just the lagrange multiplier can be condensed, "
+        "choose SYSTEM = Condensed.");
 
   // ---------------------------------------------------------------------
   // invalid parallel strategies
   // ---------------------------------------------------------------------
-  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar,"REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_master and
-     DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar,"PARALLEL_STRATEGY") != INPAR::MORTAR::ghosting_redundant )
-    dserror("ERROR: Redundant storage only reasonable in combination with parallel strategy: ghosting_redundant !");
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar,"REDUNDANT_STORAGE") ==
+         INPAR::MORTAR::redundant_master and
+     DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar,"PARALLEL_STRATEGY") !=
+         INPAR::MORTAR::ghosting_redundant )
+    dserror("ERROR: Redundant storage only reasonable in combination with parallel"
+        " strategy: ghosting_redundant !");
 
   if(DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mortar,"REDUNDANT_STORAGE") == INPAR::MORTAR::redundant_all and
      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParallelStrategy>(mortar,"PARALLEL_STRATEGY") != INPAR::MORTAR::ghosting_redundant )
@@ -519,17 +526,24 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
   cparams.setParameters(wearlist);
   cparams.setParameters(tsic);
 
-  if(problemtype==prb_tsi)
-    cparams.set<double>("TIMESTEP", DRT::Problem::Instance()->TSIDynamicParams().get<double>("TIMESTEP"));
-  else if (problemtype == prb_structure)
-    cparams.set<double>("TIMESTEP", (*GState().GetDeltaTime())[0]);
-  else
+  switch (problemtype)
   {
-    // rauch 01/16
-    if(Comm().MyPID()==0)
-      std::cout<<"\n \n  Warning: CONTACT::CoManager::ReadAndCheckInput() reads TIMESTEP = "
-        << (*GState().GetDeltaTime())[0] <<" from STR::GlobalState data container \n"<<std::endl;
-    cparams.set<double>("TIMESTEP", (*GState().GetDeltaTime())[0]);
+    case prb_tsi:
+    {
+      // rauch 01/16
+      if(Comm().MyPID()==0)
+        std::cout<<"\n \n  Warning: CONTACT::STRATEGY::Factory::ReadAndCheckInput() reads TIMESTEP = "
+          << (*GState().GetDeltaTime())[0] <<" from STR::GlobalState data container and  \n"
+          << "this value comes directly from your \"PROBLEM DYNAMICS\" section, e.g. "
+          << "\"XCONTACT DYNAMICS\". Anyway, you should not use the \"TIMESTEP\" variable inside of "
+          << "the new structural/contact framework!" << std::endl;
+      cparams.set<double>("TIMESTEP", (*GState().GetDeltaTime())[0]);
+      break;
+    }
+    default:
+      /* Do nothing, all the time integration related stuff is supposed to be handled outside
+       * of the contact strategy. */
+      break;
   }
 
   // geometrically decoupled elements cannot be given via input file
@@ -598,35 +612,9 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
     fflush(stdout);
   }
 
-  //Vector that contains solid-to-solid and beam-to-solid contact pairs
-  std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
-  Discret().GetCondition("Contact", beamandsolidcontactconditions);
-
   //Vector that solely contains solid-to-solid contact pairs
-  std::vector<DRT::Condition*> contactconditions(0);
-
-  //Sort out beam-to-solid contact pairs, since these are treated in the beam3contact framework
-  for (int i = 0; i < (int) beamandsolidcontactconditions.size(); ++i)
-  {
-    if(*(beamandsolidcontactconditions[i]->Get<std::string>("Application"))!="Beamtosolidcontact")
-      contactconditions.push_back(beamandsolidcontactconditions[i]);
-  }
-
-  // there must be more than one contact condition
-  // unless we have a self contact problem!
-  if ((int) contactconditions.size() < 1)
-    dserror("ERROR: Not enough contact conditions in discretization");
-  if ((int) contactconditions.size() == 1)
-  {
-    const std::string* side = contactconditions[0]->Get<std::string>("Side");
-    if (*side != "Selfcontact")
-      dserror("ERROR: Not enough contact conditions in discretization");
-  }
-
-  // find all pairs of matching contact conditions
-  // there is a maximum of (conditions / 2) groups
-  std::vector<int> foundgroups(0);
-  int numgroupsfound = 0;
+  std::vector<std::vector<DRT::Condition*> > ccond_grps(0);
+  CONTACT::UTILS::GetContactConditionGroups(ccond_grps,Discret());
 
   // maximum dof number in discretization
   // later we want to create NEW Lagrange multiplier degrees of
@@ -639,7 +627,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
   INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<
       INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
   INPAR::CONTACT::ConstraintDirection constr_direction =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(cparams,"CONSTRAINT_DIRECTIONS");
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(cparams,
+          "CONSTRAINT_DIRECTIONS");
   INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::FrictionType>(cparams, "FRICTION");
   INPAR::CONTACT::AdhesionType ad = DRT::INPUT::IntegralValue<
@@ -660,117 +649,39 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
   enum MORTAR::MortarElement::PhysicalType slavetype = MORTAR::MortarElement::other;
   enum MORTAR::MortarElement::PhysicalType mastertype = MORTAR::MortarElement::other;
 
-  for (int i = 0; i < (int) contactconditions.size(); ++i)
+  // loop over all contact condition groups
+  for (unsigned i = 0; i < ccond_grps.size(); ++i)
   {
-    // initialize vector for current group of conditions and temp condition
-    std::vector<DRT::Condition*> currentgroup(0);
-    DRT::Condition* tempcond = NULL;
-
-    // try to build contact group around this condition
-    currentgroup.push_back(contactconditions[i]);
+    // initialize a reference to the i-th contact condition group
+    std::vector<DRT::Condition*>& currentgroup = ccond_grps[i];
     const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int> >(
         "Interface ID");
+    /* get the interface id
+     * (should be the same for both conditions in the current group!) */
     if (!group1v)
       dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
-    bool foundit = false;
 
-    // only one surface per group is ok for self contact
-    const std::string* side = contactconditions[i]->Get<std::string>("Side");
-    if (*side == "Selfcontact")
-      foundit = true;
-
-    for (int j = 0; j < (int) contactconditions.size(); ++j)
-    {
-      if (j == i)
-        continue; // do not detect contactconditions[i] again
-      tempcond = contactconditions[j];
-      const std::vector<int>* group2v = tempcond->Get<std::vector<int> >(
-          "Interface ID");
-      if (!group2v)
-        dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
-      int groupid2 = (*group2v)[0];
-      if (groupid1 != groupid2)
-        continue; // not in the group
-      foundit = true; // found a group entry
-      currentgroup.push_back(tempcond); // store it in currentgroup
-    }
-
-    // now we should have found a group of conds
-    if (!foundit)
-      dserror("ERROR: Cannot find matching contact condition for id %d", groupid1);
-
-    // see whether we found this group before
-    bool foundbefore = false;
-    for (int j = 0; j < numgroupsfound; ++j)
-      if (groupid1 == foundgroups[j])
-      {
-        foundbefore = true;
-        break;
-      }
-
-    // if we have processed this group before, do nothing
-    if (foundbefore)
-      continue;
-
-    // we have not found this group before, process it
-    foundgroups.push_back(groupid1);
-    ++numgroupsfound;
+    /* get the parent discretization of the contact interface discretization
+     * which shares the same contact condition group */
+    Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> parent_dis_pair =
+        Teuchos::rcp(new XSTR::MultiDiscretizationWrapper::cXDisPair());
+    ExtractParentDiscretization(Discret(), currentgroup, *parent_dis_pair);
+    const DRT::DiscretizationInterface & parent_discret = *((*parent_dis_pair).second);
 
     // find out which sides are Master and Slave
-    bool hasslave = false;
-    bool hasmaster = false;
-    std::vector<const std::string*> sides((int) currentgroup.size());
-    std::vector<bool> isslave((int) currentgroup.size());
-    std::vector<bool> isself((int) currentgroup.size());
-
-    for (int j = 0; j < (int) sides.size(); ++j)
-    {
-      sides[j] = currentgroup[j]->Get<std::string>("Side");
-      if (*sides[j] == "Slave")
-      {
-        hasslave = true;
-        isslave[j] = true;
-        isself[j] = false;
-      }
-      else if (*sides[j] == "Master")
-      {
-        hasmaster = true;
-        isslave[j] = false;
-        isself[j] = false;
-      }
-      else if (*sides[j] == "Selfcontact")
-      {
-        hasmaster = true;
-        hasslave = true;
-        isslave[j] = false;
-        isself[j] = true;
-      }
-      else
-        dserror("ERROR: CoManager: Unknown contact side qualifier!");
-    }
-
-    if (!hasslave)
-      dserror("ERROR: Slave side missing in contact condition group!");
-    if (!hasmaster)
-      dserror("ERROR: Master side missing in contact condition group!");
-
-    // check for self contact group
-    if (isself[0])
-    {
-      for (int j = 1; j < (int) isself.size(); ++j)
-        if (!isself[j])
-          dserror("ERROR: Inconsistent definition of self contact condition group!");
-    }
+    std::vector<bool> isslave(0);
+    std::vector<bool> isself(0);
+    CONTACT::UTILS::GetMasterSlaveSideInfo(isslave,isself,currentgroup);
 
     // find out which sides are initialized as Active
-    std::vector<const std::string*> active((int) currentgroup.size());
-    std::vector<bool> isactive((int) currentgroup.size());
+    std::vector<const std::string*> active(currentgroup.size());
+    std::vector<bool> isactive(currentgroup.size());
 
-    for (int j = 0; j < (int) sides.size(); ++j)
+    for (std::size_t j = 0; j < currentgroup.size(); ++j)
     {
       active[j] = currentgroup[j]->Get<std::string>("Initialization");
-      if (*sides[j] == "Slave")
+      if (isslave[j])//(*sides[j] == "Slave")
       {
         // slave sides may be initialized as "Active" or as "Inactive"
         if (*active[j] == "Active")
@@ -780,17 +691,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
         else
           dserror("ERROR: Unknown contact init qualifier!");
       }
-      else if (*sides[j] == "Master")
-      {
-        // master sides must NOT be initialized as "Active" as this makes no sense
-        if (*active[j] == "Active")
-          dserror("ERROR: Master side cannot be active!");
-        else if (*active[j] == "Inactive")
-          isactive[j] = false;
-        else
-          dserror("ERROR: Unknown contact init qualifier!");
-      }
-      else if (*sides[j] == "Selfcontact")
+      else if (isself[j])//(*sides[j] == "Selfcontact")
       {
         // Selfcontact surfs must NOT be initialized as "Active" as this makes no sense
         if (*active[j] == "Active")
@@ -800,24 +701,32 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
         else
           dserror("ERROR: Unknown contact init qualifier!");
       }
-      else
-        dserror("ERROR: CoManager: Unknown contact side qualifier!");
+      else //if (*sides[j] == "Master")
+      {
+        // master sides must NOT be initialized as "Active" as this makes no sense
+        if (*active[j] == "Active")
+          dserror("ERROR: Master side cannot be active!");
+        else if (*active[j] == "Inactive")
+          isactive[j] = false;
+        else
+          dserror("ERROR: Unknown contact init qualifier!");
+      }
     }
 
     // create interface local parameter list (copy)
     Teuchos::ParameterList icparams = cparams;
 
     // find out if interface-specific coefficients of friction are given
-    if (ftype == INPAR::CONTACT::friction_tresca ||
+    if (ftype == INPAR::CONTACT::friction_tresca  or
         ftype == INPAR::CONTACT::friction_coulomb)
     {
       // read interface COFs
-      std::vector<double> frcoeff((int) currentgroup.size());
-      for (int j = 0; j < (int) currentgroup.size(); ++j)
+      std::vector<double> frcoeff(currentgroup.size());
+      for (std::size_t j = 0; j < currentgroup.size(); ++j)
         frcoeff[j] = currentgroup[j]->GetDouble("FrCoeffOrBound");
 
       // check consistency of interface COFs
-      for (int j = 1; j < (int) currentgroup.size(); ++j)
+      for (std::size_t j = 1; j < currentgroup.size(); ++j)
         if (frcoeff[j] != frcoeff[0])
           dserror(
               "ERROR: Inconsistency in friction coefficients of interface %i",
@@ -848,12 +757,12 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
     if (ad == INPAR::CONTACT::adhesion_bound)
     {
       // read interface COFs
-      std::vector<double> ad_bound((int) currentgroup.size());
-      for (int j = 0; j < (int) currentgroup.size(); ++j)
+      std::vector<double> ad_bound(currentgroup.size());
+      for (std::size_t j = 0; j < currentgroup.size(); ++j)
         ad_bound[j] = currentgroup[j]->GetDouble("AdhesionBound");
 
       // check consistency of interface COFs
-      for (int j = 1; j < (int) currentgroup.size(); ++j)
+      for (std::size_t j = 1; j < currentgroup.size(); ++j)
         if (ad_bound[j] != ad_bound[0])
           dserror(
               "ERROR: Inconsistency in adhesion bounds of interface %i",
@@ -878,27 +787,41 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
     if (isself[0] == true && redundant != INPAR::MORTAR::redundant_all)
       dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
 
-    // decide between contactinterface, augmented interface and wearinterface
+    // ------------------------------------------------------------------------
+    // create the desired interface object
+    // ------------------------------------------------------------------------
     Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
     if (stype==INPAR::CONTACT::solution_augmented)
-      newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,Comm(),Dim(),icparams,isself[0],redundant));
+       newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,
+           Comm(),Dim(),icparams,isself[0],redundant));
+    else if (stype == INPAR::CONTACT::solution_xcontact)
+    {
+      icparams.set<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> >(
+          "ParentDiscretPair",parent_dis_pair);
+      newinterface = Teuchos::rcp(new XCONTACT::Interface(groupid1, Comm(),
+          Dim(), icparams, isself[0], redundant));
+    }
     else if(wlaw!=INPAR::WEAR::wear_none)
-      newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),Dim(),icparams,isself[0],redundant));
+      newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),Dim(),
+          icparams,isself[0],redundant));
     else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
-      newinterface=Teuchos::rcp(new CONTACT::CoTSIInterface(groupid1,Comm(),Dim(),icparams,isself[0],redundant));
+      newinterface=Teuchos::rcp(new CONTACT::CoTSIInterface(groupid1,Comm(),
+          Dim(),icparams,isself[0],redundant));
     else
-      newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), Dim(), icparams, isself[0],redundant));
+      newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(),
+          Dim(), icparams, isself[0],redundant));
+
     interfaces.push_back(newinterface);
 
     // get it again
     Teuchos::RCP<CONTACT::CoInterface> interface =
         interfaces[(int) interfaces.size() - 1];
 
-    // note that the nodal ids are unique because they come from
-    // one global problem discretization containing all nodes of the
-    // contact interface.
-    // We rely on this fact, therefore it is not possible to
-    // do contact between two distinct discretizations here.
+    /* note that the nodal ids are unique because they come from
+     * one global problem discretization containing all nodes of the
+     * contact interface.
+     * We rely on this fact, therefore it is not possible to
+     * do contact between two distinct discretizations here. */
 
     // collect all intial active nodes
     std::vector<int> initialactive;
@@ -910,13 +833,13 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
       const std::vector<int>* nodeids = currentgroup[j]->Nodes();
       if (!nodeids)
         dserror("ERROR: Condition does not have Node Ids");
-      for (int k = 0; k < (int) (*nodeids).size(); ++k)
+      for (std::size_t k = 0; k < (*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
-        if (!Discret().NodeColMap()->MyGID(gid))
+        if (!parent_discret.HaveGlobalNode(gid))
           continue;
-        DRT::Node* node = Discret().gNode(gid);
+        DRT::Node* node = parent_discret.gNode(gid);
         if (!node)
           dserror("ERROR: Cannot find node with gid %", gid);
 
@@ -924,8 +847,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
         if (isactive[j])
           initialactive.push_back(gid);
 
-        // find out if this node is initial active on another Condition
-        // and do NOT overwrite this status then!
+        /* find out if this node is initial active on another Condition
+         * and do NOT overwrite this status then! */
         bool foundinitialactive = false;
         if (!isactive[j])
         {
@@ -937,10 +860,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
             }
         }
 
-        // create CoNode object or FriNode object in the frictional case
-        // for the boolean variable initactive we use isactive[j]+foundinitialactive,
-        // as this is true for BOTH initial active nodes found for the first time
-        // and found for the second, third, ... time!
+        /* create CoNode object or FriNode object in the frictional case
+         * for the boolean variable initactive we use isactive[j]+foundinitialactive,
+         * as this is true for BOTH initial active nodes found for the first time
+         * and found for the second, third, ... time! */
         if (ftype != INPAR::CONTACT::friction_none)
         {
           Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(
@@ -948,8 +871,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
                   node->Id(),
                   node->X(),
                   node->Owner(),
-                  Discret().NumDof(0, node),
-                  Discret().Dof(0, node),
+                  parent_discret.NumDof(0, node),
+                  parent_discret.Dof(0, node),
                   isslave[j],
                   isactive[j] + foundinitialactive,
                   friplus));
@@ -962,7 +885,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
 
           // get edge and corner information:
           std::vector<DRT::Condition*> contactcornercond(0);
-          Discret().GetCondition("mrtrcorner", contactcornercond);
+          parent_discret.GetCondition("mrtrcorner", contactcornercond);
           for (unsigned j = 0; j < contactcornercond.size(); j++)
           {
             if (contactcornercond.at(j)->ContainsNode(node->Id()))
@@ -971,7 +894,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
             }
           }
           std::vector<DRT::Condition*> contactedgecond(0);
-          Discret().GetCondition("mrtredge", contactedgecond);
+          parent_discret.GetCondition("mrtredge", contactedgecond);
           for (unsigned j = 0; j < contactedgecond.size(); j++)
           {
             if (contactedgecond.at(j)->ContainsNode(node->Id()))
@@ -982,7 +905,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<DRT::Condition*> contactSymconditions(0);
-          Discret().GetCondition("mrtrsym",contactSymconditions);
+          parent_discret.GetCondition("mrtrsym",contactSymconditions);
 
           for (unsigned j=0; j<contactSymconditions.size(); j++)
           if (contactSymconditions.at(j)->ContainsNode(node->Id()))
@@ -997,11 +920,11 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
                    "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
           }
 
-          // note that we do not have to worry about double entries
-          // as the AddNode function can deal with this case!
-          // the only problem would have occured for the initial active nodes,
-          // as their status could have been overwritten, but is prevented
-          // by the "foundinitialactive" block above!
+          /* note that we do not have to worry about double entries
+           * as the AddNode function can deal with this case!
+           * the only problem would have occurred for the initial active nodes,
+           * as their status could have been overwritten, but is prevented
+           * by the "foundinitialactive" block above! */
           interface->AddCoNode(cnode);
         }
         else
@@ -1011,8 +934,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
                   node->Id(),
                   node->X(),
                   node->Owner(),
-                  Discret().NumDof(0, node),
-                  Discret().Dof(0, node),
+                  parent_discret.NumDof(0, node),
+                  parent_discret.Dof(0, node),
                   isslave[j],
                   isactive[j] + foundinitialactive));
           //-------------------
@@ -1024,7 +947,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
 
           // get edge and corner information:
           std::vector<DRT::Condition*> contactcornercond(0);
-          Discret().GetCondition("mrtrcorner", contactcornercond);
+          parent_discret.GetCondition("mrtrcorner", contactcornercond);
           for (unsigned j = 0; j < contactcornercond.size(); j++)
           {
             if (contactcornercond.at(j)->ContainsNode(node->Id()))
@@ -1033,7 +956,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
             }
           }
           std::vector<DRT::Condition*> contactedgecond(0);
-          Discret().GetCondition("mrtredge", contactedgecond);
+          parent_discret.GetCondition("mrtredge", contactedgecond);
           for (unsigned j = 0; j < contactedgecond.size(); j++)
           {
             if (contactedgecond.at(j)->ContainsNode(node->Id()))
@@ -1044,7 +967,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
           std::vector<DRT::Condition*> contactSymconditions(0);
-          Discret().GetCondition("mrtrsym", contactSymconditions);
+          parent_discret.GetCondition("mrtrsym", contactSymconditions);
 
           for (unsigned j = 0; j < contactSymconditions.size(); j++)
             if (contactSymconditions.at(j)->ContainsNode(node->Id()))
@@ -1062,11 +985,11 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
                 }
             }
 
-          // note that we do not have to worry about double entries
-          // as the AddNode function can deal with this case!
-          // the only problem would have occured for the initial active nodes,
-          // as their status could have been overwritten, but is prevented
-          // by the "foundinitialactive" block above!
+          /* note that we do not have to worry about double entries
+           * as the AddNode function can deal with this case!
+           * the only problem would have occured for the initial active nodes,
+           * as their status could have been overwritten, but is prevented
+           * by the "foundinitialactive" block above! */
           interface->AddCoNode(cnode);
         }
       }
@@ -1074,20 +997,20 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
 
     //----------------------------------------------- process elements
     int ggsize = 0;
-    for (int j = 0; j < (int) currentgroup.size(); ++j)
+    for (std::size_t j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
       std::map<int, Teuchos::RCP<DRT::Element> >& currele =
           currentgroup[j]->Geometry();
 
-      // elements in a boundary condition have a unique id
-      // but ids are not unique among 2 distinct conditions
-      // due to the way elements in conditions are build.
-      // We therefore have to give the second, third,... set of elements
-      // different ids. ids do not have to be continuous, we just add a large
-      // enough number ggsize to all elements of cond2, cond3,... so they are
-      // different from those in cond1!!!
-      // note that elements in ele1/ele2 already are in column (overlapping) map
+      /* elements in a boundary condition have a unique id
+       * but ids are not unique among 2 distinct conditions
+       * due to the way elements in conditions are build.
+       * We therefore have to give the second, third,... set of elements
+       * different ids. ids do not have to be continuous, we just add a large
+       * enough number ggsize to all elements of cond2, cond3,... so they are
+       * different from those in cond1!!!
+       * note that elements in ele1/ele2 already are in column (overlapping) map */
 
       /* We count only elements, which are owned by the processor. In this way
        * the element ids stay the same for more than one processor in use.
@@ -1115,14 +1038,18 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
                 nurbs));
 
         if (isporo)
-          SetPoroParentElement(slavetype, mastertype, cele, ele);
+          SetPoroParentElement(slavetype, mastertype, cele, ele,parent_discret);
 
         if (algo == INPAR::MORTAR::algorithm_gpts)
         {
+          const DRT::Discretization * discret =
+              dynamic_cast<const DRT::Discretization * >( & Discret() );
+          if ( discret == NULL )
+            dserror("Dynamic cast failed!");
           Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
           if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
           if (faceele->ParentElement()==NULL) dserror("face parent does not exist");
-          if (Discret().ElementColMap()->LID(faceele->ParentElement()->Id())==-1) dserror("vol dis does not have parent ele");
+          if (discret->ElementColMap()->LID(faceele->ParentElement()->Id())==-1) dserror("vol dis does not have parent ele");
           cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
         }
 
@@ -1130,7 +1057,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          PrepareNURBSElement(Discret(),ele,cele);
+          PrepareNURBSElement(parent_discret,ele,cele);
         }
 
         cele->IsHermite() = DRT::INPUT::IntegralValue<int>(cparams,"HERMITE_SMOOTHING");
@@ -1160,7 +1087,8 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
     enum MORTAR::MortarElement::PhysicalType& slavetype,
     enum MORTAR::MortarElement::PhysicalType& mastertype,
     Teuchos::RCP<CONTACT::CoElement>& cele,
-    Teuchos::RCP<DRT::Element>& ele) const
+    Teuchos::RCP<DRT::Element>& ele,
+    const DRT::DiscretizationInterface & discret) const
 {
   // ints to communicate decision over poro bools between processors on every interface
   // safety check - because there may not be mixed interfaces and structural slave elements
@@ -1168,7 +1096,7 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
   if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
   cele->PhysType() = MORTAR::MortarElement::other;
   std::vector<Teuchos::RCP<DRT::Condition> > porocondvec;
-  Discret().GetCondition("PoroCoupling",porocondvec);
+  discret.GetCondition("PoroCoupling",porocondvec);
   if (!cele->IsSlave())//treat an element as a master element if it is no slave element
   {
     for(unsigned int i=0;i<porocondvec.size();++i)
@@ -1440,6 +1368,19 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
         CommPtr(),
         dof_offset));
   }
+  else if (stype == INPAR::CONTACT::solution_xcontact)
+  {
+    data_ptr = Teuchos::rcp(new XCONTACT::DataContainer());
+    strategy_ptr = Teuchos::rcp(new XCONTACT::Strategy(
+        data_ptr,
+        Discret().DofRowMap(),
+        Discret().NodeRowMap(),
+        cparams,
+        interfaces,
+        Dim(),
+        CommPtr(),
+        dof_offset));
+  }
   else if (algo == INPAR::MORTAR::algorithm_gpts &&
       (stype==INPAR::CONTACT::solution_nitsche || stype==INPAR::CONTACT::solution_penalty ))
   {
@@ -1523,4 +1464,80 @@ void CONTACT::STRATEGY::Factory::Print(
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::STRATEGY::Factory::ExtractParentDiscretization(
+    const DRT::DiscretizationInterface & full_discret,
+    const std::vector<DRT::Condition*> & given_ccgroup,
+    XSTR::MultiDiscretizationWrapper::cXDisPair & parent_dis_pair ) const
+{
+  const XSTR::MultiDiscretizationWrapper * dis_wrapper =
+      dynamic_cast<const XSTR::MultiDiscretizationWrapper *>(&full_discret);
+
+  // default case: do nothing and just return the input object
+  if (dis_wrapper == NULL)
+  {
+    parent_dis_pair = std::make_pair(XFEM::structure,
+        Teuchos::rcp<const DRT::DiscretizationInterface>(&full_discret,false));
+    return;
+  }
+
+  bool coincide = false;
+  std::vector<std::vector<DRT::Condition*> > curr_ccgroup;
+  XSTR::MultiDiscretizationWrapper::XDisMap::const_iterator cit;
+  for (cit=dis_wrapper->DiscretMap().begin();cit!=dis_wrapper->DiscretMap().end();
+      ++cit)
+  {
+    // continue if no contact conditions could be found in the current discretization
+    if (CONTACT::UTILS::GetContactConditionGroups(curr_ccgroup,*(cit->second),false))
+      continue;
+    /* loop over the condition grps of the current discretization and try
+     * to find the one with same interface ID's */
+    std::vector<std::vector<DRT::Condition*> >::const_iterator vv_cit;
+    for (vv_cit=curr_ccgroup.begin();vv_cit!=curr_ccgroup.end();++vv_cit)
+    {
+      // continue if the sizes do not fit of the contact condition groups
+      if (vv_cit->size()!=given_ccgroup.size())
+        continue;
+      // loop over the entries of the contact condition groups
+      for (unsigned j=0;j<given_ccgroup.size();++j)
+      {
+        const std::vector<int>* ggroupv = given_ccgroup[j]->Get<std::vector<int> >(
+                "Interface ID");
+        if (ggroupv==NULL)
+          dserror("ERROR: Given Contact Conditions do not have value 'Interface ID'");
+        const std::vector<int>* cgroupv = (*vv_cit)[j]->Get<std::vector<int> >(
+            "Interface ID");
+        if (cgroupv == NULL or cgroupv->size()!=ggroupv->size())
+        {
+          coincide = false;
+          break;
+        }
+        // compare the Interface ID's of the contact condition grp's
+        if ((*cgroupv)[0]!=(*ggroupv)[0])
+        {
+          coincide = false;
+          break;
+        }
+        // has to be true for all of them
+        coincide = true;
+      }
+      if (coincide)
+        break;
+    }
+    // if the search was successful, return the desired pair
+    if (coincide)
+    {
+      parent_dis_pair = std::make_pair(cit->first,cit->second.getConst());
+      return;
+    }
+  }
+  // if the search failed, throw an error
+  IO::cout << "\n:::: Given Contact Condition Group ::::\n";
+  for (unsigned i=0; i<given_ccgroup.size();++i)
+    IO::cout << *(given_ccgroup[i]) << "\n";
+  dserror("There is no wrapped discretization which belongs to the given "
+      "contact condition group!");
 }

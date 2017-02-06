@@ -3,10 +3,12 @@
 \file nln_problem_coarselevel.cpp
 
 <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
 </pre>
+
+\level 3
 */
 
 /*----------------------------------------------------------------------------*/
@@ -241,7 +243,7 @@ void NLNSOL::NlnProblemCoarseLevel::SetupResidualModification(
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemCoarseLevel::WriteVector(
     Teuchos::RCP<const Epetra_MultiVector> vec, const std::string& description,
-    const IO::DiscretizationWriter::VectorType vt) const
+    const IO::VectorType vt) const
 {
 //  if (not vec->Map().PointSameAs(DofRowMap()))
 //    dserror("Map of vector does not match map of this level.");
@@ -259,7 +261,7 @@ void NLNSOL::NlnProblemCoarseLevel::WriteVector(
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemCoarseLevel::WriteVector(
     const Epetra_MultiVector& vec, const std::string& description,
-    const IO::DiscretizationWriter::VectorType vt) const
+    const IO::VectorType vt) const
 {
   WriteVector(Teuchos::rcp(&vec, false), description, vt);
 

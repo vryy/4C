@@ -19,6 +19,8 @@
 #include "xfluid_state_creator.H"
 #include "xfluid_state.H"
 
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_discret_xfem.H"

@@ -81,12 +81,6 @@ namespace STR {
         const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
         Teuchos::RCP<LINALG::Solver>& currSolver);
 
-  private:
-    //! throws an error message
-    void throwError(
-        const std::string& functionName,
-        const std::string& errorMsg) const;
-
   }; // class LinearSystem
 } // namespace STR
 } // namespace NLN

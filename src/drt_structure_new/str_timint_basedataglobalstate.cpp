@@ -83,7 +83,7 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataGlobalState::Init(
-    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<DRT::DiscretizationInterface> discret,
     const Teuchos::ParameterList& sdynparams,
     const Teuchos::RCP<const BaseDataSDyn> datasdyn
     )
@@ -113,6 +113,10 @@ void STR::TIMINT::BaseDataGlobalState::Init(
         sdynparams.get<double>("TIMEINIT")));
     dt_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<double>(0, 0,
         sdynparams.get<double>("TIMESTEP")));
+
+    // initialize target time to initial time plus step size
+    timenp_ = (*timen_)[0] + (*dt_)[0];
+    stepnp_ = stepn_ + 1;
   }
 
   // end of initialization
@@ -132,11 +136,8 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // --------------------------------------
   // control parameters
   // --------------------------------------
-  // set target time to initial time plus step size
-  timenp_ = (*timen_)[0] + (*dt_)[0];
-  stepnp_ = stepn_ + 1;
-
   timer_ = Teuchos::rcp(new Epetra_Time(*comm_));
+
   // --------------------------------------
   // vectors
   // --------------------------------------
@@ -251,9 +252,9 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
     }
     case INPAR::STR::model_lag_pen_constraint:
     {
-      // ---------------------------------------------------------------------------
+      // ----------------------------------------------------------------------
       // check type of constraint conditions (Lagrange multiplier vs. penalty)
-      // ---------------------------------------------------------------------------
+      // ----------------------------------------------------------------------
       bool have_lag_constraint = false;
       std::vector<DRT::Condition*> lagcond_volconstr3d(0);
       std::vector<DRT::Condition*> lagcond_areaconstr3d(0);
@@ -369,8 +370,10 @@ void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor()
     }
     else
     {
-      nodaladditdofs = beameleptr->GetAdditiveDofGIDs(*discret_,*nodeptr);
-      nodalrotvecdofs = beameleptr->GetRotVecDofGIDs(*discret_,*nodeptr);
+      Teuchos::RCP<DRT::Discretization> discret =
+          Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_,true);
+      nodaladditdofs = beameleptr->GetAdditiveDofGIDs(*discret,*nodeptr);
+      nodalrotvecdofs = beameleptr->GetRotVecDofGIDs(*discret,*nodeptr);
 
       if (nodaladditdofs.size() + nodalrotvecdofs.size() !=
           (unsigned) beameleptr->NumDofPerNode(*nodeptr))

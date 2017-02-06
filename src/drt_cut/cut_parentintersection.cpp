@@ -1,4 +1,5 @@
-/*!-----------------------------------------------------------------------------------------------*
+/*-----------------------------------------------------------------------------------------------*/
+/**
 \file cut_parentintersection.cpp
 
 \brief provides the basic functionality for cutting a mesh
@@ -9,7 +10,10 @@
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
- *------------------------------------------------------------------------------------------------*/
+
+\level 2
+*/
+/*------------------------------------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -117,7 +121,7 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const 
 
       // finds also the connections of volumecell sets between adjacent elements
       // finally, each found DOFSet around a 1-ring of the node maintains its own set of DOFs
-      if(include_inner)
+      if( include_inner )
       {
         //WARNING:
         //This is necessary to have to set the "standard values" at the first DOF-set, and the
@@ -146,7 +150,8 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const 
       if(strategy == INPAR::CUT::NDS_Strategy_OneDofset_PerNodeAndPosition)
       {
 
-        // combine the (ghost) dofsets for this node w.r.t each phase to avoid multiple ghost nodal dofsets for a certain phase
+        /* combine the (ghost) dofsets for this node w.r.t each phase to avoid
+         * multiple ghost nodal dofsets for a certain phase */
         n->CollectNodalDofSets();
 
       } // otherwise do nothing
@@ -157,7 +162,7 @@ void GEO::CUT::ParentIntersection::CreateNodalDofSet( bool include_inner, const 
 
   //===============
   // STEP 2: for each element that contains volumecell_sets (connections via subelements...),
-  // all nodes of this element have to now the dofset_number for each set of volumecells
+  // all nodes of this element have to know the dofset_number for each set of volumecells
   //===============
   for( std::set<int>::iterator i= eids.begin(); i!= eids.end(); i++)
   {
@@ -443,8 +448,6 @@ void GEO::CUT::ParentIntersection::FindNodalCellSets( bool include_inner,
         node->AssignNodalCellSet(ele_vc_sets_outside, nodal_cell_sets_outside);
 
       }
-
-
     } // end loop over nodes of current sourrounding element
 
 
@@ -555,7 +558,7 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 6/6 --- Cut_Finalize" );
 
-  if(myrank_==0 and screenoutput) IO::cout << "\t * 6/6 Cut_Finalize";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 6/6 Cut_Finalize ...";
 
 //  const double t_start = Teuchos::Time::wallTime();
 

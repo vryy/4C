@@ -85,8 +85,8 @@ void INVANA::PredictionSMC::Integrate()
 
     Writer()->WriteNewStep(1,1.0);
 
-    Writer()->WriteNamedVector("solution_mean",mean,IO::DiscretizationWriter::dofvector);
-    Writer()->WriteNamedVector("solution_std",stdev,IO::DiscretizationWriter::dofvector);
+    Writer()->WriteNamedVector("solution_mean",mean,IO::dofvector);
+    Writer()->WriteNamedVector("solution_std",stdev,IO::dofvector);
   }
 
 

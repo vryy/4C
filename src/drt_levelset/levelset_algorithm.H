@@ -102,7 +102,7 @@ namespace SCATRA
     void MassCenterUsingSmoothing();
 
     /// redistribute the scatra discretization and vectors according to nodegraph
-    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
+    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> & nodegraph);
 
     /// return velocity at intermediate time n+theta
     const Teuchos::RCP<Epetra_Vector> ConVelTheta(double theta);
@@ -112,8 +112,6 @@ namespace SCATRA
 
     /// set time and step value
     void SetTimeStep(const double time, const int step);
-
-  protected:
 
     // -----------------------------------------------------------------
     // general methods
@@ -125,11 +123,18 @@ namespace SCATRA
     /// solve level-set equation
     void Solve();
 
-    /// update state vectors
-    virtual void UpdateState() = 0;
-
     /// calculate error compared to analytical solution
     void EvaluateErrorComparedToAnalyticalSol();
+
+  protected:
+
+    virtual void GetInitialVolumeOfMinusDomain(
+        const Teuchos::RCP<const Epetra_Vector>& phinp,
+        const Teuchos::RCP<const DRT::Discretization> & scatradis,
+        double& volumedomainminus) const;
+
+    /// update state vectors
+    virtual void UpdateState() = 0;
 
     // -----------------------------------------------------------------
     // hybrid method including particles
@@ -143,10 +148,34 @@ namespace SCATRA
     // -----------------------------------------------------------------
 
     /// reinitialize level-set
-    void Reinitialization();
+    virtual void Reinitialization();
+
+    /** \brief calculation of nodal velocity field via L2-projection for reinitialization
+     *
+     * (helper function for ReinitEq()) */
+    virtual void CalcNodeBasedReinitVel();
+
+    /// execute the elliptic reinitialization procedure
+    void ReinitializeWithEllipticEquation();
 
     /// set element parameters for reinitialization equation
     void SetReinitializationElementParameters(bool calcinitialtimederivative = false) const;
+
+    /** \brief access nodal gradient-based values for reinitialization
+     *
+     * (ReinitEq() only; Sussman and Elliptic) */
+    inline Teuchos::RCP<Epetra_MultiVector> & NodalGradBasedValue()
+    { return nb_grad_val_; }
+    inline Teuchos::RCP<const Epetra_MultiVector> NodalGradBasedValue() const
+    { return nb_grad_val_; }
+
+    /// access the interval for reinitialization (every 'reinitinterval_' time steps)
+    inline const int & ReinitInterval() const
+    { return reinitinterval_; }
+
+    /// use projection for grad phi and related quantities
+    inline const bool & UseProjection() const
+    { return projection_; }
 
     // -----------------------------------------------------------------
     // Reconstructing nodal curvature
@@ -229,9 +258,6 @@ namespace SCATRA
     /// convergence check for reinit equation according to Sussman et al. 1994 (helper function for ReinitEq())
     bool ConvergenceCheckReinit();
 
-    /// calculation of nodal velocity field via L2-projection for reinitialization (helper function for ReinitEq())
-    void CalcNodeBasedReinitVel();
-
     /// update phi within the reinitialization loop
     virtual void UpdateReinit() = 0;
 
@@ -296,6 +322,8 @@ namespace SCATRA
     // -----------------------------------------------------------------
     // additional post-processing and evaluation methods
     // -----------------------------------------------------------------
+
+    virtual void OutputOfLevelSetSpecificValues();
 
     // check for mass conservation before and after reinitialization as well as
     // at the end of the time step

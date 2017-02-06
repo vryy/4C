@@ -59,7 +59,7 @@ void INVANA::InvanaWriter::WriteNamedDouble(const std::string name,
 /*----------------------------------------------------------------------------*/
 void INVANA::InvanaWriter::WriteNamedVector(const std::string name,
     Teuchos::RCP<const Epetra_MultiVector> vector,
-    IO::DiscretizationWriter::VectorType type) const
+    IO::VectorType type) const
 {
   output_->WriteVector(name,vector,type);
   return;
@@ -68,7 +68,7 @@ void INVANA::InvanaWriter::WriteNamedVector(const std::string name,
 /*----------------------------------------------------------------------------*/
 void INVANA::InvanaWriter::WriteNamedVectors(const std::string name,
     Teuchos::RCP<const Epetra_MultiVector> vector,
-    IO::DiscretizationWriter::VectorType type) const
+    IO::VectorType type) const
 {
   // if there will be more vectors to write use some string functionality!
   // do it when all configs are on C++11 because without its just annoying to convert

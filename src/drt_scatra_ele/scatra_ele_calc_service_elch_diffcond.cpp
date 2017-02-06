@@ -132,14 +132,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcInitialTimeDerivativ
     {
       const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
-      for(int idim=0;idim<my::nsd_;++idim)
+      for (unsigned idim=0;idim<my::nsd_;++idim)
       {
-        for (int vi=0; vi<my::nen_; ++vi)
+        for (unsigned vi=0; vi<my::nen_; ++vi)
         {
           const double v = fac*my::funct_(vi); // no density required here
           const int fvi = vi*my::numdofpernode_+my::numscal_+1+idim;
 
-          for (int ui=0; ui<my::nen_; ++ui)
+          for (unsigned ui=0; ui<my::nen_; ++ui)
           {
             const int fui = ui*my::numdofpernode_+my::numscal_+1+idim;
 
@@ -498,9 +498,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchBoundaryKine
   {
     for(int k=0; k<my::numscal_; ++k)
     {
-      for (int vi=0; vi<my::nen_; ++vi)
+      for (unsigned vi=0; vi<my::nen_; ++vi)
       {
-        for (int ui=0; ui<my::nen_; ++ui)
+        for (unsigned ui=0; ui<my::nen_; ++ui)
         {
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
@@ -614,9 +614,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKineti
   {
     for(int k=0; k<my::numscal_; ++k)
     {
-      for (int vi=0; vi<my::nen_; ++vi)
+      for (unsigned vi=0; vi<my::nen_; ++vi)
       {
-        for (int ui=0; ui<my::nen_; ++ui)
+        for (unsigned ui=0; ui<my::nen_; ++ui)
         {
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);

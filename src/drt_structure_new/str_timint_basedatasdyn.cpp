@@ -113,7 +113,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataSDyn::Init(
-    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<DRT::DiscretizationInterface> discret,
     const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams,
     const Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes,

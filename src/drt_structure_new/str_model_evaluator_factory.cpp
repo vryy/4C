@@ -27,10 +27,12 @@
 #include "str_model_evaluator_springdashpot.H"
 #include "str_model_evaluator_contact.H"
 #include "str_model_evaluator_lagpenconstraint.H"
+#include "../drt_contact_xcontact/str_model_evaluator_xcontact.H"
 #include "../drt_struct_ale/struct_ale_str_model_evaluator.H"
 
 // problem types
 #include "../drt_lib/drt_globalproblem.H"
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -69,8 +71,10 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteraction());
         break;
       case INPAR::STR::model_contact:
-        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Contact());
+      {
+        (*model_map)[*mt_iter] = BuildContactModelEvaluator();
         break;
+      }
       case INPAR::STR::model_beam_interaction_old:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionOld());
         break;
@@ -97,6 +101,28 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
   return model_map;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::MODELEVALUATOR::Generic> STR::MODELEVALUATOR::Factory::
+    BuildContactModelEvaluator() const
+{
+  Teuchos::RCP<STR::MODELEVALUATOR::Generic> contact_model_ptr = Teuchos::null;
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  switch (probtype)
+  {
+    case prb_xcontact:
+    {
+      contact_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::XContact());
+      break;
+    }
+    default:
+    {
+      contact_model_ptr = Teuchos::rcp(new STR::MODELEVALUATOR::Contact());
+      break;
+    }
+  }
+  return contact_model_ptr;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

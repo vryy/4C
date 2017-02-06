@@ -16,23 +16,56 @@
 *----------------------------------------------------------------------*/
 
 #include "cut_integrationcellcreator.H"
-#include "cut_position2d.H"
+#include "cut_position.H"
 #include "cut_integrationcell.H"
 #include "cut_mesh.H"
 #include "cut_boundarycell.H"
+#include "cut_side.H"
+#include "cut_options.H"
 
+#include "cut_pointgraph_simple.H"
 
-bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, Element * element, const plain_volumecell_set & cells )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, Element * element,
+    const plain_volumecell_set & cells )
 {
   IntegrationCellCreator creator;
 
   for ( plain_volumecell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
   {
     VolumeCell * cell = *i;
-    bool found = ( creator.CreateTet4Cell( mesh, cell, cell->Facets() ) or
-                   creator.CreateHex8Cell( mesh, cell, cell->Facets() ) or
-                   creator.CreateWedge6Cell( mesh, cell, cell->Facets() ) or
-                   creator.CreateSpecialCases( mesh, cell, cell->Facets() ) );
+    bool found = false;
+    switch ( element->Dim() )
+    {
+      case 1:
+        found = ( creator.CreateLine2Cell( mesh, cell, cell->Facets() )   or
+                  creator.CreatePoint1Cell( mesh, cell, cell->Facets() ) );
+        if ( not found )
+          dserror( "No 1-D cell could be generated! Seems impossible to happen in 1-D! "
+              "-- hiermeier 01/17" );
+        break;
+      case 2:
+      {
+        found = ( creator.Create2DCell<DRT::Element::tri3>( mesh, cell, cell->Facets() )   or
+                  creator.Create2DCell<DRT::Element::quad4>( mesh, cell, cell->Facets() ) );
+        if ( not found )
+          dserror( "No 2-D cell could be generated and tessellation is currently "
+              "unsupported! Thus the given cut case is not yet supported! -- hiermeier 01/17" );
+        break;
+      }
+      case 3:
+      {
+        found = ( creator.CreateTet4Cell( mesh, cell, cell->Facets() )   or
+                  creator.CreateHex8Cell( mesh, cell, cell->Facets() )   or
+                  creator.CreateWedge6Cell( mesh, cell, cell->Facets() ) or
+                  creator.CreateSpecialCases( mesh, cell, cell->Facets() ) );
+        break;
+      }
+      default:
+        dserror( "Wrong element dimension! ( element dim = %d )", element->Dim() );
+        exit( EXIT_FAILURE );
+    }
 
     // pyramids are not save right now.
     // Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, creator ) );
@@ -40,16 +73,20 @@ bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, Element * eleme
 
     if ( not found )
     {
-      return false; // return false in case that not for all volumecells simple-shaped integration cells could be created
+      /* return false in case that not for all volumecells simple-shaped integration
+       * cells could be created */
+      return false;
     }
   }
   creator.Execute( mesh );
   return true;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::IntegrationCellCreator::CreateCell( Mesh & mesh,
-                                                   DRT::Element::DiscretizationType shape,
-                                                   VolumeCell * cell )
+    DRT::Element::DiscretizationType shape,
+    VolumeCell * cell )
 {
   IntegrationCellCreator creator;
 
@@ -69,71 +106,245 @@ bool GEO::CUT::IntegrationCellCreator::CreateCell( Mesh & mesh,
     //success = creator.CreatePyramid5Cell( mesh, cell, cell->Facets() );
     success = false;
     break;
+  case DRT::Element::line2:
+    success = creator.CreateLine2Cell( mesh, cell, cell->Facets() );
+    break;
+  case DRT::Element::tri3:
+    success = creator.Create2DCell<DRT::Element::tri3>( mesh, cell, cell->Facets() );
+    break;
+  case DRT::Element::quad4:
+    success = creator.Create2DCell<DRT::Element::quad4>( mesh, cell, cell->Facets() );
+    break;
   default:
-    throw std::runtime_error( "unsupported element shape" );
+    dserror( "unsupported element shape ( shape = %s )",
+        DRT::DistypeToString( shape ).c_str() );
+    exit(EXIT_FAILURE);
   }
+  // if the create process was successful, we can finally create the integration cell
   if ( success )
   {
     creator.Execute( mesh );
   }
+
   return success;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::IntegrationCellCreator::Execute( Mesh & mesh )
 {
-  for ( std::map<VolumeCell*, volume>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  for ( std::map<VolumeCell*, volume>::iterator it=cells_.begin();
+        it!=cells_.end(); ++it )
   {
-    VolumeCell * vc = i->first;
-    volume & cell = i->second;
+    VolumeCell * vc = it->first;
+    volume & cell = it->second;
     cell.Execute( mesh, vc );
   }
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::IntegrationCellCreator::CreatePoint1Cell( Mesh & mesh,
+    VolumeCell * cell, const plain_facet_set & facets )
 {
-  if ( facets.size()==4 ) // check if the volumecell has 4 facets and each facet is tri3
+  // check the facet number
+  if ( facets.size()!=1)
+    return false;
+
+  // check the actual facet type
+  Facet * f = *facets.begin();
+  if ( not f->Equals( DRT::Element::point1 ))
+    return false;
+
+  // add the side for the boundary integration cell creation
+  if ( f->OnCutSide() )
+    AddSide( cell, f, DRT::Element::point1, f->CornerPoints() );
+
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::IntegrationCellCreator::AddSide(
+    INPAR::CUT::BoundaryCellPosition bcell_position,
+    VolumeCell * vc,
+    Facet * facet,
+    DRT::Element::DiscretizationType shape,
+    const std::vector<Point*> & side )
+{
+  switch ( bcell_position )
   {
-    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    case INPAR::CUT::bcells_on_cut_side:
     {
-      Facet * f = *i;
-      if ( not f->Equals( DRT::Element::tri3 ) )
-      {
-        return false;
-      }
+      if ( facet->OnCutSide() )
+        AddSide( vc, facet, shape, side );
+      break;
     }
-
-    // So we have a tet4 here. Create it.
-
-    plain_facet_set::const_iterator i=facets.begin();
-    Facet * bot = *i;
-
-    const std::vector<Point*> & bot_points = bot->CornerPoints();
-    Point* top_point = NULL;
-
-    for ( ++i; i!=facets.end(); ++i )
+    case INPAR::CUT::bcells_on_all_sides:
     {
-      Facet * f = *i;
+      if ( vc->ParentElement()->IsCut() )
+        AddSide( vc, facet, shape, side );
+      break;
+    }
+    case INPAR::CUT::bcells_none:
+      /* do nothing */
+      break;
+    default:
+    {
+      dserror( "Unknown boundary creation position type! ( enum = %d )",
+          bcell_position );
+      exit( EXIT_FAILURE );
+    }
+  }
+}
 
-      const std::vector<Point*> & side_points = f->CornerPoints();
-      for ( std::vector<Point*>::const_iterator i=side_points.begin();
-            i!=side_points.end();
-            ++i )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::IntegrationCellCreator::CreateLine2Cell( Mesh & mesh,
+    VolumeCell * cell, const plain_facet_set & facets )
+{
+  // check the facet number
+  if ( facets.size()!=2)
+    return false;
+
+  std::vector<Point * > line_corner_points;
+  line_corner_points.reserve( 2 );
+
+  const enum INPAR::CUT::BoundaryCellPosition bcell_pos =
+      mesh.CreateOptions().GenBoundaryCellPosition();
+
+  for ( plain_facet_set::const_iterator cit = facets.begin(); cit != facets.end();
+        ++cit )
+  {
+    // check the actual facet type
+    Facet * f = *cit;
+    if ( not f->Equals( DRT::Element::point1 ) )
+      return false;
+
+    // add the side for the boundary integration cell creation
+    AddSide( bcell_pos, cell, f, DRT::Element::point1, f->CornerPoints() );
+
+    // collect the facet points
+    line_corner_points.push_back( *f->CornerPoints().begin() );
+  }
+
+  // check the two points for uniqueness
+  if ( line_corner_points.size() == 2 )
+  {
+    if ( line_corner_points[ 0 ] == line_corner_points[ 1 ] )
+      dserror( "The line is not well defined! ( same corner points )" );
+  }
+  else
+    dserror("There are more than two line corner points. You shouldn't "
+        "reach this point!");
+
+  // add the actual cell
+  Add( cell, DRT::Element::line2, line_corner_points );
+
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+#if __cplusplus < 201103L
+template < DRT::Element::DiscretizationType celltype >
+bool GEO::CUT::IntegrationCellCreator::Create2DCell( Mesh & mesh,
+    VolumeCell * cell, const plain_facet_set & facets )
+{
+  const DRT::Element::DiscretizationType facetype = DRT::UTILS::DisTypeToFaceShapeType<celltype>::shape;
+  const unsigned numfaces = DRT::UTILS::DisTypeToNumFaces<celltype>::numFaces;
+#else
+template < DRT::Element::DiscretizationType celltype,
+           DRT::Element::DiscretizationType facetype,
+           unsigned numfaces >
+bool GEO::CUT::IntegrationCellCreator::Create2DCell( Mesh & mesh,
+    VolumeCell * cell, const plain_facet_set & facets )
+{
+#endif
+  // check the facet number
+  if ( facets.size() != numfaces )
+    return false;
+
+  const enum INPAR::CUT::BoundaryCellPosition bcell_pos =
+      mesh.CreateOptions().GenBoundaryCellPosition();
+
+  IMPL::SimplePointGraph_2D pg = IMPL::SimplePointGraph_2D();
+  pg.FindLineFacetCycles( facets, cell->ParentElement() );
+
+  for ( IMPL::PointGraph::facet_iterator it = pg.fbegin();
+        it != pg.fend(); ++it )
+  {
+    Cycle & line_cycle = *it;
+
+    if ( line_cycle().size() != 2 )
+      dserror( "The line cycle has the wrong length!" );
+
+    // find corresponding facet
+    Facet * f = FindFacet( facets, line_cycle() );
+    if ( not f )
+      dserror( "Could not find the corresponding line facet!" );
+
+    AddSide( bcell_pos, cell, f, facetype, line_cycle() );
+  }
+
+  if ( pg.NumSurfaces() != 1 )
+    dserror( "There shouldn't be more than one surface cycle!" );
+
+  const Cycle & vol_cycle = ( *pg.sbegin() );
+  Add( cell, celltype, vol_cycle() );
+
+  return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell * cell,
+    const plain_facet_set & facets )
+{
+  // check if the volumecell has 4 facets and each facet is tri3
+  if ( facets.size()!=4 )
+    return false;
+
+  for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( not f->Equals( DRT::Element::tri3 ) )
+    {
+      return false;
+    }
+  }
+
+  // So we have a tet4 here. Create it.
+  plain_facet_set::const_iterator cit_facet=facets.begin();
+  Facet * bot = *cit_facet;
+
+  const std::vector<Point*> & bot_points = bot->CornerPoints();
+  Point* top_point = NULL;
+
+  for ( ++cit_facet; cit_facet!=facets.end(); ++cit_facet )
+  {
+    Facet * f = *cit_facet;
+
+    const std::vector<Point*> & side_points = f->CornerPoints();
+    for ( std::vector<Point*>::const_iterator cit_sp=side_points.begin();
+          cit_sp!=side_points.end();
+          ++cit_sp )
+    {
+      Point * p = *cit_sp;
+      if ( std::find( bot_points.begin(), bot_points.end(), p )==bot_points.end() )
       {
-        Point * p = *i;
-        if ( std::find( bot_points.begin(), bot_points.end(), p )==bot_points.end() )
+        if ( top_point==NULL )
         {
-          if ( top_point==NULL )
-          {
-            top_point = p;
-          }
-          else if ( top_point!=p )
-          {
-            //throw std::runtime_error( "illegal tet4 cell" );
-            return false;
-          }
+          top_point = p;
+        }
+        else if ( top_point!=p )
+        {
+          dserror( "Illegal tet4 cell. We found a side point of TET4 which "
+              "belongs neither to the bottom facet nor is it the top node!" );
         }
       }
     }
+  }
 
 //     for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
 //     {
@@ -141,75 +352,79 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
 //       f->NewTri3Cell( mesh );
 //     }
 
-    LINALG::Matrix<3,3> bot_xyze;
-    LINALG::Matrix<3,1> top_xyze;
+  LINALG::Matrix<3,3> bot_xyze;
+  LINALG::Matrix<3,1> top_xyz;
 
-    bot->CornerCoordinates( bot_xyze.A() );
-    top_point->Coordinates( top_xyze.A() );
+  bot->CornerCoordinates( bot_xyze.A() );
+  top_point->Coordinates( top_xyz.A() );
 
-    Position2d<DRT::Element::tri3> bot_distance( bot_xyze, top_xyze );
-    bot_distance.Compute();
+  Teuchos::RCP<GEO::CUT::Position> bot_distance =
+      GEO::CUT::Position::Create( bot_xyze, top_xyz, DRT::Element::tri3 );
 
-    if ( bot_distance.Distance() >= 0 )
+  bot_distance->Compute( true );
+  const bool invalid_pos = ( bot_distance->Status() < Position::position_distance_valid );
+
+  if ( invalid_pos or bot_distance->Distance() >= 0 )
+  {
+    std::vector<Point*> points;
+    points.reserve( 4 );
+    //std::copy( bot_points.begin(), bot_points.end(), std::back_inserter( points ) );
+    points.assign( bot_points.begin(), bot_points.end() );
+    points.push_back( top_point );
+
+    for ( int i=0; i<4; ++i )
     {
-      std::vector<Point*> points;
-      points.reserve( 4 );
-      //std::copy( bot_points.begin(), bot_points.end(), std::back_inserter( points ) );
-      points.assign( bot_points.begin(), bot_points.end() );
-      points.push_back( top_point );
-
-      for ( int i=0; i<4; ++i )
+      std::vector<Point*> side( 3 );
+      for ( int j=0; j<3; ++j )
       {
-        std::vector<Point*> side( 3 );
-        for ( int j=0; j<3; ++j )
-        {
-          side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
-        }
-        Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
-          //Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
-          AddSide( cell, f, DRT::Element::tri3, side );
+        side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
       }
-
-      //cell->NewTet4Cell( mesh, points );
-      if ( bot_distance.Distance() > 0 )
-        Add( cell, DRT::Element::tet4, points );
-      return true;
+      Facet * f = FindFacet( facets, side );
+      if ( f->OnCutSide() )
+        AddSide( cell, f, DRT::Element::tri3, side );
     }
-    else if ( bot_distance.Distance() < 0 )
-    {
-      std::vector<Point*> points;
-      points.reserve( 4 );
-      //std::copy( bot_points.rbegin(), bot_points.rend(), std::back_inserter( points ) );
-      points.assign( bot_points.rbegin(), bot_points.rend() );
-      points.push_back( top_point );
 
-      for ( int i=0; i<4; ++i )
-      {
-        std::vector<Point*> side( 3 );
-        for ( int j=0; j<3; ++j )
-        {
-          side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
-        }
-        Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
-          //Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
-          AddSide( cell, f, DRT::Element::tri3, side );
-      }
-
-      //cell->NewTet4Cell( mesh, points );
+    /* We create no TET4 cell, if the position calculation failed or the cell
+     * is planar. */
+    if ( not invalid_pos and bot_distance->Distance() > 0 )
       Add( cell, DRT::Element::tet4, points );
-      return true;
-    }
-    else
-    {
-      throw std::runtime_error( "planar cell" );
-    }
+
+    return true;
   }
-  return false;
+  else if ( bot_distance->Distance() < 0 )
+  {
+    std::vector<Point*> points;
+    points.reserve( 4 );
+    //std::copy( bot_points.rbegin(), bot_points.rend(), std::back_inserter( points ) );
+    points.assign( bot_points.rbegin(), bot_points.rend() );
+    points.push_back( top_point );
+
+    for ( int i=0; i<4; ++i )
+    {
+      std::vector<Point*> side( 3 );
+      for ( int j=0; j<3; ++j )
+      {
+        side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
+      }
+      Facet * f = FindFacet( facets, side );
+      if ( f->OnCutSide() )
+        AddSide( cell, f, DRT::Element::tri3, side );
+    }
+
+    Add( cell, DRT::Element::tet4, points );
+    return true;
+  }
+  else
+  {
+    dserror("This cannot happen!");
+    exit( EXIT_FAILURE );
+  }
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell * cell,
+    const plain_facet_set & facets )
 {
   if ( facets.size()==6 )
   {
@@ -241,9 +456,9 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
         break;
       }
     }
-    if ( top==NULL )
+    if ( top == NULL )
     {
-      throw std::runtime_error( "illegal hex8 cell" );
+      run_time_error( "illegal hex8 cell" );
     }
 
     const std::vector<Point*> & bot_points = bot->CornerPoints();
@@ -272,7 +487,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
             ++i;
             if ( i==side_points.end() )
             {
-              throw std::runtime_error( "illegal hex8 cell" );
+              run_time_error( "illegal hex8 cell" );
             }
 
             std::vector<Point*>::iterator pointpos2 = std::find( points.begin(), end, *i );
@@ -282,7 +497,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
               pointpos2 = std::find( points.begin(), end, side_points[3] );
               if ( pointpos2==end )
               {
-                throw std::runtime_error( "illegal hex8 cell" );
+                run_time_error( "illegal hex8 cell" );
               }
               std::swap( pointpos1, pointpos2 );
             }
@@ -294,7 +509,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
             if ( std::find( top_points.begin(), top_points.end(), top_point1 )==top_points.end() or
                  std::find( top_points.begin(), top_points.end(), top_point2 )==top_points.end() )
             {
-              throw std::runtime_error( "illegal hex8 cell" );
+              run_time_error( "illegal hex8 cell" );
             }
 
             pos = ( pointpos1 - points.begin() ) + 4;
@@ -304,7 +519,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
             }
             else if ( points[pos] != top_point1 )
             {
-              throw std::runtime_error( "illegal hex8 cell" );
+              run_time_error( "illegal hex8 cell" );
             }
 
             pos = ( pointpos2 - points.begin() ) + 4;
@@ -314,7 +529,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
             }
             else if ( points[pos] != top_point2 )
             {
-              throw std::runtime_error( "illegal hex8 cell" );
+              run_time_error( "illegal hex8 cell" );
             }
 
             break;
@@ -336,15 +551,22 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
     int distance_counter = 0;
     for ( int i=0; i<4; ++i )
     {
-      Position2d<DRT::Element::quad4> bot_distance( bot_xyze, LINALG::Matrix<3,1>( top_xyze.A()+3*i, true ) );
+      LINALG::Matrix<3,1> top_xyz( & top_xyze( 0, i ), true );
+      Teuchos::RCP<GEO::CUT::Position> bot_distance =
+          GEO::CUT::Position::Create( bot_xyze, top_xyz, DRT::Element::quad4 );
 
-      bot_distance.Compute();
+      bot_distance->Compute( true );
 
-      if ( bot_distance.Distance() > 0 )
+      // If the distance calculation is not possible, we return false.
+      const bool invalid_pos = ( bot_distance->Status() < Position::position_distance_valid );
+      if ( invalid_pos )
+        return false;
+
+      if ( bot_distance->Distance() > 0 )
       {
         distance_counter += 1;
       }
-      if ( bot_distance.Distance() < 0 )
+      if ( bot_distance->Distance() < 0 )
       {
         distance_counter -= 1;
       }
@@ -371,11 +593,9 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
-      //cell->NewHex8Cell( mesh, rpoints );
       Add( cell, DRT::Element::hex8, rpoints );
       return true;
     }
@@ -390,11 +610,9 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
-      //cell->NewHex8Cell( mesh, points );
       Add( cell, DRT::Element::hex8, points );
       return true;
     }
@@ -406,7 +624,10 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
   return false;
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh,
+    VolumeCell * cell, const plain_facet_set & facets )
 {
   if ( facets.size()==5 )
   {
@@ -462,7 +683,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
           ++i;
           if ( i==side_points.end() )
           {
-            throw std::runtime_error( "illegal wedge6 cell" );
+            run_time_error( "illegal wedge6 cell" );
           }
 
           std::vector<Point*>::iterator pointpos2 = std::find( points.begin(), end, *i );
@@ -472,7 +693,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
             pointpos2 = std::find( points.begin(), end, side_points[3] );
             if ( pointpos2==end )
             {
-              throw std::runtime_error( "illegal wedge6 cell" );
+              run_time_error( "illegal wedge6 cell" );
             }
             std::swap( pointpos1, pointpos2 );
           }
@@ -484,7 +705,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
           if ( std::find( top_points.begin(), top_points.end(), top_point1 )==top_points.end() or
                std::find( top_points.begin(), top_points.end(), top_point2 )==top_points.end() )
           {
-            throw std::runtime_error( "illegal wedge6 cell" );
+            run_time_error( "illegal wedge6 cell" );
           }
 
           pos = ( pointpos1 - points.begin() ) + 3;
@@ -494,7 +715,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
           }
           else if ( points[pos] != top_point1 )
           {
-            throw std::runtime_error( "illegal wedge6 cell" );
+            run_time_error( "illegal wedge6 cell" );
           }
 
           pos = ( pointpos2 - points.begin() ) + 3;
@@ -504,7 +725,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
           }
           else if ( points[pos] != top_point2 )
           {
-            throw std::runtime_error( "illegal wedge6 cell" );
+            run_time_error( "illegal wedge6 cell" );
           }
 
           break;
@@ -525,15 +746,22 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
     int distance_counter = 0;
     for ( int i=0; i<3; ++i )
     {
-      Position2d<DRT::Element::tri3> bot_distance( bot_xyze, LINALG::Matrix<3,1>( top_xyze.A()+3*i, true ) );
+      LINALG::Matrix<3,1> top_xyz( & top_xyze( 0, i ), true );
+      Teuchos::RCP<GEO::CUT::Position> bot_distance = GEO::CUT::Position::Create( bot_xyze,
+                 top_xyz, DRT::Element::tri3 );
 
-      bot_distance.Compute();
+      bot_distance->Compute( true );
 
-      if ( bot_distance.Distance() > 0 )
+      // If the distance calculation is not possible, we return false.
+      const bool invalid_pos = ( bot_distance->Status() < Position::position_distance_valid );
+      if ( invalid_pos )
+        return false;
+
+      if ( bot_distance->Distance() > 0 )
       {
         distance_counter += 1;
       }
-      if ( bot_distance.Distance() < 0 )
+      if ( bot_distance->Distance() < 0 )
       {
         distance_counter -= 1;
       }
@@ -573,7 +801,6 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::tri3, side );
       }
       for ( int i=0; i<3; ++i )
@@ -585,11 +812,9 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
-      //cell->NewWedge6Cell( mesh, rpoints );
       Add( cell, DRT::Element::wedge6, rpoints );
       return true;
     }
@@ -604,7 +829,6 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::tri3, side );
       }
       for ( int i=0; i<3; ++i )
@@ -616,11 +840,9 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
-      //cell->NewWedge6Cell( mesh, points );
       Add( cell, DRT::Element::wedge6, points );
       return true;
     }
@@ -632,7 +854,10 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
   return false;
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh,
+    VolumeCell * cell, const plain_facet_set & facets )
 {
   if ( facets.size()==5 )
   {
@@ -710,10 +935,14 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
     bot->CornerCoordinates( bot_xyze.A() );
     top_point->Coordinates( top_xyze.A() );
 
-    Position2d<DRT::Element::quad4> bot_distance( bot_xyze, top_xyze );
-    bot_distance.Compute();
+    Teuchos::RCP<Position> bot_distance =
+           GEO::CUT::Position::Create( bot_xyze, top_xyze, DRT::Element::quad4 );
+    bot_distance->Compute( true );
 
-    if ( bot_distance.Distance() >= 0 )
+    // check the status of the position computation
+    const bool invalid_pos = ( bot_distance->Status() < Position::position_distance_valid );
+
+    if ( invalid_pos or bot_distance->Distance() >= 0 )
     {
       std::vector<Point*> points;
       points.reserve( 5 );
@@ -730,7 +959,6 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::tri3, side );
       }
       for ( int i=0; i<1; ++i )
@@ -742,16 +970,17 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
-      //cell->NewPyramid5Cell( mesh, points );
-      if ( bot_distance.Distance() > 0 )
+      /* We create no PYRAMID5 cell, if the position calculation failed or the cell
+       * is planar. */
+      if ( ( not invalid_pos ) and
+           ( bot_distance->Distance() > 0 ) )
         Add( cell, DRT::Element::pyramid5, points );
       return true;
     }
-    else if ( bot_distance.Distance() < 0 )
+    else if ( bot_distance->Distance() < 0 )
     {
       std::vector<Point*> points;
       points.reserve( 5 );
@@ -768,7 +997,6 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::tri3, side );
       }
       for ( int i=0; i<1; ++i )
@@ -780,7 +1008,6 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
-          //Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
@@ -790,13 +1017,16 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
     }
     else
     {
-      throw std::runtime_error( "planar cell" );
+      dserror( "This is not possible!" );
     }
   }
   return false;
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreateSpecialCases( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::IntegrationCellCreator::CreateSpecialCases( Mesh & mesh,
+    VolumeCell * cell, const plain_facet_set & facets )
 {
   for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
@@ -926,12 +1156,14 @@ bool GEO::CUT::IntegrationCellCreator::CreateSpecialCases( Mesh & mesh, VolumeCe
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
-                                                          Element * element,
-                                                          VolumeCell * cell,
-                                                          const plain_facet_set & facets,
-                                                          int axis,
-                                                          double r )
+    Element * element,
+    VolumeCell * cell,
+    const plain_facet_set & facets,
+    int axis,
+    double r )
 {
 //  Point::PointPosition position = cell->Position();
 
@@ -992,9 +1224,10 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
     element->GlobalCoordinates( rst, xyz );
     projected_points.push_back( mesh.NewPoint( xyz.A(), NULL, NULL, 0.0 ) );
     // change Benedikt: do not set the position for additionally created points
-    // REMARK:
-    // the propagation of the inside/outside position to facets and volume cells can destroy on-cut-surface points!
-    // At the moment we do not need the inside/outside information of newly created points for tetrahedralization
+    /* REMARK:
+     * the propagation of the inside/outside position to facets and volume cells
+     * can destroy on-cut-surface points! At the moment we do not need the
+     * inside/outside information of newly created points for tetrahedralization */
 //    projected_points.back()->Position( position );
   }
 
@@ -1038,7 +1271,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
         std::vector<Point*>::iterator pos = std::find( inner_points.begin(), inner_points.end(), p );
         if ( pos==inner_points.end() )
         {
-          throw std::runtime_error( "inner point missing" );
+          run_time_error( "inner point missing" );
         }
 
         points.push_back( projected_points[pos - inner_points.begin()] );
@@ -1055,7 +1288,8 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
       }
 
       DRT::UTILS::shape_function_2D_deriv1( deriv, 0., 0., DRT::Element::tri3 );
-      DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>( xyze, deriv, metrictensor, drs, &normal );
+      DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>( xyze,
+          deriv, metrictensor, drs, &normal );
 
       if ( normal( axis ) < 0 )
       {
@@ -1107,7 +1341,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
         std::vector<Point*>::iterator pos = std::find( inner_points.begin(), inner_points.end(), p );
         if ( pos==inner_points.end() )
         {
-          throw std::runtime_error( "inner point missing" );
+          run_time_error( "inner point missing" );
         }
 
         points.push_back( projected_points[pos - inner_points.begin()] );
@@ -1124,7 +1358,8 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
       }
 
       DRT::UTILS::shape_function_2D_deriv1( deriv, 0., 0., DRT::Element::quad4 );
-      DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>( xyze, deriv, metrictensor, drs, &normal );
+      DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>( xyze, deriv,
+          metrictensor, drs, &normal );
 
       if ( normal( axis ) < 0 )
       {
@@ -1185,3 +1420,5 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
   return true;
 }
 
+template bool GEO::CUT::IntegrationCellCreator::Create2DCell< DRT::Element::tri3 >( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets );
+template bool GEO::CUT::IntegrationCellCreator::Create2DCell< DRT::Element::quad4 >( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets );

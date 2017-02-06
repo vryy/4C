@@ -298,9 +298,9 @@ public:
   //! calculation of relative error with reference to analytical solution
   virtual void EvaluateErrorComparedToAnalyticalSol();
 
-    //! Calculate the reconstructed nodal gradient of phi
-    Teuchos::RCP<Epetra_MultiVector>  ReconstructGradientAtNodes(
-        const Teuchos::RCP<const Epetra_Vector> phi);
+  //! Calculate the reconstructed nodal gradient of phi
+  Teuchos::RCP<Epetra_MultiVector>  ReconstructGradientAtNodes(
+      const Teuchos::RCP<const Epetra_Vector> phi);
 
   //! finite difference check for scalar transport system matrix
   virtual void FDCheck();

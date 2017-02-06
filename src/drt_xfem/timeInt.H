@@ -847,11 +847,12 @@ protected:
 
     LINALG::Matrix<nsd,numnode> xyz(xyz_);
 
-    GEO::CUT::Position<DISTYPE> pos(xyz,x);
-    pos.Compute();
-    xi = pos.LocalCoordinates(); // local coordinates
+    Teuchos::RCP<GEO::CUT::Position> pos =
+        GEO::CUT::PositionFactory::BuildPosition<3,DISTYPE>(xyz,x);
+    pos->Compute();
+    pos->LocalCoordinates(xi); // local coordinates
 
-    pointInCell = pos.WithinLimitsTol(newton_tol_); // check if point is in element
+    pointInCell = pos->WithinLimitsTol(newton_tol_); // check if point is in element
   };
 }; // class TimeInt
 

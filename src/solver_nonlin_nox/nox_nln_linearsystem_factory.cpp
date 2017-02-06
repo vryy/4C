@@ -33,6 +33,7 @@
 #include "../drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.H"
 #include "../drt_constraint/nox_nln_lagpenconstraint_linearsystem.H"
 #include "../drt_structure_new/nox_nln_str_linearsystem.H"
+#include "../drt_scatra/nox_nln_scatra_linearsystem.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -71,9 +72,9 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::
   Teuchos::ParameterList& lsParams    = params.sublist("Direction",true).
       sublist("Newton",true).sublist("Linear Solver",true);
 
-  // pure structural case
   switch (linsystype)
   {
+    // pure structural case
     case NOX::NLN::LinSystem::linear_system_structure:
     {
       linSys = Teuchos::rcp(new NOX::NLN::STR::LinearSystem(
@@ -114,6 +115,14 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::
           printParams,lsParams,linSolvers,iReq,iJac,iConstr,jac,iPrec,
           iConstrPrec,precMat,*cloneVector,scalingObject));
 
+      break;
+    }
+    // scalar transport case
+    case NOX::NLN::LinSystem::linear_system_scatra:
+    {
+      linSys = Teuchos::rcp(new NOX::NLN::SCATRA::LinearSystem(
+          printParams,lsParams,linSolvers,iReq,iJac,jac,iPrec,precMat,
+          *cloneVector,scalingObject));
       break;
     }
 

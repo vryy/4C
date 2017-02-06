@@ -301,13 +301,19 @@ void SlaveElementRepresentation<distype,slave_distype,slave_numdof>::Evaluate( L
   }
 
   // find element local position of gauss point
-  GEO::CUT::Position<slave_distype> pos( slave_xyze_, xslave );
-  pos.Compute();
+  Teuchos::RCP<GEO::CUT::Position> pos = GEO::CUT::PositionFactory::BuildPosition<nsd_,slave_distype>(slave_xyze_,xslave);
+  pos->Compute();
 
-  const LINALG::Matrix<nsd_,1> rst_slave = pos.LocalCoordinates();
+  if (slave_nsd_==nsd_)
+  {
+    LINALG::Matrix<slave_nsd_,1> rst_slave;
+    pos->LocalCoordinates(rst_slave);
+    DRT::UTILS::shape_function_3D( slave_funct_, rst_slave( 0 ), rst_slave( 1 ), rst_slave( 2 ), slave_distype );
+    DRT::UTILS::shape_function_3D_deriv1( slave_deriv_, rst_slave( 0 ), rst_slave( 1 ), rst_slave( 2 ), slave_distype );
+  }
+  else
+    dserror("Unsupported dimension clash!");
 
-  DRT::UTILS::shape_function_3D( slave_funct_, rst_slave( 0 ), rst_slave( 1 ), rst_slave( 2 ), slave_distype );
-  DRT::UTILS::shape_function_3D_deriv1( slave_deriv_, rst_slave( 0 ), rst_slave( 1 ), rst_slave( 2 ), slave_distype );
 
   LINALG::Matrix<nsd_,nsd_> slave_xjm(true);
   LINALG::Matrix<nsd_,nsd_> slave_xji(true);

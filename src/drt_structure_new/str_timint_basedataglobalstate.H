@@ -44,7 +44,7 @@ namespace Epetra {
 } // namespace Epetra
 } // namespace NOX
 namespace DRT {
-  class Discretization;
+  class DiscretizationInterface;
 namespace ELEMENTS {
   class Beam3Base;
 } // namespace ELEMENTS
@@ -77,7 +77,7 @@ namespace TIMINT {
     virtual ~BaseDataGlobalState() {};
 
     /// initialize class variables
-    void Init(const Teuchos::RCP<DRT::Discretization> discret,
+    void Init(const Teuchos::RCP<DRT::DiscretizationInterface> discret,
         const Teuchos::ParameterList& sdynparams,
         const Teuchos::RCP<const BaseDataSDyn> datasdyn);
 
@@ -185,13 +185,13 @@ namespace TIMINT {
     inline void CheckInitSetup() const
     {
       if (!IsInit() or !IsSetup())
-        dserror("Call Init() and Setup() first!");
+        dserror("Call STR::BaseDataGlobalState::Init() and Setup() first!");
     }
 
     inline void CheckInit() const
     {
       if (!IsInit())
-        dserror("Init() has not been called, yet!");
+        dserror("STR::BaseDataGlobalState::Init() has not been called, yet!");
     }
 
   public:
@@ -200,29 +200,29 @@ namespace TIMINT {
     ///@{
 
     /// attached discretisation
-    Teuchos::RCP<const DRT::Discretization> GetDiscret() const
+    Teuchos::RCP<const DRT::DiscretizationInterface> GetDiscret() const
     {
-      CheckInitSetup();
+      CheckInit();
       return discret_;
     };
 
     /// communicator
     Teuchos::RCP<const Epetra_Comm> GetCommPtr() const
     {
-      CheckInitSetup();
+      CheckInit();
       return comm_;
     };
 
     const Epetra_Comm& GetComm() const
     {
-      CheckInitSetup();
+      CheckInit();
       return *comm_;
     };
 
     /// ID of actual processor in parallel
     const int& GetMyRank() const
     {
-      CheckInitSetup();
+      CheckInit();
       return myRank_;
     };
 
@@ -232,14 +232,14 @@ namespace TIMINT {
     ///@{
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const;
 
     /// dof map of vector of unknowns
     /// method for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const;
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const;
 
     /// view of dof map of vector of unknowns
-    const Epetra_Map* DofRowMapView() const;
+    virtual const Epetra_Map* DofRowMapView() const;
 
     /// view of dof map of vector of additive unknowns
     /* in case we have non-additve DoFs in the structure discretization
@@ -249,6 +249,7 @@ namespace TIMINT {
     /// view of dof map of vector of rotation vector unknowns
     /* (e.g. rotation vector DoFs of beams), this method is overloaded */
     const Epetra_Map* RotVecDofRowMapView() const;
+
     ///@}
 
     /// @name Get general control parameters (read only access)
@@ -257,35 +258,35 @@ namespace TIMINT {
     /// Return target time \f$t_{n+1}\f$
     const double& GetTimeNp() const
     {
-      CheckInitSetup();
+      CheckInit();
       return timenp_;
     };
 
     /// Return time \f$t_{n}\f$ of last converged step
     const double& GetTimeN() const
     {
-      CheckInitSetup();
+      CheckInit();
       return (*timen_)[0];
     };
 
     /// Return time vector \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
     Teuchos::RCP<const ::TIMINT::TimIntMStep<double> > GetMultiTime() const
     {
-      CheckInitSetup();
+      CheckInit();
       return timen_;
     };
 
     /// Return time step index for \f$t_{n+1}\f$
     const int& GetStepNp() const
     {
-      CheckInitSetup();
+      CheckInit();
       return stepnp_;
     };
 
     /// Return time step index for \f$t_{n}\f$
     const int& GetStepN() const
     {
-      CheckInitSetup();
+      CheckInit();
       return stepn_;
     };
 
@@ -306,7 +307,7 @@ namespace TIMINT {
     /// Return time step size \f$\Delta t\f$
     Teuchos::RCP<const ::TIMINT::TimIntMStep<double> > GetDeltaTime() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dt_;
     };
 
@@ -472,9 +473,9 @@ namespace TIMINT {
     /// @name Get general purpose algorithm members (read only access)
     ///@{
     /// attached discretization
-    Teuchos::RCP<DRT::Discretization> GetMutableDiscret()
+    Teuchos::RCP<DRT::DiscretizationInterface> GetMutableDiscret()
     {
-      CheckInitSetup();
+      CheckInit();
       return discret_;
     };
 
@@ -547,35 +548,35 @@ namespace TIMINT {
     /// Return target time \f$t_{n+1}\f$
     double& GetMutableTimeNp()
     {
-      CheckInitSetup();
+      CheckInit();
       return timenp_;
     };
 
     /// Return time \f$t_{n}\f$ of last converged step
     double& GetMutableTimeN()
     {
-      CheckInitSetup();
+      CheckInit();
       return (*timen_)[0];
     };
 
     /// Return time \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
     Teuchos::RCP< ::TIMINT::TimIntMStep<double> >& GetMutableMultiTime()
     {
-      CheckInitSetup();
+      CheckInit();
       return timen_;
     };
 
     /// Return time step index for \f$t_{n+1}\f$
     int& GetMutableStepNp()
     {
-      CheckInitSetup();
+      CheckInit();
       return stepnp_;
     };
 
     /// Return time step index for \f$t_{n}\f$
     int& GetMutableStepN()
     {
-      CheckInitSetup();
+      CheckInit();
       return stepn_;
     };
 
@@ -596,7 +597,7 @@ namespace TIMINT {
     /// Return time step size \f$\Delta t\f$
     Teuchos::RCP< ::TIMINT::TimIntMStep<double> >& GetMutableDeltaTime()
     {
-      CheckInitSetup();
+      CheckInit();
       return dt_;
     };
 
@@ -633,7 +634,7 @@ namespace TIMINT {
     }
 
     /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > GetMutableMultiDis()
+    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> >& GetMutableMultiDis()
     {
       CheckInitSetup();
       return dis_;
@@ -654,7 +655,7 @@ namespace TIMINT {
     }
 
     /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > GetMutableMultiVel()
+    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> >& GetMutableMultiVel()
     {
       CheckInitSetup();
       return vel_;
@@ -675,7 +676,7 @@ namespace TIMINT {
     }
 
     /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > GetMutableMultiAcc()
+    Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> >& GetMutableMultiAcc()
     {
       CheckInitSetup();
       return acc_;
@@ -766,19 +767,26 @@ namespace TIMINT {
     }
 
     /// mass matrix (constant)
-    Teuchos::RCP<LINALG::SparseOperator> GetMutableMassMatrix()
+    Teuchos::RCP<LINALG::SparseOperator>& GetMutableMassMatrix()
     {
       CheckInitSetup();
       return mass_;
     }
 
     /// damping matrix
-    Teuchos::RCP<LINALG::SparseOperator> GetMutableDampMatrix()
+    Teuchos::RCP<LINALG::SparseOperator>& GetMutableDampMatrix()
     {
       CheckInitSetup();
       return damp_;
     }
     ///@}
+
+  protected:
+    /// mutable access to the global problem map
+    Teuchos::RCP<Epetra_Map>& GlobalProblemMapPtr()
+    {
+      return gproblem_map_ptr_;
+    }
 
   protected:
     /// @name variables for internal use only
@@ -789,7 +797,7 @@ namespace TIMINT {
     /// flag indicating if Setup() has been called
     bool issetup_;
 
-    // read only access
+    /// read only access
     Teuchos::RCP<const BaseDataSDyn> datasdyn_;
     ///@}
 
@@ -798,7 +806,7 @@ namespace TIMINT {
     ///@{
 
     /// attached discretisation
-    Teuchos::RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<DRT::DiscretizationInterface> discret_;
 
     /// communicator
     Teuchos::RCP<const Epetra_Comm> comm_;

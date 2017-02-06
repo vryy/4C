@@ -19,7 +19,8 @@
 #include "cut_triangulateFacet.H"
 #include "cut_kernel.H"
 #include "cut_side.H"
-#include "cut_position2d.H"
+#include "cut_boundingbox.H"
+#include "cut_position.H"
 #include <math.h>
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -584,19 +585,19 @@ void GEO::CUT::TriangulateFacet::EarClipping( std::vector<int> ptConcavity,   //
     }
     if ( split_size == split_.size() )
     {
-      BoundingBox bb;
+      Teuchos::RCP<BoundingBox> bb = Teuchos::rcp( BoundingBox::Create() );
       std::cout<<"The facet points are as follows\n";
       for( std::vector<Point*>::iterator it = ptlist_.begin(); it != ptlist_.end(); it++ )
       {
         Point* pp = *it;
         const double * xp = pp->X();
-        bb.AddPoint( xp );
+        bb->AddPoint( xp );
         std::cout<<xp[0]<<" "<<xp[1]<<" "<<xp[2]<<"\n";
       }
       std::cout<<"Bounding box details:\n";
-      std::cout<<"dx = "<<fabs(bb.maxx()-bb.minx())<<"\n";
-      std::cout<<"dy = "<<fabs(bb.maxy()-bb.miny())<<"\n";
-      std::cout<<"dz = "<<fabs(bb.maxz()-bb.minz())<<"\n";
+      std::cout<<"dx = "<<fabs(bb->maxx()-bb->minx())<<"\n";
+      std::cout<<"dy = "<<fabs(bb->maxy()-bb->miny())<<"\n";
+      std::cout<<"dz = "<<fabs(bb->maxz()-bb->minz())<<"\n";
       dserror( "Ear clipping: no progress in the triangulation" );
 
     }
@@ -808,8 +809,9 @@ void GEO::CUT::TriangulateFacet::EarClippingWithHoles( Side * parentside )
       {
         int reflexmaincyclepointid = * i;
         LINALG::Matrix<3,1> reflexmaincyclepoint = localmaincyclepoints[reflexmaincyclepointid];
-        Position2d<DRT::Element::tri3> pos( triangle, reflexmaincyclepoint );
-        bool within = pos.IsGivenPointWithinSide();
+        Teuchos::RCP<Position> pos =
+            GEO::CUT::Position::Create( triangle, reflexmaincyclepoint, DRT::Element::tri3 );
+        bool within = pos->IsGivenPointWithinElement();
         if( within )
         {
           insidemaincyclepointids.push_back( reflexmaincyclepointid );

@@ -5,10 +5,12 @@
 \brief Input parameters for cut library
 
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
+
+\level 2
 */
 
 /*----------------------------------------------------------------------*/
@@ -51,6 +53,13 @@ namespace INPAR
   {
     NDS_Strategy_OneDofset_PerNodeAndPosition,  ///< suppress multiple dofset per node and allow just one dofset per node and per dofset position
     NDS_Strategy_full                           ///< full strategy based on found connections of volume-cells in support of the nodal shape function
+  };
+
+  enum BoundaryCellPosition
+  {
+    bcells_on_cut_side,    ///< create boundary cells only on the cut side of the volume cell ( default )
+    bcells_on_all_sides,   ///< create boundary cells on all sides of the volume cell
+    bcells_none            ///< create no boundary cells
   };
 
   /// set the cut parameters

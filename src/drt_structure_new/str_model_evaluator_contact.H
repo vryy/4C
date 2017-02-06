@@ -61,7 +61,7 @@ namespace MODELEVALUATOR {
     //! [derived]
     virtual bool EvaluateForceStiff();
 
-    //! derived
+    //! [derived]
     virtual bool AssembleForce(Epetra_Vector& f,
         const double & timefac_np) const;
 
@@ -99,7 +99,7 @@ namespace MODELEVALUATOR {
     //! [derived]
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
-    //! derived
+    //! [derived]
     virtual void ResetStepState();
 
     //! [derived]
@@ -117,20 +117,21 @@ namespace MODELEVALUATOR {
 
     //! @name Accessors
     //! @{
-
+    //! Returns a pointer to the underlying contact strategy object
     const Teuchos::RCP<CONTACT::CoAbstractStrategy>& StrategyPtr();
-    //! @}
-  protected:
+
     //! Returns the underlying contact strategy object
     CONTACT::CoAbstractStrategy& Strategy();
     const CONTACT::CoAbstractStrategy& Strategy() const;
+    //! @}
+  protected:
 
     STR::MODELEVALUATOR::ContactData& EvalContact();
 
+    virtual void CheckPseudo2D() const;
+
   private:
     void PostUpdateStepState();
-
-    void CheckPseudo2D() const;
 
     void PrintBanner() const;
 

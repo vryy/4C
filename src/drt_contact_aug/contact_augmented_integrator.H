@@ -125,8 +125,8 @@ namespace CONTACT
     void inline GP_Normal_DerivNormal(
         MORTAR::MortarElement& sele,
         MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector sval,
-        LINALG::SerialDenseMatrix sderiv,
+        LINALG::SerialDenseVector& sval,
+        LINALG::SerialDenseMatrix& sderiv,
         const std::vector<GEN::pairedvector<int,double> >& dsxigp,
         double* gpn,
         std::vector<GEN::pairedvector<int,double> >& dnmap_unit,

@@ -25,14 +25,16 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 
 
-namespace DRT
-{
+namespace DRT {
   class Discretization;
   class Element;
 }
 
-namespace XFEM
-{
+namespace LINALG {
+  class SerialDenseMatrix;
+}
+
+namespace XFEM {
   class ConditionManager;
 }
 
@@ -51,7 +53,92 @@ namespace GEO
   {
   public:
 
+    /*------------------------------------------------------------------------*/
+    /*! \brief Container class for the background mesh object
+     *
+     *  \author hiermeier \date 01/17 */
+    class BackMesh
+    {
+    public:
+      /// constructor
+      explicit BackMesh( const Teuchos::RCP<DRT::Discretization> & backdis,
+          GEO::CutWizard * wizard )
+          : wizard_( wizard ),
+            back_discret_( backdis ),
+            back_disp_col_( Teuchos::null ),
+            back_levelset_col_( Teuchos::null )
+      {
+        if( backdis.is_null() )
+          dserror("null pointer to background dis, invalid!");
+      }
 
+      virtual ~BackMesh() {};
+
+      void Init( const Teuchos::RCP<const Epetra_Vector> & back_disp_col,
+          const Teuchos::RCP<const Epetra_Vector> & back_levelset_col);
+
+      const Teuchos::RCP<DRT::Discretization> & GetPtr()
+      {
+        return back_discret_;
+      }
+
+      DRT::Discretization & Get()
+      {
+        return * back_discret_;
+      }
+
+      const DRT::Discretization & Get() const
+      {
+        return * back_discret_;
+      }
+
+      virtual int NumMyColElements() const;
+
+      virtual const DRT::Element* lColElement( int lid ) const;
+
+      inline bool IsBackDisp() const
+      {
+        return ( not back_disp_col_.is_null() );
+      }
+
+      const Epetra_Vector & BackDispCol() const
+      {
+        if ( not IsBackDisp() )
+          dserror( "The background displacement was not initialized correctly!" );
+
+        return *back_disp_col_;
+      }
+
+      inline bool IsLevelSet() const
+      {
+        return ( not back_levelset_col_.is_null() );
+      }
+
+      const Epetra_Vector & BackLevelSetCol() const
+      {
+        if ( not IsLevelSet() )
+          dserror( "No level-set values set for the background discretization!" );
+
+        return *back_levelset_col_;
+      }
+
+
+    protected:
+      GEO::CutWizard * wizard_;
+
+    private:
+      /// background discretization
+      Teuchos::RCP<DRT::Discretization> back_discret_;
+
+      /// col vector holding background ALE displacements for backdis
+      Teuchos::RCP<const Epetra_Vector> back_disp_col_;
+
+      /// col vector holding nodal level-set values based on backdis
+      Teuchos::RCP<const Epetra_Vector> back_levelset_col_;
+
+    };
+
+    /*------------------------------------------------------------------------*/
     /*!
      * \brief Container class for a certain cutting mesh objects
      */
@@ -77,8 +164,6 @@ namespace GEO
       */
       ~CutterMesh(){};
 
-
-
       //---------------------------------discretization-----------------------------
 
       //! @name cutter discretization
@@ -96,9 +181,6 @@ namespace GEO
 
     };
 
-
-
-
     /*========================================================================*/
     //! @name Constructor and Destructor
     /*========================================================================*/
@@ -106,7 +188,7 @@ namespace GEO
     /*!
     \brief Constructor
     */
-    CutWizard( Teuchos::RCP<DRT::Discretization> dis);
+    CutWizard( const Teuchos::RCP<DRT::Discretization> & backdis );
 
 
     /*!
@@ -115,7 +197,6 @@ namespace GEO
     virtual ~CutWizard(){};
 
     //@}
-
 
     /*========================================================================*/
     //! @name Setters
@@ -132,10 +213,10 @@ namespace GEO
         bool screenoutput                           //!< print screen output
     );
 
-    void SetBackgroundState(
+    virtual void SetBackgroundState(
         Teuchos::RCP<const Epetra_Vector> back_disp_col,      //!< col vector holding background ALE displacements for backdis
         Teuchos::RCP<const Epetra_Vector> back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-        const int level_set_sid                               //!< global id for level-set side
+        int level_set_sid                                     //!< global id for level-set side
     );
 
     void AddCutterState(
@@ -153,7 +234,6 @@ namespace GEO
 
     //@}
 
-
     /*========================================================================*/
     //! @name main Cut call
     /*========================================================================*/
@@ -162,9 +242,8 @@ namespace GEO
         bool include_inner  //!< perform cut in the interior of the cutting mesh
     );
 
-
     /*========================================================================*/
-    //! @name Getters
+    //! @name Accessors
     /*========================================================================*/
 
     //! Get this side (not from cut meshes) (faces of background elements) from the cut libraries
@@ -174,7 +253,7 @@ namespace GEO
     GEO::CUT::SideHandle * GetSide( int sid );
 
     //! Get this element from the cut libraries
-    GEO::CUT::ElementHandle * GetElement( DRT::Element * ele );
+    GEO::CUT::ElementHandle * GetElement( const DRT::Element * ele ) const;
 
     //! Get this node from the cut libraries
     GEO::CUT::Node * GetNode( int nid );
@@ -185,10 +264,38 @@ namespace GEO
     //! is there a level-set side with the given sid?
     bool HasLSCuttingSide( int sid );
 
+  protected:
+    /** \brief hidden constructor for derived classes only
+     *
+     *  \author hiermeier \date 01/17 */
+    CutWizard( const Epetra_Comm & comm );
+
+    Teuchos::RCP<BackMesh> & BackMeshPtr()
+    {
+      return back_mesh_;
+    }
+
+    Teuchos::RCP<const BackMesh> BackMeshPtr() const
+    {
+      return back_mesh_.getConst();
+    }
+
+    virtual void GetPhysicalNodalCoordinates(
+        const DRT::Element * element, LINALG::SerialDenseMatrix & xyze ) const;
+
+    /// run after the Run_Cut routine has been called
+    virtual void Post_Run_Cut( bool include_inner )
+    { /* nothing to do in the base class implementation */ };
+
+    GEO::CUT::CombIntersection & Intersection()
+    {
+      if ( intersection_.is_null() )
+        dserror( "NULL pointer!" );
+
+      return *intersection_;
+    }
 
   private:
-
-
 
     /*========================================================================*/
     //! @name Add functionality for elements and cutting sides
@@ -213,11 +320,12 @@ namespace GEO
         const int start_ele_gid = 0  ///< global start index for element id numbering
         );
 
-    //! Add this cutting side element with given global coordiantes to the intersection class
+    //! Add this cutting side element with given global coordinates to the intersection class
     void AddMeshCuttingSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze, const int start_ele_gid );
 
     //! Add this background mesh element to the intersection class
-    void AddElement( DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze, double* myphinp = NULL, bool ls_only_plus_domain = false );
+    void AddElement( const DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze,
+        double* myphinp = NULL, bool ls_only_plus_domain = false );
 
     //@}
 
@@ -242,12 +350,12 @@ namespace GEO
 
     //@}
 
-
     /*========================================================================*/
     //! @name Output routines
     /*========================================================================*/
 
-    //! Print the number of volumecells and boundarycells generated over the whole mesh during the cut
+    /*! Print the number of volumecells and boundarycells generated over the
+     *  whole mesh during the cut */
     void PrintCellStats();
 
     //! Write the DOF details of the nodes
@@ -261,11 +369,12 @@ namespace GEO
 
     //@}
 
-
     //---------------------------------discretizations----------------------------
 
-    //! @name discretizations
-    Teuchos::RCP<DRT::Discretization> backdis_;              ///< background discretization
+    //! @name meshes
+    Teuchos::RCP<BackMesh> back_mesh_;
+    std::map<int, Teuchos::RCP<CutterMesh> > cutter_meshes_;
+    const Epetra_Comm & comm_;
     int myrank_;                                             ///< my processor Id
     //@}
 
@@ -280,14 +389,8 @@ namespace GEO
     //---------------------------------state vectors ----------------------------
 
     //! @name state vectors holding displacements and level-set values
-    Teuchos::RCP<const Epetra_Vector> back_disp_col_;      ///< col vector holding background ALE displacements for backdis
-    Teuchos::RCP<const Epetra_Vector> back_levelset_col_;  ///< col vector holding nodal level-set values based on backdis
     int level_set_sid_;
     //@}
-
-
-    std::map<int, Teuchos::RCP<CutterMesh> > cutter_meshes_;
-
 
     //---------------------------------Options ----------------------------
 
@@ -300,15 +403,13 @@ namespace GEO
     bool lsv_only_plus_domain_;                            ///< consider only plus domain of level-set field as physical field
     //@}
 
-
     //--------------------------------- Initialization flags ----------------------------
 
     //! @name Flags whether wizard is initialized correctly
     bool is_set_options_;
     //@}
 
-  };
-
-}
+  };  // class CutWizard
+} // namespace GEO
 
 #endif

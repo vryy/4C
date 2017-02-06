@@ -466,19 +466,13 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
   LINALG::Matrix<3,1> xsi(true);
 
 
-  GEO::CUT::IntersectionBase<DRT::Element::line2, sidetype> intersect(xyze_surfaceElement, xyze_lineElement);
+  Teuchos::RCP<GEO::CUT::IntersectionBase> intersect =
+      GEO::CUT::IntersectionBase::Create( DRT::Element::line2, sidetype );
+  intersect->Init(xyze_lineElement,xyze_surfaceElement,false,false,false);
 
   // check also limits during the newton scheme and when converged
   double itol;
-  if(intersect.ComputeCurveSurfaceIntersection(itol))
-  {
-    if( intersect.SurfaceWithinLimits() and intersect.LineWithinLimits())
-    {
-      return true;
-    }
-  }
-
-  return false;
+  return ( static_cast<bool>( intersect->ComputeEdgeSideIntersection(itol) ) );
 }
 
 
@@ -575,11 +569,12 @@ void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
 
   LINALG::Matrix<nsd,numnode> xyze(xyz);
 
-  GEO::CUT::Position<DISTYPE> pos(xyze,x);
-  pos.Compute();
-  xi = pos.LocalCoordinates(); // local coordinates
+  Teuchos::RCP<GEO::CUT::Position> pos =
+      GEO::CUT::PositionFactory::BuildPosition<3,DISTYPE>(xyze,x);
+  pos->Compute();
+  pos->LocalCoordinates(xi); // local coordinates
 
-  pointInCell = pos.WithinLimitsTol(limits_tol_); // check if point is in element
+  pointInCell = pos->WithinLimitsTol(limits_tol_); // check if point is in element
 };
 
 

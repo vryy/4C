@@ -13,6 +13,7 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "cut_element.H"
+#include "cut_edge.H"
 #include "cut_volumecell.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -206,9 +207,9 @@ void GEO::CUT::NodalDofSet::CollectCutSides( GEO::CUT::plain_int_set & cutside_i
  *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::NodalDofSet::Print()
 {
-  std::cout << "GEO::CUT::NodalDofSet: "
-      << "STD dofset? " << this->Is_Standard_DofSet()
-      << " Pos: " << this->Position()
+  std::cout << "GEO::CUT::NodalDofSet:\n"
+      << "STD dofset = " << ( this->Is_Standard_DofSet() ? "TRUE\n" : "FALSE\n" )
+      << "Position   = " << Point::PointPosition2String( this->Position() )
       << std::endl;
 }
 
@@ -217,9 +218,10 @@ void GEO::CUT::NodalDofSet::Print()
  *-----------------------------------------------------------------------------------------*/
 void GEO::CUT::CompositeNodalDofSet::Print()
 {
-  std::cout << "GEO::CUT::CompositeNodalDofSet which contains " << nodal_dofsets_.size() << " combined GEO::CUT::NodalDofSet: "
-      << "STD dofset? " << this->Is_Standard_DofSet()
-      << " Pos: " << this->Position()
+  std::cout << "GEO::CUT::CompositeNodalDofSet which contains " << nodal_dofsets_.size()
+      << " combined GEO::CUT::NodalDofSet:\n "
+      << "STD dofset = " << ( this->Is_Standard_DofSet() ? "TRUE\n" : "FALSE\n" )
+      << "Position   = " << Point::PointPosition2String( this->Position() )
       << std::endl;
 }
 
@@ -376,7 +378,8 @@ void GEO::CUT::Node::FindDOFSets( bool include_inner )
 /*-----------------------------------------------------------------------------------------*
  * Find the dofsets required at this node.
  *-----------------------------------------------------------------------------------------*/
-void GEO::CUT::Node::FindDOFSetsNEW( std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets,
+void GEO::CUT::Node::FindDOFSetsNEW(
+    std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets,
     std::vector<plain_volumecell_set> & cell_sets)
 {
 
@@ -570,6 +573,7 @@ void GEO::CUT::Node::CollectNodalDofSets()
       it++)
   {
     Teuchos::RCP<NodalDofSet> nds = *it;
+
     bool is_std_dofset = nds->Is_Standard_DofSet();
     GEO::CUT::Point::PointPosition pos = nds->Position();
 
@@ -592,7 +596,8 @@ void GEO::CUT::Node::CollectNodalDofSets()
       else
       {
         // assume that the nodal dofsets have been sorted in a step before
-        // then we potentially combine the current nodal dofset with the last CompositeNodalDofSet at most
+        // then we potentially combine the current nodal dofset with the last CompositeNodalDofSet
+        // at most
         Teuchos::RCP<CompositeNodalDofSet> cnds_last = collected_nodaldofsets.back();
 
         if(cnds_last->Is_Standard_DofSet() == is_std_dofset and
@@ -649,7 +654,8 @@ void GEO::CUT::Node::BuildDOFCellSets(
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- BuildDOFCellSets" );
 
 
-  for( std::vector<plain_volumecell_set>::const_iterator s=nodal_cell_sets.begin(); s!=nodal_cell_sets.end(); s++)
+  for( std::vector<plain_volumecell_set>::const_iterator s=nodal_cell_sets.begin();
+       s!=nodal_cell_sets.end(); s++)
   {
     const plain_volumecell_set & nodal_cells = *s;
 
@@ -661,10 +667,11 @@ void GEO::CUT::Node::BuildDOFCellSets(
       if ( done.count( cell )==0 )
       {
         plain_volumecell_set connected;
-        // REMARK: here use the version without! elements check:
-        // here we build cell sets within one global element with vcs of subelements
-        // maybe the vcs of one subelement are not connected within one subelement, but within one global element,
-        // therefore more than one vc of one subelements may be connected.
+        /* REMARK: here use the version without! elements check:
+         * here we build cell sets within one global element with vcs of sub-elements
+         * maybe the vcs of one sub-element are not connected within one sub-element,
+         * but within one global element, therefore more than one vc of one
+         * sub-element may be connected. */
         cell->Neighbors( p, cells, done, connected);
 
         if ( connected.size()>0 )
@@ -672,20 +679,15 @@ void GEO::CUT::Node::BuildDOFCellSets(
 
           std::set<plain_volumecell_set,Cmp> connected_sets;
 
-          int count=0;
           // find all cells of connected in cell_sets and add the corresponding cell_sets
           for(plain_volumecell_set::iterator c=connected.begin(); c!= connected.end(); c++)
           {
             VolumeCell* connected_cell=*c;
-            count++;
 
-            int cell_it = 0;
             for(std::vector<plain_volumecell_set>::const_iterator i=cell_sets.begin();
                 i!=cell_sets.end();
                 i++ )
             {
-              cell_it++;
-
               // contains the current cell_it
               if((*i).count( connected_cell ) > 0)
               {
@@ -869,4 +871,20 @@ bool GEO::CUT::NodalDofSetCmp::operator()(
   GEO::CUT::Cmp comp;
 
   return comp.Compare(composite1, composite2);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::FindCommonElements( const std::vector<Node*> & nelement,
+    plain_element_set & elements )
+{
+  // find the element defined by the given nodes
+  std::vector<GEO::CUT::Point *> pelement;
+  pelement.reserve( nelement.size() );
+
+  for (std::vector<GEO::CUT::Node*>::const_iterator cit = nelement.begin();
+      cit != nelement.end(); ++cit)
+    pelement.push_back((*cit)->point());
+
+  FindCommonElements( pelement, elements );
 }

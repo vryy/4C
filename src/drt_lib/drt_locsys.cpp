@@ -25,11 +25,11 @@ vectors and matrices.
 /*-------------------------------------------------------------------*
  |  ctor (public)                                         meier 06/13|
  *-------------------------------------------------------------------*/
-DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret):
-discret_(discret),
-dim_(-1),
-numlocsys_(-1),
-locsyscurvefunct_(false)
+DRT::UTILS::LocsysManager::LocsysManager(DRT::DiscretizationInterface& discret)
+    : discret_(discret),
+      dim_(-1),
+      numlocsys_(-1),
+      locsyscurvefunct_(false)
 {
   // get problem dimension (2D or 3D) and store into dim_
   dim_ = DRT::Problem::Instance()->NDim();

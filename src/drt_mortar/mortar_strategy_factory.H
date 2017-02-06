@@ -32,7 +32,7 @@ namespace IO {
 namespace DRT {
   class Node;
   class Element;
-  class Discretization;
+  class DiscretizationInterface;
 } // namespace DRT
 namespace MORTAR {
   class MortarNode;
@@ -75,7 +75,7 @@ namespace STRATEGY {
      *
      *  \author Farah */
     void PrepareNURBSElement(
-        const DRT::Discretization& discret,
+        const DRT::DiscretizationInterface& discret,
         Teuchos::RCP<DRT::Element> ele,
         Teuchos::RCP<MORTAR::MortarElement> cele) const;
 
@@ -95,8 +95,8 @@ namespace STRATEGY {
     const STR::TIMINT::BaseDataGlobalState& GState() const;
 
     //! Returns the (structural) discretization
-    DRT::Discretization& Discret();
-    const DRT::Discretization& Discret() const;
+    DRT::DiscretizationInterface& Discret();
+    const DRT::DiscretizationInterface& Discret() const;
 
     //! returns a reference to a copy of the structural communicator
     Epetra_Comm& Comm();
@@ -119,7 +119,7 @@ namespace STRATEGY {
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 
     //! pointer to the structural problem discretization
-    Teuchos::RCP<DRT::Discretization> discret_ptr_;
+    Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
 
     //! pointer to a COPY of the structural communicator
     Teuchos::RCP<Epetra_Comm> comm_ptr_;

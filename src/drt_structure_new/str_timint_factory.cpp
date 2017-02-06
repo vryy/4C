@@ -28,8 +28,8 @@
 
 // supported data containers
 #include "str_timint_basedatasdyn.H"
-
 #include "../drt_structure/strtimada.H"
+#include "../drt_structure_xstructure/xstr_xstructure_structure_state.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -214,6 +214,34 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::Factory::
+    BuildDataGlobalState() const
+{
+  Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr = Teuchos::null;
+
+  // what's the current problem type?
+  PROBLEM_TYP prbtype = DRT::Problem::Instance()->ProblemType();
+
+  switch (prbtype)
+  {
+    case prb_xcontact:
+    {
+      gstate_ptr = Teuchos::rcp(new XSTR::XStructureStructureState());
+      break;
+    }
+    default:
+    {
+      gstate_ptr = Teuchos::rcp(new STR::TIMINT::BaseDataGlobalState());
+      break;
+    }
+  }
+
+  return gstate_ptr;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::BuildStrategy(
     const Teuchos::ParameterList& sdyn)
 {
@@ -243,4 +271,12 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::BuildDataSDyn(
 {
   Factory factory;
   return factory.BuildDataSDyn(sdyn);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> STR::TIMINT::BuildDataGlobalState()
+{
+  Factory factory;
+  return factory.BuildDataGlobalState();
 }

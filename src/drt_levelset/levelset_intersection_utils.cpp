@@ -16,6 +16,7 @@
 
 #include "levelset_intersection_utils.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_cut/cut_levelsetintersection.H"
@@ -27,237 +28,417 @@
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_scatra_ele/scatra_ele_parameter_std.H"
 
-/*------------------------------------------------------------------------------------------------*
- | construct zero iso-contour of levelset field                                   rasthofer 09/13 |
- *------------------------------------------------------------------------------------------------*/
-void SCATRA::CaptureZeroLevelSet(
-  const Teuchos::RCP<const Epetra_Vector>& phi,
-  const Teuchos::RCP<const DRT::Discretization> & scatradis,
-  double& volumedomainminus,
-  double& volumedomainplus,
-  double& zerosurface,
-  std::map<int,GEO::BoundaryIntCells >& elementBoundaryIntCells)
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+SCATRA::LEVELSET::Intersection::Intersection()
+    : check_lsv_( false ),
+      desired_positions_( 0 ),
+      volumeplus_( 0.0 ),
+      volumeminus_( 0.0 ),
+      surface_( 0.0 )
 {
-  // define proc local variables for volumes and surface
-  double volumeminus = 0.0;
-  double volumeplus = 0.0;
-  double surface = 0.0;
+  desired_positions_.reserve(2);
+}
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::Reset()
+{
+  volumeplus_  = 0.0;
+  volumeminus_ = 0.0;
+  surface_     = 0.0;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::CaptureZeroLevelSet(
+    const Teuchos::RCP<const Epetra_Vector>& phi,
+    const Teuchos::RCP<const DRT::Discretization> & scatradis,
+    double& volumedomainminus,
+    double& volumedomainplus,
+    double& zerosurface,
+    std::map<int,GEO::BoundaryIntCells >& elementBoundaryIntCells)
+{
   // reset, just to be sure
+  Reset();
   volumedomainminus = 0.0;
   volumedomainplus = 0.0;
   zerosurface = 0.0;
   elementBoundaryIntCells.clear();
 
-  // export phi from row to column map
-  const Teuchos::RCP<Epetra_Vector> phicol = Teuchos::rcp(new Epetra_Vector(*scatradis->DofColMap()));
-  LINALG::Export(*phi,*phicol);
+  // herein the actual capturing happens
+  GetZeroLevelSet(*phi,*scatradis,elementBoundaryIntCells);
 
-  // remark: loop over row elements would be sufficient
-  for (int iele=0; iele<scatradis->NumMyRowElements(); ++iele)
+  // collect contributions from all procs and store in respective variables
+  scatradis->Comm().SumAll( & VolumePlus(), & volumedomainplus, 1 );
+  scatradis->Comm().SumAll( & VolumeMinus(), & volumedomainminus, 1 );
+  scatradis->Comm().SumAll( & Surface(), & zerosurface, 1 );
+
+  // export also interface to all procs
+  ExportInterface(elementBoundaryIntCells,scatradis->Comm());
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < typename T >
+void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(
+    const Epetra_Vector & phi,
+    const DRT::Discretization & scatradis,
+    std::map< int, T >& elementBoundaryIntCells,
+    bool cut_screenoutput )
+{
+  // export phi from row to column map
+  const Teuchos::RCP<Epetra_Vector> phicol =
+      Teuchos::rcp( new Epetra_Vector( *scatradis.DofColMap() ) );
+  LINALG::Export( phi, *phicol );
+
+  // remark: loop over row elements is sufficient
+  for (int iele=0; iele<scatradis.NumMyRowElements(); ++iele)
   {
     // get element from discretization
-    const DRT::Element *ele = scatradis->lRowElement(iele);
-
-    // list of domain integration cells
-    GEO::DomainIntCells listDomainIntCellsperEle; //TODO: sollte ich nicht brauchen
-
-    // list of boundary integration cells
-    GEO::BoundaryIntCells listBoundaryIntCellsperEle;
-
-    //------------------------
-    // call GEO::Cut algorithm
-    //------------------------
-    GEO::CUT::LevelSetIntersection levelset;
-
+    const DRT::Element *ele = scatradis.lRowElement(iele);
     const DRT::Element::DiscretizationType distype = ele->Shape();
-    std::size_t numnode = DRT::UTILS::getNumberOfElementNodes(distype);
 
-    LINALG::SerialDenseMatrix xyze(3,numnode);
-    switch(distype)
-    {
-      case DRT::Element::hex8:
-       GEO::fillInitialPositionArray<DRT::Element::hex8,3,LINALG::SerialDenseMatrix>(ele,xyze);
-       break;
-      default: dserror("Unknown elmenet type");
-       break;
-    }
+    // clear vector each loop
+    BoundaryIntCellsPerEle<T>().clear();
 
-    std::vector<double> phi_nodes(ele->NumNode()); // we assume one dof per node here
-    std::vector<int> lm;
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    // get element location vector
-    lm.clear();
-    lmowner.clear();
-    lmstride.clear();
-    ele->LocationVector(*scatradis,lm,lmowner,lmstride);
-    DRT::UTILS::ExtractMyValues(*phicol,phi_nodes,lm);
-
+    // ------------------------------------------------------------------------
+    // Prepare cut
+    // ------------------------------------------------------------------------
+    GEO::CUT::LevelSetIntersection levelset( scatradis.Comm() );
+    LINALG::SerialDenseMatrix xyze;
+    std::vector<double> phi_nodes;
     std::vector<int> nids;
-    nids.reserve(numnode);
-    for (std::size_t i=0; i<numnode; ++i )
-    {
-      nids.push_back(i);
-    }
+    PrepareCut( ele, scatradis, *phicol, xyze, phi_nodes, nids );
 
-    // check if this element is cut, according to its level-set values -> add it to 'levelset'
+    // check if this element is cut, according to its level-set values
+    // -> add it to 'levelset'
     // note: cut is performed in physical space
-    levelset.AddElement( 1, nids, xyze, ele->Shape(), &phi_nodes[0], false);
+    if ( !levelset.AddElement( 1, nids, xyze, ele->Shape(), &phi_nodes[0], false, check_lsv_ ) )
+      continue;
 
-    try
-    {
-      levelset.Cut();
-    }
-    catch ( std::runtime_error & err )
-    {
-      std::cerr << "failed to cut element\n"
-          << "coordinates:\n";
-      xyze.Print( std::cerr );
-      std::cerr << "g-function values:\n"
-                << std::setprecision( 16 );
-      std::copy( phi_nodes.begin(), phi_nodes.end(), std::ostream_iterator<double>( std::cerr, ", " ) );
-      std::cerr << "\n";
-      throw;
-    }
+    // ------------------------------------------------------------------------
+    // call GEO::Cut algorithm and process cut data
+    // ------------------------------------------------------------------------
+    GEO::CUT::ElementHandle * ehandle = Cut( levelset, xyze, phi_nodes, cut_screenoutput  );
 
-    //-----------------
-    // process cut data
-    //-----------------
-    GEO::CUT::ElementHandle * ehandle = levelset.GetElement( 1 );
-
+    // =========================================================
     // cell is in contact with the interface (cut or touched)
+    // =========================================================
     if (ehandle!=NULL)
     {
+
       GEO::CUT::plain_element_set cuteles;
-      ehandle->CollectElements( cuteles );
 
-      switch(distype)
-      {
-      case DRT::Element::hex8:
-      {
-        if (cuteles.size() != 1)
-          dserror("one cut element expected for linear elements");
-        break;
-      }
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
-      {
-        if (cuteles.size() != 8)
-          dserror("eight cut elements expected for quadratic elements");
-        break;
-      }
-      default:
-      {
-        dserror("distype unknown for level set cut algorithm");
-        break;
-      }
-      }
+      CollectCutEles(*ehandle, cuteles, distype);
 
-      //--------------------------------------------
+      // ----------------------------------------------------------------------
       // get zero level-set contour
-      //--------------------------------------------
-      for ( GEO::CUT::plain_element_set::const_iterator icutele=cuteles.begin(); icutele!=cuteles.end(); ++icutele )
-      {
-        // get pointer to cut element
-        GEO::CUT::Element* cutele = *icutele;
-
-        GEO::CUT::plain_volumecell_set volcells;
-        volcells = cutele->VolumeCells();
-
-        for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
-        {
-          GEO::CUT::VolumeCell * volcell = *ivolcell;
-          if (volcell->Position() == GEO::CUT::Point::outside) // corresponds to phi>0
-          {
-            volumeplus += volcell->Volume();
-            // get boundary integration cells for this volume cell
-            // we only the outside cells, otherwise we would have the boundary cells twice
-            const GEO::CUT::plain_boundarycell_set & bcells = volcell->BoundaryCells();
-            for ( GEO::CUT::plain_boundarycell_set::const_iterator ibcell=bcells.begin(); ibcell!=bcells.end(); ++ibcell )
-            {
-              GEO::CUT::BoundaryCell * bcell = *ibcell;
-
-              DRT::Element::DiscretizationType distype_bc = bcell->Shape();
-
-              if (distype_bc != DRT::Element::tri3 and
-                  distype_bc != DRT::Element::quad4)
-              {
-                IO::cout << "distype " << distype_bc << IO::endl;
-                dserror("unexpected type of boundary integration cell");
-              }
-              int numnodebc = DRT::UTILS::getNumberOfElementNodes( distype_bc );
-
-              // get physical coordinates of this cell
-              LINALG::SerialDenseMatrix coord = bcell->Coordinates();
-
-              // transfer to element coordinates
-              LINALG::SerialDenseMatrix localcoord(3,numnodebc);
-
-              for (int ivert=0; ivert<numnodebc; ivert++)
-              {
-                LINALG::Matrix<3,1> lcoord;
-                LINALG::Matrix<3,1> pcoord;
-                for (int ll=0; ll<3; ll++)
-                   pcoord(ll,0) = coord(ll,ivert);
-
-                GEO::currentToVolumeElementCoordinates(distype, xyze, pcoord, lcoord);
-
-                // write as 'physCoord'
-                for (int ll=0; ll<3; ll++)
-                    localcoord(ll,ivert) = lcoord(ll,0);
-              }
-
-              // store boundary element
-              // and sum area into surface
-              // be careful, we only set physical coordinates
-              listBoundaryIntCellsperEle.push_back(GEO::BoundaryIntCell(distype_bc, -1, localcoord, Teuchos::null, coord, true));
-              surface += bcell->Area();
-            }
-          }
-          else
-            volumeminus += volcell->Volume();
-        }
-      }
+      // ----------------------------------------------------------------------
+      GetZeroLevelSetContour( cuteles, xyze, distype );
     }
-    //------------------
+    // =========================================================
     // element is uncut
-    //------------------
+    // =========================================================
     else
     {
       double elevol = GEO::ElementVolume(distype, xyze);
 
-      // it is sufficient to check the first node, since the element entirely lies within the plus or minus domain
-      if (phi_nodes[0]>0.0)
-        volumeplus += elevol;
+      // it is sufficient to check the first node, since the element entirely
+      // lies within the plus or minus domain
+      if ( phi_nodes[0] > 0.0 )
+        VolumePlus() += elevol;
       else
-        volumeminus += elevol;
+        VolumeMinus() += elevol;
     }
 
     // store interface of element
-    if(listBoundaryIntCellsperEle.size() > 0)
-      elementBoundaryIntCells[ele->Id()] = listBoundaryIntCellsperEle;
+    if( BoundaryIntCellsPerEle<T>().size() > 0 )
+      elementBoundaryIntCells[ele->Id()] = BoundaryIntCellsPerEle<T>();
   }
-
-  // collect contributions from all procs and store in respective variables
-  scatradis->Comm().SumAll(&volumeplus,&volumedomainplus,1);
-  scatradis->Comm().SumAll(&volumeminus,&volumedomainminus,1);
-  scatradis->Comm().SumAll(&surface,&zerosurface,1);
-
-  // export also interface to all procs
-  ExportInterface(elementBoundaryIntCells,scatradis->Comm());
 
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::GetZeroLevelSetContour(
+    const GEO::CUT::plain_element_set & cuteles,
+    const LINALG::SerialDenseMatrix & xyze,
+    DRT::Element::DiscretizationType distype )
+{
+  for ( GEO::CUT::plain_element_set::const_iterator icutele=cuteles.begin();
+      icutele!=cuteles.end(); ++icutele )
+  {
+    // get pointer to cut element
+    GEO::CUT::Element* cutele = *icutele;
 
-/*------------------------------------------------------------------------------------------------*
- | export interface to all processors                                                 henke 12/09 |
- *------------------------------------------------------------------------------------------------*/
-void SCATRA::ExportInterface(
-  std::map<int, GEO::BoundaryIntCells>& myinterface,
-  const Epetra_Comm& comm)
+    GEO::CUT::plain_volumecell_set volcells;
+    volcells = cutele->VolumeCells();
+
+    for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin();
+          ivolcell!=volcells.end(); ++ivolcell )
+    {
+      GEO::CUT::VolumeCell * volcell = *ivolcell;
+      const GEO::CUT::Point::PointPosition vol_pos = volcell->Position();
+      if ( IsPointPosition( vol_pos ) )
+      {
+        AddToVolume( vol_pos, volcell->Volume() );
+        // get boundary integration cells for this volume cell
+        // we consider only the cells for one position, otherwise we would have the boundary
+        // cells twice
+        const GEO::CUT::plain_boundarycell_set & bcells = volcell->BoundaryCells();
+        for ( GEO::CUT::plain_boundarycell_set::const_iterator ibcell=bcells.begin();
+              ibcell!=bcells.end(); ++ibcell )
+        {
+          GEO::CUT::BoundaryCell * bcell = *ibcell;
+
+          AddToBoundaryIntCellsPerEle( xyze, *bcell, distype );
+
+          Surface() += bcell->Area();
+        }
+      }
+      else
+      {
+        AddToVolume( vol_pos, volcell->Volume() );
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
+    const LINALG::SerialDenseMatrix & xyze,
+    const GEO::CUT::BoundaryCell & bcell,
+    DRT::Element::DiscretizationType distype_ele )
+{
+  DRT::Element::DiscretizationType distype_bc = bcell.Shape();
+  CheckBoundaryCellType( distype_bc );
+
+  const int numnodebc = DRT::UTILS::getNumberOfElementNodes( distype_bc );
+
+  // get physical coordinates of this cell
+  LINALG::SerialDenseMatrix coord = bcell.Coordinates();
+
+  // transfer to element coordinates
+  LINALG::SerialDenseMatrix localcoord(3,numnodebc,true);
+
+  for (int ivert=0; ivert<numnodebc; ivert++)
+  {
+    LINALG::Matrix<3,1> lcoord;
+    LINALG::Matrix<3,1> pcoord;
+    for (int ll=0; ll<3; ll++)
+       pcoord(ll,0) = coord(ll,ivert);
+
+    GEO::currentToVolumeElementCoordinates(distype_ele, xyze, pcoord, lcoord);
+
+    // write as 'physCoord'
+    for (int ll=0; ll<3; ll++)
+      localcoord(ll,ivert) = lcoord(ll,0);
+  }
+
+  // store boundary element and sum area into surface
+  // be careful, we only set physical coordinates
+  BoundaryIntCellsPerEle<GEO::BoundaryIntCells>().push_back(
+      GEO::BoundaryIntCell( distype_bc, -1,
+      localcoord, Teuchos::null, coord, true) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::CheckBoundaryCellType(
+    DRT::Element::DiscretizationType distype_bc) const
+{
+  if ( distype_bc != DRT::Element::tri3   and
+       distype_bc != DRT::Element::quad4 )
+  {
+    dserror( "unexpected type of boundary integration cell: %s",
+        DRT::DistypeToString(distype_bc).c_str() );
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::AddToVolume(
+    GEO::CUT::Point::PointPosition pos, double vol )
+{
+  switch ( pos )
+  {
+    case GEO::CUT::Point::outside:
+      VolumePlus() += vol;
+      break;
+    case GEO::CUT::Point::inside:
+      VolumeMinus() += vol;
+      break;
+    default:
+      /* do nothing for the undecided case */
+      break;
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::CollectCutEles(
+    GEO::CUT::ElementHandle & ehandle,
+    GEO::CUT::plain_element_set & cuteles,
+    DRT::Element::DiscretizationType distype ) const
+{
+  ehandle.CollectElements( cuteles );
+
+  switch(distype)
+  {
+    case DRT::Element::line2:
+    case DRT::Element::hex8:
+    {
+      if (cuteles.size() != 1)
+        dserror("one cut element expected for linear elements");
+      break;
+    }
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+    {
+      if (cuteles.size() != 8)
+        dserror("eight cut elements expected for quadratic elements");
+      break;
+    }
+    default:
+    {
+      dserror("distype unknown for level set cut algorithm");
+      break;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::PrepareCut(
+    const DRT::Element * ele,
+    const DRT::Discretization & scatradis,
+    const Epetra_Vector & phicol,
+    LINALG::SerialDenseMatrix & xyze,
+    std::vector<double> & phi_nodes,
+    std::vector<int> & node_ids) const
+{
+  const DRT::Element::DiscretizationType distype = ele->Shape();
+  unsigned numnode = DRT::UTILS::getNumberOfElementNodes( distype );
+  const unsigned probdim = DRT::Problem::Instance()->NDim();
+
+  xyze.Shape( 3, numnode );
+  switch( distype )
+  {
+    case DRT::Element::hex8:
+      GEO::fillInitialPositionArray<DRT::Element::hex8,3>( ele, xyze );
+      break;
+    case DRT::Element::line2:
+      switch (probdim)
+      {
+        case 2:
+          GEO::fillInitialPositionArray<DRT::Element::line2,2>( ele, xyze );
+          break;
+        case 3:
+          GEO::fillInitialPositionArray<DRT::Element::line2,3>( ele, xyze );
+          break;
+        default:
+          dserror( "Unsupported problem dimension! (probdim = %d)", probdim );
+          exit(EXIT_FAILURE);
+      }
+      break;
+    default: dserror("Unknown elmenet type ( type = %s )",
+        DRT::DistypeToString( distype ).c_str() );
+     break;
+  }
+
+  // we assume one dof per node here
+  phi_nodes.resize( ele->NumNode(), 0.0 );
+  std::vector<int> lm;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+
+  // get element location vector
+  lm.clear();
+  lmowner.clear();
+  lmstride.clear();
+  ele->LocationVector( scatradis, lm, lmowner, lmstride );
+  DRT::UTILS::ExtractMyValues( phicol, phi_nodes, lm );
+
+  // define nodal ID's
+  node_ids.resize( numnode, 0.0 );
+  for (std::size_t i=0; i<numnode; ++i )
+    node_ids[i] = i;
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+GEO::CUT::ElementHandle * SCATRA::LEVELSET::Intersection::Cut(
+    GEO::CUT::LevelSetIntersection & levelset,
+    const LINALG::SerialDenseMatrix & xyze,
+    const std::vector<double> & phi_nodes,
+    bool cut_screenoutput ) const
+{
+  try
+  {
+    levelset.Cut( true, cut_screenoutput );
+  }
+  catch ( std::runtime_error & err )
+  {
+    std::cerr << "\n--- failed to cut element ---\n"
+        << "coordinates:\n";
+    xyze.Print( std::cerr );
+    std::cerr << "g-function values:\n"
+              << std::setprecision( 16 );
+    std::copy( phi_nodes.begin(), phi_nodes.end(), std::ostream_iterator<double>( std::cerr, ", " ) );
+    std::cerr << "\n";
+    run_time_error(err);
+  }
+
+  return levelset.GetElement( 1 );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool SCATRA::LEVELSET::Intersection::IsPointPosition(
+    const GEO::CUT::Point::PointPosition & curr_pos,
+    const std::vector<GEO::CUT::Point::PointPosition> & desired_pos) const
+{
+  for ( std::vector<GEO::CUT::Point::PointPosition>::const_iterator cit =
+      desired_pos.begin(); cit != desired_pos.end(); ++cit )
+  {
+    // OR - combination
+    if (curr_pos == *cit)
+      return true;
+  }
+
+  return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const std::vector<GEO::CUT::Point::PointPosition> &
+SCATRA::LEVELSET::Intersection::DesiredPositions()
+{
+  if (desired_positions_.empty())
+    desired_positions_.push_back( GEO::CUT::Point::outside );
+  return desired_positions_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::SetDesiredPositions(
+    const std::vector<GEO::CUT::Point::PointPosition> & desired_pos )
+{
+  desired_positions_.resize( desired_pos.size(), GEO::CUT::Point::undecided );
+  std::copy( desired_pos.begin(), desired_pos.end(), desired_positions_.begin() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LEVELSET::Intersection::ExportInterface(
+    std::map<int, GEO::BoundaryIntCells>& myinterface,
+    const Epetra_Comm& comm)
 {
   //-------------------------------
   // prepare parallel communication
@@ -284,9 +465,9 @@ void SCATRA::ExportInterface(
 #endif
 
   DRT::PackBuffer data;
-  SCATRA::packBoundaryIntCells(myinterface, data);
+  packBoundaryIntCells(myinterface, data);
   data.StartPacking();
-  SCATRA::packBoundaryIntCells(myinterface, data);
+  packBoundaryIntCells(myinterface, data);
 
   //-----------------------------------------------------------------
   // pack data (my boundary integration cell groups) for initial send
@@ -334,11 +515,13 @@ void SCATRA::ExportInterface(
     //-----------------------------------------------
     std::map<int, GEO::BoundaryIntCells> interface_recv;
 
-    SCATRA::unpackBoundaryIntCells(dataRecv, interface_recv);
+    unpackBoundaryIntCells(dataRecv, interface_recv);
 
     // add group of cells to my interface map
-    // remark: all groups of boundary integration cells (interface pieces within an element) are collected here
-    for (std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup = interface_recv.begin(); cellgroup != interface_recv.end(); ++cellgroup)
+    /* remark: all groups of boundary integration cells (interface pieces
+     * within an element) are collected here */
+    for (std::map<int, GEO::BoundaryIntCells>::const_iterator cellgroup = interface_recv.begin();
+        cellgroup != interface_recv.end(); ++cellgroup)
     {
       myinterface.insert(*cellgroup);
     }
@@ -356,9 +539,8 @@ void SCATRA::ExportInterface(
 
 
 /*-----------------------------------------------------------------------*
- | helper function for export of interface to all processors  henke 12/09 |
  *-----------------------------------------------------------------------*/
-void SCATRA::packBoundaryIntCells(
+void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
     const std::map<int, GEO::BoundaryIntCells>& intcellmap,
     DRT::PackBuffer&                            dataSend)
 {
@@ -398,9 +580,8 @@ void SCATRA::packBoundaryIntCells(
 
 
 /*-----------------------------------------------------------------------*
- | helper function for export of interface to all processors  henke 12/09 |
  *-----------------------------------------------------------------------*/
-void SCATRA::unpackBoundaryIntCells(
+void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
     const std::vector<char>&                     data,
     std::map<int, GEO::BoundaryIntCells>&   intcellmap)
 {
@@ -454,3 +635,7 @@ void SCATRA::unpackBoundaryIntCells(
   if (posingroup != data.size())
     dserror("mismatch in size of data %d <-> %d",(int)data.size(),posingroup);
 }
+
+
+template void SCATRA::LEVELSET::Intersection::GetZeroLevelSet< GEO::BoundaryIntCells >( const Epetra_Vector & phi, const DRT::Discretization & scatradis, std::map< int, GEO::BoundaryIntCells >& elementBoundaryIntCells, bool cut_screenoutput );
+template void SCATRA::LEVELSET::Intersection::GetZeroLevelSet< GEO::BoundaryIntCellPtrs >( const Epetra_Vector & phi, const DRT::Discretization & scatradis, std::map< int, GEO::BoundaryIntCellPtrs >& elementBoundaryIntCells, bool cut_screenoutput );

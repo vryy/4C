@@ -1065,7 +1065,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
     Teuchos::RCP<Epetra_MultiVector> solidpressure_multi =
         POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(*discret_,*solidpressure_,nds_solidpressure_,1);
 
-    output_->WriteVector("solidpressure", solidpressure_multi,IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("solidpressure", solidpressure_multi,IO::nodevector);
   }
 
   // displacement field
@@ -1079,7 +1079,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
         POROFLUIDMULTIPHASE::UTILS::ConvertDofVectorToNodeBasedMultiVector(*discret_,*dispnp,nds_disp_,nsd_);
 
-    output_->WriteVector("dispnp", dispnp_multi, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
   }
   // fluxes
   if(flux_!=Teuchos::null)
@@ -1108,7 +1108,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::OutputState()
           if (err!=0) dserror("Detected error in ReplaceMyValue");
         }
       }
-      output_->WriteVector(name, velocity_k, IO::DiscretizationWriter::nodevector);
+      output_->WriteVector(name, velocity_k, IO::nodevector);
     }
   }
 

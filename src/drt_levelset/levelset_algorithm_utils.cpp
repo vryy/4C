@@ -87,7 +87,8 @@ void SCATRA::LevelSetAlgorithm::SetVelocityField(
 /*----------------------------------------------------------------------*
  | add problem depended params for AssembleMatAndRHS    rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params)
+void SCATRA::LevelSetAlgorithm::AddProblemSpecificParametersAndVectors(
+    Teuchos::ParameterList& params)
 {
   // set only special parameters of the solution of the reinitialization equation
   // otherwise we take the standard parameters only
@@ -138,7 +139,8 @@ void SCATRA::LevelSetAlgorithm::CaptureInterface(
   double volplus = 0.0;
   double surf = 0.0;
   // reconstruct interface and calculate volumes, etc ...
-  SCATRA::CaptureZeroLevelSet(phinp_,discret_,volminus,volplus,surf,interface);
+  SCATRA::LEVELSET::Intersection intersect;
+  intersect.CaptureZeroLevelSet(phinp_,discret_,volminus,volplus,surf,interface);
 
   // do mass conservation check
   MassConservationCheck(volminus,writetofile);
@@ -1060,7 +1062,7 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
  | redistribute the scatra discretization and vectors         rasthofer 07/11 |
  | according to nodegraph according to nodegraph              DA wichmann     |
  *----------------------------------------------------------------------------*/
-void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> & nodegraph)
 {
   //TODO: works if and only if discretization has already been redistributed
   //      change this and use unused nodegraph

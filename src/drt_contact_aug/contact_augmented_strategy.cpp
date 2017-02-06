@@ -660,6 +660,9 @@ void CONTACT::AugmentedLagrangeStrategy::UpdateActiveSetSemiSmooth(
       // compute averaged weighted gap
       double kappa = cnode->CoData().GetKappa();
       double awgap = cnode->CoData().GetWGap();
+      // TODO
+      //std::cout << cnode->Id() << " | " << cnode->X()[0] << ", " << cnode->X()[1] <<
+      //    " | " << cnode->CoData().GetWGap() << std::endl;
       if (kappa != 1.0e12)
         awgap/= kappa;
 
@@ -771,6 +774,7 @@ void CONTACT::AugmentedLagrangeStrategy::EvalStrContactRHS()
     // scale by cn
     MultiplyElementwise(Data().Cn(),Data().GActiveNodeRowMap(),*augLmN,false);
     augLmN->Update(1.0,Data().LmN(),-1.0);
+
     // --- add contact force terms
     // *** Slave side ***
     Teuchos::RCP<Epetra_Vector> augfs = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
@@ -1137,6 +1141,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AugmentedLagrangeStrategy::
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
     return Teuchos::null;
 
+  // get the desired vector and return it (read-only)
   Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {

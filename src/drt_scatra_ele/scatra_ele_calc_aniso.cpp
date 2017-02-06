@@ -142,7 +142,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::MatScaTraAniso(
   LINALG::Matrix<my::nsd_,my::nsd_> difftensor(true);
   LINALG::Matrix<3,1> diff = actmat->Diffusivity(leleid);
 
-  for (int i=0; i<my::nsd_; i++)
+  for (unsigned i=0; i<my::nsd_; i++)
     difftensor(i,i) = diff(i);
 
   DiffManager()->SetAnisotropicDiff(difftensor,k);
@@ -163,7 +163,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::CalcRHSDiff(
 {
   const LINALG::Matrix<my::nsd_,1>&        gradphi = my::scatravarmanager_->GradPhi(k);
 
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
 
@@ -185,11 +185,11 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::CalcMatDiff(
   const double                             timefacfac
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_+k;
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const int fui = ui*my::numdofpernode_+k;
       double laplawf(0.0);

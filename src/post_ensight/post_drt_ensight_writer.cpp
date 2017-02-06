@@ -16,6 +16,8 @@
 #include "../drt_fluid/fluid_rotsym_periodicbc_utils.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_lib/drt_discret_xfem.H"
+
 #include <string>
 
 #include "../pss_full/pss_cpp.h"
@@ -1128,6 +1130,14 @@ void EnsightWriter::WriteResult(const std::string groupname,
   }
   if (!foundit) return;
 
+  // FixMe -- hiermeier
+//  if (restype == dofbased)
+//  {
+//    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+//    std::cout << "!!!Write Dof results is currently not working and thus skipped!!!\n";
+//    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+//    return;
+//  }
   // new for file continuation
   bool multiple_files = false;
 
@@ -1858,7 +1868,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
             if(fillzeros)
               Write<float>(file, 0.);
             else
-              dserror("received illegal dof local id: %d", lid);
+              dserror("received illegal dof local id: %d (gid=%d)", lid, actdofgid);
           }
         }
       }// for idf

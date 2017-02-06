@@ -1,13 +1,19 @@
 /*----------------------------------------------------------------------*/
 /**
-@file pairedvector.H
+\file pairedvector.H
+
+\brief This class is meant as a drop-in replacement for std::maps, when other
+       storage and access characteristics are needed.
 
 <pre>
-Maintainer: Karl-Robert Wichmann
+\maintainer Karl-Robert Wichmann
             wichmann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
 </pre>
+
+\level 1
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef PAIREDVECTOR_H_
@@ -153,7 +159,7 @@ class pairedvector
    */
   const_iterator find(const Key k) const
   {
-    for (iterator it = this->begin(); it != this->end(); ++it)
+    for (const_iterator it = this->begin(); it != this->end(); ++it)
     {
       if (it->first == k)
         return it;
@@ -232,7 +238,16 @@ class pairedvector
   {
     iterator it = this->find(k);
     if (it == this->end())
-      throw std::runtime_error("invalid key");
+      throw std::runtime_error("pairedvector::at(): invalid key");
+
+    return it->second;
+  }
+
+  const T& at(const Key k) const
+  {
+    const_iterator it = this->find(k);
+    if (it == this->end())
+      throw std::runtime_error("pairedvector::at(): invalid key");
 
     return it->second;
   }

@@ -143,6 +143,9 @@ namespace GEO
 
       void GnuplotDump( std::ostream & stream ) const;
 
+      /// Print the stored points to the screen
+      void Print() const;
+
     private:
       std::vector<Point*> points_;
     };

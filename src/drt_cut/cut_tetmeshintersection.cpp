@@ -25,6 +25,8 @@
 #include "cut_pointpool.H"
 #include "cut_tetmeshintersection.H"
 #include "cut_volumecell.H"
+#include "cut_side.H"
+#include "cut_output.H"
 
 /* Initialize a Mesh within an element. This is done if a TetMesh is created but can't be filled in FillFacetMesh().
    Basically this constructor converts the data structure used for TetMesh into the data structures used for Mesh.
@@ -243,17 +245,14 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
   for ( plain_edge_set::iterator i=cut_edges.begin(); i!=cut_edges.end(); ++i )
   {
     Edge * ce = *i;
-    BoundingBox edgebox( *ce );
+    Teuchos::RCP<BoundingBox> edgebox = Teuchos::rcp( BoundingBox::Create( *ce ) );
     plain_edge_set edges;
-    pp_->CollectEdges( edgebox, edges );
+    pp_->CollectEdges( *edgebox, edges );
     //edges.erase( ce );
 
     PointSet cp;
     cp.insert( ce->BeginNode()->point() );
     cp.insert( ce->EndNode()->point() );
-
-    double pos;
-    LINALG::Matrix<3,1> x;
 
     for ( plain_edge_set::iterator i=edges.begin(); i!=edges.end(); ++i )
     {
@@ -266,11 +265,25 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
              cp.count( e->EndNode()->point() )==0 )
         {
           double tolerance;
-          bool iscut = e->ComputeCut( ce, pos, x, tolerance );
-          if ( iscut )
+          try
           {
-            Point * p = Point::NewPoint( mesh_, x.A(), pos, ce, NULL, tolerance );
-            p->AddEdge( e );
+            e->ComputeCut( & mesh_, ce, NULL, tolerance );
+          }
+          catch ( std::runtime_error & err )
+          {
+            std::cout << "\n-------------------\n";
+            std::cout << "\nCut Edge\n";
+            ce->Print();
+            std::cout << "\nOther Edge\n";
+            e->Print();
+            std::cout << "\n-------------------\n";
+
+            plain_edge_set edges;
+            edges.reserve(2);
+            edges.insert( e );
+            edges.insert( ce );
+            GEO::CUT::OUTPUT::GmshEdgesOnly( edges );
+            run_time_error(err);
           }
         }
       }
@@ -279,9 +292,9 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
 }
 
 /* Cut the created mesh in a similar fashion as is done for ParentIntersection.
-   However it is not done exactly the same way... It seems to be quite complex...
-   One would have to spend quite some time to find out the thinking behind it and maybe connect it to the existing algo.
- */
+ * However it is not done exactly the same way... It seems to be quite complex...
+ * One would have to spend quite some time to find out the thinking behind it and
+ * maybe connect it to the existing algo. */
 void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh,
                                          Element * element,
                                          const plain_volumecell_set & parent_cells,
@@ -306,7 +319,9 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh,
   FindEdgeCuts();
 
   plain_element_set elements_done;
-  cut_mesh_.Cut( mesh_, elements_done, count+1 );
+  // increase counter
+  ++count;
+  cut_mesh_.Cut( mesh_, elements_done, count );
 
   //New way of cut? Might need to join the the TetMeshIntersection with the new Cut algorithm?
   //THIS IS NOT WORKING AT THE MOMENT!!!

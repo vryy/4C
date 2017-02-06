@@ -24,7 +24,7 @@ namespace LINALG{
   class Solver;
 }
 namespace DRT{
-class Discretization;
+class DiscretizationInterface;
 }
 namespace Teuchos{
 class ParameterList;
@@ -51,28 +51,28 @@ namespace SOLVER {
     Teuchos::RCP<LinSolMap> BuildLinSolvers(
         const std::set<enum INPAR::STR::ModelType>& modeltypes,
         const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const;
+        DRT::DiscretizationInterface& actdis) const;
 
   private:
     //! create the structural linear solver (should be called by default)
     Teuchos::RCP<LINALG::Solver> BuildStructureLinSolver(
         const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const;
+        DRT::DiscretizationInterface& actdis) const;
 
     //! create the meshtying/contact linear solver
     Teuchos::RCP<LINALG::Solver> BuildMeshtyingContactLinSolver(
         const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const;
+        DRT::DiscretizationInterface& actdis) const;
 
     //! create the Lagrange/penalty enforced constraint linear solver
     Teuchos::RCP<LINALG::Solver> BuildLagPenConstraintLinSolver(
         const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const;
+        DRT::DiscretizationInterface& actdis) const;
 
     //! create the Windkessel linear solver
     Teuchos::RCP<LINALG::Solver> BuildCardiovascular0DLinSolver(
         const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const;
+        DRT::DiscretizationInterface& actdis) const;
 
   }; // class Factory
 
@@ -81,7 +81,7 @@ namespace SOLVER {
   Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
       BuildLinSolvers(const std::set<enum INPAR::STR::ModelType>& modeltypes,
                       const Teuchos::ParameterList& sdyn,
-                      DRT::Discretization& actdis);
+                      DRT::DiscretizationInterface& actdis);
 } // namespace SOLVER
 } // namespace STR
 

@@ -27,6 +27,8 @@ namespace STR {
 namespace TIMINT {
   class Base;
   class BaseDataSDyn;
+  class BaseDataGlobalState;
+
   /*! \brief Factory to build the desired time integration strategy and
    *  the desired adaptive wrapper object
    *
@@ -58,6 +60,9 @@ namespace TIMINT {
         const Teuchos::ParameterList& sdyn
         ) const;
 
+    //! Build the global state data container
+    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> BuildDataGlobalState() const;
+
   private:
     //! Build the implicit time integration strategies
     Teuchos::RCP<STR::TIMINT::Base> BuildImplicitStrategy(
@@ -87,6 +92,10 @@ namespace TIMINT {
   Teuchos::RCP<STR::TIMINT::BaseDataSDyn> BuildDataSDyn(
       const Teuchos::ParameterList& sdyn
       );
+
+  /*! Non-member function, which relates to the STR::TIMINT::Factory
+   *  Please call this method, if you want to build a new global state data container. */
+  Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> BuildDataGlobalState();
 } // namespace TIMINT
 } // namespace STR
 

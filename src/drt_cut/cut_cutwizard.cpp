@@ -30,24 +30,72 @@
 #include "../drt_cut/cut_sidehandle.H"
 
 
-/*-------------------------------------------------------------*
- * constructor
-*--------------------------------------------------------------*/
-GEO::CutWizard::CutWizard( Teuchos::RCP<DRT::Discretization> dis )
-  : backdis_( dis ),
-    myrank_ ( backdis_->Comm().MyPID() ),
-    intersection_(Teuchos::rcp( new GEO::CUT::CombIntersection( myrank_ ))),
-    do_mesh_intersection_(false),
-    do_levelset_intersection_(false),
-    back_disp_col_(Teuchos::null),
-    back_levelset_col_(Teuchos::null),
-    level_set_sid_(-1),
-    lsv_only_plus_domain_(true),
-    is_set_options_(false)
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CutWizard::BackMesh::Init(
+    const Teuchos::RCP<const Epetra_Vector> & back_disp_col,
+    const Teuchos::RCP<const Epetra_Vector> & back_levelset_col)
 {
-  if(backdis_ == Teuchos::null) dserror("null pointer to background dis, invalid!");
+  back_disp_col_ = back_disp_col;
+  back_levelset_col_ = back_levelset_col;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int GEO::CutWizard::BackMesh::NumMyColElements() const
+{
+  return back_discret_->NumMyColElements();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const DRT::Element* GEO::CutWizard::BackMesh::lColElement( int lid ) const
+{
+  return back_discret_->lColElement( lid );
+}
+
+/*-------------------------------------------------------------*
+ * constructor
+ *-------------------------------------------------------------*/
+GEO::CutWizard::CutWizard( const Teuchos::RCP<DRT::Discretization> & backdis )
+    : back_mesh_( Teuchos::rcp( new CutWizard::BackMesh( backdis, this ) ) ),
+      comm_( backdis->Comm() ),
+      myrank_ ( backdis->Comm().MyPID() ),
+      intersection_(Teuchos::rcp( new GEO::CUT::CombIntersection( myrank_ ))),
+      do_mesh_intersection_(false),
+      do_levelset_intersection_(false),
+      level_set_sid_(-1),
+      VCellgausstype_( INPAR::CUT::VCellGaussPts_Tessellation ),
+      BCellgausstype_( INPAR::CUT::BCellGaussPts_Tessellation ),
+      gmsh_output_( false ),
+      tetcellsonly_( false ),
+      screenoutput_( false ),
+      lsv_only_plus_domain_(true),
+      is_set_options_(false)
+{
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+GEO::CutWizard::CutWizard( const Epetra_Comm & comm )
+    : back_mesh_( Teuchos::null ),
+      comm_( comm ),
+      myrank_ ( comm.MyPID() ),
+      intersection_( Teuchos::rcp( new GEO::CUT::CombIntersection( myrank_ ) ) ),
+      do_mesh_intersection_(false),
+      do_levelset_intersection_(false),
+      level_set_sid_(-1),
+      VCellgausstype_( INPAR::CUT::VCellGaussPts_Tessellation ),
+      BCellgausstype_( INPAR::CUT::BCellGaussPts_Tessellation ),
+      gmsh_output_( false ),
+      tetcellsonly_( false ),
+      screenoutput_( false ),
+      lsv_only_plus_domain_( false ),
+      is_set_options_( false )
+{
+
+}
 
 /*========================================================================*/
 //! @name Setters
@@ -87,18 +135,14 @@ void GEO::CutWizard::SetOptions(
 void GEO::CutWizard::SetBackgroundState(
     Teuchos::RCP<const Epetra_Vector> back_disp_col,      //!< col vector holding background ALE displacements for backdis
     Teuchos::RCP<const Epetra_Vector> back_levelset_col,  //!< col vector holding nodal level-set values based on backdis
-    const int level_set_sid                               //!< global id for level-set side
+    int level_set_sid                                     //!< global id for level-set side
 )
 {
   // set state vectors used in cut
-  back_disp_col_     = back_disp_col;
-  back_levelset_col_ = back_levelset_col;
-
+  back_mesh_->Init( back_disp_col, back_levelset_col );
   level_set_sid_ = level_set_sid;
 
-
-  if(back_levelset_col_ != Teuchos::null)
-    do_levelset_intersection_ = true;
+  do_levelset_intersection_ = back_mesh_->IsLevelSet();
 
 }
 
@@ -247,14 +291,24 @@ void GEO::CutWizard::Cut(
 
 
   // safety checks if the cut is initialized correctly
-  if(!is_set_options_) dserror("you have call SetOptions() before you can use the CutWizard");
+  if( !is_set_options_ )
+    dserror( "you have call SetOptions() before you can use the CutWizard" );
 
-  if(!do_mesh_intersection_ and !do_levelset_intersection_) dserror(" no mesh intersection and no level-set intersection! Why do you call the CUT-library?");
-
+  if( !do_mesh_intersection_ and !do_levelset_intersection_ )
+  {
+    if ( myrank_ == 0 )
+    {
+      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n";
+      std::cout << "WARNING: No mesh intersection and no level-set intersection! \n" <<
+                   "         Why do you call the CUT-library?\n";
+      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n";
+    }
+    return;
+  }
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CutWizard::Cut" );
 
-  if ( backdis_->Comm().MyPID() == 0 and screenoutput_)
+  if ( myrank_ == 0 and screenoutput_ )
     IO::cout << "\nGEO::CutWizard::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
@@ -275,7 +329,7 @@ void GEO::CutWizard::Cut(
 
 
   const double t_end = Teuchos::Time::wallTime()-t_start;
-  if ( backdis_->Comm().MyPID() == 0  and screenoutput_)
+  if ( myrank_ == 0  and screenoutput_)
   {
     IO::cout << "\n\t\t\t\t\t\t\t... Success (" << t_end  <<  " secs)\n" << IO::endl;
   }
@@ -298,7 +352,7 @@ void GEO::CutWizard::Prepare()
 
   const double t_start = Teuchos::Time::wallTime();
 
-  if(backdis_->Comm().MyPID()==0 and screenoutput_)
+  if( myrank_ == 0 and screenoutput_ )
     IO::cout << "\n\t * 1/6 Cut_Initialize ...";
 
   // fill the cutwizard cw with information:
@@ -330,7 +384,7 @@ void GEO::CutWizard::Prepare()
   intersection_->BuildStaticSearchTree();
 
   const double t_mid = Teuchos::Time::wallTime()-t_start;
-  if ( backdis_->Comm().MyPID() == 0  and screenoutput_)
+  if ( myrank_ == 0  and screenoutput_)
   {
     IO::cout << "\t\t\t... Success (" << t_mid  <<  " secs)" << IO::endl;
   }
@@ -467,93 +521,106 @@ void GEO::CutWizard::AddMeshCuttingSide( int mi, DRT::Element * ele, const Epetr
 }
 
 /*-------------------------------------------------------------*
-* add elements from the background discretization
-*--------------------------------------------------------------*/
+ * add elements from the background discretization
+ *-------------------------------------------------------------*/
 void GEO::CutWizard::AddBackgroundElements()
 {
-
-  std::vector<int> lm;
-  std::vector<double> mydisp;
 
   // vector with nodal level-set values
   std::vector<double> myphinp;
 
   // Loop over all Elements to find cut elements and add them to the LevelsetIntersection class
   // Brute force method.
-  int numelements = backdis_->NumMyColElements();
-
-
+  int numelements = back_mesh_->NumMyColElements();
 
   for ( int lid = 0; lid < numelements; ++lid )
   {
-    DRT::Element * element = backdis_->lColElement(lid);
+    const DRT::Element * element = back_mesh_->lColElement( lid );
 
-    const int numnode = element->NumNode();
-    DRT::Node ** nodes = element->Nodes();
+    LINALG::SerialDenseMatrix xyze;
 
-    Epetra_SerialDenseMatrix xyze( 3, numnode );
+    GetPhysicalNodalCoordinates( element, xyze );
 
-    for ( int i=0; i < numnode; ++i )
-    {
-      DRT::Node & node = *nodes[i];
-
-      LINALG::Matrix<3, 1> x( node.X() );
-
-      if( back_disp_col_ != Teuchos::null)
-      {
-        // castt to DiscretizationXFEM
-        Teuchos::RCP<DRT::DiscretizationXFEM>  xbackdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(backdis_, true);
-
-        lm.clear();
-        mydisp.clear();
-
-        xbackdis->InitialDof(&node, lm); //to get all dofs of background (also not active ones at the moment!)
-
-        if(lm.size() == 3) // case used actually?
-        {
-          DRT::UTILS::ExtractMyValues(*back_disp_col_,mydisp,lm);
-        }
-        else if(lm.size() == 4) // case xFluid ... just take the first three
-        {
-          // copy the first three entries for the displacement, the fourth entry an all others
-          std::vector<int> lm_red; // reduced local map
-          lm_red.clear();
-          for(int k=0; k< 3; k++) lm_red.push_back(lm[k]);
-
-          DRT::UTILS::ExtractMyValues(*back_disp_col_,mydisp,lm_red);
-        }
-        else
-          dserror("wrong number of dofs for node %i", lm.size());
-
-        if (mydisp.size() != 3)
-          dserror("we need 3 displacements here");
-
-        LINALG::Matrix<3, 1> disp( &mydisp[0], true );
-
-        //update x-position of cutter node for current time step (update with displacement)
-        x.Update( 1, disp, 1 );
-      }
-      std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
-    }
-
-    if(back_levelset_col_ != Teuchos::null)
+    if( back_mesh_->IsLevelSet() )
     {
       myphinp.clear();
 
-      DRT::UTILS::ExtractMyNodeBasedValues(element, myphinp, *back_levelset_col_);
-      AddElement(element, xyze, &myphinp[0], lsv_only_plus_domain_);
+      DRT::UTILS::ExtractMyNodeBasedValues( element, myphinp, back_mesh_->BackLevelSetCol() );
+      AddElement( element, xyze, &myphinp[0], lsv_only_plus_domain_ );
     }
     else
     {
-      AddElement(element, xyze, NULL);
+      AddElement( element, xyze, NULL );
     }
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CutWizard::GetPhysicalNodalCoordinates(
+    const DRT::Element * element, LINALG::SerialDenseMatrix & xyze ) const
+{
+  std::vector<int> lm;
+  std::vector<double> mydisp;
+
+  const int numnode = element->NumNode();
+  const DRT::Node * const * nodes = element->Nodes();
+
+  xyze.Shape( 3, numnode );
+  for ( int i=0; i < numnode; ++i )
+  {
+    const DRT::Node & node = *nodes[i];
+
+    LINALG::Matrix<3, 1> x( node.X() );
+
+    if( back_mesh_->IsBackDisp() )
+    {
+      // castt to DiscretizationXFEM
+      Teuchos::RCP<DRT::DiscretizationXFEM>  xbackdis =
+          Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(back_mesh_->GetPtr(), true);
+
+      lm.clear();
+      mydisp.clear();
+
+      xbackdis->InitialDof(&node, lm); //to get all dofs of background (also not active ones at the moment!)
+
+      if(lm.size() == 3) // case used actually?
+      {
+        DRT::UTILS::ExtractMyValues( back_mesh_->BackDispCol(), mydisp, lm );
+      }
+      else if(lm.size() == 4) // case xFluid ... just take the first three
+      {
+        // copy the first three entries for the displacement, the fourth entry an all others
+        std::vector<int> lm_red; // reduced local map
+        lm_red.clear();
+        for(int k=0; k< 3; k++) lm_red.push_back(lm[k]);
+
+        DRT::UTILS::ExtractMyValues( back_mesh_->BackDispCol(), mydisp, lm_red );
+      }
+      else
+        dserror("wrong number of dofs for node %i", lm.size());
+
+      if (mydisp.size() != 3)
+        dserror("we need 3 displacements here");
+
+      LINALG::Matrix<3, 1> disp( &mydisp[0], true );
+
+      //update x-position of cutter node for current time step (update with displacement)
+      x.Update( 1, disp, 1 );
+    }
+    std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
+  }
+}
+
+
 /*-------------------------------------------------------------*
 * Add this background mesh element to the intersection class
 *--------------------------------------------------------------*/
-void GEO::CutWizard::AddElement( DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze, double* myphinp, bool lsv_only_plus_domain )
+void GEO::CutWizard::AddElement(
+    const DRT::Element * ele,
+    const Epetra_SerialDenseMatrix & xyze,
+    double* myphinp,
+    bool lsv_only_plus_domain )
 {
   const int numnode = ele->NumNode();
   const int * nodeids = ele->NodeIds();
@@ -575,7 +642,7 @@ void GEO::CutWizard::Run_Cut(
   intersection_->Status();
 
   // just for time measurement
-  backdis_->Comm().Barrier();
+  comm_.Barrier();
 
   if(do_mesh_intersection_)
   {
@@ -588,7 +655,7 @@ void GEO::CutWizard::Run_Cut(
       intersection_->Cut_SelfCut(include_inner, screenoutput_);
 
       // just for time measurement
-      backdis_->Comm().Barrier();
+      comm_.Barrier();
 
       const double t_diff = Teuchos::Time::wallTime() - t_start;
       if (myrank_ == 0 and screenoutput_)
@@ -603,7 +670,7 @@ void GEO::CutWizard::Run_Cut(
       intersection_->Cut_CollisionDetection(include_inner, screenoutput_);
 
       // just for time measurement
-      backdis_->Comm().Barrier();
+      comm_.Barrier();
 
       const double t_diff = Teuchos::Time::wallTime() - t_start;
       if (myrank_ == 0 and screenoutput_)
@@ -619,7 +686,7 @@ void GEO::CutWizard::Run_Cut(
     intersection_->Cut(screenoutput_);
 
     // just for time measurement
-    backdis_->Comm().Barrier();
+    comm_.Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
     if ( myrank_ == 0 and screenoutput_ ) IO::cout << "\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
@@ -633,7 +700,7 @@ void GEO::CutWizard::Run_Cut(
     FindPositionDofSets( include_inner );
 
     // just for time measurement
-    backdis_->Comm().Barrier();
+    comm_.Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
     if ( myrank_ == 0 and screenoutput_ ) IO::cout << "\t... Success (" << t_diff  <<  " secs)" << IO::endl;
@@ -648,13 +715,15 @@ void GEO::CutWizard::Run_Cut(
     intersection_->Cut_Finalize( include_inner, VCellgausstype_, BCellgausstype_, tetcellsonly_, screenoutput_ );
 
     // just for time measurement
-    backdis_->Comm().Barrier();
+    comm_.Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
     if ( myrank_ == 0 and screenoutput_ ) IO::cout << "\t\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
   }
 
   intersection_->Status(VCellgausstype_);
+
+  Post_Run_Cut( include_inner );
 }
 
 
@@ -664,7 +733,7 @@ void GEO::CutWizard::Run_Cut(
 void GEO::CutWizard::FindPositionDofSets(bool include_inner)
 {
 
-  backdis_->Comm().Barrier();
+  comm_.Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)" );
 
@@ -675,21 +744,21 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
   //----------------------------------------------------------
 
   GEO::CUT::Options options;
-  intersection_->GetOptions(options);
+  intersection_->GetOptions( options );
 
   if ( options.FindPositions() )
   {
 
     GEO::CUT::Mesh & m = intersection_->NormalMesh();
 
-    bool communicate = (backdis_->Comm().NumProc() > 1);
+    bool communicate = (comm_.NumProc() > 1);
 
     // create a parallel Cut object for the current background mesh to communicate missing data
     Teuchos::RCP<GEO::CUT::Parallel> cut_parallel = Teuchos::null;
 
-    if (communicate)
+    if ( communicate )
     {
-      cut_parallel = Teuchos::rcp( new GEO::CUT::Parallel( backdis_, m, *intersection_ ) );
+      cut_parallel = Teuchos::rcp( new GEO::CUT::Parallel( back_mesh_->GetPtr(), m, *intersection_ ) );
     }
 
     // find inside and outside positions of nodes
@@ -701,7 +770,8 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
     {
       m.FindNodePositions();
 
-      if (communicate) cut_parallel->CommunicateNodePositions();
+      if ( communicate )
+        cut_parallel->CommunicateNodePositions();
 
     }
 
@@ -718,10 +788,10 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
     }
 
     //--------------------------------------------
-    backdis_->Comm().Barrier();
+    comm_.Barrier();
 
     // find number and connection of dofsets at nodes from cut volumes
-    intersection_->CreateNodalDofSet( include_inner, *backdis_);
+    intersection_->CreateNodalDofSet( include_inner, back_mesh_->Get() );
 
     if (communicate) cut_parallel->CommunicateNodeDofSetNumbers(include_inner);
 
@@ -766,7 +836,7 @@ void GEO::CutWizard::DumpGmshNumDOFSets( bool include_inner)
   std::stringstream str;
   str << filename;
 
-  intersection_->DumpGmshNumDOFSets( str.str(), include_inner, *backdis_ );
+  intersection_->DumpGmshNumDOFSets( str.str(), include_inner, back_mesh_->Get() );
 }
 
 
@@ -779,7 +849,7 @@ void GEO::CutWizard::DumpGmshVolumeCells( bool include_inner )
   std::stringstream str;
   str << name
       << ".CUT_volumecells."
-      << backdis_->Comm().MyPID()
+      << myrank_
       << ".pos";
   intersection_->DumpGmshVolumeCells( str.str(), include_inner );
 }
@@ -793,7 +863,7 @@ void GEO::CutWizard::DumpGmshIntegrationCells()
   std::stringstream str;
   str << name
       << ".CUT_integrationcells."
-      << backdis_->Comm().MyPID()
+      << myrank_
       << ".pos";
   intersection_->DumpGmshIntegrationCells( str.str() );
 }
@@ -813,7 +883,7 @@ GEO::CUT::SideHandle * GEO::CutWizard::GetSide( int sid )
   return intersection_->GetSide( sid );
 }
 
-GEO::CUT::ElementHandle * GEO::CutWizard::GetElement( DRT::Element * ele )
+GEO::CUT::ElementHandle * GEO::CutWizard::GetElement( const DRT::Element * ele ) const
 {
   return intersection_->GetElement( ele->Id() );
 }

@@ -199,9 +199,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatDiffCoeffLin(
   //
   // (nabla w, D(D(c)) nabla c)
   //
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       double laplawfrhs_gradphi(0.);
       my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi,gradphi,vi);
@@ -226,9 +226,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatPotEquDiviOhm(
     const double                                       scalar        //!< scaling factor for element matrix contributions
 )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       double laplawf(0.);
       my::GetLaplacianWeakForm(laplawf,ui,vi);
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcRhsPotEquDiviOhm(
     const double                                       scalar     //!< scaling factor for element residual contributions
   )
 {
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     double laplawfrhs_gradpot(0.);
     my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot,gradpot,vi);

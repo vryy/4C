@@ -98,7 +98,7 @@ const STR::TIMINT::BaseDataGlobalState& MORTAR::STRATEGY::Factory::GState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::Discretization& MORTAR::STRATEGY::Factory::Discret()
+DRT::DiscretizationInterface& MORTAR::STRATEGY::Factory::Discret()
 {
   CheckInit();
   return *discret_ptr_;
@@ -106,7 +106,7 @@ DRT::Discretization& MORTAR::STRATEGY::Factory::Discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const DRT::Discretization& MORTAR::STRATEGY::Factory::Discret() const
+const DRT::DiscretizationInterface& MORTAR::STRATEGY::Factory::Discret() const
 {
   CheckInit();
   return *discret_ptr_;
@@ -157,12 +157,14 @@ const int& MORTAR::STRATEGY::Factory::Dim() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MORTAR::STRATEGY::Factory::PrepareNURBSElement(
-    const DRT::Discretization& discret,
+    const DRT::DiscretizationInterface& discret,
     Teuchos::RCP<DRT::Element> ele,
     Teuchos::RCP<MORTAR::MortarElement> cele) const
 {
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discret));
+  if (nurbsdis==NULL)
+    dserror("Dynamic cast failed!");
 
   Teuchos::RCP<const DRT::NURBS::Knotvector> knots =
       nurbsdis->GetKnotVector();

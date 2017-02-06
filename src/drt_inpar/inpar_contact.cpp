@@ -68,12 +68,16 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
                            "PenaltyMethod","penalty", "Penalty",
                            "UzawaAugementedLagrange","uzawa","Uzawa",
-                           "AugmentedLagrange","augmented", "Augmented","Nitsche"),
+                           "AugmentedLagrange","augmented", "Augmented",
+                           "XContact", "xcontact",
+                           "Nitsche"),
         tuple<int>(
                 solution_lagmult, solution_lagmult, solution_lagmult,
                 solution_penalty, solution_penalty, solution_penalty,
                 solution_uzawa, solution_uzawa, solution_uzawa,
-                solution_augmented, solution_augmented, solution_augmented,solution_nitsche),
+                solution_augmented, solution_augmented, solution_augmented,
+                solution_xcontact, solution_xcontact,
+                solution_nitsche),
         &scontact);
 
   setStringToIntegralParameter<int>("SYSTEM","Condensed","Type of linear system setup / solution",
@@ -224,6 +228,18 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   setStringToIntegralParameter<int>("PRINT_ANGULAR_CONSERVATION","No",
       "Do and print the angular momentum conservation check.",
       yesnotuple,yesnovalue,&augcontact);
+
+  // sub-list "eXtended contact formulation"
+    Teuchos::ParameterList& xcontact=scontact.sublist("XCONTACT");
+  // TODO
+  setStringToIntegralParameter<int>("CONST_CPP_NORMAL", "No",
+      "If chosen, closest point normal on master is assumed to be constant during variation and linearization.",
+      yesnotuple, yesnovalue, &xcontact);
+
+  // TODO
+  setStringToIntegralParameter<int>("H1_DUALITY_PAIRING", "Yes",
+      "If chosen, H1 duality pairing for contact potential is used.",
+      yesnotuple, yesnovalue, &xcontact);
 
   DoubleParameter("NITSCHE_THETA",0.0,"+1: symmetric, 0: non-symmetric, -1: skew-symmetric",&scontact);
 

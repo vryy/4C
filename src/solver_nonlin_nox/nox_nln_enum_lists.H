@@ -26,16 +26,12 @@ namespace NLN {
   //! Supported solution type names
   enum SolutionType {
     sol_unknown,
-    // structural quantities
-    sol_structure,
-    // contact quantities
-    sol_contact,
-    // meshtying quantities
-    sol_meshtying,
-    // 0D cardiovascular quantities
-    sol_cardiovascular0d,
-    // Lagrange or/and penalty enforced constraint quantities
-    sol_lag_pen_constraint
+    sol_structure,          ///< structural problem
+    sol_contact,            ///< contact problem
+    sol_meshtying,          ///< meshtying problem
+    sol_cardiovascular0d,   ///< 0D cardiovascular problem
+    sol_lag_pen_constraint, ///< Lagrange or/and penalty enforced constraint problem
+    sol_scatra              ///< scalar transport problem
   };
 
   //! Map quantity enum to std::string
@@ -43,27 +39,23 @@ namespace NLN {
   {
     switch (type)
     {
-    case sol_structure :
-      return "Structure";
-      break;
-    case sol_contact :
-      return "Contact";
-      break;
-    case sol_meshtying :
-      return "Meshtying";
-      break;
-    case sol_cardiovascular0d:
-      return "Cardiovascular0D";
-      break;
-    case sol_lag_pen_constraint:
-      return "Lag-Pen-Constraint";
-      break;
-    case sol_unknown:
-    default :
-      return "Unknown Solution Type";
-      break;
+      case sol_structure :
+        return "Structure";
+      case sol_contact :
+        return "Contact";
+      case sol_meshtying :
+        return "Meshtying";
+      case sol_cardiovascular0d:
+        return "Cardiovascular0D";
+      case sol_lag_pen_constraint:
+        return "Lag-Pen-Constraint";
+      case sol_scatra:
+        return "ScaTra";
+      case sol_unknown:
+      default :
+        return "Unknown Solution Type";
     }
-    return "";
+    exit(EXIT_FAILURE);
   };
 
   //! Map quantity std::string to enum
@@ -80,6 +72,8 @@ namespace NLN {
       type = sol_cardiovascular0d;
     else if (boost::iequals(name,"lag-pen-constraint"))
       type = sol_lag_pen_constraint;
+    else if (boost::iequals(name,"scatra"))
+      type = sol_scatra;
 
     return type;
   };
@@ -101,34 +95,62 @@ namespace LinSystem {
     linear_system_structure_contact,
     linear_system_structure_cardiovascular0d,
     linear_system_structure_lag_pen_constraint,
+    linear_system_scatra,
     linear_system_undefined
   };
 
   /// Map quantity name to std::string
   static inline const std::string LinearSystemType2String(const enum LinearSystemType& type)
   {
-    switch (type)
+    switch ( type )
     {
-    case linear_system_structure:
-      return "linear_system_structure";
-      break;
-    case linear_system_structure_contact:
-      return "linear_system_structure_contact";
-      break;
-    case linear_system_structure_cardiovascular0d:
-      return "linear_system_structure_cardiovascular0d";
-      break;
-    case linear_system_structure_lag_pen_constraint:
-      return "linear_system_structure_lag_pen_constraint";
-      break;
-    case linear_system_undefined:
-      return "linear_system_undefined";
-      break;
-    default :
-      return "unknown operator type";
-      break;
+      case linear_system_structure:
+        return "linear_system_structure";
+      case linear_system_structure_contact:
+        return "linear_system_structure_contact";
+      case linear_system_structure_cardiovascular0d:
+        return "linear_system_structure_cardiovascular0d";
+      case linear_system_structure_lag_pen_constraint:
+        return "linear_system_structure_lag_pen_constraint";
+      case linear_system_undefined:
+        return "linear_system_undefined";
+      case linear_system_scatra:
+        return "linear_system_scatra";
+      default :
+        return "unknown operator type";
     }
-    return "";
+    exit(EXIT_FAILURE);
+  };
+
+  //! List of types of epetra objects that can be used for the Jacobian and/or Preconditioner.
+  enum OperatorType {
+    //! A LINALG_SparseOperator object.
+    LinalgSparseOperator,
+    //! A LINALG_SparseMatrixBase object.
+    LinalgSparseMatrixBase,
+    //! A LINALG_BlockSparseMatrix object.
+    LinalgBlockSparseMatrix,
+    //! A LINALG_SparseMatrix object.
+    LinalgSparseMatrix
+  };
+
+  /// Map quantity name to std::string
+  static inline const std::string OperatorType2String(const enum OperatorType& type)
+  {
+    switch ( type )
+    {
+      case LinalgSparseOperator:
+        return "LINALG_SparseOperator";
+      case LinalgBlockSparseMatrix:
+        return "LINALG_BlockSparseMatrix";
+      case LinalgSparseMatrixBase:
+        return "LINALG_SparseMatrixBase";
+      case LinalgSparseMatrix:
+        return "LINALG_SparseMatrix";
+      default :
+        return "unknown operator type";
+    }
+    exit(EXIT_FAILURE);
   };
 } // namespace LinSystem
 namespace MeritFunction {
@@ -168,25 +190,17 @@ namespace MeritFunction {
 namespace StatusTest {
   //! Supported quantity names for distinguished status tests
   enum QuantityType {
-    quantity_unknown,
-    // check structural quantities
-    quantity_structure,
-    // check (semi-smooth) contact quantities (normal/frictionless)
-    quantity_contact_normal,
-    // check (semi-smooth) contact quantities (frictionless)
-    quantity_contact_friction,
-    // check meshtying quantities
-    quantity_meshtying,
-    // check 0d cardiovascular quantities
-    quantity_cardiovascular0d,
-    // check Lagrange/penalty enforced constraint quantites
-    quantity_lag_pen_constraint,
-    // check semi-smooth contact
-    quantity_plasticity,
-    // check pressure dofs
-    quantity_pressure,
-    // check eas dofs
-    quantity_eas
+    quantity_unknown,           ///< unknown quantity (dummy)
+    quantity_structure,         ///< check structural quantities
+    quantity_contact_normal,    ///< check (semi-smooth) contact quantities (normal/frictionless)
+    quantity_contact_friction,  ///< check (semi-smooth) contact quantities (frictionless)
+    quantity_meshtying,         ///< check meshtying quantities
+    quantity_cardiovascular0d,  ///< check 0d cardiovascular quantities
+    quantity_lag_pen_constraint,///< check Lagrange/penalty enforced constraint quantites
+    quantity_plasticity,        ///< check semi-smooth plasticity
+    quantity_pressure,          ///< check pressure dofs
+    quantity_eas,               ///< check eas dofs
+    quantity_levelset_reinit    ///< check levelset reinitialization
   };
 
   /// Map quantity name to std::string
@@ -194,41 +208,34 @@ namespace StatusTest {
   {
     switch (type)
     {
-    case quantity_structure:
-      return "STRUCTURE";
-      break;
-    case quantity_contact_normal:
-      return "CONTACT-NORMAL";
-      break;
-    case quantity_contact_friction:
-      return "CONTACT-FRICTION";
-      break;
-    case quantity_meshtying:
-      return "MESHTYING";
-      break;
-    case quantity_cardiovascular0d:
-      return "CARDIOVASCULAR0D";
-      break;
-    case quantity_lag_pen_constraint:
-      return "LAG-PEN-CONSTRAINT";
-      break;
-    case quantity_plasticity:
-      return "PLASTICITY";
-      break;
-    case quantity_pressure:
-      return "PRESSURE";
-      break;
-    case quantity_eas:
-      return "EAS";
-      break;
-    case quantity_unknown:
-    default :
-      return "unknown quantity type";
-      break;
+      case quantity_structure:
+        return "STRUCTURE";
+      case quantity_contact_normal:
+        return "CONTACT-NORMAL";
+      case quantity_contact_friction:
+        return "CONTACT-FRICTION";
+      case quantity_meshtying:
+        return "MESHTYING";
+      case quantity_cardiovascular0d:
+        return "CARDIOVASCULAR0D";
+      case quantity_lag_pen_constraint:
+        return "LAG-PEN-CONSTRAINT";
+      case quantity_plasticity:
+        return "PLASTICITY";
+      case quantity_pressure:
+        return "PRESSURE";
+      case quantity_eas:
+        return "EAS";
+      case quantity_levelset_reinit:
+        return "LEVELSET-REINIT";
+      case quantity_unknown:
+      default :
+        return "unknown quantity type";
     }
-    return "";
+    exit(EXIT_FAILURE);
   };
 
+  /// Map std::string to quantity type
   inline QuantityType String2QuantityType(const std::string& name)
   {
     QuantityType type = quantity_unknown;
@@ -252,6 +259,8 @@ namespace StatusTest {
       type = quantity_pressure;
     else if (boost::iequals(name,"eas"))
       type = quantity_eas;
+    else if (boost::iequals(name,"levelset-reinit"))
+      type = quantity_levelset_reinit;
 
     return type;
   };

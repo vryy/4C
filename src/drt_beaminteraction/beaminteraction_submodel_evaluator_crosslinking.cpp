@@ -408,8 +408,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::OutputStepState(
     (*owner)[i] = crosslinker_i->Id();
   }
   bindis->Writer()->WriteVector( "displacement", dis );
-  bindis->Writer()->WriteVector( "numbond", numbond, bindis->Writer()->nodevector );
-  bindis->Writer()->WriteVector( "owner", owner, bindis->Writer()->nodevector );
+  bindis->Writer()->WriteVector( "numbond", numbond, IO::nodevector );
+  bindis->Writer()->WriteVector( "owner", owner, IO::nodevector );
 
   // as we know that our maps have changed every time we write output, we can empty
   // the map cache as we can't get any advantage saving the maps anyway

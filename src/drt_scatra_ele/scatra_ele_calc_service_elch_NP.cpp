@@ -99,9 +99,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPo
   {
     for(int k=0; k<my::numscal_; ++k)
     {
-      for(int vi=0; vi<my::nen_; ++vi)
+      for (unsigned vi=0; vi<my::nen_; ++vi)
       {
-        for(int ui=0; ui<my::nen_; ++ui)
+        for (unsigned ui=0; ui<my::nen_; ++ui)
         {
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);
@@ -119,9 +119,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPo
   {
     for(int k=0; k<my::numscal_; ++k)
     {
-      for(int vi=0; vi<my::nen_; ++vi)
+      for (unsigned vi=0; vi<my::nen_; ++vi)
       {
-        for(int ui=0; ui<my::nen_; ++ui)
+        for (unsigned ui=0; ui<my::nen_; ++ui)
         {
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+k) += INPAR::ELCH::faraday_const*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+k);
           emat(vi*my::numdofpernode_+my::numscal_,ui*my::numdofpernode_+my::numscal_) += INPAR::ELCH::faraday_const*nume*emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+my::numscal_);

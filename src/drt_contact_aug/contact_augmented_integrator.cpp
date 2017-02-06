@@ -219,7 +219,8 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivCell3DAuxPlane(
     // frequently reused quantities
     //**********************************************************************
     double gpn[3]      = {0.0,0.0,0.0};
-    std::vector<GEN::pairedvector<int,double> > dnmap_unit(3,linsize); // deriv of x,y and z comp. of gpn (unit)
+    // deriv of x,y and z comp. of gpn (unit)
+    std::vector<GEN::pairedvector<int,double> > dnmap_unit(3,linsize);
 
     //**********************************************************************
     // evaluate at GP and lin char. quantities
@@ -662,7 +663,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSegment2D(
   sele.GetNodalCoords(scoord);
   mele.GetNodalCoords(mcoord);
 
-  // nodal lagrange mulitplier
+  // nodal lagrange multiplier
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
 
   if (SolType() == INPAR::CONTACT::solution_augmented)
@@ -764,14 +765,14 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSegment2D(
     dynamic_cast<CONTACT::CoElement&>(sele).DJacDXi(djacdxi,sxi,ssecderiv);
     double dxdsxidsxi=djacdxi[0]; // only 2D here
 
-    // evalute the GP slave coordinate derivatives
+    // evaluate the GP slave coordinate derivatives
     std::vector<GEN::pairedvector<int,double> > dsxigp(1,linsize+ndof*ncol);
     for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
       dsxigp[0][p->first] += 0.5*(1-eta[0])*(p->second);
     for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
       dsxigp[0][p->first] += 0.5*(1+eta[0])*(p->second);
 
-    // evalute the GP master coordinate derivatives
+    // evaluate the GP master coordinate derivatives
     GEN::pairedvector<int,double> dmxigp(linsize+ndof*ncol);
     DerivXiGP2D(sele,mele,sxi[0],mxi[0],dsxigp[0],dmxigp,linsize);
 
@@ -970,12 +971,12 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle2D(
           double mxib =  0.1;  //--> arbitrary value
           DerivXiAB2D(sele,sxia,sxib,*meles[nummaster],mxia,mxib,ximaps,startslave,endslave,linsize);
 
-          // evalute the GP slave coordinate derivatives --> no entries
+          // evaluate the GP slave coordinate derivatives --> no entries
           std::vector<GEN::pairedvector<int,double> >dsxigp(1,linsize+ndof*ncol);
           for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
             dsxigp[0][p->first] = 0.0;
 
-          // evalute the GP master coordinate derivatives
+          // evaluate the GP master coordinate derivatives
           GEN::pairedvector<int,double> dmxigp(linsize+ndof*ncol);
           DerivXiGP2D(sele,*meles[nummaster],sxi[0],mxi[0],dsxigp[0],dmxigp,linsize);
 
@@ -1261,8 +1262,8 @@ void inline CONTACT::AugmentedIntegrator::GP_3D_kappa_Lin(
 void inline CONTACT::AugmentedIntegrator::GP_Normal_DerivNormal(
     MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector sval,
-    LINALG::SerialDenseMatrix sderiv,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseMatrix& sderiv,
     const std::vector<GEN::pairedvector<int,double> >& dsxigp,
     double* gpn,
     std::vector<GEN::pairedvector<int,double> >& dnmap_unit,

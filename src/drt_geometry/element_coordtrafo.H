@@ -128,11 +128,11 @@ static inline void elementToCurrentCoordinatesInPlace(
 \param xsi                  (in)        : element coordinates
 \param x                    (out)       : position in physical coordinates (x, y, z)
 */
-template <DRT::Element::DiscretizationType DISTYPE, class V, class M>
+template <DRT::Element::DiscretizationType DISTYPE, class V, class M, unsigned probDim>
 static inline void elementToCurrentCoordinatesT(
     const M&             xyze,
     const V&             xsi,
-    LINALG::Matrix<3,1>& x      )
+    LINALG::Matrix<probDim,1>& x      )
 {
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static LINALG::Matrix<numNodes, 1> funct;
@@ -141,8 +141,8 @@ static inline void elementToCurrentCoordinatesT(
 
     // set to zero
     x.Clear();
-    for(int i=0; i<numNodes; i++)
-        for(int j=0; j<3; j++)
+    for (int i=0; i<numNodes; i++)
+        for (unsigned j=0; j<probDim; j++)
           x(j) += xyze(j,i) * funct(i);
 
     return;
@@ -158,12 +158,12 @@ static inline void elementToCurrentCoordinatesT(
 \param xsi                  (in)        : element coordinates
 \param x                    (out)       : position in physical coordinates (x, y, z)
 */
-template <class V, class M>
+template <class V, class M, unsigned probDim>
 static inline void elementToCurrentCoordinates(
         const DRT::Element::DiscretizationType  distype,
         const M&                                xyze,
         const V&                                xsi,
-        LINALG::Matrix<3,1>&                    x)
+        LINALG::Matrix<probDim,1>&              x)
 {
   switch (distype)
   {
@@ -842,16 +842,16 @@ static inline bool currentToVolumeElementCoordinatesT(
 
 
 
-/*!
-\brief computes element coordinates of point x within element
-\param distype              (in)        : shape of the element
-\param xyze                 (in)        : nodal positions of element
-\param x                    (in)        : position in physical coordinates (x, y, z)
-\param xsi                  (out)       : element coordinates xsi
-\param fastinitguess        (in)        : if true, approximate xsi first (default: false)
-\return  true if point lies in the element, false otherwise
-         (ATTENTION: if fastinitguess == true this is just an approximation and can be incorrect)
-*/
+/*! \brief computes element coordinates of point x within element
+ *
+ *  \param distype              (in)        : shape of the element
+ *  \param xyze                 (in)        : nodal positions of element
+ *  \param x                    (in)        : position in physical coordinates (x, y, z)
+ *  \param xsi                  (out)       : element coordinates xsi
+ *  \param fastinitguess        (in)        : if true, approximate xsi first (default: false)
+ *  \return  true if point lies in the element, false otherwise
+ *
+ *  \note If \c fastinitguess == TRUE this is just an approximation and can be incorrect */
 template <class M1, class V3>
 bool currentToVolumeElementCoordinates(
     const DRT::Element::DiscretizationType  distype,

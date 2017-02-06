@@ -180,7 +180,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
        std::ostringstream temp;
        temp << k+1;
        material_internal_state_np_component_ = Teuchos::rcp((*material_internal_state_np_)(k),false);
-       output_->WriteVector("mat_int_state_hdg"+temp.str(), material_internal_state_np_component_,IO::DiscretizationWriter::elementvector);
+       output_->WriteVector("mat_int_state_hdg"+temp.str(), material_internal_state_np_component_,IO::elementvector);
      }
   }
 
@@ -211,7 +211,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::WriteProblemSpecificOutput(
       if( (*interpolatedPhi)[k] >= activation_threshold_ && (*activation_time_interpol_)[k] <= dta_*0.9)
         (*activation_time_interpol_)[k] =  time_;
     }
-    output_->WriteVector("activation_time_np_hdg", activation_time_interpol_, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("activation_time_np_hdg", activation_time_interpol_, IO::nodevector);
   }
 }
 

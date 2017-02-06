@@ -359,7 +359,7 @@ void SCATRA::LevelSetAlgorithm::PrepareTimeStepReinit()
 
 /*----------------------------------------------------------------------*
  | calculate node-based velocity field via L2-projection                |
- |  for reinitialization                                rasthofer 09/13 |
+ | for reinitialization                                 rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
 {
@@ -397,22 +397,30 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
       // set initial phi, i.e., solution of level-set equation
       discret_->SetState("phizero", initialphireinit_);
 
-      if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
+      switch ( reinitaction_ )
       {
-        // set phin as phi used for velocity
-        // note:read as phinp in SysmatNodalVel()
-#ifdef USE_PHIN_FOR_VEL
-        discret_->SetState("phinp", phin_);
-#else
-        discret_->SetState("phinp", phinp_);
-#endif
+        case INPAR::SCATRA::reinitaction_sussman :
+        {
+          // set phin as phi used for velocity
+          // note:read as phinp in SysmatNodalVel()
+  #ifdef USE_PHIN_FOR_VEL
+          discret_->SetState("phinp", phin_);
+  #else
+          discret_->SetState("phinp", phinp_);
+  #endif
+          break;
+        }
+        case INPAR::SCATRA::reinitaction_ellipticeq :
+        {
+          discret_->SetState("phinp", phinp_);
+          break;
+        }
+        default:
+        {
+          dserror("Unknown reinitialization method for projection!");
+          exit(EXIT_FAILURE);
+        }
       }
-      else if (reinitaction_ == INPAR::SCATRA::reinitaction_ellipticeq)
-      {
-        discret_->SetState("phinp", phinp_);
-      }
-      else dserror("Unknown reinitialization method for projection!");
-
       // call loop over elements
       discret_->Evaluate(eleparams,sysmat_,residual_);
       discret_->ClearState();
@@ -438,6 +446,7 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
       ((*nb_grad_val_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
     }
   }
+
 #if 0
   {
     // turn on/off screen output for writing process of Gmsh postprocessing file
@@ -1550,7 +1559,8 @@ void SCATRA::LevelSetAlgorithm::CorrectVolume()
   std::map<int,GEO::BoundaryIntCells > interface;
   interface.clear();
   // reconstruct interface and calculate volumes, etc ...
-  SCATRA::CaptureZeroLevelSet(phinp_,discret_,volminus,volplus,surface,interface);
+  SCATRA::LEVELSET::Intersection intersect;
+  intersect.CaptureZeroLevelSet(phinp_,discret_,volminus,volplus,surface,interface);
 
   const double voldelta = initvolminus_ - volminus;
   if (myrank_ == 0)
@@ -1574,13 +1584,25 @@ void SCATRA::LevelSetAlgorithm::CorrectVolume()
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  | elliptic reinitialization                            rasthofer 09/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::ReinitElliptic(
   std::map<int,GEO::BoundaryIntCells >& interface
   )
+{
+  // store interface
+  interface_eleq_ =
+      Teuchos::rcp(new std::map<int,GEO::BoundaryIntCells > (interface) );
+
+  // call the executing method
+  ReinitializeWithEllipticEquation();
+}
+
+/*----------------------------------------------------------------------*
+ | elliptic reinitialization                            rasthofer 09/14 |
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::ReinitializeWithEllipticEquation()
 {
   //-------------------------------------------------
   // preparations
@@ -1591,9 +1613,6 @@ void SCATRA::LevelSetAlgorithm::ReinitElliptic(
 
   // set element parameters for reinitialization equation
   SetReinitializationElementParameters();
-
-  // store interface
-  interface_eleq_ = Teuchos::rcp(new std::map<int,GEO::BoundaryIntCells > (interface) );
 
   // vector for initial phi (solution of level-set equation) of reinitialization process
   // this vector is only initialized: currently function CalcNodeBasedReinitVel() is also

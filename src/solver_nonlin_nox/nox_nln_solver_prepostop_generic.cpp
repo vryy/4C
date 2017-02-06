@@ -84,13 +84,16 @@ void NOX::NLN::Solver::PrePostOp::Generic::runPreSolve(
       const NOX::StatusTest::Generic& statusTest = lsSolver->GetOuterStatusTest();
       double wanted = NOX::NLN::AUX::GetNormFClassVariable(
           statusTest,NOX::NLN::StatusTest::quantity_structure,"SpecifiedTolerance");
+      if ( wanted == -1.0 )
+        wanted = NOX::NLN::AUX::GetNormFClassVariable(
+          statusTest,NOX::NLN::StatusTest::quantity_levelset_reinit,"SpecifiedTolerance");
 
       if (wanted==-1.0)
       {
         if (lsSolver->GetUtils().isPrintType(NOX::Utils::Warning))
         {
           lsSolver->GetUtils().out() << "\n*** WARNING ***\n"
-              << "There is no NOX::NLN::StatusTest::NormF test for the structural\n"
+              << "There is no NOX::NLN::StatusTest::NormF test for the primal field \n"
               << "components. The \"Wanted Tolerance\" for the sublist\n"
               << "\"Linear Solver\" was set to its default value 1.0e-6!\n";
         }

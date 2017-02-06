@@ -46,7 +46,7 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap>
 STR::SOLVER::Factory::BuildLinSolvers(
     const std::set<enum INPAR::STR::ModelType>& modeltypes,
     const Teuchos::ParameterList& sdyn,
-    DRT::Discretization& actdis) const
+    DRT::DiscretizationInterface& actdis) const
 {
   // create a new standard map
   Teuchos::RCP<LinSolMap> linsolvers = Teuchos::rcp(new LinSolMap());
@@ -104,7 +104,7 @@ STR::SOLVER::Factory::BuildLinSolvers(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver(
         const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const
+        DRT::DiscretizationInterface& actdis) const
 {
   Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::null;
 
@@ -207,7 +207,7 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolver(
         const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const
+        DRT::DiscretizationInterface& actdis) const
 {
   Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::null;
 
@@ -226,7 +226,8 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
   if(mtcond.size()==0 and ccond.size()!=0)
     onlycontact = true;
 
-  const Teuchos::ParameterList& mcparams     = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& mcparams =
+      DRT::Problem::Instance()->ContactDynamicParams();
   switch(DRT::INPUT::IntegralValue<int>(mcparams,"SYSTEM"))
   {
     case INPAR::CONTACT::system_saddlepoint:
@@ -236,19 +237,28 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
       const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
       // check if the meshtying/contact solver has a valid solver number
       if (linsolvernumber == (-1))
-        dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
+        dserror("no linear solver defined for meshtying/contact problem. Please"
+            " set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // plausibility check
 
       // solver can be either UMFPACK (direct solver) or an Aztec_MSR/Belos (iterative solver)
-      INPAR::SOLVER::SolverType sol  = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"SOLVER");
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
+      INPAR::SOLVER::SolverType sol  =
+          DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
+              DRT::Problem::Instance()->SolverParams(linsolvernumber),"SOLVER");
+      INPAR::SOLVER::AzPrecType prec =
+          DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+              DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
       if (sol != INPAR::SOLVER::umfpack && sol != INPAR::SOLVER::superlu) {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
         if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
             prec != INPAR::SOLVER::azprec_TekoSIMPLE  &&
             prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)  // TODO adapt error message
-          dserror("You have chosen an iterative linear solver. For mortar/Contact in saddlepoint formulation you have to choose a block preconditioner such as SIMPLE. Choose CheapSIMPLE, TekoSIMPLE (if Teko is available) or MueLu_contactSP (if MueLu is available) in the SOLVER %i block in your dat file.",linsolvernumber);
+          dserror("You have chosen an iterative linear solver. For mortar/Contact "
+              "in saddlepoint formulation you have to choose a block preconditioner "
+              "such as SIMPLE. Choose CheapSIMPLE, TekoSIMPLE (if Teko is available) "
+              "or MueLu_contactSP (if MueLu is available) in the SOLVER %i block in "
+              "your dat file.",linsolvernumber);
       }
 
       // build meshtying/contact solver
@@ -260,24 +270,35 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
       actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
 
       // feed the solver object with additional information
-      if     (onlycontact or meshtyingandcontact) linsolver->Params().set<bool>("CONTACT",true);
-      else if(onlymeshtying)                      linsolver->Params().set<bool>("MESHTYING",true);
-      else dserror("this cannot be: no saddlepoint problem for beamcontact or pure structure problem.");
+      if     (onlycontact or meshtyingandcontact)
+        linsolver->Params().set<bool>("CONTACT",true);
+      else if(onlymeshtying)
+        linsolver->Params().set<bool>("MESHTYING",true);
+      else
+        dserror("this cannot be: no saddlepoint problem for beamcontact "
+            "or pure structure problem.");
 
-      INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams,"STRATEGY");
+      INPAR::CONTACT::SolvingStrategy soltype =
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams,"STRATEGY");
       if (soltype==INPAR::CONTACT::solution_lagmult)
       {
         // get the solver number used for structural problems
         const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
         // check if the structural solver has a valid solver number
         if (linsolvernumber == (-1))
-          dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+          dserror("no linear solver defined for structural field. Please set"
+              " LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
         // provide null space information
         if (prec == INPAR::SOLVER::azprec_CheapSIMPLE ||
-                  prec == INPAR::SOLVER::azprec_TekoSIMPLE) {
-          actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1")); // Inverse2 is created within blockpreconditioners.cpp
-        } else if (prec == INPAR::SOLVER::azprec_MueLuAMG_contactSP) { /* do nothing here */    }
+                  prec == INPAR::SOLVER::azprec_TekoSIMPLE)
+        {
+          // Inverse2 is created within blockpreconditioners.cpp
+          actdis.ComputeNullSpaceIfNecessary(
+              linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"));
+        }
+        else if (prec == INPAR::SOLVER::azprec_MueLuAMG_contactSP)
+        { /* do nothing here */    }
       }
     }
     break;
@@ -288,7 +309,8 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
        const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
        // check if the meshtying/contact solver has a valid solver number
        if (linsolvernumber == (-1))
-         dserror("no linear solver defined for meshtying/contact problem. Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
+         dserror("no linear solver defined for meshtying/contact problem. "
+             "Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // build meshtying solver
       linsolver =
@@ -308,7 +330,7 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolver(
         const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const
+        DRT::DiscretizationInterface& actdis) const
 {
   Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::null;
 
@@ -399,7 +421,7 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLinSolver(
         const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const
+        DRT::DiscretizationInterface& actdis) const
 {
 
   Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::null;
@@ -464,7 +486,7 @@ Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> >
     STR::SOLVER::BuildLinSolvers(
     const std::set<enum INPAR::STR::ModelType>& modeltypes,
     const Teuchos::ParameterList& sdyn,
-    DRT::Discretization& actdis)
+    DRT::DiscretizationInterface& actdis)
 {
   Factory factory;
   return factory.BuildLinSolvers(modeltypes,sdyn,actdis);

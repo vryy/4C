@@ -708,6 +708,8 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
   src/drt_adapter/ad_str_poro_wrapper.cpp
   src/drt_adapter/ad_str_timeloop.cpp
+  src/drt_adapter/ad_str_xcontact.cpp
+  src/drt_adapter/ad_str_xstructure_algorithm.cpp
   src/drt_adapter/ad_str_invana.cpp
   src/drt_adapter/adapter_thermo.cpp
   src/drt_adapter/ad_ale.cpp
@@ -805,6 +807,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_twophase.cpp
   src/drt_inpar/inpar_volmortar.cpp
   src/drt_inpar/inpar_wear.cpp
+  src/drt_inpar/inpar_contact_xcontact.cpp
   src/drt_inpar/inpar_xfem.cpp
   src/drt_tutorial/inpar_tutorial.cpp
 )
@@ -843,6 +846,11 @@ set(OBJS_DRT_XFEM
   src/drt_xfem/xfem_neumann.cpp
   src/drt_xfem/xfem_interface_utils.cpp
   src/drt_xfem/xfem_utils.cpp
+  src/drt_xfem/xfem_state_creator.cpp
+  src/drt_xfem/xfield_state.cpp
+  src/drt_xfem/xfield_field_coupling_dofset.cpp
+  src/drt_xfem/xfield_field_coupling.cpp
+  src/drt_xfem/xfem_multi_field_mapextractor.cpp
   src/drt_xfem/xfluid_timeInt_base.cpp
   src/drt_xfem/xfluid_timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xfluid_timeInt.cpp
@@ -1138,6 +1146,7 @@ set(OBJS_DRT_SCATRA
   src/drt_levelset/levelset_timint_stat.cpp
   src/drt_scatra/scatra_timint_hdg.cpp
   src/drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.cpp
+  src/drt_contact_xcontact/xcontact_levelset_timint_ost.cpp
 )
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
@@ -1558,6 +1567,19 @@ set(OBJS_DRT_TWO_PHASE
   src/drt_two_phase_flow/two_phase_algorithm.cpp
   src/drt_two_phase_flow/two_phase_dyn.cpp
 )
+
+set(OBJS_DRT_CONTACT_XCONTACT
+  src/drt_contact_xcontact/xcontact_algorithm_base.cpp
+  src/drt_contact_xcontact/xcontact_algorithm_partitioned.cpp
+  src/drt_contact_xcontact/xcontact_dyn.cpp
+  src/drt_contact_xcontact/xcontact_multi_discretization_wrapper.cpp
+  src/drt_contact_xcontact/xcontact_levelset_algorithm.cpp
+  src/drt_contact_xcontact/xcontact_levelset_intersection.cpp
+  src/drt_contact_xcontact/xcontact_levelset_reinit_generic.cpp
+  src/drt_contact_xcontact/xcontact_levelset_reinit_elliptic.cpp
+  src/drt_contact_xcontact/xcontact_levelset_reinit_elliptic_nox_interface.cpp
+)
+
 set(OBJS_POST_DRT_COMMON
   src/post_drt_common/post_drt_common.cpp
 )
@@ -1747,6 +1769,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_lagpenconstraint.cpp
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
+  src/drt_contact_xcontact/str_model_evaluator_xcontact.cpp
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
   src/drt_beaminteraction/str_model_evaluator_beaminteraction.cpp
   src/drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.cpp
@@ -1785,6 +1808,15 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_timint_loca_continuation.cpp
   src/drt_structure_new/str_timint_locainterface.cpp
 #  src/drt_structure_new/loca_str_constraint_arclength.cpp
+)
+set(OBJS_DRT_STRUCTURE_XSTRUCTURE
+  src/drt_structure_xstructure/xstr_xstructure_state.cpp
+  src/drt_structure_xstructure/xstr_xstructure_structure_state.cpp
+  src/drt_structure_xstructure/xstr_multi_discretization_wrapper.cpp
+  src/drt_structure_xstructure/xstr_multi_io.cpp
+  src/drt_contact_xcontact/xcontact_cutwizard.cpp
+  src/drt_contact_xcontact/xcontact_cutwizard_debug.cpp
+  src/drt_contact_xcontact/xcontact_state_creator.cpp
 )
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
@@ -1961,6 +1993,7 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
   src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
   src/drt_constraint/nox_nln_lagpenconstraint_linearsystem.cpp
+  src/drt_scatra/nox_nln_scatra_linearsystem.cpp
 )
 
 set(OBJS_LOCA_CONTINUATION
@@ -2183,6 +2216,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/selfcontact_binarytree.cpp
   src/drt_contact/smoothing_strategy.cpp
   src/drt_contact/smoothing_manager.cpp
+  src/drt_contact/contact_utils.cpp
 )
 set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_strategy.cpp
@@ -2190,6 +2224,9 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_interface.cpp
   src/drt_contact_aug/contact_augmented_interface_tools.cpp
   src/drt_contact_aug/contact_augmented_integrator.cpp
+  src/drt_contact_xcontact/xcontact_strategy.cpp
+  src/drt_contact_xcontact/xcontact_interface.cpp
+  src/drt_contact_xcontact/xcontact_integrator.cpp
 )
 set(OBJS_DRT_CUT
   src/drt_cut/base_vol.cpp
@@ -2201,6 +2238,8 @@ set(OBJS_DRT_CUT
   src/drt_cut/direct_divergence_refplane.cpp
   src/drt_cut/cut_edge.cpp
   src/drt_cut/cut_element.cpp
+  src/drt_cut/cut_position.cpp
+  src/drt_cut/cut_intersection.cpp
   src/drt_cut/cut_elementhandle.cpp
   src/drt_cut/cut_facet.cpp
   src/drt_cut/cut_facetgraph.cpp
@@ -2235,6 +2274,8 @@ set(OBJS_DRT_CUT
   src/drt_cut/volume_integration.cpp
   src/drt_cut/least_squares.cpp
   src/drt_cut/cut_cutwizard.cpp
+  src/drt_cut/cut_pointgraph_simple.cpp
+  src/drt_cut/cut_facetgraph_simple.cpp
 )
 set(OBJS_CUT_TEST
   tests/cut_test/cut_test_double.cpp
@@ -2531,6 +2572,7 @@ add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_cavitation ${OBJS_DRT_CAVITATION})
 add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})
+add_library(alg_contact_xfem ${OBJS_DRT_CONTACT_XCONTACT})
 add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_sti ${OBJS_DRT_STI})
 add_library(alg_wear ${OBJS_DRT_WEAR})
@@ -2549,6 +2591,7 @@ set(MULTIFIELD_LIBRARIES
   alg_loma
   alg_cavitation
   alg_two_phase
+  alg_contact_xfem
   alg_tsi
   alg_sti
   alg_wear
@@ -2584,6 +2627,7 @@ add_library(alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
+add_library(alg_xstructure ${OBJS_DRT_STRUCTURE_XSTRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
 add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
@@ -2604,6 +2648,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_porofluidmultiphase
   alg_scatra
   alg_structure
+  alg_xstructure
   alg_plastic_ssn
   alg_invanalysis
   alg_statinvanalysis
@@ -2793,8 +2838,8 @@ include(CTest)
 ###------------------------------------------------------------------ Unit Tests
 
 add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
-target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchoscore ${LAPACK_LIBRARIES}
-    ${FILTER_LIBRARIES}
+target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} ${LAPACK_LIBRARIES}
+    -Wl,--start-group ${FILTER_LIBRARIES} -Wl,--end-group
 )
 add_test(NAME run_cut_test COMMAND ${MPI_DIR}/bin/mpirun $<TARGET_FILE:cut_test>)
 

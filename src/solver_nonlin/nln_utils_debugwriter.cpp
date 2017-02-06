@@ -3,10 +3,12 @@
 \file nln_utils_debugwriter.cpp
 
 <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
 </pre>
+
+\level 3
 */
 
 /*----------------------------------------------------------------------------*/
@@ -253,7 +255,7 @@ void NLNSOL::UTILS::DebugWriterSingleField::Setup()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::UTILS::DebugWriterSingleField::WriteVector(
     Teuchos::RCP<const Epetra_MultiVector> vec, const std::string& description,
-    const IO::DiscretizationWriter::VectorType vt) const
+    const IO::VectorType vt) const
 {
   // Ensure that naming is unique
   const std::string uniquename = GenerateName();

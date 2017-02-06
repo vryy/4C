@@ -24,6 +24,9 @@
 
 
 //forward declaration ...
+namespace DRT {
+  class Discretization;
+}
 namespace LINALG {
   class SparseMatrix;
 } // namespace LINALG
@@ -181,8 +184,10 @@ namespace MODELEVALUATOR{
     //! seed for random number generator
     int rs_;
 
-  };
+    //! casted pointer ( necessary due to need of column information )
+    Teuchos::RCP<DRT::Discretization> discret_ptr_;
 
+  }; // class BrownianDyn
 }
 }
 

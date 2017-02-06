@@ -122,10 +122,11 @@ void fillInitialPositionArray(
   for (int inode=0; inode<numnode; inode++)
   {
     const double* x = nodes[inode]->X();
-    for(int idim=0; idim<dim; idim++)
-    {
-      xyze(idim,inode) = x[idim];
-    }
+    // copy the values in the current column
+    std::copy( x, x+dim, & xyze( 0, inode ) );
+    // fill the remaining entries of the column with zeros, if the given matrix has
+    // the wrong row dimension (this is primarily for safety reasons)
+    std::fill( & xyze( 0, inode ) + dim, & xyze( 0, inode ) + xyze.M(), 0.0);
   }
   return;
 }

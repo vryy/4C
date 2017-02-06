@@ -558,9 +558,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   if (not mparams_ptr.is_null())
   {
     cparams_ptr =
-        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
-    if (cparams_ptr.is_null())
-      dserror("Cast to CONTACT::ParamsInterface failed!");
+        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr,true);
   }
   IntegrateDerivSegment2D(sele,sxia,sxib,mele,mxia,mxib,comm,cparams_ptr);
 }
@@ -1222,9 +1220,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
   if (not mparams_ptr.is_null())
   {
     cparams_ptr =
-        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
-    if (cparams_ptr.is_null())
-      dserror("Cast to CONTACT::ParamsInterface failed!");
+        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr,true);
   }
   IntegrateDerivEle3D(sele,meles,boundary_ele,proj_,comm,cparams_ptr);
 }
@@ -1436,9 +1432,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   if (not mparams_ptr.is_null())
   {
     cparams_ptr =
-        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
-    if (cparams_ptr.is_null())
-      dserror("Cast to CONTACT::ParamsInterface failed!");
+        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr,true);
   }
   IntegrateDerivCell3DAuxPlane(sele,mele,cell,auxn,comm,cparams_ptr);
 }
@@ -3860,9 +3854,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   if (not mparams_ptr.is_null())
   {
     cparams_ptr =
-        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
-    if (cparams_ptr.is_null())
-      dserror("Cast to CONTACT::ParamsInterface failed!");
+        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr,true);
   }
   IntegrateDerivEle2D(sele,meles,boundary_ele,cparams_ptr);
 }

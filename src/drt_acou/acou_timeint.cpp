@@ -910,7 +910,7 @@ void ACOU::AcouTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history)
     else // (phys_ == INPAR::ACOU::acou_solid)
     {
       output_->WriteVector("trace_velocity",traceVelocity);
-      //output_->WriteVector("stress",interpolatedVelocityGradient,output_->nodevector);
+      //output_->WriteVector("stress",interpolatedVelocityGradient,IO::nodevector);
       if(numdim_==2)
       {
         Teuchos::RCP<Epetra_Vector> stress = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap()));

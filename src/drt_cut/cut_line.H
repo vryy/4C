@@ -77,8 +77,16 @@ public:
   {
     return p1_;
   }
+  const Point * BeginPoint() const
+  {
+    return p1_;
+  }
 
   Point* EndPoint()
+  {
+    return p2_;
+  }
+  const Point * EndPoint() const
   {
     return p2_;
   }
@@ -89,7 +97,16 @@ public:
              ( p1==p2_ and p2==p1_ ) );
   }
 
-  void Plot( std::ofstream & f )
+  /*! \brief Print the coordinates of the points on screen */
+   void Print()
+   {
+     p1_->Print();
+     std::cout << "--";
+     p2_->Print();
+     std::cout << "\n";
+   }
+
+  void Plot( std::ofstream & f ) const
   {
     f << "# line\n";
     p1_->Plot( f );

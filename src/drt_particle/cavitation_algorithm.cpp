@@ -3156,7 +3156,7 @@ void CAVITATION::Algorithm::Output(bool forced_writerestart)
       dofluidrestart = true;
       if(fluidfrac_relevant)
       {
-        fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::DiscretizationWriter::dofvector);
+        fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::dofvector);
       }
     }
   }
@@ -3178,8 +3178,8 @@ void CAVITATION::Algorithm::Output(bool forced_writerestart)
     // add restart data for initial pressure and sub time stepping if necessary
     if(computeradiusRPbased_ == true)
     {
-      particles_->DiscWriter()->WriteVector("pg0", pg0_, IO::DiscretizationWriter::nodevector);
-      particles_->DiscWriter()->WriteVector("dtsub", dtsub_, IO::DiscretizationWriter::nodevector);
+      particles_->DiscWriter()->WriteVector("pg0", pg0_, IO::nodevector);
+      particles_->DiscWriter()->WriteVector("dtsub", dtsub_, IO::nodevector);
     }
   }
 

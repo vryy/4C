@@ -27,10 +27,10 @@ fluid meshes
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_fluid/fluid_utils.H"
+#include "../drt_xfem/xfield_state_utils.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
-#include "xfluid_utils.H"
+#include "../drt_fluid/fluid_utils.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidFluidState                         kruse 01/15 |
@@ -149,25 +149,25 @@ bool FLD::XFluidFluidState::Destroy()
 #if(1)
   std::cout << "Destroying the xffluidsysmat_ is not possible at the moment. Internally more strong RCPs point to the EpetraMatrix. This has to be checked!!!" << std::endl;
 # else
-  DestroyMatrix(xffluidsysmat_);
+  XFEM::DestroyMatrix(xffluidsysmat_);
 #endif
 
 
-  DestroyRCPObject(xffluidvelnp_);
-  DestroyRCPObject(xffluidveln_);
+  XFEM::DestroyRCPObject(xffluidvelnp_);
+  XFEM::DestroyRCPObject(xffluidveln_);
 
-  DestroyRCPObject(xffluidresidual_);
+  XFEM::DestroyRCPObject(xffluidresidual_);
 
-  DestroyRCPObject(xffluidzeros_);
-  DestroyRCPObject(xffluidincvel_);
+  XFEM::DestroyRCPObject(xffluidzeros_);
+  XFEM::DestroyRCPObject(xffluidincvel_);
 
 
-  DestroyRCPObject(xffluidsplitter_);
-  DestroyRCPObject(xffluidvelpressplitter_);
-  DestroyRCPObject(xffluiddbcmaps_);
+  XFEM::DestroyRCPObject(xffluidsplitter_);
+  XFEM::DestroyRCPObject(xffluidvelpressplitter_);
+  XFEM::DestroyRCPObject(xffluiddbcmaps_);
 
   // destroy dofrowmap
-  DestroyRCPObject(embfluiddofrowmap_);
+  XFEM::DestroyRCPObject(embfluiddofrowmap_);
 
   //TODO: actually it should be possible to delete the dofrowmap, however this causes problems in xffsi applications! (CHECK THIS!!!)
   // DofRowMap() in Xfluidfluid currently returns a strong RCP

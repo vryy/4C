@@ -18,10 +18,10 @@
 #include "nox_nln_interface_required.H"
 #include "nox_nln_linearsystem_prepostoperator.H"
 #include "nox_nln_solver_ptc.H"
+#include "nox_nln_aux.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_blocksparsematrix.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_LinearProblem.h>
@@ -30,6 +30,7 @@
 
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -48,10 +49,10 @@ NOX::NLN::LinearSystem::LinearSystem(
       solvers_(solvers),
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
-      jacType_(LinalgSparseOperator),
+      jacType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       jacPtr_(jacobian),
       precInterfacePtr_(iPrec),
-      precType_(LinalgSparseOperator),
+      precType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       precPtr_(preconditioner),
       precMatrixSource_(SeparateMatrix),
       scaling_(scalingObject),
@@ -63,7 +64,7 @@ NOX::NLN::LinearSystem::LinearSystem(
       prePostOperatorPtr_(Teuchos::null)
 {
   // Jacobian operator is supplied
-  jacType_ = getOperatorType(*jacPtr_);
+  jacType_ = NOX::NLN::AUX::GetOperatorType(*jacPtr_);
 
   reset(linearSolverParams);
 }
@@ -84,10 +85,10 @@ NOX::NLN::LinearSystem::LinearSystem(
       solvers_(solvers),
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
-      jacType_(LinalgSparseOperator),
+      jacType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       jacPtr_(jacobian),
       precInterfacePtr_(iPrec),
-      precType_(LinalgSparseOperator),
+      precType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       precPtr_(preconditioner),
       precMatrixSource_(SeparateMatrix),
       scaling_(Teuchos::null),
@@ -99,7 +100,7 @@ NOX::NLN::LinearSystem::LinearSystem(
       prePostOperatorPtr_(Teuchos::null)
 {
   // Jacobian operator is supplied
-  jacType_ = getOperatorType(*jacPtr_);
+  jacType_ = NOX::NLN::AUX::GetOperatorType(*jacPtr_);
 
   reset(linearSolverParams);
 }
@@ -119,10 +120,10 @@ NOX::NLN::LinearSystem::LinearSystem(
       solvers_(solvers),
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
-      jacType_(LinalgSparseOperator),
+      jacType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       jacPtr_(jacobian),
       precInterfacePtr_(Teuchos::null),
-      precType_(LinalgSparseOperator),
+      precType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       precPtr_(Teuchos::null),
       precMatrixSource_(SeparateMatrix),
       scaling_(Teuchos::null),
@@ -134,7 +135,7 @@ NOX::NLN::LinearSystem::LinearSystem(
       prePostOperatorPtr_(Teuchos::null)
 {
   // Jacobian operator is supplied
-  jacType_ = getOperatorType(*jacPtr_);
+  jacType_ = NOX::NLN::AUX::GetOperatorType(*jacPtr_);
 
   reset(linearSolverParams);
 }
@@ -153,10 +154,10 @@ NOX::NLN::LinearSystem::LinearSystem(
       solvers_(solvers),
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
-      jacType_(LinalgSparseOperator),
+      jacType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       jacPtr_(jacobian),
       precInterfacePtr_(Teuchos::null),
-      precType_(LinalgSparseOperator),
+      precType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       precPtr_(Teuchos::null),
       precMatrixSource_(SeparateMatrix),
       scaling_(Teuchos::null),
@@ -168,7 +169,7 @@ NOX::NLN::LinearSystem::LinearSystem(
       prePostOperatorPtr_(Teuchos::null)
 {
   // Jacobian operator is supplied
-  jacType_ = getOperatorType(*jacPtr_);
+  jacType_ = NOX::NLN::AUX::GetOperatorType(*jacPtr_);
 
   reset(linearSolverParams);
 }
@@ -198,32 +199,6 @@ void NOX::NLN::LinearSystem::resetPrePostOperator(Teuchos::ParameterList& p)
         Teuchos::rcp(new NOX::NLN::LinSystem::PrePostOperator(p));
   else
     prePostOperatorPtr_->reset(p);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-NOX::NLN::LinearSystem::OperatorType NOX::NLN::LinearSystem::
-    getOperatorType(const LINALG::SparseOperator& op) const
-{
-  const Epetra_Operator* testOperator = 0;
-
-  // Is it a LINALG_BlockSparseMatrix
-  testOperator = dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&op);
-  if (testOperator != 0)
-    return LinalgBlockSparseMatrix;
-
-  // Is it a LINALG_SparseMatrix?
-  testOperator = dynamic_cast<const LINALG::SparseMatrix*>(&op);
-  if (testOperator != 0)
-    return LinalgSparseMatrix;
-
-  // Is it a LINALG_SparseMatrixBase?
-  testOperator = dynamic_cast<const LINALG::SparseMatrixBase*>(&op);
-  if (testOperator != 0)
-    return LinalgSparseMatrixBase;
-
-  // Otherwise it must be a LINALG_SparseOperator
-  return LinalgSparseOperator;
 }
 
 /*----------------------------------------------------------------------*
@@ -524,7 +499,7 @@ Teuchos::RCP<Epetra_Operator> NOX::NLN::LinearSystem::getJacobianOperator()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const enum NOX::NLN::LinearSystem::OperatorType& NOX::NLN::LinearSystem::
+const enum NOX::NLN::LinSystem::OperatorType& NOX::NLN::LinearSystem::
     getJacobianOperatorType() const
 {
   return jacType_;
@@ -549,7 +524,7 @@ void NOX::NLN::LinearSystem::setJacobianOperatorForSolve(
 void NOX::NLN::LinearSystem::SetJacobianOperatorForSolve(
     const Teuchos::RCP<const LINALG::SparseOperator>& solveJacOp)
 {
-  if (jacType_ != getOperatorType(*solveJacOp))
+  if (jacType_ != NOX::NLN::AUX::GetOperatorType(*solveJacOp))
     throwError("SetJacobianOperatorForSolve","wrong operator type!");
 
   jacPtr_ = Teuchos::rcp_const_cast<LINALG::SparseOperator>(solveJacOp);

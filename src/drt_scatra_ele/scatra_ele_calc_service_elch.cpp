@@ -87,8 +87,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
 
     // construct location vector for velocity related dofs
     std::vector<int> lmvel(my::nsd_*my::nen_,-1);
-    for (int inode=0; inode<my::nen_; ++inode)
-      for (int idim=0; idim<my::nsd_; ++idim)
+    for (unsigned inode=0; inode<my::nen_; ++inode)
+      for (unsigned idim=0; idim<my::nsd_; ++idim)
         lmvel[inode*my::nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
     // extract local values of (convective) velocity field from global state vector
@@ -180,7 +180,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
           dserror("Flux id, which should be calculated, does not exit in the dof set.");
 
         // integrate and assemble everything into the "flux" vector
-        for (int vi=0; vi < my::nen_; vi++)
+        for (unsigned vi=0; vi < my::nen_; vi++)
         {
           const int fvi = vi*my::numdofpernode_+k;
           elevec1_epetra[fvi] += fac*my::funct_(vi)*q(0);
@@ -324,7 +324,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(
     GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
 
     // calculate integrals of (inverted) scalar(s) and domain
-    for (int i=0; i<my::nen_; i++)
+    for (unsigned i=0; i<my::nen_; i++)
     {
       double sigma_all(0.0);
       std::vector<double> sigma(my::numscal_, 0.0);
@@ -398,12 +398,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcInitialTimeDerivative(
   {
     const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
-    for (int vi=0; vi<my::nen_; ++vi)
+    for (unsigned vi=0; vi<my::nen_; ++vi)
     {
       const double v = fac*my::funct_(vi); // no density required here
       const int fvi = vi*my::numdofpernode_+my::numscal_;
 
-      for (int ui=0; ui<my::nen_; ++ui)
+      for (unsigned ui=0; ui<my::nen_; ++ui)
       {
         const int fui = ui*my::numdofpernode_+my::numscal_;
 
@@ -815,7 +815,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
   // make a copy of state variables to undo perturbations later
   std::vector<LINALG::Matrix<my::nen_,1> > ephinp_original(my::numdofpernode_);
   for(int k=0; k<my::numdofpernode_; ++k)
-    for(int i=0; i<my::nen_; ++i)
+    for (unsigned i=0; i<my::nen_; ++i)
       ephinp_original[k](i,0) = my::ephinp_[k](i,0);
 
   // generalized-alpha time integration requires a copy of history variables as well
@@ -823,7 +823,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
   if(my::scatraparatimint_->IsGenAlpha())
   {
     for(int k=0; k<my::numscal_; ++k)
-      for(int i=0; i<my::nen_; ++i)
+      for (unsigned i=0; i<my::nen_; ++i)
         ehist_original[k](i,0)  = my::ehist_[k](i,0);
   }
 
@@ -840,7 +840,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
   double maxrelerr(0.);
 
   // loop over columns of element matrix by first looping over nodes and then over dofs at each node
-  for(int inode=0; inode<my::nen_; ++inode)
+  for (unsigned inode=0; inode<my::nen_; ++inode)
   {
     for(int idof=0; idof<my::numdofpernode_; ++idof)
     {
@@ -854,11 +854,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
 
       // fill state vectors with original state variables
       for(int k=0; k<my::numdofpernode_; ++k)
-        for(int i=0; i<my::nen_; ++i)
+        for (unsigned i=0; i<my::nen_; ++i)
           my::ephinp_[k](i,0) = ephinp_original[k](i,0);
       if(my::scatraparatimint_->IsGenAlpha())
         for(int k=0; k<my::numscal_; ++k)
-          for(int i=0; i<my::nen_; ++i)
+          for (unsigned i=0; i<my::nen_; ++i)
             my::ehist_[k](i,0)  = ehist_original[k](i,0);
 
       // impose perturbation
@@ -888,7 +888,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
 
       // Note that we still need to evaluate the first comparison as well. For small entries in the element
       // matrix, the second comparison might yield good agreement in spite of the entries being wrong!
-      for(int row=0; row<my::numdofpernode_*my::nen_; ++row)
+      for (unsigned row=0; row<static_cast<unsigned>(my::numdofpernode_*my::nen_); ++row)
       {
         // get current entry in original element matrix
         const double entry = emat(row,col);
@@ -973,11 +973,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(
 
   // undo perturbations of state variables
   for(int k=0; k<my::numdofpernode_; ++k)
-    for(int i=0; i<my::nen_; ++i)
+    for (unsigned i=0; i<my::nen_; ++i)
       my::ephinp_[k](i,0) = ephinp_original[k](i,0);
   if(my::scatraparatimint_->IsGenAlpha())
     for(int k=0; k<my::numscal_; ++k)
-      for(int i=0; i<my::nen_; ++i)
+      for (unsigned i=0; i<my::nen_; ++i)
         my::ehist_[k](i,0)  = ehist_original[k](i,0);
 
   return;

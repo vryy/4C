@@ -10,11 +10,13 @@ time integrator, and then never touched again throughout the simulation. This pa
 the general parameter class holding all general static parameters required for scalar transport element evaluation.
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
 </pre>
+
+\level 2
 */
 /*----------------------------------------------------------------------*/
 #ifndef SCATRA_ELE_PARAMETER_LSREINIT_H
@@ -23,6 +25,7 @@ Maintainer: Rui Fang
 #include "scatra_ele_parameter_base.H"
 
 #include "../drt_inpar/inpar_levelset.H"
+#include "../drt_lib/drt_dserror.H"
 
 namespace DRT
 {
@@ -71,7 +74,14 @@ namespace DRT
         bool UseProjectedVel() const {return useprojectedreinitvel_;};
         INPAR::SCATRA::LinReinit LinForm() const {return linform_;};
         INPAR::SCATRA::ArtDiff ArtDiff() const {return artdiff_;};
-        double PenaltyPara() const {return alphapen_;};
+
+        /// access the penalty parameter for the elliptical reinitialization
+        double PenaltyPara() const
+        {
+          dsassert(alphapen_>0.0, "The penalty parameter have to be larger than zero!");
+          return alphapen_;
+        };
+
         bool Project() const {return project_;};
         bool Lumping() const {return lumping_;};
         double ProjectDiff() const {return projectdiff_;};

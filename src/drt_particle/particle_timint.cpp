@@ -24,7 +24,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-
 #include "../drt_mat/extparticle_mat.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -1319,11 +1318,11 @@ void PARTICLE::TimInt::WriteVector(const std::string name,
   {
     if (isdof)
     {
-      output_->WriteVector(name, vec, IO::DiscretizationWriter::dofvector);
+      output_->WriteVector(name, vec, IO::dofvector);
     }
     else
     {
-      output_->WriteVector(name, vec, IO::DiscretizationWriter::nodevector);
+      output_->WriteVector(name, vec, IO::nodevector);
     }
   }
 }
@@ -1338,11 +1337,11 @@ void PARTICLE::TimInt::WriteVector(const std::string name,
   {
     if (isdof)
     {
-      output_->WriteVector(name, vec, IO::DiscretizationWriter::dofvector);
+      output_->WriteVector(name, vec, IO::dofvector);
     }
     else
     {
-      output_->WriteVector(name, vec, IO::DiscretizationWriter::nodevector);
+      output_->WriteVector(name, vec, IO::nodevector);
     }
   }
 }
@@ -1357,11 +1356,11 @@ void PARTICLE::TimInt::WriteVector(const std::string name,
   {
     if (isdof)
     {
-      output_->WriteVector(name, (*vec)(0), IO::DiscretizationWriter::dofvector);
+      output_->WriteVector(name, (*vec)(0), IO::dofvector);
     }
     else
     {
-      output_->WriteVector(name, (*vec)(0), IO::DiscretizationWriter::nodevector);
+      output_->WriteVector(name, (*vec)(0), IO::nodevector);
     }
   }
 }

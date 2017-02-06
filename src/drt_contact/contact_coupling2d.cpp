@@ -245,8 +245,8 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
   //**********************************************************************
-  else if (IntType() == INPAR::MORTAR::inttype_elements
-      || IntType() == INPAR::MORTAR::inttype_elements_BS)
+  else if (IntType() == INPAR::MORTAR::inttype_elements or
+           IntType() == INPAR::MORTAR::inttype_elements_BS)
   {
     if ((int) MasterElements().size() == 0)
       return;
@@ -272,14 +272,14 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
     if (!Quad() || (Quad() && lmtype == INPAR::MORTAR::lagmult_quad)
         || (Quad() && lmtype == INPAR::MORTAR::lagmult_lin))
     {
-      // Test whether projection from slave to master surface is feasible --> important for dual LM Fnc.
+      // Test whether projection from slave to master surface is feasible -->
+      // important for dual LM Fnc.
       // Contact_interface.cpp --> AssembleG
-      for (int m = 0; m < (int) MasterElements().size(); ++m)
+      for (unsigned m = 0; m < MasterElements().size(); ++m)
       {
         // create CoCoupling2d object and push back
         Coupling().push_back(
-            Teuchos::rcp(
-                new CoCoupling2d(idiscret_, dim_, quad_, imortar_,
+            Teuchos::rcp(new CoCoupling2d(idiscret_, dim_, quad_, imortar_,
                     SlaveElement(), MasterElement(m))));
 
         // project the element pair

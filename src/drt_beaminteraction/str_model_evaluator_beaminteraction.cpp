@@ -45,6 +45,7 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BeamInteraction::BeamInteraction() :
+    discret_ptr_ ( Teuchos::null ),
     submodeltypes_ ( Teuchos::null ),
     me_map_ptr_ ( Teuchos::null ),
     me_vec_ptr_ ( Teuchos::null ),
@@ -72,6 +73,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   // setup variables
   // -------------------------------------------------------------------------
+  // discretization pointer
+  discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>( DiscretPtr(), true );
   // stiff
   stiff_beaminteraction_ = Teuchos::rcp( new
       LINALG::SparseMatrix( *GState().DofRowMapView(), 81, true, true ) );
@@ -96,7 +99,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase>  discloner =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
-  ia_discret_ = discloner->CreateMatchingDiscretization(DiscretPtr(),"ia_structure");
+  ia_discret_ = discloner->CreateMatchingDiscretization(discret_ptr_,"ia_structure");
   // create discretization writer
   ia_discret_->SetWriter( Teuchos::rcp( new IO::DiscretizationWriter( ia_discret_ ) ) );
 
@@ -638,7 +641,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateCouplingAdapterAndMatrixTransfo
   // reset transformation member variables (eg. exporter) by rebuilding
   // and provide new maps for coupling adapter
   siatransform_ = Teuchos::rcp( new FSI::UTILS::MatrixRowTransform );
-  coupsia_->SetupCoupling( *ia_discret_, Discret() );
+  coupsia_->SetupCoupling( *ia_discret_, *discret_ptr_ );
 }
 
 /*----------------------------------------------------------------------------*

@@ -23,10 +23,12 @@ namespace CUT
 {
 class VolumeCell;
 
+/*----------------------------------------------------------------------------*/
 /*!
-  \brief internal comparator class used for sorting sets of plain_volumecell_sets and plain_volumecell_sets.
-         This sorting is necessary to get the
-         same order of sets, important for restarts, restarts of Newton schemes in monolithic solves but also for debugging
+  \brief internal comparator class used for sorting sets of plain_volumecell_sets
+         and plain_volumecell_sets. This sorting is necessary to get the same order
+         of sets, important for restarts, restarts of Newton schemes in monolithic
+         solves but also for debugging
  */
 class Cmp
 {
@@ -51,6 +53,7 @@ private:
 
 };
 
+/*----------------------------------------------------------------------------*/
 class NodalDofSet
 {
 public:
@@ -85,8 +88,10 @@ public:
 
 protected:
 
-  /// stores for each element (and its subelements) in a 1-ring around the node all its volumecells which has been connected between the surrounding elements
-  /// for linear elements the plain_volumecell_sets contain only one volumecell, for quadratic elements usually more vc's
+  /** stores for each element (and its subelements) in a 1-ring around the node
+   *  all its volumecells which has been connected between the surrounding elements
+   *  for linear elements the plain_volumecell_sets contain only one volumecell,
+   *  for quadratic elements usually more vc's */
   std::set<plain_volumecell_set, Cmp> volumecell_composite_;
 
   /// is the dofset a standard physical dofset or a ghost dofset?
@@ -96,7 +101,7 @@ protected:
 
 };
 
-
+/*----------------------------------------------------------------------------*/
 class CompositeNodalDofSet : public NodalDofSet
 {
 public:
@@ -142,24 +147,27 @@ private:
 
 };
 
-
-
-
-
+/*----------------------------------------------------------------------------*/
 /// One node in a cut mesh
 /*!
- \brief Class to deal with nodes in the cut mesh. Nodes have a mesh-unique id, a levelset-value and a point. The point
- contains the major part of the information.
+ \brief Class to deal with nodes in the cut mesh. Nodes have a mesh-unique id, a
+        levelset-value and a point. The point contains the major part of the
+        information.
 
   Furthermore, nodes have some idea how many dofsets are required. This is
-  optional information than can be used by the xfem code.
+  optional information that can be used by the xfem code.
  */
 class Node
 {
 public:
 
   /// constructor
-  Node( int nid, Point * point, double lsv ) : nid_( nid ), point_( point ), lsv_( lsv ) { selfcutposition_ = Point::undecided; }
+  Node( int nid, Point * point, double lsv )
+      : nid_( nid ),
+        point_( point ),
+        lsv_( lsv ),
+        selfcutposition_( Point::undecided )
+  { }
 
   /// get node's node Id
   int Id() const { return nid_; }
@@ -329,11 +337,12 @@ private:
   Point::PointPosition selfcutposition_;      ///< every cutsidenode knows its selfcutposition
 };
 
-
+/*----------------------------------------------------------------------------*/
 /*!
   \brief internal comparator class used for sorting nodal dofsets.
          This sorting is necessary to get the
-         same order of sets, important for restarts, restarts of Newton schemes in monolithic solves but also for debugging
+         same order of sets, important for restarts, restarts of Newton schemes in
+         monolithic solves but also for debugging
  */
 class NodalDofSetCmp
 {
@@ -341,6 +350,16 @@ public:
 
   bool operator()(Teuchos::RCP<NodalDofSet> nodaldofset1, Teuchos::RCP<NodalDofSet> nodaldofset2);
 };
+
+  /** \brief Find if the nodes in nelement share a common element,
+   *  (i.e. do all nodes lie on the same element?)
+   *
+   *  A node knows by the help of its underlying point which cut_elements
+   *  it is associated to.
+   *
+   *  \author hiermeier \date 11/16 */
+  void FindCommonElements( const std::vector<Node*> & nelement, plain_element_set & elements );
+
 
 }
 }

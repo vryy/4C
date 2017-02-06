@@ -244,7 +244,8 @@ void FLD::XFluid::SetupFluidDiscretization()
     xdisbuilder.SetupXFEMDiscretization(
       DRT::Problem::Instance()->XFEMGeneralParams(),
       xfluiddis,
-      fluiddis
+      fluiddis,
+      "FluidMesh"
     );
   }
   else // standard xfluid case

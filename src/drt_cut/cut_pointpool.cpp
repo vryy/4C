@@ -49,7 +49,7 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_e
   if ( not IsLeaf() )
   {
     // stop finding the point when point is not included in the current bounding box
-    if(!bb_.Within(1.0, x)) return NULL;
+    if(!bb_->Within(1.0, x)) return NULL;
 
     for ( int i=0; i<8; ++i )
     {
@@ -109,7 +109,7 @@ Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::CreatePoint( unsigned newid
   else
   {
     // create a new point and add the point at the lowest level
-    Teuchos::RCP<Point> p = Teuchos::rcp( new Point( newid, x, cut_edge, cut_side, tolerance ) );
+    Teuchos::RCP<Point> p = GEO::CUT::CreatePoint( newid, x, cut_edge, cut_side, tolerance );
     AddPoint( x, p );
     return p;
   }
@@ -122,7 +122,7 @@ Teuchos::RCP<GEO::CUT::Point> GEO::CUT::OctTreeNode::CreatePoint( unsigned newid
 void GEO::CUT::OctTreeNode::AddPoint( const double * x, Teuchos::RCP<Point> p )
 {
   points_.insert( p ); // insert the point in the pointpool
-  bb_.AddPoint( x );   // modify the boundingbox size
+  bb_->AddPoint( x );   // modify the boundingbox size
 }
 
 
@@ -196,12 +196,12 @@ void GEO::CUT::OctTreeNode::Split( int level )
     for ( int i=0; i<8; ++i )
     {
       // always have the split point in all boxes
-      nodes_[i]->bb_.AddPoint( splitpoint_ );
+      nodes_[i]->bb_->AddPoint( splitpoint_ );
 
       // always have the outmost point in each box
       double x[3];
-      bb_.CornerPoint( i, x );
-      Leaf( x )->bb_.AddPoint( x );
+      bb_->CornerPoint( i, x );
+      Leaf( x )->bb_->AddPoint( x );
     }
 
     for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
@@ -227,7 +227,7 @@ void GEO::CUT::OctTreeNode::CollectEdges( const BoundingBox & edgebox, plain_edg
 {
   if ( not IsLeaf() )
   {
-    if ( edgebox.Within( norm_, bb_ ) )
+    if ( edgebox.Within( norm_, *bb_ ) )
     {
       for ( int i=0; i<8; ++i )
       {
@@ -237,7 +237,7 @@ void GEO::CUT::OctTreeNode::CollectEdges( const BoundingBox & edgebox, plain_edg
   }
   else
   {
-    BoundingBox sbox;
+    Teuchos::RCP<BoundingBox> sbox = Teuchos::rcp( BoundingBox::Create() );
     for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
@@ -247,8 +247,8 @@ void GEO::CUT::OctTreeNode::CollectEdges( const BoundingBox & edgebox, plain_edg
         Edge * s = *i;
         if ( edges.count( s )==0 )
         {
-          sbox.Assign( *s );
-          if ( sbox.Within( norm_, edgebox ) )
+          sbox->Assign( *s );
+          if ( sbox->Within( norm_, edgebox ) )
           {
             edges.insert( s );
           }
@@ -266,7 +266,7 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, plain_sid
 {
   if ( not IsLeaf() )
   {
-    if ( sidebox.Within( norm_, bb_ ) )
+    if ( sidebox.Within( norm_, *bb_ ) )
     {
       for ( int i=0; i<8; ++i )
       {
@@ -276,7 +276,7 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, plain_sid
   }
   else
   {
-    BoundingBox sbox;
+    Teuchos::RCP<BoundingBox> sbox = Teuchos::rcp( BoundingBox::Create() );
     for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
@@ -286,8 +286,8 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, plain_sid
         Side * s = *i;
         if ( sides.count( s )==0 )
         {
-          sbox.Assign( *s );
-          if ( sbox.Within( norm_, sidebox ) )
+          sbox->Assign( *s );
+          if ( sbox->Within( norm_, sidebox ) )
           {
             sides.insert( s );
           }
@@ -310,7 +310,7 @@ void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, plain_
 
   if ( not IsLeaf() )
   {
-    if ( sidebox.Within( norm_, bb_ ) ) // within check is a check of overlap between the 2 bounding boxes
+    if ( sidebox.Within( norm_, *bb_ ) ) // within check is a check of overlap between the 2 bounding boxes
     {
       for ( int i=0; i<8; ++i )
       {
@@ -320,7 +320,7 @@ void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, plain_
   }
   else
   {
-    BoundingBox elementbox;
+    Teuchos::RCP<BoundingBox> elementbox = Teuchos::rcp( BoundingBox::Create() );
     for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
@@ -333,8 +333,8 @@ void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, plain_
         Element * e = *i;
         if ( elements.count( e )==0 )
         {
-          elementbox.Assign( *e );
-          if ( elementbox.Within( norm_, sidebox ) )
+          elementbox->Assign( *e );
+          if ( elementbox->Within( norm_, sidebox ) )
           {
             elements.insert( e );
           }

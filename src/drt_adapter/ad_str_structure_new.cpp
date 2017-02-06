@@ -25,6 +25,7 @@
 #include "ad_str_structalewrapper.H"
 #include "ad_str_multiphysicswrapper_cellmigration.H"
 #include "ad_str_invana.H"
+#include "ad_str_xcontact.H"
 #include "ad_str_ssiwrapper.H"
 
 #include "../drt_structure/strtimada_create.H"
@@ -85,7 +86,7 @@ ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
 void ADAPTER::StructureBaseAlgorithmNew::Init(
     const Teuchos::ParameterList& prbdyn,
     Teuchos::ParameterList& sdyn,
-    Teuchos::RCP<DRT::Discretization> actdis)
+    Teuchos::RCP<DRT::DiscretizationInterface> actdis)
 {
   issetup_ = false;
 
@@ -267,10 +268,8 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   // initialize/setup the global state data container
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate =
-      Teuchos::rcp(new STR::TIMINT::BaseDataGlobalState());
-  dataglobalstate->Init(actdis_,*sdyn_,datasdyn);
-  dataglobalstate->Setup();
+  Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate = Teuchos::null;
+  SetGlobalState(dataglobalstate,datasdyn);
 
   // ---------------------------------------------------------------------------
   // in case of non-additive rotation (pseudo-)vector DOFs:
@@ -301,14 +300,9 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   // Build time integrator
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TIMINT::Base> ti_strategy =
-      STR::TIMINT::BuildStrategy(*sdyn_);
-  ti_strategy->Init(dataio,datasdyn,dataglobalstate);
-  /* In the restart case, we Setup the structural time integration after the
-   * discretization has been redistributed. See STR::TIMINT::Base::ReadRestart()
-   * for more information.                                     hiermeier 05/16*/
-  if (not restart)
-    ti_strategy->Setup();
+  Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
+  SetTimeIntegrationStrategy(ti_strategy,dataio,datasdyn,dataglobalstate,
+      restart);
 
 
   // ---------------------------------------------------------------------------
@@ -328,7 +322,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
 {
   if (not IsInit())
     dserror("You have to call Init() first!");
-
   // ---------------------------------------------------------------------------
   // check for meshtying and contact conditions
   // ---------------------------------------------------------------------------
@@ -522,9 +515,9 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
   {
     DRT::Element* actele = actdis_->lRowElement(i);
     // Detect plasticity -------------------------------------------------------
-    if (actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance() or
+    if (actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance()  or
         actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance() or
-        actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance()   or
         actele->ElementType() == DRT::ELEMENTS::So_hex18PlastType::Instance() or
         actele->ElementType() == DRT::ELEMENTS::So_sh18PlastType::Instance()
        )
@@ -634,8 +627,14 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(
   // Needed for reduced restart output
   xparams.set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
 
+  /* overrule certain parameters
+   *
+   * These parameters are overwritten by the parameters of the current
+   * problem type. This is done only once temporally, since we need the
+   * structural dynamics parameter-list only for the setup routines of the
+   * different data containers.                                         */
   sdyn_->set<double>("TIMESTEP", prbdyn_->get<double>("TIMESTEP"));
-  sdyn_->set<double>("MAXTIME",  prbdyn_->get<double>("MAXTIME"));
+  sdyn_->set<double>("MAXTIME", prbdyn_->get<double>("MAXTIME"));
 
   // overrule certain parameters
   sdyn_->set<int>("NUMSTEP", prbdyn_->get<int>("NUMSTEP"));
@@ -712,6 +711,37 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(
   }
 
   return;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void ADAPTER::StructureBaseAlgorithmNew::SetGlobalState(
+    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
+    const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& datasdyn)
+{
+  dataglobalstate = STR::TIMINT::BuildDataGlobalState();
+  dataglobalstate->Init(actdis_,*sdyn_,datasdyn);
+  dataglobalstate->Setup();
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void ADAPTER::StructureBaseAlgorithmNew::SetTimeIntegrationStrategy(
+    Teuchos::RCP<STR::TIMINT::Base>& ti_strategy,
+    const Teuchos::RCP<STR::TIMINT::BaseDataIO>& dataio,
+    const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& datasdyn,
+    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
+    const int& restart)
+{
+  ti_strategy = STR::TIMINT::BuildStrategy(*sdyn_);
+  ti_strategy->Init(dataio,datasdyn,dataglobalstate);
+  /* In the restart case, we Setup the structural time integration after the
+   * discretization has been redistributed. See STR::TIMINT::Base::ReadRestart()
+   * for more information.                                     hiermeier 05/16*/
+  if (not restart)
+    ti_strategy->Setup();
 }
 
 
@@ -896,6 +926,9 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
     }
     case prb_invana:
       str_wrapper_ = (Teuchos::rcp(new StructureInvana(ti_strategy)));
+      break;
+    case prb_xcontact:
+      str_wrapper_ = (Teuchos::rcp(new StructureXContact(ti_strategy)));
       break;
     default:
       /// wrap time loop for pure structure problems

@@ -480,7 +480,8 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
 
   if ( n < 4 )
   {
-    throw std::runtime_error( "illegal element topology" );
+    dserror("where coming from?");
+    run_time_error( "illegal element topology" );
   }
 //   if ( n == 4 )
 //   {
@@ -808,7 +809,7 @@ bool GEO::CUT::TetMesh::IsValidTet( const std::vector<Point*> & t )
     // The points of a tet can all be on a cut-side that is a LevelSetSide, but not share a common facet.
     // This occurs when there exists a degenerate cut (i.e. a cut we can't cut well).
     // One VC is created and that's about all.... Might have to investigate...
-    if ( dynamic_cast<LevelSetSide*>( *sides.begin() ) != NULL )
+    if ( (*sides.begin())->IsLevelSetSide() )
     {
       // This part is done mainly for debugging purposes. It is probably not necessary,
       //  but could play an important role when/if the LevelSetSide is remodeled.
@@ -960,20 +961,8 @@ void GEO::CUT::TetMesh::TestUsedPoints( const std::vector<std::vector<int> > & t
 }
 
 
-/* The TETs accepted in IsValidTet(...) are not necessarily TETs which are acceptable within arithmetic precision.
-   Thus two option exists:
-
-   1) Use the way by "Kuettler": Find the volume of the TET and check against a predefined volume-tolerance.
-                                 Leads to problems with cuts in non-local coordinates.
-
-   2) New way: Check the lengths of the TET, i.e. its length between its base points (3 lengths) and its height
-               to the base (1 length). These are tested against a tolerance
-
-               tol = \epsilon * B
-
-               where B is the distance of a point of the TET furthest away from to the origin.
-               Accept a TET if all its lengths are larger than the arithmetic tolerance.
-*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::TetMesh::FixBrokenTets()
 {
 #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT

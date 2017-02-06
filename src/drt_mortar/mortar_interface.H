@@ -619,33 +619,69 @@ public:
   */
   virtual void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell> >& intcells);
 
-  /*!
-  \brief Evaluate mortar interface
+  /*! @name Evaluate mortar interface
+   *
+   * This is the main routine of the MortarInterface class, where nodal normals
+   * are computed, search is performed, mortar segments are set up and the entries
+   * of the mortar matrices D and M are integrated. If the boolean flag "nonlinear"
+   * is set to true (only for contact), then nonlinear mortar coupling is performed
+   * including evaluation of the weighted gap g and linearizations of all mortar quantities. */
+  /// @{
 
-  This is the main routine of the MortarInterface class, where nodal normals
-  are computed, search is performed, mortar segments are set up and the entries
-  of the mortar matrices D and M are integrated. If the boolean flag "nonlinear"
-  is set to true (only for contact), then nonlinear mortar coupling is performed
-  including evaluation of the weighted gap g and linearizations of all mortar quantities.
-
-  */
+  /** \brief Evaluate mortar interface
+   *
+   *  No input necessary. */
   void Evaluate()
   { Evaluate(0,0,0,Teuchos::null); };
+
+  /** \brief Evaluate mortar interface
+   *
+   *  \param rriter      (in)     : round robin iteration */
   void Evaluate(int rriter)
   { Evaluate(rriter,0,0,Teuchos::null); };
+
+  /** \brief Evaluate mortar interface
+   *
+   *  \param rriter      (in)     : round robin iteration
+   *  \param step        (in)     : current step counter */
   void Evaluate(int rriter, const int& step)
   { Evaluate(rriter,step,0,Teuchos::null); };
+
+  /** \brief Evaluate mortar interface
+   *
+   *  \param rriter      (in)     : round robin iteration
+   *  \param step        (in)     : current step counter
+   *  \param iter        (in)     : current iteration number */
   void Evaluate(int rriter, const int& step, const int& iter)
   { Evaluate(rriter,step,iter,Teuchos::null); };
+
+  /** \brief Evaluate mortar interface
+   *
+   *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
   void Evaluate(Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
   { Evaluate(0,mparams_ptr->GetStepNp(),mparams_ptr->GetNlnIter(),mparams_ptr); };
+
+  /** \brief Evaluate mortar interface
+   *
+   *  \param rriter      (in)     : round robin iteration
+   *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
   void Evaluate(int rriter, Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
   { Evaluate(rriter,mparams_ptr->GetStepNp(),mparams_ptr->GetNlnIter(),mparams_ptr); };
+
+  /** \brief Evaluate mortar interface
+   *
+   *  \param rriter      (in)     : round robin iteration
+   *  \param step        (in)     : current step counter
+   *  \param iter        (in)     : current iteration number
+   *  \param mparams_ptr (in/out) : mortar parameter interface pointer */
   void Evaluate(
       int rriter,
       const int& step,
       const int& iter,
       Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr);
+
+  /// @}
+
   /*!
   \brief Evaluate nodal normals
 
@@ -774,6 +810,34 @@ public:
   //@}
 
 protected:
+  /** \brief function called at the beginning of each MortarCoupling call
+   *
+   *  \param sele        (in): pointer to the current slave element
+   *  \param mele        (in): pointer to the current master element
+   *  \param mparams_ptr (in): mortar parameter interface pointer
+   *
+   *  \author hiermeier
+   *  \date 11/16 */
+  virtual void PreMortarCoupling(
+      const MORTAR::MortarElement* sele,
+      const std::vector<MORTAR::MortarElement*> mele,
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const
+  { /* does nothing in the default case */ };
+
+  /** \brief function called at the end of each MortarCoupling call
+   *
+   *  \param sele        (in): pointer to the current slave element
+   *  \param mele        (in): pointer to the current master element
+   *  \param mparams_ptr (in): mortar parameter interface pointer
+   *
+   *  \author hiermeier
+   *  \date 11/16 */
+  virtual void PostMortarCoupling(
+      const MORTAR::MortarElement* sele,
+      const std::vector<MORTAR::MortarElement*> mele,
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) const
+  { /* does nothing in the default case */ };
+
   /*!
   \brief Evaluate segment-to-segment coupling (mortar...)
 

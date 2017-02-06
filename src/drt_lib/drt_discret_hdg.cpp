@@ -40,7 +40,6 @@ DRT::DiscretizationHDG::DiscretizationHDG(const std::string name,
 int DRT::DiscretizationHDG::FillComplete(bool assigndegreesoffreedom,
                                          bool initelements,
                                          bool doboundaryconditions)
-
 {
   // call FillComleteFaces of base class with create_faces set to true
   this->FillCompleteFaces(assigndegreesoffreedom, initelements,

@@ -106,9 +106,9 @@ namespace DRT
     )
     {
       val = 0.0;
-      for (int j = 0; j<my::nsd_; j++)
+      for (unsigned j = 0; j<my::nsd_; j++)
       {
-        for (int i = 0; i<my::nsd_; i++)
+        for (unsigned i = 0; i<my::nsd_; i++)
         {
           val += my::derxy_(j, vi)*difftensor(j,i)*my::derxy_(i, ui);
         }
@@ -125,9 +125,9 @@ namespace DRT
     )
     {
       val = 0.0;
-      for (int j = 0; j<my::nsd_; j++)
+      for (unsigned j = 0; j<my::nsd_; j++)
       {
-        for (int i = 0; i<my::nsd_; i++)
+        for (unsigned i = 0; i<my::nsd_; i++)
         {
           val += my::derxy_(j,vi)*difftensor(j,i)*gradphi(i);
         }

@@ -3,10 +3,12 @@
 \file nln_problem_base.cpp
 
 <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
 </pre>
+
+\level 3
 */
 
 /*----------------------------------------------------------------------------*/
@@ -212,7 +214,7 @@ Teuchos::RCP<const Epetra_Map> NLNSOL::NlnProblemBase::DofRowMap() const
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemBase::WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec,
     const std::string& description,
-    const IO::DiscretizationWriter::VectorType vt) const
+    const IO::VectorType vt) const
 {
   if (HaveDebugWriter())
   {
@@ -237,7 +239,7 @@ void NLNSOL::NlnProblemBase::WriteVector(Teuchos::RCP<const Epetra_MultiVector> 
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblemBase::WriteVector(const Epetra_MultiVector& vec,
     const std::string& description,
-    const IO::DiscretizationWriter::VectorType vt) const
+    const IO::VectorType vt) const
 {
   WriteVector(Teuchos::rcp(&vec, false), description, vt);
 

@@ -88,26 +88,23 @@ namespace Interface {
      *  constructor without the constraint interface map (pure unconstrained optimization)
      *  inclusive the pre-conditioner interface */
     GlobalData(const Epetra_Comm& comm,
-            Teuchos::ParameterList& noxParams,
-            const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
-            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-            const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec);
+        Teuchos::ParameterList& noxParams,
+        const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+        const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+        const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+        const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec);
 
     /*! UNCONSTRAINED OPTIMIZATION
      *  constructor without the constraint interface map (pure unconstrained optimization)
      *  without a pre-conditioner interface */
     GlobalData(const Epetra_Comm& comm,
-            Teuchos::ParameterList& noxParams,
-            const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
-            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac);
+        Teuchos::ParameterList& noxParams,
+        const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+        const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+        const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac);
 
     //! destructor
     virtual ~GlobalData() {};
-
-    //! setup the nln_utils class
-    void Setup();
 
     //! return the nox_utils class
     const NOX::Utils& GetNoxUtils() const;
@@ -149,6 +146,9 @@ namespace Interface {
     const NOX::NLN::CONSTRAINT::PrecInterfaceMap& GetConstraintPrecInterfaces();
 
   private:
+    //! setup the nln_utils class
+    void Setup();
+
     //! check the constructor input
     void CheckInput() const;
 

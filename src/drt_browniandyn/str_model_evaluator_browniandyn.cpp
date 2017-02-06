@@ -46,7 +46,8 @@ STR::MODELEVALUATOR::BrownianDyn::BrownianDyn():
   f_ext_np_ptr_(Teuchos::null),
   stiff_brownian_ptr_(Teuchos::null),
   maxrandnumelement_(0),
-  rs_(DRT::Problem::Instance()->getParameterList()->sublist("PROBLEM TYP").get<int>("RANDSEED"))
+  rs_(DRT::Problem::Instance()->getParameterList()->sublist("PROBLEM TYP").get<int>("RANDSEED")),
+  discret_ptr_(Teuchos::null)
 {
   // empty
 }
@@ -56,6 +57,9 @@ STR::MODELEVALUATOR::BrownianDyn::BrownianDyn():
 void STR::MODELEVALUATOR::BrownianDyn::Setup()
 {
   CheckInit();
+
+  discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>( DiscretPtr(), true );
+
   // -------------------------------------------------------------------------
   // get pointer to biopolymer network data
   // -------------------------------------------------------------------------
@@ -89,12 +93,13 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDisVector(
       GStatePtr()->GetMutableDisN(),                            // disn
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
-      DiscretPtr());
+      discret_ptr_ );
 
   BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDisVector(
       GStatePtr()->GetMutableDisNp(),                           // disnp
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
-      DiscretPtr());
+      discret_ptr_ );
+
   // -------------------------------------------------------------------------
   // get maximal number of random numbers required by any element in the
   // discretization and store them in randomnumbersperelement_
@@ -113,7 +118,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
    * required by any element in the discretization per time step; therefore this
    * multivector is suitable for synchrinisation of these random numbers in
    *  parallel computing*/
-  eval_browniandyn_ptr_->ResizeRandomForceMVector(DiscretPtr(), maxrandnumelement_);
+  eval_browniandyn_ptr_->ResizeRandomForceMVector( discret_ptr_, maxrandnumelement_ );
   GenerateGaussianRandomNumbers();
 
   issetup_ = true;
@@ -133,7 +138,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
   BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDisVector(
       GStatePtr()->GetMutableDisNp(),                           // disnp
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
-      DiscretPtr());
+      discret_ptr_ );
   // -------------------------------------------------------------------------
   // reset brownian (stochastic and damping) forces
   // -------------------------------------------------------------------------
@@ -587,7 +592,7 @@ void STR::MODELEVALUATOR::BrownianDyn::PostOutput()
   // -------------------------------------------------------------------------
   // Generate new random forces
   // -------------------------------------------------------------------------
-  eval_browniandyn_ptr_->ResizeRandomForceMVector(DiscretPtr(), maxrandnumelement_);
+  eval_browniandyn_ptr_->ResizeRandomForceMVector(discret_ptr_, maxrandnumelement_);
   GenerateGaussianRandomNumbers();
 
 }
@@ -600,7 +605,7 @@ void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
   // -------------------------------------------------------------------------
   // Generate new random forces
   // -------------------------------------------------------------------------
-  eval_browniandyn_ptr_->ResizeRandomForceMVector(DiscretPtr(), maxrandnumelement_);
+  eval_browniandyn_ptr_->ResizeRandomForceMVector(discret_ptr_, maxrandnumelement_);
   GenerateGaussianRandomNumbers();
   // -------------------------------------------------------------------------
   // Update number of unconverged steps
@@ -643,21 +648,21 @@ void STR::MODELEVALUATOR::BrownianDyn::RandomNumbersPerElement()
   // -------------------------------------------------------------------------
   // see whether current element needs more random numbers per time step
   // than any other before
-  for ( int i = 0; i < DiscretPtr()->NumMyColElements(); ++i )
+  for ( int i = 0; i < discret_ptr_->NumMyColElements(); ++i )
   {
     DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(
-                DiscretPtr()->lColElement(i) );
+        discret_ptr_->lColElement(i) );
     if( beamele != NULL )
     {
       randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,
           beamele->HowManyRandomNumbersINeed() );
     }
     else if( dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(
-        DiscretPtr()->lColElement(i) ) != NULL )
+        discret_ptr_->lColElement(i) ) != NULL )
     {
       randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,
           dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(
-                  DiscretPtr()->lColElement(i) )->HowManyRandomNumbersINeed() );
+              discret_ptr_->lColElement(i) )->HowManyRandomNumbersINeed() );
     }
     else
     {

@@ -50,7 +50,7 @@ public:
   virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null){dserror("You should not need this function!"); return;};
 
   /// redistribute the scatra discretization and vectors according to nodegraph
-  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph){dserror("You should not need this function!"); return;};
+  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> & nodegraph){dserror("You should not need this function!"); return;};
 
 protected:
 

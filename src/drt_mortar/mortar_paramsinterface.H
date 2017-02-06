@@ -27,6 +27,7 @@ namespace MORTAR {
                                   is negligible. */
     eval_force,              /*!< Evaluation of the contact/meshtying right-hand-side only. Necessary
                                   and meaningful for line search strategies for example. */
+    eval_weighted_gap,       /*!< Evaluate the weighted gap only. */
     eval_recover,            /*!< recover internal quantities, e.g. Lagrange multipliers */
     eval_reset               /*!< reset internal quantities, e.g. displacement state and/or Lagrange multipliers */
   };
@@ -43,6 +44,9 @@ namespace MORTAR {
         break;
       case eval_force:
         return "eval_force";
+        break;
+      case eval_weighted_gap:
+        return "eval_weighted_gap";
         break;
       default:
         return "unknown";

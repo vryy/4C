@@ -639,12 +639,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(
   const double cons_conv_phi = convelint.Dot(gradphi);
 
   const double consfac = timefacfac*(densnp*vdiv+densgradfac_[k]*cons_conv_phi);
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const double v = consfac*my::funct_(vi);
     const int fvi = vi*my::numdofpernode_+k;
 
-    for (int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       const int fui = ui*my::numdofpernode_+k;
 

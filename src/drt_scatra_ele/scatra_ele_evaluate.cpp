@@ -228,6 +228,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     // all physics-related stuff is included in the implementation class(es) that can
     // be used in principle inside any element (at the moment: only Transport element)
     case SCATRA::calc_mat_and_rhs:
+    case SCATRA::calc_rhs:
     {
       return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->Evaluate(
               this,

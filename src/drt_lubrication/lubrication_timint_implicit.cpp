@@ -7,11 +7,14 @@
      including stationary solver.
 
 <pre>
-Maintainer: Andy Wirtz
+\maintainer Andy Wirtz
             wirtz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15270
 </pre>
+
+\level 3
+
 */
 /*--------------------------------------------------------------------------*/
 
@@ -884,7 +887,7 @@ void LUBRICATION::TimIntImpl::OutputState()
         (*dispnp_multi)[idim][discret_->NodeRowMap()->LID(node->Id())] = (*dispnp)[dispnp->Map().LID(discret_->Dof(nds_disp_,node,idim))];
     }
 
-    output_->WriteVector("dispnp", dispnp_multi, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector("dispnp", dispnp_multi, IO::nodevector);
   }
 
   return;

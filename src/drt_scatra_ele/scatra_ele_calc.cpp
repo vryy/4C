@@ -214,8 +214,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
 
   // construct location vector for velocity related dofs
   std::vector<int> lmvel(nsd_*nen_,-1);
-  for (int inode=0; inode<nen_; ++inode)
-    for (int idim=0; idim<nsd_; ++idim)
+  for (unsigned inode=0; inode<nen_; ++inode)
+    for (unsigned idim=0; idim<nsd_; ++idim)
       lmvel[inode*nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
   // extract local values of convective velocity field from global state vector
@@ -250,8 +250,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
 
     // construct location vector for displacement related dofs
     std::vector<int> lmdisp(nsd_*nen_,-1);
-    for (int inode=0; inode<nen_; ++inode)
-      for (int idim=0; idim<nsd_; ++idim)
+    for (unsigned inode=0; inode<nen_; ++inode)
+      for (unsigned idim=0; idim<nsd_; ++idim)
         lmdisp[inode*nsd_+idim] = la[ndsdisp].lm_[inode*numdispdofpernode+idim];
 
     // extract local values of displacement field from global state vector
@@ -284,7 +284,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
 
     // construct location vector for pressure dofs
     std::vector<int> lmpre(nen_,-1);
-    for (int inode=0; inode<nen_; ++inode)
+    for (unsigned inode=0; inode<nen_; ++inode)
       lmpre[inode] = la[ndsvel].lm_[inode*numveldofpernode+nsd_];
 
     // extract local values of pressure field from global state vector
@@ -387,8 +387,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractTurbulenceApproach(
 
       // construct location vector for velocity related dofs
       std::vector<int> lmvel(nsd_*nen_,-1);
-      for (int inode=0; inode<nen_; ++inode)
-        for (int idim=0; idim<nsd_; ++idim)
+      for (unsigned inode=0; inode<nen_; ++inode)
+        for (unsigned idim=0; idim<nsd_; ++idim)
           lmvel[inode*nsd_+idim] = la[ndsvel].lm_[inode*numveldofpernode+idim];
 
       // extract local values of fine-scale velocity field from global state vector
@@ -638,7 +638,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
           CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp[k],diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(k),fsvelint);
 
         // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
-        for (int idim=0; idim<nsd_; idim++)
+        for (unsigned idim=0; idim<nsd_; idim++)
           mfsgvelint(idim,0) = fsvelint(idim,0) * B_mfs(idim,0);
         // required for conservative formulation in the context of passive scalar transport
         if (turbparams_->MfsConservative() or scatrapara_->IsConservative())
@@ -646,7 +646,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
           // get divergence of subgrid-scale velocity
           LINALG::Matrix<nsd_,nsd_> mfsvderxy;
           mfsvderxy.MultiplyNT(efsvel_,derxy_);
-          for (int idim = 0; idim<nsd_; idim++)
+          for (unsigned idim = 0; idim<nsd_; idim++)
             mfsvdiv += mfsvderxy(idim,idim) * B_mfs(idim,0);
         }
 
@@ -864,7 +864,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::BodyForce(
     {
       // function evaluation
       const int functnum = (funct) ? (*funct)[idof] : -1;
-      for (int jnode = 0; jnode < nen_; jnode++)
+      for (unsigned jnode = 0; jnode < nen_; jnode++)
       {
         const double functfac =
             (functnum > 0) ?
@@ -916,7 +916,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::OtherNodeBasedSourceTerms(
     const double grad_phi = params.sublist("TURBULENCE MODEL").get<double>("MEAN_SCALAR_GRADIENT");
 
     // fill element array
-    for (int i=0;i<nen_;++i)
+    for (unsigned i=0;i<nen_;++i)
     {
       for (int k = 0; k< numdofpernode_; ++k)
       {
@@ -967,12 +967,12 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsAtEl
 template <DRT::Element::DiscretizationType distype,int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsAtIntPoint(
   const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  ///< integration points
-  const int                                           iquad       ///< id of current Gauss point
+  const int                                        iquad       ///< id of current Gauss point
   )
 {
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
-  for (int idim=0;idim<nsd_ele_;idim++)
+  for (unsigned idim=0;idim<nsd_ele_;idim++)
     xsi_(idim) = gpcoord[idim];
 
   const double det = EvalShapeFuncAndDerivsInParameterSpace();
@@ -1122,16 +1122,16 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsInPa
     static LINALG::Matrix<nsd_ele_,nsd_> xjm_red;
     xjm_red.MultiplyNT(deriv_red,xyze_);
 
-    for(int i=0;i<nsd_;i++)
+    for(unsigned i=0;i<nsd_; ++i)
     {
-      for(int j=0;j<nsd_ele_;j++)
+      for( unsigned j=0; j<nsd_ele_; ++j )
         xjm_(j,i)=xjm_red(j,i);
       xjm_(nsd_ele_,i)=normalvec(i,0);
     }
 
-    for(int i=0;i<nen_;i++)
+    for( unsigned i=0; i<nen_; ++i )
     {
-      for(int j=0;j<nsd_ele_;j++)
+      for( unsigned j=0; j<nsd_ele_; ++j )
         deriv_(j,i)=deriv_red(j,i);
       deriv_(nsd_ele_,i)=0.0;
     }
@@ -1151,7 +1151,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsInPa
       xjm_(2,1) = normalvec2_1/norm2;
       xjm_(2,2) = normalvec2_2/norm2;
 
-      for(int i=0;i<nen_;i++)
+      for(unsigned i=0;i<nen_;i++)
         deriv_(2,i)=0.0;
     }
 
@@ -1352,9 +1352,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetLaplacianStrongForm(
 {
   diff.Clear();
   // compute N,xx  +  N,yy +  N,zz for each shape function at integration point
-  for (int i=0; i<nen_; ++i)
+  for (unsigned i=0; i<nen_; ++i)
   {
-    for (int j = 0; j<nsd_; ++j)
+    for (unsigned j = 0; j<nsd_; ++j)
     {
       diff(i) += derxy2_(j,i);
     }
@@ -1376,7 +1376,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetDivergence(
 
   vdiv = 0.0;
   // compute vel x,x  + vel y,y +  vel z,z at integration point
-  for (int j = 0; j<nsd_; ++j)
+  for (unsigned j = 0; j<nsd_; ++j)
   {
     vdiv += vderxy(j,j);
   }
@@ -1420,12 +1420,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatConv(
 
   // convective term in convective form
   const double densfac = timefacfac*densnp;
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const double v = densfac*funct_(vi);
     const int fvi = vi*numdofpernode_+k;
 
-    for (int ui=0; ui<nen_; ++ui)
+    for (unsigned ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+k;
 
@@ -1449,12 +1449,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatConvAddCons(
   )
 {
   const double consfac = timefacfac*densnp*vdiv;
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const double v = consfac*funct_(vi);
     const int fvi = vi*numdofpernode_+k;
 
-    for (int ui=0; ui<nen_; ++ui)
+    for (unsigned ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+k;
 
@@ -1478,11 +1478,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatDiff(
 {
   // diffusive term
   const double fac_diffus = timefacfac * diffmanager_->GetIsotropicDiff(k);
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
 
-    for (int ui=0; ui<nen_; ++ui)
+    for (unsigned ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+k;
       double laplawf(0.0);
@@ -1510,12 +1510,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatTransConvDiffStab(
   const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv(k);
 
   const double dens2taufac = timetaufac*densnp*densnp;
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const double v = dens2taufac*(conv(vi)+sgconv(vi)+scatrapara_->USFEMGLSFac()*1.0/scatraparatimint_->TimeFac()*funct_(vi));
     const int fvi = vi*numdofpernode_+k;
 
-    for (int ui=0; ui<nen_; ++ui)
+    for (unsigned ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+k;
 
@@ -1531,12 +1531,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatTransConvDiffStab(
     const double denstaufac = timetaufac*densnp;
     // convective stabilization of diffusive term (in convective form)
     // transient stabilization of diffusive term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
     {
       const double v = denstaufac*(conv(vi)+sgconv(vi)+scatrapara_->USFEMGLSFac()*1.0/scatraparatimint_->TimeFac()*funct_(vi));
       const int fvi = vi*numdofpernode_+k;
 
-      for (int ui=0; ui<nen_; ++ui)
+      for (unsigned ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
 
@@ -1546,12 +1546,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatTransConvDiffStab(
 
     const double densdifftaufac = scatrapara_->USFEMGLSFac()*denstaufac;
     // diffusive stabilization of convective term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
     {
       const double v = densdifftaufac*diff(vi);
       const int fvi = vi*numdofpernode_+k;
 
-      for (int ui=0; ui<nen_; ++ui)
+      for (unsigned ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
 
@@ -1561,12 +1561,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatTransConvDiffStab(
 
     const double difftaufac = scatrapara_->USFEMGLSFac()*timetaufac;
     // diffusive stabilization of diffusive term
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
     {
       const double v = difftaufac*diff(vi);
       const int fvi = vi*numdofpernode_+k;
 
-      for (int ui=0; ui<nen_; ++ui)
+      for (unsigned ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
 
@@ -1579,30 +1579,46 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatTransConvDiffStab(
 
 
 /*------------------------------------------------------------------- *
- |  calculation of mass element matrix                    ehrl 11/13  |
+ |  calculation of mass element matrix (std)              ehrl 11/13  |
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatMass(
-  Epetra_SerialDenseMatrix&     emat,
-  const int                     k,
-  const double                  fac,
-  const double                  densam
+  Epetra_SerialDenseMatrix &     emat,
+  const int &                    k,
+  const double &                 fac,
+  const double &                 densam
   )
+{
+  CalcMatMass( emat, k, fac, densam, funct_, funct_);
+}
+
+/*------------------------------------------------------------------- *
+ |  calculation of mass element matrix (std)              ehrl 11/13  |
+ *--------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatMass(
+  Epetra_SerialDenseMatrix &     emat,
+  const int &                    k,
+  const double &                 fac,
+  const double &                 densam,
+  const LINALG::Matrix<nen_,1> & sfunct,
+  const LINALG::Matrix<nen_,1> & tfunct
+  ) const
 {
   const double densamfac = fac*densam;
   //----------------------------------------------------------------
   // standard Galerkin transient term
   //----------------------------------------------------------------
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
-    const double v = densamfac*funct_(vi);
-    const int fvi = vi*numdofpernode_+k;
+    const double v = densamfac * tfunct( vi );
+    const int fvi = vi * numdofpernode_ + k;
 
-    for (int ui=0; ui<nen_; ++ui)
+    for (unsigned ui=0; ui<nen_; ++ui)
     {
-      const int fui = ui*numdofpernode_+k;
+      const int fui = ui * numdofpernode_ + k;
 
-      emat(fvi,fui) += v*funct_(ui);
+      emat(fvi,fui) += v * sfunct( ui );
     }
   }
   return;
@@ -1630,12 +1646,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatMassStab(
   //----------------------------------------------------------------
   // convective stabilization of transient term (in convective form)
   // transient stabilization of transient term
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const double v = densamnptaufac*(conv(vi)+sgconv(vi)+scatrapara_->USFEMGLSFac()*1.0/scatraparatimint_->TimeFac()*funct_(vi));
     const int fvi = vi*numdofpernode_+k;
 
-    for (int ui=0; ui<nen_; ++ui)
+    for (unsigned ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+k;
 
@@ -1647,12 +1663,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatMassStab(
   {
     const double densamreataufac = scatrapara_->USFEMGLSFac()*taufac*densam;
     // diffusive stabilization of transient term
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
     {
       const double v = densamreataufac*diff(vi);
       const int fvi = vi*numdofpernode_+k;
 
-      for (int ui=0; ui<nen_; ++ui)
+      for (unsigned ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
 
@@ -1687,12 +1703,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
   //----------------------------------------------------------------
   // standard Galerkin reactive term
   //----------------------------------------------------------------
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const double v = fac_reac*funct_(vi);
     const int fvi = vi*numdofpernode_+k;
 
-    for (int ui=0; ui<nen_; ++ui)
+    for (unsigned ui=0; ui<nen_; ++ui)
     {
       const int fui = ui*numdofpernode_+k;
 
@@ -1707,12 +1723,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
   {
     double densreataufac = timetaufac_reac*densnp;
     // convective stabilization of reactive term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
     {
       const double v = densreataufac*(conv(vi)+sgconv(vi)+scatrapara_->USFEMGLSFac()*1.0/scatraparatimint_->TimeFac()*funct_(vi));
       const int fvi = vi*numdofpernode_+k;
 
-      for (int ui=0; ui<nen_; ++ui)
+      for (unsigned ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
 
@@ -1723,12 +1739,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
     if (use2ndderiv_)
     {
       // diffusive stabilization of reactive term
-      for (int vi=0; vi<nen_; ++vi)
+      for (unsigned vi=0; vi<nen_; ++vi)
       {
         const double v = scatrapara_->USFEMGLSFac()*timetaufac_reac*diff(vi);
         const int fvi = vi*numdofpernode_+k;
 
-        for (int ui=0; ui<nen_; ++ui)
+        for (unsigned ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+k;
 
@@ -1743,12 +1759,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
     densreataufac = scatrapara_->USFEMGLSFac()*timetaufac_reac*densnp;
 
     // reactive stabilization of convective (in convective form) and reactive term
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
     {
       const double v = densreataufac*funct_(vi);
       const int fvi = vi*numdofpernode_+k;
 
-      for (int ui=0; ui<nen_; ++ui)
+      for (unsigned ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
 
@@ -1759,12 +1775,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
     if (use2ndderiv_)
     {
       // reactive stabilization of diffusive term
-      for (int vi=0; vi<nen_; ++vi)
+      for (unsigned vi=0; vi<nen_; ++vi)
       {
         const double v = scatrapara_->USFEMGLSFac()*timetaufac_reac*funct_(vi);
         const int fvi = vi*numdofpernode_+k;
 
-        for (int ui=0; ui<nen_; ++ui)
+        for (unsigned ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+k;
 
@@ -1777,12 +1793,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
     if (not scatraparatimint_->IsStationary())
     {
       // reactive stabilization of transient term
-      for (int vi=0; vi<nen_; ++vi)
+      for (unsigned vi=0; vi<nen_; ++vi)
       {
         const double v = scatrapara_->USFEMGLSFac()*taufac*densnp*reamanager_->GetReaCoeff(k)*densnp*funct_(vi);
         const int fvi = vi*numdofpernode_+k;
 
-        for (int ui=0; ui<nen_; ++ui)
+        for (unsigned ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+k;
 
@@ -1826,7 +1842,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSLinMass(
     vtrans = fac*densnp*phinp;
   }
 
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
 
@@ -2011,7 +2027,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSHistAndSource(
   )
 {
   double vrhs = fac*rhsint;
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
 
@@ -2035,7 +2051,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSConv(
   const double& conv_phi = scatravarmanager_->ConvPhi(k);
 
   double vrhs = rhsfac*conv_phi;
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
 
@@ -2060,7 +2076,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSDiff(
 
   double vrhs = rhsfac*diffmanager_->GetIsotropicDiff(k);
 
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
 
@@ -2092,7 +2108,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSTransConvDiffStab(
 
   // convective rhs stabilization (in convective form)
   double vrhs = rhstaufac*scatrares*densnp;
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
 
@@ -2104,7 +2120,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSTransConvDiffStab(
   {
     vrhs = rhstaufac*scatrares;
     // diffusive stabilization of convective temporal rhs term (in convective form)
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numdofpernode_+k;
 
@@ -2134,7 +2150,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSReact(
   // standard Galerkin term
   double vrhs = rhsfac*rea_phi;
 
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
 
@@ -2146,7 +2162,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSReact(
   {
     vrhs = scatrapara_->USFEMGLSFac()*rhstaufac*densnp*reamanager_->GetReaCoeff(k)*scatrares;
     //TODO: this is not totally correct since GetReaCoeff(k) can depend on phinp(k)...
-    for (int vi=0; vi<nen_; ++vi)
+    for (unsigned vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numdofpernode_+k;
 
@@ -2171,7 +2187,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSFSSGD(
   )
 {
   const double vrhs = rhsfac*sgdiff;
-  for (int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+k;
 
@@ -2222,7 +2238,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSMFS(
 
    const double vrhs = rhsfac*densnp*(cross+reynolds+conserv);
 
-   for (int vi=0; vi<nen_; ++vi)
+   for (unsigned vi=0; vi<nen_; ++vi)
    {
      const int fvi = vi*numdofpernode_+k;
      //erhs[fvi] -= rhsfac*densnp_[k]*funct_(vi)*(cross+reynolds);
@@ -2260,18 +2276,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatAndRhsMultiScale(
 
   // macro-scale matrix contribution
   const double matrixterm = timefacfac*dq_dphi_micro*matmultiscale->A_s();
-  for(int vi=0; vi<nen_; ++vi)
+  for(unsigned vi=0; vi<nen_; ++vi)
   {
     const double v = funct_(vi)*matrixterm;
     const int fvi = vi*numdofpernode_+k;
 
-    for(int ui=0; ui<nen_; ++ui)
+    for(unsigned ui=0; ui<nen_; ++ui)
       emat(fvi,ui*numdofpernode_+k) += v*funct_(ui);
   }
 
   // macro-scale vector contribution
   const double rhsterm = rhsfac*q_micro*matmultiscale->A_s();
-  for(int vi=0; vi<nen_; ++vi)
+  for (unsigned vi=0; vi<nen_; ++vi)
     erhs[vi*numdofpernode_+k] -= funct_(vi)*rhsterm;
 
   return;
@@ -2294,5 +2310,4 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SetInternalVariablesForMatAn
 // template classes
 
 #include "scatra_ele_calc_fwd.hpp"
-
 

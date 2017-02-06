@@ -54,42 +54,6 @@ namespace LinSystem {
   public:
     typedef std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> > SolverMap;
 
-    //! List of types of epetra objects that can be used for the Jacobian and/or Preconditioner.
-    enum OperatorType {
-      //! A LINALG_SparseOperator object.
-      LinalgSparseOperator,
-      //! A LINALG_SparseMatrixBase object.
-      LinalgSparseMatrixBase,
-      //! A LINALG_BlockSparseMatrix object.
-      LinalgBlockSparseMatrix,
-      //! A LINALG_SparseMatrix object.
-      LinalgSparseMatrix
-    };
-
-    /// Map quantity name to std::string
-    static inline const std::string OperatorType2String(const enum OperatorType& type)
-    {
-      switch (type)
-      {
-      case LinalgSparseOperator:
-        return "LINALG_SparseOperator";
-        break;
-      case LinalgBlockSparseMatrix:
-        return "LINALG_BlockSparseMatrix";
-        break;
-      case LinalgSparseMatrixBase:
-        return "LINALG_SparseMatrixBase";
-        break;
-      case LinalgSparseMatrix:
-        return "LINALG_SparseMatrix";
-        break;
-      default :
-        return "unknown operator type";
-        break;
-      }
-      return "";
-    };
-
   protected:
     //! Source of the RowMatrix if using an AztecOO native preconditioner
     enum PreconditionerMatrixSourceType
@@ -212,7 +176,7 @@ namespace LinSystem {
     Teuchos::RCP<Epetra_Operator> getJacobianOperator();
 
     //! Returns the operator type of the jacobian
-    const enum OperatorType& getJacobianOperatorType() const;
+    const enum NOX::NLN::LinSystem::OperatorType& getJacobianOperatorType() const;
 
     //! Set the jacobian operator
     //! Derived function: Check if the input operator is a LINALG_SparseOperator
@@ -255,10 +219,6 @@ namespace LinSystem {
 
 
   protected:
-    //! Returns the type of operator that is passed into the group constructors.
-    /*! Uses dynamic casting to identify the underlying object type. */
-    virtual OperatorType getOperatorType(const LINALG::SparseOperator& op) const;
-
     //! PURE VIRTUAL FUNCTIONS: These functions have to be defined in the derived
     //! problem specific subclasses.
 
@@ -293,7 +253,7 @@ namespace LinSystem {
     Teuchos::RCP<NOX::Epetra::Interface::Jacobian> jacInterfacePtr_;
 
     //! Type of operator for the Jacobian.
-    OperatorType jacType_;
+    NOX::NLN::LinSystem::OperatorType jacType_;
 
     //! Pointer to the Jacobian operator.
     Teuchos::RCP<LINALG::SparseOperator> jacPtr_;
@@ -302,7 +262,7 @@ namespace LinSystem {
     Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> precInterfacePtr_;
 
     //! Type of operator for the preconditioner.
-    OperatorType precType_;
+    NOX::NLN::LinSystem::OperatorType precType_;
 
     //! Pointer to the preconditioner operator.
     Teuchos::RCP<Epetra_Operator> precPtr_;

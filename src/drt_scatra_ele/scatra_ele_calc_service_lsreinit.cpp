@@ -31,8 +31,8 @@
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::EvaluateAction(
+template <DRT::Element::DiscretizationType distype, unsigned probDim>
+int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype,probDim>::EvaluateAction(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
@@ -134,8 +134,8 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::EvaluateAction(
 /*----------------------------------------------------------------------*
  | setup element evaluation                                  fang 02/15 |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SetupCalc(
+template<DRT::Element::DiscretizationType distype, unsigned probDim>
+int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype,probDim>::SetupCalc(
     DRT::Element*               ele,
     DRT::Discretization&        discretization
     )
@@ -159,8 +159,8 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SetupCalc(
 /*----------------------------------------------------------------------*
  | calculate system matrix and rhs for correction step  rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatCorrection(
+template <DRT::Element::DiscretizationType distype, unsigned probDim>
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype,probDim>::SysmatCorrection(
   const double                          penalty, ///< element penalty parameter
   Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
   Epetra_SerialDenseVector&             erhs ///< element rhs to calculate
@@ -170,7 +170,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatCorrection(
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints_tau(
+      SCATRA::DisTypeToStabGaussRule<distype>::rule );
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -191,7 +192,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatCorrection(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule );
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -243,8 +245,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatCorrection(
 /*-------------------------------------------------------------------------------*
  | calculation of element-wise denominator of penalty parameter  rasthofer 12/13 |
  *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcElePenaltyParameter(
+template <DRT::Element::DiscretizationType distype, unsigned probDim>
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype,probDim>::CalcElePenaltyParameter(
   double& penalty)
 {
   // safety check
@@ -261,7 +263,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcElePenaltyParameter(
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints_tau(
+      SCATRA::DisTypeToStabGaussRule<distype>::rule );
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -282,7 +285,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcElePenaltyParameter(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule );
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -338,8 +342,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcElePenaltyParameter(
 /*------------------------------------------------------------------- *
  |  calculation of penalty term on rhs                rasthofer 12/13 |
  *--------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcRHSPenalty(
+template <DRT::Element::DiscretizationType distype, unsigned probDim>
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype,probDim>::CalcRHSPenalty(
   Epetra_SerialDenseVector&     erhs,
   const double                  fac,
   const double                  penalty,
@@ -349,7 +353,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcRHSPenalty(
 {
   double vpenalty = fac * my::scatraparatimint_->Dt() * penalty * deriv_sign * norm_gradphizero;
 
-  for (int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     const int fvi = vi*my::numdofpernode_;
 
@@ -363,8 +367,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::CalcRHSPenalty(
 /*-------------------------------------------------------------------------*
  | calculate system matrix and rhs for velocity projection rasthofer 12/13 |
  *-------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
+template <DRT::Element::DiscretizationType distype, unsigned probDim>
+void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype,probDim>::SysmatNodalVel(
   const int                             dir, ///< current spatial direction
   Epetra_SerialDenseMatrix&             emat,///< element matrix to calculate
   Epetra_SerialDenseVector&             erhs ///< element rhs to calculate
@@ -374,7 +378,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
   // calculation of element volume for characteristic element length
   //----------------------------------------------------------------------
   // use one-point Gauss rule to do calculations at the element center
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints_center(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints_center(
+      SCATRA::DisTypeToStabGaussRule<distype>::rule );
 
   // volume of the element (2D: element surface area; 1D: element length)
   // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
@@ -395,7 +400,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule );
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -481,13 +487,13 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
   // do lumping: row sum
   if (lsreinitparams_->Lumping())
   {
-    for (int vi=0; vi<my::nen_; ++vi)
+    for (unsigned vi=0; vi<my::nen_; ++vi)
     {
       const int fvi = vi*my::numdofpernode_;
 
       double sum = 0.0;
       // loop all columns
-      for (int ui=0; ui<my::nen_; ++ui)
+      for (unsigned ui=0; ui<my::nen_; ++ui)
       {
         const int fui = ui*my::numdofpernode_;
         sum += emat(fvi,fui);
@@ -506,23 +512,27 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype>::SysmatNodalVel(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2,1>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line3,1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad4>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri6,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad4,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad4,3>;
+//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad8,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad9,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::nurbs9,2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex8>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet10>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::pyramid5>;
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex8,3>;
+//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex20,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::hex27,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet4,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tet10,3>;
+//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::wedge6,3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::pyramid5,3>;
+//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::nurbs27,3>;

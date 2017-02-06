@@ -1202,7 +1202,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(
   if(nurbsdis!=NULL)
   {
     Teuchos::RCP<Epetra_Vector> normalflux = Teuchos::rcp(((*flux)(0)),false);
-    output_->WriteVector("normalflux", normalflux, IO::DiscretizationWriter::dofvector);
+    output_->WriteVector("normalflux", normalflux, IO::dofvector);
     return; // leave here
   }
 
@@ -1243,7 +1243,7 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(
       err += fluxk->ReplaceMyValue(i,2,zvalue);
       if (err!=0) dserror("Detected error in ReplaceMyValue");
     }
-    output_->WriteVector(name, fluxk, IO::DiscretizationWriter::nodevector);
+    output_->WriteVector(name, fluxk, IO::nodevector);
   }
   // that's it
   return;

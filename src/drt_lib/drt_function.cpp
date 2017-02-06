@@ -26,6 +26,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_io/io.H"
+#include "drt_discret_interface.H"
 
 /*----------------------------------------------------------------------*/
 //! Print function

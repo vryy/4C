@@ -21,6 +21,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "nox_nln_enum_lists.H"
+#include "../drt_lib/drt_dserror.H"
 
 #include <NOX_StatusTest_Generic.H>
 
@@ -63,7 +64,11 @@ namespace StatusTest {
   class Problem
   {
   public:
-    //! constructor
+
+    //! minimal constructor
+    Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData);
+
+    //! standard constructor
     Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
         const Teuchos::RCP<NOX::Epetra::Vector>& x,
         const Teuchos::RCP<LINALG::SparseOperator>& A);
@@ -83,6 +88,9 @@ namespace StatusTest {
         const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys
         ) const;
 
+    void CreateOuterStatusTest(
+        Teuchos::RCP<NOX::StatusTest::Generic>& outerTests) const;
+
     virtual void CreateStatusTests(
         Teuchos::RCP<NOX::StatusTest::Generic>& outerTest,
         Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTest) const;
@@ -90,13 +98,33 @@ namespace StatusTest {
     //! check final status of the non-linear solving procedure
     virtual void CheckFinalStatus(const NOX::StatusTest::StatusType& finalStatus) const;
 
-  private:
-    //! throw error
-    void throwError(
-        const std::string& functionName,
-        const std::string& errorMsg) const;
+    /// access the global data object
+    NOX::NLN::GlobalData & NlnGlobalData()
+    {
+      return * noxNlnGlobalData_;
+    }
+
+    /// access the global data object ptr
+    Teuchos::RCP<NOX::NLN::GlobalData> NlnGlobalDataPtr()
+    {
+      return noxNlnGlobalData_;
+    }
 
   protected:
+    inline void CheckInit() const
+    {
+      if ( not isinit_ )
+        dserror("You have to call Initialize() first, before you can use this"
+            " function!");
+    }
+
+    inline const bool & IsJac() const { return isjac_; };
+
+  protected:
+    bool isinit_;
+
+    bool isjac_;
+
     Teuchos::RCP<NOX::NLN::GlobalData> noxNlnGlobalData_;
 
     Teuchos::RCP<NOX::Epetra::Vector> xVector_;

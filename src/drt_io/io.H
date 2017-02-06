@@ -49,6 +49,13 @@ namespace IO
   class OutputControl;
   class HDFReader;
 
+  // supported vector maps for the input/output routines
+  enum VectorType {
+    dofvector,
+    nodevector,
+    elementvector
+  };
+
 /*!
   \brief base class of baci restart
 
@@ -58,7 +65,6 @@ namespace IO
 class DiscretizationReader
 {
 public:
-
   /// construct reader for a given discretization to read a particular time step
   DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
                        Teuchos::RCP<IO::InputControl> input,
@@ -71,8 +77,11 @@ public:
   DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
                        int step);
 
+  /// destructor
+  virtual ~DiscretizationReader() {};
+
   /// read into given vector
-  void ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::string name);
+  void ReadVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
   /// read into given vector
   void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
@@ -116,10 +125,19 @@ public:
   int GetNumOutputProc(int step);
 
 protected:
+  /// empty constructor (only used for the construction of derived classes)
+  DiscretizationReader();
 
   /// find control file entry to given time step
   void FindResultGroup(int step, MAP* file);
 
+  /// access the Epetra_Comm object
+  virtual const Epetra_Comm& Comm() const;
+
+  MAP* RestartStepMap()
+  {
+    return restart_step_;
+  }
 
 private:
 
@@ -175,13 +193,6 @@ private:
 class DiscretizationWriter
 {
 public:
-
-  enum VectorType {
-    dofvector,
-    nodevector,
-    elementvector
-  };
-
   /*!
     Writer constructor always needs a discretization
     Use default control file from global problem.
@@ -241,7 +252,9 @@ public:
     \param vec  : the result data vector
     \param vt   : vector type
   */
-  virtual void WriteVector(const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec, VectorType vt=dofvector);
+  virtual void WriteVector(const std::string name,
+      Teuchos::RCP<const Epetra_MultiVector> vec,
+      VectorType vt=dofvector);
 
   //! write a result vector
   /*!
@@ -253,22 +266,13 @@ public:
     \param elemap: element map of discretization
     \param vt   : vector type
   */
-  virtual void WriteVector(const std::string name, const std::vector<char>& vec, const Epetra_Map& elemap, VectorType vt=dofvector);
-
-  //! write a condition identified by its name
-  virtual void WriteCondition(const std::string condname) const;
-
-
-  /*!
-    \brief write a knotvector for a nurbs discretisation
-
-    \author gammi
-    \date 06/08
-  */
-  virtual void WriteKnotvector() const;
+  virtual void WriteVector(const std::string name,
+      const std::vector<char>& vec,
+      const Epetra_Map& elemap,
+      VectorType vt=dofvector);
 
   //! write new mesh and result file next time it is possible
-  void CreateNewResultAndMeshFile(){resultfile_changed_=-1;meshfile_changed_=-1;};
+  virtual void CreateNewResultAndMeshFile(){resultfile_changed_=-1;meshfile_changed_=-1;};
   //! write new "field" group to control file including node and element chunks
   virtual void WriteMesh(const int step, const double time);
   // for MLMC purposes do not write new meshfile but write name of base mesh file to controlfile
@@ -302,13 +306,13 @@ public:
 
 
   /// overwrite result files for the inverse analysis
-  void OverwriteResultFile();
+  virtual void OverwriteResultFile();
 
   /// creating new result files for the inverse analysis
-  void NewResultFile(int numb_run);
+  virtual void NewResultFile(int numb_run);
 
   /// creating new result files for the mlmc
-  void NewResultFile(std::string name_appendix, int numb_run);
+  virtual void NewResultFile(std::string name_appendix, int numb_run);
 
   //@}
 
@@ -316,18 +320,34 @@ public:
   //@{
 
   /// clear all stored map data
-  void ClearMapCache();
+  virtual void ClearMapCache();
 
   //@}
 
   /// get output control
-  Teuchos::RCP<OutputControl> Output() const { return output_;}
+  virtual Teuchos::RCP<OutputControl> Output() const { return output_;}
 
   /// set output control
-  void SetOutput(Teuchos::RCP<OutputControl> output);
+  virtual void SetOutput(Teuchos::RCP<OutputControl> output);
 
 
 protected:
+  /// empty constructor (only used for the construction of derived classes)
+  DiscretizationWriter();
+
+  /// access the Epetra_Comm object
+  virtual const Epetra_Comm& Comm() const;
+
+  //! write a condition identified by its name
+  void WriteCondition(const std::string condname) const;
+
+  /*!
+    \brief write a knotvector for a nurbs discretisation
+
+    \author gammi
+    \date 06/08
+  */
+  void WriteKnotvector() const;
 
   //! open new mesh file
   virtual void CreateMeshFile(const int step);
@@ -363,7 +383,6 @@ protected:
 
   // do we want binary output
   bool binio_;
-
 };
 
 /*!

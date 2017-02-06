@@ -65,6 +65,8 @@ public:
 
   bool Contains( LINALG::Matrix<3,1>& x);
 
+  bool IsEqual( const plain_facet_set & vcell ) const;
+
   void Neighbors( Point * p,
                   const plain_volumecell_set & cells,
                   const plain_volumecell_set & done,
@@ -138,7 +140,8 @@ public:
    */
   void Position( GEO::CUT::Point::PointPosition position );
 
-  void Print( std::ostream & stream );
+  inline void Print() const { Print( std::cout ); };
+  void Print( std::ostream & stream ) const;
 
   const plain_facet_set & Facets() const { return facets_; }
 
@@ -178,31 +181,53 @@ public:
    */
   void NewIntegrationCell( Mesh & mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*> & x );
 
-  void NewHex8Cell( Mesh & mesh, const std::vector<Point*> & x );
+  /// create line2 volume cell
+  void NewLine2Cell( Mesh & mesh, const std::vector<Point*> & points );
 
-  IntegrationCell * NewTet4Cell( Mesh & mesh, const std::vector<Point*> & x );
+  /// create tri3 volume cell
+  void NewTri3Cell( Mesh & mesh, const std::vector<Point*> & points );
 
-  void NewWedge6Cell( Mesh & mesh, const std::vector<Point*> & x );
+  /// create quad4 volume cell
+  void NewQuad4Cell( Mesh & mesh, const std::vector<Point*> & points );
 
-  void NewPyramid5Cell( Mesh & mesh, const std::vector<Point*> & x );
+  /// create hex8 volume cell
+  void NewHex8Cell( Mesh & mesh, const std::vector<Point*> & points );
+
+  /// create tet4 volume cell
+  IntegrationCell * NewTet4Cell( Mesh & mesh, const std::vector<Point*> & points );
+
+  /// create wedge6 volume cell
+  void NewWedge6Cell( Mesh & mesh, const std::vector<Point*> & points );
+
+  /// create pryramid5 volume cell
+  void NewPyramid5Cell( Mesh & mesh, const std::vector<Point*> & points );
 
   /*!
-  \brief Create boundarycells of specified shape
+  \brief Create boundary cells of specified shape
   */
   void NewBoundaryCell( Mesh & mesh, DRT::Element::DiscretizationType shape, Facet * f, const std::vector<Point*> & x );
 
   /*!
-  \brief Create Tri3 boundarycell
+  \brief Create Point1 boundary cell
+  */
+  void NewPoint1Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
+
+  /// Create Line2 boundary cell
+  void NewLine2Cell( Mesh & mesh, Facet * f,
+      const std::vector<Point*> & x );
+
+  /*!
+  \brief Create Tri3 boundary cell
   */
   void NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
   /*!
-  \brief Create Quad4 boundarycell
+  \brief Create Quad4 boundary cell
   */
   void NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
   /*!
-  \brief Create boundarycell which contains more than 4 corner points
+  \brief Create boundary cell which contains more than 4 corner points
   */
   void NewArbitraryCell( Mesh & mesh, Facet * f, const std::vector<Point*> & x, const DRT::UTILS::GaussIntegration& gp,
       const LINALG::Matrix<3,1>& normal );

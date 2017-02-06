@@ -2,7 +2,7 @@
 /*!
 \file cut_facetgraph.cpp
 
-\brief graph to create volumecells from facets and lines
+\brief graph to create volume cells from facets and lines
 
 \level 3
 
@@ -17,10 +17,16 @@
 
 #include "cut_facetgraph.H"
 #include "cut_mesh.H"
-#include "cut_element.H"
+#include "cut_side.H"
+#include "cut_facetgraph_simple.H"
+#include "cut_output.H"
 
-GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_facet_set & facets )
-  : graph_( facets.size() )
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides,
+    const plain_facet_set & facets )
+    : graph_( facets.size() )
 {
 
   std::map<std::pair<Point*, Point*>, plain_facet_set> lines;
@@ -46,7 +52,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
             ++i )
       {
         const std::pair<Point*, Point*> & l = i->first;
-        lines[l].insert( f );
+        lines[ l ].insert( f );
       }
     }
   }
@@ -63,7 +69,6 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
   }
 
   // fix for very rare case
-
   for ( std::map<std::pair<Point*, Point*>, plain_facet_set>::iterator li=lines.begin(); li!=lines.end(); )
   {
     plain_facet_set & fs = li->second;
@@ -232,7 +237,10 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
   cycle_list_.AddPoints( graph_, used, cycle, free, all_lines_ );
 }
 
-void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, plain_volumecell_set & cells )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element,
+    plain_volumecell_set & cells )
 {
   std::vector<plain_facet_set> volumes;
   volumes.reserve( cycle_list_.size() );
@@ -272,23 +280,56 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, pl
     }
   }
 
+  // finally add the volumes to the volume cells
+  AddToVolumeCells( mesh, element, volumes, cells );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::FacetGraph::AddToVolumeCells(
+    Mesh & mesh,
+    Element * element,
+    std::vector<plain_facet_set> & volumes,
+    plain_volumecell_set & cells) const
+{
   for ( std::vector<plain_facet_set>::iterator i=volumes.begin(); i!=volumes.end(); ++i )
   {
     plain_facet_set & collected_facets = *i;
 
-    std::map<std::pair<Point*, Point*>, plain_facet_set> volume_lines;
-    for ( plain_facet_set::iterator i=collected_facets.begin();
-          i!=collected_facets.end();
-          ++i )
+    // check facet number
+    if ( collected_facets.size() < ( element->Dim() + 1 ) )
     {
-      Facet * f = *i;
-      f->GetLines( volume_lines );
+      Print();
+
+      int fsc = 0;
+      for ( std::vector<plain_facet_set>::const_iterator fs=volumes.begin(); fs!=volumes.end(); ++fs )
+        OUTPUT::GmshFacetsOnly( *fs, element, fsc++ );
+      run_time_error( "The facet number is too small to represent a volume cell! \n"
+          "If this happens, it is an indication for missing internal facets. -- hiermeier" );
     }
+
+    std::map<std::pair<Point*, Point*>, plain_facet_set> volume_lines;
+    CollectVolumeLines( collected_facets, volume_lines );
 
     cells.insert( mesh.NewVolumeCell( collected_facets, volume_lines, element ) );
 #ifdef DEBUGCUTLIBRARY
     all_collected_facets_.push_back( collected_facets );
 #endif
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::FacetGraph::CollectVolumeLines(
+    plain_facet_set & collected_facets,
+    std::map<std::pair<Point*, Point*>, plain_facet_set> & volume_lines ) const
+{
+  for ( plain_facet_set::iterator i=collected_facets.begin();
+        i!=collected_facets.end();
+        ++i )
+  {
+    Facet * f = *i;
+    f->GetLines( volume_lines );
   }
 }
 
@@ -321,3 +362,34 @@ void GEO::CUT::FacetGraph::PrintAllCollected()
 }
 
 #endif
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<GEO::CUT::FacetGraph> GEO::CUT::FacetGraph::Create(
+    const std::vector<Side*> & sides, const plain_facet_set & facets)
+{
+  Teuchos::RCP<FacetGraph> fg = Teuchos::null;
+
+
+  // get current underlying element dimension
+  const unsigned dim = sides[0]->Elements()[0]->Dim();
+  switch ( dim )
+  {
+    case 1:
+      fg = Teuchos::rcp(new SimpleFacetGraph_1D( sides, facets ));
+      break;
+    case 2:
+      fg = Teuchos::rcp(new SimpleFacetGraph_2D( sides, facets ));
+      break;
+    case 3:
+      fg = Teuchos::rcp(new FacetGraph( sides, facets ));
+      break;
+    default:
+      run_time_error("Unsupported element dimension!");
+      break;
+  }
+
+  // return the facet graph object pointer
+  return fg;
+};

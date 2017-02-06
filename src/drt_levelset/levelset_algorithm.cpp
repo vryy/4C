@@ -122,13 +122,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
   // -------------------------------------------------------------------
   //                         setup domains
   // -------------------------------------------------------------------
-  // get initial volume of minus domain
-  double volplus = 0.0;
-  double surf = 0.0;
-  std::map<int,GEO::BoundaryIntCells > interface;
-  interface.clear();
-  // reconstruct interface and calculate volumes, etc ...
-  SCATRA::CaptureZeroLevelSet(phinp_,discret_,initvolminus_,volplus,surf,interface);
+  GetInitialVolumeOfMinusDomain( phinp_, discret_, initvolminus_ );
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -245,7 +239,8 @@ void SCATRA::LevelSetAlgorithm::Setup()
     // set number of element layers around interface where velocity field form Navier-Stokes is kept
     convel_layers_ = levelsetparams_->get<int>("NUM_CONVEL_LAYERS");
     if (convel_layers_ < 1)
-      dserror("Set number of element layers around interface where velocity field form Navier-Stokes should be kept");
+      dserror("Set number of element layers around interface where velocity "
+          "field form Navier-Stokes should be kept");
   }
 
   // set flag for modification of convective velocity at contact points
@@ -267,6 +262,22 @@ void SCATRA::LevelSetAlgorithm::Setup()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::GetInitialVolumeOfMinusDomain(
+    const Teuchos::RCP<const Epetra_Vector>& phinp,
+    const Teuchos::RCP<const DRT::Discretization> & scatradis,
+    double& volumedomainminus) const
+{
+  double volplus = 0.0;
+  double surf = 0.0;
+  std::map<int,GEO::BoundaryIntCells > interface;
+  interface.clear();
+  // reconstruct interface and calculate volumes, etc ...
+  SCATRA::LEVELSET::Intersection intersect;
+  intersect.CaptureZeroLevelSet(phinp,scatradis,volumedomainminus,
+      volplus,surf,interface);
+}
 
 /*----------------------------------------------------------------------*
  | time loop                                            rasthofer 09/13 |
@@ -432,7 +443,6 @@ void SCATRA::LevelSetAlgorithm::Reinitialization()
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  | hybrid particle method                               rasthofer 11/13 |
  *----------------------------------------------------------------------*/
@@ -507,15 +517,20 @@ void SCATRA::LevelSetAlgorithm::Output(const int num)
   // -----------------------------------------------------------------
   //             further level-set specific values
   // -----------------------------------------------------------------
-
-  // capture interface, evalute mass conservation, write to file
-  std::map<int,GEO::BoundaryIntCells > zerolevelset;
-  zerolevelset.clear();
-  CaptureInterface(zerolevelset,true);
+  OutputOfLevelSetSpecificValues();
 
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SCATRA::LevelSetAlgorithm::OutputOfLevelSetSpecificValues()
+{
+  // capture interface, evalute mass conservation, write to file
+  std::map<int,GEO::BoundaryIntCells > zerolevelset;
+  zerolevelset.clear();
+  CaptureInterface(zerolevelset,true);
+}
 
 /*----------------------------------------------------------------------*
  | return velocity at intermediate time n+theta         rasthofer 01/14 |

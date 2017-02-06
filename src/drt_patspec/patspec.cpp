@@ -4,12 +4,13 @@
 \brief A collection of methods to modify patient specific geometries
 
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
 </pre>
 
+\level 2
 *----------------------------------------------------------------------*/
 
 
@@ -915,7 +916,7 @@ void PATSPEC::PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
 
     std::vector<DRT::Condition*> mypatspeccond;
     discret_->GetCondition("PatientSpecificData", mypatspeccond);
-    IO::DiscretizationWriter::VectorType vt= IO::DiscretizationWriter::elementvector;
+    IO::VectorType vt= IO::elementvector;
 
     // also check if parameter is initialised. For monte carlo we want to setup patspec only once and do not want output
     // hence the parameterlist is only initialized in the first run and then kept teuchos:null

@@ -14,18 +14,19 @@
 </pre>
 
 *----------------------------------------------------------------------*/
-#include "cut_position2d.H"
 #include "cut_integrationcell.H"
 #include "cut_facet.H"
 #include "cut_mesh.H"
 #include "cut_boundarycell.H"
 #include "cut_volumecell.H"
-
 #include "cut_position.H"
+#include "cut_output.H"
 
 #include "../drt_geometry/element_volume.H"
 
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::IntegrationCell::Contains( LINALG::Matrix<3,1>& x)
 {
   switch( this->Shape() )
@@ -33,11 +34,11 @@ bool GEO::CUT::IntegrationCell::Contains( LINALG::Matrix<3,1>& x)
   case DRT::Element::tet4:
   {
     // find element local position of gauss point
-    return Contains<DRT::Element::tet4>( x );
+    return Contains<3,DRT::Element::tet4>( x );
   }
   case DRT::Element::hex8:
   {
-    return Contains<DRT::Element::hex8>( x );
+    return Contains<3,DRT::Element::hex8>( x );
   }
   default:
   {
@@ -49,122 +50,64 @@ bool GEO::CUT::IntegrationCell::Contains( LINALG::Matrix<3,1>& x)
   return false;
 }
 
-template<DRT::Element::DiscretizationType celltype>
-bool GEO::CUT::IntegrationCell::Contains( LINALG::Matrix<3,1>& x)
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template<unsigned probdim, DRT::Element::DiscretizationType celltype>
+bool GEO::CUT::IntegrationCell::Contains( LINALG::Matrix<probdim,1>& x)
 {
   const int ncn = DRT::UTILS::DisTypeToNumNodePerEle<celltype>::numNodePerElement;
 
-  LINALG::Matrix<3,ncn> coords(xyz_);
+  LINALG::Matrix<probdim,ncn> coords( xyz_ );
 
-  GEO::CUT::Position<celltype> pos( coords, x );
-  pos.Compute();
+  Teuchos::RCP<GEO::CUT::Position> pos = GEO::CUT::Position::Create( coords, x, celltype );
+  pos->Compute();
 
-  return pos.WithinLimits();
+  return pos->WithinLimits();
 }
 
-
-void GEO::CUT::Hex8IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
 {
-  file << "SH(";
-  for ( int i=0; i<8; ++i )
-  {
-    if ( i > 0 )
-      file << ", ";
-    file << xyz_( 0, i ) << ","
-         << xyz_( 1, i ) << ","
-         << xyz_( 2, i );
-  }
-  file << "){";
-  for ( int i=0; i<8; ++i )
-  {
-    if ( i > 0 )
-      file << ",";
-    if ( value!=NULL )
-      file << ( *value );
-    else
-      file << position_;
-  }
-  file << "};\n";
+  OUTPUT::GmshCellDump( file, Shape(), xyz_, & position_, value );
 }
 
-void GEO::CUT::Tet4IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
-{
-  file << "SS(";
-  for ( int i=0; i<4; ++i )
-  {
-    if ( i > 0 )
-      file << ", ";
-    file << xyz_( 0, i ) << ","
-         << xyz_( 1, i ) << ","
-         << xyz_( 2, i );
-  }
-  file << "){";
-  for ( int i=0; i<4; ++i )
-  {
-    if ( i > 0 )
-      file << ",";
-    if ( value!=NULL )
-      file << ( *value );
-    else
-      file << position_;
-  }
-  file << "};\n";
-}
-
-void GEO::CUT::Wedge6IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
-{
-  file << "SI(";
-  for ( int i=0; i<6; ++i )
-  {
-    if ( i > 0 )
-      file << ", ";
-    file << xyz_( 0, i ) << ","
-         << xyz_( 1, i ) << ","
-         << xyz_( 2, i );
-  }
-  file << "){";
-  for ( int i=0; i<6; ++i )
-  {
-    if ( i > 0 )
-      file << ",";
-    if ( value!=NULL )
-      file << ( *value );
-    else
-      file << position_;
-  }
-  file << "};\n";
-}
-
-void GEO::CUT::Pyramid5IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
-{
-  file << "SP(";
-  for ( int i=0; i<5; ++i )
-  {
-    if ( i > 0 )
-      file << ", ";
-    file << xyz_( 0, i ) << ","
-         << xyz_( 1, i ) << ","
-         << xyz_( 2, i );
-  }
-  file << "){";
-  for ( int i=0; i<5; ++i )
-  {
-    if ( i > 0 )
-      file << ",";
-    if ( value!=NULL )
-      file << ( *value );
-    else
-      file << position_;
-  }
-  file << "};\n";
-}
-
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 double GEO::CUT::IntegrationCell::Volume() const
 {
-  return GEO::ElementVolume( Shape(), xyz_ );
+  return GEO::ElementVolume( Shape(), xyz_ );;
 }
 
-int GEO::CUT::Hex8IntegrationCell::CubatureDegree( DRT::Element::DiscretizationType elementshape ) const
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int GEO::CUT::Line2IntegrationCell::CubatureDegree(
+    DRT::Element::DiscretizationType elementshape ) const
+{
+  // not 100% sure what this value really means, but 4 seems more than sufficient.
+  return 4;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int GEO::CUT::Tri3IntegrationCell::CubatureDegree(
+    DRT::Element::DiscretizationType elementshape ) const
+{
+  return 4;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int GEO::CUT::Quad4IntegrationCell::CubatureDegree(
+    DRT::Element::DiscretizationType elementshape ) const
+{
+  return 4;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int GEO::CUT::Hex8IntegrationCell::CubatureDegree(
+    DRT::Element::DiscretizationType elementshape ) const
 {
   switch ( elementshape )
   {
@@ -185,11 +128,15 @@ int GEO::CUT::Hex8IntegrationCell::CubatureDegree( DRT::Element::DiscretizationT
   case DRT::Element::pyramid5:
     return 6;
   default:
-    throw std::runtime_error( "no rule defined for this element type" );
+    run_time_error( "no rule defined for this element type" );
+    exit(EXIT_FAILURE);
   }
 }
 
-int GEO::CUT::Tet4IntegrationCell::CubatureDegree( DRT::Element::DiscretizationType elementshape ) const
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int GEO::CUT::Tet4IntegrationCell::CubatureDegree(
+    DRT::Element::DiscretizationType elementshape ) const
 {
   switch ( elementshape )
   {
@@ -210,16 +157,23 @@ int GEO::CUT::Tet4IntegrationCell::CubatureDegree( DRT::Element::DiscretizationT
   case DRT::Element::pyramid5:
     return 6;
   default:
-    throw std::runtime_error( "no rule defined for this element type" );
+    run_time_error( "no rule defined for this element type" );
+    exit(EXIT_FAILURE);
   }
 }
 
-int GEO::CUT::Wedge6IntegrationCell::CubatureDegree( DRT::Element::DiscretizationType elementshape ) const
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int GEO::CUT::Wedge6IntegrationCell::CubatureDegree(
+    DRT::Element::DiscretizationType elementshape ) const
 {
   return 4;
 }
 
-int GEO::CUT::Pyramid5IntegrationCell::CubatureDegree( DRT::Element::DiscretizationType elementshape ) const
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int GEO::CUT::Pyramid5IntegrationCell::CubatureDegree(
+    DRT::Element::DiscretizationType elementshape ) const
 {
   return 4;
 }

@@ -1,3 +1,15 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file cut_test_intersection.cpp
+
+\brief cut test cpp file
+
+\level 1
+
+\maintainer Benedikt Schott, Christoph Ager
+
+*/
+/*---------------------------------------------------------------------------*/
 
 #include <iostream>
 #include <map>
@@ -62,9 +74,10 @@ void test_quad4_line2( double x1, double y1,
   nodes.push_back( mesh.GetNode( 6, &xyz[0] ) );
 
   GEO::CUT::Side * side = mesh.GetSide( 1, nodes, shards::getCellTopologyData< shards::Quadrilateral<4> >() );
-  GEO::CUT::ConcreteSide<DRT::Element::quad4> * cs = dynamic_cast<GEO::CUT::ConcreteSide<DRT::Element::quad4>*>( side );
 
-  GEO::CUT::Intersection<DRT::Element::line2, DRT::Element::quad4> intersection( mesh, *edge, *cs );
+  Teuchos::RCP<GEO::CUT::IntersectionBase> intersection =
+      GEO::CUT::IntersectionBase::Create( DRT::Element::line2, DRT::Element::quad4 );
+  intersection->Init( & mesh, edge, side, false, false, false );
 
 #if 0
   GEO::CUT::PointSet cuts;
@@ -77,7 +90,7 @@ void test_quad4_line2( double x1, double y1,
   }
 #else
   GEO::CUT::PointSet cuts;
-  intersection.Intersect( cuts );
+  intersection->Intersect( cuts );
 #endif
 
   mesh.Status();

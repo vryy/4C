@@ -3,10 +3,12 @@
 \file nln_problem.cpp
 
 <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
 </pre>
+
+\level 3
 */
 
 /*----------------------------------------------------------------------------*/
@@ -54,7 +56,7 @@ NLNSOL::NlnProblem::NlnProblem()
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblem::WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec,
     const std::string& description,
-    const IO::DiscretizationWriter::VectorType vt) const
+    const IO::VectorType vt) const
 {
   if (HaveDebugWriter())
   {
@@ -78,7 +80,7 @@ void NLNSOL::NlnProblem::WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec,
 /*----------------------------------------------------------------------------*/
 void NLNSOL::NlnProblem::WriteVector(const Epetra_MultiVector& vec,
     const std::string& description,
-    const IO::DiscretizationWriter::VectorType vt) const
+    const IO::VectorType vt) const
 {
   WriteVector(Teuchos::rcp(&vec, false), description, vt);
 

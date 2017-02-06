@@ -1,3 +1,16 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file cut_test_utils.cpp
+
+\brief cut test utilities
+
+\level 1
+
+\maintainer Benedikt Schott, Christoph Ager
+
+*/
+/*---------------------------------------------------------------------------*/
+
 
 #include "cut_test_utils.H"
 #include "../../src/drt_cut/cut_mesh.H"
@@ -72,7 +85,7 @@ GEO::CUT::Side* create_quad4( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & 
     nids.push_back( numnode++ );
   }
 
-  return mesh.CreateQuad4( numele++, nids );
+  return mesh.CreateQuad4Side( numele++, nids );
 }
 
 void create_hex8( Epetra_SerialDenseMatrix & xyze, double dx, double dy, double dz )
@@ -203,7 +216,7 @@ void create_quad4_mesh( GEO::CUT::Mesh & mesh, int rows, int cols, std::vector<G
       nids.push_back( numnode+i+(j+1)*(rows+1)+1 );
       nids.push_back( numnode+i+(j+1)*(rows+1)   );
 
-      sides.push_back( mesh.CreateQuad4( numele++, nids ) );
+      sides.push_back( mesh.CreateQuad4Side( numele++, nids ) );
     }
   }
 

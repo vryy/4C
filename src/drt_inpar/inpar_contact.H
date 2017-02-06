@@ -49,6 +49,7 @@ namespace INPAR
       solution_penalty,  ///< penalty approach
       solution_uzawa,    ///< Uzawa augmented Lagrange approach
       solution_augmented,///< augmented Lagrange approach
+      solution_xcontact, ///< eXtended contact approach
       solution_nitsche   ///< Nitsche contact solution method
     };
 

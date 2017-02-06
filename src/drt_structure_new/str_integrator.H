@@ -158,12 +158,12 @@ namespace TIMINT {
     int GetCondensedDofNumber(
         const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
 
+    //! Return the model evaluator control object (read and write)
+    STR::ModelEvaluator& ModelEval();
+
     //! Return the model evaluator control object (read-only)
     const STR::ModelEvaluator& ModelEval() const;
     Teuchos::RCP<const STR::ModelEvaluator> ModelEvalPtr() const;
-
-    //! Return the model evaluator control object (read-write)
-    STR::ModelEvaluator& ModelEval();
 
     //! Return the model evaluator object for the given model type
     STR::MODELEVALUATOR::Generic& Evaluator(const INPAR::STR::ModelType& mt);

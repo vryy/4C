@@ -13,9 +13,9 @@
 #define DRT_LOCSYS_H
 
 #include "Teuchos_RCP.hpp"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_ale3/ale3.H"
+#include "drt_discret_interface.H"
 
 
 namespace LINALG {
@@ -82,7 +82,7 @@ public:
    *                                to be applied on sysmatrix, if true
    *
    */
-  explicit LocsysManager(DRT::Discretization& discret);
+  explicit LocsysManager(DRT::DiscretizationInterface& discret);
 
   /*!
    * \brief Set-up stuff common to all constructors
@@ -113,7 +113,7 @@ public:
    * \brief Get discretization
    *
    */
-  inline DRT::Discretization& Discret() const { return discret_;};
+  inline DRT::DiscretizationInterface& Discret() const { return discret_;};
 
   /*!
    * \brief Get problem dimension
@@ -244,7 +244,7 @@ protected:
   //@{
 
   /// current discretization
-  DRT::Discretization&                     discret_;
+  DRT::DiscretizationInterface&              discret_;
 
   /// id of locsys condition
   std::vector<int>                         id_;

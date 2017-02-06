@@ -50,20 +50,12 @@ public:
 
   void DisconnectVolume( VolumeCell * cell );
 
-  void Print()
+  inline void Print() const
   {
-    for ( std::vector<Point*>::iterator i=points_.begin();
-          i!=points_.end();
-          ++i )
-    {
-      Point & p = **i;
-      std::cout << p.Pid() << " ";
-      LINALG::Matrix<3,1> x(true);
-      p.Coordinates(x.A());
-      std::cout << x << std::endl;
-    }
-    std::cout << "\n";
+    Print( std::cout );
   }
+
+  void Print( std::ostream & stream ) const;
 
   ///Print only point IDs of a facet.
   void PrintPointIds()
@@ -78,14 +70,16 @@ public:
     std::cout << "\n";
   }
 
-  void Print( std::ostream & stream );
 
-  bool OnCutSide() { return SideId() > -1; }
+
+  /** TRUE, if the \c parentside_ has a ID greater than -1 and is thus no
+   *  \c element_side, i.e. side of the background mesh. */
+  bool OnCutSide() const;
 
   /*!
   \brief Returns the parent side Id from which the facet is created
    */
-  int SideId();
+  int SideId() const;
 
   int PositionSideId();
 
@@ -99,6 +93,7 @@ public:
 
   void AddHole( Facet * hole );
 
+  /** \brief set the given side as parentside and set the position as well */
   void ExchangeSide( Side * side, bool cutsurface )
   {
     parentside_ = side;
@@ -119,9 +114,7 @@ public:
 
   bool CornerEquals( const std::vector<Point*> & facet_points ) { return Equals( corner_points_, facet_points ); }
 
-  /*!
-  \brief Check whether the parent side is a cut side
-   */
+  /*! \brief Check whether the parent side is a cut side */
   bool IsCutSide( Side * side );
 
   Point::PointPosition Position() const { return position_; }
@@ -137,6 +130,13 @@ public:
   bool IsLine( Point * p1, Point * p2 );
 
   bool Contains( Point * p ) const;
+
+
+  /** \brief Check if the given volume cell is equal to one of the already
+   *         stored volume cells in this facet.
+   *
+   *  \author  hiermeier \date 12/16 */
+  bool Contains( const plain_facet_set & vcell ) const;
 
   bool Contains( const std::vector<Point*> & side ) const;
 
@@ -202,20 +202,28 @@ public:
     }
   }
 
+  /// Create new point1 boundary cell associated with this facet
+  void NewPoint1Cell( Mesh & mesh, VolumeCell * volume,
+      const std::vector<Point*> & points, plain_boundarycell_set & bcells );
+
+  /// Create new point1 boundary cell associated with this facet
+  void NewLine2Cell( Mesh & mesh, VolumeCell * volume,
+      const std::vector<Point*> & points, plain_boundarycell_set & bcells );
+
   /*!
-  \brief Create new tri3 boundarycell associated with this facet
+  \brief Create new tri3 boundary cell associated with this facet
    */
   void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells );
 
 //  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, plain_boundarycell_set & bcells );
 
   /*!
-  \brief Create new quad4 boundarycell associated with this facet
+  \brief Create new quad4 boundary cell associated with this facet
    */
   void NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells );
 
   /*!
-  \brief Create new arbitrary boundarycell associated with this facet. These cells are to be dealt with when moment fitting is used for boun.cell integration
+  \brief Create new arbitrary boundary cell associated with this facet. These cells are to be dealt with when moment fitting is used for boun.cell integration
    */
   void NewArbitraryCell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells,
       const DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3,1>& normal );
@@ -332,10 +340,11 @@ private:
   bool isPlanar_;
 };
 
-  inline Facet * FindFacet( const plain_facet_set & facets, const std::vector<Point*> & side )
+  template < class T >
+  inline Facet * FindFacet( const T & facets, const std::vector<Point*> & side )
   {
     Facet * found = NULL;
-    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( typename T::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( f->CornerEquals( side ) )
@@ -346,7 +355,7 @@ private:
         }
         else
         {
-          throw std::runtime_error( "not unique" );
+          run_time_error( "not unique" );
         }
       }
     }

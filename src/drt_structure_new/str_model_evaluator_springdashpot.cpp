@@ -57,8 +57,11 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
   n_conds_ = (int)springdashpots.size();
 
   // new instance of spring dashpot BC for each condition
+  Teuchos::RCP<DRT::Discretization> discret_ptr =
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(),true);
   for (int i=0; i<n_conds_; ++i)
-    springs_.push_back(Teuchos::rcp(new UTILS::SpringDashpotNew(DiscretPtr(), springdashpots[i])));
+    springs_.push_back(Teuchos::rcp(new UTILS::SpringDashpotNew(discret_ptr,
+        springdashpots[i])));
 
   // setup the displacement pointer
   disnp_ptr_ = GState().GetMutableDisNp();

@@ -409,8 +409,8 @@ double STR::TIMINT::NoxInterface::GetObjectiveModelValue(
     // parameter needed by the elements
     p.set("action", "calc_struct_energy");
 
-    Teuchos::RCP<DRT::Discretization> discret_ptr =
-        Teuchos::rcp_const_cast<DRT::Discretization>(gstate_ptr_->GetDiscret());
+    Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr =
+        gstate_ptr_->GetMutableDiscret();
     // set vector values needed by elements
     discret_ptr->ClearState();
     discret_ptr->SetState("displacement", disnp);

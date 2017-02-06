@@ -130,7 +130,7 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
        std::ostringstream temp;
        temp << k+1;
        material_internal_state_np_component_ = Teuchos::rcp((*material_internal_state_np_)(k),false);
-       output_->WriteVector("mat_int_state_"+temp.str(), material_internal_state_np_component_,IO::DiscretizationWriter::elementvector);
+       output_->WriteVector("mat_int_state_"+temp.str(), material_internal_state_np_component_,IO::elementvector);
      }
 
   }
@@ -149,7 +149,7 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
        std::ostringstream temp;
        temp << k+1;
        material_ionic_currents_np_component_ = Teuchos::rcp((*material_ionic_currents_np_)(k),false);
-       output_->WriteVector("mat_ionic_currents_"+temp.str(), material_ionic_currents_np_component_,IO::DiscretizationWriter::elementvector);
+       output_->WriteVector("mat_ionic_currents_"+temp.str(), material_ionic_currents_np_component_,IO::elementvector);
      }
 
   }

@@ -52,9 +52,9 @@ bool GEO::CUT::COLOREDGRAPH::ForkFinder::operator()( const std::pair<const int, 
 void GEO::CUT::COLOREDGRAPH::Graph::Add( int row, int col )
 {
   if ( row >= color_split_ and col >= color_split_ )
-    throw std::runtime_error( "two lines connected" );
+    run_time_error( "two lines connected" );
   if ( row < color_split_ and col < color_split_ )
-    throw std::runtime_error( "two facets connected" );
+    run_time_error( "two facets connected" );
   graph_[row].insert( col );
   graph_[col].insert( row );
 }
@@ -145,7 +145,8 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
       // In such situations, geometrically two separate volumecells can't be formed
       // Check your cut_mesh from cut_mesh*.pos
       // -------------------------------------------------------------------
-      throw std::runtime_error( "open point in colored graph" );
+      dserror( "open point in colored graph ( facet-id = %d )", i->first );
+      run_time_error( "open point in colored graph" );
     }
   }
 }
@@ -160,23 +161,25 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestFacets()
       plain_int_set & row = i->second;
       if ( row.size() < 3 )
       {
-        throw std::runtime_error( "facets need at least three lines" );
+        run_time_error( "facets need at least three lines" );
       }
     }
   }
 }
 
-void GEO::CUT::COLOREDGRAPH::Graph::Print()
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::COLOREDGRAPH::Graph::Print() const
 {
-  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::const_iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int p = i->first;
-    plain_int_set & row = i->second;
+    const plain_int_set & row = i->second;
     std::cout << p << ": ";
-    for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+    for ( plain_int_set::const_iterator j=row.begin(); j!=row.end(); ++j )
     {
-      int p = *i;
-      std::cout << p << " ";
+      int pp = *j;
+      std::cout << pp << " ";
     }
     std::cout << "\n";
   }
@@ -281,7 +284,7 @@ namespace GEO
         }
         visited[facet] -= 1;
         if ( visited[facet] < 0 )
-          throw std::runtime_error( "facet left more than once" );
+          run_time_error( "facet left more than once" );
       }
 
 #if 0
@@ -298,7 +301,7 @@ namespace GEO
           int pos = line - split_color;
           if ( pos < 0 or pos >= static_cast<int>( all_lines.size() ) )
           {
-            throw std::runtime_error( "line index error" );
+            run_time_error( "line index error" );
           }
           points[all_lines[pos].first ].push_back( pos );
           points[all_lines[pos].second].push_back( pos );
@@ -321,7 +324,7 @@ namespace GEO
           count += 1;
           if ( count >= split_trace.size() )
           {
-            throw std::runtime_error( "overflow." );
+            run_time_error( "overflow." );
           }
         }
 
@@ -378,7 +381,7 @@ namespace GEO
                 }
                 if ( split_trace.size()==0 )
                 {
-                  throw std::runtime_error( "no split trace" );
+                  run_time_error( "no split trace" );
                 }
 
                 // ok. all points connected.
@@ -483,7 +486,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets( Graph & graph,
     }
     else if ( *i > 1 )
     {
-      throw std::runtime_error( "same facet twice" );
+      run_time_error( "same facet twice" );
     }
   }
 }
@@ -515,7 +518,7 @@ bool GEO::CUT::COLOREDGRAPH::Graph::ContainsTrace( const std::vector<int> & spli
   return true;
 }
 
-void GEO::CUT::COLOREDGRAPH::Cycle::Print()
+void GEO::CUT::COLOREDGRAPH::Cycle::Print() const
 {
   std::cout << "Cycle:\n";
   cycle_.Print();
@@ -542,7 +545,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & used, plain_int_set & free, G
   if ( row->size()!=2 )
   {
     // This might happen and it might be a valid split. How to deal with it?
-    throw std::runtime_error( "expect two facets at line" );
+    run_time_error( "expect two facets at line" );
   }
 
   plain_int_set::iterator i = row->begin();
@@ -575,14 +578,14 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & used, plain_int_set & free, G
     }
     else
     {
-      throw std::runtime_error( "open line after graph split" );
+      run_time_error( "open line after graph split" );
     }
 
     if ( open!=NULL )
     {
       plain_int_set & row = at( p );
       if ( row.size()!=2 )
-        throw std::runtime_error( "expect two facets at line" );
+        run_time_error( "expect two facets at line" );
       plain_int_set::iterator i = row.begin();
       int f1 = *i;
       ++i;
@@ -597,7 +600,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & used, plain_int_set & free, G
       }
       else
       {
-        throw std::runtime_error( "confused" );
+        run_time_error( "confused" );
       }
     }
   }
@@ -703,7 +706,7 @@ void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints( Graph & graph,
         {
           PushBack( c1 );
 
-          throw std::runtime_error( "bad luck" );
+          run_time_error( "bad luck" );
 
           cycles_.erase( *ilist );
           found = true;
@@ -722,7 +725,7 @@ void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints( Graph & graph,
                c1.count( f ) > 0 and
                c2.count( f ) > 0 )
           {
-            throw std::runtime_error( "not a valid split" );
+            run_time_error( "not a valid split" );
           }
         }
 
@@ -748,11 +751,11 @@ void GEO::CUT::COLOREDGRAPH::CycleList::PushBack( Graph & g )
   c.Assign( g );
 }
 
-void GEO::CUT::COLOREDGRAPH::CycleList::Print()
+void GEO::CUT::COLOREDGRAPH::CycleList::Print() const
 {
-  for ( std::list<Cycle>::iterator i=cycles_.begin(); i!=cycles_.end(); ++i )
+  for ( std::list<Cycle>::const_iterator i=cycles_.begin(); i!=cycles_.end(); ++i )
   {
-    Cycle & c = *i;
+    const Cycle & c = *i;
     c.Print();
   }
 }
@@ -770,7 +773,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestSplit()
 #ifdef DEBUGCUTLIBRARY
         DumpGraph( "failedgraph.py" );
 #endif
-        throw std::runtime_error( "colored graph not properly split" );
+        run_time_error( "colored graph not properly split" );
       }
     }
   }

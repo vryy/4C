@@ -109,6 +109,7 @@ hasproj_(false),
 hassegment_(false),
 detected_(false),
 dentries_(0),
+modata_( Teuchos::null ),
 nurbsw_(-1.0)
 {
   for (int i=0;i<3;++i)

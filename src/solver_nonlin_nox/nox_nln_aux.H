@@ -27,6 +27,7 @@ class Epetra_Vector;
 class Epetra_Comm;
 namespace LINALG {
   class Solver;
+  class SparseOperator;
 } // namespace LINALG
 namespace NOX {
 namespace StatusTest {
@@ -40,6 +41,12 @@ namespace AUX {
    *  Note: The Yes/No tuples are translated to booleans! */
   void SetPrintingParameters(Teuchos::ParameterList& p_nox,
       const Epetra_Comm& comm);
+
+  /*! \brief Returns the type of operator that is passed in.
+   *
+   *   Uses dynamic casting to identify the underlying object type. */
+  NOX::NLN::LinSystem::OperatorType GetOperatorType(
+      const LINALG::SparseOperator& op);
 
   NOX::NLN::LinSystem::LinearSystemType GetLinearSystemType(
       const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linsolvers);

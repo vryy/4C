@@ -21,6 +21,7 @@ equations
 #include "cut_boundarycell.H"
 #include "cut_triangulateFacet.H"
 #include "cut_kernel.H"
+#include "cut_side.H"
 
 #include "cut_options.H"
 
@@ -172,7 +173,7 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> & eqn_pl
       coord(1,0)= cornersLocal[1][1];
       coord(2,0)= cornersLocal[1][2];
 #ifdef LOCAL
-      phi_deriv1 = elem1_->GetLevelSetGradientInLocalCoords(coord, true);
+      phi_deriv1 = elem1_->GetLevelSetGradientAtLocalCoordsInLocalCoords(coord);
 #else
       phi_deriv1 = elem1_->GetLevelSetGradient(coord, false);
 #endif
@@ -408,7 +409,9 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> & eqn_pl
           break;
         }
         default:
-          throw std::runtime_error( "unsupported integration cell type" );
+          dserror( "unsupported integration cell type ( cell type = %s )",
+              DRT::DistypeToString( elem1->Shape() ).c_str() );
+          exit( EXIT_FAILURE );
       }
     }
     //std::cout<<"clockwise = "<<clockwise_<<"\t"<<"is cut side = "<<iscut<<"\n";
@@ -1336,7 +1339,9 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew( Mesh &mesh,
           break;
         }
         default:
-          throw std::runtime_error( "unsupported integration cell type" );
+          dserror( "unsupported integration cell type ( cell type = %s )",
+              DRT::DistypeToString( bcell->Shape() ).c_str() );
+          exit( EXIT_FAILURE );
       }
       double wei = iquad.Weight()*drs*normalX;
 

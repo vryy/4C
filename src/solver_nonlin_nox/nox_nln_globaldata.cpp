@@ -148,12 +148,13 @@ void NOX::NLN::GlobalData::CheckInput() const
 
   typedef std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >::const_iterator CI;
   for (CI iter=linSolvers_.begin(); iter!=linSolvers_.end(); ++iter)
-  if (iter->second.is_null())
-  {
-    std::ostringstream msg;
-    msg << "The entry \"" << SolutionType2String(iter->first) << "\" of the linear solver vector is not initialized!";
-    dserror(msg.str());
-  }
+    if (iter->second.is_null())
+    {
+      std::ostringstream msg;
+      msg << "The entry \"" << SolutionType2String(iter->first)
+          << "\" of the linear solver vector is not initialized!";
+      dserror(msg.str());
+    }
   return;
 }
 

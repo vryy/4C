@@ -23,6 +23,9 @@ namespace ADAPTER
 {
   class Coupling;
 }
+namespace DRT {
+  class Discretization;
+}
 namespace FSI{
 namespace UTILS{
   class MatrixRowTransform;
@@ -206,6 +209,8 @@ namespace MODELEVALUATOR{
     //! @}
 
   private:
+    //! pointer to the problem discretization (cast of base class member)
+    Teuchos::RCP<DRT::Discretization> discret_ptr_;
 
     //!@name data for submodel management
     //! @{

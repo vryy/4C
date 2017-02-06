@@ -18,12 +18,34 @@
 #include "cut_point_impl.H"
 #include "cut_levelsetside.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #include <string>
 #include <stack>
 
-/*------------------------------------------------------------------------*
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<GEO::CUT::Edge> GEO::CUT::Edge::Create(
+    DRT::Element::DiscretizationType edgetype,
+    const std::vector<Node*> & nodes)
+{
+  EdgeFactory factory;
+  return factory.CreateEdge( edgetype, nodes );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<GEO::CUT::Edge> GEO::CUT::Edge::Create(
+    unsigned shardskey,
+    const std::vector<Node*> & nodes)
+{
+  return Edge::Create( DRT::ShardsKeyToDisType( shardskey ), nodes );
+}
+
+/*-----------------------------------------------------------------------------*
  *  Find points at which this edge which is in "side" cuts the "other"
- *------------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------------*/
 bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
                                     Element * element,
                                     Side & side,
@@ -70,9 +92,10 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
   return cut_points.size()>0;
 }
 
-/*---------------------------------------------------------------------------------------*
- * Cut points falling on this edge that are common to the two given sides are extracted
- *---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ * Cut points falling on this edge that are common to the two given sides are
+ * extracted
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Edge::GetCutPoints( Element * element,
                                    Side & side,
                                    Side & other,
@@ -88,9 +111,10 @@ void GEO::CUT::Edge::GetCutPoints( Element * element,
   }
 }
 
-/*---------------------------------------------------------------------------------------*
- * Cut points falling on this edge that are common to the given edge are extracted
- *---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ * Cut points falling on this edge that are common to the given edge are
+ * extracted
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Edge::GetCutPoints( Edge * other, PointSet & cuts )
 {
   for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
@@ -103,6 +127,8 @@ void GEO::CUT::Edge::GetCutPoints( Edge * other, PointSet & cuts )
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Edge::AddPoint( Point* cut_point )
 {
   // make sure the position of the point on this edge is known
@@ -129,7 +155,10 @@ void GEO::CUT::Edge::AddPoint( Point* cut_point )
 #endif
 }
 
-void GEO::CUT::Edge::CutPoint( Node* edge_start, Node* edge_end, std::vector<Point*> & edge_points )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Edge::CutPoint( Node* edge_start, Node* edge_end,
+    std::vector<Point*> & edge_points )
 {
   Point * bp = BeginNode()->point();
   Point * ep = EndNode()  ->point();
@@ -149,6 +178,8 @@ void GEO::CUT::Edge::CutPoint( Node* edge_start, Node* edge_end, std::vector<Poi
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Edge::CutPoints( Side * side, PointSet & cut_points )
 {
   IMPL::SideCutFilter filter( side );
@@ -164,12 +195,17 @@ void GEO::CUT::Edge::CutPoints( Side * side, PointSet & cut_points )
   }
 }
 
-void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end,
+    std::vector<Point*> & line )
 {
 //   PointPositionLess::iterator bi = cut_points_.find( begin );
 //   PointPositionLess::iterator ei = cut_points_.find( end );
-  PointPositionSet::iterator bi = std::lower_bound( cut_points_.begin(), cut_points_.end(), begin, PointPositionLess( this ) );
-  PointPositionSet::iterator ei = std::lower_bound( cut_points_.begin(), cut_points_.end(), end  , PointPositionLess( this ) );
+  PointPositionSet::iterator bi = std::lower_bound( cut_points_.begin(),
+      cut_points_.end(), begin, PointPositionLess( this ) );
+  PointPositionSet::iterator ei = std::lower_bound( cut_points_.begin(),
+      cut_points_.end(), end  , PointPositionLess( this ) );
 
   if ( *bi != begin )
     bi = cut_points_.end();
@@ -207,10 +243,15 @@ void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Poi
   }
 }
 
-void GEO::CUT::Edge::CutPointsIncluding( Point* begin, Point* end, std::vector<Point*> & line )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Edge::CutPointsIncluding( Point* begin, Point* end,
+    std::vector<Point*> & line )
 {
-  PointPositionSet::iterator bi = std::lower_bound( cut_points_.begin(), cut_points_.end(), begin, PointPositionLess( this ) );
-  PointPositionSet::iterator ei = std::lower_bound( cut_points_.begin(), cut_points_.end(), end  , PointPositionLess( this ) );
+  PointPositionSet::iterator bi = std::lower_bound( cut_points_.begin(),
+      cut_points_.end(), begin, PointPositionLess( this ) );
+  PointPositionSet::iterator ei = std::lower_bound( cut_points_.begin(),
+      cut_points_.end(), end  , PointPositionLess( this ) );
 
   if ( *bi != begin )
     throw std::runtime_error( "begin point not on edge" );
@@ -242,6 +283,8 @@ void GEO::CUT::Edge::CutPointsIncluding( Point* begin, Point* end, std::vector<P
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & line )
 {
   Point * first = NULL;
@@ -288,6 +331,8 @@ void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & l
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Edge::IsCut( Side * side )
 {
   // cutpoints contains end-points and internal cut-points
@@ -302,66 +347,8 @@ bool GEO::CUT::Edge::IsCut( Side * side )
   return false;
 }
 
-bool GEO::CUT::Edge::ComputeCut( Edge * other, double & pos, LINALG::Matrix<3,1> & x, double & tolerance )
-{
-  LINALG::Matrix<3,1> p1;
-  LINALG::Matrix<3,1> p2;
-  LINALG::Matrix<3,1> u1;
-  LINALG::Matrix<3,1> u2;
-
-  const double * x11 = other->BeginNode()->point()->X();
-  const double * x12 = other->EndNode()  ->point()->X();
-  const double * x21 =  this->BeginNode()->point()->X();
-  const double * x22 =  this->EndNode()  ->point()->X();
-
-  for ( int i=0; i<3; ++i )
-  {
-    p1( i ) = .5*( x11[i] + x12[i] );
-    p2( i ) = .5*( x21[i] + x22[i] );
-    u1( i ) = .5*( x12[i] - x11[i] );
-    u2( i ) = .5*( x22[i] - x21[i] );
-  }
-
-  LINALG::Matrix<3,1> w;
-  w.Update( 1, p1, -1, p2, 0 );
-
-  double a = u1.Dot( u1 );
-  double b = u1.Dot( u2 );
-  double c = u2.Dot( u2 );
-  double d = u1.Dot( w );
-  double e = u2.Dot( w );
-
-  double denom = a*c - b*b;
-
-  if ( denom >= std::numeric_limits<double>::min() )
-  {
-    denom = 1./denom;
-    double s = denom * ( b*e-c*d );
-    double t = denom * ( a*e-b*d );
-
-    pos = t;
-    x.Update( 1, p1, s, u1, 0 );
-
-    w.Update( 1, p2, t, u2, 0 );
-    w.Update( 1, x, -1 );
-    double distance = w.Norm2();
-
-    //approximate the tolerance for evaluating the point!
-    tolerance = p1.NormInf();
-    double tolerance2 = p2.NormInf();
-    if (tolerance2 > tolerance) tolerance = tolerance2;
-    tolerance *= POSITIONTOL;
-
-    return ( distance < tolerance and
-             s >= -1-REFERENCETOL and
-             s <=  1+REFERENCETOL and
-             t >= -1-REFERENCETOL and
-             t <=  1+REFERENCETOL );
-  }
-
-  return false;
-}
-
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 GEO::CUT::Point* GEO::CUT::Edge::NodeInElement( Element * element, Point * other )
 {
   Point * p = BeginNode()->point();
@@ -377,65 +364,13 @@ GEO::CUT::Point* GEO::CUT::Edge::NodeInElement( Element * element, Point * other
   return NULL;
 }
 
-
-void GEO::CUT::Edge::Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, PointSet & cuts )
-{
-  Intersection<DRT::Element::line2, DRT::Element::tri3> inter( mesh, *this, side );
-  inter.Intersect( cuts );
-}
-
-void GEO::CUT::Edge::Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, PointSet & cuts )
-{
-  Intersection<DRT::Element::line2, DRT::Element::quad4> inter( mesh, *this, side );
-  inter.Intersect( cuts );
-}
-
-void GEO::CUT::Edge::LevelSetCut( Mesh & mesh, LevelSetSide & side, PointSet & cuts )
-{
-  double blsv = BeginNode()->LSV();
-  double elsv = EndNode()  ->LSV();
-
-  bool cutfound = false;
-
-  // version for single element cuts, here we need to watch for tolerances on
-  // nodal cuts
-  if ( fabs( blsv ) <= REFERENCETOL )
-  {
-    cuts.insert( Point::InsertCut( this, &side, BeginNode() ) );
-    cutfound = true;
-  }
-  if ( fabs( elsv ) <= REFERENCETOL )
-  {
-    cuts.insert( Point::InsertCut( this, &side, EndNode() ) );
-    cutfound = true;
-  }
-
-  if ( not cutfound )
-  {
-    if ( ( blsv < 0.0 and elsv > 0.0 ) or
-         ( blsv > 0.0 and elsv < 0.0 ) )
-    {
-      double t = blsv / ( blsv-elsv );
-
-      LINALG::Matrix<3,1> x1;
-      LINALG::Matrix<3,1> x2;
-      BeginNode()->Coordinates( x1.A() );
-      EndNode()  ->Coordinates( x2.A() );
-
-      LINALG::Matrix<3,1> x;
-      x.Update( -1., x1, 1., x2, 0. );
-      x.Update( 1., x1, t );
-      Point * p = Point::NewPoint( mesh, x.A(), 2.*t-1., this, &side, 0.0 );
-      cuts.insert( p );
-    }
-  }
-}
-
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Edge::RectifyCutNumerics()
 {
   if ( cut_points_.size() > 2 )
   {
-    // Rectify numerical problems that occationally occur. There might be middle
+    // Rectify numerical problems that occasionally occur. There might be middle
     // points that do not know their position on an element side.
     //
     // This assumes linear sides. There might be a problem with quad4
@@ -556,3 +491,140 @@ void GEO::CUT::Edge::replaceNode( Node* nod, Node* replwith )
     }
   }
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probDim,
+           DRT::Element::DiscretizationType edgeType,
+           unsigned dimEdge ,
+           unsigned numNodesEdge >
+bool GEO::CUT::ConcreteEdge<probDim,edgeType,dimEdge,numNodesEdge>::Cut(
+    Mesh & mesh, Side & side, PointSet & cuts )
+{
+  Teuchos::RCP<GEO::CUT::IntersectionBase> inter_ptr =
+      IntersectionPtr(side.Shape());
+
+  inter_ptr->Init(&mesh,this,&side,false,false,false);
+  return inter_ptr->Intersect( cuts );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probDim,
+           DRT::Element::DiscretizationType edgeType,
+           unsigned dimEdge ,
+           unsigned numNodesEdge >
+bool GEO::CUT::ConcreteEdge<probDim,edgeType,dimEdge,numNodesEdge>::ComputeCut(
+    Mesh * mesh,
+    Edge * other,
+    PointSet * cut_points,
+    double & tolerance )
+{
+  // nodal edge coordinates
+  LINALG::Matrix<probDim,numNodesEdge> xyze_this;
+  Coordinates( xyze_this.A() );
+
+  // nodal pseudo side coordinates
+  /* Note: We insert the this edge as side. In this way we can use the
+   * standard intersection object. */
+  Epetra_SerialDenseMatrix xyze_other;
+  xyze_other.Shape( other->ProbDim(), other->NumNodes() );
+  other->Coordinates( xyze_other );
+
+  Teuchos::RCP<GEO::CUT::IntersectionBase> inter_ptr =
+      IntersectionPtr( other->Shape() );
+  inter_ptr->Init( xyze_other, xyze_this, false, false, false );
+
+  // perform the actual edge - edge intersection
+  const enum IntersectionStatus istatus =
+      inter_ptr->ComputeEdgeSideIntersection( tolerance );
+
+  switch ( istatus )
+  {
+    case intersect_single_cut_point:
+    {
+      double * x_ptr = inter_ptr->FinalPoint();
+      const double & pos = inter_ptr->LocalCoordinates()[ 0 ];
+
+      Point * p = NULL;
+      p = Point::NewPoint( *mesh, x_ptr, pos, other, NULL, tolerance );
+      p->AddEdge( this );
+
+      if ( cut_points )
+        cut_points->insert( p );
+
+      break;
+    }
+    case intersect_multiple_cut_points:
+    {
+      std::vector<LINALG::Matrix<probDim,1> > xyz_cuts;
+      std::vector<LINALG::Matrix<dimEdge,1> > r_cuts;
+      inter_ptr->FinalPoints( xyz_cuts );
+      inter_ptr->LocalSideCoordinates( r_cuts );
+
+      dsassert( xyz_cuts.size() == r_cuts.size(), "Size mismatch!" );
+
+      Point * p = NULL;
+      for ( unsigned i=0; i<xyz_cuts.size(); ++i )
+      {
+        p = Point::NewPoint( *mesh, xyz_cuts[ i ].A(), r_cuts[ i ]( 0 ), other, NULL, tolerance );
+        p->AddEdge( this );
+
+       if ( cut_points )
+          cut_points->insert( p );
+      }
+
+      break;
+    }
+    case intersect_no_cut_point:
+    {
+      /* do nothing */
+      break;
+    }
+    default:
+      dserror( "Unsupported intersection status! ( status = %d )", istatus );
+      exit(EXIT_FAILURE);
+  }
+  return ( static_cast<bool>( istatus ) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < unsigned probDim,
+           DRT::Element::DiscretizationType edgeType,
+           unsigned dimEdge ,
+           unsigned numNodesEdge >
+Teuchos::RCP<GEO::CUT::IntersectionBase> GEO::CUT::ConcreteEdge<probDim,edgeType,
+    dimEdge,numNodesEdge>::IntersectionPtr(
+    const DRT::Element::DiscretizationType & sidetype) const
+{
+  return GEO::CUT::IntersectionBase::Create( edgeType, sidetype );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<GEO::CUT::Edge> GEO::CUT::EdgeFactory::CreateEdge(
+        const DRT::Element::DiscretizationType & edgetype,
+        const std::vector<Node*> & nodes) const
+{
+  Teuchos::RCP<Edge> cedge_ptr = Teuchos::null;
+  const int probdim = DRT::Problem::Instance()->NDim();
+  switch (edgetype)
+  {
+    case DRT::Element::line2:
+    {
+      cedge_ptr = Teuchos::rcp( CreateConcreteEdge<DRT::Element::line2>( nodes, probdim ) );
+      break;
+    }
+    default:
+    {
+      dserror("Unsupported edge type! ( %d | %s )",
+          edgetype, DRT::DistypeToString( edgetype).c_str() );
+      break;
+    }
+  }
+  return cedge_ptr;
+}
+
+template class GEO::CUT::ConcreteEdge<2,DRT::Element::line2>;
+template class GEO::CUT::ConcreteEdge<3,DRT::Element::line2>;

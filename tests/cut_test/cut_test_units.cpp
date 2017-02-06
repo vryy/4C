@@ -1,7 +1,20 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file cut_test_units.cpp
+
+\brief cut test cpp file
+
+\level 1
+
+\maintainer Benedikt Schott, Christoph Ager
+
+*/
+/*---------------------------------------------------------------------------*/
 
 #include "../../src/drt_cut/cut_options.H"
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_intersection.H"
+#include "../../src/drt_cut/cut_side.H"
 #include "cut_test_utils.H"
 
 void test_unit_intersection_touch()
@@ -60,13 +73,13 @@ void test_unit_intersection_touch()
       throw std::runtime_error( "unexpected nodal id" );
     }
 
-    GEO::CUT::Intersection<DRT::Element::line2, DRT::Element::quad4>
-      intersection( mesh,
-                    *( e ),
-                    *dynamic_cast<GEO::CUT::ConcreteSide<DRT::Element::quad4>*>( s1 ) );
+
+    Teuchos::RCP<GEO::CUT::IntersectionBase> intersection =
+        GEO::CUT::IntersectionBase::Create( DRT::Element::line2, DRT::Element::quad4 );
+    intersection->Init( & mesh, e, s1, false, false, false );
 
     GEO::CUT::PointSet cuts;
-    intersection.Intersect( cuts );
+    intersection->Intersect( cuts );
 
     for ( GEO::CUT::PointSet::iterator i=cuts.begin();
           i!=cuts.end();
@@ -75,7 +88,7 @@ void test_unit_intersection_touch()
       GEO::CUT::Point* p = *i;
       if ( p->Id()!=8 )
       {
-        throw std::runtime_error( "unexpected nodal id" );
+        run_time_error( "unexpected nodal id" );
       }
     }
   }

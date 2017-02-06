@@ -266,10 +266,10 @@ void PARTICLE::Rendering::OutputState()
   output->WriteVector("acceleration", acc_);
 
   // write node-based vectors
-  output->WriteVector("density", density_, output->nodevector);
-  output->WriteVector("specEnthalpy", specEnthalpy_, output->nodevector);
-  output->WriteVector("temperature", temperature_, output->nodevector);
-  output->WriteVector("pressure", pressure_, output->nodevector);
+  output->WriteVector("density", density_, IO::nodevector);
+  output->WriteVector("specEnthalpy", specEnthalpy_, IO::nodevector);
+  output->WriteVector("temperature", temperature_, IO::nodevector);
+  output->WriteVector("pressure", pressure_, IO::nodevector);
 
   trg_writeMesh_ = false;
 }

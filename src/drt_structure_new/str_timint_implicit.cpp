@@ -124,8 +124,6 @@ void STR::TIMINT::Implicit::PrepareTimeStep()
   double& time_np = DataGlobalState().GetMutableTimeNp();
   time_np = DataGlobalState().GetTimeN() + (*DataGlobalState().GetDeltaTime())[0]; */
 
-  // ToDo prepare contact for new time step
-  // PrepareStepContact();
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
   Predictor().Predict(grp);
 
@@ -310,8 +308,9 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::S
       double proc_randnum_get = ((double) rand()/(double) RAND_MAX);
       double proc_randnum = proc_randnum_get;
       double randnum = 1.0;
-      Discretization()->Comm().SumAll(&proc_randnum,&randnum,1);
-      const double numproc = Discretization()->Comm().NumProc();
+      const Epetra_Comm & comm = DiscretizationInterface()->Comm();
+      comm.SumAll(&proc_randnum,&randnum,1);
+      const double numproc = comm.NumProc();
       randnum /= numproc;
       if      (GetRandomTimeStepFactor() > 1.0) SetRandomTimeStepFactor(randnum*0.49+0.51);
       else if (GetRandomTimeStepFactor() < 1.0) SetRandomTimeStepFactor(randnum*0.99+1.0);

@@ -21,8 +21,8 @@
  |  compute nullspace of system (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ComputeNullSpaceIfNecessary(
-                                              Teuchos::ParameterList& solveparams,
-                                              bool recompute)
+    Teuchos::ParameterList& solveparams,
+    bool recompute)
 {
   // see whether we have an aztec list
   if (!solveparams.isSublist("Aztec Parameters") &&

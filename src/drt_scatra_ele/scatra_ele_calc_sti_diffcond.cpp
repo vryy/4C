@@ -169,9 +169,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
   LINALG::Matrix<my::nsd_,1> di2_dgradT = i;
   di2_dgradT.Scale(2.*di_dgradT);
 
-  for(int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for(int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // gradient of shape function times derivative of square of current density w.r.t. temperature gradient
       double di2_dgradT_gradN(0.);
@@ -214,9 +214,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
   // square of abovementioned gradient
   const double a2 = a.Dot(a);
 
-  for(int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for(int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // abovementioned gradient times gradient of shape function
       double laplawfrhs_a(0.);
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
   LINALG::Matrix<my::nsd_,1> a = VarManager()->GradConc();
   a.Update(concentration*soret/temperature,gradtemp,1.);
 
-  for(int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     // abovementioned gradient times gradient of test function
     double laplawfrhs_a_vi(0.);
@@ -272,7 +272,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
     double laplawfrhs_gradtemp_vi(0.);
     my::GetLaplacianWeakFormRHS(laplawfrhs_gradtemp_vi,gradtemp,vi);
 
-    for(int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // abovementioned gradient times gradient of shape function
       double laplawfrhs_a_ui(0.);
@@ -441,9 +441,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
   LINALG::Matrix<my::nsd_,1> di2_dgradpot= i;
   di2_dgradpot.Scale(-2.*kappa);
 
-  for(int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for(int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // gradient of shape function times derivative of square of current density w.r.t. concentration gradient
       double di2_dgradc_gradN(0.);
@@ -493,9 +493,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
   // square of abovementioned gradient
   const double a2 = a.Dot(a);
 
-  for(int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
-    for(int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // abovementioned gradient times gradient of shape function
       double laplawfrhs_a(0.);
@@ -545,7 +545,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
   // abovementioned gradient times temperature gradient
   const double gradtemp_a = gradtemp.Dot(a);
 
-  for(int vi=0; vi<my::nen_; ++vi)
+  for (unsigned vi=0; vi<my::nen_; ++vi)
   {
     // gradient of test function times abovementioned gradient
     double laplawfrhs_a(0.);
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
     double laplawfrhs_gradtemp_vi(0.);
     my::GetLaplacianWeakFormRHS(laplawfrhs_gradtemp_vi,gradtemp,vi);
 
-    for(int ui=0; ui<my::nen_; ++ui)
+    for (unsigned ui=0; ui<my::nen_; ++ui)
     {
       // gradient of shape function times temperature gradient
       double laplawfrhs_gradtemp_ui(0.);

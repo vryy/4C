@@ -79,7 +79,6 @@ void STR::ModelEvaluator::Init(
   int_ptr_ = int_ptr;
   timint_ptr_ = timint_ptr;
 
-
   isinit_ = true;
 }
 

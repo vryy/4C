@@ -1005,7 +1005,8 @@ private:
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL, "Master element is no combust element");
+        dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL,
+            "Master element is no combust element");
         return static_cast<DRT::ELEMENTS::Combust3*>(parent);
       }
 
@@ -1016,7 +1017,8 @@ private:
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL, "Master element is no combust element");
+        dsassert(dynamic_cast<DRT::ELEMENTS::Combust3*>(parent) != NULL,
+            "Master element is no combust element");
         return static_cast<DRT::ELEMENTS::Combust3*>(parent);
       }
 

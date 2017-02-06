@@ -42,7 +42,9 @@ derivtxi_(0,0),  //init deriv txi    to length 0 with 0 entries per direction
 derivteta_(0,0), //init deriv teta   to length 0 with 0 entries per direction
 varWGapSl_(0),
 alpha_(0),
-kappa_(1.0)
+kappa_(1.0),
+Wc_lm_(0),
+Wc_su_lm_(0)
 {
   // set all tangent entries to 0.0
   for (int i=0;i<3;++i)
@@ -534,6 +536,94 @@ void CONTACT::CoNode::AddVarWGapMa(int& col, int& gid, double &val)
   std::map<int,std::pair<int,double> >& varWGapMaMap = CoData().GetVarWGapMa();
   varWGapMaMap[col].first   = gid;
   varWGapMaMap[col].second += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | TODO                                                     Hofer 08/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddWcLm(const double& val)
+{
+  // Notes:
+  // - This is a adapted version of CONTACT::CoNode::AddgValue with changed variable.
+
+  // Check if this is a master node or slave boundary node
+  if (!IsSlave())
+  {
+    dserror("Contact node: Function called for master node %i.", Id());
+  }
+  if (IsOnBound())
+  {
+    dserror("Contact node: Function called for boundary node %i.", Id());
+  }
+
+  // Initialize if called for the first time
+  if (CoData().GetWcLm() == 1.0e12)
+  {
+    CoData().GetWcLm() = 0.0;
+  }
+
+  // Add given value to Wc_lm_
+  CoData().GetWcLm() += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | TODO                                                     Hofer 08/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddWcSuLm(const int& col, const double& val)
+{
+  // Notes:
+  // - This is a adapted version of MORTAR::MortarNode::AddDValue with changed variable.
+  // - CONTACT::CoNode::AddVarWGapSl does basically the same, but additionally adds the global id
+  //   of this node.
+
+  // Check if this is a master node or slave boundary node
+  if (!IsSlave())
+  {
+    dserror("Contact node: Function called for master node %i.", Id());
+  }
+  if (IsOnBound())
+  {
+    dserror("Contact node: Function called for boundary node %i.", Id());
+  }
+
+  // Check if this has been called before
+  if ((int)CoData().GetWcSuLm().size() == 0)
+  {
+    CoData().GetWcSuLm().resize(dentries_);
+  }
+
+  // Add the pair (col, val) to the given row of Wc_su_lm_
+  CoData().GetWcSuLm()[col] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | TODO                                                     Hofer 08/16 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddWcMuLm(const int& col, const double& val)
+{
+  // Notes:
+  // - This is a adapted version of MORTAR::MortarNode::AddMValue with changed variable.
+  // - CONTACT::CoNode::AddVarWGapMa does basically the same, but additionally adds the global id
+  //   of this node.
+
+  // Check if this is a master node or slave boundary node
+  if (!IsSlave())
+  {
+    dserror("Contact node: Function called for master node %i.", Id());
+  }
+  if (IsOnBound())
+  {
+    dserror("Contact node: Function called for boundary node %i.", Id());
+  }
+
+  // Add the pair (col, val) to the given row of Wc_mu_lm_
+  CoData().GetWcMuLm()[col] += val;
 
   return;
 }

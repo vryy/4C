@@ -1,15 +1,20 @@
-/*!-----------------------------------------------------------------------------------------------*
-\file cut_levelsetintersection.cpp
+/*-----------------------------------------------------------------------------------------------*/
+/**
+\file cut_combintersection.cpp
 
-\brief provides the basic functionality for cutting a mesh with a level set function
+\brief provides the basic functionality for cutting a mesh with a level set function and/or a
+       mesh
 
 <pre>
-Maintainer: Benedikt Schott and Magnus Winter
+\maintainer Benedikt Schott and Magnus Winter
             schott@lnm.mw.tum.de, winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
- *------------------------------------------------------------------------------------------------*/
+
+\level 2
+*/
+/*------------------------------------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "cut_levelsetside.H"
@@ -34,7 +39,7 @@ void GEO::CUT::CombIntersection::Cut(bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 4/6 --- Cut_Intersection" );
 
-  if(myrank_==0 and screenoutput) IO::cout << "\n\t * 4/6 Cut_Intersection ...";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 4/6 Cut_Intersection ...";
 
   Mesh & m = NormalMesh();
 

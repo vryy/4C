@@ -50,7 +50,7 @@ public:
   virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
   /// redistribute the scatra discretization and vectors according to nodegraph
-  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
+  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> & nodegraph);
 
   /// interpolate phi to intermediate time n+theta with 0<theta<1
   Teuchos::RCP<Epetra_Vector> Phinptheta(const double theta_inter);

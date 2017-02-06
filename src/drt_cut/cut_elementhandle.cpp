@@ -1,16 +1,19 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/**
 \file cut_elementhandle.cpp
 \brief Outside world interface to element. Converts quadratic to linear element. This provides the
   Gaussian rules generated from the cut
 
 <pre>
-Maintainer:  Benedikt Schott
+\maintainer  Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
 </pre>
 
-*----------------------------------------------------------------------*/
+\level 2
+*/
+/*----------------------------------------------------------------------*/
 
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -42,21 +45,24 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected(
 )
 {
   const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
-  LINALG::Matrix<3, nen> xie;
+  const unsigned dim = DRT::UTILS::DisTypeToDim<distype>::dim;
+  LINALG::Matrix<dim, nen> xie;
   if ( cpoints.size() != nen )
-    throw std::runtime_error( "non-matching number of points" );
+    run_time_error( "non-matching number of points" );
 
-  // Find the local coordinates of given corner points w.r to background ElementHandle
+  // Find the local coordinates of given corner points w.r. to background ElementHandle
   for ( unsigned i=0; i<nen; ++i )
   {
-    GEO::CUT::Point * p = cpoints[i];
+    GEO::CUT::Point * p = cpoints[ i ];
     const LINALG::Matrix<3,1> & xi = LocalCoordinates( p );
-    std::copy( xi.A(), xi.A()+3, &xie( 0, i ) );
+
+    // copy first dim entries into xie
+    std::copy( xi.A(), xi.A()+dim, &xie( 0, i ) );
   }
 
   DRT::UTILS::GaussIntegration intpoints( gp_ic );
-  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( gp_ic->NumPoints() ) );
+  Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp =
+      Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( gp_ic->NumPoints() ) );
 
   // Perform actual mapping to correct local coordinates
   DRT::UTILS::GaussIntegration::ProjectGaussPointsLocalToGlobal<distype> ( xie, intpoints, cgp );
@@ -84,20 +90,39 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints(
     Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
         Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
 
-    if(vc->ParentElement()->GetElementIntegrationType() == INPAR::CUT::EleIntType_Tessellation)
-      AppendVolumeCellGaussPoints_Tessellation(gpc, vc);
-    else if(vc->ParentElement()->GetElementIntegrationType() == INPAR::CUT::EleIntType_MomentFitting)
-      AppendVolumeCellGaussPoints_MomentFitting(gpc, vc);
-    else if(vc->ParentElement()->GetElementIntegrationType() == INPAR::CUT::EleIntType_DirectDivergence)
-      AppendVolumeCellGaussPoints_DirectDivergence(gpc,vc);
-    else dserror("non supported element integration type for given volume-cell %i", vc->ParentElement()->GetElementIntegrationType());
+    switch ( vc->ParentElement()->GetElementIntegrationType() )
+    {
+      case INPAR::CUT::EleIntType_Tessellation:
+      {
+        AppendVolumeCellGaussPoints_Tessellation(gpc, vc);
+        break;
+      }
+      case INPAR::CUT::EleIntType_MomentFitting:
+      {
+        AppendVolumeCellGaussPoints_MomentFitting(gpc, vc);
+        break;
+      }
+      case INPAR::CUT::EleIntType_DirectDivergence:
+      {
+        AppendVolumeCellGaussPoints_DirectDivergence(gpc,vc);
+        break;
+      }
+      default:
+      {
+        dserror( "non supported element integration type for given volume-cell %i",
+            vc->ParentElement()->GetElementIntegrationType() );
+        exit( EXIT_FAILURE );
+      }
+    }
 
     intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
   }
 }
 
 
-void GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc)
+void GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(
+    Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc,
+    GEO::CUT::VolumeCell*                          vc)
 {
 
   //---------------
@@ -109,43 +134,58 @@ void GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_Tessellation(Teuchos::
   {
     GEO::CUT::IntegrationCell * ic = *i;
 
-    Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic = DRT::UTILS::GaussPointCache::Instance().
-                                                                Create( ic->Shape(), ic->CubatureDegree( ic->Shape() ) );
+    Teuchos::RCP<DRT::UTILS::GaussPoints> gp_ic =
+        DRT::UTILS::GaussPointCache::Instance().Create( ic->Shape(), ic->CubatureDegree( ic->Shape() ) );
     const std::vector<GEO::CUT::Point*> & cpoints = ic->Points();
 
     switch ( ic->Shape() )
     {
-    case DRT::Element::hex8:
-    {
-      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( cpoints, gp_ic );
-      gpc->Append( gp );
-      break;
-    }
-    case DRT::Element::tet4:
-    {
-      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( cpoints, gp_ic );
-      gpc->Append( gp );
-      break;
-    }
-    case DRT::Element::wedge6:
-    {
-      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( cpoints, gp_ic );
-      gpc->Append( gp );
-      break;
-    }
-    case DRT::Element::pyramid5:
-    {
-      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( cpoints, gp_ic );
-      gpc->Append( gp );
-      break;
-    }
-    default:
-      throw std::runtime_error( "unsupported integration cell type" );
+      case DRT::Element::tri3:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tri3>( cpoints, gp_ic );
+        gpc->Append( gp );
+        break;
+      }
+      case DRT::Element::quad4:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::quad4>( cpoints, gp_ic );
+        gpc->Append( gp );
+        break;
+      }
+      case DRT::Element::hex8:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( cpoints, gp_ic );
+        gpc->Append( gp );
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( cpoints, gp_ic );
+        gpc->Append( gp );
+        break;
+      }
+      case DRT::Element::wedge6:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( cpoints, gp_ic );
+        gpc->Append( gp );
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( cpoints, gp_ic );
+        gpc->Append( gp );
+        break;
+      }
+      default:
+        dserror( "unsupported integration cell type ( cell type = %s )",
+            DRT::DistypeToString( ic->Shape() ).c_str() );
+        exit( EXIT_FAILURE );
     }
   }
 }
 
-void GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc)
+void GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_MomentFitting(
+    Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc, GEO::CUT::VolumeCell* vc)
 {
   //-------------------
   // For MomentFitting, we have Gauss points that are calculated w.r to local coordinates of linear shadow element
@@ -264,7 +304,9 @@ Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GEO::CUT::ElementHandle::GaussPoi
           break;
         }
         default:
-          throw std::runtime_error( "unsupported integration cell type" );
+          dserror( "unsupported integration cell type ( cell type = %s )",
+              DRT::DistypeToString( ic->Shape() ).c_str() );
+          exit( EXIT_FAILURE );
         }
       }
     }
@@ -366,7 +408,9 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPoints(
         break;
       }
       default:
-        throw std::runtime_error( "unsupported integration cell type" );
+        dserror( "unsupported integration cell type ( cell type = %s )",
+            DRT::DistypeToString( bc->Shape() ).c_str() );
+        exit( EXIT_FAILURE );
       }
     }
   }
@@ -422,7 +466,23 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::ElementHandle::GetBoundaryCellSets(
+    const std::vector<GEO::CUT::Point::PointPosition> & desired_positions,
+    std::vector<plain_boundarycell_set> & bcellsets
+    )
+{
+  for ( std::vector<GEO::CUT::Point::PointPosition>::const_iterator ip =
+      desired_positions.begin(); ip != desired_positions.end(); ++ip )
+  {
+    const std::vector<plain_boundarycell_set> & ele_bcellsets =
+        GetBoundaryCellSet( *ip );
 
+    std::copy( ele_bcellsets.begin(), ele_bcellsets.end(),
+        std::inserter( bcellsets, bcellsets.end() ) );
+  }
+}
 
 /*----------------------------------------------------------------------*/
 // get all the element' sets of volume-cells and nds-vectors
@@ -440,7 +500,7 @@ void GEO::CUT::ElementHandle::GetVolumeCellsDofSets (
   std::vector<std::vector<int> > & nodaldofset_vc_sets_inside = GetNodalDofSet_VcSets_Inside();
   std::vector<std::vector<int> > & nodaldofset_vc_sets_outside = GetNodalDofSet_VcSets_Outside();
 
-  if(include_inner)
+  if( include_inner )
   {
     std::copy( ele_vc_sets_inside.begin(), ele_vc_sets_inside.end(), std::inserter(cellsets,cellsets.end()) );
     std::copy( nodaldofset_vc_sets_inside.begin(), nodaldofset_vc_sets_inside.end(), std::inserter(nds_sets,nds_sets.end()) );
@@ -491,10 +551,10 @@ void GEO::CUT::LinearElementHandle::CollectVolumeCells (
 }
 
 
-/*----------------------------------------------------------------------*/
-// get all the element' sets of volume-cells, nds-vectors and integration points
-// return true if a specific XFEM-Gaussrule is available and necessary
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+  get all the element sets of volume-cells, nds-vectors and integration points
+  return true if a specific XFEM-Gaussrule is available and necessary
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints (
     std::vector< plain_volumecell_set >                        & cell_sets ,
     std::vector< std::vector< int > >                          & nds_sets,
@@ -502,23 +562,28 @@ bool GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints (
     bool                                                         include_inner
 )
 {
-  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Get_CellSets_nds_GaussPoints" );
+  TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints" );
 
   GetVolumeCellsDofSets( cell_sets, nds_sets, include_inner);
 
   intpoints_sets.clear();
 
-  // switch this on to only integrate cut elements
-  // only one cell_sets for current element and element is not intersected, then use a non-XFEM Gaussrule
-  if(!IsIntersected())
+  /* switch this on to only integrate cut elements
+   * only one cell_sets for current element and element is not intersected, then
+   * use a non-XFEM Gaussrule */
+  if( !IsIntersected() )
   {
     // perform  standard integration on an uncut element
-    if(cell_sets.size() == 1) return false;
+    if(cell_sets.size() == 1)
+      return false;
     else if(cell_sets.size() == 0)
     {
-      // the element does not have a physical but only a ghost set, therefore no integration is necessary and intpoints remains empty
+      /* the element does not have a physical but only a ghost set, therefore
+       * no integration is necessary and intpoints remains empty */
     }
-    else dserror("number of cell_sets for a non-intersected element is invalid: %i", cell_sets.size());
+    else
+      dserror("number of cell_sets for a non-intersected element is invalid: %i",
+          cell_sets.size());
   }
 
 
@@ -534,9 +599,47 @@ bool GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints (
     intpoints_sets.push_back( gaussCellsets );
   }
 
-  return true; // specific XFEM-integration rule available
+  // return true if specific XFEM-integration rule available
+  return true;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::LinearElementHandle::BoundaryCellSet( Point::PointPosition position )
+{
+  // boundary cell sets were already added
+  if ( bcell_sets_.find( position ) != bcell_sets_.end() )
+    return;
+
+  // increase the size of the paired vector and extract the std::vector
+  // corresponding to the given position
+  const unsigned curr_size = bcell_sets_.size();
+  bcell_sets_.resize( curr_size + 1 );
+  std::vector<plain_boundarycell_set> & bcell_sets = bcell_sets_[ position ];
+  bcell_sets.resize( 1, plain_boundarycell_set() );
+
+  // get the volume cells of this linear element
+  const plain_volumecell_set & evolcells = element_->VolumeCells();
+
+  plain_boundarycell_set & bcells = bcell_sets[ 0 ];
+  for ( plain_volumecell_set::const_iterator citvol = evolcells.begin();
+        citvol != evolcells.end(); ++citvol )
+  {
+    const VolumeCell & evolcell = **citvol;
+    if ( evolcell.Position() == position )
+    {
+      const plain_boundarycell_set & ebcells = evolcell.BoundaryCells();
+      for ( plain_boundarycell_set::const_iterator citbc = ebcells.begin();
+            citbc != ebcells.end(); ++citbc )
+      {
+        // avoid to add boundary cells twice
+        if ( bcells.find( *citbc ) == bcells.end() )
+          bcells.insert( *citbc );
+      }
+    }
+  }
+
+}
 
 /*----------------------------------------------------------------------*/
 // get the element's sets of volume-cells ordered by inside/outside position
@@ -555,13 +658,13 @@ void GEO::CUT::LinearElementHandle::VolumeCellSets()
       {
         plain_volumecell_set s; // plain volume cell set with only one entry
         s.insert(*i);
-        vc_sets_outside_.push_back(s);
+        vc_sets_outside_.push_back( s );
       }
       else // inside vc
       {
         plain_volumecell_set s;  // plain volume cell set with only one entry
         s.insert(*i);
-        vc_sets_inside_.push_back(s);
+        vc_sets_inside_.push_back( s );
       }
     }
 
@@ -682,16 +785,97 @@ void GEO::CUT::QuadraticElementHandle::GetIntegrationCells( plain_integrationcel
 
 /*----------------------------------------------------------------------*/
 //  get all the quadratic element's boundary integration cells
-// TODO: this has to be corrected such that just the bcs which belong the outside vcs will be returned
+//  TODO: this has to be corrected such that just the bcs which belong the
+//  outside vcs will be returned
 /*----------------------------------------------------------------------*/
 void GEO::CUT::QuadraticElementHandle::GetBoundaryCells( plain_boundarycell_set & bcells )
 {
+  dserror( "Deprecated version!" );
   for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
   {
     Element * e = *i;
     e->GetBoundaryCells( bcells );
   }
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::BoundaryCellSet( Point::PointPosition position )
+{
+  if ( connected_bcell_sets_.find( position ) != connected_bcell_sets_.end() )
+    return;
+
+  ConnectBoundaryCells( position );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::ConnectBoundaryCells( Point::PointPosition position )
+{
+  plain_volumecell_set evolcells_position;
+  CollectVolumeCells( position, evolcells_position );
+
+  std::vector<plain_volumecell_set> connected_evolcells_position;
+  BuildCellSets( evolcells_position, connected_evolcells_position );
+
+  BuildBoundaryCellSets( connected_evolcells_position,
+     connected_bcell_sets_[ position ] );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::BuildBoundaryCellSets(
+    const std::vector<plain_volumecell_set> & connected_vcell_set,
+    std::vector<plain_boundarycell_set> & connected_bcell_set ) const
+{
+  connected_bcell_set.resize( connected_vcell_set.size(), plain_boundarycell_set() );
+
+  unsigned vcell_set_count = 0;
+  for ( std::vector<plain_volumecell_set>::const_iterator citvset =
+      connected_vcell_set.begin(); citvset != connected_vcell_set.end(); ++ citvset )
+  {
+    const plain_volumecell_set & vcell_set = *citvset;
+    plain_boundarycell_set & bcell_set = connected_bcell_set[ vcell_set_count++ ];
+    for ( plain_volumecell_set::const_iterator citvc = vcell_set.begin();
+          citvc != vcell_set.end(); ++citvc )
+    {
+      const VolumeCell & vcell = **citvc;
+      const plain_boundarycell_set & bcells = vcell.BoundaryCells();
+      for ( plain_boundarycell_set::const_iterator citbc = bcells.begin();
+            citbc != bcells.end(); ++citbc )
+      {
+        // avoid to add bcells twice
+        if ( bcell_set.find( *citbc ) == bcell_set.end() )
+          bcell_set.insert( *citbc );
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::QuadraticElementHandle::CollectVolumeCells(
+    Point::PointPosition position,
+    plain_volumecell_set & evolcells_position ) const
+{
+  for ( std::vector<Element*>::const_iterator i=subelements_.begin();
+        i!=subelements_.end(); ++i )
+  {
+    Element * e = *i;
+    const plain_volumecell_set & ecells = e->VolumeCells();
+
+    // sort for inside and outside volume-cells
+    for (plain_volumecell_set::const_iterator i = ecells.begin(); i!=ecells.end(); i++)
+    {
+      VolumeCell * evolcell = *i;
+      if( evolcell->Position() == position )
+      {
+        evolcells_position.insert( evolcell );
+      }
+    }
+  }
+}
+
 
 
 /*----------------------------------------------------------------------*/
@@ -730,8 +914,6 @@ void GEO::CUT::QuadraticElementHandle::ConnectVolumeCells ()
 
 }
 
-
-
 /*----------------------------------------------------------------------*/
 //! build sets
 /*----------------------------------------------------------------------*/
@@ -752,8 +934,9 @@ void GEO::CUT::QuadraticElementHandle::BuildCellSets (
       plain_volumecell_set connected;
       // REMARK: here use the version without! elements check:
       // here we build cell sets within one global element with vcs of subelements
-      // maybe the vcs of one subelement are not connected within one subelement, but within one global element,
-      // therefore more than one vc of one subelements may be connected.
+      // maybe the vcs of one subelement are not connected within one subelement,
+      // but within one global element, therefore more than one vc of one subelements
+      // may be connected.
       //        cell->Neighbors( NULL, cells_to_connect, done, connected, elements );
       cell->Neighbors( NULL, cells_to_connect, done, connected);
 
@@ -1240,9 +1423,10 @@ GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const st
 /*----------------------------------------------------------------------*/
 void GEO::CUT::Hex20ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
-  Position<DRT::Element::hex20> pos( nodes_, xyz );
+  Teuchos::RCP<GEO::CUT::Position> pos =
+       GEO::CUT::PositionFactory::BuildPosition<3,DRT::Element::hex20>(nodes_,xyz);
 
-  bool success = pos.ComputeTol(1e-10);;
+  bool success = pos->Compute(1e-10);;
   if ( not success )
   {
     std::cout << "local coordinates for hex20 element could not be determined" << std::endl;
@@ -1256,7 +1440,7 @@ void GEO::CUT::Hex20ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
 
     dserror("local coordinates for hex20 element could not be determined");
   }
-  rst = pos.LocalCoordinates();
+  pos->LocalCoordinates(rst);
 }
 
 
@@ -1265,12 +1449,14 @@ void GEO::CUT::Hex20ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
 /*----------------------------------------------------------------------*/
 void GEO::CUT::Hex27ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
-  Position<DRT::Element::hex27> pos( nodes_, xyz );
-  bool success = pos.Compute();
+  Teuchos::RCP<GEO::CUT::Position> pos =
+         GEO::CUT::PositionFactory::BuildPosition<3,DRT::Element::hex27>(nodes_,xyz);
+
+  bool success = pos->Compute();
   if ( not success )
   {
   }
-  rst = pos.LocalCoordinates();
+  pos->LocalCoordinates(rst);
 }
 
 
@@ -1279,11 +1465,13 @@ void GEO::CUT::Hex27ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
 /*----------------------------------------------------------------------*/
 void GEO::CUT::Tet10ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
 {
-  Position<DRT::Element::tet10> pos( nodes_, xyz );
-  bool success = pos.Compute();
+  Teuchos::RCP<GEO::CUT::Position> pos =
+         GEO::CUT::PositionFactory::BuildPosition<3,DRT::Element::tet10>(nodes_,xyz);
+
+  bool success = pos->Compute();
   if ( not success )
   {
   }
-  rst = pos.LocalCoordinates();
+  pos->LocalCoordinates(rst);
 }
 

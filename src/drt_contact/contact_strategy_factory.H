@@ -19,6 +19,7 @@
 
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_strategy_factory.H"
+#include "../drt_xfem/xfem_enum_lists.H"
 
 // forward declarations...
 namespace Teuchos {
@@ -89,7 +90,8 @@ namespace STRATEGY {
         enum MORTAR::MortarElement::PhysicalType& slavetype,
         enum MORTAR::MortarElement::PhysicalType& mastertype,
         Teuchos::RCP<CONTACT::CoElement>& cele,
-        Teuchos::RCP<DRT::Element>& ele) const;
+        Teuchos::RCP<DRT::Element>& ele,
+        const DRT::DiscretizationInterface & discret) const;
 
     /*! \brief Find Physical Type (Poro or Structure) of Poro Interface
      *
@@ -102,6 +104,18 @@ namespace STRATEGY {
         enum MORTAR::MortarElement::PhysicalType& slavetype,
         enum MORTAR::MortarElement::PhysicalType& mastertype) const;
 
+    /*! \brief Extract the discretization belonging to the given contact
+     *   condition pair/group
+     *
+     *  \param full_discret (in) : full structural discretization
+     *  \param given_cgroup (in) : given contact condition group/pair
+     *
+     *  \author hiermeier
+     *  \date 10/16 */
+    void ExtractParentDiscretization(
+        const DRT::DiscretizationInterface & full_discret,
+        const std::vector<DRT::Condition*> & given_ccgroup,
+        std::pair<enum XFEM::FieldName, Teuchos::RCP<const DRT::DiscretizationInterface> > & xdispair) const;
   };  // class Factory
 } // namespace STRATEGY
 } // namespace CONTACT

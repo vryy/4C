@@ -51,6 +51,9 @@
 #include "../drt_levelset/levelset_timint_ost.H"
 #include "../drt_levelset/levelset_timint_stat.H"
 
+// xcontact level set specific files
+#include "../drt_contact_xcontact/xcontact_levelset_timint_ost.H"
+
 // cardiac monodomain specific files
 #include "../drt_scatra/scatra_timint_cardiac_monodomain_scheme.H"
 
@@ -138,7 +141,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // restart
   scatratimeparams->set<int>      ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  scatratimeparams->set<int>      ("RESULTSEVRY"       ,prbdyn.get<int>("RESULTSEVRY"));
+  scatratimeparams->set<int>      ("RESULTSEVRY" ,prbdyn.get<int>("RESULTSEVRY"));
 
   // -------------------------------------------------------------------
   // overrule flags for solid-based scalar transport!
@@ -268,74 +271,116 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   }
 
   // levelset, combustion, and two phase flow
-  else if (probtype == prb_level_set or probtype == prb_combust or probtype == prb_two_phase_flow or probtype == prb_fluid_xfem_ls)
+  else if (probtype == prb_level_set      or
+           probtype == prb_combust        or
+           probtype == prb_two_phase_flow or
+           probtype == prb_fluid_xfem_ls  or
+           probtype == prb_xcontact)
   {
     Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
-    if (probtype == prb_level_set)
-      lsparams = Teuchos::rcp(new Teuchos::ParameterList(prbdyn));
-    else
+    switch ( probtype )
     {
-      lsparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LevelSetControl()));
-      // overrule certain parameters for coupled problems
-      // this has already been ensured for scatratimeparams, but has also been ensured for the level-set
-      // parameter which are potentially handled down to the particle algorithm in a hybrid approach
-      // time step size
-      lsparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
-      // maximum simulation time
-      lsparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
-      // maximum number of timesteps
-      lsparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP"));
-      // restart
-      lsparams->set<int>      ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
-      // solution output
-      lsparams->set<int>      ("RESULTSEVRY"       ,prbdyn.get<int>("RESULTSEVRY"));
-
-      if (probtype == prb_two_phase_flow)
+      case prb_level_set:
+        lsparams = Teuchos::rcp( new Teuchos::ParameterList( prbdyn ) );
+        break;
+      case prb_two_phase_flow:
       {
         //Give access to smoothing parameter for levelset calculations.
+        lsparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LevelSetControl()));
         lsparams->set<double> ("INTERFACE_THICKNESS_TPF",prbdyn.sublist("SMEARED").get<double>("INTERFACE_THICKNESS"));
+        // !!! no break !!!
+      }
+      default:
+      {
+        if ( lsparams.is_null() )
+          lsparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LevelSetControl()));
+        // overrule certain parameters for coupled problems
+        // this has already been ensured for scatratimeparams, but has also been ensured for the level-set
+        // parameter which are potentially handled down to the particle algorithm in a hybrid approach
+        // time step size
+        lsparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP") );
+        // maximum simulation time
+        lsparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME") );
+        // maximum number of timesteps
+        lsparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP") );
+        // restart
+        lsparams->set<int>      ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY") );
+        // solution output
+        lsparams->set<int>      ("RESULTSEVRY"       ,prbdyn.get<int>("RESULTSEVRY") );
+
+        break;
       }
     }
 
-    switch(timintscheme)
+    switch ( timintscheme )
     {
-    case INPAR::SCATRA::timeint_one_step_theta:
-    {
-      // create instance of time integration class (call the constructor)
-      scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntOneStepTheta(discret, solver, lsparams, scatratimeparams, extraparams,output));
-      break;
-    }
-    case INPAR::SCATRA::timeint_stationary:
-    {
-      // create instance of time integration class (call the constructor)
-      if (probtype != prb_level_set)
-        scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntStationary(discret, solver, lsparams, scatratimeparams,extraparams, output));
-      else
-        dserror("Stationary time integration scheme only supported for coupled level-set problems!");
-      break;
-    }
-    case INPAR::SCATRA::timeint_gen_alpha:
-    {
-      if (probtype == prb_combust)
+      case INPAR::SCATRA::timeint_one_step_theta:
       {
-        std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You thus get a standard Scatra!\n\n\n" << std::endl;
-        // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(discret, solver, scatratimeparams,extraparams, output));
+        switch ( probtype )
+        {
+          case prb_xcontact:
+            // create instance of time integration class (call the constructor)
+            scatra_ = Teuchos::rcp(new XCONTACT::LEVELSET::TIMINT::OneStepTheta(
+                discret, solver, lsparams, scatratimeparams, extraparams,output));
+            break;
+          default:
+          {
+            // create instance of time integration class (call the constructor)
+            scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntOneStepTheta(discret,
+                solver, lsparams, scatratimeparams, extraparams,output));
+            break;
+          }
+        }
+        break;
       }
-      else if (probtype == prb_two_phase_flow)
+      case INPAR::SCATRA::timeint_stationary:
       {
-        std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You thus get a standard Scatra!\n\n\n" << std::endl;
         // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(discret, solver, scatratimeparams,extraparams, output));
+        switch ( probtype )
+        {
+          case prb_xcontact:
+          case prb_level_set:
+          {
+            dserror("Stationary time integration scheme only supported for a selection of coupled "
+                "level-set problems!");
+            exit(EXIT_FAILURE);
+          }
+          default:
+          {
+            scatra_ = Teuchos::rcp(new SCATRA::LevelSetTimIntStationary(discret, solver, lsparams, scatratimeparams,extraparams, output));
+            break;
+          }
+        }
+        break;
       }
-      else
+      case INPAR::SCATRA::timeint_gen_alpha:
+      {
+        switch ( probtype )
+        {
+          case prb_combust:
+          {
+            std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You thus get a standard Scatra!\n\n\n" << std::endl;
+            // create instance of time integration class (call the constructor)
+            scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(discret, solver, scatratimeparams,extraparams, output));
+            break;
+          }
+          case prb_two_phase_flow:
+          {
+            std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You thus get a standard Scatra!\n\n\n" << std::endl;
+            // create instance of time integration class (call the constructor)
+            scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(discret, solver, scatratimeparams,extraparams, output));
+            break;
+          }
+          default:
+            dserror("Unknown time-integration scheme for level-set problem");
+            exit(EXIT_FAILURE);
+        }
+
+        break;
+      }
+      default:
         dserror("Unknown time-integration scheme for level-set problem");
-
-      break;
-    }
-    default:
-      dserror("Unknown time-integration scheme for level-set problem");
-      break;
+        break;
     }// switch(timintscheme)
   }
 

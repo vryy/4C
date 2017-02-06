@@ -5,10 +5,12 @@
 \brief Write output for debugging purposes
 
 <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
 </pre>
+
+\level 3
 */
 
 /*----------------------------------------------------------------------------*/
@@ -123,7 +125,7 @@ namespace UTILS
     //! Write vector to output
     virtual void WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector with result data (to be outputted)
         const std::string& description, ///< user-provided description of output quantity for log-file #log_
-        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///< vector type
+        const IO::VectorType vt = IO::dofvector ///< vector type
         ) const = 0;
 
     //@}
@@ -296,7 +298,7 @@ namespace UTILS
     //! Write vector to output
     virtual void WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector with result data (to be outputted)
         const std::string& description, ///< user-provided description of output quantity for log-file #log_
-        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///< vector type
+        const IO::VectorType vt = IO::dofvector ///< vector type
         ) const;
 
     //@}

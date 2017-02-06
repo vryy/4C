@@ -127,7 +127,7 @@ const DRT::Element*        ele
     const double rhs = my::bodyforce_[0].Dot(my::funct_);
 
     // calculate integrals of domain and bodyforce
-    for (int i=0; i<my::nen_; i++)
+    for (unsigned i=0; i<my::nen_; i++)
     {
       scalars[0] += fac*my::funct_(i);
     }
@@ -231,7 +231,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
 
   if(my::nsd_ == 3)
   {
-    for (int i=0; i<my::nen_; ++i)
+    for (unsigned i=0; i<my::nen_; ++i)
     {
       double sum = (my::derxy2_(0,i)+my::derxy2_(1,i)+my::derxy2_(2,i))/prefac;
 
@@ -243,7 +243,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
 
   else if(my::nsd_ == 2)
   {
-    for (int i=0; i<my::nen_; ++i)
+    for (unsigned i=0; i<my::nen_; ++i)
     {
       double sum = (my::derxy2_(0,i)+my::derxy2_(1,i))/prefac;
 

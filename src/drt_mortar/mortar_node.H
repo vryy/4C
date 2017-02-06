@@ -112,6 +112,15 @@ public:
   }
 
   /*!
+   \brief Return const ptr to current Lagrange mutliplier in step n+1
+   (only for slave side!) (length 3)
+   */
+  const double* lm() const
+  {
+    return lm_;
+  }
+
+  /*!
    \brief Return old Lagrange mutliplier from step n (only for slave side!) (length 3)
    */
   double* lmold()
@@ -340,7 +349,7 @@ public:
   /*!
    \brief Is node on slave or master side of mortar interface
    */
-  virtual bool IsSlave() const
+  bool IsSlave() const
   {
     return isslave_;
   }
@@ -356,7 +365,7 @@ public:
    changed to master, thy do NOT carry Lagrange multipliers and their
    neighbors' dual shape fct. are modified!
    */
-  virtual bool& SetSlave()
+  bool& SetSlave()
   {
     return isslave_;
   }
@@ -365,7 +374,7 @@ public:
    \brief Return attached status
 
    */
-  virtual bool IsDetected()
+  bool IsDetected()
   {
     return detected_;
   }
@@ -374,7 +383,7 @@ public:
    \brief Return attached status
 
    */
-  virtual bool& SetDetected()
+  bool& SetDetected()
   {
     return detected_;
   }
@@ -382,7 +391,7 @@ public:
   /*!
    \brief Is slave node tied or untied
    */
-  virtual bool IsTiedSlave() const
+  bool IsTiedSlave() const
   {
     return istiedslave_;
   }
@@ -406,7 +415,7 @@ public:
    for each node accordingly.
 
    */
-  virtual bool& SetTiedSlave()
+  bool& SetTiedSlave()
   {
     return istiedslave_;
   }
@@ -414,7 +423,7 @@ public:
   /*!
    \brief Is node on boundary of slave side of mortar interface
    */
-  virtual bool IsOnBound() const
+  bool IsOnBound() const
   {
     return isonbound_;
   }
@@ -422,7 +431,7 @@ public:
   /*!
    \brief Set slave side boundary status of current node
    */
-  virtual bool& SetBound()
+  bool& SetBound()
   {
     return isonbound_;
   }
@@ -430,7 +439,7 @@ public:
   /*!
    \brief Is node on bound or corner/edge
    */
-  virtual bool IsOnBoundorCE() const
+  bool IsOnBoundorCE() const
   {
     return ((isonedge_ or isoncorner_) or isonbound_);
   }
@@ -438,7 +447,7 @@ public:
   /*!
    \brief Is node on edge or corner
    */
-  virtual bool IsOnCornerEdge() const
+  bool IsOnCornerEdge() const
   {
     return (isonedge_ or isoncorner_);
   }
@@ -446,7 +455,7 @@ public:
   /*!
    \brief Is node on geometrical edge
    */
-  virtual bool IsOnEdge() const
+  bool IsOnEdge() const
   {
     return isonedge_;
   }
@@ -454,7 +463,7 @@ public:
   /*!
    \brief Set node is on geometrical edge
    */
-  virtual bool& SetOnEdge()
+  bool& SetOnEdge()
   {
     return isonedge_;
   }
@@ -462,7 +471,7 @@ public:
   /*!
    \brief Is node on geometrical corner
    */
-  virtual bool IsOnCorner() const
+  bool IsOnCorner() const
   {
     return isoncorner_;
   }
@@ -470,7 +479,7 @@ public:
   /*!
    \brief Is node on geometrical corner
    */
-  virtual bool IsOnCornerorBound() const
+  bool IsOnCornerorBound() const
   {
     return (isoncorner_ or isonbound_);
   }
@@ -478,7 +487,7 @@ public:
   /*!
    \brief Set node is on geometrical corner
    */
-  virtual bool& SetOnCorner()
+  bool& SetOnCorner()
   {
     return isoncorner_;
   }
@@ -486,7 +495,7 @@ public:
   /*!
    \brief Return D.B.C. status of this node (true if at least one dof with D.B.C)
    */
-  virtual bool IsDbc() const
+  bool IsDbc() const
   {
     return isdbc_;
   }
@@ -494,7 +503,7 @@ public:
   /*!
    \brief Set D.B.C. status of current node
    */
-  virtual bool& SetDbc()
+  bool& SetDbc()
   {
     return isdbc_;
   }
@@ -502,7 +511,7 @@ public:
   /*!
    \brief Get number of degrees of freedom
    */
-  virtual int NumDof() const
+  int NumDof() const
   {
     return numdof_;
   }
@@ -510,7 +519,7 @@ public:
   /*!
    \brief Get predefined degrees of freedom
    */
-  virtual const int* Dofs() const
+  const int* Dofs() const
   {
     return &dofs_[0];
   }
@@ -518,7 +527,15 @@ public:
   /*!
    \brief Return current configuration (length 3)
    */
-  virtual double* xspatial()
+  double* xspatial()
+  {
+    return xspatial_;
+  }
+
+  /*!
+   \brief Return const ptr to current configuration (length 3)
+   */
+  const double* xspatial() const
   {
     return xspatial_;
   }
@@ -526,7 +543,7 @@ public:
   /*!
    \brief Return old displacement (length 3)
    */
-  virtual double* uold()
+  double* uold()
   {
     return uold_;
   }
@@ -534,7 +551,7 @@ public:
   /*!
    \brief Return projection status of this node (only for slave side!)
    */
-  virtual bool& HasProj()
+  bool& HasProj()
   {
     return hasproj_;
   }
@@ -542,7 +559,7 @@ public:
   /*!
    \brief Return segmentation / cell status of this node (only for slave side!)
    */
-  virtual bool& HasSegment()
+  bool& HasSegment()
   {
     return hassegment_;
   }
@@ -557,7 +574,7 @@ public:
   inline MORTAR::MortarNodeDataContainer& MoData() const
   {
     if (modata_ == Teuchos::null)
-      dserror("No mortar data attached.");
+      dserror( "No mortar data attached. (node-id = %d)", Id() );
     return *modata_;
   }
 

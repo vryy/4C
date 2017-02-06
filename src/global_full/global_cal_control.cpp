@@ -18,6 +18,7 @@
 #include "../drt_ale/ale_dyn.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_combust/combust_dyn.H"
+#include "../drt_contact_xcontact/xcontact_dyn.H"
 #include "../drt_ehl/ehl_dyn.H"
 #include "../drt_elch/elch_dyn.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
@@ -64,6 +65,9 @@ void ntacal()
     case prb_structure:
     case prb_polymernetwork:
       caldyn_drt();
+      break;
+    case prb_xcontact:
+      xcontact_dyn(restart);
       break;
     case prb_fluid:
     case prb_fluid_redmodels:

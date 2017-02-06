@@ -133,11 +133,11 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::CalcMatChemo(
        bigterm.MultiplyTN(my::derxy_,gradattractant);
        gradgradmatrix.MultiplyTN(my::derxy_,my::derxy_); //N1,x*N1,x+N1,y*N1,y+... ; N1,x*N2,x+N1,y*N2,y+...
 
-       for (int vi=0; vi<my::nen_; vi++)
+       for (unsigned vi=0; vi<my::nen_; vi++)
        {
          const int fvi = vi*my::numdofpernode_+k;
 
-         for (int ui=0;ui<my::nen_;ui++)
+         for (unsigned ui=0;ui<my::nen_;ui++)
          {
            const int fui = ui*my::numdofpernode_+k;
 
@@ -145,11 +145,11 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::CalcMatChemo(
          }
        }
 
-       for (int vi=0; vi<my::nen_; vi++)
+       for (unsigned vi=0; vi<my::nen_; vi++)
        {
          const int fvi = vi*my::numdofpernode_+k;
 
-         for (int ui=0;ui<my::nen_;ui++)
+         for (unsigned ui=0;ui<my::nen_;ui++)
          {
            const int fui = ui*my::numdofpernode_+partner;
            emat(fvi,fui) -= chemofac*chemocoeff*my::scatravarmanager_->Phinp(k)*gradgradmatrix(vi,ui);
@@ -201,7 +201,7 @@ for (int condnum=0; condnum<numcondchemo_; condnum++)
 
     const double decoyed = varmanager->Phinp(k);
 
-    for(int vi=0;vi<my::nen_;vi++)
+    for (unsigned vi=0;vi<my::nen_;vi++)
     {
       const int fvi = vi*my::numdofpernode_+k;
       erhs[fvi] += rhsfac*chemocoeff*decoyed*gradfunctattr(vi);

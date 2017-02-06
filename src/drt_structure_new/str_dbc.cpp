@@ -46,7 +46,8 @@ STR::Dbc::Dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::Init(const Teuchos::RCP<DRT::Discretization>& discret_ptr,
+void STR::Dbc::Init(
+    const Teuchos::RCP<DRT::DiscretizationInterface>& discret_ptr,
     const Teuchos::RCP<Epetra_Vector>& freact_ptr,
     const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
 {
@@ -68,12 +69,14 @@ void STR::Dbc::Setup()
   // ---------------------------------------------------------------------------
   // Create Dirichlet Boundary Condition map
   // ---------------------------------------------------------------------------
-  zeros_ptr_ = LINALG::CreateVector(*(discret_ptr_->DofRowMap()),true);
+  zeros_ptr_ = Teuchos::rcp(new Epetra_Vector(
+      *timint_ptr_->GetDataGlobalState().DofRowMapView(),true));
   Teuchos::ParameterList p;
-  p.set("total time", timint_ptr_->GetDataGlobalState().GetTimeNp());
+  p.set<double>("total time", timint_ptr_->GetDataGlobalState().GetTimeNp());
   dbcmap_ptr_ = Teuchos::rcp(new LINALG::MapExtractor());
   discret_ptr_->EvaluateDirichlet(p,zeros_ptr_,
       Teuchos::null,Teuchos::null,Teuchos::null,dbcmap_ptr_);
+  // clear the system vector of possibly inserted non-zero DBC values
   zeros_ptr_->Scale(0.0);
 
   // ---------------------------------------------------------------------------
@@ -137,10 +140,10 @@ void STR::Dbc::CheckInitSetup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization>& STR::Dbc::DiscretPtr()
+Teuchos::RCP<DRT::Discretization> STR::Dbc::DiscretPtr()
 {
   CheckInit();
-  return discret_ptr_;
+  return Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_ptr_,true);
 }
 
 /*----------------------------------------------------------------------------*

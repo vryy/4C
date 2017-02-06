@@ -16,6 +16,7 @@
 *----------------------------------------------------------------------*/
 
 #include "cut_point.H"
+#include "cut_cycle.H"
 #include "cut_volumecell.H"
 #include "cut_boundarycell.H"
 #include "cut_integrationcell.H"
@@ -56,12 +57,15 @@ int GEO::CUT::VolumeCell::pyramid5totet4[2][4] = {
 };
 
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 GEO::CUT::VolumeCell::VolumeCell( const plain_facet_set & facets,
                                   const std::map<std::pair<Point*, Point*>, plain_facet_set > & volume_lines,
                                   Element * element )
   : element_( element ),
     position_( Point::undecided ),
-    facets_( facets )
+    facets_( facets ),
+    isNegligibleSmall_( false )
 {
   for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -70,6 +74,36 @@ GEO::CUT::VolumeCell::VolumeCell( const plain_facet_set & facets,
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::VolumeCell::IsEqual( const plain_facet_set & vcell ) const
+{
+  bool isequal = false;
+  for ( plain_facet_set::const_iterator ci = facets_.begin();
+        ci != facets_.end(); ++ci )
+  {
+    const Facet & f = **ci;
+    for ( plain_facet_set::const_iterator cii = vcell.begin();
+          cii != vcell.end(); ++cii )
+    {
+      const Facet & ff = **cii;
+      const std::vector<Point * > & ffpoints = ff.Points();
+
+      isequal = ( f.Points().size() == ffpoints.size() and f.Contains( ffpoints ) );
+      if ( isequal )
+        break;
+    }
+
+    if ( not isequal )
+      return false;
+  }
+
+  // if it reaches this point, the volume cells are identical
+  return isequal;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::Neighbors( Point * p,
                                       const plain_volumecell_set & cells,
                                       const plain_volumecell_set & done,
@@ -109,6 +143,8 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 // without check for elements
 void GEO::CUT::VolumeCell::Neighbors( Point * p,
                                       const plain_volumecell_set & cells,
@@ -127,6 +163,7 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
     for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
     {
       Facet * f = *i;
+
       if ( p==NULL or f->Contains( p ) )
       {
         f->Neighbors( p, cells, done, connected);
@@ -147,7 +184,8 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
   }
 }
 
-
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, PointSet & cut_points )
 {
   for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
@@ -157,6 +195,8 @@ void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, PointSet & cut_points )
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::VolumeCell::Contains( Point * p )
 {
   for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
@@ -170,6 +210,8 @@ bool GEO::CUT::VolumeCell::Contains( Point * p )
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::VolumeCell::Contains( LINALG::Matrix<3,1>& x)
 {
 
@@ -185,7 +227,8 @@ bool GEO::CUT::VolumeCell::Contains( LINALG::Matrix<3,1>& x)
   return false;
 }
 
-
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh,
                                                        const std::vector<std::vector<Point*> > & tets,
                                                        const std::map<Facet*, std::vector<Point*> > & sides_xyz )
@@ -224,6 +267,8 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh,
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::GetIntegrationCells( plain_integrationcell_set & cells )
 {
   std::copy( integrationcells_.begin(), integrationcells_.end(), std::inserter( cells, cells.begin() ) );
@@ -247,6 +292,8 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT:
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::CollectCutSides( plain_int_set & cutside_ids)
 {
   for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
@@ -262,11 +309,15 @@ void GEO::CUT::VolumeCell::CollectCutSides( plain_int_set & cutside_ids)
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 int GEO::CUT::VolumeCell::GetParentElementId() const
 {
   return element_->GetParentId();
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::ConnectNodalDOFSets( bool include_inner )
 {
 //   if ( Empty() )
@@ -286,6 +337,8 @@ void GEO::CUT::VolumeCell::ConnectNodalDOFSets( bool include_inner )
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::Position( Point::PointPosition position )
 {
   if ( position_ != position )
@@ -304,50 +357,100 @@ void GEO::CUT::VolumeCell::Position( Point::PointPosition position )
   }
 }
 
-void GEO::CUT::VolumeCell::Print( std::ostream & stream )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::Print( std::ostream & stream ) const
 {
+  stream << "\n==========================================\n";
+  stream << "=== VolumeCell ( address: " << std::setw( 10 ) << this << " ) ===\n";
   stream << "# VolumeCell: "
-         << " pos: "      << position_ << " "
+         << " pos: "      << Point::PointPosition2String(position_) << " "
          << "#facets: "   << facets_.size() << " "
          << "#intcells: " << integrationcells_.size() << " "
          << "#bcells: "   << bcells_.size()
          << "\n";
-  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  unsigned count = 0;
+  for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
+    stream << "\n# Facet " << count++ << " of VolumeCell:\n";
     f->Print( stream );
   }
+
+  count = 0;
+  for ( plain_boundarycell_set::const_iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
+  {
+    BoundaryCell * bcell = *i;
+    stream << "\n# BoundaryCell " << count++ << " of VolumeCell:\n";
+    bcell->Print();
+  }
+  stream << "\n";
 }
 
-void GEO::CUT::VolumeCell::NewBoundaryCell( Mesh & mesh, DRT::Element::DiscretizationType shape, Facet * f, const std::vector<Point*> & x )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::NewBoundaryCell( Mesh & mesh,
+    DRT::Element::DiscretizationType shape,
+    Facet * f, const std::vector<Point*> & x )
 {
   if ( facets_.count( f )==0 )
   {
-    throw std::runtime_error( "facet does not belong to volume cell" );
+    run_time_error( "facet does not belong to volume cell" );
   }
   switch ( shape )
   {
-  case DRT::Element::tri3:
-    NewTri3Cell( mesh, f, x );
-    break;
-  case DRT::Element::quad4:
-    NewQuad4Cell( mesh, f, x );
-    break;
-  default:
-    throw std::runtime_error( "unknown shape" );
+    case DRT::Element::point1:
+      NewPoint1Cell( mesh, f, x );
+      break;
+    case DRT::Element::line2:
+      NewLine2Cell( mesh, f, x );
+      break;
+    case DRT::Element::tri3:
+      NewTri3Cell( mesh, f, x );
+      break;
+    case DRT::Element::quad4:
+      NewQuad4Cell( mesh, f, x );
+      break;
+    default:
+      dserror( "Unsupported shape ( shape = %s )",
+          DRT::DistypeToString( shape ).c_str() );
+      exit( EXIT_FAILURE );
   }
 }
 
-void GEO::CUT::VolumeCell::NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::NewPoint1Cell( Mesh & mesh, Facet * f,
+    const std::vector<Point*> & x )
+{
+  f->NewPoint1Cell( mesh, this, x, bcells_ );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::NewLine2Cell( Mesh & mesh, Facet * f,
+    const std::vector<Point*> & x )
+{
+  f->NewLine2Cell( mesh, this, x, bcells_ );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::NewTri3Cell( Mesh & mesh, Facet * f,
+    const std::vector<Point*> & x )
 {
   f->NewTri3Cell( mesh, this, x, bcells_ );
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x )
 {
   f->NewQuad4Cell( mesh, this, x, bcells_ );
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::NewArbitraryCell( Mesh & mesh, Facet * f, const std::vector<Point*> & x,
     const DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3,1>& normal )
 {
@@ -365,6 +468,8 @@ void GEO::CUT::VolumeCell::NewArbitraryCell( Mesh & mesh, Facet * f, const std::
   return volume;
 }*/
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 int GEO::CUT::VolumeCell::NumGaussPoints( DRT::Element::DiscretizationType shape )
 {
   int numgp = 0;
@@ -384,6 +489,8 @@ int GEO::CUT::VolumeCell::NumGaussPoints( DRT::Element::DiscretizationType shape
   return numgp;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::Disconnect()
 {
   for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
@@ -393,27 +500,70 @@ void GEO::CUT::VolumeCell::Disconnect()
   }
 }
 
-void GEO::CUT::VolumeCell::NewIntegrationCell( Mesh & mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*> & x )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::NewIntegrationCell( Mesh & mesh,
+    DRT::Element::DiscretizationType shape, const std::vector<Point*> & x )
 {
   switch ( shape )
   {
-  case DRT::Element::hex8:
-    NewHex8Cell( mesh, x );
-    break;
-  case DRT::Element::tet4:
-    NewTet4Cell( mesh, x );
-    break;
-  case DRT::Element::wedge6:
-    NewWedge6Cell( mesh, x );
-    break;
-  case DRT::Element::pyramid5:
-    NewPyramid5Cell( mesh, x );
-    break;
-  default:
-    throw std::runtime_error( "unknown shape" );
+    // --- 1-D elements ---
+    case DRT::Element::line2:
+      NewLine2Cell( mesh, x );
+      break;
+    // --- 2-D elements ---
+    case DRT::Element::tri3:
+      NewTri3Cell( mesh, x );
+      break;
+    case DRT::Element::quad4:
+      NewQuad4Cell( mesh, x );
+      break;
+    // --- 3-D elements ---
+    case DRT::Element::hex8:
+      NewHex8Cell( mesh, x );
+      break;
+    case DRT::Element::tet4:
+      NewTet4Cell( mesh, x );
+      break;
+    case DRT::Element::wedge6:
+      NewWedge6Cell( mesh, x );
+      break;
+    case DRT::Element::pyramid5:
+      NewPyramid5Cell( mesh, x );
+      break;
+    default:
+      dserror( "Unsupported shape ( shape = %s )",
+          DRT::DistypeToString( shape ).c_str() );
+      exit(EXIT_FAILURE);
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::NewLine2Cell( Mesh & mesh, const std::vector<Point*> & points )
+{
+  Point::PointPosition position = Position();
+  integrationcells_.insert( mesh.NewLine2Cell( position, points, this ) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::NewTri3Cell( Mesh & mesh, const std::vector<Point*> & points )
+{
+  Point::PointPosition position = Position();
+  integrationcells_.insert( mesh.NewTri3Cell( position, points, this ) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::VolumeCell::NewQuad4Cell( Mesh & mesh, const std::vector<Point*> & points )
+{
+  Point::PointPosition position = Position();
+  integrationcells_.insert( mesh.NewQuad4Cell( position, points, this ) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::NewHex8Cell( Mesh & mesh, const std::vector<Point*> & points )
 {
   Point::PointPosition position = Position();
@@ -432,6 +582,8 @@ void GEO::CUT::VolumeCell::NewHex8Cell( Mesh & mesh, const std::vector<Point*> &
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 GEO::CUT::IntegrationCell * GEO::CUT::VolumeCell::NewTet4Cell( Mesh & mesh, const std::vector<Point*> & points )
 {
   Point::PointPosition position = Position();
@@ -440,6 +592,8 @@ GEO::CUT::IntegrationCell * GEO::CUT::VolumeCell::NewTet4Cell( Mesh & mesh, cons
   return ic;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::NewWedge6Cell( Mesh & mesh, const std::vector<Point*> & points )
 {
   Point::PointPosition position = Position();
@@ -458,6 +612,8 @@ void GEO::CUT::VolumeCell::NewWedge6Cell( Mesh & mesh, const std::vector<Point*>
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::NewPyramid5Cell( Mesh & mesh, const std::vector<Point*> & points )
 {
   Point::PointPosition position = Position();
@@ -550,7 +706,8 @@ void GEO::CUT::VolumeCell::SimplifyIntegrationCells( Mesh & mesh )
             mesh.NewTri3Cell( this, facets[0], corner_points );
             break;
           default:
-            throw std::runtime_error( "unsupported boundary cell type" );
+            dserror( "unsupported boundary cell type" );
+            exit(EXIT_FAILURE);
           }
         }
 #if 0
@@ -754,7 +911,7 @@ void GEO::CUT::VolumeCell::DumpGmsh( std::ofstream& file )
 }
 
 /*---------------------------------------------------------------------------------------*
- * Write the geometry of the volumecell based on facet surfaces                  sudhakar 07/15
+ * Write the geometry of the volumecell based on facet surfaces            sudhakar 07/15
  * Can be used to check if the geometry of vc is correct or not
  *---------------------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::DumpGmshSolid( std::ofstream& file, Mesh & mesh )
@@ -1465,7 +1622,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
 
   //if the volumecell is inside and include_inner is false, no need to compute the Gaussian points
   //as this vc will never be computed in xfem algorithm
-  if(Position()==-2 && include_inner==false)
+  if(Position()==Point::inside && include_inner==false)
     return;
 
   int BaseNos=84;                                     // number of base functions to be used in the integration
@@ -1681,8 +1838,8 @@ bool GEO::CUT::VolumeCell::SetPositionCutSideBased()
      ParentElement()->ElementCenter( elecen );
 
      //-----
-     // STEP 2: Get geometric centre point of the facet
-     // For concave facets, this is not the actual centre, but it does not matter
+     // STEP 2: Get geometric center point of the facet
+     // For concave facets, this is not the actual center, but it does not matter
      //-----
      LINALG::Matrix<3,1> facecen;
      for( std::vector< Point*>::const_iterator fit = f->CornerPoints().begin(); fit != f->CornerPoints().end(); fit++ )

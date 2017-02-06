@@ -1577,14 +1577,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      {
        //------------------------------------ build F^-1 as vector 9x1
        static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_inv_vec;
-       for(int i=0; i<my::nsd_; i++)
-         for(int j=0; j<my::nsd_; j++)
+       for (int i=0; i<my::nsd_; i++)
+         for (int j=0; j<my::nsd_; j++)
            defgrd_inv_vec(i*my::nsd_+j) = defgrd_inv(i,j);
 
        //------------------------------------ build F^-T as vector 9x1
        static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec;
-       for(int i=0; i<my::nsd_; i++)
-         for(int j=0; j<my::nsd_; j++)
+       for (int i=0; i<my::nsd_; i++)
+         for (int j=0; j<my::nsd_; j++)
            defgrd_IT_vec(i*my::nsd_+j) = defgrd_inv(j,i);
 
        // dF/dx
@@ -1727,7 +1727,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
        // reacoeff * phi * v_s
        for (int vi=0; vi<my::nen_; ++vi)
        {
-         for(int idim = 0; idim <my::nsd_; ++idim)
+         for (int idim = 0; idim <my::nsd_; ++idim)
            velforce(idim,vi) -= -rhsfac* my::funct_(vi) * reagridvel_(idim) ;
        }
      }  // end if (not stationary)
@@ -1747,7 +1747,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
 
      for (int vi=0; vi<my::nen_; ++vi)
      {
-       for(int idim = 0; idim <my::nsd_; ++idim)
+       for (int idim = 0; idim <my::nsd_; ++idim)
        {
          velforce(idim,vi)-=resM_Du(idim)*my::funct_(vi);
        }
@@ -2031,7 +2031,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
            {
              const int fvi = my::nsd_*vi;
 
-             for(int jdim=0;jdim<my::nsd_;++jdim)
+             for (int jdim=0;jdim<my::nsd_;++jdim)
              {
                estif_u(fvi+jdim,fui_p_idim) += v0*my::derxy_(jdim, vi) ;
              }
@@ -2190,8 +2190,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
 
     //------------------------------------ build F^-T as vector 9x1
     static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec;
-    for(int i=0; i<my::nsd_; i++)
-      for(int j=0; j<my::nsd_; j++)
+    for (int i=0; i<my::nsd_; i++)
+      for (int j=0; j<my::nsd_; j++)
         defgrd_IT_vec(i*my::nsd_+j) = defgrd_inv(j,i);
 
     // dF/dx
@@ -2462,11 +2462,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(
     {
       const double v = reac_tau*my::funct_(vi);
 
-      for(int idim=0;idim<my::nsd_;++idim)
+      for (int idim=0;idim<my::nsd_;++idim)
       {
         const int fvi_p_idim = my::nsd_*vi+idim;
 
-        for(int jdim=0;jdim<my::nsd_;++jdim)
+        for (int jdim=0;jdim<my::nsd_;++jdim)
         {
           for (int ui=0; ui<my::nen_; ++ui)
           {
@@ -2555,7 +2555,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
       for (int ui=0; ui<my::nen_; ++ui)
       {
         const int fui = my::nsd_*ui;
-        for(int idim = 0; idim <my::nsd_; ++idim)
+        for (int idim = 0; idim <my::nsd_; ++idim)
         {
           ecoupl_p(vi,fui+idim)+=  w * dphi_dJdp * (-my::rhscon_) * dJ_dus(fui+idim)
           ;
@@ -2586,7 +2586,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
       for (int ui=0; ui<my::nen_; ++ui)
       {
         const int fui = my::nsd_*ui;
-        for(int idim = 0; idim <my::nsd_; ++idim)
+        for (int idim = 0; idim <my::nsd_; ++idim)
         {
            ecoupl_p(vi,fui+idim)+=   v * dphi_dus(fui+idim) * my::vdiv_
                                    + v * grad_porosity_us_velint(fui+idim)
@@ -2635,7 +2635,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
         {
           const int fui = my::nsd_*ui;
           const double funct_ui = my::funct_(ui);
-          for(int idim = 0; idim <my::nsd_; ++idim)
+          for (int idim = 0; idim <my::nsd_; ++idim)
           {
             ecoupl_p(vi,fui+idim)+=   v * ( dphi_dJ * J_ * my::derxy_(idim,ui) )
                                     + w * (
@@ -2672,7 +2672,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
       for (int ui=0; ui<my::nen_; ++ui)
       {
         const int fui = my::nsd_*ui;
-        for(int idim = 0; idim <my::nsd_; ++idim)
+        for (int idim = 0; idim <my::nsd_; ++idim)
         {
           ecoupl_p(vi,fui+idim)+= dphi_dus(fui+idim) * val_deriv_vel_vi
           ;
@@ -2722,7 +2722,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
         {
           const int fui = my::nsd_*ui;
           const double funct_ui = my::funct_(ui);
-          for(int idim = 0; idim <my::nsd_; ++idim)
+          for (int idim = 0; idim <my::nsd_; ++idim)
           {
             ecoupl_p(vi,fui+idim)+=   v * ( (dphi_dJ * J_ + porosity_)* my::derxy_(idim,ui) )
                                     + my::fac_ * my::derxy_(idim,vi) * ( porosity_ * funct_ui )
@@ -2763,7 +2763,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
       static LINALG::Matrix<1, my::nen_ >   temp(false);
       temp.MultiplyTN(my::sgvelint_,my::derxy_);
 
-      for(int jdim=0;jdim<my::nsd_;++jdim)
+      for (int jdim=0;jdim<my::nsd_;++jdim)
       {
         for (int ui=0; ui<my::nen_; ++ui)
         {
@@ -2778,11 +2778,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
     }
 
     for (int vi=0; vi<my::nen_; ++vi)
-      for(int idim=0;idim<my::nsd_;++idim)
+      for (int idim=0;idim<my::nsd_;++idim)
       {
         const double scal_derxy_idim_vi=scal_grad_q*my::derxy_(idim,vi);
         for (int ui=0; ui<my::nen_; ++ui)
-          for(int jdim=0;jdim<my::nsd_;++jdim)
+          for (int jdim=0;jdim<my::nsd_;++jdim)
             ecoupl_p(vi,ui*my::nsd_+jdim) += scal_derxy_idim_vi*(lin_resM_Dus(idim,ui*my::nsd_+jdim)+lin_resM_Dus_gridvel(idim,ui*my::nsd_+jdim));
       }
 
@@ -2807,11 +2807,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
     {
       const double funct_ui = my::funct_(ui);
       for (int vi=0; vi<my::nen_; ++vi)
-        for(int jdim=0;jdim<my::nsd_;++jdim)
+        for (int jdim=0;jdim<my::nsd_;++jdim)
         {
           double stiff_val = 0.0;
           double stiff_val2 = 0.0;
-          for(int idim=0;idim<my::nsd_;++idim)
+          for (int idim=0;idim<my::nsd_;++idim)
           {
             stiff_val += N_XYZ_(idim,vi)*lin_resM_Dus(idim,ui*my::nsd_+jdim);
             stiff_val2 += N_XYZ_(idim,vi)*gridvelint_(idim);
@@ -2827,10 +2827,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
       for (int vi=0; vi<my::nen_; ++vi)
       {
         double stiff_val = 0.0;
-        for(int idim=0;idim<my::nsd_;++idim)
+        for (int idim=0;idim<my::nsd_;++idim)
           stiff_val += val * N_XYZ_(idim,vi)*( my::gradp_(idim) + reaconvel_(idim) );
         for (int ui=0; ui<my::nen_; ++ui)
-          for(int jdim=0;jdim<my::nsd_;++jdim)
+          for (int jdim=0;jdim<my::nsd_;++jdim)
             ecoupl_p(vi,ui*my::nsd_+jdim) += stiff_val * dphi_dus(ui*my::nsd_+jdim);
       }
     }
@@ -2841,8 +2841,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
       for (int vi=0; vi<my::nen_; ++vi)
       {
         for (int ui=0; ui<my::nen_; ++ui)
-          for(int jdim=0;jdim<my::nsd_;++jdim)
-            for(int idim=0;idim<my::nsd_;++idim)
+          for (int jdim=0;jdim<my::nsd_;++jdim)
+            for (int idim=0;idim<my::nsd_;++idim)
               ecoupl_p(vi,ui*my::nsd_+jdim) += val * N_XYZ_(idim,vi)*mixresLinOD_(idim,ui*my::nsd_+jdim);
       }
     }
@@ -5140,13 +5140,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::PSPG(
               \                              /
     */
 
-    for(int jdim=0;jdim<my::nsd_;++jdim)
+    for (int jdim=0;jdim<my::nsd_;++jdim)
     {
       for (int ui=0; ui<my::nen_; ++ui)
       {
         const int fui_p_jdim   = my::nsd_*ui + jdim;
 
-        for(int idim=0;idim<my::nsd_;++idim)
+        for (int idim=0;idim<my::nsd_;++idim)
         {
           const int nsd_idim=my::nsd_*idim;
           const double lin_resM_Du_idim_jdim_ui = lin_resM_Du(nsd_idim+jdim,ui);
@@ -5275,13 +5275,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::StabBiot(
 
   {
     const double val = -1.0*taustruct_*porosity_;
-    for(int jdim=0;jdim<my::nsd_;++jdim)
+    for (int jdim=0;jdim<my::nsd_;++jdim)
     {
       for (int ui=0; ui<my::nen_; ++ui)
       {
         const int fui_p_jdim   = my::nsd_*ui + jdim;
 
-        for(int idim=0;idim<my::nsd_;++idim)
+        for (int idim=0;idim<my::nsd_;++idim)
         {
           const int nsd_idim=my::nsd_*idim;
           const double lin_resMRea_Du_idim_jdim_ui = lin_resMRea_Du(nsd_idim+jdim,ui);
@@ -5311,10 +5311,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeFDerivative(
   F_X.Clear();
 
   if(my::is_higher_order_ele_ and kintype_!=INPAR::STR::kinem_linear )
-    for(int i=0; i<my::nsd_; i++)
-      for(int j=0; j<my::nsd_; j++)
-        for(int k=0; k<my::nsd_; k++)
-          for(int n=0; n<my::nen_; n++)
+    for (int i=0; i<my::nsd_; i++)
+      for (int j=0; j<my::nsd_; j++)
+        for (int k=0; k<my::nsd_; k++)
+          for (int n=0; n<my::nen_; n++)
             F_X(i*my::nsd_+j, k) += N_XYZ2full_(j*my::nsd_+k,n)*edispnp(i,n);
 
   F_x.Multiply(F_X,defgrd_inv);
@@ -5425,14 +5425,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(
     dFinvdus_dFdx.Clear();
     for (int i=0; i<my::nsd_; i++)
       for (int n =0; n<my::nen_; n++)
-        for(int j=0; j<my::nsd_; j++)
+        for (int j=0; j<my::nsd_; j++)
         {
           const int gid = my::nsd_ * n +j;
           const double defgrd_inv_ij = defgrd_inv(i,j);
           for (int k=0; k<my::nsd_; k++)
           {
             const double derxy_kn = my::derxy_(k,n);
-            for(int p=0; p<my::nsd_; p++)
+            for (int p=0; p<my::nsd_; p++)
               dFinvdus_dFdx(p, gid) += -defgrd_inv_ij * derxy_kn * F_x(k*my::nsd_+i,p);
           }
         }
@@ -5443,21 +5443,21 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(
 
     if(my::is_higher_order_ele_)
       for (int n =0; n<my::nen_; n++)
-        for(int j=0; j<my::nsd_; j++)
+        for (int j=0; j<my::nsd_; j++)
         {
           const int gid = my::nsd_ * n +j;
-          for(int p=0; p<my::nsd_; p++)
+          for (int p=0; p<my::nsd_; p++)
           {
             double val = 0.0;
             const double derxy_p_n = my::derxy_(p,n);
-            for(int k=0; k<my::nsd_; k++)
+            for (int k=0; k<my::nsd_; k++)
             {
               const double defgrd_inv_kj = defgrd_inv(k,j);
               const double defgrd_inv_kp = defgrd_inv(k,p);
-              for(int i=0; i<my::nsd_; i++)
+              for (int i=0; i<my::nsd_; i++)
               {
                 val +=   defgrd_inv(i,j) * N_XYZ2full_(i*my::nsd_+k,n) * defgrd_inv_kp ;
-                for(int l=0; l<my::nsd_; l++)
+                for (int l=0; l<my::nsd_; l++)
                   val += - defgrd_inv(i,l) * F_X(i*my::nsd_+l,k) * defgrd_inv_kj * derxy_p_n ;
               }
             }
@@ -5685,13 +5685,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ReacStab(
     {
       const double v = reac_tau*my::funct_(vi);
 
-      for(int idim=0;idim<my::nsd_;++idim)
+      for (int idim=0;idim<my::nsd_;++idim)
       {
         const int nsd_idim=my::nsd_*idim;
 
         const int fvi_p_idim = my::nsd_*vi+idim;
 
-        for(int jdim=0;jdim<my::nsd_;++jdim)
+        for (int jdim=0;jdim<my::nsd_;++jdim)
         {
           const int nsd_idim_p_jdim=nsd_idim+jdim;
 
@@ -5894,7 +5894,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
           {
             const double defgrd_inv_ldim_jdim = defgrd_inv(ldim,jdim);
             const double defgrd_inv_ldim_idim = defgrd_inv(ldim,idim);
-            for(int mdim=0; mdim<my::nsd_; ++mdim)
+            for (int mdim=0; mdim<my::nsd_; ++mdim)
             {
               const double matreatensor_ldim_mdim = matreatensor_(ldim,mdim);
               const double defgrd_inv_mdim_jdim = defgrd_inv(mdim,jdim);
@@ -5926,7 +5926,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
               for (int k=0; k<my::nsd_; ++k)
               {
                 const double defgrd_inv_k_idim = defgrd_inv(k,idim);
-                for(int l=0; l<my::nsd_; ++l)
+                for (int l=0; l<my::nsd_; ++l)
                 {
                   val_reatensorlinODvel += J_ * porosity_ * velint_j * defgrd_inv_k_idim * matreatensorlinporosity_ (k,l) * dphi_dus_gid;
                   val_reatensorlinODgridvel += J_ * porosity_ * gridvelint_j * defgrd_inv_k_idim * matreatensorlinporosity_ (k,l) * dphi_dus_gid;
@@ -5944,7 +5944,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
               const double gridvelint_j = my::gridvelint_(j);
               for (int k=0; k<my::nsd_; ++k)
               {
-                for(int l=0; l<my::nsd_; ++l)
+                for (int l=0; l<my::nsd_; ++l)
                 {
                   val_reatensorlinODvel += J_ * porosity_ * velint_j * matreatensorlinJ_(k,l) * dJ_dus_gid * defgrd_inv(l,j);
                   val_reatensorlinODgridvel += J_ * porosity_ * gridvelint_j * matreatensorlinJ_(k,l) * dJ_dus_gid * defgrd_inv(l,j);
@@ -6257,7 +6257,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDu_Stab(
     {
       const int nsd_idim=my::nsd_*idim;
 
-      for(int jdim=0;jdim<my::nsd_;++jdim)
+      for (int jdim=0;jdim<my::nsd_;++jdim)
       {
         const int nsd_idim_p_jdim=nsd_idim+jdim;
 
@@ -6884,7 +6884,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeDefGradient(
   else if(kintype_==INPAR::STR::kinem_linear) //linear kinematics
   {
     defgrd.Clear();
-    for(int i=0;i<my::nsd_;i++)
+    for (int i=0;i<my::nsd_;i++)
       defgrd(i,i) = 1.0;
   }
   else
@@ -7072,8 +7072,8 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(
 
     /* H1 -error norm
     // compute error for first velocity derivative
-    for(int i=0;i<my::nsd_;++i)
-      for(int j=0;j<my::nsd_;++j)
+    for (int i=0;i<my::nsd_;++i)
+      for (int j=0;j<my::nsd_;++j)
         deltadervel(i,j)= dervelint(i,j) - dervel(i,j);
     */
 
@@ -7479,7 +7479,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeJacobianDeterminantVolumeC
 
     volchange=1.0;
     //volchange = 1 + trace of the linearized strains (= trace of displacement gradient)
-    for(int i=0; i<my::nsd_;++i)
+    for (int i=0; i<my::nsd_;++i)
       volchange += dispgrad(i,i);
   }
   else

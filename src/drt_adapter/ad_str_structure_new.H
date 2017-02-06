@@ -24,18 +24,21 @@ namespace Teuchos{
   class ParameterList;
 } // namespace Teuchos
 namespace STR{
-namespace MODELEVALUATOR{
-  class Generic;
-} // namespace MODELEVALUATOR
 namespace TIMINT{
   class Base;
+  class BaseDataGlobalState;
+  class BaseDataSDyn;
+  class BaseDataIO;
 } // namespace TIMINT
+namespace MODELEVALUATOR {
+  class Generic;
+} // namespace MODELEVALUATOR
 } // namespace STR
 namespace LINALG{
   class Solver;
 } // namespace LINALG
 namespace DRT{
-  class Discretization;
+  class DiscretizationInterface;
 } // namespace DRT
 
 namespace ADAPTER {
@@ -275,14 +278,6 @@ namespace ADAPTER {
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
 
-    /// access the desired model evaluator (read-only)
-    virtual const ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        const INPAR::STR::ModelType& mtype) const = 0;
-
-    /// access the desired model evaluator (read and write)
-    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        const INPAR::STR::ModelType& mtype) = 0;
-
     /*!
     \brief Reset time step
 
@@ -438,11 +433,22 @@ namespace ADAPTER {
     /// return contact/meshtying bridge
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() = 0;
 
-    // access to locsys manager
+    /// access to locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;
+
+    /// access the desired model evaluator (read-only)
+    virtual const ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
+        const INPAR::STR::ModelType& mtype) const = 0;
+
+    /// access the desired model evaluator (read and write)
+    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
+        const INPAR::STR::ModelType& mtype) = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+
+    /// Access generic discretization pointer
+    virtual Teuchos::RCP<DRT::DiscretizationInterface> DiscretizationInterface() = 0;
 
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
@@ -507,7 +513,9 @@ namespace ADAPTER {
     virtual ~StructureBaseAlgorithmNew() {};
 
     /// initialize all class internal variables
-    virtual void Init(const Teuchos::ParameterList& prbdyn, Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis);
+    virtual void Init(const Teuchos::ParameterList& prbdyn,
+        Teuchos::ParameterList& sdyn,
+        Teuchos::RCP<DRT::DiscretizationInterface> actdis);
 
     /// setup
     virtual void Setup();
@@ -597,6 +605,19 @@ namespace ADAPTER {
         Teuchos::ParameterList& timeadaptivity
         );
 
+    /// Create, initialize and setup the global state data container
+    virtual void SetGlobalState(
+        Teuchos::RCP< ::STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
+        const Teuchos::RCP<const ::STR::TIMINT::BaseDataSDyn>& datasdyn_ptr);
+
+    /// Create, initialize and setup the time integration strategy object
+    virtual void SetTimeIntegrationStrategy(
+        Teuchos::RCP< ::STR::TIMINT::Base>& ti_strategy,
+        const Teuchos::RCP< ::STR::TIMINT::BaseDataIO>& dataio,
+        const Teuchos::RCP< ::STR::TIMINT::BaseDataSDyn>& datasdyn,
+        const Teuchos::RCP< ::STR::TIMINT::BaseDataGlobalState>& dataglobalstate,
+        const int& restart);
+
     /// set the final structure time integrator object
     virtual void SetStructureWrapper(
         const Teuchos::ParameterList& ioflags,
@@ -627,7 +648,7 @@ namespace ADAPTER {
     Teuchos::RCP<Teuchos::ParameterList> sdyn_;
 
     /// current discretization
-    Teuchos::RCP<DRT::Discretization> actdis_;
+    Teuchos::RCP<DRT::DiscretizationInterface> actdis_;
 
     /// init flag
     bool isinit_;

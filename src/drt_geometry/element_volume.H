@@ -20,7 +20,7 @@
 
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-
+#include "../drt_cut/cut_kernel.H"
 
 namespace GEO
 {
@@ -105,6 +105,69 @@ namespace GEO
     return vol;
   }
 
+  /** \brief calculates the length of a edge element in given configuration
+   *
+   *  \params distype (in) : discretization type of the given element
+   *  \params xyze    (in) : spatial coordinates of the elememnt nodes
+   *                         (row = dim, col = number of nodes)
+   *
+   *  \author hiermeier \date 11/16 */
+    template <class M1>
+    double ElementLength(
+      const DRT::Element::DiscretizationType &  distype,
+      const M1 &                                xyze )
+    {
+      if (distype != DRT::Element::line2 or xyze.N() != 2)
+        run_time_error("Currently only line2 elements are supported!");
+
+      // calculate the distance between the two given nodes and return
+      // the value
+      LINALG::Matrix<3,1> d( & xyze( 0, 0 ) );
+      const LINALG::Matrix<3,1> x1( & xyze( 0, 1 ) );
+
+      d.Update(1.0,x1,-1.0);
+      return d.Norm2();
+    }
+
+
+  /** \brief calculates the area of a surface element in given configuration
+   *
+   *  \author hiermeier \date 11/16 */
+  template <class M1>
+  double ElementArea(
+    const DRT::Element::DiscretizationType    distype,
+    const M1&                                 xyze
+    )
+  {
+    switch(distype)
+    {
+      // --- 2-D boundary elements
+      case DRT::Element::line2:
+        return ElementLength(distype,xyze);
+      // --- 3-D boundary elements
+      case DRT::Element::quad4:
+      {
+        LINALG::Matrix<3,3> xyze_tri3;
+        double area = 0.0;
+        for (unsigned id = 0; id < 2; ++id)
+        {
+          CUT::KERNEL::SplitQuad4IntoTri3( xyze, id, xyze_tri3 );
+          area += CUT::KERNEL::getAreaTri( xyze_tri3 );
+        }
+        return area;
+      }
+      case DRT::Element::tri3:
+      {
+        return CUT::KERNEL::getAreaTri(xyze);
+      }
+    default:
+      dserror("Unsupported surface element type!");
+      exit(EXIT_FAILURE);
+    }
+
+    return -1.0;
+  }
+
   //! calculates the volume of an element in given configuration          u.may
   template <class M1>
   double ElementVolume(
@@ -114,28 +177,37 @@ namespace GEO
   {
     switch(distype)
     {
-    case DRT::Element::hex8:
-      return ElementVolumeT<DRT::Element::hex8>(xyze);
-    case DRT::Element::hex20:
-      return ElementVolumeT<DRT::Element::hex20>(xyze);
-    case DRT::Element::hex27:
-      return ElementVolumeT<DRT::Element::hex27>(xyze);
-    case DRT::Element::tet4:
-      return ElementVolumeT<DRT::Element::tet4>(xyze);
-    case DRT::Element::tet10:
-      return ElementVolumeT<DRT::Element::tet10>(xyze);
-    case DRT::Element::wedge6:
-      return ElementVolumeT<DRT::Element::wedge6>(xyze);
-    case DRT::Element::wedge15:
-      return ElementVolumeT<DRT::Element::wedge15>(xyze);
-    case DRT::Element::pyramid5:
-      return ElementVolumeT<DRT::Element::pyramid5>(xyze);
+      // --- 1-D elements -----------------------------------------------------
+      case DRT::Element::line2:
+        return ElementLength(distype,xyze);
+      // --- 2-D elements -----------------------------------------------------
+      case DRT::Element::quad4:
+      case DRT::Element::tri3:
+        return ElementArea(distype,xyze);
+      // --- 3-D elements -----------------------------------------------------
+      case DRT::Element::hex8:
+        return ElementVolumeT<DRT::Element::hex8>(xyze);
+      case DRT::Element::hex20:
+        return ElementVolumeT<DRT::Element::hex20>(xyze);
+      case DRT::Element::hex27:
+        return ElementVolumeT<DRT::Element::hex27>(xyze);
+      case DRT::Element::tet4:
+        return ElementVolumeT<DRT::Element::tet4>(xyze);
+      case DRT::Element::tet10:
+        return ElementVolumeT<DRT::Element::tet10>(xyze);
+      case DRT::Element::wedge6:
+        return ElementVolumeT<DRT::Element::wedge6>(xyze);
+      case DRT::Element::wedge15:
+        return ElementVolumeT<DRT::Element::wedge15>(xyze);
+      case DRT::Element::pyramid5:
+        return ElementVolumeT<DRT::Element::pyramid5>(xyze);
     default:
       dserror("add you distype here");
 
     }
     return -1.0;
   }
+
 }  // namespace GEO
 
 

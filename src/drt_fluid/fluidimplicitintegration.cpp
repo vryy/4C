@@ -6331,7 +6331,7 @@ void FLD::FluidImplicitTimeInt::WriteOutputFluidFraction()
 {
   if (density_scaling_ != Teuchos::null)
   {
-    output_->WriteVector("fluidfraction", density_scaling_, IO::DiscretizationWriter::elementvector);
+    output_->WriteVector("fluidfraction", density_scaling_, IO::elementvector);
   }
   return;
 }

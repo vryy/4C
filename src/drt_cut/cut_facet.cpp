@@ -16,23 +16,28 @@
 *----------------------------------------------------------------------*/
 #include "../linalg/linalg_gauss.H"
 
-#include "cut_element.H"
 #include "cut_mesh.H"
 #include "cut_boundarycell.H"
 #include "cut_volumecell.H"
 #include "cut_kernel.H"
 #include "cut_options.H"
 #include "cut_triangulateFacet.H"
+#include "cut_side.H"
+
+#include "cut_output.H"
 
 #include "../drt_lib/drt_colors.H"
 
-GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface )
-  : points_( points ),
-    parentside_( side ),
-    planar_( false ),
-    planar_known_( false ),
-    position_( cutsurface ? Point::oncutsurface : Point::undecided ),
-    isPlanarComputed_( false )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points,
+    Side * side, bool cutsurface )
+    : points_( points ),
+      parentside_( side ),
+      planar_( false ),
+      planar_known_( false ),
+      position_( cutsurface ? Point::oncutsurface : Point::undecided ),
+      isPlanarComputed_( false )
 {
   FindCornerPoints();
 
@@ -81,6 +86,8 @@ GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * 
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::Register( VolumeCell * cell )
 {
   cells_.insert( cell );
@@ -96,20 +103,47 @@ void GEO::CUT::Facet::Register( VolumeCell * cell )
       }
     }
 #endif
-    throw std::runtime_error( "too many volume cells at facet" );
+    this->Print();
+    for ( plain_volumecell_set::const_iterator ic = cells_.begin();
+          ic != cells_.end(); ++ic )
+    {
+      std::cout << "\n\nVolumeCell " << *ic << std::endl;
+      (*ic)->Print( std::cout );
+    }
+
+    // write details of volume cells
+    OUTPUT::GmshVolumeCellsOnly( cells_ );
+
+    std::ostringstream ostr;
+    ostr << "Too many volume cells at facet! ( num cells = " << cells_.size() << " )";
+//    dserror(ostr.str().c_str());
+    run_time_error( ostr.str().c_str() );
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::DisconnectVolume( VolumeCell * cell )
 {
   cells_.erase( cell );
 }
 
-int GEO::CUT::Facet::SideId()
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::Facet::OnCutSide() const
+{
+  return parentside_->IsCutSide();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int GEO::CUT::Facet::SideId() const
 {
   return parentside_->Id();
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 int GEO::CUT::Facet::PositionSideId()
 {
   int sid = SideId();
@@ -146,6 +180,8 @@ void GEO::CUT::Facet::Coordinates( double * x )
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::CornerCoordinates( double * x )
 {
   FindCornerPoints();
@@ -157,6 +193,8 @@ void GEO::CUT::Facet::CornerCoordinates( double * x )
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, PointSet & cut_points, bool dotriangulate )
 {
   if ( IsPlanar( mesh, dotriangulate ) )
@@ -181,6 +219,8 @@ void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, PointSet & cut_points, bool dot
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::AddHole( Facet * hole )
 {
   double dot = 1.0;
@@ -207,6 +247,8 @@ void GEO::CUT::Facet::AddHole( Facet * hole )
   holes_.insert( hole );
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, bool dotriangulate )
 {
   if ( dotriangulate )
@@ -229,6 +271,8 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, bool dotriangulate )
   return planar_;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points )
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::IsPlanar" );
@@ -293,8 +337,9 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
   return true;
 }
 
-//Does the facet share the same cut-side?
-bool GEO::CUT::Facet::ShareSameCutSide( Facet* f )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::Facet::ShareSameCutSide( Facet* f ) /* Does the facet share the same cut-side? */
 {
   if(this->parentside_->Id() == f->ParentSide()->Id())
   {
@@ -303,12 +348,12 @@ bool GEO::CUT::Facet::ShareSameCutSide( Facet* f )
   return false;
 }
 
-/*-------------------------------------------------------------------------------------------------------*
-  Perform triangulation of the facet.                                                            sudhakar 06/15
-  When convex, centre-point-triangulation is used that can better approximate the geometry
-  For concave facets, Ear-clipping procedure is utilized -- slightly less accurate due to
-  deleting the inline points but no other choice
-*--------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+  Perform triangulation of the facet.                            sudhakar 06/15
+  When convex, centre-point-triangulation is used that can better approximate
+  the geometry. For concave facets, Ear-clipping procedure is utilized --
+  slightly less accurate due to deleting the inline points but no other choice
+*-----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*> & points )
 {
 #if 0 //old implementation of Ulli -- failed when --test=alex55 when called for directDivergence
@@ -518,6 +563,8 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
 #endif
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::GetNodalIds( Mesh & mesh, const std::vector<Point*> & points, std::vector<int> & nids )
 {
   for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
@@ -534,6 +581,8 @@ void GEO::CUT::Facet::GetNodalIds( Mesh & mesh, const std::vector<Point*> & poin
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::Equals( const std::vector<Point*> & my_points,
                               const std::vector<Point*> & facet_points )
 {
@@ -567,6 +616,8 @@ bool GEO::CUT::Facet::Equals( const std::vector<Point*> & my_points,
   return true;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::IsCutSide( Side * side )
 {
   if ( parentside_==side )
@@ -588,6 +639,8 @@ bool GEO::CUT::Facet::IsCutSide( Side * side )
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::Position( Point::PointPosition pos )
 {
 
@@ -627,6 +680,8 @@ void GEO::CUT::Facet::Position( Point::PointPosition pos )
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, plain_facet_set > & lines )
 {
 #if 0
@@ -658,6 +713,8 @@ void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, plain_facet_
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::GetLines( const std::vector<Point*> & points,
                                 std::map<std::pair<Point*, Point*>, plain_facet_set > & lines )
 {
@@ -677,12 +734,18 @@ void GEO::CUT::Facet::GetLines( const std::vector<Point*> & points,
     {
       lines[std::make_pair( p2, p1 )].insert( this );
     }
+    else if ( p1->Id() == p2->Id() and length == 1 )
+    {
+      lines[std::make_pair( p1, p2 )].insert( this );
+    }
     else
       dserror( "line creation with identical begin and end points\n" );
 
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::IsLine( Point * p1, Point * p2 )
 {
   if ( IsTriangulated() )
@@ -710,6 +773,8 @@ bool GEO::CUT::Facet::IsLine( Point * p1, Point * p2 )
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::IsLine( const std::vector<Point*> & points, Point * p1, Point * p2 )
 {
   std::vector<Point*>::const_iterator i1 = std::find( points.begin(), points.end(), p1 );
@@ -751,6 +816,8 @@ bool GEO::CUT::Facet::IsLine( const std::vector<Point*> & points, Point * p1, Po
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::Contains( Point * p ) const
 {
   if ( IsTriangulated() )
@@ -778,6 +845,8 @@ bool GEO::CUT::Facet::Contains( Point * p ) const
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::Contains( const std::vector<Point*> & side ) const
 {
   for ( std::vector<Point*>::const_iterator i=side.begin(); i!=side.end(); ++i )
@@ -791,6 +860,22 @@ bool GEO::CUT::Facet::Contains( const std::vector<Point*> & side ) const
   return true;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::Facet::Contains( const plain_facet_set & vcell ) const
+{
+  for ( plain_volumecell_set::const_iterator i_vc = cells_.begin();
+        i_vc != cells_.end(); ++i_vc )
+  {
+    const VolumeCell & vc = **i_vc;
+    if ( vc.IsEqual( vcell ) )
+      return true;
+  }
+  return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::ContainsSome( const std::vector<Point*> & side ) const
 {
   for ( std::vector<Point*>::const_iterator i=side.begin(); i!=side.end(); ++i )
@@ -804,6 +889,8 @@ bool GEO::CUT::Facet::ContainsSome( const std::vector<Point*> & side ) const
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::Touches( Facet * f )
 {
   for ( std::vector<Point*>::iterator i=points_.begin(); i!=points_.end(); ++i )
@@ -967,6 +1054,8 @@ GEO::CUT::VolumeCell * GEO::CUT::Facet::Neighbor( VolumeCell * cell )
   return NULL;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::Neighbors( Point * p,
                                  const plain_volumecell_set & cells,
                                  const plain_volumecell_set & done,
@@ -990,7 +1079,8 @@ void GEO::CUT::Facet::Neighbors( Point * p,
   }
 }
 
-
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::Neighbors( Point * p,
                                  const plain_volumecell_set & cells,
                                  const plain_volumecell_set & done,
@@ -1013,6 +1103,8 @@ void GEO::CUT::Facet::Neighbors( Point * p,
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::Equals( DRT::Element::DiscretizationType distype )
 {
   if ( holes_.size()==0 )
@@ -1020,17 +1112,28 @@ bool GEO::CUT::Facet::Equals( DRT::Element::DiscretizationType distype )
     FindCornerPoints();
     switch ( distype )
     {
-    case DRT::Element::quad4:
-      return KERNEL::IsValidQuad4( corner_points_ );
-    case DRT::Element::tri3:
-      return KERNEL::IsValidTri3( corner_points_ );
-    default:
-      throw std::runtime_error( "unsupported distype requested" );
+      case DRT::Element::point1:
+        return KERNEL::IsValidPoint1( corner_points_ );
+        break;
+      case DRT::Element::line2:
+        return KERNEL::IsValidLine2( corner_points_ );
+        break;
+      case DRT::Element::quad4:
+        return KERNEL::IsValidQuad4( corner_points_ );
+        break;
+      case DRT::Element::tri3:
+        return KERNEL::IsValidTri3( corner_points_ );
+        break;
+      default:
+        run_time_error( "unsupported distype requested" );
+        break;
     }
   }
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 unsigned GEO::CUT::Facet::Normal( const std::vector<Point*> & points,
                                   LINALG::Matrix<3,1> & x1,
                                   LINALG::Matrix<3,1> & x2,
@@ -1050,7 +1153,7 @@ unsigned GEO::CUT::Facet::Normal( const std::vector<Point*> & points,
   b1.Scale( 1./b1.Norm2() );
 
   if ( b1.Norm2() < std::numeric_limits<double>::min() )
-    throw std::runtime_error( "same point in facet not supported" );
+    run_time_error( "same point in facet not supported" );
 
   bool found = false;
   unsigned i=2;
@@ -1083,6 +1186,8 @@ unsigned GEO::CUT::Facet::Normal( const std::vector<Point*> & points,
   return i;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::TriangulationPoints( PointSet & points )
 {
   for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation_.begin();
@@ -1094,14 +1199,37 @@ void GEO::CUT::Facet::TriangulationPoints( PointSet & points )
   }
 }
 
-void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Facet::NewPoint1Cell( Mesh & mesh, VolumeCell * volume,
+    const std::vector<Point*> & points, plain_boundarycell_set & bcells )
+{
+  BoundaryCell * bc = mesh.NewPoint1Cell( volume, this, points );
+  bcells.insert( bc );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Facet::NewLine2Cell( Mesh & mesh, VolumeCell * volume,
+    const std::vector<Point*> & points, plain_boundarycell_set & bcells )
+{
+  BoundaryCell * bc = mesh.NewLine2Cell( volume, this, points );
+  bcells.insert( bc );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume,
+    const std::vector<Point*> & points, plain_boundarycell_set & bcells )
 {
   BoundaryCell * bc = mesh.NewTri3Cell( volume, this, points );
   bcells.insert( bc );
 }
 
-
-void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume,
+    const std::vector<Point*> & points, plain_boundarycell_set & bcells )
 {
   if ( mesh.CreateOptions().GenQuad4() )
   {
@@ -1121,18 +1249,22 @@ void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std:
   }
 }
 
-void GEO::CUT::Facet::NewArbitraryCell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points,
-    plain_boundarycell_set & bcells, const DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3,1>& normal )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Facet::NewArbitraryCell( Mesh & mesh, VolumeCell * volume,
+    const std::vector<Point*> & points, plain_boundarycell_set & bcells,
+    const DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3,1>& normal )
 {
   BoundaryCell* bc = mesh.NewArbitraryCell(volume, this, points, gp, normal);
   bcells.insert( bc );
 }
 
-/// unused, see comment
-void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells ) /// unused, see comment
 {
   if ( cells_.size()==0 )
-    throw std::runtime_error( "no volume cells" );
+    run_time_error( "no volume cells" );
 
   dserror("do not use this function at the moment -> Read comment!");
 
@@ -1162,6 +1294,8 @@ void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells )
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::TestFacetArea( double tolerance, bool istetmeshintersection)
 {
   if ( OnCutSide() and cells_.size() > 1 )
@@ -1223,6 +1357,8 @@ void GEO::CUT::Facet::TestFacetArea( double tolerance, bool istetmeshintersectio
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::Facet::FindCornerPoints()
 {
   if ( corner_points_.size()==0 )
@@ -1235,60 +1371,53 @@ void GEO::CUT::Facet::FindCornerPoints()
   }
 }
 
-void GEO::CUT::Facet::Print( std::ostream & stream )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Facet::Print( std::ostream & stream ) const
 {
+
+  stream << "--- Facet ( address: " << this << " )\n";
   stream << "# Facet: " << "numpoints " << points_.size()
-         << "\n# ";
+         << "\n# OnCutSide: " << ( OnCutSide() ? "TRUE" : "FALSE" )
+         << "\n# registered volume cells: ";
+  std::copy( cells_.begin(), cells_.end(), std::ostream_iterator<VolumeCell*>( stream, " " ) );
+  stream << "\n# points: ";
   std::copy( points_.begin(), points_.end(), std::ostream_iterator<Point*>( stream, " " ) );
   stream << "\n";
-  if ( points_.size() > 0 )
+  for ( std::vector<Point*>::const_iterator i=points_.begin();
+        i!=points_.end();
+        ++i )
   {
-    LINALG::Matrix<3,1> middle;
-    LINALG::Matrix<3,1> x;
-
-    middle = 0;
-    for ( std::vector<Point*>::iterator i=points_.begin(); i!=points_.end(); ++i )
-    {
-      Point * p = *i;
-      p->Coordinates( x.A() );
-      middle.Update( 1, x, 1 );
-      //p->Plot( stream );
-    }
-    middle.Scale( 1./points_.size() );
-    for ( unsigned i=0; i<=points_.size(); ++i )
-    {
-      Point * p = points_[i % points_.size()];
-      p->Coordinates( x.A() );
-      x.Update( -1, middle, 1 );
-      x.Scale( 0.8 );
-      x.Update( 1, middle, 1 );
-      stream << std::setprecision( 10 ) << x( 0, 0 ) << " "
-             << std::setprecision( 10 ) << x( 1, 0 ) << " "
-             << std::setprecision( 10 ) << x( 2, 0 ) << " "
-             << std::setprecision( 10 ) << p->X()[0] << " "
-             << std::setprecision( 10 ) << p->X()[1] << " "
-             << std::setprecision( 10 ) << p->X()[2] << " "
-             << "# " << p->Id()
-             << "\n";
-    }
-    stream << "\n\n";
-
-    for ( plain_facet_set::iterator i=holes_.begin(); i!=holes_.end(); ++i )
-    {
-      Facet * hole = *i;
-      hole->Print( stream );
-    }
+    Point & p = **i;
+    p.Print( stream );
+    stream << "\n";
   }
+  stream << "\n";
+
+  for ( plain_facet_set::const_iterator i=holes_.begin(); i!=holes_.end(); ++i )
+  {
+    Facet * hole = *i;
+    hole->Print( stream );
+  }
+
+  stream << "\n";
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::IsTriangle( const std::vector<Point*> & tri ) const
 {
   if ( tri.size()!=3 )
-    throw std::runtime_error( "three points expected" );
+    run_time_error( "three points expected" );
 
-  return points_.size()==3 and not IsTriangulated() and not HasHoles() and Contains( tri );
+  return points_.size()==3    and
+         not IsTriangulated() and
+         not HasHoles()       and
+         Contains( tri );
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::IsTriangulatedSide( const std::vector<Point*> & tri ) const
 {
   if ( tri.size()!=3 )
@@ -1317,6 +1446,8 @@ bool GEO::CUT::Facet::IsTriangulatedSide( const std::vector<Point*> & tri ) cons
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 unsigned GEO::CUT::Facet::NumPoints()
 {
   unsigned numpoints = points_.size();
@@ -1330,6 +1461,8 @@ unsigned GEO::CUT::Facet::NumPoints()
   return numpoints;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 GEO::CUT::Point * GEO::CUT::Facet::OtherPoint( Point * p1, Point * p2 )
 {
   Point * result = NULL;
@@ -1358,11 +1491,13 @@ GEO::CUT::Point * GEO::CUT::Facet::OtherPoint( Point * p1, Point * p2 )
   return result;
 }
 
-/*-----------------------------------------------------------------------------------------------------------*
+/*----------------------------------------------------------------------------*
   return the local coordinates of corner points with respect to the given element
-  if shadow=true, then the mapping is w.r. to the parent quad element from which this element is derived
-*------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::Facet::CornerPointsLocal( Element *elem1, std::vector<std::vector<double> > & cornersLocal, bool shadow )
+  if shadow=true, then the mapping is w.r. to the parent quad element from which
+  this element is derived
+*-----------------------------------------------------------------------------*/
+void GEO::CUT::Facet::CornerPointsLocal( Element *elem1,
+    std::vector<std::vector<double> > & cornersLocal, bool shadow )
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::CornerPointsLocal" );
 
@@ -1398,10 +1533,12 @@ void GEO::CUT::Facet::CornerPointsLocal( Element *elem1, std::vector<std::vector
   }
 }
 
-/*---------------------------------------------------------------------------------------------------------*
- * Return the global coordinates all of its corner points in order                                 sudhakar 05/15
- *---------------------------------------------------------------------------------------------------------*/
-const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsGlobal( Element *elem1, bool shadow )
+/*----------------------------------------------------------------------------*
+ * Return the global coordinates all of its corner points in order
+ *                                                              sudhakar 05/15
+ *----------------------------------------------------------------------------*/
+const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsGlobal(
+    Element *elem1, bool shadow )
 {
   const std::vector<Point*> & corners = CornerPoints();
   int mm=0;
@@ -1421,9 +1558,9 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsGlobal( Ele
   return cornersLocal;
 }
 
-/*-----------------------------------------------------------------------*
-          Split the facet into a number of tri and quad cells
-*------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*
+ *        Split the facet into a number of tri and quad cells
+ *------------------------------------------------------------------------*/
 void GEO::CUT::Facet::SplitFacet( const std::vector<Point*> & facetpts )
 {
  if( not this->HasHoles() )
@@ -1445,9 +1582,9 @@ void GEO::CUT::Facet::SplitFacet( const std::vector<Point*> & facetpts )
  }
 }
 
-/*-----------------------------------------------------------------------*
+/*----------------------------------------------------------------------------*
           Returns true if the facet is convex shaped
-*------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::isConvex()
 {
 
@@ -1463,14 +1600,15 @@ bool GEO::CUT::Facet::isConvex()
  return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::BelongsToLevelSetSide()
 {
   return parentside_->IsLevelSetSide();
 }
 
- /*-----------------------------------------------------------------------*
-
- *------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
  std::ostream & operator<<( std::ostream & stream, GEO::CUT::Facet & f )
  {
    stream << "facet: {";

@@ -184,7 +184,7 @@ public:
   LINALG::SparseMatrix& DMatrix()
   {
     if (dmatrix_.is_null())
-      dserror("The augDnMatrixPtr_ is not initialized!");
+      dserror("The dmatrix_ is not initialized!");
     return *dmatrix_;
   }
 
@@ -194,7 +194,7 @@ public:
   LINALG::SparseMatrix& MMatrix()
   {
     if (mmatrix_.is_null())
-      dserror("The augMnMatrixPtr_ is not initialized!");
+      dserror("The mmatrix_ is not initialized!");
     return *mmatrix_;
   }
 
@@ -1207,6 +1207,14 @@ protected:
 
   //! @Internal evaluate routines
   //! @{
+  /*! \brief Evaluate only the weighted gap values
+   *
+   * \param cparams (in): parameter interface between the contact objects and the structural time integration
+   *
+   *  \date 03/2016
+   *  \author hiermeier */
+  virtual void EvalWeightedGap(CONTACT::ParamsInterface& cparams);
+
   /*! \brief Compute force and stiffness terms
    *
    * \param cparams (in): parameter interface between the contact objects and the structural time integration

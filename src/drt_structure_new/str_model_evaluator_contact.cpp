@@ -64,10 +64,10 @@ void STR::MODELEVALUATOR::Contact::Setup()
   Teuchos::ParameterList cparams;
 
   // read and check contact input parameters
-  factory_ptr->ReadAndCheckInput(cparams);
+  factory_ptr->ReadAndCheckInput( cparams );
 
   // check for FillComplete of discretization
-  if (!Discret().Filled())
+  if ( not Discret().Filled() )
     dserror("Discretization is not fillcomplete");
   // ---------------------------------------------------------------------
   // build the contact interfaces
@@ -75,31 +75,31 @@ void STR::MODELEVALUATOR::Contact::Setup()
   // FixMe Would be great, if we get rid of these poro parameters...
   bool poroslave = false;
   bool poromaster = false;
-  factory_ptr->BuildInterfaces(cparams, interfaces,poroslave,poromaster);
+  factory_ptr->BuildInterfaces( cparams, interfaces, poroslave, poromaster );
 
   // ---------------------------------------------------------------------
   // build the solver strategy object
   // ---------------------------------------------------------------------
-  strategy_ptr_ = factory_ptr->BuildStrategy(cparams,poroslave,
-      poromaster,DofOffset(),interfaces);
+  strategy_ptr_ = factory_ptr->BuildStrategy( cparams, poroslave,
+      poromaster, DofOffset(), interfaces );
 
   // build the search tree
-  factory_ptr->BuildSearchTree(interfaces);
+  factory_ptr->BuildSearchTree( interfaces );
 
   // print final screen output
-  factory_ptr->Print(interfaces,strategy_ptr_,cparams);
+  factory_ptr->Print( interfaces, strategy_ptr_, cparams );
 
   // ---------------------------------------------------------------------
   // final touches to the contact strategy
   // ---------------------------------------------------------------------
-  strategy_ptr_->StoreDirichletStatus(Int().GetDbc().GetDBCMapExtractor());
-  strategy_ptr_->SetState(MORTAR::state_new_displacement,
-      Int().GetDbc().GetZeros());
-  strategy_ptr_->SaveReferenceState(Int().GetDbc().GetZerosPtr());
-  strategy_ptr_->EvaluateReferenceState(Int().GetDbc().GetZerosPtr());
+  strategy_ptr_->StoreDirichletStatus( Int().GetDbc().GetDBCMapExtractor() );
+  strategy_ptr_->SetState( MORTAR::state_new_displacement,
+      Int().GetDbc().GetZeros() );
+  strategy_ptr_->SaveReferenceState( Int().GetDbc().GetZerosPtr() );
+  strategy_ptr_->EvaluateReferenceState( Int().GetDbc().GetZerosPtr() );
   strategy_ptr_->Inttime_init();
-  strategy_ptr_->RedistributeContact(GState().GetDisN());
-  strategy_ptr_->InitBinStrategyforTimestep(GState().GetVelN());
+  strategy_ptr_->RedistributeContact( GState().GetDisN() );
+  strategy_ptr_->InitBinStrategyforTimestep( GState().GetVelN() );
 
   CheckPseudo2D();
 
@@ -124,7 +124,8 @@ void STR::MODELEVALUATOR::Contact::CheckPseudo2D() const
     std::cout << "WARNING: The flag CONTACTPSEUDO2D is switched on. If this "
          << "is a real 3D problem, switch it off!" << std::endl;
   #else
-    std::cout << "WARNING: The flag CONTACTPSEUDO2D is switched off. If this "
+    std::cout << "STR::MODELEVALUATOR::Contact::CheckPseudo2D -- "
+         << "WARNING: \nThe flag CONTACTPSEUDO2D is switched off. If this "
          << "is a 2D problem modeled pseudo-3D, switch it on!" << std::endl;
   #endif // #ifdef CONTACTPSEUDO2D
   }
@@ -150,7 +151,7 @@ bool STR::MODELEVALUATOR::Contact::EvaluateForce()
   CheckInitSetup();
   bool ok = true;
   // --- evaluate contact contributions ---------------------------------
-  EvalContact().SetActionType(MORTAR::eval_force);
+  EvalContact().SetActionType( MORTAR::eval_force );
   Strategy().Evaluate(EvalData().Contact());
 
   return ok;
@@ -163,7 +164,7 @@ bool STR::MODELEVALUATOR::Contact::EvaluateStiff()
   CheckInitSetup();
   bool ok = true;
   // --- evaluate contact contributions ---------------------------------
-  EvalContact().SetActionType(MORTAR::eval_force_stiff);
+  EvalContact().SetActionType( MORTAR::eval_force_stiff );
   Strategy().Evaluate(EvalData().Contact());
 
   return ok;
@@ -176,7 +177,7 @@ bool STR::MODELEVALUATOR::Contact::EvaluateForceStiff()
   CheckInitSetup();
   bool ok = true;
   // --- evaluate contact contributions ---------------------------------
-  EvalContact().SetActionType(MORTAR::eval_force_stiff);
+  EvalContact().SetActionType( MORTAR::eval_force_stiff );
   Strategy().Evaluate(EvalData().Contact());
 
   return ok;
@@ -480,7 +481,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
 
-  iowriter.WriteVector("activeset", activesetexp);
+  iowriter.WriteVector("activeset", activesetexp,IO::nodevector);
 
   // *********************************************************************
   // contact tractions
@@ -888,6 +889,14 @@ void STR::MODELEVALUATOR::Contact::PrintBanner() const
         {
           std::cout << "================================================================\n";
           std::cout << "===== Augmented Lagrange strategy ==============================\n";
+          std::cout << "===== (Saddle point formulation) ===============================\n";
+          std::cout << "================================================================\n\n";
+        }
+        // TODO: added
+        else if (soltype == INPAR::CONTACT::solution_xcontact && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          std::cout << "================================================================\n";
+          std::cout << "===== Extended contact strategy ================================\n";
           std::cout << "===== (Saddle point formulation) ===============================\n";
           std::cout << "================================================================\n\n";
         }

@@ -178,7 +178,7 @@ namespace GEO
       {
       public:
 
-        Entity()
+        Entity() : id_( -1 )
         {
         }
 
@@ -673,10 +673,24 @@ namespace GEO
 
     private:
 
-      /*!
-      \brief Calculate the volume of the created delauney-cells and remove cells smaller than VOLUMETOL. Also switches
-             the order in which nodes are stored if the tets are numbered the wrong way (deduced from taking the cross product).
-       */
+      /*! \brief Calculate the volume of the created delauney-cells and remove cells smaller than VOLUMETOL.
+       *         Also switches the order in which nodes are stored if the tets are numbered the wrong way
+       *         (deduced from taking the cross product).
+       *
+       *  The TETs accepted in IsValidTet(...) are not necessarily TETs which are acceptable within arithmetic precision.
+       *  Thus two option exists:
+       *
+       *  1) Use the way by "Kuettler": Find the volume of the TET and check against a predefined volume-tolerance.
+       *                                Leads to problems with cuts in non-local coordinates.
+       *
+       *  2) New way: Check the lengths of the TET, i.e. its length between its base points (3 lengths) and its height
+       *              to the base (1 length). These are tested against a tolerance
+       *    \f[
+       *       tol = \epsilon * B
+       *    \f]
+       *
+       *    where B is the distance of a point of the TET furthest away from to the origin.
+       *   Accept a TET if all its lengths are larger than the arithmetic tolerance. */
       void FixBrokenTets();
 
       void FindProperSides( const PlainEntitySet<3> & tris,

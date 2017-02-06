@@ -80,47 +80,50 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
   {
     case DRT::Element::hex8:
     {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::hex8>(rhs_mom(0),"LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3,DRT::Element::hex8>(rhs_mom(0),"LocalToGlobal");
       break;
     }
     case DRT::Element::tet4:
     {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::tet4>(rhs_mom(0),"LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3,DRT::Element::tet4>(rhs_mom(0),"LocalToGlobal");
       break;
     }
     case DRT::Element::wedge6:
     {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::wedge6>(rhs_mom(0),"LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3,DRT::Element::wedge6>(rhs_mom(0),"LocalToGlobal");
       break;
     }
     case DRT::Element::pyramid5:
     {
-      volGlobal = elem1_->ScalarFromLocalToGlobal<DRT::Element::pyramid5>(rhs_mom(0),"LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3,DRT::Element::pyramid5>(rhs_mom(0),"LocalToGlobal");
       break;
     }
     default:
-      throw std::runtime_error( "unsupported integration cell type" );
+      dserror( "unsupported integration cell type ( cell type = %s )",
+          DRT::DistypeToString( elem1_->Shape() ).c_str() );
+      exit( EXIT_FAILURE );
   }
   volcell_->SetVolume(volGlobal);
 
   return rhs_mom;
 }
 
-/*-------------------------------------------------------------------------------------------------*
-    compute the gaussian points of the volumecell with "numeach" points in each 3-directions
+/*----------------------------------------------------------------------------*
+    compute the gaussian points of the volumecell with "numeach" points in each
+    3-directions
     numeach should be more than 1
     uses ray tracing method
-*--------------------------------------------------------------------------------------------------*/
+*-----------------------------------------------------------------------------*/
 bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
 {
-  BoundingBox box1(*volcell_,elem1_);
+  Teuchos::RCP<BoundingBox> box1 = Teuchos::rcp( BoundingBox::Create(*volcell_,elem1_) );
   double minn[3],maxx[3];
-  minn[0] = box1.minx();
-  maxx[0] = box1.maxx();
-  minn[1] = box1.miny();
-  maxx[1] = box1.maxy();
-  minn[2] = box1.minz();
-  maxx[2] = box1.maxz();
+  minn[0] = box1->minx();
+  maxx[0] = box1->maxx();
+  minn[1] = box1->miny();
+  maxx[1] = box1->maxy();
+  minn[2] = box1->minz();
+  maxx[2] = box1->maxz();
 
   std::vector<std::vector<double> > zcoord;
   std::vector<std::vector<double> > ycoord;
@@ -1118,7 +1121,7 @@ void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVec
  *-------------------------------------------------------------------------------------*/
 std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rst )
 {
-  std::cout << RED << "** GEO::CUT::VolumeIntegration::IsPointInside -- This function does not work for general volumecells (concave, facets with holes, ...)! **" << END_COLOR << std::endl;
+//  std::cout << RED << "** GEO::CUT::VolumeIntegration::IsPointInside -- This function does not work for general volumecells (concave, facets with holes, ...)! **" << END_COLOR << std::endl;
   const plain_facet_set & facete = volcell_->Facets();
 
   //--------------------------------------------------------------------------------

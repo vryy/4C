@@ -13,8 +13,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SRC_DRT_LIB_DRT_DISCRET_GENERIC_H_
-#define SRC_DRT_LIB_DRT_DISCRET_GENERIC_H_
+#ifndef SRC_DRT_LIB_DRT_DISCRET_INTERFACE_H_
+#define SRC_DRT_LIB_DRT_DISCRET_INTERFACE_H_
 
 #include "drt_dserror.H"
 #include <Teuchos_RCP.hpp>
@@ -618,4 +618,4 @@ namespace DRT {
 } // namespace DRT
 
 
-#endif /* SRC_DRT_LIB_DRT_DISCRET_GENERIC_H_ */
+#endif /* SRC_DRT_LIB_DRT_DISCRET_INTERFACE_H_ */

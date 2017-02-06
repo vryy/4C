@@ -455,8 +455,8 @@ void ALE::Ale::OutputState(bool& datawritten)
 
   if (elequalityyesno_)
   {
-    output_->WriteVector("det_j", eledetjac_, IO::DiscretizationWriter::elementvector);
-    output_->WriteVector("element_quality", elequality_, IO::DiscretizationWriter::elementvector);
+    output_->WriteVector("det_j", eledetjac_, IO::elementvector);
+    output_->WriteVector("element_quality", elequality_, IO::elementvector);
   }
 
   return;

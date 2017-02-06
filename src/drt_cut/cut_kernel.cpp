@@ -2,30 +2,30 @@
 /*!
 \file cut_kernel.cpp
 
-\brief the cut kernel computes basic geometric operation, implemeted are
-    - Intersection of Surface and line
+\brief The cut kernel computes basic geometric operation, implemented are
+    - Intersection of Surface and line or line and line
     - Calculate local coordinates inside an element
-    - Compute Distance from a point to a surface
+    - Compute Distance from a point to an embedded geometrical object
+      ( surface or line )
 
-\level 2
+\level 1
 
-<pre>
-\maintainer Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
+\maintainer Michael Hiermeier
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
+
 
 #include "cut_kernel.H"
 #include "cut_point.H"
-#include "cut_position2d.H"
+#include "cut_position.H"
 #include "../drt_io/io_pstream.H"
 #include <iostream>
 
 #include <Teuchos_TimeMonitor.hpp>
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 unsigned GEO::CUT::KERNEL::FindNextCornerPoint( const std::vector<Point*> & points,
                                                 LINALG::Matrix<3,1> & x1,
                                                 LINALG::Matrix<3,1> & x2,
@@ -94,6 +94,8 @@ unsigned GEO::CUT::KERNEL::FindNextCornerPoint( const std::vector<Point*> & poin
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::KERNEL::FindCornerPoints( const std::vector<Point*> & points,
                                          std::vector<Point*> & corner_points )
 {
@@ -115,6 +117,22 @@ void GEO::CUT::KERNEL::FindCornerPoints( const std::vector<Point*> & points,
   }
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::KERNEL::IsValidPoint1( const std::vector<Point*> & corner_points )
+{
+  return (corner_points.size() == 1);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::KERNEL::IsValidLine2( const std::vector<Point*> & corner_points )
+{
+  return (corner_points.size() == 2);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::KERNEL::IsValidQuad4( const std::vector<Point*> & points )
 {
   if ( points.size()==4 )
@@ -128,8 +146,8 @@ bool GEO::CUT::KERNEL::IsValidQuad4( const std::vector<Point*> & points )
       points[( i+2 )%4]->Coordinates( &xyze( 0, 2 ) );
       points[( i+3 )%4]->Coordinates( &xyz( 0, 0 ) );
 
-      Position2d<DRT::Element::tri3> pos( xyze, xyz );
-      if ( pos.Compute() )
+      Teuchos::RCP<Position> pos = Position::Create(xyze,xyz,DRT::Element::tri3);
+      if ( pos->Compute() )
       {
         return false;
       }
@@ -139,8 +157,11 @@ bool GEO::CUT::KERNEL::IsValidQuad4( const std::vector<Point*> & points )
   return false;
 }
 
-DRT::Element::DiscretizationType GEO::CUT::KERNEL::CalculateShape( const std::vector<Point*> & points,
-                                                                   std::vector<Point*> & line_points )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+DRT::Element::DiscretizationType GEO::CUT::KERNEL::CalculateShape(
+    const std::vector<Point*> & points,
+    std::vector<Point*> & line_points )
 {
   FindCornerPoints( points, line_points );
 
@@ -156,11 +177,10 @@ DRT::Element::DiscretizationType GEO::CUT::KERNEL::CalculateShape( const std::ve
   return DRT::Element::dis_none;
 }
 
-/*-----------------------------------------------------------------------------------------------------*
-  Check whether three points are lying on the same line by checking whether the cross product is zero
-                                                                                          Sudhakar 04/12
-*------------------------------------------------------------------------------------------------------*/
-bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3, bool DeleteInlinePts )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1,
+    Point* & pt2, Point* & pt3, bool DeleteInlinePts )
 {
   LINALG::Matrix<3,1> x1,x2,x3;
   LINALG::Matrix<3,1> pt1pt2,pt1pt3,cross;
@@ -190,11 +210,12 @@ bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3, bool 
   return false;
 }
 
-/*---------------------------------------------------------------------------------------------------------*
-      Check whether the list of points given forms a convex polygon                         Sudhakar 04/12
-      If any 3 points fall along the line, this will delete the middle point and return new pt
-      Intially the polygon is projected into the given plane
-*----------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+  Check whether the list of points given forms a convex polygon
+  If any 3 points fall along the line, this will delete the middle point and
+  return new ptr. Intially the polygon is projected into the given plane
+                                                                Sudhakar 04/12
+ *----------------------------------------------------------------------------*/
 std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& ptlist,
                                                    GEO::CUT::FacetShape& geomType,
                                                    bool InSplit,
@@ -615,11 +636,10 @@ bool GEO::CUT::KERNEL::PtInsideQuad( std::vector<Point*> quad, Point* check )
   return false;
 }
 
-/*------------------------------------------------------------------------------------------------------------*
-           Returns true if the points of the polygon are ordered clockwise                        sudhakar 05/12
-   Polygon in 3D space is first projected into 2D plane, and the plane of projection is returned in projType
-*-------------------------------------------------------------------------------------------------------------*/
-bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints, std::string& projPlane )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints,
+    std::string& projPlane )
 {
   if( polyPoints.size()<3 )
     dserror( "polygon with less than 3 corner points" );
@@ -665,13 +685,10 @@ bool GEO::CUT::KERNEL::IsClockwiseOrderedPolygon( std::vector<Point*>polyPoints,
   return false;
 }
 
-/*----------------------------------------------------------------------------------------------*
-    In several cases, it is appropriate to project the surface in 3D space into appropriate
-    coordinate plane. It is better to project over the plane which is max normal component
-    because this will reduce the round-off error in further calculations
-                                                                                          Sudhakar 06/12
-*------------------------------------------------------------------------------------------------*/
-void GEO::CUT::KERNEL::FindProjectionPlane( std::string& projPlane, const std::vector<double>& eqn )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::KERNEL::FindProjectionPlane( std::string& projPlane,
+    const std::vector<double>& eqn )
 {
   if( fabs(eqn[0])>fabs(eqn[1]) && fabs(eqn[0])>fabs(eqn[2]) )
     projPlane = "x";
@@ -707,11 +724,8 @@ void GEO::CUT::KERNEL::FindProjectionPlane( std::string& projPlane, const std::v
   }
 }
 
-/*--------------------------------------------------------------------------------------*
-    If more than two points are on a line, all points except the end points
-    are deleted. This is checked for all the lines for a facet. So once this is
-    called the facet is free of more than 2 inline points                   Sudhakar 06/12
-*---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::KERNEL::DeleteInlinePts( std::vector<Point*>& poly )
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::DeleteInlinePts" );
@@ -733,18 +747,20 @@ void GEO::CUT::KERNEL::DeleteInlinePts( std::vector<Point*>& poly )
 
     if( anyInLine )
     {
-      std::vector<Point*>::iterator delPt = poly.begin()+i; //iterator of the point to be deleted
+      //iterator of the point to be deleted
+      std::vector<Point*>::iterator delPt = poly.begin()+i;
       poly.erase(delPt);
       break;
     }
   }
-  if( anyInLine )   // this makes sure the procedure is repeated until all the inline points of the facet are deleted
+  /* this makes sure the procedure is repeated until all the inline points of
+   * the facet are deleted */
+  if( anyInLine )
     DeleteInlinePts( poly );
 }
 
-/*--------------------------------------------------------------------------------------*
-    Returns true if at least 3 points are collinear                          Wirtz 05/13
-*---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool GEO::CUT::KERNEL::HaveInlinePts( std::vector<Point*>& poly )
 {
 
@@ -766,10 +782,10 @@ bool GEO::CUT::KERNEL::HaveInlinePts( std::vector<Point*>& poly )
 
 }
 
-/*--------------------------------------------------------------------------------------*
-    Finds tree points of the polygon which are not collinear                 Wirtz 05/13
-*---------------------------------------------------------------------------------------*/
-std::vector<GEO::CUT::Point*> GEO::CUT::KERNEL::Get3NoncollinearPts( std::vector<Point*> & polyPoints )
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+std::vector<GEO::CUT::Point*> GEO::CUT::KERNEL::Get3NoncollinearPts(
+    std::vector<Point*> & polyPoints )
 {
 
   std::vector<Point*> preparedPoints;
@@ -796,25 +812,38 @@ std::vector<GEO::CUT::Point*> GEO::CUT::KERNEL::Get3NoncollinearPts( std::vector
 
 }
 
-/*------------------------------------------------------------------------------*
- * Calculate area of triangle in 3D                                     sudhakar 11/14
- *------------------------------------------------------------------------------*/
-double GEO::CUT::KERNEL::getAreaTri(const std::vector<Point*> & poly,
-                                    LINALG::Matrix<3,1>* normalvec)
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double GEO::CUT::KERNEL::getAreaTri( const std::vector<Point*> & poly,
+    LINALG::Matrix<3,1>* normalvec )
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
 
   if( poly.size() != 3 )
     dserror("expecting a triangle");
 
-  const int numnodes = 3;
-  // create planes consisting of 3 nodes each
-  LINALG::Matrix<numnodes,1> p0( poly[0]->X() );
-  LINALG::Matrix<numnodes,1> p1( poly[1]->X() );
-  LINALG::Matrix<numnodes,1> p2( poly[2]->X() );
+  double p0[3]={0.0,0.0,0.0},p1[3]={0.0,0.0,0.0},p2[3]={0.0,0.0,0.0};
+  poly[0]->Coordinates( p0 );
+  poly[1]->Coordinates( p1 );
+  poly[2]->Coordinates( p2 );
 
-  LINALG::Matrix<numnodes,1> v01;
-  LINALG::Matrix<numnodes,1> v02;
+  return getAreaTri( p0, p1, p2, normalvec );
+}
+
+/*------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------*/
+double GEO::CUT::KERNEL::getAreaTri( const double * p0_ptr, const double * p1_ptr,
+    const double * p2_ptr, LINALG::Matrix<3,1>* normalvec)
+{
+  //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
+
+  // create planes consisting of 3 nodes each
+  const LINALG::Matrix<3,1> p0( p0_ptr, true );
+  const LINALG::Matrix<3,1> p1( p1_ptr, true );
+  const LINALG::Matrix<3,1> p2( p2_ptr, true );
+
+  LINALG::Matrix<3,1> v01;
+  LINALG::Matrix<3,1> v02;
 
   v01.Update( 1, p1, -1, p0, 0 );
   v02.Update( 1, p2, -1, p0, 0 );
@@ -834,7 +863,7 @@ double GEO::CUT::KERNEL::getAreaTri(const std::vector<Point*> & poly,
   }
 
 #if DEBUG
-  LINALG::Matrix<numnodes,1> v12;
+  LINALG::Matrix<3,1> v12;
   v12.Update( 1, p1, -1, p2, 0 );
 
   double areacrossprod = 0.5*doubleareacrossprod;
@@ -940,10 +969,8 @@ double GEO::CUT::KERNEL::getAreaTri(const std::vector<Point*> & poly,
 
 }
 
-/*------------------------------------------------------------------------------*
- * Calculate area of convex Quad in 3D                                  sudhakar 11/14
- * Quad is split into two triangles and area of tri are summed up
- *------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 double GEO::CUT::KERNEL::getAreaConvexQuad( std::vector<Point*> & poly )
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaConvexQuad" );
@@ -964,3 +991,4 @@ double GEO::CUT::KERNEL::getAreaConvexQuad( std::vector<Point*> & poly )
   double area2 = getAreaTri( tri2 );
   return (area1 + area2);
 }
+

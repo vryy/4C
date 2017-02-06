@@ -5,10 +5,12 @@
 \brief Base class for interface of nonlinear solver to BACI
 
 <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
 </pre>
+
+\level 3
 */
 
 /*----------------------------------------------------------------------------*/
@@ -247,7 +249,7 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      */
     virtual void WriteVector(Teuchos::RCP<const Epetra_MultiVector> vec, ///< vector with result data (to be outputted)
         const std::string& description, ///< description of output quantity
-        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///< vector type
+        const IO::VectorType vt = IO::dofvector ///< vector type
         ) const;
 
     /*! \brief Wrapper to write plain Epetra_MultiVector to output
@@ -256,7 +258,7 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      */
     virtual void WriteVector(const Epetra_MultiVector& vec, ///< vector with result data (to be outputted)
         const std::string& description, ///< description of output quantity
-        const IO::DiscretizationWriter::VectorType vt = IO::DiscretizationWriter::dofvector ///< vector type
+        const IO::VectorType vt = IO::dofvector ///< vector type
         ) const;
 
     //@}

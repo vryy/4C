@@ -581,7 +581,8 @@ void GEO::CUT::SelfCut::CreateSelfCutEdges()
         }
         else
         {
-          Edge * selfcutedge = new Edge(commonselfcutnodes);
+          Teuchos::RCP<Edge> selfcutedge = GEO::CUT::Edge::Create(DRT::Element::line2,
+              commonselfcutnodes);
           selfcutedge->SelfCutPosition(Point::oncutsurface);
           mesh_.GetEdge(commonselfcutnodeids, selfcutedge);
           const std::map<plain_int_set, Teuchos::RCP<Edge> > & cutsideedgercp =
@@ -589,7 +590,7 @@ void GEO::CUT::SelfCut::CreateSelfCutEdges()
           std::map<plain_int_set, Teuchos::RCP<Edge> >::const_iterator edgeiterator =
               cutsideedgercp.find(commonselfcutnodeids);
           selfcut_edges_[commonselfcutnodeids] = edgeiterator->second;
-          cutside->GetSelfCutEdge(selfcutedge);
+          cutside->GetSelfCutEdge(selfcutedge.get());
         }
       }
     }
@@ -610,7 +611,7 @@ void GEO::CUT::SelfCut::FindSelfCutTriangulation()
   for (std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i =
       selfcut_sides_.begin(); i != selfcut_sides_.end(); ++i)
   {
-    Side * cutside = &*i->second;
+    Side * cutside = i->second.get();
     const std::vector<Node*> & cutsidenodes = cutside->Nodes();
 
     // find the equation of plane of this SIDE
@@ -1271,7 +1272,7 @@ void GEO::CUT::SelfCut::FindIslands()
 
   if (selfcut_connectivity_.size() > 1)
   {
-    std::map<int, BoundingBox > selfcutconnectivitybbs;
+    std::map<int, Teuchos::RCP<BoundingBox> > selfcutconnectivitybbs;
     std::map<int, double > selfcutconnectivitybbvols;
     double volmax = 0;
     // int numislands = 0;
@@ -1285,15 +1286,16 @@ void GEO::CUT::SelfCut::FindIslands()
           i != selfcutconnectivity.end(); ++i)
       {
         Node * selfcutconnectivitynode = *i;
-        selfcutconnectivitybbs[count].AddPoint(selfcutconnectivitynode->point()->X());
+        selfcutconnectivitybbs[count] = Teuchos::rcp( BoundingBox::Create() );
+        selfcutconnectivitybbs[count]->AddPoint(selfcutconnectivitynode->point()->X());
       }
     }
 
-    for (std::map<int, BoundingBox >::iterator i = selfcutconnectivitybbs.begin();
+    for (std::map<int, Teuchos::RCP<BoundingBox> >::iterator i = selfcutconnectivitybbs.begin();
         i != selfcutconnectivitybbs.end(); ++i)
     {
       int count = i->first;
-      BoundingBox *selfcutconnectivitybb = &i->second;
+      BoundingBox * selfcutconnectivitybb = i->second.get();
       selfcutconnectivitybbvols[count] = (selfcutconnectivitybb->maxx() - selfcutconnectivitybb->minx()) * (selfcutconnectivitybb->maxy() - selfcutconnectivitybb->miny()) * (selfcutconnectivitybb->maxz() - selfcutconnectivitybb->minz());
       if (selfcutconnectivitybbvols[count] > volmax)
       {

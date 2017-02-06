@@ -43,8 +43,9 @@ namespace CUT
 class Node;
 class Edge;
 class Side;
-class LevelSetSide;
 class Element;
+
+class BoundingBox;
 
 class PointPool;
 class Options;
@@ -55,11 +56,16 @@ class Facet;
 class VolumeCell;
 
 class BoundaryCell;
+class Point1BoundaryCell;
+class Line2BoundaryCell;
 class Tri3BoundaryCell;
 class Quad4BoundaryCell;
 class ArbitraryBoundaryCell;
 
 class IntegrationCell;
+class Line2IntegrationCell;
+class Tri3IntegrationCell;
+class Quad4IntegrationCell;
 class Hex8IntegrationCell;
 class Tet4IntegrationCell;
 class Wedge6IntegrationCell;
@@ -96,6 +102,15 @@ public:
   /*========================================================================*/
   //! @name Create-routines for elements
   /*========================================================================*/
+  /// @{
+  /// creates a new line2 element based on element id and node ids
+  Element * CreateLine2( int eid, const std::vector<int> & nids );
+
+  /// creates a new tri3 element based on element id and node ids
+  Element * CreateTri3( int eid, const std::vector<int> & nids );
+
+  /// creates a new quad4 element based on element id and node ids
+  Element * CreateQuad4( int eid, const std::vector<int> & nids );
 
   /// creates a new tet4 element based on element id and node ids
   Element * CreateTet4( int eid, const std::vector<int> & nids );
@@ -108,18 +123,18 @@ public:
 
   /// creates a new hex8 element based on element id and node ids
   Element * CreateHex8( int eid, const std::vector<int> & nids );
-
+  /// @}
 
   /*========================================================================*/
   //! @name Create-routines for sides
   /*========================================================================*/
-
+  /// @{
   /// creates a new tri3 side based on side id and node ids
-  Side * CreateTri3( int sid, const std::vector<int> & nids );
+  Side * CreateTri3Side( int sid, const std::vector<int> & nids );
 
   /// creates a new quad4 side based on side id and node ids
-  Side * CreateQuad4( int sid, const std::vector<int> & nids );
-
+  Side * CreateQuad4Side( int sid, const std::vector<int> & nids );
+  /// @}
 
   /*========================================================================*/
   //! @name Create-routines for points, lines, facets and volumecells
@@ -142,6 +157,20 @@ public:
                              const std::map<std::pair<Point*, Point*>, plain_facet_set> & volume_lines,
                              Element * element );
 
+  /*========================================================================*/
+  //! @name Create-routines for 0D boundary cells
+  /*========================================================================*/
+
+  /// creates a new point1 boundary cell
+  Point1BoundaryCell * NewPoint1Cell( VolumeCell * volume,
+      Facet * facet, const std::vector<Point*> & points );
+
+  /*========================================================================*/
+  //! @name Create-routines for 1D boundary cells
+  /*========================================================================*/
+
+  Line2BoundaryCell* NewLine2Cell( VolumeCell * volume,
+      Facet * facet, const std::vector<Point*> & points );
 
   /*========================================================================*/
   //! @name Create-routines for 2D boundary cells
@@ -159,23 +188,49 @@ public:
 
 
   /*========================================================================*/
+  //! @name Create-routines for 1D integration cells
+  /*========================================================================*/
+
+  /// creates a new line2 integration cell
+  Line2IntegrationCell* NewLine2Cell( Point::PointPosition position,
+      const std::vector<Point*> & points, VolumeCell * cell );
+
+  /*========================================================================*/
+  //! @name Create-routines for 2D integration cells
+  /*========================================================================*/
+
+  /// creates a new tri3 integration cell
+  Tri3IntegrationCell* NewTri3Cell( Point::PointPosition position,
+      const std::vector<Point*> & points, VolumeCell * cell );
+
+  /// creates a new tri3 integration cell
+  Quad4IntegrationCell* NewQuad4Cell( Point::PointPosition position,
+      const std::vector<Point*> & points, VolumeCell * cell );
+
+
+  /*========================================================================*/
   //! @name Create-routines for 3D integration cells
   /*========================================================================*/
 
   /// creates a new hex8 integration cell
-  Hex8IntegrationCell* NewHex8Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
+  Hex8IntegrationCell* NewHex8Cell( Point::PointPosition position,
+      const std::vector<Point*> & points, VolumeCell * cell );
 
   /// creates a new tet4 integration cell, based on points
-  Tet4IntegrationCell* NewTet4Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
+  Tet4IntegrationCell* NewTet4Cell( Point::PointPosition position,
+      const std::vector<Point*> & points, VolumeCell * cell );
 
   /// creates a new hex8 integration cell, based on xyz coordinates
-  Tet4IntegrationCell* NewTet4Cell( Point::PointPosition position, const Epetra_SerialDenseMatrix & xyz, VolumeCell * cell );
+  Tet4IntegrationCell* NewTet4Cell( Point::PointPosition position,
+      const Epetra_SerialDenseMatrix & xyz, VolumeCell * cell );
 
   /// creates a new wedge6 integration cell
-  Wedge6IntegrationCell* NewWedge6Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
+  Wedge6IntegrationCell* NewWedge6Cell( Point::PointPosition position,
+      const std::vector<Point*> & points, VolumeCell * cell );
 
   /// creates a new pyramid5 integration cell
-  Pyramid5IntegrationCell* NewPyramid5Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
+  Pyramid5IntegrationCell* NewPyramid5Cell( Point::PointPosition position,
+      const std::vector<Point*> & points, VolumeCell * cell );
 
 
   /*========================================================================*/
@@ -203,7 +258,7 @@ public:
   void Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done, int recursion );
 
   /// Cuts the background elements with this levelset side
-  void Cut( LevelSetSide & side );
+  void Cut( Side & side );
 
   /// Used in TetMeshIntersection, however, unclear for what use??!
   void RectifyCutNumerics();
@@ -315,6 +370,11 @@ public:
   /// ?
   void DumpGmshIntegrationCells( std::string name );
 
+  /* writre boundary cells belonging to a volume cell with "pos" position
+   * and their normals to the given file */
+  void DumpGmshBoundaryCells( std::ofstream & file,
+      Point::PointPosition pos );
+
   /// ?
   void DumpGmshVolumeCells( std::string name );
 
@@ -402,15 +462,37 @@ public:
                        const CellTopologyData & top_data );
 #endif
 
-  /*!
-  \brief Create a new element with given nodes. All details of the element are in
-   cell topology data
-   */
-  Element* GetElement( int eid,
-                       const std::vector<Node*> & nodes,
-                       const CellTopologyData & top_data,
-                       bool active=true );
+  /*! \brief Create a new element 1D/2D/3D element with given nodes.
+   *
+   *  All details of the element are in cell topology data. */
+  GEO::CUT::Element* GetElement(
+      int eid,
+      const std::vector<Node*> & nodes,
+      const CellTopologyData & top_data,
+      bool active );
 
+  /*! \brief Create a new element with desired element dimension
+   *
+   *  dim = 1: Create a new element 1D/line element with given nodes.
+   *
+   *  All details of the element are in cell topology data.
+   *  This routine uses the elements (1-D) as edges (1-D) and sides (1-D).
+   *
+   *  dim = 1: Create a new element 2D/surface element with given nodes.
+   *
+   *  All details of the element are in cell topology data.
+   *  This routine creates new sides (1-D) and uses them also as edges (1-D).
+   *
+   *  dim = 3: Create a new element 3D element with given nodes.
+   *
+   *  All details of the element (3-D) are in cell topology data.
+   *  This routine creates also the corresponding edges (1-D) and sides (2-D) for
+   *  3-dimensional elements. */
+  template < unsigned dim >
+  Element* GetElement(int eid,
+      const std::vector<Node*> & nodes,
+      const CellTopologyData & top_data,
+      bool active=true );
 
   /*========================================================================*/
   //! @name Get routines for points, edges, volumecells
@@ -475,7 +557,7 @@ public:
   void GetNode( int nid, Node * node ) { nodes_[nid] = Teuchos::rcp( node ); }
 
   /// Creates a new edge in the cutmesh
-  void GetEdge( plain_int_set eid, Edge * edge ) { edges_[eid] = Teuchos::rcp( edge ); }
+  void GetEdge( plain_int_set eid, const Teuchos::RCP<Edge> & edge ) { edges_[eid] = edge; }
 
   /// Erases a side of the cutmesh
   void EraseSide( plain_int_set sid ) { sides_.erase( sid ); }
@@ -522,7 +604,7 @@ private:
   Teuchos::RCP<PointPool> pp_;
 
   /// bounding box of this mesh
-  BoundingBox bb_;
+  Teuchos::RCP<BoundingBox> bb_;
 
   /// (output) flag for cut mesh
   bool cutmesh_;
@@ -586,6 +668,23 @@ private:
 
   //@}
 };
+
+// instantiation of the function template specializations
+template <>
+Element* Mesh::GetElement<1>(int eid,
+      const std::vector<Node*> & nodes,
+      const CellTopologyData & top_data,
+      bool active );
+template <>
+Element* Mesh::GetElement<2>(int eid,
+      const std::vector<Node*> & nodes,
+      const CellTopologyData & top_data,
+      bool active );
+template <>
+Element* Mesh::GetElement<3>(int eid,
+      const std::vector<Node*> & nodes,
+      const CellTopologyData & top_data,
+      bool active );
 
 
 }

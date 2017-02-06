@@ -342,13 +342,13 @@ void SCATRA::TimIntHDG::OutputState()
       interpolatedPhinp_, interpolatedGradPhi, interpolatedtracePhi, nds_intvar_, discret_->NumDofSets());
 
   // write vector to output file
-  output_->WriteVector("phi_hdg",interpolatedPhinp_, IO::DiscretizationWriter::nodevector);
-  output_->WriteVector("gradphi_hdg",interpolatedGradPhi, IO::DiscretizationWriter::nodevector);
-  output_->WriteVector("tracephi_hdg",interpolatedtracePhi, IO::DiscretizationWriter::nodevector);
+  output_->WriteVector("phi_hdg",interpolatedPhinp_, IO::nodevector);
+  output_->WriteVector("gradphi_hdg",interpolatedGradPhi, IO::nodevector);
+  output_->WriteVector("tracephi_hdg",interpolatedtracePhi, IO::nodevector);
 
   WriteProblemSpecificOutput(interpolatedPhinp_);
 
-  output_->WriteVector("elementdegree",elementdegree_, IO::DiscretizationWriter::elementvector);
+  output_->WriteVector("elementdegree",elementdegree_, IO::elementvector);
 
 }//OutputState
 

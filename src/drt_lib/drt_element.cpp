@@ -23,6 +23,8 @@
 
 #include "../drt_mat/material.H"
 
+#include <Shards_BasicTopologies.hpp>
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -63,6 +65,101 @@ DRT::Element::DiscretizationType DRT::StringToDistype(std::string name)
     return i->second;
   dserror("unsupported distype '%s'",name.c_str());
   return DRT::Element::dis_none;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::Element::DiscretizationType DRT::ShardsKeyToDisType(
+    const unsigned& key)
+{
+  DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
+  switch (key)
+  {
+    case shards::Particle::key:
+    {
+      distype = DRT::Element::point1;
+      break;
+    }
+    case shards::Line<2>::key:
+    {
+      distype= DRT::Element::line2;
+      break;
+    }
+    case shards::Line<3>::key:
+    {
+      distype = DRT::Element::line3;
+      break;
+    }
+    case shards::Quadrilateral<4>::key:
+    {
+      distype = DRT::Element::quad4;
+      break;
+    }
+    case shards::Quadrilateral<8>::key:
+    {
+      distype = DRT::Element::quad8;
+      break;
+    }
+    case shards::Quadrilateral<9>::key:
+    {
+      distype = DRT::Element::quad9;
+      break;
+    }
+    case shards::Triangle<3>::key:
+    {
+      distype = DRT::Element::tri3;
+      break;
+    }
+    case shards::Triangle<6>::key:
+    {
+      distype = DRT::Element::tri6;
+      break;
+    }
+    case shards::Hexahedron<8>::key:
+    {
+      distype = DRT::Element::hex8;
+      break;
+    }
+    case shards::Hexahedron<20>::key:
+    {
+      distype = DRT::Element::hex20;
+      break;
+    }
+    case shards::Hexahedron<27>::key:
+    {
+      distype = DRT::Element::hex27;
+      break;
+    }
+    case shards::Tetrahedron<4>::key:
+    {
+      distype = DRT::Element::tet4;
+      break;
+    }
+    case shards::Tetrahedron<10>::key:
+    {
+      distype = DRT::Element::tet10;
+      break;
+    }
+    case shards::Wedge<6>::key:
+    {
+      distype = DRT::Element::wedge6;
+      break;
+    }
+    case shards::Wedge<15>::key:
+    {
+      distype = DRT::Element::wedge15;
+      break;
+    }
+    case shards::Pyramid<5>::key:
+    {
+      distype = DRT::Element::pyramid5;
+      break;
+    }
+    default:
+      dserror("Unknown conversion from Shards::key to disType!");
+      break;
+  }
+  return distype;
 }
 
 /*----------------------------------------------------------------------*

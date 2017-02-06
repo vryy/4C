@@ -178,12 +178,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcTauTaylorHughesZarins(
   double normG(0.0);
   double Gnormu(0.0);
   const double dens_sqr = densnp*densnp;
-  for (int nn=0;nn<nsd_;++nn)
+  for (unsigned nn=0;nn<nsd_;++nn)
   {
-    for (int rr=0;rr<nsd_;++rr)
+    for (unsigned rr=0;rr<nsd_;++rr)
     {
       G = xij_(nn,0)*xij_(rr,0);
-      for(int tt=1;tt<nsd_;tt++)
+      for (unsigned tt=1;tt<nsd_;tt++)
       {
         G += xij_(nn,tt)*xij_(rr,tt);
       }
@@ -647,10 +647,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
 
       // compute reference length
       double h_sum(0.0);
-      for (int inode=0; inode<nen_; inode++)
+      for (unsigned inode=0; inode<nen_; inode++)
       {
         double val(0.0);
-        for (int idim=0; idim<nsd_; idim++)
+        for (unsigned idim=0; idim<nsd_; idim++)
           val += normalized_gradphi(idim,0)*derxy_(idim,inode);
 
         h_sum += std::abs(val);
@@ -663,7 +663,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcArtificialDiff(
 
       // compute intermediate quantity
       double kappa_inter(0.0);
-      for (int idim=0; idim<nsd_; idim++)
+      for (unsigned idim=0; idim<nsd_; idim++)
       {
         double val = gradphi(idim,0)/phiref;
         kappa_inter += (val*val);
@@ -978,9 +978,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocity(
     const std::vector<double>* val   = myfluidneumcond[0]->Get<std::vector<double> >("val"  );
 
     // set this condition to the body force array
-    for(int isd=0;isd<nsd_;isd++)
+    for (unsigned isd=0;isd<nsd_;isd++)
     {
-      for (int jnode=0; jnode<nen_; jnode++)
+      for (unsigned jnode=0; jnode<nen_; jnode++)
       {
         // get usual body force
         if (*condtype == "neum_dead" or *condtype == "neum_live")
@@ -1040,7 +1040,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocity(
   //--------------------------------------------------------------------
   if (scatraparatimint_->IsGenAlpha())
   {
-    for (int rr=0;rr<nsd_;++rr)
+    for (unsigned rr=0;rr<nsd_;++rr)
     {
       sgvelint(rr) = -tau*(densam*acc(rr)+densnp*conv(rr)
                                 +gradp(rr)-2*visc*epsilonvel(rr)
@@ -1049,7 +1049,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocity(
   }
   else
   {
-    for (int rr=0;rr<nsd_;++rr)
+    for (unsigned rr=0;rr<nsd_;++rr)
     {
       sgvelint(rr) = -tau*(densnp*convelint(rr)+scatraparatimint_->TimeFac()*(densnp*conv(rr)
                                                                    +gradp(rr)-2*visc*epsilonvel(rr)
@@ -1072,7 +1072,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocityVisc(
 {
   if(nsd_ == 3)
   {
-    for (int i=0; i<nen_; ++i)
+    for (unsigned i=0; i<nen_; ++i)
     {
       double sum = (derxy2_(0,i)+derxy2_(1,i)+derxy2_(2,i));
 
@@ -1084,7 +1084,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocityVisc(
 
   else if(nsd_ == 2)
   {
-    for (int i=0; i<nen_; ++i)
+    for (unsigned i=0; i<nen_; ++i)
     {
       double sum = (derxy2_(0,i)+derxy2_(1,i));
 

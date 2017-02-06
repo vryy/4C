@@ -214,8 +214,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
 
     // construct location vector for displacement related dofs
     std::vector<int> lmdisp(my::nsd_*my::nen_,-1);
-    for (int inode=0; inode<my::nen_; ++inode)
-      for (int idim=0; idim<my::nsd_; ++idim)
+    for (unsigned inode=0; inode<my::nen_; ++inode)
+      for (unsigned idim=0; idim<my::nsd_; ++idim)
         lmdisp[inode*my::nsd_+idim] = la[ndsdisp].lm_[inode*numdispdofpernode+idim];
 
     // extract local values of displacement field from global state vector
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ExtractElementAndNodeVa
 
   // get number of dofset associated with saturation related dofs
   const int ndssat = params.get<int>("ndssat");
-  if((int)la[ndssat].lm_.size()!=numphases*my::nen_)
+  if(la[ndssat].lm_.size()!= static_cast<unsigned>( numphases*my::nen_ ))
   {
     dserror("Number of DOFs of saturation vector unequal to number of phases given by the pressure vector!");
   }
