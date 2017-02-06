@@ -283,12 +283,14 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
   LINALG::Matrix<dim,1> r[3];
   // for hex8, we can rely on those rotations to enable the construction of the orthogonal basis
   if (ParentElement()->Shape()==DRT::Element::hex8)
+  {
     for (int d=0;d<dim;++d)
     {
-      r[0](d)=xcurr(0,d)-.5*xcurr(6,d)-.5*xcurr(7,d);
-      r[1](d)=xcurr(1,d)-.5*xcurr(4,d)-.5*xcurr(7,d);
-      r[2](d)=xcurr(4,d)-.5*xcurr(1,d)-.5*xcurr(2,d);
+      r[0](d)=xcurr(0,d)-.5*xcurr(2,d)-.5*xcurr(6,d);
+      r[1](d)=xcurr(1,d)-.5*xcurr(3,d)-.5*xcurr(7,d);
     }
+    r[2].CrossProduct(r[0],r[1]);
+  }
   // otherwise choose random numbers and hope for the best
   // or thing about axes that surely do not align with element edges or anything connecting nodes
   else
