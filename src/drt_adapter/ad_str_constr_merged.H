@@ -4,12 +4,9 @@
 
 \brief Adapter Layer for Structures with Algebraic Constraints
 
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\level 2
+
+\maintainer Alexander Popp
 */
 
 /*----------------------------------------------------------------------*/
@@ -68,6 +65,9 @@ namespace ADAPTER {
       Teuchos::RCP<Structure> stru
     );
 
+    /// setup this object
+    virtual void Setup();
+
     /// initial guess of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
 
@@ -103,7 +103,7 @@ namespace ADAPTER {
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual void ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce);
 
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
@@ -180,6 +180,9 @@ namespace ADAPTER {
     Teuchos::RCP<IO::DiscretizationWriter> output_;   ///< the output writer
 
     //@}
+
+    /// flag indicating if Setup() was called
+    bool issetup_;
 
   };  // class StructureConstrained
 

@@ -521,7 +521,6 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
     double tens5[3][3][3][3] = {{{{0.}}}};
     double tens6[3][3][3][3] = {{{{0.}}}};
     double tens7[3][3][3][3] = {{{{0.}}}};
-    double tens_final[3][3][3][3] = {{{{0.}}}};
     double auxtens[3][3][3][3] = {{{{0.}}}};
     // 3x3 matrix auxiliary variables
     LINALG::Matrix<3,3> tempmat1;
@@ -595,14 +594,6 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
     MultMatrixFourTensor(auxtens,tempmat1,dsqrtCdC_Tensor,true);
     MultFourTensorMatrix(tens7,tempmat2,auxtens,false);
 
-
-    for (int i=0; i<3; i++)
-      for (int j=0; j<3; j++)
-        for (int k=0; k<3; k++)
-          for (int l=0; l<3; l++)
-            auxtens[i][j][k][l] = tens4[i][j][k][l] + tens5[i][j][k][l] + tens6[i][j][k][l] + tens7[i][j][k][l];
-
-
     // FINALLY SUM IT ALL UP
 
     // put together viscous constitutive tensor
@@ -610,10 +601,10 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
       for (int j=0; j<3; j++)
         for (int k=0; k<3; k++)
           for (int l=0; l<3; l++)
-            tens_final[i][j][k][l] = tens1[i][j][k][l]  + tens2[i][j][k][l] + tens3[i][j][k][l] + auxtens[i][j][k][l]*viscosity;
+            auxtens[i][j][k][l] = tens1[i][j][k][l]  + tens2[i][j][k][l] + tens3[i][j][k][l] + (tens4[i][j][k][l] + tens5[i][j][k][l] + tens6[i][j][k][l] + tens7[i][j][k][l])*viscosity;
 
     // convert tensor to voigt notation
-    Setup6x6VoigtMatrix(visc_cmat,tens_final);
+    Setup6x6VoigtMatrix(visc_cmat,auxtens);
 
     // every part of the linearization needs to be scaled with 2*J
     // this factor has been neglected in the single terms.

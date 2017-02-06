@@ -93,7 +93,7 @@ namespace ADAPTER
     /// fsi_dc3D_part_ait_ga_ost_xwall (no solidsh8 possible yet)
     /// fsi_ow3D_mtr_drt (no solidsh8 possible yet)
     /// constr2D_fsi (newtonlinuzawa not implemented; but really needed ?)
-    void ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual void ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce);
 
     /// rebuild FSI interface from structure side
     virtual void RebuildInterface();

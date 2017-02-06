@@ -1,8 +1,5 @@
 //
-// Maintainer: Thomas Kloeppel
-// kloeppel@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-25257
+// Maintainer: Alexander Popp
 //
 // necessary defines: D_FLUID2 BINIO D_ALE
 //
@@ -63,27 +60,14 @@ ALPHA_F                         0.3333333333333
 ALPHA_M                         0.
 BETA                            0.44444444444
 GAMMA                           0.83333333333
---------------------------------------------------------STRUCT NOX/Printing
-Error                           = No
-Warning                         = Yes
-Outer Iteration                 = Yes
-Inner Iteration                 = No
-Parameters                      = No
-Details                         = No
-Outer Iteration StatusTest      = No
-Linear Solver Details           = No
-Test Details                    = No
-Debug                           = No
---------------------------------------------STRUCT NOX/Status Test
-XML File                        = fsi_part_struct_solver.xml
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
 NUMSTEP                         1000
-TIMESTEP                        0.05
+TIMESTEP                        0.1
 THETA                           1.0
 NONLINITER                      fixed_point_like
 ITEMAX                          10
@@ -118,7 +102,7 @@ MAXTIME                         0.2
 NUMSTEP                         2
 RESTARTEVRY                     1
 TIMESTEP                        0.1
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-6
 ITEMAX                          100

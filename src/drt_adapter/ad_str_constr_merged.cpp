@@ -4,12 +4,10 @@
 
 \brief Adapter Layer for Structures with Algebraic Constraints
 
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15267
-</pre>
+\level 2
+
+\maintainer Alexander Popp
+
 */
 
 /*----------------------------------------------------------------------*/
@@ -35,8 +33,21 @@ ADAPTER::StructureConstrMerged::StructureConstrMerged
 (
   Teuchos::RCP<Structure> stru
 )
-: FSIStructureWrapper(stru)
+: FSIStructureWrapper(stru),
+  issetup_(false)
 {
+ // do nothing
+}
+
+
+/*----------------------------------------------------------------------*/
+/* */
+void ADAPTER::StructureConstrMerged::Setup()
+{
+
+  // call setup on time integrator
+  StructureWrapper::Setup();
+
   // make sure
   if (structure_ == Teuchos::null)
     dserror("Failed to create the underlying structural adapter");
@@ -55,14 +66,19 @@ ADAPTER::StructureConstrMerged::StructureConstrMerged
   //setup fsi-Interface
   interface_ = Teuchos::rcp(new STR::AUX::MapExtractor);
   interface_->Setup(*Discretization(), *dofrowmap_);
-}
 
+  issetup_ = true;
+
+}
 
 
 /*----------------------------------------------------------------------*/
 /* */
 Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureConstrMerged::InitialGuess()
 {
+  if (not issetup_)
+    dserror("Call Setup() first!");
+
   //get initial guesses from structure and constraintmanager
   Teuchos::RCP<const Epetra_Vector> strucGuess = structure_->InitialGuess();
   Teuchos::RCP<const Epetra_Vector> lagrGuess = Teuchos::rcp(new Epetra_Vector(*(structure_->GetConstraintManager()->GetConstraintMap()),true));
@@ -237,7 +253,7 @@ const Epetra_Map& ADAPTER::StructureConstrMerged::DomainMap() const
 
 /*----------------------------------------------------------------------*/
 // Apply interface forces
-void ADAPTER::StructureConstrMerged::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
+void ADAPTER::StructureConstrMerged::ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce)
 {
   // create vector with displacement and constraint DOFs
   Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*DofRowMap(), true);
