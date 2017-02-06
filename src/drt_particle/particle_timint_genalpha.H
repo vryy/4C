@@ -103,6 +103,9 @@ namespace PARTICLE
     //! Set up the additional state vectors required in the genAlpha algorithm
     virtual void SetupStateVectors();
 
+    //! Compute and updates in the interactionHandler all the relevant dis-related state vectors
+    virtual void ComputeAndSetDisRelatedStateVectors();
+
     //! mid-average type more at MidAverageEnum
     enum INPAR::PARTICLE::MidAverageEnum midavg_;
     //@}
@@ -136,8 +139,8 @@ namespace PARTICLE
 
 
     Teuchos::RCP<Epetra_Vector> mGradW_;
-    //! m * hess(weightFunction) for meshfree methods
-    Teuchos::RCP<Epetra_MultiVector> mHessW_;
+    //! m * hess(weightFunction) for meshfree methods (not needed for now)
+    //Teuchos::RCP<Epetra_MultiVector> mHessW_;
     //! Displacements \f${D}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
     Teuchos::RCP<Epetra_Vector> dism_;
     //! Velocities \f${V}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme

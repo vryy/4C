@@ -51,6 +51,9 @@ public :
   // weight function in 0 (auto-interactions)
   virtual double W0(const double& radius) = 0;
 
+  // hessian of the weight function in 0 (auto-interactions)
+  virtual double DDW0(const double& radius) = 0;
+
   // weight function type
   virtual INPAR::PARTICLE::WeightFunction Name() = 0;
 
@@ -79,6 +82,9 @@ public :
 
    // weight function in 0 (auto-interactions)
    virtual inline double W0(const double& radius) { return 2.0/3.0 * RszDim(radius); }
+
+   // hessian of the weight function in 0 (auto-interactions)
+   virtual inline double DDW0(const double& radius) { return -8 * RszDim(radius) / std::pow(radius,2); }
 
    // weight function type
    virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::CubicBspline; }
@@ -112,6 +118,9 @@ public :
    // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
    virtual inline double W0(const double& radius) { return RszDim(radius); }
 
+   // hessian of the weight function in 0 (auto-interactions)
+   virtual inline double DDW0(const double& radius) { return RszDim(radius); }
+
    // weight function type
    virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::SqrtHyperbola; }
 
@@ -142,6 +151,9 @@ public :
 
    // weight function in 0 (auto-interactions) - if it is not allowed, it is 0
    virtual inline double W0(const double& radius) { return RszDim(radius); }
+
+   // hessian of the weight function in 0 (auto-interactions)
+   virtual inline double DDW0(const double& radius) { return RszDim(radius); }
 
    // weight function type
    virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::HyperbolaNoRsz; }

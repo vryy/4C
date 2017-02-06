@@ -482,6 +482,7 @@ for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lid
 /*----------------------------------------------------------------------*
  | set colVectors in the local data structs                katta 10/16  |
  *----------------------------------------------------------------------*/
+/*
 void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector(Teuchos::RCP<const Epetra_MultiVector> stateVector)
 {
 // checks
@@ -509,6 +510,7 @@ for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lid
 }
 
 }
+*/
 
 /*----------------------------------------------------------------------*
  | set all the neighbours                                  katta 12/16  |
@@ -1571,13 +1573,25 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP(
     const double speedOfSound_i = PARTICLE::Utils::SpeedOfSound(particle_i.specEnthalpy_, particle_algorithm_->ExtParticleMat());
 
     // useful i variables
-    const double coeff1_i = std::pow(speedOfSound_i,2) * (2 * restDensity - density_i) / std::pow(density_i,3);
+    const double gradCoeffP_Rho2_i = std::pow(speedOfSound_i,2) * (2 * restDensity - density_i) / std::pow(density_i,3);
     const double rhoSquare_i = std::pow(density_i,2);
     const double p_Rho2_i = particle_i.pressure_/rhoSquare_i;
 
-    // diadic product mGradW_i * mGradW_i^T
-    LINALG::Matrix<3,3> mGradWmGradW_ii;
-    mGradWmGradW_ii.MultiplyNT(particle_i.mGradW_, particle_i.mGradW_);
+    // auto-interaction
+    const double ddw_ii = weightFunctionHandler_->DDW0(particle_i.radius_);
+    LINALG::Matrix<3,3> mHessW_ii;
+    for (int dim = 0; dim < 3; ++dim)
+    {
+      mHessW_ii(dim,dim) = ddw_ii * particle_i.mass_;
+    }
+    // assemble
+    LINALG::Matrix<3,3> gradAccP_ii;
+      // 2-term
+    gradAccP_ii.Update(-2 * p_Rho2_i, mHessW_ii, 1.0); // the force is negative!
+    // scale
+    gradAccP_ii.Scale(extMulti);
+    // write
+    PARTICLE::Utils::Assemble(*gradAccP, gradAccP_ii, particle_i.lm_, particle_i.owner_, myrank_);
 
     // loop over the interaction particle list
     for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
@@ -1586,26 +1600,45 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP(
       const int& lidNodeCol_j = jj->first;
       const InterDataPvP& interData_ij = jj->second;
       const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+
+      //useful quantities
+      LINALG::Matrix<3,1> GradW_ij = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
+      LINALG::Matrix<3,1> mGradW_ij(GradW_ij);
+      mGradW_ij.Scale(particle_j.mass_);
+      LINALG::Matrix<3,1> mGradW_ji = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ji_);
+      mGradW_ji.Scale(-particle_i.mass_); // actio = - reactio
+      LINALG::Matrix<3,3> HessW_ij = weightFunctionHandler_->HessW(interData_ij.rRelVersor_ij_,
+          interData_ij.dw_ij_, interData_ij.rRelNorm2_, interData_ij.ddw_ij_);
+      LINALG::Matrix<3,3> mHessW_ij(HessW_ij);
+      mHessW_ij.Scale(particle_j.mass_);
+      LINALG::Matrix<3,3> mHessW_ji = weightFunctionHandler_->HessW(interData_ij.rRelVersor_ij_,
+          interData_ij.dw_ji_, interData_ij.rRelNorm2_, interData_ij.ddw_ji_);
+      mHessW_ji.Scale(particle_i.mass_); // actio = - reactio ... but twice! (no sign change)
+
       //const double density_j = useDensityApprox ? particle_j.densityapprox_ : particle_j.density_;
       const double density_j = particle_j.density_;
       const double speedOfSound_j = PARTICLE::Utils::SpeedOfSound(particle_j.specEnthalpy_, particle_algorithm_->ExtParticleMat());
 
       // useful j variables
-      const double coeff1_j = std::pow(speedOfSound_j,2) * (2 * restDensity - density_j) / std::pow(density_j,3);
+      const double gradCoeffP_Rho2_j = std::pow(speedOfSound_j,2) * (2 * restDensity - density_j) / std::pow(density_j,3);
       const double rhoSquare_j = std::pow(density_j,2);
       const double p_Rho2_j = particle_j.pressure_/rhoSquare_j;
 
+      // diadic product mGradW_i *  gradRho_i^T
+      LINALG::Matrix<3,3> mGradWmGradW_ii;
+      mGradWmGradW_ii.MultiplyNT(mGradW_ij, particle_i.mGradW_);
+
       // diadic product mGradW_i * mGradW_j^T
       LINALG::Matrix<3,3> mGradWmGradW_ij;
-      mGradWmGradW_ij.MultiplyNT(particle_i.mGradW_, particle_j.mGradW_);
+      mGradWmGradW_ij.MultiplyNT(mGradW_ij, particle_j.mGradW_);
 
       // diadic product mGradW_j * mGradW_i^T
       LINALG::Matrix<3,3> mGradWmGradW_ji;
-      mGradWmGradW_ji.UpdateT(mGradWmGradW_ij);
+      mGradWmGradW_ji.MultiplyNT(mGradW_ji, particle_i.mGradW_);
 
       // diadic product mGradW_ju * mGradW_j^T
       LINALG::Matrix<3,3> mGradWmGradW_jj;
-      mGradWmGradW_jj.MultiplyNT(particle_j.mGradW_, particle_j.mGradW_);
+      mGradWmGradW_jj.MultiplyNT(mGradW_ji, particle_j.mGradW_);
 
       // write on particle i if appropriate specializing the quantities
       if (interData_ij.dw_ij_ != 0 || interData_ij.ddw_ij_ != 0 || interData_ij.dw_ji_ != 0)
@@ -1613,13 +1646,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP(
         // assemble
         LINALG::Matrix<3,3> gradAccP_ij;
           // 1-term
-        gradAccP_ij.Update(coeff1_i, mGradWmGradW_ii, 1.0);
+        gradAccP_ij.Update(-gradCoeffP_Rho2_i, mGradWmGradW_ii, 1.0); // the force is negative!
           // 2-term
-        gradAccP_ij.Update(p_Rho2_i, particle_i.mHessW_, 1.0);
-          // 3-term
-        gradAccP_ij.Update(coeff1_j, mGradWmGradW_ij, 1.0);
-          // 4-term
-        gradAccP_ij.Update(p_Rho2_j, particle_i.mHessW_, 1.0);
+        gradAccP_ij.Update(-gradCoeffP_Rho2_j, mGradWmGradW_ij, 1.0); // the force is negative!
+          // 2-term
+        gradAccP_ij.Update(-p_Rho2_i-p_Rho2_j, mHessW_ij, 1.0); // the force is negative!
         // scale
         gradAccP_ij.Scale(extMulti);
         // write
@@ -1632,13 +1663,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP(
         // assemble
         LINALG::Matrix<3,3> gradAccP_ji;
           // 1-term
-        gradAccP_ji.Update(coeff1_j, mGradWmGradW_jj, 1.0);
+        gradAccP_ji.Update(-gradCoeffP_Rho2_j, mGradWmGradW_jj, 1.0); // the force is negative!
           // 2-term
-        gradAccP_ji.Update(p_Rho2_j, particle_j.mHessW_, 1.0);
-          // 3-term
-        gradAccP_ji.Update(coeff1_i, mGradWmGradW_ji, 1.0);
-          // 4-term
-        gradAccP_ji.Update(p_Rho2_i, particle_j.mHessW_, 1.0);
+        gradAccP_ji.Update(-gradCoeffP_Rho2_i, mGradWmGradW_ji, 1.0); // the force is negative!
+          // 2-term
+        gradAccP_ji.Update(-p_Rho2_i-p_Rho2_j, mHessW_ji, 1.0); // the force is negative!
         // scale
         gradAccP_ji.Scale(extMulti);
         // write
@@ -1848,13 +1877,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_gradAccP(
     const double speedOfSound_i = PARTICLE::Utils::SpeedOfSound(particle_i.specEnthalpy_, particle_algorithm_->ExtParticleMat());
 
     // useful i variables
-    const double coeff1_i = std::pow(speedOfSound_i,2) * (2 * restDensity - density_i) / std::pow(density_i,3);
+    const double gradCoeffP_Rho2_i = std::pow(speedOfSound_i,2) * (2 * restDensity - density_i) / std::pow(density_i,3);
     const double rhoSquare_i = std::pow(density_i,2);
     const double p_Rho2_i = particle_i.pressure_/rhoSquare_i;
-
-    // diadic product mGradW_i * mGradW_i^T
-    LINALG::Matrix<3,3> mGradWmGradW_ii;
-    mGradWmGradW_ii.MultiplyNT(particle_i.mGradW_, particle_i.mGradW_);
 
     // loop over the interaction particle list
     for (boost::unordered_map<int, InterDataPvW>::const_iterator jj = neighbours_w_[lidNodeRow_i].begin(); jj != neighbours_w_[lidNodeRow_i].end(); ++jj)
@@ -1862,19 +1887,43 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_gradAccP(
       // extract data for faster access
       const InterDataPvW& interData_ij = jj->second;
 
+      if (wallInteractionType_ == INPAR::PARTICLE::Mirror)
+      {
+        wallMeshFreeData_.pressure_ = particle_i.pressure_;
+        wallMeshFreeData_.density_ = density_i;
+        wallMeshFreeData_.mass_ = particle_i.mass_;
+      }
+
+      //useful quantities
+      LINALG::Matrix<3,1> GradW_ij = weightFunctionHandler_->GradW(interData_ij.rRelVersor_, interData_ij.dw_);
+      LINALG::Matrix<3,1> mGradW_ij(GradW_ij);
+      mGradW_ij.Scale(wallMeshFreeData_.mass_);
+      LINALG::Matrix<3,3> HessW_ij = weightFunctionHandler_->HessW(interData_ij.rRelVersor_,
+          interData_ij.dw_, interData_ij.rRelNorm2_, interData_ij.ddw_);
+      LINALG::Matrix<3,3> mHessW_ij(HessW_ij);
+      mHessW_ij.Scale(wallMeshFreeData_.mass_);
+
+      const double rhoSquare_j = std::pow(wallMeshFreeData_.density_,2);
+      const double p_Rho2_j = wallMeshFreeData_.pressure_/rhoSquare_j;
+
+      // diadic product mGradW_i *  gradRho_i^T
+      LINALG::Matrix<3,3> mGradWmGradW_ii;
+      mGradWmGradW_ii.MultiplyNT(mGradW_ij, particle_i.mGradW_);
+
       // write on particle i if appropriate specializing the quantities
       if (interData_ij.dw_ != 0 || interData_ij.ddw_ != 0)
       {
         // assemble
         LINALG::Matrix<3,3> gradAccP_ij;
           // 1-term
-        gradAccP_ij.Update(coeff1_i, mGradWmGradW_ii, 1.0);
+        gradAccP_ij.Update(-gradCoeffP_Rho2_i, mGradWmGradW_ii, 1.0); // the force is negative!
           // 2-term
-        gradAccP_ij.Update(p_Rho2_i, particle_i.mHessW_, 1.0);
         if (wallInteractionType_ == INPAR::PARTICLE::Mirror)
         {
-          gradAccP_ij.Scale(2.0);
+          gradAccP_ij.Update(-gradCoeffP_Rho2_i, mGradWmGradW_ii, 1.0); // the force is negative!
         }
+          // 3-term
+        gradAccP_ij.Update(-p_Rho2_i-p_Rho2_j, mHessW_ij, 1.0); // the force is negative!
         // scale
         gradAccP_ij.Scale(extMulti);
         // write

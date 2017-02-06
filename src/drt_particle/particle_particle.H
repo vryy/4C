@@ -116,22 +116,20 @@ namespace PARTICLE
 
 // ---------------------------------------------------------- //
   /// base class for surface tension dynamics
-  class ParticleMFmGradHessWbase
+  class ParticleMFmGradWbase
   {
   public:
 
   /// constructor
 
-    ParticleMFmGradHessWbase(const LINALG::Matrix<3,1> mGradW, const LINALG::Matrix<3,3> mHessW) :
-      mGradW_(mGradW),
-      mHessW_(mHessW) {}
+    ParticleMFmGradWbase(const LINALG::Matrix<3,1> mGradW) :
+      mGradW_(mGradW) {}
 
-    ParticleMFmGradHessWbase() {}
+    ParticleMFmGradWbase() {}
 
   /// internal variables
 
     LINALG::Matrix<3,1> mGradW_;
-    LINALG::Matrix<3,3> mHessW_;
 
   }; // ParticleMFmGradHessWbase
 
@@ -215,7 +213,7 @@ namespace PARTICLE
 
 // ---------------------------------------------------------- //
   /// particles for meshfree dynamics (thermodynamics and surface tensions incuded)
-  class ParticleMF : public ParticleBase, public ParticleThermoBase, public ParticleSurfTensionBase, public ParticleMFmGradHessWbase
+  class ParticleMF : public ParticleBase, public ParticleThermoBase, public ParticleSurfTensionBase, public ParticleMFmGradWbase
   {
   public:
 
@@ -235,20 +233,19 @@ namespace PARTICLE
       const double temperature,
       const double densityDot,
       const double alpha,
-      const LINALG::Matrix<3,1> mGradW,
-      const LINALG::Matrix<3,3> mHessW
+      const LINALG::Matrix<3,1> mGradW
       ) :
         ParticleBase(gid, owner, lm, dis, vel, radius, mass, density),
         ParticleThermoBase(specEnthalpy),
         ParticleSurfTensionBase(colorFieldGradient),
-        ParticleMFmGradHessWbase(mGradW, mHessW),
+        ParticleMFmGradWbase(mGradW),
         pressure_(pressure),
         temperature_(temperature),
         densityDot_(densityDot),
         alpha_(alpha) {}
 
   /// constructor: empty
-  ParticleMF() : ParticleBase(), ParticleThermoBase(), ParticleSurfTensionBase(), ParticleMFmGradHessWbase(),
+  ParticleMF() : ParticleBase(), ParticleThermoBase(), ParticleSurfTensionBase(), ParticleMFmGradWbase(),
       pressure_(-1), temperature_(-1), densityDot_(-1), alpha_(-1) {}
 
   // contructor: only identifiers
@@ -260,7 +257,7 @@ namespace PARTICLE
         ParticleBase(gid, owner, lm),
         ParticleThermoBase(),
         ParticleSurfTensionBase(),
-        ParticleMFmGradHessWbase(),
+        ParticleMFmGradWbase(),
         pressure_(-1),
         temperature_(-1),
         densityDot_(-1),
@@ -283,7 +280,7 @@ namespace PARTICLE
         ParticleBase(gid, owner, lm, dis, vel, radius, mass, density),
         ParticleThermoBase(specEnthalpy),
         ParticleSurfTensionBase(),
-        ParticleMFmGradHessWbase(),
+        ParticleMFmGradWbase(),
         pressure_(pressure),
         temperature_(temperature),
         densityDot_(-1),

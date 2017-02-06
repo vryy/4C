@@ -140,7 +140,7 @@ namespace PARTICLE
         const PARTICLE::StateVectorType svt);
 
     //! set state vector in ColParticles - for multiVector
-    virtual void SetStateVector(Teuchos::RCP<const Epetra_MultiVector> stateVector);
+    //virtual void SetStateVector(Teuchos::RCP<const Epetra_MultiVector> stateVector);
 
     //! clear content, keep memory
     virtual void Clear();

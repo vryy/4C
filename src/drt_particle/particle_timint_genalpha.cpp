@@ -45,7 +45,7 @@ PARTICLE::TimIntGenAlpha::TimIntGenAlpha(
   tol_(particledynparams.sublist("GENALPHA").get<double>("TOL")),
   maxIt_(particledynparams.sublist("GENALPHA").get<int>("MAXIT")),
   mGradW_(Teuchos::null),
-  mHessW_(Teuchos::null),
+  //mHessW_(Teuchos::null),
   dism_(Teuchos::null),
   velm_(Teuchos::null),
   accm_(Teuchos::null),
@@ -105,12 +105,8 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
   interHandler_->Inter_pvhs_specEnthalpyDot(specEnthalpyDotn_);
   specEnthalpyn_->Update(dt, *specEnthalpyDotn_, 1.0);
 
-  // compute densities and pressures
-  interHandler_->MF_mW(densityn_);
-  interHandler_->SetStateVector(densityn_, PARTICLE::Density);
-
-  UpdatePressure();
-  interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
+  // compute and set displacement-related quantities
+  ComputeAndSetDisRelatedStateVectors();
 
   //-- genAlpha can start --//
 
@@ -130,8 +126,6 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
   int nri = 0;
   for (; nri<maxIt_; ++ nri)
   {
-
-
     // Is convergence reached?
     resAcc_->Norm2(&resAccAvgNorm2);
 
@@ -140,6 +134,7 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
     {
       std::cout << "Iteration: " << nri << "/" << maxIt_ << " and residual: " << resAccAvgNorm2 << "\n";
     }
+
     if (resAccAvgNorm2 <= tol_)
     {
       if (myrank_ == 0)
@@ -149,12 +144,6 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
       notConverged = false;
       break;
     }
-
-    // update gradient and hessian (necessary for gradResAcc)
-    interHandler_->MF_mGradW(mGradW_);
-    interHandler_->SetStateVector(mGradW_, PARTICLE::mGradW);
-    interHandler_->MF_mHessW(mHessW_);
-    interHandler_->SetStateVector(mHessW_);
 
     // compute the gradient of the residual acceleration
     GradResAcc(dt);
@@ -167,12 +156,9 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
     // update weights
     interHandler_->UpdateWeights(step_);
 
-    interHandler_->MF_mW(densityn_);
+    // update the displacement-related quantities
+    ComputeAndSetDisRelatedStateVectors();
 
-    interHandler_->SetStateVector(densityn_, PARTICLE::Density);
-    UpdatePressure();
-
-    interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
     // predict new state
     PredictNewState();
 
@@ -376,7 +362,7 @@ void PARTICLE::TimIntGenAlpha::ReadRestartState()
 void PARTICLE::TimIntGenAlpha::SetupStateVectors()
 {
   mGradW_ = LINALG::CreateVector(*DofRowMapView(), true);
-  mHessW_ = Teuchos::rcp(new Epetra_MultiVector(*DofRowMapView(), 3, true));
+  //mHessW_ = Teuchos::rcp(new Epetra_MultiVector(*DofRowMapView(), 3, true));
   accm_ = LINALG::CreateVector(*DofRowMapView(), true);
   velm_ = LINALG::CreateVector(*DofRowMapView(), true);
   dism_ = LINALG::CreateVector(*DofRowMapView(), true);
@@ -393,7 +379,7 @@ void PARTICLE::TimIntGenAlpha::UpdateStatesAfterParticleTransfer()
   TimInt::UpdateStatesAfterParticleTransfer();
 
   UpdateStateVectorMap(mGradW_);
-  UpdateStateVectorMap(mHessW_);
+  //UpdateStateVectorMap(mHessW_);
   UpdateStateVectorMap(dism_);
   UpdateStateVectorMap(velm_);
   UpdateStateVectorMap(accm_);
@@ -408,13 +394,15 @@ void PARTICLE::TimIntGenAlpha::ResAcc()
 {
   // erase the vector
   resAcc_->PutScalar(0.0);
-  // build -resAcc
-  GravityAcc(resAcc_);
-  interHandler_->Inter_pvp_acc(resAcc_);
-  interHandler_->Inter_pvw_acc(resAcc_);
-  resAcc_->Update(-1.0, *accm_, 1.0);
-  // reverse it
-  resAcc_->Scale(-1.0);
+
+  // build
+    // F_ext - gravity
+  GravityAcc(resAcc_, -1.0);
+    // F_int - P
+  interHandler_->Inter_pvp_acc(resAcc_, -1.0);
+  interHandler_->Inter_pvw_acc(resAcc_, -1.0);
+    // Acc - Am
+  resAcc_->Update(1.0, *accm_, 1.0);
 }
 
 
@@ -425,13 +413,14 @@ void PARTICLE::TimIntGenAlpha::GradResAcc(const double dt)
 {
   // erase the vector
   gradResAcc_->PutScalar(0.0);
+
   // build
-  interHandler_->Inter_pvp_gradAccP(gradResAcc_, restDensity_);
-  interHandler_->Inter_pvw_gradAccP(gradResAcc_, restDensity_);
-
-  // add the acceleration part (in a collocation method is quite straight forward)
+    // F_int - P
+  const double accPmulti = 1 - alphaf_;
+  interHandler_->Inter_pvp_gradAccP(gradResAcc_, restDensity_, -accPmulti);
+  interHandler_->Inter_pvw_gradAccP(gradResAcc_, restDensity_, -accPmulti);
+    // Acc -Am
   const double accCoeff = (1 - alpham_) / (beta_ * dt * dt);
-
   for (int ii = 0; ii < discret_->DofRowMap()->NumMyElements(); ++ii)
   {
     ((*gradResAcc_)[ii%3])[ii] += accCoeff;
@@ -486,4 +475,18 @@ void PARTICLE::TimIntGenAlpha::CorrectDis(bool checkDis)
       dserror("Particles go too fast! They can bypass each other. Reduce the time step");
     }
   }
+}
+
+/*----------------------------------------------------------------------*/
+/* Compute and set dis-related state vectors */
+void PARTICLE::TimIntGenAlpha::ComputeAndSetDisRelatedStateVectors()
+{
+  interHandler_->MF_mW(densityn_);
+  interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+  UpdatePressure();
+  interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
+  interHandler_->MF_mGradW(mGradW_);
+  interHandler_->SetStateVector(mGradW_, PARTICLE::mGradW);
+  //interHandler_->MF_mHessW(mHessW_);
+  //interHandler_->SetStateVector(mHessW_);
 }

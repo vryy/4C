@@ -21,8 +21,8 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     50
 RESTARTEVRY                     500
-TIMESTEP                        1e-3
-NUMSTEP                         10000
+TIMESTEP                        1e-5
+NUMSTEP                         5000
 MAXTIME                         30
 GRAVITY_ACCELERATION            0.0 -9.81 0.0
 PARTICLE_INTERACTION            MeshFree
@@ -31,8 +31,8 @@ RADIUS_DISTRIBUTION             no
 RANDOM_AMPLITUDE                0.001
 WALL_INTERACTION_TYPE           InitParticle
 ---------------------------------------------------PARTICLE DYNAMIC/GENALPHA
-TOL                             1e-6
-MAXIT                           3000
+TOL                             1e-5
+MAXIT                           1000
 ---------------------------------------------------MESHFREE RENDERING DOMAIN
 ------------------------------------------------DESIGN HEAT SOURCE CONDITION
 --------------------------------------------------------------------SOLVER 1
