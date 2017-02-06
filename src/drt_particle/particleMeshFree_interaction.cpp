@@ -1578,6 +1578,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP(
     const double p_Rho2_i = particle_i.pressure_/rhoSquare_i;
 
     // auto-interaction
+    /*
     const double ddw_ii = weightFunctionHandler_->DDW0(particle_i.radius_);
     LINALG::Matrix<3,3> mHessW_ii;
     for (int dim = 0; dim < 3; ++dim)
@@ -1592,7 +1593,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP(
     gradAccP_ii.Scale(extMulti);
     // write
     PARTICLE::Utils::Assemble(*gradAccP, gradAccP_ii, particle_i.lm_, particle_i.owner_, myrank_);
-
+*/
     // loop over the interaction particle list
     for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
     {

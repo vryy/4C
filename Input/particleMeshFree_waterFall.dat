@@ -21,7 +21,7 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     50
 RESTARTEVRY                     500
-TIMESTEP                        1e-5
+TIMESTEP                        1e-3
 NUMSTEP                         5000
 MAXTIME                         30
 GRAVITY_ACCELERATION            0.0 -9.81 0.0
