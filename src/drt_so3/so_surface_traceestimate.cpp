@@ -281,31 +281,8 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
   c.Scale(1./xcurr.M());
 
   LINALG::Matrix<dim,1> r[3];
-  // for hex8, we can rely on those rotations to enable the construction of the orthogonal basis
-  if (ParentElement()->Shape()==DRT::Element::hex8)
-  {
-    for (int d=0;d<dim;++d)
-    {
-      r[0](d)=xcurr(0,d)-.5*xcurr(2,d)-.5*xcurr(6,d);
-      r[1](d)=xcurr(1,d)-.5*xcurr(3,d)-.5*xcurr(7,d);
-    }
-    r[2].CrossProduct(r[0],r[1]);
-  }
-  // otherwise choose random numbers and hope for the best
-  // or thing about axes that surely do not align with element edges or anything connecting nodes
-  else
-  {
-    for (int d=0;d<dim;++d)
-      for (int e=0;e<dim;++e)
-        r[d](e)=rand();
-    for (int i=0;i<3;++i)
-    {
-      const LINALG::Matrix<3,1> tmp(r[i]);
-      for (int j=0;j<i;++j)
-        r[i].Update(-tmp.Dot(r[j]),r[j],1.);
-      r[i].Scale(1./r[i].Norm2());
-    }
-  }
+  for (int i=0;i<3;++i)
+    r[i](i)=1.;
 
   // basis, where the first six entries are the rigid body modes and the
   // remaining are constructed to be orthogonal to the rigid body modes
@@ -335,21 +312,31 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
   for (int i=6;i<dim*num_node;++i)
   {
     double sign=+1.;
-    for (int j=0;j<i+1;++j)
+    int off=0;
+    bool new_basis_found=false;
+    for (off=0;(off<dim*num_node-i) && !new_basis_found;++off)
     {
-      LINALG::SerialDenseMatrix det(i,i,true);
-      for (int c=0;c<i;++c)
+      for (int j=0;j<i+1;++j)
       {
-        for (int k=0;k<j;++k)
-          det(k,c)=basis[c](k);
-        for (int k=j;k<i;++k)
-          det(k,c)=basis[c](k+1);
+        LINALG::SerialDenseMatrix det(i,i,true);
+        for (int c=0;c<i;++c)
+        {
+          for (int k=0;k<j;++k)
+            det(k,c)=basis[c](k+off);
+          for (int k=j;k<i;++k)
+            det(k,c)=basis[c](k+1+off);
+        }
+        basis[i](j+off)=LINALG::DeterminantLU(det)*sign;
+        sign*=-1.;
       }
-      basis[i](j)=LINALG::DeterminantLU(det)*sign;
-      sign*=-1.;
+      if (basis[i].Norm2()>1.e-6)
+      {
+        basis[i].Scale(1./basis[i].Norm2());
+        new_basis_found=true;
+      }
     }
-
-    basis[i].Scale(1./basis[i].Norm2());
+    if (!new_basis_found)
+      dserror("no new basis vector found");
   }
 
   // at this point basis should already contain an ONB.
