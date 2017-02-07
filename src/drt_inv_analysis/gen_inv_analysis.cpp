@@ -42,6 +42,7 @@
 #include "../drt_matelast/elast_coupmooneyrivlin.H"
 #include "../drt_matelast/elast_coupneohooke.H"
 #include "../drt_matelast/elast_coupsimopister.H"
+#include "../drt_matelast/elast_coupSaintVenantKirchhoff.H"
 #include "../drt_matelast/elast_iso1pow.H"
 #include "../drt_matelast/elast_iso2pow.H"
 #include "../drt_matelast/elast_isoexpopow.H"
@@ -1310,8 +1311,8 @@ void STR::GenInvAnalysis::ReadInParameters()
               int j = p_.Length();
               p_.Resize(j+2);
               p_[j]   = params2->mue_;
-              p_[j+1] = (1./(1.-2.*params2->nue_))-1.;
-              //p_[j+1] = params2->f_;
+              p_[j+1] = params2->nue_/(1.-2.*params2->nue_);
+             // p_[j+2] = params2->f_;
               break;
             }
             case INPAR::MAT::mes_coupsimopister:
@@ -1321,6 +1322,16 @@ void STR::GenInvAnalysis::ReadInParameters()
               int j = p_.Length();
               p_.Resize(j+1);
               p_[j] = params2->mue_;
+              break;
+            }
+            case INPAR::MAT::mes_coupSVK:
+            {
+              filename_=filename_+"_coupsaintvenantkirchhoff";
+              const MAT::ELASTIC::PAR::CoupSVK* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+2);
+              p_[j] = params2->lambda_;
+              p_[j+1] = params2->mue_;
               break;
             }
             case INPAR::MAT::mes_isoneohooke:
@@ -1509,8 +1520,8 @@ void STR::GenInvAnalysis::ReadInParameters()
               int j = p_.Length();
               p_.Resize(j+2);
               p_[j]   = params2->mue_;
-              p_[j+1] = (1./(1.-2.*params2->nue_))-1.;
-              //p_[j+1] = params2->f_;
+              p_[j+1] = params2->nue_/(1.-2.*params2->nue_);
+              //p_[j+2] = params2->f_;
               break;
             }
             case INPAR::MAT::mes_coupsimopister:
@@ -1520,6 +1531,16 @@ void STR::GenInvAnalysis::ReadInParameters()
               int j = p_.Length();
               p_.Resize(j+1);
               p_[j] = params2->mue_;
+              break;
+            }
+            case INPAR::MAT::mes_coupSVK:
+            {
+              filename_=filename_+"_coupsaintvenantkirchhoff";
+              const MAT::ELASTIC::PAR::CoupSVK* params2 = dynamic_cast<const MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+2);
+              p_[j] = params2->lambda_;
+              p_[j+1] = params2->mue_;
               break;
             }
             case INPAR::MAT::mes_isoneohooke:
@@ -1717,6 +1738,7 @@ void STR::GenInvAnalysis::ReadInParameters()
       case INPAR::MAT::mes_coupneohooke:
       case INPAR::MAT::mes_coupblatzko:
       case INPAR::MAT::mes_coupsimopister:
+      case INPAR::MAT::mes_coupSVK:
       case INPAR::MAT::mes_isoneohooke:
       case INPAR::MAT::mes_isoyeoh:
       case INPAR::MAT::mes_iso1pow:
@@ -1971,8 +1993,8 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             MAT::ELASTIC::PAR::CoupBlatzKo* params2 =
               dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
-            //params2->SetF(abs(p_cur(j+1)));
             params2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
+           // params2->SetF(abs(p_cur(j+2)));
             j = j+2;
             break;
           }
@@ -1982,6 +2004,15 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               dynamic_cast<MAT::ELASTIC::PAR::CoupSimoPister*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             j = j+1;
+            break;
+          }
+          case INPAR::MAT::mes_coupSVK:
+          {
+            MAT::ELASTIC::PAR::CoupSVK* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+            params2->SetLambda(abs(p_cur(j)));
+            params2->SetMue(abs(p_cur(j+1)));
+            j = j+2;
             break;
           }
           case INPAR::MAT::mes_isoneohooke:
@@ -2118,6 +2149,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
     case INPAR::MAT::mes_coupneohooke:
     case INPAR::MAT::mes_coupblatzko:
     case INPAR::MAT::mes_coupsimopister:
+    case INPAR::MAT::mes_coupSVK:
     case INPAR::MAT::mes_isoneohooke:
     case INPAR::MAT::mes_isoyeoh:
     case INPAR::MAT::mes_iso1pow:
@@ -2222,8 +2254,8 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             MAT::ELASTIC::PAR::CoupBlatzKo* params2 =
               dynamic_cast<MAT::ELASTIC::PAR::CoupBlatzKo*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
-            //params2->SetF(abs(p_cur(j+1)));
             params2->SetNue((abs(p_cur(j+1)))/(2.*(abs(p_cur(j+1))+1.)));
+          //  params2->SetF(abs(p_cur(j+2)));
             j = j+2;
             break;
           }
@@ -2233,6 +2265,15 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
               dynamic_cast<MAT::ELASTIC::PAR::CoupSimoPister*>(actelastmat->Parameter());
             params2->SetMue(abs(p_cur(j)));
             j = j+1;
+            break;
+          }
+          case INPAR::MAT::mes_coupSVK:
+          {
+            MAT::ELASTIC::PAR::CoupSVK* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::CoupSVK*>(actelastmat->Parameter());
+            params2->SetLambda(abs(p_cur(j)));
+            params2->SetMue(abs(p_cur(j+1)));
+            j = j+2;
             break;
           }
           case INPAR::MAT::mes_isoneohooke:

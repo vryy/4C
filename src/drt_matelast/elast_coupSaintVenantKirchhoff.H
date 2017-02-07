@@ -55,6 +55,12 @@ namespace ELASTIC
 
       virtual Teuchos::RCP<MAT::Material> CreateMaterial(){ return Teuchos::null; };
 
+      /// @name Write methods
+      //@{
+      void SetLambda(const double lambda) { lambda_ = lambda; }
+      void SetMue(const double mue) { mue_ = mue; }
+      //@}
+
     };
 
   }  // namespace PAR
@@ -110,6 +116,12 @@ namespace ELASTIC
     virtual void AddThirdDerivativesPrincipalIso(LINALG::Matrix<10,1>& dddPIII_iso,       ///< third derivative with respect to invariants
                                                  const LINALG::Matrix<3,1>& prinv_iso,    ///< principal isotropic invariants
                                                  const int eleGID);                       ///< element GID
+
+    /// @name Access methods
+    //@{
+    double LAMBDA() const { return params_->lambda_; }
+    double MUE() const { return params_->mue_; }
+    //@}
 
     /// Indicator for formulation
     virtual void SpecifyFormulation(
