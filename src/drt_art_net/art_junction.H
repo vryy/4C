@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
 \file art_junction.H
-\brief Method to deal with one dimensional artery juction bcs 
+\brief Method to deal with one dimensional artery juction bcs
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 
 *----------------------------------------------------------------------*/
 
@@ -46,7 +43,7 @@ namespace ART
     struct JunctionNodeParams
     {
       double Ao_;    // Initial cross-sectional area
-      double beta_;  // Material constant 
+      double beta_;  // Material constant
       double Pext_;  // external pressure at that node
       double Q_;     // Volumetric flow rate
       double A_;     // Cross-sectional area

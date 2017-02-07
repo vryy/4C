@@ -2,12 +2,9 @@
 /*!
 \file cnst_1d_art.H
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\level 3
+
+\maintainer Lena Yoshihara
 */
 /*----------------------------------------------------------------------*/
 #ifndef CNST_1D_ART_H

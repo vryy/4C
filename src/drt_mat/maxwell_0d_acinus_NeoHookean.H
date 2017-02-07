@@ -2,12 +2,9 @@
 /*!
 \file maxwell_0d_acinus_NeoHookean.H
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 */
 /*----------------------------------------------------------------------*/
 #ifndef MAXWELL_0D_ACINUS_NEOHOOKEAN_H

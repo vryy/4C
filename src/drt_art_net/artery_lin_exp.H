@@ -5,12 +5,10 @@
 
 \brief Internal implementation of artery_lin_exp element
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -83,7 +81,7 @@ namespace ELEMENTS
                                     DRT::Discretization&          discretization,
                                     std::vector<int>&             lm,
                                     Teuchos::RCP<MAT::Material>    mat) = 0;
-    
+
     virtual void CalcPostprocessingValues(Artery*                       ele,
                                           Teuchos::ParameterList&       params,
                                           DRT::Discretization&          discretization,
@@ -113,7 +111,7 @@ namespace ELEMENTS
                                           DRT::Discretization&         discretization,
                                           std::vector<int>&            lm,
                                           Teuchos::RCP<MAT::Material>   material) =0;
-    
+
     /// Internal implementation class for artery element
     static ArteryExpInterface* Expl(DRT::ELEMENTS::Artery* art);
 
@@ -236,7 +234,7 @@ namespace ELEMENTS
                                           DRT::Discretization&         discretization,
                                           std::vector<int>&            lm,
                                           Teuchos::RCP<MAT::Material>   material) ;
-    
+
     virtual void SolveScatraAnalytically(  Artery*                      ele,
                                           Teuchos::ParameterList&      params,
                                           DRT::Discretization&         discretization,
@@ -264,7 +262,7 @@ namespace ELEMENTS
                          Teuchos::RCP<const MAT::Material>        material);
 
     /*!
-     \Essential functions to compute the results of essentail matrices 
+     \Essential functions to compute the results of essentail matrices
     */
 #if 0
     LINALG::Matrix<2,1> F    (double xi);
@@ -275,7 +273,7 @@ namespace ELEMENTS
     LINALG::Matrix<2,1> FLW  (double xi, double dt);
     LINALG::Matrix<2,1> BLW  (double xi, double dt);
 #endif
-    
+
   private:
     //! array for shape functions
     LINALG::Matrix<iel,1> funct_;
@@ -308,4 +306,4 @@ namespace ELEMENTS
 
 #endif
 
-#endif 
+#endif

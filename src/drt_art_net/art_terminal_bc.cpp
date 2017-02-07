@@ -2,12 +2,9 @@
 \file art_terminal_bc.cpp
 \brief evaluation of 1d-artery inlet bc
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 
 *----------------------------------------------------------------------*/
 
@@ -70,14 +67,14 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     Type = *(condition->Get<std::string>("type"));
     BC   = *(condition->Get<std::string>("boundarycond"));
-    
+
     // -----------------------------------------------------------------
     // Read in the bc curve information
     // -----------------------------------------------------------------
     const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
     double curvefac = 1.0;
     const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
-    
+
     // -----------------------------------------------------------------
     // Check whether the BC is absorbing or forced
     // -----------------------------------------------------------------
@@ -123,7 +120,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       dserror("no inlet boundary condition defined!");
       exit(1);
     }
-    
+
   }
   else if (params.get<std::string>("Condition Name") == "Art_redD_3D_CouplingCond")
   {
@@ -230,7 +227,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
 
     // Initial backward characteristic speed at terminal 1
     const double Wbo   = -4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
-    // backward characteristic wave, 
+    // backward characteristic wave,
     const double Wb    = (Rf*Wbnp + (1.0-Rf)*Wbo);
 
     if(BC=="flow")
@@ -238,22 +235,22 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
 
       /*
        Prescribed Volumetric flow rate:
-                                                                                 
-              /2.rho.Ao\2  /Wf - Wb\4  /Wf - Wb\                                
-       Q    = |--------| . |-------| . |-------|                            
-              \ beta   /   \   8   /   \   2   /                            
-                                                                       
-              /2.rho.Ao\2  /Wf - Wb\4  /Wf - Wb\                       
-       f    = |--------| . |-------| . |-------|  - Q = 0               
-              \ beta   /   \   8   /   \   2   /                        
-                                                                          
-        df    /2.rho.Ao\2  /Wf - Wb\3  /5*Wf - 3*Wb\                 
-       ---- = |--------| . |-------| . |-----------|                 
-       dWf    \ beta   /   \   8   /   \     16    /              
-             
+
+              /2.rho.Ao\2  /Wf - Wb\4  /Wf - Wb\
+       Q    = |--------| . |-------| . |-------|
+              \ beta   /   \   8   /   \   2   /
+
+              /2.rho.Ao\2  /Wf - Wb\4  /Wf - Wb\
+       f    = |--------| . |-------| . |-------|  - Q = 0
+              \ beta   /   \   8   /   \   2   /
+
+        df    /2.rho.Ao\2  /Wf - Wb\3  /5*Wf - 3*Wb\
+       ---- = |--------| . |-------| . |-----------|
+       dWf    \ beta   /   \   8   /   \     16    /
+
        The nonlinear equation: f could be solve using Newton-Raphson
        method as following:
-                                                                                 
+
          1- U(first guess) = Q*(Ao) => W1(first guess) = 2Q/Ao - W2
          2- Calculate df/dWf
          3- Find Wf,i+1 = Wf,i - f,i/(df/dWf),i
@@ -320,9 +317,9 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       Wfnp = BCin;
     }
     else
-    {   
+    {
       dserror("%s is not defined!",BC.c_str());
-      exit(1);          
+      exit(1);
     }
   }//If BC is prescribed at the inlet
   else if(IO == 1) // If BC is prescribed at the outlet
@@ -330,7 +327,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     Wfnp  =  params.get<double>("forward characteristic wave speed");
     // Initial forward characteristic speed at terminal 2
     const double Wfo   =  4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
-    // forward characteristic wave, 
+    // forward characteristic wave,
     const double Wf    = (Rf*Wfnp + (1.0-Rf)*Wfo);
 
     if(BC=="flow")
@@ -339,24 +336,24 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       /*
        Prescribed Volumetric flow rate:
 
-                             2           4                                       
-                   /2.rho.Ao\   /Wf - Wb\   /Wf + Wb\          
-      #    Q   =   |--------| . |-------| . |-------|          
-                   \ beta   /   \   8   /   \   2   /          
-                                                              
-                             2           4                    
-                   /2.rho.Ao\   /Wf - Wb\   /Wf + Wb\         
+                             2           4
+                   /2.rho.Ao\   /Wf - Wb\   /Wf + Wb\
+      #    Q   =   |--------| . |-------| . |-------|
+                   \ beta   /   \   8   /   \   2   /
+
+                             2           4
+                   /2.rho.Ao\   /Wf - Wb\   /Wf + Wb\
        #   f   =   |--------| . |-------| . |-------|  - Q = 0
-                   \ beta   /   \   8   /   \   2   /         
-                                                              
-                             2           3                    
-           df      /2.rho.Ao\   /Wf - Wb\   /3*Wf + 5*Wb\     
-       #  ---- = - |--------| . |-------| . |-----------|     
-          dWb      \ beta   /   \   8   /   \     16    /     
-             
+                   \ beta   /   \   8   /   \   2   /
+
+                             2           3
+           df      /2.rho.Ao\   /Wf - Wb\   /3*Wf + 5*Wb\
+       #  ---- = - |--------| . |-------| . |-----------|
+          dWb      \ beta   /   \   8   /   \     16    /
+
        The nonlinear equation: f could be solve using Newton-Raphson
        method as following:
-                                                                                    
+
          1- U(first guess) = Q*(Ao) => W2(first guess) = 2Q/Ao - W1
          2- Calculate df/dWb
          3- Find Wb,i+1 = Wb,i - f,i/(df/dWb),i
@@ -383,7 +380,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
         f      =  pow(2.0*dens*Ao/beta,2)
                 * pow((Wf - Wbnp)/8.0,4)*( Wf +   Wbnp)/2.0
                 - BCin;
-  
+
         // a small routine to prevent infinit loop
         itrs++;
         if(itrs>=30)
@@ -445,7 +442,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       dserror("Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed don't exist");
       exit(1);
     }
-    
+
     // -----------------------------------------------------------------
     // Compute the variable solved by the 1D simulation to be passed to
     // the 3D simulation
@@ -511,10 +508,10 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       dserror("The 3D map for (1D - 3D coupling) has no variable (%s) for ID [%d]",returnedBC.c_str(),ID );
       exit(1);
     }
-    
+
     // update the 1D map
     (*map1D)[returnedBCwithId.str()] = BC3d;
-    
+
   }
 
   // -------------------------------------------------------------------
@@ -582,7 +579,7 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
   // Initial backward characteristic speed at terminal 1
   const double Wbo  = -4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
   const double Wfo  =  4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
-  // backward characteristic wave, 
+  // backward characteristic wave,
   const double Wbnp = -Rf*(Wfnp-Wfo) + Wbo;
 
   // -------------------------------------------------------------------
@@ -691,13 +688,13 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       }
 
 #if 0
-      // calculate the 
+      // calculate the
       Rf = (R - dens*co/Ao)/ (R + dens*co/Ao);
       // calculate the backward charachteristic speed
       const double Wo = 4.0*sqrt(beta/(2.0*dens*sqrt(Ao)));
       Wb = -Rf*(Wf - Wo) - Wo;
 #endif
-      // ---------------------------------------------------------------      
+      // ---------------------------------------------------------------
       // Solve the nonlinear problem using Newton-Raphsn scheme
       // ---------------------------------------------------------------
 
@@ -710,7 +707,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       int count = 0;
       while (fabs(F/(R*Ao*Wo)) > 0.0000000001)
       {
-        
+
         dFdA = R*Wf - 5.0*R*sqrt(beta/(2.0*dens*Ao) * sqrt(A)) - 0.5*beta/(Ao *sqrt(A));
         A   -= F/dFdA;
         F =  R*Wf*A - 4.0*R*sqrt(beta/(2.0*dens*Ao))*pow(A,5.0/4.0)
@@ -779,7 +776,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       }
 
       // Calculate W2
-      
+
 
     }//if (wk_type == "RC")
     else if (wk_type == "RCR") // The famous 3 element wind kessel model
@@ -812,7 +809,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
         double t;
         if (time <= dt)
           t = time;
-        else 
+        else
           t = time -dt;
         curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(t);
         Poutnm = (*vals)[0]*curvefac;

@@ -2,12 +2,9 @@
 \file art_junction.cpp
 \brief evaluation of 1d-artery junction bc
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 
 *----------------------------------------------------------------------*/
 
@@ -106,20 +103,20 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
       // (2) check whether the condition is connected to an inlet(-1) or
       //     to an outlet(1)
       //----------------------------------------------------------------------
-      
+
       std::vector<int> IOart(numofcond);
       for(int i =0; i<numofcond; i++)
       {
         // get the node number connected to the condition
         const std::vector<int> * nodes = myConditions[i]->Nodes();
-        
+
         // The junction condition must be connected to one and only one node
         if(nodes->size()!=1)
           dserror("Artery Connection BC should have only one node connected to it!");
 
         int local_id =  discret_->NodeRowMap()->LID((*nodes)[0]);
         // Get the actual node connected to the condition
-        DRT::Node * nd = discret_->lColNode(local_id);        
+        DRT::Node * nd = discret_->lColNode(local_id);
 
         // find whether the nodes is at the inlet or at the outlet of the element
         std::string terminalType = *(nd->GetCondition("ArtInOutCond")->Get<std::string>("terminaltype"));
@@ -133,9 +130,9 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
       //----------------------------------------------------------------------
       // (3) Group all of the conditions that belong to the same junction
       //----------------------------------------------------------------------
-      
+
       DRT::Condition * cond_i;
-      
+
       //first, sort the condition list according to there IDs
       //In this case the bubble sort algorithm is used
       int IO_i;
@@ -156,11 +153,11 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
           }
         }
       }
-      
+
       // second, group all the similar conditions in one vector
       std::vector<std::vector<DRT::Condition*> > SortedConds;
       std::vector<DRT::Condition *> grouped_cond;
-      
+
       std::vector<std::vector<int> > SortedIOarts;
       std::vector<int> grouped_IO;
 
@@ -170,19 +167,19 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
         {
           grouped_IO.push_back(IOart[i]);
           grouped_cond.push_back(myConditions[i++]);
-          
+
           if(i==myConditions.size())
           break;
         }
         while(myConditions[i]->GetInt("ConditionID") == grouped_cond[0]->GetInt("ConditionID"));
-        
+
         SortedConds.push_back(grouped_cond);
         grouped_cond.erase(grouped_cond.begin(),grouped_cond.end());
-        
+
         SortedIOarts.push_back(grouped_IO);
         grouped_IO.erase(grouped_IO.begin(),grouped_IO.end());
       }
-      
+
       // ---------------------------------------------------------------------
       // (4) Create junction boundary conditions
       // ---------------------------------------------------------------------
@@ -196,23 +193,23 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
         // allocate the junction bc class members for every case
         // -------------------------------------------------------------------
         condid = SortedConds[i][0]->GetInt("ConditionID");
-        
+
         // -------------------------------------------------------------------
-        // sort junction BCs in map 
+        // sort junction BCs in map
         // -------------------------------------------------------------------
-        Teuchos::RCP<ArtJunctionBc> junbc = Teuchos::rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );    
+        Teuchos::RCP<ArtJunctionBc> junbc = Teuchos::rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );
         ajunmap_.insert( std::make_pair( condid, junbc ) );
 
         // -------------------------------------------------------------------
-        // Creat the nodes' parameters (material prameters, geometric 
+        // Creat the nodes' parameters (material prameters, geometric
         // parameters, n-1 values) in map, and export all the values so that
         // elements could access them.
-        // Finally check wheather a node has multiple BC, which is not allowed 
+        // Finally check wheather a node has multiple BC, which is not allowed
         // -------------------------------------------------------------------
         bool inserted;
         // create an empty map associated to the Teuchos::RCP nodalParams_
         //      nodalParams = Teuchos::rcp(new std::map<const int, Teuchos::RCP<JunctionNodeParams> >());
-        
+
         for (unsigned int j=0 ; j< SortedConds[i].size(); j++)
         {
           const std::vector<int> * nodes = SortedConds[i][j]->Nodes();
@@ -223,9 +220,9 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(Teuchos::RCP<DRT::Discretizat
           if(!inserted)
             dserror("Node %d has more than one condition", (*nodes)[0]+1);
         }
-        
+
       }
-      
+
     }// end if there is a connection
   }
 
@@ -318,7 +315,7 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc( Teuchos::RCP<DRT::Discretization>  act
   }
 
   //----------------------------------------------------------------------
-  // Find the size of the nonlinear problem. In this case each nodes is 
+  // Find the size of the nonlinear problem. In this case each nodes is
   // supossed to have two degrees of freedom, i.e. a junction with "N"
   // nodes must have 2*N degrees of freedom to be solved, which in turn
   // is the size of the nonlinear problem
@@ -343,7 +340,7 @@ ART::UTILS::ArtJunctionBc::ArtJunctionBc( Teuchos::RCP<DRT::Discretization>  act
  |                                                                      |
  |                                                                      |
  |                                                                      |
- | Implimenting the junction boundary condition such that:              | 
+ | Implimenting the junction boundary condition such that:              |
  |                                                                      |
  |                                                                      |
  | Parent 1    ______________             _______________  Daughter 1   |
@@ -453,7 +450,7 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList & params)
   std::vector<double> beta(ProbSize_/2,0.0);
   std::vector<double> Pext(ProbSize_/2,0.0);
 
-  // get the map having the junction nodal information from the elements  
+  // get the map having the junction nodal information from the elements
   Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams> > > nodalMap =  params.get< Teuchos::RCP<std::map<const int, Teuchos::RCP<JunctionNodeParams> > > >("Junctions Parameters");
 
   // loop over all the nodes and read in the required parameters
@@ -667,7 +664,7 @@ void ART::UTILS::ArtJunctionBc::Residual_Eval( Epetra_SerialDenseVector & f,
   for(unsigned int i = 1; i< nodes_.size(); i++)
   {
     f[nodes_.size()+i] = P0 - (0.5*rho[i]*pow(Q[i]/A[i],2) + beta[i]*(sqrt(A[i]) - sqrt(Ao[i]))/Ao[i]);
-  } 
+  }
 
 }
 

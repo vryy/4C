@@ -2,12 +2,9 @@
 \file fluid_volumetric_surfaceFlow_condition.H
 \brief Method to deal with womersley flow profiles
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 
 *----------------------------------------------------------------------*/
 

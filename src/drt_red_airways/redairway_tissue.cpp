@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
 \file redairway_tissue.cpp
 \brief Control routine for coupled reduced airways and continuum tissue models
-\level 2
-<pre>
+
 \maintainer Lena Yoshihara
-            yoshihara@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15303
-</pre>
+
+\level 3
 *----------------------------------------------------------------------*/
 
 

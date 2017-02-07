@@ -3,12 +3,9 @@
 \brief Method to print the arteries in a way that could be displayed by
 \gnuplot
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\level 3
+
+\maintainer Lena Yoshihara
 
 *----------------------------------------------------------------------*/
 

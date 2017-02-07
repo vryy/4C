@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------
 \file art_net_dyn_drt.H
-\brief Control routine for arterial network (time) integration. Calls
+\brief Control routine for arterial network (time) integration.
 
+\maintainer Lena Yoshihara
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\level 3
 
 *----------------------------------------------------------------------*/
 /************/

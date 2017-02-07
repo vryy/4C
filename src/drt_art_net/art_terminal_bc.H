@@ -1,13 +1,10 @@
 /*!----------------------------------------------------------------------
-\file art_terminal.H
-\brief Method to deal with one dimensional artery inlet bcs 
+\file art_terminal_bc.H
+\brief Method to deal with one dimensional artery inlet bcs
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 
 *----------------------------------------------------------------------*/
 

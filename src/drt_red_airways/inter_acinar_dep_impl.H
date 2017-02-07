@@ -5,12 +5,9 @@
 
 \brief Internal implementation of inter_acinar_dep_impl element
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 */
 /*----------------------------------------------------------------------*/
 

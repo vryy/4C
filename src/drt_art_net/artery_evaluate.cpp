@@ -1,14 +1,10 @@
 
 /*!----------------------------------------------------------------------
 \file artery_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 
 *----------------------------------------------------------------------*/
 #ifdef D_ARTNET
@@ -171,7 +167,7 @@ Here must add the steps for evaluating an element
                                                                           lm,
                                                                           mat);
   }
-  break;  
+  break;
   case evaluate_wf_wb:
   {
     DRT::ELEMENTS::ArteryExpInterface::Expl(this)->EvaluateWfAndWb(this,
@@ -189,7 +185,7 @@ Here must add the steps for evaluating an element
                                                                    lm,
                                                                    mat);
   }
-  break;    
+  break;
   default:
       dserror("Unkown type of action for Artery");
   }// end of switch(act)

@@ -3,12 +3,9 @@
 \brief Main control routine for reduced dimensional airways network
  (time) integration.
 
-\level 2
+\maintainer Lena Yoshihara
 
-\maintainer Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
+\level 3
 
 *----------------------------------------------------------------------*/
 

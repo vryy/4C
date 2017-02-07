@@ -3,13 +3,9 @@
 
 \brief evaluation of 3D/redD coupled vascular bc
 
+\maintainer Lena Yoshihara
+
 \level 3
-<pre>
-\maintainer Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
 
 *----------------------------------------------------------------------*/
 

@@ -5,12 +5,9 @@
 \brief Internal implementation of RedInterAcinarDep element. Routines
        from inter_acinar_dep_evaluate are re-implemented here.
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 */
 /*----------------------------------------------------------------------*/
 

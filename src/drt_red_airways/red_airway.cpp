@@ -4,9 +4,9 @@
 
 \brief Implements an airway element
 
-\level 2
+\maintainer Lena Yoshihara
 
-\maintainer Christian Roth
+\level 3
 
 */
 /*----------------------------------------------------------------------*/

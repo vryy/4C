@@ -3,12 +3,9 @@
 \brief Method to deal with coupling between 3D fluid and 0/1D vascular
 problem
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\maintainer Lena Yoshihara
+
+\level 3
 
 *----------------------------------------------------------------------*/
 
@@ -59,7 +56,7 @@ public:
   */
   Fluid_couplingWrapperBase( Teuchos::RCP<DRT::Discretization>  dis_3D,
                          Teuchos::RCP<DRT::Discretization>  dis_redD,
-			 IO::DiscretizationWriter& output,
+                         IO::DiscretizationWriter& output,
                          double                    dt_3d,
                          double                    dt_rm);
 
@@ -218,11 +215,11 @@ public:
   */
   Fluid_couplingBc( Teuchos::RCP<DRT::Discretization>  dis3D,
                     Teuchos::RCP<DRT::Discretization>  dis_reD,
-		    IO::DiscretizationWriter& output,
+                    IO::DiscretizationWriter& output,
                     double dt_3d,
                     double dt_rm,
-		    int condid,
-		    int numcond,
+                    int condid,
+                    int numcond,
                     int numcond2);
 
   /*!

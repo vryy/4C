@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inter_acinar_dep_impl.cpp
+\file red_air_blood_scatraLine3_impl.cpp
 
 \brief Internal implementation of RedAcinus element
 
-<pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
+\level 3
+
+\maintainer Lena Yoshihara
 */
 /*----------------------------------------------------------------------*/
 

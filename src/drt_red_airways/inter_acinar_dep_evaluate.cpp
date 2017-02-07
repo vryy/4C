@@ -6,12 +6,9 @@
        RedInterAcinarDep. The actual implementation of the routines called
        during the possible actions is contained in inter_acinar_dep_impl.cpp
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\level 3
+
+\maintainer Lena Yoshihara
 
 *----------------------------------------------------------------------*/
 

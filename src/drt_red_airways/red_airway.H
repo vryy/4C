@@ -4,10 +4,9 @@
 
 \brief Implements an airway element
 
-\level 2
+\level 3
 
-\maintainer Christian Roth
-
+\maintainer Lena Yoshihara
 */
 /*----------------------------------------------------------------------*/
 #ifndef RED_AIRWAY_H_

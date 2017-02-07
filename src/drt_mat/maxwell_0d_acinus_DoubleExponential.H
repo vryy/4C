@@ -2,12 +2,9 @@
 /*!
 \file maxwell_0d_acinus_DoubleExponential.H
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\level 3
+
+\maintainer Lena Yoshihara
 */
 /*----------------------------------------------------------------------*/
 #ifndef MAXWELL_0D_ACINUS_DOUBLEEXPONENTIAL_H

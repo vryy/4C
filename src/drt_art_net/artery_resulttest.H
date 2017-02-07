@@ -1,3 +1,15 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file artery_resulttest.H
+
+\brief testing of artery calculation results
+
+\maintainer Lena Yoshihara
+
+\level 3
+*/
+/*----------------------------------------------------------------------*/
+
 #ifdef D_ARTNET
 
 #ifndef ART_NET_RESULTTEST_H
