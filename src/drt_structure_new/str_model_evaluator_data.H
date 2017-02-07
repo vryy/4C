@@ -803,6 +803,13 @@ namespace MODELEVALUATOR {
       return str_data_ptr_->IsDefaultStep();
     };
 
+    //! get the current time step [derived]
+    virtual inline double GetDeltaTime() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetDeltaTime();
+    }
+
     /*! @name set routines which are used to set the parameters of the data container
      *
      *  These functions are not allowed to be called by the elements! */

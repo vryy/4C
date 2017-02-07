@@ -58,7 +58,8 @@ void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(
     }
   }
   if(fc->GlobalAssemble(Add,false)!=0) dserror("GlobalAssemble failed");
-  if (f->Update(1.,*fc,1.)) dserror("update went wrong");
+  // add negative contact force here since the time integrator handed me a rhs!
+  if (f->Update(-1.,*fc,1.)) dserror("update went wrong");
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add);
   kt->UnComplete();
   kt->Add(*kc,false,1.,1.);
@@ -185,7 +186,7 @@ void CONTACT::CoNitscheStrategy::Evaluate(
   case MORTAR::eval_none: break;
   case MORTAR::eval_force:
   case MORTAR::eval_force_stiff:
-    Integrate();
+    Integrate(cparams);
     break;
   case MORTAR::eval_reset:
     SetState(MORTAR::state_new_displacement, *(eval_vec[0])); break;
@@ -195,7 +196,7 @@ void CONTACT::CoNitscheStrategy::Evaluate(
   return;
 }
 
-void CONTACT::CoNitscheStrategy::Integrate()
+void CONTACT::CoNitscheStrategy::Integrate(CONTACT::ParamsInterface& cparams)
 {
   // we already did this displacement state
   if (curr_state_eval_==true)
@@ -204,6 +205,7 @@ void CONTACT::CoNitscheStrategy::Integrate()
   // Evaluation for all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
+    interface_[i]->IParams().set<double>("TIMESTEP",cparams.GetDeltaTime());
     interface_[i]->Initialize();
     interface_[i]->Evaluate(0,step_,iter_);
   }
@@ -231,7 +233,6 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
       mele->GetNitscheContainer().Assemble(mele,fc,Teuchos::null);
     }
   if(fc->GlobalAssemble(Add,false)!=0) dserror("GlobalAssemble failed");
-  fc->Scale(-1.);
 
   return Teuchos::rcp(new Epetra_Vector(Copy,*fc,0));
 }
@@ -268,6 +269,9 @@ void CONTACT::CoNitscheStrategy::Setup(bool redistributed, bool init)
 {
   if (isselfcontact_)
     dserror("no self contact with Nitsche yet");
+  ReconnectParentElements();
+  curr_state_=Teuchos::null;
+  curr_state_eval_=false;
 }
 
 void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
@@ -292,10 +296,9 @@ void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
 void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (DRT::INPUT::IntegralValue<int>(Params(),"NITSCHE_PENALTY_ADAPTIVE"))
-  {
-    SetState(MORTAR::state_new_displacement,*dis);
     UpdateTraceIneqEtimates();
-  }
+  if (friction_)
+    SetState(MORTAR::state_old_displacement,*dis);
 
   return;
 }
@@ -305,4 +308,40 @@ void CONTACT::CoNitscheStrategy::EvaluateReferenceState(Teuchos::RCP<const Epetr
   SetState(MORTAR::state_new_displacement,*dis);
   UpdateTraceIneqEtimates();
   return;
+}
+
+
+/*----------------------------------------------------------------------------------------------*
+ |  Reconnect Contact Element -- Parent Element Pointers (required for restart)       ager 04/16|
+ *---------------------------------------------------------------------------------------------*/
+void CONTACT::CoNitscheStrategy::ReconnectParentElements()
+{
+  Teuchos::RCP<DRT::Discretization> voldis=DRT::Problem::Instance()->GetDis("structure");
+
+  for (int intidx = 0; intidx < (int) ContactInterfaces().size(); ++intidx)
+  {
+    const Epetra_Map* elecolmap = voldis->ElementColMap();
+
+    const Epetra_Map* ielecolmap = ContactInterfaces()[intidx]->Discret().ElementColMap();
+
+    for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
+    {
+      int gid = ielecolmap->GID(i);
+
+      DRT::Element* ele = ContactInterfaces()[intidx]->Discret().gElement(gid);
+      if (!ele)
+        dserror("ERROR: Cannot find element with gid %", gid);
+      DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+
+      int volgid = faceele->ParentElementId();
+      if (elecolmap->LID(volgid) == -1) //Volume Discretization has not Element
+        dserror("CoManager::ReconnectParentElements: Element %d does not exist on this Proc!",volgid);
+
+      DRT::Element* vele = voldis->gElement(volgid);
+      if (!vele)
+        dserror("ERROR: Cannot find element with gid %", volgid);
+
+      faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
+    }
+  }
 }

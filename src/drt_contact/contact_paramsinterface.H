@@ -35,6 +35,9 @@ namespace CONTACT {
 
     //! get the is_default_step indicator
     virtual bool IsDefaultStep() const = 0;
+
+    //! get the current time step [derived]
+    virtual double GetDeltaTime() const = 0;
   };
 }
 

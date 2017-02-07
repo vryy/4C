@@ -889,7 +889,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       contact.get<double>("SEMI_SMOOTH_CN") <= 0.0)
     dserror("Regularization parameter cn, must be greater than 0 for contact problems");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca && dim == 3)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca && dim == 3
+      && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_nitsche)
     dserror("ERROR: 3D frictional contact with Tresca's law not yet implemented");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none
@@ -1212,9 +1213,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none)
       dserror("GPTS algorithm not implemented for wear");
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
-      dserror("GPTS algorithm only for frictionless contact");
-
   }// END GPTS CHECKS
 
   // *********************************************************************
@@ -1325,7 +1323,7 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
 
 
   //If Parent Elements are required, we need to reconnect them before contact restart!
-  if (atype == INPAR::MORTAR::algorithm_gpts || GetStrategy().Params().get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+  if (GetStrategy().Params().get<int>("PROBTYPE")==INPAR::CONTACT::poro)
     ReconnectParentElements();
 
   // this is contact, thus we need the displacement state for restart

@@ -26,7 +26,7 @@ namespace INPAR
     /// (this enum represents the input file parameter FRICTION)
     enum FrictionType
     {
-      friction_none,    ///< no friction
+      friction_none=0,    ///< no friction
       friction_stick,   ///< perfect stick
       friction_tresca,  ///< Tresca friction law
       friction_coulomb  ///< Coulomb friction law

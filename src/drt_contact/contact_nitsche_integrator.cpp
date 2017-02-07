@@ -115,7 +115,20 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
   if (dim!=Dim())
     dserror("dimension inconsistency");
 
+  if (frtype_!=INPAR::CONTACT::friction_none && dim!=3)
+    dserror("only 3D friction");
+  if (frtype_!=INPAR::CONTACT::friction_none
+      && frtype_!=INPAR::CONTACT::friction_coulomb
+      && frtype_!=INPAR::CONTACT::friction_tresca)
+    dserror("only coulomb or tresca friction");
+  if (frtype_==INPAR::CONTACT::friction_coulomb && frcoeff_<0.)
+    dserror("negative coulomb friction coefficient");
+  if (frtype_==INPAR::CONTACT::friction_tresca && frbound_<0.)
+    dserror("negative tresca friction bound");
+
   double pen = ppn_;
+  double pet = ppt_;
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   const LINALG::Matrix<dim,1> normal(gpn,true);
 
@@ -152,10 +165,12 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
     case INPAR::CONTACT::NitWgt_slave :
       ws=1.;wm=0.;
       pen/=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
+      pet/=dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
       break;
     case INPAR::CONTACT::NitWgt_master:
       ws=0.;wm=1.;
       pen/=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      pet/=dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
       break;
     case INPAR::CONTACT::NitWgt_harmonic:
       ws=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
@@ -163,9 +178,54 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
       ws/=(ws+wm);
       wm=1.-ws;
       pen/=ws*dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      pet/=ws*dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
       break;
     default: dserror("unknown Nitsche weighting"); break;
     }
+    const double characteristic_timescale=1.;
+    pet*=characteristic_timescale/dt_;
+
+    // variables for friction (declaration only)
+    LINALG::Matrix<dim,1> t1, t2;
+    std::vector<GEN::pairedvector<int,double> > dt1,dt2;
+    LINALG::Matrix<dim,1> relVel;
+    std::vector<GEN::pairedvector<int,double> > relVel_deriv(dim,sele.NumNode()*dim+mele.NumNode()*dim+dsxi[0].size()+dmxi[0].size());
+    double vt1,vt2;
+    GEN::pairedvector<int,double> dvt1(0);
+    GEN::pairedvector<int,double> dvt2(0);
+    double cauchy_nt1_weighted_average=0.;
+    GEN::pairedvector<int,double> cauchy_nt1_weighted_average_deriv(sele.NumNode()*3*12+sele.MoData().ParentDisp().size()+mele.MoData().ParentDisp().size());
+    LINALG::SerialDenseVector t1_adjoint_test_slave(sele.MoData().ParentDof().size());
+    GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t1_adjoint_test_slave(
+        sele.MoData().ParentDof().size()
+        +dnmap_unit[0].size()
+        +dsxi[0].size(),
+        -1,
+        LINALG::SerialDenseVector(sele.MoData().ParentDof().size(),true));
+    LINALG::SerialDenseVector t1_adjoint_test_master(mele.MoData().ParentDof().size());
+    GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t1_adjoint_test_master(
+        mele.MoData().ParentDof().size()
+        +dnmap_unit[0].size()
+        +dmxi[0].size(),
+        -1,
+        LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
+    double cauchy_nt2_weighted_average=0.;
+    GEN::pairedvector<int,double> cauchy_nt2_weighted_average_deriv(sele.NumNode()*3*12+sele.MoData().ParentDisp().size()+mele.MoData().ParentDisp().size());
+    LINALG::SerialDenseVector t2_adjoint_test_slave(sele.MoData().ParentDof().size());
+    GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t2_adjoint_test_slave(
+        sele.MoData().ParentDof().size()
+        +dnmap_unit[0].size()
+        +dsxi[0].size(),
+        -1,
+        LINALG::SerialDenseVector(sele.MoData().ParentDof().size(),true));
+    LINALG::SerialDenseVector t2_adjoint_test_master(mele.MoData().ParentDof().size());
+    GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t2_adjoint_test_master(
+        mele.MoData().ParentDof().size()
+        +dnmap_unit[0].size()
+        +dmxi[0].size(),
+        -1,
+        LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
+    // variables for friction (end)
 
     SoEleCauchy<dim>(sele,sxi,dsxi,wgt,normal,dnmap_unit,normal,dnmap_unit,ws,
         cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
@@ -174,46 +234,208 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
         cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
         normal_adjoint_test_master,deriv_normal_adjoint_test_master);
 
+    // evaluation of tangential stuff
+    if (frtype_)
+    {
+      CONTACT::UTILS::BuildTangentVectors<dim>(normal.A(),dnmap_unit,t1.A(),dt1,t2.A(),dt2);
+
+
+      RelVel<dim>(sele,sval,sderiv,dsxi,+1.,relVel,relVel_deriv);
+      RelVel<dim>(mele,mval,mderiv,dmxi,-1.,relVel,relVel_deriv);
+      VectorScalarProduct<dim>(t1,dt1,relVel,relVel_deriv,vt1,dvt1);
+      VectorScalarProduct<dim>(t2,dt2,relVel,relVel_deriv,vt2,dvt2);
+
+      SoEleCauchy<dim>(sele,sxi,dsxi,wgt,normal,dnmap_unit,t1,dt1,ws,
+          cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
+          t1_adjoint_test_slave ,deriv_t1_adjoint_test_slave);
+      SoEleCauchy<dim>(mele,mxi,dmxi,wgt,normal,dnmap_unit,t1,dt1,wm,
+          cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
+          t1_adjoint_test_master,deriv_t1_adjoint_test_master);
+
+      SoEleCauchy<dim>(sele,sxi,dsxi,wgt,normal,dnmap_unit,t2,dt2,ws,
+          cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
+          t2_adjoint_test_slave ,deriv_t2_adjoint_test_slave);
+      SoEleCauchy<dim>(mele,mxi,dmxi,wgt,normal,dnmap_unit,t2,dt2,wm,
+          cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
+          t2_adjoint_test_master,deriv_t2_adjoint_test_master);
+    }// evaluation of tangential stuff
+
+
     if (gap+cauchy_nn_weighted_average/pen>=0.)
     {
        if (abs(theta_)>1.e-12)
+       {
          IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
              cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
              sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
-      if (abs(theta_)>1.e-12)
-        IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
-            cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
-            mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
-    }
+         IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
+             cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
+             mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
 
+         if (frtype_)
+         {
+           IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+               cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
+               sele,t1_adjoint_test_slave,deriv_t1_adjoint_test_slave);
+           IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+               cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
+               sele,t2_adjoint_test_slave,deriv_t2_adjoint_test_slave);
+
+           IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+               cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
+               mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
+           IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+               cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
+               mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
+         }
+       }
+    }
     else
     {
       // test in normal contact direction
-      IntegrateTest<dim>(+pen,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
-      IntegrateTest<dim>(-pen,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
+      IntegrateTest<dim>(-pen,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
+      IntegrateTest<dim>(+pen,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
 
-      IntegrateTest<dim>(+1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal,dnmap_unit);
-      IntegrateTest<dim>(-1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal,dnmap_unit);
+      IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal,dnmap_unit);
+      IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal,dnmap_unit);
 
       if (abs(theta_)>1.e-12)
         IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
       if (abs(theta_)>1.e-12)
         IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
+
+      if (frtype_)
+      {
+        double fr =0.;
+        switch (frtype_)
+        {
+        case INPAR::CONTACT::friction_coulomb: fr=frcoeff_*(-1.)*(gap*pen+cauchy_nn_weighted_average); break;
+        case INPAR::CONTACT::friction_tresca:  fr=frbound_; break;
+        default: fr=0.; dserror("why are you here???"); break;
+        }
+
+        double tan_tr =            sqrt(
+            (cauchy_nt1_weighted_average-pet*vt1)*(cauchy_nt1_weighted_average-pet*vt1)
+            +
+            (cauchy_nt2_weighted_average-pet*vt2)*(cauchy_nt2_weighted_average-pet*vt2));
+
+        if (tan_tr<=0. && false)
+        {
+
+        }
+          // stick
+        else if (tan_tr<fr)
+        {
+          IntegrateTest<dim>(+pet,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,vt1,dvt1,t1,dt1);
+          IntegrateTest<dim>(-pet,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,vt1,dvt1,t1,dt1);
+
+          IntegrateTest<dim>(+pet,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,vt2,dvt2,t2,dt2);
+          IntegrateTest<dim>(-pet,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,vt2,dvt2,t2,dt2);
+
+          IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,t1,dt1);
+          IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,t1,dt1);
+
+          IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,t2,dt2);
+          IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,t2,dt2);
+
+          if (abs(theta_)>1.e-12)
+          {
+            IntegrateAdjointTest<dim>(-theta_,jac,jacintcellmap,wgt,vt1,dvt1,sele,t1_adjoint_test_slave ,deriv_t1_adjoint_test_slave);
+            IntegrateAdjointTest<dim>(-theta_,jac,jacintcellmap,wgt,vt1,dvt1,mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
+            IntegrateAdjointTest<dim>(-theta_,jac,jacintcellmap,wgt,vt2,dvt2,sele,t2_adjoint_test_slave ,deriv_t2_adjoint_test_slave );
+            IntegrateAdjointTest<dim>(-theta_,jac,jacintcellmap,wgt,vt2,dvt2,mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
+          }
+        }
+        // slip
+        else
+        {
+          GEN::pairedvector<int,double> tmp_d(
+              dgapgp.size()
+              +cauchy_nn_weighted_average_deriv.size()
+              +cauchy_nt1_weighted_average_deriv.size()
+              +dvt1.size(),0,0);
+          if (frtype_==INPAR::CONTACT::friction_coulomb)
+          {
+            for(_CI  p=dgapgp.begin();p!=dgapgp.end();++p)
+              tmp_d[p->first]+=-frcoeff_*pen*p->second/tan_tr;
+            for(_CI  p=cauchy_nn_weighted_average_deriv.begin();p!=cauchy_nn_weighted_average_deriv.end();++p)
+              tmp_d[p->first]+=-frcoeff_*p->second/tan_tr;
+          }
+          for(_CI  p=cauchy_nt1_weighted_average_deriv.begin();p!=cauchy_nt1_weighted_average_deriv.end();++p)
+            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt1_weighted_average-pet*vt1)*p->second;
+          for(_CI p=dvt1.begin();p!=dvt1.end();++p)
+            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt1_weighted_average-pet*vt1)*(-pet)*p->second;
+
+          for(_CI  p=cauchy_nt2_weighted_average_deriv.begin();p!=cauchy_nt2_weighted_average_deriv.end();++p)
+            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt2_weighted_average-pet*vt2)*p->second;
+          for(_CI p=dvt2.begin();p!=dvt2.end();++p)
+            tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt2_weighted_average-pet*vt2)*(-pet)*p->second;
+
+          double test1=fr/tan_tr*(cauchy_nt1_weighted_average-pet*vt1);
+          GEN::pairedvector<int,double> dtest1(
+              dgapgp.size()
+              +cauchy_nn_weighted_average_deriv.size()
+              +cauchy_nt1_weighted_average_deriv.size()
+              +dvt1.size(),0,0);
+          for(_CI p=tmp_d.begin();p!=tmp_d.end();++p)
+            dtest1[p->first]+=p->second*(cauchy_nt1_weighted_average-pet*vt1);
+          for(_CI p=cauchy_nt1_weighted_average_deriv.begin();p!=cauchy_nt1_weighted_average_deriv.end();++p)
+            dtest1[p->first]+=fr/tan_tr*p->second;
+          for(_CI p=dvt1.begin();p!=dvt1.end();++p)
+            dtest1[p->first]+=-fr/tan_tr*pet*p->second;
+          IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,test1,dtest1,t1,dt1);
+          IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,test1,dtest1,t1,dt1);
+
+          double test2=fr/tan_tr*(cauchy_nt2_weighted_average-pet*vt2);
+          GEN::pairedvector<int,double> dtest2(
+              dgapgp.size()
+              +cauchy_nn_weighted_average_deriv.size()
+              +cauchy_nt2_weighted_average_deriv.size()
+              +dvt2.size(),0,0);
+          for(_CI p=tmp_d.begin();p!=tmp_d.end();++p)
+            dtest2[p->first]+=p->second*(cauchy_nt2_weighted_average-pet*vt2);
+          for(_CI p=cauchy_nt2_weighted_average_deriv.begin();p!=cauchy_nt2_weighted_average_deriv.end();++p)
+            dtest2[p->first]+=fr/tan_tr*p->second;
+          for(_CI p=dvt2.begin();p!=dvt2.end();++p)
+            dtest2[p->first]+=-fr/tan_tr*pet*p->second;
+          IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,test2,dtest2,t2,dt2);
+          IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,test2,dtest2,t2,dt2);
+
+          if (abs(theta_)>1.e-12)
+          {
+            IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+                cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
+                sele,t1_adjoint_test_slave,deriv_t1_adjoint_test_slave);
+            IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+                cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
+                sele,t2_adjoint_test_slave,deriv_t2_adjoint_test_slave);
+
+            IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+                cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
+                mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
+            IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+                cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
+                mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
+
+            IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,test1,dtest1,sele,t1_adjoint_test_slave ,deriv_t1_adjoint_test_slave);
+            IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,test1,dtest1,mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
+            IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,test2,dtest2,sele,t2_adjoint_test_slave ,deriv_t2_adjoint_test_slave);
+            IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,test2,dtest2,mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
+          }
+        }
+      }
     }
   }
   else if (stype_==INPAR::CONTACT::solution_penalty)
   {
     if (gap<0.)
     {
-      IntegrateTest<dim>(+pen,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
-      IntegrateTest<dim>(-pen,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
+      IntegrateTest<dim>(-pen,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
+      IntegrateTest<dim>(+pen,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
     }
   }
   else
     dserror("unknown algorithm");
-
-
-
 
   return;
 }
@@ -345,7 +567,6 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(
       *(ele.GetNitscheContainer().rhs(
           DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),ele.FaceParentNumber(),s)*dim+d))+=val*shape(s);
 
-
     std::map<int,double> val_deriv;
 
     for (GEN::pairedvector<int,double>::const_iterator p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
@@ -360,7 +581,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(
       double* row = ele.GetNitscheContainer().k(p->first);
       for (int s=0;s<ele.NumNode();++s)
         row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),ele.FaceParentNumber(),s)*dim+d]
-             +=-p->second*shape(s);
+             +=p->second*shape(s);
     }
 
     for (int e=0;e<Dim()-1;++e)
@@ -369,7 +590,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(
         double* row = ele.GetNitscheContainer().k(p->first);
         for (int s=0;s<ele.NumNode();++s)
           row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),ele.FaceParentNumber(),s)*dim+d]
-               +=-val*deriv(s,e)*p->second;
+               +=val*deriv(s,e)*p->second;
       }
   }
 }
@@ -439,7 +660,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest(
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test
         )
 {
-  LINALG::SerialDenseVector(View,moEle.GetNitscheContainer().rhs(),moEle.MoData().ParentDof().size()).Update(-fac*jac*wgt*test,adjoint_test,1.);
+  LINALG::SerialDenseVector(View,moEle.GetNitscheContainer().rhs(),moEle.MoData().ParentDof().size()).Update(fac*jac*wgt*test,adjoint_test,1.);
 
   for(GEN::pairedvector<int,LINALG::SerialDenseVector>::const_iterator p=deriv_adjoint_test.begin();p!=deriv_adjoint_test.end();++p)
     LINALG::SerialDenseVector(View,moEle.GetNitscheContainer().k(p->first),moEle.MoData().ParentDof().size()).Update(fac*jac*wgt*test,p->second,1.);
@@ -451,4 +672,157 @@ void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest(
     LINALG::SerialDenseVector(View,moEle.GetNitscheContainer().k(p->first),moEle.MoData().ParentDof().size()).Update(fac*jac*wgt*p->second,adjoint_test,1.);
 
   return;
+}
+
+
+template <int dim>
+void CONTACT::CoIntegratorNitsche::RelVel(
+    MORTAR::MortarElement& ele,
+    const LINALG::SerialDenseVector& shape,
+    const LINALG::SerialDenseMatrix& deriv,
+    const std::vector<GEN::pairedvector<int,double> >& dxi,
+    const double fac,
+    LINALG::Matrix<dim,1>& relVel,
+    std::vector<GEN::pairedvector<int,double> >& relVel_deriv
+    )
+{
+  for (int n=0;n<ele.NumNode();++n)
+    for (int d=0;d<dim;++d)
+      {
+      relVel(d)+=fac*shape(n)*(ele.GetNodalCoords(d,n)-ele.GetNodalCoordsOld(d,n));
+      relVel_deriv[d][dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[n])->Dofs()[d]]+=fac*shape(n);
+
+      for (int sd=0;sd<dim-1;++sd)
+        for(GEN::pairedvector<int,double>::const_iterator p=dxi[sd].begin();p!=dxi[sd].end();++p)
+          relVel_deriv[d][p->first]+=fac*(ele.GetNodalCoords(d,n)-ele.GetNodalCoordsOld(d,n))*deriv(n,sd)*p->second;
+      }
+}
+
+
+template <int dim>
+void CONTACT::CoIntegratorNitsche::VectorScalarProduct(
+    const LINALG::Matrix<dim,1>& v1,
+    const std::vector<GEN::pairedvector<int,double> >& v1d,
+    const LINALG::Matrix<dim,1>& v2,
+    const std::vector<GEN::pairedvector<int,double> >& v2d,
+    double& val,
+    GEN::pairedvector<int,double>& val_deriv
+)
+{
+  val=v1.Dot(v2);
+  val_deriv.resize(v1d[0].size()+v2d[0].size());
+  for (int d=0;d<dim;++d)
+  {
+    for (GEN::pairedvector<int,double>::const_iterator p=v1d[d].begin();p!=v1d[d].end();++p)
+      val_deriv[p->first]+=v2(d)*p->second;
+    for (GEN::pairedvector<int,double>::const_iterator p=v2d[d].begin();p!=v2d[d].end();++p)
+      val_deriv[p->first]+=v1(d)*p->second;
+  }
+}
+
+void CONTACT::UTILS::BuildTangentVectors_3D(
+    const double* np,
+    const std::vector<GEN::pairedvector<int,double> >& dn,
+    double* t1p,
+    std::vector<GEN::pairedvector<int,double> >& dt1,
+    double* t2p,
+    std::vector<GEN::pairedvector<int,double> >& dt2
+    )
+{
+  const LINALG::Matrix<3,1> n(np,false);
+  LINALG::Matrix<3,1> t1(t1p,true);
+  LINALG::Matrix<3,1> t2(t2p,true);
+
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
+  bool z=true;
+  LINALG::Matrix<3,1> tmp;
+  tmp(2)=1.;
+  if (abs(tmp.Dot(n))>1.-1.e-4)
+    {tmp(0)=1.;tmp(2)=0.; z=false;}
+
+  t1.CrossProduct(tmp,n);
+  dt1.resize(3,
+      std::max(dn[0].size(),
+          std::max(dn[1].size(),dn[2].size())));
+  dt2.resize(3,
+      std::max(dn[0].size(),
+          std::max(dn[1].size(),dn[2].size())));
+
+  const double lt1=t1.Norm2();
+  t1.Scale(1./lt1);
+  LINALG::Matrix<3,3> p;
+  for (int i=0;i<3;++i)
+    p(i,i)=1.;
+  p.MultiplyNT(-1.,t1,t1,1.);
+  p.Scale(1./lt1);
+  if (z)
+  {
+    for (_CI i=dn[1].begin();i!=dn[1].end();++i)
+        for (int d=0;d<3;++d)
+      dt1[d][i->first]-=p(d,0)*i->second;
+
+    for (_CI i=dn[0].begin();i!=dn[0].end();++i)
+        for (int d=0;d<3;++d)
+      dt1[d][i->first]+=p(d,1)*i->second;
+  }
+  else
+  {
+    for (_CI i=dn[2].begin();i!=dn[2].end();++i)
+        for (int d=0;d<3;++d)
+      dt1[d][i->first]-=p(d,1)*i->second;
+
+    for (_CI i=dn[1].begin();i!=dn[1].end();++i)
+        for (int d=0;d<3;++d)
+      dt1[d][i->first]+=p(d,2)*i->second;
+  }
+
+  t2.CrossProduct(n,t1);
+  if (abs(t2.Norm2()-1.)>1.e-10)
+    dserror("this should already form an orthonormal basis");
+
+  for (_CI p=dn[0].begin();p!=dn[0].end();++p)
+  {
+    dt2[1][p->first] -= t1(2)*(p->second);
+    dt2[2][p->first] += t1(1)*(p->second);
+  }
+  for (_CI p=dn[1].begin();p!=dn[1].end();++p)
+  {
+    dt2[0][p->first] += t1(2)*(p->second);
+    dt2[2][p->first] -= t1(0)*(p->second);
+  }
+  for (_CI p=dn[2].begin();p!=dn[2].end();++p)
+  {
+    dt2[0][p->first] -= t1(1)*(p->second);
+    dt2[1][p->first] += t1(0)*(p->second);
+  }
+  for (_CI p=dt1[0].begin();p!=dt1[0].end();++p)
+  {
+    dt2[1][p->first] += n(2)*(p->second);
+    dt2[2][p->first] -= n(1)*(p->second);
+  }
+  for (_CI p=dt1[1].begin();p!=dt1[1].end();++p)
+  {
+    dt2[0][p->first] -= n(2)*(p->second);
+    dt2[2][p->first] += n(0)*(p->second);
+  }
+  for (_CI p=dt1[2].begin();p!=dt1[2].end();++p)
+  {
+    dt2[0][p->first] += n(1)*(p->second);
+    dt2[1][p->first] -= n(0)*(p->second);
+  }
+
+  return;
+}
+template <int dim>
+void CONTACT::UTILS::BuildTangentVectors(
+    const double* np,
+    const std::vector<GEN::pairedvector<int,double> >& dn,
+    double* t1p,
+    std::vector<GEN::pairedvector<int,double> >& dt1,
+    double* t2p,
+    std::vector<GEN::pairedvector<int,double> >& dt2
+    )
+{
+  if(dim==3) BuildTangentVectors_3D(np,dn,t1p,dt1,t2p,dt2);
+  else dserror("not implemented");
 }

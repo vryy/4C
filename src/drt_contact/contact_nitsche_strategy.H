@@ -71,7 +71,7 @@ public:
       CONTACT::ParamsInterface& cparams,
       const std::vector<Teuchos::RCP<const Epetra_Vector> >& eval_vec);
 
-  void Integrate();
+  void Integrate(CONTACT::ParamsInterface& cparams);
 
   virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
      const enum STR::VecBlockType& bt) const;
@@ -103,6 +103,7 @@ public:
   {/* nothing stored in nitsche strategy that would need to be written */};
   virtual void OutputStresses()
   {/* nothing stress output in nitsche strategy yet */};
+  virtual void ReconnectParentElements();
 
   /*!
 \brief Destructor

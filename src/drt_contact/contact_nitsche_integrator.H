@@ -50,12 +50,14 @@ public:
    CoIntegratorNitsche(Teuchos::ParameterList& params,
       DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm):
         CoIntegrator(params,eletype,comm),
-        fc_(params.get<Teuchos::RCP<Epetra_FEVector> >("GLOBAL_CONTACT_FORCE",Teuchos::null)),
-        kc_(params.get<Teuchos::RCP<LINALG::SparseMatrix> >("GLOBAL_CONTACT_STIFF",Teuchos::null)),
         theta_(params.get<double>("NITSCHE_THETA")),
         nit_wgt_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(params,"NITSCHE_WEIGHTING")),
         ppn_(imortar_.get<double>("PENALTYPARAM")),
-        ppt_(imortar_.get<double>("PENALTYPARAMTAN"))
+        ppt_(imortar_.get<double>("PENALTYPARAMTAN")),
+        frcoeff_(imortar_.get<double>("FRCOEFF",-1.)),
+        frbound_(imortar_.get<double>("FRBOUND",-1.)),
+        frtype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(imortar_,"FRICTION")),
+        dt_(imortar_.get<double>("TIMESTEP"))
    {}
 
   /*!
@@ -65,6 +67,8 @@ public:
   virtual ~CoIntegratorNitsche()
   {
   }
+
+protected:
 
   /*!
    \brief Perform integration at GP
@@ -200,14 +204,59 @@ public:
         LINALG::SerialDenseVector& adjoint_test,
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test);
 
-protected:
+    template <int dim>
+    void RelVel(
+        MORTAR::MortarElement& ele,
+        const LINALG::SerialDenseVector& shape,
+        const LINALG::SerialDenseMatrix& deriv,
+        const std::vector<GEN::pairedvector<int,double> >& dxi,
+        const double fac,
+        LINALG::Matrix<dim,1>& relVel,
+        std::vector<GEN::pairedvector<int,double> >& relVel_deriv
+        );
 
-    Teuchos::RCP<Epetra_FEVector> fc_;
-    Teuchos::RCP<LINALG::SparseMatrix> kc_;
+
+    template <int dim>
+    void VectorScalarProduct(
+        const LINALG::Matrix<dim,1>& v1,
+        const std::vector<GEN::pairedvector<int,double> >& v1d,
+        const LINALG::Matrix<dim,1>& v2,
+        const std::vector<GEN::pairedvector<int,double> >& v2d,
+        double& val,
+        GEN::pairedvector<int,double>& val_deriv
+);
+
     double theta_;
     INPAR::CONTACT::NitscheWeighting nit_wgt_;
     double ppn_;
     double ppt_;
+    double frcoeff_; // coulomb
+    double frbound_; // tresca
+    INPAR::CONTACT::FrictionType frtype_;
+    double dt_;
+
 };
+
+namespace UTILS
+{
+void BuildTangentVectors_3D(
+    const double* np,
+    const std::vector<GEN::pairedvector<int,double> >& dn,
+    double* t1p,
+    std::vector<GEN::pairedvector<int,double> >& dt1,
+    double* t2p,
+    std::vector<GEN::pairedvector<int,double> >& dt2
+    );//{dserror("stop");}
+
+template <int dim>
+void BuildTangentVectors(
+    const double* np,
+    const std::vector<GEN::pairedvector<int,double> >& dn,
+    double* t1p,
+    std::vector<GEN::pairedvector<int,double> >& dt1,
+    double* t2p,
+    std::vector<GEN::pairedvector<int,double> >& dt2
+    );
+}
 }
 #endif // CONTACT_INTEGRATOR_NITSCHE_H
