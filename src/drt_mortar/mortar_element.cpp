@@ -1846,30 +1846,13 @@ void MORTAR::MortarElement::NodeLinearization(std::vector<std::vector<GEN::paire
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalueCombined()
 {
-  if (ParentElement()->Faces()==NULL)
-  {
-    if (Dim()==3)
-      ParentElement()->SetFace(FaceParentNumber(),Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ParentElement()->Surfaces()[FaceParentNumber()]));
-    else if (Dim()==2)
-      ParentElement()->SetFace(FaceParentNumber(),Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ParentElement()->Lines()[FaceParentNumber()]));
-    else
-      dserror("unknown dimension");
-  }
-  if (ParentElement()->Faces()[FaceParentNumber()]==Teuchos::null)
-  {
-    if (Dim()==3)
-      ParentElement()->SetFace(FaceParentNumber(),Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ParentElement()->Surfaces()[FaceParentNumber()]));
-    else if (Dim()==2)
-      ParentElement()->SetFace(FaceParentNumber(),Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ParentElement()->Lines()[FaceParentNumber()]));
-    else
-      dserror("unknown dimension");
-  }
-
   double maxeigenvalue = 0.;
   if (Dim()==3)
-    maxeigenvalue = dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(
-        ParentElement()->Faces()[FaceParentNumber()].get())
-        ->EstimateNitscheTraceMaxEigenvalueCombined(MoData().ParentDisp());
+  {
+    Teuchos::RCP<DRT::Element> surf_ele = ParentElement()->Surfaces()[FaceParentNumber()];
+    DRT::ELEMENTS::StructuralSurface* surf = dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(surf_ele.get());
+    maxeigenvalue =surf->EstimateNitscheTraceMaxEigenvalueCombined(MoData().ParentDisp());
+  }
   else
     dserror("not implemented for this spatial dimension");
 
