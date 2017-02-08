@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------
 \file fsi_matrixtransform.cpp
 
+\level 1
+
 <pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -233,8 +235,9 @@ FSI::UTILS::MatrixLogicalSplitAndTransform::AddIntoFilled(Teuchos::RCP<Epetra_Cr
       // not found, sparsity pattern of B does not contain the index from A -> terminate
       if (jB == NumEntriesB || IndicesB[jB] != col)
       {
-        dserror("Attempted to add column with unknown global index %d to row %d",
-                srccolmap.GID(IndicesA[jA]), esrc->RowMap().GID(i));
+        dserror("Source matrix entry with global row ID %d and global column ID %d couldn't be added to"
+                " destination matrix entry with global row ID %d and unknown global column ID %d!",
+                esrc->RowMap().GID(i),srccolmap.GID(IndicesA[jA]),matching_dst_rows.GID(i),edst->ColMap().GID(col));
       }
 
       ValuesB[jB] += ValuesA[jA] * scale;

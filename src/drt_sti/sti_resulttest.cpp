@@ -21,6 +21,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+#include "../linalg/linalg_solver.H"
+
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/17 |
  *----------------------------------------------------------------------*/
@@ -79,6 +81,15 @@ double STI::STIResultTest::ResultSpecial(
   // number of Newton-Raphson iterations in last time step
   if(quantity == "numiterlastnewton")
     result = (double) sti_algorithm_->Iter();
+
+  // number of iterations performed by linear solver during last Newton-Raphson iteration
+  else if(quantity == "numiterlastsolve")
+  {
+    // safety check
+    if(sti_algorithm_->Solver().Params().get("solver","none") != "aztec")
+      dserror("Must have Aztec solver for result test involving number of solver iterations during last Newton-Raphson iteration!");
+    result = (double) sti_algorithm_->Solver().getNumIters();
+  }
 
   // catch unknown quantity strings
   else

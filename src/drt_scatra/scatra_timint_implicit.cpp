@@ -2849,6 +2849,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       // end time measurement for solver
       dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
+
+      // output performance statistics associated with linear solver into text file if applicable
+      if(DRT::INPUT::IntegralValue<int>(*params_,"OUTPUTSOLVERSTATS"))
+        OutputSolverStats(*solver_,dtsolve_,Step(),iternum_);
     }
 
     //------------------------------------------------ update solution vector

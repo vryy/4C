@@ -16,7 +16,7 @@ Test case for scatra-thermo interaction involving electrochemistry and electrode
 - charge transfer kinetics characterized by Butler-Volmer-Peltier kinetics
 - discharge from fully charged state at C rate of 10
 - 1560 tet4 elements with matching interface nodes
-- cf. bachelor thesis by Tobias Crönert (2015) for details
+- cf. bachelor thesis by Tobias Crönert (2015) and term paper by Maximilian Wurzer (2016) for details
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1560
 //NODES       533
@@ -31,8 +31,9 @@ TIMESTEP                        1.0
 THETA                           0.5
 VELOCITYFIELD                   zero
 INITIALFIELD                    field_by_condition
+CALCFLUX_BOUNDARY               total
 SKIPINITDER                     no
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -44,14 +45,25 @@ DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
+MATRIXTYPE                      block_condition
+EQUILIBRATION                   rows
 --------------------------------------------------------STI DYNAMIC
 SCATRATYPE                      Elch
-MATRIXTYPE                      sparse
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
 LINEAR_SOLVER                   1
-THERMO_LINEAR_SOLVER            1
+THERMO_LINEAR_SOLVER            3
 -----------------------------------------------------------SOLVER 1
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4.xml
+-----------------------------------------------------------SOLVER 2
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4_scatra.xml
+-----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 2.e-10 COND_PARA_NUM 1 COND_PARA 1.e5 C_MAX 16.1 OCP_MODEL Redlich-Kister OCP_PARA_NUM 16 OCP_PARA 1.1652e4 -3.268e3 3.955e3 -4.573e3 6.147e3 -3.339e3 1.117e4 2.997e2 -4.866e4 1.362e2 1.373e5 -2.129e4 -1.722e5 3.956e4 9.302e4 -3.280e4 END
@@ -78,24 +90,49 @@ FUNCT 3 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 3.892392107528559  // initial elec
 -------------------------------------------------------------FUNCT4
 FUNCT 4 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 300.0              // initial temperature
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 8.25404354285118558e+00 TOLERANCE 1.e-09          // local lithium concentration at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE -7.10585317795950367e-08 TOLERANCE 1.e-16         // local electric potential at anode-electrolyte interface (anode side)
-SCATRA DIS thermo NODE 40 QUANTITY phi VALUE 3.00355713742267540e+02 TOLERANCE 1.e-07           // local temperature at anode-electrolyte interface (anode side)
-SCATRA DIS scatra NODE 277 QUANTITY phi1 VALUE 1.20013744700698077e+00 TOLERANCE 1.e-09         // local lithium concentration at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 277 QUANTITY phi2 VALUE -9.96716011856440681e-02 TOLERANCE 1.e-11        // local electric potential at anode-electrolyte interface (electrolyte side)
-SCATRA DIS thermo NODE 277 QUANTITY phi VALUE 3.00355713742267540e+02 TOLERANCE 1.e-07          // local temperature at anode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY phi1 VALUE 1.19995901883087042e+00 TOLERANCE 1.e-09         // local lithium concentration at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 391 QUANTITY phi2 VALUE -9.96787719057649624e-02 TOLERANCE 1.e-11        // local electric potential at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS thermo NODE 391 QUANTITY phi VALUE 3.00355754949047707e+02 TOLERANCE 1.e-07          // local temperature at cathode-electrolyte interface (electrolyte side)
-SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE 1.26475657657333382e+01 TOLERANCE 1.e-08         // local lithium concentration at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE 3.77030482830429570e+00 TOLERANCE 1.e-09         // local electric potential at cathode-electrolyte interface (cathode side)
-SCATRA DIS thermo NODE 452 QUANTITY phi VALUE 3.00355754949047707e+02 TOLERANCE 1.e-07          // local temperature at cathode-electrolyte interface (cathode side)
-SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.44444416539958476e-01 TOLERANCE 1.e-10          // anode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58363865002511583e-01 TOLERANCE 1.e-10          // cathode state of charge
-SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.77030388966926777e+00 TOLERANCE 1.e-09   // cell voltage
+SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 8.25404354285118558e+00 TOLERANCE 1.e-09                  // local lithium concentration at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE -7.10585317795950367e-08 TOLERANCE 1.e-16                 // local electric potential at anode-electrolyte interface (anode side)
+SCATRA DIS thermo NODE 40 QUANTITY phi VALUE 3.00355713742267540e+02 TOLERANCE 1.e-07                   // local temperature at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 40 QUANTITY flux_boundary_1_x VALUE -4.21568903133980829e-06 TOLERANCE 1.e-14    // local lithium flux at anode-electrolyte interface (anode side)
+SCATRA DIS scatra NODE 40 QUANTITY flux_boundary_1_y VALUE -5.00074737131529894e-06 TOLERANCE 1.e-14
+SCATRA DIS scatra NODE 40 QUANTITY flux_boundary_1_z VALUE 3.74024672257989026e-06 TOLERANCE 1.e-14
+SCATRA DIS thermo NODE 40 QUANTITY flux_boundary_1_x VALUE -3.50740382777306223e+01 TOLERANCE 1.e-08    // local heat flux at anode-electrolyte interface (anode side)
+SCATRA DIS thermo NODE 40 QUANTITY flux_boundary_1_y VALUE -4.16056315859308015e+01 TOLERANCE 1.e-08
+SCATRA DIS thermo NODE 40 QUANTITY flux_boundary_1_z VALUE 3.11184140340234840e+01 TOLERANCE 1.e-08
+SCATRA DIS scatra NODE 277 QUANTITY flux_boundary_1_x VALUE -4.21568903084243986e-06 TOLERANCE 1.e-14   // local lithium flux at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 277 QUANTITY flux_boundary_1_y VALUE -5.00074737072530916e-06 TOLERANCE 1.e-14
+SCATRA DIS scatra NODE 277 QUANTITY flux_boundary_1_z VALUE 3.74024672213861447e-06 TOLERANCE 1.e-14
+SCATRA DIS thermo NODE 277 QUANTITY flux_boundary_1_x VALUE -3.50628506716868173e+01 TOLERANCE 1.e-08   // local heat flux at anode-electrolyte interface (electrolyte side)
+SCATRA DIS thermo NODE 277 QUANTITY flux_boundary_1_y VALUE -4.15923605901104452e+01 TOLERANCE 1.e-08
+SCATRA DIS thermo NODE 277 QUANTITY flux_boundary_1_z VALUE 3.11084881579620003e+01 TOLERANCE 1.e-08
+SCATRA DIS scatra NODE 277 QUANTITY phi1 VALUE 1.20013744700698077e+00 TOLERANCE 1.e-09                 // local lithium concentration at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 277 QUANTITY phi2 VALUE -9.96716011856440681e-02 TOLERANCE 1.e-11                // local electric potential at anode-electrolyte interface (electrolyte side)
+SCATRA DIS thermo NODE 277 QUANTITY phi VALUE 3.00355713742267540e+02 TOLERANCE 1.e-07                  // local temperature at anode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY phi1 VALUE 1.19995901883087042e+00 TOLERANCE 1.e-09                 // local lithium concentration at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY phi2 VALUE -9.96787719057649624e-02 TOLERANCE 1.e-11                // local electric potential at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS thermo NODE 391 QUANTITY phi VALUE 3.00355754949047707e+02 TOLERANCE 1.e-07                  // local temperature at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY flux_boundary_1_x VALUE 4.09405339974418319e-06 TOLERANCE 1.e-14    // local lithium flux at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS scatra NODE 391 QUANTITY flux_boundary_1_y VALUE 6.83957890140220865e-06 TOLERANCE 1.e-14
+SCATRA DIS scatra NODE 391 QUANTITY flux_boundary_1_z VALUE -3.79928355760941326e-06 TOLERANCE 1.e-14
+SCATRA DIS thermo NODE 391 QUANTITY flux_boundary_1_x VALUE -2.32598384148886730e+01 TOLERANCE 1.e-08   // local heat flux at cathode-electrolyte interface (electrolyte side)
+SCATRA DIS thermo NODE 391 QUANTITY flux_boundary_1_y VALUE -3.88581888263689379e+01 TOLERANCE 1.e-08
+SCATRA DIS thermo NODE 391 QUANTITY flux_boundary_1_z VALUE 2.15851414267972643e+01 TOLERANCE 1.e-08
+SCATRA DIS scatra NODE 452 QUANTITY flux_boundary_1_x VALUE 4.09405339893842531e-06 TOLERANCE 1.e-14    // local lithium flux at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 452 QUANTITY flux_boundary_1_y VALUE 6.83957890005609881e-06 TOLERANCE 1.e-14
+SCATRA DIS scatra NODE 452 QUANTITY flux_boundary_1_z VALUE -3.79928355686166994e-06 TOLERANCE 1.e-14
+SCATRA DIS thermo NODE 452 QUANTITY flux_boundary_1_x VALUE -2.32444902302805900e+01 TOLERANCE 1.e-08   // local heat flux at cathode-electrolyte interface (cathode side)
+SCATRA DIS thermo NODE 452 QUANTITY flux_boundary_1_y VALUE -3.88325479493772363e+01 TOLERANCE 1.e-08
+SCATRA DIS thermo NODE 452 QUANTITY flux_boundary_1_z VALUE 2.15708983039732480e+01 TOLERANCE 1.e-08
+SCATRA DIS scatra NODE 452 QUANTITY phi1 VALUE 1.26475657657333382e+01 TOLERANCE 1.e-08                 // local lithium concentration at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra NODE 452 QUANTITY phi2 VALUE 3.77030482830429570e+00 TOLERANCE 1.e-09                 // local electric potential at cathode-electrolyte interface (cathode side)
+SCATRA DIS thermo NODE 452 QUANTITY phi VALUE 3.00355754949047707e+02 TOLERANCE 1.e-07                  // local temperature at cathode-electrolyte interface (cathode side)
+SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.44444416539958476e-01 TOLERANCE 1.e-10                  // anode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58363865002511583e-01 TOLERANCE 1.e-10                  // cathode state of charge
+SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.77030388966926777e+00 TOLERANCE 1.e-09           // cell voltage
+STI SPECIAL QUANTITY numiterlastnewton VALUE 4.0 TOLERANCE 1.e-20                                       // number of Newton-Raphson iterations during last time step
+STI SPECIAL QUANTITY numiterlastsolve VALUE 5.0 TOLERANCE 1.e-20                                        // number of iterations performed by linear solver during last Newton-Raphson iteration
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 78
-NDSURF  8
+NDSURF  14
 NDVOL   5
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
@@ -114,86 +151,11 @@ E 2 - 0 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e-
 E 3 - 0 Master
 E 4 - 1 Master
 E 5 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5 peltier -0.038
----------------------------DESIGN POINT THERMO COUPLING CONDITIONS
-DPOINT 78
-E 1 - NUMDOF 1 ONOFF 1
-E 2 - NUMDOF 1 ONOFF 1
-E 3 - NUMDOF 1 ONOFF 1
-E 4 - NUMDOF 1 ONOFF 1
-E 5 - NUMDOF 1 ONOFF 1
-E 6 - NUMDOF 1 ONOFF 1
-E 7 - NUMDOF 1 ONOFF 1
-E 8 - NUMDOF 1 ONOFF 1
-E 9 - NUMDOF 1 ONOFF 1
-E 10 - NUMDOF 1 ONOFF 1
-E 11 - NUMDOF 1 ONOFF 1
-E 12 - NUMDOF 1 ONOFF 1
-E 13 - NUMDOF 1 ONOFF 1
-E 14 - NUMDOF 1 ONOFF 1
-E 15 - NUMDOF 1 ONOFF 1
-E 16 - NUMDOF 1 ONOFF 1
-E 17 - NUMDOF 1 ONOFF 1
-E 18 - NUMDOF 1 ONOFF 1
-E 19 - NUMDOF 1 ONOFF 1
-E 20 - NUMDOF 1 ONOFF 1
-E 21 - NUMDOF 1 ONOFF 1
-E 22 - NUMDOF 1 ONOFF 1
-E 23 - NUMDOF 1 ONOFF 1
-E 24 - NUMDOF 1 ONOFF 1
-E 25 - NUMDOF 1 ONOFF 1
-E 26 - NUMDOF 1 ONOFF 1
-E 27 - NUMDOF 1 ONOFF 1
-E 28 - NUMDOF 1 ONOFF 1
-E 29 - NUMDOF 1 ONOFF 1
-E 30 - NUMDOF 1 ONOFF 1
-E 31 - NUMDOF 1 ONOFF 1
-E 32 - NUMDOF 1 ONOFF 1
-E 33 - NUMDOF 1 ONOFF 1
-E 34 - NUMDOF 1 ONOFF 1
-E 35 - NUMDOF 1 ONOFF 1
-E 36 - NUMDOF 1 ONOFF 1
-E 37 - NUMDOF 1 ONOFF 1
-E 38 - NUMDOF 1 ONOFF 1
-E 39 - NUMDOF 1 ONOFF 1
-E 40 - NUMDOF 1 ONOFF 1
-E 41 - NUMDOF 1 ONOFF 1
-E 42 - NUMDOF 1 ONOFF 1
-E 43 - NUMDOF 1 ONOFF 1
-E 44 - NUMDOF 1 ONOFF 1
-E 45 - NUMDOF 1 ONOFF 1
-E 46 - NUMDOF 1 ONOFF 1
-E 47 - NUMDOF 1 ONOFF 1
-E 48 - NUMDOF 1 ONOFF 1
-E 49 - NUMDOF 1 ONOFF 1
-E 50 - NUMDOF 1 ONOFF 1
-E 51 - NUMDOF 1 ONOFF 1
-E 52 - NUMDOF 1 ONOFF 1
-E 53 - NUMDOF 1 ONOFF 1
-E 54 - NUMDOF 1 ONOFF 1
-E 55 - NUMDOF 1 ONOFF 1
-E 56 - NUMDOF 1 ONOFF 1
-E 57 - NUMDOF 1 ONOFF 1
-E 58 - NUMDOF 1 ONOFF 1
-E 59 - NUMDOF 1 ONOFF 1
-E 60 - NUMDOF 1 ONOFF 1
-E 61 - NUMDOF 1 ONOFF 1
-E 62 - NUMDOF 1 ONOFF 1
-E 63 - NUMDOF 1 ONOFF 1
-E 64 - NUMDOF 1 ONOFF 1
-E 65 - NUMDOF 1 ONOFF 1
-E 66 - NUMDOF 1 ONOFF 1
-E 67 - NUMDOF 1 ONOFF 1
-E 68 - NUMDOF 1 ONOFF 1
-E 69 - NUMDOF 1 ONOFF 1
-E 70 - NUMDOF 1 ONOFF 1
-E 71 - NUMDOF 1 ONOFF 1
-E 72 - NUMDOF 1 ONOFF 1
-E 73 - NUMDOF 1 ONOFF 1
-E 74 - NUMDOF 1 ONOFF 1
-E 75 - NUMDOF 1 ONOFF 1
-E 76 - NUMDOF 1 ONOFF 1
-E 77 - NUMDOF 1 ONOFF 1
-E 78 - NUMDOF 1 ONOFF 1
+-----------------DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING
+DVOL   3
+E 1 -
+E 2 -
+E 3 -
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   2
 E 1 - ID 0 c_0% 2.029 c_100% 10.88
@@ -202,163 +164,14 @@ E 3 - ID 1 c_0% 22.37 c_100% 10.56
 DSURF  2
 E 1 - ID 0
 E 6 - ID 1
------------------------------------------------DNODE-NODE TOPOLOGY
-NODE    7 DNODE 1
-NODE    255 DNODE 1
-NODE    8 DNODE 2
-NODE    207 DNODE 2
-NODE    9 DNODE 3
-NODE    267 DNODE 3
-NODE    21 DNODE 4
-NODE    282 DNODE 4
-NODE    22 DNODE 5
-NODE    192 DNODE 5
-NODE    23 DNODE 6
-NODE    408 DNODE 6
-NODE    24 DNODE 7
-NODE    407 DNODE 7
-NODE    25 DNODE 8
-NODE    177 DNODE 8
-NODE    30 DNODE 9
-NODE    240 DNODE 9
-NODE    31 DNODE 10
-NODE    369 DNODE 10
-NODE    32 DNODE 11
-NODE    288 DNODE 11
-NODE    34 DNODE 12
-NODE    371 DNODE 12
-NODE    36 DNODE 13
-NODE    274 DNODE 13
-NODE    40 DNODE 14
-NODE    277 DNODE 14
-NODE    45 DNODE 15
-NODE    175 DNODE 15
-NODE    48 DNODE 16
-NODE    343 DNODE 16
-NODE    49 DNODE 17
-NODE    428 DNODE 17
-NODE    51 DNODE 18
-NODE    259 DNODE 18
-NODE    53 DNODE 19
-NODE    132 DNODE 19
-NODE    56 DNODE 20
-NODE    144 DNODE 20
-NODE    57 DNODE 21
-NODE    143 DNODE 21
-NODE    59 DNODE 22
-NODE    238 DNODE 22
-NODE    60 DNODE 23
-NODE    134 DNODE 23
-NODE    61 DNODE 24
-NODE    135 DNODE 24
-NODE    67 DNODE 25
-NODE    212 DNODE 25
-NODE    68 DNODE 26
-NODE    368 DNODE 26
-NODE    71 DNODE 27
-NODE    335 DNODE 27
-NODE    85 DNODE 28
-NODE    319 DNODE 28
-NODE    86 DNODE 29
-NODE    258 DNODE 29
-NODE    87 DNODE 30
-NODE    237 DNODE 30
-NODE    88 DNODE 31
-NODE    287 DNODE 31
-NODE    89 DNODE 32
-NODE    384 DNODE 32
-NODE    91 DNODE 33
-NODE    357 DNODE 33
-NODE    92 DNODE 34
-NODE    358 DNODE 34
-NODE    94 DNODE 35
-NODE    361 DNODE 35
-NODE    101 DNODE 36
-NODE    256 DNODE 36
-NODE    104 DNODE 37
-NODE    424 DNODE 37
-NODE    106 DNODE 38
-NODE    359 DNODE 38
-NODE    108 DNODE 39
-NODE    420 DNODE 39
-NODE    435 DNODE 40
-NODE    146 DNODE 40
-NODE    437 DNODE 41
-NODE    251 DNODE 41
-NODE    439 DNODE 42
-NODE    217 DNODE 42
-NODE    445 DNODE 43
-NODE    375 DNODE 43
-NODE    448 DNODE 44
-NODE    405 DNODE 44
-NODE    451 DNODE 45
-NODE    194 DNODE 45
-NODE    452 DNODE 46
-NODE    391 DNODE 46
-NODE    458 DNODE 47
-NODE    164 DNODE 47
-NODE    459 DNODE 48
-NODE    167 DNODE 48
-NODE    463 DNODE 49
-NODE    393 DNODE 49
-NODE    466 DNODE 50
-NODE    427 DNODE 50
-NODE    468 DNODE 51
-NODE    216 DNODE 51
-NODE    469 DNODE 52
-NODE    172 DNODE 52
-NODE    470 DNODE 53
-NODE    178 DNODE 53
-NODE    471 DNODE 54
-NODE    396 DNODE 54
-NODE    472 DNODE 55
-NODE    413 DNODE 55
-NODE    483 DNODE 56
-NODE    316 DNODE 56
-NODE    484 DNODE 57
-NODE    127 DNODE 57
-NODE    485 DNODE 58
-NODE    317 DNODE 58
-NODE    487 DNODE 59
-NODE    119 DNODE 59
-NODE    489 DNODE 60
-NODE    128 DNODE 60
-NODE    493 DNODE 61
-NODE    281 DNODE 61
-NODE    495 DNODE 62
-NODE    401 DNODE 62
-NODE    496 DNODE 63
-NODE    402 DNODE 63
-NODE    498 DNODE 64
-NODE    347 DNODE 64
-NODE    505 DNODE 65
-NODE    376 DNODE 65
-NODE    506 DNODE 66
-NODE    373 DNODE 66
-NODE    507 DNODE 67
-NODE    190 DNODE 67
-NODE    511 DNODE 68
-NODE    226 DNODE 68
-NODE    512 DNODE 69
-NODE    390 DNODE 69
-NODE    513 DNODE 70
-NODE    120 DNODE 70
-NODE    514 DNODE 71
-NODE    394 DNODE 71
-NODE    519 DNODE 72
-NODE    148 DNODE 72
-NODE    526 DNODE 73
-NODE    185 DNODE 73
-NODE    527 DNODE 74
-NODE    415 DNODE 74
-NODE    528 DNODE 75
-NODE    188 DNODE 75
-NODE    529 DNODE 76
-NODE    412 DNODE 76
-NODE    531 DNODE 77
-NODE    421 DNODE 77
-NODE    533 DNODE 78
-NODE    379 DNODE 78
+----------------------------------SCATRA FLUX CALC SURF CONDITIONS
+DSURF  6
+E 1 -
+E 2 -
+E 3 -
+E 4 -
+E 5 -
+E 6 -
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    104 DSURFACE 1
 NODE    106 DSURFACE 1

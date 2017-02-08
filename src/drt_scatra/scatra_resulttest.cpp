@@ -21,6 +21,8 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_linedefinition.H"
 
+#include "../linalg/linalg_solver.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SCATRA::ScaTraResultTest::ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatratimint) :
@@ -365,6 +367,15 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
           result = (*scatratimint_->RelErrors())[domain*scatratimint_->NumDofPerNode()*2+species*2+1];
       }
     }
+  }
+
+  // number of iterations performed by linear solver during last Newton-Raphson iteration
+  else if(quantity == "numiterlastsolve")
+  {
+    // safety check
+    if(scatratimint_->Solver()->Params().get("solver","none") != "aztec")
+      dserror("Must have Aztec solver for result test involving number of solver iterations during last Newton-Raphson iteration!");
+    result = (double) scatratimint_->Solver()->getNumIters();
   }
 
   // catch unknown quantity strings

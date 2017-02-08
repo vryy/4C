@@ -1108,6 +1108,55 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
   return;
 } // SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer
 
+
+/*-----------------------------------------------------------------------------------------*
+ | output performance statistics associated with linear solver into text file   fang 02/17 |
+ *-----------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputSolverStats(
+    const LINALG::Solver&   solver,     //!< linear solver
+    double                  time,       //!< solver time
+    const int&              step,       //!< time step
+    const int&              iteration   //!< Newton-Raphson iteration number
+    )
+{
+  // safety check
+  if(solver.Params().get("solver","none") != "aztec")
+    dserror("Performance statistics only available for Aztec solvers!");
+
+  // extract communicator
+  const Epetra_Comm& comm = solver.Comm();
+
+  // compute accumulated solver time across all processors
+  double globaltime(0.);
+  comm.SumAll(&time,&globaltime,1);
+
+  // write performance statistics to file
+  if(comm.MyPID() == 0)
+  {
+    // set file name
+    std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".solver_stats.txt");
+
+    // open file in appropriate mode and write header at beginning
+    std::ofstream file;
+    if(step == 1 and iteration == 1)
+    {
+      file.open(filename.c_str(),std::fstream::trunc);
+      file << "Step,NewtonRaphsonIteration,SolverIterations,SolverTimeAllProcs,SolverTimeOneProc" << std::endl;
+    }
+    else
+      file.open(filename.c_str(),std::fstream::app);
+
+    // write results
+    file << step << "," << iteration << "," << solver.getNumIters() << "," << std::setprecision(16) << std::scientific << globaltime<< "," << globaltime/comm.NumProc() << std::endl;
+
+    // close file
+    file.close();
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::OutputSolverStats
+
+
 /*----------------------------------------------------------------------*
  | write state vectors to Gmsh postprocessing files        henke   12/09|
  *----------------------------------------------------------------------*/

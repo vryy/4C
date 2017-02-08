@@ -90,6 +90,12 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       &stidyn
       );
+
+  // ID of linear solver for global system of equations
+  IntParameter("LINEAR_SOLVER",-1,"ID of linear solver for global system of equations",&stidyn);
+
+  // ID of linear solver for temperature field
+  IntParameter("THERMO_LINEAR_SOLVER",-1,"ID of linear solver for temperature field",&stidyn);
 }
 
 

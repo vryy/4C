@@ -566,6 +566,9 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("CONV_HEAT_TRANS",
       "No","Flag to (de)activate potential convective heat transfer boundary conditions",&cellscatradyn);
 
+  // flag for output of performance statistics associated with linear solver into text file
+  BoolParameter("OUTPUTSOLVERSTATS","No","flag for output of performance statistics associated with linear solver into text file",&cellscatradyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& cellscatra_nonlin = cellscatradyn.sublist(
       "NONLINEAR",

@@ -104,6 +104,12 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! provide global state vectors for element evaluation
     void AddTimeIntegrationSpecificVectors() const;
 
+    //! return map extractor associated with blocks of global system matrix
+    const LINALG::MultiMapExtractor& BlockMaps() const {return *blockmaps_;};
+
+    //! return map extractor associated with blocks of auxiliary system matrix for slave side
+    const LINALG::MultiMapExtractor& BlockMapsSlave() const {return *blockmaps_slave_;};
+
     //! compute time derivatives of discrete state variables
     void ComputeTimeDerivative() const;
 
@@ -171,6 +177,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! return master dofs transformed to slave side of scatra-scatra interface
     const Teuchos::RCP<const Epetra_Vector> MasterPhinp() const {return imasterphinp_;};
+
+    //! return type of global system matrix in global system of equations
+    const INPAR::S2I::MatrixType& MatrixType() const {return matrixtype_;};
 
     //! return mortar interface discretization associated with particular condition ID
     DRT::Discretization& MortarDiscretization(const int& condid) const;

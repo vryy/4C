@@ -19,6 +19,7 @@
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 
+#include "../drt_inpar/inpar_s2i.H"
 #include "../drt_inpar/inpar_sti.H"
 
 // forward declarations
@@ -45,6 +46,7 @@ namespace LINALG
 {
   class BlockSparseMatrixBase;
   class MapExtractor;
+  class MultiMapExtractor;
   class Solver;
   class SparseMatrix;
   class SparseOperator;
@@ -65,10 +67,12 @@ namespace STI
 
       //! constructor
       explicit Algorithm(
-          const Epetra_Comm&              comm,          //! communicator
-          const Teuchos::ParameterList&   stidyn,        //! parameter list for scatra-thermo interaction
-          const Teuchos::ParameterList&   scatradyn,     //! scalar transport parameter list for scatra and thermo fields
-          const Teuchos::ParameterList&   solverparams   //! solver parameter list
+          const Epetra_Comm&              comm,                  //! communicator
+          const Teuchos::ParameterList&   stidyn,                //! parameter list for scatra-thermo interaction
+          const Teuchos::ParameterList&   scatradyn,             //! scalar transport parameter list for scatra and thermo fields
+          const Teuchos::ParameterList&   solverparams,          //! solver parameter list for scatra-thermo interaction
+          const Teuchos::ParameterList&   solverparams_scatra,   //! solver parameter list for scatra field
+          const Teuchos::ParameterList&   solverparams_thermo    //! solver parameter list for thermo field
          );
 
       //! return counter for Newton-Raphson iterations
@@ -96,6 +100,9 @@ namespace STI
       //! access scatra time integrator
       const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Scatra() const {return scatra_;};
 
+      //! return algebraic solver for global system of equations
+      const LINALG::Solver& Solver() const {return *solver_;};
+
       //! access thermo time integrator
       const Teuchos::RCP<SCATRA::ScaTraTimIntImpl>& Thermo() const {return thermo_;};
 
@@ -107,8 +114,29 @@ namespace STI
       //! assemble global system of equations
       void AssembleMatAndRHS();
 
+      //! build null spaces associated with blocks of global system matrix
+      void BuildBlockNullSpaces() const;
+
+      //! compute inverse sums of absolute values of matrix row entries
+      void ComputeInvRowSums(
+          const LINALG::SparseMatrix&          matrix,      //!< matrix
+          const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
+          ) const;
+
       //! global map of degrees of freedom
       const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
+
+      //! equilibrate matrix rows
+      void EquilibrateMatrixRows(
+          LINALG::SparseMatrix&                matrix,      //!< matrix
+          const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
+          ) const;
+
+      //! equilibrate global system of equations if necessary
+      void EquilibrateSystem(
+          const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //!< system matrix
+          const Teuchos::RCP<Epetra_Vector>&            residual        //!< residual vector
+          ) const;
 
       //! pass scatra degrees of freedom to thermo discretization and vice versa
       void ExchangeStateVectors();
@@ -180,10 +208,16 @@ namespace STI
       const INPAR::STI::MatrixType matrixtype_;
 
       //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo degrees of freedom)
-      Teuchos::RCP<LINALG::SparseMatrix> scatrathermoblock_;
+      Teuchos::RCP<LINALG::SparseOperator> scatrathermoblock_;
 
       //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra degrees of freedom)
-      Teuchos::RCP<LINALG::SparseMatrix> thermoscatrablock_;
+      Teuchos::RCP<LINALG::SparseOperator> thermoscatrablock_;
+
+      //! map extractor associated with blocks of global system matrix
+      Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
+
+      //! map extractor associated with single thermo block of global system matrix
+      Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermo_;
 
       //! global increment vector for Newton-Raphson iteration
       Teuchos::RCP<Epetra_Vector> increment_;
@@ -199,6 +233,12 @@ namespace STI
 
       //! algebraic solver for global system of equations
       Teuchos::RCP<LINALG::Solver> solver_;
+
+      //! flag for equilibration of global system of equations
+      const INPAR::S2I::EquilibrationMethods equilibration_;
+
+      //! inverse sums of absolute values of row entries in global system matrix
+      Teuchos::RCP<Epetra_Vector> invrowsums_;
 
       //! L2 norm of scatra state vector
       double scatradofnorm_;

@@ -46,6 +46,8 @@ SCATRATYPE                      Elch
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
 MATRIXTYPE                      sparse
+LINEAR_SOLVER                   1
+THERMO_LINEAR_SOLVER            1
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    StandardMortar
 ----------------------------------------------------------SOLVER 1

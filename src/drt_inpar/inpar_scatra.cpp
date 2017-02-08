@@ -4,25 +4,22 @@
 
 \brief Input parameters for scatra
 
-   \level 1
+\level 1
 
-   \maintainer  Rui Fang
-                fang@lnm.mw.tum.de
-                http://www.lnm.mw.tum.de
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 */
-
 /*----------------------------------------------------------------------*/
-
-
+#include "inpar_scatra.H"
 
 #include "drt_validparameters.H"
-#include "inpar_s2i.H"
-#include "inpar_scatra.H"
 #include "inpar_fluid.H"
+#include "inpar_s2i.H"
 #include "inpar_thermo.H"
+
 #include "../drt_lib/drt_conditiondefinition.H"
-
-
 
 void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -71,7 +68,6 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("ALPHA_M",0.5,"Generalized-alpha time integration factor",&scatradyn);
   DoubleParameter("ALPHA_F",0.5,"Generalized-alpha time integration factor",&scatradyn);
   DoubleParameter("GAMMA",0.5,"Generalized-alpha time integration factor",&scatradyn);
-  //IntParameter("WRITESOLEVRY",1,"Increment for writing solution",&scatradyn);
   IntParameter("RESULTSEVRY",1,"Increment for writing solution",&scatradyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&scatradyn);
   IntParameter("MATID",-1,"Material ID for automatic mesh generation",&scatradyn);
@@ -326,6 +322,9 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("PADAPTERRORBASE",1.66,"The error tolerance base to calculate the variation of the elemental degree",&scatradyn);
   IntParameter("PADAPTDEGREEMAX",4,"The max. degree of the shape functions",&scatradyn);
   BoolParameter("SEMIIMPLICIT", "no","Flag to (de)activate semi-implicit calculation of the reaction term",&scatradyn);
+
+  // flag for output of performance statistics associated with linear solver into text file
+  BoolParameter("OUTPUTSOLVERSTATS","No","flag for output of performance statistics associated with linear solver into text file",&scatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(

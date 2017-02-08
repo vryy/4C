@@ -113,16 +113,34 @@ void sti_dyn(
     scatraele->AddMaterial(thermoele->Material());
   }
 
-  // access scatra parameter list
+  // access parameter lists for scatra-thermo interaction and scalar transport field
+  const Teuchos::ParameterList& stidyn = problem->STIDynamicParams();
   const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
-  // extract and check ID of linear solver
-  const int solver_id = scatradyn.get<int>("LINEAR_SOLVER");
+  // extract and check ID of global linear solver
+  const int solver_id = stidyn.get<int>("LINEAR_SOLVER");
   if(solver_id == -1)
-    dserror("No linear solver specified in input file section 'SCALAR TRANSPORT DYNAMIC'!");
+    dserror("No global linear solver was specified in input file section 'STI DYNAMIC'!");
+
+  // extract and check ID of linear solver for scatra field
+  const int solver_id_scatra = scatradyn.get<int>("LINEAR_SOLVER");
+  if(solver_id_scatra == -1)
+    dserror("No linear solver for scalar transport field was specified in input file section 'SCALAR TRANSPORT DYNAMIC'!");
+
+  // extract and check ID of linear solver for thermo field
+  const int solver_id_thermo = stidyn.get<int>("THERMO_LINEAR_SOLVER");
+  if(solver_id_thermo == -1)
+    dserror("No linear solver for temperature field was specified in input file section 'STI DYNAMIC'!");
 
   // instantiate monolithic algorithm for scatra-thermo interaction
-  Teuchos::RCP<STI::Algorithm> sti_algorithm = Teuchos::rcp(new STI::Algorithm(comm,problem->STIDynamicParams(),scatradyn,DRT::Problem::Instance()->SolverParams(solver_id)));
+  const Teuchos::RCP<STI::Algorithm> sti_algorithm = Teuchos::rcp(new STI::Algorithm(
+      comm,
+      stidyn,
+      scatradyn,
+      DRT::Problem::Instance()->SolverParams(solver_id),
+      DRT::Problem::Instance()->SolverParams(solver_id_scatra),
+      DRT::Problem::Instance()->SolverParams(solver_id_thermo)
+      ));
 
   // read restart data if necessary
   if(restartstep)
