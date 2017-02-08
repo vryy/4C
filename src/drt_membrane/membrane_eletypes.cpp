@@ -19,6 +19,7 @@
 #include "membrane_eletypes.H"
 #include "../drt_lib/drt_discret.H"
 
+
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          fbraeu 06/16 |
  *----------------------------------------------------------------------*/
@@ -41,7 +42,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri3Type::Create( const std::
                                                                      const int id,
                                                                      const int owner )
 {
-  if ( eletype=="MEMBRANE" && eledistype=="TRI3" )
+  if ( eletype=="MEMBRANE3" && eledistype=="TRI3" )
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::tri3>(id,owner));
     return ele;
@@ -69,7 +70,7 @@ void DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpace( DRT::Discretization & d
 
 void DRT::ELEMENTS::Membrane_tri3Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE3"];
 
   defs["TRI3"]
        .AddIntVector("TRI3",3)
@@ -108,7 +109,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_tri6Type::Create( const std::
                                                                      const int id,
                                                                      const int owner )
 {
-  if ( eletype=="MEMBRANE" && eledistype=="TRI6" )
+  if ( eletype=="MEMBRANE6" && eledistype=="TRI6" )
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::tri6>(id,owner));
     return ele;
@@ -136,7 +137,7 @@ void DRT::ELEMENTS::Membrane_tri6Type::ComputeNullSpace( DRT::Discretization & d
 
 void DRT::ELEMENTS::Membrane_tri6Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE6"];
 
   defs["TRI6"]
        .AddIntVector("TRI6",6)
@@ -175,7 +176,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad4Type::Create( const std:
                                                                       const int id,
                                                                       const int owner )
 {
-  if ( eletype=="MEMBRANE" && eledistype=="QUAD4" )
+  if ( eletype=="MEMBRANE4" && eledistype=="QUAD4" )
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::quad4>(id,owner));
     return ele;
@@ -203,7 +204,7 @@ void DRT::ELEMENTS::Membrane_quad4Type::ComputeNullSpace( DRT::Discretization & 
 
 void DRT::ELEMENTS::Membrane_quad4Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE4"];
 
   defs["QUAD4"]
        .AddIntVector("QUAD4",4)
@@ -242,7 +243,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_quad9Type::Create( const std:
                                                                       const int id,
                                                                       const int owner )
 {
-  if ( eletype=="MEMBRANE" && eledistype=="QUAD9" )
+  if ( eletype=="MEMBRANE9" && eledistype=="QUAD9" )
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Membrane<DRT::Element::quad9>(id,owner));
     return ele;
@@ -270,7 +271,7 @@ void DRT::ELEMENTS::Membrane_quad9Type::ComputeNullSpace( DRT::Discretization & 
 
 void DRT::ELEMENTS::Membrane_quad9Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE9"];
 
   defs["QUAD9"]
        .AddIntVector("QUAD9",9)
