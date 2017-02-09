@@ -13,13 +13,6 @@ MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 0.45 ISOHARD 0.
                             PL_SPIN_CHI -50 rY_11 1.0 rY_22 0.9 rY_33 0.9 rY_12 0.7 rY_23 0.57385 rY_13 0.7
 
 \level 2
-
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -524,9 +517,9 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(DRT::INPUT::LineDefinition* lin
     ElastSymTensorMultiplyAddSym(PlAniso_full_,0.5*(alpha3-alpha1-alpha2),M0,M1,1.);
     ElastSymTensorMultiplyAddSym(PlAniso_full_,0.5*(alpha1-alpha2-alpha3),M1,M2,1.);
     ElastSymTensorMultiplyAddSym(PlAniso_full_,0.5*(alpha2-alpha3-alpha1),M0,M2,1.);
-    AddtodMdC_gamma2(PlAniso_full_,M0,M1,alpha4);
-    AddtodMdC_gamma2(PlAniso_full_,M1,M2,alpha5);
-    AddtodMdC_gamma2(PlAniso_full_,M0,M2,alpha6);
+    AddSymmetricHolzapfelProduct(PlAniso_full_,M0,M1,alpha4);
+    AddSymmetricHolzapfelProduct(PlAniso_full_,M1,M2,alpha5);
+    AddSymmetricHolzapfelProduct(PlAniso_full_,M0,M2,alpha6);
 
     // we need this matrix to get rid of the zero eigenvalue to be able to invert
     // the anisotropy tensor. After the inversion we expand the tensor again to 6x6
@@ -2090,8 +2083,8 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(
     )
 {
     // derivative of PK2 w.r.t. inverse plastic deformation gradient
-    AddtodPK2dFpinv(dPK2dFpinvIsoprinc,id2,Fpi,gamma(0));
-    AddtodPK2dFpinv(dPK2dFpinvIsoprinc,CpiC,Fpi,gamma(1));
+  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2,Fpi,gamma(0));
+  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,CpiC,Fpi,gamma(1));
     dPK2dFpinvIsoprinc.MultiplyNT(delta(0),Cpi,CFpi,1.);
     dPK2dFpinvIsoprinc.MultiplyNT(delta(1),Cpi,CFpiCe,1.);
     dPK2dFpinvIsoprinc.MultiplyNT(delta(1),CpiCCpi,CFpi,1.);
@@ -2101,7 +2094,7 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(
     dPK2dFpinvIsoprinc.MultiplyNT(delta(4),CpiCCpi,CFpiCei,1.);
     dPK2dFpinvIsoprinc.MultiplyNT(delta(4),ircg,CFpiCe,1.);
     dPK2dFpinvIsoprinc.MultiplyNT(delta(5),ircg,CFpiCei,1.);
-    AddtodPK2dFpinv(dPK2dFpinvIsoprinc,id2,FpiCe,0.5*delta(7));
+    AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2,FpiCe,0.5*delta(7));
 
     // Mandel stress
     LINALG::Matrix<6,1> Mv;
@@ -2117,8 +2110,8 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(
     MandelStressIsoprinc(2,0) += Mv(5);
 
     // derivative of Mandel stress w.r.t. GL
-    AddtodMdC_gamma1(dMdCisoprinc,Fpi,gamma(0));
-    AddtodMdC_gamma2(dMdCisoprinc,Fpi,FpiCe,gamma(1));
+    AddSymmetricHolzapfelProduct(dMdCisoprinc,Fpi,Fpi,.5*gamma(0));
+    AddSymmetricHolzapfelProduct(dMdCisoprinc,Fpi,FpiCe,gamma(1));
     dMdCisoprinc.MultiplyNT(delta(0),Ce,Cpi,1.);
     dMdCisoprinc.MultiplyNT(delta(1),Ce,CpiCCpi,1.);
     dMdCisoprinc.MultiplyNT(delta(1),Ce2,Cpi,1.);
@@ -2130,9 +2123,9 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(
     dMdCisoprinc.MultiplyNT(delta(5),id2V,ircg,1.);
 
     // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
-    AddtodPK2dFpinv(dMdFpinvIsoprinc,FpiTC,id2,gamma(0));
-    AddtodPK2dFpinv(dMdFpinvIsoprinc,FpiTC,CeM,gamma(1));
-    AddtodPK2dFpinv(dMdFpinvIsoprinc,CeFpiTC,id2,gamma(1));
+    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC,id2,gamma(0));
+    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC,CeM,gamma(1));
+    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,CeFpiTC,id2,gamma(1));
     dMdFpinvIsoprinc.MultiplyNT(delta(0),Ce,CFpi,1.);
     dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce,CFpiCe,1.);
     dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce2,CFpi,1.);
@@ -2202,179 +2195,6 @@ bool MAT::PlasticElastHyper::VisData(
   return false;
 
 }  // VisData()
-
-/*----------------------------------------------------------------------*
- |                                                          seitz 09/13 |
- *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::AddtodPK2dFpinv(LINALG::Matrix<6,9>& dPK2dFpinv,
-    LINALG::Matrix<3,3> A, LINALG::Matrix<3,3> B, double fac)
-{
-  dPK2dFpinv(0,0) += 2 * fac * A(0,0) * B(0,0);
-  dPK2dFpinv(0,3) += 2 * fac * A(0,0) * B(0,1);
-  dPK2dFpinv(0,5) += 2 * fac * A(0,0) * B(0,2);
-  dPK2dFpinv(0,6) += 2 * fac * A(0,1) * B(0,0);
-  dPK2dFpinv(0,1) += 2 * fac * A(0,1) * B(0,1);
-  dPK2dFpinv(0,4) += 2 * fac * A(0,1) * B(0,2);
-  dPK2dFpinv(0,8) += 2 * fac * A(0,2) * B(0,0);
-  dPK2dFpinv(0,7) += 2 * fac * A(0,2) * B(0,1);
-  dPK2dFpinv(0,2) += 2 * fac * A(0,2) * B(0,2);
-
-  dPK2dFpinv(1,0) += 2 * fac * A(1,0) * B(1,0);
-  dPK2dFpinv(1,3) += 2 * fac * A(1,0) * B(1,1);
-  dPK2dFpinv(1,5) += 2 * fac * A(1,0) * B(1,2);
-  dPK2dFpinv(1,6) += 2 * fac * A(1,1) * B(1,0);
-  dPK2dFpinv(1,1) += 2 * fac * A(1,1) * B(1,1);
-  dPK2dFpinv(1,4) += 2 * fac * A(1,1) * B(1,2);
-  dPK2dFpinv(1,8) += 2 * fac * A(1,2) * B(1,0);
-  dPK2dFpinv(1,7) += 2 * fac * A(1,2) * B(1,1);
-  dPK2dFpinv(1,2) += 2 * fac * A(1,2) * B(1,2);
-
-  dPK2dFpinv(2,0) += 2 * fac * A(2,0) * B(2,0);
-  dPK2dFpinv(2,3) += 2 * fac * A(2,0) * B(2,1);
-  dPK2dFpinv(2,5) += 2 * fac * A(2,0) * B(2,2);
-  dPK2dFpinv(2,6) += 2 * fac * A(2,1) * B(2,0);
-  dPK2dFpinv(2,1) += 2 * fac * A(2,1) * B(2,1);
-  dPK2dFpinv(2,4) += 2 * fac * A(2,1) * B(2,2);
-  dPK2dFpinv(2,8) += 2 * fac * A(2,2) * B(2,0);
-  dPK2dFpinv(2,7) += 2 * fac * A(2,2) * B(2,1);
-  dPK2dFpinv(2,2) += 2 * fac * A(2,2) * B(2,2);
-
-  dPK2dFpinv(3,0) += fac * (A(0,0) * B(1,0) + A(1,0) * B(0,0));
-  dPK2dFpinv(3,3) += fac * (A(0,0) * B(1,1) + A(1,0) * B(0,1));
-  dPK2dFpinv(3,5) += fac * (A(0,0) * B(1,2) + A(1,0) * B(0,2));
-  dPK2dFpinv(3,6) += fac * (A(0,1) * B(1,0) + A(1,1) * B(0,0));
-  dPK2dFpinv(3,1) += fac * (A(0,1) * B(1,1) + A(1,1) * B(0,1));
-  dPK2dFpinv(3,4) += fac * (A(0,1) * B(1,2) + A(1,1) * B(0,2));
-  dPK2dFpinv(3,8) += fac * (A(0,2) * B(1,0) + A(1,2) * B(0,0));
-  dPK2dFpinv(3,7) += fac * (A(0,2) * B(1,1) + A(1,2) * B(0,1));
-  dPK2dFpinv(3,2) += fac * (A(0,2) * B(1,2) + A(1,2) * B(0,2));
-
-  dPK2dFpinv(4,0) += fac * (A(1,0) * B(2,0) + A(2,0) * B(1,0));
-  dPK2dFpinv(4,3) += fac * (A(1,0) * B(2,1) + A(2,0) * B(1,1));
-  dPK2dFpinv(4,5) += fac * (A(1,0) * B(2,2) + A(2,0) * B(1,2));
-  dPK2dFpinv(4,6) += fac * (A(1,1) * B(2,0) + A(2,1) * B(1,0));
-  dPK2dFpinv(4,1) += fac * (A(1,1) * B(2,1) + A(2,1) * B(1,1));
-  dPK2dFpinv(4,4) += fac * (A(1,1) * B(2,2) + A(2,1) * B(1,2));
-  dPK2dFpinv(4,8) += fac * (A(1,2) * B(2,0) + A(2,2) * B(1,0));
-  dPK2dFpinv(4,7) += fac * (A(1,2) * B(2,1) + A(2,2) * B(1,1));
-  dPK2dFpinv(4,2) += fac * (A(1,2) * B(2,2) + A(2,2) * B(1,2));
-
-  dPK2dFpinv(5,0) += fac * (A(0,0) * B(2,0) + A(2,0) * B(0,0));
-  dPK2dFpinv(5,3) += fac * (A(0,0) * B(2,1) + A(2,0) * B(0,1));
-  dPK2dFpinv(5,5) += fac * (A(0,0) * B(2,2) + A(2,0) * B(0,2));
-  dPK2dFpinv(5,6) += fac * (A(0,1) * B(2,0) + A(2,1) * B(0,0));
-  dPK2dFpinv(5,1) += fac * (A(0,1) * B(2,1) + A(2,1) * B(0,1));
-  dPK2dFpinv(5,4) += fac * (A(0,1) * B(2,2) + A(2,1) * B(0,2));
-  dPK2dFpinv(5,8) += fac * (A(0,2) * B(2,0) + A(2,2) * B(0,0));
-  dPK2dFpinv(5,7) += fac * (A(0,2) * B(2,1) + A(2,2) * B(0,1));
-  dPK2dFpinv(5,2) += fac * (A(0,2) * B(2,2) + A(2,2) * B(0,2));
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |                                                          seitz 09/13 |
- *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::AddtodMdC_gamma1(LINALG::Matrix<6,6>& dMdC,
-    LINALG::Matrix<3,3> A, double fac)
-{
-  dMdC(0,0) += 2. * fac * A(0,0) * A(0,0);
-  dMdC(0,3) += 2. * fac * A(0,0) * A(1,0);
-  dMdC(0,5) += 2. * fac * A(0,0) * A(2,0);
-  dMdC(0,1) += 2. * fac * A(1,0) * A(1,0);
-  dMdC(0,4) += 2. * fac * A(1,0) * A(2,0);
-  dMdC(0,2) += 2. * fac * A(2,0) * A(2,0);
-
-  dMdC(1,0) += 2. * fac * A(0,1) * A(0,1);
-  dMdC(1,3) += 2. * fac * A(0,1) * A(1,1);
-  dMdC(1,5) += 2. * fac * A(0,1) * A(2,1);
-  dMdC(1,1) += 2. * fac * A(1,1) * A(1,1);
-  dMdC(1,4) += 2. * fac * A(1,1) * A(2,1);
-  dMdC(1,2) += 2. * fac * A(2,1) * A(2,1);
-
-  dMdC(2,0) += 2. * fac * A(0,2) * A(0,2);
-  dMdC(2,3) += 2. * fac * A(0,2) * A(1,2);
-  dMdC(2,5) += 2. * fac * A(0,2) * A(2,2);
-  dMdC(2,1) += 2. * fac * A(1,2) * A(1,2);
-  dMdC(2,4) += 2. * fac * A(1,2) * A(2,2);
-  dMdC(2,2) += 2. * fac * A(2,2) * A(2,2);
-
-  dMdC(3,0) += 2. * fac * A(0,0) * A(0,1);
-  dMdC(3,3) += fac * (A(0,0) * A(1,1) + A(0,1) * A(1,0));
-  dMdC(3,5) += fac * (A(0,0) * A(2,1) + A(0,1) * A(2,0));
-  dMdC(3,1) += 2. * fac * A(1,0) * A(1,1);
-  dMdC(3,4) += fac * (A(1,0) * A(2,1) + A(1,1) * A(2,0));
-  dMdC(3,2) += 2. * fac * A(2,0) * A(2,1);
-
-  dMdC(4,0) += 2. * fac * A(0,1) * A(0,2);
-  dMdC(4,3) += fac * (A(0,1) * A(1,2) + A(0,2) * A(1,1));
-  dMdC(4,5) += fac * (A(0,1) * A(2,2) + A(0,2) * A(2,1));
-  dMdC(4,1) += 2. * fac * A(1,1) * A(1,2);
-  dMdC(4,4) += fac * (A(1,1) * A(2,2) + A(1,2) * A(2,1));
-  dMdC(4,2) += 2. * fac * A(2,1) * A(2,2);
-
-  dMdC(5,0) += 2. * fac * A(0,0) * A(0,2);
-  dMdC(5,3) += fac * (A(0,0) * A(1,2) + A(0,2) * A(1,0));
-  dMdC(5,5) += fac * (A(0,0) * A(2,2) + A(0,2) * A(2,0));
-  dMdC(5,1) += 2. * fac * A(1,0) * A(1,2);
-  dMdC(5,4) += fac * (A(1,0) * A(2,2) + A(1,2) * A(2,0));
-  dMdC(5,2) += 2. * fac * A(2,0) * A(2,2);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |                                                          seitz 09/13 |
- *----------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::AddtodMdC_gamma2(LINALG::Matrix<6,6>& dMdC,
-    LINALG::Matrix<3,3> A, LINALG::Matrix<3,3> B, double fac)
-{
-  dMdC(0,0) += 4 * fac * A(0,0) * B(0,0);
-  dMdC(0,3) += fac * (2 * A(0,0) * B(1,0) + 2 * A(1,0) * B(0,0));
-  dMdC(0,5) += fac * (2 * A(0,0) * B(2,0) + 2 * A(2,0) * B(0,0));
-  dMdC(0,1) += 4 * fac * A(1,0) * B(1,0);
-  dMdC(0,4) += fac * (2 * A(1,0) * B(2,0) + 2 * A(2,0) * B(1,0));
-  dMdC(0,2) += 4 * fac * A(2,0) * B(2,0);
-
-  dMdC(3,0) += fac * (2 * A(0,0) * B(0,1) + 2 * A(0,1) * B(0,0));
-  dMdC(3,3) += fac * (A(0,0) * B(1,1) + A(1,0) * B(0,1) + A(1,1) * B(0,0) + A(0,1) * B(1,0));
-  dMdC(3,5) += fac * (A(0,0) * B(2,1) + A(2,0) * B(0,1) + A(2,1) * B(0,0) + A(0,1) * B(2,0));
-  dMdC(3,1) += fac * (2 * A(1,0) * B(1,1) + 2 * A(1,1) * B(1,0));
-  dMdC(3,4) += fac * (A(1,0) * B(2,1) + A(2,0) * B(1,1) + A(2,1) * B(1,0) + A(1,1) * B(2,0));
-  dMdC(3,2) += fac * (2 * A(2,0) * B(2,1) + 2 * A(2,1) * B(2,0));
-
-  dMdC(5,0) += fac * (2 * A(0,0) * B(0,2) + 2 * A(0,2) * B(0,0));
-  dMdC(5,3) += fac * (A(0,0) * B(1,2) + A(1,0) * B(0,2) + A(1,2) * B(0,0) + A(0,2) * B(1,0));
-  dMdC(5,5) += fac * (A(0,0) * B(2,2) + A(2,0) * B(0,2) + A(2,2) * B(0,0) + A(0,2) * B(2,0));
-  dMdC(5,1) += fac * (2 * A(1,0) * B(1,2) + 2 * A(1,2) * B(1,0));
-  dMdC(5,4) += fac * (A(1,0) * B(2,2) + A(2,0) * B(1,2) + A(2,2) * B(1,0) + A(1,2) * B(2,0));
-  dMdC(5,2) += fac * (2 * A(2,0) * B(2,2) + 2 * A(2,2) * B(2,0));
-
-  dMdC(1,0) += 4 * fac * A(0,1) * B(0,1);
-  dMdC(1,3) += fac * (2 * A(0,1) * B(1,1) + 2 * A(1,1) * B(0,1));
-  dMdC(1,5) += fac * (2 * A(0,1) * B(2,1) + 2 * A(2,1) * B(0,1));
-  dMdC(1,1) += 4 * fac * A(1,1) * B(1,1);
-  dMdC(1,4) += fac * (2 * A(1,1) * B(2,1) + 2 * A(2,1) * B(1,1));
-  dMdC(1,2) += 4 * fac * A(2,1) * B(2,1);
-
-  dMdC(4,0) += fac * (2 * A(0,1) * B(0,2) + 2 * A(0,2) * B(0,1));
-  dMdC(4,3) += fac * (A(0,1) * B(1,2) + A(1,1) * B(0,2) + A(1,2) * B(0,1) + A(0,2) * B(1,1));
-  dMdC(4,5) += fac * (A(0,1) * B(2,2) + A(2,1) * B(0,2) + A(2,2) * B(0,1) + A(0,2) * B(2,1));
-  dMdC(4,1) += fac * (2 * A(1,1) * B(1,2) + 2 * A(1,2) * B(1,1));
-  dMdC(4,4) += fac * (A(1,1) * B(2,2) + A(2,1) * B(1,2) + A(2,2) * B(1,1) + A(1,2) * B(2,1));
-  dMdC(4,2) += fac * (2 * A(2,1) * B(2,2) + 2 * A(2,2) * B(2,1));
-
-  dMdC(2,0) += 4 * fac * A(0,2) * B(0,2);
-  dMdC(2,3) += fac * (2 * A(0,2) * B(1,2) + 2 * A(1,2) * B(0,2));
-  dMdC(2,5) += fac * (2 * A(0,2) * B(2,2) + 2 * A(2,2) * B(0,2));
-  dMdC(2,1) += 4 * fac * A(1,2) * B(1,2);
-  dMdC(2,4) += fac * (2 * A(1,2) * B(2,2) + 2 * A(2,2) * B(1,2));
-  dMdC(2,2) += 4 * fac * A(2,2) * B(2,2);
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 09/13 |
@@ -2488,9 +2308,9 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivativeSym3x3(const LINALG::Mat
     for (int n=1; n<=nmax; n++)
     {
       for (int m=1; m<=n/2; m++)
-        AddToSymMatrixExponentialDeriv(1./fac[n],Xn.at(m-1),Xn.at(n-m),MatrixExpDeriv);
+        AddSymmetricHolzapfelProduct(MatrixExpDeriv,Xn.at(m-1),Xn.at(n-m),.5/fac[n]);
       if (n%2==1)
-        AddToSymMatrixExponentialDeriv(0.5/fac[n],Xn.at((n-1)/2),Xn.at((n-1)/2),MatrixExpDeriv);
+        AddSymmetricHolzapfelProduct(MatrixExpDeriv,Xn.at((n-1)/2),Xn.at((n-1)/2),.25/fac[n]);
     }
   }
   else
@@ -2665,157 +2485,7 @@ void MAT::PlasticElastHyper::MatrixExponentialDerivative3x3(const LINALG::Matrix
   MatrixExpDeriv.Clear();
   for (int n=1; n<=nmax; n++)
     for (int m=1; m<=n; m++)
-      AddToMatrixExponentialDeriv(1./fac[n],Xn.at(m-1),Xn.at(n-m),MatrixExpDeriv);
+      AddNonSymmetricProduct(1./fac[n],Xn.at(m-1),Xn.at(n-m),MatrixExpDeriv);
 
   return;
-}
-
-/*---------------------------------------------------------------------------*
- |  add terms for matrix exponential derivative of a symmetric matrix        |
- | via power series                                              seitz 08/13 |
- *---------------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::AddToSymMatrixExponentialDeriv(const double fac,
-    const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<6,6>& Dexp)
-{
-  Dexp(0,0) += 2. * fac * A(0,0) * B(0,0);
-  Dexp(0,3) += fac * ( A(0,0) * B(0,1) + A(0,1) * B(0,0));
-  Dexp(0,5) += fac * ( A(0,0) * B(0,2) + A(0,2) * B(0,0));
-  Dexp(0,1) += 2. * fac * A(0,1) * B(0,1);
-  Dexp(0,4) += fac * ( A(0,1) * B(0,2) + A(0,2) * B(0,1));
-  Dexp(0,2) += 2. * fac * A(0,2) * B(0,2);
-
-  Dexp(3,0) += fac * (A(0,0) * B(0,1) + A(0,1) * B(0,0));
-  Dexp(3,3) += 0.5 * fac * (A(0,0) * B(1,1) + 2. * A(0,1) * B(0,1) + A(1,1) * B(0,0));
-  Dexp(3,5) += 0.5 * fac * (A(0,0) * B(1,2) + A(0,2) * B(0,1) + A(1,2) * B(0,0) + A(0,1) * B(0,2));
-  Dexp(3,1) +=  fac * ( A(0,1) * B(1,1) +  A(1,1) * B(0,1));
-  Dexp(3,4) += 0.5 * fac * (A(0,1) * B(1,2) + A(0,2) * B(1,1) + A(1,2) * B(0,1) + A(1,1) * B(0,2));
-  Dexp(3,2) += fac * ( A(0,2) * B(1,2) + A(1,2) * B(0,2));
-
-  Dexp(5,0) += fac * (A(0,0) * B(0,2) + A(0,2) * B(0,0));
-  Dexp(5,3) += 0.5 * fac * (A(0,0) * B(1,2) + A(0,2) * B(0,1) + A(1,2) * B(0,0) + A(0,1) * B(0,2));
-  Dexp(5,5) += 0.5 * fac * (A(0,0) * B(2,2) + 2. * A(0,2) * B(0,2) + A(2,2) * B(0,0));
-  Dexp(5,1) += fac * (A(0,1) * B(1,2) + A(1,2) * B(0,1));
-  Dexp(5,4) += 0.5 * fac * (A(0,1) * B(2,2) + A(0,2) * B(1,2) + A(2,2) * B(0,1) + A(1,2) * B(0,2));
-  Dexp(5,2) += fac * ( A(0,2) * B(2,2) +  A(2,2) * B(0,2));
-
-  Dexp(1,0) += 2. * fac * A(0,1) * B(0,1);
-  Dexp(1,3) +=  fac * ( A(0,1) * B(1,1) + A(1,1) * B(0,1));
-  Dexp(1,5) +=  fac * ( A(0,1) * B(1,2) +  A(1,2) * B(0,1));
-  Dexp(1,1) += 2. * fac * A(1,1) * B(1,1);
-  Dexp(1,4) +=  fac * ( A(1,1) * B(1,2) + A(1,2) * B(1,1));
-  Dexp(1,2) += 2. * fac * A(1,2) * B(1,2);
-
-  Dexp(4,0) +=  fac * ( A(0,1) * B(0,2) +  A(0,2) * B(0,1));
-  Dexp(4,3) += 0.5 * fac * (A(0,1) * B(1,2) + A(0,2) * B(1,1) + A(1,2) * B(0,1) + A(1,1) * B(0,2));
-  Dexp(4,5) += 0.5 * fac * (A(0,1) * B(2,2) + A(0,2) * B(1,2) + A(2,2) * B(0,1) + A(1,2) * B(0,2));
-  Dexp(4,1) +=  fac * ( A(1,1) * B(1,2) + A(1,2) * B(1,1));
-  Dexp(4,4) += 0.5 * fac * (A(1,1) * B(2,2) + 2. * A(1,2) * B(1,2) + A(2,2) * B(1,1));
-  Dexp(4,2) += fac * ( A(1,2) * B(2,2) + A(2,2) * B(1,2));
-
-  Dexp(2,0) += 2. * fac * A(0,2) * B(0,2);
-  Dexp(2,3) += fac * (A(0,2) * B(1,2) +  A(1,2) * B(0,2));
-  Dexp(2,5) += fac * ( A(0,2) * B(2,2) +  A(2,2) * B(0,2));
-  Dexp(2,1) += 2. * fac * A(1,2) * B(1,2);
-  Dexp(2,4) += fac * ( A(1,2) * B(2,2) + A(2,2) * B(1,2));
-  Dexp(2,2) += 2. * fac * A(2,2) * B(2,2);
-
-  return;
-}
-
-/*---------------------------------------------------------------------------*
- |  add terms for matrix exponential derivative of a symmetric matrix        |
- | via power series                                              seitz 09/13 |
- *---------------------------------------------------------------------------*/
-void MAT::PlasticElastHyper::AddToMatrixExponentialDeriv(const double fac,
-    const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<9,9>& Dexp)
-{
-  Dexp(0,0) += fac * A(0,0) * B(0,0);
-  Dexp(0,3) += fac * A(0,0) * B(1,0);
-  Dexp(0,5) += fac * A(0,0) * B(2,0);
-  Dexp(0,6) += fac * A(0,1) * B(0,0);
-  Dexp(0,1) += fac * A(0,1) * B(1,0);
-  Dexp(0,4) += fac * A(0,1) * B(2,0);
-  Dexp(0,8) += fac * A(0,2) * B(0,0);
-  Dexp(0,7) += fac * A(0,2) * B(1,0);
-  Dexp(0,2) += fac * A(0,2) * B(2,0);
-
-  Dexp(3,0) += fac * A(0,0) * B(0,1);
-  Dexp(3,3) += fac * A(0,0) * B(1,1);
-  Dexp(3,5) += fac * A(0,0) * B(2,1);
-  Dexp(3,6) += fac * A(0,1) * B(0,1);
-  Dexp(3,1) += fac * A(0,1) * B(1,1);
-  Dexp(3,4) += fac * A(0,1) * B(2,1);
-  Dexp(3,8) += fac * A(0,2) * B(0,1);
-  Dexp(3,7) += fac * A(0,2) * B(1,1);
-  Dexp(3,2) += fac * A(0,2) * B(2,1);
-
-  Dexp(5,0) += fac * A(0,0) * B(0,2);
-  Dexp(5,3) += fac * A(0,0) * B(1,2);
-  Dexp(5,5) += fac * A(0,0) * B(2,2);
-  Dexp(5,6) += fac * A(0,1) * B(0,2);
-  Dexp(5,1) += fac * A(0,1) * B(1,2);
-  Dexp(5,4) += fac * A(0,1) * B(2,2);
-  Dexp(5,8) += fac * A(0,2) * B(0,2);
-  Dexp(5,7) += fac * A(0,2) * B(1,2);
-  Dexp(5,2) += fac * A(0,2) * B(2,2);
-
-  Dexp(6,0) += fac * A(1,0) * B(0,0);
-  Dexp(6,3) += fac * A(1,0) * B(1,0);
-  Dexp(6,5) += fac * A(1,0) * B(2,0);
-  Dexp(6,6) += fac * A(1,1) * B(0,0);
-  Dexp(6,1) += fac * A(1,1) * B(1,0);
-  Dexp(6,4) += fac * A(1,1) * B(2,0);
-  Dexp(6,8) += fac * A(1,2) * B(0,0);
-  Dexp(6,7) += fac * A(1,2) * B(1,0);
-  Dexp(6,2) += fac * A(1,2) * B(2,0);
-
-  Dexp(1,0) += fac * A(1,0) * B(0,1);
-  Dexp(1,3) += fac * A(1,0) * B(1,1);
-  Dexp(1,5) += fac * A(1,0) * B(2,1);
-  Dexp(1,6) += fac * A(1,1) * B(0,1);
-  Dexp(1,1) += fac * A(1,1) * B(1,1);
-  Dexp(1,4) += fac * A(1,1) * B(2,1);
-  Dexp(1,8) += fac * A(1,2) * B(0,1);
-  Dexp(1,7) += fac * A(1,2) * B(1,1);
-  Dexp(1,2) += fac * A(1,2) * B(2,1);
-
-  Dexp(4,0) += fac * A(1,0) * B(0,2);
-  Dexp(4,3) += fac * A(1,0) * B(1,2);
-  Dexp(4,5) += fac * A(1,0) * B(2,2);
-  Dexp(4,6) += fac * A(1,1) * B(0,2);
-  Dexp(4,1) += fac * A(1,1) * B(1,2);
-  Dexp(4,4) += fac * A(1,1) * B(2,2);
-  Dexp(4,8) += fac * A(1,2) * B(0,2);
-  Dexp(4,7) += fac * A(1,2) * B(1,2);
-  Dexp(4,2) += fac * A(1,2) * B(2,2);
-
-  Dexp(8,0) += fac * A(2,0) * B(0,0);
-  Dexp(8,3) += fac * A(2,0) * B(1,0);
-  Dexp(8,5) += fac * A(2,0) * B(2,0);
-  Dexp(8,6) += fac * A(2,1) * B(0,0);
-  Dexp(8,1) += fac * A(2,1) * B(1,0);
-  Dexp(8,4) += fac * A(2,1) * B(2,0);
-  Dexp(8,8) += fac * A(2,2) * B(0,0);
-  Dexp(8,7) += fac * A(2,2) * B(1,0);
-  Dexp(8,2) += fac * A(2,2) * B(2,0);
-
-  Dexp(7,0) += fac * A(2,0) * B(0,1);
-  Dexp(7,3) += fac * A(2,0) * B(1,1);
-  Dexp(7,5) += fac * A(2,0) * B(2,1);
-  Dexp(7,6) += fac * A(2,1) * B(0,1);
-  Dexp(7,1) += fac * A(2,1) * B(1,1);
-  Dexp(7,4) += fac * A(2,1) * B(2,1);
-  Dexp(7,8) += fac * A(2,2) * B(0,1);
-  Dexp(7,7) += fac * A(2,2) * B(1,1);
-  Dexp(7,2) += fac * A(2,2) * B(2,1);
-
-  Dexp(2,0) += fac * A(2,0) * B(0,2);
-  Dexp(2,3) += fac * A(2,0) * B(1,2);
-  Dexp(2,5) += fac * A(2,0) * B(2,2);
-  Dexp(2,6) += fac * A(2,1) * B(0,2);
-  Dexp(2,1) += fac * A(2,1) * B(1,2);
-  Dexp(2,4) += fac * A(2,1) * B(2,2);
-  Dexp(2,8) += fac * A(2,2) * B(0,2);
-  Dexp(2,7) += fac * A(2,2) * B(1,2);
-  Dexp(2,2) += fac * A(2,2) * B(2,2);
 }

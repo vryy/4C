@@ -585,7 +585,7 @@ void MAT::PlasticElastHyperVCU::EvalDceDlp(
 
   LINALG::Matrix<3,3> tmp;
   tmp.MultiplyTN(next_fpi,rcg);
-  PlasticElastHyper::AddtodPK2dFpinv(dcedfpi,tmp,id2,1.0);
+  AddRightNonSymmetricHolzapfelProduct(dcedfpi,tmp,id2,1.0);
 
   // Derivative of inverse plastic deformation gradient
   dFpiDdeltaDp.Clear();
@@ -1058,8 +1058,8 @@ void MAT::PlasticElastHyperVCU::EvaluatePlast(
 {
 
   // derivative of PK2 w.r.t. inverse plastic deformation gradient
-  AddtodPK2dFpinv(dPK2dFpinvIsoprinc,id2,Fpi,gamma(0));
-  AddtodPK2dFpinv(dPK2dFpinvIsoprinc,CpiC,Fpi,gamma(1));
+  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2,Fpi,gamma(0));
+  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,CpiC,Fpi,gamma(1));
   dPK2dFpinvIsoprinc.MultiplyNT(delta(0),Cpi,CFpi,1.);
   dPK2dFpinvIsoprinc.MultiplyNT(delta(1),Cpi,CFpiCe,1.);
   dPK2dFpinvIsoprinc.MultiplyNT(delta(1),CpiCCpi,CFpi,1.);
@@ -1069,7 +1069,7 @@ void MAT::PlasticElastHyperVCU::EvaluatePlast(
   dPK2dFpinvIsoprinc.MultiplyNT(delta(4),CpiCCpi,CFpiCei,1.);
   dPK2dFpinvIsoprinc.MultiplyNT(delta(4),ircg,CFpiCe,1.);
   dPK2dFpinvIsoprinc.MultiplyNT(delta(5),ircg,CFpiCei,1.);
-  AddtodPK2dFpinv(dPK2dFpinvIsoprinc,id2,FpiCe,0.5*delta(7));
+  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2,FpiCe,0.5*delta(7));
 }
 
 void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(

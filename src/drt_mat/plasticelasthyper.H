@@ -2,13 +2,7 @@
 /*!
 \file plasticelasthyper.H
 \maintainer Alexander Seitz
-
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
+\level 2
 */
 
 /*----------------------------------------------------------------------*/
@@ -440,31 +434,6 @@ private:
     /// convert non-symmetric 2-tensor to 9x1 vector
     void Matrix3x3to9x1(LINALG::Matrix<3,3> A, LINALG::Matrix<9,1>& Out);
 
-    /// add a contribution to the derivative of the PK2 stress with respect to the plastic deformation gradient
-    /// in index notation this method does:
-    /// dPK2dFpinv_IJKL += fac*( A_IK * B_JL + A_JK * B_IL )
-    /// Note that the result is symmetric within the first two indices
-    /// Thus the first two indices are stored in stress-like Voigt notation.
-    /// The 2nd index pair has no symmetries and is therefore stored as 9-vector
-    /// Be aware that this is NOT symmetric w.r.t. A and B !!!
-    void AddtodPK2dFpinv(LINALG::Matrix<6,9>& dPK2dFpinv,
-        LINALG::Matrix<3,3> A,
-        LINALG::Matrix<3,3> B,
-        double fac);
-
-    /// in index notation this does:
-    /// dMdC_abCD += fac*( A_Ca * A_Db + A_Cb * A_Da )
-    /// result has minor symmetries but no major symmetry
-    void AddtodMdC_gamma1(LINALG::Matrix<6,6>& dMdC,
-        LINALG::Matrix<3,3> A, double fac);
-
-    /// in index notation this does:
-    /// dMdC_abCD += fac*( A_Ca*B_Db + A_Da*B_Cb + A_Db*B_Ca + A_Cb*B_Da )
-    /// result has minor symmetries but no major symmetry
-    /// Symmetric w.r.t. A,B
-    void AddtodMdC_gamma2(LINALG::Matrix<6,6>& dMdC,
-        LINALG::Matrix<3,3> A, LINALG::Matrix<3,3> B, double fac);
-
     /// calculates the isotropic stress and elasticity tensor for coupled configuration
     virtual void EvaluateIsotropicPrincPlast(
         LINALG::Matrix<6,9>& dPK2dFpinvIsoprinc,
@@ -548,18 +517,6 @@ private:
 
     //! calculate the derivative of the exponential of a non-symmetric 3x3 matrix
     virtual void MatrixExponentialDerivative3x3(const LINALG::Matrix<3,3> MatrixIn, LINALG::Matrix<9,9>& MatrixExpDeriv);
-
-    // index notation:
-    // Dexp_ijkl += 0.5*fac* (A_ik*B_lj + B_ik*A_lj + A_jk*B_li + B_jk*A_li)
-    // A and B symmetric!
-    virtual void AddToSymMatrixExponentialDeriv(const double fac,
-        const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<6,6>& Dexp);
-
-    /// index notation:
-    /// Dexp_ijkl += fac*( A_ik * B_lj )
-    /// A and B non-symmetric!
-    virtual void AddToMatrixExponentialDeriv(const double fac,
-        const LINALG::Matrix<3,3> A,const LINALG::Matrix<3,3> B, LINALG::Matrix<9,9>& Dexp);
 
     /// @name Voigt index arrays
     //@{
