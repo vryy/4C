@@ -1,0 +1,22 @@
+<ParameterList name="Preconditioner">
+  <Parameter name="Preconditioner" type="string" value="BlockSmoother(X)"/>
+
+  <!-- preconditioner -->
+  <ParameterList name="BlockSmoother(X)">
+    <Parameter name="type" type="string" value="BlockSmoother(X)"/>
+    <ParameterList name="parameters">
+      <Parameter name="smoother"  type="string" value="BGS"/>
+      <Parameter name="verbosity" type="string" value="off"/>
+    </ParameterList>
+  </ParameterList>
+
+  <!-- global smoother -->
+  <ParameterList name="BGS">
+    <Parameter name="type" type="string" value="BGS"/>
+    <ParameterList name="parameters">
+      <Parameter name="blocks"       type="string" value="(0),(1),(2)"/>
+      <Parameter name="smoothers"    type="string" value="DIRECT_SOLVER,DIRECT_SOLVER,DIRECT_SOLVER"/>
+      <Parameter name="local sweeps" type="string" value="1,1,1"/>
+    </ParameterList>
+  </ParameterList>
+</ParameterList>
