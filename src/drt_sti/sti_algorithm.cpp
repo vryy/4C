@@ -539,23 +539,50 @@ void STI::Algorithm::AssembleMatAndRHS()
  *-------------------------------------------------------------------------------*/
 void STI::Algorithm::BuildBlockNullSpaces() const
 {
-  // loop over block(s) of global system matrix associated with scalar transport field
-  for(int iblock=0; iblock<strategyscatra_->BlockMaps().NumMaps(); ++iblock)
+  switch(strategyscatra_->MatrixType())
   {
-    // store number of current block as string, starting from 1
-    std::stringstream iblockstr;
-    iblockstr << iblock+1;
+    case INPAR::S2I::matrix_block_condition:
+    {
+      // loop over block(s) of global system matrix associated with scalar transport field
+      for(int iblock=0; iblock<strategyscatra_->BlockMaps().NumMaps(); ++iblock)
+      {
+        // store number of current block as string, starting from 1
+        std::stringstream iblockstr;
+        iblockstr << iblock+1;
 
-    // equip smoother for current matrix block with empty parameter sublists to trigger null space computation
-    Teuchos::ParameterList& blocksmootherparams = solver_->Params().sublist("Inverse"+iblockstr.str());
-    blocksmootherparams.sublist("Aztec Parameters");
-    blocksmootherparams.sublist("MueLu Parameters");
+        // equip smoother for current matrix block with empty parameter sublists to trigger null space computation
+        Teuchos::ParameterList& blocksmootherparams = solver_->Params().sublist("Inverse"+iblockstr.str());
+        blocksmootherparams.sublist("Aztec Parameters");
+        blocksmootherparams.sublist("MueLu Parameters");
 
-    // equip smoother for current matrix block with null space associated with all degrees of freedom on scalar transport discretization
-    scatra_->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
+        // equip smoother for current matrix block with null space associated with all degrees of freedom on scalar transport discretization
+        scatra_->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
 
-    // reduce full null space to match degrees of freedom associated with current matrix block
-    LINALG::Solver::FixMLNullspace("Block "+iblockstr.str(),*scatra_->Discretization()->DofRowMap(),*strategyscatra_->BlockMaps().Map(iblock),blocksmootherparams);
+        // reduce full null space to match degrees of freedom associated with current matrix block
+        LINALG::Solver::FixMLNullspace("Block "+iblockstr.str(),*scatra_->Discretization()->DofRowMap(),*strategyscatra_->BlockMaps().Map(iblock),blocksmootherparams);
+      }
+
+      break;
+    }
+
+    case INPAR::S2I::matrix_sparse:
+    {
+      // equip smoother for scatra matrix block with empty parameter sublists to trigger null space computation
+      Teuchos::ParameterList& blocksmootherparams = solver_->Params().sublist("Inverse1");
+      blocksmootherparams.sublist("Aztec Parameters");
+      blocksmootherparams.sublist("MueLu Parameters");
+
+      // equip smoother for scatra matrix block with null space associated with all degrees of freedom on scatra discretization
+      scatra_->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
   }
 
   // store number of matrix block associated with temperature field as string
@@ -1697,9 +1724,7 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
           // as a consequence, the final thermo-scatra block lacks some entries, and so does the final matrix graph after calling Complete()
           // this leads to errors involving unknown global indices of matrix columns during the second run of the following code, with the thermo-scatra block now being Complete()
           // to circumvent this problem, we call Complete() on the thermo-scatra block before the very first run of the following code
-          if(strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition and
-             (Step() == 1 or Step() == DRT::Problem::Instance()->Restart()) and
-             iter_ == 1)
+          if(strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition and Step() == 1 and iter_ == 1)
             thermoscatrablock_->Complete();
 
           // loop over all thermo-scatra matrix blocks
@@ -1736,9 +1761,7 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
             thermoscatrarowsmaster.Complete(*maps_->Map(0),*icoupthermo_->MasterDofMap());
 
             // undo Complete() from above before performing subsequent matrix row transformation
-            if(strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition and
-               (Step() == 1 or Step() == DRT::Problem::Instance()->Restart()) and
-               iter_ == 1)
+            if(strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition and Step() == 1 and iter_ == 1)
               thermoscatrablock.UnComplete();
 
             // add master-side rows of thermo-scatra matrix block to corresponding slave-side rows

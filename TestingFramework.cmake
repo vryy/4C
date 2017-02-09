@@ -1741,6 +1741,7 @@ baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_4x4 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_BGS-AMG_3x3 3 "")
 
 # scatra-thermo interaction using the AMGnxn framework
+baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_BGS-AMG_2x2 3 15)
 baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4 3 "")
 endif (HAVE_MueLu)
 
