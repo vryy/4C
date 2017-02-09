@@ -3932,8 +3932,21 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectImmersedBoundVelocities
   static double searchradiusfac = globalproblem->ImmersedMethodParams().get<double>("FLD_SRCHRADIUS_FAC");
 
   // get discretizations
-  const Teuchos::RCP<DRT::Discretization> fluid_dis  = globalproblem->GetDis("fluid");
-  const Teuchos::RCP<DRT::Discretization> struct_dis = globalproblem->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluid_dis  = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> struct_dis = Teuchos::null;
+
+  if(globalproblem->ProblemType()==prb_immersed_cell)
+  {
+    // get discretizations
+    fluid_dis  = globalproblem->GetDis("porofluid");
+    struct_dis = globalproblem->GetDis("cell");
+  }
+  else
+  {
+    // get discretizations
+    fluid_dis  = globalproblem->GetDis("fluid");
+    struct_dis = globalproblem->GetDis("structure");
+  }
 
   // determine whether fluid mesh is deformable or not
   static int isALE = (globalproblem->ProblemType()==prb_immersed_ale_fsi);

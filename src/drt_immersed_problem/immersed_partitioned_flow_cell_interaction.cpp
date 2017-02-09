@@ -28,8 +28,6 @@
 
 #include "../drt_inpar/inpar_immersed.H"
 
-#include "../drt_fsi/fsi_nox_aitken.H"
-
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 #include "../drt_structure/stru_aux.H"
@@ -44,17 +42,64 @@
 
 
 IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInteraction(const Teuchos::ParameterList& params, const Epetra_Comm& comm)
-  : ImmersedPartitioned(comm)
+  : ImmersedPartitioned(comm),
+    artificial_velocity_isvalid_(false),
+    boundary_traction_isvalid_(false),
+    immersed_info_isvalid_(false)
 {
+  // get pointer to global problem
+  globalproblem_ = DRT::Problem::Instance();
+  // safety check
+  if (globalproblem_->CellMigrationParams().get<std::string>("FLUID_INTERACTION") != "yes")
+    dserror("Parameter FLUID_INTERACTION must be set to 'yes' in ---CELL DYNAMIC section.");
+
+  // important variables for parallel simulations
+  myrank_  = comm.MyPID();
+  numproc_ = comm.NumProc();
+
+  // get pointer to discretizations
+  backgroundfluiddis_     = globalproblem_->GetDis("porofluid");
+  backgroundstructuredis_ = globalproblem_->GetDis("structure");
+  immerseddis_            = globalproblem_->GetDis("cell");
+  scatradis_              = globalproblem_->GetDis("scatra");
+
+  // get coupling variable
+  displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_FSI") == "Displacement";
+  if(displacementcoupling_ and myrank_==0)
+    std::cout<<" Coupling variable for partitioned scheme :  Displacements "<<std::endl;
+  else if (!displacementcoupling_ and myrank_==0)
+    std::cout<<" Coupling variable for partitioned scheme :  Force "<<std::endl;
+
+  // set switch for interface velocity correction
+  correct_boundary_velocities_= (DRT::INPUT::IntegralValue<int>(globalproblem_->ImmersedMethodParams(), "CORRECT_BOUNDARY_VELOCITIES"));
+
+  // print acceleration method
+  if(globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<std::string>("COUPALGO") == "iter_stagg_fixed_rel_param")
+  {
+    is_relaxation_=false;
+    if(myrank_==0)
+      std::cout<<"\n Using FIXED relaxation parameter. "<<std::endl;
+  }
+  else if(globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<std::string>("COUPALGO") == "iter_stagg_AITKEN_rel_param")
+  {
+    is_relaxation_=true;
+    if(myrank_==0)
+      std::cout<<"\n Using AITKEN relaxation parameter. "<<std::endl;
+  }
+  else
+    dserror("Unknown definition of COUPALGO in FSI DYNAMIC section for Immersed FSI.");
+
+
+  // check for unfeasible combination
+  if (correct_boundary_velocities_ and displacementcoupling_ and is_relaxation_)
+    dserror("Interface velocity correction is not possible with displacement coupled Immersed FSI in combination with relaxation.");
+
   // get pointer to fluid search tree from ParameterList
   fluid_SearchTree_ = params.get<Teuchos::RCP<GEO::SearchTree> >("RCPToFluidSearchTree");
-
   // get pointer to cell search tree from ParameterList
   cell_SearchTree_ = params.get<Teuchos::RCP<GEO::SearchTree> >("RCPToCellSearchTree");
-
   // get pointer to the current position map of the cell
   currpositions_cell_ = params.get<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsCell");
-
   // get pointer to the current position map of the cell
   currpositions_ECM_ = params.get<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM");
 
@@ -64,10 +109,9 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   // get pointer to cell structure
   Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> multiphysicswrapper =
       params.get<Teuchos::RCP<ADAPTER::MultiphysicsStructureWrapperCellMigration> >("RCPToCellStructure");
-
+  // safety check
   if(multiphysicswrapper == Teuchos::null)
     dserror("no pointer to MultiphysicsStructureWrapperCellMigration provided");
-
   // get the fsi specific structure wrapper
   cellstructure_ = multiphysicswrapper->GetFSIStructureWrapperPtr();
 
@@ -89,23 +133,6 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
     dserror("no pointer to poroscatra_subproblem_ provided !");
   if(poroscatra_wrapper_==Teuchos::null)
     dserror("no pointer to poroscatra_wrapper_ provided !");
-
-  // important variables for parallel simulations
-  myrank_  = comm.MyPID();
-  numproc_ = comm.NumProc();
-
-  // get pointer to global problem
-  globalproblem_ = DRT::Problem::Instance();
-
-  // safety check
-  if (globalproblem_->CellMigrationParams().get<std::string>("FLUID_INTERACTION") != "yes")
-    dserror("Parameter FLUID_INTERACTION must be set to 'yes' in ---CELL DYNAMIC section.");
-
-  // get pointer to discretizations
-  backgroundfluiddis_     = globalproblem_->GetDis("porofluid");
-  backgroundstructuredis_ = globalproblem_->GetDis("structure");
-  immerseddis_            = globalproblem_->GetDis("cell");
-  scatradis_              = globalproblem_->GetDis("scatra");
 
   // counter for continued (unconverged) steps
   continued_steps_=0;
@@ -136,9 +163,6 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   segregationtype_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams().sublist("PROTEOLYSIS MODULE"),"SEGREGATION");
   segregationby_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams().sublist("PROTEOLYSIS MODULE"),"SEGREGATION_BY");
 
-  // setup the relaxation parameters
-  SetupRelaxation();
-
   // set pointer to poro fpsi structure
   porostructure_ = poroscatra_subproblem_->PoroField()->StructureField();
 
@@ -149,17 +173,11 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   // vector with fluid velocities interpolated from structure
   poroscatra_segregated_phi_ = Teuchos::rcp(new Epetra_Vector(*(poroscatra_subproblem_->ScaTraField()->DofRowMap(0)),true));
 
-  // get coupling variable
-  displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_FSI") == "Displacement";
-  if(displacementcoupling_ and myrank_==0)
-    std::cout<<" Coupling variable for partitioned scheme :  Displacements "<<std::endl;
-  else if (!displacementcoupling_ and myrank_==0)
-    std::cout<<" Coupling variable for partitioned scheme :  Force "<<std::endl;
-
-  // construct immersed exchange manager. singleton class that makes immersed variables comfortably accessible from everywhere in the code
+  // construct immersed exchange manager.
+  // singleton class that makes immersed variables accessible from everywhere in the code.
+  // IsFluidInteraction() is asked for in fluid_ele_calc_poro_p1_immersed.
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
   exchange_manager_->SetIsFluidInteraction(true);
-  exchange_manager_->SetPointerToCurrentSubsetOfBackgrdDis(&curr_subset_of_backgrounddis_);
   exchange_manager_->SetIsInitialized(true);
 
   // PSEUDO2D switch
@@ -183,6 +201,46 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
     dserror("Invalid value for parameter NUM_GP_FLUID_BOUND (valid parameters are 8, 64, 125, 343, 729 and 1000). \n"
             "Fix your Input File.");
 
+  // Validation flag for velocity in artificial domain. After each structure solve the velocity becomes invalid
+  // and needs to be projected again.
+  artificial_velocity_isvalid_ = false;
+
+  // Validation flag for bdry. traction on structure. After each fluid solve the traction becomes invalid
+  // and needs to be integrated again.
+  boundary_traction_isvalid_ = false;
+
+  // Validation flag for immersed information. After each structure solve, we have to assess
+  // again, which fluid elements are covered by the structure and which fluid eles are cut by
+  // the interface.
+  // todo: NOTE: There is little inconsistency right now in this method.
+  //             Fluid elements are labeled isboundarimmersed_ if:
+  //             1) at least one but not all nodes are covered, or
+  //             2) if a gp of the structural surface lies in a fluid element.
+  //
+  //             The first criterion is checked in CalcArtificialVelocity(). This is
+  //             done at the same time as struct vel. projection is performed.
+  //             The second criterion is checked in CalcFluidTractionsOnStructure().
+  //             This is done at the same time as the bdry. traction is integrated.
+  //
+  //             Since, the fluid field decides which gps of the fluid are compressible,
+  //             based on IsImmersed() and IsBoundaryImmersed() information, it might
+  //             happen, that after performing CalcArtificialVelocity(), the nodal criterion
+  //             is updated correctly, but since the structure has moved, the gp criterion
+  //             is invalid. It is only updated after the next struct solve. So the fluid
+  //             might be solved with incorrect compressible gps.
+  //
+  //             To fix this, one would have to split the information update and the projections.
+  //
+  //             However:
+  //             1) This would be more expensive.
+  //             2) I assume the error we make by the procedure explained above is very small, since
+  //                the deformations between iteration steps should be small. Especially, when we
+  //                are close to convergence, the difference in structure deformation should be so small,
+  //                that no new gps should have changed their states inbetween the last two structure solves.
+  immersed_info_isvalid_ = false;
+
+  // wait for all processors to arrive here
+  Comm().Barrier();
 }
 
 /*----------------------------------------------------------------------*/
@@ -217,29 +275,30 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::Setup()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFlowCellInteraction::CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
-  ReinitTransferVectors();
-
-  ResetImmersedInformation();
+  CheckIsInit();
+  CheckIsSetup();
 
   // DISPLACEMENT COUPLING
   if (displacementcoupling_)
   {
-    const Teuchos::RCP<Epetra_Vector> idispn = Teuchos::rcp(new Epetra_Vector(x));
+    // get the current artificial velocity state
+    const Teuchos::RCP<Epetra_Vector> artificial_velocity_n = Teuchos::rcp(new Epetra_Vector(x));
 
     ////////////////////
     // CALL BackgroundOp
     ////////////////////
-    PrepareBackgroundOp();
-    BackgroundOp(porofluid_artificial_velocity_, fillFlag);
+    BackgroundOp(artificial_velocity_n, fillFlag);  //!< solve the interstitial flow
 
     ////////////////////
     // CALL ImmersedOp
     ////////////////////
-    PrepareImmersedOp();
-    Teuchos::RCP<Epetra_Vector> idispnp =
-    ImmersedOp(cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_), fillFlag);
+    CalcFluidTractionOnStructure(); //!< // calculate new fluid traction interpolated to structural surface
+    ImmersedOp(cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_), fillFlag); //!< solve the cell
+    ResetImmersedInformation(); //!< structure moved; immersed info are invalid -> reset
+    const Teuchos::RCP<Epetra_Vector> artificial_velocity_np = CalcArtificialVelocity(); //!< calc new projected velocities and update immersed information
 
-    int err = F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
+    // calc residual
+    int err = F.Update(1.0, *artificial_velocity_np, -1.0, *artificial_velocity_n, 0.0);
     if(err != 0)
       dserror("Vector update of Coupling-residual returned err=%d",err);
 
@@ -247,25 +306,26 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CouplingOp(const Epetra_V
   // FORCE COUPLING
   else if(!displacementcoupling_)
   {
+    // get the current interface force state
     const Teuchos::RCP<Epetra_Vector> iforcen = Teuchos::rcp(new Epetra_Vector(x));
 
     ////////////////////
     // CALL ImmersedOp
     ////////////////////
-    PrepareImmersedOp();
-    ImmersedOp(iforcen, fillFlag);
+    ImmersedOp(iforcen, fillFlag);   //!< solve the cell
+    ResetImmersedInformation();      //!< structure moved; immersed info are invalid -> reset
 
     ////////////////////
     // CALL BackgroundOp
     ////////////////////
-    PrepareBackgroundOp(); // determine elements cut by the boundary
-    BackgroundOp(porofluid_artificial_velocity_, fillFlag);
+    CalcArtificialVelocity(); //!< calc the new velocity in the artificial fluid domain, immersed info are set inside
+    BackgroundOp(porofluid_artificial_velocity_, fillFlag); //!< solve the fluid
+    CalcFluidTractionOnStructure(); //!< calculate new fluid traction integrated over structural surface
 
+    // calc residual
     int err = F.Update(1.0, *(cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_)), -1.0, *iforcen, 0.0);
-
     if(err != 0)
       dserror("Vector update of FSI-residual returned err=%d",err);
-
   }
 
   // perform n steps max; then set converged
@@ -273,7 +333,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CouplingOp(const Epetra_V
   static int  itemax = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<int>("ITEMAX");
   if((IterationCounter())[0] == itemax and nlnsolver_continue)
   {
-    if(Comm().MyPID()==0)
+    if(myrank_==0)
       std::cout<<"\n  Continue with next time step after ITEMAX = "<<(IterationCounter())[0]<<" iterations. \n"<<std::endl;
 
     // !!! EXPERIMENTAL !!!
@@ -282,13 +342,15 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CouplingOp(const Epetra_V
     F.Update(1.0,*zeros,0.0);
     // !!! EXPERIMENTAL !!!
 
+    // clear states after time step was set converged
     immerseddis_->ClearState();
     backgroundfluiddis_->ClearState();
 
+    // increment the counter for unconverged steps
     continued_steps_++;
   }
 
-  if(DRT::Problem::Instance()->ImmersedMethodParams().get<std::string>("TIMESTATS")=="everyiter")
+  if(globalproblem_->ImmersedMethodParams().get<std::string>("TIMESTATS")=="everyiter")
   {
     Teuchos::TimeMonitor::summarize();
     Teuchos::TimeMonitor::zeroOutTimers();
@@ -305,8 +367,6 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::BackgroundOp(Teuchos::RCP
 {
   // print
   IMMERSED::ImmersedPartitioned::BackgroundOp(backgrd_dirichlet_values,fillFlag);
-  Teuchos::ParameterList params;
-  params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
 
   if (fillFlag==User)
   {
@@ -314,151 +374,28 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::BackgroundOp(Teuchos::RCP
   }
   else
   {
-    // calc the fluid velocity from the cell displacements
-    DRT::AssembleStrategy fluid_vol_strategy(
-        0,              // struct dofset for row
-        0,              // struct dofset for column
-        Teuchos::null,  // matrix 1
-        Teuchos::null,  //
-        backgrd_dirichlet_values ,  // vector 1
-        Teuchos::null,  //
-        Teuchos::null   //
-    );
+    // apply the given artificial velocity to the fluid field
+    ApplyImmersedDirichlet(backgrd_dirichlet_values);
 
-    if(myrank_ == 0)
-    {
-      std::cout<<"################################################################################################"<<std::endl;
-      std::cout<<"###   Interpolate transfer quantities from immersed elements which overlap the "<<backgroundfluiddis_->Name()<<" nodes ..."<<std::endl;
-    }
-
-    if(curr_subset_of_backgrounddis_.empty()==false)
-      EvaluateImmersed(params,
-          backgroundfluiddis_,
-          &fluid_vol_strategy,
-          &curr_subset_of_backgrounddis_,
-          cell_SearchTree_, currpositions_cell_,
-          (int)FLD::interpolate_velocity_to_given_point_immersed,
-          false);
-    else
-    {
-      // do nothing : a proc without subset of backgrd dis. does not need to enter evaluation,
-      //              since cell is ghosted on all procs and no communication has to be performed.
-    }
-
-    /////////////////////////////////////////////////////////////////////////////////////
-    //  Apply Dirichlet values to background fluid
-    //
-    BuildImmersedDirichMap(backgroundfluiddis_, dbcmap_immersed_, poroscatra_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap(),0);
-    poroscatra_subproblem_->FluidField()->AddDirichCond(dbcmap_immersed_);
-    DoImmersedDirichletCond(poroscatra_subproblem_->FluidField()->WriteAccessVelnp(),backgrd_dirichlet_values, dbcmap_immersed_);
-
-    /////////////////////////////////////////////////////////////////////////////////////
-    //  Apply Dirichlet values to background scatra field
-    //
-    if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_dirichlet and segregationtype_==INPAR::CELL::segregation_volumetric)
-    {
-      // only constant segregation so far
-      poroscatra_segregated_phi_->PutScalar(segregationconstant_);
-      BuildImmersedScaTraDirichMap(backgroundfluiddis_, scatradis_, dbcmap_immersed_scatra_, poroscatra_subproblem_->ScaTraField()->DirichMaps()->CondMap(),0);
-      poroscatra_subproblem_->ScaTraField()->AddDirichCond(dbcmap_immersed_scatra_);
-      DoImmersedDirichletCond(poroscatra_subproblem_->ScaTraField()->Phinp(),poroscatra_segregated_phi_, dbcmap_immersed_scatra_);
-    }
-    /////////////////////////////////////////////////////////////////////////////////////
-    //  Apply Source values to rhs of background scatra field
-    //
-    else if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_neumann)
-    {
-      bool evaluateonlyboundary = false;
-      if(segregationtype_==INPAR::CELL::segregation_volumetric)
-        evaluateonlyboundary = false;
-      else if(segregationtype_==INPAR::CELL::segregation_surface)
-        evaluateonlyboundary = true;
-      else
-      {
-        if(myrank_==0)
-          std::cout<<"WARNING! Undefined SEGREGATION type! "
-          "Volumetric Segregation is assumed by default."<<std::endl;
-      }
-
-      Teuchos::ParameterList sparams_struct;
-
-      // provide element parameter list with number of dofset associated with displacement dofs on scatra discretization
-      sparams_struct.set<int>("ndsdisp",poroscatra_subproblem_->ScaTraField()->NdsDisp());
-
-      sparams_struct.set<int>("action",(int)SCATRA::calc_immersed_element_source);
-      sparams_struct.set<double>("segregation_constant",segregationconstant_);
-
-      // calc the fluid velocity from the cell displacements
-      DRT::AssembleStrategy scatra_vol_strategy(
-          0,              // struct dofset for row
-          0,              // struct dofset for column
-          Teuchos::null,  // matrix 1
-          Teuchos::null,  //
-          poroscatra_segregated_phi_ ,  // vector 1
-          Teuchos::null,  //
-          Teuchos::null   //
-      );
-      if(curr_subset_of_backgrounddis_.empty()==false)
-        EvaluateScaTraWithInternalCommunication(scatradis_,
-            backgroundfluiddis_,
-            &scatra_vol_strategy,
-            &curr_subset_of_backgrounddis_,
-            cell_SearchTree_,
-            currpositions_cell_,
-            sparams_struct,
-            evaluateonlyboundary);
-
-      poroscatra_wrapper_->AddContributionToRHS(poroscatra_segregated_phi_);
-
-    }
-    else
-    {
-      if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
-        dserror("combination of SEGREGATION parameters is not implemented. Fix your input file.");
-    }
-
-    // rebuild the combined dbcmap
-    poroscatra_subproblem_->BuildCombinedDBCMap();
-
-    double normofvelocities = -1234.0;
-    poroscatra_subproblem_->FluidField()->ExtractVelocityPart(backgrd_dirichlet_values)->Norm2(&normofvelocities);
-
-    double normofconcentrations = -1234.0;
-    poroscatra_segregated_phi_->Norm2(&normofconcentrations);
-
-    if(myrank_ == 0)
-    {
-      std::cout<<"###   Norm of Fluid Velocity Dirichlet values:           "<<std::setprecision(7)<<normofvelocities<<std::endl;
-      if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
-      {
-        std::cout<<"###   Norm of Segregated Species Dirichlet values:     "<<std::setprecision(10)<<normofconcentrations<<std::endl;
-      }
-      std::cout<<"###   Norm of transferred source/sink:                 "<<std::setprecision(10)<<"not available"<<std::endl;
-      std::cout<<"################################################################################################"<<std::endl;
-    }
-
-    exchange_manager_->SetImmersedSearchTree(cell_SearchTree_);
-    exchange_manager_->SetCurrentPositionsImmersedDis(currpositions_cell_);
+    // apply the given artificial velocity to the fluid field
+    ApplyImmersedDirichletScatra(poroscatra_segregated_phi_);
 
     // solve poro
     poroscatra_subproblem_->Solve();
 
-    //std::cout<<"Matched "<<exchange_manager_->GetCheckCounter()<<" integration points in "<<exchange_manager_->GetNumIsImmersedBoundary()<<" IsImmersedBoundary() elements on PROC "<<myrank_<<". "<<std::endl;
-
     // remove immersed dirichlets from dbcmap of fluid (may be different in next iteration)
-    poroscatra_subproblem_->FluidField()->RemoveDirichCond(dbcmap_immersed_);
-    // remove immersed dirichlets from dbcmap of scatra (may be different in next iteration)
-    if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_dirichlet)
-      poroscatra_subproblem_->ScaTraField()->RemoveDirichCond(dbcmap_immersed_scatra_);
+    RemoveDirichCond();
 
-    // rebuild the combined dbcmap
-    poroscatra_subproblem_->BuildCombinedDBCMap();
+    // correct the quality of the interface solution
+    CorrectInterfaceVelocity();
 
-  } // fillflag not User
+    // remove scatra values from dbcmap of fluid (may be different in next iteration)
+    RemoveDirichCondScatra();
 
+  } // fillflag is not User
 
-  // calculate new fluid traction interpolated to structural surface
-  CalcFluidTractionOnStructure();
+  // we just invalidated the boundary tractions
+  boundary_traction_isvalid_=false;
 
   return;
 }
@@ -484,6 +421,12 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedOp(Teuchos::RCP<Epetra
 
     // solve cell
     cellstructure_->Solve();
+
+    // structure moved; we just invalidated the artificial velocity
+    artificial_velocity_isvalid_=false;
+
+    // we also invalidated the immersed info
+    immersed_info_isvalid_ = false;
 
     return cellstructure_->ExtractImmersedInterfaceDispnp();
   }
@@ -513,7 +456,7 @@ Teuchos::RCP<Epetra_Vector>
 IMMERSED::ImmersedPartitionedFlowCellInteraction::InitialGuess()
 {
   if(displacementcoupling_)
-    return cellstructure_->PredictImmersedInterfaceDispnp();
+    return CalcArtificialVelocity();
   else // FORCE COUPLING
   {
     return cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_);
@@ -634,16 +577,6 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::DoImmersedDirichletCond(T
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedFlowCellInteraction::PrepareImmersedOp()
-{
-  immerseddis_->SetState(0,"velnp",cellstructure_->Velnp());
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFlowCellInteraction::PrepareBackgroundOp()
 {
   TEUCHOS_FUNC_TIME_MONITOR("IMMERSED::PrepareBackgroundOp()");
@@ -751,38 +684,6 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetupRelaxation()
-{
-  // initialize some relaxation related member variables
-    relaxforceglobally_ = globalproblem_->ImmersedMethodParams().get<std::string>("APPLY_FORCE_RELAX") == "globally";
-    relaxvelglobally_   = globalproblem_->ImmersedMethodParams().get<std::string>("APPLY_VEL_RELAX")   == "globally";
-    forcerelax_         = globalproblem_->ImmersedMethodParams().get<double>("FORCE_RELAX");
-    velrelax_           = globalproblem_->ImmersedMethodParams().get<double>("VEL_RELAX");
-
-    if(globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<std::string>("COUPALGO") == "iter_stagg_fixed_rel_param")
-    {
-      coupalgo_= INPAR::IMMERSED::fixed;
-      if(myrank_==0)
-        std::cout<<"\n"
-                 " Relax Force globally = "<<relaxforceglobally_<<" with relaxation parameter = "<<forcerelax_<<"\n"
-                 " Relax Vel   globally = "<<relaxvelglobally_  <<" with relaxation parameter = "<<velrelax_<<"\n"<<std::endl;
-    }
-    else if(globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<std::string>("COUPALGO") == "iter_stagg_AITKEN_rel_param")
-    {
-      coupalgo_ = INPAR::IMMERSED::aitken;
-      if(myrank_==0)
-        std::cout<<"\n Using AITKEN relaxation parameter. "<<std::endl;
-    }
-    else
-      dserror("Unknown definition of COUPALGO in FSI DYNAMIC section for Immersed FSI.");
-
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFlowCellInteraction::ReadRestart(int step)
 {
   cellstructure_->ReadRestart(step);
@@ -792,17 +693,49 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::ReadRestart(int step)
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::RemoveDirichCond()
+{
+  poroscatra_subproblem_->FluidField()->RemoveDirichCond(dbcmap_immersed_);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::RemoveDirichCondScatra()
+{
+  // remove immersed dirichlets from dbcmap of scatra (may be different in next iteration)
+  if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_dirichlet)
+  {
+    poroscatra_subproblem_->ScaTraField()->RemoveDirichCond(dbcmap_immersed_scatra_);
+    // rebuild the combined dbcmap
+    poroscatra_subproblem_->BuildCombinedDBCMap();
+  }
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFlowCellInteraction::CalcFluidTractionOnStructure()
 {
+  // sanity check
+  if (boundary_traction_isvalid_)
+    dserror("Boundary traction from fluid onto immersed cell is still valid!\n"
+            "If you really need to calc them anew, invalidate flag boundary_traction_isvalid_ at the proper position.");
+
+  // reinitialize the transfer vector
+  cell_bdry_traction_->Scale(0.0);
+
+  // declare and fill parameter list
   Teuchos::ParameterList params;
   params.set<std::string>("action","calc_fluid_traction");
   params.set<std::string>("backgrddisname","porofluid");
   params.set<std::string>("immerseddisname","cell");
 
-  backgroundfluiddis_->SetState(0,"velnp",poroscatra_subproblem_->FluidField()->Velnp());
-  backgroundfluiddis_->SetState(0,"veln", poroscatra_subproblem_->FluidField()->Veln());
+  // set the states needed for evaluation
+  SetStatesImmersedOP();
 
   DRT::AssembleStrategy cell_fld_bdry_strategy(
       0,              // struct dofset for row
@@ -817,7 +750,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CalcFluidTractionOnStruct
   if(myrank_ == 0)
   {
     std::cout<<"################################################################################################"<<std::endl;
-    std::cout<<"###   Interpolate fluid stresses to structural surface and calculate tractions                  "<<std::endl;
+    std::cout<<"###   Interpolate fluid stresses to structural surface and calculate traction                  "<<std::endl;
 
   }
   double normofstructbdrytraction=-1234.0;
@@ -830,6 +763,243 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CalcFluidTractionOnStruct
     std::cout<<"################################################################################################"<<std::endl;
   }
 
+  // we just validate the boundary tractions
+  boundary_traction_isvalid_=true;
+
+  // we just validated the immersed info again.
+  // technically this is not entirely true.
+  // see remark in constructor of this class.
+  // here we additionally validated the IsBoundaryImmersed
+  // information based on the struct. bdry. int. points.
+  immersed_info_isvalid_=true;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFlowCellInteraction::CalcArtificialVelocity()
+{
+  if(not artificial_velocity_isvalid_)
+  {
+    // reinitialize the transfer vector
+    porofluid_artificial_velocity_->Scale(0.0);
+
+    // declare parameter list
+    Teuchos::ParameterList params;
+
+    // provide number of integration points in fluid elements cut by boundary
+    params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
+
+    // set the states needed for evaluation
+    SetStatesBackgroundOP();
+    // update search trees, etc. ...
+    PrepareBackgroundOp();
+
+    // calc the fluid velocity from the structural displacements
+    DRT::AssembleStrategy fluid_vol_strategy(
+        0,              // struct dofset for row
+        0,              // struct dofset for column
+        Teuchos::null,  // matrix 1
+        Teuchos::null,  //
+        porofluid_artificial_velocity_,  // vector 1
+        Teuchos::null,  //
+        Teuchos::null   //
+    );
+
+    if(myrank_ == 0)
+    {
+      std::cout<<"################################################################################################"<<std::endl;
+      std::cout<<"###   Interpolate Dirichlet Values from immersed elements which overlap the "<<backgroundfluiddis_->Name()<<" nodes ..."<<std::endl;
+      std::cout<<"################################################################################################"<<std::endl;
+    }
+
+    EvaluateImmersed(params,
+              backgroundfluiddis_,
+              &fluid_vol_strategy,
+              &curr_subset_of_backgrounddis_,
+              cell_SearchTree_, currpositions_cell_,
+              (int)FLD::interpolate_velocity_to_given_point_immersed,
+              false);
+
+    // we just validated the artificial velocity
+    artificial_velocity_isvalid_=true;
+
+    // we just validated the immersed info again.
+    // technically this is not entirely true.
+    // see remark in constructor of this class.
+    immersed_info_isvalid_=true;
+  }
+
+  return porofluid_artificial_velocity_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::ApplyImmersedDirichlet(Teuchos::RCP<Epetra_Vector> artificial_velocity)
+{
+  BuildImmersedDirichMap(backgroundfluiddis_, dbcmap_immersed_, poroscatra_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap(),0);
+  poroscatra_subproblem_->FluidField()->AddDirichCond(dbcmap_immersed_);
+
+  // apply immersed dirichlets
+  DoImmersedDirichletCond(poroscatra_subproblem_->FluidField()->WriteAccessVelnp(),artificial_velocity, dbcmap_immersed_);
+  double normofvelocities = -1234.0;
+  poroscatra_subproblem_->FluidField()->ExtractVelocityPart(artificial_velocity)->Norm2(&normofvelocities);
+
+  if(myrank_ == 0)
+  {
+    std::cout<<"################################################################################################"<<std::endl;
+    std::cout<<"###   Norm of Dirichlet Values:   "<<std::setprecision(7)<<normofvelocities<<std::endl;
+    std::cout<<"################################################################################################"<<std::endl;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::ApplyImmersedDirichletScatra(Teuchos::RCP<Epetra_Vector> scatra_values)
+{
+  if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+  {
+
+    if(segregationby_==INPAR::CELL::segregation_by_dirichlet and segregationtype_==INPAR::CELL::segregation_volumetric)
+    {
+      // only constant segregation so far
+      scatra_values->PutScalar(segregationconstant_);
+      BuildImmersedScaTraDirichMap(backgroundfluiddis_, scatradis_, dbcmap_immersed_scatra_, poroscatra_subproblem_->ScaTraField()->DirichMaps()->CondMap(),0);
+      poroscatra_subproblem_->ScaTraField()->AddDirichCond(dbcmap_immersed_scatra_);
+      DoImmersedDirichletCond(poroscatra_subproblem_->ScaTraField()->Phinp(),scatra_values, dbcmap_immersed_scatra_);
+
+      // rebuild the combined dbcmap
+      poroscatra_subproblem_->BuildCombinedDBCMap();
+    }
+    else if(segregationby_==INPAR::CELL::segregation_by_neumann)
+    {
+      bool evaluateonlyboundary = false;
+      if(segregationtype_==INPAR::CELL::segregation_volumetric)
+        evaluateonlyboundary = false;
+      else if(segregationtype_==INPAR::CELL::segregation_surface)
+        evaluateonlyboundary = true;
+      else
+      {
+        if(myrank_==0)
+          std::cout<<"WARNING! Undefined SEGREGATION type! "
+          "Volumetric Segregation is assumed by default."<<std::endl;
+      }
+
+      Teuchos::ParameterList sparams_struct;
+
+      // provide element parameter list with number of dofset associated with displacement dofs on scatra discretization
+      sparams_struct.set<int>("ndsdisp",poroscatra_subproblem_->ScaTraField()->NdsDisp());
+
+      sparams_struct.set<int>("action",(int)SCATRA::calc_immersed_element_source);
+      sparams_struct.set<double>("segregation_constant",segregationconstant_);
+
+      // calc the fluid velocity from the cell displacements
+      DRT::AssembleStrategy scatra_vol_strategy(
+          0,              // struct dofset for row
+          0,              // struct dofset for column
+          Teuchos::null,  // matrix 1
+          Teuchos::null,  //
+          scatra_values , // vector 1
+          Teuchos::null,  //
+          Teuchos::null   //
+      );
+      if(curr_subset_of_backgrounddis_.empty()==false)
+        EvaluateScaTraWithInternalCommunication(scatradis_,
+            backgroundfluiddis_,
+            &scatra_vol_strategy,
+            &curr_subset_of_backgrounddis_,
+            cell_SearchTree_,
+            currpositions_cell_,
+            sparams_struct,
+            evaluateonlyboundary);
+
+      poroscatra_wrapper_->AddContributionToRHS(scatra_values);
+
+    }
+    else
+    {
+      if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+        dserror("combination of SEGREGATION parameters is not implemented. Fix your input file.");
+    }
+
+    double normofconcentrations = -1234.0;
+    scatra_values->Norm2(&normofconcentrations);
+
+    if(myrank_ == 0)
+    {
+      std::cout<<"################################################################################################"<<std::endl;
+      std::cout<<"###   Norm of Segregated Species Dirichlet values:   "<<std::setprecision(7)<<normofconcentrations<<std::endl;
+      std::cout<<"################################################################################################"<<std::endl;
+    }
+  } // if proteolytic
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::CorrectInterfaceVelocity()
+{
+  //***********************************************************************************
+  // Correct velocity at nodes of fluid elements being cut by the structural surface
+  // (fluid is solved a second time with different Dirichlet values)
+  //***********************************************************************************
+  if (correct_boundary_velocities_)
+  {
+    // declare parameter list
+    Teuchos::ParameterList params;
+
+    // provide number of integration points in fluid elements cut by boundary
+    params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
+
+    // calc the fluid velocity from the structural displacements
+    DRT::AssembleStrategy fluid_vol_strategy(
+        0,              // struct dofset for row
+        0,              // struct dofset for column
+        Teuchos::null,  // matrix 1
+        Teuchos::null,  //
+        porofluid_artificial_velocity_,  // vector 1
+        Teuchos::null,  //
+        Teuchos::null   //
+    );
+
+    SetStatesVelocityCorrection();
+
+    if(myrank_ == 0)
+    {
+      std::cout<<"\nCorrection step "<<std::endl;
+      std::cout<<"################################################################################################"<<std::endl;
+      std::cout<<"###   Correct Velocity in fluid boundary elements "<<std::endl;
+    }
+
+    // calculate new dirichlet velocities for fluid elements cut by structure
+    EvaluateImmersed(params,
+                     backgroundfluiddis_,
+                     &fluid_vol_strategy,
+                     &curr_subset_of_backgrounddis_,
+                     cell_SearchTree_,
+                     currpositions_cell_,
+                     (int)FLD::correct_immersed_fluid_bound_vel,
+                     true);
+
+    // apply corrected dirichlet values
+    ApplyImmersedDirichlet(porofluid_artificial_velocity_);
+
+    // solve fluid again with new dirichlet values
+    // solve poro
+    poroscatra_subproblem_->Solve();
+
+    // remove immersed dirichlets from dbcmap of fluid (may be different in next iteration step)
+    RemoveDirichCond();
+
+  } // correct_boundary_velocities_ finished
+
   return;
 }
 
@@ -838,11 +1008,57 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CalcFluidTractionOnStruct
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFlowCellInteraction::ResetImmersedInformation()
 {
+  if (immersed_info_isvalid_)
+    dserror("Immersed information are valid! Reconsider your call to ResetImmersedInformation().\n"
+            "Did you forget to invalidate the flag immersed_info_isvalid_?");
+
+  if(myrank_==0)
+    std::cout<<"\nReset Immersed Information ...\n"<<std::endl;
+
+  // reset element and node information about immersed method
   Teuchos::ParameterList params;
   params.set<int>("action",FLD::reset_immersed_ele);
   params.set<int>("Physical Type", poroscatra_subproblem_->FluidField()->PhysicalType());
   params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
-  backgroundfluiddis_->Evaluate(params);
+  EvaluateSubsetElements(params,
+                         backgroundfluiddis_,
+                         curr_subset_of_backgrounddis_,
+                         (int)FLD::reset_immersed_ele);
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetStatesBackgroundOP()
+{
+  // for FluidOP
+  immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
+  immerseddis_->SetState(0,"velocity",cellstructure_->Velnp());
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetStatesVelocityCorrection()
+{
+  immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
+  immerseddis_->SetState(0,"velocity",cellstructure_->Velnp());
+  backgroundfluiddis_->SetState(0,"velnp",poroscatra_subproblem_->FluidField()->Velnp());
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetStatesImmersedOP()
+{
+  backgroundfluiddis_->SetState(0,"velnp",poroscatra_subproblem_->FluidField()->Velnp());
+  backgroundfluiddis_->SetState(0,"veln", poroscatra_subproblem_->FluidField()->Veln());
+  immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
   return;
 }

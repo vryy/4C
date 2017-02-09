@@ -109,8 +109,14 @@ protected:
   /// add immersed dirichlet values from immersed dis to systemvector of background dis
   void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
 
-  /// prepare the immersed solve
-  void PrepareImmersedOp();
+  /// set state necessary state vectors
+  virtual void SetStatesBackgroundOP();
+
+  /// set state necessary state vectors
+  virtual void SetStatesVelocityCorrection();
+
+  /// set state necessary state vectors
+  virtual void  SetStatesImmersedOP();
 
   /// prepare the background solve
   void PrepareBackgroundOp();
@@ -124,14 +130,35 @@ protected:
   /// update fields
   virtual void Update();
 
-  /// initialize the relaxation parameters and print output
-  void SetupRelaxation();
+  /// call to special routine that removes dirichlet values from fluid field
+  virtual void RemoveDirichCond();
 
-  /// extract the pressure part
-  void ExtractPressurePart();
+  /// call to special routine that removes scatra values from scatra field
+  virtual void RemoveDirichCondScatra();
 
-  /// calc the current fluid tractions interpolated to the structural surface
+  /*!
+  \brief calc the current fluid tractions integrated over structural surface
+
+  Calc new tractions on immersed boundary. After leaving this method the vector struct_bdry_traction_
+  contains the current tractions on the immersed boundary.
+
+  */
   void CalcFluidTractionOnStructure();
+
+  /*!
+  \brief calc the current artificial velocity by projection from structure velocity onto fluid
+
+  Calc new velocity in artificial fluid domain. After leaving this method the vector fluid_artificial_velocity_
+  contains the current velocity projected from the structure onto the fluid.
+
+   \note Artificial velocity is only projected if the member artificial_velocity_isvalid_ is=false on entry.
+         if artificial_velocity_isvalid_=true the current artificial velocity stored in fluid_artificial_velocity_
+         is returned. This is important when restart is requested since then the we need to perform the projection
+         in the first restart step. This is done in \ref InitialGuess(). In case of no restart, we can just return
+         the velocity since it had recently been projected after the last structural solve. This work would be done
+         twice, else.
+  */
+  virtual Teuchos::RCP<Epetra_Vector> CalcArtificialVelocity();
 
   //! @name Various global vectors
   //@{
@@ -148,20 +175,10 @@ protected:
   Teuchos::RCP<DRT::Discretization> scatradis_;
   //@}
 
-  //! @name parameters and variables for relaxation
-  //@{
-  Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory_;
-  bool relaxforceglobally_;
-  bool relaxvelglobally_;
-  double forcerelax_;
-  double velrelax_;
-  int coupalgo_;
-  //@}
-
-  /// cell structure of the immersed problem
+  /// pointer to cell structure of the immersed problem
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure_;
 
-  /// poro structure of the immersed problem
+  /// pointer to poro structure of the immersed problem
   Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>        porostructure_;
 
   /// pointer to cell subproblem (structure-scatra interaction)
@@ -173,30 +190,24 @@ protected:
   /// scatra adapter for poro-scatra time integration
   Teuchos::RCP<ADAPTER::AdapterScatraWrapperCellMigration> poroscatra_wrapper_;
 
-  /// basic information for parallelism
+  //! @name  basic information for parallelism
   int myrank_;
   int numproc_;
+  //@}
 
   /// pointer to global problem
   DRT::Problem* globalproblem_;
 
-  /// coupling scheme
-  bool displacementcoupling_;
-
-  /// switch that determines if there are more than one distinct immersed cells
-  bool multicellmigration_;  //! distinct cells must be marked with ImmersedSearchbox condition
-
-  /// true if problem is modeled as a quasi 2D problem
-  bool isPseudo2D_;
-
-  /// amoeboid or proteolytic migration
-  int migrationtype_;
-
-  /// global timstep
-  double timestep_;
+  //! @name various bools and switches
+  //@{
+  bool displacementcoupling_; //!< true if increment of displacement is chosen for convergence check of partitioned scheme.
+  bool multicellmigration_;   //!< true if more than one cell is present. Each cell needs to be labeled with "ImmersedSearchbox" condition.
+  bool isPseudo2D_;           //!< true if problem is modeled as a quasi 2D problem
+  //@}
 
   //! @name proteolytic migration control parameters
   //@{
+  int migrationtype_;           //!< amoeboid or proteolytic migration
   double segregationconstant_;
   int segregationtype_;
   int segregationby_;
@@ -227,7 +238,7 @@ protected:
 
   //! @name current subsets of discretizations
   //@{
-  std::map<int,std::set<int> > curr_subset_of_backgrounddis_;    //!< backgrd elements to evaluate the dirichlet interpolation
+  std::map<int,std::set<int> > curr_subset_of_backgrounddis_; //!< backgrd elements to evaluate the dirichlet interpolation
   //@}
 
   //! @name Maps for Dirichlet BCs
@@ -238,15 +249,27 @@ protected:
 
 private:
 
-  /// reinitialize the transfer vectors
-  void ReinitTransferVectors(){  porofluid_artificial_velocity_->PutScalar(0.0);
-                                 cell_bdry_traction_->PutScalar(0.0);
-                                 poroscatra_segregated_phi_->PutScalar(0.0);
-                                 return;
-                              };
+  /// apply given vector as Dirichlet to artificial fluid field
+  virtual void ApplyImmersedDirichlet(Teuchos::RCP<Epetra_Vector> artificial_velocity);
 
-  /// reset element and node information about immersed method
+  /// apply given vector as Dirichlet to scatra field
+  virtual void ApplyImmersedDirichletScatra(Teuchos::RCP<Epetra_Vector> scatra_values);
+
+  /// improve quality of solution near the interface
+  virtual void CorrectInterfaceVelocity();
+
+  /// reset immersed information in fluid dis
+  /// e.g. isimmersed_, isboundaryimmersed_
   void ResetImmersedInformation();
+
+  //! @name various validation switches
+  //@{
+  bool artificial_velocity_isvalid_; //!< this flag is true if the current vel. in artificial fluid domain is consistent with current state of structure
+  bool boundary_traction_isvalid_;   //!< this flag is true if the current bdry. traction on the structure is consistent with current state of fluid
+  bool immersed_info_isvalid_;       //!< true if struct. configuration and fluid configuration are consistently reflected in immersed infos, like e.g. isimmersed_
+  bool is_relaxation_;               //!< true if relaxation is used
+  int correct_boundary_velocities_;  //!< true if interface accuracy correction is requested
+  //@}
 
 };// class ImmersedPartitionedFlowCellInteraction
 } // namespace IMMERSED

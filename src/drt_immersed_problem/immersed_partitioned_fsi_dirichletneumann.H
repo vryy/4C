@@ -192,8 +192,8 @@ protected:
 
   //! @name various bools and switches
   //@{
-  bool displacementcoupling_;
-  bool multibodysimulation_;         //!< true if more than one body is present. Each body needs to be labeled with "ImmersedSearchbox" condition
+  bool displacementcoupling_;        //!< true if increment of displacement is chosen for convergence check of partitioned scheme.
+  bool multibodysimulation_;         //!< true if more than one body is present. Each body needs to be labeled with "ImmersedSearchbox" condition.
   bool output_evry_nlniter_;         //!< true if output after every iteration of the outer fsi loop. Useful for debugging.
   bool is_relaxation_;               //!< true if relaxation is used
   int coupalgo_;                     //!< here we store the coupalgo

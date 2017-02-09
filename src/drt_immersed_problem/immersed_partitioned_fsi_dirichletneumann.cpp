@@ -52,7 +52,6 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
     multibodysimulation_(false),
     output_evry_nlniter_(false),
     is_relaxation_(false),
-    coupalgo_(0),
     correct_boundary_velocities_(0),
     degree_gp_fluid_bound_(0),
     artificial_velocity_isvalid_(false),
@@ -110,7 +109,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   else if (!displacementcoupling_ and myrank_==0)
     std::cout<<"\n Coupling variable for partitioned FSI scheme :  Force "<<std::endl;
 
-  // set switch for interfdace velocity correction
+  // set switch for interface velocity correction
   correct_boundary_velocities_= (DRT::INPUT::IntegralValue<int>(globalproblem_->ImmersedMethodParams(), "CORRECT_BOUNDARY_VELOCITIES"));
 
   // set switch for output in every nln. iteration (for debugging)
@@ -120,14 +119,12 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   if(globalproblem_->FSIDynamicParams().get<std::string>("COUPALGO") == "iter_stagg_fixed_rel_param")
   {
     is_relaxation_=false;
-    coupalgo_= INPAR::IMMERSED::fixed;
     if(myrank_==0)
       std::cout<<"\n Using FIXED relaxation parameter. "<<std::endl;
   }
   else if(globalproblem_->FSIDynamicParams().get<std::string>("COUPALGO") == "iter_stagg_AITKEN_rel_param")
   {
     is_relaxation_=true;
-    coupalgo_ = INPAR::IMMERSED::aitken;
     if(myrank_==0)
       std::cout<<"\n Using AITKEN relaxation parameter. "<<std::endl;
   }
@@ -373,7 +370,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
     // we just invalidated the boundary tractions
     boundary_traction_isvalid_=false;
 
-  }
+  } // fillflag is not User
 
   return Teuchos::null;
 }
@@ -764,7 +761,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcFluidTractionsOnStruc
 {
   // sanity check
   if (boundary_traction_isvalid_)
-    dserror("Boundary tractions from fluid onto immersed structure are still valid!\n"
+    dserror("Boundary traction from fluid onto immersed structure is still valid!\n"
             "If you really need to calc them anew, invalidate flag boundary_traction_isvalid_ at the proper position.");
 
   // reinitialize the transfer vector
@@ -791,7 +788,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcFluidTractionsOnStruc
   if(myrank_ == 0)
   {
     std::cout<<"################################################################################################"<<std::endl;
-    std::cout<<"###   Interpolate fluid stresses to structural surface and calculate tractions ...              "<<std::endl;
+    std::cout<<"###   Interpolate fluid stresses to structural surface and calculate traction ...              "<<std::endl;
     std::cout<<"################################################################################################"<<std::endl;
 
   }
@@ -880,14 +877,13 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ApplyImmersedDirichlet(Te
 
   // apply immersed dirichlets
   DoImmersedDirichletCond(MBFluidField()->FluidField()->WriteAccessVelnp(),artificial_velocity, dbcmap_immersed_);
-  double normofvelocities;
+  double normofvelocities = -1234.0;
   MBFluidField()->FluidField()->ExtractVelocityPart(artificial_velocity)->Norm2(&normofvelocities);
 
   if(myrank_ == 0)
   {
     std::cout<<"################################################################################################"<<std::endl;
     std::cout<<"###   Norm of Dirichlet Values:   "<<std::setprecision(7)<<normofvelocities<<std::endl;
-    std::cout<<"###   Norm of transferred divergence of structural velocity:   "<<std::setprecision(10)<<"not used"<<std::endl;
     std::cout<<"################################################################################################"<<std::endl;
   }
 
@@ -977,7 +973,6 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ResetImmersedInformation(
             "Did you forget to invalidate the flag immersed_info_isvalid_?");
 
   if(myrank_==0)
-
     std::cout<<"\nReset Immersed Information ...\n"<<std::endl;
 
   // reset element and node information about immersed method
