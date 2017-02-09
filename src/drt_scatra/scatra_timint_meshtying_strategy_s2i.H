@@ -107,6 +107,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! return map extractor associated with blocks of global system matrix
     const LINALG::MultiMapExtractor& BlockMaps() const {return *blockmaps_;};
 
+    //! return map extractor associated with blocks of auxiliary system matrix for master side
+    const LINALG::MultiMapExtractor& BlockMapsMaster() const {return *blockmaps_master_;};
+
     //! return map extractor associated with blocks of auxiliary system matrix for slave side
     const LINALG::MultiMapExtractor& BlockMapsSlave() const {return *blockmaps_slave_;};
 
