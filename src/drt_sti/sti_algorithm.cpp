@@ -1771,8 +1771,8 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
         if(!thermo_->Discretization()->GetCondition("PointCoupling"))
         {
           // during the very first run of the following code, Complete() has not yet been called on the thermo-scatra block of the global system matrix
-          // experiments have shown that the ExtractGlobalRowCopy routine called in the following does not properly work in this case if the thermo-scatra block exhibits a block structure
-          // in particular, some matrix entries are simply omitted during extraction, although the routine returns a zero error code
+          // experiments have shown that the ExtractMatrixRows routine called in the following does not properly work in this case if the thermo-scatra block exhibits a block structure
+          // in particular, some matrix entries are simply omitted during extraction, although the underlying routine ExtractGlobalRowCopy returns a zero error code
           // as a consequence, the final thermo-scatra block lacks some entries, and so does the final matrix graph after calling Complete()
           // this leads to errors involving unknown global indices of matrix columns during the second run of the following code, with the thermo-scatra block now being Complete()
           // to circumvent this problem, we call Complete() on the thermo-scatra block before the very first run of the following code
@@ -1788,26 +1788,8 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
             // extract current thermo-scatra matrix block
             LINALG::SparseMatrix& thermoscatrablock = strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition ? Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(thermoscatrablock_)->Matrix(0,iblock) : *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(thermoscatrablock_);
 
-            // loop over all master-side rows of thermo-scatra matrix block
-            for(int masterdoflid=0; masterdoflid<icoupthermo_->MasterDofMap()->NumMyElements(); ++masterdoflid)
-            {
-              // determine global ID of current matrix row
-              const int masterdofgid = icoupthermo_->MasterDofMap()->GID(masterdoflid);
-              if(masterdofgid < 0)
-                dserror("Couldn't find local ID %d in map!",masterdoflid);
-
-              // extract current matrix row from thermo-scatra matrix block
-              const int length = thermoscatrablock.EpetraMatrix()->NumGlobalEntries(masterdofgid);
-              int numentries(0);
-              std::vector<double> values(length,0.);
-              std::vector<int> indices(length,0);
-              if(thermoscatrablock.EpetraMatrix()->ExtractGlobalRowCopy(masterdofgid,length,numentries,&values[0],&indices[0]) != 0)
-                dserror("Cannot extract matrix row with global ID %d from thermo-scatra matrix block!",masterdofgid);
-
-              // copy current matrix row of thermo-scatra matrix block into temporary matrix
-              if(thermoscatrarowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,numentries,&values[0],&indices[0]) < 0)
-                dserror("Cannot insert matrix row with global ID %d into temporary matrix!",masterdofgid);
-            }
+            // extract master-side rows of thermo-scatra matrix block into temporary matrix
+            SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(thermoscatrablock,thermoscatrarowsmaster,*icoupthermo_->MasterDofMap());
 
             // finalize temporary matrix with master-side rows of thermo-scatra matrix block
             thermoscatrarowsmaster.Complete(*maps_->Map(0),*icoupthermo_->MasterDofMap());
@@ -1949,26 +1931,8 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
           // extract current thermo-scatra matrix block
           LINALG::SparseMatrix& thermoscatrablock = strategyscatra_->MatrixType() == INPAR::S2I::matrix_block_condition ? Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(thermoscatrablock_)->Matrix(0,iblock) : *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(thermoscatrablock_);
 
-          // loop over all slave-side rows of thermo-scatra matrix block
-          for(int slavedoflid=0; slavedoflid<strategythermo_->InterfaceMaps()->Map(1)->NumMyElements(); ++slavedoflid)
-          {
-            // determine global ID of current matrix row
-            const int slavedofgid = strategythermo_->InterfaceMaps()->Map(1)->GID(slavedoflid);
-            if(slavedofgid < 0)
-              dserror("Couldn't find local ID %d in map!",slavedoflid);
-
-            // extract current matrix row from thermo-scatra matrix block
-            const int length = thermoscatrablock.EpetraMatrix()->NumGlobalEntries(slavedofgid);
-            int numentries(0);
-            std::vector<double> values(length,0.);
-            std::vector<int> indices(length,0);
-            if(thermoscatrablock.EpetraMatrix()->ExtractGlobalRowCopy(slavedofgid,length,numentries,&values[0],&indices[0]))
-              dserror("Cannot extract matrix row with global ID %d from thermo-scatra matrix block!",slavedofgid);
-
-            // copy current matrix row of thermo-scatra matrix block into temporary matrix
-            if(thermoscatrarowsslave.EpetraMatrix()->InsertGlobalValues(slavedofgid,numentries,&values[0],&indices[0]) < 0)
-              dserror("Cannot insert matrix row with global ID %d into temporary matrix!",slavedofgid);
-          }
+          // extract slave-side rows of thermo-scatra matrix block into temporary matrix
+          SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(thermoscatrablock,thermoscatrarowsslave,*strategythermo_->InterfaceMaps()->Map(1));
 
           // finalize temporary matrix with slave-side rows of thermo-scatra matrix block
           thermoscatrarowsslave.Complete(*maps_->Map(0),*strategythermo_->InterfaceMaps()->Map(1));

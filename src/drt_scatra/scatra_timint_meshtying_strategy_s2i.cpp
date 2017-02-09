@@ -145,26 +145,8 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
         // initialize temporary matrix for slave-side rows of global system matrix
         LINALG::SparseMatrix sparsematrixrowsslave(*interfacemaps_->Map(1),81);
 
-        // loop over all slave-side rows of global system matrix
-        for(int slavedoflid=0; slavedoflid<interfacemaps_->Map(1)->NumMyElements(); ++slavedoflid)
-        {
-          // determine global ID of current matrix row
-          const int slavedofgid = interfacemaps_->Map(1)->GID(slavedoflid);
-          if(slavedofgid < 0)
-            dserror("Couldn't find local ID %d in map!",slavedoflid);
-
-          // extract current matrix row from global system matrix
-          const int length = sparsematrix->EpetraMatrix()->NumGlobalEntries(slavedofgid);
-          int numentries(0);
-          std::vector<double> values(length,0.);
-          std::vector<int> indices(length,0);
-          if(sparsematrix->EpetraMatrix()->ExtractGlobalRowCopy(slavedofgid,length,numentries,&values[0],&indices[0]))
-            dserror("Cannot extract matrix row with global ID %d from global system matrix!",slavedofgid);
-
-          // copy current matrix row of global system matrix into temporary matrix
-          if(sparsematrixrowsslave.EpetraMatrix()->InsertGlobalValues(slavedofgid,numentries,&values[0],&indices[0]) < 0)
-            dserror("Cannot insert matrix row with global ID %d into temporary matrix!",slavedofgid);
-        }
+        // extract slave-side rows of global system matrix into temporary matrix
+        ExtractMatrixRows(*sparsematrix,sparsematrixrowsslave,*interfacemaps_->Map(1));
 
         // finalize temporary matrix with slave-side rows of global system matrix
         sparsematrixrowsslave.Complete(*interfacemaps_->FullMap(),*interfacemaps_->Map(1));
@@ -227,26 +209,8 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
         // initialize temporary matrix for master-side rows of global system matrix
         LINALG::SparseMatrix sparsematrixrowsmaster(*interfacemaps_->Map(2),81);
 
-        // loop over all master-side rows of global system matrix
-        for(int masterdoflid=0; masterdoflid<interfacemaps_->Map(2)->NumMyElements(); ++masterdoflid)
-        {
-          // determine global ID of current matrix row
-          const int masterdofgid = interfacemaps_->Map(2)->GID(masterdoflid);
-          if(masterdofgid < 0)
-            dserror("Couldn't find local ID %d in map!",masterdoflid);
-
-          // extract current matrix row from global system matrix
-          const int length = sparsematrix->EpetraMatrix()->NumGlobalEntries(masterdofgid);
-          int numentries(0);
-          std::vector<double> values(length,0.);
-          std::vector<int> indices(length,0);
-          if(sparsematrix->EpetraMatrix()->ExtractGlobalRowCopy(masterdofgid,length,numentries,&values[0],&indices[0]))
-            dserror("Cannot extract matrix row with global ID %d from global system matrix!",masterdofgid);
-
-          // copy current matrix row of global system matrix into temporary matrix
-          if(sparsematrixrowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,numentries,&values[0],&indices[0]) < 0)
-            dserror("Cannot insert matrix row with global ID %d into temporary matrix!",masterdofgid);
-        }
+        // extract master-side rows of global system matrix into temporary matrix
+        ExtractMatrixRows(*sparsematrix,sparsematrixrowsmaster,*interfacemaps_->Map(2));
 
         // finalize temporary matrix with master-side rows of global system matrix
         sparsematrixrowsmaster.Complete(*interfacemaps_->FullMap(),*interfacemaps_->Map(2));
@@ -391,26 +355,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // initialize temporary matrix for master-side rows of system matrix
           LINALG::SparseMatrix systemmatrixrowsmaster(*icoup_->MasterDofMap(),81);
 
-          // loop over all master-side rows of system matrix
-          for(int masterdoflid=0; masterdoflid<icoup_->MasterDofMap()->NumMyElements(); ++masterdoflid)
-          {
-            // determine global ID of current matrix row
-            const int masterdofgid = icoup_->MasterDofMap()->GID(masterdoflid);
-            if(masterdofgid < 0)
-              dserror("Couldn't find local ID %d in map!",masterdoflid);
-
-            // extract current matrix row from system matrix
-            const int length = systemmatrix->EpetraMatrix()->NumGlobalEntries(masterdofgid);
-            int numentries(0);
-            std::vector<double> values(length,0.);
-            std::vector<int> indices(length,0);
-            if(systemmatrix->EpetraMatrix()->ExtractGlobalRowCopy(masterdofgid,length,numentries,&values[0],&indices[0]) != 0)
-              dserror("Cannot extract matrix row with global ID %d from system matrix!",masterdofgid);
-
-            // copy current matrix row of system matrix into temporary matrix
-            if(systemmatrixrowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,numentries,&values[0],&indices[0]) < 0)
-              dserror("Cannot insert matrix row with global ID %d into temporary matrix!",masterdofgid);
-          }
+          // extract master-side rows of system matrix into temporary matrix
+          ExtractMatrixRows(*systemmatrix,systemmatrixrowsmaster,*icoup_->MasterDofMap());
 
           // zero out master-side rows of system matrix and put a one on the main diagonal
           systemmatrix->Complete();
@@ -2632,6 +2578,44 @@ void SCATRA::MeshtyingStrategyS2I::ExplicitPredictor() const
   if(intlayergrowth_evaluation_ == INPAR::S2I::growth_evaluation_monolithic)
     // predict state vector of discrete scatra-scatra interface layer thicknesses at time n+1
     growthnp_->Update(scatratimint_->Dt(),*growthdtn_,1.);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------------*
+ | extract selected rows from a sparse matrix                      fang 02/17 |
+ *----------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(
+    const LINALG::SparseMatrix&   matrix,   //!< source matrix
+    LINALG::SparseMatrix&         rows,     //!< destination matrix
+    const Epetra_Map&             rowmap    //!< map of matrix rows to be extracted
+    )
+{
+  // safety check
+  if(rows.Filled())
+    dserror("Source matrix rows cannot be extracted into filled destination matrix!");
+
+  // loop over all source matrix rows to be extracted
+  for(int doflid=0; doflid<rowmap.NumMyElements(); ++doflid)
+  {
+    // determine global ID of current matrix row
+    const int dofgid = rowmap.GID(doflid);
+    if(dofgid < 0)
+      dserror("Couldn't find local ID %d in map!",doflid);
+
+    // extract current matrix row from source matrix
+    const int length = matrix.EpetraMatrix()->NumGlobalEntries(dofgid);
+    int numentries(0);
+    std::vector<double> values(length,0.);
+    std::vector<int> indices(length,0);
+    if(matrix.EpetraMatrix()->ExtractGlobalRowCopy(dofgid,length,numentries,&values[0],&indices[0]))
+      dserror("Cannot extract matrix row with global ID %d from source matrix!",dofgid);
+
+    // copy current source matrix row into destination matrix
+    if(rows.EpetraMatrix()->InsertGlobalValues(dofgid,numentries,&values[0],&indices[0]) < 0)
+      dserror("Cannot insert matrix row with global ID %d into destination matrix!",dofgid);
+  }
 
   return;
 }

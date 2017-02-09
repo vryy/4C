@@ -142,6 +142,13 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
     void ExplicitPredictor() const;
 
+    //! extract selected rows from a sparse matrix
+    static void ExtractMatrixRows(
+        const LINALG::SparseMatrix&   matrix,   //!< source matrix
+        LINALG::SparseMatrix&         rows,     //!< destination matrix
+        const Epetra_Map&             rowmap    //!< map of matrix rows to be extracted
+        );
+
     //! finite difference check for extended system matrix involving scatra-scatra interface layer growth (for debugging only)
     void FDCheck(
         const LINALG::BlockSparseMatrixBase&   extendedsystemmatrix,   //!< global system matrix
