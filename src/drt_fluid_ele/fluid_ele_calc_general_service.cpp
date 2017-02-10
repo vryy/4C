@@ -3416,44 +3416,48 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::UpdateImmersedInformation(
   bool match = false;
   int  matchnum = 0;
 
-  for (int node=0; node<nen_; node++)
+  if(curr_subset_of_structdis.size()>0)
   {
-    std::vector<double> backgrdxi(nsd_);
-    backgrdxi[0] = nodalrefcoords[node][0];
-    backgrdxi[1] = nodalrefcoords[node][1];
-    backgrdxi[2] = nodalrefcoords[node][2];
+    for (int node=0; node<nen_; node++)
+    {
+      std::vector<double> backgrdxi(nsd_);
+      backgrdxi[0] = nodalrefcoords[node][0];
+      backgrdxi[1] = nodalrefcoords[node][1];
+      backgrdxi[2] = nodalrefcoords[node][2];
 
-  if(static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched())
-  {
-    match = true;
-  }
+      if(static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched())
+      {
+        match = true;
+      }
 
-  IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
-                                        DRT::Element::hex8>                       // target/fluid
-                                                       (curr_subset_of_structdis,
-                                                        immerseddis,              // source/structure
-                                                        backgrddis,               // target/fluid
-                                                        *ele,
-                                                        backgrdxi,
-                                                        targeteledisp,
-                                                        "none",
-                                                        dummy,                      // result
-                                                        match,
-                                                        false,
-                                                        false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
-                                                       );                         // interpolate to its backgrd nodes.
+      IMMERSED::InterpolateToBackgrdPoint
+      <DRT::Element::hex8,          // source/structure
+      DRT::Element::hex8>           // target/fluid
+      (curr_subset_of_structdis,
+          immerseddis,              // source/structure
+          backgrddis,               // target/fluid
+          *ele,
+          backgrdxi,
+          targeteledisp,
+          "none",
+          dummy,                   // result
+          match,
+          false,
+          false                    // do no communication. immerseddis is ghosted. every proc finds an immersed element
+      );                           // to interpolate to its backgrd nodes.
 
-  if(match)
-  {
-    matchnum++;
-    static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsMatched(1);
+      if(match)
+      {
+        matchnum++;
+        static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsMatched(1);
 
-  } // if match
+      } // if match
 
-  // reset match to false and check next node in the following loop execution
-  match = false;
+      // reset match to false and check next node in the following loop execution
+      match = false;
 
-  } // loop over all nodes of this element
+    } // loop over all nodes of this element
+  } // if immersed elements are in vicinity of ele
 
   // set ele "IsImmersed" if all nodes lie underneath the immersed dis (i.e. matched = true)
   if(matchnum==nen_)
@@ -3600,53 +3604,57 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   // in first step only velocity is interpolated
   bool vel_calculation = true;
 
-  for (int node=0; node<nen_; node++)
+  if(curr_subset_of_structdis.size()>0)
   {
-    std::vector<double> backgrdxi(nsd_);
-    backgrdxi[0] = nodalrefcoords[node][0];
-    backgrdxi[1] = nodalrefcoords[node][1];
-    backgrdxi[2] = nodalrefcoords[node][2];
-
-  if(static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched())
-  {
-    match = true;
-  }
-
-  IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
-                                        DRT::Element::hex8>                       // target/fluid
-                                                       (curr_subset_of_structdis,
-                                                        immerseddis,              // source/structure
-                                                        backgrddis,               // target/fluid
-                                                        *ele,
-                                                        backgrdxi,
-                                                        targeteledisp,
-                                                        action,
-                                                        vel,                      // result
-                                                        match,
-                                                        vel_calculation,
-                                                        false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
-                                                       );                         // interpolate to its backgrd nodes.
-
-  // under fsi structure NOT under immersed structure !
-  if(vel[0]==-12345.0 and vel[1]==-12345.0)
-    match=false;
-
-  if(match)
-  {
-    matchnum++;
-    static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsMatched(1);
-    immersedele->SetHasProjectedDirichlet(1);
-
-    for(int i=0; i<nsd_;++i)
+    for (int node=0; node<nen_; node++)
     {
-      elevec1_epetra((node*numdofpernode_)+i) += vel[i];
-    }
-  } // if match
+      std::vector<double> backgrdxi(nsd_);
+      backgrdxi[0] = nodalrefcoords[node][0];
+      backgrdxi[1] = nodalrefcoords[node][1];
+      backgrdxi[2] = nodalrefcoords[node][2];
 
-  // reset match to false and check next node in the following loop execution
-  match = false;
+      if(static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched())
+      {
+        match = true;
+      }
 
-  } // loop over all nodes of this element
+      IMMERSED::InterpolateToBackgrdPoint
+      <DRT::Element::hex8,          // source/structure
+      DRT::Element::hex8>           // target/fluid
+      (curr_subset_of_structdis,
+          immerseddis,              // source/structure
+          backgrddis,               // target/fluid
+          *ele,
+          backgrdxi,
+          targeteledisp,
+          action,
+          vel,                      // result
+          match,
+          vel_calculation,
+          false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element
+      );                            // to interpolate to its backgrd nodes.
+
+      // under fsi structure NOT under immersed structure !
+      if(vel[0]<-12344.0 and vel[1]<-12344.0)
+        match=false;
+
+      if(match)
+      {
+        matchnum++;
+        static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsMatched(1);
+        immersedele->SetHasProjectedDirichlet(1);
+
+        for(int i=0; i<nsd_;++i)
+        {
+          elevec1_epetra((node*numdofpernode_)+i) += vel[i];
+        }
+      } // if match
+
+      // reset match to false and check next node in the following loop execution
+      match = false;
+
+    } // loop over all nodes of this element
+  } // if immersed elements are in vicinity of ele
 
   // set ele "IsImmersed" if all nodes lie underneath the immersed dis (i.e. matched = true)
   if(matchnum==nen_)
@@ -3654,7 +3662,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   // set ele "IsBoundaryImmersed" if 1<=x<8 nodes lie underneath the immersed dis ("HasProjectedDirichlet" is conjunction of "IsImmersed" and "IsBoundaryImmersed")
   else if (matchnum < nen_ and matchnum > 0)
   {
+    // inform background ele about immersed boundary
     immersedele -> SetBoundaryIsImmersed(1);
+
+    // loop over nodes of this ele and set IsBoundaryImmersed
+    for (int node=0; node<nen_; node++)
+      static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsBoundaryImmersed(1);
+
     if (isfluidinteraction)
     {
       immersedele -> ConstructElementRCP(num_gp_fluid_bound);
@@ -3709,8 +3723,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
             match = true;
           }
 
-          IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
-          DRT::Element::hex8>                       // target/fluid
+          IMMERSED::InterpolateToBackgrdPoint
+          <DRT::Element::hex8,          // source/structure
+          DRT::Element::hex8>           // target/fluid
           (curr_subset_of_structdis,
               immerseddis,              // source/structure
               backgrddis,               // target/fluid
@@ -3721,10 +3736,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
               div,                      // result (in dof 3)
               match,
               vel_calculation,
-              false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
-          );                         // interpolate to its backgrd nodes.
+              false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element
+          );                            // to interpolate to its backgrd nodes.
+
           // under fsi structure NOT under immersed structure !
-          if(div[3]==-12345.0)
+          if(div[nsd_]<-12344.0)
             match=false;
 
           if(match)
@@ -3737,8 +3753,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
           match = false;
 
         } // loop over int points
-      }
-    }
+      } // only if IsBoundaryImmersed
+    } // degree_gp_fluid_bound > 0
+    else
+      dserror("In case of fluid interaction a proper value for NUM_GP_FLUID_BOUND must be set in your .dat file.\n"
+              "(valid parameters are 8, 64, 125, 343, 729 and 1000). Check also if you forgot to set the value in \n"
+              "the parameter list provided for this action.");
   }
   return 0;
 }

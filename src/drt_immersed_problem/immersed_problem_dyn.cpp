@@ -724,7 +724,6 @@ void CellMigrationControlAlgorithm()
   // pointer to map of vectors for search tree containing current ECM positions
   std::map<int,LINALG::Matrix<3,1> > currpositions_ECM;
 
-
   // construct 3D search tree for fluid domain
   Teuchos::RCP<GEO::SearchTree> fluid_SearchTree = Teuchos::rcp(new GEO::SearchTree(5));
 

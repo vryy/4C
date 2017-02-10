@@ -25,6 +25,7 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../drt_cut/cut_boundingbox.H"
 
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
@@ -52,6 +53,13 @@ public:
 
   */
   ImmersedBase();
+
+
+  /*!
+  \brief destructor
+
+  */
+  virtual ~ImmersedBase(){};
 
 
   /*! \brief Initialize this object
@@ -789,25 +797,18 @@ protected:
 
     // error flag
     int err = 0;
-
     // get communicator
     const Epetra_Comm& comm = sourcedis->Comm();
-
     // get the global problem
     DRT::Problem* problem = DRT::Problem::Instance();
-
     // dimension of global problem
     const int globdim = problem->NDim();
-
     // pointer to background element
     DRT::Element* sourceele;
-
     // declare vector of global current coordinates
     double x [globdim];
-
     // dimension of source discretization
     static const int source_dim = DRT::UTILS::DisTypeToDim<sourcedistype>::dim;
-
     // declarations and definitions for round robin loop
           int numproc  = comm.NumProc();
     const int myrank   = comm.MyPID();                     // myrank
@@ -816,12 +817,11 @@ protected:
 
     if(numproc == 1)
       doCommunication=false;
-
     if(doCommunication==false)
       numproc=1;
 
     Teuchos::RCP<const Epetra_Vector> dispnp = sourcedis->GetState("displacement");
-    DRT::Element::LocationArray la(sourcedis->NumDofSets());
+    DRT::Element::LocationArray la(1);
 
     // get current global coordinates of the given point xi of the target dis
     MORTAR::UTILS::LocalToCurrentGlobal<targetdistype>(targetele,globdim,&targetxi[0],targetedisp,&x[0]);
@@ -892,89 +892,49 @@ protected:
         {
           for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
           {
-            //std::cout<<"tgtele "<<targetele.Id()<<": "<<*eleIter<<std::endl;
             bool converged = false;
             double residual = -1234.0;
             sourceele = sourcedis->gElement(*eleIter);
 
             // get parameter space coords xi in source element
             sourceele->LocationVector(*sourcedis,la,false);
-            std::vector<double> mydispnp(la[0].lm_.size());
-            DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,la[0].lm_);
+            std::vector<double> mysourcedispnp(la[0].lm_.size());
+            DRT::UTILS::ExtractMyValues(*dispnp,mysourcedispnp,la[0].lm_);
 
-            std::vector<double> targeteleposition1(3);
-            targeteleposition1[0]=(targetele.Nodes())[1]->X()[0]+targetedisp[1*3+0];
-            targeteleposition1[1]=(targetele.Nodes())[1]->X()[1]+targetedisp[1*3+1];
-            targeteleposition1[2]=(targetele.Nodes())[1]->X()[2]+targetedisp[1*3+2];
-
-            std::vector<double> targeteleposition7(3);
-            targeteleposition7[0]=(targetele.Nodes())[7]->X()[0]+targetedisp[7*3+0];
-            targeteleposition7[1]=(targetele.Nodes())[7]->X()[1]+targetedisp[7*3+1];
-            targeteleposition7[2]=(targetele.Nodes())[7]->X()[2]+targetedisp[7*3+2];
-
-            double diagonaltargetelelength = sqrt(pow(targeteleposition1[0]-targeteleposition7[0],2)+pow(targeteleposition1[1]-targeteleposition7[1],2)+pow(targeteleposition1[2]-targeteleposition7[2],2));
-
-            std::vector<double> sourceeleposition1(3);
-            sourceeleposition1[0]=(sourceele->Nodes())[1]->X()[0] + mydispnp[1*3+0];
-            sourceeleposition1[1]=(sourceele->Nodes())[1]->X()[1] + mydispnp[1*3+1];
-            sourceeleposition1[2]=(sourceele->Nodes())[1]->X()[2] + mydispnp[1*3+2];
-
-            // distance between given point of target dis and sourceelenode 1
-            double dist = sqrt(pow(xvec[0]-sourceeleposition1[0],2)+pow(xvec[1]-sourceeleposition1[1],2)+pow(xvec[2]-sourceeleposition1[2],2));
-
-            // only try to match given target point and sourceele if sourceele is in vicinity of target point
-            if(dist < 1.5*diagonaltargetelelength)
+            // construct bounding box around current source element
+            Teuchos::RCP<GEO::CUT::BoundingBox> bbside = Teuchos::rcp( GEO::CUT::BoundingBox::Create() );
+            LINALG::Matrix<3, 1> nodalpos;
+            for ( int i=0; i<(int)(sourceele->NumNode()); ++i )
             {
-              MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(*sourceele,&mydispnp[0],&xvec[0],&xi(0),converged,residual);
+              nodalpos(0,0) = (sourceele->Nodes())[i]->X()[0] + mysourcedispnp[i*3+0];
+              nodalpos(1,0) = (sourceele->Nodes())[i]->X()[1] + mysourcedispnp[i*3+1];
+              nodalpos(2,0) = (sourceele->Nodes())[i]->X()[2] + mysourcedispnp[i*3+2];
+              bbside->AddPoint( nodalpos );
+            }
 
-//              //DEBUG output
-//              bool check = false;
-//              for(int nn=0;nn<8;nn++)
-//              {
-//                if(targetele.NodeIds()[nn]==83274)
-//                  check = true;
-//              }
-//              if(check == true)
-//              {
-//                std::cout<<"xi for ele "<<targetele.Id()<<" ["<<xi(0)<<" "<<xi(1)<<" "<<xi(2)<<"]"<<std::endl;
-//              }
+            // check if given point lies within bounding box
+            bool within = bbside->Within(1.0,&xvec[0]);
+
+            // only try to match given target point and sourceele if within bounding box
+            if(within)
+            {
+              MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(*sourceele,&mysourcedispnp[0],&xvec[0],&xi(0),converged,residual);
 
               if(converged==false)
               {
+                std::cout<<"!! WARNING !! GlobalToCurrentLocal did not not converge (res="<<residual<<") though background point " <<xvec[0]<<" "<<xvec[1]<<" "<<xvec[2]<<"\n"
+                           " is lying within bounding box of immersed element "<<sourceele->Id()<<"."<<std::endl;
+                bbside->Print();
+                // we assume not in bounding box. point is lying outside sourcele.
                 xi(0) = 2.0; xi(1) = 2.0; xi(2) = 2.0;
               }
             }
             else
             {
+              // not in bounding box. point is lying outside sourcele.
               xi(0) = 2.0; xi(1) = 2.0; xi(2) = 2.0;
             }
 
-//# ifdef DEBUG
-//            if(!converged and dist < 1.6*diagonaltargetelelength)
-//            { std::vector<double> sourceeleposition1(3);
-//            sourceeleposition1[0]=(sourceele->Nodes())[1]->X()[0] + mydispnp[1*3+0];
-//            sourceeleposition1[1]=(sourceele->Nodes())[1]->X()[1] + mydispnp[1*3+1];;
-//            sourceeleposition1[2]=(sourceele->Nodes())[1]->X()[2] + mydispnp[1*3+2];;
-//
-//            std::vector<double> sourceeleposition7(3);
-//            sourceeleposition7[0]=(sourceele->Nodes())[7]->X()[0];
-//            sourceeleposition7[1]=(sourceele->Nodes())[7]->X()[1];
-//            sourceeleposition7[2]=(sourceele->Nodes())[7]->X()[2];
-//
-//            //double diagonalsourcelength = sqrt(pow(sourceeleposition1[0]-sourceeleposition7[0],2)+pow(sourceeleposition1[1]-sourceeleposition7[1],2)+pow(sourceeleposition1[2]-sourceeleposition7[2],2));
-//            //double distance = sqrt(pow(xvec[0]-sourceeleposition7[0],2)+pow(xvec[1]-sourceeleposition7[1],2)+pow(xvec[2]-sourceeleposition7[2],2));
-//
-//            //              std::cout<<"UNCONVERGED MAPPING : (maybe not critical)"<<std::endl;
-//            //              std::cout<<"Global coordinate of target point : "<<xvec[0]<<" "<<xvec[1]<<" "<<xvec[2]<<std::endl;
-//            //              std::cout<<"Global coordinate of source node1 : "<<sourceeleposition1[0]<<" "<<sourceeleposition1[1]<<" "<<sourceeleposition1[2]<<std::endl;
-//            //              std::cout<<"Diagonal length of source element : "<<diagonalsourcelength<<std::endl;
-//            //              std::cout<<"Distance between target point and source node 7 : "<<distance<<std::endl;
-//
-//            dserror("MAPPING FROM SOURCE POINT TO TARGET DID NOT CONVERGE");
-//            xi(0)=-1234.0; xi(1)=-1234.0; xi(2)=-1234.0;
-//
-//            }
-//# endif
             /////////////////////////////////////////////////
             ////
             ////     MATCH
@@ -1126,17 +1086,17 @@ protected:
   template < DRT::Element::DiscretizationType structdistype,
   DRT::Element::DiscretizationType fluiddistype >
   int FindClosestStructureSurfacePoint(
-      std::map<int,std::set<int> >& curr_subset_of_structdis,   // Input
-      const Teuchos::RCP<DRT::Discretization> structdis,        // Input
-      const Teuchos::RCP<DRT::Discretization> fluiddis,         // Input
-      DRT::Element& fluidele,                                   // Input
-      const std::vector<double>& fluidxi,                       // Input
-      const std::vector<double>& fluideledisp,                  // Input
-      const std::string action,                                 // Input
-      std::vector<double>& target_vel_data,                     // Output
-      std::vector<double>& target_pos_data,                     // Output
-      bool& match,                                              // Output
-      bool doCommunication = true                               // Input
+      std::map<int,std::set<int> >& curr_subset_of_structdis,   //!< Input
+      const Teuchos::RCP<DRT::Discretization> structdis,        //!< Input
+      const Teuchos::RCP<DRT::Discretization> fluiddis,         //!< Input
+      DRT::Element& fluidele,                                   //!< Input
+      const std::vector<double>& fluidxi,                       //!< Input
+      const std::vector<double>& fluideledisp,                  //!< Input
+      const std::string action,                                 //!< Input
+      std::vector<double>& target_vel_data,                     //!< Output
+      std::vector<double>& target_pos_data,                     //!< Output
+      bool& match,                                              //!< Output
+      bool doCommunication = true                               //!< Input
   )
   {
 

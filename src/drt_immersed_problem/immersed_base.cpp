@@ -91,12 +91,6 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
       params.set<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp",structsearchtree);
       params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",currpositions_struct);
       params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
-      if(dis->Name()=="fluid")
-        params.set<std::string>("immerseddisname","structure");
-      else if (dis->Name()=="porofluid")
-        params.set<std::string>("immerseddisname","cell");
-      else
-        dserror("no corresponding immerseddisname set for this type of backgrounddis!");
 
       DRT::Element::LocationArray la(1);
       immersedelebase->LocationVector(*dis,la,false);
@@ -416,7 +410,6 @@ void IMMERSED::ImmersedBase::EvaluateSubsetElements(Teuchos::ParameterList& para
         Epetra_SerialDenseMatrix dummymatrix;
         Epetra_SerialDenseVector dummyvector;
         ele->Evaluate(params,*dis,la,dummymatrix,dummymatrix,dummyvector,dummyvector,dummyvector);
-
     }
   }
 

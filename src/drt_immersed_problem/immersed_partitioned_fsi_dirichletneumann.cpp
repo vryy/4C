@@ -596,7 +596,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
   //
   // get state
   Teuchos::RCP<const Epetra_Vector> displacements = immersedstructure_->Dispnp();
-  //std::cout<<*displacements<<std::endl;
+
   // find current positions for immersed structural discretization
   std::map<int,LINALG::Matrix<3,1> > my_currpositions_struct;
   for (int lid = 0; lid < structdis_->NumMyRowNodes(); ++lid)
@@ -616,6 +616,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
 
     my_currpositions_struct[node->Id()] = currpos;
   }
+
   // Communicate local currpositions:
   // map with current structural positions should be same on all procs
   // to make use of the advantages of ghosting the structure redundantly
@@ -624,10 +625,6 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
   for(int i=0;i<numproc_;i++)
     procs[i]=i;
   LINALG::Gather<int,LINALG::Matrix<3,1> >(my_currpositions_struct,currpositions_struct_,numproc_,&procs[0],Comm());
-
-//  DEBUG output
-//  std::cout<<"Proc "<<myrank_<<": my_curr_pos.size()="<<my_currpositions_struct.size()<<std::endl;
-//  std::cout<<"Proc "<<myrank_<<":    curr_pos.size()="<<currpositions_struct_.size()<<std::endl;
 
   // take special care in case of multibody simulations
   if (multibodysimulation_ == false)
@@ -657,7 +654,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     if(curr_subset_of_fluiddis_.empty() == false)
       std::cout<<"\nPrepareFluidOp returns "<<curr_subset_of_fluiddis_.begin()->second.size()<<" background elements on Proc "<<myrank_<<std::endl;
   }
-  else // if only one body is immersed
+  else
   {
     // get searchbox conditions on bodies
     std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
@@ -698,7 +695,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
 
     for(int i=0;i<(int)structboxes.size();++i)
       std::cout<<"\nPrepareFluidOp returns "<<curr_subset_of_fluiddis_.at(i).size()<<" background elements for body "<<i<<std::endl;
-  }
+  } //
 
   return;
 }
@@ -822,6 +819,8 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Ca
 
     // provide number of integration points in fluid elements cut by boundary
     params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
+    // provide name of immersed discretization
+    params.set<std::string>("immerseddisname","structure");
 
     // set the states needed for evaluation
     SetStatesFluidOP();

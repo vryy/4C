@@ -89,7 +89,6 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   else
     dserror("Unknown definition of COUPALGO in FSI DYNAMIC section for Immersed FSI.");
 
-
   // check for unfeasible combination
   if (correct_boundary_velocities_ and displacementcoupling_ and is_relaxation_)
     dserror("Interface velocity correction is not possible with displacement coupled Immersed FSI in combination with relaxation.");
@@ -581,12 +580,13 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::PrepareBackgroundOp()
 {
   TEUCHOS_FUNC_TIME_MONITOR("IMMERSED::PrepareBackgroundOp()");
 
-  immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
-  immerseddis_->SetState(0,"velocity",cellstructure_->Velnp());
-  backgroundstructuredis_->SetState(0,"displacement",porostructure_->Dispnp());
-  backgroundfluiddis_->SetState(0,"veln",poroscatra_subproblem_->FluidField()->Veln());
-
+  // search radius factor around center of structure bounding box (fac*diagonal of bounding box)
   double structsearchradiusfac = DRT::Problem::Instance()->ImmersedMethodParams().get<double>("STRCT_SRCHRADIUS_FAC");
+
+//  immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
+//  immerseddis_->SetState(0,"velocity",cellstructure_->Velnp());
+//  backgroundstructuredis_->SetState(0,"displacement",porostructure_->Dispnp());
+//  backgroundfluiddis_->SetState(0,"veln",poroscatra_subproblem_->FluidField()->Veln());
 
   // determine subset of fluid discretization which is potentially underlying the immersed discretization
   //
@@ -617,11 +617,12 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::PrepareBackgroundOp()
   // map with current cell positions should be same on all procs
   // to make use of the advantages of ghosting the cell redundantly
   // on all procs.
-  int procs[Comm().NumProc()];
-  for(int i=0;i<Comm().NumProc();i++)
+  int procs[numproc_];
+  for(int i=0;i<numproc_;i++)
     procs[i]=i;
-  LINALG::Gather<int,LINALG::Matrix<3,1> >(my_currpositions_cell,*currpositions_cell_,Comm().NumProc(),&procs[0],Comm());
+  LINALG::Gather<int,LINALG::Matrix<3,1> >(my_currpositions_cell,*currpositions_cell_,numproc_,&procs[0],Comm());
 
+  // take special care in case of multi-cell migration
   if (multicellmigration_ == false)
   {
     // get bounding box of current configuration of structural dis
@@ -633,8 +634,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::PrepareBackgroundOp()
     boundingboxcenter(1) = structBox(1,0)+(structBox(1,1)-structBox(1,0))*0.5;
     boundingboxcenter(2) = structBox(2,0)+(structBox(2,1)-structBox(2,0))*0.5;
 
-    // search background elements covered by bounding box of cell
-    curr_subset_of_backgrounddis_ = fluid_SearchTree_->searchElementsInRadius(*backgroundfluiddis_,*currpositions_ECM_,boundingboxcenter,structsearchradiusfac*max_radius,0);
+    SearchPotentiallyCoveredBackgrdElements(&curr_subset_of_backgrounddis_,fluid_SearchTree_,*backgroundfluiddis_,*currpositions_ECM_,boundingboxcenter,structsearchradiusfac*max_radius,0);
 
     if(curr_subset_of_backgrounddis_.empty() == false)
       std::cout<<"\nPrepareBackgroundOp returns "<<curr_subset_of_backgrounddis_.begin()->second.size()<<" background elements on Proc "<<Comm().MyPID()<<std::endl;
@@ -791,6 +791,8 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFlowCellInteraction::Ca
 
     // provide number of integration points in fluid elements cut by boundary
     params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
+    // provide name of immersed discretization
+    params.set<std::string>("immerseddisname","cell");
 
     // set the states needed for evaluation
     SetStatesBackgroundOP();
