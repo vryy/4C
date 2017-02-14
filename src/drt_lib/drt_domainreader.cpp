@@ -245,13 +245,28 @@ void DomainReader::Partition(int* nodeoffset)
   }
 
   // Create initial (or final) map of row elements
+  DRT::Element::DiscretizationType distype_enum= DRT::StringToDistype(distype_);
   int numnewele = interval_[0]*interval_[1]*interval_[2];
   if (autopartition) // linear map
   {
-    roweles_ = Teuchos::rcp(new Epetra_Map(numnewele,0,*comm_));
+    int scale=1;
+    if(distype_enum == DRT::Element::wedge6 or
+        distype_enum == DRT::Element::wedge15)
+    {
+      scale=2;
+    }
+    roweles_ = Teuchos::rcp(new Epetra_Map(scale*numnewele,0,*comm_));
   }
   else // fancy final box map
   {
+    //Error for invalid elemnt types!!!
+    if(distype_enum != DRT::Element::hex8 and
+        distype_enum != DRT::Element::hex20 and
+        distype_enum != DRT::Element::hex27)
+    {
+      dserror("This map-partition is only available for HEX-elements!");
+    }
+
     std::vector<int> factors;
     int nproc = numproc;
     for (int fac = 2; fac < nproc+1;)
@@ -316,12 +331,8 @@ void DomainReader::Partition(int* nodeoffset)
     int eleid = roweles_->GID(lid);
     dsassert(eleid >= 0, "Missing gid");
 
-    // let the factory create a matching empty element
-    Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(elementtype_,distype_,eleid,myrank);
-
     // For the time being we support old and new input facilities. To
     // smooth transition.
-
     DRT::INPUT::LineDefinition* linedef = ed.ElementLines(elementtype_,distype_);
     if (linedef == NULL)
       dserror("a matching line definition is needed for %s %s", elementtype_.c_str(), distype_.c_str());
@@ -338,62 +349,26 @@ void DomainReader::Partition(int* nodeoffset)
       dserror("failed to read element %d %s %s",eleid,elementtype_.c_str(),distype_.c_str());
     }
 
-    // this depends on the distype
-    std::vector<int> nodeids(DRT::UTILS::getNumberOfElementNodes(DRT::StringToDistype(distype_)));
-    // current element position
-    const size_t ex = 2*( eleid%interval_[0]);
-    const size_t ey = 2*((eleid/interval_[0])%interval_[1]);
-    const size_t ez = 2*( eleid/(interval_[0]*interval_[1]));
-
-    // number of nodes per direction
-    const size_t nx = 2*interval_[0]+1;
-    const size_t ny = 2*interval_[1]+1;
-
-    switch (nodeids.size())
+    //Create specified elemnts
+    switch(distype_enum)
     {
-    case 27:
-      nodeids[20]= *nodeoffset+(ez*ny+ey+1)*nx+ex+1;
-      nodeids[21]= *nodeoffset+((ez+1)*ny+ey)*nx+ex+1;
-      nodeids[22]= *nodeoffset+((ez+1)*ny+ey+1)*nx+ex+2;
-      nodeids[23]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex+1;
-      nodeids[24]= *nodeoffset+((ez+1)*ny+ey+1)*nx+ex;
-      nodeids[25]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+1;
-      nodeids[26]= *nodeoffset+((ez+1)*ny+ey+1)*nx+ex+1;
-      // intentionally left breakless
-    case 20:
-      nodeids[8] = *nodeoffset+(ez*ny+ey)*nx+ex+1;
-      nodeids[9] = *nodeoffset+(ez*ny+ey+1)*nx+ex+2;
-      nodeids[10]= *nodeoffset+(ez*ny+ey+2)*nx+ex+1;
-      nodeids[11]= *nodeoffset+(ez*ny+ey+1)*nx+ex;
-      nodeids[12]= *nodeoffset+((ez+1)*ny+ey)*nx+ex;
-      nodeids[13]= *nodeoffset+((ez+1)*ny+ey)*nx+ex+2;
-      nodeids[14]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex+2;
-      nodeids[15]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex;
-      nodeids[16]= *nodeoffset+((ez+2)*ny+ey)*nx+ex+1;
-      nodeids[17]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+2;
-      nodeids[18]= *nodeoffset+((ez+2)*ny+ey+2)*nx+ex+1;
-      nodeids[19]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex;
-      // intentionally left breakless
-    case 8:
-      nodeids[0] = *nodeoffset+(ez*ny+ey)*nx+ex;
-      nodeids[1] = *nodeoffset+(ez*ny+ey)*nx+ex+2;
-      nodeids[2] = *nodeoffset+(ez*ny+ey+2)*nx+ex+2;
-      nodeids[3] = *nodeoffset+(ez*ny+ey+2)*nx+ex;
-      nodeids[4] = *nodeoffset+((ez+2)*ny+ey)*nx+ex;
-      nodeids[5] = *nodeoffset+((ez+2)*ny+ey)*nx+ex+2;
-      nodeids[6] = *nodeoffset+((ez+2)*ny+ey+2)*nx+ex+2;
-      nodeids[7] = *nodeoffset+((ez+2)*ny+ey+2)*nx+ex;
-      break;
-    default:
-      dserror("Not implemented: Currently only hex8, hex20 and hex27 are implemented for the box geometry generation.");
-      break;
+      case DRT::Element::hex8:
+      case DRT::Element::hex20:
+      case DRT::Element::hex27:
+      {
+        CreateHexElement(eleid, nodeoffset, myrank, linedef);
+        break;
+      }
+      case DRT::Element::wedge6:
+      case DRT::Element::wedge15:
+      {
+        CreateWedgeElement(eleid, nodeoffset, myrank, linedef);
+        break;
+      }
+      default:
+        dserror("The discretization type %s, is not implemented. Currently only HEX(8,20,27) and WEDGE(6,15) are implemented for the box geometry generation.",distype_.c_str());
     }
 
-    ele->SetNodeIds(nodeids.size(),&(nodeids[0]));
-    ele->ReadElement(elementtype_,distype_,linedef);
-
-    // add element to discretization
-    dis_->AddElement(ele);
   }
 
   // redistribute the elements
@@ -490,6 +465,156 @@ void DomainReader::Complete()
   DRT::UTILS::PrintParallelDistribution(*dis_);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DomainReader::CreateHexElement(int eleid, int* nodeoffset, int myrank, DRT::INPUT::LineDefinition* linedef)
+{
+  // Reserve nodeids for this element type
+  std::vector<int> nodeids(DRT::UTILS::getNumberOfElementNodes(DRT::StringToDistype(distype_)));
+
+  // current element position
+  const size_t ex = 2*( eleid%interval_[0]);
+  const size_t ey = 2*((eleid/interval_[0])%interval_[1]);
+  const size_t ez = 2*( eleid/(interval_[0]*interval_[1]));
+
+  // number of nodes per direction
+  const size_t nx = 2*interval_[0]+1;
+  const size_t ny = 2*interval_[1]+1;
+
+  switch (nodeids.size())
+  {
+  case 27:
+    nodeids[20]= *nodeoffset+(ez*ny+ey+1)*nx+ex+1;
+    nodeids[21]= *nodeoffset+((ez+1)*ny+ey)*nx+ex+1;
+    nodeids[22]= *nodeoffset+((ez+1)*ny+ey+1)*nx+ex+2;
+    nodeids[23]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex+1;
+    nodeids[24]= *nodeoffset+((ez+1)*ny+ey+1)*nx+ex;
+    nodeids[25]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+1;
+    nodeids[26]= *nodeoffset+((ez+1)*ny+ey+1)*nx+ex+1;
+    // intentionally left breakless
+  case 20:
+    nodeids[8] = *nodeoffset+(ez*ny+ey)*nx+ex+1;
+    nodeids[9] = *nodeoffset+(ez*ny+ey+1)*nx+ex+2;
+    nodeids[10]= *nodeoffset+(ez*ny+ey+2)*nx+ex+1;
+    nodeids[11]= *nodeoffset+(ez*ny+ey+1)*nx+ex;
+    nodeids[12]= *nodeoffset+((ez+1)*ny+ey)*nx+ex;
+    nodeids[13]= *nodeoffset+((ez+1)*ny+ey)*nx+ex+2;
+    nodeids[14]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex+2;
+    nodeids[15]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex;
+    nodeids[16]= *nodeoffset+((ez+2)*ny+ey)*nx+ex+1;
+    nodeids[17]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+2;
+    nodeids[18]= *nodeoffset+((ez+2)*ny+ey+2)*nx+ex+1;
+    nodeids[19]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex;
+    // intentionally left breakless
+  case 8:
+    nodeids[0] = *nodeoffset+(ez*ny+ey)*nx+ex;
+    nodeids[1] = *nodeoffset+(ez*ny+ey)*nx+ex+2;
+    nodeids[2] = *nodeoffset+(ez*ny+ey+2)*nx+ex+2;
+    nodeids[3] = *nodeoffset+(ez*ny+ey+2)*nx+ex;
+    nodeids[4] = *nodeoffset+((ez+2)*ny+ey)*nx+ex;
+    nodeids[5] = *nodeoffset+((ez+2)*ny+ey)*nx+ex+2;
+    nodeids[6] = *nodeoffset+((ez+2)*ny+ey+2)*nx+ex+2;
+    nodeids[7] = *nodeoffset+((ez+2)*ny+ey+2)*nx+ex;
+    break;
+  default:
+    dserror("The number of nodeids: %d, does not correspond to a supported HEX-element.",nodeids.size());
+    break;
+  }
+  // let the factory create a matching empty element
+  Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(elementtype_,distype_,eleid,myrank);
+  ele->SetNodeIds(nodeids.size(),&(nodeids[0]));
+  ele->ReadElement(elementtype_,distype_,linedef);
+  // add element to discretization
+  dis_->AddElement(ele);
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DomainReader::CreateWedgeElement(int eleid, int* nodeoffset, int myrank, DRT::INPUT::LineDefinition* linedef)
+{
+  // Reserve nodeids for this element type
+  std::vector<int> nodeids(DRT::UTILS::getNumberOfElementNodes(DRT::StringToDistype(distype_)));
+
+  // HEX-equivalent element
+  int hex_equiv_eleid = int(eleid/2);
+
+  // current element position
+  const size_t ex = 2*( hex_equiv_eleid%interval_[0]);
+  const size_t ey = 2*((hex_equiv_eleid/interval_[0])%interval_[1]);
+  const size_t ez = 2*( hex_equiv_eleid/(interval_[0]*interval_[1]));
+
+  // number of nodes per direction
+  const size_t nx = 2*interval_[0]+1;
+  const size_t ny = 2*interval_[1]+1;
+
+  //Create 2 elements for every hex element. Even - Odd pairs.
+  if(eleid%2==0) //Even - elements
+  {
+    switch (nodeids.size())
+    {
+    case 15:
+      nodeids[6] = *nodeoffset+(ez*ny+ey)*nx+ex+1;       // HEX-eqvi: 8
+      nodeids[8]= *nodeoffset+(ez*ny+ey+1)*nx+ex;        // HEX-eqvi: 11
+      nodeids[9]= *nodeoffset+((ez+1)*ny+ey)*nx+ex;      // HEX-eqvi: 12
+      nodeids[10]= *nodeoffset+((ez+1)*ny+ey)*nx+ex+2;   // HEX-eqvi: 13
+      nodeids[11]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex;   // HEX-eqvi: 15
+      nodeids[12]= *nodeoffset+((ez+2)*ny+ey)*nx+ex+1;   // HEX-eqvi: 16
+      nodeids[14]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex;   // HEX-eqvi: 19
+      nodeids[7]= *nodeoffset+(ez*ny+ey+1)*nx+ex+1;      // HEX-eqvi: 20
+      nodeids[13]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+1; // HEX-eqvi: 25
+    case 6:
+      nodeids[0] = *nodeoffset+(ez*ny+ey)*nx+ex;         // HEX-eqvi: 0
+      nodeids[1] = *nodeoffset+(ez*ny+ey)*nx+ex+2;       // HEX-eqvi: 1
+      nodeids[2] = *nodeoffset+(ez*ny+ey+2)*nx+ex;       // HEX-eqvi: 3
+      nodeids[3] = *nodeoffset+((ez+2)*ny+ey)*nx+ex;     // HEX-eqvi: 4
+      nodeids[4] = *nodeoffset+((ez+2)*ny+ey)*nx+ex+2;   // HEX-eqvi: 5
+      nodeids[5] = *nodeoffset+((ez+2)*ny+ey+2)*nx+ex;   // HEX-eqvi: 7
+      break;
+      //---------------------
+    default:
+      dserror("The number of nodeids: %d, does not correspond to a supported WEDGE-element.",nodeids.size());
+      break;
+    }
+  }
+  else //Odd - elements
+  {
+    switch (nodeids.size())
+    {
+    case 15:
+      nodeids[6] = *nodeoffset+(ez*ny+ey+1)*nx+ex+2;     // HEX-eqvi: 9
+      nodeids[7]= *nodeoffset+(ez*ny+ey+2)*nx+ex+1;      // HEX-eqvi: 10
+      nodeids[9]= *nodeoffset+((ez+1)*ny+ey)*nx+ex+2;    // HEX-eqvi: 13
+      nodeids[10]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex+2; // HEX-eqvi: 14
+      nodeids[11]= *nodeoffset+((ez+1)*ny+ey+2)*nx+ex;   // HEX-eqvi: 15
+      nodeids[12]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+2; // HEX-eqvi: 17
+      nodeids[13]= *nodeoffset+((ez+2)*ny+ey+2)*nx+ex+1; // HEX-eqvi: 18
+      nodeids[8]= *nodeoffset+(ez*ny+ey+1)*nx+ex+1;      // HEX-eqvi: 20
+      nodeids[13]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+1; // HEX-eqvi: 25
+    case 6:
+      nodeids[0] = *nodeoffset+(ez*ny+ey)*nx+ex+2;       // HEX-eqvi: 1
+      nodeids[1] = *nodeoffset+(ez*ny+ey+2)*nx+ex+2;     // HEX-eqvi: 2
+      nodeids[2] = *nodeoffset+(ez*ny+ey+2)*nx+ex;       // HEX-eqvi: 3
+      nodeids[3] = *nodeoffset+((ez+2)*ny+ey)*nx+ex+2;   // HEX-eqvi: 5
+      nodeids[4] = *nodeoffset+((ez+2)*ny+ey+2)*nx+ex+2; // HEX-eqvi: 6
+      nodeids[5] = *nodeoffset+((ez+2)*ny+ey+2)*nx+ex;   // HEX-eqvi: 7
+      break;
+      //---------------------
+    default:
+      dserror("The number of nodeids: %d, does not correspond to a supported WEDGE-element.",nodeids.size());
+      break;
+    }
+  }
+
+  // let the factory create a matching empty element
+  Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(elementtype_,distype_,eleid,myrank);
+  ele->SetNodeIds(nodeids.size(),&(nodeids[0]));
+  ele->ReadElement(elementtype_,distype_,linedef);
+
+  // add element to discretization
+  dis_->AddElement(ele);
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

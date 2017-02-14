@@ -31,6 +31,7 @@ namespace DRT
 
 namespace INPUT
 {
+  class LineDefinition;
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -178,6 +179,19 @@ protected:
 
   /// further arguments to the elements to be created
   std::string elearguments_;
+
+private:
+
+  /// create HEX type elements for the partition
+  void CreateHexElement(int eleid ,int* nodeoffset, int myrank, DRT::INPUT::LineDefinition* linedef);
+
+  /*!
+     Create WEDGE type elements for the partition.
+     For even eleids -> create 1st part of HEX equivalent, odd -> 2nd part of HEX equivalent.
+     Wedges aligned in z-direction.
+   */
+  void CreateWedgeElement(int eleid ,int* nodeoffset, int myrank, DRT::INPUT::LineDefinition* linedef);
+
 };
 
 
