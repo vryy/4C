@@ -64,7 +64,7 @@ namespace ACOU
     virtual void compute_post_gradient (const std::vector<parallel::distributed::Vector<value_type> >  &src,
                                         std::vector<parallel::distributed::Vector<value_type> >        &dst,
                                         const double                                              &cur_time,
-                                        const double                                                    &dt = 0.0) const;
+                                        const double                                                    &dt = 0.0) const = 0;
 
     virtual void initialize_dof_vector(parallel::distributed::Vector<value_type> &src) const = 0;
 

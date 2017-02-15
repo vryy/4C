@@ -219,7 +219,7 @@ local_apply_face (const MatrixFree<dim,value_type> &,
 
     const VectorizedArray<value_type> tau_inv = 1./(tau_plus + tau_minus);
 
-    AssertDimension(phi.n_q_points, data.get_n_q_points_face(0));
+    AssertDimension(phi.n_q_points, this->data.get_n_q_points_face(0));
 
     for(unsigned int q=0; q<phi.n_q_points; ++q)
     {
