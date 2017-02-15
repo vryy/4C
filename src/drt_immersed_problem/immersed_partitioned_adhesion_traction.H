@@ -101,6 +101,9 @@ protected:
   /// calculate force from cell adhesion node inside ecm element to ecm element nodes
   void CalcAdhesionForce();
 
+  /// print information on the current solution step
+  virtual void PrintStepInfo();
+
   /*!
   \brief Distribute force from cell adhesion node inside ecm element to ecm element nodes.
 
@@ -229,8 +232,8 @@ private:
   Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem_;
 
   /// reinitialize the transfer vectors
-  void ReinitTransferVectors(){  ecm_adhesion_forces_->PutScalar(0.0);
-                                 cell_adhesion_disp_ ->PutScalar(0.0);
+  void ReinitTransferVectors(){  ecm_adhesion_forces_->Scale(0.0);
+                                 cell_adhesion_disp_ ->Scale(0.0);
                                  return;
                               };
 

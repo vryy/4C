@@ -41,6 +41,11 @@ RESULTSEVRY                     1
 RESTARTEVRY                     1000
 --------------------------------CELL DYNAMIC/FLOW INTERACTION MODULE
 COUPALGO                        iter_stagg_AITKEN_rel_param
+COUPVARIABLE                    Displacement
+CONVTOL                         1e-06
+RELAX                           1.0
+MAXOMEGA                        0
+ITEMAX                          12
 -------------------------------------CELL DYNAMIC/PROTEOLYSIS MODULE
 COUPALGO                        iter_stagg_fixed_rel_param
 SEGREGATION                     surface // volume surface
@@ -69,27 +74,14 @@ THETA                           1.0
 ----------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
-PROJECTION                      shapefunctions
-APPLY_FORCE_RELAX               globally
-APPLY_VEL_RELAX                 globally
 DIVERCONT                       stop
 OUTPUT_EVRY_NLNITER             no
-FORCE_RELAX                     1
-VEL_RELAX                       1
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
 NUM_GP_FLUID_BOUND              125
 TIMESTATS                       endofsim // everyiter
 -------------------------------------IMMERSED METHOD/PARTITIONED SOLVER
-PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
-COUPVARIABLE_FSI                Displacement
-COUPMETHOD                      immersed
-BASETOL                         0.001
-CONVTOL                         1e-06
-RELAX                           1.0
-MAXOMEGA                        0
-ITEMAX                          12
 -------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta

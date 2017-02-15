@@ -18,6 +18,7 @@
 #include "immersed_partitioned.H"
 #include "immersed_partitioned_fsi.H"
 #include "immersed_partitioned_confine_cell.H"
+#include "immersed_partitioned_multiphysics.H"
 #include "immersed_partitioned_cellmigration.H"
 #include "ssi_partitioned_2wc_biochemomechano.H"
 #include "immersed_partitioned_cellcontraction.H"
@@ -484,7 +485,7 @@ void CellMigrationControlAlgorithm()
     case INPAR::SSI::ssi_IterStagg:
       if(simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
         cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm,problem->CellMigrationParams()));
-      else if (simtype==INPAR::CELL::sim_type_pureAdhesion)
+      else if (simtype==INPAR::CELL::sim_type_pureAdhesion or simtype==INPAR::CELL::sim_type_multiphysics)
       {
         if(problem->CellMigrationParams().get<std::string>("ADHESION_DYNAMICS") == "yes")
           cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_ADHESIONDYNAMICS(comm,problem->CellMigrationParams()));
@@ -970,7 +971,44 @@ void CellMigrationControlAlgorithm()
 
   else if (simtype==INPAR::CELL::sim_type_multiphysics)
   {
-    // here the global algo of the fully coupled cell migration will be implemented
+    // construct multiphysics object
+    Teuchos::RCP<IMMERSED::ImmersedPartitionedMultiphysics> multiphysics_algo =
+        Teuchos::rcp(new IMMERSED::ImmersedPartitionedMultiphysics(comm));
+
+    // construct cell-flow interaction module
+    Teuchos::RCP<IMMERSED::ImmersedPartitionedFlowCellInteraction> cfi_algo =
+        Teuchos::rcp(new IMMERSED::ImmersedPartitionedFlowCellInteraction(params,comm));
+
+    // construct cell-ECM (adhesion) interaction module
+    Teuchos::RCP<IMMERSED::ImmersedPartitionedAdhesionTraction> adh_algo =
+        Teuchos::rcp(new IMMERSED::ImmersedPartitionedAdhesionTraction(params,comm));
+
+    // add modules to parameter list
+    params.set<Teuchos::RCP<IMMERSED::ImmersedPartitionedFlowCellInteraction> >("ImmersedPartitionedFlowCellInteraction",cfi_algo);
+    params.set<Teuchos::RCP<IMMERSED::ImmersedPartitionedAdhesionTraction> >("ImmersedPartitionedAdhesionTraction",adh_algo);
+
+    // init algo
+    multiphysics_algo->Init(params);
+
+    // setup algo
+    multiphysics_algo->Setup();
+
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
+    {
+      // read the restart information, set vectors and variables
+      multiphysics_algo->ReadRestart(restart);
+    }
+
+    // solve the multiphysics problem
+    multiphysics_algo->Solve();
+
+    if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
+    {
+      Teuchos::TimeMonitor::summarize();
+      Teuchos::TimeMonitor::zeroOutTimers();
+    }
+
   }// sim_type_multiphysics
 
   else

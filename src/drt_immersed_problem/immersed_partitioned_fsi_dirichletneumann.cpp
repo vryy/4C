@@ -469,7 +469,10 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::BuildImmersedDirichMap(Te
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap)
+void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::DoImmersedDirichletCond(
+    Teuchos::RCP<Epetra_Vector> statevector,
+    Teuchos::RCP<Epetra_Vector> dirichvals,
+    Teuchos::RCP<Epetra_Map> dbcmap)
 {
   int mynumvals = dbcmap->NumMyElements();
   double* myvals = dirichvals->Values();

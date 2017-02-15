@@ -213,7 +213,7 @@ void POROELAST::PoroScatraPart2WC::Solve()
 
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+    std::cout<<"\n*******************************************\n Poro-Scatra 2WC OUTER ITERATION LOOP \n*******************************************\n";
   }
 
   while (stopnonliniter==false)

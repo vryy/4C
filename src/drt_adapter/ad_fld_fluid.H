@@ -230,10 +230,10 @@ namespace ADAPTER {
     /// apply contribution to neumann loads of the fluid (similar to ApplyExternalForces but without residual scaling)
     virtual void AddContributionToExternalLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector) = 0;
 
-    /// expand dirichlet set
+    /// expand dirichlet dbc set by provided map containing dofs to add
     virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) = 0;
 
-    /// contract dirichlet set
+    /// contract dirichlet set by provided map containing dofs to remove
     virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) = 0;
 
     ///  set scalar fields within outer iteration loop

@@ -2,8 +2,12 @@
 /*!
 \file inpar_immersed.H
 
+\brief Input parameters for immersed
+
+\level 1
+
 <pre>
-Maintainer: Andreas Rauch
+\maintainer Andreas Rauch
             rauch@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -33,6 +37,14 @@ enum _IMMERSED_COUPLING
   partitioned,
   monolithic
 };
+
+typedef enum _PARITIONED_SCHEME
+{
+  cell_coupling_undefined=0,
+  cell_basic_sequ_stagg=1,
+  cell_iter_stagg_fixed_rel_param=2,
+  cell_iter_stagg_AITKEN_rel_param=3,
+} PARITIONED_SCHEME;
 
 enum _IMMERSED_COUPLING_SCHEME
 {

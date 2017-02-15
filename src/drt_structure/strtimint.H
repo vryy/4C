@@ -1034,6 +1034,12 @@ namespace STR
 
   protected:
 
+    /// Expand the dbc map by dofs provided in Epetra_Map maptoadd
+    virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd);
+
+    /// Contract the dbc map by dofs provided in Epetra_Map maptoremove
+    virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
+
     //! @name General purpose algorithm members
     //@{
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation

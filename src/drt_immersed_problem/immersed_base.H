@@ -40,6 +40,11 @@ namespace DRT{
   class Discretization;
 }
 
+namespace ADAPTER{
+  class FluidWrapper;
+  class StructureWrapper;
+}
+
 
 namespace IMMERSED{
 
@@ -125,11 +130,85 @@ public:
 
 
   /*!
+  \brief construct the dof row map for a given condition.
+
+  \author rauch
+  \date 02/17
+  */
+  void BuildConditionDofMap(
+      const Teuchos::RCP<const DRT::Discretization>&  dis,
+      const std::string                     condname,
+      const Teuchos::RCP<const Epetra_Map>& cond_dofmap_orig,
+      Teuchos::RCP<Epetra_Map> &            cond_dofmap);
+
+
+  /*!
+  \brief Apply Dirichlet values to systemvector of conditioned field.
+
+  \author rauch
+  \date 02/17
+  */
+  void DoDirichletCond(
+      const Teuchos::RCP<Epetra_Vector>&       statevector,
+      const Teuchos::RCP<const Epetra_Vector>& dirichvals,
+      const Teuchos::RCP<const Epetra_Map>&    dbcmap);
+
+
+  /*!
+  \brief Apply Dirichlet boundary condition to a structure field.
+
+  \author rauch
+  \date 02/17
+  */
+  virtual void ApplyDirichlet(
+      const Teuchos::RCP< ::ADAPTER::StructureWrapper>& field_wrapper,
+      const Teuchos::RCP<DRT::Discretization>&  dis,
+      const std::string                         condname,
+      Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+      const Teuchos::RCP<const Epetra_Vector>&  dirichvals);
+
+
+  /*!
+  \brief Apply Dirichlet boundary condition to a fluid field.
+
+  \author rauch
+  \date 02/17
+  */
+  void ApplyDirichletToFluid(
+      const Teuchos::RCP< ::ADAPTER::FluidWrapper>& field_wrapper,
+      const Teuchos::RCP<DRT::Discretization>&  dis,
+      const std::string                         condname,
+      Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+      const Teuchos::RCP<const Epetra_Vector>&  dirichvals);
+
+
+  /*!
+  \brief Remove Dirichlet boundary condition from a structure field.
+
+  \author rauch
+  \date 02/17
+  */
+  void RemoveDirichlet(
+      const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
+      const Teuchos::RCP< ::ADAPTER::StructureWrapper>& field_wrapper);
+
+
+  /*!
+  \brief Remove Dirichlet boundary condition from a fluid field.
+
+  \author rauch
+  \date 02/17
+  */
+  void RemoveDirichletFromFluid(
+      const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
+      const Teuchos::RCP< ::ADAPTER::FluidWrapper>& field_wrapper);
+
+
+  /*!
   \brief specialized evaluate for immersed algorithm
 
   \author rauch
   \date 05/14
-
   */
   void EvaluateImmersed(Teuchos::ParameterList& params,
                         Teuchos::RCP<DRT::Discretization> dis,

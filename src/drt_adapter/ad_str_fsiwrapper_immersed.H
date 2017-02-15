@@ -64,11 +64,13 @@ namespace ADAPTER
     STR::Dbc& GetMutableDBC();
 
     /// expand dirichlet bc map
-    void AddDirichDofs(
+    /// old struct. time integration version
+    virtual void AddDirichDofs(
         const Teuchos::RCP<const Epetra_Map> maptoadd);
 
     /// contract dirichlet bc map
-    void RemoveDirichDofs(
+    /// old struct. time integration version
+    virtual void RemoveDirichDofs(
         const Teuchos::RCP<const Epetra_Map> maptoremove);
 
     /// set the state of the nox group and the global state data container

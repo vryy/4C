@@ -4,8 +4,10 @@
 
 \brief Input parameters for immersed
 
+\level 1
+
 <pre>
-Maintainer: Andreas Rauch
+\maintainer Andreas Rauch
             rauch@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -33,6 +35,15 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
     "General parameters for any immersed problem"
     );
 
+  Teuchos::Tuple<std::string,3> coupname;
+  Teuchos::Tuple<int,3> couplabel;
+
+  coupname[ 0] = "basic_sequ_stagg";                              couplabel[ 0] = cell_basic_sequ_stagg;
+  coupname[ 1] = "iter_stagg_fixed_rel_param";                    couplabel[ 1] = cell_iter_stagg_fixed_rel_param;
+  coupname[ 2] = "iter_stagg_AITKEN_rel_param";                   couplabel[ 2] = cell_iter_stagg_AITKEN_rel_param;
+
+
+
   setStringToIntegralParameter<int>(
                                "COUPALGO","partitioned",
                                "Coupling strategies for immersed method.",
@@ -53,40 +64,6 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  tuple<int>(
                                  neumannneumann,
                                  dirichletneumann),
-                                 &immersedmethod);
-
-
-  setStringToIntegralParameter<int>(
-                               "PROJECTION","shapefunctions",
-                               "Projection of nodal values between the coupled fields.",
-                               tuple<std::string>(
-                                 "shapefunctions",
-                                 "mortar"),
-                                 tuple<int>(
-                                 shapefunctions,
-                                 mortar),
-                                 &immersedmethod);
-
-  setStringToIntegralParameter<int>(
-                               "APPLY_FORCE_RELAX","globally",
-                               "Relax whole force vector or not.",
-                               tuple<std::string>(
-                                 "globally",
-                                 "selectively"),
-                                 tuple<int>(
-                                 globally,
-                                 selectively),
-                                 &immersedmethod);
-
-  setStringToIntegralParameter<int>(
-                               "APPLY_VEL_RELAX","globally",
-                               "Relax whole velocity vector or not.",
-                               tuple<std::string>(
-                                 "globally",
-                                 "selectively"),
-                                 tuple<int>(
-                                 globally,
-                                 selectively),
                                  &immersedmethod);
 
   setStringToIntegralParameter<int>(
@@ -133,8 +110,6 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  0),
                                  &immersedmethod);
 
-  DoubleParameter("FORCE_RELAX",1.0,"Force Relaxaton Parameter"    ,&immersedmethod);
-  DoubleParameter("VEL_RELAX"  ,1.0,"Velocity Relaxation Parameter",&immersedmethod);
   DoubleParameter("FLD_SRCHRADIUS_FAC",1.0,"fac times fluid ele. diag. length",&immersedmethod);
   DoubleParameter("STRCT_SRCHRADIUS_FAC",0.5,"fac times structure bounding box diagonal",&immersedmethod);
   IntParameter("NUM_GP_FLUID_BOUND",8,"number of gp in fluid elements cut by surface of immersed structure (higher number yields better mass conservation)",&immersedmethod);
@@ -143,18 +118,11 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   /* parameters for paritioned immersed solvers */
   Teuchos::ParameterList& immersedpart = immersedmethod.sublist("PARTITIONED SOLVER",false,"");
 
-  setStringToIntegralParameter<int>(
-                                 "PARTITIONED","DirichletNeumann",
-                                 "Coupling strategies for partitioned FSI solvers.",
-                                 tuple<std::string>(
-                                   "DirichletNeumann",
-                                   "DirichletNeumannSlideALE"
-                                   ),
-                                 tuple<int>(
-                                   INPAR::FSI::DirichletNeumann,
-                                   INPAR::FSI::DirichletNeumannSlideale
-                                   ),
-                                 &immersedpart);
+  setStringToIntegralParameter<int>("COUPALGO","iter_stagg_fixed_rel_param",
+                                    "Iteration Scheme over the fields",
+                                    coupname,
+                                    couplabel,
+                                    &immersedpart);
 
   setStringToIntegralParameter<int>("PREDICTOR","d(n)",
                                  "Predictor for interface displacements",
@@ -167,43 +135,11 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  tuple<int>(1,2,3,4),
                                  &immersedpart);
 
-    setStringToIntegralParameter<int>("COUPVARIABLE_FSI","Displacement",
+    setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
                                  "Coupling variable at the fsi interface",
                                  tuple<std::string>("Displacement","Force"),
                                  tuple<int>(0,1),
                                  &immersedpart);
-
-    setStringToIntegralParameter<int>("COUPVARIABLE_ADHESION","Displacement",
-                                 "Coupling variable at the adhesion interface",
-                                 tuple<std::string>("Displacement","Force"),
-                                 tuple<int>(0,1),
-                                 &immersedpart);
-
-    setStringToIntegralParameter<int>("COUPVARIABLE_PROTRUSION","Displacement",
-                                 "Coupling variable at the protruding interface",
-                                 tuple<std::string>("Displacement","Force"),
-                                 tuple<int>(0,1),
-                                 &immersedpart);
-
-    setStringToIntegralParameter<int>("COUPMETHOD","immersed",
-                                 "Coupling Method Mortar (mtr) or conforming nodes at interface",
-                                 tuple<std::string>(
-                                   "MTR",
-                                   "Mtr",
-                                   "mtr",
-                                   "conforming",
-                                   "immersed"
-                                   ),
-                                 tuple<int>(0,0,0,1,2),
-                                 &immersedpart);
-
-    DoubleParameter("BASETOL",1e-3,
-                    "Basic tolerance for adaptive convergence check in monolithic FSI.\n"
-                    "This tolerance will be used for the linear solve of the FSI block system.\n"
-                    "The linear convergence test will always use the relative residual norm (AZ_r0).\n"
-                    "Not to be confused with the Newton tolerance (CONVTOL) that applies\n"
-                    "to the nonlinear convergence test using a absolute residual norm.",
-                    &immersedpart);
 
     DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&immersedpart);
     DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned FSI solvers",&immersedpart);

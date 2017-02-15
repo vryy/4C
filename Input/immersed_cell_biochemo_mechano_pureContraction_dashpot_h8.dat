@@ -96,25 +96,16 @@ SUGRVEL                         no
 ---------------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
-PROJECTION                      shapefunctions
-APPLY_FORCE_RELAX               globally
-APPLY_VEL_RELAX                 globally
 DIVERCONT                       continue
 OUTPUT_EVRY_NLNITER             no
-FORCE_RELAX                     1
-VEL_RELAX                       1
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
 NUM_GP_FLUID_BOUND              125
 CORRECT_BOUNDARY_VELOCITIES     no
 TIMESTATS                       endofsim // everyiter
 --------------------------------------IMMERSED METHOD/PARTITIONED SOLVER
-PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
-COUPVARIABLE_FSI                Force //Force //Displacement
-COUPVARIABLE_ADHESION           Force //Force //Displacement
-COUPMETHOD                      immersed
-BASETOL                         0.001
+COUPVARIABLE                    Displacement
 CONVTOL                         1e-00
 RELAX                           1.0
 MAXOMEGA                        0

@@ -239,6 +239,18 @@ namespace ADAPTER {
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
+    /// expand dirichlet bc map
+    virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
+    {/* This is only needed for the old structural time integration.
+        For the new structural time integration this is already
+        implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */};
+
+    /// contract dirichlet bc map
+    virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove)
+    {/* This is only needed for the old structural time integration.
+        For the new structural time integration this is already
+        implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */};
+
     //@}
 
     //! @name Time step helpers

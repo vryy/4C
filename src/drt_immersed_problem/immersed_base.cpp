@@ -13,14 +13,17 @@
 *----------------------------------------------------------------------*/
 #include "immersed_base.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_adapter/ad_fld_wrapper.H"
+#include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
 
 
 IMMERSED::ImmersedBase::ImmersedBase():
 issetup_(false),
 isinit_(false)
 {
-
-}
+  // empty
+  return;
+} // ImmersedBase
 
 
 /*----------------------------------------------------------------------*/
@@ -37,7 +40,7 @@ void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discr
   id += 1;
 
   // build condition
-  bool buildgeometry = true; // needed for now to check number of elements in neumannnaumann.cpp
+  bool buildgeometry = false;
   Teuchos::RCP<DRT::Condition> condition =
           Teuchos::rcp(new DRT::Condition(id,condtype,buildgeometry,DRT::Condition::Volume));
 
@@ -49,14 +52,175 @@ void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discr
 
    // fill complete if necessary
    if (!dis->Filled())
-     dis -> FillComplete();
+     dis -> FillComplete(false,false,false);
 
-   //debug
+   return;
+} // CreateVolumeCondition
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::BuildConditionDofMap(
+  const Teuchos::RCP<const DRT::Discretization>&  dis,
+  const std::string                         condname,
+  const Teuchos::RCP<const Epetra_Map>&     cond_dofmap_orig,
+  Teuchos::RCP<Epetra_Map> &                cond_dofmap)
+{
+  // declare dof vector
+  std::vector<int> mydirichdofs(0);
+
+  // get condition and conditioned nodes
+  DRT::Condition* condition = dis->GetCondition(condname);
+  const std::vector<int>* cond_nodes = condition->Nodes();
+  int cond_nodes_size = cond_nodes->size();
+
+  if(cond_nodes_size==0)
+    dserror("No nodes in nodal cloud of condition %s",condname.c_str());
+
+  // loop over all conditioned nodes
+  for(int node=0;node<cond_nodes_size;node++)
+  {
+    // get node id
+    int nodeid = cond_nodes->at(node);
+    // get node pointer
+    DRT::Node* node_ptr = dis->gNode(nodeid);
+    if(node_ptr==NULL)
+      dserror("Could not get node with id %d",nodeid);
+
+    // get dofs
+    std::vector<int> dofs = dis->Dof(0,node_ptr);
+    int numdofpernode = dis->NumDof(node_ptr);
+
+    for (int dim=0;dim<numdofpernode;++dim)
+    {
+      // if not already in original dirich map
+      if(cond_dofmap_orig->LID(dofs[dim]) == -1)
+        mydirichdofs.push_back(dofs[dim]);
+    }
+
+  } // loop over all conditioned nodes
+
+  int nummydirichvals = mydirichdofs.size();
+  cond_dofmap = Teuchos::rcp( new Epetra_Map(-1,nummydirichvals,&(mydirichdofs[0]),0,dis->Comm()) );
+
+  return;
+} // BuildConditionDofRowMap
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::DoDirichletCond(
+    const Teuchos::RCP<Epetra_Vector>&        statevector,
+    const Teuchos::RCP<const Epetra_Vector>&  dirichvals,
+    const Teuchos::RCP<const Epetra_Map>&     dbcmap)
+{
+  int mynumvals = dbcmap->NumMyElements();
+  double* myvals = dirichvals->Values();
+
+  for(int i=0;i<mynumvals;++i)
+  {
+    int gid = dbcmap->GID(i);
+
 #ifdef DEBUG
-   std::cout<<"PROC "<<dis->Comm().MyPID()<<" : Number of conditioned elements: "<<dis->GetCondition(condname)->Geometry().size()<<" ("<<condname<<")"<<std::endl;
+    if(mynumvals==0)
+      dserror("dbcmap empty!");
+    int err = -2;
+    int lid = dirichvals->Map().LID(gid);
+    err = statevector -> ReplaceGlobalValue(gid,0,myvals[lid]);
+    if(err==-1)
+      dserror("VectorIndex >= NumVectors()");
+    else if (err==1)
+        dserror("GlobalRow not associated with calling processor");
+    else if (err != -1 and err != 1 and err != 0)
+      dserror("Trouble using ReplaceGlobalValue on fluid state vector. ErrorCode = %d",err);
+#else
+    int lid = dirichvals->Map().LID(gid);
+    statevector -> ReplaceGlobalValue(gid,0,myvals[lid]);
 #endif
 
-}
+  }
+  return;
+} // DoDirichletCond
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::ApplyDirichlet(
+    const Teuchos::RCP< ::ADAPTER::StructureWrapper>& field_wrapper,
+    const Teuchos::RCP<DRT::Discretization>&  dis,
+    const std::string                         condname,
+    Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+    const Teuchos::RCP<const Epetra_Vector>&  dirichvals)
+{
+  // build map of dofs subjected to Dirichlet condition
+  BuildConditionDofMap(
+      dis,
+      condname,
+      field_wrapper->GetDBCMapExtractor()->CondMap(),
+      cond_dofrowmap);
+
+  // add adhesion dofs to dbc map
+  field_wrapper->AddDirichDofs(cond_dofrowmap);
+
+  // write Dirichlet values to systemvector
+  DoDirichletCond(
+      field_wrapper->WriteAccessDispnp(),
+      dirichvals,
+      field_wrapper->GetDBCMapExtractor()->CondMap());
+
+  return;
+} // ApplyDirichlet
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::ApplyDirichletToFluid(
+    const Teuchos::RCP< ::ADAPTER::FluidWrapper>& field_wrapper,
+    const Teuchos::RCP<DRT::Discretization>&  dis,
+    const std::string                         condname,
+    Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+    const Teuchos::RCP<const Epetra_Vector>&  dirichvals)
+{
+  // build map of dofs subjected to Dirichlet condition
+  BuildConditionDofMap(
+      dis,
+      condname,
+      field_wrapper->GetDBCMapExtractor()->CondMap(),
+      cond_dofrowmap);
+
+  // add adhesion dofs to dbc map
+  field_wrapper->AddDirichCond(cond_dofrowmap);
+
+  // write Dirichlet values to systemvector
+  DoDirichletCond(
+      field_wrapper->WriteAccessVelnp(),
+      dirichvals,
+      field_wrapper->GetDBCMapExtractor()->CondMap());
+
+  return;
+} // ApplyDirichlet
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::RemoveDirichlet(
+    const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
+    const Teuchos::RCP< ::ADAPTER::StructureWrapper>& field_wrapper)
+{
+  field_wrapper->RemoveDirichDofs(cond_dofmap);
+  return;
+} // RemoveDirichlet
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::RemoveDirichletFromFluid(
+    const Teuchos::RCP<const Epetra_Map>& cond_dofmap,
+    const Teuchos::RCP< ::ADAPTER::FluidWrapper>& field_wrapper)
+{
+  field_wrapper->RemoveDirichCond(cond_dofmap);
+  return;
+} // RemoveDirichlet
 
 
 /*----------------------------------------------------------------------*/
@@ -166,7 +330,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& 
     }
   }
   return;
-}
+} // EvaluateImmersedNoAssembly
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -338,7 +502,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
           strategy.ClearElementStorage( la[row].Size(), la[col].Size() );
 
           // call the element specific evaluate method
-          int err = curr->second->Evaluate(params,*evaldis,la,
+          int err = curr->second->Evaluate(params,*evaldis,la[0].lm_,
               strategy.Elematrix1(),
               strategy.Elematrix2(),
               strategy.Elevector1(),
@@ -368,7 +532,7 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
     } // if condstring found
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   return;
-}
+} // EvaluateInterpolationCondition
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -381,11 +545,9 @@ void IMMERSED::ImmersedBase::SearchPotentiallyCoveredBackgrdElements(
         const double radius,
         const int label)
 {
-
   *current_subset_tofill = backgrd_SearchTree->searchElementsInRadius(dis,currentpositions,point,radius,label);
-
   return;
-}
+} // SearchPotentiallyCoveredBackgrdElements
 
 
 /*----------------------------------------------------------------------*/
@@ -414,5 +576,5 @@ void IMMERSED::ImmersedBase::EvaluateSubsetElements(Teuchos::ParameterList& para
   }
 
   return;
-}
+} // EvaluateSubsetElements
 

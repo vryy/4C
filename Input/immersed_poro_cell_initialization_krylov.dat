@@ -47,6 +47,11 @@ SEGREGATION_LAW                 constant
 SEGREGATION_CONST               0
 -------------------------------------CELL DYNAMIC/CONFINEMENT MODULE
 COUPALGO                        iter_stagg_fixed_rel_param
+COUPVARIABLE                    Displacement // Displacement Force
+CONVTOL                         1e-05
+RELAX                           1
+MAXOMEGA                        0.0
+ITEMAX                          23
 PENALTY_INIT                    100.0
 PENALTY_START                   250.0
 ECM_FIBER_RADIUS                3.5
@@ -104,27 +109,14 @@ THETA                           1.0
 ----------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
-PROJECTION                      shapefunctions
-APPLY_FORCE_RELAX               globally
-APPLY_VEL_RELAX                 globally
 DIVERCONT                       continue
 OUTPUT_EVRY_NLNITER             no
 TIMESTATS                       endofsim
-FORCE_RELAX                     1
-VEL_RELAX                       1
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
 NUM_GP_FLUID_BOUND              8
 ---------------------------------IMMERSED METHOD/PARTITIONED SOLVER
-PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
-COUPVARIABLE_FSI                Displacement // Displacement Force
-COUPMETHOD                      immersed
-BASETOL                         0.001
-CONVTOL                         1e-05
-RELAX                           1
-MAXOMEGA                        0.0
-ITEMAX                          23
 -------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1

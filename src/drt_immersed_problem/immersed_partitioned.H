@@ -3,8 +3,10 @@
 
 \brief base class for all partitioned immersed algorithms
 
+\level 2
+
 <pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
@@ -33,10 +35,17 @@ class ImmersedPartitioned : public ImmersedBase,
 {
 public:
 
+  /// constructor
   explicit ImmersedPartitioned(const Epetra_Comm& comm);
 
   /// loop over time steps of partitioned scheme
   void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+
+  /// Calc single time step and return coupling information
+  /// vector for interaction with other coupled problems.
+  Teuchos::RCP<Epetra_Vector> DoStep(
+      const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
+      const Teuchos::RCP<Epetra_Vector>& coupling_info);
 
   /// compute residual of partitioned scheme S^{-1}(F(d)) - d
   bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
@@ -46,9 +55,20 @@ public:
 
 protected:
 
-    virtual void SetFieldDt(){};
+    /// setup list with default parameters
+    virtual void SetDefaultParameters(const Teuchos::ParameterList& immersedpart, Teuchos::ParameterList& list);
 
-    virtual void PrepareTimeStep(){};
+    /// set the time step
+    virtual void SetFieldDt(){/* may be overridden by subclass */};
+
+    /// prepare the time step calculation
+    virtual void PrepareTimeStep(){/* may be overridden by subclass */};
+
+    /// return coupling information for inter-module couplings of multi-multiphysics problems
+    virtual Teuchos::RCP<Epetra_Vector> ReturnCouplingInfo(){return Teuchos::null;};
+
+    /// print information on the current solution step
+    virtual void PrintStepInfo(){/* may be overridden by subclass */};
 
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess()
   {dserror("not implemented in this class. may be overriden in derived class."); return Teuchos::null;};
@@ -83,16 +103,13 @@ protected:
   /// access to iteration counter
   std::vector<int> IterationCounter(){return counter_;};
 
+  Teuchos::ParameterList& NOXParameterList(){return noxparameterlist_;};
+
   /// parameters handed in to NOX
   Teuchos::ParameterList noxparameterlist_;
 
-protected:
-
 
 private:
-
-  /// setup list with default parameters
-  virtual void SetDefaultParameters(const Teuchos::ParameterList& immerseddyn, Teuchos::ParameterList& list);
 
 
   /// print parameters and stuff

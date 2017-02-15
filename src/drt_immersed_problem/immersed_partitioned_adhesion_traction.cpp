@@ -88,9 +88,9 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   exchange_manager_->SetIsPureAdhesionSimulation(true);
 
   // get coupling variable
-  displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_ADHESION") == "Displacement";
+  displacementcoupling_ = globalproblem_->CellMigrationParams().sublist("ADHESION MODULE").get<std::string>("COUPVARIABLE") == "Displacement";
   if(displacementcoupling_ and myrank_==0)
-    std::cout<<" Coupling variable for partitioned Cell-ECM Adhesion Dynamics scheme :  Displacements "<<std::endl;
+    dserror("Displacement coupled scheme for Cell-ECM Adhesion Dynamics is not implemented.");
   else if (!displacementcoupling_ and myrank_==0)
     std::cout<<" Coupling variable for partitioned Cell-ECM Adhesion Dynamics scheme :  Force "<<std::endl;
 
@@ -137,7 +137,10 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::Setup()
   // make sure Init(...) was called first
   CheckIsInit();
 
-  // do all setup stuff here
+  // get parameters for nox
+  const Teuchos::ParameterList& noxparams = globalproblem_->CellMigrationParams().sublist("ADHESION MODULE");
+  SetDefaultParameters(noxparams,NOXParameterList());
+  //noxparameterlist_.print();
 
   // set flag issetup true
   SetIsSetup(true);
@@ -153,25 +156,8 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vect
 
   // DISPLACEMENT COUPLING
   if (displacementcoupling_)
-  { dserror("COUPVARIABLE 'Displacement' is not tested, yet!!");
-    const Teuchos::RCP<Epetra_Vector> idispn = Teuchos::rcp(new Epetra_Vector(x));
-
-    ////////////////////
-    // CALL BackgroundOp
-    ////////////////////
-    PrepareBackgroundOp();
-    BackgroundOp(Teuchos::null, fillFlag);
-
-    ////////////////////
-    // CALL ImmersedOp
-    ////////////////////
-    Teuchos::RCP<Epetra_Vector> idispnp =
-        ImmersedOp(Teuchos::null, fillFlag);
-
-    int err = F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
-    if(err != 0)
-      dserror("Vector update of Coupling-residual returned err=%d",err);
-
+  {
+    dserror("COUPVARIABLE 'Displacement' is not implemented, yet!!");
   }
   // FORCE COUPLING
   else if(!displacementcoupling_)
@@ -403,12 +389,9 @@ Teuchos::RCP<Epetra_Vector>
 IMMERSED::ImmersedPartitionedAdhesionTraction::InitialGuess()
 {
   if(displacementcoupling_)
-    return cellstructure_->PredictImmersedInterfaceDispnp();
+    return Teuchos::null;
   else // FORCE COUPLING
-  {
     return cellstructure_->Freact();
-  }
-
 }
 
 
@@ -912,3 +895,15 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::ResetImmersedInformation()
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedAdhesionTraction::PrintStepInfo()
+{
+  if(myrank_==0)
+  {
+    std::cout<<"################################################################################################"<<std::endl;
+    std::cout<<"### DO CELL-ECM ADHESION INTERACTION STEP ...                                                ###"<<std::endl;
+    std::cout<<"################################################################################################"<<std::endl;
+  }
+}

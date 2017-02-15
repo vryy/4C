@@ -155,21 +155,6 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidPoro::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
-{
-  fluidimpl_->AddDirichCond(maptoadd);
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void ADAPTER::FluidPoro::RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
-{
-  fluidimpl_->RemoveDirichCond(maptoremove);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::MapExtractor> ADAPTER::FluidPoro::VelPresSplitter()
 {
   return fluidimpl_->VelPresSplitter();

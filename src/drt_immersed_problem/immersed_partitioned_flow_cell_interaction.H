@@ -160,6 +160,12 @@ protected:
   */
   virtual Teuchos::RCP<Epetra_Vector> CalcArtificialVelocity();
 
+  /// return vector containing information for inter-module coupling
+  Teuchos::RCP<Epetra_Vector> ReturnCouplingInfo();
+
+  /// print information on the current solution step
+  virtual void PrintStepInfo();
+
   //! @name Various global vectors
   //@{
   Teuchos::RCP<Epetra_Vector> porofluid_artificial_velocity_;//!< background velocity interpolated from immersed dis

@@ -1,5 +1,5 @@
 //
-// \maintainer Andreas Rauch
+// Maintainer: Andreas Rauch
 //             rauch@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15240
@@ -32,6 +32,13 @@ NUMSTEP                         5
 TIMESTEP                        0.2
 MAXTIME                         1.0
 -------------------------------------CELL DYNAMIC/PROTRUSION MODULE
+COUPALGO                        iter_stagg_fixed_rel_param
+COUPVARIABLE                    Displacement
+SSICOUPVARIABLE                 growth
+CONVTOL                         1e-00
+RELAX                           1.0
+MAXOMEGA                        0
+ITEMAX                          10
 NUMDOF_ACTIN                    0
 NUMDOF_BRANCHES                 2
 NUMDOF_BARBEDENDS               3
@@ -92,15 +99,7 @@ FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
 TIMESTATS                       endofsim
 -------------------------------------IMMERSED METHOD/PARTITIONED SOLVER
-PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
-COUPVARIABLE_PROTRUSION         Displacement //Force //Displacement
-COUPMETHOD                      immersed
-BASETOL                         0.001
-CONVTOL                         1e-00
-RELAX                           1.0
-MAXOMEGA                        0
-ITEMAX                          10
 -------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DAMPING                         Material // mandatory for poro!!

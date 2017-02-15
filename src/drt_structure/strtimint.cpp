@@ -3635,3 +3635,29 @@ void STR::TimInt::ResizeMStepTimAda()
 
   return;
 }
+
+/*----------------------------------------------------------------------*/
+/* Expand the dbc map by dofs provided in Epetra_Map maptoadd.          */
+void STR::TimInt::AddDirichDofs(
+    const Teuchos::RCP<const Epetra_Map> maptoadd)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+  condmaps.push_back(maptoadd);
+  condmaps.push_back(GetDBCMapExtractor()->CondMap());
+  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Contract the dbc map by dofs provided in Epetra_Map maptoremove.     */
+void STR::TimInt::RemoveDirichDofs(
+    const Teuchos::RCP<const Epetra_Map> maptoremove)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > othermaps;
+  othermaps.push_back(maptoremove);
+  othermaps.push_back(GetDBCMapExtractor()->OtherMap());
+  Teuchos::RCP<Epetra_Map> othermerged = LINALG::MultiMapExtractor::MergeMaps(othermaps);
+  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
+  return;
+}

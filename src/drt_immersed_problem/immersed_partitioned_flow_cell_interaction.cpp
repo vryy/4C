@@ -64,11 +64,11 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   scatradis_              = globalproblem_->GetDis("scatra");
 
   // get coupling variable
-  displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_FSI") == "Displacement";
+  displacementcoupling_ = globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<std::string>("COUPVARIABLE") == "Displacement";
   if(displacementcoupling_ and myrank_==0)
-    std::cout<<" Coupling variable for partitioned scheme :  Displacements "<<std::endl;
+    std::cout<<" Coupling variable for partitioned FSI scheme :  Displacements "<<std::endl;
   else if (!displacementcoupling_ and myrank_==0)
-    std::cout<<" Coupling variable for partitioned scheme :  Force "<<std::endl;
+    std::cout<<" Coupling variable for partitioned FSI scheme :  Force "<<std::endl;
 
   // set switch for interface velocity correction
   correct_boundary_velocities_= (DRT::INPUT::IntegralValue<int>(globalproblem_->ImmersedMethodParams(), "CORRECT_BOUNDARY_VELOCITIES"));
@@ -87,7 +87,7 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
       std::cout<<"\n Using AITKEN relaxation parameter. "<<std::endl;
   }
   else
-    dserror("Unknown definition of COUPALGO in FSI DYNAMIC section for Immersed FSI.");
+    dserror("Unknown definition of COUPALGO in FLOW INTERACTION MODULE section for Immersed CFI.");
 
   // check for unfeasible combination
   if (correct_boundary_velocities_ and displacementcoupling_ and is_relaxation_)
@@ -151,7 +151,7 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   // 0 undefined , 1 ameboid , 2 proteolytic
   migrationtype_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"MIGRATIONTYPE");
   if(migrationtype_==INPAR::CELL::cell_migration_ameboid and myrank_==0)
-    std::cout<<"AMEBOID TYPE MIGRATION. No proteolytic reaction in ECM."<<std::endl;
+    std::cout<<" AMEBOID TYPE MIGRATION. No proteolytic reaction in ECM."<<std::endl;
   if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and myrank_==0)
     std::cout<<"MESENCHYMAL TYPE MIGRATION. Proteolytic reaction in ECM."<<std::endl;
   else if(migrationtype_==INPAR::CELL::cell_migration_undefined)
@@ -264,7 +264,11 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::Setup()
   // make sure Init(...) was called first
   CheckIsInit();
 
-  // do all setup stuff here
+  // get parameters for nox
+  const Teuchos::ParameterList& noxparams =
+      globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE");
+  SetDefaultParameters(noxparams,NOXParameterList());
+  //noxparameterlist_.print();
 
   // set flag issetup true
   SetIsSetup(true);
@@ -329,7 +333,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CouplingOp(const Epetra_V
 
   // perform n steps max; then set converged
   static bool nlnsolver_continue = globalproblem_->ImmersedMethodParams().get<std::string>("DIVERCONT") == "continue";
-  static int  itemax = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<int>("ITEMAX");
+  static int  itemax = globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<int>("ITEMAX");
   if((IterationCounter())[0] == itemax and nlnsolver_continue)
   {
     if(myrank_==0)
@@ -544,7 +548,10 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::BuildImmersedScaTraDirich
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedFlowCellInteraction::DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap)
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::DoImmersedDirichletCond(
+    Teuchos::RCP<Epetra_Vector> statevector,
+    Teuchos::RCP<Epetra_Vector> dirichvals,
+    Teuchos::RCP<Epetra_Map> dbcmap)
 {
   int mynumvals = dbcmap->NumMyElements();
   double* myvals = dirichvals->Values();
@@ -840,7 +847,8 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFlowCellInteraction::Ca
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedFlowCellInteraction::ApplyImmersedDirichlet(Teuchos::RCP<Epetra_Vector> artificial_velocity)
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::ApplyImmersedDirichlet(
+    Teuchos::RCP<Epetra_Vector> artificial_velocity)
 {
   BuildImmersedDirichMap(backgroundfluiddis_, dbcmap_immersed_, poroscatra_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap(),0);
   poroscatra_subproblem_->FluidField()->AddDirichCond(dbcmap_immersed_);
@@ -1063,4 +1071,25 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetStatesImmersedOP()
   backgroundfluiddis_->SetState(0,"veln", poroscatra_subproblem_->FluidField()->Veln());
   immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
   return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFlowCellInteraction::ReturnCouplingInfo()
+{
+  return cell_bdry_traction_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::PrintStepInfo()
+{
+  if(myrank_==0)
+  {
+    std::cout<<"################################################################################################"<<std::endl;
+    std::cout<<"### DO CELL-FLOW INTERACTION STEP ...                                                        ###"<<std::endl;
+    std::cout<<"################################################################################################"<<std::endl;
+  }
 }

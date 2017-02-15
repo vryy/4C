@@ -60,10 +60,7 @@ namespace ADAPTER {
                            Teuchos::RCP<std::set<int> > condIDs,
                            POROELAST::coupltype coupltype = POROELAST::fluidfluid);
 
-    virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
-
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
-
+    //! calls the VelPresSplitter on the time integrator
     virtual Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter();
 
     /*!

@@ -87,7 +87,7 @@ IMMERSED::ImmersedPartitionedConfineCell::ImmersedPartitionedConfineCell(const T
   exchange_manager_->SetIsInitialized(true);
 
   // get coupling variable
-  displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_ADHESION") == "Displacement";
+  displacementcoupling_ = globalproblem_->CellMigrationParams().sublist("CONFINEMENT MODULE").get<std::string>("COUPVARIABLE") == "Displacement";
   if(displacementcoupling_ and myrank_==0)
     std::cout<<"\n Coupling variable for partitioned Cell-ECM Confinement scheme :  Displacements "<<std::endl;
   else if (!displacementcoupling_ and myrank_==0)
@@ -151,7 +151,10 @@ void IMMERSED::ImmersedPartitionedConfineCell::Setup()
   // make sure Init(...) was called first
   CheckIsInit();
 
-  // do all setup stuff here
+  // get parameters for nox
+  const Teuchos::ParameterList& noxparams = globalproblem_->CellMigrationParams().sublist("CONFINEMENT MODULE");
+  SetDefaultParameters(noxparams,NOXParameterList());
+  //noxparameterlist_.print();
 
   // set flag issetup true
   SetIsSetup(true);

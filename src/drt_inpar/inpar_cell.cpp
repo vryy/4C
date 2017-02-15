@@ -236,6 +236,17 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     couplabel,
                                     &confinementdyn);
 
+  setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
+                               "Coupling variable at the interface",
+                               tuple<std::string>("Displacement","Force"),
+                               tuple<int>(0,1),
+                               &confinementdyn);
+
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&confinementdyn);
+  DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned solver",&confinementdyn);
+  DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&confinementdyn);
+  IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&confinementdyn);
+
   DoubleParameter("PENALTY_INIT",100.0,"Penalty parameter for the cell initialization",&confinementdyn);
   DoubleParameter("PENALTY_START",100.0,"Penalty parameter at the beginning of each time step",&confinementdyn);
   DoubleParameter("ECM_FIBER_RADIUS",0.3,"Average radius of ECM fibers",&confinementdyn);
@@ -253,6 +264,17 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     couplabel,
                                     &adhesiondyn);
 
+    setStringToIntegralParameter<int>("COUPVARIABLE","Force",
+                                 "Coupling variable at the interface",
+                                 tuple<std::string>("Displacement","Force"),
+                                 tuple<int>(0,1),
+                                 &adhesiondyn);
+
+    DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&adhesiondyn);
+    DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned solver",&adhesiondyn);
+    DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&adhesiondyn);
+    IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&adhesiondyn);
+
 
 
   /* CELL PROTRUSION PARAMETERS */
@@ -266,7 +288,13 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     couplabel,
                                     &protdyn);
 
-  setStringToIntegralParameter<int>("COUPVARIABLE","growth",
+  setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
+                               "Coupling variable at the interface",
+                               tuple<std::string>("Displacement","Force"),
+                               tuple<int>(0,1),
+                               &protdyn);
+
+  setStringToIntegralParameter<int>("SSICOUPVARIABLE","growth",
                                     "Check growth or usual ssi criterion",
                                     tuple<std::string>(
                                                        "undefined",
@@ -277,6 +305,11 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                                coup_growth_growth,
                                                coup_growth_ssi),
                                     &protdyn);
+
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&protdyn);
+  DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned solver",&protdyn);
+  DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&protdyn);
+  IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&protdyn);
 
   IntParameter("NUMDOF_ACTIN",-1,"Number of Scalar for Actin Monomer Concentration",&protdyn);
   IntParameter("NUMDOF_BARBEDENDS",-1,"Number of Scalar for Pointed End Concentration at surface",&protdyn);
@@ -292,6 +325,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("ACTIN_MONOMER_SIZE",2.7e-3,"Size of actin monomer",&protdyn);
 
 
+
   /* CELL-FLOW INTERACTION PARAMETERS */
 
   Teuchos::ParameterList& cfidyn = celldyn.sublist("FLOW INTERACTION MODULE",false,
@@ -302,6 +336,20 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     coupname,
                                     couplabel,
                                     &cfidyn);
+
+
+    setStringToIntegralParameter<int>("COUPVARIABLE","Force",
+                                 "Coupling variable at the interface",
+                                 tuple<std::string>("Displacement","Force"),
+                                 tuple<int>(0,1),
+                                 &cfidyn);
+
+    DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&cfidyn);
+    DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned solver",&cfidyn);
+    DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&cfidyn);
+    IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&cfidyn);
+
+
 
   /* ENDO-/EXOCYTOSIS PARAMETERS */
 

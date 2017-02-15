@@ -44,6 +44,11 @@ RESULTSEVRY                     1
 RESTARTEVRY                     1
 --------------------------------CELL DYNAMIC/FLOW INTERACTION MODULE
 COUPALGO                        iter_stagg_fixed_rel_param
+COUPVARIABLE                    Force
+CONVTOL                         1e-09
+RELAX                           1.0
+MAXOMEGA                        0
+ITEMAX                          10
 -------------------------------------CELL DYNAMIC/CONFINEMENT MODULE
 COUPALGO                        iter_stagg_fixed_rel_param
 ECM_FIBER_RADIUS                100.0 // very large -> no ecm interaction
@@ -78,27 +83,14 @@ XML File                        = fsi_part_struct_solver.xml
 ----------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
-PROJECTION                      shapefunctions
-APPLY_FORCE_RELAX               globally
-APPLY_VEL_RELAX                 globally
 DIVERCONT                       continue
 OUTPUT_EVRY_NLNITER             no
-FORCE_RELAX                     1
-VEL_RELAX                       1
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
 NUM_GP_FLUID_BOUND              8
 TIMESTATS                       endofsim // everyiter
 -------------------------------------IMMERSED METHOD/PARTITIONED SOLVER
-PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
-COUPVARIABLE_FSI                Force
-COUPMETHOD                      immersed
-BASETOL                         0.001
-CONVTOL                         1e-09
-RELAX                           1.0
-MAXOMEGA                        0
-ITEMAX                          10
 -------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta

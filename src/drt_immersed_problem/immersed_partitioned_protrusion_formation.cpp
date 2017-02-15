@@ -85,7 +85,7 @@ IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedPartitionedProtrusionF
   scatradis_              = globalproblem_->GetDis("scatra");
 
   // get coupling variable
-  displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_PROTRUSION") == "Displacement";
+  displacementcoupling_ = globalproblem_->CellMigrationParams().sublist("PROTRUSION MODULE").get<std::string>("COUPVARIABLE") == "Displacement";
   if(displacementcoupling_ and myrank_==0)
     std::cout<<"\n Coupling variable for partitioned protrusion formation:  Displacements "<<std::endl;
   else if (!displacementcoupling_ and myrank_==0)
@@ -122,7 +122,10 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::Setup()
   // make sure Init(...) was called first
   CheckIsInit();
 
-  // do all setup stuff here
+  // get parameters for nox
+  const Teuchos::ParameterList& noxparams = globalproblem_->CellMigrationParams().sublist("PROTRUSION MODULE");
+  SetDefaultParameters(noxparams,NOXParameterList());
+  //noxparameterlist_.print();
 
   // set flag issetup true
   SetIsSetup(true);
@@ -207,7 +210,6 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::CouplingOp(const Epetra_V
   else if(!displacementcoupling_)
   {
    dserror("Force Coupling for Protrusion Formation is not implemented, yet.");
-
   } // displacement / force coupling
 
   return;

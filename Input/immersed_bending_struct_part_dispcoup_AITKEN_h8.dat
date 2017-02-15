@@ -106,8 +106,6 @@ COUPALGO                        iter_stagg_AITKEN_rel_param
 PREDICTOR                       d(n)
 COUPVARIABLE                    Displacement
 PARTITIONED                     DirichletNeumann
-COUPMETHOD                      immersed
-BASETOL                         0.001
 CONVTOL                         1e-07
 RELAX                           1.0
 MAXOMEGA                        0
@@ -115,14 +113,9 @@ ITEMAX                          100
 ----------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
-PROJECTION                      shapefunctions
-APPLY_FORCE_RELAX               globally
-APPLY_VEL_RELAX                 globally
 DIVERCONT                       stop
 OUTPUT_EVRY_NLNITER             no
 CORRECT_BOUNDARY_VELOCITIES     no
-FORCE_RELAX                     1
-VEL_RELAX                       1
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
 NUM_GP_FLUID_BOUND              125

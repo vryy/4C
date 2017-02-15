@@ -866,7 +866,7 @@ bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::ConvergenceCheck(int itnum)
   }
 
   // ignore base class check if growth is converged
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE"),"COUPVARIABLE") == INPAR::CELL::coup_growth_growth)
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE"),"SSICOUPVARIABLE") == INPAR::CELL::coup_growth_growth)
   {
     if((growthincnorm/growthinc_->GlobalLength())<=ittol_)
     {
@@ -876,8 +876,8 @@ bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::ConvergenceCheck(int itnum)
       stopnonliniter=true;
     }
   }
-  else if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE"),"COUPVARIABLE") == INPAR::CELL::coup_growth_undefined)
-    dserror("set COUPVARIABLE in section ---CELL DYNAMIC/PROTRUSION MODULE to 'growth' or 'ssi'");
+  else if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE"),"SSICOUPVARIABLE") == INPAR::CELL::coup_growth_undefined)
+    dserror("set SSICOUPVARIABLE in section ---CELL DYNAMIC/PROTRUSION MODULE to 'growth' or 'ssi'");
 
   // tell if we converged
   return stopnonliniter;

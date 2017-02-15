@@ -3,8 +3,10 @@
 
 \brief base class for all partitioned immersed algorithms
 
+\level 2
+
 <pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
@@ -29,10 +31,7 @@ IMMERSED::ImmersedPartitioned::ImmersedPartitioned(const Epetra_Comm& comm)
     ADAPTER::AlgorithmBase(comm,DRT::Problem::Instance()->CellMigrationParams()),
     counter_(7)
 {
-  const Teuchos::ParameterList& immerseddyn   = DRT::Problem::Instance()->ImmersedMethodParams();
-  SetDefaultParameters(immerseddyn,noxparameterlist_);
-  //noxparameterlist_.print();
-
+  // keep constructor empty
 }// ImmersedPartitioned constructor
 
 /*----------------------------------------------------------------------*/
@@ -45,7 +44,6 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
   Teuchos::ParameterList& nlParams = noxparameterlist_;
 
   // sublists
-
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
@@ -76,6 +74,7 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
       ;
   }
 
+  // construct the timer
   Teuchos::Time timer("time step timer");
 
   // ==================================================================
@@ -173,6 +172,95 @@ void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Int
     // write current solution
     Output();
   }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitioned::
+    DoStep(
+        const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
+        const Teuchos::RCP<Epetra_Vector>& coupling_info)
+{
+  PrintStepInfo();
+
+  // Get the top level parameter list
+  Teuchos::ParameterList& nlParams = noxparameterlist_;
+
+  // sublists
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+
+  // Create printing utilities
+  utils_ = Teuchos::rcp(new NOX::Utils(printParams));
+
+  // construct the timer
+  Teuchos::Time timer("time step timer");
+
+  // set time step size for this step
+  SetFieldDt();
+
+  // increment counters
+  IncrementTimeAndStep();
+
+  // print info
+  PrintHeader();
+
+  // reset all counters
+  std::fill(counter_.begin(),counter_.end(),0);
+  lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
+  linsolvcount_.resize(0);
+
+  // start time measurement
+  Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = Teuchos::rcp(new Teuchos::TimeMonitor(timer,true));
+
+  /*----------------- CSD - predictor for itnum==0 --------------------*/
+
+  // Begin Nonlinear Solver ************************************
+
+  // Get initial guess.
+  Teuchos::RCP<Epetra_Vector> soln = InitialGuess();
+
+  NOX::Epetra::Vector noxSoln(soln, NOX::Epetra::Vector::CreateView);
+
+  // Create the linear system
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
+    CreateLinearSystem(nlParams, interface, noxSoln, utils_);
+
+  // Create the Group
+  Teuchos::RCP<NOX::Epetra::Group> grp =
+    Teuchos::rcp(new NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
+
+  // Convergence Tests
+  Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
+
+  // Create the solver
+  Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,Teuchos::RCP<Teuchos::ParameterList>(&nlParams,false));
+
+  // solve the whole thing
+  NOX::StatusTest::StatusType status = solver->solve();
+
+  if (status != NOX::StatusTest::Converged)
+    dserror("Nonlinear solver failed to converge!");
+
+  // End Nonlinear Solver **************************************
+
+  // Output the parameter list
+  if (utils_->isPrintType(NOX::Utils::Parameters))
+    if (Step()==1 and Comm().MyPID()==0)
+    {
+      utils_->out() << std::endl
+                    << "Final Parameters" << std::endl
+                    << "****************" << std::endl;
+      solver->getList().print(utils_->out());
+      utils_->out() << std::endl;
+    }
+
+  // return the inter-module coupling information
+  return ReturnCouplingInfo();
 }
 
 
@@ -350,11 +438,8 @@ void IMMERSED::ImmersedPartitioned::CouplingOp(const Epetra_Vector &x, Epetra_Ve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::ParameterList& immerseddyn, Teuchos::ParameterList& list)
+void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::ParameterList& immersedpart, Teuchos::ParameterList& list)
 {
-  // extract sublist with settings for partitioned solver
-  const Teuchos::ParameterList& immersedpart = immerseddyn.sublist("PARTITIONED SOLVER");
-  const Teuchos::ParameterList& celldyn = DRT::Problem::Instance()->CellMigrationParams().sublist("FLOW INTERACTION MODULE");
 
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = list;
@@ -373,7 +458,7 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
   // Set parameters for NOX to chose the solver direction and line
   // search step.
   //
-  switch (DRT::INPUT::IntegralValue<int>(celldyn,"COUPALGO"))
+  switch (DRT::INPUT::IntegralValue<int>(immersedpart,"COUPALGO"))
   {
     case INPAR::CELL::cell_iter_stagg_fixed_rel_param:
     {
@@ -430,7 +515,7 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
     }
     default:
     {
-      dserror("coupling method type '%s' unsupported", celldyn.get<std::string>("COUPALGO").c_str());
+      dserror("coupling method type '%s' unsupported", immersedpart.get<std::string>("COUPALGO").c_str());
       break;
     }
   }

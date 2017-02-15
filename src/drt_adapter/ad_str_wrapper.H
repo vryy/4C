@@ -179,6 +179,16 @@ namespace ADAPTER
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return structure_->GetDBCMapExtractor(); }
 
+    /// expand dirichlet bc map
+    virtual void AddDirichDofs(
+        const Teuchos::RCP<const Epetra_Map> maptoadd)
+    {structure_->AddDirichDofs(maptoadd);};
+
+    /// contract dirichlet bc map
+    virtual void RemoveDirichDofs(
+        const Teuchos::RCP<const Epetra_Map> maptoremove)
+    {structure_->RemoveDirichDofs(maptoremove);};
+
     /// reset step and state vectors
     virtual void Reset()
     { structure_->Reset(); }

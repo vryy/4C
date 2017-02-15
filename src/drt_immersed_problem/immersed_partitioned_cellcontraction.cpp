@@ -87,7 +87,7 @@ IMMERSED::ImmersedPartitionedCellContraction::ImmersedPartitionedCellContraction
   scatradis_              = globalproblem_->GetDis("scatra");
 
   // get coupling variable
-  displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_PROTRUSION") == "Displacement";
+  displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE") == "Displacement";
   if(displacementcoupling_ and myrank_==0)
     std::cout<<"\n Coupling variable for partitioned protrusion formation:  Displacements "<<std::endl;
   else if (!displacementcoupling_ and myrank_==0)
@@ -121,7 +121,11 @@ void IMMERSED::ImmersedPartitionedCellContraction::Setup()
   // make sure Init(...) was called first
   CheckIsInit();
 
-  // do all setup stuff here
+  // get parameters for nox
+  const Teuchos::ParameterList& immerseddyn =
+      globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER");
+  SetDefaultParameters(immerseddyn,NOXParameterList());
+  //noxparameterlist_.print();
 
   // set flag issetup true
   SetIsSetup(true);
