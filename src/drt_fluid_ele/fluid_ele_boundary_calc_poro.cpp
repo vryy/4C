@@ -153,13 +153,16 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(DRT::ELEME
   }
   case FLD::fpsi_coupling:
   {
-    FPSICoupling(
-        ele1,
-        params,
-        discretization,
-        lm,
-        elemat1,
-        elevec1);
+    //We skip all elements without any row nodes on this proc (will not contribute to the matrix in the assembly of the matrix).
+    //Otherwise even fully ghosted Volume Elements would required a ghosted Volume Element on the other side of the interface
+    if (!ele1->HasOnlyGhostNodes(discretization.Comm().MyPID()))
+      FPSICoupling(
+          ele1,
+          params,
+          discretization,
+          lm,
+          elemat1,
+          elevec1);
     break;
   }
   case FLD::calc_flowrate:
@@ -491,6 +494,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     {
       Teuchos::RCP<DRT::Discretization> porofluiddis = DRT::Problem::Instance()-> GetDis("porofluid");
       it = InterfaceFacingElementMap->find(ele->Id());
+      if (it == InterfaceFacingElementMap->end())
+        dserror("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
+
       DRT::Element* porofluidelement = porofluiddis -> gElement(it -> second);
 
       generalmaterial        = porofluidelement -> Material();
@@ -506,6 +512,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
   {
     Teuchos::RCP<DRT::Discretization> fluiddis     = DRT::Problem::Instance()-> GetDis("fluid");
     it = InterfaceFacingElementMap->find(ele->Id());
+    if (it == InterfaceFacingElementMap->end())
+      dserror("Couldn't find ele %d in InterfaceFacingElementMap", ele->Id());
+
     DRT::Element* fluidelement = fluiddis -> gElement(it -> second);
 
     fluidmaterial            = fluidelement -> Material();
