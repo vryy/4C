@@ -245,6 +245,11 @@ void SSI::SSI_Base::Setup()
   // construct zeros_ vector
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
 
+  // re-connect the material pointers.
+  // At this point all the ghosting should have been done
+  ssicoupling_->AssignMaterialPointers(
+      structure_->Discretization(),scatra_->ScaTraField()->Discretization());
+
   // set flag issetup true
   SetIsSetup(true);
 

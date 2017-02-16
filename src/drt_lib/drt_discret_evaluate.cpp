@@ -70,16 +70,11 @@ void DRT::Discretization::Evaluate(
 
   Element::LocationArray la(dofsets_.size());
 
-  const int mypid = Comm().MyPID();
-
   // loop over column elements
   const int numcolele = NumMyColElements();
   for (int i=0; i<numcolele; ++i)
   {
     DRT::Element* actele = lColElement(i);
-
-    //if the element has only ghosted nodes it will not assemble -> skip evaluation
-    if(actele->HasOnlyGhostNodes(mypid)) continue;
 
     {
     TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate LocationVector");
@@ -410,8 +405,6 @@ void DRT::Discretization::EvaluateCondition
 
   Element::LocationArray la(dofsets_.size());
 
-  const int mypid = Comm().MyPID();
-
   std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
 
   //----------------------------------------------------------------------
@@ -456,9 +449,6 @@ void DRT::Discretization::EvaluateCondition
 
         for (curr=geom.begin(); curr!=geom.end(); ++curr)
         {
-          //if the element has only ghosted nodes it will not assemble -> skip evaluation
-          if(curr->second->HasOnlyGhostNodes(mypid)) continue;
-
           // get element location vector and ownerships
           // the LocationVector method will return the the location vector
           // of the dofs this condition is meant to assemble into.

@@ -2319,10 +2319,6 @@ void MORTAR::MortarInterface::EvaluateSTS(
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1)
       dserror("ERROR: Cannot find slave element with gid %d", gid1);
-    /* skip elements with only ghost nodes, since they will not contribute
-     * to the assemble procedure */
-    if (ele1->HasOnlyGhostNodes(Comm().MyPID()))
-      continue;
 
     MortarElement* selement = dynamic_cast<MortarElement*>(ele1);
 

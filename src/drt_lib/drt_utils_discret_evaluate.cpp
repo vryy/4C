@@ -92,8 +92,6 @@ void DRT::UTILS::Evaluate(
 
   Element::LocationArray la( discret.NumDofSets() );
 
-  const int mypid = discret.Comm().MyPID();
-
   bool is_subset = false;
   if ( not col_ele_map )
     col_ele_map = discret.ElementColMap();
@@ -114,10 +112,6 @@ void DRT::UTILS::Evaluate(
     }
     else
       actele = discret.lColElement( i );
-
-    // if the element has only ghosted nodes it will not assemble -> skip evaluation
-    if( actele->HasOnlyGhostNodes( mypid ) )
-      continue;
 
     {
       TEUCHOS_FUNC_TIME_MONITOR( "DRT::UTILS::Evaluate LocationVector" );
