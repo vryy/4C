@@ -1126,7 +1126,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
         // set file name
         std::ostringstream id;
         id << condid;
-        const std::string filename(problem_->OutputControlFile()->FileName()+".electrode_soc_"+id.str()+".txt");
+        const std::string filename(problem_->OutputControlFile()->FileName()+".electrode_soc_"+id.str()+".csv");
 
         // open file in appropriate mode and write header at beginning
         std::ofstream file;
@@ -1233,7 +1233,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       std::cout << "+----+-------------------------+" << std::endl << std::endl;
 
       // set file name
-      const std::string filename(problem_->OutputControlFile()->FileName()+".cell_voltage.txt");
+      const std::string filename(problem_->OutputControlFile()->FileName()+".cell_voltage.csv");
 
       // open file in appropriate mode and write header at beginning
       std::ofstream file;

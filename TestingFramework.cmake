@@ -211,6 +211,17 @@ macro(muelu_agg2vtk arg nlevel nblock nproc scaling)
 
 endmacro(muelu_agg2vtk)
 
+# compare arbitrary result file to corresponding reference file
+macro(result_file arg nproc filetag resultfilename referencefilename)
+
+  # add test to testing framework
+  add_test(NAME ${arg}-p${nproc}-${filetag} COMMAND diff -q -s ${PROJECT_BINARY_DIR}/${resultfilename} ${PROJECT_SOURCE_DIR}/Input/${referencefilename})
+
+  # set maximum test runtime
+  set_tests_properties(${arg}-p${nproc}-${filetag} PROPERTIES TIMEOUT 100)
+
+endmacro(result_file)
+
 ###------------------------------------------------------------------ List of tests
 baci_test(acou_pat_1d_impleuler 2 "" minimal)
 baci_test(acou_pat_1d_impleuler_inv 2 "")
@@ -526,6 +537,9 @@ baci_test(elch_2D_tertiary_twoEqu_ENC_varParams_2iter 1 10)
 baci_test(elch_2D_tertiary_twoEqu_ENC_varParams_ndb_2iter 2 10)
 baci_test(elch_3D_tet4_s2i_butlervolmer 3 15)
 post_processing(elch_3D_tet4_s2i_butlervolmer 3 "" "" 20)
+result_file(elch_3D_tet4_s2i_butlervolmer 3 cellvoltage xxx.cell_voltage.csv elch_3D_tet4_s2i_butlervolmer_cellvoltage.csv)
+result_file(elch_3D_tet4_s2i_butlervolmer 3 soc0 xxx.electrode_soc_0.csv elch_3D_tet4_s2i_butlervolmer_soc0.csv)
+result_file(elch_3D_tet4_s2i_butlervolmer 3 relerror0 xxx_dof_0.relerror elch_3D_tet4_s2i_butlervolmer_relerror0.csv)
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_condensed_bubnov_lmmaster 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_condensed_petrov 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_condensed_petrov_lmmaster 3 "")
