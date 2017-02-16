@@ -86,13 +86,13 @@ namespace FS3I
     virtual void Timeloop() = 0;
 
     //! flag whether time loop should be finished
-    bool NotFinished() const { return step_ < numstep_ and time_ <= timemax_; };
+    bool NotFinished() { return ((step_ < numstep_) and ((time_+1e-14) < timemax_)); };
 
     //! read and set fields needed for restart
     virtual void ReadRestart();
 
     /// redistribute the  FPSI interface, if running on parallel. Just needed in the case of FPS3I
-    void RedistributeInterface() {;} ;
+    void RedistributeInterface() {return;} ;
 
     /// create a volmortar object
     Teuchos::RCP< ::ADAPTER::MortarVolCoupl> CreateVolMortarObject(
