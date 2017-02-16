@@ -1782,6 +1782,8 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
           filename << 0 << 0;
         else if (problemcount < 10000)
           filename << 0;
+        else if (problemcount < 100000)
+          {;}
         else
           dserror(
               "Gmsh output implemented for a maximum of 9.999 problem polygons");
@@ -2658,6 +2660,10 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     else if (gmshcount < 1000)
       filename << 0 << 0;
     else if (gmshcount < 10000)
+      filename << 0 ;
+    else if (gmshcount < 100000)
+      {;}
+    else
       dserror("Gmsh output implemented for a maximum of 9.999 clip polygons");
     filename << gmshcount << ".pos";
     gmshcount++;
@@ -2666,8 +2672,8 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "w");
     std::stringstream gmshfilecontent;
-    gmshfilecontent << "View \" Clipping \" {" << std::endl;
 
+    gmshfilecontent << "View \" poly1 \" {" << std::endl;
     for (int i = 0; i < (int) poly1.size(); ++i)
     {
       if (i != (int) poly1.size() - 1)
@@ -2694,7 +2700,9 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
           << ")";
       gmshfilecontent << "{" << "S" << i << "};" << std::endl;
     }
+    gmshfilecontent << "};" << std::endl;
 
+    gmshfilecontent << "View \" poly2 \" {" << std::endl;
     for (int i = 0; i < (int) poly2.size(); ++i)
     {
       if (i != (int) poly2.size() - 1)
@@ -2721,7 +2729,9 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
           << ")";
       gmshfilecontent << "{" << "M" << i << "};" << std::endl;
     }
+    gmshfilecontent << "};" << std::endl;
 
+    gmshfilecontent << "View \" clip poly \" {" << std::endl;
     for (int i = 0; i < (int) respoly.size(); ++i)
     {
       if (i != (int) respoly.size() - 1)
