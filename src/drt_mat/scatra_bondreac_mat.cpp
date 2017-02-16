@@ -181,11 +181,18 @@ double MAT::ScatraBondReacMat::CalcReaBodyForceTerm(
     const double* gpcoord                //!< Gauss-point coordinates
     ) const
 {
-  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(gpcoord))>1.0e-14)
+  // set time and space coordinates
+  std::vector<std::pair<std::string,double> > constants;
+  constants.push_back(std::pair<std::string,double>("t",0.0));
+  constants.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants.push_back(std::pair<std::string,double>("z",gpcoord[2]));
+
+  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(constants))>1.0e-14)
   {
     double ReacCoeffFactor = AdjustReacCoeff(traction,porosity,phin,k);
 
-    return CalcReaBodyForceTerm(k,phinp,ReacCoeffFactor*ReacCoeff(gpcoord)*Stoich()->at(k),scale_phi);// scalar at integration point np
+    return CalcReaBodyForceTerm(k,phinp,ReacCoeffFactor*ReacCoeff(constants)*Stoich()->at(k),scale_phi);// scalar at integration point np
   }
   else
     return 0.0;
@@ -205,11 +212,18 @@ void MAT::ScatraBondReacMat::CalcReaBodyForceDerivMatrix(
     const double* gpcoord                //!< Gauss-point coordinates
     ) const
 {
-  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(gpcoord))>1.0e-14)
+  // set time and space coordinates
+  std::vector<std::pair<std::string,double> > constants;
+  constants.push_back(std::pair<std::string,double>("t",0.0));
+  constants.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants.push_back(std::pair<std::string,double>("z",gpcoord[2]));
+
+  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(constants))>1.0e-14)
   {
     double ReacCoeffFactor = AdjustReacCoeff(traction,porosity,phin,k);
 
-    CalcReaBodyForceDeriv(k,derivs,phinp,ReacCoeffFactor*ReacCoeff(gpcoord)*Stoich()->at(k),scale_phi);
+    CalcReaBodyForceDeriv(k,derivs,phinp,constants,ReacCoeffFactor*ReacCoeff(constants)*Stoich()->at(k),scale_phi);
   }
 
   return;
@@ -230,11 +244,18 @@ double MAT::ScatraBondReacMat::CalcReaBodyForceTerm(
     const double* gpcoord                                            //!< Gauss-point coordinates
     ) const
 {
-  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(gpcoord))>1.0e-14)
+  // add time and space coordinates
+  std::vector<std::pair<std::string,double> >constants_mod(constants);
+  constants_mod.push_back(std::pair<std::string,double>("t",0.0));
+  constants_mod.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants_mod.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants_mod.push_back(std::pair<std::string,double>("z",gpcoord[2]));
+
+  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(constants_mod))>1.0e-14)
   {
     double ReacCoeffFactor = AdjustReacCoeff(traction,porosity,phin,k);
 
-    return  CalcReaBodyForceTerm(k,phinp,constants,ReacCoeffFactor*ReacCoeff(gpcoord)*Stoich()->at(k),scale_phi);// scalar at integration point np
+    return  CalcReaBodyForceTerm(k,phinp,constants_mod,ReacCoeffFactor*ReacCoeff(constants_mod)*Stoich()->at(k),scale_phi);// scalar at integration point np
   }
   else
     return 0.0;
@@ -255,11 +276,17 @@ void MAT::ScatraBondReacMat::CalcReaBodyForceDerivMatrix(
     const double* gpcoord                //!< Gauss-point coordinates
     ) const
 {
-  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(gpcoord))>1.0e-14)
+  std::vector<std::pair<std::string,double> >constants_mod(constants);
+  constants_mod.push_back(std::pair<std::string,double>("t",0.0));
+  constants_mod.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants_mod.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants_mod.push_back(std::pair<std::string,double>("z",gpcoord[2]));
+
+  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(constants_mod))>1.0e-14)
   {
     double ReacCoeffFactor = AdjustReacCoeff(traction,porosity,phin,k);
 
-    CalcReaBodyForceDeriv(k,derivs,phinp,constants,ReacCoeffFactor*ReacCoeff(gpcoord)*Stoich()->at(k),scale_phi);
+    CalcReaBodyForceDeriv(k,derivs,phinp,constants_mod,ReacCoeffFactor*ReacCoeff(constants_mod)*Stoich()->at(k),scale_phi);
   }
 
   return;
@@ -280,7 +307,14 @@ double MAT::ScatraBondReacMat::CalcReaBodyForceTerm(
     double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
     ) const
 {
-  return params_->reaction_->CalcReaBodyForceTerm(k,NumScal(),phinp,*Couprole(),scale_reac,scale_phi);
+  // set time and space coordinates
+  std::vector<std::pair<std::string,double> > constants;
+  constants.push_back(std::pair<std::string,double>("t",0.0));
+  constants.push_back(std::pair<std::string,double>("x",0.0));
+  constants.push_back(std::pair<std::string,double>("y",0.0));
+  constants.push_back(std::pair<std::string,double>("z",0.0));
+
+  return params_->reaction_->CalcReaBodyForceTerm(k,NumScal(),phinp,constants,*Couprole(),scale_reac,scale_phi);
 }
 
 

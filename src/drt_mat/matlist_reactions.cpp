@@ -234,6 +234,13 @@ double MAT::MatListReactions::CalcReaBodyForceTerm(
         const double scale
     ) const
 {
+  // set time and space coordinates
+  std::vector<std::pair<std::string,double> > constants;
+  constants.push_back(std::pair<std::string,double>("t",0.0));
+  constants.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants.push_back(std::pair<std::string,double>("z",gpcoord[2]));
+
   double bodyforcetermK=0.0;
 
   for (int condnum = 0;condnum < NumReac();condnum++)
@@ -241,7 +248,7 @@ double MAT::MatListReactions::CalcReaBodyForceTerm(
     const int reacid = ReacID(condnum);
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, scale, gpcoord);
+    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, constants, scale);
   }
 
   return bodyforcetermK;
@@ -258,13 +265,19 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(
         const double scale
     ) const
 {
+  // set time and space coordinates
+  std::vector<std::pair<std::string,double> > constants;
+  constants.push_back(std::pair<std::string,double>("t",0.0));
+  constants.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants.push_back(std::pair<std::string,double>("z",gpcoord[2]));
 
   for (int condnum = 0;condnum < NumReac();condnum++)
   {
     const int reacid = ReacID(condnum);
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, scale, gpcoord);
+    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, constants, scale);
   }
 //gpcoord_
   return;
@@ -281,6 +294,13 @@ double MAT::MatListReactions::CalcReaBodyForceTerm(
         const double scale
     ) const
 {
+  // add time and space coordinates
+  std::vector<std::pair<std::string,double> >constants_mod(constants);
+  constants_mod.push_back(std::pair<std::string,double>("t",0.0));
+  constants_mod.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants_mod.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants_mod.push_back(std::pair<std::string,double>("z",gpcoord[2]));
+
   double bodyforcetermK=0.0;
 
   for (int condnum = 0;condnum < NumReac();condnum++)
@@ -288,7 +308,7 @@ double MAT::MatListReactions::CalcReaBodyForceTerm(
     const int reacid = ReacID(condnum);
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp,constants, scale, gpcoord);
+    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp,constants_mod, scale);
   }
 
   return bodyforcetermK;
@@ -306,13 +326,19 @@ void MAT::MatListReactions::CalcReaBodyForceDerivMatrix(
         const double scale
     ) const
 {
+  // add time and space coordinates
+  std::vector<std::pair<std::string,double> >constants_mod(constants);
+  constants_mod.push_back(std::pair<std::string,double>("t",0.0));
+  constants_mod.push_back(std::pair<std::string,double>("x",gpcoord[0]));
+  constants_mod.push_back(std::pair<std::string,double>("y",gpcoord[1]));
+  constants_mod.push_back(std::pair<std::string,double>("z",gpcoord[2]));
 
   for (int condnum = 0;condnum < NumReac();condnum++)
   {
     const int reacid = ReacID(condnum);
     const Teuchos::RCP<const MAT::ScatraReactionMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraReactionMat>(MaterialById(reacid));
 
-    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp,constants, scale, gpcoord);
+    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp,constants_mod, scale);
   }
 
   return;

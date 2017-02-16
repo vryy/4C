@@ -77,97 +77,10 @@ MAT::PAR::REACTIONCOUPLING::ReactionInterface::CreateReaction(
   return reaction;
 }
 
-/*----------------------------------------------------------------------*
- * **********************************************************************
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |  access method for calculating advanced reaction terms    vuong 09/16 |
- *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::ReactionBase::CalcReaBodyForceTerm(
-    const int k,                         //!< current scalar id
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
-    )
-{
-  // check
-  dsassert(IsInit(),"Reaction class has not been initialized!");
-
-  // call the real evaluation (scale_phi should have been applied in wrapper class)
-  return CalcReaBodyForceTerm(k,numscal,phinp,couprole,scale_reac);
-}
-
-/*--------------------------------------------------------------------------------*
- | access method for calculating advanced reaction term derivatives    vuong 09/16 |
- *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ReactionBase::CalcReaBodyForceDeriv(
-    const int k,                         //!< current scalar id
-    int numscal,                         //!< number of scalars
-    std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
-    )
-{
-
-  // check
-  dsassert(IsInit(),"Reaction class has not been initialized!");
-
-  // call the real evaluation (scale_phi should have been applied in wrapper class)
-  CalcReaBodyForceDeriv(k,numscal,derivs,phinp,couprole,scale_reac);
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |  access method for calculating advanced reaction terms    vuong 09/16 |
- *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceTerm(
-    const int k,                         //!< current scalar id
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
-    )
-{
-  // modify the phinp vector if neccessary (e.g. for reference concentrations)
-  std::vector<double> phinp_mod(ModifyPhi(phinp,scale_phi));
-
-  // call the real evaluation
-  return reaction_->CalcReaBodyForceTerm(k,numscal,phinp_mod,couprole,scale_reac,scale_phi);
-}
-
-/*--------------------------------------------------------------------------------*
- | access method for calculating advanced reaction term derivatives    vuong 09/16 |
- *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDeriv(
-    const int k,                         //!< current scalar id
-    int numscal,                         //!< number of scalars
-    std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
-    )
-{
-
-  // modify the phinp vector if necessary (e.g. for reference concentrations)
-  std::vector<double> phinp_mod(ModifyPhi(phinp,scale_phi));
-
-  // call the real evaluation
-  reaction_->CalcReaBodyForceDeriv(k,numscal,derivs,phinp_mod,couprole,scale_reac,scale_phi);
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  access method for calculating advanced reaction terms    vuong 09/16 |
@@ -176,7 +89,7 @@ double MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceTerm(
     const int k,                                                     //!< current scalar id
     int numscal,                                                     //!< number of scalars
     const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
-    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
     const std::vector<double>& couprole,                             //!< coupling role vector
     double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
@@ -197,7 +110,7 @@ void MAT::PAR::REACTIONCOUPLING::ReactionWithPhiScaling::CalcReaBodyForceDeriv(
     int numscal,                                                    //!< number of scalars
     std::vector<double>& derivs,                                    //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,                               //!< scalar values at t_(n+1)
-    const std::vector<std::pair<std::string,double> >& constants,   //!< vector containing values which are independent of the scalars
+    const std::vector<std::pair<std::string,double> >& constants,   //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
     const std::vector<double>& couprole,                            //!< coupling role vector
     double scale_reac,                                              //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     double scale_phi                                                //!< scaling factor for scalar values (used for reference concentrations)
@@ -251,62 +164,10 @@ void MAT::PAR::REACTIONCOUPLING::ReacStart::Initialize(
  |  access method for calculating advanced reaction terms    vuong 09/16 |
  *----------------------------------------------------------------------*/
 double MAT::PAR::REACTIONCOUPLING::ReacStart::CalcReaBodyForceTerm(
-    const int k,                         //!< current scalar id
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
-    )
-{
-  // modify the phinp vector for reaction start feature
-  std::vector<double> phinp_mod(ModifyPhi(phinp));
-
-  // call the real evaluation
-  return reaction_->CalcReaBodyForceTerm(k,numscal,phinp_mod,couprole,scale_reac,scale_phi);
-}
-
-/*--------------------------------------------------------------------------------*
- |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
- *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ReacStart::CalcReaBodyForceDeriv(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac,                   //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    double scale_phi                     //!< scaling factor for scalar values (used for reference concentrations)
-    )
-{
-
-  // modify the phinp vector for reaction start feature
-  std::vector<double> phinp_mod(ModifyPhi(phinp));
-
-  // temporary vector of same size as derivs
-  std::vector<double> myderivs(derivs.size(),0.0);
-
-  // call reaction evaluation
-  reaction_->CalcReaBodyForceDeriv(k,numscal,myderivs,phinp_mod,couprole,scale_reac,scale_phi);
-
-  for (int toderive=0; toderive<numscal ;toderive++)
-  {
-    // only copy the value if reaction has already started
-    if ( not(reacstart_[toderive] > 0 and phinp_mod[toderive]==0.0) )
-      derivs[toderive]+=myderivs[toderive];
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  access method for calculating advanced reaction terms    vuong 09/16 |
- *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::ReacStart::CalcReaBodyForceTerm(
     const int k,                                                     //!< current scalar id
     int numscal,                                                     //!< number of scalars
     const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
-    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
     const std::vector<double>& couprole,                             //!< coupling role vector
     double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
@@ -317,6 +178,7 @@ double MAT::PAR::REACTIONCOUPLING::ReacStart::CalcReaBodyForceTerm(
 
   // call the real evaluation
   return reaction_->CalcReaBodyForceTerm(k,numscal,phinp_mod,constants,couprole,scale_reac,scale_phi);
+
 }
 
 /*--------------------------------------------------------------------------------*
@@ -327,7 +189,7 @@ void MAT::PAR::REACTIONCOUPLING::ReacStart::CalcReaBodyForceDeriv(
     int numscal,                                                    //!< number of scalars
     std::vector<double>& derivs,                                    //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,                               //!< scalar values at t_(n+1)
-    const std::vector<std::pair<std::string,double> >& constants,   //!< vector containing values which are independent of the scalars
+    const std::vector<std::pair<std::string,double> >& constants,   //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
     const std::vector<double>& couprole,                            //!< coupling role vector
     double scale_reac,                                              //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     double scale_phi                                                //!< scaling factor for scalar values (used for reference concentrations)
@@ -381,8 +243,8 @@ std::vector<double> MAT::PAR::REACTIONCOUPLING::ReacStart::ModifyPhi(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::Initialize(
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& couprole //!< coupling role vector
+    int numscal,                                                     //!< number of scalars
+    const std::vector<double>& couprole                              //!< coupling role vector
     )
 {
   ReactionBase::Initialize(numscal,couprole);
@@ -392,11 +254,12 @@ void MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::Initialize(
  |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
 double MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::CalcReaBodyForceTerm(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac                    //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    int k,                                                           //!< current scalar id
+    int numscal,                                                     //!< number of scalars
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
 {
 
@@ -417,12 +280,13 @@ double MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::CalcReaBodyForceTerm(
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::CalcReaBodyForceDeriv(
-    const int k,                         //!< current scalar id
-    int numscal,                         //!< number of scalars
-    std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    const double scale_reac              //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    const int k,                                                     //!< current scalar id
+    int numscal,                                                     //!< number of scalars
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    const double scale_reac                                          //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
 {
 
@@ -454,8 +318,8 @@ void MAT::PAR::REACTIONCOUPLING::SimpleMultiplicative::CalcReaBodyForceDeriv(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::Initialize(
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& couprole  //!< coupling role vector
+    int numscal,                                                     //!< number of scalars
+    const std::vector<double>& couprole                              //!< coupling role vector
     )
 {
   ReactionBase::Initialize(numscal,couprole);
@@ -465,11 +329,12 @@ void MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::Initialize(
  |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
 double MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::CalcReaBodyForceTerm(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac                    //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    int k,                                                           //!< current scalar id
+    int numscal,                                                     //!< number of scalars
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
 {
 
@@ -490,12 +355,13 @@ double MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::CalcReaBodyForceTerm(
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::CalcReaBodyForceDeriv(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac                    //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    int k,                                                           //!< current scalar id
+    int numscal,                                                     //!< number of scalars
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
 {
 
@@ -529,8 +395,8 @@ void MAT::PAR::REACTIONCOUPLING::PowerMultiplicative::CalcReaBodyForceDeriv(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::Constant::Initialize(
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& couprole  //!< coupling role vector
+    int numscal,                                                     //!< number of scalars
+    const std::vector<double>& couprole                              //!< coupling role vector
     )
 {
   ReactionBase::Initialize(numscal,couprole);
@@ -540,11 +406,12 @@ void MAT::PAR::REACTIONCOUPLING::Constant::Initialize(
  |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
 double MAT::PAR::REACTIONCOUPLING::Constant::CalcReaBodyForceTerm(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac                    //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    int k,                                                           //!< current scalar id
+    int numscal,                                                     //!< number of scalars
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
 {
   return scale_reac;
@@ -554,12 +421,13 @@ double MAT::PAR::REACTIONCOUPLING::Constant::CalcReaBodyForceTerm(
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::Constant::CalcReaBodyForceDeriv(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac                    //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    int k,                                                           //!< current scalar id
+    int numscal,                                                     //!< number of scalars
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
 {
   // zero derivative -> do nothing
@@ -574,8 +442,8 @@ void MAT::PAR::REACTIONCOUPLING::Constant::CalcReaBodyForceDeriv(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::MichaelisMenten::Initialize(
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& couprole  //!< coupling role vector
+    int numscal,                                                     //!< number of scalars
+    const std::vector<double>& couprole                              //!< coupling role vector
     )
 {
   ReactionBase::Initialize(numscal,couprole);
@@ -585,11 +453,12 @@ void MAT::PAR::REACTIONCOUPLING::MichaelisMenten::Initialize(
  |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
 double MAT::PAR::REACTIONCOUPLING::MichaelisMenten::CalcReaBodyForceTerm(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac                    //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    int k,                                                           //!< current scalar id
+    int numscal,                                                     //!< number of scalars
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
 {
 
@@ -610,12 +479,13 @@ double MAT::PAR::REACTIONCOUPLING::MichaelisMenten::CalcReaBodyForceTerm(
  |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
  *--------------------------------------------------------------------------------*/
 void MAT::PAR::REACTIONCOUPLING::MichaelisMenten::CalcReaBodyForceDeriv(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac                    //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
+    int k,                                                           //!< current scalar id
+    int numscal,                                                     //!< number of scalars
+    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
+    const std::vector<double>& couprole,                             //!< coupling role vector
+    double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
 {
 
@@ -690,6 +560,18 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(
             variables_.push_back(std::pair<std::string,double>(name,0.0));
           }
         }
+
+        //add possible time dependency
+        if(not Function(functID-1).IsVariable(0,"t"))
+          Function(functID-1).AddVariable(0,"t",0.0);
+
+        //add possible spatial dependency
+        if(not Function(functID-1).IsVariable(0,"x"))
+          Function(functID-1).AddVariable(0,"x",0.0);
+        if(not Function(functID-1).IsVariable(0,"y"))
+          Function(functID-1).AddVariable(0,"y",0.0);
+        if(not Function(functID-1).IsVariable(0,"z"))
+          Function(functID-1).AddVariable(0,"z",0.0);
       }
     }
   }
@@ -700,107 +582,17 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::Initialize(
 
 
 /*----------------------------------------------------------------------*
- |  access method for calculating advanced reaction terms    vuong 09/16 |
- *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(
-    const int k,                                                     //!< current scalar id
-    int numscal,                                                     //!< number of scalars
-    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
-    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
-    const std::vector<double>& couprole,                             //!< coupling role vector
-    double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
-    )
-{
-  // check
-  dsassert(IsInit(),"Reaction class has not been initialized!");
-
-  // call the real evaluation (scale_phi should have been applied in wrapper class)
-  return CalcReaBodyForceTerm(k,numscal,phinp,constants,couprole,scale_reac);
-}
-
-/*--------------------------------------------------------------------------------*
- | access method for calculating advanced reaction term derivatives    vuong 09/16 |
- *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(
-    const int k,                                                     //!< current scalar id
-    int numscal,                                                     //!< number of scalars
-    std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
-    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
-    const std::vector<double>& couprole,                             //!< coupling role vector
-    double scale_reac,                                               //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    double scale_phi                                                 //!< scaling factor for scalar values (used for reference concentrations)
-    )
-{
-
-  // check
-  dsassert(IsInit(),"Reaction class has not been initialized!");
-
-  // call the real evaluation (scale_phi should have been applied in wrapper class)
-  CalcReaBodyForceDeriv(k,numscal,derivs,phinp,constants,couprole,scale_reac);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  helper for calculating advanced reaction terms           vuong 09/16 |
- *----------------------------------------------------------------------*/
-double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac                    //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    )
-{
-
-  // copy phi vector in different format to be read by the function
-  BuildPhiVectorForFunction(phinp,numscal);
-  // evaluate reaction term
-  double bftfac= Function(round(couprole[k])-1).Evaluate(0,variables_);
-
-  return scale_reac*bftfac;
-}
-
-/*--------------------------------------------------------------------------------*
- |  helper for calculating advanced reaction term derivatives          vuong 09/16 |
- *--------------------------------------------------------------------------------*/
-void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(
-    int k,                               //!< current scalar id
-    int numscal,                         //!< number of scalars
-    std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& couprole, //!< coupling role vector
-    double scale_reac                    //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
-    )
-{
-
-  // copy phi vector in different format to be read by the function
-  BuildPhiVectorForFunction(phinp,numscal);
-  // evaluate the derivatives of the reaction term
-  std::vector<double> myderivs = Function(round(couprole[k])-1).FctDer(0,variables_);
-
-  // add it to derivs
-  for (int toderive=0; toderive<numscal ;toderive++)
-    derivs[toderive]+=scale_reac*myderivs[toderive];
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  helper for calculating advanced reaction terms           vuong 09/16 |
  *----------------------------------------------------------------------*/
 double MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceTerm(
     int k,                                                            //!< current scalar id
     int numscal,                                                      //!< number of scalars
     const std::vector<double>& phinp,                                 //!< scalar values at t_(n+1)
-    const std::vector<std::pair<std::string,double> >& constants,     //!< vector containing values which are independent of the scalars
+    const std::vector<std::pair<std::string,double> >& constants,     //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
     const std::vector<double>& couprole,                              //!< coupling role vector
     double scale_reac                                                 //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
 {
-
   // copy phi vector in different format to be read by the function
   BuildPhiVectorForFunction(phinp,numscal);
   // evaluate reaction term
@@ -817,7 +609,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(
     int numscal,                                                     //!< number of scalars
     std::vector<double>& derivs,                                     //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
-    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
+    const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars (e.g. t,x,y,z)
     const std::vector<double>& couprole,                             //!< coupling role vector
     double scale_reac                                                //!< scaling factor for reaction term (= reaction coefficient * stoichometry)
     )
