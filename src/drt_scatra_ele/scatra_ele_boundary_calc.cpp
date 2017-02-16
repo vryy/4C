@@ -1506,12 +1506,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
     const double                      scalar
     )
 {
+  //////////////////////////////////////////////////////////////////////
+  //              get current condition and parameters
+  //////////////////////////////////////////////////////////////////////
+
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
   if(cond == Teuchos::null)
     dserror("Cannot access condition 'TransportRobin'");
-
-  std::vector<int>& lm = la[0].lm_;
 
   // get on/off flags
   const std::vector<int>* onoff = cond->Get<std::vector<int> > ("onoff");
@@ -1520,6 +1522,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
   const double prefac = cond->GetDouble("prefactor");
   const double refval = cond->GetDouble("refvalue");
 
+  //////////////////////////////////////////////////////////////////////
+  //                  read nodal values
+  //////////////////////////////////////////////////////////////////////
+
+  std::vector<int>& lm = la[0].lm_;
+
+  // ------------get values of scalar transport------------------
   // extract global state vector from discretization
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if(phinp == Teuchos::null)
@@ -1528,6 +1537,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
   // extract local nodal state variables from global state vector
   std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
+
+  //////////////////////////////////////////////////////////////////////
+  //                  build RHS and StiffMat
+  //////////////////////////////////////////////////////////////////////
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -1547,21 +1560,40 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
         const double refconcfac = FacForRefConc(gpid, ele, params, discretization);
 
         // evaluate overall integration factors
-        const double prefactimefacfac = prefac *scatraparamstimint_->TimeFac() *intfac *refconcfac;
-        const double prefactimefacrhsfac = prefac *scatraparamstimint_->TimeFacRhs() *intfac *refconcfac;
+        const double fac_3 = prefac *intfac *refconcfac ;
 
         // evaluate current scalar at current integration point
         const double phinp = funct_.Dot(ephinp[k]);
 
-        // evaluate element matrix and element right-hand side vector
-        for (int vi=0; vi<nen_; ++vi)
+        //build RHS and matrix
         {
-          const int fvi = vi*numscal_+k;
+          //////////////////////////////////////////////////////////////////////
+          //                  rhs
+          //////////////////////////////////////////////////////////////////////
+          const double vrhs = scatraparamstimint_->TimeFacRhs() *(phinp-refval) *fac_3;
 
-          for (int ui=0; ui<nen_; ++ui)
-            elemat1_epetra(fvi,ui*numscal_+k) += funct_(vi)*funct_(ui)*prefactimefacfac;
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi = vi*numscal_+k;
 
-           elevec1_epetra[fvi] -= funct_(vi)*(phinp-refval)*prefactimefacrhsfac;
+            elevec1_epetra[fvi] += vrhs * funct_(vi);
+          }
+
+          //////////////////////////////////////////////////////////////////////
+          //                  matrix
+          //////////////////////////////////////////////////////////////////////
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const double vlhs = scatraparamstimint_->TimeFac() * fac_3 * funct_(vi);
+            const int fvi = vi*numscal_+k;
+
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui = ui*numdofpernode_+k;
+
+              elemat1_epetra(fvi,fui) -= vlhs *funct_(ui);
+            }
+          }
         }
       } // loop over integration points
     }// if((*onoff)[k]==1)
