@@ -24,6 +24,7 @@
 #include "../linalg/linalg_utils.H"
 #include "particle_algorithm.H"
 #include "particle_heatSource.H"
+#include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -32,11 +33,13 @@ PARTICLE::TimIntGenAlpha::TimIntGenAlpha(
     const Teuchos::ParameterList& particledynparams,
     const Teuchos::ParameterList& xparams,
     Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver>& solver,
     Teuchos::RCP<IO::DiscretizationWriter> output
   ) : PARTICLE::TimIntImpl(ioparams, particledynparams, xparams, actdis, output),
 
-
-  midavg_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::MidAverageEnum>(particledynparams.sublist("GENALPHA"),"GENAVG")),
+  solver_(solver),
+  midavg_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::MidAverageEnum>(particledynparams.sublist("GENALPHA"),"GENAVG")),\
+  gradResAccApproxType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::GAapproxType>(particledynparams.sublist("GENALPHA"),"GRADRES_APPROX")),
   beta_(particledynparams.sublist("GENALPHA").get<double>("BETA")),
   gamma_(particledynparams.sublist("GENALPHA").get<double>("GAMMA")),
   alphaf_(particledynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
@@ -49,7 +52,8 @@ PARTICLE::TimIntGenAlpha::TimIntGenAlpha(
   dism_(Teuchos::null),
   velm_(Teuchos::null),
   accm_(Teuchos::null),
-  resAcc_(Teuchos::null)
+  resAcc_(Teuchos::null),
+  gradResAcc_(Teuchos::null)
 {
 
   return;
@@ -111,9 +115,9 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
   //-- genAlpha can start --//
 
   // predict new state
-  PredictNewState(true);
+  PredictNewState(disn_, true);
   // predict mid state
-  PredictMidState();
+  PredictMidState(disn_);
 
   // compute the residual
   ResAcc();
@@ -146,7 +150,13 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
     }
 
     // compute the gradient of the residual acceleration
-    GradResAcc(dt);
+    GradResAcc();
+
+    // predict new state
+    PredictNewState(disn_);
+    // predict mid state
+    PredictMidState(disn_);
+
 
     // compute deltaDis and update disn - Newton-Rhapson iteration. Check dis every nn iterations
     CorrectDis((10 * nri) % maxIt_ == 0);
@@ -160,10 +170,10 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
     ComputeAndSetDisRelatedStateVectors();
 
     // predict new state
-    PredictNewState();
+    PredictNewState(disn_);
 
     // predict mid state
-    PredictMidState();
+    PredictMidState(disn_);
 
     // compute the residual
     ResAcc();
@@ -184,8 +194,6 @@ int PARTICLE::TimIntGenAlpha::IntegrateStep()
 
   // erase the handler, information are outdated
   interHandler_->Clear();
-  //dserror("IntegrateStep is still in the todo list");
-
 
   return 0;
 }
@@ -217,11 +225,11 @@ void PARTICLE::TimIntGenAlpha::DetermineMassDampConsistAccel()
 
 /*----------------------------------------------------------------------*/
 /* evaluate mid-state vectors by averaging end-point vectors */
-void PARTICLE::TimIntGenAlpha::PredictMidState()
+void PARTICLE::TimIntGenAlpha::PredictMidState(const Teuchos::RCP<Epetra_Vector> disn)
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-  dism_->Update(1.-alphaf_, *disn_, alphaf_, (*dis_)[0], 0.0);
+  dism_->Update(1.-alphaf_, *disn, alphaf_, (*dis_)[0], 0.0);
 
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
@@ -297,7 +305,7 @@ void PARTICLE::TimIntGenAlpha::CalcCoeff()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void PARTICLE::TimIntGenAlpha::PredictNewState(const bool disAreEqual)
+void PARTICLE::TimIntGenAlpha::PredictNewState(const Teuchos::RCP<Epetra_Vector> disn, const bool disAreEqual)
 {
   if (disAreEqual)
   {
@@ -306,8 +314,8 @@ void PARTICLE::TimIntGenAlpha::PredictNewState(const bool disAreEqual)
   }
   else
   {
-    veln_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
-    accn_->Update(1.0, *disn_, -1.0, *(*dis_)(0), 0.0);
+    veln_->Update(1.0, *disn, -1.0, *(*dis_)(0), 0.0);
+    accn_->Update(1.0, *disn, -1.0, *(*dis_)(0), 0.0);
   }
 
   // consistent velocities following Newmark formulas
@@ -367,7 +375,6 @@ void PARTICLE::TimIntGenAlpha::SetupStateVectors()
   velm_ = LINALG::CreateVector(*DofRowMapView(), true);
   dism_ = LINALG::CreateVector(*DofRowMapView(), true);
   resAcc_ = LINALG::CreateVector(*DofRowMapView(), true);
-  gradResAcc_ = Teuchos::rcp(new Epetra_MultiVector(*DofRowMapView(), 3, true));
 }
 
 
@@ -384,7 +391,6 @@ void PARTICLE::TimIntGenAlpha::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(velm_);
   UpdateStateVectorMap(accm_);
   UpdateStateVectorMap(resAcc_);
-  UpdateStateVectorMap(gradResAcc_);
 }
 
 
@@ -409,22 +415,37 @@ void PARTICLE::TimIntGenAlpha::ResAcc()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void PARTICLE::TimIntGenAlpha::GradResAcc(const double dt)
+void PARTICLE::TimIntGenAlpha::GradResAcc()
 {
+  const double dt = (*dt_)[0];
   // erase the vector
-  gradResAcc_->PutScalar(0.0);
+  gradResAcc_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 0, false, false));
 
   // build
     // F_int - P
   const double accPmulti = 1 - alphaf_;
-  interHandler_->Inter_pvp_gradAccP(gradResAcc_, restDensity_, -accPmulti);
-  interHandler_->Inter_pvw_gradAccP(gradResAcc_, restDensity_, -accPmulti);
-    // Acc -Am
-  const double accCoeff = (1 - alpham_) / (beta_ * dt * dt);
-  for (int ii = 0; ii < discret_->DofRowMap()->NumMyElements(); ++ii)
+
+  if (gradResAccApproxType_ == INPAR::PARTICLE::gaapprox_full)
   {
-    ((*gradResAcc_)[ii%3])[ii] += accCoeff;
+    interHandler_->Inter_pvp_gradAccP(gradResAcc_, restDensity_, -accPmulti);
+    interHandler_->Inter_pvw_gradAccP(gradResAcc_, restDensity_, -accPmulti);
   }
+  else
+  {
+    interHandler_->Inter_pvp_gradAccPapproxOnlyHess(gradResAcc_, restDensity_, -accPmulti);
+    interHandler_->Inter_pvw_gradAccPapproxOnlyHess(gradResAcc_, restDensity_, -accPmulti);
+  }
+    // Acc -Am
+  double accCoeff = (1 - alpham_) / (beta_ * dt * dt);
+  for (int lidDofRow = 0; lidDofRow < discret_->DofRowMap()->NumMyElements(); ++lidDofRow)
+  {
+    int gidDof = discret_->DofRowMap()->GID(lidDofRow);
+    gradResAcc_->Assemble(accCoeff, gidDof, gidDof);
+  }
+
+  // the matrix has been filled
+  gradResAcc_->Complete();
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -432,40 +453,25 @@ void PARTICLE::TimIntGenAlpha::GradResAcc(const double dt)
  * and consistent velocities and displacements */
 void PARTICLE::TimIntGenAlpha::CorrectDis(bool checkDis)
 {
+
   Teuchos::RCP<Epetra_Vector> deltaDisNorms2 = Teuchos::null;
+
   if (checkDis)
   {
     deltaDisNorms2 = LINALG::CreateVector(*NodeRowMapView(), true);
   }
 
-  for (int lidRowNode = 0; lidRowNode < discret_->NodeRowMap()->NumMyElements(); ++lidRowNode)
-  {
-    // indexes
-    DRT::Node *particle = discret_->lRowNode(lidRowNode);
-    std::vector<int> lm;
-    lm.reserve(3);
-    discret_->Dof(particle, lm);
+  gradResAcc_->Scale(-1.0);
 
+  Teuchos::RCP<Epetra_Vector> deltaDis = LINALG::CreateVector(*DofRowMapView(), true);
+  solver_->Solve(gradResAcc_->EpetraOperator(), deltaDis, resAcc_, true, true);
 
-    LINALG::Matrix<3,3> gradResAcc_i;
-    PARTICLE::Utils::ExtractMyValues(*gradResAcc_, gradResAcc_i, lm);
-    LINALG::Matrix<3,1> resAcc_i;
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*resAcc_, resAcc_i, lm);
-    gradResAcc_i.Invert();
-
-    LINALG::Matrix<3,1> deltaDis;
-    if (checkDis)
-    {
-      (*deltaDisNorms2)[lidRowNode] = deltaDis.Norm2();
-    }
-    deltaDis.MultiplyNN(gradResAcc_i, resAcc_i);
-    deltaDis.Scale(-1.0);
-
-    LINALG::Assemble(*disn_, deltaDis, lm, myrank_);
-  }
+  disn_->Update(1.0, *deltaDis, 1.0);
 
   if (checkDis)
   {
+
+
     double maxDeltaDisNorms2 = 0;
     double minRadius = 0;
     deltaDisNorms2->MaxValue(&maxDeltaDisNorms2);
@@ -485,8 +491,62 @@ void PARTICLE::TimIntGenAlpha::ComputeAndSetDisRelatedStateVectors()
   interHandler_->SetStateVector(densityn_, PARTICLE::Density);
   UpdatePressure();
   interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
-  interHandler_->MF_mGradW(mGradW_);
-  interHandler_->SetStateVector(mGradW_, PARTICLE::mGradW);
+  if (gradResAccApproxType_ == INPAR::PARTICLE::gaapprox_full)
+  {
+    interHandler_->MF_mGradW(mGradW_);
+    interHandler_->SetStateVector(mGradW_, PARTICLE::mGradW);
+  }
+  // these lines can be useful in the future
   //interHandler_->MF_mHessW(mHessW_);
   //interHandler_->SetStateVector(mHessW_);
+}
+
+/*----------------------------------------------------------------------*/
+// Compute the gradGenAcc with the finite differences
+Teuchos::RCP<LINALG::SparseMatrix> PARTICLE::TimIntGenAlpha::FDGradResAcc()
+{
+  const double dt = (*dt_)[0];
+
+  // compute the residual difference
+  Teuchos::RCP<Epetra_Vector> resAcc0 = Teuchos::rcp(new Epetra_Vector(*resAcc_));
+  Teuchos::RCP<LINALG::SparseMatrix> gradResAcc = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 0, false, false));
+
+  for (int jj = 0; jj<discret_->DofRowMap()->NumMyElements(); ++jj)
+  {
+    Teuchos::RCP<Epetra_Vector> newDis = Teuchos::rcp(new Epetra_Vector(*disn_));
+    const double incr = dt * dt * std::abs((*resAcc0)[jj]) + dt * dt;
+
+    (*newDis)[jj] += incr;
+
+    interHandler_->SetStateVector(newDis, PARTICLE::Dis);
+    interHandler_->UpdateWeights(step_);
+
+    interHandler_->MF_mW(densityn_);
+    interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+    UpdatePressure();
+    interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
+    interHandler_->MF_mGradW(mGradW_);
+    interHandler_->SetStateVector(mGradW_, PARTICLE::mGradW);
+    PredictNewState(newDis);
+    PredictMidState(newDis);
+    ResAcc();
+
+    Teuchos::RCP<Epetra_Vector> deltaResAcc = Teuchos::rcp(new Epetra_Vector(*resAcc0));
+
+    deltaResAcc->Update(1.0, *resAcc_, -1.0);
+    deltaResAcc->Scale(1/incr);
+
+    int gidj = discret_->DofRowMap()->GID(jj);
+    for (int ii = 0; ii<discret_->DofRowMap()->NumMyElements(); ++ii)
+    {
+      int gidi = discret_->DofRowMap()->GID(ii);
+      gradResAcc->Assemble((*deltaResAcc)[ii], gidi, gidj);
+    }
+  }
+
+  gradResAcc->Complete();
+
+  resAcc_ = resAcc0;
+
+  return gradResAcc;
 }

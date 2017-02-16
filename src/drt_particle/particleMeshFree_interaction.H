@@ -32,6 +32,7 @@
 #include "../drt_lib/drt_element.H"
 #include <boost/unordered_map.hpp>
 #include "particle_enums.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 // forward declarations
 namespace DRT
@@ -196,7 +197,12 @@ namespace PARTICLE
     /// compute the gradient of the momentum part of the particle vs particle interactions
     /// if you change this function you need to touch the pressure definition too!
     virtual void Inter_pvp_gradAccP(
-        const Teuchos::RCP<Epetra_MultiVector> gradAccP,
+        const Teuchos::RCP<LINALG::SparseMatrix> gradAccP,
+        const double &restDensity,
+        const double extMulti = 1.0);
+
+    virtual void Inter_pvp_gradAccPapproxOnlyHess(
+        const Teuchos::RCP<LINALG::SparseMatrix> gradAccP,
         const double &restDensity,
         const double extMulti = 1.0);
 
@@ -216,7 +222,12 @@ namespace PARTICLE
         const double extMulti = 1.0);
 
     virtual void Inter_pvw_gradAccP(
-        const Teuchos::RCP<Epetra_MultiVector> gradAccP,
+        const Teuchos::RCP<LINALG::SparseMatrix> gradAccP,
+        const double &restDensity,
+        const double extMulti = 1.0);
+
+    virtual void Inter_pvw_gradAccPapproxOnlyHess(
+        const Teuchos::RCP<LINALG::SparseMatrix> gradAccP,
         const double &restDensity,
         const double extMulti = 1.0);
 

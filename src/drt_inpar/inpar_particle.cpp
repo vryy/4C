@@ -137,6 +137,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  ),
                                &particledyn);
 
+   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for structural problems",&particledyn);
    DoubleParameter("ERROR_TOLL",1e-6,"tolerance of the error for implicit schemes",&particledyn);
    IntParameter("ITER_MAX",10,"maximum iteration per time step for implicit schemes",&particledyn);
    DoubleParameter("ALPHA_MIN",1e-6,"cap of the alpha parameter for the divergence free scheme for meshfree",&particledyn);
@@ -202,6 +203,15 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   midavg_imrlike,
                                   midavg_trlike),
                                 &genalpha);
+   setStringToIntegralParameter<int>("GRADRES_APPROX","OnlyHess",
+                                "type of approximation of the Generalised-alpha's residual of the gradient",
+                                tuple<std::string>(
+                                  "Full",
+                                  "OnlyHess"),
+                                tuple<int>(
+                                  gaapprox_full,
+                                  gaapprox_onlyhess),
+                                &genalpha);
 
 
    DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&genalpha);
@@ -210,6 +220,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
    DoubleParameter("RHO_INF",-1.0,"Generalised-alpha factor in [0,1]",&genalpha);
    DoubleParameter("TOL",1e-5,"Generalised-alpha tollerance",&genalpha);
+   IntParameter("MAXIT",10,"Generalised-alpha max number of iterations",&genalpha);
    IntParameter("MAXIT",10,"Generalised-alpha max number of iterations",&genalpha);
 }
 

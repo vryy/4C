@@ -37,6 +37,7 @@ namespace DRT
 namespace LINALG
 {
   class MapExtractor;
+  class Solver;
 }
 
 namespace IO
@@ -344,6 +345,13 @@ namespace ADAPTER
       const Teuchos::ParameterList& prbdyn,
       Teuchos::RCP<DRT::Discretization> actdis
       );
+
+    /// create linear solver for implicit time integration schemes
+    /** returns linear solver object for implicit time integration schemes
+     *
+     *  uses the parameters from the PARTICLE SOLVER block in the BACI dat file
+     */
+    Teuchos::RCP<LINALG::Solver> CreateLinearSolver(Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /// particle field
     Teuchos::RCP<Particle> particle_;

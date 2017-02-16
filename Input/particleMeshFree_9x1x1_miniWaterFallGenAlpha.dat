@@ -34,6 +34,7 @@ WEIGHT_FUNCTION                 CubicBspline
 RADIUS_DISTRIBUTION             no
 RANDOM_AMPLITUDE                0.001
 WALL_INTERACTION_TYPE           InitParticle
+LINEAR_SOLVER                   1
 ---------------------------------------------------PARTICLE DYNAMIC/GENALPHA
 TOL                             1e-5
 MAXIT                           1000

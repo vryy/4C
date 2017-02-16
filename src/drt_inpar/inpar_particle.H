@@ -131,6 +131,13 @@ namespace INPAR
       }
     }
 
+    /// approximations of the generalized-alpha scheme
+    enum GAapproxType
+    {
+      gaapprox_full,
+      gaapprox_onlyhess
+    };
+
     /// set the particle parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

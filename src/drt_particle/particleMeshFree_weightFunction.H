@@ -57,6 +57,12 @@ public :
   // weight function type
   virtual INPAR::PARTICLE::WeightFunction Name() = 0;
 
+  // check if the gradient is correct
+  virtual void DBG_GradW();
+
+  // check if the gradient is correct
+  virtual void DBG_HessW();
+
 private :
 
   // resizer due to the dimension integral

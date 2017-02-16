@@ -51,7 +51,144 @@ LINALG::Matrix<3,3> PARTICLE::WeightFunction_Base::HessW(const LINALG::Matrix<3,
 }
 
 /*----------------------------------------------------------------------*
- | compute the cubicBspline w function           cattabiani 08/16  |
+ | gradient check                                     cattabiani 01/17  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::WeightFunction_Base::DBG_GradW()
+{
+  LINALG::Matrix<3,1> r;
+  const double radius = 1;
+  const double sampl = 100.0; // double because of the divisions
+  const double incr = 1e-8;
+  const double tol = 1e-6;
+
+  for (int ri=1; ri<sampl; ++ri)
+  {
+    r(0) = 2*radius*ri/sampl;
+    for (int rj=1; rj<sampl; ++rj)
+    {
+      r(1) = 2*radius*rj/sampl;
+      for (int rk=1; rk<sampl; ++rk)
+      {
+        r(2) = 2*radius*rk/sampl;
+
+        LINALG::Matrix<3,1> rVersor(r);
+        const double rNorm2 = rVersor.Norm2();
+        rVersor.Scale(1/rNorm2);
+
+        // compute the gradient in the standard method
+        LINALG::Matrix<3,1> gradW1;
+        gradW1 = GradW(rVersor, DW(rNorm2, radius));
+
+        // compute the gradient with the finite differences
+        LINALG::Matrix<3,1> gradW2;
+        double w0 = W(rNorm2, radius);
+        for (int dim=0; dim<3; ++dim)
+        {
+          LINALG::Matrix<3,1> rfd(r);
+
+          rfd(dim) += incr;
+          double w1 = W(rfd.Norm2(), radius);
+          gradW2(dim) = (w1 - w0) / incr;
+        }
+
+        LINALG::Matrix<3,1> gradWdiff(gradW1);
+        gradWdiff.Update(1.0, gradW2, -1.0);
+
+        if (gradWdiff.Norm2()/3 > tol)
+        {
+          std::cout << "The check of the gradient failed\n";
+          std::cout << "Standard:\n";
+          std::cout << gradW1 << std::endl;
+          std::cout << "Finite differences:\n";
+          std::cout << gradW2 << std::endl;
+          std::cout << "Difference:\n";
+          std::cout << gradWdiff << std::endl;
+          std::cout << "Difference norm:\n";
+          std::cout << gradWdiff.Norm2() << std::endl;
+          std::cin.get();
+        }
+      }
+    }
+  }
+  std::cout << "Gradient check passed!\n";
+  std::cin.get();
+}
+
+/*----------------------------------------------------------------------*
+ | gradient check                                     cattabiani 01/17  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::WeightFunction_Base::DBG_HessW()
+{
+  LINALG::Matrix<3,1> r;
+  const double radius = 1;
+  const double sampl = 100.0; // double because of the divisions
+  const double incr = 1e-8;
+  const double tol = 1e-6;
+
+  for (int ri=1; ri<sampl; ++ri)
+  {
+    r(0) = radius*ri/sampl;
+    for (int rj=1; rj<sampl; ++rj)
+    {
+      r(1) = radius*rj/sampl;
+      for (int rk=1; rk<sampl; ++rk)
+      {
+        r(2) = radius*rk/sampl;
+
+        LINALG::Matrix<3,1> rVersor(r);
+        const double rNorm2 = rVersor.Norm2();
+        rVersor.Scale(1/rNorm2);
+
+        // compute the gradient in the standard method
+        LINALG::Matrix<3,3> hessW1;
+        hessW1 = HessW(rVersor, DW(rNorm2, radius), rNorm2, DDW(rNorm2, radius));
+
+        // compute the gradient with the finite differences
+        LINALG::Matrix<3,3> hessW2;
+        LINALG::Matrix<3,1> gradW0 = GradW(rVersor, DW(rNorm2, radius));
+
+        for (int dimj=0; dimj<3; ++dimj)
+        {
+          LINALG::Matrix<3,1> rfd(r);
+          rfd(dimj) += incr;
+          LINALG::Matrix<3,1> rfdVersor(rfd);
+          const double rfdNorm2 = rfd.Norm2();
+          rfdVersor.Scale(1/rfdNorm2);
+
+          for (int dimi=0; dimi<3; ++dimi)
+          {
+          LINALG::Matrix<3,1> gradW1 = GradW(rfdVersor, DW(rfdNorm2, radius));
+          hessW2(dimi, dimj) = (gradW1(dimi) - gradW0(dimi))/incr;
+          }
+        }
+
+
+        LINALG::Matrix<3,3> hessWdiff(hessW1);
+        hessWdiff.Update(1.0, hessW2, -1.0);
+
+        if (hessWdiff.Norm2()/9 > tol)
+        {
+          std::cout << "The check of the hessian failed\n";
+          std::cout << "Standard:\n";
+          std::cout << hessW1 << std::endl;
+          std::cout << "Finite differences:\n";
+          std::cout << hessW2 << std::endl;
+          std::cout << "Difference:\n";
+          std::cout << hessWdiff << std::endl;
+          std::cout << "Difference norm:\n";
+          std::cout << hessWdiff.Norm2() << std::endl;
+          std::cin.get();
+        }
+      }
+    }
+  }
+  std::cout << "Hessian check passed!\n";
+  std::cin.get();
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute the cubicBspline w function                cattabiani 08/16  |
  *----------------------------------------------------------------------*/
 
 // The 3D variant can be found in Monaghan2005, Eq. (2.6)

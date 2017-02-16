@@ -48,6 +48,7 @@ namespace PARTICLE
       const Teuchos::ParameterList& particledynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<LINALG::Solver>& solver, //!< solver
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
@@ -86,16 +87,16 @@ namespace PARTICLE
     virtual void CalcCoeff();
 
     //! Evaluate mid-state vectors by averaging end-point vectors
-    virtual void PredictMidState();
+    virtual void PredictMidState(const Teuchos::RCP<Epetra_Vector> disn);
 
     //! Evaluate new-state vectors by Newmark's formulae
-    virtual void PredictNewState(const bool disAreEqual = false);
+    virtual void PredictNewState(const Teuchos::RCP<Epetra_Vector> disn, const bool disAreEqual = false);
 
     //! Evaluate the residual (acceleration)
     virtual void ResAcc();
 
     //! Evaluate the gradient of the residual (acceleration)
-    virtual void GradResAcc(const double dt);
+    virtual void GradResAcc();
 
     //! Compute deltaDis and update disn - Newton-Rhapson iteration
     virtual void CorrectDis(bool checkDis);
@@ -106,9 +107,19 @@ namespace PARTICLE
     //! Compute and updates in the interactionHandler all the relevant dis-related state vectors
     virtual void ComputeAndSetDisRelatedStateVectors();
 
+    //! debug too to check the gradResAcc against its residual difference definition
+    virtual Teuchos::RCP<LINALG::SparseMatrix> FDGradResAcc();
+
+    //! solver
+    Teuchos::RCP<LINALG::Solver> solver_;
+
+    //@}
+
     //! mid-average type more at MidAverageEnum
     enum INPAR::PARTICLE::MidAverageEnum midavg_;
-    //@}
+
+    //! Approximation type
+    enum INPAR::PARTICLE::GAapproxType gradResAccApproxType_;
 
     //! @name Key coefficients
     //! Please note, to obtain a second-order accurate scheme, you need
@@ -138,6 +149,7 @@ namespace PARTICLE
 
 
 
+
     Teuchos::RCP<Epetra_Vector> mGradW_;
     //! m * hess(weightFunction) for meshfree methods (not needed for now)
     //Teuchos::RCP<Epetra_MultiVector> mHessW_;
@@ -150,7 +162,7 @@ namespace PARTICLE
     //! Acceleration residue \f${R}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
     Teuchos::RCP<Epetra_Vector> resAcc_;
     //! Gradient of the acceleration residue \f$\grad{R}_{n+1-\alpha f}\f$ - required for genalpha implicit scheme
-    Teuchos::RCP<Epetra_MultiVector> gradResAcc_;
+    Teuchos::RCP<LINALG::SparseMatrix> gradResAcc_;
 
   };  // class TimIntGenAlpha
 

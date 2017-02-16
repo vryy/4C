@@ -27,12 +27,18 @@ MAXTIME                         30
 GRAVITY_ACCELERATION            0.0 -9.81 0.0
 PARTICLE_INTERACTION            MeshFree
 WEIGHT_FUNCTION                 CubicBspline
-RADIUS_DISTRIBUTION             no
-RANDOM_AMPLITUDE                0.001
 WALL_INTERACTION_TYPE           InitParticle
+LINEAR_SOLVER                   1
+MIN_RADIUS                      0.0001
+MAX_RADIUS                      1
+MAX_VELOCITY                    1.0
+RANDOM_AMPLITUDE                0.001
+RADIUS_DISTRIBUTION             no
+RADIUS_DISTRIBUTION_SIGMA       0.004
 ---------------------------------------------------PARTICLE DYNAMIC/GENALPHA
-TOL                             1e-5
+TOL                             1e-6
 MAXIT                           1000
+GRADRES_APPROX                  Full
 ---------------------------------------------------MESHFREE RENDERING DOMAIN
 ------------------------------------------------DESIGN HEAT SOURCE CONDITION
 --------------------------------------------------------------------SOLVER 1

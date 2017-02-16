@@ -33,6 +33,7 @@
 #include "../drt_mat/particle_mat.H"
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../linalg/linalg_solver.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -123,7 +124,8 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   }
   case INPAR::PARTICLE::dyna_genAlpha:
   {
-    tmppart = Teuchos::rcp(new PARTICLE::TimIntGenAlpha(ioflags, *partdyn, *xparams, actdis, output));
+    Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis, *partdyn);
+    tmppart = Teuchos::rcp(new PARTICLE::TimIntGenAlpha(ioflags, *partdyn, *xparams, actdis, solver, output));
     break;
   }
   default :
@@ -138,3 +140,25 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
 
   return;
 }  // SetupTimInt()
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::Solver> ADAPTER::ParticleBaseAlgorithm::CreateLinearSolver(Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
+{
+  Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
+
+  // get the solver number used for structural problems
+  const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
+  // check if the structural solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in PARTICLE DYNAMIC to a valid number!");
+
+  solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+                                    actdis->Comm(),
+                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+
+  return solver;
+}
