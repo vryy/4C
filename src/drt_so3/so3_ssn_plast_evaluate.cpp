@@ -3,13 +3,9 @@
 \file so3_ssn_plast_evaluate.cpp
 \maintainer Alexander Seitz
 \brief
+\level 2
+\maintainer Alexander Seitz
 
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
 
 */
 
@@ -1685,27 +1681,27 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       if (HavePlasticSpin())
       {
         if (fbar_)
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&RCG,MyPID,detJ_w,
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&N_XYZ,&RCG,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,
               NULL,NULL,NULL,&f_bar_factor,&htensor);
         else if (eastype_!=soh8p_easnone)
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda,&dHda);
         else
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
       else
       {
         if (fbar_)
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&RCG,MyPID,detJ_w,
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&N_XYZ,&RCG,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,
               NULL,NULL,NULL,&f_bar_factor,&htensor);
         else if (eastype_!=soh8p_easnone)
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda,&dHda);
         else
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
     }// plastic modifications
@@ -1840,6 +1836,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     const LINALG::Matrix<nsd_,nsd_>& defgrd,
     const LINALG::Matrix<nsd_,nsd_>& deltaLp,
     const LINALG::Matrix<numstr_,numdofperelement_>& bop,
+    const LINALG::Matrix<nsd_,nen_>* N_XYZ,
     const LINALG::Matrix<numstr_,1>* RCG,
     const int MyPID,
     const double detJ_w,
@@ -1869,6 +1866,24 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
   // temporary Epetra matrix for matrix-matrix-matrix products
   Epetra_SerialDenseMatrix tmp;
 
+  // Nitsche contact
+  LINALG::Matrix<numstr_,1>* cauchy_ptr=NULL;
+  LINALG::Matrix<numstr_,spintype+1> d_cauchy_ddp;
+  LINALG::Matrix<numstr_,spintype+1>* d_cauchy_ddp_ptr=NULL;
+  LINALG::Matrix<numstr_,numstr_> d_cauchy_dC;
+  LINALG::Matrix<numstr_,numstr_>* d_cauchy_dC_ptr=NULL;
+  LINALG::Matrix<numstr_,9> d_cauchy_dF;
+  LINALG::Matrix<numstr_,9>* d_cauchy_dF_ptr=NULL;
+  if (is_nitsche_contact_)
+  {
+    cauchy_ptr=&(cauchy_.at(gp));
+    d_cauchy_ddp_ptr=&d_cauchy_ddp;
+    d_cauchy_dC_ptr=&d_cauchy_dC;
+    d_cauchy_dF_ptr=&d_cauchy_dF;
+    if (eval_tsi)
+      dserror("no Nitsche thermo contact yet");
+  }
+
   // second material call ****************************************************
   LINALG::Matrix<numstr_,spintype+1> dpk2ddp;
   LINALG::Matrix<spintype+1,1> ncp;
@@ -1882,7 +1897,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
   bool as_converged=true;
   if (!eval_tsi)
     plmat->EvaluatePlast(&defgrd,&deltaLp,0,params,&dpk2ddp,
-        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,NULL,NULL,NULL,data_->dt_,Id());
+        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,NULL,NULL,NULL,data_->dt_,Id(),
+        cauchy_ptr,d_cauchy_ddp_ptr,d_cauchy_dC_ptr,d_cauchy_dF_ptr);
   else
     plmat->EvaluatePlast(&defgrd,&deltaLp,temp,params,&dpk2ddp,
         &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,&dncpdT,&dHdC,&dHdLp,data_->dt_,Id());
@@ -1948,6 +1964,50 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     kdbeta.MultiplyTN(detJ_w/(*f_bar_factor),bop,dpk2db);
   else
     kdbeta.MultiplyTN(detJ_w,bop,dpk2db);
+
+  LINALG::Matrix<numstr_,spintype> d_cauchy_db;
+  if (is_nitsche_contact_)
+  {
+    if (N_XYZ==NULL)
+      dserror("shape derivative not provided");
+
+    LINALG::Matrix<9,numdofperelement_> dFdd;
+    for (int k=0;k<nen_;++k)
+    {
+      for (int d=0;d<3;++d)
+        dFdd(d,k*nsd_+d)=(*N_XYZ)(d,k);
+      dFdd(3,k*nsd_+0)=(*N_XYZ)(1,k);
+      dFdd(4,k*nsd_+1)=(*N_XYZ)(2,k);
+      dFdd(5,k*nsd_+0)=(*N_XYZ)(2,k);
+
+      dFdd(6,k*nsd_+1)=(*N_XYZ)(0,k);
+      dFdd(7,k*nsd_+2)=(*N_XYZ)(1,k);
+      dFdd(8,k*nsd_+2)=(*N_XYZ)(0,k);
+    }
+    cauchy_deriv_.at(gp).Clear();
+    if (fbar_)
+    {
+      if (RCG==NULL) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
+      LINALG::Matrix<6,1> tmp61;
+      tmp61.Multiply(.5,d_cauchy_dC,(*RCG));
+      cauchy_deriv_.at(gp).MultiplyNT((*f_bar_factor)*(*f_bar_factor)*2./3.,tmp61,*htensor,1.);
+      cauchy_deriv_.at(gp).Multiply((*f_bar_factor)*(*f_bar_factor),d_cauchy_dC,bop,1.);
+
+      LINALG::Matrix<9,1> f; for(int i=0;i<3;++i) f(i)=defgrd(i,i);
+      f(3)=defgrd(0,1); f(4)=defgrd(1,2); f(5)=defgrd(0,2);
+      f(6)=defgrd(1,0); f(7)=defgrd(2,1); f(8)=defgrd(2,0);
+
+      tmp61.Multiply(1.,d_cauchy_dF,f,0.);
+      cauchy_deriv_.at(gp).MultiplyNT(*f_bar_factor/3.,tmp61,*htensor,1.);
+      cauchy_deriv_.at(gp).Multiply(*f_bar_factor,d_cauchy_dF,dFdd,1.);
+    }
+    else
+    {
+      cauchy_deriv_.at(gp).Multiply(1.,d_cauchy_dC,bop,1.);
+      cauchy_deriv_.at(gp).Multiply(1.,d_cauchy_dF,dFdd,1.);
+    }
+    d_cauchy_db.Multiply(d_cauchy_ddp,dDpdbeta);
+  }
 
   // EAS matrix block
   Epetra_SerialDenseMatrix Kab(neas_,spintype);
@@ -2221,6 +2281,14 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
         break;
       default: dserror("Don't know what to do with EAS type %d", eastype_); break;
       }
+    }
+
+    if (is_nitsche_contact_)
+    {
+      LINALG::Matrix<numstr_,spintype> tmp;
+      tmp.Multiply(d_cauchy_db,LINALG::Matrix<spintype,spintype>(KbbInv_.at(gp).A(),true));
+      cauchy_.at(gp).Multiply(-1.,tmp,LINALG::Matrix<spintype,1>(fbeta_.at(gp).A(),true),1.);
+      cauchy_deriv_.at(gp).Multiply(-1.,tmp,LINALG::Matrix<spintype,numdofperelement_>(Kbd_.at(gp).A(),true),1.);
     }
     // **************************************************************
     // static condensation of inner variables
@@ -2644,4 +2712,563 @@ double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
   } // gp loop
 
   return energy;
+}
+
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXi(
+        const LINALG::Matrix<3,1>& xi,
+        const std::vector<double>& disp,
+        const LINALG::Matrix<3,1>& n,
+        const LINALG::Matrix<3,1>& t,
+        double& sigma_nt,
+        Epetra_SerialDenseMatrix* dsntdd,
+        Epetra_SerialDenseMatrix* d2sntdd2,
+        Epetra_SerialDenseMatrix* d2sntDdDn,
+        Epetra_SerialDenseMatrix* d2sntDdDt,
+        Epetra_SerialDenseMatrix* d2sntDdDpxi,
+        LINALG::Matrix<3,1>* dsntdn,
+        LINALG::Matrix<3,1>* dsntdt,
+        LINALG::Matrix<3,1>* dsntdpxi)
+{
+  if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+    GetCauchyAtXiPlast(xi,disp,n,t,sigma_nt,dsntdd,d2sntdd2,d2sntDdDn,d2sntDdDt,
+            d2sntDdDpxi,dsntdn,dsntdt,dsntdpxi);
+  else
+    GetCauchyAtXiElast(xi,disp,n,t,sigma_nt,dsntdd,d2sntdd2,d2sntDdDn,d2sntDdDt,
+            d2sntDdDpxi,dsntdn,dsntdt,dsntdpxi);
+}
+
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
+        const LINALG::Matrix<3,1>& xi,
+        const std::vector<double>& disp,
+        const LINALG::Matrix<3,1>& n,
+        const LINALG::Matrix<3,1>& t,
+        double& sigma_nt,
+        Epetra_SerialDenseMatrix* dsntdd,
+        Epetra_SerialDenseMatrix* d2sntdd2,
+        Epetra_SerialDenseMatrix* d2sntDdDn,
+        Epetra_SerialDenseMatrix* d2sntDdDt,
+        Epetra_SerialDenseMatrix* d2sntDdDpxi,
+        LINALG::Matrix<3,1>* dsntdn,
+        LINALG::Matrix<3,1>* dsntdt,
+        LINALG::Matrix<3,1>* dsntdpxi)
+{
+  if (fbar_ || eastype_!=soh8p_easnone)
+    dserror("cauchy stress not available for fbar or eas elements");
+
+  sigma_nt=0.;
+
+  LINALG::Matrix<nen_,nsd_> xrefe;  // reference coord. of element
+  LINALG::Matrix<nen_,nsd_> xcurr;  // current  coord. of element
+  DRT::Node** nodes = Nodes();
+
+  for (int i=0; i<nen_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    for (int d =0; d<nsd_; ++d)
+    {
+      xrefe(i,d) = x[d];
+      xcurr(i,d) = xrefe(i,d) + disp[i*nsd_+d];
+    }
+  }
+
+  LINALG::Matrix<nsd_,nen_> deriv;
+  DRT::UTILS::shape_function_deriv1<distype>(xi,deriv);
+
+  LINALG::Matrix<nsd_,nen_> N_XYZ;
+
+  LINALG::Matrix<nsd_,nsd_> invJ;
+  invJ.Multiply(deriv,xrefe);
+  invJ.Invert();
+  N_XYZ.Multiply(invJ,deriv);
+  LINALG::Matrix<nsd_,nsd_> defgrd;
+  defgrd.MultiplyTT(xcurr,N_XYZ);
+
+  LINALG::Matrix<nsd_,nsd_> b;
+  b.MultiplyNT(defgrd,defgrd);
+
+  LINALG::Matrix<nsd_,nen_> F_N_XYZ;
+  F_N_XYZ.Multiply(defgrd,N_XYZ);
+
+  LINALG::Matrix<MAT::NUM_STRESS_3D,numdofperelement_> bop; // here: linearization of b=FF^T !!!
+  if (dsntdd || d2sntDdDn || d2sntDdDt || d2sntDdDpxi)
+
+  {
+    for (int i=0; i<nen_; ++i)
+    {
+      for (int x=0;x<nsd_;++x)
+        bop(x,nsd_*i+x) += F_N_XYZ(x,i); // defgrd(x,g)*N_XYZ(g,i);
+      {
+        bop(3,nsd_*i+0) +=  F_N_XYZ(1,i); //defgrd(1,g)*N_XYZ(g,i);
+        bop(3,nsd_*i+1) +=  F_N_XYZ(0,i); //defgrd(0,g)*N_XYZ(g,i);
+        bop(4,nsd_*i+2) +=  F_N_XYZ(1,i); //defgrd(1,g)*N_XYZ(g,i);
+        bop(4,nsd_*i+1) +=  F_N_XYZ(2,i); //defgrd(2,g)*N_XYZ(g,i);
+        bop(5,nsd_*i+0) +=  F_N_XYZ(2,i); //defgrd(2,g)*N_XYZ(g,i);
+        bop(5,nsd_*i+2) +=  F_N_XYZ(0,i); //defgrd(0,g)*N_XYZ(g,i);
+      }
+    }
+    bop.Scale(2.);
+  }
+
+  LINALG::Matrix<6,1> dsntdb;
+  LINALG::Matrix<6,6> d2sntdb2;
+  LINALG::Matrix<6,nsd_> d2sntDbDn;
+  LINALG::Matrix<6,nsd_> d2sntDbDt;
+  SolidMaterial()->EvaluateCauchy(b,n,t,sigma_nt,&dsntdb,&d2sntdb2,&d2sntDbDn,&d2sntDbDt,dsntdn,dsntdt,0);
+
+  if (dsntdd)
+  {
+    dsntdd     ->Reshape(numdofperelement_,1);
+    LINALG::Matrix<numdofperelement_,1> dsntdd_m(dsntdd->A(),true);
+    dsntdd_m.MultiplyTN(bop,dsntdb);
+  }
+
+  if (d2sntDdDn)
+  {
+    d2sntDdDn  ->Reshape(numdofperelement_,nsd_);
+    LINALG::Matrix<numdofperelement_,nsd_> d2sntDdDn_m(d2sntDdDn->A(),true);
+    d2sntDdDn_m.MultiplyTN(bop,d2sntDbDn);
+  }
+
+  if (d2sntDdDt)
+  {
+    d2sntDdDt  ->Reshape(numdofperelement_,nsd_);
+    LINALG::Matrix<numdofperelement_,nsd_> d2sntDdDt_m(d2sntDdDt->A(),true);
+    d2sntDdDt_m.MultiplyTN(bop,d2sntDbDt);
+  }
+
+  if (d2sntdd2)
+  {
+    d2sntdd2   ->Reshape(numdofperelement_,numdofperelement_);
+    LINALG::Matrix<numdofperelement_,numdofperelement_> d2sntdd2_linalg(d2sntdd2->A(),true);
+    d2sntdd2_linalg.Clear();
+    LINALG::Matrix<6,numdofperelement_> d2sntdb2Bop;
+    d2sntdb2Bop.Multiply(d2sntdb2,bop);
+    d2sntdd2_linalg.MultiplyTN(1.,bop,d2sntdb2Bop,1.);
+
+    LINALG::Matrix<nen_,nen_> NN;
+    NN.MultiplyTN(N_XYZ,N_XYZ);
+
+    for (int i=0; i<nen_; ++i)
+    {
+      for (int k=0;k<nen_;++k)
+        // for (int g=0;g<3;++g)
+      {
+        for (int x=0;x<nsd_;++x)
+          d2sntdd2_linalg(nsd_*i+x,nsd_*k+x) += dsntdb(x)*2.*NN(i,k); // *N_XYZ(g,i)*N_XYZ(g,k);
+
+        d2sntdd2_linalg(nsd_*i+0,nsd_*k+1)   += dsntdb(3)*2.*NN(i,k); // *N_XYZ(g,i)*N_XYZ(g,k);
+        d2sntdd2_linalg(nsd_*i+1,nsd_*k+0)   += dsntdb(3)*2.*NN(i,k); // *N_XYZ(g,i)*N_XYZ(g,k);
+
+        d2sntdd2_linalg(nsd_*i+1,nsd_*k+2)   += dsntdb(4)*2.*NN(i,k); // *N_XYZ(g,i)*N_XYZ(g,k);
+        d2sntdd2_linalg(nsd_*i+2,nsd_*k+1)   += dsntdb(4)*2.*NN(i,k); // *N_XYZ(g,i)*N_XYZ(g,k);
+
+        d2sntdd2_linalg(nsd_*i+0,nsd_*k+2)   += dsntdb(5)*2.*NN(i,k); // *N_XYZ(g,i)*N_XYZ(g,k);
+        d2sntdd2_linalg(nsd_*i+2,nsd_*k+0)   += dsntdb(5)*2.*NN(i,k); // *N_XYZ(g,i)*N_XYZ(g,k);
+      }
+    }
+  }
+
+
+  if (d2sntDdDpxi)
+  {
+    d2sntDdDpxi->Reshape(numdofperelement_,nsd_);
+
+    LINALG::Matrix < DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2,
+    nen_ > deriv2;
+    DRT::UTILS::shape_function_deriv2<distype>(xi,deriv2);
+
+    LINALG::Matrix<nen_,nsd_> xXF(xcurr);
+    xXF.MultiplyNT(-1.,xrefe,defgrd,1.);
+
+    LINALG::Matrix<nsd_,DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2> xXFsec;
+    xXFsec.MultiplyTT(1.,xXF,deriv2,0.);
+
+    LINALG::Matrix<nsd_,nsd_> jift;
+    jift.MultiplyTT(invJ,defgrd);
+
+    LINALG::Matrix<MAT::NUM_STRESS_3D,nsd_> dbdxi(true);
+
+    int VOIGT3X3SYM_[3][3] = {{0,3,5},{3,1,4},{5,4,2}};
+
+    for (int i=0;i<nsd_;++i)
+      for (int j=0;j<nsd_;++j)
+      {
+        dbdxi(VOIGT3X3SYM_[i][j],0)+=
+            xXFsec(i,0)*jift(0,j)
+            +xXFsec(i,3)*jift(1,j)
+            +xXFsec(i,4)*jift(2,j)
+            +xXFsec(j,0)*jift(0,i)
+            +xXFsec(j,3)*jift(1,i)
+            +xXFsec(j,4)*jift(2,i);
+
+        dbdxi(VOIGT3X3SYM_[i][j],1)+=
+            xXFsec(i,3)*jift(0,j)
+            +xXFsec(i,1)*jift(1,j)
+            +xXFsec(i,5)*jift(2,j)
+            +xXFsec(j,3)*jift(0,i)
+            +xXFsec(j,1)*jift(1,i)
+            +xXFsec(j,5)*jift(2,i);
+
+        dbdxi(VOIGT3X3SYM_[i][j],2)+=
+            xXFsec(i,4)*jift(0,j)
+            +xXFsec(i,5)*jift(1,j)
+            +xXFsec(i,2)*jift(2,j)
+            +xXFsec(j,4)*jift(0,i)
+            +xXFsec(j,5)*jift(1,i)
+            +xXFsec(j,2)*jift(2,i);
+      }
+
+    dsntdpxi->MultiplyTN(dbdxi,dsntdb);
+
+    LINALG::Matrix<numdofperelement_,nsd_> d2sntDdDpxi_m(d2sntDdDpxi->A(),true);
+    d2sntDdDpxi_m.Clear();
+
+    LINALG::Matrix<6,numdofperelement_> d2sntdb2Bop;
+    d2sntdb2Bop.Multiply(d2sntdb2,bop);
+    d2sntDdDpxi_m.MultiplyTN(d2sntdb2Bop,dbdxi);
+
+    LINALG::Matrix<nsd_,nen_> invJ_N_XYZ;
+    invJ_N_XYZ.MultiplyTN(invJ,N_XYZ);
+    LINALG::Matrix <DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2,nsd_ > Xsec;
+    Xsec.Multiply(deriv2,xrefe);
+    LINALG::Matrix<nen_,6> N_XYZ_Xsec;
+    N_XYZ_Xsec.MultiplyTT(N_XYZ,Xsec);
+    for (int i=0; i<nen_; ++i)
+    {
+      {
+        int x=0;
+        for (x=0;x<nsd_;++x)
+        {
+          d2sntDdDpxi_m(nsd_*i+x,0)+=dsntdb(x)*2.*(
+              invJ_N_XYZ(0,i)*xXFsec    (x,0)
+              +invJ_N_XYZ(1,i)*xXFsec    (x,3)
+              +invJ_N_XYZ(2,i)*xXFsec    (x,4)
+              +jift      (0,x)*deriv2    (0,i)
+              +jift      (1,x)*deriv2    (3,i)
+              +jift      (2,x)*deriv2    (4,i)
+              -jift      (0,x)*N_XYZ_Xsec(i,0)
+              -jift      (1,x)*N_XYZ_Xsec(i,3)
+              -jift      (2,x)*N_XYZ_Xsec(i,4));
+
+          d2sntDdDpxi_m(nsd_*i+x,1)+=dsntdb(x)*2.*(
+              invJ_N_XYZ(0,i)*xXFsec    (x,3)
+              +invJ_N_XYZ(1,i)*xXFsec    (x,1)
+              +invJ_N_XYZ(2,i)*xXFsec    (x,5)
+              +jift      (0,x)*deriv2    (3,i)
+              +jift      (1,x)*deriv2    (1,i)
+              +jift      (2,x)*deriv2    (5,i)
+              -jift      (0,x)*N_XYZ_Xsec(i,3)
+              -jift      (1,x)*N_XYZ_Xsec(i,1)
+              -jift      (2,x)*N_XYZ_Xsec(i,5));
+
+          d2sntDdDpxi_m(nsd_*i+x,2)+=dsntdb(x)*2.*(
+              invJ_N_XYZ(0,i)*xXFsec    (x,4)
+              +invJ_N_XYZ(1,i)*xXFsec    (x,5)
+              +invJ_N_XYZ(2,i)*xXFsec    (x,2)
+              +jift      (0,x)*deriv2    (4,i)
+              +jift      (1,x)*deriv2    (5,i)
+              +jift      (2,x)*deriv2    (2,i)
+              -jift      (0,x)*N_XYZ_Xsec(i,4)
+              -jift      (1,x)*N_XYZ_Xsec(i,5)
+              -jift      (2,x)*N_XYZ_Xsec(i,2));
+        }
+
+        x=1;
+        int y=0;
+        d2sntDdDpxi_m(nsd_*i+y,0)+=dsntdb(3)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,0)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,4)
+            +jift      (0,x)*deriv2    (0,i)
+            +jift      (1,x)*deriv2    (3,i)
+            +jift      (2,x)*deriv2    (4,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,0)
+            -jift      (1,x)*N_XYZ_Xsec(i,3)
+            -jift      (2,x)*N_XYZ_Xsec(i,4));
+        d2sntDdDpxi_m(nsd_*i+y,1)+=dsntdb(3)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,1)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,5)
+            +jift      (0,x)*deriv2    (3,i)
+            +jift      (1,x)*deriv2    (1,i)
+            +jift      (2,x)*deriv2    (5,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,3)
+            -jift      (1,x)*N_XYZ_Xsec(i,1)
+            -jift      (2,x)*N_XYZ_Xsec(i,5));
+        d2sntDdDpxi_m(nsd_*i+y,2)+=dsntdb(3)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,4)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,5)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,2)
+            +jift      (0,x)*deriv2    (4,i)
+            +jift      (1,x)*deriv2    (5,i)
+            +jift      (2,x)*deriv2    (2,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,4)
+            -jift      (1,x)*N_XYZ_Xsec(i,5)
+            -jift      (2,x)*N_XYZ_Xsec(i,2));
+        x=0;y=1;
+        d2sntDdDpxi_m(nsd_*i+y,0)+=dsntdb(3)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,0)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,4)
+            +jift      (0,x)*deriv2    (0,i)
+            +jift      (1,x)*deriv2    (3,i)
+            +jift      (2,x)*deriv2    (4,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,0)
+            -jift      (1,x)*N_XYZ_Xsec(i,3)
+            -jift      (2,x)*N_XYZ_Xsec(i,4));
+        d2sntDdDpxi_m(nsd_*i+y,1)+=dsntdb(3)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,1)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,5)
+            +jift      (0,x)*deriv2    (3,i)
+            +jift      (1,x)*deriv2    (1,i)
+            +jift      (2,x)*deriv2    (5,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,3)
+            -jift      (1,x)*N_XYZ_Xsec(i,1)
+            -jift      (2,x)*N_XYZ_Xsec(i,5));
+        d2sntDdDpxi_m(nsd_*i+y,2)+=dsntdb(3)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,4)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,5)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,2)
+            +jift      (0,x)*deriv2    (4,i)
+            +jift      (1,x)*deriv2    (5,i)
+            +jift      (2,x)*deriv2    (2,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,4)
+            -jift      (1,x)*N_XYZ_Xsec(i,5)
+            -jift      (2,x)*N_XYZ_Xsec(i,2));
+
+        x=1;y=2;
+        d2sntDdDpxi_m(nsd_*i+y,0)+=dsntdb(4)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,0)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,4)
+            +jift      (0,x)*deriv2    (0,i)
+            +jift      (1,x)*deriv2    (3,i)
+            +jift      (2,x)*deriv2    (4,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,0)
+            -jift      (1,x)*N_XYZ_Xsec(i,3)
+            -jift      (2,x)*N_XYZ_Xsec(i,4));
+        d2sntDdDpxi_m(nsd_*i+y,1)+=dsntdb(4)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,1)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,5)
+            +jift      (0,x)*deriv2    (3,i)
+            +jift      (1,x)*deriv2    (1,i)
+            +jift      (2,x)*deriv2    (5,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,3)
+            -jift      (1,x)*N_XYZ_Xsec(i,1)
+            -jift      (2,x)*N_XYZ_Xsec(i,5));
+        d2sntDdDpxi_m(nsd_*i+y,2)+=dsntdb(4)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,4)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,5)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,2)
+            +jift      (0,x)*deriv2    (4,i)
+            +jift      (1,x)*deriv2    (5,i)
+            +jift      (2,x)*deriv2    (2,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,4)
+            -jift      (1,x)*N_XYZ_Xsec(i,5)
+            -jift      (2,x)*N_XYZ_Xsec(i,2));
+        x=2;y=1;
+        d2sntDdDpxi_m(nsd_*i+y,0)+=dsntdb(4)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,0)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,4)
+            +jift      (0,x)*deriv2    (0,i)
+            +jift      (1,x)*deriv2    (3,i)
+            +jift      (2,x)*deriv2    (4,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,0)
+            -jift      (1,x)*N_XYZ_Xsec(i,3)
+            -jift      (2,x)*N_XYZ_Xsec(i,4));
+        d2sntDdDpxi_m(nsd_*i+y,1)+=dsntdb(4)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,1)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,5)
+            +jift      (0,x)*deriv2    (3,i)
+            +jift      (1,x)*deriv2    (1,i)
+            +jift      (2,x)*deriv2    (5,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,3)
+            -jift      (1,x)*N_XYZ_Xsec(i,1)
+            -jift      (2,x)*N_XYZ_Xsec(i,5));
+        d2sntDdDpxi_m(nsd_*i+y,2)+=dsntdb(4)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,4)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,5)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,2)
+            +jift      (0,x)*deriv2    (4,i)
+            +jift      (1,x)*deriv2    (5,i)
+            +jift      (2,x)*deriv2    (2,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,4)
+            -jift      (1,x)*N_XYZ_Xsec(i,5)
+            -jift      (2,x)*N_XYZ_Xsec(i,2));
+
+        x=0;y=2;
+        d2sntDdDpxi_m(nsd_*i+y,0)+=dsntdb(5)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,0)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,4)
+            +jift      (0,x)*deriv2    (0,i)
+            +jift      (1,x)*deriv2    (3,i)
+            +jift      (2,x)*deriv2    (4,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,0)
+            -jift      (1,x)*N_XYZ_Xsec(i,3)
+            -jift      (2,x)*N_XYZ_Xsec(i,4));
+        d2sntDdDpxi_m(nsd_*i+y,1)+=dsntdb(5)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,1)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,5)
+            +jift      (0,x)*deriv2    (3,i)
+            +jift      (1,x)*deriv2    (1,i)
+            +jift      (2,x)*deriv2    (5,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,3)
+            -jift      (1,x)*N_XYZ_Xsec(i,1)
+            -jift      (2,x)*N_XYZ_Xsec(i,5));
+        d2sntDdDpxi_m(nsd_*i+y,2)+=dsntdb(5)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,4)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,5)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,2)
+            +jift      (0,x)*deriv2    (4,i)
+            +jift      (1,x)*deriv2    (5,i)
+            +jift      (2,x)*deriv2    (2,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,4)
+            -jift      (1,x)*N_XYZ_Xsec(i,5)
+            -jift      (2,x)*N_XYZ_Xsec(i,2));
+        x=2;y=0;
+        d2sntDdDpxi_m(nsd_*i+y,0)+=dsntdb(5)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,0)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,4)
+            +jift      (0,x)*deriv2    (0,i)
+            +jift      (1,x)*deriv2    (3,i)
+            +jift      (2,x)*deriv2    (4,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,0)
+            -jift      (1,x)*N_XYZ_Xsec(i,3)
+            -jift      (2,x)*N_XYZ_Xsec(i,4));
+        d2sntDdDpxi_m(nsd_*i+y,1)+=dsntdb(5)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,3)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,1)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,5)
+            +jift      (0,x)*deriv2    (3,i)
+            +jift      (1,x)*deriv2    (1,i)
+            +jift      (2,x)*deriv2    (5,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,3)
+            -jift      (1,x)*N_XYZ_Xsec(i,1)
+            -jift      (2,x)*N_XYZ_Xsec(i,5));
+        d2sntDdDpxi_m(nsd_*i+y,2)+=dsntdb(5)*2.*(
+            invJ_N_XYZ(0,i)*xXFsec    (x,4)
+            +invJ_N_XYZ(1,i)*xXFsec    (x,5)
+            +invJ_N_XYZ(2,i)*xXFsec    (x,2)
+            +jift      (0,x)*deriv2    (4,i)
+            +jift      (1,x)*deriv2    (5,i)
+            +jift      (2,x)*deriv2    (2,i)
+            -jift      (0,x)*N_XYZ_Xsec(i,4)
+            -jift      (1,x)*N_XYZ_Xsec(i,5)
+            -jift      (2,x)*N_XYZ_Xsec(i,2));
+      }
+    }
+  }
+  return;
+}
+
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiPlast(
+        const LINALG::Matrix<3,1>& xi,
+        const std::vector<double>& disp,
+        const LINALG::Matrix<3,1>& n,
+        const LINALG::Matrix<3,1>& t,
+        double& sigma_nt,
+        Epetra_SerialDenseMatrix* dsntdd,
+        Epetra_SerialDenseMatrix* d2sntdd2,
+        Epetra_SerialDenseMatrix* d2sntDdDn,
+        Epetra_SerialDenseMatrix* d2sntDdDt,
+        Epetra_SerialDenseMatrix* d2sntDdDpxi,
+        LINALG::Matrix<3,1>* dsntdn,
+        LINALG::Matrix<3,1>* dsntdt,
+        LINALG::Matrix<3,1>* dsntdpxi)
+{
+  if (distype!=DRT::Element::hex8 || numgpt_!=8)
+    dserror("only for hex8 with 8 gp");
+  if (Material()->MaterialType()!=INPAR::MAT::m_plelasthyper)
+    dserror("only PlasticElastHyper materials here");
+  if ((int)cauchy_.size()!=numgpt_ || (int)cauchy_deriv_.size()!=numgpt_)
+    dserror("have you evaluated the cauchy stress???");
+
+  sigma_nt=0.;
+  if (dsntdpxi) dsntdpxi->Clear();
+
+  LINALG::Matrix<3,3>nttn;
+  nttn.MultiplyNT(.5,n,t,1.);
+  nttn.MultiplyNT(.5,t,n,1.);
+  LINALG::Matrix<6,1> nttn_v;
+  for (int i=0;i<3;++i) nttn_v(i)=nttn(i,i);
+  nttn_v(3)=nttn(0,1)+nttn(1,0);
+  nttn_v(4)=nttn(2,1)+nttn(1,2);
+  nttn_v(5)=nttn(0,2)+nttn(2,0);
+
+  LINALG::Matrix<3,1> xi_expol(xi);
+  xi_expol.Scale(sqrt(3.));
+
+  LINALG::Matrix<nen_,1> shapefunct;
+  LINALG::Matrix<nsd_,nen_> deriv;
+  DRT::UTILS::shape_function<distype>(xi_expol,shapefunct);
+  DRT::UTILS::shape_function_deriv1<distype>(xi_expol,deriv);
+
+  LINALG::Matrix<numstr_,1> cauchy_expol;
+  LINALG::Matrix<numstr_,numdofperelement_> cauchy_deriv_expol;
+
+  LINALG::Matrix<6,1> tmp61;
+  for (int gp=0;gp<numgpt_;++gp)
+  {
+    cauchy_expol.Update(shapefunct(gp),cauchy_.at(gp),1.);
+    cauchy_deriv_expol.Update(shapefunct(gp),cauchy_deriv_.at(gp),1.);
+    if (dsntdpxi)
+      for (int d=0;d<nsd_;++d)
+        (*dsntdpxi)(d)+=cauchy_.at(gp).Dot(nttn_v)*deriv(d,gp)*sqrt(3.);
+  }
+
+  sigma_nt=cauchy_expol.Dot(nttn_v);
+
+  if (dsntdd)
+  {
+    dsntdd->Reshape(numdofperelement_,1);
+    LINALG::Matrix<numdofperelement_,1>(dsntdd->A(),true).
+        MultiplyTN(cauchy_deriv_expol,nttn_v);
+  }
+  if (d2sntdd2)
+  {
+    d2sntdd2   ->Reshape(numdofperelement_,numdofperelement_);
+    d2sntdd2   ->Scale(0.);
+  }
+
+  LINALG::Matrix<numstr_,nsd_> d_nttn_v_dn,d_nttn_v_dt;
+  for (int i=0;i<nsd_;++i)
+    for (int j=0;j<nsd_;++j)
+      for (int a=0;a<nsd_;++a)
+      {
+        d_nttn_v_dn(VOIGT3X3SYM_[i][j],a)+=.5*((i==a)*t(j)+(j==a)*t(i));
+        d_nttn_v_dt(VOIGT3X3SYM_[i][j],a)+=.5*((i==a)*n(j)+(j==a)*n(i));
+      }
+  if (dsntdn)
+    dsntdn->MultiplyTN(d_nttn_v_dn,cauchy_expol);
+  if (dsntdt)
+    dsntdt->MultiplyTN(d_nttn_v_dt,cauchy_expol);
+
+  if (d2sntDdDn)
+  {
+    d2sntDdDn  ->Reshape(numdofperelement_,nsd_);
+    LINALG::Matrix<numdofperelement_,nsd_>(d2sntDdDn->A(),true).
+        MultiplyTN(cauchy_deriv_expol,d_nttn_v_dn);
+  }
+
+  if (d2sntDdDt)
+  {
+    d2sntDdDt  ->Reshape(numdofperelement_,nsd_);
+    LINALG::Matrix<numdofperelement_,nsd_>(d2sntDdDt->A(),true).
+        MultiplyTN(cauchy_deriv_expol,d_nttn_v_dt);
+  }
+  if (d2sntDdDpxi)
+  {
+    d2sntDdDpxi   ->Reshape(numdofperelement_,nsd_);
+    d2sntDdDpxi   ->Scale(0.);
+  }
 }

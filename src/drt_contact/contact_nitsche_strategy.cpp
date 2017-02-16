@@ -24,6 +24,7 @@
 #include "contact_nitsche_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "contact_paramsinterface.H"
+#include "../drt_so3/so3_ssn_plast.H"
 
 
 /*----------------------------------------------------------------------*
@@ -342,6 +343,12 @@ void CONTACT::CoNitscheStrategy::ReconnectParentElements()
         dserror("ERROR: Cannot find element with gid %", volgid);
 
       faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
+
+      DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* vele_plast=
+          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(vele);
+      if (vele_plast)
+        vele_plast->SetIsNitscheContactEle(true);
+
     }
   }
 }

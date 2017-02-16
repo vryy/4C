@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so3_ssn_plast_sosh18.cpp
-
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\brief element
+\level 2
+\maintainer Alexander Seitz
 */
 /*----------------------------------------------------------------------*/
 
@@ -638,19 +634,19 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
       if (HavePlasticSpin())
       {
         if (eas_)
-          CondensePlasticity<plspin>(defgrd,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<plspin>(defgrd,deltaLp,bop,NULL,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M_ep,&Kda);
         else
-          CondensePlasticity<plspin>(defgrd,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<plspin>(defgrd,deltaLp,bop,NULL,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
       else
       {
         if (eas_)
-          CondensePlasticity<zerospin>(defgrd,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<zerospin>(defgrd,deltaLp,bop,NULL,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M_ep,&Kda);
         else
-          CondensePlasticity<zerospin>(defgrd,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<zerospin>(defgrd,deltaLp,bop,NULL,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
     }// plastic modifications

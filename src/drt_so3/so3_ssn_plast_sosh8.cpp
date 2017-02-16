@@ -14,12 +14,8 @@ The Solid-Shell element technology is based on the work of
 
 Refer also to the Semesterarbeit of Alexander Popp, 2006
 
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
+\maintainer Alexander Seitz
+\level 2
 */
 
 /*----------------------------------------------------------------------*/
@@ -1767,19 +1763,19 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
       if (HavePlasticSpin())
       {
         if (eastype_!=soh8p_easnone)
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda,&dHda);
         else
-          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
       else
       {
         if (eastype_!=soh8p_easnone)
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda,&dHda);
         else
-          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,NULL,MyPID,detJ_w,
+          CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
       }
     }// plastic modifications

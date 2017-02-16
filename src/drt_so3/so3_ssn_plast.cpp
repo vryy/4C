@@ -2,13 +2,9 @@
 /*!
 \file so3_ssn_plast.cpp
 \brief
+\maintainer Alexander Seitz
+\level 2
 
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
 */
 
 
@@ -59,7 +55,8 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   alpha_eas_inc_(Teuchos::null),
   eastype_(soh8p_easnone),
   neas_(0),
-  tsi_(false)
+  tsi_(false),
+  is_nitsche_contact_(false)
 {
   return;
 }
@@ -271,6 +268,14 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(
     for (int i=0; i<histsize; i++)
       AddtoPack(data,dDp_last_iter_[i]);
 
+  // nitsche contact
+  AddtoPack(data,(int)is_nitsche_contact_);
+  if (is_nitsche_contact_)
+  {
+    AddtoPack(data,cauchy_);
+    AddtoPack(data,cauchy_deriv_);
+  }
+
   return;
 }  // Pack()
 
@@ -388,6 +393,19 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    size=ExtractInt(position,data);
    for (int i=0; i<size; i++)
      ExtractfromPack(position,data,dDp_last_iter_[i]);
+
+   // Nitsche contact stuff
+   is_nitsche_contact_=(bool)ExtractInt(position,data);
+   if (is_nitsche_contact_)
+   {
+     ExtractfromPack(position,data,cauchy_);
+     ExtractfromPack(position,data,cauchy_deriv_);
+   }
+   else
+   {
+     cauchy_      .resize(0);
+     cauchy_deriv_.resize(0);
+   }
 
    data_=Teuchos::null;
 

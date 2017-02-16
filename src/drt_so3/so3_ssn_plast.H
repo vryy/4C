@@ -2,13 +2,7 @@
 /*!
 \file so3_ssn_plast.H
 \maintainer Alexander Seitz
-
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\level 2
 */
 
 
@@ -271,6 +265,30 @@ namespace ELEMENTS
     // get parameter list from ssn_plast_manager
     virtual void ReadParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams);
 
+    /// evaluate Cauchy stress at given point in parameter space
+    virtual void GetCauchyAtXi(
+        const LINALG::Matrix<3,1>& xi,
+        const std::vector<double>& disp,
+        const LINALG::Matrix<3,1>& n,
+        const LINALG::Matrix<3,1>& t,
+        double& sigma_nt,
+        Epetra_SerialDenseMatrix* dsntdd,
+        Epetra_SerialDenseMatrix* d2sntdd2,
+        Epetra_SerialDenseMatrix* d2sntDdDn,
+        Epetra_SerialDenseMatrix* d2sntDdDt,
+        Epetra_SerialDenseMatrix* d2sntDdDpxi,
+        LINALG::Matrix<3,1>* dsntdn,
+        LINALG::Matrix<3,1>* dsntdt,
+        LINALG::Matrix<3,1>* dsntdpxi);
+
+    virtual void SetIsNitscheContactEle(bool val){
+      is_nitsche_contact_=val;
+      if (is_nitsche_contact_)
+      {
+        cauchy_.resize(numgpt_);
+        cauchy_deriv_.resize(numgpt_);
+      }
+    }
     //@}
 
   protected:
@@ -437,6 +455,7 @@ namespace ELEMENTS
         const LINALG::Matrix<nsd_,nsd_>& defgrd,
         const LINALG::Matrix<nsd_,nsd_>& deltaLp,
         const LINALG::Matrix<numstr_,numdofperelement_>& bop,
+        const LINALG::Matrix<nsd_,nen_>* N_XYZ,
         const LINALG::Matrix<numstr_,1>* RCG,
         const int MyPID,
         const double detJ_w,
@@ -486,6 +505,36 @@ namespace ELEMENTS
         Teuchos::ParameterList&         params);
 
     //@}
+
+    virtual void GetCauchyAtXiPlast(
+        const LINALG::Matrix<3,1>& xi,
+        const std::vector<double>& disp,
+        const LINALG::Matrix<3,1>& n,
+        const LINALG::Matrix<3,1>& t,
+        double& sigma_nt,
+        Epetra_SerialDenseMatrix* dsntdd,
+        Epetra_SerialDenseMatrix* d2sntdd2,
+        Epetra_SerialDenseMatrix* d2sntDdDn,
+        Epetra_SerialDenseMatrix* d2sntDdDt,
+        Epetra_SerialDenseMatrix* d2sntDdDpxi,
+        LINALG::Matrix<3,1>* dsntdn,
+        LINALG::Matrix<3,1>* dsntdt,
+        LINALG::Matrix<3,1>* dsntdpxi);
+
+    virtual void GetCauchyAtXiElast(
+        const LINALG::Matrix<3,1>& xi,
+        const std::vector<double>& disp,
+        const LINALG::Matrix<3,1>& n,
+        const LINALG::Matrix<3,1>& t,
+        double& sigma_nt,
+        Epetra_SerialDenseMatrix* dsntdd,
+        Epetra_SerialDenseMatrix* d2sntdd2,
+        Epetra_SerialDenseMatrix* d2sntDdDn,
+        Epetra_SerialDenseMatrix* d2sntDdDt,
+        Epetra_SerialDenseMatrix* d2sntDdDpxi,
+        LINALG::Matrix<3,1>* dsntdn,
+        LINALG::Matrix<3,1>* dsntdt,
+        LINALG::Matrix<3,1>* dsntdpxi);
 
 
     // algoirthmic parameters
@@ -546,6 +595,11 @@ namespace ELEMENTS
     /// As the gp temperature depends linearly on the nodal temperature dofs
     /// a scalar value is sufficient
     Teuchos::RCP<std::vector<double> > temp_last_;
+
+    // Cauchy stress for Nitsche contact **************************
+    bool is_nitsche_contact_;
+    std::vector<LINALG::Matrix<numstr_,1> > cauchy_;
+    std::vector<LINALG::Matrix<numstr_,numdofperelement_> > cauchy_deriv_;
 
   };  // class So3_Plast
 

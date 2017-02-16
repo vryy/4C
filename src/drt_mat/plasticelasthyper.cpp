@@ -103,6 +103,32 @@ DRT::ParObject* MAT::PlasticElastHyperType::Create( const std::vector<char> & da
  *----------------------------------------------------------------------*/
 const int MAT::PlasticElastHyper::VOIGT3X3_[3][3]       = {{0,3,5},{3,1,4},{5,4,2}};
 const int MAT::PlasticElastHyper::VOIGT3X3NONSYM_[3][3] = {{0,3,5},{6,1,4},{8,7,2}};
+LINALG::Matrix<3,1> MAT::PlasticElastHyper::prinv_;
+LINALG::Matrix<9,1> MAT::PlasticElastHyper::CFpiCei_;
+LINALG::Matrix<9,1> MAT::PlasticElastHyper::CFpi_;
+LINALG::Matrix<9,1> MAT::PlasticElastHyper::CFpiCe_;
+LINALG::Matrix<6,1> MAT::PlasticElastHyper::Cpi_;
+LINALG::Matrix<6,1> MAT::PlasticElastHyper::CpiCCpi_;
+LINALG::Matrix<6,1> MAT::PlasticElastHyper::ircg_;
+LINALG::Matrix<6,1> MAT::PlasticElastHyper::Ce_;
+LINALG::Matrix<6,1> MAT::PlasticElastHyper::Ce2_;
+LINALG::Matrix<6,1> MAT::PlasticElastHyper::id2V_;
+LINALG::Matrix<6,1> MAT::PlasticElastHyper::bev_;
+LINALG::Matrix<6,1> MAT::PlasticElastHyper::be2v_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::invpldefgrd_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::CeM_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::id2_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::CpiC_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::FpiCe_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::FpiTC_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::CeFpiTC_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::be_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::be2_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::Fe_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::beF_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::beFe_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::FCpi_;
+LINALG::Matrix<3,3> MAT::PlasticElastHyper::beFCpi_;
 
 
 /*----------------------------------------------------------------------*/
@@ -562,17 +588,11 @@ void MAT::PlasticElastHyper::EvaluateElast(
     const int gp,
     const int eleGID)
 {
-  LINALG::Matrix<6,1> Cpi;
-  LINALG::Matrix<6,1> CpiCCpi;
-  LINALG::Matrix<6,1> ircg;
-
-  LINALG::Matrix<3,1> prinv;
-
   LINALG::Matrix<3,1> dPI(true);
   LINALG::Matrix<6,1> ddPII(true);
 
-  EvaluateKinQuantElast(defgrd,deltaLp,gp,Cpi,CpiCCpi,ircg,prinv);
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
+  EvaluateKinQuantElast(defgrd,deltaLp,gp);
+  EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -583,7 +603,7 @@ void MAT::PlasticElastHyper::EvaluateElast(
   // isotropic elasticity in decoupled ("mod") format go here as well
   // as the modified gammas and deltas have been converted
   if (isoprinc_ || isomod_)
-    EvaluateIsotropicPrincElast(*pk2,*cmat,Cpi,CpiCCpi,ircg,prinv,dPI,ddPII);
+    EvaluateIsotropicPrincElast(*pk2,*cmat,dPI,ddPII);
   else
     dserror("only isotropic hyperelastic materials");
 
@@ -788,36 +808,30 @@ void MAT::PlasticElastHyper::EvaluatePlast(
     LINALG::Matrix<6,1>* dHdC,
     LINALG::Matrix<6,1>* dHdDp,
     const double dt,
-    const int eleGID)
+    const int eleGID,
+    LINALG::Matrix<6,1>* cauchy,
+    LINALG::Matrix<6,6>* d_cauchy_ddp,
+    LINALG::Matrix<6,6>* d_cauchy_dC,
+    LINALG::Matrix<6,9>* d_cauchy_dF
+    )
 {
-  LINALG::Matrix<6,1> Cpi;
-  LINALG::Matrix<6,1> CpiCCpi;
-  LINALG::Matrix<6,1> ircg;
-  LINALG::Matrix<3,1> prinv;
-  LINALG::Matrix<6,1> id2V;
-  LINALG::Matrix<3,3> id2;
-  LINALG::Matrix<3,3> CpiC;
-  LINALG::Matrix<3,3> FpiCe;
-  LINALG::Matrix<9,1> CFpiCei;
-  LINALG::Matrix<9,1> CFpi;
-  LINALG::Matrix<3,3> FpiTC;
-  LINALG::Matrix<9,1> CFpiCe;
-  LINALG::Matrix<3,3> CeFpiTC;
-  LINALG::Matrix<6,1> Ce;
-  LINALG::Matrix<3,3> CeM;
-  LINALG::Matrix<6,1> Ce2;
-  LINALG::Matrix<3,3> invpldefgrd;
+  int check =
+      +(cauchy!=NULL)
+      +(d_cauchy_dC!=NULL)
+      +(d_cauchy_dF!=NULL)
+      +(d_cauchy_ddp!=NULL);
+  if (!(check==0 || check==4))
+    dserror("some inconsistency with provided variables");
 
   LINALG::Matrix<3,1> dPI;
   LINALG::Matrix<6,1> ddPII;
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
 
-  if (EvaluateKinQuantPlast(defgrd,deltaDp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
-                        id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
+  if (EvaluateKinQuantPlast(defgrd,deltaDp,gp,params))
     return;
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
-  CalculateGammaDelta(gamma,delta,prinv,dPI,ddPII);
+  EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID);
+  CalculateGammaDelta(gamma,delta,prinv_,dPI,ddPII);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -832,20 +846,22 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   LINALG::Matrix<6,6> dMdC;     // derivative of Mandel stress w.r.t. RCG
   LINALG::Matrix<6,9> dMdFpinv; // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
   LINALG::Matrix<6,9> dPK2dFpinv;
+  LINALG::Matrix<6,9> d_cauchy_dFpi;
 
   // isotropic elasticity in coupled strain energy format
   // isotropic elasticity in decoupled ("mod") format go here as well
   // as the modified gammas and deltas have been converted
   if (isoprinc_ || isomod_)
-  {
-    EvaluateIsotropicPrincPlast(dPK2dFpinv,mStr,dMdC,dMdFpinv,
-        Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,id2V,id2,CpiC,FpiCe,
-        invpldefgrd,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,gamma,delta);
-  }
+    EvaluateIsotropicPrincPlast(dPK2dFpinv,mStr,dMdC,dMdFpinv,gamma,delta);
   else
     dserror("only isotropic hypereleastic materials");
 
-  EvaluateNCP(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaDp,gp,temp,NCP,dNCPdC,dNCPdDp,dNCPdT,dPK2dDp,active,elast,as_converged,dHdC,dHdDp,params,dt);
+  if (cauchy)
+    EvaluateCauchyPlast(dPI,ddPII,defgrd,*cauchy,d_cauchy_dFpi,*d_cauchy_dC,*d_cauchy_dF);
+
+  EvaluateNCP(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaDp,gp,temp,
+      NCP,dNCPdC,dNCPdDp,dNCPdT,dPK2dDp,active,elast,as_converged,
+      dHdC,dHdDp,params,dt,&d_cauchy_dFpi,d_cauchy_ddp);
 
   return;
 }
@@ -873,7 +889,9 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     LINALG::Matrix<6,1>* dHdC,
     LINALG::Matrix<6,1>* dHdDp,
     Teuchos::ParameterList& params,
-    const double dt
+    const double dt,
+    const LINALG::Matrix<6,9>* d_cauchy_dFpi,
+    LINALG::Matrix<6,6>* d_cauchy_ddp
     )
 {
   const double sq=sqrt(2./3.);
@@ -1069,6 +1087,8 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     detaddp.Multiply(*dMdFpinv,dFpiDdeltaDp);
     detaddp.Update(-2./3.*Kinhard(),pdev,1.);
     dPK2dDp->Multiply(*dPK2dFpinv,dFpiDdeltaDp);
+    if (d_cauchy_ddp)
+      d_cauchy_ddp->Multiply(*d_cauchy_dFpi,dFpiDdeltaDp);
 
     //TSI
     if (dNCPdT!=NULL)
@@ -1323,37 +1343,31 @@ void MAT::PlasticElastHyper::EvaluatePlast(
     LINALG::Matrix<6,1>* dHdC,
     LINALG::Matrix<9,1>* dHdLp,
     const double dt,
-    const int eleGID
+    const int eleGID,
+    LINALG::Matrix<6,1>* cauchy,
+    LINALG::Matrix<6,9>* d_cauchy_ddp,
+    LINALG::Matrix<6,6>* d_cauchy_dC,
+    LINALG::Matrix<6,9>* d_cauchy_dF
     )
 {
-  LINALG::Matrix<6,1> Cpi;
-  LINALG::Matrix<6,1> CpiCCpi;
-  LINALG::Matrix<6,1> ircg;
-  LINALG::Matrix<6,1> id2V;
-  LINALG::Matrix<3,3> id2;
-  LINALG::Matrix<3,3> CpiC;
-  LINALG::Matrix<3,3> FpiCe;
-  LINALG::Matrix<9,1> CFpiCei;
-  LINALG::Matrix<9,1> CFpi;
-  LINALG::Matrix<3,3> FpiTC;
-  LINALG::Matrix<9,1> CFpiCe;
-  LINALG::Matrix<3,3> CeFpiTC;
-  LINALG::Matrix<6,1> Ce;
-  LINALG::Matrix<3,3> CeM;
-  LINALG::Matrix<6,1> Ce2;
-  LINALG::Matrix<3,3> invpldefgrd;
+  int check =
+      +(cauchy!=NULL)
+      +(d_cauchy_dC!=NULL)
+      +(d_cauchy_dF!=NULL)
+      +(d_cauchy_ddp!=NULL);
+  if (!(check==0 || check==4))
+    dserror("some inconsistency with provided variables");
 
-  LINALG::Matrix<3,1> prinv;
   LINALG::Matrix<3,1> dPI(true);
   LINALG::Matrix<6,1> ddPII(true);
   LINALG::Matrix<3,1> gamma(true);
   LINALG::Matrix<8,1> delta(true);
 
-  if (EvaluateKinQuantPlast(defgrd,deltaLp,gp,params,invpldefgrd,Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,
-                        id2V,id2,CpiC,FpiCe,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,prinv))
+  if (EvaluateKinQuantPlast(defgrd,deltaLp,gp,params))
     return;
-  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
-  CalculateGammaDelta(gamma,delta,prinv,dPI,ddPII);
+
+  EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID);
+  CalculateGammaDelta(gamma,delta,prinv_,dPI,ddPII);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -1368,20 +1382,24 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   LINALG::Matrix<6,6> dMdC;     // derivative of Mandel stress w.r.t. RCG
   LINALG::Matrix<6,9> dMdFpinv; // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
   LINALG::Matrix<6,9> dPK2dFpinv;
+  LINALG::Matrix<6,9> d_cauchy_dFpi;
 
   // isotropic elasticity in coupled strain energy format
   // isotropic elasticity in decoupled ("mod") format go here as well
   // as the modified gammas and deltas have been converted
   if (isoprinc_ || isomod_)
   {
-    EvaluateIsotropicPrincPlast(dPK2dFpinv,mStr,dMdC,dMdFpinv,
-        Cpi,CpiCCpi,ircg,Ce,CeM,Ce2,id2V,id2,CpiC,FpiCe,
-        invpldefgrd,CFpiCei,CFpi,FpiTC,CFpiCe,CeFpiTC,gamma,delta);
+    EvaluateIsotropicPrincPlast(dPK2dFpinv,mStr,dMdC,dMdFpinv,gamma,delta);
   }
   else
     dserror("only isotropic hypereleastic materials");
 
-  EvaluateNCPandSpin(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaLp,gp,NCP,dNCPdC,dNCPdLp,dPK2dLp,active,elast,as_converged,dt);
+  if (cauchy)
+    EvaluateCauchyPlast(dPI,ddPII,defgrd,*cauchy,d_cauchy_dFpi,*d_cauchy_dC,*d_cauchy_dF);
+
+  EvaluateNCPandSpin(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaLp,gp,
+      NCP,dNCPdC,dNCPdLp,dPK2dLp,active,elast,as_converged,dt,
+      &d_cauchy_dFpi,d_cauchy_ddp);
 
   return;
 }
@@ -1403,7 +1421,9 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
     bool* active,
     bool* elast,
     bool* as_converged,
-    const double dt)
+    const double dt,
+    const LINALG::Matrix<6,9>* d_cauchy_dFpi,
+    LINALG::Matrix<6,9>* d_cauchy_ddp)
 {
   const double sq=sqrt(2./3.);
   LINALG::Matrix<6,1> tmp61;
@@ -1570,6 +1590,8 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
     LINALG::Matrix<6,9> detadLp(dMdLp);
     detadLp.Update(-2./3.*Kinhard(),psymdev,1.);
     dPK2dLp->Multiply(*dPK2dFpinv,dFpiDdeltaLp);
+    if (d_cauchy_ddp)
+      d_cauchy_ddp->Multiply(*d_cauchy_dFpi,dFpiDdeltaLp);
 
     // Factor of derivative of Y^pl w.r.t. delta alpha ^i
     // we have added the factor sqrt(2/3) from delta_alpha_i=sq*... here
@@ -1779,6 +1801,77 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
   return;
 }
 
+void MAT::PlasticElastHyper::EvaluateCauchyPlast(
+    const LINALG::Matrix<3,1>& dPI,
+    const LINALG::Matrix<6,1>& ddPII,
+    const LINALG::Matrix<3,3>* defgrd,
+    LINALG::Matrix<6,1>& cauchy,
+    LINALG::Matrix<6,9>& d_cauchy_dFpi,
+    LINALG::Matrix<6,6>& d_cauchy_dC,
+    LINALG::Matrix<6,9>& d_cauchy_dF)
+{
+  cauchy.Clear();
+  d_cauchy_dC.Clear();
+  d_cauchy_dF.Clear();
+  d_cauchy_dFpi.Clear();
+
+  cauchy.Update(sqrt(prinv_(2))*dPI(2),id2V_,1.);
+  cauchy.Update(prinv_(2)*(dPI(0)+prinv_(1)*dPI(1)),bev_,1.);
+  cauchy.Update(-prinv_(2)*dPI(1),be2v_,1.);
+  cauchy.Scale(2.);
+
+  d_cauchy_dC.MultiplyNT(sqrt(prinv_(2))*(ddPII(4)+prinv_(0)*ddPII(3)),id2V_,Cpi_,1.);
+  d_cauchy_dC.MultiplyNT(-sqrt(prinv_(2))*ddPII(3),id2V_,CpiCCpi_,1.);
+  d_cauchy_dC.MultiplyNT(sqrt(prinv_(2))*(.5*dPI(2)+prinv_(2)*ddPII(2)),id2V_,ircg_,1.);
+
+  d_cauchy_dC.MultiplyNT(
+      prinv_(2)*ddPII(0)
+      +prinv_(1)*prinv_(2)*ddPII(5)
+      +prinv_(0)*prinv_(2)*ddPII(5)
+      +prinv_(0)*prinv_(2)*dPI(1)
+      +prinv_(0)*prinv_(1)*prinv_(2)*ddPII(1)
+                                    ,bev_,Cpi_,1.);
+  d_cauchy_dC.MultiplyNT(
+      -prinv_(2)*ddPII(5)
+      -prinv_(2)*dPI(1)
+      -prinv_(1)*prinv_(2)*ddPII(1)
+      ,bev_,CpiCCpi_,1.);
+  d_cauchy_dC.MultiplyNT(
+      prinv_(2)*dPI(0)
+      +prinv_(1)*prinv_(2)*dPI(1)
+      +prinv_(2)*prinv_(2)*ddPII(4)
+      +prinv_(2)*prinv_(2)*prinv_(1)*ddPII(3)
+      ,bev_,ircg_,1.);
+
+  d_cauchy_dC.MultiplyNT(-prinv_(2)*(ddPII(5)+prinv_(0)*ddPII(1)),be2v_,Cpi_,1.);
+  d_cauchy_dC.MultiplyNT(prinv_(2)*ddPII(1),be2v_,CpiCCpi_,1.);
+  d_cauchy_dC.MultiplyNT(-prinv_(2)*(dPI(1)+prinv_(2)*ddPII(3)),be2v_,ircg_,1.);
+  d_cauchy_dC.Scale(4.);
+
+  d_cauchy_dFpi.MultiplyNT(sqrt(prinv_(2))*(ddPII(4)+prinv_(0)*ddPII(3)),id2V_,CFpi_,1.);
+  d_cauchy_dFpi.MultiplyNT(-sqrt(prinv_(2))*ddPII(3),id2V_,CFpiCe_,1.);
+  d_cauchy_dFpi.MultiplyNT(sqrt(prinv_(2))*(.5*dPI(2)+prinv_(2)*ddPII(2)),id2V_,CFpiCei_,1.);
+
+  d_cauchy_dFpi.MultiplyNT(prinv_(2)*(prinv_(0)*prinv_(0)*ddPII(1)+2.*prinv_(0)*ddPII(5)
+                                    +ddPII(0)+dPI(1)),bev_,CFpi_,1.);
+  d_cauchy_dFpi.MultiplyNT(-prinv_(2)*(ddPII(5)+prinv_(0)*ddPII(1)),bev_,CFpiCe_,1.);
+  d_cauchy_dFpi.MultiplyNT(prinv_(2)*(dPI(0)+prinv_(0)*dPI(1)+prinv_(2)*ddPII(4)
+                                    +prinv_(0)*prinv_(2)*ddPII(3)),bev_,CFpiCei_,1.);
+
+  d_cauchy_dFpi.MultiplyNT(-prinv_(2)*(ddPII(5)+prinv_(0)*ddPII(1)),be2v_,CFpi_,1.);
+  d_cauchy_dFpi.MultiplyNT(prinv_(2)*ddPII(1),be2v_,CFpiCe_,1.);
+  d_cauchy_dFpi.MultiplyNT(-prinv_(2)*(dPI(1)+prinv_(2)*ddPII(3)),be2v_,CFpiCei_,1.);
+
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi,*defgrd,Fe_,prinv_(2)*(dPI(0)+prinv_(1)*dPI(1)));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi,*defgrd,beFe_,-prinv_(2)*dPI(1));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi,beF_,Fe_,prinv_(2)*(dPI(0)+prinv_(1)*dPI(1)));
+
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,id2_,FCpi_,prinv_(2)*(dPI(0)+prinv_(1)*dPI(1)));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,id2_,beFCpi_,-prinv_(2)*dPI(1));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,be_,FCpi_,-prinv_(2)*dPI(1));
+  d_cauchy_dF.Scale(2.);
+}
+
 void MAT::PlasticElastHyper::UpdateGP(const int gp, const LINALG::Matrix<3,3>* deltaDp)
 {
   if (activity_state_[gp]==true)
@@ -1807,11 +1900,7 @@ void MAT::PlasticElastHyper::UpdateGP(const int gp, const LINALG::Matrix<3,3>* d
 void MAT::PlasticElastHyper::EvaluateKinQuantElast(
     const LINALG::Matrix<3,3>* defgrd,
     const LINALG::Matrix<3,3>* deltaLp,
-    const int gp,
-    LINALG::Matrix<6,1>& Cpi,
-    LINALG::Matrix<6,1>& CpiCCpi,
-    LINALG::Matrix<6,1>& ircg,
-    LINALG::Matrix<3,1>& prinv)
+    const int gp)
 {
   LINALG::Matrix<3,3> tmp;
   LINALG::Matrix<3,3> invpldefgrd;
@@ -1824,10 +1913,10 @@ void MAT::PlasticElastHyper::EvaluateKinQuantElast(
   LINALG::Matrix<3,3> CpiM;
   CpiM.MultiplyNT(invpldefgrd,invpldefgrd);
   // stress-like Voigt notation
-  for (int i=0; i<3; i++) Cpi(i) = CpiM(i,i);
-  Cpi(3) = (CpiM(0,1)+CpiM(1,0))/2.;
-  Cpi(4) = (CpiM(2,1)+CpiM(1,2))/2.;
-  Cpi(5) = (CpiM(0,2)+CpiM(2,0))/2.;
+  for (int i=0; i<3; i++) Cpi_(i) = CpiM(i,i);
+  Cpi_(3) = (CpiM(0,1)+CpiM(1,0))/2.;
+  Cpi_(4) = (CpiM(2,1)+CpiM(1,2))/2.;
+  Cpi_(5) = (CpiM(0,2)+CpiM(2,0))/2.;
 
   // inverse RCG
   LINALG::Matrix<3,3> iRCG;
@@ -1835,20 +1924,20 @@ void MAT::PlasticElastHyper::EvaluateKinQuantElast(
   RCG.MultiplyTN(*defgrd,*defgrd);
   iRCG.Invert(RCG);
   // stress-like Voigt notation
-  for (int i=0; i<3; i++) ircg(i) = iRCG(i,i);
-  ircg(3) = (iRCG(0,1)+iRCG(1,0))/2.;
-  ircg(4) = (iRCG(2,1)+iRCG(1,2))/2.;
-  ircg(5) = (iRCG(0,2)+iRCG(2,0))/2.;
+  for (int i=0; i<3; i++) ircg_(i) = iRCG(i,i);
+  ircg_(3) = (iRCG(0,1)+iRCG(1,0))/2.;
+  ircg_(4) = (iRCG(2,1)+iRCG(1,2))/2.;
+  ircg_(5) = (iRCG(0,2)+iRCG(2,0))/2.;
 
   // C_p^-1 * C * C_p^-1
   LINALG::Matrix<3,3> CpiCCpiM;
   tmp.Multiply(CpiM,RCG);
   CpiCCpiM.Multiply(tmp,CpiM);
   // stress-like Voigt notation
-  for (int i=0; i<3; i++) CpiCCpi(i) = CpiCCpiM(i,i);
-  CpiCCpi(3) = (CpiCCpiM(0,1)+CpiCCpiM(1,0))/2.;
-  CpiCCpi(4) = (CpiCCpiM(2,1)+CpiCCpiM(1,2))/2.;
-  CpiCCpi(5) = (CpiCCpiM(0,2)+CpiCCpiM(2,0))/2.;
+  for (int i=0; i<3; i++) CpiCCpi_(i) = CpiCCpiM(i,i);
+  CpiCCpi_(3) = (CpiCCpiM(0,1)+CpiCCpiM(1,0))/2.;
+  CpiCCpi_(4) = (CpiCCpiM(2,1)+CpiCCpiM(1,2))/2.;
+  CpiCCpi_(5) = (CpiCCpiM(0,2)+CpiCCpiM(2,0))/2.;
 
   tmp.Multiply(*defgrd,invpldefgrd);
   LINALG::Matrix<3,3> CeM;
@@ -1862,7 +1951,7 @@ void MAT::PlasticElastHyper::EvaluateKinQuantElast(
   elasticRCGv(5) = (CeM(0,2)+CeM(2,0));
 
   // principal invariants of elastic Cauchy-Green strain
-  InvariantsPrincipal(prinv,elasticRCGv);
+  InvariantsPrincipal(prinv_,elasticRCGv);
 
   return;
 }
@@ -1874,72 +1963,76 @@ int MAT::PlasticElastHyper::EvaluateKinQuantPlast(
     const LINALG::Matrix<3,3>* defgrd,
     const LINALG::Matrix<3,3>* deltaLp,
     const int gp,
-    Teuchos::ParameterList& params,
-    LINALG::Matrix<3,3>& invpldefgrd,
-    LINALG::Matrix<6,1>& Cpi,
-    LINALG::Matrix<6,1>& CpiCCpi,
-    LINALG::Matrix<6,1>& ircg,
-    LINALG::Matrix<6,1>& Ce,
-    LINALG::Matrix<3,3>& CeM,
-    LINALG::Matrix<6,1>& Ce2,
-    LINALG::Matrix<6,1>& id2V,
-    LINALG::Matrix<3,3>& id2,
-    LINALG::Matrix<3,3>& CpiC,
-    LINALG::Matrix<3,3>& FpiCe,
-    LINALG::Matrix<9,1>& CFpiCei,
-    LINALG::Matrix<9,1>& CFpi,
-    LINALG::Matrix<3,3>& FpiTC,
-    LINALG::Matrix<9,1>& CFpiCe,
-    LINALG::Matrix<3,3>& CeFpiTC,
-    LINALG::Matrix<3,1>& prinv)
+    Teuchos::ParameterList& params
+)
 {
-  id2.Clear();
-  id2V.Clear();
+  id2_.Clear();
+  id2V_.Clear();
   for (int i=0; i<3; i++)
   {
-    id2V(i)  = 1.;
-    id2(i,i) = 1.;
+    id2V_(i)  = 1.;
+    id2_(i,i) = 1.;
   }
   LINALG::Matrix<3,3> tmp;
   LINALG::Matrix<3,3> tmp33;
   LINALG::Matrix<3,3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.Update(-1.,*deltaLp);
   MatrixExponential3x3(tmp);
-  invpldefgrd.Multiply(InvPlasticDefgrdLast,tmp);
+  invpldefgrd_.Multiply(InvPlasticDefgrdLast,tmp);
 
-  tmp33.Multiply(*defgrd,invpldefgrd);
-  CeM.MultiplyTN(tmp33,tmp33);
+  tmp33.Multiply(*defgrd,invpldefgrd_);
+  Fe_.Update(tmp33);
+  be_.MultiplyNT(Fe_,Fe_);
+  for(int i=0;i<3;++i)
+    bev_(i)=be_(i,i);
+  bev_(3)=be_(0,1);
+  bev_(4)=be_(1,2);
+  bev_(5)=be_(0,2);
+
+  be2_.Multiply(be_,be_);
+  for(int i=0;i<3;++i)
+    be2v_(i)=be2_(i,i);
+  be2v_(3)=be2_(0,1);
+  be2v_(4)=be2_(1,2);
+  be2v_(5)=be2_(0,2);
+
+  beF_.Multiply(be_,*defgrd);
+  beFe_.Multiply(be_,Fe_);
+
+  CeM_.MultiplyTN(tmp33,tmp33);
   // elastic right Cauchy-Green in strain-like Voigt notation.
   LINALG::Matrix<6,1> elasticRCGv;
   for (int i=0; i<3; i++)
-    elasticRCGv(i)=CeM(i,i);
-  elasticRCGv(3) = (CeM(0,1)+CeM(1,0));
-  elasticRCGv(4) = (CeM(2,1)+CeM(1,2));
-  elasticRCGv(5) = (CeM(0,2)+CeM(2,0));
+    elasticRCGv(i)=CeM_(i,i);
+  elasticRCGv(3) = (CeM_(0,1)+CeM_(1,0));
+  elasticRCGv(4) = (CeM_(2,1)+CeM_(1,2));
+  elasticRCGv(5) = (CeM_(0,2)+CeM_(2,0));
   // elastic right Cauchy-Green in stress-like Voigt notation.
-  for (int i=0; i<3; i++) Ce(i) = CeM(i,i);
-  Ce(3) = (CeM(0,1)+CeM(1,0))/2.;
-  Ce(4) = (CeM(2,1)+CeM(1,2))/2.;
-  Ce(5) = (CeM(0,2)+CeM(2,0))/2.;
+  for (int i=0; i<3; i++) Ce_(i) = CeM_(i,i);
+  Ce_(3) = (CeM_(0,1)+CeM_(1,0))/2.;
+  Ce_(4) = (CeM_(2,1)+CeM_(1,2))/2.;
+  Ce_(5) = (CeM_(0,2)+CeM_(2,0))/2.;
 
   // square of elastic right Cauchy-Green in stress-like Voigt notation.
-  tmp.Multiply(CeM,CeM);
-  for (int i=0; i<3; i++) Ce2(i) = tmp(i,i);
-  Ce2(3) = (tmp(0,1)+tmp(1,0))/2.;
-  Ce2(4) = (tmp(2,1)+tmp(1,2))/2.;
-  Ce2(5) = (tmp(0,2)+tmp(2,0))/2.;
+  tmp.Multiply(CeM_,CeM_);
+  for (int i=0; i<3; i++) Ce2_(i) = tmp(i,i);
+  Ce2_(3) = (tmp(0,1)+tmp(1,0))/2.;
+  Ce2_(4) = (tmp(2,1)+tmp(1,2))/2.;
+  Ce2_(5) = (tmp(0,2)+tmp(2,0))/2.;
 
   // principal invariants of elastic Cauchy-Green strain
-  InvariantsPrincipal(prinv,elasticRCGv);
+  InvariantsPrincipal(prinv_,elasticRCGv);
 
   // inverse plastic right Cauchy-Green
   LINALG::Matrix<3,3> CpiM;
-  CpiM.MultiplyNT(invpldefgrd,invpldefgrd);
+  CpiM.MultiplyNT(invpldefgrd_,invpldefgrd_);
   // stress-like Voigt notation
-  for (int i=0; i<3; i++) Cpi(i) = CpiM(i,i);
-  Cpi(3) = (CpiM(0,1)+CpiM(1,0))/2.;
-  Cpi(4) = (CpiM(2,1)+CpiM(1,2))/2.;
-  Cpi(5) = (CpiM(0,2)+CpiM(2,0))/2.;
+  for (int i=0; i<3; i++) Cpi_(i) = CpiM(i,i);
+  Cpi_(3) = (CpiM(0,1)+CpiM(1,0))/2.;
+  Cpi_(4) = (CpiM(2,1)+CpiM(1,2))/2.;
+  Cpi_(5) = (CpiM(0,2)+CpiM(2,0))/2.;
+  FCpi_.Multiply(*defgrd,CpiM);
+  beFCpi_.Multiply(be_,FCpi_);
 
   // inverse RCG
   LINALG::Matrix<3,3> iRCG;
@@ -1947,33 +2040,33 @@ int MAT::PlasticElastHyper::EvaluateKinQuantPlast(
   RCG.MultiplyTN(*defgrd,*defgrd);
   iRCG.Invert(RCG);
   // stress-like Voigt notation
-  for (int i=0; i<3; i++) ircg(i) = iRCG(i,i);
-  ircg(3) = (iRCG(0,1)+iRCG(1,0))/2.;
-  ircg(4) = (iRCG(2,1)+iRCG(1,2))/2.;
-  ircg(5) = (iRCG(0,2)+iRCG(2,0))/2.;
+  for (int i=0; i<3; i++) ircg_(i) = iRCG(i,i);
+  ircg_(3) = (iRCG(0,1)+iRCG(1,0))/2.;
+  ircg_(4) = (iRCG(2,1)+iRCG(1,2))/2.;
+  ircg_(5) = (iRCG(0,2)+iRCG(2,0))/2.;
 
   // C_p^-1 * C * C_p^-1
   LINALG::Matrix<3,3> CpiCCpiM;
   tmp33.Multiply(CpiM,RCG);
   CpiCCpiM.Multiply(tmp33,CpiM);
   // stress-like Voigt notation
-  for (int i=0; i<3; i++) CpiCCpi(i) = CpiCCpiM(i,i);
-  CpiCCpi(3) = (CpiCCpiM(0,1)+CpiCCpiM(1,0))/2.;
-  CpiCCpi(4) = (CpiCCpiM(2,1)+CpiCCpiM(1,2))/2.;
-  CpiCCpi(5) = (CpiCCpiM(0,2)+CpiCCpiM(2,0))/2.;
+  for (int i=0; i<3; i++) CpiCCpi_(i) = CpiCCpiM(i,i);
+  CpiCCpi_(3) = (CpiCCpiM(0,1)+CpiCCpiM(1,0))/2.;
+  CpiCCpi_(4) = (CpiCCpiM(2,1)+CpiCCpiM(1,2))/2.;
+  CpiCCpi_(5) = (CpiCCpiM(0,2)+CpiCCpiM(2,0))/2.;
 
-  CpiC.Multiply(CpiM,RCG);
-  FpiCe.Multiply(invpldefgrd,CeM);
+  CpiC_.Multiply(CpiM,RCG);
+  FpiCe_.Multiply(invpldefgrd_,CeM_);
 
-  FpiTC.MultiplyTN(invpldefgrd,RCG);
-  CeFpiTC.Multiply(CeM,FpiTC);
+  FpiTC_.MultiplyTN(invpldefgrd_,RCG);
+  CeFpiTC_.Multiply(CeM_,FpiTC_);
 
-  tmp.Multiply(RCG,invpldefgrd);
-  Matrix3x3to9x1(tmp,CFpi);
-  tmp33.Multiply(tmp,CeM);
-  Matrix3x3to9x1(tmp33,CFpiCe);
+  tmp.Multiply(RCG,invpldefgrd_);
+  Matrix3x3to9x1(tmp,CFpi_);
+  tmp33.Multiply(tmp,CeM_);
+  Matrix3x3to9x1(tmp33,CFpiCe_);
 
-  double det=CeM.Determinant();
+  double det=CeM_.Determinant();
   if (det > -1e-30 and det < 1e-30)
     if (params.isParameter("tolerate_errors"))
       if (params.get<bool>("tolerate_errors")==true)
@@ -1982,10 +2075,10 @@ int MAT::PlasticElastHyper::EvaluateKinQuantPlast(
         return 1;
       }
 
-  tmp.Invert(CeM);
-  tmp33.Multiply(invpldefgrd,tmp);
+  tmp.Invert(CeM_);
+  tmp33.Multiply(invpldefgrd_,tmp);
   tmp.Multiply(RCG,tmp33);
-  Matrix3x3to9x1(tmp,CFpiCei);
+  Matrix3x3to9x1(tmp,CFpiCei_);
 
   return 0;
 }
@@ -2007,10 +2100,6 @@ double MAT::PlasticElastHyper::NormStressLike(const LINALG::Matrix<6,1>& stress)
 void MAT::PlasticElastHyper::EvaluateIsotropicPrincElast(
     LINALG::Matrix<6,1>& stressisoprinc,
     LINALG::Matrix<6,6>& cmatisoprinc,
-    LINALG::Matrix<6,1> Cpi,
-    LINALG::Matrix<6,1> CpiCCpi,
-    LINALG::Matrix<6,1> ircg,
-    LINALG::Matrix<3,1> prinv,
     LINALG::Matrix<3,1> dPI,
     LINALG::Matrix<6,1> ddPII
     )
@@ -2018,39 +2107,39 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincElast(
   // 2nd Piola Kirchhoff stress (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
   // factors
   LINALG::Matrix<3,1> gamma(true);
-  gamma(0) = 2.*(dPI(0)+prinv(0)*dPI(1));
+  gamma(0) = 2.*(dPI(0)+prinv_(0)*dPI(1));
   gamma(1) = -2.*dPI(1);
-  gamma(2) = 2.*prinv(2)*dPI(2);
+  gamma(2) = 2.*prinv_(2)*dPI(2);
 
   //  // 2nd Piola Kirchhoff stresses
-  stressisoprinc.Update(gamma(0), Cpi, 1.0);
-  stressisoprinc.Update(gamma(1), CpiCCpi, 1.0);
-  stressisoprinc.Update(gamma(2), ircg, 1.0);
+  stressisoprinc.Update(gamma(0), Cpi_, 1.0);
+  stressisoprinc.Update(gamma(1), CpiCCpi_, 1.0);
+  stressisoprinc.Update(gamma(2), ircg_, 1.0);
 
   // constitutive tensor according to Holzapfel-Nonlinear Solid Mechanics p. 261)
   // factors
   LINALG::Matrix<8,1> delta(true);
-  delta(0) = 4.*(ddPII(0) +2.*prinv(0)*ddPII(5) +dPI(1) +prinv(0)*prinv(0)*ddPII(1));
-  delta(1) = -4.*(ddPII(5) +prinv(0)*ddPII(1));
-  delta(2) = 4.*(prinv(2)*ddPII(4) +prinv(0)*prinv(2)*ddPII(3));
+  delta(0) = 4.*(ddPII(0) +2.*prinv_(0)*ddPII(5) +dPI(1) +prinv_(0)*prinv_(0)*ddPII(1));
+  delta(1) = -4.*(ddPII(5) +prinv_(0)*ddPII(1));
+  delta(2) = 4.*(prinv_(2)*ddPII(4) +prinv_(0)*prinv_(2)*ddPII(3));
   delta(3) = 4.*ddPII(1);
-  delta(4) = -4.*prinv(2)*ddPII(3);
-  delta(5) = 4.*(prinv(2)*dPI(2) +prinv(2)*prinv(2)*ddPII(2));
-  delta(6) = -4.*prinv(2)*dPI(2);
+  delta(4) = -4.*prinv_(2)*ddPII(3);
+  delta(5) = 4.*(prinv_(2)*dPI(2) +prinv_(2)*prinv_(2)*ddPII(2));
+  delta(6) = -4.*prinv_(2)*dPI(2);
   delta(7) = -4.*dPI(1);
 
   // constitutive tensor
-  cmatisoprinc.MultiplyNT(delta(0),Cpi,Cpi,1.);
-  cmatisoprinc.MultiplyNT(delta(1),CpiCCpi,Cpi,1.);
-  cmatisoprinc.MultiplyNT(delta(1),Cpi,CpiCCpi,1.);
-  cmatisoprinc.MultiplyNT(delta(2),Cpi,ircg,1.);
-  cmatisoprinc.MultiplyNT(delta(2),ircg,Cpi,1.);
-  cmatisoprinc.MultiplyNT(delta(3),CpiCCpi,CpiCCpi,1.);
-  cmatisoprinc.MultiplyNT(delta(4),CpiCCpi,ircg,1.);
-  cmatisoprinc.MultiplyNT(delta(4),ircg,CpiCCpi,1.);
-  cmatisoprinc.MultiplyNT(delta(5),ircg,ircg,1.);
-  AddtoCmatHolzapfelProduct(cmatisoprinc,ircg,delta(6));
-  AddtoCmatHolzapfelProduct(cmatisoprinc,Cpi,delta(7));
+  cmatisoprinc.MultiplyNT(delta(0),Cpi_,Cpi_,1.);
+  cmatisoprinc.MultiplyNT(delta(1),CpiCCpi_,Cpi_,1.);
+  cmatisoprinc.MultiplyNT(delta(1),Cpi_,CpiCCpi_,1.);
+  cmatisoprinc.MultiplyNT(delta(2),Cpi_,ircg_,1.);
+  cmatisoprinc.MultiplyNT(delta(2),ircg_,Cpi_,1.);
+  cmatisoprinc.MultiplyNT(delta(3),CpiCCpi_,CpiCCpi_,1.);
+  cmatisoprinc.MultiplyNT(delta(4),CpiCCpi_,ircg_,1.);
+  cmatisoprinc.MultiplyNT(delta(4),ircg_,CpiCCpi_,1.);
+  cmatisoprinc.MultiplyNT(delta(5),ircg_,ircg_,1.);
+  AddtoCmatHolzapfelProduct(cmatisoprinc,ircg_,delta(6));
+  AddtoCmatHolzapfelProduct(cmatisoprinc,Cpi_,delta(7));
 
   return;
 }
@@ -2062,45 +2151,29 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(
     LINALG::Matrix<3,3>& MandelStressIsoprinc,
     LINALG::Matrix<6,6>& dMdCisoprinc,
     LINALG::Matrix<6,9>& dMdFpinvIsoprinc,
-    const LINALG::Matrix<6,1>& Cpi,
-    const LINALG::Matrix<6,1>& CpiCCpi,
-    const LINALG::Matrix<6,1>& ircg,
-    const LINALG::Matrix<6,1>& Ce,
-    const LINALG::Matrix<3,3>& CeM,
-    const LINALG::Matrix<6,1>& Ce2,
-    const LINALG::Matrix<6,1>& id2V,
-    const LINALG::Matrix<3,3>& id2,
-    const LINALG::Matrix<3,3>& CpiC,
-    const LINALG::Matrix<3,3>& FpiCe,
-    const LINALG::Matrix<3,3>& Fpi,
-    const LINALG::Matrix<9,1>& CFpiCei,
-    const LINALG::Matrix<9,1>& CFpi,
-    const LINALG::Matrix<3,3>& FpiTC,
-    const LINALG::Matrix<9,1>& CFpiCe,
-    const LINALG::Matrix<3,3>& CeFpiTC,
     const LINALG::Matrix<3,1>& gamma,
     const LINALG::Matrix<8,1>& delta
     )
 {
     // derivative of PK2 w.r.t. inverse plastic deformation gradient
-  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2,Fpi,gamma(0));
-  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,CpiC,Fpi,gamma(1));
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(0),Cpi,CFpi,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(1),Cpi,CFpiCe,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(1),CpiCCpi,CFpi,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(2),Cpi,CFpiCei,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(2),ircg,CFpi,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(3),CpiCCpi,CFpiCe,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(4),CpiCCpi,CFpiCei,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(4),ircg,CFpiCe,1.);
-    dPK2dFpinvIsoprinc.MultiplyNT(delta(5),ircg,CFpiCei,1.);
-    AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2,FpiCe,0.5*delta(7));
+  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2_,invpldefgrd_,gamma(0));
+  AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,CpiC_,invpldefgrd_,gamma(1));
+    dPK2dFpinvIsoprinc.MultiplyNT(delta(0),Cpi_,CFpi_,1.);
+    dPK2dFpinvIsoprinc.MultiplyNT(delta(1),Cpi_,CFpiCe_,1.);
+    dPK2dFpinvIsoprinc.MultiplyNT(delta(1),CpiCCpi_,CFpi_,1.);
+    dPK2dFpinvIsoprinc.MultiplyNT(delta(2),Cpi_,CFpiCei_,1.);
+    dPK2dFpinvIsoprinc.MultiplyNT(delta(2),ircg_,CFpi_,1.);
+    dPK2dFpinvIsoprinc.MultiplyNT(delta(3),CpiCCpi_,CFpiCe_,1.);
+    dPK2dFpinvIsoprinc.MultiplyNT(delta(4),CpiCCpi_,CFpiCei_,1.);
+    dPK2dFpinvIsoprinc.MultiplyNT(delta(4),ircg_,CFpiCe_,1.);
+    dPK2dFpinvIsoprinc.MultiplyNT(delta(5),ircg_,CFpiCei_,1.);
+    AddRightNonSymmetricHolzapfelProduct(dPK2dFpinvIsoprinc,id2_,FpiCe_,0.5*delta(7));
 
     // Mandel stress
     LINALG::Matrix<6,1> Mv;
-    Mv.Update(gamma(0),Ce);
-    Mv.Update(gamma(1),Ce2,1.);
-    Mv.Update(gamma(2),id2V,1.);
+    Mv.Update(gamma(0),Ce_);
+    Mv.Update(gamma(1),Ce2_,1.);
+    Mv.Update(gamma(2),id2V_,1.);
     for (int i=0; i<3; i++) MandelStressIsoprinc(i,i) += Mv(i);
     MandelStressIsoprinc(0,1) += Mv(3);
     MandelStressIsoprinc(1,0) += Mv(3);
@@ -2110,31 +2183,31 @@ void MAT::PlasticElastHyper::EvaluateIsotropicPrincPlast(
     MandelStressIsoprinc(2,0) += Mv(5);
 
     // derivative of Mandel stress w.r.t. GL
-    AddSymmetricHolzapfelProduct(dMdCisoprinc,Fpi,Fpi,.5*gamma(0));
-    AddSymmetricHolzapfelProduct(dMdCisoprinc,Fpi,FpiCe,gamma(1));
-    dMdCisoprinc.MultiplyNT(delta(0),Ce,Cpi,1.);
-    dMdCisoprinc.MultiplyNT(delta(1),Ce,CpiCCpi,1.);
-    dMdCisoprinc.MultiplyNT(delta(1),Ce2,Cpi,1.);
-    dMdCisoprinc.MultiplyNT(delta(2),Ce,ircg,1.);
-    dMdCisoprinc.MultiplyNT(delta(2),id2V,Cpi,1.);
-    dMdCisoprinc.MultiplyNT(delta(3),Ce2,CpiCCpi,1.);
-    dMdCisoprinc.MultiplyNT(delta(4),Ce2,ircg,1.);
-    dMdCisoprinc.MultiplyNT(delta(4),id2V,CpiCCpi,1.);
-    dMdCisoprinc.MultiplyNT(delta(5),id2V,ircg,1.);
+    AddSymmetricHolzapfelProduct(dMdCisoprinc,invpldefgrd_,invpldefgrd_,.5*gamma(0));
+    AddSymmetricHolzapfelProduct(dMdCisoprinc,invpldefgrd_,FpiCe_,gamma(1));
+    dMdCisoprinc.MultiplyNT(delta(0),Ce_,Cpi_,1.);
+    dMdCisoprinc.MultiplyNT(delta(1),Ce_,CpiCCpi_,1.);
+    dMdCisoprinc.MultiplyNT(delta(1),Ce2_,Cpi_,1.);
+    dMdCisoprinc.MultiplyNT(delta(2),Ce_,ircg_,1.);
+    dMdCisoprinc.MultiplyNT(delta(2),id2V_,Cpi_,1.);
+    dMdCisoprinc.MultiplyNT(delta(3),Ce2_,CpiCCpi_,1.);
+    dMdCisoprinc.MultiplyNT(delta(4),Ce2_,ircg_,1.);
+    dMdCisoprinc.MultiplyNT(delta(4),id2V_,CpiCCpi_,1.);
+    dMdCisoprinc.MultiplyNT(delta(5),id2V_,ircg_,1.);
 
     // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
-    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC,id2,gamma(0));
-    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC,CeM,gamma(1));
-    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,CeFpiTC,id2,gamma(1));
-    dMdFpinvIsoprinc.MultiplyNT(delta(0),Ce,CFpi,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce,CFpiCe,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce2,CFpi,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(2),Ce,CFpiCei,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(2),id2V,CFpi,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(3),Ce2,CFpiCe,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(4),Ce2,CFpiCei,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(4),id2V,CFpiCe,1.);
-    dMdFpinvIsoprinc.MultiplyNT(delta(5),id2V,CFpiCei,1.);
+    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC_,id2_,gamma(0));
+    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,FpiTC_,CeM_,gamma(1));
+    AddRightNonSymmetricHolzapfelProduct(dMdFpinvIsoprinc,CeFpiTC_,id2_,gamma(1));
+    dMdFpinvIsoprinc.MultiplyNT(delta(0),Ce_,CFpi_,1.);
+    dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce_,CFpiCe_,1.);
+    dMdFpinvIsoprinc.MultiplyNT(delta(1),Ce2_,CFpi_,1.);
+    dMdFpinvIsoprinc.MultiplyNT(delta(2),Ce_,CFpiCei_,1.);
+    dMdFpinvIsoprinc.MultiplyNT(delta(2),id2V_,CFpi_,1.);
+    dMdFpinvIsoprinc.MultiplyNT(delta(3),Ce2_,CFpiCe_,1.);
+    dMdFpinvIsoprinc.MultiplyNT(delta(4),Ce2_,CFpiCei_,1.);
+    dMdFpinvIsoprinc.MultiplyNT(delta(4),id2V_,CFpiCe_,1.);
+    dMdFpinvIsoprinc.MultiplyNT(delta(5),id2V_,CFpiCei_,1.);
 
   return ;
 }

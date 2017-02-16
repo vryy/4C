@@ -302,7 +302,11 @@ private:
         LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
         LINALG::Matrix<6,1>* dHdDp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
         const double dt,                     ///< time step size
-        const int eleGID                    ///< global ID of element
+        const int eleGID,                   ///< global ID of element
+        LINALG::Matrix<6,1>* cauchy=NULL,
+        LINALG::Matrix<6,6>* d_cauchy_ddp=NULL,
+        LINALG::Matrix<6,6>* d_cauchy_dC=NULL,
+        LINALG::Matrix<6,9>* d_cauchy_dF=NULL
         );
 
     /// evaluate everything needed for the condensation of the plastic deformation
@@ -323,8 +327,21 @@ private:
         LINALG::Matrix<6,1>* dHdC,          ///< derivative of Heating w.r.t. RCG (only in TSI case)
         LINALG::Matrix<9,1>* dHdLp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
         const double dt,                     ///< time step size
-        const int eleGID                    ///< global ID of element
+        const int eleGID,                    ///< global ID of element
+        LINALG::Matrix<6,1>* cauchy=NULL,
+        LINALG::Matrix<6,9>* d_cauchy_ddp=NULL,
+        LINALG::Matrix<6,6>* d_cauchy_dC=NULL,
+        LINALG::Matrix<6,9>* d_cauchy_dF=NULL
         );
+
+    virtual void EvaluateCauchyPlast(
+        const LINALG::Matrix<3,1>& dPI,
+        const LINALG::Matrix<6,1>& ddPII,
+        const LINALG::Matrix<3,3>* defgrd,
+        LINALG::Matrix<6,1>& cauchy,
+        LINALG::Matrix<6,9>& d_cauchy_dFpi,
+        LINALG::Matrix<6,6>& d_cauchy_dC,
+        LINALG::Matrix<6,9>& d_cauchy_dF);
 
     /// hyperelastic stress response plus elasticity tensor
     /// (pure virtual in material base class. Not allowed here)
@@ -334,7 +351,10 @@ private:
                           LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
                           LINALG::Matrix<6,6>* cmat,          ///< Constitutive matrix
                           const int eleGID)                    ///< Element GID
-    {dserror("PlasticHyperElast cannot be called by standard evaluate routine"); return;}
+    {
+      ElastHyper::Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
+      return;
+    }
 
     virtual double StrainEnergy(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID);
 
@@ -401,33 +421,13 @@ private:
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<3,3>* deltaLp,
         const int gp,
-        Teuchos::ParameterList& params,
-        LINALG::Matrix<3,3>& invpldefgrd,
-        LINALG::Matrix<6,1>& Cpi,
-        LINALG::Matrix<6,1>& CpiCCpi,
-        LINALG::Matrix<6,1>& ircg,
-        LINALG::Matrix<6,1>& Ce,
-        LINALG::Matrix<3,3>& CeM,
-        LINALG::Matrix<6,1>& Ce2,
-        LINALG::Matrix<6,1>& id2V,
-        LINALG::Matrix<3,3>& id2,
-        LINALG::Matrix<3,3>& CpiC,
-        LINALG::Matrix<3,3>& FpiCe,
-        LINALG::Matrix<9,1>& CFpiCei,
-        LINALG::Matrix<9,1>& CFpi,
-        LINALG::Matrix<3,3>& FpiTC,
-        LINALG::Matrix<9,1>& CFpiCe,
-        LINALG::Matrix<3,3>& CeFpiTC,
-        LINALG::Matrix<3,1>& prinv);
+        Teuchos::ParameterList& params
+);
 
     virtual void EvaluateKinQuantElast(
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<3,3>* deltaLp,
-        const int gp,
-        LINALG::Matrix<6,1>& Cpi,
-        LINALG::Matrix<6,1>& CpiCCpi,
-        LINALG::Matrix<6,1>& ircg,
-        LINALG::Matrix<3,1>& prinv);
+        const int gp);
 
     virtual double NormStressLike(const LINALG::Matrix<6,1>& stress);
 
@@ -440,22 +440,6 @@ private:
         LINALG::Matrix<3,3>& MandelStressIsoprinc,
         LINALG::Matrix<6,6>& dMdCisoprinc,
         LINALG::Matrix<6,9>& dMdFpinvIsoprinc,
-        const LINALG::Matrix<6,1>& Cpi,
-        const LINALG::Matrix<6,1>& CpiCCpi,
-        const LINALG::Matrix<6,1>& ircg,
-        const LINALG::Matrix<6,1>& Ce,
-        const LINALG::Matrix<3,3>& CeM,
-        const LINALG::Matrix<6,1>& Ce2,
-        const LINALG::Matrix<6,1>& id2V,
-        const LINALG::Matrix<3,3>& id2,
-        const LINALG::Matrix<3,3>& CpiC,
-        const LINALG::Matrix<3,3>& FpiCe,
-        const LINALG::Matrix<3,3>& Fpi,
-        const LINALG::Matrix<9,1>& CFpiCei,
-        const LINALG::Matrix<9,1>& CFpi,
-        const LINALG::Matrix<3,3>& FpiTC,
-        const LINALG::Matrix<9,1>& CFpiCe,
-        const LINALG::Matrix<3,3>& CeFpiTC,
         const LINALG::Matrix<3,1>& gamma,
         const LINALG::Matrix<8,1>& delta
         );
@@ -464,10 +448,6 @@ private:
     virtual void EvaluateIsotropicPrincElast(
         LINALG::Matrix<6,1>& stressisoprinc,
         LINALG::Matrix<6,6>& cmatisoprinc,
-        LINALG::Matrix<6,1> Cpi,
-        LINALG::Matrix<6,1> CpiCCpi,
-        LINALG::Matrix<6,1> ircg,
-        LINALG::Matrix<3,1> prinv,
         LINALG::Matrix<3,1> dPI,
         LINALG::Matrix<6,1> ddPII
         );
@@ -490,24 +470,28 @@ private:
                              LINALG::Matrix<6,1>* dHdC,
                              LINALG::Matrix<6,1>* dHdDp,
                              Teuchos::ParameterList& params,
-                             const double dt
+                             const double dt,
+                             const LINALG::Matrix<6,9>* d_cauchy_dFpi,
+                             LINALG::Matrix<6,6>* d_cauchy_ddp
     );
 
-    virtual void EvaluateNCPandSpin(const LINALG::Matrix<3,3>* mStr,
-                             const LINALG::Matrix<6,6>* dMdC,
-                             const LINALG::Matrix<6,9>* dMdFpinv,
-                             const LINALG::Matrix<6,9>* dPK2dFpinv,
-                             const LINALG::Matrix<3,3>* deltaLp,
-                             const int gp,
-                             LINALG::Matrix<9,1>* NCP,
-                             LINALG::Matrix<9,6>* dNCPdC,
-                             LINALG::Matrix<9,9>* dNCPdLp,
-                             LINALG::Matrix<6,9>* dPK2dLp,
-                             bool* active,
-                             bool* elast,
-                             bool* as_converged,
-                             const double dt
-    );
+    virtual void EvaluateNCPandSpin(
+        const LINALG::Matrix<3,3>* mStr,
+        const LINALG::Matrix<6,6>* dMdC,
+        const LINALG::Matrix<6,9>* dMdFpinv,
+        const LINALG::Matrix<6,9>* dPK2dFpinv,
+        const LINALG::Matrix<3,3>* deltaLp,
+        const int gp,
+        LINALG::Matrix<9,1>* NCP,
+        LINALG::Matrix<9,6>* dNCPdC,
+        LINALG::Matrix<9,9>* dNCPdLp,
+        LINALG::Matrix<6,9>* dPK2dLp,
+        bool* active,
+        bool* elast,
+        bool* as_converged,
+        const double dt,
+        const LINALG::Matrix<6,9>* d_cauchy_dFpi,
+        LINALG::Matrix<6,9>* d_cauchy_ddp);
 
     //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
     virtual void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
@@ -566,6 +550,15 @@ private:
     /// this is an additional term to dHepDissdT_ that only appears in EAS elements
     Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > dHepDissdTeas_;
 
+
+//  private:
+
+    /// kinematic quatities
+    static LINALG::Matrix<6,1> Cpi_,CpiCCpi_,ircg_,Ce_,Ce2_,id2V_,bev_,be2v_;
+    static LINALG::Matrix<3,3> invpldefgrd_,CeM_,id2_,CpiC_,FpiCe_,FpiTC_,CeFpiTC_,
+                                be_,be2_,Fe_,beF_,beFe_,FCpi_,beFCpi_;
+    static LINALG::Matrix<9,1> CFpiCei_,CFpi_,CFpiCe_;
+    static LINALG::Matrix<3,1> prinv_;
 
   };
 
