@@ -275,30 +275,43 @@ void shape_function_3D(
   }
   case DRT::Element::wedge15:
   {
-    dserror("shape functions for wedge15 have not been checked\n");
 
     const T t1=r;
     const T t2=s;
     const T t3=1.0-r-s;
-    const T p1=Q12*t*(t-1);
-    const T p2=1.0-t*t;
-    const T p3=Q12*t*(t+1);
 
-    funct(0)=t1*(2*t1-1)*p1;
-    funct(1)=t2*(2*t2-1)*p1;
-    funct(2)=t3*(2*t3-1)*p1;
-    funct(3)=t1*(2*t1-1)*p3;
-    funct(4)=t2*(2*t2-1)*p3;
-    funct(5)=t3*(2*t3-1)*p3;
-    funct(6)=4*t1*t2*p1;
-    funct(7)=4*t2*t3*p1;
-    funct(8)=4*t1*t3*p1;
-    funct(9)=4*t1*t2*p3;
-    funct(10)=4*t2*t3*p3;
-    funct(11)=4*t1*t3*p3;
-    funct(12)=t1*(2*t1-1)*p2;
-    funct(13)=t2*(2*t2-1)*p2;
-    funct(14)=t3*(2*t3-1)*p2;
+    const T f1=t1*(2.0*t1-1.0);
+    const T f2=t2*(2.0*t2-1.0);
+    const T f3=t3*(2.0*t3-1.0);
+
+    const T p2 = 1.0-t*t;
+    const T mt = 1.0-t;
+    const T pt = 1.0+t;
+
+    const T t1p2 = t1*p2;
+    const T t2p2 = t2*p2;
+    const T t3p2 = t3*p2;
+
+    const T t1t2_2 = 2.0*t1*t2;
+    const T t2t3_2 = 2.0*t2*t3;
+    const T t3t1_2 = 2.0*t3*t1;
+
+    funct(0) = Q12*(f1*mt-t1p2);
+    funct(1) = Q12*(f2*mt-t2p2);
+    funct(2) = Q12*(f3*mt-t3p2);
+    funct(3) = Q12*(f1*pt-t1p2);
+    funct(4) = Q12*(f2*pt-t2p2);
+    funct(5) = Q12*(f3*pt-t3p2);
+    funct(6) = t1t2_2*mt;
+    funct(7) = t2t3_2*mt;
+    funct(8) = t3t1_2*mt;
+    funct(9) = t1p2;
+    funct(10)= t2p2;
+    funct(11)= t3p2;
+    funct(12)= t1t2_2*pt;
+    funct(13)= t2t3_2*pt;
+    funct(14)= t3t1_2*pt;
+
     break;
   }
   case DRT::Element::pyramid5:
@@ -336,6 +349,18 @@ void shape_function_3D(
   dserror("distyp unknown\n");
   break;
 }  /* end switch(distype) */
+
+#if 0
+  const int numfunct = 15;
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=funct(i);
+    }
+    std::cout << "sum funct " << ver << std::endl;
+  }
+#endif
 
   return;
 }
@@ -871,63 +896,72 @@ void shape_function_3D_deriv1(
   }
   case DRT::Element::wedge15:
   {
-    const T t1 = r;
-    const T t2 = s;
-    const T t3 = 1.0 - r - s;
-    const T p1 = Q12 * t * (t - 1);
-    const T p2 = 1.0 - t * t;
-    const T p3 = Q12 * t * (t + 1);
-    const T pd1 = t - 1.0;
-    const T pd2 = -2.0 * t;
-    const T pd3 = t + 1.0;
+    const T t1=r;
+    const T t2=s;
+    const T t3=1.0-r-s;
 
-    deriv1(0, 0) = (4.0 * t1 - 1) * p1;
-    deriv1(0, 1) = 0;
-    deriv1(0, 2) = (4.0 * t1 + 4.0 * t2 - 3.0) * p1;
-    deriv1(0, 3) = (4.0 * t1 - 1) * p3;
-    deriv1(0, 4) = 0;
-    deriv1(0, 5) = (4.0 * t1 + 4.0 * t2 - 3.0) * p3;
-    deriv1(0, 6) = 4.0 * t2 * p1;
-    deriv1(0, 7) = -4.0 * t2 * p1;
-    deriv1(0, 8) = (4.0 - 8.0 * t1 - 4.0 * t2) * p1;
-    deriv1(0, 9) = 4.0 * t2 * p3;
-    deriv1(0, 10) = -4.0 * t2 * p3;
-    deriv1(0, 11) = (4.0 - 8.0 * t1 - 4.0 * t2) * p2;
-    deriv1(0, 12) = (4.0 * t1 - 1) * p2;
-    deriv1(0, 13) = 0;
-    deriv1(0, 14) = (4.0 * t1 + 4.0 * t2 - 3.0) * p2;
+    const T f1=t1*(2.0*t1-1.0);
+    const T f2=t2*(2.0*t2-1.0);
+    const T f3=t3*(2.0*t3-1.0);
 
-    deriv1(1, 0) = 0;
-    deriv1(1, 1) = (4.0 * t2 - 1) * p1;
-    deriv1(1, 2) = (4.0 * t1 + 4.0 * t2 - 3.0) * p1;
-    deriv1(1, 3) = 0;
-    deriv1(1, 4) = (4.0 * t2 - 1) * p3;
-    deriv1(1, 5) = (4.0 * t1 + 4.0 * t2 - 3.0) * p3;
-    deriv1(1, 6) = 4.0 * t1 * p1;
-    deriv1(1, 7) = (4.0 - 4.0 * t1 - 8.0 * t2) * p1;
-    deriv1(1, 8) = -4.0 * t1 * p1;
-    deriv1(1, 9) = 4.0 * t1 * p3;
-    deriv1(1, 10) = (4.0 - 4.0 * t1 - 8.0 * t2) * p3;
-    deriv1(1, 11) = -4.0 * t1 * p3;
-    deriv1(1, 12) = 0;
-    deriv1(1, 13) = (4.0 * t2 - 1) * p2;
-    deriv1(1, 14) = (4.0 * t1 + 4.0 * t2 - 3) * p2;
+    const T p2 = 1.0-t*t;
+    const T mt = 1.0-t;
+    const T pt = 1.0+t;
 
-    deriv1(2, 0) = t1 * (2 * t1 - 1) * pd1;
-    deriv1(2, 1) = t2 * (2 * t2 - 1) * pd1;
-    deriv1(2, 2) = t3 * (2 * t3 - 1) * pd1;
-    deriv1(2, 3) = t1 * (2 * t1 - 1) * pd3;
-    deriv1(2, 4) = t2 * (2 * t2 - 1) * pd3;
-    deriv1(2, 5) = t3 * (2 * t3 - 1) * pd3;
-    deriv1(2, 6) = 4 * t1 * t2 * pd1;
-    deriv1(2, 7) = 4 * t2 * t3 * pd1;
-    deriv1(2, 8) = 4 * t1 * t3 * pd1;
-    deriv1(2, 9) = 4 * t1 * t2 * pd3;
-    deriv1(2, 10) = 4 * t2 * t3 * pd3;
-    deriv1(2, 11) = 4 * t1 * t3 * pd3;
-    deriv1(2, 12) = t1 * (2 * t1 - 1) * pd2;
-    deriv1(2, 13) = t2 * (2 * t2 - 1) * pd2;
-    deriv1(2, 14) = t3 * (2 * t3 - 1) * pd2;
+    const T t1t2_2 = 2.0*t1*t2;
+    const T t2t3_2 = 2.0*t2*t3;
+    const T t3t1_2 = 2.0*t3*t1;
+
+    const T dp2dt= -2.0*t;
+
+    deriv1(dr, 0)  =  Q12*((4.0*t1-1.0)*mt-p2);
+    deriv1(dr, 1)  =  0;
+    deriv1(dr, 2)  =  Q12*((1.0-4.0*t3)*mt+p2);
+    deriv1(dr, 3)  =  Q12*((4.0*t1-1.0)*pt-p2);
+    deriv1(dr, 4)  =  0;
+    deriv1(dr, 5)  =  Q12*((1.0-4.0*t3)*pt+p2);
+    deriv1(dr, 6)  =  2.0*t2*mt;
+    deriv1(dr, 7)  = -2.0*t2*mt;
+    deriv1(dr, 8)  =  2.0*(t3-t1)*mt;
+    deriv1(dr, 9)  =  p2;
+    deriv1(dr, 10) =  0;
+    deriv1(dr, 11) = -p2;
+    deriv1(dr, 12) =  2.0*t2*pt;
+    deriv1(dr, 13) = -2.0*t2*pt;
+    deriv1(dr, 14) =  2.0*(t3-t1)*pt;
+
+    deriv1(ds, 0)  =  0;
+    deriv1(ds, 1)  =  Q12*((4.0*t2-1.0)*mt-p2);
+    deriv1(ds, 2)  =  Q12*((1.0-4.0*t3)*mt+p2);
+    deriv1(ds, 3)  =  0;
+    deriv1(ds, 4)  =  Q12*((4.0*t2-1.0)*pt-p2);
+    deriv1(ds, 5)  =  Q12*((1.0-4.0*t3)*pt+p2);
+    deriv1(ds, 6)  =  2.0*t1*mt;
+    deriv1(ds, 7)  =  2.0*(t3-t2)*mt;
+    deriv1(ds, 8)  = -2.0*t1*mt;
+    deriv1(ds, 9)  =  0;
+    deriv1(ds, 10) =  p2;
+    deriv1(ds, 11) = -p2;
+    deriv1(ds, 12) =  2.0*t1*pt;
+    deriv1(ds, 13) =  2.0*(t3-t2)*pt;
+    deriv1(ds, 14) = -2.0*t1*pt;
+
+    deriv1(dt, 0)  =  Q12*(-f1-t1*dp2dt);
+    deriv1(dt, 1)  =  Q12*(-f2-t2*dp2dt);
+    deriv1(dt, 2)  =  Q12*(-f3-t3*dp2dt);
+    deriv1(dt, 3)  =  Q12*( f1-t1*dp2dt);
+    deriv1(dt, 4)  =  Q12*( f2-t2*dp2dt);
+    deriv1(dt, 5)  =  Q12*( f3-t3*dp2dt);
+    deriv1(dt, 6)  = -t1t2_2;
+    deriv1(dt, 7)  = -t2t3_2;
+    deriv1(dt, 8)  = -t3t1_2;
+    deriv1(dt, 9)  =  t1*dp2dt;
+    deriv1(dt, 10) =  t2*dp2dt;
+    deriv1(dt, 11) =  t3*dp2dt;
+    deriv1(dt, 12) =  t1t2_2;
+    deriv1(dt, 13) =  t2t3_2;
+    deriv1(dt, 14) =  t3t1_2;
+
     break;
   }
   case DRT::Element::pyramid5:
@@ -977,6 +1011,35 @@ void shape_function_3D_deriv1(
     dserror("distyp unknown\n");
     break;
   } /* end switch(distype) */
+
+#if 0
+  const int numfunct = 15;
+
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=deriv1(0,i);
+    }
+    std::cout << "sum deriv1(0,.) " << ver << std::endl;
+  }
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=deriv1(1,i);
+    }
+    std::cout << "sum deriv1(1,.) " << ver << std::endl;
+  }
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=deriv1(2,i);
+    }
+    std::cout << "sum deriv1(2,.) " << ver << std::endl;
+  }
+#endif
 
   return;
 }
@@ -1829,115 +1892,108 @@ void shape_function_3D_deriv2(
   }
   case DRT::Element::wedge15:
   {
+    const T t1=r;
+    const T t2=s;
+    const T t3=1.0-r-s;
 
-    const T t1 = r;
-    const T t2 = s;
-    const T t3 = 1.0 - r - s;
-    const T p1 = Q12 * t * (t - 1);
-    const T p2 = 1.0 - t * t;
-    const T p3 = Q12 * t * (t + 1);
-    const T pd1 = 2.0 * t - 1;
-    const T pd2 = -2.0 * t;
-    const T pd3 = 2.0 * t + 1;
-    const T pdd1 = 2.0;
-    const T pdd2 = -2.0;
-    const T pdd3 = 2.0;
+    const T mt = 1.0-t;
+    const T pt = 1.0+t;
 
-    deriv2(0, 0) = 4.0 * p1;
-    deriv2(0, 1) = 0;
-    deriv2(0, 2) = 4.0 * p1;
-    deriv2(0, 3) = 4.0 * p3;
-    deriv2(0, 4) = 0;
-    deriv2(0, 5) = 4.0 * p3;
-    deriv2(0, 6) = 0;
-    deriv2(0, 7) = 0;
-    deriv2(0, 8) = -8.0 * p1;
-    deriv2(0, 9) = 0;
-    deriv2(0, 10) = 0;
-    deriv2(0, 11) = -8.0 * p1;
-    deriv2(0, 12) = 4.0 * p2;
-    deriv2(0, 13) = 0;
-    deriv2(0, 14) = 4.0 * p2;
+    deriv2(drdr, 0)  = 2.0*mt;
+    deriv2(drdr, 1)  = 0;
+    deriv2(drdr, 2)  = 2.0*mt;
+    deriv2(drdr, 3)  = 2.0*pt;
+    deriv2(drdr, 4)  = 0;
+    deriv2(drdr, 5)  = 2.0*pt;
+    deriv2(drdr, 6)  = 0;
+    deriv2(drdr, 7)  = 0;
+    deriv2(drdr, 8)  = -4.0*mt;
+    deriv2(drdr, 9)  = 0;
+    deriv2(drdr, 10) = 0;
+    deriv2(drdr, 11) = 0;
+    deriv2(drdr, 12) = 0;
+    deriv2(drdr, 13) = 0;
+    deriv2(drdr, 14) =-4.0*pt;
 
-    deriv2(1, 0) = 0;
-    deriv2(1, 1) = 4.0 * p1;
-    deriv2(1, 2) = 4.0 * p1;
-    deriv2(1, 3) = 0;
-    deriv2(1, 4) = 4.0 * p3;
-    deriv2(1, 5) = 4.0 * p3;
-    deriv2(1, 6) = 0;
-    deriv2(1, 7) = -8.0 * p1;
-    deriv2(1, 8) = 0;
-    deriv2(1, 9) = 0;
-    deriv2(1, 10) = -8.0 * p3;
-    deriv2(1, 11) = 0;
-    deriv2(1, 12) = 0;
-    deriv2(1, 13) = 4.0 * p2;
-    deriv2(1, 14) = 4.0 * p2;
+    deriv2(dsds, 0)  = 0;
+    deriv2(dsds, 1)  = 2.0*mt;
+    deriv2(dsds, 2)  = 2.0*mt;
+    deriv2(dsds, 3)  = 0;
+    deriv2(dsds, 4)  = 2.0*pt;
+    deriv2(dsds, 5)  = 2.0*pt;
+    deriv2(dsds, 6)  = 0;
+    deriv2(dsds, 7)  = -4.0*mt;
+    deriv2(dsds, 8)  = 0;
+    deriv2(dsds, 9)  = 0;
+    deriv2(dsds, 10) = 0;
+    deriv2(dsds, 11) = 0;
+    deriv2(dsds, 12) = 0;
+    deriv2(dsds, 13) = -4.0*pt;
+    deriv2(dsds, 14) = 0;
 
-    deriv2(2, 0) = t1 * (2 * t1 - 1) * pdd1;
-    deriv2(2, 1) = t2 * (2 * t2 - 1) * pdd1;
-    deriv2(2, 2) = t3 * (2 * t3 - 1) * pdd1;
-    deriv2(2, 3) = t1 * (2 * t1 - 1) * pdd3;
-    deriv2(2, 4) = t2 * (2 * t2 - 1) * pdd3;
-    deriv2(2, 5) = t3 * (2 * t3 - 1) * pdd3;
-    deriv2(2, 6) = 4 * t1 * t2 * pdd1;
-    deriv2(2, 7) = 4 * t2 * t3 * pdd1;
-    deriv2(2, 8) = 4 * t1 * t3 * pdd1;
-    deriv2(2, 9) = 4 * t1 * t2 * pdd3;
-    deriv2(2, 10) = 4 * t2 * t3 * pdd3;
-    deriv2(2, 11) = 4 * t1 * t3 * pdd3;
-    deriv2(2, 12) = t1 * (2 * t1 - 1) * pdd2;
-    deriv2(2, 13) = t2 * (2 * t2 - 1) * pdd2;
-    deriv2(2, 14) = t3 * (2 * t3 - 1) * pdd2;
+    deriv2(dtdt, 0)  = t1;
+    deriv2(dtdt, 1)  = t2;
+    deriv2(dtdt, 2)  = t3;
+    deriv2(dtdt, 3)  = t1;
+    deriv2(dtdt, 4)  = t2;
+    deriv2(dtdt, 5)  = t3;
+    deriv2(dtdt, 6)  = 0;
+    deriv2(dtdt, 7)  = 0;
+    deriv2(dtdt, 8)  = 0;
+    deriv2(dtdt, 9)  = -2.0*t1;
+    deriv2(dtdt, 10) = -2.0*t2;
+    deriv2(dtdt, 11) = -2.0*t3;
+    deriv2(dtdt, 12) = 0;
+    deriv2(dtdt, 13) = 0;
+    deriv2(dtdt, 14) = 0;
 
-    deriv2(3, 0) = 0;
-    deriv2(3, 1) = 0;
-    deriv2(3, 2) = 4.0 * p1;
-    deriv2(3, 3) = 0;
-    deriv2(3, 4) = 0;
-    deriv2(3, 5) = 4.0 * p3;
-    deriv2(3, 6) = 4.0 * p1;
-    deriv2(3, 7) = -4.0 * p1;
-    deriv2(3, 8) = -4.0 * p1;
-    deriv2(3, 9) = 4.0 * p3;
-    deriv2(3, 10) = -4.0 * p3;
-    deriv2(3, 11) = -4.0 * p3;
-    deriv2(3, 12) = 0;
-    deriv2(3, 13) = 0;
-    deriv2(3, 14) = 4.0 * p2;
+    deriv2(drds, 0)  =  0;
+    deriv2(drds, 1)  =  0;
+    deriv2(drds, 2)  =  2.0*mt;
+    deriv2(drds, 3)  =  0;
+    deriv2(drds, 4)  =  0;
+    deriv2(drds, 5)  =  2.0*pt;
+    deriv2(drds, 6)  =  2.0*mt;
+    deriv2(drds, 7)  = -2.0*mt;
+    deriv2(drds, 8)  = -2.0*mt;
+    deriv2(drds, 9)  =  0;
+    deriv2(drds, 10) =  0;
+    deriv2(drds, 11) =  0;
+    deriv2(drds, 12) =  2.0*pt;
+    deriv2(drds, 13) = -2.0*pt;
+    deriv2(drds, 14) = -2.0*pt;
 
-    deriv2(4, 0) = 0;
-    deriv2(4, 1) = (4.0 * t2 - 1) * pd1;
-    deriv2(4, 2) = (4.0 * t1 + 4.0 * t2 - 3.0) * pd1;
-    deriv2(4, 3) = 0;
-    deriv2(4, 4) = (4.0 * t2 - 1) * pd3;
-    deriv2(4, 5) = (4.0 * t1 + 4.0 * t2 - 3.0) * pd3;
-    deriv2(4, 6) = 4.0 * t1 * pd1;
-    deriv2(4, 7) = (4.0 - 4.0 * t1 - 8.0 * t2) * pd1;
-    deriv2(4, 8) = -4.0 * t1 * pd1;
-    deriv2(4, 9) = 4.0 * t1 * pd3;
-    deriv2(4, 10) = (4.0 - 4.0 * t1 - 8.0 * t2) * pd3;
-    deriv2(4, 11) = -4.0 * t1 * pd3;
-    deriv2(4, 12) = 0;
-    deriv2(4, 13) = (4.0 * t2 - 1) * pd2;
-    deriv2(4, 14) = (4.0 * t1 + 4.0 * t2 - 3) * pd2;
+    deriv2(drdt, 0)  =  Q12*((1.0-4.0*t1)+2.0*t);
+    deriv2(drdt, 1)  =  0;
+    deriv2(drdt, 2)  =  Q12*((4.0*t3-1.0)-2.0*t);
+    deriv2(drdt, 3)  =  Q12*((4.0*t1-1.0)+2.0*t);
+    deriv2(drdt, 4)  =  0;
+    deriv2(drdt, 5)  =  Q12*((1.0-4.0*t3)-2.0*t);
+    deriv2(drdt, 6)  = -2.0*t2;
+    deriv2(drdt, 7)  =  2.0*t2;
+    deriv2(drdt, 8)  = -2.0*(t3-t1);
+    deriv2(drdt, 9)  = -2.0*t;
+    deriv2(drdt, 10) =  0;
+    deriv2(drdt, 11) =  2.0*t;
+    deriv2(drdt, 12) =  2.0*t2;
+    deriv2(drdt, 13) = -2.0*t2;
+    deriv2(drdt, 14) =  2.0*(t3-t1);
 
-    deriv2(5, 0) = (4.0 * t1 - 1) * pd1;
-    deriv2(5, 1) = 0;
-    deriv2(5, 2) = (4.0 * t1 + 4.0 * t2 - 3.0) * pd1;
-    deriv2(5, 3) = (4.0 * t1 - 1) * pd3;
-    deriv2(5, 4) = 0;
-    deriv2(5, 5) = (4.0 * t1 + 4.0 * t2 - 3.0) * pd3;
-    deriv2(5, 6) = 4.0 * t2 * pd1;
-    deriv2(5, 7) = -4.0 * t2 * pd1;
-    deriv2(5, 8) = (4.0 - 8.0 * t1 - 4.0 * t2) * pd1;
-    deriv2(5, 9) = 4.0 * t2 * pd3;
-    deriv2(5, 10) = -4.0 * t2 * pd3;
-    deriv2(5, 11) = (4.0 - 8.0 * t1 - 4.0 * t2) * pd2;
-    deriv2(5, 12) = (4.0 * t1 - 1) * pd2;
-    deriv2(5, 13) = 0;
-    deriv2(5, 14) = (4.0 * t1 + 4.0 * t2 - 3.0) * pd2;
+    deriv2(dsdt, 0)  =  0;
+    deriv2(dsdt, 1)  =  Q12*((1.0-4.0*t2)+2.0*t);
+    deriv2(dsdt, 2)  =  Q12*((4.0*t3-1.0)-2.0*t);
+    deriv2(dsdt, 3)  =  0;
+    deriv2(dsdt, 4)  =  Q12*((4.0*t2-1.0)+2.0*t);
+    deriv2(dsdt, 5)  =  Q12*((1.0-4.0*t3)-2.0*t);
+    deriv2(dsdt, 6)  = -2.0*t1;
+    deriv2(dsdt, 7)  = -2.0*(t3-t2);
+    deriv2(dsdt, 8)  =  2.0*t1;
+    deriv2(dsdt, 9)  =  0;
+    deriv2(dsdt, 10) = -2.0*t;
+    deriv2(dsdt, 11) =  2.0*t;
+    deriv2(dsdt, 12) =  2.0*t1;
+    deriv2(dsdt, 13) =  2.0*(t3-t2);
+    deriv2(dsdt, 14) = -2.0*t1;
 
     break;
   }
@@ -1945,6 +2001,58 @@ void shape_function_3D_deriv2(
     dserror("distyp unknown\n");
     break;
   } /* end switch(distype) */
+
+#if 0
+  const int numfunct = 15;
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=deriv2(0,i);
+    }
+    std::cout << "sum deriv2(0,.) " << ver << std::endl;
+  }
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=deriv2(1,i);
+    }
+    std::cout << "sum deriv2(1,.) " << ver << std::endl;
+  }
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=deriv2(2,i);
+    }
+    std::cout << "sum deriv2(2,.) " << ver << std::endl;
+  }
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=deriv2(3,i);
+    }
+    std::cout << "sum deriv2(3,.) " << ver << std::endl;
+  }
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=deriv2(4,i);
+    }
+    std::cout << "sum deriv2(4,.) " << ver << std::endl;
+  }
+  {
+    T ver=0;
+    for(int i=0;i<numfunct;++i)
+    {
+      ver+=deriv2(5,i);
+    }
+    std::cout << "sum deriv2(5,.) " << ver << std::endl;
+  }
+#endif
 
   return;
 }

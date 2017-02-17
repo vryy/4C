@@ -1372,7 +1372,8 @@ inline void BoundaryGPToParentGP3(
         dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if( (distype==DRT::Element::quad4 && pdistype == DRT::Element::wedge6))
+    else if((distype==DRT::Element::quad4 && pdistype == DRT::Element::wedge6)
+        or  (distype==DRT::Element::quad8 && pdistype == DRT::Element::wedge15))
     {
       switch(beleid)
       {
@@ -1452,9 +1453,9 @@ inline void BoundaryGPToParentGP3(
         dserror("invalid number of quad4 surface for wedge element, unable to determine intpoint in parent");
       }
     }
-    else if( (distype==DRT::Element::tri3 && pdistype == DRT::Element::wedge6))
+    else if( (distype==DRT::Element::tri3 && pdistype == DRT::Element::wedge6 )
+          or (distype==DRT::Element::tri6 && pdistype == DRT::Element::wedge15))
     {
-      dserror("transformation for tri3 surface of wedge6 element implemented, however, not tested yet! Just do it now!");
       switch(beleid)
       {
       case 3:

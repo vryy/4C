@@ -128,19 +128,19 @@ namespace UTILS
           {1,  3,  8},
           {2,  3,  9}};
 
-  //! Triangular surfaces of wedge15 with 7 nodes per surface
-  const int eleNodeNumbering_wedge15_trisurfaces[2][6] = {
+  //! Triangular surfaces of wedge18 with 6 nodes per surface
+  const int eleNodeNumbering_wedge18_trisurfaces[2][6] = {
           { 2, 1, 0, 7, 6, 8},
           { 5, 3, 4, 14, 12, 13}};
 
-  //! Rectangular surfaces of wedge15 with 8 nodes per surface
-  const int eleNodeNumbering_wedge15_quadsurfaces[3][8] = {
-          {0, 1, 4, 3, 6, 10, 12,  9},
-          {1, 2, 5, 4, 7, 11, 13, 10},
-          {2, 0, 3, 5, 8, 9, 14, 11}};
+  //! Rectangular surfaces of wedge18 with 9 nodes per surface
+  const int eleNodeNumbering_wedge18_quadsurfaces[3][9] = {
+          {0, 1, 4, 3, 6, 10, 12,  9, 15},
+          {1, 2, 5, 4, 7, 11, 13, 10, 16},
+          {2, 0, 3, 5, 8,  9, 14, 11, 17}};
 
-  //! 9 lines of a wedge15 element with 3 nodes per line
-  const int eleNodeNumbering_wedge15_lines[9][3] = {
+  //! 9 lines of a wedge18 element with 3 nodes per line
+  const int eleNodeNumbering_wedge18_lines[9][3] = {
           {0, 1, 6},
           {1, 2, 7},
           {2, 0, 8},

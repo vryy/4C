@@ -500,7 +500,7 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
     {
       map.push_back(submapq);
       for(int j = 0; j < nqNode; j++)
-        map[i][j] = eleNodeNumbering_wedge15_quadsurfaces[i][j];
+        map[i][j] = eleNodeNumbering_wedge18_quadsurfaces[i][j];
     }
 
     // tri surfaces
@@ -511,7 +511,7 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
     {
       map.push_back(submapt);
       for(int j = 0; j < ntNode; j++)
-        map[i+nqSurf][j] = eleNodeNumbering_wedge15_trisurfaces[i][j];
+        map[i+nqSurf][j] = eleNodeNumbering_wedge18_trisurfaces[i][j];
     }
     break;
   }
@@ -525,7 +525,7 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
     {
       map.push_back(submapq);
       for(int j = 0; j < nqNode; j++)
-        map[i][j] = eleNodeNumbering_wedge15_quadsurfaces[i][j];
+        map[i][j] = eleNodeNumbering_wedge18_quadsurfaces[i][j];
     }
 
     // tri surfaces
@@ -536,7 +536,7 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
     {
       map.push_back(submapt);
       for(int j = 0; j < ntNode; j++)
-        map[i+nqSurf][j] = eleNodeNumbering_wedge15_trisurfaces[i][j];
+        map[i+nqSurf][j] = eleNodeNumbering_wedge18_trisurfaces[i][j];
     }
     break;
   }
@@ -695,7 +695,7 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             {
                 map.push_back(submap);
                 for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_wedge15_lines[i][j];
+                    map[i][j] = eleNodeNumbering_wedge18_lines[i][j];
             }
             break;
         }
@@ -709,7 +709,7 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             {
                 map.push_back(submap);
                 for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_wedge15_lines[i][j];
+                    map[i][j] = eleNodeNumbering_wedge18_lines[i][j];
             }
             break;
         }

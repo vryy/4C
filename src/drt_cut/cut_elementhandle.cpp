@@ -1415,6 +1415,219 @@ GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const st
   sub8->setQuadCorners( mesh, nids );
   sub8->setQuadShape( DRT::Element::tet10 );
   subelements_.push_back( sub8 );
+
+  // each subelement should know its parents id
+  for(std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * subelement = *i;
+    subelement->ParentId(eid);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+// constructor
+/*----------------------------------------------------------------------*/
+GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle( Mesh & mesh, int eid, const std::vector<int> & nodes )
+  : QuadraticElementHandle()
+{
+
+  subelements_.reserve( 8 );  // subdivide into 8 wedge 6 elements
+
+  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Wedge<6> >();
+
+  // create middle nodes
+
+  LINALG::Matrix<3,1> xyz;
+  LINALG::Matrix<1,1> lsv;
+
+  plain_int_set node_nids;
+
+  LINALG::Matrix<3,8> side_xyze;
+  LINALG::Matrix<1,8> side_lsvs;
+  LINALG::Matrix<8,1> side_funct;
+  std::vector<Node*> side_nodes( 8 );
+
+  std::vector<Node*> center_nodes( 3 );
+
+  // get the real nodes of the wedge15 element and get the center nodes (shadow nodes) of its quadratic quad8 sides
+  // which stored in the shadow_nodes list in cut_mesh.H using the eight side nodes of the side as key
+  // special handling for the inner center node of wedge15 element required, see below,
+
+  // loop the 5 sides of the wedge15 element
+
+  // three quadratic sides
+  for ( int localsideid = 0; localsideid < 3; ++localsideid )
+  {
+    node_nids.clear();
+    // loop the eight nodes of each quad8 side of the wedge15 element
+    for ( int i=0; i<8; ++i )
+    {
+      int localnodeid = DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[localsideid][i];
+      Node * n = mesh.GetNode( nodes[localnodeid], static_cast<double*>( NULL ) );
+      side_nodes[i] = n;
+      node_nids.insert( nodes[localnodeid] );
+      n->Coordinates( &side_xyze( 0, i ) );
+      side_lsvs( i ) = n->LSV();
+    }
+
+    DRT::UTILS::shape_function_2D( side_funct, 0.0, 0.0, DRT::Element::quad8 );
+    xyz.Multiply( side_xyze, side_funct );
+    lsv.Multiply( side_lsvs, side_funct );
+
+    // find the unique center node of the quadratic quad8 sides
+    center_nodes[localsideid] = mesh.GetNode( node_nids, xyz.A(), lsv( 0 ) );
+  }
+
+  LINALG::Matrix<3,6> tb_side_xyze; //top_bottom_sides
+  LINALG::Matrix<1,6> tb_side_lsvs;
+  LINALG::Matrix<6,1> tb_side_funct;
+  std::vector<Node*> tb_side_nodes( 6 );
+
+  // two quadratic sides on top and bottom
+  for ( int localsideid = 0; localsideid < 2; ++localsideid )
+  {
+    node_nids.clear();
+    // loop the 6 nodes of each tri6 side of the wedge15 element
+    for ( int i=0; i<6; ++i )
+    {
+      int localnodeid = DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[localsideid][i];
+      Node * n = mesh.GetNode( nodes[localnodeid], static_cast<double*>( NULL ) );
+      tb_side_nodes[i] = n;
+      node_nids.insert( nodes[localnodeid] );
+      n->Coordinates( &tb_side_xyze( 0, i ) );
+      tb_side_lsvs( i ) = n->LSV();
+    }
+  }
+
+  Node* node15 = center_nodes[0];
+  int node15_id = node15->Id();
+
+  Node* node16 = center_nodes[1];
+  int node16_id = node16->Id();
+
+  Node* node17 = center_nodes[2];
+  int node17_id = node17->Id();
+
+
+  LINALG::Matrix<3,15> xyze;
+  LINALG::Matrix<1,15> lsvs;
+  nodes_.reserve( 15 );
+  for ( int i=0; i<15; ++i )
+  {
+    Node * n = mesh.GetNode( nodes[i], static_cast<double*>( NULL ) );
+    nodes_.push_back( n );
+    n->Coordinates( &xyze( 0,i ) );
+    lsvs( i ) = n->LSV();
+  }
+
+
+  std::vector<int> nids( 6 );
+
+  nids[0] = nodes[ 0];
+  nids[1] = nodes[ 6];
+  nids[2] = nodes[ 8];
+  nids[3] = nodes[ 9];
+  nids[4] = node15_id;
+  nids[5] = node17_id;
+  Element* sub1 = mesh.GetElement( -1, nids, *top_data );
+  sub1->setAsShadowElem();
+  sub1->setQuadCorners( mesh, nodes );
+  sub1->setQuadShape( DRT::Element::wedge6 );
+  subelements_.push_back( sub1 );
+
+  nids[0] = nodes[ 6];
+  nids[1] = nodes[ 1];
+  nids[2] = nodes[ 7];
+  nids[3] = node15_id;
+  nids[4] = nodes[10];
+  nids[5] = node16_id;
+  Element* sub2 = mesh.GetElement( -1, nids, *top_data );
+  sub2->setAsShadowElem();
+  sub2->setQuadCorners( mesh, nodes );
+  sub2->setQuadShape( DRT::Element::wedge6 );
+  subelements_.push_back( sub2 );
+
+  nids[0] = nodes[ 6];
+  nids[1] = nodes[ 7];
+  nids[2] = nodes[ 8];
+  nids[3] = node15_id;
+  nids[4] = node16_id;
+  nids[5] = node17_id;
+  Element* sub3 = mesh.GetElement( -1, nids, *top_data );
+  sub3->setAsShadowElem();
+  sub3->setQuadCorners( mesh, nodes );
+  sub3->setQuadShape( DRT::Element::wedge6 );
+  subelements_.push_back( sub3 );
+
+  nids[0] = nodes[ 8];
+  nids[1] = nodes[ 7];
+  nids[2] = nodes[ 2];
+  nids[3] = node17_id;
+  nids[4] = node16_id;
+  nids[5] = nodes[11];
+  Element* sub4 = mesh.GetElement( -1, nids, *top_data );
+  sub4->setAsShadowElem();
+  sub4->setQuadCorners( mesh, nodes );
+  sub4->setQuadShape( DRT::Element::wedge6 );
+  subelements_.push_back( sub4 );
+
+  /////////////////////////////////////////////////////////////////
+
+  nids[0] = nodes[ 9];
+  nids[1] = node15_id;
+  nids[2] = node17_id;
+  nids[3] = nodes[ 3];
+  nids[4] = nodes[12];
+  nids[5] = nodes[14];
+  Element* sub5 = mesh.GetElement( -1, nids, *top_data );
+  sub5->setAsShadowElem();
+  sub5->setQuadCorners( mesh, nodes );
+  sub5->setQuadShape( DRT::Element::wedge6 );
+  subelements_.push_back( sub5 );
+
+  nids[0] = node15_id;
+  nids[1] = nodes[10];
+  nids[2] = node16_id;
+  nids[3] = nodes[12];
+  nids[4] = nodes[ 4];
+  nids[5] = nodes[13];
+  Element* sub6 = mesh.GetElement( -1, nids, *top_data );
+  sub6->setAsShadowElem();
+  sub6->setQuadCorners( mesh, nodes );
+  sub6->setQuadShape( DRT::Element::wedge6 );
+  subelements_.push_back( sub6 );
+
+  nids[0] = node15_id;
+  nids[1] = node16_id;
+  nids[2] = node17_id;
+  nids[3] = nodes[12];
+  nids[4] = nodes[13];
+  nids[5] = nodes[14];
+  Element* sub7 = mesh.GetElement( -1, nids, *top_data );
+  sub7->setAsShadowElem();
+  sub7->setQuadCorners( mesh, nodes );
+  sub7->setQuadShape( DRT::Element::wedge6 );
+  subelements_.push_back( sub7 );
+
+  nids[0] = node17_id;
+  nids[1] = node16_id;
+  nids[2] = nodes[11];
+  nids[3] = nodes[14];
+  nids[4] = nodes[13];
+  nids[5] = nodes[ 5];
+  Element* sub8 = mesh.GetElement( -1, nids, *top_data );
+  sub8->setAsShadowElem();
+  sub8->setQuadCorners( mesh, nodes );
+  sub8->setQuadShape( DRT::Element::wedge6 );
+  subelements_.push_back( sub8 );
+
+  // each subelement should know its parents id
+  for(std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+  {
+    Element * subelement = *i;
+    subelement->ParentId(eid);
+  }
+
 }
 
 
@@ -1475,3 +1688,17 @@ void GEO::CUT::Tet10ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> &
   pos->LocalCoordinates(rst);
 }
 
+/*----------------------------------------------------------------------*/
+// compute local coordinates of the element for given global coordinates
+/*----------------------------------------------------------------------*/
+void GEO::CUT::Wedge15ElementHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+{
+  Teuchos::RCP<GEO::CUT::Position> pos =
+         GEO::CUT::PositionFactory::BuildPosition<3,DRT::Element::wedge15>(nodes_,xyz);
+
+  bool success = pos->Compute();
+  if ( not success )
+  {
+  }
+  pos->LocalCoordinates(rst);
+  }

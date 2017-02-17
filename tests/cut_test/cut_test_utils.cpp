@@ -613,7 +613,7 @@ void SimpleWrapper::CreateElementSides( DRT::Element::DiscretizationType distype
     {
       for ( int j=0; j<3; ++j )
       {
-        int node = DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[i][j];
+        int node = DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[i][j];
         std::copy( &xyze( 0, node ), &xyze( 0, node )+3, &tri3_side_xyze( 0, j ) );
       }
       CreateSide( DRT::Element::tri3, tri3_side_xyze );
@@ -622,7 +622,7 @@ void SimpleWrapper::CreateElementSides( DRT::Element::DiscretizationType distype
     {
       for ( int j=0; j<4; ++j )
       {
-        int node = DRT::UTILS::eleNodeNumbering_wedge15_quadsurfaces[i][j];
+        int node = DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[i][j];
         std::copy( &xyze( 0, node ), &xyze( 0, node )+3, &quad4_side_xyze( 0, j ) );
       }
       CreateSide( DRT::Element::quad4, quad4_side_xyze );

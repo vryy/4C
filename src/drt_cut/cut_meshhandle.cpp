@@ -142,6 +142,128 @@ void GEO::CUT::MeshHandle::CreateElementSides(const std::vector<int> & nids, DRT
 
   switch ( distype )
   {
+  case DRT::Element::wedge15:
+  {
+    plain_int_set sidenodeids;
+    sidenodeids.insert(nids[ 0]);
+    sidenodeids.insert(nids[ 1]);
+    sidenodeids.insert(nids[ 4]);
+    sidenodeids.insert(nids[ 3]);
+    sidenodeids.insert(nids[ 6]);
+    sidenodeids.insert(nids[10]);
+    sidenodeids.insert(nids[12]);
+    sidenodeids.insert(nids[ 9]);
+    std::vector<int> nodeids;
+    nodeids.push_back(nids[ 0]);
+    nodeids.push_back(nids[ 1]);
+    nodeids.push_back(nids[ 4]);
+    nodeids.push_back(nids[ 3]);
+    nodeids.push_back(nids[ 6]);
+    nodeids.push_back(nids[10]);
+    nodeids.push_back(nids[12]);
+    nodeids.push_back(nids[ 9]);
+
+    std::map<plain_int_set, Teuchos::RCP<QuadraticSideHandle> >::iterator i1 = elementquadraticsides_.find( sidenodeids );
+    if ( i1==elementquadraticsides_.end() )
+    {
+      QuadraticSideHandle * qsh = NULL;
+      qsh = new Quad8SideHandle( mesh_, -1, nodeids, false );
+      elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+    }
+    sidenodeids.clear();
+    sidenodeids.insert(nids[ 1]);
+    sidenodeids.insert(nids[ 2]);
+    sidenodeids.insert(nids[ 5]);
+    sidenodeids.insert(nids[ 4]);
+    sidenodeids.insert(nids[ 7]);
+    sidenodeids.insert(nids[11]);
+    sidenodeids.insert(nids[13]);
+    sidenodeids.insert(nids[10]);
+    nodeids.clear();
+    nodeids.push_back(nids[ 1]);
+    nodeids.push_back(nids[ 2]);
+    nodeids.push_back(nids[ 5]);
+    nodeids.push_back(nids[ 4]);
+    nodeids.push_back(nids[ 7]);
+    nodeids.push_back(nids[11]);
+    nodeids.push_back(nids[13]);
+    nodeids.push_back(nids[10]);
+    std::map<plain_int_set, Teuchos::RCP<QuadraticSideHandle> >::iterator i2 = elementquadraticsides_.find( sidenodeids );
+    if ( i2==elementquadraticsides_.end() )
+    {
+      QuadraticSideHandle * qsh = NULL;
+      qsh = new Quad8SideHandle( mesh_, -1, nodeids, false );
+      elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+    }
+    sidenodeids.clear();
+    sidenodeids.insert(nids[ 2]);
+    sidenodeids.insert(nids[ 0]);
+    sidenodeids.insert(nids[ 3]);
+    sidenodeids.insert(nids[ 5]);
+    sidenodeids.insert(nids[ 8]);
+    sidenodeids.insert(nids[ 9]);
+    sidenodeids.insert(nids[14]);
+    sidenodeids.insert(nids[11]);
+    nodeids.clear();
+    nodeids.push_back(nids[ 2]);
+    nodeids.push_back(nids[ 0]);
+    nodeids.push_back(nids[ 3]);
+    nodeids.push_back(nids[ 5]);
+    nodeids.push_back(nids[ 8]);
+    nodeids.push_back(nids[ 9]);
+    nodeids.push_back(nids[14]);
+    nodeids.push_back(nids[11]);
+    std::map<plain_int_set, Teuchos::RCP<QuadraticSideHandle> >::iterator i3 = elementquadraticsides_.find( sidenodeids );
+    if ( i3==elementquadraticsides_.end() )
+    {
+      QuadraticSideHandle * qsh = NULL;
+      qsh = new Quad8SideHandle( mesh_, -1, nodeids, false );
+      elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+    }
+    sidenodeids.clear();
+    sidenodeids.insert(nids[ 2]);
+    sidenodeids.insert(nids[ 1]);
+    sidenodeids.insert(nids[ 0]);
+    sidenodeids.insert(nids[ 7]);
+    sidenodeids.insert(nids[ 6]);
+    sidenodeids.insert(nids[ 8]);
+    nodeids.clear();
+    nodeids.push_back(nids[ 2]);
+    nodeids.push_back(nids[ 1]);
+    nodeids.push_back(nids[ 0]);
+    nodeids.push_back(nids[ 7]);
+    nodeids.push_back(nids[ 6]);
+    nodeids.push_back(nids[ 8]);
+    std::map<plain_int_set, Teuchos::RCP<QuadraticSideHandle> >::iterator i4 = elementquadraticsides_.find( sidenodeids );
+    if ( i4==elementquadraticsides_.end() )
+    {
+      QuadraticSideHandle * qsh = NULL;
+      qsh = new Tri6SideHandle( mesh_, -1, nodeids );
+      elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+    }
+    sidenodeids.clear();
+    sidenodeids.insert(nids[ 5]);
+    sidenodeids.insert(nids[ 3]);
+    sidenodeids.insert(nids[ 4]);
+    sidenodeids.insert(nids[14]);
+    sidenodeids.insert(nids[12]);
+    sidenodeids.insert(nids[13]);
+    nodeids.clear();
+    nodeids.push_back(nids[ 5]);
+    nodeids.push_back(nids[ 3]);
+    nodeids.push_back(nids[ 4]);
+    nodeids.push_back(nids[14]);
+    nodeids.push_back(nids[12]);
+    nodeids.push_back(nids[13]);
+    std::map<plain_int_set, Teuchos::RCP<QuadraticSideHandle> >::iterator i5 = elementquadraticsides_.find( sidenodeids );
+    if ( i5==elementquadraticsides_.end() )
+    {
+      QuadraticSideHandle * qsh = NULL;
+      qsh = new Tri6SideHandle( mesh_, -1, nodeids );
+      elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+    }
+    break;
+  }
   case DRT::Element::hex20:
   {
     plain_int_set sidenodeids;
@@ -621,6 +743,10 @@ GEO::CUT::ElementHandle * GEO::CUT::MeshHandle::CreateElement( int eid, const st
       break;
     }
     case DRT::Element::wedge15:
+    {
+      qeh = new Wedge15ElementHandle( mesh_, eid, nids );
+      break;
+    }
     default:
       dserror( "unsupported distype ( distype = %s )",
           DRT::DistypeToString( distype ).c_str() );

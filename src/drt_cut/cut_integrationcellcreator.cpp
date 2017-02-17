@@ -797,7 +797,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh,
         std::vector<Point*> side( 3 );
         for ( int j=0; j<3; ++j )
         {
-          side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[i][j]];
+          side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
@@ -808,7 +808,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh,
         std::vector<Point*> side( 4 );
         for ( int j=0; j<4; ++j )
         {
-          side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge15_quadsurfaces[i][j]];
+          side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
@@ -825,7 +825,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh,
         std::vector<Point*> side( 3 );
         for ( int j=0; j<3; ++j )
         {
-          side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[i][j]];
+          side[j] = points[DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
@@ -836,7 +836,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh,
         std::vector<Point*> side( 4 );
         for ( int j=0; j<4; ++j )
         {
-          side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_quadsurfaces[i][j]];
+          side[j] = points[DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
         if ( f->OnCutSide() )
@@ -1300,7 +1300,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
       std::vector<Point*> side( 3 );
       for ( int j=0; j<3; ++j )
       {
-        side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[sidepos][j]];
+        side[j] = points[DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[sidepos][j]];
       }
       //Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
       AddSide( cell, f, DRT::Element::tri3, side );

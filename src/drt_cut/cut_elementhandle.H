@@ -712,6 +712,22 @@ public:
 
 };
 
+/// wedge15 element handle
+class Wedge15ElementHandle : public QuadraticElementHandle
+{
+public:
+
+  //! constructor
+  Wedge15ElementHandle( Mesh & mesh, int eid, const std::vector<int> & nids );
+
+  //! get the shape of the element
+  virtual DRT::Element::DiscretizationType Shape() { return DRT::Element::wedge15; }
+
+  //! compute local coordinates of the element for given global coordinates
+  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+
+};
+
 }
 }
 
