@@ -202,32 +202,36 @@ bool GEO::CUT::ComputeEmbeddedPosition<probdim,eletype,numNodesElement,dim>::
 
   this->compute_tolerance_ = cd.GetTolerance();
 
-  // if newton did not converge, do a simpler check
+  // if newton did not converge, try some other checks
   if ( this->pos_status_ != Position::position_valid )
   {
+    //if the surface has no area zero area
     if ( cd.ZeroArea() )
-      this->pos_status_ = Position::position_zero_area;
-
-    double d = 0.0;
-    for ( unsigned i=0; i<numNodesElement; ++i )
     {
-      LINALG::Matrix<probdim,1> x1( &this->xyze_( 0, i ),  true );
-      LINALG::Matrix<probdim,1> x2( &this->xyze_( 0, ( i+1 )%numNodesElement ),  true );
-      if ( not LinePointDistance( x1, x2, this->px_, d ) )
-        return false;
-      if ( i == 0 or d < dist )
-        dist = d;
+      //Comment: If there is no area an the surface is a line it would be possible to calculate the distance between the lines,
+      // but we would still loose the sign of the distance (if we need this we would still need to add something like
+      // Position::position_absdistance_valid) - for this case the normal is just not defined anymore
+      this->pos_status_ = Position::position_zero_area;
+      return false;
     }
+    else //this branch is a little bit unsafe --> write a warning when this case is used
+    {
+      // Check the l2-norm of the actual reached residual. If it is smaller than 1.0,
+      // we will trust the distance value
+      // --> this is quite critical as we cannot guarantee that the precicion of the distance anymore (but only option to get a signed distance)
+      double res_nrm2 = cd.GetResidualL2Norm();
+      if ( res_nrm2 < 1.0 )
+      {
+        std::cout << "==| WARNING: ComputeDistance didn't converge, but residual is smaller than 1 (calculated distance is used) |==" << std::endl;
+        this->pos_status_ = Position::position_distance_valid;
+      }
 
-    // FixMe -- hiermeier
-    // If the algorithm reaches this point, the position seems to be within the
-    // element bounds, but was not yet calculated correctly!
-    xsi_aug_ = 0;
-    xsi_aug_ ( dim ) = dist;
-
-    this->pos_status_ = Position::position_distance_valid;
+      //as the local coordinates didn't converge
+      return false;
+    }
   }
 
+  //Std Return in case Compute Distance converged!
   return WithinLimitsTol( Tol, allow_dist );
 };
 

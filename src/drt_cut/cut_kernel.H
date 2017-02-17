@@ -1175,6 +1175,12 @@ namespace KERNEL {
       return tol_;
     }
 
+    /// get actual reached residual
+    double GetResidualL2Norm() const
+    {
+      return b_.Norm2();
+    }
+
     /// return \TRUE if the side metric vectors is zero
     bool ZeroArea() const
     {
@@ -1546,6 +1552,12 @@ namespace KERNEL {
     double GetTolerance() const
     {
       return Strategy::GetTolerance();
+    }
+
+    /// access the l2 norm of the reached residual
+    double GetResidualL2Norm() const
+    {
+      return Strategy::GetResidualL2Norm();
     }
 
     bool ZeroArea() const

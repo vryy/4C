@@ -542,6 +542,9 @@ namespace CUT {
      *  (after scaling) */
     void ConstructBoundingBox();
 
+    //not used in the actual version 02/17
+#if (0)
+
     /*! \brief Compute the perpendicular distance between point p3 and the line joining p1 and p2
      *
      *                  \f$(p_3)\f$ x_____
@@ -583,6 +586,7 @@ namespace CUT {
       distance = d.Norm2();
       return true;
     }
+#endif
 
   private:
     /** local coordinates corresponding to \c px_, the last n = ( probdim - dim )
