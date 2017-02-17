@@ -134,6 +134,7 @@ public:
   virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
     { dserror("Currently unsupported for the penalty strategy!"); return Teuchos::null; };
   virtual bool IsNitsche() const {return true;}
+  virtual void PrintActiveSet() const {};
   bool ActiveSetSemiSmoothConverged() const {return true;}
   bool ActiveSetConverged() {return true;}
   int ActiveSetSteps() {return 0;}
