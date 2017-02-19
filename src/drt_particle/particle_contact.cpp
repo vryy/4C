@@ -1655,7 +1655,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::GatherNormalContactForcesToFile() co
     std::ostringstream step;
     step << particle_algorithm_->Step();
     const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".particle_contact_forces.csv."+step.str());
-    std::ofstream file(filename);
+    std::ofstream file;
+    file.open(filename);
 
     // loop over all processors
     for(int iproc=0; iproc<discret_->Comm().NumProc(); ++iproc)
@@ -1664,7 +1665,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::GatherNormalContactForcesToFile() co
       std::ostringstream iprocstr;
       iprocstr << iproc;
       const std::string procfilename(filename+"."+iprocstr.str());
-      std::ifstream procfile(procfilename);
+      std::ifstream procfile;
+      procfile.open(procfilename);
 
       // gather current source file into destination file
       if(procfile)
@@ -1701,7 +1703,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::OutputNormalContactForceToFile(
 
   // open file in appropriate mode
   std::ofstream file;
-  if(!std::ifstream(filename))
+  FILE* temp = fopen(filename.c_str(),"r");
+  if(!temp)
   {
     file.open(filename.c_str(),std::fstream::trunc);
 
@@ -1710,7 +1713,10 @@ void PARTICLE::ParticleCollisionHandlerDEM::OutputNormalContactForceToFile(
       file << "x,y,z,F" << std::endl;
   }
   else
+  {
+    fclose(temp);
     file.open(filename.c_str(),std::fstream::app);
+  }
 
   // write application point and value of normal contact force to file
   file << std::setprecision(16) << std::fixed << forceapplicationpoint(0) << "," << forceapplicationpoint(1) << "," << forceapplicationpoint(2) << "," << normalcontactforce << std::endl;
