@@ -78,6 +78,9 @@ int DRT::ResultTest::CompareValues(double actresult, std::string type, DRT::INPU
   res.ExtractDouble("VALUE",givenresult);
   double tolerance;
   res.ExtractDouble("TOLERANCE",tolerance);
+  // safety check
+  if(tolerance <= 0.)
+    dserror("Tolerance for result test must be strictly positive!");
   // name is an optional input argument!
   std::string name = "";
   if (res.HaveNamed("NAME"))
