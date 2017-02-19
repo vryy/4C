@@ -60,6 +60,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&particledyn);
    IntParameter("RESEVRYERGY",0,"write system energies every requested step",&particledyn);
    IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&particledyn);
+   IntParameter("CONTACTFORCESEVRY",0,"output particle-particle and particle-wall contact forces to *.csv file every CONTACTFORCESEVRY steps",&particledyn);
    // Time loop control
    DoubleParameter("TIMESTEP",0.05,"time step size",&particledyn);
    IntParameter("NUMSTEP",200,"maximum number of steps",&particledyn);
@@ -108,6 +109,23 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                &particledyn);
 
    setStringToIntegralParameter<int>(
+                               "NORMAL_ADHESION_LAW","None",
+                               "adhesion law governing normal contact of particles",
+                               tuple<std::string>(
+                                 "None",
+                                 "LennardJones",
+                                 "LinearSpring",
+                                 "LinearSpringDamp"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::adhesion_none,
+                                 INPAR::PARTICLE::adhesion_lennardjones,
+                                 INPAR::PARTICLE::adhesion_linspring,
+                                 INPAR::PARTICLE::adhesion_linspringdamp
+                                 ),
+                               &particledyn);
+
+   setStringToIntegralParameter<int>(
                                "WEIGHT_FUNCTION","CubicBspline",
                                "weight function for meshFree interaction dynamics",
                                tuple<std::string>(
@@ -149,7 +167,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("WALL_FAKE_MASS",-1.0,"fake mass of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
    DoubleParameter("WALL_FAKE_PRESSURE",-1.0,"fake pressure of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
    DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
-   DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
    DoubleParameter("MAX_RADIUS",-1.0,"largest particle radius",&particledyn);
    DoubleParameter("REL_PENETRATION",-1.0,"relative particle penetration",&particledyn);
    DoubleParameter("MAX_VELOCITY",-1.0,"highest particle velocity",&particledyn);
@@ -167,8 +184,24 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    BoolParameter("MOVING_WALLS","no","switch on/off moving walls",&particledyn);
    IntParameter("TRANSFER_EVERY",1,"transfer particles every TRANSFER_EVERY steps",&particledyn);
    DoubleParameter("RANDOM_AMPLITUDE",0.0,"random value for initial position",&particledyn);
-   BoolParameter("RADIUS_DISTRIBUTION","no","switch on/off random normal distribution of particle radii",&particledyn);
-   DoubleParameter("RADIUS_DISTRIBUTION_SIGMA",-1.0,"standard deviation of normal distribution of particle radii",&particledyn);
+
+   setStringToIntegralParameter<int>(
+                               "RADIUS_DISTRIBUTION","None",
+                               "random distribution of particle radii",
+                               tuple<std::string>(
+                                 "None",
+                                 "LogNormal",
+                                 "Normal"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::radiusdistribution_none,
+                                 INPAR::PARTICLE::radiusdistribution_lognormal,
+                                 INPAR::PARTICLE::radiusdistribution_normal
+                                 ),
+                               &particledyn);
+
+   DoubleParameter("RADIUS_DISTRIBUTION_SIGMA",-1.0,"standard deviation of particle radii distribution",&particledyn);
+   IntParameter("RADIUS_CHANGE_CURVE",-1,"number of curve governing radius change",&particledyn);
    BoolParameter("RENDERING","no","switch on/off the rendering domain. If it is yes... you better have a RENDERING DOMAIN available",&particledyn);
    setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
                              "Acceleration due to gravity in particle simulations.",
@@ -188,6 +221,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   INPAR::PARTICLE::particle_2Dz),
                                 &particledyn);
 
+   DoubleParameter("ADHESION_EQ_GAP",0.0,"gap between two particles or between particle and wall in adhesion equilibrium",&particledyn);
+   DoubleParameter("ADHESION_NORMAL_STIFF",-1.0,"stiffness for normal adhesion force",&particledyn);
+   DoubleParameter("ADHESION_NORMAL_DAMP",-1.0,"damping coefficient for normal adhesion force",&particledyn);
+   DoubleParameter("ADHESION_NORMAL_EPS",-1.0,"depth of Lennard-Jones adhesion potential well",&particledyn);
+   DoubleParameter("ADHESION_MAX_FORCE",-1.0,"maximum adhesion force",&particledyn);
+   DoubleParameter("ADHESION_MAX_DISP",-1.0,"maximum displacement from adhesion equilibrium",&particledyn);
    /*----------------------------------------------------------------------*/
    /* parameters for generalised-alpha integrator */
    Teuchos::ParameterList& genalpha = particledyn.sublist("GENALPHA",false,"");

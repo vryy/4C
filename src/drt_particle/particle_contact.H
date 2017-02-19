@@ -118,7 +118,10 @@ namespace PARTICLE
     //@{
 
     /// normal contact model
-    INPAR::PARTICLE::NormalContact normal_contact_;
+    const INPAR::PARTICLE::NormalContact normal_contact_;
+
+    /// adhesion law governing normal contact of particles
+    const INPAR::PARTICLE::NormalAdhesion normal_adhesion_;
 
     /// particle Poisson ratio
     double nue_;
@@ -174,11 +177,24 @@ namespace PARTICLE
 
     /// energy stored in elastic springs due to contact
     double contact_energy_;
-    /// maximum penetration occured
+    /// maximum penetration occurred
     double g_max_;
 
+    /// gap between two particles or between particle and wall in adhesion equilibrium
+    const double adhesion_eq_gap_;
+    /// stiffness for normal adhesion force
+    const double adhesion_normal_stiff_;
+    /// damping coefficient for normal adhesion force
+    const double adhesion_normal_damp_;
+    /// depth of Lennard-Jones adhesion potential well
+    const double adhesion_normal_eps_;
+    /// maximum adhesion force
+    const double adhesion_max_force_;
+    /// maximum displacement from adhesion equilibrium
+    const double adhesion_max_disp_;
+
     //! write system energy every given step
-    int writeenergyevery_;
+    const int writeenergyevery_;
 
     //@}
 
@@ -274,8 +290,10 @@ namespace PARTICLE
     const Teuchos::RCP<Epetra_Vector>& specEnthalpyDotn);
 
   /// calculate normal contact force for single contact pair
-  virtual void CalculateNormalContactForce(
+  void CalculateNormalContactForce(
     const double g,
+    const double radius_i,
+    const double radius_j,
     const double v_rel_normal,
     const double m_eff,
     double& normalcontactforce,
@@ -296,8 +314,23 @@ namespace PARTICLE
     const int owner_j
     );
 
+  /// check whether normal particle adhesion needs to be evaluated
+  bool ConsiderNormalAdhesion(const double normalgap) const;
   //@}
 
+  private:
+
+  //! gather *.csv files with normal particle-particle and particle-wall contact forces across all processors
+  void GatherNormalContactForcesToFile() const;
+
+  //! write normal contact force between two particles or between particle and wall into *.csv file
+  void OutputNormalContactForceToFile(
+      const double&                normalcontactforce,     //!< normal contact force
+      const LINALG::Matrix<3,1>&   forceapplicationpoint   //!< force application point
+      ) const;
+
+  //! write particle-particle and particle-wall contact forces into *.csv file every given step
+  const int writecontactforcesevery_;
    };  // class ParticleCollisionHandlerDEM
 
 

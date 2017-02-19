@@ -25,7 +25,11 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
-  : DRT::ResultTest("PARTICLE")
+  : DRT::ResultTest("PARTICLE"),
+    kineticenergy_(tintegrator.KineticEnergy()),
+    internalenergy_(tintegrator.InternalEnergy()),
+    externalenergy_(tintegrator.ExternalEnergy()),
+    maxpenetration_(tintegrator.MaximumPenetration())
 {
   partdisc_ = tintegrator.Discretization();
 
@@ -44,7 +48,7 @@ PartResultTest::PartResultTest(PARTICLE::TimInt& tintegrator)
     density_  = tintegrator.Densitynp();
   if (tintegrator.Temperature() != Teuchos::null)
     temperature_ = tintegrator.Temperature();
-  if (tintegrator.Temperature() != Teuchos::null)
+  if (tintegrator.Pressure() != Teuchos::null)
     pressure_ = tintegrator.Pressure();
 }
 
@@ -221,3 +225,66 @@ void PartResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
     }
   }
 }
+
+
+/*-------------------------------------------------------------------------------------*
+ | test special quantity not associated with a particular element or node   fang 02/17 |
+ *-------------------------------------------------------------------------------------*/
+void PartResultTest::TestSpecial(
+    DRT::INPUT::LineDefinition&   res,         //!< input file line containing result test specification
+    int&                          nerr,        //!< number of failed result tests
+    int&                          test_count   ///< number of result tests
+    )
+{
+  // make sure that quantity is tested only by one processor
+  if(partdisc_->Comm().MyPID() == 0)
+  {
+    // extract name of quantity to be tested
+    std::string quantity;
+    res.ExtractString("QUANTITY",quantity);
+
+    // get result to be tested
+    const double result = ResultSpecial(quantity);
+
+    // compare values
+    const int err = CompareValues(result,"SPECIAL",res);
+    nerr += err;
+    ++test_count;
+  }
+
+  return;
+} // PartResultTest::TestSpecial
+
+
+/*----------------------------------------------------------------------*
+ | get special result to be tested                           fang 02/17 |
+ *----------------------------------------------------------------------*/
+double PartResultTest::ResultSpecial(
+    const std::string&   quantity   //! name of quantity to be tested
+    ) const
+{
+  // initialize variable for result
+  double result(0.);
+
+  // kinetic energy
+  if(quantity == "kineticenergy")
+    result = kineticenergy_;
+
+  // internal energy
+  else if(quantity == "internalenergy")
+    result = internalenergy_;
+
+  // external energy
+  else if(quantity == "externalenergy")
+    result = externalenergy_;
+
+  // maximum penetration
+  else if(quantity == "maxpenetration")
+    result = maxpenetration_;
+
+  // catch unknown quantity strings
+  else
+    dserror("Quantity '%s' not supported by result testing functionality for particle problems!",quantity.c_str());
+
+  return result;
+} // PartResultTest::ResultSpecial

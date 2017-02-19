@@ -56,6 +56,15 @@ namespace INPAR
       Tsuji
     };
 
+    /// adhesion law governing normal contact of particles
+    enum NormalAdhesion
+    {
+      adhesion_none,
+      adhesion_lennardjones,
+      adhesion_linspring,
+      adhesion_linspringdamp
+    };
+
     //! type of collision
     enum coltype
     {
@@ -71,6 +80,14 @@ namespace INPAR
       particle_2Dx,
       particle_2Dy,
       particle_2Dz
+    };
+
+    /// random distribution of particle radii
+    enum RadiusDistribution
+    {
+      radiusdistribution_none,
+      radiusdistribution_lognormal,
+      radiusdistribution_normal
     };
 
     /// Weight function for MeshFree interactions

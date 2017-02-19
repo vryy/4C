@@ -30,6 +30,7 @@
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_io/io_control.H"
 
 
 #include "../drt_mat/stvenantkirchhoff.H"
@@ -50,8 +51,16 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
   const Teuchos::ParameterList& particledynparams
   ) :
+  normal_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particledynparams,"NORMAL_CONTACT_LAW")),
+  normal_adhesion_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalAdhesion>(particledynparams,"NORMAL_ADHESION_LAW")),
   contact_energy_(0.0),
   g_max_(0.0),
+  adhesion_eq_gap_(particledynparams.get<double>("ADHESION_EQ_GAP")),
+  adhesion_normal_stiff_(particledynparams.get<double>("ADHESION_NORMAL_STIFF")),
+  adhesion_normal_damp_(particledynparams.get<double>("ADHESION_NORMAL_DAMP")),
+  adhesion_normal_eps_(particledynparams.get<double>("ADHESION_NORMAL_EPS")),
+  adhesion_max_force_(particledynparams.get<double>("ADHESION_MAX_FORCE")),
+  adhesion_max_disp_(particledynparams.get<double>("ADHESION_MAX_DISP")),
   writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
   myrank_(discret->Comm().MyPID()),
   discret_(discret),
@@ -66,9 +75,6 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
 
   // extract input parameters
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-
-  //find the normal contact type
-  normal_contact_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particleparams,"NORMAL_CONTACT_LAW");
 
   if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
   {
@@ -322,6 +328,61 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     if (r_dismember_ > r_max_)
             dserror("DISMEMBER_RADIUS > MAX_RADIUS -> DISMEMBER_RADIUS is too big!");
   }
+
+  // safety checks for particle adhesion
+  switch(normal_adhesion_)
+  {
+    case INPAR::PARTICLE::adhesion_none:
+    {
+      if(std::abs(adhesion_eq_gap_) > GEO::TOL14
+          or adhesion_normal_stiff_ >= 0.
+          or adhesion_normal_damp_ >= 0.
+          or adhesion_normal_eps_ >= 0.
+          or adhesion_max_force_ >= 0.
+          or adhesion_max_disp_ >= 0.)
+        dserror("If you do not want to consider particle adhesion, please do not specify any associated parameters in the input file!");
+
+      break;
+    }
+
+    case INPAR::PARTICLE::adhesion_lennardjones:
+    {
+      if(adhesion_normal_stiff_ >= 0.
+          or adhesion_normal_damp_ >= 0.
+          or adhesion_normal_eps_ <= 0.)
+        dserror("Invalid particle adhesion parameters specified in input file for Lennard-Jones potential!");
+
+      break;
+    }
+
+    case INPAR::PARTICLE::adhesion_linspring:
+    {
+      if(adhesion_normal_stiff_ <= 0.
+          or adhesion_normal_damp_ >= 0.
+          or adhesion_normal_eps_ >= 0.)
+        dserror("Invalid particle adhesion parameters specified in input file for linear-spring model!");
+
+      break;
+    }
+
+    case INPAR::PARTICLE::adhesion_linspringdamp:
+    {
+      if(adhesion_normal_stiff_ <= 0.
+          or adhesion_normal_damp_ <= 0.
+          or adhesion_normal_eps_ >= 0.)
+        dserror("Invalid particle adhesion parameters specified in input file for linear-spring-damp model!");
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Unknown adhesion law governing normal contact of particles!");
+      break;
+    }
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -425,17 +486,20 @@ void PARTICLE::ParticleCollisionHandlerBase::Init(
  *----------------------------------------------------------------------*/
 double PARTICLE::ParticleCollisionHandlerBase::EnergyAssemble(double owner_i,double owner_j)
 {
-  double value = -1.0;
+  // initialize scaling factor to unity
+  double value = 1.0;
 
+  // extract ID of current processor
   const int myrank = discret_->Comm().MyPID();
 
-  //contact  with wall
+  // adjust scaling factor in parallel case if necessary
+  // contact with wall
   if(owner_j<0)
   {
     if(owner_i!=myrank)
      value = 0.0;
   }
-  //contact between particle_i and particle_j
+  // contact between particle_i and particle_j
   else
   {
     if((owner_i==myrank && owner_j!=myrank) or (owner_i!=myrank && owner_j==myrank))
@@ -444,6 +508,7 @@ double PARTICLE::ParticleCollisionHandlerBase::EnergyAssemble(double owner_i,dou
       value = 0.0;
   }
 
+  // return scaling factor
   return value;
 }
 
@@ -460,7 +525,8 @@ PARTICLE::ParticleCollisionHandlerDEM::ParticleCollisionHandlerDEM(
     discret,
     particlealgorithm,
     particledynparams
-    )
+    ),
+  writecontactforcesevery_(particledynparams.get<int>("CONTACTFORCESEVRY"))
 {
   return;
 }
@@ -557,6 +623,14 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       }
     }
   }
+
+  // communicate maximum particle-particle or particle-wall penetration
+  double g_max(g_max_);
+  particle_algorithm_->Comm().MaxAll(&g_max,&g_max_,1);
+
+  // gather *.csv files with normal particle-particle and particle-wall contact forces across all processors if applicable
+  if(writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0)
+    GatherNormalContactForcesToFile();
 
   // erase temporary storage for collision data
   particleData_.clear();
@@ -703,14 +777,14 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
 
       // penetration
       const double g = norm_r_contact - data_i.rad - data_j.rad;
-      // in case of penetration contact forces and moments are calculated
-      if(g <= 0.0)
+      // in case of penetration or adhesion, contact forces and moments are calculated
+      if(g <= 0.0 or ConsiderNormalAdhesion(g))
       {
         // contact forces
         double normalcontactforce = 0.0;
         static LINALG::Matrix<3,1> tangentcontactforce(true);
 
-        if(std::abs(g)>g_max_)
+        if(g<=0. and std::abs(g)>g_max_)
           g_max_ = std::abs(g);
 
         // velocity v_rel = v_i - v_j
@@ -726,10 +800,18 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         const double v_rel_normal(v_rel.Dot(normal));
 
         // calculation of normal contact force
-        CalculateNormalContactForce(g, v_rel_normal, m_eff, normalcontactforce, data_i.owner, data_j.owner);
+        CalculateNormalContactForce(g, data_i.rad, data_j.rad, v_rel_normal, m_eff, normalcontactforce, data_i.owner, data_j.owner);
+
+        // output normal contact force between the two particles to *.csv file if applicable
+        if(writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0 and data_i.owner == myrank_ and data_j.owner <= myrank_)
+        {
+          LINALG::Matrix<3,1> forceapplicationpoint(true);
+          forceapplicationpoint.Update(1.,data_i.dis,data_i.rad+0.5*g,normal);
+          OutputNormalContactForceToFile(normalcontactforce,forceapplicationpoint);
+        };
 
         // calculation of tangential contact force
-        if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
+        if(g <= 0. and particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
         {
           // velocity v_rel = v_i - v_j + omega_i x (r'_i n) + omega_j x (r'_j n)
           static LINALG::Matrix<3,1> v_rel_rot;
@@ -801,7 +883,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
           LINALG::Assemble(*specEnthalpyDotn, specEnthalpyDotn2j, gid_j, data_j.owner);
         }
       }
-      else if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 --> no contact
+      else if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)// g > 0.0 and no adhesion --> no contact
       {
         // erase entry in history if still existing
         std::map<int, PARTICLE::Collision>::iterator it = history_particle.find(gid_j);
@@ -888,7 +970,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     const double distance_i_wall = r_i_wall.Norm2();
     const double penetration = distance_i_wall-radius_i;
 
-    if(penetration <= 0.0)
+    if(penetration <= 0.0 or ConsiderNormalAdhesion(penetration))
     {
       // get pointer to the current object type of closest point
       std::vector<WallContactPoint> *pointer=0;
@@ -939,7 +1021,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
         (*pointer).push_back(currentContact);
       }
     }
-    // penetration > 0.0 --> contact impossible
+    // penetration > 0.0 and no adhesion --> no contact
     else
     {
       unusedIds.insert(neighboringwallele->Id());
@@ -950,42 +1032,48 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
   // hierarchical: surfaces first
   for(size_t s=0; s<surfaces.size(); ++s)
   {
-    // within this radius no other contact point can lie: radius = sqrt(r_i^2 - (r_i-|g|)^2)
-    const double rminusg = radius_i-std::abs(surfaces[s].penetration);
-    const double radius_surface = sqrt(radius_i*radius_i - rminusg*rminusg);
+    if(surfaces[s].penetration < 0.)
+    {
+      // within this radius no other contact point can lie: radius = sqrt(r_i^2 - (r_i-|g|)^2)
+      const double rminusg = radius_i-std::abs(surfaces[s].penetration);
+      const double radius_surface = sqrt(radius_i*radius_i - rminusg*rminusg);
 
-    for(size_t l=0; l<lines.size(); ++l)
-    {
-      static LINALG::Matrix<3,1> distance_vector;
-      distance_vector.Update(1.0, surfaces[s].point, -1.0, lines[l].point);
-      const double distance = distance_vector.Norm2();
-      if(distance <= radius_surface)
-        unusedIds.insert(lines[l].eleid);
-    }
-    for(size_t p=0; p<nodes.size(); ++p)
-    {
-      static LINALG::Matrix<3,1> distance_vector;
-      distance_vector.Update(1.0, surfaces[s].point, -1.0, nodes[p].point);
-      const double distance = distance_vector.Norm2();
-      if(distance <= radius_surface)
-        unusedIds.insert(nodes[p].eleid);
+      for(size_t l=0; l<lines.size(); ++l)
+      {
+        static LINALG::Matrix<3,1> distance_vector;
+        distance_vector.Update(1.0, surfaces[s].point, -1.0, lines[l].point);
+        const double distance = distance_vector.Norm2();
+        if(distance <= radius_surface)
+          unusedIds.insert(lines[l].eleid);
+      }
+      for(size_t p=0; p<nodes.size(); ++p)
+      {
+        static LINALG::Matrix<3,1> distance_vector;
+        distance_vector.Update(1.0, surfaces[s].point, -1.0, nodes[p].point);
+        const double distance = distance_vector.Norm2();
+        if(distance <= radius_surface)
+          unusedIds.insert(nodes[p].eleid);
+      }
     }
   }
   // find entries of nodes which are within the penetration volume of the current particle
   // hierarchical: lines next
   for(size_t l=0; l<lines.size(); ++l)
   {
-    // radius = sqrt(r_i^2 - (r_i-|g|)^2)
-    const double rminusg = radius_i-std::abs(lines[l].penetration);
-    const double radius_line = sqrt(radius_i*radius_i - rminusg*rminusg);
-
-    for(size_t p=0; p<nodes.size(); ++p)
+    if(lines[l].penetration < 0.)
     {
-      static LINALG::Matrix<3,1> distance_vector;
-      distance_vector.Update(1.0, lines[l].point, -1.0, nodes[p].point);
-      const double distance = distance_vector.Norm2();
-      if(distance <= radius_line)
-        unusedIds.insert(nodes[p].eleid);
+      // radius = sqrt(r_i^2 - (r_i-|g|)^2)
+      const double rminusg = radius_i-std::abs(lines[l].penetration);
+      const double radius_line = sqrt(radius_i*radius_i - rminusg*rminusg);
+
+      for(size_t p=0; p<nodes.size(); ++p)
+      {
+        static LINALG::Matrix<3,1> distance_vector;
+        distance_vector.Update(1.0, lines[l].point, -1.0, nodes[p].point);
+        const double distance = distance_vector.Norm2();
+        if(distance <= radius_line)
+          unusedIds.insert(nodes[p].eleid);
+      }
     }
   }
 
@@ -1009,7 +1097,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
   for(size_t s=0; s<surfaces.size(); ++s)
   {
     // gid of wall element
-    WallContactPoint wallcontact = surfaces[s];
+    const WallContactPoint& wallcontact = surfaces[s];
     const int gid_wall = wallcontact.eleid;
 
     // distance-vector
@@ -1020,7 +1108,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     // distance between centre of mass of two particles
     const double norm_r_contact(r_contact.Norm2());
 
-    if(norm_r_contact == 0.0)
+    if(norm_r_contact < GEO::TOL14)
       dserror("particle center and wall are lying at the same place -> bad initialization?");
 
     // normal vector
@@ -1064,7 +1152,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     // penetration
     // g = norm_r_contact - radius_i;
     const double g(wallcontact.penetration);
-    if(std::abs(g)>g_max_)
+    if(g<=0. and std::abs(g)>g_max_)
       g_max_ = std::abs(g);
     //-------------------------------------------------------
 
@@ -1077,7 +1165,11 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     tangentcontactforce.PutScalar(0.0);
 
     // normal contact force between particle and wall (note: owner_j = -1)
-    CalculateNormalContactForce(g, v_rel_normal, m_eff, normalcontactforce, owner_i, -1);
+    CalculateNormalContactForce(g, data_i.rad, 0., v_rel_normal, m_eff, normalcontactforce, owner_i, -1);
+
+    // output normal contact force between particle and wall to *.csv file if applicable
+    if(writecontactforcesevery_ and particle_algorithm_->Step() % writecontactforcesevery_ == 0 and owner_i == myrank_)
+      OutputNormalContactForceToFile(normalcontactforce,wallcontact.point);
 
     if(particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::NormalAndTang_DEM)
     {
@@ -1163,6 +1255,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
   const double g,
+  const double radius_i,
+  const double radius_j,
   const double v_rel_normal,
   const double m_eff,
   double& normalcontactforce,
@@ -1170,159 +1264,213 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
   const int owner_j
   )
 {
-  // damping parameter
-  double d = 0.0;
-
-  //--------------------------------------------------------
-  // which contact law: for details see Bachelor thesis Niklas Fehn
-  // LinSpring = linear spring
-  // Hertz = normal force law of Hertz
-  // LinSpringDamp = linear spring damper element
-  // LeeHerrmann = nonlinear normal force law of Lee and Herrmann
-  // KuwabaraKono = nonlinear normal force law of Kuwabara und Kono
-  // Tsuji = nonlinear normal force law of Tsuji
-  //---------------------------------------------------------
-
-  // damping parameter
-  // TODO: for uni-sized particles this can be done once in the beginning -> efficiency
-  // TODO: different m_eff for particle-wall and particel-particle needed when uni-size assumption
-  if(owner_j < 0) // contact particle-wall
+  // evaluate normal contact force arising from penalty contact
+  if(g <= 0.)
   {
-    if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
+    // damping parameter
+    double d = 0.0;
+
+    //--------------------------------------------------------
+    // which contact law: for details see Bachelor thesis Niklas Fehn
+    // LinSpring = linear spring
+    // Hertz = normal force law of Hertz
+    // LinSpringDamp = linear spring damper element
+    // LeeHerrmann = nonlinear normal force law of Lee and Herrmann
+    // KuwabaraKono = nonlinear normal force law of Kuwabara und Kono
+    // Tsuji = nonlinear normal force law of Tsuji
+    //---------------------------------------------------------
+
+    // damping parameter
+    // TODO: for uni-sized particles this can be done once in the beginning -> efficiency
+    // TODO: different m_eff for particle-wall and particel-particle needed when uni-size assumption
+    if(owner_j < 0) // contact particle-wall
     {
-      if(e_wall_ != 0.0)
+      if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
       {
-        const double lnewall = log(e_wall_);
-        d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+        if(e_wall_ != 0.0)
+        {
+          const double lnewall = log(e_wall_);
+          d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+        }
+        else
+        {
+          d = 2.0 * sqrt(k_normal_ * m_eff);
+        }
       }
       else
       {
-        d = 2.0 * sqrt(k_normal_ * m_eff);
+        d = d_normal_wall_;
       }
     }
-    else
+    else // contact particle-particle
     {
-      d = d_normal_wall_;
-    }
-  }
-  else // contact particle-particle
-  {
-    if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
-    {
-      if(e_ != 0.0)
+      if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
       {
-        const double lne = log(e_);
-        d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+        if(e_ != 0.0)
+        {
+          const double lne = log(e_);
+          d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
+        }
+        else
+        {
+          d = 2.0 * sqrt(k_normal_ * m_eff);
+        }
       }
       else
       {
-        d = 2.0 * sqrt(k_normal_ * m_eff);
+        d = d_normal_;
       }
     }
-    else
+
+    // contact force
+    switch(normal_contact_)
     {
-      d = d_normal_;
-    }
-  }
-
-  // contact force
-  switch(normal_contact_)
-  {
-  case INPAR::PARTICLE::LinSpring:
-  {
-    normalcontactforce = k_normal_ * g;
-
-    if(writeenergyevery_)
+    case INPAR::PARTICLE::LinSpring:
     {
-      //monitor E N E R G Y: here: calculate energy of elastic contact
-      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k_normal_ * g * g;
-    }
-  }
-  break;
-  case INPAR::PARTICLE::Hertz:
-  {
-    normalcontactforce = - k_normal_ * pow(-g,1.5);
+      normalcontactforce = k_normal_ * g;
 
-    if(writeenergyevery_)
-    {
-      //monitor E N E R G Y: here: calculate energy of elastic contact
-      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
+      if(writeenergyevery_)
+      {
+        //monitor E N E R G Y: here: calculate energy of elastic contact
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k_normal_ * g * g;
+      }
     }
-  }
-  break;
-  case INPAR::PARTICLE::LinSpringDamp:
-  {
-    normalcontactforce = k_normal_ * g - d * v_rel_normal;
-
-    // tension-cutoff
-    if(tension_cutoff_ && normalcontactforce > 0.0)
-    {
-      normalcontactforce = 0.0;
-    }
-
-    if(writeenergyevery_)
-    {
-      //monitor E N E R G Y: here: calculate energy of elastic contact
-      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k_normal_ * g * g;
-    }
-  }
-  break;
-  case INPAR::PARTICLE::LeeHerrmann:
-  {
-    // m_eff = m_i * m_j / ( m_i + m_j)
-
-    normalcontactforce = - k_normal_ * pow(-g,1.5) - m_eff * d * v_rel_normal;
-
-    // tension-cutoff
-    if(tension_cutoff_ && normalcontactforce > 0.0)
-    {
-      normalcontactforce = 0.0;
-    }
-
-    if(writeenergyevery_)
-    {
-      //monitor E N E R G Y: here: calculate energy of elastic contact
-      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
-    }
-  }
-  break;
-  case INPAR::PARTICLE::KuwabaraKono:
-  {
-    normalcontactforce = - k_normal_ * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.5);
-
-    // tension-cutoff
-    if(tension_cutoff_ && normalcontactforce > 0.0)
-    {
-      normalcontactforce = 0.0;
-    }
-
-    if(writeenergyevery_)
-    {
-      //monitor E N E R G Y: here: calculate energy of elastic contact
-      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
-    }
-  }
-  break;
-  case INPAR::PARTICLE::Tsuji:
-  {
-    normalcontactforce = - k_normal_ * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.25);
-
-    // tension-cutoff
-    if(tension_cutoff_ && normalcontactforce > 0.0)
-    {
-      normalcontactforce = 0.0;
-    }
-
-    if(writeenergyevery_)
-    {
-      //monitor E N E R G Y: here: calculate energy of elastic contact
-      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
-    }
-  }
-  break;
-  default:
-    dserror("specified normal contact law does not exist");
     break;
+    case INPAR::PARTICLE::Hertz:
+    {
+      normalcontactforce = - k_normal_ * pow(-g,1.5);
+
+      if(writeenergyevery_)
+      {
+        //monitor E N E R G Y: here: calculate energy of elastic contact
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
+      }
+    }
+    break;
+    case INPAR::PARTICLE::LinSpringDamp:
+    {
+      normalcontactforce = k_normal_ * g - d * v_rel_normal;
+
+      // tension-cutoff
+      if(tension_cutoff_ && normalcontactforce > 0.0)
+      {
+        normalcontactforce = 0.0;
+      }
+
+      if(writeenergyevery_)
+      {
+        //monitor E N E R G Y: here: calculate energy of elastic contact
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k_normal_ * g * g;
+      }
+    }
+    break;
+    case INPAR::PARTICLE::LeeHerrmann:
+    {
+      // m_eff = m_i * m_j / ( m_i + m_j)
+
+      normalcontactforce = - k_normal_ * pow(-g,1.5) - m_eff * d * v_rel_normal;
+
+      // tension-cutoff
+      if(tension_cutoff_ && normalcontactforce > 0.0)
+      {
+        normalcontactforce = 0.0;
+      }
+
+      if(writeenergyevery_)
+      {
+        //monitor E N E R G Y: here: calculate energy of elastic contact
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
+      }
+    }
+    break;
+    case INPAR::PARTICLE::KuwabaraKono:
+    {
+      normalcontactforce = - k_normal_ * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.5);
+
+      // tension-cutoff
+      if(tension_cutoff_ && normalcontactforce > 0.0)
+      {
+        normalcontactforce = 0.0;
+      }
+
+      if(writeenergyevery_)
+      {
+        //monitor E N E R G Y: here: calculate energy of elastic contact
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
+      }
+    }
+    break;
+    case INPAR::PARTICLE::Tsuji:
+    {
+      normalcontactforce = - k_normal_ * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.25);
+
+      // tension-cutoff
+      if(tension_cutoff_ && normalcontactforce > 0.0)
+      {
+        normalcontactforce = 0.0;
+      }
+
+      if(writeenergyevery_)
+      {
+        //monitor E N E R G Y: here: calculate energy of elastic contact
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
+      }
+    }
+    break;
+    default:
+      dserror("specified normal contact law does not exist");
+      break;
+    }
+  }
+
+  // evaluate normal contact force arising from particle adhesion
+  if(normal_adhesion_ != INPAR::PARTICLE::adhesion_none)
+  {
+    // initialize variables for normal adhesion force and energy
+    double normaladhesionforce(0.), normaladhesionenergy(0.);
+
+    // calculate normal adhesion force and update internal system energy if applicable
+    switch(normal_adhesion_)
+    {
+      case INPAR::PARTICLE::adhesion_lennardjones:
+      {
+        const double eq_dist = radius_i+radius_j+adhesion_eq_gap_;
+        const double fraction = eq_dist/(radius_i+radius_j+g);
+        normaladhesionforce = 12.*adhesion_normal_eps_/eq_dist*(pow(fraction,7)-pow(fraction,13));
+
+        if(writeenergyevery_)
+          normaladhesionenergy = EnergyAssemble(owner_i,owner_j)*adhesion_normal_eps_*(pow(fraction,12)-2.*pow(fraction,6));
+
+        break;
+      }
+
+      case INPAR::PARTICLE::adhesion_linspring:
+      case INPAR::PARTICLE::adhesion_linspringdamp:
+      {
+        normaladhesionforce = adhesion_normal_stiff_*(g-adhesion_eq_gap_);
+
+        if(normal_adhesion_ == INPAR::PARTICLE::adhesion_linspringdamp)
+          normaladhesionforce -= 2.*adhesion_normal_damp_*sqrt(adhesion_normal_stiff_*m_eff)*v_rel_normal;
+
+        if(writeenergyevery_)
+          normaladhesionenergy = EnergyAssemble(owner_i,owner_j)*0.5*adhesion_normal_stiff_*pow(g-adhesion_eq_gap_,2);
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Unknown adhesion law governing normal contact of particles!");
+        break;
+      }
+    }
+
+    // add normal adhesion force and energy to total normal contact force and energy if upper force threshold is not exceeded
+    if(adhesion_max_force_ < 0. or std::abs(normaladhesionforce) <= adhesion_max_force_)
+    {
+      normalcontactforce += normaladhesionforce;
+      contact_energy_ += normaladhesionenergy;
+    }
   }
 
   return;
@@ -1481,6 +1629,94 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
 
     contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k * new_length * new_length;
   }
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------*
+ | check whether normal particle adhesion needs to be evaluated   fang 02/17 |
+ *---------------------------------------------------------------------------*/
+bool PARTICLE::ParticleCollisionHandlerDEM::ConsiderNormalAdhesion(const double normalgap) const
+{
+  return normal_adhesion_ != INPAR::PARTICLE::adhesion_none and (adhesion_max_disp_ < 0. or normalgap <= adhesion_eq_gap_ + adhesion_max_disp_);
+}
+
+
+/*----------------------------------------------------------------------------------------------------------------------*
+ | gather *.csv files with normal particle-particle and particle-wall contact forces across all processors   fang 02/17 |
+ *----------------------------------------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerDEM::GatherNormalContactForcesToFile() const
+{
+  // gathering is performed by first processor only
+  if(myrank_ == 0)
+  {
+    // open destination file
+    std::ostringstream step;
+    step << particle_algorithm_->Step();
+    const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".particle_contact_forces.csv."+step.str());
+    std::ofstream file(filename);
+
+    // loop over all processors
+    for(int iproc=0; iproc<discret_->Comm().NumProc(); ++iproc)
+    {
+      // open source file associated with current processor
+      std::ostringstream iprocstr;
+      iprocstr << iproc;
+      const std::string procfilename(filename+"."+iprocstr.str());
+      std::ifstream procfile(procfilename);
+
+      // gather current source file into destination file
+      if(procfile)
+        file << procfile.rdbuf();
+
+      // close and remove current source file
+      procfile.close();
+      if(remove(procfilename.c_str()))
+        dserror("Couldn't remove file named "+procfilename+"!");
+    }
+
+    // close destination file
+    file.close();
+  }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------------------*
+ | write normal contact force between two particles or between particle and wall into *.csv file   fang 02/17 |
+ *------------------------------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleCollisionHandlerDEM::OutputNormalContactForceToFile(
+    const double&                normalcontactforce,     //!< normal contact force
+    const LINALG::Matrix<3,1>&   forceapplicationpoint   //!< force application point
+    ) const
+{
+  // set file name
+  std::ostringstream step;
+  step << particle_algorithm_->Step();
+  std::ostringstream myrank;
+  myrank << myrank_;
+  const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".particle_contact_forces.csv."+step.str()+"."+myrank.str());
+
+  // open file in appropriate mode
+  std::ofstream file;
+  if(!std::ifstream(filename))
+  {
+    file.open(filename.c_str(),std::fstream::trunc);
+
+    // write header at beginning of file
+    if(myrank_ == 0)
+      file << "x,y,z,F" << std::endl;
+  }
+  else
+    file.open(filename.c_str(),std::fstream::app);
+
+  // write application point and value of normal contact force to file
+  file << std::setprecision(16) << std::fixed << forceapplicationpoint(0) << "," << forceapplicationpoint(1) << "," << forceapplicationpoint(2) << "," << normalcontactforce << std::endl;
+
+  // close file
+  file.close();
 
   return;
 }

@@ -31,7 +31,6 @@ MAXTIME                         30
 GRAVITY_ACCELERATION            0.0 -9.81 0.0
 PARTICLE_INTERACTION            MeshFree
 WEIGHT_FUNCTION                 CubicBspline
-RADIUS_DISTRIBUTION             no
 RANDOM_AMPLITUDE                0.001
 WALL_INTERACTION_TYPE           InitParticle
 LINEAR_SOLVER                   1

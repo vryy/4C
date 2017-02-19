@@ -34,8 +34,6 @@ REL_PENETRATION                 0.05
 MAX_VELOCITY                    1.0
 COEFF_RESTITUTION               0.2
 COEFF_RESTITUTION_WALL          0.2
-RADIUS_DISTRIBUTION             no
-RADIUS_DISTRIBUTION_SIGMA       0.004
 ------------------------------------------------DESIGN HEAT SOURCE CONDITION
 DPARTICLE                       1
 // heat source

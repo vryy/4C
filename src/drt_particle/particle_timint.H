@@ -19,7 +19,7 @@
 #include "particle_utils.H"
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_timestepping/timintmstep.H"
-#include "../drt_inpar/inpar_cavitation.H"
+#include "../drt_inpar/inpar_particle.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -340,6 +340,17 @@ namespace PARTICLE
     //! check state vectors (debugging)
     virtual void CheckStateVector(std::string vecName, const Teuchos::RCP<const Epetra_Vector> vec, bool trg_showVec = false);
 
+    //! return kinetic energy
+    double KineticEnergy() const {return kinergy_;};
+
+    //! return internal energy
+    double InternalEnergy() const {return intergy_;};
+
+    //! return external energy
+    double ExternalEnergy() const {return extergy_;};
+
+    //! return maximum particle-particle or particle-wall penetration
+    double MaximumPenetration() const;
     //@}
 
     //! @name Extract methods
@@ -615,7 +626,14 @@ namespace PARTICLE
     //! @name control flags for special features
     //@{
 
-    const bool variableradius_;   //!< bool to control whether radius is constant or variable
+    //! flag for random distribution of particle radii
+    const INPAR::PARTICLE::RadiusDistribution radiusdistribution_;
+
+    //! bool to control whether radius is constant or variable in time
+    const bool variableradius_;
+
+    //! number of curve governing radius change
+    const int radiuschangecurve_;
 
     //@}
 

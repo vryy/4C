@@ -1,47 +1,45 @@
 //
-// Maintainer: Cattabiani Alessandro
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
                   General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 Test case for particle DEM:
-- box containing 27 spherical particles with randomly distributed size
+- box containing 27 spherical particles with random, normally distributed size
 - gravitational acceleration in negative z-direction
 - coefficient of restitution e = 0.8 for particle-particle and particle-wall contact
 - particles fall down initially and then begin to collide with walls and each other
-- two heat sources with different life spans and position heat particles
-- particle-particle thermal interaction is considered
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
 SHAPEFCT                        Meshfree
 RANDSEED                        1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-CUTOFF_RADIUS                   0.05
+CUTOFF_RADIUS                   0.035
 BOUNDINGBOX                     -0.050001 -0.050001 -0.080001 0.050001 0.050001 0.080001
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
-RESULTSEVRY                     20
+RESULTSEVRY                     10
 RESTARTEVRY                     500
-TIMESTEP                        5e-5
-NUMSTEP                         6000
-MAXTIME                         0.3
+RESEVRYERGY                     3000
+TIMESTEP                        1.e-4
+NUMSTEP                         3000
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
-PARTICLE_INTERACTION            NormalContact_DEM_thermo
+PARTICLE_INTERACTION            NormalContact_DEM
 NORMAL_CONTACT_LAW              LinearSpringDamp
 MIN_RADIUS                      0.005
 MAX_RADIUS                      0.015
 REL_PENETRATION                 0.05
 MAX_VELOCITY                    1.0
-COEFF_RESTITUTION               0.5
-COEFF_RESTITUTION_WALL          0.5
-------------------------------------------------DESIGN HEAT SOURCE CONDITION
-DPARTICLE                       2
-// heat source
-E 1 - vertex0 -0.050001 0.050001 0.040001 vertex1 0.050001 -0.050001 -0.040001 HSQDot 984320 HSTstart 0 HSTend 0.2
-E 2 - vertex0 -0.050001 0.050001 -0.080001 vertex1 0.050001 -0.050001 0 HSQDot -2083320 HSTstart 0.1 HSTend 0.2
+COEFF_RESTITUTION               0.8
+COEFF_RESTITUTION_WALL          0.8
+RADIUS_DISTRIBUTION             LogNormal
+RADIUS_DISTRIBUTION_SIGMA       0.4
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -51,9 +49,33 @@ DSURF                           1
 E 1 - 1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0e9 NUE 0.3 DENS 1.0
-MAT 2 MAT_ExtParticle DENSITY 7.85e3 INITRADIUS 0.01 DISMEMBER_RADIUS 0.01 NUE 0.3 YOUNG 210.0e9 INITTEMPERATURE 293.16 CPS 1 CPL 1 LATENT_HEAT 2 TRANSITION_TEMPERATURE 300 THERMAL_EXPANSION_S 0.00001 THERMAL_EXPANSION_L 0.00003 THERMAL_EXPANSION_T 0.00005 BULK_MODULUS 50e9 DYNAMIC_VISCOSITY 40e7 BULK_VISCOSITY 0 THERMAL_CONDUCTIVITY 30 SURFACE_VOID_TENSION 1.65 SURFACE_WALL_TENSION 1.65
+MAT 2 MAT_Particle DENSITY 7.85e3 INITRADIUS 0.01 NUE 0.3 YOUNG 210.0e9
 ----------------------------------------------------------RESULT DESCRIPTION
-PARTICLE DIS particle NODE 11 QUANTITY temperature VALUE 2.81956534332874128e+02 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 1 QUANTITY velx VALUE -6.68493486777402834e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 3.57159022117974900e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 1 QUANTITY velz VALUE -3.44387402181473234e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE 1.31589573388351290e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 1.77169840612649634e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -6.21986867118485276e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 1 QUANTITY radius VALUE 1.49999999999999994e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 11 QUANTITY velx VALUE 6.50068494517493267e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 11 QUANTITY vely VALUE 4.05722315133728362e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 11 QUANTITY velz VALUE -3.60886785218490158e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 11 QUANTITY dispx VALUE 4.24677942536730649e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 11 QUANTITY dispy VALUE 3.99389978741557794e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 11 QUANTITY dispz VALUE -7.00450632398285367e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 11 QUANTITY radius VALUE 6.91252490988546707e-03 TOLERANCE 1.e-12
+PARTICLE DIS particle NODE 21 QUANTITY velx VALUE -1.67378357555818286e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 21 QUANTITY vely VALUE 3.82524906334754278e-01 TOLERANCE 1.e-10
+PARTICLE DIS particle NODE 21 QUANTITY velz VALUE 2.69818158388406802e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 21 QUANTITY dispx VALUE -4.11841839941209584e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 21 QUANTITY dispy VALUE 3.05263484528954035e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 21 QUANTITY dispz VALUE -6.82308532911933135e-02 TOLERANCE 1.e-11
+PARTICLE DIS particle NODE 21 QUANTITY radius VALUE 8.21805372850018326e-03 TOLERANCE 1.e-12
+PARTICLE SPECIAL QUANTITY kineticenergy VALUE 7.26435838874587153e-02 TOLERANCE 1.e-11
+PARTICLE SPECIAL QUANTITY internalenergy VALUE -6.97536074832106667e-01 TOLERANCE 1.e-10
+PARTICLE SPECIAL QUANTITY externalenergy VALUE 0.0 TOLERANCE 1.e-20
+PARTICLE SPECIAL QUANTITY maxpenetration VALUE 1.26137209335013163e-03 TOLERANCE 1.e-12
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

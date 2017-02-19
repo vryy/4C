@@ -118,7 +118,10 @@ PARTICLE::TimInt::TimInt
   dofmapexporter_(Teuchos::null),
   nodemapexporter_(Teuchos::null),
 
+  radiusdistribution_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::RadiusDistribution>(particledynparams,"RADIUS_DISTRIBUTION")),
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
+  radiuschangecurve_(particledynparams.get<int>("RADIUS_CHANGE_CURVE")),
+  particle_algorithm_(Teuchos::null),
   collhandler_(Teuchos::null),
   interHandler_(Teuchos::null)
 {
@@ -140,10 +143,6 @@ PARTICLE::TimInt::TimInt
   step_ = 0;
   timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
   stepn_ = step_ + 1;
-
-  // output file for energy
-  if ( (writeenergyevery_ != 0) and (myrank_ == 0) )
-    AttachEnergyFile();
 
   return;
 }
@@ -180,7 +179,7 @@ void PARTICLE::TimInt::Init()
     break;
   }
 
-  if(variableradius_)
+  if(variableradius_ or radiuschangecurve_ > 0)
   {
     // initial radius of each particle for time dependent radius
     radius0_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
@@ -243,12 +242,17 @@ void PARTICLE::TimInt::Init()
 
     // create and fill inertia
     PARTICLE::Utils::ComputeInertia((*radius_)(0), mass_, inertia_, true);
-
   }
+
+  // output file for energy
+  if(writeenergyevery_ != 0 and myrank_ == 0)
+    AttachEnergyFile();
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
-/* Set intitial fields in structure (e.g. initial velocities) */
+/* Set initial fields in structure (e.g. initial velocities) */
 void PARTICLE::TimInt::SetInitialFields()
 {
   // -----------------------------------------//
@@ -311,38 +315,53 @@ void PARTICLE::TimInt::SetInitialFields()
   // evaluate random normal distribution for particle radii if applicable
   // -----------------------------------------//
 
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RADIUS_DISTRIBUTION"))
+  switch(radiusdistribution_)
   {
-    // get minimum and maximum radius for particles
-    const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
-    const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
-
-    // loop over all particles
-    for(int n=0; n<discret_->NumMyRowNodes(); ++n)
+    case INPAR::PARTICLE::radiusdistribution_none:
     {
-      // get local ID of current particle
-      const int lid = discret_->NodeRowMap()->LID(discret_->lRowNode(n)->Id());
+      // do nothing
+      break;
+    }
 
-      // initialize random number generator with current particle radius as mean and input parameter value as standard deviation
-      DRT::Problem::Instance()->Random()->SetMeanVariance((*(*radius_)(0))[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
+    case INPAR::PARTICLE::radiusdistribution_lognormal:
+    case INPAR::PARTICLE::radiusdistribution_normal:
+    {
+      // get minimum and maximum radius for particles
+      const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
+      const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
 
-      // generate normally distributed random value for particle radius
-      double random_radius = DRT::Problem::Instance()->Random()->Normal();
-
-      // check whether random value lies within allowed bounds, and adjust otherwise
-      if(random_radius > max_radius)
+      // loop over all particles
+      for(int n=0; n<discret_->NumMyRowNodes(); ++n)
       {
-        random_radius = max_radius;
-      }
-      else if(random_radius < min_radius)
-      {
-        random_radius = min_radius;
+        // get local ID of current particle
+        const int lid = discret_->NodeRowMap()->LID(discret_->lRowNode(n)->Id());
+
+        // initialize random number generator with current particle radius or its natural logarithm as mean and input parameter value as standard deviation
+        DRT::Problem::Instance()->Random()->SetMeanVariance(radiusdistribution_ == INPAR::PARTICLE::radiusdistribution_lognormal ? log((*(*radius_)(0))[lid]) : (*(*radius_)(0))[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
+
+        // generate normally or log-normally distributed random value for particle radius
+        double random_radius = radiusdistribution_ == INPAR::PARTICLE::radiusdistribution_lognormal ? exp(DRT::Problem::Instance()->Random()->Normal()) : DRT::Problem::Instance()->Random()->Normal();
+
+        // check whether random value lies within allowed bounds, and adjust otherwise
+        if(random_radius > max_radius)
+          random_radius = max_radius;
+        else if(random_radius < min_radius)
+          random_radius = min_radius;
+
+        // set particle radius to random value
+        (*(*radius_)(0))[lid] = random_radius;
+
+        // recompute particle mass
+        (*mass_)[lid] = initDensity * PARTICLE::Utils::Radius2Volume(random_radius);
       }
 
-      // set particle radius to random value
-      (*(*radius_)(0))[lid] = random_radius;
-      // recompute particle mass
-      (*mass_)[lid] = initDensity * PARTICLE::Utils::Radius2Volume(random_radius);
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid random distribution of particle radii!");
+      break;
     }
   }
 
@@ -425,6 +444,12 @@ void PARTICLE::TimInt::SetInitialFields()
     deltaDensity->Update(1.0, *(*density_)(0), -1.0);
     PARTICLE::Utils::Density2Pressure(deltaDensity, (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true);
   }
+
+  // set vector of initial particle radii if necessary
+  if(radiuschangecurve_ > 0)
+    radius0_->Update(1.,*(*radius_)(0),0.);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -440,6 +465,10 @@ void PARTICLE::TimInt::PrepareTimeStep()
     // do particle business
     particle_algorithm_->TransferParticles(true);
   }
+
+  // update particle radii if necessary
+  if(radiuschangecurve_ > 0)
+    (*radius_)(0)->Update(DRT::Problem::Instance()->Curve(radiuschangecurve_-1).f(timen_),*radius0_,0.);
 
   return;
 }
@@ -876,7 +905,7 @@ void PARTICLE::TimInt::DetermineEnergy()
         kinergy_ += 0.5 * ((*mass_)[i] * kinetic_energy + (*inertia_)[i] * rot_energy);
       }
       // total external energy not available
-      kinergy_ = 0.0;
+      extergy_ = 0.0;
     }//energy for SPH case
     else if (collhandler_ == Teuchos::null and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree )
     {
@@ -997,9 +1026,8 @@ void PARTICLE::TimInt::AttachEnergyFile()
 {
   if (energyfile_.is_null())
   {
-
-    //energy for all cases besides SPH
-    if (collhandler_ != Teuchos::null)
+    // energy for all cases besides SPH
+    if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::MeshFree)
     {
       std::string energyname
         = DRT::Problem::Instance()->OutputControlFile()->FileName()
@@ -1008,7 +1036,9 @@ void PARTICLE::TimInt::AttachEnergyFile()
       (*energyfile_) << "# timestep time total_energy"
                      << " kinetic_energy internal_energy external_energy max_particle_penetration"
                      << std::endl;
-    }//energy for SPH case
+    }
+
+    // energy for SPH case
     else
     {
       std::string energyname
@@ -1019,8 +1049,8 @@ void PARTICLE::TimInt::AttachEnergyFile()
                      << " kinetic_energy internal_energy external_energy x_lin_momentum y_lin_momentum z_lin_momentum"
                      << std::endl;
     }
-
   }
+
   return;
 }
 
@@ -1217,6 +1247,16 @@ void PARTICLE::TimInt::CheckStateVector(std::string vecName, const Teuchos::RCP<
     std::cout << *vec << std::endl;
   std::cin.get();
 }
+
+
+/*----------------------------------------------------------------------------*
+ | return maximum particle-particle or particle-wall penetration   fang 02/17 |
+ *----------------------------------------------------------------------------*/
+double PARTICLE::TimInt::MaximumPenetration() const
+{
+  return collhandler_ == Teuchos::null ? 0. : collhandler_->GetMaxPenetration();
+}
+
 
 /*----------------------------------------------------------------------*/
 /* update step */
