@@ -1656,7 +1656,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::GatherNormalContactForcesToFile() co
     step << particle_algorithm_->Step();
     const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".particle_contact_forces.csv."+step.str());
     std::ofstream file;
-    file.open(filename);
+    file.open(filename.c_str());
 
     // loop over all processors
     for(int iproc=0; iproc<discret_->Comm().NumProc(); ++iproc)
@@ -1666,7 +1666,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::GatherNormalContactForcesToFile() co
       iprocstr << iproc;
       const std::string procfilename(filename+"."+iprocstr.str());
       std::ifstream procfile;
-      procfile.open(procfilename);
+      procfile.open(procfilename.c_str());
 
       // gather current source file into destination file
       if(procfile)
