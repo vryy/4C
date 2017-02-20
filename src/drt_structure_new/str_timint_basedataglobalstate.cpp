@@ -232,8 +232,20 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
           DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
               problem->ContactDynamicParams(),"SYSTEM");
 
+      enum INPAR::CONTACT::SolvingStrategy soltype =
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
+              problem->ContactDynamicParams(),"STRATEGY");
+
+      // systems without additional dofs
+      if (soltype == INPAR::CONTACT::solution_nitsche
+          ||
+          soltype == INPAR::CONTACT::solution_penalty
+          ||
+          soltype == INPAR::CONTACT::solution_uzawa)
+        model_block_id_[mt] = 0;
+
       // --- saddle-point system
-      if (systype == INPAR::CONTACT::system_saddlepoint)
+      else if (systype == INPAR::CONTACT::system_saddlepoint)
       {
         model_block_id_[mt] = max_block_num_;
         ++max_block_num_;
