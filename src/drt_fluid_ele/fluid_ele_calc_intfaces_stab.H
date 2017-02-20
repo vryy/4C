@@ -14,13 +14,13 @@ Literature:
     E.Burman, M.A.Fernandez
     Comput. Methods Appl. Mech. Engrg. 198 (2009) 2508-2519
 
+\level 2
 
-<pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -274,19 +274,33 @@ namespace DRT
           const bool isale
       );
 
-      //! Provid pressure and viscous u (EOS) ghost penalty stabilization for 2nd order derivatives
-      void GhostPenalty2nd(
-                  LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
-                  LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
-                  LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
-                  LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
-                  LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
-                  LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
-                  const double &                                                timefacfac,
-                  const double &                                                timefacfacpre,
-                  const double &                                                tau_u_2nd,
-                  const double &                                                tau_p_2nd
-                  );
+      //! Provid pressure and viscous u (EOS) ghost penalty stabilization for full! 2nd order derivatives
+      void GhostPenalty2ndFull(
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
+          const double &                                                timefacfac,
+          const double &                                                timefacfacpre,
+          const double &                                                tau_u_2nd,
+          const double &                                                tau_p_2nd
+      );
+
+      //! Provid pressure and viscous u (EOS) ghost penalty stabilization for 2nd order normal derivatives
+      void GhostPenalty2ndNormal(
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
+          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
+          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
+          LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
+          LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
+          const double &                                                timefacfac,
+          const double &                                                timefacfacpre,
+          const double &                                                tau_u_2nd,
+          const double &                                                tau_p_2nd
+      );
 
       //! Provide pressure (EOS) stabilization assembly for fluid
       void pressureEOS(

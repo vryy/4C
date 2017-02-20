@@ -179,6 +179,10 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
     {
       return DefineProblemTypeXFEM<DRT::Element::wedge6>(problem);
     }
+    case DRT::Element::wedge15:
+    {
+      return DefineProblemTypeXFEM<DRT::Element::wedge15>(problem);
+    }
 //    case DRT::Element::pyramid5:
 //    {
 //      return DefineProblemTypeXFEM<DRT::Element::pyramid5>(problem);

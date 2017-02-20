@@ -81,6 +81,7 @@ DRT::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
     ghost_penalty_visc_(false),
     ghost_penalty_trans_(false),
     ghost_penalty_u_p_2nd_(false),
+    ghost_penalty_u_p_2nd_normal_(false),
     ghost_penalty_visc_2nd_fac(0.0),
     ghost_penalty_press_2nd_fac(0.0),
     is_face_EOS_Pres_(false),
@@ -227,7 +228,8 @@ void DRT::ELEMENTS::FluidEleParameterIntFace::SetFaceGeneralXFEMParameter(
   // safety check
   if(fldparatimint_->IsStationary() and ghost_penalty_trans_) dserror("Do not use transient ghost penalties for stationary problems");
 
-  ghost_penalty_u_p_2nd_  = (bool)DRT::INPUT::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_2nd_STAB");
+  ghost_penalty_u_p_2nd_        = (bool)DRT::INPUT::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_2nd_STAB");
+  ghost_penalty_u_p_2nd_normal_ = (bool)DRT::INPUT::IntegralValue<int>(stablist_xfem, "GHOST_PENALTY_2nd_STAB_NORMAL");
 
   return;
 }

@@ -1967,6 +1967,8 @@ void FLD::XFluid::PrintStabilizationDetails() const
     IO::cout << "GHOST_PENALTY_FAC:                 " << interfstabparams->get<double>("GHOST_PENALTY_FAC") << "\n";
     IO::cout << "GHOST_PENALTY_TRANSIENT_FAC:       " << interfstabparams->get<double>("GHOST_PENALTY_TRANSIENT_FAC") << "\n";
     IO::cout << "GHOST_PENALTY_2nd_STAB:            " << interfstabparams->get<std::string>("GHOST_PENALTY_2nd_STAB") << "\n";
+    IO::cout << "GHOST_PENALTY_2nd_STAB_NORMAL:     " << interfstabparams->get<std::string>("GHOST_PENALTY_2nd_STAB_NORMAL") << "\n";
+
 
     IO::cout << "CONV_STAB_SCALING:                 " << interfstabparams->get<std::string>("CONV_STAB_SCALING") << "\n";
 

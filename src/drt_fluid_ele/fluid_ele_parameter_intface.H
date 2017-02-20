@@ -79,7 +79,7 @@ public:
   //! set the 2nd order derivatives ghost-penalty stabilization flag
   void Set_Face_GP_u_p_2nd(const bool is_face_GP_u_p_2nd){is_face_GP_u_p_2nd_ = is_face_GP_u_p_2nd;};
 
-  //! set the EOS pattern for the assembly of the current face
+   //! set the EOS pattern for the assembly of the current face
   void Set_Face_EOS_GP_Pattern(const INPAR::FLUID::EOS_GP_Pattern face_eos_gp_pattern){face_eos_gp_pattern_ = face_eos_gp_pattern;};
 
   //! general fluid parameters are set
@@ -158,6 +158,9 @@ public:
 
   //! get the 2nd order derivatives ghost-penalty stabilization flag
   bool Is_General_Ghost_Penalty_u_p_2nd(){return ghost_penalty_u_p_2nd_;};
+
+  //! get the 2nd order derivatives ghost-penalty stabilization flag - normal derivatives or full derivatives
+  bool Is_General_Ghost_Penalty_u_p_2nd_Normal(){return ghost_penalty_u_p_2nd_normal_;};
 
   //! get the viscous ghost-penalty stabilization factor
   double Ghost_Penalty_visc_fac(){return ghost_penalty_visc_fac;};
@@ -273,6 +276,9 @@ protected:
 
   //! general flag for 2nd order derivatives in u- and p- ghost-penalty stabilization terms
   bool ghost_penalty_u_p_2nd_;
+
+  //! general flag for 2nd order derivatives in u- and p- ghost-penalty stabilization terms
+  bool ghost_penalty_u_p_2nd_normal_;
 
   //! factor for viscous ghost penalty XFEM stabilization terms
   double ghost_penalty_visc_2nd_fac;

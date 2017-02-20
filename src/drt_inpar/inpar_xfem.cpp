@@ -235,6 +235,8 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("GHOST_PENALTY_TRANSIENT_STAB","no","switch on/off ghost penalty transient interface stabilization",&xfluid_stab);
 
   BoolParameter("GHOST_PENALTY_2nd_STAB","no","switch on/off ghost penalty interface stabilization for 2nd order derivatives",&xfluid_stab);
+  BoolParameter("GHOST_PENALTY_2nd_STAB_NORMAL","no","switch between ghost penalty interface stabilization for 2nd order derivatives in normal or all spatial directions",&xfluid_stab);
+
 
   DoubleParameter("GHOST_PENALTY_FAC",       0.1, "define stabilization parameter ghost penalty interface stabilization",&xfluid_stab);
 

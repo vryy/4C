@@ -5,15 +5,18 @@
 \brief Factory class for providing an implementation for coupling with
        Mixed/Stress/Hybrid methods or Nitsche's method to enforce
        interface conditions in the XFEM weakly
+
+\level 2
+
 <pre>
-Maintainer: Raffaela Kruse /Benedikt Schott
-            kruse@lnm.mw.tum.de
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
 </pre>
 */
 /*----------------------------------------------------------------------*/
+
 
 #include "fluid_ele_calc_xfem_coupling.H"
 #include "fluid_ele_calc_xfem_coupling_impl.H"
@@ -595,6 +598,7 @@ template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex27>
 template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet4>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet10>;
 template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::wedge15>;
 //template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::pyramid5>;
 
 template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::hex8>;
@@ -603,6 +607,7 @@ template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::hex27>;
 template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::tet4>;
 template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::tet10>;
 template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::wedge15>;
 //template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::pyramid5>;
 
 template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::hex8>;
@@ -611,4 +616,5 @@ template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::hex27>;
 template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::tet4>;
 template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::tet10>;
 template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::wedge15>;
 //template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::pyramid5>;
