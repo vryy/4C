@@ -1950,8 +1950,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                               "integration point based and scalar dependent interpolation between to materials",
                                               INPAR::MAT::m_sc_dep_interp));
 
-      AddNamedInt(mm,"IDZEROCONCMAT","material for zero concentrations");
-      AddNamedInt(mm,"IDINFTYCONCMAT","material for infinite concentrations");
+      AddNamedInt(mm,"IDMATZEROSC","material for lambda equal to zero");
+      AddNamedInt(mm,"IDMATUNITSC","material for lambda equal to one");
 //      AddNamedReal(mm,"ALPHA","size of ",-1.0,true);
 
       AppendMaterialDefinition(matlist,mm);

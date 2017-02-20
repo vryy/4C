@@ -11,7 +11,7 @@ strain energy function).
 \level 3
 
 The input line should read
-MAT 1 MAT_ScalarDepInterp CONC_0_MAT 2 CONC_INFTY_MAT 3
+MAT 1 MAT_ScalarDepInterp IDMATZEROSC 2 IDMATUNITSC 3
 
 
 \maintainer Moritz Thon
@@ -33,8 +33,8 @@ MAT::PAR::ScalarDepInterp::ScalarDepInterp(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  id_zero_conc_mat_(matdata->GetInt("IDZEROCONCMAT")),
-  id_infty_conc_mat_(matdata->GetInt("IDINFTYCONCMAT"))
+  id_lambda_zero_(matdata->GetInt("IDMATZEROSC")),
+  id_lambda_unit_(matdata->GetInt("IDMATUNITSC"))
 {
 
 };
@@ -62,9 +62,9 @@ DRT::ParObject* MAT::ScalarDepInterpType::Create( const std::vector<char> & data
 MAT::ScalarDepInterp::ScalarDepInterp()
   : params_(NULL),
     isinit_(false),
-    zero_conc_mat_(Teuchos::null),
-    infty_conc_mat_(Teuchos::null),
-    zero_conc_ratio_(Teuchos::null)
+    lambda_zero_mat_(Teuchos::null),
+    lambda_unit_mat_(Teuchos::null),
+    lambda_(Teuchos::null)
 {
 }
 
@@ -74,9 +74,9 @@ MAT::ScalarDepInterp::ScalarDepInterp()
 MAT::ScalarDepInterp::ScalarDepInterp(MAT::PAR::ScalarDepInterp* params)
   : params_(params),
     isinit_(false),
-    zero_conc_mat_(Teuchos::null),
-    infty_conc_mat_(Teuchos::null),
-    zero_conc_ratio_(Teuchos::null)
+    lambda_zero_mat_(Teuchos::null),
+    lambda_unit_mat_(Teuchos::null),
+    lambda_(Teuchos::null)
 {
 }
 
@@ -88,18 +88,18 @@ void MAT::ScalarDepInterp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
     dserror("This function should just be called, if the material is jet not initialized.");
 
   // Setup of elastic material for zero concentration
-  zero_conc_mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->id_zero_conc_mat_));
-  zero_conc_mat_->Setup(numgp, linedef);
+  lambda_zero_mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->id_lambda_zero_));
+  lambda_zero_mat_->Setup(numgp, linedef);
 
   // Setup of elastic material for zero concentration
-  infty_conc_mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->id_infty_conc_mat_));
-  infty_conc_mat_->Setup(numgp, linedef);
+  lambda_unit_mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->id_lambda_unit_));
+  lambda_unit_mat_->Setup(numgp, linedef);
 
   //Some safety check
-  const double density1 = zero_conc_mat_->Density();
-  const double density2 = infty_conc_mat_->Density();
+  const double density1 = lambda_zero_mat_->Density();
+  const double density2 = lambda_unit_mat_->Density();
   if (abs(density1-density2)>1e-14)
-    dserror("The densities of the materials specified in IDZEROCONCMAT and IDINFTYCONCMAT must be equal!");
+    dserror("The densities of the materials specified in IDMATZEROSC and IDMATUNITSC must be equal!");
 
 
   double lambda=1.0;
@@ -107,7 +107,7 @@ void MAT::ScalarDepInterp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   if(linedef->HaveNamed("lambda"))
     ReadLambda(linedef,"lambda",lambda);
 
-  zero_conc_ratio_ = std::vector<double >(numgp,lambda);
+  lambda_ = std::vector<double >(numgp,lambda);
 
   //initialization done
   isinit_ = true;
@@ -130,23 +130,23 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     dserror("no Gauss point number provided in material");
 
   //evaluate elastic material corresponding to zero concentration
-  LINALG::Matrix<6,1> stress_zero_conc = *stress;
+  LINALG::Matrix<6,1> stress_lambda_zero = *stress;
   LINALG::Matrix<6,6> cmat_zero_conc = *cmat;
 
-  zero_conc_mat_->Evaluate(defgrd, glstrain, params, &stress_zero_conc, &cmat_zero_conc,eleGID);
+  lambda_zero_mat_->Evaluate(defgrd, glstrain, params, &stress_lambda_zero, &cmat_zero_conc,eleGID);
 
   //evaluate elastic material corresponding to infinite concentration
-  LINALG::Matrix<6,1> stress_infty_conc = *stress;
+  LINALG::Matrix<6,1> stress_lambda_unit = *stress;
   LINALG::Matrix<6,6> cmat_infty_conc = *cmat;
 
-  infty_conc_mat_->Evaluate(defgrd, glstrain, params, &stress_infty_conc, &cmat_infty_conc,eleGID);
+  lambda_unit_mat_->Evaluate(defgrd, glstrain, params, &stress_lambda_unit, &cmat_infty_conc,eleGID);
 
-  double conc_zero_ratio;
+  double lambda;
   //get the ratio of interpolation
   // NOTE: if no ratio is available, we use the conc_zero material!
   if (params.isParameter("conc_zero_ratio"))
   {
-    conc_zero_ratio = params.get< double >("conc_zero_ratio");
+    lambda = params.get< double >("conc_zero_ratio");
 
     // NOTE: this would be nice, but since negative concentrations can occur,
     // we have to catch 'unnatural' cases different...
@@ -154,16 +154,16 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     //      dserror("The conc_zero_ratio must be in [0,1]!");
 
     // e.g. like that:
-    if ( conc_zero_ratio < -1.0e-14 )
-      conc_zero_ratio = 0.0;
-    if ( conc_zero_ratio > (1.0+1.0e-14) )
-      conc_zero_ratio = 1.0;
+    if ( lambda < -1.0e-14 )
+      lambda = 0.0;
+    if ( lambda > (1.0+1.0e-14) )
+      lambda = 1.0;
 
-    zero_conc_ratio_.at(gp)=conc_zero_ratio;
+    lambda_.at(gp)=lambda;
   }
   else
   {
-    conc_zero_ratio=zero_conc_ratio_.at(gp);
+    lambda=lambda_.at(gp);
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -171,28 +171,29 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   // \mym S = 2 \frac{\partial}{\partial \mym C} \left( \gamma(J) * \Psi_1(\mym C) + (1-\gamma(J)) * \Psi_2(\mym C) \right) = ...
   ///////////////////////////////////////////////////////////////////////////////////////////////
 
+  //TODO:make a substitution: \tilde{\lambda}=1-\lambda
   //do the linear interpolation between stresses:
   // ... = \gamma * 2 * \frac{\partial}{\partial \mym C} \Psi_1 + (1-\gamma) * 2* \frac{\partial}{\partial \mym C} \Psi_2)
-  stress->Update(conc_zero_ratio,stress_zero_conc,1-conc_zero_ratio,stress_infty_conc,0.0);
+  stress->Update(lambda,stress_lambda_zero,1.0-lambda,stress_lambda_unit,0.0);
 
-  cmat->Update(conc_zero_ratio,cmat_zero_conc,1-conc_zero_ratio,cmat_infty_conc,0.0);
+  cmat->Update(lambda,cmat_zero_conc,1.0-lambda,cmat_infty_conc,0.0);
 
   if (params.isParameter("dconc_zero_ratio_dC"))
   {
     //get derivative of interpolation ratio w.r.t. glstrain
-    Teuchos::RCP<LINALG::Matrix<6,1> > dconc_zero_ratio_dC =
+    Teuchos::RCP<LINALG::Matrix<6,1> > dlambda_dC =
         params.get< Teuchos::RCP<LINALG::Matrix<6,1> > >( "dconc_zero_ratio_dC");
 
     //evaluate strain energy functions
-    double psi_zero_conc = 0.0;
-    zero_conc_mat_->StrainEnergy(*glstrain,psi_zero_conc,eleGID);
+    double psi_lambda_zero = 0.0;
+    lambda_zero_mat_->StrainEnergy(*glstrain,psi_lambda_zero,eleGID);
 
-    double psi_infty_conc = 0.0;
-    infty_conc_mat_->StrainEnergy(*glstrain,psi_infty_conc,eleGID);
+    double psi_lambda_unit = 0.0;
+    lambda_unit_mat_->StrainEnergy(*glstrain,psi_lambda_unit,eleGID);
 
     //...and add the stresses due to possible dependency of the ratio w.r.t. to C
     // ... + * 2 * \Psi_1 * \frac{\partial}{\partial \mym C} \gamma - 2 * \Psi_2 * \frac{\partial}{\partial \mym C} \gamma )
-    stress->Update(2.0*psi_zero_conc,*dconc_zero_ratio_dC,-2.0*psi_infty_conc,*dconc_zero_ratio_dC,1.0);
+    stress->Update(2.0*psi_lambda_zero,*dlambda_dC,-2.0*psi_lambda_unit,*dlambda_dC,1.0);
 
     //Note: for the linearization we do neglect the derivatives of the ratio w.r.t. glstrain
   }
@@ -216,20 +217,20 @@ void MAT::ScalarDepInterp::Pack(DRT::PackBuffer& data) const
   int numgp=0;
   if (isinit_)
   {
-    numgp = zero_conc_ratio_.size();;   // size is number of gausspoints
+    numgp = lambda_.size();;   // size is number of gausspoints
   }
   AddtoPack(data,numgp);
 
   for (int gp=0; gp<numgp; gp++)
   {
-    AddtoPack(data,zero_conc_ratio_.at(gp));
+    AddtoPack(data,lambda_.at(gp));
   }
 
   // Pack data of both elastic materials
-  if (zero_conc_mat_!=Teuchos::null and infty_conc_mat_!=Teuchos::null)
+  if (lambda_zero_mat_!=Teuchos::null and lambda_unit_mat_!=Teuchos::null)
   {
-    zero_conc_mat_->Pack(data);
-    infty_conc_mat_->Pack(data);
+    lambda_zero_mat_->Pack(data);
+    lambda_unit_mat_->Pack(data);
   }
 
   return;
@@ -266,13 +267,13 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,numgp);
   if (not (numgp == 0))
   {
-    zero_conc_ratio_ = std::vector<double>(numgp,1.0);
+    lambda_ = std::vector<double>(numgp,1.0);
 
     for (int gp=0; gp<numgp; gp++)
     {
-      double zero_conc_ratio=1.0;
-      ExtractfromPack(position,data,zero_conc_ratio);
-      zero_conc_ratio_.at(gp)=zero_conc_ratio;
+      double lambda=1.0;
+      ExtractfromPack(position,data,lambda);
+      lambda_.at(gp)=lambda;
     }
   }
 
@@ -285,10 +286,10 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
     MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
     if (matel==NULL)
       dserror("failed to unpack elastic material");
-    zero_conc_mat_ = Teuchos::rcp(matel);
+    lambda_zero_mat_ = Teuchos::rcp(matel);
   }
   else
-    zero_conc_mat_ = Teuchos::null;
+    lambda_zero_mat_ = Teuchos::null;
 
   // Unpack data of elastic material (these lines are copied from drt_element.cpp)
   std::vector<char> dataelastic2;
@@ -299,10 +300,10 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
     MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
     if (matel==NULL)
       dserror("failed to unpack elastic material");
-    infty_conc_mat_ = Teuchos::rcp(matel);
+    lambda_unit_mat_ = Teuchos::rcp(matel);
   }
   else
-    infty_conc_mat_ = Teuchos::null;
+    lambda_unit_mat_ = Teuchos::null;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
@@ -313,40 +314,40 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------------*/
 void MAT::ScalarDepInterp::ResetAll(const int numgp)
 {
-  zero_conc_mat_->ResetAll(numgp);
-  infty_conc_mat_->ResetAll(numgp);
+  lambda_zero_mat_->ResetAll(numgp);
+  lambda_unit_mat_->ResetAll(numgp);
 }
 
 /*----------------------------------------------------------------------------*/
 void MAT::ScalarDepInterp::Update()
 {
-  zero_conc_mat_->Update();
-  infty_conc_mat_->Update();
+  lambda_zero_mat_->Update();
+  lambda_unit_mat_->Update();
 }
 
 /*----------------------------------------------------------------------------*/
 void MAT::ScalarDepInterp::ResetStep()
 {
-  zero_conc_mat_->ResetStep();
-  infty_conc_mat_->ResetStep();
+  lambda_zero_mat_->ResetStep();
+  lambda_unit_mat_->ResetStep();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ScalarDepInterp::VisNames(std::map<std::string,int>& names)
 {
-  std::string fiber = "zero_conc_ratio";
+  std::string fiber = "lambda";
   names[fiber] = 1; // 1-dim vector
 
-  zero_conc_mat_->VisNames(names);
-  infty_conc_mat_->VisNames(names);
+  lambda_zero_mat_->VisNames(names);
+  lambda_unit_mat_->VisNames(names);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool MAT::ScalarDepInterp::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
-  if (name == "zero_conc_ratio")
+  if (name == "lambda")
   {
     if ((int)data.size()!=1)
       dserror("size mismatch");
@@ -354,14 +355,14 @@ bool MAT::ScalarDepInterp::VisData(const std::string& name, std::vector<double>&
     double temp = 0.0;
     for (int gp=0; gp<numgp; gp++)
     {
-      temp += zero_conc_ratio_.at(gp);
+      temp += lambda_.at(gp);
     }
 
     data[0] = temp/((double)numgp);
   }
 
-  bool tmp1 = zero_conc_mat_->VisData(name, data, numgp, eleID);
-  bool tmp2 = infty_conc_mat_->VisData(name, data, numgp, eleID);
+  bool tmp1 = lambda_zero_mat_->VisData(name, data, numgp, eleID);
+  bool tmp2 = lambda_unit_mat_->VisData(name, data, numgp, eleID);
   return (tmp1 and tmp2);
 }
 
@@ -372,4 +373,28 @@ void MAT::ScalarDepInterp::ReadLambda(
 )
 {
   linedef->ExtractDouble(specifier,lambda);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ScalarDepInterp::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                                          double& psi, const int eleGID)
+{
+  //evaluate strain energy functions
+  double psi_lambda_zero =0.0;
+  lambda_zero_mat_->StrainEnergy(glstrain,psi_lambda_zero,eleGID);
+
+  double psi_lambda_unit = 0.0;
+  lambda_unit_mat_->StrainEnergy(glstrain,psi_lambda_unit,eleGID);
+
+  double lambda=0.0;
+  for (unsigned gp=0; gp<lambda_.size(); gp++)
+  {
+    lambda += lambda_.at(gp);
+  }
+  lambda=lambda/(lambda_.size());
+
+  //TODO:make a substitution: \tilde{\lambda}=1-\lambda
+  psi+=lambda*psi_lambda_zero+(1-lambda)*psi_lambda_unit;
+  return;
 }

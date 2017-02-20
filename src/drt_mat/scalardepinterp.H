@@ -60,9 +60,9 @@ namespace MAT
       /// @name material parameters
       //@{
       /// elastic material number
-      const int id_zero_conc_mat_;
+      const int id_lambda_zero_;
       /// growthlaw material number
-      const int id_infty_conc_mat_;
+      const int id_lambda_unit_;
       //@}
 
       // create material instance of matching type with my parameters
@@ -185,7 +185,7 @@ private:
     virtual double Density() const
     {
       //Note: we have already check that both densities are equal in Setuo()
-      return zero_conc_mat_->Density();
+      return lambda_zero_mat_->Density();
     };
 
     /// provide access to material by its ID
@@ -216,6 +216,9 @@ private:
     ///Reading material weights (lambda) from input file
     void ReadLambda(DRT::INPUT::LineDefinition* linedef, std::string specifier, double &lambda);
 
+    /// evaluate strain energy function
+    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,double& psi,const int eleGID);
+
   private:
 
     /// my material parameters
@@ -225,12 +228,13 @@ private:
     bool isinit_;
 
     /// elastic material for zero concentration
-    Teuchos::RCP<MAT::So3Material> zero_conc_mat_;
+    Teuchos::RCP<MAT::So3Material> lambda_zero_mat_;
 
     /// elastic material for infinity concentration
-    Teuchos::RCP<MAT::So3Material> infty_conc_mat_;
+    Teuchos::RCP<MAT::So3Material> lambda_unit_mat_;
 
-    std::vector<double> zero_conc_ratio_;
+    std::vector<double> lambda_;
+
   };
 
 
