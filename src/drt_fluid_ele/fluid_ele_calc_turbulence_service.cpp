@@ -4,8 +4,10 @@
 
 \brief Internal implementation of Fluid element
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -1612,6 +1614,7 @@ template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27,DRT::ELEMENTS::Fl
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge15,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8,DRT::ELEMENTS::Fluid::none>;

@@ -73,24 +73,33 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     {
       return FluidInternalSurfaceStab<DRT::Element::tri3,DRT::Element::tet4,DRT::Element::tet4>::Instance();
     }
+    else if(    surfele->ParentMasterElement()->Shape()==DRT::Element::wedge6
+             && surfele->ParentSlaveElement()->Shape()== DRT::Element::wedge6)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::tri3,DRT::Element::wedge6,DRT::Element::wedge6>::Instance();
+    }
     else
     {
-      dserror("expected combination tri3/tet4/tet4 for surface/parent/neighbor pair");
+      dserror("expected combination tri3/tet4/tet4 or tri6/wedge6/wedge6 for surface/parent/neighbor pair");
     }
     break;
   }
   // 3D:
   case DRT::Element::tri6:
   {
-
     if(    surfele->ParentMasterElement()->Shape()==DRT::Element::tet10
         && surfele->ParentSlaveElement()->Shape()== DRT::Element::tet10)
     {
       return FluidInternalSurfaceStab<DRT::Element::tri6,DRT::Element::tet10,DRT::Element::tet10>::Instance();
     }
+    else if(    surfele->ParentMasterElement()->Shape()==DRT::Element::wedge15
+        && surfele->ParentSlaveElement()->Shape()== DRT::Element::wedge15)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::tri6,DRT::Element::wedge15,DRT::Element::wedge15>::Instance();
+    }
     else
     {
-      dserror("expected combination tri6/tet10/tet10 for surface/parent/neighbor pair");
+      dserror("expected combination tri6/tet10/tet10 or tri6/wedge15/wedge15 for surface/parent/neighbor pair");
     }
     break;
   }
@@ -103,7 +112,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     {
       return FluidInternalSurfaceStab<DRT::Element::quad4,DRT::Element::hex8,DRT::Element::hex8>::Instance();
     }
-    else if(    surfele->ParentMasterElement()->Shape()==DRT::Element::wedge6
+    else if(    surfele->ParentMasterElement()->Shape()== DRT::Element::wedge6
               && surfele->ParentSlaveElement()->Shape()== DRT::Element::wedge6)
     {
       return FluidInternalSurfaceStab<DRT::Element::quad4,DRT::Element::wedge6,DRT::Element::wedge6>::Instance();
@@ -123,9 +132,14 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     {
       return FluidInternalSurfaceStab<DRT::Element::quad8,DRT::Element::hex20,DRT::Element::hex20>::Instance();
     }
+    else if(    surfele->ParentMasterElement()->Shape()== DRT::Element::wedge15
+        && surfele->ParentSlaveElement()->Shape()== DRT::Element::wedge15)
+    {
+      return FluidInternalSurfaceStab<DRT::Element::quad8,DRT::Element::wedge15,DRT::Element::wedge15>::Instance();
+    }
     else
     {
-      dserror("expected combination quad8/hex20/hex20 for surface/parent/neighbor pair");
+      dserror("expected combination quad8/hex20/hex20 or quad8/wedge15/wedge15 for surface/parent/neighbor pair");
     }
     break;
   }

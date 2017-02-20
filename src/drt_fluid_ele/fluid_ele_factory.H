@@ -5,11 +5,13 @@
 \brief Factory of fluid elements
 
 <pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
+\maintainer Volker Gravemeier
+            vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15236/245
 </pre>
+
+\level 1
 */
 /*--------------------------------------------------------------------------*/
 

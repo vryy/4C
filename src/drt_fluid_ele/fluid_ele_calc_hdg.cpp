@@ -4,8 +4,10 @@
 
 \brief main file containing routines for calculation of HDG fluid element
 
+\level 2
+
 <pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -1893,6 +1895,7 @@ template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::hex27>;
 template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::tet4>;
 template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::tet10>;
 template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::wedge15>;
 template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::quad4>;
 template class DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::quad8>;

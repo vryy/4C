@@ -4,9 +4,11 @@
 
 \brief standard routines for calculation of fluid element
 
+\level 1
+
 <pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
+\maintainer Volker Gravemeier
+            vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236/-245
 </pre>
@@ -71,6 +73,7 @@ template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::hex27>;
 template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::tet4>;
 template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::tet10>;
 template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::wedge15>;
 template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::quad4>;
 template class DRT::ELEMENTS::FluidEleCalcStd<DRT::Element::quad8>;

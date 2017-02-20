@@ -3,8 +3,10 @@
 
 \brief main file containing routines for calculation of HDG fluid element
 
+\level 2
+
 <pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235

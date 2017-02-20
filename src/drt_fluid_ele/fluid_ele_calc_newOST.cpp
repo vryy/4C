@@ -4,8 +4,10 @@
 
 \brief main file containing routines for calculation of fluid element
 
+\level 3
+
 <pre>
-Maintainer: Magnus Winter & Volker Gravemeier
+\maintainer Magnus Winter & Volker Gravemeier
             {winter,vgravem}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236/-245
@@ -2550,6 +2552,7 @@ template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27,DRT::ELEMENTS::Fl
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6,DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge15,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4,DRT::ELEMENTS::Fluid::none>;
 template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8,DRT::ELEMENTS::Fluid::none>;

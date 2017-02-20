@@ -1580,6 +1580,7 @@ template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::hex27>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::tet4>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::tet10>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::wedge15>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::quad4>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1<DRT::Element::quad8>;

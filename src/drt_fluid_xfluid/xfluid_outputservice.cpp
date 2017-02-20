@@ -19,8 +19,6 @@
 #include "xfluid_state_creator.H"
 #include "xfluid_state.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_discret_xfem.H"
@@ -1003,6 +1001,20 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
           const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
           LINALG::Matrix<numnodes,1> funct;
           DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::wedge6 );
+          LINALG::Matrix<3,numnodes> velocity( vel, true );
+          LINALG::Matrix<1,numnodes> pressure( press, true );
+          LINALG::Matrix<3,numnodes> acceleration( acc, true );
+
+          v.Multiply( 1, velocity, funct, 1 );
+          p.Multiply( 1, pressure, funct, 1 );
+          if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
+          break;
+        }
+        case DRT::Element::wedge15:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement;
+          LINALG::Matrix<numnodes,1> funct;
+          DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::wedge15 );
           LINALG::Matrix<3,numnodes> velocity( vel, true );
           LINALG::Matrix<1,numnodes> pressure( press, true );
           LINALG::Matrix<3,numnodes> acceleration( acc, true );

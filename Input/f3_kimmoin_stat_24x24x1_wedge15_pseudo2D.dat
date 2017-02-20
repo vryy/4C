@@ -1,0 +1,205 @@
+//
+// Maintainer: Benedikt Schott
+// schott@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15241
+//
+// Test of the direct specification of geometry for wedge 15 elements with the kimmoin test case adapted to an Oseen problem
+// Based on: Test of Edge-based pressure stabilization (pEOS) for wedge15 elements
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    3442
+//NODES       13103
+DIM           3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Fluid
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     1
+--------------------------------------------------------------------------IO
+OUTPUT_GMSH                     no
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+FILESTEPS                       1000
+-----------------------------------------------------FLUID DYNAMIC
+LINEAR_SOLVER                   1
+PHYSICAL_TYPE    Oseen
+OSEENFIELDFUNCNO 2
+INITIALFIELD     field_by_function
+STARTFUNCNO      2
+TIMEINTEGR       One_Step_Theta
+NONLINITER       fixed_point_like
+ITEMAX           10
+CONVCHECK        L_2_norm
+CONVTOL          1.0E-10
+RESTARTEVRY      0
+NUMSTEP          1
+NUMSTASTEPS      0
+MAXTIME          1.0
+TIMESTEP         1.0
+THETA            1.0
+START_THETA      1.0
+ALPHA_F          1.00
+ALPHA_M          1.00
+LIFTDRAG         no
+ADAPTCONV        Yes
+ADAPTCONV_BETTER 0.1
+SIMPLER          No
+GMSH_OUTPUT      yes
+GEOMETRY                        box
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+STABTYPE                        residual_based
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+TDS                             quasistatic
+TRANSIENT                       no_transient
+PSPG                            yes
+SUPG                            yes
+VSTAB                           no_vstab
+GRAD_DIV                        yes
+CROSS-STRESS                    no_cross
+REYNOLDS-STRESS                 no_reynolds
+-----------------------------------------------------------------FSI DYNAMIC
+SECONDORDER                     No
+----------------------------------------------------------------XFEM GENERAL
+GMSH_DEBUG_OUT                  No
+GMSH_SOL_OUT                    yes
+GMSH_DISCRET_OUT                yes
+GMSH_CUT_OUT                    yes
+VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
+BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
+------------------------------------------------------XFLUID DYNAMIC/GENERAL
+------------------------------------------------XFLUID DYNAMIC/STABILIZATION
+--------------------------------------------------------------------SOLVER 1
+NAME                            Fluid_Solver
+SOLVER                          Aztec_MSR //Aztec_MSR //Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50           // output every so often, 0 no output
+AZSOLVE                         GMRES        // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU //MLFLUID2     // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         1            // how often to recompute some preconditioners
+IFPACKGFILL                     3            // (3 for edgebased stabilization pattern) graph fill for ILU
+AZTOL                           1.0E-13      // tolerance in unscaled residual
+AZCONV                          AZ_r0        // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000         // max iterations
+AZSUB                           1000           // size of krylov space for gmres
+IFPACKOVERLAP                   0            // amount of ASM overlap for ILU, ILU, ICC, LU
+ML_MAXCOARSESIZE                1  //2500    // ML stop coarsening when coarse ndof smaller then this (1: each level has to be used)
+ML_MAXLEVEL                     3            // ML max number of levels
+ML_COARSEN                      UC           // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27           // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0          // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0          // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 ILU          // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU          // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack      // SGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     3 3 0        // no. stmoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.2         // damping fine grid
+ML_DAMPMED                      0.2         // damping med grids
+ML_DAMPCOARSE                   1.0          // damping coarse grid
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_fluid DYNVISCOSITY 0.0001 DENSITY 1.0 GAMMA 1.0
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC 1.0+sin(2.0*pi/3.0*(t-0.75)) t1 0.0 t2 100.0 // displacement curve
+----------------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC sin(t*pi/2.0)  t1 0.0 t2 1.0 //100.0
+----------------------------------------------------------------------CURVE3
+CURVE3 on EXPR FUNC 2.0*pi/3.0*cos(2.0*pi/3.0*(t-0.75)) t1 0.0 t2 100.0 // velocity curve
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------CURVE5
+----------------------------------------------------------------------FUNCT1
+//FUNCT1 KIMMOIN-RHS MAT 1 ISSTAT 1 ISSTOKES 0
+FUNCT1 EXPR 0 0.0 0 FUNCTION -1.0*(sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.45)
+----------------------------------------------------------------------FUNCT2 // exact velocity/pressure solution
+FUNCT2 KIMMOIN-UP MAT 1 ISSTAT 1
+----------------------------------------------------------------------FUNCT3
+FUNCT3 EXPR 0 0.0 0 FUNCTION -1.0*(sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.45)
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------------------FUNCT5
+----------------------------------------------------------------------FUNCT6
+----------------------------------------------------------RESULT DESCRIPTION
+FLUID DIS fluid NODE 231 QUANTITY velx VALUE 1.10222969010104088e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 231 QUANTITY vely VALUE -8.28298336621413833e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 231 QUANTITY velz VALUE 0.00000000000000000 TOLERANCE 1e-12
+FLUID DIS fluid NODE 231 QUANTITY pressure VALUE 1.24474639097804041e-01 TOLERANCE 1e-12
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 2
+NDLINE  14
+NDSURF  6
+NDVOL   1
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL   1
+// fluid_volume
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 1 1 1 Live Mid
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
+DVOL   1
+// fluid_volume
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 2 2 2 0 0 0
+-----------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
+DVOL   1
+// fluid_volume
+E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF   4
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 1.0 0.0 CURVE none none none none FUNCT 2 2 2 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 1.0 0.0 CURVE none none none none FUNCT 2 2 2 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 1.0 0.0 CURVE none none none none FUNCT 2 2 2 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 1.0 0.0 CURVE none none none none FUNCT 2 2 2 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+CORNER fluid x- y- z+ DNODE 1
+CORNER fluid x- y- z- DNODE 1
+CORNER fluid x- y+ z+ DNODE 1
+CORNER fluid x- y+ z- DNODE 1
+CORNER fluid x+ y- z+ DNODE 2
+CORNER fluid x+ y- z- DNODE 2
+CORNER fluid x+ y+ z+ DNODE 2
+CORNER fluid x+ y+ z- DNODE 2
+-----------------------------------------------DLINE-NODE TOPOLOGY
+EDGE fluid x- y+ DLINE 1
+EDGE fluid x- z+ DLINE 2
+EDGE fluid x- y- DLINE 3
+EDGE fluid x- z- DLINE 4
+EDGE fluid x- y+ DLINE 5
+EDGE fluid x- z+ DLINE 5
+EDGE fluid x- y- DLINE 5
+EDGE fluid x- z- DLINE 5
+EDGE fluid y+ z+ DLINE 6
+EDGE fluid y- z+ DLINE 7
+EDGE fluid y- z- DLINE 8
+EDGE fluid y+ y- DLINE 9
+EDGE fluid y+ z+ DLINE 10
+EDGE fluid y- z+ DLINE 10
+EDGE fluid y- z- DLINE 10
+EDGE fluid y+ y- DLINE 10
+EDGE fluid x+ y+ DLINE 11
+EDGE fluid x+ z+ DLINE 12
+EDGE fluid x+ y- DLINE 13
+EDGE fluid x+ z- DLINE 14
+-----------------------------------------------DSURF-NODE TOPOLOGY
+SIDE fluid y+ DSURFACE 1
+SIDE fluid y- DSURFACE 2
+SIDE fluid x- DSURFACE 3
+SIDE fluid z+ DSURFACE 4
+SIDE fluid z- DSURFACE 5
+SIDE fluid x+ DSURFACE 6
+------------------------------------------------DVOL-NODE TOPOLOGY
+VOLUME fluid DVOL 1
+-------------------------------------------------------NODE COORDS
+------------------------------------------------STRUCTURE ELEMENTS
+----------------------------------------------------FLUID DOMAIN
+LOWER_BOUND -0.5 -0.5 -0.01
+UPPER_BOUND  0.5  0.5  0.01
+INTERVALS   24 24 1
+ELEMENTS    FLUID WEDGE15 MAT 1 NA Euler GP 3 3 3 CA No
+PARTITION   auto
+---------------------------------------------------------------END
+// END

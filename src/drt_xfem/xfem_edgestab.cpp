@@ -291,7 +291,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     } // if linear elements
     else if (p_master->Shape() == DRT::Element::hex20
         or p_master->Shape() == DRT::Element::hex27
-        or p_master->Shape() == DRT::Element::tet10)
+        or p_master->Shape() == DRT::Element::tet10
+        or p_master->Shape() == DRT::Element::wedge15)
     {
       GEO::CUT::SideHandle* side = GetFace(faceele,wizard);   // the side of the quadratic element
       //-------------------------------- loop facets of this side -----------------------------
@@ -441,7 +442,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         or p_master->Shape() == DRT::Element::pyramid5
         or p_master->Shape() == DRT::Element::hex20
         or p_master->Shape() == DRT::Element::hex27
-        or p_master->Shape() == DRT::Element::tet10)
+        or p_master->Shape() == DRT::Element::tet10
+        or p_master->Shape() == DRT::Element::wedge15)
     {
 
       GEO::CUT::SideHandle * side = GetFace(faceele,wizard);

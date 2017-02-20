@@ -550,6 +550,7 @@ template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::hex27>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::tet4>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::tet10>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::wedge15>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::quad4>;
 template class DRT::ELEMENTS::FluidEleCalcImmersed<DRT::Element::quad8>;

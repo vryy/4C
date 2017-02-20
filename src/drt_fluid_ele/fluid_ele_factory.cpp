@@ -5,8 +5,8 @@
 \brief Factory of fluid elements
 
 <pre>
-\maintainer Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
+\maintainer Volker Gravemeier
+            vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15236/245
 </pre>
@@ -63,12 +63,10 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(DRT::
     {
       return DefineProblemType<DRT::Element::wedge6>(problem);
     }
-    /* wedge15 cannot be used since no mesh generator exists
     case DRT::Element::wedge15:
     {
       return DefineProblemType<DRT::Element::wedge15>(problem);
     }
-    */
     case DRT::Element::pyramid5:
     {
       return DefineProblemType<DRT::Element::pyramid5>(problem);

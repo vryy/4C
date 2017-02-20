@@ -371,6 +371,7 @@ template class DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<DRT::Element::hex27>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<DRT::Element::tet4>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<DRT::Element::tet10>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<DRT::Element::wedge15>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<DRT::Element::quad4>;
 template class DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<DRT::Element::quad8>;

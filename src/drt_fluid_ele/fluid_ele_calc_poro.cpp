@@ -7495,6 +7495,7 @@ template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::hex27>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::tet4>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::tet10>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::wedge15>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::quad4>;
 template class DRT::ELEMENTS::FluidEleCalcPoro<DRT::Element::quad8>;

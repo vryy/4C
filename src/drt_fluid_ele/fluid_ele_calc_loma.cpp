@@ -4,8 +4,10 @@
 
 \brief Low-Mach-number flow routines for calculation of fluid element
 
+\level 2
+
 <pre>
-Maintainer: Volker Gravemeier
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
@@ -683,6 +685,7 @@ template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::hex27>;
 template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::tet4>;
 template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::tet10>;
 template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::wedge15>;
 template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::pyramid5>;
 template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::quad4>;
 template class DRT::ELEMENTS::FluidEleCalcLoma<DRT::Element::quad8>;
