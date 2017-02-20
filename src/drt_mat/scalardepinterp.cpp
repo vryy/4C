@@ -8,14 +8,16 @@ come from the idea, that there is a scalar quantity (e.g. foam cells) which indu
 fraction thereby consists of another material (e.g. softer or stiffer material parameters or totally different
 strain energy function).
 
+\level 3
+
 The input line should read
 MAT 1 MAT_ScalarDepInterp CONC_0_MAT 2 CONC_INFTY_MAT 3
 
-<pre>
-Maintainer: Moritz Thon
+
+\maintainer Moritz Thon
             thon@mhpc.mw.tum.de
             089 - 289-10364
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/
@@ -99,7 +101,13 @@ void MAT::ScalarDepInterp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   if (abs(density1-density2)>1e-14)
     dserror("The densities of the materials specified in IDZEROCONCMAT and IDINFTYCONCMAT must be equal!");
 
-  zero_conc_ratio_ = std::vector<double >(numgp,1.0);
+
+  double lambda=1.0;
+  //Read lambda from input file, if available
+  if(linedef->HaveNamed("lambda"))
+    ReadLambda(linedef,"lambda",lambda);
+
+  zero_conc_ratio_ = std::vector<double >(numgp,lambda);
 
   //initialization done
   isinit_ = true;
@@ -355,4 +363,13 @@ bool MAT::ScalarDepInterp::VisData(const std::string& name, std::vector<double>&
   bool tmp1 = zero_conc_mat_->VisData(name, data, numgp, eleID);
   bool tmp2 = infty_conc_mat_->VisData(name, data, numgp, eleID);
   return (tmp1 and tmp2);
+}
+
+void MAT::ScalarDepInterp::ReadLambda(
+    DRT::INPUT::LineDefinition* linedef,
+    std::string specifier,
+    double &lambda
+)
+{
+  linedef->ExtractDouble(specifier,lambda);
 }

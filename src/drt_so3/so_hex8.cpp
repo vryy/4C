@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_hex8.cpp
 
+\brief ToDo Add meaningful comment.
+
+\level 1
+
 \maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
@@ -96,6 +100,7 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("STRENGTH")
     .AddOptionalNamedDouble("HU")
+    .AddOptionalNamedDouble("lambda")
     ;
 }
 

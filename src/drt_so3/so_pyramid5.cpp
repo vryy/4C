@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_pyramid5.cpp
-\brief
 
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289 15271
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 1
+
+\maintainer Alexander Seitz
 
 *----------------------------------------------------------------------*/
 
@@ -92,6 +90,8 @@ void DRT::ELEMENTS::So_pyramid5Type::SetupElementDefinition( std::map<std::strin
     .AddOptionalNamedDoubleVector("FIBER2",3)
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("STRENGTH")
+    .AddOptionalNamedDouble("HU")
+    .AddOptionalNamedDouble("lambda")
     ;
 }
 

@@ -1,13 +1,11 @@
-/*!----------------------------------------------------------------------**##
+/*!----------------------------------------------------------------------
 \file so_tet4.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 1
+
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 
@@ -99,6 +97,7 @@ void DRT::ELEMENTS::So_tet4Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDoubleVector("FIBER2",3)
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("HU")
+    .AddOptionalNamedDouble("lambda")
     ;
 }
 

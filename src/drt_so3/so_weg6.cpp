@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_weg6.cpp
-\brief
 
-<pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 1
+
+\maintainer Moritz Frenzel
 
 *----------------------------------------------------------------------*/
 
@@ -94,6 +92,7 @@ void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDoubleVector("FIBER2",3)
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("HU")
+    .AddOptionalNamedDouble("lambda")
     ;
 }
 

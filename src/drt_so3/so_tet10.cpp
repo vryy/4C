@@ -1,13 +1,11 @@
-/*!----------------------------------------------------------------------**##
+/*!----------------------------------------------------------------------
 \file so_tet10.cpp
-\brief
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 1
+
+\maintainer Jonas Biehler
 
 *----------------------------------------------------------------------*/
 
@@ -92,6 +90,9 @@ void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition( std::map<std::string,s
     .AddOptionalNamedDoubleVector("FIBER1",3)
     .AddOptionalNamedDoubleVector("FIBER2",3)
     .AddOptionalNamedDoubleVector("FIBER3",3)
+    .AddOptionalNamedDouble("STRENGTH")
+    .AddOptionalNamedDouble("HU")
+    .AddOptionalNamedDouble("lambda")
     ;
 }
 

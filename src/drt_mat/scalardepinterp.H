@@ -8,11 +8,13 @@ come from the idea, that there is a scalar quantity (e.g. foam cells) which indu
 fraction thereby consists of another material (e.g. softer or stiffer material parameters or totally different
 strain energy function).
 
-<pre>
-Maintainer: Moritz Thon
+\level 3
+
+
+\maintainer Moritz Thon
             thon@mhpc.mw.tum.de
             089 - 289-10364
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/
@@ -210,6 +212,9 @@ private:
 
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+
+    ///Reading material weights (lambda) from input file
+    void ReadLambda(DRT::INPUT::LineDefinition* linedef, std::string specifier, double &lambda);
 
   private:
 

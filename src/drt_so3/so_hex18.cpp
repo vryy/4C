@@ -83,6 +83,8 @@ void DRT::ELEMENTS::So_hex18Type::SetupElementDefinition( std::map<std::string,s
     .AddOptionalNamedDoubleVector("FIBER2",3)
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("STRENGTH")
+    .AddOptionalNamedDouble("HU")
+    .AddOptionalNamedDouble("lambda")
     ;
 }
 

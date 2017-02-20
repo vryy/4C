@@ -1,12 +1,11 @@
-/*!----------------------------------------------------------------------**##
+/*!----------------------------------------------------------------------
 \file so_nstet5.cpp
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 3
+
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 
@@ -157,6 +156,7 @@ void DRT::ELEMENTS::NStet5Type::SetupElementDefinition( std::map<std::string,std
   .AddOptionalNamedDoubleVector("FIBER2",3)
   .AddOptionalNamedDoubleVector("FIBER3",3)
   .AddOptionalNamedDouble("HU")
+  .AddOptionalNamedDouble("lambda")
   ;
 }
 

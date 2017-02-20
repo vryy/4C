@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_sh18.cpp
-\brief
 
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 1
+
+\maintainer Alexander Seitz
 
 *----------------------------------------------------------------------*/
 
@@ -77,6 +75,7 @@ void DRT::ELEMENTS::So_sh18Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("STRENGTH")
     .AddOptionalNamedDouble("HU")
+    .AddOptionalNamedDouble("lambda")
     ;
 }
 

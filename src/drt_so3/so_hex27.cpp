@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_hex27.cpp
-\brief
 
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 1
+
+\maintainer Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 
@@ -90,6 +88,8 @@ void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition( std::map<std::string,s
     .AddOptionalNamedDoubleVector("FIBER2",3)
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("STRENGTH")
+    .AddOptionalNamedDouble("HU")
+    .AddOptionalNamedDouble("lambda")
     ;
 }
 
