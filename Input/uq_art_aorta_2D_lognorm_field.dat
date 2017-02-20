@@ -1,3 +1,8 @@
+//
+// Maintainer: Jonas Biehler
+// biehler@lnm.mw.tum.de
+// 089 - 289-15276
+//
 ==================================================================
 General Data File BACI
 ==================================================================
@@ -185,14 +190,6 @@ DLINE                           0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           0
 ----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
-DVOL                            0
-----------------------------------------DESIGN XFEM POINT NEUMANN CONDITIONS
-DPOINT                          0
------------------------------------------DESIGN XFEM LINE NEUMANN CONDITIONS
-DLINE                           0
------------------------------------------DESIGN XFEM SURF NEUMANN CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN XFEM VOL NEUMANN CONDITIONS
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0

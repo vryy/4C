@@ -35,16 +35,6 @@ namespace DRT
   class Element;
 }
 
-namespace GEO
-{
-  class CutWizard;
-
-  namespace CUT
-  {
-    class ElementHandle;
-  }
-}
-
 namespace LINALG
 {
   class SparseOperator;
@@ -59,15 +49,13 @@ namespace XFEM
 {
 
 /// evaluate Neumann boundary conditions
-void EvaluateNeumann(  Teuchos::RCP<GEO::CutWizard>         wizard,
-                       Teuchos::ParameterList &             params,
+void EvaluateNeumann(  Teuchos::ParameterList &             params,
                        Teuchos::RCP<DRT::Discretization>    discret,
                        Teuchos::RCP<Epetra_Vector>          systemvector,
                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::null );
 
 /// evaluate Neumann boundary conditions
-void EvaluateNeumann(  Teuchos::RCP<GEO::CutWizard>         wizard,
-                       Teuchos::ParameterList &             params,
+void EvaluateNeumann(  Teuchos::ParameterList &             params,
                        Teuchos::RCP<DRT::Discretization>    discret,
                        Epetra_Vector&                       systemvector,
                        LINALG::SparseOperator*              systemmatrix = NULL );
@@ -81,27 +69,6 @@ void EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* >&  cond
                               Teuchos::RCP<DRT::Discretization>             discret,
                               Epetra_Vector&                                systemvector,
                               LINALG::SparseOperator*                       systemmatrix);
-
-void CutNeumannSurf(
-    Teuchos::RCP<DRT::Element> neumann_surface,
-    DRT::Element* parentele, GEO::CUT::ElementHandle * parentele_handle,
-    bool & eval_Neumann,
-    bool & xfem_eval_Neumann);
-
-/// evaluate XFEM Neumann boundary conditions
-void EvaluateNeumannXFEM(     Teuchos::RCP<GEO::CutWizard>                  wizard,
-                              std::multimap<std::string,DRT::Condition* >&  condition,
-                              bool                                          usetime,
-                              const double                                  time,
-                              bool                                          assemblemat,
-                              Teuchos::ParameterList &                      params,
-                              Teuchos::RCP<DRT::Discretization>             discret,
-                              Epetra_Vector&                                systemvector,
-                              LINALG::SparseOperator*                       systemmatrix);
-
-int getParentElementId(       Teuchos::RCP<DRT::Discretization>  discret,
-                              Teuchos::RCP<DRT::Element>  surf_ele  );
-
 
 
 }

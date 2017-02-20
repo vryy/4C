@@ -335,36 +335,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Volume));
 
-  // Neumann conditions for xfem fluid problems
-  Teuchos::RCP<ConditionDefinition> pointXFEMneumann =
-    Teuchos::rcp(new ConditionDefinition("DESIGN XFEM POINT NEUMANN CONDITIONS",
-                                         "PointXFEMNeumann",
-                                         "Point XFEM Neumann",
-                                         DRT::Condition::PointNeumann,
-                                         false,
-                                         DRT::Condition::Point));
-  Teuchos::RCP<ConditionDefinition> lineXFEMneumann =
-    Teuchos::rcp(new ConditionDefinition("DESIGN XFEM LINE NEUMANN CONDITIONS",
-                                         "LineXFEMNeumann",
-                                         "Line XFEM Neumann",
-                                         DRT::Condition::LineNeumann,
-                                         true,
-                                         DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfXFEMneumann =
-    Teuchos::rcp(new ConditionDefinition("DESIGN XFEM SURF NEUMANN CONDITIONS",
-                                         "SurfaceXFEMNeumann",
-                                         "Surface XFEM Neumann",
-                                         DRT::Condition::SurfaceNeumann,
-                                         true,
-                                         DRT::Condition::Surface));
-  Teuchos::RCP<ConditionDefinition> volXFEMneumann =
-    Teuchos::rcp(new ConditionDefinition("DESIGN XFEM VOL NEUMANN CONDITIONS",
-                                         "VolumeXFEMNeumann",
-                                         "Volume XFEM Neumann",
-                                         DRT::Condition::VolumeNeumann,
-                                         true,
-                                         DRT::Condition::Volume));
-
   // Neumann conditions for poroelasticity problems
   Teuchos::RCP<ConditionDefinition> pointporoneumann =
     Teuchos::rcp(new ConditionDefinition("DESIGN POINT PORO NEUMANN CONDITIONS",
@@ -413,11 +383,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     surfthermoneumann->AddComponent(neumanncomponents[i]);
     volthermoneumann->AddComponent(neumanncomponents[i]);
 
-    pointXFEMneumann->AddComponent(neumanncomponents[i]);
-    lineXFEMneumann->AddComponent(neumanncomponents[i]);
-    surfXFEMneumann->AddComponent(neumanncomponents[i]);
-    volXFEMneumann->AddComponent(neumanncomponents[i]);
-
     pointporoneumann->AddComponent(neumanncomponents[i]);
     lineporoneumann->AddComponent(neumanncomponents[i]);
     surfporoneumann->AddComponent(neumanncomponents[i]);
@@ -438,11 +403,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(linethermoneumann);
   condlist.push_back(surfthermoneumann);
   condlist.push_back(volthermoneumann);
-
-  condlist.push_back(pointXFEMneumann);
-  condlist.push_back(lineXFEMneumann);
-  condlist.push_back(surfXFEMneumann);
-  condlist.push_back(volXFEMneumann);
 
   condlist.push_back(pointporoneumann);
   condlist.push_back(lineporoneumann);

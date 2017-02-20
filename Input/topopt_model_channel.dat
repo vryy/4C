@@ -105,14 +105,6 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
-----------------------------------------DESIGN XFEM POINT NEUMANN CONDITIONS
-DPOINT                          0
------------------------------------------DESIGN XFEM LINE NEUMANN CONDITIONS
-DLINE                           0
------------------------------------------DESIGN XFEM SURF NEUMANN CONDITIONS
-DSURF                           0
-------------------------------------------DESIGN XFEM VOL NEUMANN CONDITIONS
-DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0

@@ -32,7 +32,6 @@
 
 #include "../drt_xfem/xfem_condition_manager.H"
 #include "../drt_xfem/xfem_dofset.H"
-#include "../drt_xfem/xfem_neumann.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
