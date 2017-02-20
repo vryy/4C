@@ -359,6 +359,50 @@ void MAT::AAAneohooke::Evaluate(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  calculate strain energy                                hemmler 02/17|
+ *----------------------------------------------------------------------*/
+void MAT::AAAneohooke::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                                          double& psi, const int eleGID)
+{
+  // material parameters for isochoric part
+  const double youngs   = params_->GetParameter(params_->young,eleGID);// Young's modulus
+  const double beta     = params_->GetParameter(params_->beta,eleGID);      // second parameter
+  const double nue      = params_->GetParameter(params_->nue,eleGID);       // Poisson's ratio
+  const double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
+
+  // material parameters for volumetric part
+  const double beta2 = -2.0;                                                   // parameter from Holzapfel
+  double komp  = (nue!=0.5) ? 2.0*alpha / (1.0-2.0*nue) : 0.0;              // bulk modulus
+
+  // build identity tensor I
+  LINALG::Matrix<6,1> identity(true);
+  for (int i = 0; i < 3; i++)
+    identity(i) = 1.0;
+
+  // right Cauchy-Green Tensor  C = 2 * E + I
+  LINALG::Matrix<6,1> rcg(glstrain);
+  rcg.Scale(2.0);
+  rcg += identity;
+
+  // invariants
+  double inv = rcg(0) + rcg(1) + rcg(2);  // 1st invariant, trace
+  double iiinv = rcg(0)*rcg(1)*rcg(2)
+        + 0.25 * rcg(3)*rcg(4)*rcg(5)
+        - 0.25 * rcg(1)*rcg(5)*rcg(5)
+        - 0.25 * rcg(2)*rcg(3)*rcg(3)
+        - 0.25 * rcg(0)*rcg(4)*rcg(4);    // 3rd invariant, determinante
+
+  //isochoric part
+  //W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
+  psi+=alpha*(inv*pow(iiinv,-1/3.)-3)+beta*(inv*pow(iiinv,-1/3.)-3)*(inv*pow(iiinv,-1/3.)-3);
+  //volumetric part
+  //W_vol = K beta2^(-2) ( beta2 ln (J) + J^(-beta2) -1 )
+  psi+=komp*pow(beta2,-2.)*(beta2*log(pow(iiinv,-2.))+pow(pow(iiinv,-2.),-beta2)-1.0);
+  return;
+}
+
+
 
 void MAT::AAAneohooke::VisNames(std::map<std::string,int>& names)
 {

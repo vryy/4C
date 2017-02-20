@@ -10,7 +10,8 @@ the input line should read
   MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E7 BETA 188.1E5 DENS 1.0
 
 <pre>
-Maintainer: Jonas Biehler
+\level 3
+\maintainer Jonas Biehler
             biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -155,6 +156,11 @@ private:
       LINALG::Matrix<6,1>* stress,
       LINALG::Matrix<6,6>* cmat,
       const int eleGID);
+
+    /// evaluate strain energy function
+    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                              double& psi,
+                              const int eleGID);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
