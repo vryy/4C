@@ -591,7 +591,7 @@ void DomainReader::CreateWedgeElement(int eleid, int* nodeoffset, int myrank, DR
       nodeids[12]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+2; // HEX-eqvi: 17
       nodeids[13]= *nodeoffset+((ez+2)*ny+ey+2)*nx+ex+1; // HEX-eqvi: 18
       nodeids[8]= *nodeoffset+(ez*ny+ey+1)*nx+ex+1;      // HEX-eqvi: 20
-      nodeids[13]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+1; // HEX-eqvi: 25
+      nodeids[14]= *nodeoffset+((ez+2)*ny+ey+1)*nx+ex+1; // HEX-eqvi: 25
     case 6:
       nodeids[0] = *nodeoffset+(ez*ny+ey)*nx+ex+2;       // HEX-eqvi: 1
       nodeids[1] = *nodeoffset+(ez*ny+ey+2)*nx+ex+2;     // HEX-eqvi: 2
