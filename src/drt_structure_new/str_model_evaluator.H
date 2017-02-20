@@ -66,6 +66,9 @@ namespace MODELEVALUATOR {
     //! setup
     void Setup();
 
+    //! setup the MultiMapExtractor in the global state
+    void SetupMultiMapExtractor();
+
     //! @name General evaluate routines
     //! @{
     bool InitializeInertiaAndDamping(const Epetra_Vector& x,

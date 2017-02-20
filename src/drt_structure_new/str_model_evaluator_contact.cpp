@@ -16,6 +16,7 @@
 
 #include "str_model_evaluator_contact.H"
 #include "str_model_evaluator_data.H"
+#include "str_model_evaluator.H"
 #include "str_timint_base.H"
 #include "str_integrator.H"
 #include "str_dbc.H"
@@ -343,10 +344,6 @@ void STR::MODELEVALUATOR::Contact::ReadRestart(
 void STR::MODELEVALUATOR::Contact::UpdateStepState(
     const double& timefac_n)
 {
-  /* Note: DisN() and DisNp() have the same value at this stage, since
-   * we call the structural model evaluator always in first place! */
-  strategy_ptr_->Update(GState().GetDisN());
-
   // add the contact forces to the old structural residual state
   // vector
   Teuchos::RCP<const Epetra_Vector> strcontactrhs_ptr =
@@ -357,6 +354,10 @@ void STR::MODELEVALUATOR::Contact::UpdateStepState(
         GState().GetMutableFstructureOld();
     fstructold_ptr->Update(timefac_n,*strcontactrhs_ptr,1.0);
   }
+
+  /* Note: DisN() and DisNp() have the same value at this stage, since
+   * we call the structural model evaluator always in first place! */
+  strategy_ptr_->Update(GState().GetDisN());
 
   PostUpdateStepState();
 }
@@ -371,6 +372,11 @@ void STR::MODELEVALUATOR::Contact::PostUpdateStepState()
   strategy_ptr_->RedistributeContact(GState().GetDisN());
   // initialize binning strategy for new time step
   strategy_ptr_->InitBinStrategyforTimestep(GState().GetVelN());
+  // setup the map extractor, since redistribute calls FillComplete
+  // on the structural discretization. Though this only changes the
+  // ghosted dofs while keeping row distribution fixed, the map pointers
+  // in the global state are no longer valid. So we reset them.
+  Int().ModelEval().SetupMultiMapExtractor();
 }
 
 /*----------------------------------------------------------------------*

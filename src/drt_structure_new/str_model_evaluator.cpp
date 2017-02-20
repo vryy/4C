@@ -114,6 +114,19 @@ void STR::ModelEvaluator::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::SetupMultiMapExtractor()
+{
+  // setup the block information for saddle point problems
+  for (Vector::iterator me_iter=me_vec_ptr_->begin();
+      me_iter!=me_vec_ptr_->end();++me_iter)
+    gstate_ptr_->SetupBlockInformation(**me_iter,
+        (**me_iter).Type());
+
+  gstate_ptr_->SetupMultiMapExtractor();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::ModelEvaluator::InitializeInertiaAndDamping(const Epetra_Vector& x,
     LINALG::SparseOperator& jac)
 {
