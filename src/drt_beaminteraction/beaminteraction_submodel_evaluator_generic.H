@@ -17,8 +17,12 @@
 
 #include "../drt_inpar/inpar_beaminteraction.H"
 #include "str_model_evaluator_beaminteraction.H"
+#include "../linalg/linalg_mapextractor.H"
 
 // forward declaration
+namespace BINSTRATEGY{
+  class BinningStrategy;
+}
 namespace PARTICLE {
   class ParticleHandler;
 }
@@ -68,7 +72,8 @@ namespace SUBMODELEVALUATOR {
         Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
         Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
         Teuchos::RCP<PARTICLE::ParticleHandler> const& particlehandler,
-        Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox
+        Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
+        Teuchos::RCP<LINALG::MultiMapExtractor> const& eletypeextractor
     );
 
     //! setup class variables
@@ -116,6 +121,22 @@ namespace SUBMODELEVALUATOR {
     //! reset routine for model evlaluator
     virtual void ResetStepState() = 0;
 
+    /*! \brief write model specific restart
+     *
+     *  \param iowriter            (in) : output writer
+     *  \param forced_writerestart (in) : special treatment is necessary, if the restart is forced */
+    virtual void WriteRestart(
+        IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const = 0;
+
+    /*! \brief read model specific restart information
+     *
+     *  \param ioreader (in) : input reader*/
+    virtual void ReadRestart( IO::DiscretizationReader& ioreader ) = 0;
+
+    //! \brief do stuff post read of model specific restart information
+    virtual void PostReadRestart() = 0;
+
     //! reset routine for model evlaluator
     virtual void InitSubmodelDependencies(Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelvector) = 0;
 
@@ -153,9 +174,17 @@ namespace SUBMODELEVALUATOR {
     Teuchos::RCP<PARTICLE::ParticleHandler>& ParticleHandlerPtr();
     PARTICLE::ParticleHandler const& ParticleHandler() const;
 
+    BINSTRATEGY::BinningStrategy& BinStrategy();
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategyPtr();
+    BINSTRATEGY::BinningStrategy const& BinStrategy() const;
+
     GEO::MESHFREE::BoundingBox& PeriodicBoundingBox();
     Teuchos::RCP<GEO::MESHFREE::BoundingBox>& PeriodicBoundingBoxPtr();
     GEO::MESHFREE::BoundingBox const& PeriodicBoundingBox() const;
+
+    LINALG::MultiMapExtractor& EleTypeMapExtractor();
+    Teuchos::RCP<LINALG::MultiMapExtractor>& EleTypeMapExtractorPtr();
+    LINALG::MultiMapExtractor const& EleTypeMapExtractor() const;
 
     //! @}
   protected:
@@ -183,6 +212,9 @@ namespace SUBMODELEVALUATOR {
 
     //! periodic bounding box
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
+
+    /// map extractor for split of different element types
+    Teuchos::RCP<LINALG::MultiMapExtractor> eletypeextractor_;
 
   }; // class Generic
 

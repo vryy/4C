@@ -82,12 +82,12 @@ void GetCurrentNodePos(
 
   // if the node does not have position DoFs, we return the position of the first
   // node of the corresponding element
-  if (beamelement != NULL and not beamelement->IsCenterlineNode(*node) )
+  if ( beamelement != NULL and not beamelement->IsCenterlineNode(*node) )
   {
     node_with_position_Dofs = beamelement->Nodes()[0];
   }
 
-  if(disnp!=Teuchos::null)
+  if( disnp != Teuchos::null )
   {
     const int gid = discret->Dof(node_with_position_Dofs, 0);
     const int lid = disnp->Map().LID(gid);
@@ -95,14 +95,14 @@ void GetCurrentNodePos(
       dserror("Your displacement is incomplete (need to be based on a column map"
               " as this function is also called from a loop over elements and "
               "each proc does (usually) not own all nodes of his row elements ");
-    for(int dim=0; dim<3; ++dim)
+    for( int dim = 0; dim < 3; ++dim )
     {
       currpos[dim] = node_with_position_Dofs->X()[dim] + (*disnp)[lid+dim];
     }
   }
   else
   {
-    for(int dim=0; dim<3; ++dim)
+    for( int dim = 0; dim < 3; ++dim )
       currpos[dim] = node_with_position_Dofs->X()[dim];
   }
 

@@ -23,10 +23,10 @@
 #include <Isorropia_EpetraRedistributor.hpp>
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 #include "binning_strategy.H"
 #include "binning_strategy_utils.H"
-
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -421,8 +421,6 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBinsUsingEleXAABB(
 {
   bintorowelemap.clear();
 
-  // NOTE: this member functions takes
-
   // exploit bounding box idea for elements in underlying discretization and bins
   // loop over all row elements
   for ( int lid = 0; lid < discret->NumMyRowElements(); ++lid )
@@ -607,28 +605,41 @@ void BINSTRATEGY::BinningStrategy::GetBinContent(
     if( lid < 0 )
       continue;
 
+    // get content of current bin
+    GetBinContent( bindis_->lColElement(lid), eles, bincontent, roweles );
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::GetBinContent(
+    DRT::Element* binptr,
+    std::set<DRT::Element*> &eles,
+    std::vector< BINSTRATEGY::UTILS::BinContentType > bincontent,
+    bool roweles
+)
+{
+  DRT::MESHFREE::MeshfreeMultiBin* bin =
+      static_cast<DRT::MESHFREE::MeshfreeMultiBin*>( binptr );
+
 #ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( bindis_->lColElement(lid) );
-    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+  // safety check
+  if( bin == NULL )
+    dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
 
-    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
-        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>( bindis_->lColElement(lid) );
-
-    // loop over bincontent you want to get
-    for( int bc_i = 0; bc_i < static_cast<int>( bincontent.size() ); ++bc_i )
+  // loop over bincontent you want to get
+  for( int bc_i = 0; bc_i < static_cast<int>( bincontent.size() ); ++bc_i )
+  {
+    // gather elements of with specific bincontent type
+    DRT::Element** elements = bin->AssociatedEles(bincontent[bc_i]);
+    const int numeles = bin->NumAssociatedEle(bincontent[bc_i]);
+    for( int iele = 0;iele < numeles; ++iele )
     {
-      // gather elements of with specific bincontent type
-      DRT::Element** elements = neighboringbin->AssociatedEles(bincontent[bc_i]);
-      const int numeles = neighboringbin->NumAssociatedEle(bincontent[bc_i]);
-      for( int iele = 0;iele < numeles; ++iele )
-      {
-        if( roweles && elements[iele]->Owner() != myrank_ )
-          continue;
-        eles.insert(elements[iele]);
-      }
+      if( roweles && elements[iele]->Owner() != myrank_ )
+        continue;
+      eles.insert(elements[iele]);
     }
-
   }
 }
 
@@ -1023,6 +1034,9 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
     Teuchos::RCP<Epetra_Map>&           stdelecolmap,
     Teuchos::RCP<Epetra_Map>&           stdnodecolmap ) const
 {
+
+
+
   // each owner of a bin gets owner of the nodes this bin contains
   // all other nodes of elements, of which proc is owner of at least one
   // node, are ghosted
@@ -1143,7 +1157,7 @@ void BINSTRATEGY::BinningStrategy::ExtendDiscretizationGhosting(
   discret->ExportColumnNodes( *nodecolmap );
 
   // fillcomplete discret with extended ghosting
-  discret->FillComplete( assigndegreesoffreedom, false, false );
+  discret->FillComplete( assigndegreesoffreedom, false, true );
 
 #ifdef DEBUG
   // print distribution after standard ghosting
@@ -2555,18 +2569,188 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::CreateLinearMapForNumbin(
   return Teuchos::rcp(new Epetra_Map(numbin, linearmap.size(), &linearmap[0], 0, comm));
 }
 
-/*----------------------------------------------------------------------*
- | apply periodic boundary conditions to particles          ghamm 10/12 |
- *----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::PeriodicBoundaryShift1D(double& currpos, int dim) const
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::PeriodicBoundaryShift1D( double& currpos, int dim ) const
 {
-  if(pbconoff_[dim])
+  if( pbconoff_[dim] )
   {
-    if(currpos < XAABB_(dim,0))
+    if( currpos < XAABB_(dim,0) )
       currpos += pbcdeltas_[dim];
-    else if(currpos > XAABB_(dim,1))
+    else if( currpos > XAABB_(dim,1) )
       currpos -= pbcdeltas_[dim];
   }
 
   return;
 }
+
+/*-----------------------------------------------------------------------------*
+| transfer nodes and elements of input discret                 eichinger 11/16 |
+ *-----------------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
+    Teuchos::RCP<DRT::Discretization> & discret,
+    Teuchos::RCP<Epetra_Vector> disnp)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("BINSTRATEGY::BinningStrategy::TransferNodesAndElements");
+
+  // store elements that need treatment
+  std::set< DRT::Element* > elestoupdate;
+
+  double currpos[3] = { 0.0, 0.0, 0.0 };
+  // loop over all column nodes and check ownership
+  for (int i = 0; i < discret->NodeColMap()->NumMyElements(); ++i )
+  {
+    // get current node and position
+    DRT::Node* currnode = discret->lColNode(i);
+    BINSTRATEGY::UTILS::GetCurrentNodePos( discret, currnode, disnp, currpos );
+
+    int const gidofbin = ConvertPosToGid(currpos);
+
+    if( bindis_->HaveGlobalElement(gidofbin) )
+    {
+      int const hostbinowner = bindis_->gElement(gidofbin)->Owner();
+      if( currnode->Owner() != hostbinowner )
+      {
+        // set new owner of node
+        currnode->SetOwner( hostbinowner );
+        // in case myrank is owner of associated element, add it to set
+        DRT::Element** curreles = currnode->Elements();
+        for( int j = 0; j < currnode->NumElement(); ++j )
+          if( curreles[j]->Owner() == myrank_ )
+            elestoupdate.insert(curreles[j]);
+      }
+    }
+    /*else: in this case myrank was not owner of node and a corresponding element had and
+    will only have ghost nodes on myrank, therefore we can leave the old owner because
+    during the built up of the node col map all ghost nodes get deleted anyway  */
+  }
+
+  // store elements that need to be communicated
+  std::map< int, std::vector<DRT::Element*> > toranktosendeles;
+
+  // loop over row elements whose ownership may need an update
+  std::set< DRT::Element* >::const_iterator eleiter;
+  for( eleiter = elestoupdate.begin(); eleiter != elestoupdate.end(); ++eleiter )
+  {
+    DRT::Element* currele = *eleiter;
+    DRT::Node** nodes = currele->Nodes();
+    std::map< int, int > owner;
+    for( int inode = 0; inode < currele->NumNode(); ++inode )
+      owner[nodes[inode]->Owner()] += 1;
+
+    // check if any proc owns more nodes than myrank (for same number myrank_ stays owner)
+    int newowner = myrank_;
+    int numowned = ( owner.find( myrank_ ) != owner.end() ) ? owner[myrank_] : -1;
+    std::map< int, int >::const_iterator i;
+    for( i = owner.begin(); i != owner.end(); ++i )
+      if( i->second > numowned )
+        newowner = i->first;
+
+    if ( newowner != myrank_ )
+    {
+      currele->SetOwner(newowner);
+      toranktosendeles[newowner].push_back(currele);
+    }
+  }
+
+  // send and receive elements
+  CommunicateElements( discret, toranktosendeles );
+
+  discret->FillComplete( true, false, false );
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::CommunicateElements(
+    Teuchos::RCP<DRT::Discretization> & discret,
+    std::map< int, std::vector<DRT::Element*> > const& toranktosendeles) const
+{
+  // build exporter
+  DRT::Exporter exporter( discret->Comm() );
+  int const numproc = discret->Comm().NumProc();
+
+  // -----------------------------------------------------------------------
+  // send
+  // -----------------------------------------------------------------------
+  // ---- pack data for sending -----
+  std::map<int, std::vector<char> > sdata;
+  std::vector<int> targetprocs( numproc, 0 );
+  std::map< int, std::vector<DRT::Element*> >::const_iterator p;
+  for( p = toranktosendeles.begin(); p != toranktosendeles.end(); ++p )
+  {
+    std::vector<DRT::Element*>::const_iterator iter;
+    for( iter = p->second.begin(); iter != p->second.end(); ++iter )
+    {
+     DRT::PackBuffer data;
+     (*iter)->Pack(data);
+     data.StartPacking();
+     (*iter)->Pack(data);
+     sdata[p->first].insert( sdata[p->first].end(), data().begin(), data().end() );
+    }
+    targetprocs[p->first] = 1;
+  }
+
+  // ---- send ----
+  const int length = sdata.size();
+  std::vector<MPI_Request> request(length);
+  int tag = 0;
+  for(std::map<int, std::vector<char> >::const_iterator p = sdata.begin(); p != sdata.end(); ++p )
+  {
+    exporter.ISend( myrank_, p->first, &((p->second)[0]), (int)(p->second).size(), 1234, request[tag]);
+    ++tag;
+  }
+  if (tag != length) dserror("Number of messages is mixed up");
+
+  // -----------------------------------------------------------------------
+  // receive
+  // -----------------------------------------------------------------------
+  // ---- prepare receiving procs -----
+  std::vector<int> summedtargets( numproc, 0) ;
+  discret->Comm().SumAll( targetprocs.data(), summedtargets.data(), numproc );
+
+  // ---- receive ----
+  for( int rec = 0; rec < summedtargets[myrank_]; ++rec )
+  {
+    std::vector<char> rdata;
+    int length = 0;
+    int tag = -1;
+    int from = -1;
+    exporter.ReceiveAny(from,tag,rdata,length);
+    if (tag != 1234)
+      dserror("Received on proc %i data with wrong tag from proc %i", myrank_, from);
+
+    // ---- unpack ----
+    {
+      // Put received nodes into discretization
+      std::vector<char>::size_type index = 0;
+      while (index < rdata.size())
+      {
+        std::vector<char> data;
+        DRT::ParObject::ExtractfromPack( index, rdata, data );
+        // this Teuchos::rcp holds the memory of the node
+        Teuchos::RCP< DRT::ParObject > object = Teuchos::rcp( DRT::UTILS::Factory(data), true );
+        Teuchos::RCP<DRT::Element> element = Teuchos::rcp_dynamic_cast< DRT::Element >(object);
+        if (element == Teuchos::null) dserror("Received object is not a element");
+
+        // safety check
+        if( discret->HaveGlobalElement( element->Id() ) != true)
+          dserror("%i is getting owner of element %i without having it ghosted before, "
+                  "this is not intended.", myrank_, element->Id() );
+
+        // delete already existing element (as it has wrong internal variables)
+        discret->DeleteElement( element->Id() );
+        // add node (ownership already adapted on sending proc)
+        discret->AddElement(element);
+      }
+      if ( index != rdata.size() )
+        dserror("Mismatch in size of data %d <-> %d",static_cast<int>( rdata.size() ), index );
+    }
+  }
+
+  // wait for all communications to finish
+  for ( int i = 0; i < length; ++i )
+    exporter.Wait( request[i] );
+  // safety, should be a no time operation if everything works fine before
+  discret->Comm().Barrier();
+}
+

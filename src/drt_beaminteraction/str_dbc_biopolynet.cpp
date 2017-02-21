@@ -31,100 +31,35 @@
 #include "../drt_browniandyn/str_model_evaluator_browniandyn.H"
 
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
 STR::DbcBioPolyNet::DbcBioPolyNet()
- :smdyn_ptr_(Teuchos::null),
-  basisnodes_(0),
-  basiselements_(0),
-  useinitdbcset_(false)
+    :periodic_boundingbox_( Teuchos::null ),
+     useinitdbcset_(false)
 {
   // empty constructor
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::DbcBioPolyNet::Init(const Teuchos::RCP<DRT::Discretization>&     discret_ptr_,
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void STR::DbcBioPolyNet::Init(const Teuchos::RCP<DRT::Discretization>&   discret_ptr_,
                             const Teuchos::RCP<Epetra_Vector>&           freact_ptr,
                             const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
 {
   // call Init from base class
-  STR::Dbc::Init(discret_ptr_,freact_ptr,timint_ptr);
+  STR::Dbc::Init( discret_ptr_, freact_ptr, timint_ptr ) ;
 
-  smdyn_ptr_ = timint_ptr_->GetDataSDyn().GetMeshFreeDataPtr();
+  periodic_boundingbox_ = timint_ptr_->GetDataSDynPtr()->GetPeriodicBoundingBox();
 
   // initial clearing of dbc management vectors
   dbcnodesets_.clear();
-  // number of nodes which are part of the discretization already before starting adding crosslinkers
-  basisnodes_    = discret_ptr_->NumGlobalNodes();
-  // number of nodes which are part of the discretization already before starting adding crosslinkers
-  basiselements_ = discret_ptr_->NumGlobalElements();
-
-  // BC sanity checks
-  DbcSanityCheck();
-
-  // print dbc type
-  BioPolyNetPrintBCType();
 
   isinit_ = true;
 }
 
-/*----------------------------------------------------------------------*
- |  print Boundary condition type to screen      (public) mueller 03/12 |
- *----------------------------------------------------------------------*/
-void STR::DbcBioPolyNet::BioPolyNetPrintBCType()
-{
-  if(!DiscretPtr()->Comm().MyPID())
-  {
-    INPAR::STATMECH::DBCType dbctype = smdyn_ptr_->DbcType();
-    switch(dbctype)
-    {
-      // standard DBC application
-      case INPAR::STATMECH::dbctype_std:
-        std::cout<<"- Conventional Input file based application of DBCs"<<std::endl;
-      break;
-      // shear with a fixed Dirichlet node set
-      case INPAR::STATMECH::dbctype_shearfixed:
-        std::cout<<"- DBCs for rheological measurements applied: fixed node set"<<std::endl;
-      break;
-      case INPAR::STATMECH::dbctype_shearfixeddel:
-        std::cout<<"- DBCs for rheological measurements applied: fixed node set"<<std::endl;
-      break;
-      // shear with an updated Dirichlet node set (only DOF in direction of oscillation is subject to BC, others free)
-      case INPAR::STATMECH::dbctype_sheartrans:
-        std::cout<<"- DBCs for rheological measurements applied: transient node set"<<std::endl;
-      break;
-      // pin down and release individual nodes
-      case INPAR::STATMECH::dbctype_pinnodes:
-        std::cout<<"- Special DBCs pinning down selected nodes"<<std::endl;
-      break;
-      // apply affine shear deformation
-      case INPAR::STATMECH::dbctype_affineshear:
-        std::cout<<"- DBCs for affine shear deformation"<<std::endl;
-      break;
-      case INPAR::STATMECH::dbctype_affinesheardel:
-        std::cout<<"- DBCs for affine shear deformation"<<std::endl;
-      break;
-      case INPAR::STATMECH::dbctype_movablesupport1d:
-        std::cout<<"- DBCs 1D movable support"<<std::endl;
-      break;
-      // no DBCs at all
-      case INPAR::STATMECH::dbctype_none:
-        std::cout<<"- No application of DBCs (i.e. also no DBCs by Input file)"<<std::endl;
-      break;
-      // default: everything involving periodic boundary conditions
-      default:
-        dserror("Check your DBC type! %i", dbctype);
-      break;
-    }
 
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | apply Dirichlet Boundary Conditions            (public) mueller 03/12|
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
 void STR::DbcBioPolyNet::ApplyDirichletBC(const double&               time,
                                         Teuchos::RCP<Epetra_Vector> dis,
                                         Teuchos::RCP<Epetra_Vector> vel,

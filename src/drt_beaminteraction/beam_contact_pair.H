@@ -77,8 +77,7 @@ public:
 
   //! return appropriate internal implementation class (acts as a simple factory)
   static Teuchos::RCP<BeamContactPair> Create(
-      unsigned int numnodes,
-      unsigned int numnodalvalues);
+      std::vector< DRT::Element const *> const& ele_ptrs);
 
   /*
   \brief Update state of translational nodal DoFs (absolute positions and tangents) of both elements

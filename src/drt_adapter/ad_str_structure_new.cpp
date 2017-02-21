@@ -483,7 +483,8 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamInteractionParams().sublist("CONTRACTILE CELLS"), "CONTRACTILECELLS") or
       (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
       DRT::Problem::Instance()->BeamContactParams(),"BEAMS_STRATEGY") != INPAR::BEAMCONTACT::bstr_none and
-      modelevaluator == INPAR::BEAMCONTACT::bstr_standard ) )
+      modelevaluator == INPAR::BEAMCONTACT::bstr_standard ) or
+      ( beampotconditions.size() > 0 and modelevaluator == INPAR::BEAMCONTACT::bstr_standard) )
     modeltypes.insert(INPAR::STR::model_beaminteraction);
 
   // hopefully we haven't forgotten anything

@@ -217,6 +217,20 @@ void IO::DiscretizationReader::ReadHistoryData(int step)
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationReader::ReadCharVector( Teuchos::RCP<std::vector<char> >& charvec,
+                const std::string name)
+{
+  // read vector properties
+  MAP* result = map_read_map(restart_step_, name.c_str());
+  std::string value_path = map_read_string(result, "values");
+
+  charvec = reader_->ReadCharVector( value_path, dis_->Comm() );
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1486,6 +1500,58 @@ void IO::DiscretizationWriter::WriteKnotvector() const
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* write a stl vector of chars                                          */
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteCharVector(
+  const std::string name,
+  Teuchos::RCP<std::vector<char> > charvec)
+{
+  if(binio_)
+  {
+    // only proc0 writes the vector entities to the binary data
+    // an appropriate name has to be provided
+    std::string valuename = name + ".values";
+    const hsize_t size = charvec->size();
+    if (size != 0)
+    {
+      const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),1,&size,&((*charvec)[0]));
+      if (make_status < 0)
+        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+    }
+    else
+    {
+      const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),0,&size,&((*charvec)[0]));
+      if (make_status < 0)
+        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+    }
+
+    // ... write other mesh informations
+    if (dis_->Comm().MyPID() == 0)
+    {
+      // do I need the following naming stuff?
+      std::ostringstream groupname;
+
+      groupname << "/step"
+          << step_
+          << "/"
+        ;
+
+      valuename = groupname.str()+valuename;
+
+      // a comment is also added to the control file
+      output_->ControlFile()
+        << "    " << name << ":\n"
+        << "        values = \"" << valuename.c_str() << "\"\n\n"
+        << std::flush;
+    }
+
+    const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+    if (flush_status < 0)
+      dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+  }
 }
 
 /*----------------------------------------------------------------------*/

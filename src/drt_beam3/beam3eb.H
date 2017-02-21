@@ -639,9 +639,6 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
-  //! flag indicating Brownian dynamics simulation -> neglect inertia
-  bool statmechprob_;
-
   //! cross section area
   double crosssec_;
 

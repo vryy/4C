@@ -105,6 +105,9 @@ public:
   /// Read the history data of elements and nodes from restart files
   void ReadHistoryData(int step);
 
+  /// read a non discretisation based vector of chars
+  void ReadCharVector(Teuchos::RCP<std::vector<char> >& charvec, const std::string name);
+
   //! read a non discretisation based vector of doubles
   /*!
     This vector should have been written only by proc0.
@@ -285,6 +288,10 @@ public:
 
   //! write node data to file
   virtual void WriteNodeData(bool writeowner);
+
+  //! write a non discretisation based vector of chars
+  virtual void WriteCharVector(const std::string name,
+               Teuchos::RCP<std::vector<char> > doublevec);
 
   //! write a non discretisation based vector of doubles
   /*!

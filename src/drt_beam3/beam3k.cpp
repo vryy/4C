@@ -170,7 +170,6 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
 DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner) :
  DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
-statmechprob_(false),
 crosssec_(0),
 Iyy_(0),
 Izz_(0),
@@ -219,7 +218,6 @@ inertscalerot2_(0)
 DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
  DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
- statmechprob_(old.statmechprob_),
  crosssec_(old.crosssec_),
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
@@ -332,7 +330,6 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
 
   //add all class variables
   AddtoPack(data,isinit_);
-  AddtoPack(data,statmechprob_);
   AddtoPack(data,crosssec_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
@@ -393,7 +390,6 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
 
   //extract all class variables of beam3 element
   isinit_ = ExtractInt(position,data);
-  statmechprob_ = ExtractInt(position,data);
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
@@ -489,9 +485,6 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
   if(!isinit_ || secondinit)
   {
     const int nnode = 2; //number of nodes
-
-    // set the flag statmechprob_
-    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB");
 
     //Calculate the (initial reference triads) = (initial material triads) at the CPs out of the angles theta0_.
     //So far the initial value for the relative angle is set to zero, i.e.
@@ -676,9 +669,6 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
   if(!isinit_ || secondinit)
   {
     const int nnode = 2; //number of nodes
-
-    // set the flag statmechprob_
-    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB");
 
     //Calculate the (initial reference triads) = (initial material triads) at the CPs out of the angles theta0_.
     //So far the initial value for the relative angle is set to zero, i.e.

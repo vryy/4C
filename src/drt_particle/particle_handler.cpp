@@ -69,6 +69,22 @@ void PARTICLE::ParticleHandler::DistributeParticlesToBins(
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleHandler::RemoveAllParticles()
+{
+  // 1st) loop over bins and remove initial particle info
+  const int numrowbin = BinStrategy()->BinDiscret()->NumMyColElements();
+  for (int ibin=0; ibin<numrowbin; ++ibin)
+  {
+    DRT::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
+    dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele)->DeleteNodes();
+  }
+
+  // 2nd) initial particles need to be removed from bindis_
+  BinStrategy()->BinDiscret()->DeleteNodes();
+}
+
+/*----------------------------------------------------------------------*
 | bins are distributed to the processors                    ghamm 09/12 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::DistributeBinsToProcs()
@@ -243,32 +259,15 @@ void PARTICLE::ParticleHandler::FillParticlesIntoBinsRoundRobin(std::list<Teucho
   return;
 }
 
-
 /*----------------------------------------------------------------------*
 | fill particles into their correct bin on according proc   ghamm 03/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::FillParticlesIntoBinsRemoteIdList(std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
+Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::FillParticlesIntoBinsRemoteIdList(
+    std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleHandler::FillParticlesIntoBinsRemoteIdList");
   const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
   Teuchos::RCP<std::list<int> > removedparticles = Teuchos::rcp(new std::list<int>(0));
-  if(numproc == 1)
-  {
-    if(homelessparticles.size())
-    {
-      std::cout << " There are " << homelessparticles.size() << " particles which have left the computational domain on rank " << myrank_ << std::endl;
-      std::list<Teuchos::RCP<DRT::Node> >::const_iterator hlp;
-      for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
-      {
-        const int removeid = (*hlp)->Id();
-        removedparticles->push_back(removeid);
-        binstrategy_->BinDiscret()->DeleteNode(removeid);
-      }
-      homelessparticles.clear();
-    }
-
-    return removedparticles;
-  }
 
   // parallel case
   // ---- find new host procs for particles -----
@@ -341,7 +340,6 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::FillParticlesIntoBinsRe
   std::vector<int> summedtargets(numproc,0);
   binstrategy_->BinDiscret()->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
-
   // ---- send ----
   DRT::Exporter exporter(binstrategy_->BinDiscret()->Comm());
   const int length = sdata.size();
@@ -354,8 +352,137 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::FillParticlesIntoBinsRe
   }
   if (tag != length) dserror("Number of messages is mixed up");
 
+  ReceiveParticlesAndFillThemInBins( summedtargets[myrank_], exporter, homelessparticles );
+
+  // wait for all communications to finish
+  {
+    for (int i=0; i<length; ++i)
+      exporter.Wait(request[i]);
+  }
+
+  binstrategy_->BinDiscret()->Comm().Barrier(); // I feel better this way ;-)
+
+  return removedparticles;
+}
+
+/*-----------------------------------------------------------------------------------------*
+| fill particles into their correct bin on according proc using ghosting   eichinger 02/17 |
+ *-----------------------------------------------------------------------------------------*/
+Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::FillParticlesIntoBinsUsingGhosting(
+    std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleHandler::FillParticlesIntoBinsUsingGhosting");
+
+  const int numproc = binstrategy_->BinDiscret()->Comm().NumProc();
+  Teuchos::RCP<std::list<int> > removedparticles = Teuchos::rcp(new std::list<int>(0));
+
+  // parallel case
+  // ---- find new host procs for particles -----
+  std::list<Teuchos::RCP<DRT::Node> >::const_iterator hlp;
+  std::map< int, std::list<Teuchos::RCP<DRT::Node> > > towhomwhat;
+  int binId, binowner;
+  for( hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp )
+  {
+    binId = binstrategy_->ConvertPosToGid( (*hlp)->X() );
+    if( binId == -1 )
+    {
+      binowner = -1;
+    }
+    else
+    {
+#ifdef DEBUG
+      // safety check
+      if( not binstrategy_->BinDiscret()->HaveGlobalElement(binId) )
+        dserror("To transfer particles using ghosting you need to provide a one layer ghosting,"
+                " that is not the case. Bin with gid %i not ghosted on rank %i ", binId, myrank_ );
+#endif
+      binowner = binstrategy_->BinDiscret()->gElement(binId)->Owner();
+    }
+    towhomwhat[binowner].push_back((*hlp));
+  }
+
+  // -----------------------------------------------------------------------
+  // send
+  // -----------------------------------------------------------------------
+  // ---- pack data for sending -----
+  std::map<int, std::vector<char> > sdata;
+  std::vector<int> targetprocs( numproc, 0 );
+  std::map< int, std::list<Teuchos::RCP<DRT::Node> > >::const_iterator p;
+  for( p = towhomwhat.begin(); p != towhomwhat.end(); ++p )
+  {
+    if( p->first != -1)
+    {
+      std::list<Teuchos::RCP<DRT::Node> >::const_iterator iter;
+      for( iter = p->second.begin(); iter != p->second.end(); ++iter )
+      {
+       DRT::PackBuffer data;
+       (*iter)->Pack(data);
+       data.StartPacking();
+       (*iter)->Pack(data);
+       binstrategy_->BinDiscret()->DeleteNode( (*iter)->Id() );
+       sdata[p->first].insert( sdata[p->first].end(), data().begin(), data().end() );
+      }
+      targetprocs[p->first] = 1;
+    }
+    else
+    {
+      std::list<Teuchos::RCP<DRT::Node> >::const_iterator iter;
+      for( iter = p->second.begin(); iter != p->second.end(); ++iter )
+      {
+        const int removeid = (*iter)->Id();
+        removedparticles->push_back(removeid);
+        binstrategy_->BinDiscret()->DeleteNode(removeid);
+      }
+    }
+  }
+
+  // ---- send ----
+  DRT::Exporter exporter(binstrategy_->BinDiscret()->Comm());
+  const int length = sdata.size();
+  std::vector<MPI_Request> request(length);
+  int tag = 0;
+  for(std::map<int, std::vector<char> >::const_iterator p = sdata.begin(); p != sdata.end(); ++p )
+  {
+    exporter.ISend( myrank_, p->first, &((p->second)[0]), (int)(p->second).size(), 1234, request[tag]);
+    ++tag;
+  }
+  if (tag != length) dserror("Number of messages is mixed up");
+
+
+  if( removedparticles->size() != 0 )
+    std::cout << "There are " << removedparticles->size() << " particles which have "
+                 "left the computational domain on rank " << myrank_ << std::endl;
+  homelessparticles.clear();
+
+  // -----------------------------------------------------------------------
+  // receive
+  // -----------------------------------------------------------------------
+  // ---- prepare receiving procs -----
+  std::vector<int> summedtargets(numproc,0);
+  binstrategy_->BinDiscret()->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+
+  // ---- receive -----
+  ReceiveParticlesAndFillThemInBins( summedtargets[myrank_], exporter, homelessparticles );
+
+  // wait for all communications to finish
+  for ( int i = 0; i < length; ++i )
+    exporter.Wait(request[i]);
+
+  // should be no time operation (if we have done everything correctly)
+  binstrategy_->BinDiscret()->Comm().Barrier();
+
+  return removedparticles;
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void PARTICLE::ParticleHandler::ReceiveParticlesAndFillThemInBins(
+    int const numrec,
+    DRT::Exporter& exporter,
+    std::list<Teuchos::RCP<DRT::Node> >& homelessparticles)
+{
   // ---- receive ----
-  for(int rec=0; rec<summedtargets[myrank_]; ++rec)
+  for( int rec = 0; rec < numrec; ++rec )
   {
     std::vector<char> rdata;
     int length = 0;
@@ -374,30 +501,20 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::FillParticlesIntoBinsRe
         std::vector<char> data;
         DRT::ParObject::ExtractfromPack(index,rdata,data);
         // this Teuchos::rcp holds the memory of the node
-        Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data),true);
-        Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
+        Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp( DRT::UTILS::Factory(data), true );
+        Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast< DRT::Node >(object);
         if (node == Teuchos::null) dserror("Received object is not a node");
 
         // process received particle
         const double* currpos = node->X();
-        PlaceNodeCorrectly(node, currpos, homelessparticles);
-        if(homelessparticles.size())
-          dserror("particle (id: %i) was sent to proc %i but corresponding bin (gid: %i) is missing", node->Id(), myrank_, binstrategy_->ConvertPosToGid(currpos));
+        PlaceNodeCorrectly( node, currpos, homelessparticles );
+        if( homelessparticles.size() )
+          dserror("particle (id: %i) was sent to proc %i but corresponding bin (gid: %i) "
+                  " is missing", node->Id(), myrank_, binstrategy_->ConvertPosToGid(currpos));
       }
     }
   }
-
-  // wait for all communications to finish
-  {
-    for (int i=0; i<length; ++i)
-      exporter.Wait(request[i]);
-  }
-
-  binstrategy_->BinDiscret()->Comm().Barrier(); // I feel better this way ;-)
-
-  return removedparticles;
 }
-
 
 /*----------------------------------------------------------------------*
 | node is placed into the correct row bin                   ghamm 09/12 |
@@ -437,7 +554,7 @@ bool PARTICLE::ParticleHandler::PlaceNodeCorrectly(
           // assign node to the correct bin
           currbin->AddNode(existingnode);
         }
-        else // ghost node becomes row node and node from outside is trashed
+        else // delete existing node, insert received node into discretization and add it to correct bin
         {
           // delete existing node
           binstrategy_->BinDiscret()->DeleteNode(existingnode->Id());
@@ -565,15 +682,15 @@ void PARTICLE::ParticleHandler::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap
     }
 #endif
 
-
   return;
 }
 
 /*-----------------------------------------------------------------------------*
  | particles are checked and transferred if necessary              ghamm 10/12 |
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::
-    TransferParticles(Teuchos::RCP<Epetra_Vector> disnp)
+Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::TransferParticles(
+    Teuchos::RCP<Epetra_Vector> disnp,
+    bool const ghosting)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
@@ -674,7 +791,7 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::
         /*bool placed = */PlaceNodeCorrectly(Teuchos::rcp(currnode,false), currpos, homelessparticles);
       }
 
-    } // end for inode
+    }
 
     // finally remove nodes from their old bin
     for(size_t iter=0; iter<tobemoved.size(); iter++)
@@ -682,19 +799,48 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::
       dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(tobemoved[iter]);
     }
 
-  } // end for ibin
+  }
 
 #ifdef DEBUG
   if(homelessparticles.size())
     std::cout << "There are " << homelessparticles.size() << " homeless particles on proc" << myrank_ << std::endl;
 #endif
 
-  // homeless particles are sent to their new processors where they are inserted into their correct bin
-  Teuchos::RCP<std::list<int> > deletedparticles = FillParticlesIntoBinsRemoteIdList(homelessparticles);
+  // store particles that have left the computational domain
+  Teuchos::RCP<std::list<int> > deletedparticles = Teuchos::rcp( new std::list<int>(0) );
+
+  //---------------------------------------------------------------------------
+  // numproc == 1
+  //---------------------------------------------------------------------------
+  if( binstrategy_->BinDiscret()->Comm().NumProc() == 1)
+  {
+    if(homelessparticles.size())
+    {
+      std::cout << " There are " << homelessparticles.size() << " particles which have left the"
+                   " computational domain on rank " << myrank_ << std::endl;
+      std::list<Teuchos::RCP<DRT::Node> >::const_iterator hlp;
+      for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
+      {
+        const int removeid = (*hlp)->Id();
+        deletedparticles->push_back(removeid);
+        binstrategy_->BinDiscret()->DeleteNode(removeid);
+      }
+      homelessparticles.clear();
+    }
+    return deletedparticles;
+  }
+
+   //---------------------------------------------------------------------------
+   // numproc > 1
+   //---------------------------------------------------------------------------
+   // homeless particles are sent to their new processors where they are inserted into their correct bin
+  if (ghosting)
+    deletedparticles = FillParticlesIntoBinsUsingGhosting(homelessparticles);
+  else
+    deletedparticles = FillParticlesIntoBinsRemoteIdList(homelessparticles);
 
   return deletedparticles;
 }
-
 
 /*----------------------------------------------------------------------*
 | bins are distributed to the processors based on an        ghamm 11/12 |

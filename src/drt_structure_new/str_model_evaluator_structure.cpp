@@ -283,8 +283,7 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
   // set action type and evaluation matrix and vector pointers
   StaticContributions(&eval_vec[0]);
   MaterialDampingContributions(&eval_mat[0]);
-  if (masslin_type_!=INPAR::STR::ml_none)
-    InertialContributions(&eval_vec[0]);
+  InertialContributions(&eval_vec[0]);
 
   // evaluate ...
   EvaluateInternal(&eval_mat[0],&eval_vec[0]);
@@ -361,7 +360,7 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
   // set action types and evaluate matrices/vectors
   StaticContributions(&eval_mat[0],&eval_vec[0]);
   MaterialDampingContributions(&eval_mat[0]);
-  if (masslin_type_!=INPAR::STR::ml_none)
+  if (masslin_type_!=INPAR::STR::ml_none )
     InertialContributions(&eval_mat[0],&eval_vec[0]);
 
   // evaluate
@@ -432,6 +431,9 @@ void STR::MODELEVALUATOR::Structure::InertialContributions(
 {
   CheckInitSetup();
 
+  if ( TimInt().GetDataSDynPtr()->NeglectInertia() )
+    return;
+
   // overwrite element action
   if (TimInt().GetDataSDyn().IsMassLumping())
     EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstifflmass);
@@ -457,6 +459,9 @@ void STR::MODELEVALUATOR::Structure::InertialContributions(
     Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   CheckInitSetup();
+
+  if ( masslin_type_ == INPAR::STR::ml_none or TimInt().GetDataSDynPtr()->NeglectInertia() )
+    return;
 
   // overwrite element action
   EvalData().SetActionType(DRT::ELEMENTS::struct_calc_internalinertiaforce);

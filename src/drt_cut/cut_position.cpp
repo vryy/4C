@@ -430,6 +430,7 @@ template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<2>( const E
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3>( const std::vector<Node*> nodes, const LINALG::Matrix<3, 1> & xyz, DRT::Element::DiscretizationType distype );
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<2>( const std::vector<Node*> nodes, const LINALG::Matrix<2, 1> & xyz, DRT::Element::DiscretizationType distype );
 
+// embedded element types
 template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::tri3>;
 template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::tri6>;
 template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::quad4>;
@@ -437,3 +438,11 @@ template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::quad8>;
 template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::quad9>;
 template class GEO::CUT::ComputeEmbeddedPosition<2,DRT::Element::line2>;
 template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::line2>;
+
+// non-embedded element types for the embedded case (only necessary for the cluster compiler)
+template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::hex16>;
+template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::hex18>;
+template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::hex27>;
+template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::tet10>;
+template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::wedge15>;
+

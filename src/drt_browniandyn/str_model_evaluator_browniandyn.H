@@ -57,9 +57,6 @@ namespace MODELEVALUATOR{
     virtual bool EvaluateForce();
 
     //! derived
-    virtual bool EvaluateInitialForce();
-
-    //! derived
     virtual bool EvaluateStiff();
 
     //! derived

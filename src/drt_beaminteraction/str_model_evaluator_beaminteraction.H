@@ -16,6 +16,7 @@
 
 #include "../drt_structure_new/str_model_evaluator_generic.H"        // base class
 #include "../drt_inpar/inpar_beaminteraction.H"
+#include "../linalg/linalg_mapextractor.H"
 
 
 //forward declaration ...
@@ -33,6 +34,9 @@ namespace UTILS{
 }
 namespace LINALG {
   class SparseMatrix;
+}
+namespace BINSTRATEGY{
+  class BinningStrategy;
 }
 namespace PARTICLE
 {
@@ -121,6 +125,7 @@ namespace MODELEVALUATOR{
 
     //! derived
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+    virtual void OutputStepState() const;
 
     //! derived
     virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
@@ -136,6 +141,13 @@ namespace MODELEVALUATOR{
 
     //! derived
     virtual void ResetStepState();
+    //! @}
+
+    //!@name routines for submodel management
+    //! @{
+
+    //! build, init and setup submodel evaluator
+    void PartitionProblem();
     //! @}
 
   protected:
@@ -156,14 +168,17 @@ namespace MODELEVALUATOR{
     //! build, init and setup submodel evaluator
     void InitAndSetupSubModeEvaluators();
 
+    //! give submodels a certain order in which they are evaluated
+    virtual Teuchos::RCP< STR::MODELEVALUATOR::BeamInteraction::Vector > Sort(
+        STR::MODELEVALUATOR::BeamInteraction::Map submodel_map,
+        std::vector<INPAR::BEAMINTERACTION::SubModelType>& sorted_submodel_types
+    ) const;
+
     /// create bin discretization
     void CreateBinDiscretization();
 
     /// set random initial position of crosslinker and add them to bin discretization
-    void AddParticlesToBinDiscret();
-
-    //! build, init and setup submodel evaluator
-    void PartitionProblem();
+    void AddCrosslinkerToBinDiscret();
 
     //! @}
 
@@ -192,13 +207,21 @@ namespace MODELEVALUATOR{
         Teuchos::RCP<Epetra_Vector> old = Teuchos::null
     );
 
+    /// get eletype map extractor pointer
+    Teuchos::RCP<LINALG::MultiMapExtractor>& EleTypeMapExtractorPtr()
+    {
+      CheckInit();
+      eletypeextractor_->CheckForValidMapExtractor();
+      return eletypeextractor_;
+    }
+
     //! @}
 
     //!@name routines that manage binning strategy
     //! @{
 
     /// change parallel distribution of bindis and ia_discret and assign (beam) eles to bins
-    void RedistributeExtendGhostingAndAssign();
+    void ExtendGhostingAndAssign();
 
     /// build ele to bin map
     virtual void BuildRowEleToBinMap();
@@ -241,6 +264,9 @@ namespace MODELEVALUATOR{
     //! beam to beam, potential ...)
     Teuchos::RCP<DRT::Discretization> ia_discret_;
 
+    /// map extractor for split of different element types
+    Teuchos::RCP<LINALG::MultiMapExtractor> eletypeextractor_;
+
     //! pointer to the global state data container
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> ia_state_ptr_;
 
@@ -256,11 +282,16 @@ namespace MODELEVALUATOR{
     //! particle handler and binning strategy
     Teuchos::RCP<PARTICLE::ParticleHandler> particlehandler_;
 
+    //! particle handler and binning strategy
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
+
     //! crosslinker and bin discretization
     Teuchos::RCP<DRT::Discretization> bindis_;
 
     //! elerowmap of bindis
     Teuchos::RCP<Epetra_Map> rowbins_;
+
+    Epetra_Map* colbins_;
 
     //! @}
 

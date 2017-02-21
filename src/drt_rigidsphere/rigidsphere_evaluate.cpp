@@ -82,6 +82,7 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_linstiffmass:
     case ELEMENTS::struct_calc_nlnstiffmass:
     case ELEMENTS::struct_calc_nlnstifflmass:
+    case ELEMENTS::struct_calc_internalinertiaforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
@@ -96,19 +97,29 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myvel(lm.size());
       myvel.clear();
 
+      // get element acceleration
+
+      std::vector<double> myacc( lm.size() );
+
+        myacc.clear();
+
+
       if (act == ELEMENTS::struct_calc_nlnstiffmass or act == ELEMENTS::struct_calc_nlnstifflmass or act == ELEMENTS::struct_calc_linstiffmass)
       {
-        nlnstiffmass(params, myvel, mydisp, &elemat1, &elemat2, &elevec1);
+        nlnstiffmass(params, myacc, myvel, mydisp, &elemat1, &elemat2, &elevec1, &elevec2);
       }
       else if (act == ELEMENTS::struct_calc_linstiff or act == ELEMENTS::struct_calc_nlnstiff)
       {
-        nlnstiffmass(params, myvel, mydisp, &elemat1, NULL, &elevec1);
+        nlnstiffmass(params, myacc, myvel, mydisp, &elemat1, NULL, &elevec1, NULL);
       }
       else if (act == ELEMENTS::struct_calc_internalforce)
       {
-        nlnstiffmass(params, myvel, mydisp, NULL, NULL, &elevec1);
+        nlnstiffmass(params, myacc, myvel, mydisp, NULL, NULL, &elevec1, NULL);
       }
-
+      else if (act == ELEMENTS::struct_calc_internalinertiaforce)
+      {
+        nlnstiffmass(params, myacc, myvel, mydisp, NULL, NULL, &elevec1, &elevec2);
+      }
     }
     break;
 
@@ -159,33 +170,42 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
  | nonlinear stiffness and mass matrix (private)                                                   meier 05/12|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
+                                              std::vector<double>& acc,
                                               std::vector<double>& vel,
                                               std::vector<double>& disp,
                                               Epetra_SerialDenseMatrix* stiffmatrix,
                                               Epetra_SerialDenseMatrix* massmatrix,
-                                              Epetra_SerialDenseVector* force)
+                                              Epetra_SerialDenseVector* force,
+                                              Epetra_SerialDenseVector* inertia_force)
 {
   //assemble internal force vector if requested
   if (force != NULL)
   {
-    for (int i=0; i<3; i++)
+    for (int i=0; i<3; ++i)
       (*force)(i) = 0.0;
   }
 
   //assemble stiffmatrix if requested
   if (stiffmatrix != NULL)
   {
-    for (int i=0; i<3; i++)
-      for (int j=0; j<3; j++)
+    for (int i=0; i<3; ++i)
+      for (int j=0; j<3; ++j)
         (*stiffmatrix)(i,j) = 0.0;
   }
 
   //assemble massmatrix if requested
   if (massmatrix != NULL)
   {
-    for (int i=0; i<3; i++)
+    for (int i=0; i<3; ++i)
       (*massmatrix)(i,i) = rho_*4.0/3.0*PI*pow(radius_,3);
   }
+
+//    //assemble inertia force vector if requested
+//    if ( inertia_force != NULL and massmatrix != NULL )
+//    {
+//      for ( int i = 0; i < 3; ++i )
+//        (*inertia_force)(i) = acc[i] * (*massmatrix)(i,i);
+//    }
 
   return;
 }
@@ -215,14 +235,14 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
   double gamma = MyDampingConstant();
 
   //get time step size
-  double dt =  ParamsInterface().GetDeltaTime();;
+  double dt =  ParamsInterface().GetDeltaTime();
 
   //velocity and gradient of background velocity field
   LINALG::Matrix<3,1> velbackground;
   LINALG::Matrix<3,3> velbackgroundgrad;                          // is a dummy so far
 
   // Compute background velocity
-  MyBackgroundVelocity(params, velbackground, velbackgroundgrad);
+  GetBackgroundVelocity(params, velbackground, velbackgroundgrad);
 
   // Drag force contribution
   if(force != NULL)
@@ -249,17 +269,17 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
  |computes velocity of background fluid and gradient of that velocity at a certain evaluation point in       |
  |the physical space                                                         (public)           grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Rigidsphere::MyBackgroundVelocity(Teuchos::ParameterList& params,  //!<parameter list
+void DRT::ELEMENTS::Rigidsphere::GetBackgroundVelocity(Teuchos::ParameterList& params,  //!<parameter list
                                                 LINALG::Matrix<3,1>& velbackground,  //!< velocity of background fluid
                                                 LINALG::Matrix<3,3>& velbackgroundgrad) //!<gradient of velocity of background fluid
 {
   // only constant background velocity implemented yet. for case of shear flow, see beam3r
 
-  // default values for background velocity and its gradient
+
+  //default values for background velocity and its gradient
   velbackground.PutScalar(0);
   velbackgroundgrad.PutScalar(0);
 
-  dserror("Needs to be transferred to new structure time integration and new statmech");
 //  double time = params.get<double>("total time",0.0);
 //  double starttime = params.get<double>("STARTTIMEACT",0.0);
 //  double dt = params.get<double>("delta time");
@@ -341,9 +361,14 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(Teuchos::ParameterList& par
    * and standard deviation (2*kT / dt)^0.5*/
   Teuchos::RCP<Epetra_MultiVector> randomnumbers = ParamsInterface().GetBrownianDynParamInterface()->GetRandomForces();
 
-  for(int k=0; k<3; k++)
-    if(force != NULL)
-        (*force)(k) -= sqrt(gamma) * (*randomnumbers)[k][LID()];
+  if(force != NULL)
+    for(int k=0; k<3; k++)
+    {
+      (*force)(k) -= sqrt(gamma) * (*randomnumbers)[k][LID()];
+
+    }
+
+
 
   // no contribution to stiffmatrix
 

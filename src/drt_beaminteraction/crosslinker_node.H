@@ -142,28 +142,6 @@ public:
     return;
   }
 
-  /*!
-  \brief Get current binding spot status of linker
-  */
- const std::vector<std::pair<int, int> >& GetBeamNodeGids()
- {
-#ifdef DEBUG
-    // safety check
-    if((int)bnodegids_.size()!=2)
-      dserror("crosslinker has wrong bspot size");
-#endif
-   return bnodegids_;
- }
-
- /*!
-  \brief Get
-  */
- void SetBeamNodeGids(std::vector<std::pair<int, int> > bnodegids)
- {
-   bnodegids_ = bnodegids;
-   return;
- }
-
   //@}
 
 protected:
@@ -176,8 +154,6 @@ protected:
   std::vector<std::pair<int, int> > clbspots_;
   /// number of active bonds
   int numbond_;
-  /// first and second node of beam binding partner, [0] and [1] first and second bspot of cl
-  std::vector<std::pair<int, int> > bnodegids_;
 
 };
 // class CrosslinkerNodeDataContainer

@@ -90,7 +90,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
   CheckInitSetup();
 
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator iter;
-  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
@@ -100,34 +100,22 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
     element_ptr[1] = elepairptr->Element2();
 
     // element Dof values relevant for centerline interpolation
-    std::vector< std::vector<double> > element_centerline_dofvec_absolutevalues(2);
+    std::vector< std::vector<double> > element_posdofvec_absolutevalues(2);
 
-    for (unsigned int ielement=0; ielement<2; ++ielement)
+    for ( unsigned int ielement = 0; ielement < 2; ++ielement )
     {
-      std::vector<double> eledispvec;
-
       // extract the Dof values of this element from displacement vector
-      BIOPOLYNET::UTILS::GetCurrentElementDis(
+      BIOPOLYNET::UTILS::ExtractPosDofVecAbsoluteValues(
           Discret(),
           element_ptr[ielement],
           BeamInteractionDataStatePtr()->GetMutableDisColNp(),
-          eledispvec);
-
-      const DRT::ELEMENTS::Beam3Base* beam_element_ptr =
-          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element_ptr[ielement]);
-
-      // get the current absolute values for those Dofs relevant for centerline interpolation
-      // initial values are added by element itself
-      beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
-          eledispvec,
-          element_centerline_dofvec_absolutevalues[ielement],
-          true);
+          element_posdofvec_absolutevalues[ielement]);
     }
 
     // update the Dof values in the interaction element pair object
     elepairptr->ResetState(
-        element_centerline_dofvec_absolutevalues[0],
-        element_centerline_dofvec_absolutevalues[1]);
+        element_posdofvec_absolutevalues[0],
+        element_posdofvec_absolutevalues[1]);
   }
 
 }
@@ -394,6 +382,33 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ResetStepState()
 
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteRestart(
+    IO::DiscretizationWriter& iowriter,
+    const bool& forced_writerestart) const
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::ReadRestart(
+    IO::DiscretizationReader& ioreader)
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::PostReadRestart()
+{
+  CheckInitSetup();
+  nearby_elements_map_.clear();
+  FindAndStoreNeighboringElements();
+  CreateBeamContactElementPairs();
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::AddBinsToBinColMap(
@@ -422,10 +437,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringElements");
 
   // loop over all row elements
-  const int numroweles = DiscretPtr()->NumMyRowElements();
+  const int numroweles = EleTypeMapExtractorPtr()->Map(0)->NumMyElements();
   for( int rowele_i = 0; rowele_i < numroweles; ++rowele_i )
   {
-    const int elegid = DiscretPtr()->ElementRowMap()->GID(rowele_i);
+    const int elegid = EleTypeMapExtractorPtr()->Map(0)->GID(rowele_i);
     DRT::Element* currele = DiscretPtr()->gElement(elegid);
 
     // (unique) set of neighboring bins for all col bins assigned to current element
@@ -440,7 +455,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
       loc_neighboring_binIds.reserve(27);
 
       // do not check on existence here -> shifted to GetBinContent
-      ParticleHandlerPtr()->BinStrategy()->GetNeighborAndOwnBinIds(
+      BinStrategyPtr()->GetNeighborAndOwnBinIds(
           *biniter, loc_neighboring_binIds );
 
       // build up comprehensive unique set of neighboring bins
@@ -452,9 +467,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
         neighboring_binIds.end() );
 
     // set of elements that lie in neighboring bins
-    std::vector< BINSTRATEGY::UTILS::BinContentType > bc( 1, bin_beamcontent_);
+    std::vector< BINSTRATEGY::UTILS::BinContentType > bc(2);
+    bc[0] = BINSTRATEGY::UTILS::Beam;
+    bc[1] = BINSTRATEGY::UTILS::RigidSphere;
     std::set<DRT::Element*> neighboring_elements;
-    ParticleHandlerPtr()->BinStrategy()->GetBinContent( neighboring_elements,
+    BinStrategyPtr()->GetBinContent( neighboring_elements,
         bc, glob_neighboring_binIds );
 
     // sort out elements that should not be considered in contact evaluation
@@ -512,27 +529,22 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
   for (nearbyeleiter=nearby_elements_map_.begin(); nearbyeleiter!=nearby_elements_map_.end(); ++nearbyeleiter)
   {
     const int elegid = nearbyeleiter->first;
-    const DRT::Element* firsteleptr = DiscretPtr()->gElement(elegid);
+    std::vector< DRT::Element const *> ele_ptrs(2);
+    ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
-    const DRT::ELEMENTS::Beam3Base* beamele1 =
-        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(firsteleptr);
-
-    // at the moment, both elements of a beam contact pair must be of same type Todo
-    const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
-    const unsigned int numnodalvalues = beamele1->HermiteCenterlineInterpolation() ? 2 : 1;
 
     std::set<DRT::Element*>::const_iterator secondeleiter;
     for (secondeleiter=nearbyeleiter->second.begin(); secondeleiter!=nearbyeleiter->second.end(); ++secondeleiter)
     {
-      const DRT::Element* secondeleptr = *secondeleiter;
+      ele_ptrs[1] = *secondeleiter;
 
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamContactPair::Create(numnodes_centerline,numnodalvalues);
+          BEAMINTERACTION::BeamContactPair::Create(ele_ptrs);
 
       newbeaminteractionpair->Init(
           beam_contact_params_ptr_,
-          firsteleptr,
-          secondeleptr);
+          ele_ptrs[0],
+          ele_ptrs[1]);
 
       newbeaminteractionpair->Setup();
 

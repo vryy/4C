@@ -4,14 +4,13 @@
 
 \brief Helpers to read HDF5 based output.
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\level 1
+
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
-*/
-/*----------------------------------------------------------------------*/
+
+*----------------------------------------------------------------------*/
 
 
 #include <iostream>
@@ -440,6 +439,23 @@ IO::HDFReader::ReadResultDataVecChar(std::string id_path, std::string value_path
   elemap = Teuchos::rcp(new Epetra_Map(map));
 
   Teuchos::RCP<std::vector<char> > res = ReadCharData(value_path,start,end);
+  return res;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<char> >
+IO::HDFReader::ReadCharVector(std::string value_path, const Epetra_Comm& Comm) const
+{
+  int new_proc_num = Comm.NumProc();
+  int my_id = Comm.MyPID();
+
+  if ( files_.size() == 0 )
+    dserror("Tried to read data without opening any file");
+  int start, end;
+  CalculateRange( new_proc_num, my_id, start, end );
+
+  Teuchos::RCP<std::vector<char> > res = ReadCharData( value_path, start ,end );
   return res;
 }
 

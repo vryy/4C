@@ -48,7 +48,7 @@ public:
 
   void Setup();
 
-  double const& EdgeLength(const int dim) { return edgelength_[dim]; };
+  double const& EdgeLength(const int dim) const { return edgelength_[dim]; };
 
   LINALG::Matrix<3,2> const& Box(){return box_;}
 

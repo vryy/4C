@@ -100,6 +100,9 @@ namespace IMPLICIT {
 
     //! things that should be done after updating (derived)
     virtual void PostUpdate() {/* do nothing for now */};
+
+    //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
+    virtual void UpdateConstantStateContributions() {/* do nothing for some integrators */};
     //! @}
 
     //! @name Predictor routines (dependent on the implicit integration scheme)

@@ -40,22 +40,44 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         25
 LOADLIN                         Yes
+--------------------------------------------------------------------MESHFREE
+DEFINEBINSPER                   cutoff
+CUTOFF_RADIUS                   8
+DEFINEXAABBPER                  input
+BOUNDINGBOX                     -5 -5 -5 5 5 5
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.9
 ----------------------------------------------------------------BEAM CONTACT
+MODELEVALUATOR                  Standard
 BEAMS_STRATEGY                  Penalty
-BEAMS_BTBPENALTYPARAM           0.0
-BEAMS_PENALTYLAW                LinPen
-BEAMS_OCTREE                    none
-BEAMS_ADDITEXT                  Yes
-BEAMS_EXTVAL                    2.0
-BEAMS_BTSPH                     Yes
 BEAMS_BTSPH_PENALTYPARAM        1e3
+
+// needed only for beam-to-beam contact
+BEAMS_BTBPENALTYPARAM           0.0
+BEAMS_BTBLINEPENALTYPARAM       0.0
+BEAMS_PENALTYLAW                LinPen
+BEAMS_SEGCON                    Yes
+BEAMS_PERPSHIFTANGLE1           10
+BEAMS_PERPSHIFTANGLE2           15
+BEAMS_PARSHIFTANGLE1            10
+BEAMS_PARSHIFTANGLE2            15
+BEAMS_SEGANGLE                  1.0
+BEAMS_NUMINTEGRATIONINTERVAL    20
+
+// needed only for old beam_contact_manager
+BEAMS_DEBUG                     No
+BEAMS_MAXDELTADISSCALEFAC       -1   //10000
+BEAMS_OCTREE                    none //octree_spherical
+BEAMS_ADDITEXT                  Yes
+BEAMS_EXTVAL                    0.01
+BEAMS_BTSPH                     Yes
 --------------------------------------------------------------BEAM POTENTIAL
 POT_LAW_PREFACTOR               4e-3
 POT_LAW_EXPONENT                1.0
 BEAMPOTENTIAL_TYPE              Surface
+
+// needed only for old beam_contact_manager
 BEAMPOT_OCTREE                  none
 CUTOFFRADIUS                    -1
 BEAMPOT_BTSPH                   Yes
@@ -64,7 +86,7 @@ NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym
 ---------------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
-Inner Iteration                 = Yes
+Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3

@@ -17,6 +17,7 @@
 #include "Teuchos_RCP.hpp"
 #include "../linalg/linalg_fixedsizematrix.H"
 
+
 // forward declaration
 class Epetra_FEVector;
 class Epetra_Vector;
@@ -24,6 +25,7 @@ namespace LINALG {
   class SerialDenseVector;
   class SerialDenseMatrix;
   class SparseMatrix;
+  class MultiMapExtractor;
 }
 namespace DRT {
   class Element;
@@ -52,6 +54,13 @@ void PeriodicBoundaryConsistentDisVector(
     Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
     Teuchos::RCP<DRT::Discretization> const&        discret);
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void UpdateCellsPositionRandomly(
+    Teuchos::RCP<Epetra_Vector> dis,
+    Teuchos::RCP<DRT::Discretization> const& discret,
+    int const step);
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -109,6 +118,14 @@ void AssembleCenterlineDofForceStiffIntoElementForceStiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void ExtractPosDofVecAbsoluteValues(
+    DRT::Discretization const& discret,
+    DRT::Element const* ele,
+    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+    std::vector<double>& element_posdofvec_absolutevalues);
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void ApplyBpotForceToParentElements(
     DRT::Discretization const&                             discret,
     const Teuchos::RCP<Epetra_Vector>                      disp_np_col,
@@ -135,6 +152,12 @@ void ApplyBpotForceStiffToParentElements(
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
     std::vector< LINALG::SerialDenseVector >&                      eleforce,
     std::vector< std::vector< LINALG::SerialDenseMatrix > >&       elestiff);
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SetupEleTypeMapExtractor(
+    Teuchos::RCP<DRT::Discretization> const& discret,
+    Teuchos::RCP<LINALG::MultiMapExtractor>& eletypeextractor);
 
 }
 }

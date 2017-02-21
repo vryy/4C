@@ -19,7 +19,10 @@
 #include <Teuchos_RCP.hpp>
 #include "../drt_beaminteraction/beam_contact_params.H"
 #include "beam_to_beam_potential_pair.H"
+#include "beam_to_sphere_potential_pair.H"
 
+#include "../drt_beam3/beam3_base.H"
+#include "../drt_rigidsphere/rigidsphere.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -64,40 +67,58 @@ void BEAMINTERACTION::BeamPotentialPair::Setup()
  *-----------------------------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>
 BEAMINTERACTION::BeamPotentialPair::Create(
-    unsigned int numnodes,
-    unsigned int numnodalvalues)
+    std::vector< DRT::Element const *> const& ele_ptrs)
 {
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
   // numnodalvalues = 2: positions AND tangents ==> Hermite interpolation
 
+  const DRT::ELEMENTS::Beam3Base* beamele1 =
+      dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
+
+  // at the moment, both elements of a beam contact pair must be of same type Todo
+  const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
+  const unsigned int numnodalvalues = beamele1->HermiteCenterlineInterpolation() ? 2 : 1;
+
   switch (numnodalvalues)
   {
     case 1:
     {
-      switch (numnodes)
+      switch (numnodes_centerline)
       {
         case 2:
         {
-          return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<2,1>());
+          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<2,1>());
+          else
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<2,1>());
         }
         case 3:
         {
-          return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<3,1>());
+          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<3,1>());
+          else
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<3,1>());
         }
         case 4:
         {
-          return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<4,1>());
+          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<4,1>());
+          else
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<4,1>());
         }
         case 5:
         {
-          return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<5,1>());
+          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<5,1>());
+          else
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<5,1>());
         }
         default:
         {
           dserror("%d and %d is no valid template parameter combination for the "
               "number of nodes and number of types of nodal DoFs used for centerline "
-              "interpolation!", numnodes, numnodalvalues);
+              "interpolation!", numnodes_centerline, numnodalvalues);
           break;
         }
       }
@@ -105,16 +126,19 @@ BEAMINTERACTION::BeamPotentialPair::Create(
     }
     case 2:
     {
-      switch (numnodes)
+      switch (numnodes_centerline)
       {
         case 2:
         {
-          return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<2,2>());
+          if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToSpherePotentialPair<2,2>());
+          else
+            return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamPotentialPair<2,2>());
         }
         default:
           dserror("%d and %d is no valid template parameter combination for the "
               "number of nodes and number of types of nodal DoFs used for centerline "
-              "interpolation!", numnodes, numnodalvalues);
+              "interpolation!", numnodes_centerline, numnodalvalues);
           break;
       }
       break;
@@ -123,7 +147,7 @@ BEAMINTERACTION::BeamPotentialPair::Create(
     {
       dserror("%d and %d is no valid template parameter combination for the "
           "number of nodes and number of types of nodal DoFs used for centerline "
-          "interpolation!", numnodes, numnodalvalues);
+          "interpolation!", numnodes_centerline, numnodalvalues);
       break;
     }
   }

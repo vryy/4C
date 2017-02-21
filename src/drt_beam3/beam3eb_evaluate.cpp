@@ -1883,7 +1883,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     }
     NTilde.MultiplyTN(N_mass,N_mass);
 
-    if (massmatrix != NULL and !statmechprob_)
+    if (massmatrix != NULL)
     {
     #ifndef INEXTENSIBLE
       for (int i=0; i<6*nnode; i++)

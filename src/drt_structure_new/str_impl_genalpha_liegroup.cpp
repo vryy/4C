@@ -79,9 +79,11 @@ void STR::IMPLICIT::GenAlphaLieGroup::PostSetup()
     /* ToDo tolerance value is experience and based on following consideration:
      * epsilon = O(1e-15) scaled with EA = O(1e8) yields residual contributions in
      * initial, stress free state of order 1e-8 */
-    if(not CurrentStateIsEquilibrium(1.0e-6))
-      dserror("Lie group GenAlpha only supports initially vanishing acceleration state,"
-          " i.e. an initial state where the system is equilibrated");
+    if( not CurrentStateIsEquilibrium(1.0e-6)  and GlobalState().GetMyRank() == 0 )
+      std::cout << "\nSERIOUS WARNING: Initially non vanishing acceleration states "
+              "in case of ml_rotation = true,\ni.e. an initial state where the system "
+              "is not equilibrated, cannot yet be computed correctly.\nThis means your "
+              "results in the beginning are not physically correct\n" << std::endl;
 
     // call update routines to copy states from t_{n+1} to t_{n}
     // note that the time step is not incremented

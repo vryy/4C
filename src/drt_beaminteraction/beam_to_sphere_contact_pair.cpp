@@ -112,7 +112,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     LINALG::SerialDenseMatrix* stiffmat22)
 {
   unsigned int dim1 = 3*numnodes*numnodalvalues;
-  unsigned int dim2 = 3*numnodes*numnodalvalues;
+  unsigned int dim2 = 3;
 
   // resize and initialize variables to zero
   if (forcevec1 != NULL)

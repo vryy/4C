@@ -65,8 +65,7 @@ public:
 
   //! return appropriate derived (templated) class (acts as a simple factory)
   static Teuchos::RCP<BeamPotentialPair> Create(
-      unsigned int numnodes,
-      unsigned int numnodalvalues);
+      std::vector< DRT::Element const *> const& ele_ptrs);
 
   //@}
 

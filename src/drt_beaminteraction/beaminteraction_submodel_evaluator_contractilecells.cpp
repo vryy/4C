@@ -26,6 +26,7 @@
 #include "../drt_io/io_pstream.H"
 
 #include "../drt_beam3/beam3_base.H"
+#include "../drt_rigidsphere/rigidsphere.H"
 
 #include "../drt_particle/particle_handler.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -134,6 +135,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::PreUpdateStepElement(
 {
   CheckInitSetup();
 
+
 }
 
 /*-------------------------------------------------------------------------------*
@@ -150,6 +152,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::PostUpdateStepElement
 {
   CheckInitSetup();
 
+  std::set<int> spherebingids;
+  int spheregid = -1;
+  for( int i = 0; i < EleTypeMapExtractorPtr()->Map(1)->NumMyElements(); ++i )
+  {
+    spheregid =  EleTypeMapExtractorPtr()->Map(1)->GID(i);
+    spherebingids.insert( BeamInteractionDataStatePtr()->GetRowEleToBinSet(spheregid).begin(),
+                          BeamInteractionDataStatePtr()->GetRowEleToBinSet(spheregid).end() );
+  }
+
+  sm_crosslinkink_ptr->UnbindCrosslinkerInBinsAndNeighborhood( spherebingids, true );
+
+//  int const updateevery = 200;
+//
+//  if( (GState().GetStepN() + 1) % updateevery == 0 and GState().GetStepN() > updateevery)
+//    sm_crosslinkink_ptr->DoubleBindCrosslinkerInBinsAndNeighborhood( spherebingids );
 }
 
 /*-------------------------------------------------------------------------------*
@@ -158,6 +175,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
   CheckInitSetup();
+
 
 }
 
@@ -170,13 +188,36 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::ResetStepState()
   dserror("Not yet implemented");
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::WriteRestart(
+    IO::DiscretizationWriter& iowriter,
+    const bool& forced_writerestart) const
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::ReadRestart(
+    IO::DiscretizationReader& ioreader)
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::PostReadRestart()
+{
+  // empty
+}
+
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::AddBinsToBinColMap(
     std::set< int >& colbins)
 {
-  CheckInitSetup();
-
+  // empty
 }
 
 /*-------------------------------------------------------------------------------*
@@ -184,8 +225,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::AddBinsToBinColMap(
 void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::
     AddBinsWithRelevantContentForIaDiscretColMap( std::set< int >& colbins ) const
 {
-  CheckInitSetup();
-
+  // empty
 }
 
 /*----------------------------------------------------------------------------*
@@ -215,7 +255,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::FindAndStoreNeighbori
       loc_neighboring_binIds.reserve(27);
 
       // do not check on existence here -> shifted to GetBinContent
-      ParticleHandlerPtr()->BinStrategy()->GetNeighborAndOwnBinIds(
+      BinStrategyPtr()->GetNeighborAndOwnBinIds(
           *biniter, loc_neighboring_binIds );
 
       // build up comprehensive unique set of neighboring bins
@@ -229,7 +269,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::FindAndStoreNeighbori
     // set of elements that lie in neighboring bins
     std::vector< BINSTRATEGY::UTILS::BinContentType > bc( 1, bin_beamcontent_);
     std::set<DRT::Element*> neighboring_elements;
-    ParticleHandlerPtr()->BinStrategy()->GetBinContent( neighboring_elements,
+    BinStrategyPtr()->GetBinContent( neighboring_elements,
         bc, glob_neighboring_binIds );
 
     nearby_elements_map_[elegid] = neighboring_elements;
@@ -238,19 +278,43 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::FindAndStoreNeighbori
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-//void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::DiffuseCells()
-//{
-//  CheckInit();
-//
-//  // diffuse crosslinker according to brownian dynamics
-//  LINALG::Matrix<3,1> newclpos ( true );
-//  std::vector<double> randvec;
-//  int count = 3;
-//  DRT::Problem::Instance()->Random()->Normal( randvec, count );
-//  for( int dim = 0; dim < 3; ++dim )
-//    newclpos(dim) = crosslinker->X()[dim] + randvec[dim];
-//
-//  // check compliance with periodic boundary conditions
-//  PeriodicBoundingBox().Shift3D( newclpos );
-//  SetCrosslinkerPosition( crosslinker, newclpos );
-//}
+void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::UpdateCellsPositionRandomly()
+{
+  CheckInit();
+
+  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
+  int const numcells = EleTypeMapExtractorPtr()->Map(1)->NumMyElements();
+  std::vector<double> randpos;
+  DRT::Problem::Instance()->Random()->Uni( randpos, 3 * numcells );
+
+  //todo: this is of course not nice, this needs to be done somewhere else
+  for( int i = 0; i < numcells; ++i )
+  {
+    DRT::Element* eleptr = Discret().gElement(EleTypeMapExtractorPtr()->Map(1)->GID(i) );
+
+    std::vector<int> dofnode  = Discret().Dof(eleptr->Nodes()[0]);
+
+    // random position of cell inside box
+    static std::vector< std::vector< double > > Xnew(numcells, std::vector< double >(3) );
+    if( GState().GetStepN() % 20 == 0 and GState().GetStepN() != 0)
+    {
+      for ( int dim = 0; dim < 3; ++dim )
+      {
+        double edgelength = 5.5;
+        double min = 0.5;
+        Xnew[i][dim] = min + ( edgelength * randpos[ i + dim ] );
+      }
+    }
+
+    // loop over all dofs
+    for( int dim = 0; dim < 3; ++dim )
+    {
+      int doflid = BeamInteractionDataStatePtr()->GetMutableDisNp()->Map().LID(dofnode[dim]);
+      (*BeamInteractionDataStatePtr()->GetMutableDisNp() )[doflid] = Xnew[i][dim] - eleptr->Nodes()[0]->X()[dim];
+    }
+ /*   int const elegid = EleTypeMapExtractorPtr()->Map(1)->GID(i);
+    DiscretPtr()->gElement(elegid)->Nodes()[0]->SetPos(Xnew);*/
+   }
+}
+
+

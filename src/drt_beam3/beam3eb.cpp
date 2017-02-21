@@ -115,7 +115,6 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,st
 DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner) :
  DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
-statmechprob_(false),
 crosssec_(0),
 Iyy_(0),
 Izz_(0),
@@ -144,7 +143,6 @@ epsilon_max_(0.0)
 DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
  DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
- statmechprob_(old.statmechprob_),
  crosssec_(old.crosssec_),
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
@@ -222,7 +220,6 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,jacobi_);
   AddtoPack(data,crosssec_);
   AddtoPack(data,isinit_);
-  AddtoPack(data,statmechprob_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
@@ -261,7 +258,6 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,crosssec_);
   isinit_ = ExtractInt(position,data);
-  statmechprob_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
@@ -316,9 +312,6 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
     if(!isinit_ || secondinit)
     {
       isinit_ = true;
-
-      // set the flag statmechprob_
-      statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB");
 
       //Get DiscretizationType
       DRT::Element::DiscretizationType distype = Shape();

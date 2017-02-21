@@ -61,21 +61,19 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Setup()
   issetup_ = true;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostSetup()
 {
   CheckInitSetup();
 
-  // Todo really needed here? maybe find better place
-  // ensure that potential-based interactions are evaluated correctly at beginning of first time step (initially)
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
   CreateBeamPotentialElementPairs();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitSubmodelDependencies(
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map>  const submodelmap)
 {
@@ -100,34 +98,22 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
     element_ptr[1] = elepairptr->Element2();
 
     // element Dof values relevant for centerline interpolation
-    std::vector< std::vector<double> > element_centerline_dofvec_absolutevalues(2);
+    std::vector< std::vector<double> > element_posdofvec_absolutevalues(2);
 
-    for (unsigned int ielement=0; ielement<2; ++ielement)
+    for ( unsigned int ielement = 0; ielement < 2; ++ielement )
     {
-      std::vector<double> eledispvec;
-
       // extract the Dof values of this element from displacement vector
-      BIOPOLYNET::UTILS::GetCurrentElementDis(
+      BIOPOLYNET::UTILS::ExtractPosDofVecAbsoluteValues(
           Discret(),
           element_ptr[ielement],
           BeamInteractionDataStatePtr()->GetMutableDisColNp(),
-          eledispvec);
-
-      const DRT::ELEMENTS::Beam3Base* beam_element_ptr =
-          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element_ptr[ielement]);
-
-      // get the current absolute values for those Dofs relevant for centerline interpolation
-      // initial values are added by element itself
-      beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
-          eledispvec,
-          element_centerline_dofvec_absolutevalues[ielement],
-          true);
+          element_posdofvec_absolutevalues[ielement]);
     }
 
     // update the Dof values in the interaction element pair object
     elepairptr->ResetState(
-        element_centerline_dofvec_absolutevalues[0],
-        element_centerline_dofvec_absolutevalues[1]);
+        element_posdofvec_absolutevalues[0],
+        element_posdofvec_absolutevalues[1]);
   }
 
 }
@@ -184,7 +170,6 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
           if(npotlaw1 > (int)BeamPotentialParams().PotentialLawPrefactors().size())
             dserror("number of potential law specified in line charge condition exceeds"
                 " number of defined potential laws!");
-
 
           pair_is_active = elepairptr->Evaluate(
               &eleforce_centerlineDOFs[0],
@@ -496,8 +481,35 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState()
   dserror("Not yet implemented");
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteRestart(
+    IO::DiscretizationWriter& iowriter,
+    const bool& forced_writerestart) const
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ReadRestart(
+    IO::DiscretizationReader& ioreader)
+{
+  // empty
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::PostReadRestart()
+{
+  CheckInitSetup();
+  nearby_elements_map_.clear();
+  FindAndStoreNeighboringElements();
+  CreateBeamPotentialElementPairs();
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::AddBinsToBinColMap(
     std::set< int >& colbins)
 {
@@ -505,8 +517,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::AddBinsToBinColMap(
   // nothing to do
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     AddBinsWithRelevantContentForIaDiscretColMap( std::set< int >& colbins ) const
 {
@@ -524,10 +536,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringE
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringElements");
 
   // loop over all row elements
-  const int numroweles = DiscretPtr()->NumMyRowElements();
-  for(int rowele_i=0; rowele_i<numroweles; ++rowele_i)
+  int const numroweles = EleTypeMapExtractorPtr()->Map(0)->NumMyElements();
+  for( int rowele_i = 0; rowele_i < numroweles; ++rowele_i )
   {
-    const int elegid = DiscretPtr()->ElementRowMap()->GID(rowele_i);
+    int const elegid = EleTypeMapExtractorPtr()->Map(0)->GID(rowele_i);
     DRT::Element* currele = DiscretPtr()->gElement(elegid);
 
     // (unique) set of neighboring bins for all col bins assigned to current element
@@ -535,14 +547,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringE
 
     // loop over all bind touched by currele
     std::set<int>::const_iterator biniter;
-    for(biniter=BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).begin();
-        biniter!=BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).end(); ++biniter)
+    for( biniter = BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).begin();
+        biniter != BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).end(); ++biniter )
     {
       std::vector<int> loc_neighboring_binIds;
       loc_neighboring_binIds.reserve(27);
 
       // do not check on existence here -> shifted to GetBinContent
-      ParticleHandlerPtr()->BinStrategy()->GetNeighborAndOwnBinIds(
+      BinStrategyPtr()->GetNeighborAndOwnBinIds(
           *biniter,loc_neighboring_binIds);
 
       // build up comprehensive unique set of neighboring bins
@@ -555,10 +567,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringE
 
     // set of elements that lie in neighboring bins
     std::set<DRT::Element*> neighboring_elements;
-    std::vector< BINSTRATEGY::UTILS::BinContentType > bc(1);
-    bc[0] = bin_beamcontent_;
-    ParticleHandlerPtr()->BinStrategy()->GetBinContent(neighboring_elements,
-        bc,glob_neighboring_binIds);
+    std::vector< BINSTRATEGY::UTILS::BinContentType > bc(2);
+    bc[0] = BINSTRATEGY::UTILS::Beam;
+    bc[1] = BINSTRATEGY::UTILS::RigidSphere;
+    BinStrategyPtr()->GetBinContent( neighboring_elements, bc, glob_neighboring_binIds );
 
     // sort out elements that should not be considered in contact evaluation
     SelectElesToBeConsideredForPotentialEvaluation(currele, neighboring_elements);
@@ -595,50 +607,50 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     //    TODO introduce flag for self-interaction in input file
     else
     {
-    // get the conditions applied to both elements of the pair and decide whether they need to be evaluated
-    std::vector<DRT::Condition*> conds1, conds2;
+      // get the conditions applied to both elements of the pair and decide whether they need to be evaluated
+      std::vector<DRT::Condition*> conds1, conds2;
 
-    // since only the nodes know about their conditions, we need this workaround
-    // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is sufficient to check only one node
-    DRT::Node** nodes1;
-    DRT::Node** nodes2;
-    nodes1 = currele->Nodes();
-    nodes2 = currneighborele->Nodes();
+      // since only the nodes know about their conditions, we need this workaround
+      // we assume that a linecharge condition is always applied to the entire physical beam, i.e. it is sufficient to check only one node
+      DRT::Node** nodes1;
+      DRT::Node** nodes2;
+      nodes1 = currele->Nodes();
+      nodes2 = currneighborele->Nodes();
 
-    dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
-    dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
+      dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
+      dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
 
-    nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
+      nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
-    // get correct condition for beam or rigid sphere element
-    if ( BEAMCONTACT::BeamElement(*currneighborele) )
-      nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
-    else
-      dserror("Only beam-to-beampotential-based interaction is implemented yet. "
-          "No other types of elements allowed!");
-//    else if(BEAMCONTACT::RigidsphereElement(*currneighborele)
-//      nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
+      // get correct condition for beam or rigid sphere element
+      if ( BEAMCONTACT::BeamElement(*currneighborele) )
+        nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
+      else if(BEAMCONTACT::RigidsphereElement(*currneighborele) )
+        nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
+      else
+        dserror("Only beam-to-beampotential or beam-to-sphere -based interaction is implemented yet. "
+            "No other types of elements allowed!");
 
-    // validinteraction == true includes: both eles "loaded" by a charge condition of same potential law
-    bool validinteraction = false;
+      // validinteraction == true includes: both eles "loaded" by a charge condition of same potential law
+      bool validinteraction = false;
 
-    for (unsigned int i=0; i<conds1.size(); ++i)
-    {
-      int npotlaw1 = conds1[i]->GetInt("potlaw");
-
-      for (unsigned int j=0; j<conds2.size(); ++j)
+      for (unsigned int i=0; i<conds1.size(); ++i)
       {
-        int npotlaw2 = conds2[j]->GetInt("potlaw");
+        int npotlaw1 = conds1[i]->GetInt("potlaw");
 
-        // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical beam
-        // TODO introduce flag for self-interaction in input file
-        if (conds1[i] != conds2[j] and npotlaw1 == npotlaw2)
-          validinteraction = true;
+        for (unsigned int j=0; j<conds2.size(); ++j)
+        {
+          int npotlaw2 = conds2[j]->GetInt("potlaw");
+
+          // here, we also exclude "self-interaction", i.e. a pair of elements on the same physical beam
+          // TODO introduce flag for self-interaction in input file
+          if (conds1[i] != conds2[j] and npotlaw1 == npotlaw2)
+            validinteraction = true;
+        }
       }
-    }
 
-    if (not validinteraction)
-      toerase = true;
+      if (not validinteraction)
+        toerase = true;
     }
 
 
@@ -663,27 +675,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   for (nearbyeleiter=nearby_elements_map_.begin(); nearbyeleiter!=nearby_elements_map_.end(); ++nearbyeleiter)
   {
     const int elegid = nearbyeleiter->first;
-    const DRT::Element* firsteleptr = DiscretPtr()->gElement(elegid);
-
-    const DRT::ELEMENTS::Beam3Base* beamele1 =
-        dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(firsteleptr);
-
-    // at the moment, both elements of a beam contact pair must be of same type Todo
-    const unsigned int numnodes_centerline = beamele1->NumCenterlineNodes();
-    const unsigned int numnodalvalues = beamele1->HermiteCenterlineInterpolation() ? 2 : 1;
+    std::vector< DRT::Element const *> ele_ptrs(2);
+    ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
     std::set<DRT::Element*>::const_iterator secondeleiter;
     for (secondeleiter=nearbyeleiter->second.begin(); secondeleiter!=nearbyeleiter->second.end(); ++secondeleiter)
     {
-      const DRT::Element* secondeleptr = *secondeleiter;
+      ele_ptrs[1] = *secondeleiter;
 
       Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamPotentialPair::Create(numnodes_centerline,numnodalvalues);
+          BEAMINTERACTION::BeamPotentialPair::Create(ele_ptrs);
 
       newbeaminteractionpair->Init(
           BeamPotentialParamsPtr(),
-          firsteleptr,
-          secondeleptr);
+          ele_ptrs[0],
+          ele_ptrs[1]);
 
       newbeaminteractionpair->Setup();
 
@@ -749,7 +755,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
 
   nodes1[0]->GetCondition("BeamPotentialLineCharge", conditions_element1);
-  nodes2[0]->GetCondition("BeamPotentialLineCharge", conditions_element2);
+
+  // get correct condition for beam or rigid sphere element
+  if ( BEAMCONTACT::BeamElement(*ele2) )
+    nodes2[0]->GetCondition("BeamPotentialLineCharge", conditions_element2);
+  else if(BEAMCONTACT::RigidsphereElement(*ele2) )
+    nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conditions_element2);
+  else
+    dserror("Only beam-to-beampotential or beam-to-sphere -based interaction is implemented yet. "
+        "No other types of elements allowed!");
 
 }
 

@@ -235,9 +235,10 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::S
     }
     case INPAR::STR::divcont_continue:
     {
-      // we should not get here, dserror for safety
-      dserror("Nonlinear solver did not converge! ");
-      return INPAR::STR::conv_nonlin_fail;
+      if (myrank == 0)
+        IO::cout << "\n WARNING: You are continuing your simulation although the nonlinear solver\n"
+                     " did not converge in the current time step.\n" << IO::endl;
+      return INPAR::STR::conv_success;
       break;
     }
     case INPAR::STR::divcont_repeat_step:
@@ -269,6 +270,8 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::S
       // reset step (e.g. quantities on element level or model specific stuff)
       ResetStep();
 
+      Integrator().UpdateConstantStateContributions();
+
       return INPAR::STR::conv_fail_repeat;
       break;
     }
@@ -295,6 +298,8 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::S
 
       // reset step (e.g. quantities on element level or model specific stuff)
       ResetStep();
+
+      Integrator().UpdateConstantStateContributions();
 
       return INPAR::STR::conv_fail_repeat;
       break;
@@ -326,6 +331,8 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::S
       SetTimeNp(GetTimeN()+GetDeltaTime());
       // reset step (e.g. quantities on element level or model specific stuff)
       ResetStep();
+
+      Integrator().UpdateConstantStateContributions();
 
       return INPAR::STR::conv_fail_repeat;
       break;
@@ -382,8 +389,8 @@ void STR::TIMINT::Implicit::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStat
       // increase the step size if the remaining number of steps is a even number
       if(((GetStepEnd() - GetStepNp())%2)==0 and GetStepEnd()!=GetStepNp())
       {
-        IO::cout << "Nonlinear solver successful. Double timestep size!"
-                 << IO::endl;
+        if( DataGlobalState().GetMyRank() == 0 )
+          IO::cout << "Nonlinear solver successful. Double timestep size!" << IO::endl;
 
         SetDivConRefineLevel(GetDivConRefineLevel()-1);
         SetDivConNumFineStep(0);

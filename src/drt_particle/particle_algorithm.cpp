@@ -411,16 +411,7 @@ void PARTICLE::Algorithm::Update()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::ReadRestart(int restart)
 {
-  // 1st) loop over bins and remove initial particle info
-  const int numrowbin = BinStrategy()->BinDiscret()->NumMyColElements();
-  for (int ibin=0; ibin<numrowbin; ++ibin)
-  {
-    DRT::Element* actele = BinStrategy()->BinDiscret()->lColElement(ibin);
-    dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(actele)->DeleteNodes();
-  }
-
-  // 2nd) initial particles need to be removed from bindis_
-  BinStrategy()->BinDiscret()->DeleteNodes();
+  RemoveAllParticles();
 
   // read in particles for restart
   {
@@ -607,7 +598,8 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
   Teuchos::RCP<Epetra_Vector> disnp = particles_->WriteAccessDispnp();
 
   // transfer particles to new bins
-  Teuchos::RCP<std::list<int> > deletedparticles = PARTICLE::ParticleHandler::TransferParticles(disnp);
+  Teuchos::RCP<std::list<int> > deletedparticles =
+      PARTICLE::ParticleHandler::TransferParticles( disnp, ghosting);
 
   // check whether all procs have a filled bindis_,
   // oldmap in ExportColumnElements must be Reset() on every proc or nowhere

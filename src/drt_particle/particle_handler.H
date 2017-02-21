@@ -25,6 +25,7 @@
 
 namespace DRT
 {
+  class Exporter;
   class Element;
   class Discretization;
   class Node;
@@ -62,6 +63,9 @@ namespace PARTICLE
     /// initial distribution of particles ( more general nodes of bindis_ ) to bins
     virtual void DistributeParticlesToBins(Teuchos::RCP<Epetra_Map> const& particlerowmap);
 
+    /// remove all particles
+    virtual void RemoveAllParticles();
+
     /// get bin colume map
     virtual inline Teuchos::RCP<Epetra_Map>& BinColMap(){return bincolmap_;}
 
@@ -70,7 +74,9 @@ namespace PARTICLE
 
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
-    virtual Teuchos::RCP<std::list<int> > TransferParticles(Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null);
+    virtual Teuchos::RCP<std::list<int> > TransferParticles(
+        Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null,
+        bool const ghosting = true);
 
     /// node is placed into the correct row bin or put into the list of homeless particles
     virtual bool PlaceNodeCorrectly(
@@ -102,10 +108,24 @@ namespace PARTICLE
     /// create graph for bin distribution
     Teuchos::RCP<const Epetra_CrsGraph> CreateGraph();
 
-    /// fill particles into their correct bin on according proc
+    /// fill particles into their correct bin on according proc using remote id list
     virtual Teuchos::RCP<std::list<int> > FillParticlesIntoBinsRemoteIdList(
       std::list<Teuchos::RCP<DRT::Node> >& homelessparticles   ///< set of homeless particles
       );
+
+    /// fill particles into their correct bin on according proc using one layer ghosting
+    /// note, this is faster than the other two method as there is no communication required
+    /// to find new owner ( complete one layer bin ghosting is required though)
+    virtual Teuchos::RCP<std::list<int> > FillParticlesIntoBinsUsingGhosting(
+      std::list<Teuchos::RCP<DRT::Node> >& homelessparticles   ///< set of homeless particles
+      );
+
+    /// receive particles and fill them in correct bin
+    virtual void ReceiveParticlesAndFillThemInBins(
+        int const numrec,
+        DRT::Exporter& exporter,
+        std::list<Teuchos::RCP<DRT::Node> >& homelessparticles
+    );
 
     /// bins are distributed to the processors
     virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcsBasedOnUnderlyingDiscret(

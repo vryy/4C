@@ -139,6 +139,9 @@ namespace TIMINT {
     /// things that should be done after updating
     virtual void PostUpdate() = 0;
 
+    //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
+    virtual void UpdateConstantStateContributions() = 0;
+
     /// things that should be done after output
     virtual void PostOutput();
     //!@}

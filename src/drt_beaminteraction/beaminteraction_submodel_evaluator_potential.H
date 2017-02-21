@@ -82,6 +82,17 @@ namespace SUBMODELEVALUATOR {
     virtual void ResetStepState();
 
     //! derived
+    virtual void WriteRestart(
+        IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const;
+
+    //! derived
+    virtual void ReadRestart( IO::DiscretizationReader& ioreader );
+
+    //! derived
+    virtual void PostReadRestart();
+
+    //! derived
     virtual void InitSubmodelDependencies(Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap);
 
     //! derived

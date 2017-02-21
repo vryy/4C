@@ -273,11 +273,13 @@ public:
   \brief Evaluate mass matrix
   */
   void nlnstiffmass(Teuchos::ParameterList& params,
+                    std::vector<double>& acc,
                     std::vector<double>& vel,
                     std::vector<double>& disp,
                     Epetra_SerialDenseMatrix* stiffmatrix,
                     Epetra_SerialDenseMatrix* massmatrix,
-                    Epetra_SerialDenseVector* force);
+                    Epetra_SerialDenseVector* force,
+                    Epetra_SerialDenseVector* inertia_force);
 
   //!computes the number of different random numbers required in each time step for generation of stochastic forces
   int HowManyRandomNumbersINeed();
@@ -361,7 +363,7 @@ private:
 //                         Epetra_SerialDenseVector* force);
 
   //!calculation of background fluid velocity and gradient of velocity
-  void MyBackgroundVelocity(Teuchos::ParameterList& params,
+  void GetBackgroundVelocity(Teuchos::ParameterList& params,
                             LINALG::Matrix<3,1>& velbackground,
                             LINALG::Matrix<3,3>& velbackgroundgrad);
 

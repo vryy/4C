@@ -103,10 +103,9 @@ void BEAMINTERACTION::BeamPotentialParams::Init()
   }
 
   // outdated: flags to indicate, if beam-to-solid or beam-to-sphere potential-based interaction is applied
-  if ( DRT::INPUT::IntegralValue<int>(beam_potential_params_list,"BEAMPOT_BTSOL") != 0 or
-       DRT::INPUT::IntegralValue<int>(beam_potential_params_list,"BEAMPOT_BTSPH") != 0)
+  if ( DRT::INPUT::IntegralValue<int>(beam_potential_params_list,"BEAMPOT_BTSOL") != 0)
   {
-    dserror("The flags BEAMPOT_BTSOL and BEAMPOT_BTSPH are outdated! remove them as soon"
+    dserror("The flag BEAMPOT_BTSOL is outdated! remove them as soon"
         "as old beamcontact_manager is gone!");
   }
 

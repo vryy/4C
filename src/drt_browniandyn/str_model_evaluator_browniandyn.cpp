@@ -58,6 +58,11 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
 {
   CheckInit();
 
+  // safety check, brownian dynamics simulation only for one step theta and
+  // theta = 1.0 (see Cyron 2012)
+  if( TimInt().GetDataSDynPtr()->GetDynamicType() != INPAR::STR::dyna_onesteptheta)
+    dserror("Brownian dynamics simulation only consistent for one step theta scheme.");
+
   discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>( DiscretPtr(), true );
 
   // -------------------------------------------------------------------------
@@ -98,8 +103,17 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDisVector(
       GStatePtr()->GetMutableDisNp(),                           // disnp
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
-      discret_ptr_ );
+      discret_ptr_);
 
+  BIOPOLYNET::UTILS::UpdateCellsPositionRandomly(
+      GStatePtr()->GetMutableDisN(),                           // disp
+      discret_ptr_,
+      GState().GetStepN() );
+
+  BIOPOLYNET::UTILS::UpdateCellsPositionRandomly(
+      GStatePtr()->GetMutableDisNp(),                           // disnp
+      discret_ptr_,
+      GState().GetStepN() );
   // -------------------------------------------------------------------------
   // get maximal number of random numbers required by any element in the
   // discretization and store them in randomnumbersperelement_
@@ -116,7 +130,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   /* multivector for stochastic forces evaluated by each element; the numbers of
    * vectors in the multivector equals the maximal number of random numbers
    * required by any element in the discretization per time step; therefore this
-   * multivector is suitable for synchrinisation of these random numbers in
+   * multivector is suitable for synchronization of these random numbers in
    *  parallel computing*/
   eval_browniandyn_ptr_->ResizeRandomForceMVector( discret_ptr_, maxrandnumelement_ );
   GenerateGaussianRandomNumbers();
@@ -139,6 +153,10 @@ void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
       GStatePtr()->GetMutableDisNp(),                           // disnp
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
       discret_ptr_ );
+  BIOPOLYNET::UTILS::UpdateCellsPositionRandomly(
+      GStatePtr()->GetMutableDisNp(),                           // disnp
+      discret_ptr_,
+      GState().GetStepN() );
   // -------------------------------------------------------------------------
   // reset brownian (stochastic and damping) forces
   // -------------------------------------------------------------------------
@@ -172,18 +190,6 @@ bool STR::MODELEVALUATOR::BrownianDyn::EvaluateForce()
   // ordinary internal force
   ok = (ok ? ApplyForceBrownian() : false);
 
-  return ok;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BrownianDyn::EvaluateInitialForce()
-{
-  CheckInitSetup();
-  bool ok = true;
-
-  // do nothing here as we do not want initial stochastic forces in case of
-  // ml_rotations = true;
   return ok;
 }
 
@@ -246,6 +252,12 @@ bool STR::MODELEVALUATOR::BrownianDyn::AssembleForce(Epetra_Vector& f,
     const double & timefac_np) const
 {
   CheckInitSetup();
+
+  // safety check, brownian dynamics simulation for with one step theta and
+  // theta = 1.0 (see Cyron 2012)
+  if( abs(timefac_np - 1.0) > 1.0e-8 )
+    dserror("Brownian dynamics simulation only consistent for one step theta scheme"
+            " and theta = 1.0 .");
 
   // -------------------------------------------------------------------------
   // *********** finally put everything together ***********
@@ -466,10 +478,7 @@ void STR::MODELEVALUATOR::BrownianDyn::WriteRestart(
         IO::DiscretizationWriter& iowriter,
         const bool& forced_writerestart) const
 {
-  CheckInitSetup();
-
-
-  return;
+  // nothing to do
 }
 
 /*----------------------------------------------------------------------------*
@@ -477,9 +486,7 @@ void STR::MODELEVALUATOR::BrownianDyn::WriteRestart(
 void STR::MODELEVALUATOR::BrownianDyn::ReadRestart(
     IO::DiscretizationReader& ioreader)
 {
-  CheckInitSetup();
-
-  return;
+  // nothing to do
 }
 
 /*----------------------------------------------------------------------------*
@@ -626,8 +633,13 @@ void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
   GStatePtr()->GetMutableDisNp()->PutScalar(0.0);
   GStatePtr()->GetMutableVelNp()->PutScalar(0.0);
   // we only need this in case we use Lie Group gen alpha and calculate a consistent
-  // mass matrix and acc vector (i.e. we are not neclecting inertia forces)
+  // mass matrix and acc vector (i.e. we are not neglecting inertia forces)
   GStatePtr()->GetMutableAccNp()->PutScalar(0.0);
+
+  GStatePtr()->GetMutableDisNp()->Update(1.0, (*GStatePtr()->GetDisN()), 0.0);
+  GStatePtr()->GetMutableVelNp()->Update(1.0, (*GStatePtr()->GetVelN()), 0.0);
+  GStatePtr()->GetMutableAccNp()->Update(1.0, (*GStatePtr()->GetAccN()), 0.0);
+
 
   return;
 }
@@ -802,10 +814,14 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
 
         if((*randomnumbersrow)[j][i]>maxrandforcefac*standarddeviation + meanvalue)
         {
+          std::cout << "warning: stochastic force restricted according to MAXRANDFORCE"
+              " this should not happen to often" << std::endl;
           (*randomnumbersrow)[j][i]=maxrandforcefac*standarddeviation + meanvalue;
         }
         else if((*randomnumbersrow)[j][i]<-maxrandforcefac*standarddeviation + meanvalue)
         {
+          std::cout << "warning: stochastic force restricted according to MAXRANDFORCE"
+              " this should not happen to often" << std::endl;
           (*randomnumbersrow)[j][i]=-maxrandforcefac*standarddeviation + meanvalue;
         }
       }

@@ -20,9 +20,11 @@
 
 #include "../drt_beaminteraction/beam3contact_utils.H"
 #include "../drt_beaminteraction/beam_to_beam_linkage.H"
-#include "../drt_beam3/beam3_base.H"
 #include <Epetra_FEVector.h>
 #include "../drt_beaminteraction/periodic_boundingbox.H"
+
+#include "../drt_beam3/beam3_base.H"
+#include "../drt_rigidsphere/rigidsphere.H"
 
 namespace BIOPOLYNET
 {
@@ -34,7 +36,7 @@ namespace UTILS
 void PeriodicBoundaryConsistentDisVector(
     Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
-    Teuchos::RCP<DRT::Discretization> const&        discret)
+    Teuchos::RCP<DRT::Discretization> const& discret)
 {
   for ( int i = 0; i < discret->NumMyRowNodes(); ++i )
   {
@@ -50,7 +52,7 @@ void PeriodicBoundaryConsistentDisVector(
     //get GIDs of this node's degrees of freedom
     std::vector<int> dofnode = discret->Dof(node);
 
-    for (int dim=0; dim<3; ++dim)
+    for ( int dim = 0; dim < 3; ++dim )
     {
       int doflid = dis->Map().LID(dofnode[dim]);
       pbb->Shift1D( dim, (*dis)[doflid], node->X()[dim] );
@@ -58,9 +60,53 @@ void PeriodicBoundaryConsistentDisVector(
   }
 }
 
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void UpdateCellsPositionRandomly(
+    Teuchos::RCP<Epetra_Vector> dis,
+    Teuchos::RCP<DRT::Discretization> const& discret,
+    int const step)
+{
+//  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
+//  const int updateevery = 200;
+//
+//  //todo: this is of course not nice, this needs to be done somewhere else
+//  for( int i = 0; i < discret->ElementRowMap()->NumMyElements(); ++i )
+//  {
+//    static std::vector< std::vector< double > > Xnew(discret->ElementRowMap()->NumMyElements(), std::vector< double >(3) );
+//    Xnew.resize(discret->ElementRowMap()->NumMyElements());
+//
+//    DRT::Element* eleptr = discret->gElement( discret->ElementRowMap()->GID(i) );
+//
+//    if ( dynamic_cast< const DRT::ELEMENTS::Rigidsphere* >(eleptr) != NULL and step >= updateevery )
+//    {
+//
+//      std::vector<int> dofnode  = discret->Dof(eleptr->Nodes()[0]);
+//
+//      // random position of cell inside box
+//      if( step % updateevery == 0 )
+//      {
+//        for ( int dim = 0; dim < 2; ++dim )
+//        {
+//          double edgelength = 5.6;
+//          double min = 0.4;
+//          Xnew[i][dim] = min + ( edgelength * DRT::Problem::Instance()->Random()->Uni() );
+//        }
+//      }
+//
+//      // loop over all dofs
+//      for( int dim = 0; dim < 2; ++dim )
+//      {
+//        int doflid = dis->Map().LID(dofnode[dim]);
+//        (*dis )[doflid] = Xnew[i][dim] - eleptr->Nodes()[0]->X()[dim];
+//      }
+//    }
+//  }
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<int> Permutation(const int& number)
+std::vector<int> Permutation( const int& number )
 {
   //auxiliary variable
   int j = 0;
@@ -209,9 +255,6 @@ void AssembleCenterlineDofForceStiffIntoElementForceStiff(
   {
     DRT::Element* ele = discret.gElement(elegid[iele]);
 
-    DRT::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele);
-
     // Todo implement method in DRT::Element or find alternative way of doing this
     // find out the elements' number of Dofs (=dimension of element vector/matrices)
     std::vector<int> lmrow;
@@ -220,7 +263,19 @@ void AssembleCenterlineDofForceStiffIntoElementForceStiff(
     ele->LocationVector(discret,lmrow,dummy1,dummy2);
     numdof_ele[iele] = lmrow.size();
 
-    beamele->CenterlineDofIndicesOfElement(ele_centerlinedofindices[iele]);
+    DRT::ELEMENTS::Beam3Base* beamele =
+        dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele);
+
+    if( beamele != NULL)
+    {
+      beamele->CenterlineDofIndicesOfElement(ele_centerlinedofindices[iele]);
+    }
+    else
+    {
+      ele_centerlinedofindices[iele].resize( numdof_ele[iele] );
+      for(unsigned int i = 0; i < numdof_ele[iele]; ++i )
+        ele_centerlinedofindices[iele][i] = i;
+    }
   }
 
 
@@ -272,6 +327,40 @@ void AssembleCenterlineDofForceStiffIntoElementForceStiff(
     }
   }
 
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void ExtractPosDofVecAbsoluteValues(
+    DRT::Discretization const& discret,
+    DRT::Element const* ele,
+    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+    std::vector<double>& element_posdofvec_absolutevalues)
+{
+  std::vector<double> eledispvec;
+
+  // extract the Dof values of this element from displacement vector
+  GetCurrentElementDis( discret, ele, ia_discolnp, eledispvec );
+
+   DRT::ELEMENTS::Beam3Base const* beam_element_ptr =
+      dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+   if( beam_element_ptr != NULL )
+   {
+    // get the current absolute values for those Dofs relevant for centerline interpolation
+    // initial values are added by element itself
+    beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
+        eledispvec,
+        element_posdofvec_absolutevalues,
+        true);
+   }
+   else
+   {
+     element_posdofvec_absolutevalues = eledispvec;
+     for ( unsigned int dim = 0; dim < 3; ++dim )
+       for ( int node = 0; node < ele->NumNode(); ++node )
+         element_posdofvec_absolutevalues[ 3*node + dim] += ele->Nodes()[node]->X()[dim];
+   }
 }
 
 /*----------------------------------------------------------------------------*
@@ -529,6 +618,45 @@ void ApplyBpotForceStiffToParentElements(
     elestiff[1][1].Shape(numdof_ele2,numdof_ele2);
     elestiff[1][1].Multiply('N','N',1.0,auxmat[1][1],trafomatrix,0.0);
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void SetupEleTypeMapExtractor(
+    Teuchos::RCP<DRT::Discretization> const& discret,
+    Teuchos::RCP<LINALG::MultiMapExtractor>& eletypeextractor)
+{
+  std::vector< std::set<int> > eletypeset(2);
+
+  for ( int i = 0; i < discret->NumMyRowElements(); ++i )
+  {
+    // get ele pointer
+    DRT::Element* eleptr = discret->lRowElement(i);
+
+    if( dynamic_cast< const DRT::ELEMENTS::Beam3Base* >(eleptr) != NULL )
+    {
+      eletypeset[0].insert( eleptr->Id() );
+    }
+    else if ( dynamic_cast< const DRT::ELEMENTS::Rigidsphere* >(eleptr) != NULL)
+    {
+      eletypeset[1].insert( eleptr->Id() );
+    }
+    else
+    {
+      dserror("eletype multi map extractor cannot yet handle current element type.");
+    }
+  }
+
+  std::vector< Teuchos::RCP< const Epetra_Map > > maps( eletypeset.size() );
+  for( int i = 0; i < static_cast<int>( eletypeset.size() ); ++i )
+  {
+    std::vector<int> mapvec( eletypeset[i].begin(), eletypeset[i].end() );
+    eletypeset[0].clear();
+    maps[i] = Teuchos::rcp( new Epetra_Map(-1, mapvec.size(),
+        &mapvec[0], 0, discret->Comm()));
+  }
+
+  eletypeextractor->Setup( *discret()->ElementRowMap(), maps );
 }
 
 }

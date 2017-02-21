@@ -446,9 +446,67 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 
     case ELEMENTS::struct_calc_stress:
     {
-      dserror("No stress output implemented for beam3r elements");
-      break;
+//      // nothing to do for ghost elements
+//      if ( discretization.Comm().MyPID() == Owner() )
+//      {
+//        // need current displacement
+//        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+//        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+//        std::vector<double> mydisp(lm.size());
+//        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+//
+//        Teuchos::RCP<std::vector<char> > stressdata = Teuchos::null;
+//        Teuchos::RCP<std::vector<char> > straindata = Teuchos::null;
+//
+//        INPAR::STR::StressType iostress = INPAR::STR::stress_none;
+//        INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
+//
+//        if ( IsParamsInterface() )
+//        {
+//          stressdata   = ParamsInterface().MutableStressDataPtr();
+//          straindata   = ParamsInterface().MutableStrainDataPtr();
+//
+//          iostress   = ParamsInterface().GetStressOutputType();
+//          iostrain   = ParamsInterface().GetStrainOutputType();
+//        }
+//        else
+//        {
+//          stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
+//          straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
+//          iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+//          iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+//        }
+//
+//        if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
+//        if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
+//
+//        // todo: check if stress/strain types are the ones for beams
+//
+//        LINALG::Matrix<BEAMSVTUVISUALSUBSEGMENTS,6> stress;
+//        LINALG::Matrix<BEAMSVTUVISUALSUBSEGMENTS,6> strain;
+//
+//        // determine strains and/or stresses
+////        CalcInternalAndInertiaForcesAndStiff(lm,mydisp,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+//
+//        // add data to pack
+//        {
+//          DRT::PackBuffer data;
+//          AddtoPack(data, stress);
+//          data.StartPacking();
+//          AddtoPack(data, stress);
+//          std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
+//        }
+//
+//        {
+//          DRT::PackBuffer data;
+//          AddtoPack(data, strain);
+//          data.StartPacking();
+//          AddtoPack(data, strain);
+//          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+//        }
+//      }
     }
+    break;
 
     case ELEMENTS::struct_calc_recover:
     {
@@ -1097,7 +1155,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
    *****************************************************************************************************/
 
   // calculation of inertia forces/moments and massmatrix; neglect inertia in case of Brownian dynamics (Statmech) simulation
-  if ( (massmatrix != NULL or inertia_force != NULL) and (!statmechprob_) )
+  if ( ( massmatrix != NULL ) or ( inertia_force != NULL ) )
   {
 
     /* calculation of mass matrix: According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant

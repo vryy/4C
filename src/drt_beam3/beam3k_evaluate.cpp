@@ -118,17 +118,6 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);     // ToDo unused?
 
-      // get element velocity vector
-      std::vector<double> myvel(lm.size());
-
-      const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-      if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP")!=INPAR::STR::dyna_statics)
-      {
-        Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-        DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-      }
-
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
       {
         if(weakkirchhoff_)
@@ -573,7 +562,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
   //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
   //according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)
 
-  if ( (massmatrix != NULL or inertia_force != NULL) and !statmechprob_)
+  if ( (massmatrix != NULL) or (inertia_force != NULL ) )
   {
     double dt = 1000.0;
     double beta = -1.0;
@@ -1133,7 +1122,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
   //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
   //according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)
 
-  if ( (massmatrix != NULL or inertia_force != NULL) and !statmechprob_)
+  if ( ( massmatrix != NULL ) or ( inertia_force != NULL) )
   {
     double dt = 1000.0;
     double beta = -1.0;

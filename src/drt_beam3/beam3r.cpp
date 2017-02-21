@@ -440,7 +440,6 @@ DRT::ELEMENTS::Beam3Base(id,owner),
 useFAD_(false),
 centerline_hermite_(false),
 isinit_(false),
-statmechprob_(false),
 nodeI_(0),
 nodeJ_(0),
 crosssec_(0),
@@ -474,7 +473,6 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  useFAD_(old.useFAD_),
  centerline_hermite_(old.centerline_hermite_),
  isinit_(old.isinit_),
- statmechprob_(old.statmechprob_),
  Kmax_(old.Kmax_),
  dispthetaconvnode_(old.dispthetaconvnode_),
  dispthetanewnode_(old.dispthetanewnode_),
@@ -615,7 +613,6 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,useFAD_);
   AddtoPack(data,centerline_hermite_);
   AddtoPack(data,isinit_);
-  AddtoPack(data,statmechprob_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
@@ -691,7 +688,6 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   useFAD_ = ExtractInt(position,data);
   centerline_hermite_ = ExtractInt(position,data);
   isinit_ = ExtractInt(position,data);
-  statmechprob_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
@@ -971,9 +967,6 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
   if (!isinit_)
   {
     isinit_ = true;
-
-    // set the flag statmechprob_
-    statmechprob_ = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BrownianDynamicsParams(), "BROWNDYNPROB");
 
     // check input data
     if (xrefe.size() != 3*nnodecl)
@@ -1262,42 +1255,38 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
      *****************************************************************************************************/
 
     // if needed, compute Jacobi determinant at GPs for integration of damping/stochastic forces
-    if (statmechprob_)
+    // Get the applied integration scheme
+    DRT::UTILS::GaussRule1D gaussrule_damp_stoch = MyGaussRule(res_damp_stoch);    // TODO reuse/copy quantities if same integration scheme has been applied above
+    DRT::UTILS::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
+
+    // these quantities will later be used mainly for calculation of damping/stochastic terms -> named 'dampstoch'
+    QconvGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
+    QnewGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
+    jacobiGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
+
+    // reuse variables for individual shape functions and resize to new numgp
+    I_i.resize(gausspoints_damp_stoch.nquad);
+    H_i_xi.resize(gausspoints_damp_stoch.nquad);
+
+    // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
+    EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_damp_stoch,I_i,distype);
+    EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_damp_stoch,H_i_xi,distype);
+
+    // Loop through all GPs
+    for (int numgp=0; numgp < gausspoints_damp_stoch.nquad; numgp++)
     {
-      // Get the applied integration scheme
-      DRT::UTILS::GaussRule1D gaussrule_damp_stoch = MyGaussRule(res_damp_stoch);    // TODO reuse/copy quantities if same integration scheme has been applied above
-      DRT::UTILS::IntegrationPoints1D gausspoints_damp_stoch(gaussrule_damp_stoch);
+      Calc_r_xi<nnodecl,vpernode,double>(disp_refe_centerline,H_i_xi[numgp],dr0dxi);
 
-      // these quantities will later be used mainly for calculation of damping/stochastic terms -> named 'dampstoch'
-      QconvGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
-      QnewGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
-      jacobiGPdampstoch_.resize(gausspoints_damp_stoch.nquad);
+      // Store Jacobi determinant at this Gauss point
+      jacobiGPdampstoch_[numgp]= dr0dxi.Norm2();
 
-      // reuse variables for individual shape functions and resize to new numgp
-      I_i.resize(gausspoints_damp_stoch.nquad);
-      H_i_xi.resize(gausspoints_damp_stoch.nquad);
+      // compute quaternion at this GP and store in QnewGPdampstoch_
+      Calc_Psi_l<nnodetriad,double>(Psi_li, I_i[numgp], Psi_l);
+      Calc_Qgauss<double>(Psi_l,Q_r,QnewGPdampstoch_[numgp]);
 
-      // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
-      EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_damp_stoch,I_i,distype);
-      EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_damp_stoch,H_i_xi,distype);
-
-      // Loop through all GPs
-      for (int numgp=0; numgp < gausspoints_damp_stoch.nquad; numgp++)
-      {
-        Calc_r_xi<nnodecl,vpernode,double>(disp_refe_centerline,H_i_xi[numgp],dr0dxi);
-
-        // Store Jacobi determinant at this Gauss point
-        jacobiGPdampstoch_[numgp]= dr0dxi.Norm2();
-
-        // compute quaternion at this GP and store in QnewGPdampstoch_
-        Calc_Psi_l<nnodetriad,double>(Psi_li, I_i[numgp], Psi_l);
-        Calc_Qgauss<double>(Psi_l,Q_r,QnewGPdampstoch_[numgp]);
-
-        // copy QnewGPdampstoch_ to QconvGPdampstoch_
-        QconvGPdampstoch_[numgp] = QnewGPdampstoch_[numgp];
-      }
+      // copy QnewGPdampstoch_ to QconvGPdampstoch_
+      QconvGPdampstoch_[numgp] = QnewGPdampstoch_[numgp];
     }
-
 
     /********************* Compute quantities required for integration of Neumann lineloads **************
      *****************************************************************************************************/

@@ -3,14 +3,13 @@
  * \file io_hdf.H
 \brief Helpers to read HDF5 based output.
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\level 1
+
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
-*/
-/*----------------------------------------------------------------------*/
+
+*----------------------------------------------------------------------*/
 
 #ifndef IO_HDF_H
 #define IO_HDF_H
@@ -161,6 +160,12 @@ public:
       int columns,
       const Epetra_Comm& Comm,
       Teuchos::RCP<Epetra_Map>& elemap
+      ) const;
+
+  Teuchos::RCP<std::vector<char> >
+  ReadCharVector(
+      std::string value_path,
+      const Epetra_Comm& Comm
       ) const;
 
   Teuchos::RCP<std::vector<double> > ReadDoubleVector(std::string path) const

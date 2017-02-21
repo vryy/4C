@@ -135,12 +135,22 @@ namespace BINSTRATEGY
       bool isslave   ///< decide whether slave or master side is processed
       ) const;
 
-    /// beams (considering cut elements according to  are assigned to bins
+    /// distribute elements to bins exploiting axis aligned bounding box idea
     virtual void DistributeElesToBinsUsingEleXAABB(
         Teuchos::RCP<DRT::Discretization> const& discret,           ///< discret of which the elements are distributed to bins
-        std::map<int, std::set<int> >& bintorowelemap,         ///< map of bins and assigned row elements
-        Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null    ///< statevector holding current displacements of discret's nodes
+        std::map<int, std::set<int> >& bintorowelemap,              ///< map of bins and assigned row elements
+        Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null           ///< statevector holding current displacements of discret's nodes
       ) const;
+
+    /// transfer nodes and elements of input discret
+    virtual void TransferNodesAndElements(
+        Teuchos::RCP<DRT::Discretization> & discret,
+        Teuchos::RCP<Epetra_Vector> disnp);
+
+    /// communicate elements for element transfer
+    virtual void CommunicateElements(
+        Teuchos::RCP<DRT::Discretization> & discret,
+        std::map< int, std::vector<DRT::Element*> > const& toranktosendeles) const;
 
     /// number of bins in ijk range
     virtual int GetNumberOfBinsInijkRange( int const ijk_range[6] ) const;
@@ -180,6 +190,14 @@ namespace BINSTRATEGY
         std::vector< BINSTRATEGY::UTILS::BinContentType> bincontent,
         std::vector<int>& binIds,
         bool roweles = false
+    );
+
+    /// get elements of type bincontent in given bin
+    void GetBinContent(
+        DRT::Element* binptr,
+        std::set<DRT::Element*> &eles,
+        std::vector< BINSTRATEGY::UTILS::BinContentType > bincontent,
+        bool roweles
     );
 
     /// remove elements of specific kinds from bins

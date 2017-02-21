@@ -18,14 +18,11 @@
 #include "str_dbc.H"
 
 
-// forward declarations
-namespace DRT
-{
-  class Condition;
-  class Element;
-  class Discretization;
+namespace GEO{
+namespace MESHFREE{
+  class BoundingBox;
 }
-
+}
 namespace LINALG
 {
   class SparseOperator;
@@ -48,8 +45,6 @@ namespace TIMINT {
     //! Destructor
     virtual ~DbcBioPolyNet() {};
 
-    //! \brief print BC type to screen
-    void BioPolyNetPrintBCType();
 
     /*! \brief Evaluate and apply the DBC
      *
@@ -161,9 +156,6 @@ namespace TIMINT {
                               LINALG::SerialDenseMatrix&  coord,
                               std::vector<int>*           lids=NULL);
 
-    //! \brief some simple checks for correct setup of boundary conditions via input file
-    void DbcSanityCheck();
-
     /*!\brief check whether element is "broken" due to periodic boundary conditions
       \param coord  (in)  set of nodal coordinates
       \param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element*/
@@ -172,23 +164,17 @@ namespace TIMINT {
 
   protected:
 
-    //! statmech dynamics data container
-    Teuchos::RCP<const STR::TIMINT::MeshFreeData> smdyn_ptr_;
+    //! periodic bounding box
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
 
     //! \brief vector of node sets for DBC application
     std::vector<std::vector<int> > dbcnodesets_;
 
-    //! \brief number of nodes which are part of the discretization already before starting adding crosslinkers
-    int basisnodes_;
-
-    //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
-    int basiselements_;
-
     //! \brief flag signaling the use of the initially found DBC node set throughout the simulation
     bool useinitdbcset_;
 
-  };  // class  DbcBioPolyNet
-} // namespace STR
+  };
+}
 
 
 #endif /* STR_DBC_BIOPOLYNET_H_ */
