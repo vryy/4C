@@ -113,7 +113,7 @@ namespace MAT
         double& psi,                      ///< strain energy functions
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
-        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain in strain like Voigt notation
+        const LINALG::Matrix<6,1>& glstrain,///< Green-Lagrange strain in strain like Voigt notation
         const int eleGID                   ///< element GID
         )
       { dserror("Summand does not support calculation of strain energy"); };

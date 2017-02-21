@@ -128,10 +128,10 @@ void MAT::ELASTIC::CoupAnisoExpo::AddStrainEnergy(double& psi,
   LINALG::Matrix<6,1> rcg(true);
 
   for(int i=0;i<3;++i)
-    rcg(i) = 2.0*glstrain(i,i)+1.0;
-  rcg(3) = glstrain(3);
-  rcg(4) = glstrain(4);
-  rcg(5) = glstrain(5);
+    rcg(i) = 2.0*glstrain(i)+1.0;
+  rcg(3) = 2.0*glstrain(3);
+  rcg(4) = 2.0*glstrain(4);
+  rcg(5) = 2.0*glstrain(5);
 
   double I4 = 0.0;
   I4 =  A_(0)*rcg(0) + A_(1)*rcg(1) + A_(2)*rcg(2)

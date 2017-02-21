@@ -57,7 +57,7 @@ void MAT::ELASTIC::CoupExpPol::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
-    const LINALG::Matrix<6,1> glstrain,
+    const LINALG::Matrix<6,1>& glstrain,
     const int eleGID)
 {
   // routine runs when calculation is done during the inverse analysis

@@ -53,7 +53,7 @@ void MAT::ELASTIC::VolOgden::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
-    const LINALG::Matrix<6,1> glstrain,
+    const LINALG::Matrix<6,1>& glstrain,
     const int eleGID)
 {
   const double kappa = params_ -> kappa_;

@@ -52,7 +52,7 @@ void MAT::ELASTIC::VolPow::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
-    const LINALG::Matrix<6,1> glstrain,
+    const LINALG::Matrix<6,1>& glstrain,
     const int eleGID)
 {
   const double a = params_ -> a_;
