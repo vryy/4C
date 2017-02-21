@@ -223,6 +223,7 @@ macro(result_file arg nproc filetag resultfilename referencefilename)
 endmacro(result_file)
 
 ###------------------------------------------------------------------ List of tests
+baci_test(aaa_mat_input 2 "")
 baci_test(acou_pat_1d_impleuler 2 "" minimal)
 baci_test(acou_pat_1d_impleuler_inv 2 "")
 baci_test(acou_pat_1d_impleuler_inv_sol 2 "")

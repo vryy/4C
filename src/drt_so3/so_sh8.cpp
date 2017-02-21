@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_sh8.cpp
-\brief
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 1
+
+\maintainer Alexander Popp
 
 *----------------------------------------------------------------------*/
 
@@ -85,6 +83,8 @@ void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition( std::map<std::string,std
     .AddOptionalNamedDoubleVector("FIBER2",3)
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("STRENGTH")
+    .AddOptionalNamedDouble("HU")
+    .AddOptionalNamedDouble("lambda")
     ;
 }
 
