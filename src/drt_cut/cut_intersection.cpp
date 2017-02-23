@@ -803,7 +803,8 @@ bool GEO::CUT::Intersection<probdim,edgetype,sidetype,debug,dimedge,dimside,
   // (4) try to calculate the intersection point directly with Newton
   // ------------------------------------------------------------------------
   double itol = 0.0;
-  if ( ComputeEdgeSideIntersection( itol ) ) //if newton converges we trust the result!
+  bool conv = ComputeCurveSurfaceIntersection(itol);
+  if (conv) //if newton converges we trust the result!
   {
     if ( SurfaceWithinLimits() and LineWithinLimits() )
     {
@@ -903,7 +904,7 @@ bool GEO::CUT::Intersection<probdim,edgetype,sidetype,debug,dimedge,dimside,
       LINALG::Matrix<2,1> tri_conv;
       for (unsigned tri = 0; tri < 2; ++tri)
       {
-        tri_conv( tri ) = ComputeEdgeTri3Intersection( tri_tol( tri ), tri );
+        tri_conv(tri) = ComputeCurveSurfaceIntersection(tri_tol(tri),tri);
         /* we expect the QUAD4 to converge in case that the projected point is
          * inside the QUAD4 or TRI3! */
         if ( tri_conv( tri ) and Tri3WithinLimits( tri_tol( tri ) ) )
@@ -927,8 +928,8 @@ bool GEO::CUT::Intersection<probdim,edgetype,sidetype,debug,dimedge,dimside,
           std::cout << "Local Coordinates from ComputeIntersection (tol="
               << tri_tol(tri) << ") on Tri3 ( " << tri << " ) : " << "xsi: " << xsi_(0,0)
               << " / eta: "<< xsi_(1,0) << " / alpha: "<< xsi_(2,0) << std::endl;
-          dserror("ComputeEdgeSideIntersection for Quad4 didn't converge, "
-              "but ComputeEdgeTri3Intersection for triangulation (id=%d) is inside the Element!",
+          dserror("ComputeCurveSurfaceIntersection for Quad4 didn't converge, "
+              "but ComputeCurveSurfaceIntersection for triangulation (id=%d) is inside the Element!",
               tri);
         }
       }

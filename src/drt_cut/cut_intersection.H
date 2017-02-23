@@ -477,10 +477,10 @@ namespace CUT {
     }
     virtual double * FinalPoint( )
     {
-      if ( istatus_ != intersect_single_cut_point )
-        dserror( "INVALID IntersectionStatus: This routine is restricted to one single "
-            "cut point only! ( istatus_ = \"%s\" )",
-            IntersectionStatus2String( istatus_ ).c_str() );
+//      if ( istatus_ != intersect_single_cut_point )
+//        dserror( "INVALID IntersectionStatus: This routine is restricted to one single "
+//            "cut point only! ( istatus_ = \"%s\" )",
+//            IntersectionStatus2String( istatus_ ).c_str() );
 
       FinalPoint( xsi_edge_, x_ );
       return x_.A();
@@ -489,6 +489,42 @@ namespace CUT {
     {
       FinalPoint( LocalEdgeCoordinates( cp_id ), x_ );
       return x_.A();
+    }
+
+    bool ComputeCurveSurfaceIntersection(double& tolerance, int triangleid = -1)
+    {
+      TEUCHOS_FUNC_TIME_MONITOR( "ComputeCurveSurfaceIntersection" );
+
+      bool conv;
+
+      if (triangleid == -1)
+      {
+        KERNEL::ComputeIntersection<probdim,edgetype, sidetype> ci( xsi_ );
+        //KERNEL::DebugComputeIntersection<edgetype, sidetype> ci( xsi_ );
+        conv =  ci( xyze_surfaceElement_, xyze_lineElement_ );
+        tolerance = ci.GetTolerance();
+      }
+      else
+      {
+        if (probdim != 3 ) dserror("2d Version of ComputeCurveSurfaceIntersection not implemented here!");
+
+        TEUCHOS_FUNC_TIME_MONITOR( "ComputeEdgeTri3Intersection" );
+        LINALG::Matrix<3,1> xsi;
+        if (xsi_.M() != 3)
+          dserror("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)",dimedge);
+        else
+          xsi.SetView( xsi_.A() );
+        KERNEL::ComputeIntersection<3,edgetype,  DRT::Element::tri3> ci( xsi );
+
+        LINALG::Matrix<3, 3> xyze_triElement;
+        GetTriangle(xyze_triElement,triangleid);
+
+        LINALG::Matrix<3, numNodesEdge> xyze_lineElement( xyze_lineElement_.A(), true );
+        conv =  ci( xyze_triElement, xyze_lineElement );
+        tolerance = ci.GetTolerance();
+      }
+
+    return conv;
     }
 
     /** \brief Calculate the actual intersection of an edge and a side ( or 2-nd edge )
@@ -783,7 +819,7 @@ namespace CUT {
       }
       else
       {
-        dserror("Cut::Intersection::ComputDistance: For Triangulation a QUAD4 is expected!");
+        dserror("Cut::Intersection::GetTriangle: For Triangulation a QUAD4 is expected!");
       }
     };
 
