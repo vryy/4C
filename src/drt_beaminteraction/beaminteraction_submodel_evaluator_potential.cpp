@@ -37,7 +37,6 @@
  *-----------------------------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::BeamPotential()
     : beam_potential_params_ptr_(Teuchos::null),
-      bin_beamcontent_(BINSTRATEGY::UTILS::Beam),
       beam_potential_element_pairs_(Teuchos::null)
 {
   // clear stl stuff

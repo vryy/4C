@@ -38,7 +38,6 @@
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
-      bin_beamcontent_(BINSTRATEGY::UTILS::Beam),
       BTB_contact_elepairs_(Teuchos::null)
 {
   // clear stl stuff

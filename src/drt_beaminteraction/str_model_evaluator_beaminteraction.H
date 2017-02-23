@@ -291,7 +291,7 @@ namespace MODELEVALUATOR{
     //! elerowmap of bindis
     Teuchos::RCP<Epetra_Map> rowbins_;
 
-    Epetra_Map* colbins_;
+//    Epetra_Map* colbins_;  // Todo kept line for future improvement
 
     //! @}
 

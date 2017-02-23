@@ -165,8 +165,8 @@ namespace SUBMODELEVALUATOR {
     //! data container holding all beam contact related parameters
     Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr_;
 
-    //! type of eles in bins
-    BINSTRATEGY::UTILS::BinContentType bin_beamcontent_;
+    //! type of eles in bins  // Todo kept line for future improvement
+//    BINSTRATEGY::UTILS::BinContentType bin_beamcontent_;
 
      //! interacting pairs of beam elements that might exert forces on each other
     std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> > beam_potential_element_pairs_;
