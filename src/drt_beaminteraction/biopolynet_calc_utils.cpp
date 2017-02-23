@@ -173,7 +173,7 @@ void GetPosAndTriadOfBindingSpot(
   beamele->GetPosOfBindingSpot( bspotpos, eledisp, locbspotnum, pbb );
 
   // get current triad at binding spot xi
-  beamele->GetTriadOfBindingSpot( bspottriad, eledisp, locbspotnum );
+  beamele->GetTriadOfBindingSpot( bspottriad, eledisp, locbspotnum, pbb );
 
 }
 
@@ -372,7 +372,7 @@ void ApplyBpotForceToParentElements(
     std::vector< LINALG::SerialDenseVector > const&        bspotforce,
     std::vector< LINALG::SerialDenseVector >&              eleforce)
 {
-  // transformation matrix, will be resized and reused for various needs
+  // auxiliary transformation matrix, will be resized and reused
   LINALG::SerialDenseMatrix trafomatrix;
 
   for( int elei = 0; elei < 2; ++elei )
@@ -392,7 +392,7 @@ void ApplyBpotForceToParentElements(
 
     // I_variations
     beamele->GetGeneralizedInterpolationMatrixVariationsAtXi( trafomatrix,
-        beamele->GetBindingSpotXi( elepairptr->GetLocBSpotNum(elei) ) );
+        beamele->GetBindingSpotXi( elepairptr->GetLocBSpotNum(elei) ), eledisp );
 
     eleforce[elei].Size(numdof_ele);
     eleforce[elei].Multiply('T','N',1.0,trafomatrix,bspotforce[elei],0.0);
@@ -408,6 +408,12 @@ void ApplyBpotStiffToParentElements(
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
     std::vector< std::vector< LINALG::SerialDenseMatrix > >&       elestiff)
 {
+  // Todo grill 02/17
+  dserror("we can not evaluate the tangent stiffness matrix without evaluating "
+      "the residual in case of Kirchhoff beam Beam3k. This is because we have a coupled "
+      "term and the residual vector is required to compute the full linearization. "
+      "Use the combined evaluation method instead!");
+
   // todo: put this in a loop
   DRT::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
   DRT::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
@@ -442,7 +448,7 @@ void ApplyBpotStiffToParentElements(
     // i) I_variations
     beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
         trafomatrix,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)));
+        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)), ele1disp);
 
     auxmat[0][0].Shape(numdof_ele1,6);
     auxmat[0][0].Multiply('T','N',1.0,trafomatrix,bspotstiff[0][0],0.0);
@@ -472,7 +478,7 @@ void ApplyBpotStiffToParentElements(
 
     beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
         trafomatrix,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)));
+        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)), ele2disp);
 
     elestiff[1][0].Shape(numdof_ele2,numdof_ele1);
     elestiff[1][0].Multiply('T','N',1.0,trafomatrix,auxmat[1][0],0.0);
@@ -525,7 +531,7 @@ void ApplyBpotForceStiffToParentElements(
    * force vectors and stiffness matrices to discrete element force vectors and
    * stiffness matrices */
 
-  // todo: put this in a loop
+  // todo @grill: put this in a loop
   DRT::Element* ele1 = discret.gElement(elepairptr->GetEleGid(0));
   DRT::Element* ele2 = discret.gElement(elepairptr->GetEleGid(1));
 
@@ -551,6 +557,9 @@ void ApplyBpotForceStiffToParentElements(
   std::vector< std::vector< LINALG::SerialDenseMatrix > > auxmat( 2,
       std::vector< LINALG::SerialDenseMatrix >(2) );
 
+  // contribution to stiffmat from linearization of generalized interpolation matrix for variations
+  LINALG::SerialDenseMatrix stiffmat_lin_Ivar;
+
   // zero out and set correct size of transformation matrix
   trafomatrix.Shape(6,numdof_ele1);
 
@@ -560,7 +569,8 @@ void ApplyBpotForceStiffToParentElements(
     // i) I_variations
     beamele1->GetGeneralizedInterpolationMatrixVariationsAtXi(
         trafomatrix,
-        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)));
+        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
+        ele1disp);
 
     eleforce[0].Size(numdof_ele1);
     eleforce[0].Multiply('T','N',1.0,trafomatrix,bspotforce[0],0.0);
@@ -584,6 +594,19 @@ void ApplyBpotForceStiffToParentElements(
 
     auxmat[1][0].Shape(6,numdof_ele1);
     auxmat[1][0].Multiply('N','N',1.0,bspotstiff[1][0],trafomatrix,0.0);
+
+
+    // additional contribution from linearization of generalized interpolation matrix for variations
+    stiffmat_lin_Ivar.Shape(numdof_ele1,numdof_ele1);
+
+    beamele1->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+        stiffmat_lin_Ivar,
+        beamele1->GetBindingSpotXi(elepairptr->GetLocBSpotNum(0)),
+        ele1disp,
+        bspotforce[0]);
+
+    elestiff[0][0].Update(1.0, stiffmat_lin_Ivar, 1.0);
+
   }
 
   // element 2
@@ -593,7 +616,8 @@ void ApplyBpotForceStiffToParentElements(
 
     beamele2->GetGeneralizedInterpolationMatrixVariationsAtXi(
         trafomatrix,
-        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)));
+        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
+        ele2disp);
 
     eleforce[1].Size(numdof_ele2);
     eleforce[1].Multiply('T','N',1.0,trafomatrix,bspotforce[1],0.0);
@@ -617,6 +641,19 @@ void ApplyBpotForceStiffToParentElements(
 
     elestiff[1][1].Shape(numdof_ele2,numdof_ele2);
     elestiff[1][1].Multiply('N','N',1.0,auxmat[1][1],trafomatrix,0.0);
+
+
+    // additional contribution from linearization of generalized interpolation matrix for variations
+    stiffmat_lin_Ivar.Shape(numdof_ele2,numdof_ele2);
+
+    beamele2->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+        stiffmat_lin_Ivar,
+        beamele2->GetBindingSpotXi(elepairptr->GetLocBSpotNum(1)),
+        ele2disp,
+        bspotforce[1]);
+
+    elestiff[1][1].Update(1.0, stiffmat_lin_Ivar, 1.0);
+
   }
 }
 
@@ -661,4 +698,3 @@ void SetupEleTypeMapExtractor(
 
 }
 }
-

@@ -915,11 +915,11 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeGap(TYPE& g
   const DRT::ElementType & eot1 = element1_->ElementType();
 
   if ( eot1 == DRT::ELEMENTS::Beam3Type::Instance() )
-    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
+    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->MomentOfInertiaY();
   else if ( eot1 == DRT::ELEMENTS::Beam3rType::Instance() )
-    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->Iyy();
+    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->MomentOfInertiaY();
   else if ( eot1 == DRT::ELEMENTS::Beam3ebType::Instance() )
-    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->Iyy();
+    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->MomentOfInertiaY();
   else
     dserror("unknown beam type!");
 

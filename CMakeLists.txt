@@ -2051,6 +2051,8 @@ set(OBJS_DRT_NURBS_DISCRET
   src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp
 )
 set(OBJS_DRT_B3_LIB
+  src/drt_beam3/triad_interpolation.cpp
+  src/drt_beam3/triad_interpolation_local_rotation_vectors.cpp
   src/drt_beam3/beam3_base.cpp
   src/drt_beam3/beam3.cpp
   src/drt_beam3/beam3_evaluate.cpp

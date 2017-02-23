@@ -16,24 +16,24 @@ NUMSTRUCDIS            1
 NUMALEDIS              0
 NUMTHERMDIS            0
 ----------------------------------------------------------------IO
-OUTPUT_BIN             Yes                   // toggles control file and error file creation
+OUTPUT_BIN             Yes
 STRUCT_DISP            Yes
 FILESTEPS              1000000
 STDOUTEVRY             100
+VERBOSITY              standard
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER          1
 INT_STRATEGY           Standard
 DYNAMICTYP             OneStepTheta
-RESULTSEVRY            1                     // write results every n-th step (Attention: problems with mem leak)
-RESTARTEVRY            1000                  // set restart points every n-th step
-RESEVRYERGY            0                     // output energy evry n-th step
-NLNSOL                 fullnewton                   // fullnewton modnewton nlncg ptc
-DIVERCONT              stop            // Continue even if results are divergent
-TIMESTEP               0.001                  // step size
-NUMSTEP                100             // total number of steps  //rumpf2.txt end
+RESULTSEVRY            1
+RESTARTEVRY            10
+NLNSOL                 fullnewton
+DIVERCONT              stop
+TIMESTEP               0.001
+NUMSTEP                100
 MAXTIME                10000
-PREDICT                ConstDis              //  ConstDisVelAcc ConstDis
-TOLDISP                1.0E-12               // 5.5e-05 1.0E-06
+PREDICT                ConstDis
+TOLDISP                1.0E-12
 TOLRES                 1.0E-08
 MAXITER                25
 MASSLIN                rotations
@@ -43,21 +43,18 @@ NEGLECTINERTIA         yes
 PERIODICONOFF          1 1 1
 BOUNDINGBOX            0 0 0 10 10 10
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                  1                     // header_01 end
+THETA                  1
 ----------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB           yes
-VISCOSITY              0.001                 // ~ 1e-3 / 2.27 according to Cyron2011 eq 52 ff, viscosity of surrounding fluid
-KT                     0.00404531            // thermal energy
------------------------------------------------------SOLVER 1  // header_02 begin
+VISCOSITY              0.001
+KT                     0.00404531
+-----------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
-Linear Solver Details           = No
-Test Details                    = No
-Debug                           = No
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1

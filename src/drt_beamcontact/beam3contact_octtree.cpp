@@ -500,11 +500,11 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
         (*diameter_)[i] = -1.0;     // TODO get diameter from call of abstract Beam3Base::Radius();
 
         if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->Izz()) / M_PI));
+          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->MomentOfInertiaZ()) / M_PI));
         else if (eot == DRT::ELEMENTS::Beam3rType::Instance())
-          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3r*>(element))->Izz()) / M_PI));
+          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3r*>(element))->MomentOfInertiaZ()) / M_PI));
         else if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
-          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element))->Izz()) / M_PI));
+          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element))->MomentOfInertiaZ()) / M_PI));
         else if (eot == DRT::ELEMENTS::RigidsphereType::Instance())
           (*diameter_)[i] = 2.0 * (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(element))->Radius();
         //If we have a solid element, we don't need its diameter and can it set to zero:

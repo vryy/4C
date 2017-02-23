@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam3r_evaluate.cpp
 
@@ -8,9 +8,12 @@
 
 \maintainer Maximilian Grill
 */
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 #include "beam3r.H"
+
+#include "triad_interpolation_local_rotation_vectors.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
@@ -315,7 +318,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       rttmodconvGPmass_ = rttmodnewGPmass_;
       rtconvGPmass_ = rtnewGPmass_;
       rconvGPmass_ = rnewGPmass_;
-      dispthetaconvnode_ = dispthetanewnode_;
       QconvGPdampstoch_ = QnewGPdampstoch_;
       break;
     }
@@ -329,7 +331,6 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
        * of the geometric configuration should be canceled and the configuration should be reset to the value at the
        * beginning of the time step*/
       Qnewnode_ = Qconvnode_;
-      dispthetanewnode_ = dispthetaconvnode_;
       QnewGPmass_=QconvGPmass_;
       wnewGPmass_=wconvGPmass_;
       anewGPmass_=aconvGPmass_;
@@ -446,6 +447,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 
     case ELEMENTS::struct_calc_stress:
     {
+      dserror("stress output for Beam3r not implemented yet!");
 //      // nothing to do for ghost elements
 //      if ( discretization.Comm().MyPID() == Owner() )
 //      {
@@ -504,9 +506,11 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 //          AddtoPack(data, strain);
 //          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
 //        }
+//
 //      }
+
+      break;
     }
-    break;
 
     case ELEMENTS::struct_calc_recover:
     {
@@ -546,21 +550,21 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
   if (time<0.0) usetime = false;
 
   // nnodetriad: number of nodes used for interpolation of triad field
-  const int nnodetriad = NumNode();
+  const unsigned int nnodetriad = NumNode();
   // nnodecl: number of nodes used for interpolation of centerline
   // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
-  int nnodecl = nnodetriad;
+  unsigned int nnodecl = nnodetriad;
   if (centerline_hermite_) nnodecl=2;
 
   // vpernode: number of interpolated values per node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
-  int vpernode=1;
+  unsigned int vpernode=1;
   if (centerline_hermite_)
     vpernode=2;
 
   // number of DOFs per node depending on type of node
-  const int dofperclnode = 3*vpernode;
-  const int dofpertriadnode = 3;
-  const int dofpercombinode = dofperclnode+dofpertriadnode;
+  const unsigned int dofperclnode = 3*vpernode;
+  const unsigned int dofpertriadnode = 3;
+  const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
 
   const DiscretizationType distype = this->Shape();
 
@@ -569,7 +573,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
   // amplitude of load curve at current time called, 6 components (3 forces, 3 moments)
   std::vector<double> curvefac(6,1.0);
 
-  for (int i=0; i<6; ++i)
+  for (unsigned int i=0; i<6; ++i)
   {
     int curvenum = -1;
     // number of the load curve related with a specific line Neumann condition called
@@ -621,9 +625,9 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
     std::vector<double> X_ref(3,0.0);
 
     // calculate coordinates of corresponding Gauss point in reference configuration
-    for (int node=0;node<nnodecl;node++)
+    for (unsigned int node=0;node<nnodecl;node++)
     {
-      for (int dim=0;dim<3;dim++)
+      for (unsigned int dim=0;dim<3;dim++)
       {
         X_ref[dim]+=H_i[vpernode*node]*Nodes()[node]->X()[dim];
 
@@ -645,7 +649,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
     int functnum = -1;
 
     //sum up load components
-    for (int dof=0; dof<6; ++dof)
+    for (unsigned int dof=0; dof<6; ++dof)
     {
       if (functions)
         functnum = (*functions)[dof];
@@ -654,11 +658,11 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
 
       // evaluate function at the position of the current GP
       if (functnum>0)
-        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);   // TODO X_ref[0] is only x-coordinate. is this done on purpose?
+        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);
       else
         functionfac = 1.0;
 
-      for (int node=0; node<nnodecl; ++node)
+      for (unsigned int node=0; node<nnodecl; ++node)
       {
         if (dof<3)
         {
@@ -671,55 +675,13 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
           elevec1[dofpercombinode*node+dof] += I_i[node] *ar[dof] *functionfac;
       }
 
-      for (int node=nnodecl; node<nnodetriad; ++node)
+      for (unsigned int node=nnodecl; node<nnodetriad; ++node)
         if (dof>2 && dof<6)
           elevec1[dofperclnode*nnodecl+dofpertriadnode*node+dof-3] += I_i[node] *ar[dof] *functionfac;
     }
-  } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
+  }
 
   return 0;
-}
-
-/*----------------------------------------------------------------------------------------------------------------------*
- | get constitutive matrices from material law                                                               grill 03/16|
- *----------------------------------------------------------------------------------------------------------------------*/
-template <typename T>
-inline void DRT::ELEMENTS::Beam3r::GetConstitutiveMatrices(LINALG::TMatrix<T,3,3>& CN,
-                                                           LINALG::TMatrix<T,3,3>& CM) const
-{
-  // first of all we get the material law
-   Teuchos::RCP<const MAT::Material> currmat = Material();
-   double ym = 0.0;
-   double sm = 0.0;
-
-   // assignment of material parameters; only St.Venant material is accepted for this beam
-   switch(currmat->MaterialType())
-   {
-     case INPAR::MAT::m_stvenant:// only linear elastic material supported
-     {
-       const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-       ym = actmat->Youngs();
-       sm = ym / (2*(1 + actmat->PoissonRatio()));
-     }
-     break;
-     default:
-       dserror("unknown or improper type of material law");
-     break;
-   }
-
-   // defining material constitutive matrix CN between Gamma and N according to Jelenic 1999, section 2.4
-   CN.PutScalar(0);
-   CN(0,0) = ym*crosssec_;
-   CN(1,1) = sm*crosssecshear_;
-   CN(2,2) = sm*crosssecshear_;
-
-   // defining material constitutive matrix CM between curvature and moment according to Jelenic 1999, section 2.4
-   CM.PutScalar(0);
-   CM(0,0) = sm*Irr_;
-   CM(1,1) = ym*Iyy_;
-   CM(2,2) = ym*Izz_;
-
-  return;
 }
 
 /*----------------------------------------------------------------------------------------------------------------------*
@@ -802,22 +764,27 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     // internal force vector
     LINALG::TMatrix<double, numdofelement, 1> internal_force(true);
 
-    CalcInternalAndInertiaForcesAndStiff<nnodetriad,nnodecl,vpernode,double>(
+    if (force != NULL)
+    {
+      internal_force.SetView( &( (*force)(0) ) );
+    }
+
+    CalcInternalForceAndStiff<nnodetriad,nnodecl,vpernode,double>(
         disp_totlag_centerline,
         Qnode,
         stiffmatrix,
-        massmatrix,
-        internal_force,
-        inertia_force);
+        internal_force);
 
-    if (force != NULL)
+    // calculation of inertia forces/moments and mass matrix
+    if ( massmatrix != NULL or inertia_force != NULL )
     {
-      for (unsigned int i=0; i<numdofelement; ++i)
-        (*force)(i) = internal_force(i);
-      // Todo check this alternative
-//      std::copy(&internal_force[0], &internal_force[numdofelement], force);
-      // maybe even set view on Epetra_SerialDenseVector force
+      CalcInertiaForceAndMassMatrix<nnodetriad, nnodecl, vpernode>(
+          disp_totlag_centerline,
+          Qnode,
+          massmatrix,
+          inertia_force);
     }
+
   }
   else
   {
@@ -842,18 +809,16 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
         disp_totlag_centerline_FAD,
         Qnode_FAD);
 
-    CalcInternalAndInertiaForcesAndStiff<nnodetriad,nnodecl,vpernode,Sacado::Fad::DFad<double> >(
+    CalcInternalForceAndStiff<nnodetriad,nnodecl,vpernode,Sacado::Fad::DFad<double> >(
         disp_totlag_centerline_FAD,
         Qnode_FAD,
         NULL,
-        massmatrix,
-        internal_force,
-        inertia_force);
+        internal_force);
 
     if (force != NULL)
     {
-      for (unsigned int i=0; i<numdofelement; ++i)
-        (*force)(i)= FADUTILS::CastToDouble(internal_force(i));
+      for (unsigned int idof=0; idof<numdofelement; ++idof)
+        (*force)(idof)= FADUTILS::CastToDouble(internal_force(idof));
     }
 
     if (stiffmatrix != NULL)
@@ -863,6 +828,16 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
           Qnode,
           internal_force);
     }
+
+    // calculation of inertia forces/moments and mass matrix
+    if ( massmatrix != NULL or inertia_force != NULL )
+    {
+      CalcInertiaForceAndMassMatrix<nnodetriad, nnodecl, vpernode>(
+          disp_totlag_centerline,
+          Qnode,
+          massmatrix,
+          inertia_force);
+    }
   }
 
 }
@@ -870,13 +845,11 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
-void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
-    LINALG::TMatrix<T,3*vpernode*nnodecl,1>&                disp_totlag_centerline,   // Todo think about adding const qualifiers here
-    std::vector<LINALG::TMatrix<T,4,1> >&                   Qnode,
+void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
+    const LINALG::TMatrix<T,3*vpernode*nnodecl,1>&          disp_totlag_centerline,
+    const std::vector<LINALG::TMatrix<T,4,1> >&             Qnode,
     Epetra_SerialDenseMatrix*                               stiffmatrix,
-    Epetra_SerialDenseMatrix*                               massmatrix,
-    LINALG::TMatrix<T, 3*vpernode*nnodecl+3*nnodetriad, 1>& internal_force,
-    Epetra_SerialDenseVector*                               inertia_force)
+    LINALG::TMatrix<T, 3*vpernode*nnodecl+3*nnodetriad, 1>& internal_force)
 {
   // nnodetriad: number of nodes used for interpolation of triad field
   // nnodecl: number of nodes used for interpolation of centerline
@@ -887,24 +860,12 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
    *****************************************************************************************************/
 
   //********************************** quantities valid for entire element *****************************
-  const int dofperclnode = 3*vpernode;
-  const int dofpertriadnode = 3;
-  const int dofpercombinode = dofperclnode+dofpertriadnode;
-
-  // reference triad Lambda_r and corresponding quaternion Q_r
-  LINALG::TMatrix<T,3,3> Lambda_r(true);
-  LINALG::TMatrix<T,4,1> Q_r(true);
-
-  // angle of relative rotation between node I and J according to (3.10), Jelenic 1999
-  LINALG::TMatrix<T,3,1> Phi_IJ(true);
+  const unsigned int dofperclnode = 3*vpernode;
+  const unsigned int dofpertriadnode = 3;
+  const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
 
   // clear internal (elastic) energy
-  Eint_=0.0;
-
-  //**************************************** nodal quantities *******************************************
-
-  // local rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
-  std::vector<LINALG::TMatrix<T,3,1> > Psi_li(nnodetriad);
+  Eint_ = 0.0;
 
   //*************************** physical quantities evaluated at a certain GP ***************************
 
@@ -943,32 +904,31 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
 
   /* vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial shape functions evaluated at the numgp-th Gauss point
    * these shape functions are used for the interpolation of the triad field*/
-  std::vector<LINALG::Matrix<1,nnodetriad> > I_i;
+  std::vector<LINALG::TMatrix<double,1,nnodetriad> > I_i;
   // same for the derivatives
-  std::vector<LINALG::Matrix<1,nnodetriad> > I_i_xi;
+  std::vector<LINALG::TMatrix<double,1,nnodetriad> > I_i_xi;
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape functions evaluated at the numgp-th GP
    * these shape functions are used for the interpolation of the beam centerline*/
-  std::vector<LINALG::Matrix<1,vpernode*nnodecl> > H_i;
+  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i;
   // same for the derivatives
-  std::vector<LINALG::Matrix<1,vpernode*nnodecl> > H_i_xi;
+  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i_xi;
 
 
   /*************************** update/compute quantities valid for entire element **********************
    *****************************************************************************************************/
 
-  // compute reference triad Lambda_r according to (3.9), Jelenic 1999
-  CalcRefQuaternion<T>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,Phi_IJ);
-  LARGEROTATIONS::quaterniontotriad(Q_r,Lambda_r);
-
   // setup constitutive matrices
   GetConstitutiveMatrices<T>(CN,CM);
 
-  /* compute nodal local rotations according to (3.8), Jelenic 1999
-   * this is done individually for each node in order to avoid function argument std::vector<LINALG::TMatrix<...> >
-   * a function with this argument type cannot be called with an argument of type std::vector<LINALG::Matrix<...> > (needed e.g. in SetUpReferenceGeometry) */
-  for (unsigned int node=0; node<nnodetriad; ++node)
-    CalcPsi_li<T>(Qnode[node],Q_r,Psi_li[node]);
+  // create object of triad interpolation scheme
+  Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T> >
+      triad_interpolation_scheme_ptr =
+      Teuchos::rcp(new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>() );
+
+  // reset triad interpolation scheme based on nodal quaternions
+  triad_interpolation_scheme_ptr->Reset(Qnode);
+
 
   /******************************* elasticity: compute fint and stiffmatrix ****************************
    *****************************************************************************************************/
@@ -990,15 +950,16 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
 
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
-  for(int numgp=0; numgp < gausspoints_elast_force.nquad; numgp++)
+  for (int numgp=0; numgp < gausspoints_elast_force.nquad; numgp++)
   {
     // weight of GP in parameter space
     const double wgt = gausspoints_elast_force.qwgt[numgp];
 
     Calc_r_s<nnodecl,vpernode,T>(disp_totlag_centerline, H_i_xi[numgp], jacobiGPelastf_[numgp], r_s);
 
-    Calc_Psi_l<nnodetriad,T>(Psi_li, I_i[numgp], Psi_l);
-    Calc_Lambda<T>(Psi_l,Q_r,Lambda);
+    triad_interpolation_scheme_ptr->GetInterpolatedTriadAtXi(
+        Lambda,
+        gausspoints_elast_force.qxg[numgp][0] );
 
     // compute spin matrix related to vector rprime for later use
     LARGEROTATIONS::computespin<T>(r_s_hat,r_s);
@@ -1021,7 +982,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
        * note: jacobi factor cancels out because it is defined by ds=(ds/dxi)*dxi
        *       and I^{i'} in Jelenic1999 is derivative with respect to arc-length parameter in reference configuration s
        *       which can be computed from I_i_xi by multiplication with the inverse determinant: I^{i'}=I_i_s=I_i_xi*(dxi/ds) */
-      for (int k=0; k<3; ++k)
+      for (unsigned int k=0; k<3; ++k)
       {
         internal_force(dofpercombinode*node+k) += H_i_xi[numgp](vpernode*node)*stressn(k)*wgt;
         if (centerline_hermite_)
@@ -1029,15 +990,15 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
       }
 
       // lower left block
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           internal_force(dofpercombinode*node+3+i) -= r_s_hat(i,j)*stressn(j)*I_i[numgp](node)*wgt*jacobiGPelastf_[numgp];
     }
     for (unsigned int node=nnodecl; node<nnodetriad; ++node)    // this loop is only entered in case of nnodetriad>nnodecl
     {
       // lower left block
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           internal_force(dofperclnode*nnodecl+dofpertriadnode*node+i) -= r_s_hat(i,j)*stressn(j)*I_i[numgp](node)*wgt*jacobiGPelastf_[numgp];
     }
 
@@ -1048,19 +1009,15 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
           stressn,
           cn,
           r_s_hat,
-          Psi_l,
-          Phi_IJ,
-          Lambda_r,
-          Psi_li,
+          *triad_interpolation_scheme_ptr,
           I_i[numgp],
           H_i_xi[numgp],
           wgt,
           jacobiGPelastf_[numgp]);
     }
 
-
     // add elastic energy from forces at this GP
-    for(int dim=0; dim<3; dim++)
+    for (unsigned int dim=0; dim<3; ++dim)
     {
       Eint_ += 0.5 * FADUTILS::CastToDouble(Gamma(dim)) * FADUTILS::CastToDouble(stressN(dim)) *jacobiGPelastf_[numgp]*wgt;
     }
@@ -1081,7 +1038,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad,1>(gausspoints_elast_moment,I_i,I_i_xi,this->Shape());
 
   // reset norm of maximal bending curvature
-  Kmax_=0.0;
+  Kmax_ = 0.0;
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp<gausspoints_elast_moment.nquad; numgp++)
@@ -1089,16 +1046,25 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     // weight of GP in parameter space
     const double wgt = gausspoints_elast_moment.qwgt[numgp];
 
-    Calc_Psi_l<nnodetriad,T>(Psi_li, I_i[numgp], Psi_l);
-    Calc_Psi_l_s<nnodetriad,T>(Psi_li, I_i_xi[numgp], jacobiGPelastm_[numgp], Psi_l_s);
-    Calc_Lambda<T>(Psi_l,Q_r,Lambda);
+    triad_interpolation_scheme_ptr->GetInterpolatedLocalRotationVector(
+        Psi_l,
+        I_i[numgp]);
+
+    triad_interpolation_scheme_ptr->GetInterpolatedLocalRotationVectorDerivative(
+        Psi_l_s,
+        I_i_xi[numgp],
+        jacobiGPelastm_[numgp]);
+
+    triad_interpolation_scheme_ptr->GetInterpolatedTriad(
+        Lambda,
+        Psi_l);
 
     // compute material curvature K
     computeK<T>(Psi_l,Psi_l_s,KrefGP_[numgp],K);
 
     // determine norm of maximal bending curvature at this GP and store in class variable if needed
     double Kmax = std::sqrt(FADUTILS::CastToDouble(K(1))*FADUTILS::CastToDouble(K(1)) + FADUTILS::CastToDouble(K(2))*FADUTILS::CastToDouble(K(2)) );
-    if(Kmax > Kmax_)
+    if (Kmax > Kmax_)
       Kmax_=Kmax;
 
     // compute material stresses by multiplying curvature with constitutive matrix
@@ -1113,13 +1079,13 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     for (unsigned int node=0; node<nnodecl; ++node)
     {
       // lower right block
-      for (int i=0; i<3; ++i)
+      for (unsigned int i=0; i<3; ++i)
         internal_force(dofpercombinode*node+3+i) += I_i_xi[numgp](node)*stressm(i)*wgt;
     }
     for (unsigned int node=nnodecl; node<nnodetriad; ++node)    // this loop is only entered in case of nnodetriad>nnodecl
     {
       // lower right block
-      for (int i=0; i<3; ++i)
+      for (unsigned int i=0; i<3; ++i)
         internal_force(dofperclnode*nnodecl+dofpertriadnode*node+i) += I_i_xi[numgp](node)*stressm(i)*wgt;
     }
 
@@ -1130,11 +1096,9 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
           *stiffmatrix,
           stressm,
           cm,
+          *triad_interpolation_scheme_ptr,
           Psi_l,
           Psi_l_s,
-          Phi_IJ,
-          Lambda_r,
-          Psi_li,
           I_i[numgp],
           I_i_xi[numgp],
           wgt,
@@ -1142,349 +1106,396 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     }
 
     // add elastic energy from moments at this GP
-    for(int dim=0; dim<3; dim++)
+    for(unsigned int dim=0; dim<3; dim++)
     {
       Eint_ += 0.5 * FADUTILS::CastToDouble(K(dim)) * FADUTILS::CastToDouble(stressM(dim)) *jacobiGPelastm_[numgp]*wgt;
     }
 
   }
 
+  return;
+}
 
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
+    const LINALG::TMatrix<double,3*vpernode*nnodecl,1>& disp_totlag_centerline,
+    const std::vector<LINALG::TMatrix<double,4,1> >&    Qnode,
+    Epetra_SerialDenseMatrix*                           massmatrix,
+    Epetra_SerialDenseVector*                           inertia_force)
+{
+  const unsigned int dofperclnode = 3*vpernode;
+  const unsigned int dofpertriadnode = 3;
+  const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
 
-  /******************************* inertia: compute fint and massmatrix ********************************
-   *****************************************************************************************************/
+  /* Remark:
+   * According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory:
+   * implementation of a strain-invariant finite element for statics and dynamics", 1999,
+   * page 146, a time integration scheme that delivers angular velocities and angular
+   * accelerations as needed for the inertia terms of geometrically exact beams has to be
+   * based on multiplicative rotation angle increments between two successive time steps.
+   * Since BACI does all displacement updates in an additive manner, the global vector of
+   * rotational displacements has no physical meaning and, consequently the global velocity
+   * and acceleration vectors resulting from the BACI time integration schemes have no
+   * physical meaning, too. Therefore, a mass matrix in combination with this global
+   * acceleration vector is meaningless from a physical point of view. For these reasons, we
+   * have to apply our own time integration scheme at element level. Up to now, the only
+   * implemented integration scheme is the gen-alpha Lie group time integration according to
+   * [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in
+   * combination with a constdisvelacc predictor. (Christoph Meier, 04.14)*/
 
-  // calculation of inertia forces/moments and massmatrix; neglect inertia in case of Brownian dynamics (Statmech) simulation
-  if ( ( massmatrix != NULL ) or ( inertia_force != NULL ) )
+  /* Update:
+   * we now use a multiplicative update of rotational DOFs on time integrator level. Moreover,
+   * a new Lie group GenAlpha has been implemented that consistently updates the discrete
+   * TRANSLATIONAL velocity and acceleration vectors according to this element-internal scheme.
+   * This would allow us to use the global vel and acc vector at least for translational
+   * inertia contributions. Nevertheless, we stick to this completely element-internal temporal
+   * discretization of spatially continuous variables (angular velocity and acceleration)
+   * because the reverse order of discretization (spatial -> temporal) is much more intricate
+   * basically because of the triad interpolation. See also the discussion in Christoph Meier's
+   * Dissertation on this topic. (Maximilian Grill, 08/16)*/
+
+  const double dt = ParamsInterface().GetDeltaTime();
+  const double beta = ParamsInterface().GetBeamParamsInterfacePtr()->GetBeta();
+  const double gamma = ParamsInterface().GetBeamParamsInterfacePtr()->GetGamma();
+  const double alpha_f = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlphaf();
+  const double alpha_m = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlpham();
+
+  const bool materialintegration=true;        // TODO unused? remove or realize coverage by test case
+  const double diff_factor_vel = gamma/(beta*dt);
+  const double diff_factor_acc = (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f));
+
+  LINALG::Matrix<3,3> Lambdanewmass(true);
+  LINALG::Matrix<3,3> Lambdaconvmass(true);
+
+  // get the material law
+  Teuchos::RCP<const MAT::Material> currmat = Material();
+  double rho = 0.0;
+
+  // assignment of material parameters; only St.Venant material is accepted for this beam
+  switch(currmat->MaterialType())
   {
-
-    /* calculation of mass matrix: According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant
-     * finite element for statics and dynamics", 1999, page 146, a time integration scheme that delivers angular velocities and angular accelerations as
-     * needed for the inertia terms of geometrically exact beams has to be based on multiplicative rotation angle increments between two successive time
-     * steps. Since BACI does all displacement updates in an additive manner, the global vector of rotational displacements has no physical meaning and,
-     * consequently the global velocity and acceleration vectors resulting from the BACI time integration schemes have no physical meaning, too. Therefore,
-     * a mass matrix in combination with this global acceleration vector is meaningless from a physical point of view. For these reasons, we have to apply
-     * our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
-     * according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)*/
-
-    /* Update: we now use a multiplicative update of rotational DOFs on time integrator level. Moreover, a new Lie group GenAlpha has been implemented
-     *         that consistently updates the discrete TRANSLATIONAL velocity and acceleration vectors according to this element-internal scheme. This would allow us to
-     *         use the global vel and acc vector at least for translational inertia contributions. Nevertheless, we stick to this completely element-internal
-     *         temporal discretization of spatially continuous variables (angular velocity and acceleration) because the reverse order of discretization (spatial -> temporal)
-     *         is much more intricate basically because of the triad interpolation. See also the discussion in Christoph Meier's Dissertation on this topic. (Maximilian Grill, 08/16)*/
-
-    const double dt = ParamsInterface().GetDeltaTime();
-    const double beta = ParamsInterface().GetBeamParamsInterfacePtr()->GetBeta();
-    const double gamma = ParamsInterface().GetBeamParamsInterfacePtr()->GetGamma();
-    const double alpha_f = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlphaf();
-    const double alpha_m = ParamsInterface().GetBeamParamsInterfacePtr()->GetAlpham();
-
-    const bool materialintegration=true;        // TODO unused?
-    const double diff_factor_vel = gamma/(beta*dt);
-    const double diff_factor_acc = (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f));
-
-    LINALG::Matrix<3,3> Lambdanewmass(true);
-    LINALG::Matrix<3,3> Lambdaconvmass(true);
-
-    // get the material law
-    Teuchos::RCP<const MAT::Material> currmat = Material();
-    double rho = 0.0;
-
-    // assignment of material parameters; only St.Venant material is accepted for this beam
-    switch(currmat->MaterialType())
+    case INPAR::MAT::m_stvenant:// only linear elastic material supported
     {
-      case INPAR::MAT::m_stvenant:// only linear elastic material supported
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      rho = actmat->Density();
+    }
+    break;
+    default:
+      dserror("unknown or improper type of material law");
+    break;
+  }
+
+  /* tensor of mass moments of inertia and cross-section value. These values are used in order to artificially scale
+   * the the translational and rotational inertia terms with given input parameters if necessary*/
+  LINALG::Matrix<3,3> Jp(true);
+  Jp(0,0)=inertscalerot1_*(Iyy_+Izz_);
+  Jp(1,1)=inertscalerot2_*Iyy_;
+  Jp(2,2)=inertscalerot2_*Izz_;
+  Jp.Scale(rho);
+
+  const double scaledcrosssec = inertscaletrans_*crosssec_;
+
+  //********************************** shape functions ************************************
+  /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
+   * the vectors store individual shape functions, NOT an assembled matrix of shape functions)*/
+
+  /* vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial shape functions evaluated at the numgp-th Gauss point
+   * these shape functions are used for the interpolation of the triad field*/
+  std::vector<LINALG::TMatrix<double,1,nnodetriad> > I_i;
+
+  /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape functions evaluated at the numgp-th GP
+   * these shape functions are used for the interpolation of the beam centerline*/
+  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i;
+
+  // get integration scheme for inertia forces and mass matrix
+  DRT::UTILS::IntegrationPoints1D gausspoints_mass(MyGaussRule(res_inertia));
+  // reuse variables for individual shape functions and resize to new numgp
+  I_i.resize(gausspoints_mass.nquad);
+  H_i.resize(gausspoints_mass.nquad);
+
+  // evaluate all shape functions at all specified Gauss points
+  EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_mass,I_i,this->Shape());
+  EvaluateShapeFunctionsAllGPs<nnodecl,vpernode>(gausspoints_mass,H_i,this->Shape());
+
+  // Calculate current centerline position at gauss points (needed for element intern time integration)
+  for (int gp=0; gp<gausspoints_mass.nquad; gp++)//loop through Gauss points
+    Calc_r<nnodecl,vpernode,double>(
+        disp_totlag_centerline,
+        H_i[gp],
+        rnewGPmass_[gp]);
+
+  // create object of triad interpolation scheme
+  Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double> >
+      triad_interpolation_scheme_ptr =
+      Teuchos::rcp(new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>() );
+
+  // reset triad interpolation scheme with nodal quaternions
+  triad_interpolation_scheme_ptr->Reset(Qnode);
+
+  Ekin_ = 0.0;
+  L_ = 0.0;
+  P_ = 0.0;
+
+  // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
+  LINALG::TMatrix<double,3,1> Psi_l(true);
+
+  // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
+  std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
+
+  for (int gp=0; gp<gausspoints_mass.nquad; gp++)//loop through Gauss points
+  {
+    // weight of GP in parameter space
+    const double wgtmass = gausspoints_mass.qwgt[gp];
+
+    LINALG::Matrix<3,3> Jp_bar(Jp);
+    Jp_bar.Scale(diff_factor_acc);
+
+    LINALG::Matrix<3,1> dL(true);
+
+    triad_interpolation_scheme_ptr->GetInterpolatedLocalRotationVector(
+        Psi_l,
+        I_i[gp]);
+
+    triad_interpolation_scheme_ptr->GetInterpolatedQuaternion(
+        QnewGPmass_[gp],
+        Psi_l);
+
+    triad_interpolation_scheme_ptr->GetNodalGeneralizedRotationInterpolationMatrices(
+        Itilde,
+        Psi_l,
+        I_i[gp]);
+
+    Lambdanewmass.Clear();
+    Lambdaconvmass.Clear();
+    // compute current and old triad at Gauss point
+    LARGEROTATIONS::quaterniontotriad<double>(QnewGPmass_[gp],Lambdanewmass);
+    LARGEROTATIONS::quaterniontotriad<double>(QconvGPmass_[gp],Lambdaconvmass);
+
+    // rotation between last converged position and current position expressed as a quaternion
+    LINALG::Matrix<4,1> deltaQ(true);
+    LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion<double>(QconvGPmass_[gp]),QnewGPmass_[gp],deltaQ);
+
+    // spatial rotation between last converged position and current position expressed as a three element rotation vector
+    LINALG::Matrix<3,1> deltatheta(true);
+    LARGEROTATIONS::quaterniontoangle<double>(deltaQ,deltatheta);
+
+    // compute material counterparts of spatial vectors
+    LINALG::Matrix<3,1> deltaTHETA(true);
+    LINALG::Matrix<3,1> Wconvmass(true);
+    LINALG::Matrix<3,1> Wnewmass(true);
+    LINALG::Matrix<3,1> Aconvmass(true);
+    LINALG::Matrix<3,1> Anewmass(true);
+    LINALG::Matrix<3,1> Amodconvmass(true);
+    LINALG::Matrix<3,1> Amodnewmass(true);
+    deltaTHETA.MultiplyTN(Lambdanewmass,deltatheta);
+    Wconvmass.MultiplyTN(Lambdaconvmass,wconvGPmass_[gp]);
+    Aconvmass.MultiplyTN(Lambdaconvmass,aconvGPmass_[gp]);
+    Amodconvmass.MultiplyTN(Lambdaconvmass,amodconvGPmass_[gp]);
+
+    /* update angular velocities and accelerations according to Newmark time integration scheme in
+     * material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)).
+     * The corresponding equations are adapted according to the gen-alpha Lie group time
+     * integration scheme proposed in [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and
+     * [Brüls, Cardona, Arnold (2012)].
+     * In the predictor step of the time integration the following formulas automatically
+     * deliver a constant displacement (deltatheta=0), consistent velocity and consistent
+     * acceleration predictor. This fact has to be reflected in a consistent manner by
+     * the choice of the predictor in the input file: */
+    if (materialintegration)
+    {
+      for (unsigned int i=0;i<3;i++)
       {
-        const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-        rho = actmat->Density();
+        Anewmass(i)= (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltaTHETA(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*Wconvmass(i)      \
+                      -alpha_f/(1.0-alpha_f)*Aconvmass(i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*Amodconvmass(i);
+
+        Wnewmass(i)=gamma/(beta*dt)*deltaTHETA(i)+(1-gamma/beta)*Wconvmass(i)+dt*(1-gamma/(2*beta))*Amodconvmass(i);
+
+        Amodnewmass(i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*Anewmass(i) + alpha_f*Aconvmass(i) - alpha_m*Amodconvmass(i));
       }
-      break;
-      default:
-        dserror("unknown or improper type of material law");
-      break;
+      wnewGPmass_[gp].Multiply(Lambdanewmass,Wnewmass);
+      anewGPmass_[gp].Multiply(Lambdanewmass,Anewmass);
+      amodnewGPmass_[gp].Multiply(Lambdanewmass,Amodnewmass);
+    }
+    else
+    {
+      for (unsigned int i=0;i<3;i++)
+      {
+        wnewGPmass_[gp](i)=gamma/(beta*dt)*deltatheta(i)+(1-gamma/beta)*wconvGPmass_[gp](i)+dt*(1-gamma/(2*beta))*amodconvGPmass_[gp](i);
+
+        anewGPmass_[gp](i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltatheta(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*wconvGPmass_[gp](i)      \
+                      -alpha_f/(1.0-alpha_f)*aconvGPmass_[gp](i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*amodconvGPmass_[gp](i);
+
+        amodnewGPmass_[gp](i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*anewGPmass_[gp](i) + alpha_f*aconvGPmass_[gp](i) - alpha_m*amodconvGPmass_[gp](i) );
+      }
+      Wnewmass.MultiplyTN(Lambdanewmass,wnewGPmass_[gp]);
+      Anewmass.MultiplyTN(Lambdanewmass,anewGPmass_[gp]);
+      Amodnewmass.MultiplyTN(Lambdanewmass,amodnewGPmass_[gp]);
     }
 
-    /* tensor of mass moments of inertia and cross-section value. These values are used in order to artificially scale
-     * the the translational and rotational inertia terms with given input parameters if necessary*/
-    LINALG::Matrix<3,3> Jp(true);
-    Jp(0,0)=inertscalerot1_*(Iyy_+Izz_);
-    Jp(1,1)=inertscalerot2_*Iyy_;
-    Jp(2,2)=inertscalerot2_*Izz_;
-    Jp.Scale(rho);
-
-    const double scaledcrosssec=inertscaletrans_*crosssec_;
-
-    // get integration scheme for inertia forces and mass matrix
-    DRT::UTILS::IntegrationPoints1D gausspoints_mass(MyGaussRule(res_inertia));
-    // reuse variables for individual shape functions and resize to new numgp
-    I_i.resize(gausspoints_mass.nquad);
-    H_i.resize(gausspoints_mass.nquad);
-
-    // evaluate all shape functions at all specified Gauss points
-    EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_mass,I_i,this->Shape());
-    EvaluateShapeFunctionsAllGPs<nnodecl,vpernode>(gausspoints_mass,H_i,this->Shape());
-
-    // Calculate current centerline position at gauss points (needed for element intern time integration)
-    for (int gp=0; gp<gausspoints_mass.nquad; gp++)//loop through Gauss points
-      Calc_r<nnodecl,vpernode,double>(
-          FADUTILS::CastToDouble<T,3*vpernode*nnodecl,1>(disp_totlag_centerline),
-          H_i[gp],
-          rnewGPmass_[gp]);
-
-    Ekin_=0.0;
-    L_=0.0;
-    P_=0.0;
-
-    // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
-    std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
-
-    for (int gp=0; gp<gausspoints_mass.nquad; gp++)//loop through Gauss points
+    LINALG::Matrix<3,1> deltar(true);
+    for (unsigned int i=0;i<3;i++)
     {
-      // weight of GP in parameter space
-      const double wgtmass = gausspoints_mass.qwgt[gp];
+      deltar(i)=rnewGPmass_[gp](i)-rconvGPmass_[gp](i);
+    }
+    for (unsigned int i=0;i<3;i++)
+    {
+      rttnewGPmass_[gp](i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltar(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*rtconvGPmass_[gp](i)      \
+                    -alpha_f/(1.0-alpha_f)*rttconvGPmass_[gp](i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*rttmodconvGPmass_[gp](i);
 
-      LINALG::Matrix<3,3> Jp_bar(Jp);
-      Jp_bar.Scale(diff_factor_acc);
+      rtnewGPmass_[gp](i)=gamma/(beta*dt)*deltar(i)+(1-gamma/beta)*rtconvGPmass_[gp](i)+dt*(1-gamma/(2*beta))*rttmodconvGPmass_[gp](i);
 
-      LINALG::Matrix<3,1> dL(true);
+      rttmodnewGPmass_[gp](i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*rttnewGPmass_[gp](i) + alpha_f*rttconvGPmass_[gp](i) - alpha_m*rttmodconvGPmass_[gp](i) );
+    }
 
-      // update quaternions at GPs for exact Gauss quadrature
-      Calc_Psi_l<nnodetriad,T>(Psi_li, I_i[gp], Psi_l);
-      Calc_Qgauss<double>(FADUTILS::CastToDouble<T,3,1>(Psi_l),FADUTILS::CastToDouble<T,4,1>(Q_r),QnewGPmass_[gp]);
-      computeItilde<nnodetriad>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i[gp]);
+    // spin matrix of the material angular velocity, i.e. S(W)
+    LINALG::Matrix<3,3> SWnewmass(true);
+    LARGEROTATIONS::computespin<double>(SWnewmass,Wnewmass);
+    LINALG::Matrix<3,1> Jp_Wnewmass(true);
+    LINALG::Matrix<3,1> auxvector1(true);
+    LINALG::Matrix<3,1> Pi_t(true);
+    Jp_Wnewmass.Multiply(Jp,Wnewmass);
+    for (unsigned int i=0;i<3;i++)
+      for (unsigned int j=0;j<3;j++)
+        auxvector1(i)+=SWnewmass(i,j)*Jp_Wnewmass(j)+Jp(i,j)*Anewmass(j);
 
-      Lambdanewmass.Clear();
-      Lambdaconvmass.Clear();
-      // compute current and old triad at Gauss point
-      LARGEROTATIONS::quaterniontotriad<double>(QnewGPmass_[gp],Lambdanewmass);
-      LARGEROTATIONS::quaterniontotriad<double>(QconvGPmass_[gp],Lambdaconvmass);
+    Pi_t.Multiply(Lambdanewmass,auxvector1);
+    LINALG::Matrix<3,1> r_tt(true);
+    LINALG::Matrix<3,1> r_t(true);
+    LINALG::Matrix<3,1> r(true);
 
-      // rotation between last converged position and current position expressed as a quaternion
-      LINALG::Matrix<4,1>  deltaQ(true);
-      LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion<double>(QconvGPmass_[gp]),QnewGPmass_[gp],deltaQ);
+    r_tt = rttnewGPmass_[gp];
+    r_t = rtnewGPmass_[gp];
+    r = rnewGPmass_[gp];
 
-      // spatial rotation between last converged position and current position expressed as a three element rotation vector
-      LINALG::Matrix<3,1> deltatheta(true);
-      LARGEROTATIONS::quaterniontoangle<double>(deltaQ,deltatheta);
+    LINALG::Matrix<3,3> S_r(true);
+    LARGEROTATIONS::computespin<double>(S_r,r);
+    dL.Multiply(S_r,r_t);
+    dL.Scale(rho*scaledcrosssec);
+    LINALG::Matrix<3,1> Lambdanewmass_Jp_Wnewmass(true);
+    Lambdanewmass_Jp_Wnewmass.Multiply(Lambdanewmass,Jp_Wnewmass);
+    dL.Update(1.0,Lambdanewmass_Jp_Wnewmass,1.0);
+    for (unsigned int i=0;i<3;i++)
+    {
+      L_(i)+=wgtmass*jacobiGPmass_[gp]*dL(i);
+      P_(i)+=wgtmass*jacobiGPmass_[gp]*rho*scaledcrosssec*r_t(i);
+    }
 
-      // compute material counterparts of spatial vectors
-      LINALG::Matrix<3,1> deltaTHETA(true);
-      LINALG::Matrix<3,1> Wconvmass(true);
-      LINALG::Matrix<3,1> Wnewmass(true);
-      LINALG::Matrix<3,1> Aconvmass(true);
-      LINALG::Matrix<3,1> Anewmass(true);
-      LINALG::Matrix<3,1> Amodconvmass(true);
-      LINALG::Matrix<3,1> Amodnewmass(true);
-      deltaTHETA.MultiplyTN(Lambdanewmass,deltatheta);
-      Wconvmass.MultiplyTN(Lambdaconvmass,wconvGPmass_[gp]);
-      Aconvmass.MultiplyTN(Lambdaconvmass,aconvGPmass_[gp]);
-      Amodconvmass.MultiplyTN(Lambdaconvmass,amodconvGPmass_[gp]);
+    LINALG::Matrix<3,3> S_Pit(true);
+    LARGEROTATIONS::computespin<double>(S_Pit,Pi_t);
+    LINALG::Matrix<3,3> SJpWnewmass(true);
+    LARGEROTATIONS::computespin<double>(SJpWnewmass,Jp_Wnewmass);
+    LINALG::Matrix<3,3> SWnewmass_Jp(true);
+    SWnewmass_Jp.Multiply(SWnewmass,Jp);
+    Jp_bar.Update(diff_factor_vel,SWnewmass_Jp,1.0);
+    Jp_bar.Update(-diff_factor_vel,SJpWnewmass,1.0);
 
-      /* update angular velocities and accelerations according to Newmark time integration scheme either in
-       * material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)) or in spatial description
-       * (for testing purposes, not recommended by Jelenic). The corresponding equations are adapted according to
-       * the gen-alpha Lie group time integration scheme proposed in [Arnold, Brüls (2007)], [Brüls, Cardona, 2010]
-       * and [Brüls, Cardona, Arnold (2012)]. In the predictor step of the time integration the following
-       * formulas automatically deliver a constant displacement (deltatheta=0), consistent velocity and consistent acceleration
-       * predictor. This fact has to be reflected in a consistent manner by the choice of the predictor in the input file*/
-      if (materialintegration)
+    LINALG::Matrix<3,3> Tmatrix(true);
+    Tmatrix=LARGEROTATIONS::Tmatrix(deltatheta);
+
+    LINALG::Matrix<3,3> Lambdanewmass_Jpbar(true);
+    Lambdanewmass_Jpbar.Multiply(Lambdanewmass, Jp_bar);
+    LINALG::Matrix<3,3> LambdaconvmassT_Tmatrix(true);
+    LambdaconvmassT_Tmatrix.MultiplyTN(Lambdaconvmass, Tmatrix);
+    LINALG::Matrix<3,3> Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix(true);
+    Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix.Multiply(Lambdanewmass_Jpbar, LambdaconvmassT_Tmatrix);
+    LINALG::Matrix<3,3> auxmatrix1(true);
+    auxmatrix1.Update(-1.0,S_Pit,1.0);
+    auxmatrix1.Update(1.0,Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix,1.0);
+
+    if (inertia_force != NULL)
+    {
+      // inertia forces
+      for (unsigned int i=0; i<3; i++)
       {
-        for (int i=0;i<3;i++)
-        {
-          Anewmass(i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltaTHETA(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*Wconvmass(i)      \
-                        -alpha_f/(1.0-alpha_f)*Aconvmass(i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*Amodconvmass(i);
-
-          Wnewmass(i)=gamma/(beta*dt)*deltaTHETA(i)+(1-gamma/beta)*Wconvmass(i)+dt*(1-gamma/(2*beta))*Amodconvmass(i);
-
-          Amodnewmass(i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*Anewmass(i) + alpha_f*Aconvmass(i) - alpha_m*Amodconvmass(i));
-        }
-        wnewGPmass_[gp].Multiply(Lambdanewmass,Wnewmass);
-        anewGPmass_[gp].Multiply(Lambdanewmass,Anewmass);
-        amodnewGPmass_[gp].Multiply(Lambdanewmass,Amodnewmass);
-      }
-      else
-      {
-        for (int i=0;i<3;i++)
-        {
-          wnewGPmass_[gp](i)=gamma/(beta*dt)*deltatheta(i)+(1-gamma/beta)*wconvGPmass_[gp](i)+dt*(1-gamma/(2*beta))*amodconvGPmass_[gp](i);
-
-          anewGPmass_[gp](i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltatheta(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*wconvGPmass_[gp](i)      \
-                        -alpha_f/(1.0-alpha_f)*aconvGPmass_[gp](i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*amodconvGPmass_[gp](i);
-
-          amodnewGPmass_[gp](i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*anewGPmass_[gp](i) + alpha_f*aconvGPmass_[gp](i) - alpha_m*amodconvGPmass_[gp](i) );
-        }
-        Wnewmass.MultiplyTN(Lambdanewmass,wnewGPmass_[gp]);
-        Anewmass.MultiplyTN(Lambdanewmass,anewGPmass_[gp]);
-        Amodnewmass.MultiplyTN(Lambdanewmass,amodnewGPmass_[gp]);
-      }
-
-      LINALG::Matrix<3,1> deltar(true);
-      for (int i=0;i<3;i++)
-      {
-        deltar(i)=rnewGPmass_[gp](i)-rconvGPmass_[gp](i);
-      }
-      for (int i=0;i<3;i++)
-      {
-        rttnewGPmass_[gp](i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltar(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*rtconvGPmass_[gp](i)      \
-                      -alpha_f/(1.0-alpha_f)*rttconvGPmass_[gp](i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*rttmodconvGPmass_[gp](i);
-
-        rtnewGPmass_[gp](i)=gamma/(beta*dt)*deltar(i)+(1-gamma/beta)*rtconvGPmass_[gp](i)+dt*(1-gamma/(2*beta))*rttmodconvGPmass_[gp](i);
-
-        rttmodnewGPmass_[gp](i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*rttnewGPmass_[gp](i) + alpha_f*rttconvGPmass_[gp](i) - alpha_m*rttmodconvGPmass_[gp](i) );
-      }
-
-      // spin matrix of the material angular velocity, i.e. S(W)
-      LINALG::Matrix<3,3> SWnewmass(true);
-      LARGEROTATIONS::computespin<double>(SWnewmass,Wnewmass);
-      LINALG::Matrix<3,1> Jp_Wnewmass(true);
-      LINALG::Matrix<3,1> auxvector1(true);
-      LINALG::Matrix<3,1> Pi_t(true);
-      Jp_Wnewmass.Multiply(Jp,Wnewmass);
-      for (int i=0;i<3;i++)
-        for (int j=0;j<3;j++)
-          auxvector1(i)+=SWnewmass(i,j)*Jp_Wnewmass(j)+Jp(i,j)*Anewmass(j);
-
-      Pi_t.Multiply(Lambdanewmass,auxvector1);
-      LINALG::Matrix<3,1> r_tt(true);
-      LINALG::Matrix<3,1> r_t(true);
-      LINALG::Matrix<3,1> r(true);
-
-      r_tt = rttnewGPmass_[gp];
-      r_t = rtnewGPmass_[gp];
-      r = rnewGPmass_[gp];
-
-      LINALG::Matrix<3,3> S_r(true);
-      LARGEROTATIONS::computespin<double>(S_r,r);
-      dL.Multiply(S_r,r_t);
-      dL.Scale(rho*scaledcrosssec);
-      LINALG::Matrix<3,1> Lambdanewmass_Jp_Wnewmass(true);
-      Lambdanewmass_Jp_Wnewmass.Multiply(Lambdanewmass,Jp_Wnewmass);
-      dL.Update(1.0,Lambdanewmass_Jp_Wnewmass,1.0);
-      for (int i=0;i<3;i++)
-      {
-        L_(i)+=wgtmass*jacobiGPmass_[gp]*dL(i);
-        P_(i)+=wgtmass*jacobiGPmass_[gp]*rho*scaledcrosssec*r_t(i);
-      }
-
-      LINALG::Matrix<3,3> S_Pit(true);
-      LARGEROTATIONS::computespin<double>(S_Pit,Pi_t);
-      LINALG::Matrix<3,3> SJpWnewmass(true);
-      LARGEROTATIONS::computespin<double>(SJpWnewmass,Jp_Wnewmass);
-      LINALG::Matrix<3,3> SWnewmass_Jp(true);
-      SWnewmass_Jp.Multiply(SWnewmass,Jp);
-      Jp_bar.Update(diff_factor_vel,SWnewmass_Jp,1.0);
-      Jp_bar.Update(-diff_factor_vel,SJpWnewmass,1.0);
-
-      LINALG::Matrix<3,3> Tmatrix(true);
-      Tmatrix=LARGEROTATIONS::Tmatrix(deltatheta);
-
-      LINALG::Matrix<3,3> Lambdanewmass_Jpbar(true);
-      Lambdanewmass_Jpbar.Multiply(Lambdanewmass, Jp_bar);
-      LINALG::Matrix<3,3> LambdaconvmassT_Tmatrix(true);
-      LambdaconvmassT_Tmatrix.MultiplyTN(Lambdaconvmass, Tmatrix);
-      LINALG::Matrix<3,3> Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix(true);
-      Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix.Multiply(Lambdanewmass_Jpbar, LambdaconvmassT_Tmatrix);
-      LINALG::Matrix<3,3> auxmatrix1(true);
-      auxmatrix1.Update(-1.0,S_Pit,1.0);
-      auxmatrix1.Update(1.0,Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix,1.0);
-
-      if (inertia_force != NULL)
-      {
-        // inertia forces
-        for (int i=0; i<3; i++)
-        {
-          for (unsigned int node=0; node<nnodecl; node++)
-          {
-            // translational contribution
-            (*inertia_force)(dofpercombinode*node+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node)*r_tt(i);
-            if (centerline_hermite_)
-              (*inertia_force)(dofpercombinode*node+6+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node+1)*r_tt(i);
-            //rotational contribution
-            (*inertia_force)(dofpercombinode*node+3+i) += jacobiGPmass_[gp]*wgtmass*I_i[gp](node)*Pi_t(i);
-          }
-          for (unsigned int node=nnodecl; node<nnodetriad; node++)    // this loop is only entered in case of nnodetriad>nnodecl
-          {
-            // rotational contribution
-            (*inertia_force)(dofperclnode*nnodecl+dofpertriadnode*node+i) += jacobiGPmass_[gp]*wgtmass*I_i[gp](node)*Pi_t(i);
-          }
-        }
-      }
-
-      if (massmatrix != NULL)
-      {
-        // linearization of inertia forces: massmatrix
-        for (unsigned int jnode=0; jnode<nnodecl; jnode++)
+        for (unsigned int node=0; node<nnodecl; node++)
         {
           // translational contribution
-          for (unsigned int inode=0; inode<nnodecl; inode++)
-            for (int k=0;k<3;k++)
-            {
-              (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode);
-              if (centerline_hermite_)
-              {
-                (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode+1);
-                (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode+1);
-                (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode);
-              }
-            }
-
-          // rotational contribution
-          LINALG::Matrix<3,3> auxmatrix2(true);
-          auxmatrix2.Multiply(auxmatrix1,Itilde[jnode]);
-          for (unsigned int inode=0; inode<nnodecl; inode++)
-          {
-            for (int i=0; i<3; i++)
-              for (int j=0; j<3; j++)
-                (*massmatrix)(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
-          }
-          for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
-          {
-            for (int i=0; i<3; i++)
-              for (int j=0; j<3; j++)
-                (*massmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
-          }
+          (*inertia_force)(dofpercombinode*node+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node)*r_tt(i);
+          if (centerline_hermite_)
+            (*inertia_force)(dofpercombinode*node+6+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node+1)*r_tt(i);
+          //rotational contribution
+          (*inertia_force)(dofpercombinode*node+3+i) += jacobiGPmass_[gp]*wgtmass*I_i[gp](node)*Pi_t(i);
         }
-        for (unsigned int jnode=nnodecl; jnode<nnodetriad; ++jnode)    // this loop is only entered in case of nnodetriad>nnodecl
+        for (unsigned int node=nnodecl; node<nnodetriad; node++)    // this loop is only entered in case of nnodetriad>nnodecl
         {
           // rotational contribution
-          LINALG::Matrix<3,3> auxmatrix2(true);
-          auxmatrix2.Multiply(auxmatrix1,Itilde[jnode]);
-          for (unsigned int inode=0; inode<nnodecl; inode++)
-          {
-            for (int i=0; i<3; i++)
-              for (int j=0; j<3; j++)
-                (*massmatrix)(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
-          }
-          for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
-          {
-            for (int i=0; i<3; i++)
-              for (int j=0; j<3; j++)
-                (*massmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
-          }
+          (*inertia_force)(dofperclnode*nnodecl+dofpertriadnode*node+i) += jacobiGPmass_[gp]*wgtmass*I_i[gp](node)*Pi_t(i);
         }
       }
+    }
 
-      // Calculation of kinetic energy
-      LINALG::Matrix<1,1> ekinrot(true);
-      LINALG::Matrix<1,1> ekintrans(true);
-      ekinrot.MultiplyTN(Wnewmass,Jp_Wnewmass);
-      ekintrans.MultiplyTN(r_t,r_t);
-      Ekin_+=0.5*(ekinrot.Norm2() + rho*scaledcrosssec*ekintrans.Norm2())*jacobiGPmass_[gp]*wgtmass;
-      Ekintorsion_+=0.5* Wnewmass(0)*Jp_Wnewmass(0)*jacobiGPmass_[gp]*wgtmass;
-      Ekinbending_+=0.5* Wnewmass(1)*Jp_Wnewmass(1)*jacobiGPmass_[gp]*wgtmass;
-      Ekinbending_+=0.5* Wnewmass(2)*Jp_Wnewmass(2)*jacobiGPmass_[gp]*wgtmass;
-      Ekintrans_+=0.5*rho*scaledcrosssec*ekintrans.Norm2()*jacobiGPmass_[gp]*wgtmass;
+    if (massmatrix != NULL)
+    {
+      // linearization of inertia forces: massmatrix
+      for (unsigned int jnode=0; jnode<nnodecl; jnode++)
+      {
+        // translational contribution
+        for (unsigned int inode=0; inode<nnodecl; inode++)
+          for (unsigned int k=0;k<3;k++)
+          {
+            (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode);
+            if (centerline_hermite_)
+            {
+              (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode+1);
+              (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode+1);
+              (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode);
+            }
+          }
 
-      Jp_Wnewmass.Multiply(Jp,Wnewmass);
-    }//for (int gp=0; gp<gausspoints_mass.nquad; gp++)
+        // rotational contribution
+        LINALG::Matrix<3,3> auxmatrix2(true);
+        auxmatrix2.Multiply(auxmatrix1,Itilde[jnode]);
+        for (unsigned int inode=0; inode<nnodecl; inode++)
+        {
+          for (unsigned int i=0; i<3; i++)
+            for (unsigned int j=0; j<3; j++)
+              (*massmatrix)(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
+        }
+        for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
+        {
+          for (unsigned int i=0; i<3; i++)
+            for (unsigned int j=0; j<3; j++)
+              (*massmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
+        }
+      }
+      for (unsigned int jnode=nnodecl; jnode<nnodetriad; ++jnode)    // this loop is only entered in case of nnodetriad>nnodecl
+      {
+        // rotational contribution
+        LINALG::Matrix<3,3> auxmatrix2(true);
+        auxmatrix2.Multiply(auxmatrix1,Itilde[jnode]);
+        for (unsigned int inode=0; inode<nnodecl; inode++)
+        {
+          for (unsigned int i=0; i<3; i++)
+            for (unsigned int j=0; j<3; j++)
+              (*massmatrix)(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
+        }
+        for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
+        {
+          for (unsigned int i=0; i<3; i++)
+            for (unsigned int j=0; j<3; j++)
+              (*massmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) += jacobiGPmass_[gp]*wgtmass*I_i[gp](inode)*auxmatrix2(i,j);
+        }
+      }
+    }
 
-    // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later.
-    // so we apply inverse factor here because the correct prefactors for displacement/velocity/acceleration dependent terms have been applied individually above
-    if (massmatrix!=NULL)
-      massmatrix->Scale(beta*dt*dt*(1.0-alpha_f)/(1.0-alpha_m));
-  }//if (massmatrix != NULL or inertia_force != NULL)
+    // Calculation of kinetic energy
+    LINALG::Matrix<1,1> ekinrot(true);
+    LINALG::Matrix<1,1> ekintrans(true);
+    ekinrot.MultiplyTN(Wnewmass,Jp_Wnewmass);
+    ekintrans.MultiplyTN(r_t,r_t);
+    Ekin_+=0.5*(ekinrot.Norm2() + rho*scaledcrosssec*ekintrans.Norm2())*jacobiGPmass_[gp]*wgtmass;
+    Ekintorsion_+=0.5* Wnewmass(0)*Jp_Wnewmass(0)*jacobiGPmass_[gp]*wgtmass;
+    Ekinbending_+=0.5* Wnewmass(1)*Jp_Wnewmass(1)*jacobiGPmass_[gp]*wgtmass;
+    Ekinbending_+=0.5* Wnewmass(2)*Jp_Wnewmass(2)*jacobiGPmass_[gp]*wgtmass;
+    Ekintrans_+=0.5*rho*scaledcrosssec*ekintrans.Norm2()*jacobiGPmass_[gp]*wgtmass;
 
-  return;
+    Jp_Wnewmass.Multiply(Jp,Wnewmass);
+  }
+
+  // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later.
+  // so we apply inverse factor here because the correct prefactors for displacement/velocity/acceleration dependent terms have been applied individually above
+  if (massmatrix!=NULL)
+    massmatrix->Scale(beta*dt*dt*(1.0-alpha_f)/(1.0-alpha_m));
 }
 
 /*----------------------------------------------------------------------------*
@@ -1495,18 +1506,15 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
     const LINALG::TMatrix<double,3,1>&                     stressn,
     const LINALG::TMatrix<double,3,3>&                     cn,
     const LINALG::TMatrix<double,3,3>&                     r_s_hat,
-    const LINALG::TMatrix<double,3,1>&                     Psi_l,
-    const LINALG::TMatrix<double,3,1>&                     Phi_IJ,
-    const LINALG::TMatrix<double,3,3>&                     Lambda_r,
-    const std::vector<LINALG::TMatrix<double,3,1> >&       Psi_li,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad,double>& triad_intpol,
     const LINALG::TMatrix<double,1,nnodetriad>&            I_i,
     const LINALG::TMatrix<double,1,vpernode*nnodecl>&      H_i_xi,
     const double                                           wgt,
     const double                                           jacobifactor) const
 {
-  const int dofperclnode = 3*vpernode;
-  const int dofpertriadnode = 3;
-  const int dofpercombinode = dofperclnode+dofpertriadnode;
+  const unsigned int dofperclnode = 3*vpernode;
+  const unsigned int dofpertriadnode = 3;
+  const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
 
   /* computation of stiffness matrix according to Jelenic 1999, eq. (4.7); computation split up with respect
    * to single blocks of matrix in eq. (4.7).
@@ -1516,7 +1524,10 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
   // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
   std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
 
-  computeItilde<nnodetriad,double>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i);
+  LINALG::TMatrix<double,3,1> Psi_l(true);
+  triad_intpol.GetInterpolatedLocalRotationVector(Psi_l, I_i);
+  triad_intpol.GetNodalGeneralizedRotationInterpolationMatrices(Itilde, Psi_l, I_i);
+
 
   // auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
   LINALG::TMatrix<double,3,3> auxmatrix1;
@@ -1528,8 +1539,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
     for (unsigned int nodej=0; nodej<nnodecl; nodej++)
     {
       // upper left block
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
         {
           stiffmatrix(dofpercombinode*nodei+i,dofpercombinode*nodej+j) += H_i_xi(vpernode*nodei)*H_i_xi(vpernode*nodej)*cn(i,j)*wgt/jacobifactor;
           if (centerline_hermite_)
@@ -1545,8 +1556,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
       LARGEROTATIONS::computespin(auxmatrix1,stressn);
       auxmatrix1 -= auxmatrix2;
       auxmatrix1.Scale(I_i(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
         {
           stiffmatrix(dofpercombinode*nodei+3+i,dofpercombinode*nodej+j) += auxmatrix1(i,j)*H_i_xi(vpernode*nodej)*wgt;
           if (centerline_hermite_)
@@ -1559,8 +1570,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
       auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
 
       auxmatrix3.Multiply(auxmatrix2,Itilde[nodej]);
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
         {
           stiffmatrix(dofpercombinode*nodei+i,dofpercombinode*nodej+3+j) += auxmatrix3(i,j)*H_i_xi(vpernode*nodei)*wgt;
           if (centerline_hermite_)
@@ -1573,8 +1584,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
 
       auxmatrix3.Multiply(r_s_hat,auxmatrix1);
       auxmatrix3.Scale(I_i(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*nodei+3+i,dofpercombinode*nodej+3+j) -= auxmatrix3(i,j)*jacobifactor*wgt;
 
     }
@@ -1586,8 +1597,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
       auxmatrix2 -= auxmatrix1;       // auxmatrix2: term in parantheses
 
       auxmatrix3.Multiply(auxmatrix2,Itilde[nodej]);
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
         {
           stiffmatrix(dofpercombinode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix3(i,j)*H_i_xi(vpernode*nodei)*wgt;
           if (centerline_hermite_)
@@ -1600,8 +1611,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
 
       auxmatrix3.Multiply(r_s_hat,auxmatrix1);
       auxmatrix3.Scale(I_i(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*nodei+3+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix3(i,j)*jacobifactor*wgt;
     }
   }
@@ -1614,8 +1625,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
       LARGEROTATIONS::computespin(auxmatrix1,stressn);
       auxmatrix1 -= auxmatrix2;
       auxmatrix1.Scale(I_i(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
         {
           stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+j) += auxmatrix1(i,j)*H_i_xi(vpernode*nodej)*wgt;
           if (centerline_hermite_)
@@ -1632,8 +1643,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
 
       auxmatrix3.Multiply(r_s_hat,auxmatrix1);
       auxmatrix3.Scale(I_i(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+3+j) -= auxmatrix3(i,j)*jacobifactor*wgt;
 
     }
@@ -1649,8 +1660,8 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions(
 
       auxmatrix3.Multiply(r_s_hat,auxmatrix1);
       auxmatrix3.Scale(I_i(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix3(i,j)*jacobifactor*wgt;
     }
   }
@@ -1664,19 +1675,17 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
     Epetra_SerialDenseMatrix&                        stiffmatrix,
     const LINALG::TMatrix<double,3,1>&               stressm,
     const LINALG::TMatrix<double,3,3>&               cm,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad,double>& triad_intpol,
     const LINALG::TMatrix<double,3,1>&               Psi_l,
     const LINALG::TMatrix<double,3,1>&               Psi_l_s,
-    const LINALG::TMatrix<double,3,1>&               Phi_IJ,
-    const LINALG::TMatrix<double,3,3>&               Lambda_r,
-    const std::vector<LINALG::TMatrix<double,3,1> >& Psi_li,
     const LINALG::TMatrix<double,1,nnodetriad>&      I_i,
     const LINALG::TMatrix<double,1,nnodetriad>&      I_i_xi,
     const double                                     wgt,
     const double                                     jacobifactor) const
 {
-  const int dofperclnode = 3*vpernode;
-  const int dofpertriadnode = 3;
-  const int dofpercombinode = dofperclnode+dofpertriadnode;
+  const unsigned int dofperclnode = 3*vpernode;
+  const unsigned int dofpertriadnode = 3;
+  const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
 
   /* computation of stiffness matrix according to Jelenic 1999, eq. (4.7)*/
 
@@ -1686,8 +1695,19 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
   // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at a certain Gauss point according to (3.19), Jelenic 1999
   std::vector<LINALG::TMatrix<double,3,3> > Itildeprime(nnodetriad);
 
-  computeItilde<nnodetriad,double>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i);
-  computeItildeprime<nnodetriad,double>(Psi_l,Psi_l_s,Itildeprime,Phi_IJ,Lambda_r,Psi_li,I_i,I_i_xi,jacobifactor);
+  triad_intpol.GetNodalGeneralizedRotationInterpolationMatrices(
+      Itilde,
+      Psi_l,
+      I_i);
+
+  triad_intpol.GetNodalGeneralizedRotationInterpolationMatricesDerivative(
+      Itildeprime,
+      Psi_l,
+      Psi_l_s,
+      I_i,
+      I_i_xi,
+      jacobifactor);
+
 
   // auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
   LINALG::TMatrix<double,3,3> auxmatrix1;
@@ -1701,16 +1721,16 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
       // first summand
       auxmatrix1.Multiply(cm,Itildeprime[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*nodei+3+i,dofpercombinode*nodej+3+j) += auxmatrix1(i,j)*wgt;
 
       // second summand
       LARGEROTATIONS::computespin(auxmatrix2,stressm);
       auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*nodei+3+i,dofpercombinode*nodej+3+j) -= auxmatrix1(i,j)*wgt;
     }
     for(unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)    // this loop is only entered in case of nnodetriad>nnodecl
@@ -1719,16 +1739,16 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
       // first summand
       auxmatrix1.Multiply(cm,Itildeprime[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*nodei+3+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix1(i,j)*wgt;
 
       // second summand
       LARGEROTATIONS::computespin(auxmatrix2,stressm);
       auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*nodei+3+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix1(i,j)*wgt;
     }
   }
@@ -1741,16 +1761,16 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
       // first summand
       auxmatrix1.Multiply(cm,Itildeprime[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+3+j) += auxmatrix1(i,j)*wgt;
 
       // second summand
       LARGEROTATIONS::computespin(auxmatrix2,stressm);
       auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofpercombinode*nodej+3+j) -= auxmatrix1(i,j)*wgt;
     }
     for(unsigned int nodej=nnodecl; nodej<nnodetriad; nodej++)
@@ -1759,16 +1779,16 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions(
       // first summand
       auxmatrix1.Multiply(cm,Itildeprime[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) += auxmatrix1(i,j)*wgt;
 
       // second summand
       LARGEROTATIONS::computespin(auxmatrix2,stressm);
       auxmatrix1.Multiply(auxmatrix2,Itilde[nodej]);
       auxmatrix1.Scale(I_i_xi(nodei));
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*nodei+i,dofperclnode*nnodecl+dofpertriadnode*nodej+j) -= auxmatrix1(i,j)*wgt;
     }
   }
@@ -1817,41 +1837,41 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAutomaticDifferentiation(
     for (unsigned int inode=0; inode<nnodecl; inode++)
     {
       // block1: derivative of nodal positions with respect to theta (rotational DOFs)
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           tempmat(i,j) = stiffmatrix(dofpercombinode*inode+i,dofpercombinode*jnode+3+j);
 
       newstiffmat.Clear();
       newstiffmat.MultiplyNN(tempmat,Tmat);
 
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*inode+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j);
 
       // block2: derivative of nodal theta with respect to theta (rotational DOFs)
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           tempmat(i,j) = stiffmatrix(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j);
 
       newstiffmat.Clear();
       newstiffmat.MultiplyNN(tempmat,Tmat);
 
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*inode+3+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j);
 
       // block3: derivative of nodal tangents with respect to theta (rotational DOFs)
-      if(centerline_hermite_)
+      if (centerline_hermite_)
       {
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
+        for (unsigned int i=0; i<3; ++i)
+          for (unsigned int j=0; j<3; ++j)
             tempmat(i,j) = stiffmatrix(dofpercombinode*inode+6+i,dofpercombinode*jnode+3+j);
 
         newstiffmat.Clear();
         newstiffmat.MultiplyNN(tempmat,Tmat);
 
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
+        for (unsigned int i=0; i<3; ++i)
+          for (unsigned int j=0; j<3; ++j)
             stiffmatrix(dofpercombinode*inode+6+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j);
       }
 
@@ -1859,15 +1879,15 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAutomaticDifferentiation(
     for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)    // this loop is only entered in case of nnodetriad>nnodecl
     {
       // block2: derivative of nodal theta with respect to theta (rotational DOFs)
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           tempmat(i,j) = stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j);
 
       newstiffmat.Clear();
       newstiffmat.MultiplyNN(tempmat,Tmat);
 
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofpercombinode*jnode+3+j) = newstiffmat(i,j);
 
     }
@@ -1884,41 +1904,41 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAutomaticDifferentiation(
     for (unsigned int inode=0; inode<nnodecl; inode++)
     {
       // block1: derivative of nodal positions with respect to theta (rotational DOFs)
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           tempmat(i,j) = stiffmatrix(dofpercombinode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
 
       newstiffmat.Clear();
       newstiffmat.MultiplyNN(tempmat,Tmat);
 
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j);
 
       // block2: derivative of nodal theta with respect to theta (rotational DOFs)
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           tempmat(i,j) = stiffmatrix(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
 
       newstiffmat.Clear();
       newstiffmat.MultiplyNN(tempmat,Tmat);
 
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofpercombinode*inode+3+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j);
 
       // block3: derivative of nodal tangents with respect to theta (rotational DOFs)
-      if(centerline_hermite_)
+      if (centerline_hermite_)
       {
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
+        for (unsigned int i=0; i<3; ++i)
+          for (unsigned int j=0; j<3; ++j)
             tempmat(i,j) = stiffmatrix(dofpercombinode*inode+6+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
 
         newstiffmat.Clear();
         newstiffmat.MultiplyNN(tempmat,Tmat);
 
-        for (int i=0; i<3; ++i)
-          for (int j=0; j<3; ++j)
+        for (unsigned int i=0; i<3; ++i)
+          for (unsigned int j=0; j<3; ++j)
             stiffmatrix(dofpercombinode*inode+6+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j);
       }
 
@@ -1926,15 +1946,15 @@ void DRT::ELEMENTS::Beam3r::CalcStiffmatAutomaticDifferentiation(
     for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)
     {
       // block2: derivative of nodal theta with respect to theta (rotational DOFs)
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           tempmat(i,j) = stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j);
 
       newstiffmat.Clear();
       newstiffmat.MultiplyNN(tempmat,Tmat);
 
-      for (int i=0; i<3; ++i)
-        for (int j=0; j<3; ++j)
+      for (unsigned int i=0; i<3; ++i)
+        for (unsigned int j=0; j<3; ++j)
           stiffmatrix(dofperclnode*nnodecl+dofpertriadnode*inode+i,dofperclnode*nnodecl+dofpertriadnode*jnode+j) = newstiffmat(i,j);
 
     }
@@ -1961,8 +1981,8 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
 
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
-  if(BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp,nnodecl);
+  if (BrownianDynParamsInterfacePtr() != Teuchos::null)
+    UnShiftNodePosition(disp, nnodecl);
 
   /****** update/compute key variables describing displacement and velocity state of this element *****/
 
@@ -1976,21 +1996,21 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
   std::vector<LINALG::TMatrix<double,4,1> > Q_i(nnodetriad);
 
   // update disp_totlag_centerline and nodal triads
-  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,double>(disp,disp_totlag_centerline,Q_i);
+  UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode,double>(disp, disp_totlag_centerline, Q_i);
 
   // update current values of centerline (i.e. translational) velocity
-  ExtractCenterlineDofValuesFromElementStateVector<nnodecl,vpernode,double>(vel,vel_centerline);
+  ExtractCenterlineDofValuesFromElementStateVector<nnodecl,vpernode,double>(vel, vel_centerline);
 
   /****** compute and assemble force and stiffness contributions from viscous damping and stochastic forces *****/
 
   // add stiffness and forces due to translational damping effects
-  EvaluateTranslationalDamping<nnodecl,vpernode,3>(params,vel_centerline,disp_totlag_centerline,stiffmatrix,force);
+  EvaluateTranslationalDamping<nnodecl,vpernode,3>(params, vel_centerline, disp_totlag_centerline, stiffmatrix, force);
 
   // add stiffness and forces (i.e. moments) due to rotational damping effects
-  EvaluateRotationalDamping<nnodetriad,nnodecl,vpernode,3>(params,Q_i,stiffmatrix,force);
+  EvaluateRotationalDamping<nnodetriad,nnodecl,vpernode,3>(params, Q_i, stiffmatrix, force);
 
   // add stochastic forces and (if required) resulting stiffness
-  EvaluateStochasticForces<nnodecl,vpernode,3,3>(params,disp_totlag_centerline,stiffmatrix,force);
+  EvaluateStochasticForces<nnodecl,vpernode,3,3>(params, disp_totlag_centerline, stiffmatrix, force);
 
 }
 
@@ -2106,16 +2126,6 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
   DRT::UTILS::GaussRule1D gaussrule = MyGaussRule(res_damp_stoch);
   DRT::UTILS::IntegrationPoints1D gausspoints(gaussrule);
 
-  // reference triad Lambda_r and corresponding quaternion Q_r
-  LINALG::Matrix<3,3> Lambda_r(true);
-  LINALG::Matrix<4,1> Q_r(true);
-
-  // angle of relative rotation between node I and J according to (3.10), Jelenic 1999
-  LINALG::Matrix<3,1> Phi_IJ(true);
-
-  // rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
-  std::vector<LINALG::TMatrix<double,3,1> > Psi_li(nnodetriad);
-
   //*************************** physical quantities evaluated at a certain GP ***************************
 
   // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
@@ -2131,104 +2141,138 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
 
   /* vector whose numgp-th element is a 1xnnodetriad-matrix with all Lagrange polynomial shape functions evaluated at the numgp-th Gauss point
    * these shape functions are used for the interpolation of the triad field */
-  std::vector<LINALG::Matrix<1,nnodetriad> > I_i(gausspoints.nquad);
+  std::vector<LINALG::TMatrix<double,1,nnodetriad> > I_i(gausspoints.nquad);
 
   // evaluate all shape functions at all specified Gauss points
-  EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints,I_i,this->Shape());
+  EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints, I_i, this->Shape());
 
   /* vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode according to (3.19), Jelenic 1999*/
   std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
 
 
-  // compute reference triad Lambda_r according to (3.9), Jelenic 1999
-  CalcRefQuaternion<double>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,Phi_IJ);
-  LARGEROTATIONS::quaterniontotriad(Q_r,Lambda_r);
+  // create an object of the triad interpolation scheme
+  Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double> >
+      triad_interpolation_scheme_ptr =
+      Teuchos::rcp(new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>() );
 
-  // compute nodal local rotations according to (3.8), Jelenic 1999
-  for (unsigned int node=0; node<nnodetriad; ++node)
-    CalcPsi_li(Qnode[node],Q_r,Psi_li[node]);
+  // reset the scheme with nodal quaternions
+  triad_interpolation_scheme_ptr->Reset(Qnode);
 
 
-  for (int gp=0; gp<gausspoints.nquad; gp++)//loop through Gauss points
+  for (int gp=0; gp<gausspoints.nquad; gp++)
   {
-    // update quaternions at GPs for exact Gauss quadrature
-    Calc_Psi_l<nnodetriad>(Psi_li, I_i[gp], Psi_l);
-    Calc_Qgauss<double>(Psi_l,Q_r,QnewGP);
+    triad_interpolation_scheme_ptr->GetInterpolatedLocalRotationVector(Psi_l, I_i[gp]);
+
+    triad_interpolation_scheme_ptr->GetInterpolatedQuaternion(QnewGP, Psi_l);
 
     // store in class variable in order to get QconvGPmass_ in subsequent time step
     QnewGPdampstoch_[gp]=QnewGP;
 
     // compute triad at Gauss point
-    LARGEROTATIONS::quaterniontotriad(QnewGP,LambdaGP);
+    LARGEROTATIONS::quaterniontotriad(QnewGP, LambdaGP);
 
-    // rotation between last converged position and current position expressed as a quaternion
-    LINALG::Matrix<4,1> deltaQ;
-    LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion(QconvGPdampstoch_[gp]),QnewGP,deltaQ);
+
+    // rotation between last converged state and current state expressed as a quaternion
+
+    // ******** alternative 1 *************** Todo @grill
+//    LINALG::Matrix<4,1> deltaQ;
+//    LARGEROTATIONS::quaternionproduct(
+//        LARGEROTATIONS::inversequaternion(QconvGPdampstoch_[gp]), QnewGP, deltaQ);
+
+    // ******** alternative 2 ***************
+
+    // get quaternion in converged state at gp and compute corresponding triad
+    LINALG::TMatrix<double,3,3> triad_mat_conv(true);
+    LINALG::TMatrix<double,4,1>  Qconv(true);
+    for (unsigned int i=0; i<4; ++i)
+      Qconv(i) = (QconvGPdampstoch_[gp])(i);
+
+    LARGEROTATIONS::quaterniontotriad(Qconv, triad_mat_conv);
+
+    // compute quaternion of relative rotation from converged to current state
+    LINALG::TMatrix<double,3,3> deltatriad(true);
+    deltatriad.MultiplyNT(LambdaGP, triad_mat_conv);
+
+    LINALG::TMatrix<double,4,1> deltaQ(true);
+    LARGEROTATIONS::triadtoquaternion(deltatriad, deltaQ);
+
+    // **************************************
 
     // extract rotation vector from quaternion
     LINALG::Matrix<3,1> deltatheta;
-    LARGEROTATIONS::quaterniontoangle(deltaQ,deltatheta);
+    LARGEROTATIONS::quaterniontoangle(deltaQ, deltatheta);
+
 
     // angular velocity at this Gauss point according to backward Euler scheme
     LINALG::Matrix<3,1> omega(true);
-    omega += deltatheta;
-    omega.Scale(1/dt);
+    omega.Update(1.0/dt, deltatheta);
 
     // compute matrix Lambda*[gamma(2) 0 0 \\ 0 0 0 \\ 0 0 0]*Lambda^t = gamma(2) * g_1 \otimes g_1
     // where g_1 is first base vector, i.e. first column of Lambda
     LINALG::Matrix<3,3> g1g1gamma;
     for(int k=0; k<3; k++)
       for(int j = 0; j<3; j++)
-        g1g1gamma(k,j) = (LambdaGP)(k,0)*(LambdaGP)(j,0)*gamma(2);
+        g1g1gamma(k,j) = LambdaGP(k,0) * LambdaGP(j,0) * gamma(2);
 
     // compute vector gamma(2) * g_1 \otimes g_1 * \omega
     LINALG::Matrix<3,1> g1g1gammaomega;
     g1g1gammaomega.Multiply(g1g1gamma,omega);
 
+    const double jacobifac_gp_weight = jacobiGPdampstoch_[gp] * gausspoints.qwgt[gp];
+
     if (force != NULL)
     {
-      //loop over all nodes
+      // loop over all nodes
       for (unsigned int inode=0; inode<nnodecl; inode++)
       {
-        //loop over three dimensions in line direction
+        // loop over spatial dimensions
         for (unsigned int idim=0; idim<ndim; idim++)
           (*force)(dofpercombinode*inode+3+idim) +=
-              g1g1gammaomega(idim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              g1g1gammaomega(idim) * (I_i[gp])(inode) * jacobifac_gp_weight;
       }
       for (unsigned int inode=nnodecl; inode<nnodetriad; inode++)
       {
-        //loop over three dimensions in line direction
+        // loop over spatial dimensions
         for (unsigned int idim=0; idim<ndim; idim++)
           (*force)(dofperclnode*nnodecl+dofpertriadnode*inode+idim) +=
-              g1g1gammaomega(idim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              g1g1gammaomega(idim) * (I_i[gp])(inode) * jacobifac_gp_weight;
       }
     }
 
     if (stiffmatrix != NULL)
     {
-      computeItilde<nnodetriad>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i[gp]);
+      triad_interpolation_scheme_ptr->GetNodalGeneralizedRotationInterpolationMatrices(
+          Itilde,
+          Psi_l,
+          I_i[gp]);
+
+      LINALG::Matrix<3,3> g1g1oldgamma;
+      for(int k=0; k<3; k++)
+        for(int j = 0; j<3; j++)
+          g1g1oldgamma(k,j) = LambdaGP(k,0) * triad_mat_conv(j,0) * gamma(2);
+
 
       // compute matrix gamma(2) * g_1 \otimes g_1 * \omega * Tmat
-      LINALG::Matrix<3,3> g1g1gammaTmat;
-      g1g1gammaTmat.Multiply(g1g1gamma,LARGEROTATIONS::Tmatrix(deltatheta));
+      LINALG::Matrix<3,3> g1g1oldgammaTmat;
+      g1g1oldgammaTmat.Multiply( g1g1oldgamma, LARGEROTATIONS::Tmatrix(deltatheta) );
 
       // compute spin matrix S(\omega)
       LINALG::Matrix<3,3> Sofomega;
-      LARGEROTATIONS::computespin(Sofomega,omega);
+      LARGEROTATIONS::computespin(Sofomega, omega);
 
       // compute matrix gamma(2) * g_1 \otimes g_1 *S(\omega)
       LINALG::Matrix<3,3> g1g1gammaSofomega;
-      g1g1gammaSofomega.Multiply(g1g1gamma,Sofomega);
+      g1g1gammaSofomega.Multiply(g1g1gamma, Sofomega);
 
       // compute spin matrix S(gamma(2) * g_1 \otimes g_1 *\omega)
       LINALG::Matrix<3,3> Sofg1g1gammaomega;
-      LARGEROTATIONS::computespin(Sofg1g1gammaomega,g1g1gammaomega);
+      LARGEROTATIONS::computespin(Sofg1g1gammaomega, g1g1gammaomega);
 
       // auxiliary matrices
       LINALG::Matrix<3,3> sum(true);
       LINALG::Matrix<3,3> auxmatrix(true);
 
-      sum += g1g1gammaTmat;
+      sum += g1g1oldgammaTmat;
       sum.Scale(1/dt);
       sum += g1g1gammaSofomega;
       sum -= Sofg1g1gammaomega;
@@ -2239,27 +2283,27 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
         // loop over first nnodecl column nodes
         for (unsigned int jnode=0; jnode<nnodecl; jnode++)
         {
-          auxmatrix.Multiply(sum,Itilde[jnode]);
+          auxmatrix.Multiply(sum, Itilde[jnode]);
 
           // loop over three dimensions in row and column direction
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<3; jdim++)
             {
-              (*stiffmatrix)(dofpercombinode*inode+3+idim,dofpercombinode*jnode+3+jdim) +=
-                  auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              (*stiffmatrix)(dofpercombinode*inode+3+idim, dofpercombinode*jnode+3+jdim) +=
+                  auxmatrix(idim,jdim) * (I_i[gp])(inode) * jacobifac_gp_weight;
             }
 
         }
         for (unsigned int jnode=nnodecl; jnode<nnodetriad; jnode++)    // this loop is only entered in case of nnodetriad>nnodecl
         {
-          auxmatrix.Multiply(sum,Itilde[jnode]);
+          auxmatrix.Multiply(sum, Itilde[jnode]);
 
           // loop over three dimensions in row and column direction
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<3; jdim++)
             {
-              (*stiffmatrix)(dofpercombinode*inode+3+idim,dofperclnode*nnodecl+dofpertriadnode*jnode+jdim) +=
-                  auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              (*stiffmatrix)(dofpercombinode*inode+3+idim, dofperclnode*nnodecl+dofpertriadnode*jnode+jdim) +=
+                  auxmatrix(idim,jdim) * (I_i[gp])(inode) * jacobifac_gp_weight;
             }
         }
       }
@@ -2268,27 +2312,27 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
         // loop over all column nodes
         for (unsigned int jnode=0; jnode<nnodecl; jnode++)
         {
-          auxmatrix.Multiply(sum,Itilde[jnode]);
+          auxmatrix.Multiply(sum, Itilde[jnode]);
 
           // loop over three dimensions in row and column direction
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<3; jdim++)
             {
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+idim,dofpercombinode*jnode+3+jdim) +=
-                  auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+idim, dofpercombinode*jnode+3+jdim) +=
+                  auxmatrix(idim,jdim) * (I_i[gp])(inode) * jacobifac_gp_weight;
             }
 
         }
         for (unsigned int jnode=nnodecl; jnode<nnodetriad; jnode++)    // this loop is only entered in case of nnodetriad>nnodecl
         {
-          auxmatrix.Multiply(sum,Itilde[jnode]);
+          auxmatrix.Multiply(sum, Itilde[jnode]);
 
           // loop over three dimensions in row and column direction
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<3; jdim++)
             {
-              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+idim,dofperclnode*nnodecl+dofpertriadnode*jnode+jdim) +=
-                  auxmatrix(idim,jdim)*(I_i[gp])(inode)*gausspoints.qwgt[gp]*jacobiGPdampstoch_[gp];
+              (*stiffmatrix)(dofperclnode*nnodecl+dofpertriadnode*inode+idim, dofperclnode*nnodecl+dofpertriadnode*jnode+jdim) +=
+                  auxmatrix(idim,jdim) * (I_i[gp])(inode) * jacobifac_gp_weight;
             }
         }
       }
@@ -2300,11 +2344,12 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
  | computes translational damping forces and stiffness (public)                                 cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
-void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                                                  const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& vel_centerline,
-                                                  const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
-                                                  Epetra_SerialDenseMatrix*        stiffmatrix,  //!< element stiffness matrix
-                                                  Epetra_SerialDenseVector*        force)//!< element internal force vector
+void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(
+    Teuchos::ParameterList& params,
+    const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& vel_centerline,
+    const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
+    Epetra_SerialDenseMatrix*        stiffmatrix,
+    Epetra_SerialDenseVector*        force) const
 {
   /* only nodes for centerline interpolation are considered here (= first nnodecl nodes of this element);
      each of these nodes holds 3*vpernode translational DoFs AND 3 rotational DoFs */
@@ -2343,9 +2388,9 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape functions evaluated at the numgp-th GP
    * these shape functions are used for the interpolation of the beam centerline*/
-  std::vector<LINALG::Matrix<1,vpernode*nnodecl> > H_i(gausspoints.nquad);
+  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i(gausspoints.nquad);
   // same for the derivatives
-  std::vector<LINALG::Matrix<1,vpernode*nnodecl> > H_i_xi(gausspoints.nquad);
+  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i_xi(gausspoints.nquad);
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
   EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl,vpernode>(gausspoints,H_i,H_i_xi,this->Shape());
@@ -2373,6 +2418,8 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
     // compute viscous force vector per unit length at current GP
     f_visc.Multiply(damp_mat,vel_rel);
 
+    const double jacobifac_gp_weight = jacobiGPdampstoch_[gp] * gausspoints.qwgt[gp];
+
     if (force != NULL)
     {
       // loop over all nodes used for centerline interpolation
@@ -2380,9 +2427,11 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
         // loop over dimensions
         for (unsigned int idim=0; idim<ndim; idim++)
         {
-          (*force)(inode*dofpernode+idim) += H_i[gp](vpernode*inode)*jacobiGPdampstoch_[gp]*gausspoints.qwgt[gp]*f_visc(idim);
+          (*force)(inode*dofpernode+idim) +=
+              H_i[gp](vpernode*inode) * f_visc(idim) * jacobifac_gp_weight;
           if (centerline_hermite_)
-            (*force)(inode*dofpernode+6+idim) += H_i[gp](vpernode*inode+1)*jacobiGPdampstoch_[gp]*gausspoints.qwgt[gp]*f_visc(idim);
+            (*force)(inode*dofpernode+6+idim) +=
+                H_i[gp](vpernode*inode+1) * f_visc(idim) * jacobifac_gp_weight;
         }
     }
 
@@ -2395,7 +2444,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
 
       // loop over all nodes used for centerline interpolation
       for (unsigned int inode=0; inode<nnodecl; inode++)
-        //loop over all column nodes
+        //loop over all column nodes used for centerline interpolation
         for (unsigned int jnode=0; jnode<nnodecl; jnode++)
         {
           for (unsigned int idim=0; idim<ndim; idim++)
@@ -2434,10 +2483,11 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
  | computes stochastic forces and resulting stiffness (public)                                  cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodecl,unsigned int vpernode, unsigned int ndim, unsigned int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
-                                              const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
-                                              Epetra_SerialDenseMatrix*        stiffmatrix,  //!< element stiffness matrix
-                                              Epetra_SerialDenseVector*        force)//!< element internal force vector
+void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(
+    Teuchos::ParameterList& params,
+    const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
+    Epetra_SerialDenseMatrix*        stiffmatrix,
+    Epetra_SerialDenseVector*        force) const
 {
   /* only nodes for centerline interpolation are considered here (= first nnodecl nodes of this element);
      each of these nodes holds 3*vpernode translational DoFs AND 3 rotational DoFs */
@@ -2466,9 +2516,9 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
 
   /* vector whose numgp-th element is a 1x(vpernode*nnode)-matrix with all (Lagrange/Hermite) shape functions evaluated at the numgp-th GP
    * these shape functions are used for the interpolation of the beam centerline*/
-  std::vector<LINALG::Matrix<1,vpernode*nnodecl> > H_i(gausspoints.nquad);
+  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i(gausspoints.nquad);
   // same for the derivatives
-  std::vector<LINALG::Matrix<1,vpernode*nnodecl> > H_i_xi(gausspoints.nquad);
+  std::vector<LINALG::TMatrix<double,1,vpernode*nnodecl> > H_i_xi(gausspoints.nquad);
 
   // evaluate all shape function derivatives with respect to element parameter xi at all specified Gauss points
   EvaluateShapeFunctionsAndDerivsAllGPs<nnodecl,vpernode>(gausspoints,H_i,H_i_xi,this->Shape());
@@ -2477,7 +2527,11 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
   for (int gp=0; gp < gausspoints.nquad; gp++)
   {
     // compute tangent vector t_{\par}=r' at current Gauss point
-    Calc_r_s<nnodecl,vpernode,double>(disp_totlag_centerline, H_i_xi[gp], jacobiGPdampstoch_[gp], r_s);
+    Calc_r_s<nnodecl,vpernode,double>(
+        disp_totlag_centerline,
+        H_i_xi[gp],
+        jacobiGPdampstoch_[gp],
+        r_s);
 
     // extract random numbers from global vector
     for (unsigned int idim=0; idim<ndim; idim++)
@@ -2493,8 +2547,13 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
     f_stoch.Clear();
     for (unsigned int idim=0; idim<ndim; idim++)
       for (unsigned int jdim=0; jdim<ndim; jdim++)
-        f_stoch(idim) += (std::sqrt(gamma(1))*(idim==jdim) + (std::sqrt(gamma(0)) - std::sqrt(gamma(1)))*r_s(idim)*r_s(jdim))*randnumvec(jdim);
+        f_stoch(idim) +=
+            ( std::sqrt(gamma(1)) * (idim==jdim)
+             + ( std::sqrt(gamma(0)) - std::sqrt(gamma(1)) ) * r_s(idim) * r_s(jdim) )
+            * randnumvec(jdim);
 
+    const double sqrt_jacobifac_gp_weight =
+        std::sqrt( jacobiGPdampstoch_[gp] * gausspoints.qwgt[gp] );
 
     if (force != NULL)
     {
@@ -2503,42 +2562,61 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
         //loop dimensions with respect to lines
         for (unsigned int idim=0; idim<ndim; idim++)
         {
-          (*force)(inode*dofpernode+idim) -= H_i[gp](vpernode*inode)*f_stoch(idim)*std::sqrt(jacobiGPdampstoch_[gp]*gausspoints.qwgt[gp]);
+          (*force)(inode*dofpernode+idim) -=
+              H_i[gp](vpernode*inode) * f_stoch(idim) * sqrt_jacobifac_gp_weight;
           if (centerline_hermite_)
-            (*force)(inode*dofpernode+6+idim) -= H_i[gp](vpernode*inode+1)*f_stoch(idim)*std::sqrt(jacobiGPdampstoch_[gp]*gausspoints.qwgt[gp]);
+          {
+            (*force)(inode*dofpernode+6+idim) -=
+                H_i[gp](vpernode*inode+1) * f_stoch(idim) * sqrt_jacobifac_gp_weight;
+          }
         }
     }
 
 
     if (stiffmatrix != NULL)
     {
+      // note: division by sqrt of jacobi factor, because H_i_s = H_i_xi / jacobifactor
+      const double sqrt_gp_weight_jacobifac_inv =
+          std::sqrt( gausspoints.qwgt[gp] / jacobiGPdampstoch_[gp]);
+
+      const double prefactor =
+          sqrt_gp_weight_jacobifac_inv * ( std::sqrt(gamma(0)) - std::sqrt(gamma(1)) );
+
       // loop over all nodes used for centerline interpolation
       for (unsigned int inode=0; inode<nnodecl; inode++)
-        //loop over all column nodes
+        //loop over all column nodes used for centerline interpolation
         for (unsigned int jnode=0; jnode<nnodecl; jnode++)
         {
           for (unsigned int idim=0; idim<ndim; idim++)
             for (unsigned int jdim=0; jdim<ndim; jdim++)
             {
-              (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+idim) -= H_i[gp](vpernode*inode)*H_i_xi[gp](vpernode*jnode)*r_s(jdim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobiGPdampstoch_[gp])*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
-              (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+jdim) -= H_i[gp](vpernode*inode)*H_i_xi[gp](vpernode*jnode)*r_s(idim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobiGPdampstoch_[gp])*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
+              (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+idim) -=
+                  H_i[gp](vpernode*inode) * H_i_xi[gp](vpernode*jnode) * r_s(jdim) * randnumvec(jdim) * prefactor;
+              (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+jdim) -=
+                  H_i[gp](vpernode*inode) * H_i_xi[gp](vpernode*jnode) * r_s(idim) * randnumvec(jdim) * prefactor;
 
               if (centerline_hermite_)
               {
-                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+idim) -= H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode)*r_s(jdim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobiGPdampstoch_[gp])*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
-                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+jdim) -= H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode)*r_s(idim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobiGPdampstoch_[gp])*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
+                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+idim) -=
+                    H_i[gp](vpernode*inode+1) * H_i_xi[gp](vpernode*jnode) * r_s(jdim) * randnumvec(jdim) * prefactor;
+                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+jdim) -=
+                    H_i[gp](vpernode*inode+1) * H_i_xi[gp](vpernode*jnode) * r_s(idim) * randnumvec(jdim) * prefactor;
 
-                (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+6+idim) -= H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode+1)*r_s(jdim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobiGPdampstoch_[gp])*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
-                (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+6+jdim) -= H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode+1)*r_s(idim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobiGPdampstoch_[gp])*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
+                (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+6+idim) -=
+                    H_i[gp](vpernode*inode) * H_i_xi[gp](vpernode*jnode+1) * r_s(jdim) * randnumvec(jdim) * prefactor;
+                (*stiffmatrix)(inode*dofpernode+idim,jnode*dofpernode+6+jdim) -=
+                    H_i[gp](vpernode*inode) * H_i_xi[gp](vpernode*jnode+1) * r_s(idim)*  randnumvec(jdim) * prefactor;
 
-                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+6+idim) -= H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode+1)*r_s(jdim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobiGPdampstoch_[gp])*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
-                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+6+jdim) -= H_i[gp](vpernode*inode+1)*H_i_xi[gp](vpernode*jnode+1)*r_s(idim)*randnumvec(jdim)*std::sqrt(gausspoints.qwgt[gp]/ jacobiGPdampstoch_[gp])*(std::sqrt(gamma(0)) - std::sqrt(gamma(1)));
+                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+6+idim) -=
+                    H_i[gp](vpernode*inode+1) * H_i_xi[gp](vpernode*jnode+1) * r_s(jdim)*randnumvec(jdim) * prefactor;
+                (*stiffmatrix)(inode*dofpernode+6+idim,jnode*dofpernode+6+jdim) -=
+                    H_i[gp](vpernode*inode+1) * H_i_xi[gp](vpernode*jnode+1) * r_s(idim)*randnumvec(jdim) * prefactor;
               }
             }
         }
     }
 
-  } // end: loop GPs
+  }
 
 }
 
@@ -2658,117 +2736,126 @@ template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,2,2>
     Epetra_SerialDenseVector*,
     Epetra_SerialDenseVector*);
 
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,1,double>(
-    LINALG::TMatrix<double,6,1>&,
-    std::vector<LINALG::TMatrix<double,4,1> >&,
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<2,2,1,double>(
+    const LINALG::TMatrix<double,6,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
     Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,12,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<3,3,1,double>(
+    const LINALG::TMatrix<double,9,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
     Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<double,12,1>&,
+    LINALG::TMatrix<double,18,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<4,4,1,double>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,24,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<5,5,1,double>(
+    const LINALG::TMatrix<double,15,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,30,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<2,2,2,double>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,18,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<3,2,2,double>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,21,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<4,2,2,double>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,24,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<5,2,2,double>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<double,27,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<2,2,1,Sacado::Fad::DFad<double> >(
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>,6,1>&,
+    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<3,3,1,Sacado::Fad::DFad<double> >(
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>,9,1>&,
+    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,18,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<4,4,1,Sacado::Fad::DFad<double> >(
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,24,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<5,5,1,Sacado::Fad::DFad<double> >(
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>,15,1>&,
+    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,30,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<2,2,2,Sacado::Fad::DFad<double> >(
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,18,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<3,2,2,Sacado::Fad::DFad<double> >(
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,21,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<4,2,2,Sacado::Fad::DFad<double> >(
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,24,1>&);
+template void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff<5,2,2,Sacado::Fad::DFad<double> >(
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
+    const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
+    Epetra_SerialDenseMatrix*,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,27,1>&);
+
+template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<2,2,1>(
+    const LINALG::TMatrix<double,6,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
+    Epetra_SerialDenseMatrix*,
     Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,3,1,double>(
-    LINALG::TMatrix<double,9,1>&,
-    std::vector<LINALG::TMatrix<double,4,1> >&,
+template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<3,3,1>(
+    const LINALG::TMatrix<double,9,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
     Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<double,18,1>&,
     Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,4,1,double>(
-    LINALG::TMatrix<double,12,1>&,
-    std::vector<LINALG::TMatrix<double,4,1> >&,
+template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<4,4,1>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
     Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<double,24,1>&,
     Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,5,1,double>(
-    LINALG::TMatrix<double,15,1>&,
-    std::vector<LINALG::TMatrix<double,4,1> >&,
+template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<5,5,1>(
+    const LINALG::TMatrix<double,15,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
     Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<double,30,1>&,
     Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,2,double>(
-    LINALG::TMatrix<double,12,1>&,
-    std::vector<LINALG::TMatrix<double,4,1> >&,
+template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<2,2,2>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
     Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<double,18,1>&,
     Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,2,2,double>(
-    LINALG::TMatrix<double,12,1>&,
-    std::vector<LINALG::TMatrix<double,4,1> >&,
+template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<3,2,2>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
     Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<double,21,1>&,
     Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,2,2,double>(
-    LINALG::TMatrix<double,12,1>&,
-    std::vector<LINALG::TMatrix<double,4,1> >&,
+template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<4,2,2>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
     Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<double,24,1>&,
     Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,2,2,double>(
-    LINALG::TMatrix<double,12,1>&,
-    std::vector<LINALG::TMatrix<double,4,1> >&,
+template void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix<5,2,2>(
+    const LINALG::TMatrix<double,12,1>&,
+    const std::vector<LINALG::TMatrix<double,4,1> >&,
     Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<double,27,1>&,
-    Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,1,Sacado::Fad::DFad<double> >(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,6,1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
-    Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
-    Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,3,1,Sacado::Fad::DFad<double> >(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,9,1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
-    Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,18,1>&,
-    Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,4,1,Sacado::Fad::DFad<double> >(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
-    Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,24,1>&,
-    Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,5,1,Sacado::Fad::DFad<double> >(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,15,1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
-    Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,30,1>&,
-    Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<2,2,2,Sacado::Fad::DFad<double> >(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
-    Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,18,1>&,
-    Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<3,2,2,Sacado::Fad::DFad<double> >(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
-    Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,21,1>&,
-    Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<4,2,2,Sacado::Fad::DFad<double> >(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
-    Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,24,1>&,
-    Epetra_SerialDenseVector*);
-template void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff<5,2,2,Sacado::Fad::DFad<double> >(
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,12,1>&,
-    std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,4,1> >&,
-    Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseMatrix*,
-    LINALG::TMatrix<Sacado::Fad::DFad<double>,27,1>&,
     Epetra_SerialDenseVector*);
 
 template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<2,2,1>(
@@ -2776,10 +2863,7 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<2,2,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
     const LINALG::TMatrix<double,3,3>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2,double>&,
     const LINALG::TMatrix<double,1,2>&,
     const LINALG::TMatrix<double,1,2>&,
     const double,
@@ -2789,10 +2873,7 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<3,3,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
     const LINALG::TMatrix<double,3,3>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3,double>&,
     const LINALG::TMatrix<double,1,3>&,
     const LINALG::TMatrix<double,1,3>&,
     const double,
@@ -2802,10 +2883,7 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<4,4,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
     const LINALG::TMatrix<double,3,3>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4,double>&,
     const LINALG::TMatrix<double,1,4>&,
     const LINALG::TMatrix<double,1,4>&,
     const double,
@@ -2815,10 +2893,7 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<5,5,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
     const LINALG::TMatrix<double,3,3>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5,double>&,
     const LINALG::TMatrix<double,1,5>&,
     const LINALG::TMatrix<double,1,5>&,
     const double,
@@ -2828,10 +2903,7 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<2,2,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
     const LINALG::TMatrix<double,3,3>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2,double>&,
     const LINALG::TMatrix<double,1,2>&,
     const LINALG::TMatrix<double,1,4>&,
     const double,
@@ -2841,10 +2913,7 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<3,2,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
     const LINALG::TMatrix<double,3,3>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3,double>&,
     const LINALG::TMatrix<double,1,3>&,
     const LINALG::TMatrix<double,1,4>&,
     const double,
@@ -2854,10 +2923,7 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<4,2,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
     const LINALG::TMatrix<double,3,3>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4,double>&,
     const LINALG::TMatrix<double,1,4>&,
     const LINALG::TMatrix<double,1,4>&,
     const double,
@@ -2867,10 +2933,7 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticForceContributions<5,2,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
     const LINALG::TMatrix<double,3,3>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5,double>&,
     const LINALG::TMatrix<double,1,5>&,
     const LINALG::TMatrix<double,1,4>&,
     const double,
@@ -2880,11 +2943,9 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<2,2
     Epetra_SerialDenseMatrix&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2,double>&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
     const LINALG::TMatrix<double,1,2>&,
     const LINALG::TMatrix<double,1,2>&,
     const double,
@@ -2893,11 +2954,9 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<3,3
     Epetra_SerialDenseMatrix&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3,double>&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
     const LINALG::TMatrix<double,1,3>&,
     const LINALG::TMatrix<double,1,3>&,
     const double,
@@ -2906,11 +2965,9 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<4,4
     Epetra_SerialDenseMatrix&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4,double>&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
     const LINALG::TMatrix<double,1,4>&,
     const LINALG::TMatrix<double,1,4>&,
     const double,
@@ -2919,11 +2976,9 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<5,5
     Epetra_SerialDenseMatrix&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5,double>&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
     const LINALG::TMatrix<double,1,5>&,
     const LINALG::TMatrix<double,1,5>&,
     const double,
@@ -2932,11 +2987,9 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<2,2
     Epetra_SerialDenseMatrix&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<2,double>&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
     const LINALG::TMatrix<double,1,2>&,
     const LINALG::TMatrix<double,1,2>&,
     const double,
@@ -2945,11 +2998,9 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<3,2
     Epetra_SerialDenseMatrix&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3,double>&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
     const LINALG::TMatrix<double,1,3>&,
     const LINALG::TMatrix<double,1,3>&,
     const double,
@@ -2958,11 +3009,9 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<4,2
     Epetra_SerialDenseMatrix&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<4,double>&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
     const LINALG::TMatrix<double,1,4>&,
     const LINALG::TMatrix<double,1,4>&,
     const double,
@@ -2971,11 +3020,9 @@ template void DRT::ELEMENTS::Beam3r::CalcStiffmatAnalyticMomentContributions<5,2
     Epetra_SerialDenseMatrix&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,3>&,
+    const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<5,double>&,
     const LINALG::TMatrix<double,3,1>&,
     const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,1>&,
-    const LINALG::TMatrix<double,3,3>&,
-    const std::vector<LINALG::TMatrix<double,3,1> >&,
     const LINALG::TMatrix<double,1,5>&,
     const LINALG::TMatrix<double,1,5>&,
     const double,

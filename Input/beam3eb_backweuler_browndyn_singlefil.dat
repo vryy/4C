@@ -38,6 +38,7 @@ TOLDISP                1.0E-12               // 5.5e-05 1.0E-06
 TOLRES                 1.0E-08
 MAXITER                25
 NEGLECTINERTIA         yes
+LOADLIN                yes
 --------------------------------------------------------------------MESHFREE
 PERIODICONOFF          1 1 1
 BOUNDINGBOX            0 0 0 10 10 10

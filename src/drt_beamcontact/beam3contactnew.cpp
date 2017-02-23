@@ -149,18 +149,18 @@ radius2_(0.0)
   double Iyy2 = 0.0;
   if (eot1 == DRT::ELEMENTS::Beam3Type::Instance())
   {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->Iyy();
+    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->MomentOfInertiaY();
+    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->MomentOfInertiaY();
   }
   else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
   {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->Iyy();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3r*>(element2_))->Iyy();
+    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->MomentOfInertiaY();
+    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3r*>(element2_))->MomentOfInertiaY();
   }
   else if (eot1 == DRT::ELEMENTS::Beam3ebType::Instance())
   {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->Iyy();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->Iyy();
+    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->MomentOfInertiaY();
+    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->MomentOfInertiaY();
   }
   radius1_ = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy1 / M_PI));
   radius2_ = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy2 / M_PI));

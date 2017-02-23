@@ -108,6 +108,49 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,st
     ;
 }
 
+/*----------------------------------------------------------------------*
+ |  Initialize (public)                                      meier 05/12|
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
+{
+  //setting up geometric variables for beam3eb elements
+  for (int num=0; num<  dis.NumMyColElements(); ++num)
+  {
+    //in case that current element is not a Truss3CL element there is nothing to do and we go back
+    //to the head of the loop
+    if (dis.lColElement(num)->ElementType() != *this) continue;
+
+    //if we get so far current element is a beam3eb element and  we get a pointer at it
+    DRT::ELEMENTS::Beam3eb* currele = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(dis.lColElement(num));
+    if (!currele) dserror("cast to Beam3eb* failed");
+
+    //reference node position
+    std::vector<double> xrefe;
+
+    const int nnode= currele->NumNode();
+
+    //resize xrefe for the number of coordinates we need to store
+    xrefe.resize(3*nnode);
+
+    //getting element's nodal coordinates and treating them as reference configuration
+    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+      dserror("Cannot get nodes in order to compute reference configuration'");
+    else
+    {
+      for (int node=0; node<nnode; node++) //element has k nodes
+        for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
+        {
+          xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
+        }
+    }
+
+    currele->SetUpReferenceGeometry(xrefe);
+
+  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
+  return 0;
+}
+
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            meier 05/12|
@@ -189,7 +232,6 @@ void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
@@ -294,7 +336,6 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3eb::Lines()
  | has to be stored; prerequesite for applying this method is that the
  | element nodes are already known (public)                   meier 05/12|
  *----------------------------------------------------------------------*/
-
 void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& xrefe, const bool secondinit)
 {
   /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
@@ -435,62 +476,76 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
   }//end high precission*/
   return;
 
-}//DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry()
-
-/*----------------------------------------------------------------------*
- |  Initialize (public)                                      meier 05/12|
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
-{
-    //setting up geometric variables for beam3eb elements
-    for (int num=0; num<  dis.NumMyColElements(); ++num)
-    {
-      //in case that current element is not a Truss3CL element there is nothing to do and we go back
-      //to the head of the loop
-      if (dis.lColElement(num)->ElementType() != *this) continue;
-
-      //if we get so far current element is a beam3eb element and  we get a pointer at it
-      DRT::ELEMENTS::Beam3eb* currele = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(dis.lColElement(num));
-      if (!currele) dserror("cast to Beam3eb* failed");
-
-      //reference node position
-      std::vector<double> xrefe;
-
-      const int nnode= currele->NumNode();
-
-      //resize xrefe for the number of coordinates we need to store
-      xrefe.resize(3*nnode);
-
-      //getting element's nodal coordinates and treating them as reference configuration
-      if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
-        dserror("Cannot get nodes in order to compute reference configuration'");
-      else
-      {
-        for (int node=0; node<nnode; node++) //element has k nodes
-          for(int dof= 0; dof < 3; dof++)// element node has three coordinates x1, x2 and x3
-          {
-            xrefe[node*3 + dof] = currele->Nodes()[node]->X()[dof];
-          }
-      }
-
-      currele->SetUpReferenceGeometry(xrefe);
-
-    } //for (int num=0; num<dis_.NumMyColElements(); ++num)
-    return 0;
 }
 
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3eb::Tref() const
 {
   return Tref_;
 }
 
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Beam3eb::jacobi() const
 {
   return jacobi_;
 }
 
-const double& DRT::ELEMENTS::Beam3eb::Iyy() const
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+double DRT::ELEMENTS::Beam3eb::MomentOfInertiaY() const
 {
   return Iyy_;
 }
 
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3eb::GetPosAtXi(LINALG::Matrix<3,1>&      pos,
+                                       const double&              xi,
+                                       const std::vector<double>& disp) const
+{
+  if (disp.size() != 12)
+    dserror("size mismatch: expected 12 values for element displacement vector "
+        "and got %d",disp.size());
+
+  // add reference positions and tangents => total Lagrangean state vector
+  LINALG::Matrix<12,1> disp_totlag(true);
+  UpdateDispTotlag<2,6>(disp,disp_totlag);
+
+  // Todo @grill: rename this to GetPosAtXiFromDispTotlag and make it private; replace call from outside
+  //      by a call to this more general method (GetPosAtXi) based on displacement instead of absolute values
+  pos = this->GetPos(xi,disp_totlag);
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(LINALG::Matrix<3,3>&       triad,
+                                          const double&              xi,
+                                          const std::vector<double>& disp) const
+{
+  if (disp.size() != 12)
+    dserror("size mismatch: expected 12 values for element displacement vector "
+        "and got %d",disp.size());
+
+  // add reference positions and tangents => total Lagrangean state vector
+  LINALG::Matrix<12,1> disp_totlag(true);
+  UpdateDispTotlag<2,6>(disp,disp_totlag);
+
+  triad.Clear();
+
+  /* note: this beam formulation (Beam3eb = torsion-free, isotropic Kirchhoff beam)
+   *       does not need to track material triads and therefore can not provide it here;
+   *       instead, we return the unit tangent vector as first base vector; both are
+   *       identical in the case of Kirchhoff beams (shear-free);
+   *
+   * Todo @grill: what to do with second and third base vector?
+   *
+   */
+
+  dserror("\nBeam3eb::GetTriadAtXi(): by definition, this element can not return "
+      "a full triad; think about replacing it by GetTangentAtXi or another solution.");
+
+}

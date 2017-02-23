@@ -1,5 +1,5 @@
 //
-// \maintainer Maximilian Grill
+// Maintainer: Maximilian Grill
 //
 ==================================================================
                         General Data File CCARAT
@@ -32,23 +32,18 @@ INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlphaLieGroup
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESTARTEVRY                     2
 NLNSOL                          fullnewton
 TIMESTEP                        0.05
 NUMSTEP                         20
 MAXTIME                         1
-DAMPING                         No
-M_DAMP                          0
-K_DAMP                          0
 PREDICT                         ConstDis
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
 TOLRES                          1.0E-6
 TOLDISP                         1.0E-11
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-MAXITER                         80
+MAXITER                         30
 LOADLIN                         Yes
 MASSLIN                         rotations
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
@@ -60,6 +55,10 @@ GAMMA           0.525641025641
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
+------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
 -------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  1

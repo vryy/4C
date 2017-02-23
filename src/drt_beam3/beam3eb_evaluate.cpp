@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam3eb_evaluate.cpp
 
@@ -8,7 +8,7 @@
 
 \maintainer Maximilian Grill
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 #include "beam3eb.H"
 #include "../drt_lib/drt_discret.H"
@@ -2152,10 +2152,6 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(Teuchos::ParameterList
     // compute viscous force vector per unit length at current GP
     f_visc.Multiply(damp_mat,vel_rel);
 
-    // compute matrix product of damping matrix and gradient of background velocity
-    LINALG::Matrix<ndim,ndim> dampmatvelbackgroundgrad(true);
-    dampmatvelbackgroundgrad.Multiply(damp_mat,velbackgroundgrad);
-
 
     if (force != NULL)
     {
@@ -2168,6 +2164,10 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(Teuchos::ParameterList
 
     if (stiffmatrix != NULL)
     {
+      // compute matrix product of damping matrix and gradient of background velocity
+      LINALG::Matrix<ndim,ndim> dampmatvelbackgroundgrad(true);
+      dampmatvelbackgroundgrad.Multiply(damp_mat,velbackgroundgrad);
+
       // loop over all shape functions in row dimension
       for (unsigned int i=0; i<nnode*vpernode; i++)
         // loop over all shape functions in column dimension
@@ -2311,6 +2311,8 @@ void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& 
  *----------------------------------------------------------------------------------------------------------*/
 LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(const double& xi, const LINALG::Matrix<12,1>& disp_totlag) const
 {
+  // Todo call more general interpolation method from Beam3Base: Calc_r here
+
   LINALG::Matrix<3,1> r(true);
   LINALG::Matrix<4,1> N_i(true);
 
@@ -2331,6 +2333,8 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3eb::GetPos(const double& xi, const LINAL
 
 double DRT::ELEMENTS::Beam3eb::GetAxialStrain(double& xi, const LINALG::Matrix<12,1>& disp_totlag) const
 {
+  // Todo implement and call more general method from Beam3Base
+
   LINALG::Matrix<3,1> r_s(true);
   LINALG::Matrix<1,4> N_i_x(true);
   const DRT::Element::DiscretizationType distype = Shape();

@@ -1,4 +1,5 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*-----------------------------------------------------------------------------------------------*/
+/*!
 \file beam3_base.cpp
 
 \brief base class for all beam elements
@@ -6,9 +7,13 @@
 \level 2
 
 \maintainer Maximilian Grill
- *-----------------------------------------------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------------------------------*/
 
 #include "beam3_base.H"
+
+#include "../drt_mat/stvenantkirchhoff.H"
+
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
@@ -27,7 +32,7 @@ browndyn_interface_ptr_(Teuchos::null)
   // todo: this is a temporary hack, should of course be set from outside
   for (unsigned int i=0; i<1; ++i)
   {
-    bspotposxi_.push_back(0);
+    bspotposxi_.push_back(0.0);
     bspotstatus_[i] = -1;
   }
   // empty
@@ -179,6 +184,53 @@ void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(LINALG::Matrix<3,1>& refpos,
   this->GetPosAtXi(refpos,xi,zerovec);
 }
 
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
+void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices(
+    LINALG::TMatrix<T,3,3>& CN,
+    LINALG::TMatrix<T,3,3>& CM) const
+{
+  // get the material law
+   Teuchos::RCP<const MAT::Material> currmat = Material();
+   double youngs_modulus = 0.0;
+   double shear_modulus = 0.0;
+
+   // assignment of material parameters; only St.Venant material is accepted for this beam
+   switch ( currmat->MaterialType() )
+   {
+     case INPAR::MAT::m_stvenant:// only linear elastic material supported
+     {
+       const MAT::StVenantKirchhoff* actmat =
+           static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+
+       youngs_modulus = actmat->Youngs();
+       shear_modulus = actmat->ShearMod();
+
+       break;
+     }
+     default:
+     {
+       dserror("unknown or improper type of material law");
+       break;
+     }
+   }
+
+   // defining material constitutive matrix CN between Gamma and N
+   // according to Jelenic 1999, section 2.4
+   CN.Clear();
+   CN(0,0) = youngs_modulus * CrossSectionArea();
+   CN(1,1) = shear_modulus * CrossSectionAreaShearCorrected();
+   CN(2,2) = shear_modulus * CrossSectionAreaShearCorrected();
+
+   // defining material constitutive matrix CM between curvature and moment
+   // according to Jelenic 1999, section 2.4
+   CM.Clear();
+   CM(0,0) = shear_modulus * PolarMomentOfInertia();
+   CM(1,1) = youngs_modulus * MomentOfInertiaY();
+   CM(2,2) = youngs_modulus * MomentOfInertiaZ();
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3,1>& gamma) const
@@ -189,12 +241,13 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3,1>& gamma
    * (1) damping of translation orthogonal to axis,
    * (2) damping of rotation around its own axis */
 
-  gamma(0) = 2*PI*BrownianDynParamsInterface().GetViscosity();
-  gamma(1) = 4*PI*BrownianDynParamsInterface().GetViscosity();
-  gamma(2) = 4*PI*BrownianDynParamsInterface().GetViscosity() * std::sqrt(4*this->Iyy()/PI);
+  gamma(0) = 2.0 * PI * BrownianDynParamsInterface().GetViscosity();
+  gamma(1) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity();
+  gamma(2) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity()
+             * std::sqrt( 4*this->MomentOfInertiaY()/PI );
 
-  // huge convergence improvement in case of artificial factor 4000
-//  gamma(2) = 4*PI*BrownianDynParamsInterface().GetViscosity() * std::sqrt(4*this->Iyy()/PI)*4000;
+  // huge improvement in convergence of non-linear solver in case of artificial factor 4000
+//  gamma(2) *= 4000.0;
 }
 
 /*----------------------------------------------------------------------*
@@ -214,10 +267,10 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(Teuchos::ParameterList&    
 //  double uppervel = 0.0;
 
   //default values for background velocity and its gradient
-  velbackground.PutScalar(0);
-  velbackgroundgrad.PutScalar(0);
+  velbackground.PutScalar(0.0);
+  velbackgroundgrad.PutScalar(0.0);
 
-  // fixme: this needs to go somewhere else, outside element level
+  // fixme @grill: this needs to go somewhere else, outside element level
 //  double time = -1.0;
 //
 //  double shearamplitude = BrownianDynParamsInterface().GetShearAmplitude();
@@ -301,24 +354,36 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>& pos,
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(LINALG::Matrix<3,3>&     triad,
-                                                   std::vector<double>&       disp,
-                                                   const int&                 bspotlocn) const
+void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(
+    LINALG::Matrix<3,3>&                            triad,
+    std::vector<double>&                            disp,
+    const int&                                      bspotlocn,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const
 {
+  // unshift node position to get correct position at xi
+  UnShiftNodePosition(disp,periodic_boundingbox,NumCenterlineNodes());
+
   const double xi = bspotposxi_[bspotlocn];
   // get position
   GetTriadAtXi(triad,xi,disp);
 
-  return;
 }
 
 // explicit template instantiations
-template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3,double>(Teuchos::ParameterList&,
-                                                                        const LINALG::TMatrix<double,3,1>&,
-                                                                        LINALG::TMatrix<double,3,1>&,
-                                                                        LINALG::TMatrix<double,3,3>&) const;
-template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3,Sacado::Fad::DFad<double> >(Teuchos::ParameterList&,
-                                                                        const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&,
-                                                                        LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&,
-                                                                        LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>&) const;
+template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<double>(
+    LINALG::TMatrix<double,3,3>& CN,
+    LINALG::TMatrix<double,3,3>& CM) const;
+template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<Sacado::Fad::DFad<double> >(
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>& CN,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>& CM) const;
 
+template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3,double>(
+    Teuchos::ParameterList&,
+    const LINALG::TMatrix<double,3,1>&,
+    LINALG::TMatrix<double,3,1>&,
+    LINALG::TMatrix<double,3,3>&) const;
+template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3,Sacado::Fad::DFad<double> >(
+    Teuchos::ParameterList&,
+    const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>&) const;

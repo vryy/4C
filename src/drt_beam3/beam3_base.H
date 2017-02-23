@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam3_base.H
 
@@ -8,7 +8,7 @@
 
 \maintainer Maximilian Grill
 */
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 #ifndef BEAM3_BASE_H_
 #define BEAM3_BASE_H_
@@ -75,7 +75,6 @@ public:
   */
   Beam3Base(const Beam3Base& old);
 
-
   //! Destructor
   virtual ~Beam3Base(){};
 
@@ -129,11 +128,35 @@ public:
    *  \date 05/16 */
   virtual double RefLength() const = 0;
 
-  /** \brief get access to the first principal area moment of inertia
+  /** \brief get the cross-section area
+   *
+   *  \author grill
+   *  \date 02/17 */
+  virtual double CrossSectionArea() const = 0;
+
+  /** \brief get the shear-corrected (i.e. scaled) cross-section area
+   *
+   *  \author grill
+   *  \date 02/17 */
+  virtual double CrossSectionAreaShearCorrected() const = 0;
+
+  /** \brief get the first principal area moment of inertia
    *
    *  \author grill
    *  \date 08/16 */
-  virtual const double& Iyy() const = 0;
+  virtual double MomentOfInertiaY() const = 0;
+
+  /** \brief get the second principal area moment of inertia
+   *
+   *  \author grill
+   *  \date 02/17 */
+  virtual double MomentOfInertiaZ() const = 0;
+
+  /** \brief get the polar area moment of inertia
+   *
+   *  \author grill
+   *  \date 02/17 */
+  virtual double PolarMomentOfInertia() const = 0;
 
   /** \brief get number of nodes used for centerline interpolation
    *
@@ -246,7 +269,6 @@ public:
                             const std::vector<double>& disp) const
   {
     // ToDo make pure virtual and add/generalize implementations in beam eles
-    // so far only implemented for beam3r
     dserror("not implemented");
   }
 
@@ -257,7 +279,22 @@ public:
    *  \date 11/16 */
   virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
       LINALG::SerialDenseMatrix& Ivar,
-      const double&              xi) const
+      const double&              xi,
+      const std::vector<double>& disp) const
+  {
+    dserror("not implemented");
+  }
+
+  /** \brief get linearization of the product of (generalized interpolation matrix for variations
+   *         (see above) and applied force vector) with respect to the primary DoFs of this element
+   *
+   *  \author grill
+   *  \date 01/17 */
+  virtual void GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+      LINALG::SerialDenseMatrix&       stiffmat,
+      const double&                    xi,
+      const std::vector<double>&       disp,
+      const LINALG::SerialDenseVector& force) const
   {
     dserror("not implemented");
   }
@@ -309,9 +346,9 @@ protected:
    *  \author grill
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionsAtXi(const double&                           xi,
-                                  LINALG::Matrix<1,vpernode*nnode>&       I_i,
-                                  const DRT::Element::DiscretizationType& distype) const
+  void EvaluateShapeFunctionsAtXi(const double&                             xi,
+                                  LINALG::TMatrix<double,1,vpernode*nnode>& I_i,
+                                  const DRT::Element::DiscretizationType&   distype) const
   {
     I_i.Clear();
 
@@ -339,9 +376,9 @@ protected:
    *  \author grill
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionDerivsAtXi(const double&                           xi,
-                                       LINALG::Matrix<1,vpernode*nnode>&       I_i_xi,
-                                       const DRT::Element::DiscretizationType& distype) const
+  void EvaluateShapeFunctionDerivsAtXi(const double&                             xi,
+                                       LINALG::TMatrix<double,1,vpernode*nnode>& I_i_xi,
+                                       const DRT::Element::DiscretizationType&   distype) const
   {
     I_i_xi.Clear();
 
@@ -369,10 +406,10 @@ protected:
    *  \author grill
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode>
-  void EvaluateShapeFunctionsAndDerivsAtXi(const double&                           xi,
-                                           LINALG::Matrix<1,vpernode*nnode>&       I_i,
-                                           LINALG::Matrix<1,vpernode*nnode>&       I_i_xi,
-                                           const DRT::Element::DiscretizationType& distype) const
+  void EvaluateShapeFunctionsAndDerivsAtXi(const double&                             xi,
+                                           LINALG::TMatrix<double,1,vpernode*nnode>& I_i,
+                                           LINALG::TMatrix<double,1,vpernode*nnode>& I_i_xi,
+                                           const DRT::Element::DiscretizationType&   distype) const
   {
     this->EvaluateShapeFunctionsAtXi<nnode,vpernode>(xi,I_i,distype);
     this->EvaluateShapeFunctionDerivsAtXi<nnode,vpernode>(xi,I_i_xi,distype);
@@ -384,7 +421,7 @@ protected:
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode>
   void EvaluateShapeFunctionsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
-                                    std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i,
+                                    std::vector<LINALG::TMatrix<double,1,vpernode*nnode> >& I_i,
                                     const DRT::Element::DiscretizationType&         distype) const
   {
     if (I_i.size()!= (unsigned int) gausspoints.nquad)
@@ -405,7 +442,7 @@ protected:
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode>
   void EvaluateShapeFunctionDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
-                                         std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i_xi,
+                                         std::vector<LINALG::TMatrix<double,1,vpernode*nnode> >& I_i_xi,
                                          const DRT::Element::DiscretizationType&         distype) const
   {
     if (I_i_xi.size()!= (unsigned int) gausspoints.nquad)
@@ -426,8 +463,8 @@ protected:
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode>
   void EvaluateShapeFunctionsAndDerivsAllGPs(const DRT::UTILS::IntegrationPoints1D&          gausspoints,
-                                             std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i,
-                                             std::vector<LINALG::Matrix<1,vpernode*nnode> >& I_i_xi,
+                                             std::vector<LINALG::TMatrix<double,1,vpernode*nnode> >& I_i,
+                                             std::vector<LINALG::TMatrix<double,1,vpernode*nnode> >& I_i_xi,
                                              const DRT::Element::DiscretizationType&         distype) const
   {
     this->EvaluateShapeFunctionsAllGPs<nnode,vpernode>(gausspoints,I_i,distype);
@@ -440,7 +477,7 @@ protected:
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode, unsigned int ndim, typename T>
   void CalcInterpolation(const LINALG::TMatrix<T,ndim*vpernode*nnode,1>& dof_vals,
-                         const LINALG::Matrix<1,vpernode*nnode>&         shapefcn_vals,
+                         const LINALG::TMatrix<double,1,vpernode*nnode>& shapefcn_vals,
                          LINALG::TMatrix<T,ndim,1>&                      result) const
   {
     result.Clear();
@@ -456,9 +493,9 @@ protected:
    *  \author grill
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode, typename T>
-  void Calc_r(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
-              const LINALG::Matrix<1,vpernode*nnode>&      funct,
-              LINALG::TMatrix<T,3,1>&                      r) const
+  void Calc_r(const LINALG::TMatrix<T,3*vpernode*nnode,1>&    disp_totlag_centerline,
+              const LINALG::TMatrix<double,1,vpernode*nnode>& funct,
+              LINALG::TMatrix<T,3,1>&                         r) const
   {
     CalcInterpolation<nnode,vpernode,3,T>(disp_totlag_centerline,funct,r);
   }
@@ -470,9 +507,9 @@ protected:
    *  \author grill
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode, typename T>
-  void Calc_r_xi(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
-                 const LINALG::Matrix<1,vpernode*nnode>&      deriv,
-                 LINALG::TMatrix<T,3,1>&                      r_xi) const
+  void Calc_r_xi(const LINALG::TMatrix<T,3*vpernode*nnode,1>&    disp_totlag_centerline,
+                 const LINALG::TMatrix<double,1,vpernode*nnode>& deriv,
+                 LINALG::TMatrix<T,3,1>&                         r_xi) const
   {
     CalcInterpolation<nnode,vpernode,3,T>(disp_totlag_centerline,deriv,r_xi);
   }
@@ -484,10 +521,10 @@ protected:
    *  \author grill
    *  \date 03/16 */
   template<unsigned int nnode, unsigned int vpernode, typename T>
-  void Calc_r_s(const LINALG::TMatrix<T,3*vpernode*nnode,1>& disp_totlag_centerline,
-                const LINALG::Matrix<1, vpernode*nnode>&     deriv,
-                const double&                                jacobi,
-                LINALG::TMatrix<T,3,1>&                      r_s) const
+  void Calc_r_s(const LINALG::TMatrix<T,3*vpernode*nnode,1>&     disp_totlag_centerline,
+                const LINALG::TMatrix<double,1, vpernode*nnode>& deriv,
+                const double&                                    jacobi,
+                LINALG::TMatrix<T,3,1>&                          r_s) const
   {
     Calc_r_xi<nnode,vpernode,T>(disp_totlag_centerline,deriv,r_s);
 
@@ -496,6 +533,14 @@ protected:
      * we have to divide it by the Jacobi determinant at the respective point*/
     r_s.Scale(1.0/jacobi);
   }
+
+  /** \brief setup constitutive matrices from material law
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template <typename T>
+  void GetConstitutiveMatrices(LINALG::TMatrix<T,3,3>& CN,
+                               LINALG::TMatrix<T,3,3>& CM) const;
 
 
   //! @name Methods and variables for Brownian dynamics simulations
@@ -523,9 +568,11 @@ public:
                            Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const;
 
   //! get triad at binding spot with locn x stored in element parameter space coordinates \in [-1,1] from displacement state vector
-  void GetTriadOfBindingSpot(LINALG::Matrix<3,3>&     triad,
-                             std::vector<double>&     disp,
-                             const int&               bspotlocn) const;
+  void GetTriadOfBindingSpot(
+      LINALG::Matrix<3,3>&                            triad,
+      std::vector<double>&                            disp,
+      const int&                                      bspotlocn,
+      Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const;
 
   const std::map<int, int>& GetBindingSpotStatus()
   {
@@ -574,9 +621,9 @@ private:
   */
   Beam3Base();
 
-};  // class Beam3Base
+};
 
-} // namespace ELEMENTS
-} // namespace DRT
+}
+}
 
-#endif /* BEAM3_BASE_H_ */
+#endif

@@ -1,4 +1,4 @@
-/*---------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam3k_input.cpp
 
@@ -7,20 +7,19 @@
 \level 2
 
 \maintainer Maximilian Grill
-
 */
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 #include "beam3k.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/largerotations.H"
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Beam3k::ReadElement(const std::string& eletype,
-                                       const std::string& distype,
-                                       DRT::INPUT::LineDefinition* linedef)
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
+bool DRT::ELEMENTS::Beam3k::ReadElement(const std::string&          eletype,
+                                        const std::string&          distype,
+                                        DRT::INPUT::LineDefinition* linedef)
 {
 
   // read number of material model
@@ -102,6 +101,9 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(const std::string& eletype,
     }
 
   }
+
+  // read whether automatic differentiation via Sacado::Fad package shall be used
+  useFAD_ = linedef->HaveNamed("FAD") ? true : false;
 
   return true;
 }

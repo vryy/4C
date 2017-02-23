@@ -336,7 +336,6 @@ void LARGEROTATIONS::computedTinvdx(const LINALG::Matrix<3,1>& Psil, const LINAL
   }
   else
   {
-    //TODO: Check this term also in beam3cl
     //scalarproduct \Psi^{l,t} \cdot \Psi^{l,'}
     double scalarproductPsilPsilprime = 0;
     for(int i=0; i<3; i++)
@@ -352,7 +351,6 @@ void LARGEROTATIONS::computedTinvdx(const LINALG::Matrix<3,1>& Psil, const LINAL
     dTinvdx.Multiply(spinPsilprime,spinPsil);
     auxmatrix.Multiply(spinPsil,spinPsilprime);
     dTinvdx += auxmatrix;
-    //TODO: Check this term also in beam3cl
     dTinvdx.Scale((1-sin(normPsil)/normPsil)/(normPsil*normPsil));
 
     //first summand
@@ -364,7 +362,6 @@ void LARGEROTATIONS::computedTinvdx(const LINALG::Matrix<3,1>& Psil, const LINAL
     //second summand
     auxmatrix.PutScalar(0);
     auxmatrix += spinPsilprime;
-    //TODO: Check this term also in beam3cl
     auxmatrix.Scale((1-cos(normPsil))/(normPsil*normPsil));
     dTinvdx += auxmatrix;
 
@@ -458,8 +455,9 @@ void LARGEROTATIONS::directionstotriad(const LINALG::Matrix<3,1>& d1,const LINAL
 
 } //LARGEROTATIONS::directionstotriad
 
-//!Transformation from node number according to Crisfield 1999 to storage position applied in BACI
-int LARGEROTATIONS::NumberingTrafo(const int j, const int numnode)
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+unsigned int LARGEROTATIONS::NumberingTrafo(const unsigned int j, const unsigned int numnode)
 {
   //Node numbering j=1,...,NumNode() according to Crisfield 1999:
   //LIN2  1---2
@@ -474,7 +472,7 @@ int LARGEROTATIONS::NumberingTrafo(const int j, const int numnode)
   //LIN5  (1,5,2,3,4)
 
   //Initialization
-  int i=0;
+  unsigned int i=0;
 
   //Transformation
   if (j==1) i=0;

@@ -8,7 +8,7 @@ General Data File CCARAT
 ------------------------------------------------------PROBLEM SIZE
 DIM                    3
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP             Structure
+PROBLEMTYP             Polymer_Network
 RANDSEED               1
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS            0
@@ -16,7 +16,7 @@ NUMSTRUCDIS            1
 NUMALEDIS              0
 NUMTHERMDIS            0
 ----------------------------------------------------------------IO
-OUTPUT_BIN             Yes                   // toggles control file and error file creation
+OUTPUT_BIN             Yes
 STRUCT_DISP            Yes
 FILESTEPS              1000000
 STDOUTEVRY             100
@@ -25,39 +25,37 @@ VERBOSITY              standard
 LINEAR_SOLVER          1
 INT_STRATEGY           Standard
 DYNAMICTYP             OneStepTheta
-RESULTSEVRY            1                     // write results every n-th step (Attention: problems with mem leak)
-RESTARTEVRY            1000                  // set restart points every n-th step
-RESEVRYERGY            0                     // output energy evry n-th step
-NLNSOL                 fullnewton            // fullnewton modnewton nlncg ptc
-DIVERCONT              stop                  // Continue even if results are divergent
-TIMESTEP               0.0001                // step size
-NUMSTEP                100                   // total number of steps  //rumpf2.txt end
+RESULTSEVRY            1
+RESTARTEVRY            10
+NLNSOL                 fullnewton
+DIVERCONT              stop
+TIMESTEP               0.0001
+NUMSTEP                100
 MAXTIME                10000
-PREDICT                ConstDis              //  ConstDisVelAcc ConstDis
-TOLDISP                1.0E-10               // 5.5e-05 1.0E-06
+PREDICT                ConstDis
+TOLDISP                1.0E-10
 TOLRES                 1.0E-08
 MAXITER                25
 NEGLECTINERTIA         yes
 MASSLIN                rotations
---------------------------------------------------------------------MESHFREE
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                  1
+----------------------------------------------------------MESHFREE
 TYPE                   Particle
 DEFINEBINSPER          cutoff
 CUTOFF_RADIUS          2
 PERIODICONOFF          1 1 1
 DEFINEXAABBPER         input
 BOUNDINGBOX            0 0 0 10 6 6
-//  WRITEBINS              cols
-------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                  1
 ----------------------------------------------BROWNIAN DYNAMICS
 BROWNDYNPROB           yes
 VISCOSITY              0.001
-KT                     0.00
+KT                     0.0
 ----------------------------------------------CROSSLINKING
 CROSSLINKER            yes
 NUMCROSSLINK           2000
 VISCOSITY              0.001
-KT                     0.00
+KT                     0.0
 LINKINGLENGTH          0.5
 LINKINGLENGTHTOL       0.2
 ALINK                  4.751658e-06
@@ -67,7 +65,7 @@ LINKINGANGLE           0.0
 LINKINGANGLETOL        0.392699081698724
 K_ON                   10000000.0
 K_OFF                  0.0
------------------------------------------------------SOLVER 1  // header_02 begin
+-----------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ------------------------------------------------STRUCT NOX/Printing
@@ -127,7 +125,7 @@ NODE            3     COORD 4.500000000000000e+00     2.500000000000000e+00     
 NODE            4     COORD 5.500000000000000e+00     2.500000000000000e+00     2.500000000000000e+00
 NODE            5     COORD 6.500000000000000e+00     2.500000000000000e+00     2.500000000000000e+00
 NODE            6     COORD 7.500000000000000e+00     2.500000000000000e+00     2.500000000000000e+00
-NODE            7     COORD 8.500000000000000e+00     2.500000000000000e+00     2.500000000000002e+00
+NODE            7     COORD 8.500000000000000e+00     2.500000000000000e+00     2.500000000000000e+00
 NODE            8     COORD 9.500000000000000e+00     2.500000000000000e+00     2.500000000000000e+00
 NODE            9     COORD 1.050000000000000e+01     2.500000000000000e+00     2.500000000000000e+00
 NODE           10     COORD 1.150000000000000e+01     2.500000000000000e+00     2.500000000000000e+00

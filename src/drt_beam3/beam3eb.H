@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam3eb.H
 
@@ -8,7 +8,7 @@
 
 \maintainer Maximilian Grill
 */
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 /* 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
  * nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. The current formulation is only able to display axial
@@ -257,12 +257,48 @@ public:
    *  \date 10/16 */
   virtual inline bool IsCenterlineNode(const DRT::Node& node) const { return true; }
 
-  /*!
-   \brief Get moment of inertia of area Izz_ of this element
-   */
-  const double& Izz() const
+
+  /** \brief get the cross-section area
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double CrossSectionArea() const
+  {
+    return crosssec_;
+  }
+
+  /** \brief get the shear-corrected (i.e. scaled) cross-section area
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double CrossSectionAreaShearCorrected() const
+  {
+    // Kirchhoff formulation is shear-free
+    return crosssec_;
+  }
+
+  /** \brief Get moment of inertia of area Iyy_
+   *
+   *  \author grill
+   *  \date 02/17 */
+  virtual double MomentOfInertiaY() const;
+
+  /** \brief Get moment of inertia of area Izz_
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double MomentOfInertiaZ() const
   {
     return Izz_;
+  }
+
+  /** \brief get the polar area moment of inertia
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double PolarMomentOfInertia() const
+  {
+    return Irr_;
   }
 
   /*!
@@ -313,21 +349,17 @@ public:
    *
    *  \author grill
    *  \date 06/16 */
-  virtual inline void GetPosAtXi(LINALG::Matrix<3,1>&      pos,
+  virtual void GetPosAtXi(LINALG::Matrix<3,1>&      pos,
                                 const double&              xi,
-                                const std::vector<double>& disp) const
-  {
-    if (disp.size() != 12)
-      dserror("size mismatch: expected 12 values for disp_totlag and got %d",disp.size());
+                                const std::vector<double>& disp) const;
 
-    // add reference positions and tangents => total Lagrangean state vector
-    LINALG::Matrix<12,1> disp_totlag(true);
-    UpdateDispTotlag<2,6>(disp,disp_totlag);
-
-    pos = this->GetPos(xi,disp_totlag);
-
-    return;
-  }
+  /** \brief get triad at xi \in [-1,1] (element parameter space)
+   *
+   *  \author grill
+   *  \date 01/17 */
+  virtual void GetTriadAtXi(LINALG::Matrix<3,3>&       triad,
+                                   const double&              xi,
+                                   const std::vector<double>& disp) const;
 
   /*!
   \brief Get axial strain at xi for given nodal displacements
@@ -403,12 +435,6 @@ public:
      * constant along the entire element length */
     return jacobi();
   }
-
-  /*!
-  \brief get moment of inertia of area Iyy_
-  */
-  virtual const double& Iyy() const;
-
 
   //! @name Construction
   /*!

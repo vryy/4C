@@ -25,15 +25,15 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
    * we thus make a difference between nnodetriad and nnodecl;
    * assumptions: nnodecl<=nnodetriad
    * first nodes with local ID 0...nnodecl-1 are used for interpolation of centerline AND triad field*/
-  const int nnodetriad=NumNode();
+  const int nnodetriad = NumNode();
 
-  if(linedef->HaveNamed("HERM2LIN2") or linedef->HaveNamed("HERM2LINE2") or
+  if (linedef->HaveNamed("HERM2LIN2") or linedef->HaveNamed("HERM2LINE2") or
       linedef->HaveNamed("HERM2LIN3") or linedef->HaveNamed("HERM2LINE3") or
       linedef->HaveNamed("HERM2LIN4") or linedef->HaveNamed("HERM2LINE4") or
-      linedef->HaveNamed("HERM2LIN5") or linedef->HaveNamed("HERM2LINE5"))
-    centerline_hermite_=true;
+      linedef->HaveNamed("HERM2LIN5") or linedef->HaveNamed("HERM2LINE5") )
+    centerline_hermite_ = true;
   else
-    centerline_hermite_=false;
+    centerline_hermite_ = false;
 
   // read whether automatic differentiation via Sacado::Fad package shall be used
   useFAD_ = linedef->HaveNamed("FAD") ? true : false;
@@ -54,19 +54,19 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
   linedef->ExtractDouble("IRR",Irr_);
 
   if(linedef->HaveNamed("IT"))
-    linedef->ExtractDouble("IT",inertscaletrans_);
+    linedef->ExtractDouble("IT", inertscaletrans_);
   else
-    inertscaletrans_=1.0;
+    inertscaletrans_ = 1.0;
 
   if(linedef->HaveNamed("IR1"))
-    linedef->ExtractDouble("IR1",inertscalerot1_);
+    linedef->ExtractDouble("IR1", inertscalerot1_);
   else
-    inertscalerot1_=1.0;
+    inertscalerot1_ = 1.0;
 
   if(linedef->HaveNamed("IR2"))
-    linedef->ExtractDouble("IR2",inertscalerot2_);
+    linedef->ExtractDouble("IR2", inertscalerot2_);
   else
-    inertscalerot2_=1.0;
+    inertscalerot2_ = 1.0;
 
   // store nodal triads according to input file
   theta0node_.resize(nnodetriad);
@@ -78,7 +78,7 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
   /* extract rotational pseudovectors at element nodes in reference configuration
    *  and save them as quaternions at each node, respectively*/
   std::vector<double> nodal_rotvecs;
-  linedef->ExtractDoubleVector("TRIADS",nodal_rotvecs);
+  linedef->ExtractDoubleVector("TRIADS", nodal_rotvecs);
 
   for(int node=0; node<nnodetriad; node++)
     for(int dim=0; dim<3; dim++)
@@ -93,7 +93,6 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
 void DRT::ELEMENTS::Beam3r::SetIyy(const double& Iyy)
 {
   Iyy_ = Iyy;
-  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -102,7 +101,6 @@ void DRT::ELEMENTS::Beam3r::SetIyy(const double& Iyy)
 void DRT::ELEMENTS::Beam3r::SetIzz(const double& Izz)
 {
   Izz_ = Izz;
-  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -111,7 +109,6 @@ void DRT::ELEMENTS::Beam3r::SetIzz(const double& Izz)
 void DRT::ELEMENTS::Beam3r::SetIrr(const double& Irr)
 {
   Irr_ = Irr;
-  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -120,7 +117,6 @@ void DRT::ELEMENTS::Beam3r::SetIrr(const double& Irr)
 void DRT::ELEMENTS::Beam3r::SetCrossSec(const double& crosssec)
 {
   crosssec_ = crosssec;
-  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -129,7 +125,6 @@ void DRT::ELEMENTS::Beam3r::SetCrossSec(const double& crosssec)
 void DRT::ELEMENTS::Beam3r::SetCrossSecShear(const double& crosssecshear)
 {
   crosssecshear_ = crosssecshear;
-  return;
 }
 
 /*------------------------------------------------------------------------*
@@ -137,5 +132,4 @@ void DRT::ELEMENTS::Beam3r::SetCrossSecShear(const double& crosssecshear)
 void DRT::ELEMENTS::Beam3r::SetCenterlineHermite(const bool yesno)
 {
   centerline_hermite_ = yesno;
-  return;
 }

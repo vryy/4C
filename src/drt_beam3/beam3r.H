@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam3r.H
 
@@ -8,7 +8,7 @@
 
 \maintainer Maximilian Grill
 */
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 /* 3D nonlinear Reissner beam element of type II (according to "The interpolation
  * of rotations and its application to finite element models of geometrically exact
@@ -38,6 +38,12 @@
 namespace LINALG
 {
   class SerialDenseMatrix;
+}
+
+namespace LARGEROTATIONS
+{
+  template<unsigned int numnodes, typename T>
+  class TriadInterpolationLocalRotationVectors;
 }
 
 #define BEAM3RLENGTHCALCNEWTONTOL 10e-12 //Tolerance for iterative determination of element length.
@@ -94,6 +100,17 @@ author cyron (cyron @lnm.mw.tum.de)
 */
 class Beam3r : public Beam3Base
 {
+private:
+  //! purposes of numerical integration
+  enum IntegrationPurpose
+  {
+    res_elastic_force,
+    res_elastic_moment,
+    res_inertia,
+    res_damp_stoch,
+    neumann_lineload
+  };
+
 public:
 
   //! @name Friends
@@ -121,6 +138,9 @@ public:
   \brief Destructor
   */
   virtual ~Beam3r();
+
+  // don't want = operator
+  Beam3r& operator = (const Beam3r& old);
 
   /*!
   \brief Deep copy this instance of Beam3r and return pointer to the copy
@@ -237,20 +257,38 @@ public:
   */
   virtual void Print(std::ostream& os) const;
 
+  /** \brief get the cross-section area
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double CrossSectionArea() const
+  {
+    return crosssec_;
+  }
+
+  /** \brief get the shear-corrected (i.e. scaled) cross-section area
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double CrossSectionAreaShearCorrected() const
+  {
+    return crosssecshear_;
+  }
+
   /*!
   \brief Get moment of inertia of area Iyy_ of this element
   */
-  inline virtual const double& Iyy() const { return Iyy_;}
+  inline virtual double MomentOfInertiaY() const { return Iyy_;}
 
   /*!
   \brief Get moment of inertia of area Izz_ of this element
   */
-  const double& Izz() const { return Izz_;}
+  inline virtual double MomentOfInertiaZ() const { return Izz_;}
 
   /*!
   \brief Get polar moment of inertia of area Irr_ of this element
   */
-  const double& Irr() const { return Irr_;}
+  inline virtual double PolarMomentOfInertia() const { return Irr_;}
 
   /*!
   \brief return flag whether Hermite polynomials are applied for centerline interpolation
@@ -280,7 +318,34 @@ public:
    *  \date 11/16 */
   virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
       LINALG::SerialDenseMatrix& Ivar,
-      const double&              xi) const;
+      const double&              xi,
+      const std::vector<double>& disp) const;
+
+  /** \brief get linearization of the product of (generalized interpolation matrix for variations
+   *         (see above) and applied force vector) with respect to the primary DoFs of this element
+   *
+   *  \author grill
+   *  \date 01/17 */
+  virtual void GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+      LINALG::SerialDenseMatrix&       stiffmat,
+      const double&                    xi,
+      const std::vector<double>&       disp,
+      const LINALG::SerialDenseVector& force) const
+  {
+    const unsigned int vpernode = this->HermiteCenterlineInterpolation() ? 2 : 1;
+    const unsigned int nnodecl = this->NumCenterlineNodes();
+    const unsigned int nnodetriad = this->NumNode();
+
+    // safety check
+    if ( (unsigned int) stiffmat.M() != 3*vpernode*nnodecl+3*nnodetriad or
+         (unsigned int) stiffmat.N() != 3*vpernode*nnodecl+3*nnodetriad )
+      dserror("size mismatch! expected %dx%d matrix and got %dx%d",
+          3*vpernode*nnodecl+3*nnodetriad, 3*vpernode*nnodecl+3*nnodetriad,
+          stiffmat.M(), stiffmat.N() );
+
+    // nothing to do here since this term vanishes for Beam3r
+    stiffmat.Zero();
+  }
 
   /** \brief get generalized interpolation matrix which yields the increments of the position and
    *         orientation at xi \in [-1,1] if multiplied with the vector of primary DoF increments
@@ -352,11 +417,6 @@ public:
    *  \author grill
    *  \date 05/16 */
   virtual inline double RefLength() const { return reflength_; }
-
-  /*!
-  \brief Get current nodal triads as quaternions
-  */
-  const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnewnode_;}
 
   /*!
   \brief Get initial nodal rotation vectors
@@ -602,166 +662,55 @@ public:
 
 private:
 
-  //! purposes of numerical integration
-  enum IntegrationPurpose
-  {
-    res_elastic_force,
-    res_elastic_moment,
-    res_inertia,
-    res_damp_stoch,
-    neumann_lineload
-  };
-
-  //! bool storing whether automatic differentiation shall be used for this element evaluation
-  bool useFAD_;
-  //! bool storing whether Hermite interpolation of centerline is applied (false => Lagrange interpolation)
-  bool centerline_hermite_;
-  //! variable saving whether element has already been initialized (then isinit_ == true)
-  bool isinit_;
-  //! norm of maximal bending curvature occurring in this element
-  double Kmax_;
-
-//  //! rotation angle displacement at nodes; relates to the end of the preceding time step
-  std::vector<LINALG::Matrix<3,1> > dispthetaconvnode_;
-  //! rotation angle displacement at nodes; relates to current configuration
-  std::vector<LINALG::Matrix<3,1> > dispthetanewnode_;
-//  //! nodal triads in quaternion form at the end of the preceding time step
-  std::vector<LINALG::Matrix<4,1> > Qconvnode_;
-  //! nodal triads in quaternion during the current iteration step
-  std::vector<LINALG::Matrix<4,1> > Qnewnode_;
-
-  //************** begin: Class variables required for element-based Lie-group time integration *******************************
-  //! triads at Gauss points for exact integration in quaternion at the end of the preceding time step (required for computation of angular velocity)
-  std::vector<LINALG::Matrix<4,1> > QconvGPmass_;
-  //! current triads at Gauss points for exact integration in quaternion (required for computation of angular velocity)
-  std::vector<LINALG::Matrix<4,1> > QnewGPmass_;
-  //! spatial angular velocity vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > wconvGPmass_;
-  //! current spatial angular velocity vector at Gauss points for exact integration (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > wnewGPmass_;
-  //! spatial angular acceleration vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > aconvGPmass_;
-  //! current spatial angular acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > anewGPmass_;
-  //! translational acceleration vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > rttconvGPmass_;
-  //! current translational acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > rttnewGPmass_;
-  //! modified translational acceleration vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > rttmodconvGPmass_;
-  //! modified current translational acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > rttmodnewGPmass_;
-  //! translational velocity vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > rtconvGPmass_;
-  //! current translational velocity vector at Gauss points for exact integration (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > rtnewGPmass_;
-  //! translational displacement vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > rconvGPmass_;
-  //! current translational displacement vector at Gauss points for exact integration (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > rnewGPmass_;
-  //! modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > amodconvGPmass_;
-  //! current modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration (required for computation of inertia terms)
-  std::vector<LINALG::Matrix<3,1> > amodnewGPmass_;
-  //************** end: Class variables required for element-based Lie-group time integration *******************************//
-
-  //! triads at Gauss points for integration of damping/stochastic forces in quaternion form at the end of the preceding time step (required for computation of angular velocity)
-  std::vector<LINALG::Matrix<4,1> > QconvGPdampstoch_;
-  //! current triads at Gauss points for integration of damping/stochastic forces in quaternion form (required for computation of angular velocity)
-  std::vector<LINALG::Matrix<4,1> > QnewGPdampstoch_;
-
-  //! initial length of the element
-  double reflength_;
-  //! rotational pseudovectors at nodes in reference configuration
-  std::vector<LINALG::Matrix<3,1> > theta0node_;
-  //! vector holding current tangent at the centerline nodes
-  std::vector<LINALG::Matrix<3,1> > Tcurrnode_;
-  //! vector holding reference tangent at the centerline nodes
-  std::vector<LINALG::Matrix<3,1> > Trefnode_;
-
-  //! initial material curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999
-  std::vector<LINALG::Matrix<3,1> > KrefGP_;
-
-  //! initial axial tension (always zero) and shear deformation at Gauss points for elasticity (corresponding to \Lambda_0^t rprime_0 - (1,0,0) )
-  std::vector<LINALG::Matrix<3,1> > GammarefGP_;
-
-  //! node I for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
-  unsigned int nodeI_;
-
-  //! node J for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
-  unsigned int nodeJ_;
-
-  //! cross-section area
-  double crosssec_;
-
-   //! cross-section area scaled with shear correction factor
-  double crosssecshear_;
-
-  //! moment of inertia of area around y-axis (orthogonal to beam axis in yz-plane)
-  double Iyy_;
-
-  //! moment of inertia of area around z-axis (forming cartesian system with beam- and y-axis)
-  double Izz_;
-
-  //! polar moment of inertia of area
-  double Irr_;
-
-  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose res_elastic_force
-  std::vector<double> jacobiGPelastf_;
-
-  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose res_elastic_moment
-  std::vector<double> jacobiGPelastm_;
-
-  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose res_inertia
-  std::vector<double> jacobiGPmass_;
-
-  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose res_damp_stoch
-  std::vector<double> jacobiGPdampstoch_;
-
-  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose neumann_lineload
-  std::vector<double> jacobiGPneumannline_;
-
-  //! kinetic energy of element
-  double Ekin_;
-
-  //! internal (elastic) energy of element
-  double Eint_;
-
-  //! angular momentum of the element
-  LINALG::Matrix<3,1> L_;
-
-  //! linear momentum of the element
-  LINALG::Matrix<3,1> P_;
-
-  //! kinetic energy from rotational dofs part1
-  double Ekintorsion_;
-
-  //! kinetic energy from rotational dofs part2
-  double Ekinbending_;
-
-  //! kinetic energy from translational dofs
-  double Ekintrans_;
-
-  //! scale factor for translational inertia terms
-  double inertscaletrans_;
-  //! scale factor for tangential component of rotational inertia terms
-  double inertscalerot1_;
-  //! scale factor for remaining components of rotational inertia terms
-  double inertscalerot2_;
-
-
   //! @name Internal calculation methods
+
+  /** \brief compute internal (i.e. elastic) force, stiffness matrix, inertia force and mass matrix
+   *
+   *  \author grill
+   *  \date 12/16 */
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+  void CalcInternalAndInertiaForcesAndStiff(
+      Teuchos::ParameterList&   params,
+      std::vector<double>&      disp,
+      Epetra_SerialDenseMatrix* stiffmatrix,
+      Epetra_SerialDenseMatrix* massmatrix,
+      Epetra_SerialDenseVector* force,
+      Epetra_SerialDenseVector* inertia_force);
+
+  /** \brief compute internal (i.e. elastic) force and stiffness matrix
+   *
+   *  \author grill
+   *  \date 12/16 */
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
+  void CalcInternalForceAndStiff(
+      const LINALG::TMatrix<T,3*vpernode*nnodecl,1>&          disp_totlag_centerline,
+      const std::vector<LINALG::TMatrix<T,4,1> >&             Qnode,
+      Epetra_SerialDenseMatrix*                               stiffmatrix,
+      LINALG::TMatrix<T, 3*vpernode*nnodecl+3*nnodetriad, 1>& internal_force);
+
+  /** \brief calculate inertia force and mass matrix
+   *
+   *  \author grill
+   *  \date 11/16 */
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+  void CalcInertiaForceAndMassMatrix(
+      const LINALG::TMatrix<double,3*vpernode*nnodecl,1>& disp_totlag_centerline,
+      const std::vector<LINALG::TMatrix<double,4,1> >&    Qnode,
+      Epetra_SerialDenseMatrix*                           massmatrix,
+      Epetra_SerialDenseVector*                           inertia_force);
 
   /*!
    \brief Get centerline position at given parameter coordinate xi
   */
+  // Todo: think about moving this method to Beam3Base (as protected) and call it from
+  //       all derived beam elements in public method GetPosAtXi with correct template parameters :-)
   template<unsigned int nnodecl, unsigned int vpernode>
   LINALG::Matrix<3,1> GetPosAtXi(
       const double& xi,
       const LINALG::TMatrix<double,3*nnodecl*vpernode,1>& disp_totlag) const
   {
     LINALG::Matrix<3,1> r;
-    LINALG::Matrix<1,vpernode*nnodecl> N_i;
+    LINALG::TMatrix<double,1,vpernode*nnodecl> N_i;
 
     this->EvaluateShapeFunctionsAtXi<nnodecl,vpernode>(xi,N_i,this->Shape());
     this->Calc_r<nnodecl,vpernode,double>(disp_totlag,N_i,r);
@@ -779,7 +728,7 @@ private:
     /* ||dr_0/ds(xi)||=1 because s is arc-length parameter => ||dr_0/dxi(xi)|| * dxi/ds(xi) = 1
      * => JacobiFac(xi) = ds/dxi(xi) = ||dr_0/dxi(xi)|| */
     LINALG::Matrix<3,1> r0_xi;
-    LINALG::Matrix<1,vpernode*nnodecl> N_i_xi;
+    LINALG::TMatrix<double,1,vpernode*nnodecl> N_i_xi;
     LINALG::Matrix<3*nnodecl*vpernode,1> disp_centerline_ref;
 
     // fill disp_centerline_ref with reference nodal centerline positions and tangents
@@ -803,32 +752,19 @@ private:
    \brief Get triad (three unit base vectors) at given parameter coordinate xi
   */
   template<unsigned int nnodetriad, typename T>
-  LINALG::Matrix<3,3> GetTriadAtXi(const double& xi,
-                                   const std::vector<LINALG::TMatrix<T,4,1> >& Qnode) const
+  void GetTriadAtXi(LINALG::TMatrix<T,3,3>&                     triad,
+                    const double&                               xi,
+                    const std::vector<LINALG::TMatrix<T,4,1> >& Qnode) const
   {
-    // compute reference triad Lambda_r (in form of a quaternion) according to (3.9), Jelenic 1999
-    LINALG::Matrix<4,1> Q_r(true);
-    LINALG::Matrix<3,1> dummy(true);  // dummy 3x1 vector, quantity not required here
-    CalcRefQuaternion<double>(Qnode[nodeI_],Qnode[nodeJ_],Q_r,dummy);
+    // create object of triad interpolation scheme
+    Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T> >
+        triad_interpolation_scheme_ptr =
+        Teuchos::rcp(new LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>() );
 
-    // compute nodal rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
-    std::vector<LINALG::Matrix<3,1> > Psi_li(nnodetriad);
-    for (unsigned int node=0; node<nnodetriad; node++)
-      CalcPsi_li<double>(Qnode[node],Q_r,Psi_li[node]);
+    // reset scheme with nodal quaternions
+    triad_interpolation_scheme_ptr->Reset(Qnode);
 
-    // values of Lagrange shape function at xi used for interpolation
-    LINALG::Matrix<1,nnodetriad> I_i;
-    this->EvaluateShapeFunctionsAtXi<nnodetriad,1>(xi,I_i,this->Shape());
-
-    // compute interpolated local relative rotation \Psi^l at xi according to (3.11), Jelenic 1999
-    LINALG::Matrix<3,1> Psi_l;
-    Calc_Psi_l<nnodetriad>(Psi_li, I_i, Psi_l);
-
-    // finally compute interpolated triad Lambda at xi
-    LINALG::Matrix<3,3> triad;
-    Calc_Lambda<double>(Psi_l,Q_r,triad);
-
-    return triad;
+    triad_interpolation_scheme_ptr->GetInterpolatedTriadAtXi(triad, xi);
   }
 
   /** \brief get generalized interpolation matrix which yields the variation of the position and
@@ -852,144 +788,6 @@ private:
       const double&                                              xi,
       const std::vector<double>&                                 disp) const;
 
-  //! compute quaternion corresponding to reference triad Lambda_r according to (3.9), Jelenic 1999
-  template<typename T>
-  void CalcRefQuaternion(const LINALG::TMatrix<T,4,1>&  Q_nodeI,
-                          const LINALG::TMatrix<T,4,1>& Q_nodeJ,
-                          LINALG::TMatrix<T,4,1>&       Q_r,
-                          LINALG::TMatrix<T,3,1>&       Phi_IJ) const
-  {
-    Q_r.Clear();
-    Phi_IJ.Clear();
-
-    // quaternion of relative rotation between node I and J according to (3.10), Jelenic 1999
-    LINALG::TMatrix<T,4,1> QIJ(true);
-    // quaternion of half relative rotation between node I and J according to (3.9), Jelenic 1999
-    LINALG::TMatrix<T,4,1> QIJhalf(true);
-
-    // compute quaternion Qr corresponding to reference triad \Lambda_r according to eq. (3.10) and (3.9), Jelenic 1999
-    LARGEROTATIONS::quaternionproduct(Q_nodeJ,LARGEROTATIONS::inversequaternion<T>(Q_nodeI),QIJ);
-    LARGEROTATIONS::quaterniontoangle<T>(QIJ,Phi_IJ);
-
-    LINALG::TMatrix<T,3,1> Phi_IJhalf(Phi_IJ);
-    Phi_IJhalf.Scale(0.5);
-    LARGEROTATIONS::angletoquaternion<T>(Phi_IJhalf,QIJhalf);
-
-    LARGEROTATIONS::quaternionproduct(QIJhalf,Q_nodeI,Q_r);
-
-    return;
-  }
-
-  //! compute nodal local rotations according to (3.8), Jelenic 1999
-  template<typename T>
-  void CalcPsi_li(const LINALG::TMatrix<T,4,1>& Q_i,
-                  const LINALG::TMatrix<T,4,1>& Q_r,
-                  LINALG::TMatrix<T,3,1>&       Psi_li) const
-  {
-    // quaternion equivalent to Psi_li
-    LINALG::TMatrix<T,4,1>  Q_li(true);
-
-    LARGEROTATIONS::quaternionproduct(Q_i,LARGEROTATIONS::inversequaternion<T>(Q_r),Q_li);
-    LARGEROTATIONS::quaterniontoangle<T>(Q_li,Psi_li);
-
-    return;
-  }
-
-  //! compute interpolated local relative rotation \Psi^l according to (3.11), Jelenic 1999
-  template<unsigned int nnode, typename T>
-  void Calc_Psi_l(const std::vector<LINALG::TMatrix<T,3,1> >& Psi_li,
-                  const LINALG::TMatrix<double,1,nnode>&      func,
-                  LINALG::TMatrix<T,3,1>&                     Psi_l) const
-  {
-    Psi_l.Clear();
-
-    for (int dof=0; dof<3; ++dof)
-      for (unsigned int node=0; node<nnode; ++node)
-        Psi_l(dof)+= func(node)*(Psi_li[node])(dof);
-
-    return;
-  }
-
-  //! compute interpolated local relative rotation \Psi^l according to (3.11), Jelenic 1999
-  // Todo maybe find better solution. so far, we need this method because compiler throws error:
-  //      ‘std::vector<LINALG::Matrix<3u, 1u> >’ is not derived from ‘const std::vector<LINALG::TMatrix<T, 3u, 1u> >’
-  template<unsigned int nnode>
-  void Calc_Psi_l(const std::vector<LINALG::Matrix<3,1> >& Psi_li,
-                  const LINALG::Matrix<1,nnode>&           func,
-                  LINALG::Matrix<3,1>&                     Psi_l) const
-  {
-    Psi_l.Clear();
-
-    for (int dof=0; dof<3; ++dof)
-      for (unsigned int node=0; node<nnode; ++node)
-        Psi_l(dof)+= func(node)*(Psi_li[node])(dof);
-
-    return;
-  }
-
-  //!compute derivative of interpolated local relative rotation \Psi^l with respect to reference arc-length parameter s according to (3.11), Jelenic 1999
-  template<unsigned int nnode, typename T>
-  void Calc_Psi_l_s(const std::vector<LINALG::TMatrix<T,3,1> >& Psi_li,
-                  const LINALG::TMatrix<double,1,nnode>&        deriv,
-                  const double&                                 jacobi,
-                  LINALG::TMatrix<T,3,1>&                       Psi_l_s) const
-  {
-    Psi_l_s.Clear();
-
-    for (int dof=0; dof<3; ++dof)
-      for (unsigned int node=0; node<nnode; ++node)
-        Psi_l_s(dof)+= deriv(node)*(Psi_li[node])(dof);
-
-    /* at this point we have computed derivative with respect to the element parameter \xi \in [-1;1];
-     * as we want a derivatives with respect to the reference arc-length parameter s,
-     * we have to divide it by the Jacobi determinant at the respective point*/
-    Psi_l_s.Scale(1.0/jacobi);
-
-    return;
-  }
-
-  //!compute local triad \Lambda from Crisfield 1999, eq. (4.7)
-  template <typename T>
-  void Calc_Lambda(const LINALG::TMatrix<T,3,1>& Psi_l,
-                  const LINALG::TMatrix<T,4,1>&  Q_r,
-                  LINALG::TMatrix<T,3,3>&        Lambda) const
-  {
-    Lambda.Clear();
-
-    LINALG::TMatrix<T,4,1> Ql;
-    LINALG::TMatrix<T,4,1> Qgauss;
-
-    //c ompute relative rotation between triad at Gauss point and reference triad Qr
-    LARGEROTATIONS::angletoquaternion(Psi_l,Ql);
-
-    // compute rotation at Gauss point, i.e. the quaternion equivalent to \Lambda(s) in Crisfield 1999, eq. (4.7)
-    LARGEROTATIONS::quaternionproduct(Ql,Q_r,Qgauss);
-
-    // compute rotation matrix at Gauss point, i.e. \Lambda(s) in Crisfield 1999, eq. (4.7)
-    LARGEROTATIONS::quaterniontotriad(Qgauss,Lambda);
-
-    return;
-  }
-
-  //! compute quaternion equivalent to local triad \Lambda from Crisfield 1999, eq. (4.7)
-  template <typename T>
-  void Calc_Qgauss(const LINALG::TMatrix<T,3,1>& Psi_l,
-                   const LINALG::TMatrix<T,4,1>& Q_r,
-                   LINALG::TMatrix<T,4,1>&       Qgauss) const
-  {
-    Qgauss.Clear();
-
-    LINALG::TMatrix<T,4,1> Ql;
-
-    // compute relative rotation between triad at Gauss point and reference triad Qr
-    LARGEROTATIONS::angletoquaternion(Psi_l,Ql);
-
-    // compute rotation at Gauss point, i.e. the quaternion equivalent to \Lambda(s) in Crisfield 1999, eq. (4.7)
-    LARGEROTATIONS::quaternionproduct(Ql,Q_r,Qgauss);
-
-    return;
-  }
-
   //! compute material curvature at certain Gauss point according to Crisfield 1999, eq. (4.9)
   template <typename T>
   void computeK(const LINALG::TMatrix<T,3,1>&           Psi_l,
@@ -1010,7 +808,6 @@ private:
     // mechanically relevant curvature is current curvature minus curvature in reference position
     for (int i=0; i<3; ++i)
       K(i) -= Kref(i);
-
   }
 
   //! compute convected strain at certain Gauss point with according to Crisfield 1999, eq. (3.4)
@@ -1038,11 +835,6 @@ private:
       Gamma(i) -= Gammaref(i);
   }
 
-  //! setup constitutive matrices from material law
-  template <typename T>
-  void GetConstitutiveMatrices(LINALG::TMatrix<T,3,3>& CN,
-                               LINALG::TMatrix<T,3,3>& CM) const;
-
   //! push forward material stress vector and constitutive matrix to their spatial counterparts by rotation matrix Lambda
   template <typename T>
   void pushforward(const LINALG::TMatrix<T,3,3>& Lambda,
@@ -1050,256 +842,6 @@ private:
                    const LINALG::TMatrix<T,3,3>& C_mat,
                    LINALG::TMatrix<T,3,1>& stress_spatial,
                    LINALG::TMatrix<T,3,3>& c_spatial) const;
-
-  //! compute \tilde{I}^i in (3.18), page 152, Jelenic 1999, for all nodes i at a certain Gauss point
-  template<unsigned int nnode, typename T>
-  void computeItilde(const LINALG::TMatrix<T,3,1>&               Psil,
-                     std::vector<LINALG::TMatrix<T,3,3> >&       Itilde,
-                     const LINALG::TMatrix<T,3,1>&               phiIJ,
-                     const LINALG::TMatrix<T,3,3>&               Lambdar,
-                     const std::vector<LINALG::TMatrix<T,3,1> >& Psili,
-                     const LINALG::TMatrix<double,1,nnode>&      funct) const
-  {
-    /* note: Itilde is always be of type double because it is only needed for computation of analytical stiffness/mass matrix
-     *       thus no need to template for FADordouble here*/
-
-    // auxiliary matrices for storing intermediate results
-    LINALG::TMatrix<T,3,3> auxmatrix;
-    auxmatrix.PutScalar(0);
-    LINALG::TMatrix<T,3,3> auxmatrix2;
-    auxmatrix2.PutScalar(0);
-    LINALG::TMatrix<T,3,3> Tinv_Psil = LARGEROTATIONS::Tinvmatrix<T>(Psil);
-
-    // make sure that Itilde has proper dimensions
-    Itilde.resize(nnode);
-
-    // compute squared brackets term in (3.18), Jelenic 1999
-    LINALG::TMatrix<T,3,3> squaredbrackets;
-    squaredbrackets.PutScalar(0);
-    for(unsigned int node=0; node<nnode; ++node)
-    {
-      auxmatrix.Clear();
-
-      auxmatrix = LARGEROTATIONS::Tmatrix<T>(Psili[node]);
-      auxmatrix.Scale(funct(node));
-      auxmatrix2.Update(-1.0,auxmatrix,1.0);
-    }
-
-    squaredbrackets.Multiply(Tinv_Psil,auxmatrix2);
-
-    for(int i=0; i<3; i++)
-      squaredbrackets(i,i) += 1;
-
-    // loop through all nodes i
-    for (unsigned int node=0; node<nnode; ++node)
-    {
-      // compute rightmost term in curley brackets in (3.18), Jelenic 1999
-      Itilde[node].Clear();
-      Itilde[node].Multiply(Tinv_Psil,LARGEROTATIONS::Tmatrix<T>(Psili[node]));
-      Itilde[node].Scale(funct(node));
-
-      // if node i is node I then add squared brackets term times v_I
-      if(node == nodeI_)
-      {
-        auxmatrix.Multiply(squaredbrackets,vI(phiIJ));
-        Itilde[node] += auxmatrix;
-      }
-
-      // if node i is node J then add squared brackets term times v_J
-      if(node == nodeJ_)
-      {
-        auxmatrix.Multiply(squaredbrackets,vJ(phiIJ));
-        Itilde[node] += auxmatrix;
-      }
-
-      // now the term in the curly brackets has been computed and has to be rotated by \Lambda_r and \Lambda_r^t
-      auxmatrix.MultiplyNT(Itilde[node],Lambdar);
-      Itilde[node].MultiplyNN(Lambdar,auxmatrix);
-    }
-
-     return;
-  }
-
-
-  //! compute \tilde{I}^i of type double if pre-calculated values are of type FAD
-  template<unsigned int nnode>
-  void computeItilde(const LINALG::TMatrix<FAD,3,1>&               Psil,
-                     std::vector<LINALG::TMatrix<double,3,3> >&    Itilde,
-                     const LINALG::TMatrix<FAD,3,1>&               phiIJ,
-                     const LINALG::TMatrix<FAD,3,3>&               Lambdar,
-                     const std::vector<LINALG::TMatrix<FAD,3,1> >& Psili,
-                     const LINALG::TMatrix<double,1,nnode>&        funct) const
-  {
-    /* note: Itilde should always be of type double because it is only needed for computation of analytical stiffness/mass matrix
-     * therefore no templated function used here; cast pre-calculated FAD values to double and call 'regular' function afterwards*/
-
-    LINALG::TMatrix<double,3,1> Psil_double = FADUTILS::CastToDouble<FAD,3,1>(Psil);
-    LINALG::TMatrix<double,3,1> phiIJ_double = FADUTILS::CastToDouble<FAD,3,1>(phiIJ);
-    LINALG::TMatrix<double,3,3> Lambdar_double = FADUTILS::CastToDouble<FAD,3,3>(Lambdar);
-
-    std::vector<LINALG::TMatrix<double,3,1> > Psili_double;
-    for (unsigned int i=0; i<Psili.size(); ++i)
-      Psili_double.push_back(FADUTILS::CastToDouble<FAD,3,1>(Psili[i]));
-
-    computeItilde(Psil_double,Itilde,phiIJ_double,Lambdar_double,Psili_double,funct);
-
-    return;
-  }
-
-  //! compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999 for all nodes i at a certain Gauss point
-  template<unsigned int nnode, typename T>
-  void computeItildeprime(const LINALG::TMatrix<T,3,1>&               Psil,
-                          const LINALG::TMatrix<T,3,1>&               Psilprime,
-                          std::vector<LINALG::TMatrix<T,3,3> >&       Itildeprime,
-                          const LINALG::TMatrix<T,3,1>&               phiIJ,
-                          const LINALG::TMatrix<T,3,3>&               Lambdar,
-                          const std::vector<LINALG::TMatrix<T,3,1> >& Psili,
-                          const LINALG::TMatrix<double,1,nnode>&      funct,
-                          const LINALG::TMatrix<double,1,nnode>&      deriv,
-                          const double&                               jacobi) const
-  {
-    // auxiliary matrices for storing intermediate results
-    LINALG::TMatrix<T,3,3> auxmatrix;
-
-    // make sure that Itildeprime has proper dimensions
-    Itildeprime.resize(nnode);
-
-    // matrix d(T^{-1})/dx
-    LINALG::TMatrix<T,3,3> dTinvdx;
-    LARGEROTATIONS::computedTinvdx<T>(Psil,Psilprime,dTinvdx);
-
-    // compute T^{~} according to remark subsequent to (3.19), Jelenic 1999
-    LINALG::TMatrix<T,3,3> Ttilde;
-    Ttilde.PutScalar(0);
-    for(unsigned int node=0; node<nnode; ++node)
-    {
-      auxmatrix = LARGEROTATIONS::Tmatrix<T>(Psili[node]);
-      auxmatrix.Scale(funct(node));
-      Ttilde += auxmatrix;
-    }
-
-    // compute T^{~'} according to remark subsequent to (3.19), Jelenic 1999
-    LINALG::TMatrix<T,3,3> Ttildeprime;
-    Ttildeprime.PutScalar(0);
-    for(unsigned int node=0; node<nnode; ++node)
-    {
-      auxmatrix = LARGEROTATIONS::Tmatrix<T>(Psili[node]);
-      auxmatrix.Scale(deriv(node)/jacobi);
-      Ttildeprime += auxmatrix;
-    }
-
-    // compute first squared brackets term in (3.18), Jelenic 1999
-    LINALG::TMatrix<T,3,3> squaredbrackets;
-    squaredbrackets.PutScalar(0);
-    squaredbrackets.Multiply(dTinvdx,Ttilde);
-    auxmatrix.Multiply(LARGEROTATIONS::Tinvmatrix(Psil),Ttildeprime);
-    squaredbrackets += auxmatrix;
-
-    // loop through all nodes i
-    for (unsigned int node=0; node<nnode; ++node)
-    {
-
-      // compute first term in second squared brackets
-      Itildeprime[node] = dTinvdx;
-      Itildeprime[node].Scale(funct(node));
-
-      // compute second term in second squared brackets
-      auxmatrix.PutScalar(0);
-      auxmatrix += LARGEROTATIONS::Tinvmatrix(Psil);
-      auxmatrix.Scale(deriv(node)/jacobi);
-
-      // compute second squared brackets
-      auxmatrix += Itildeprime[node];
-
-      // compute second squared brackets time T(\Psi^l_j)
-      Itildeprime[node].Multiply(auxmatrix,LARGEROTATIONS::Tmatrix<T>(Psili[node]));
-
-      // if node i is node I then add first squared brackets term times v_I
-      if(node == nodeI_)
-      {
-        auxmatrix.Multiply(squaredbrackets,vI<T>(phiIJ));
-        Itildeprime[node] -= auxmatrix;
-      }
-
-      // if node i is node J then add first squared brackets term times v_J
-      if(node == nodeJ_)
-      {
-        auxmatrix.Multiply(squaredbrackets,vJ<T>(phiIJ));
-        Itildeprime[node] -= auxmatrix;
-      }
-
-      // now the term in the curly brackets has been computed and has to be rotated by \Lambda_r and \Lambda_r^t
-      auxmatrix.MultiplyNT(Itildeprime[node],Lambdar);
-      Itildeprime[node].MultiplyNN(Lambdar,auxmatrix);
-    }
-
-     return;
-  }
-
-  //! compute matrix v_I as outlined in the equations above (3.15) on page 152 of Jelenic 1999
-  template<typename T>
-  LINALG::TMatrix<T,3,3> vI(const LINALG::TMatrix<T,3,1>& phiIJ) const
-  {
-    // matrix v_I
-    LINALG::TMatrix<T,3,3> result;
-
-    LARGEROTATIONS::computespin(result,phiIJ);
-    if( FADUTILS::VectorNorm<3>(phiIJ) == 0.0)     // Todo think about introducing a tolerance to avoid singularity
-      result.Scale(0.25);
-    else
-      result.Scale( std::tan(FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(phiIJ))/4.0) / FADUTILS::VectorNorm<3>(phiIJ) );
-
-    for(int i=0; i<3; i++)
-      result(i,i) += 1.0;
-
-    result.Scale(0.5);
-
-    return result;
-  }
-
-  //! compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999
-  template<typename T>
-  LINALG::TMatrix<T,3,3> vJ(const LINALG::TMatrix<T,3,1>& phiIJ) const
-  {
-    // matrix v_J
-    LINALG::TMatrix<T,3,3> result;
-
-    LARGEROTATIONS::computespin(result,phiIJ);
-    if ( FADUTILS::VectorNorm<3>(phiIJ) == 0.0)     // Todo think about introducing a tolerance to avoid singularity
-      result.Scale(-0.25);
-    else
-      result.Scale( - std::tan(FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(phiIJ))/4.0) / FADUTILS::VectorNorm<3>(phiIJ) );
-
-    for(int i=0; i<3; i++)
-      result(i,i) += 1.0;
-
-    result.Scale(0.5);
-
-    return result;
-  }
-
-  //! calculation of nonlinear stiffness and mass matrix
-  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-  void CalcInternalAndInertiaForcesAndStiff(
-      Teuchos::ParameterList&   params,
-      std::vector<double>&      disp,
-      Epetra_SerialDenseMatrix* stiffmatrix,
-      Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force,
-      Epetra_SerialDenseVector* inertia_force);
-
-  /** \brief compute internal (i.e. elastic) force, stiffmatrix, inertia force and massmatrix
-   *
-   *  \author grill
-   *  \date 12/16 */
-  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
-  void CalcInternalAndInertiaForcesAndStiff(
-      LINALG::TMatrix<T,3*vpernode*nnodecl,1>&                disp_totlag_centerline,
-      std::vector<LINALG::TMatrix<T,4,1> >&                   Qnode,
-      Epetra_SerialDenseMatrix*                               stiffmatrix,
-      Epetra_SerialDenseMatrix*                               massmatrix,
-      LINALG::TMatrix<T, 3*vpernode*nnodecl+3*nnodetriad, 1>& internal_force,
-      Epetra_SerialDenseVector*                               inertia_force);
 
   /** \brief compute analytic linearization (i.e. stiffness matrix) of element force vector
    *         resulting from internal elastic forces at a certain Gauss point
@@ -1312,10 +854,7 @@ private:
       const LINALG::TMatrix<double,3,1>&                     stressn,
       const LINALG::TMatrix<double,3,3>&                     cn,
       const LINALG::TMatrix<double,3,3>&                     r_s_hat,
-      const LINALG::TMatrix<double,3,1>&                     Psi_l,
-      const LINALG::TMatrix<double,3,1>&                     Phi_IJ,
-      const LINALG::TMatrix<double,3,3>&                     Lambda_r,
-      const std::vector<LINALG::TMatrix<double,3,1> >&       Psi_li,
+      const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad,double>& triad_intpol,
       const LINALG::TMatrix<double,1,nnodetriad>&            I_i,
       const LINALG::TMatrix<double,1,vpernode*nnodecl>&      H_i_xi,
       const double                                           wgt,
@@ -1332,10 +871,7 @@ private:
       const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&               stressn,
       const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>&               cn,
       const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>&               r_s_hat,
-      const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&               Psi_l,
-      const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&               Phi_IJ,
-      const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>&               Lambda_r,
-      const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1> >& Psi_li,
+      const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad,Sacado::Fad::DFad<double> >& triad_intpol,
       const LINALG::TMatrix<double,1,nnodetriad>&                         I_i,
       const LINALG::TMatrix<double,1,vpernode*nnodecl>&                   H_i_xi,
       const double                                                        wgt,
@@ -1355,11 +891,9 @@ private:
       Epetra_SerialDenseMatrix&                        stiffmatrix,
       const LINALG::TMatrix<double,3,1>&               stressm,
       const LINALG::TMatrix<double,3,3>&               cm,
+      const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad,double>& triad_intpol,
       const LINALG::TMatrix<double,3,1>&               Psi_l,
       const LINALG::TMatrix<double,3,1>&               Psi_l_s,
-      const LINALG::TMatrix<double,3,1>&               Phi_IJ,
-      const LINALG::TMatrix<double,3,3>&               Lambda_r,
-      const std::vector<LINALG::TMatrix<double,3,1> >& Psi_li,
       const LINALG::TMatrix<double,1,nnodetriad>&      I_i,
       const LINALG::TMatrix<double,1,nnodetriad>&      I_i_xi,
       const double                                     wgt,
@@ -1375,11 +909,9 @@ private:
       Epetra_SerialDenseMatrix&                                           stiffmatrix,
       const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&               stressm,
       const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>&               cm,
+      const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad,Sacado::Fad::DFad<double> >& triad_intpol,
       const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&               Psi_l,
       const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&               Psi_l_s,
-      const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1>&               Phi_IJ,
-      const LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>&               Lambda_r,
-      const std::vector<LINALG::TMatrix<Sacado::Fad::DFad<double>,3,1> >& Psi_li,
       const LINALG::TMatrix<double,1,nnodetriad>&                         I_i,
       const LINALG::TMatrix<double,1,nnodetriad>&                         I_i_xi,
       const double                                                        wgt,
@@ -1458,7 +990,7 @@ private:
   template<unsigned int nnodetriad, typename T>
   void ComputeGeneralizedNodalRotationInterpolationMatrixFromNodalTriads(
       const std::vector<LINALG::TMatrix<T,4,1> >& Qnode,
-      const LINALG::TMatrix<T,1,nnodetriad>&      I_i,
+      const double                                xi,
       std::vector<LINALG::TMatrix<T,3,3> >&       Itilde) const;
 
   //! lump mass matrix
@@ -1479,40 +1011,176 @@ private:
 
   //! computes rotational damping forces and stiffness
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, unsigned int ndim>
-  void EvaluateRotationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                         const std::vector<LINALG::TMatrix<double,4,1> >& Qnode,
-                         Epetra_SerialDenseMatrix*       stiffmatrix,//!< element stiffness matrix
-                         Epetra_SerialDenseVector*       force);      //!< element internal force vector
+  void EvaluateRotationalDamping(
+      Teuchos::ParameterList& params,  //!<parameter list
+      const std::vector<LINALG::TMatrix<double,4,1> >& Qnode,
+      Epetra_SerialDenseMatrix*       stiffmatrix,//!< element stiffness matrix
+      Epetra_SerialDenseVector*       force);      //!< element internal force vector
 
   //! computes translational damping forces and stiffness
   template<unsigned int nnodecl, unsigned int vpernode, unsigned int ndim> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-  void EvaluateTranslationalDamping(Teuchos::ParameterList&  params,  //!<parameter list
-                           const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& vel_centerline,
-                           const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
-                           Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
-                           Epetra_SerialDenseVector*  force);//!< element internal force vector
+  void EvaluateTranslationalDamping(
+      Teuchos::ParameterList&  params,  //!<parameter list
+      const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& vel_centerline,
+      const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
+      Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+      Epetra_SerialDenseVector*  force) const;//!< element internal force vector
 
   //! computes stochastic translational forces and resulting stiffness
   template<unsigned int nnodecl,unsigned int vpernode, unsigned int ndim, unsigned int randompergauss>
-  void EvaluateStochasticForces(Teuchos::ParameterList&  params,  //!<parameter list
-                          const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
-                       Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
-                       Epetra_SerialDenseVector*  force);//!< element internal force vector
+  void EvaluateStochasticForces(
+      Teuchos::ParameterList&  params,  //!<parameter list
+      const LINALG::TMatrix<double,ndim*vpernode*nnodecl,1>& disp_totlag_centerline,
+      Epetra_SerialDenseMatrix*  stiffmatrix,  //!< element stiffness matrix
+      Epetra_SerialDenseVector*  force) const;//!< element internal force vector
 
   //@}
 
-  // don't want = operator
-  Beam3r& operator = (const Beam3r& old);
+private:
 
-}; // class Beam3r
+  //! bool storing whether automatic differentiation shall be used for this element evaluation
+  bool useFAD_;
 
+  //! bool storing whether Hermite interpolation of centerline is applied (false: Lagrange interpolation)
+  bool centerline_hermite_;
+
+  //! variable saving whether element has already been initialized (then isinit_ == true)
+  bool isinit_;
+
+
+  //! cross-section area
+  double crosssec_;
+
+   //! cross-section area scaled with shear correction factor
+  double crosssecshear_;
+
+  //! moment of inertia of area around y-axis (orthogonal to beam axis in yz-plane)
+  double Iyy_;
+
+  //! moment of inertia of area around z-axis (forming cartesian system with beam- and y-axis)
+  double Izz_;
+
+  //! polar moment of inertia of area
+  double Irr_;
+
+  //! scale factor for translational inertia terms
+  double inertscaletrans_;
+  //! scale factor for tangential component of rotational inertia terms
+  double inertscalerot1_;
+  //! scale factor for remaining components of rotational inertia terms
+  double inertscalerot2_;
+
+  //! initial length of the element
+  double reflength_;
+
+  //! rotational pseudovectors at nodes in reference configuration
+  std::vector<LINALG::Matrix<3,1> > theta0node_;
+
+  //! vector holding reference tangent at the centerline nodes
+  std::vector<LINALG::Matrix<3,1> > Trefnode_;
+
+  //! vector holding current tangent at the centerline nodes Todo needed?
+  std::vector<LINALG::Matrix<3,1> > Tcurrnode_;
+
+  //! initial material curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999
+  std::vector<LINALG::Matrix<3,1> > KrefGP_;
+
+  //! initial axial tension (always zero) and shear deformation at Gauss points for elasticity (corresponding to \Lambda_0^t rprime_0 - (1,0,0) )
+  std::vector<LINALG::Matrix<3,1> > GammarefGP_;
+
+
+  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose res_elastic_force
+  std::vector<double> jacobiGPelastf_;
+
+  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose res_elastic_moment
+  std::vector<double> jacobiGPelastm_;
+
+  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose res_inertia
+  std::vector<double> jacobiGPmass_;
+
+  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose res_damp_stoch
+  std::vector<double> jacobiGPdampstoch_;
+
+  //! Vector holding value of Jacobi determinant for each Gauss point of integration purpose neumann_lineload
+  std::vector<double> jacobiGPneumannline_;
+
+
+//  //! nodal triads in quaternion form at the end of the preceding time step
+  std::vector<LINALG::Matrix<4,1> > Qconvnode_;
+  //! nodal triads in quaternion during the current iteration step
+  std::vector<LINALG::Matrix<4,1> > Qnewnode_;
+
+  //************** begin: Class variables required for element-based Lie-group time integration *******************************
+  //! triads at Gauss points for exact integration in quaternion at the end of the preceding time step (required for computation of angular velocity)
+  std::vector<LINALG::Matrix<4,1> > QconvGPmass_;
+  //! current triads at Gauss points for exact integration in quaternion (required for computation of angular velocity)
+  std::vector<LINALG::Matrix<4,1> > QnewGPmass_;
+  //! spatial angular velocity vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > wconvGPmass_;
+  //! current spatial angular velocity vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > wnewGPmass_;
+  //! spatial angular acceleration vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > aconvGPmass_;
+  //! current spatial angular acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > anewGPmass_;
+  //! modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > amodconvGPmass_;
+  //! current modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > amodnewGPmass_;
+  //! translational acceleration vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttconvGPmass_;
+  //! current translational acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttnewGPmass_;
+  //! modified translational acceleration vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttmodconvGPmass_;
+  //! modified current translational acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttmodnewGPmass_;
+  //! translational velocity vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rtconvGPmass_;
+  //! current translational velocity vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rtnewGPmass_;
+  //! translational displacement vector at Gauss points for exact integration at the end of the preceding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rconvGPmass_;
+  //! current translational displacement vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rnewGPmass_;
+  //************** end: Class variables required for element-based Lie-group time integration *******************************//
+
+  //! triads at Gauss points for integration of damping/stochastic forces in quaternion form at the end of the preceding time step (required for computation of angular velocity)
+  std::vector<LINALG::Matrix<4,1> > QconvGPdampstoch_;
+  //! current triads at Gauss points for integration of damping/stochastic forces in quaternion form (required for computation of angular velocity)
+  std::vector<LINALG::Matrix<4,1> > QnewGPdampstoch_;
+
+  //! internal (elastic) energy of element
+  double Eint_;
+
+  //! kinetic energy of element
+  double Ekin_;
+
+  //! kinetic energy from rotational dofs part1
+  double Ekintorsion_;
+
+  //! kinetic energy from rotational dofs part2
+  double Ekinbending_;
+
+  //! kinetic energy from translational dofs
+  double Ekintrans_;
+
+  //! angular momentum of the element
+  LINALG::Matrix<3,1> L_;
+
+  //! linear momentum of the element
+  LINALG::Matrix<3,1> P_;
+
+  //! norm of maximal bending curvature occurring in this element Todo obsolete?
+  double Kmax_;
+};
 
 // << operator
 std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 
 
-} // namespace Elements
-} // namespace DRT
+}
+}
 
 
-#endif  // #ifndef BEAM3R_H
+#endif

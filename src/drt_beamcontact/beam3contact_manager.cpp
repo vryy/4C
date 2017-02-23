@@ -3139,7 +3139,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
       //if ((int)btsolpairs_.size() > 0)
       //{
       //  DRT::Element* element1 = const_cast<DRT::Element*>(btsolpairs_[0]->Element1());
-      //  Iyy1 = (dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element1))->Iyy();
+      //  Iyy1 = (dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element1))->MomentOfInertiaY();
       //}
 
       // Get number of beam elements and surface elements on contact surface
@@ -4447,12 +4447,12 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
     if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
       {
         const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
-        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaZ()) / M_PI));
       }
     if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
       {
         const DRT::ELEMENTS::Beam3r* thisbeam = static_cast<const DRT::ELEMENTS::Beam3r*>(thisele);
-        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaZ()) / M_PI));
       }
 
   // declaring variable for color of elements
@@ -4656,17 +4656,17 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
   if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
   {
     const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
+    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaZ()) / M_PI));
   }
   else if ( eot == DRT::ELEMENTS::Beam3kType::Instance() )
   {
     const DRT::ELEMENTS::Beam3k* thisbeam = static_cast<const DRT::ELEMENTS::Beam3k*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
+    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaY()) / M_PI));
   }
   else if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
   {
     const DRT::ELEMENTS::Beam3r* thisbeam = static_cast<const DRT::ELEMENTS::Beam3r*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
+    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaY()) / M_PI));
   }
   else
     dserror("ERROR: GSMH_N_noded output not yet implemented for this beam element type");

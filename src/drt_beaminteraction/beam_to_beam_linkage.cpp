@@ -251,9 +251,6 @@ void BEAMINTERACTION::BeamToBeamLinkage::ResetState(
   currenttriad.Multiply(bspottriad[1],Lambdarel2_);
   LARGEROTATIONS::triadtoquaternion<double>(currenttriad,bspottriad2_);
 
-//  std::cout << "\nResetState: ";
-//  this->Print(std::cout);
-
   // safety check until code is better tested for potential problems with periodic boundary conditions
   // **************************** DEBUG ****************************************
   LINALG::Matrix<3,1> dist ( true );

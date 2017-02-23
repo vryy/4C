@@ -215,20 +215,50 @@ public:
   */
   virtual void Print(std::ostream& os) const;
 
-  /*!
-  \brief Get moment of inertia of area Iyy_ of this element
-  */
-  const double& Iyy() const { return Iyy_;}
+  /** \brief get the cross-section area
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double CrossSectionArea() const
+  {
+    return crosssec_;
+  }
 
-  /*!
-  \brief Get moment of inertia of area Izz_ of this element
-  */
-  const double& Izz() const { return Izz_;}
+  /** \brief get the shear-corrected (i.e. scaled) cross-section area
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double CrossSectionAreaShearCorrected() const
+  {
+    return crosssecshear_;
+  }
 
-  /*!
-  \brief Get polar moment of inertia of area Irr_ of this element
-  */
-  const double& Irr() const { return Irr_;}
+  /** \brief get the first principal area moment of inertia
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double MomentOfInertiaY() const
+  {
+    return Iyy_;
+  }
+
+  /** \brief get the second principal area moment of inertia
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double MomentOfInertiaZ() const
+  {
+    return Izz_;
+  }
+
+  /** \brief get the polar area moment of inertia
+   *
+   *  \author grill
+   *  \date 02/17 */
+  inline virtual double PolarMomentOfInertia() const
+  {
+    return Irr_;
+  }
 
   /*!
   \brief Get jacobi_ factor of first gauss point

@@ -37,17 +37,16 @@ namespace LARGEROTATIONS
   void computespin(LINALG::TMatrix<T,3,3>& S, const LINALG::TMatrix<T,3,1>& theta)
   {
     //function based on Crisfield Vol. 2, Section 16 (16.8)
-    S(0,0) = 0;
+    S(0,0) = 0.0;
     S(0,1) = -theta(2);
     S(0,2) = theta(1);
     S(1,0) = theta(2);
-    S(1,1) = 0;
+    S(1,1) = 0.0;
     S(1,2) = -theta(0);
     S(2,0) = -theta(1);
     S(2,1) = theta(0);
-    S(2,2) = 0;
+    S(2,2) = 0.0;
 
-    return;
   }
 
   //!computing rotation matrix R from quaternion q, Crisfield, Vol. 2, equation (16.70)
@@ -118,6 +117,26 @@ namespace LARGEROTATIONS
 
   //!computing rotation matrix R from angle theta, Crisfield Vol. 2, equation (16.22)
   void angletotriad(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<3,3>& R);
+
+  //!this is a templated version of the method declared above in order to also handle
+  //!the datatype FAD which is needed for automatic differentiation
+  template<typename T>
+  void angletotriad(
+      const LINALG::TMatrix<T, 3, 1>& theta,
+      const LINALG::TMatrix<T, 3, 3>& triad_ref,
+      LINALG::TMatrix<T, 3, 3>& triad)
+  {
+    LINALG::TMatrix<T, 3, 3> rotation_matrix;
+    LINALG::TMatrix<T, 4, 1> quaternion;
+
+    rotation_matrix.Clear();
+    quaternion.Clear();
+    triad.Clear();
+
+    LARGEROTATIONS::angletoquaternion(theta, quaternion);
+    LARGEROTATIONS::quaterniontotriad(quaternion, rotation_matrix);
+    triad.Multiply(triad_ref, rotation_matrix);   // ???
+  }
 
   //!computing rotation angle vector theta from quaternion q, Crisfield, Vol. 2, equation (16.67)
   void quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta);
@@ -366,9 +385,8 @@ namespace LARGEROTATIONS
     }
     else
     {
-      //TODO: Check this term also in beam3cl
       //scalarproduct \Psi^{l,t} \cdot \Psi^{l,'}
-      T scalarproductPsilPsilprime = 0;
+      T scalarproductPsilPsilprime = 0.0;
       for(int i=0; i<3; i++)
         scalarproductPsilPsilprime += Psil(i)*Psilprime(i);
 
@@ -382,25 +400,23 @@ namespace LARGEROTATIONS
       dTinvdx.Multiply(spinPsilprime,spinPsil);
       auxmatrix.Multiply(spinPsil,spinPsilprime);
       dTinvdx += auxmatrix;
-      //TODO: Check this term also in beam3cl
-      dTinvdx.Scale((1-sin(normPsil)/normPsil)/(normPsil*normPsil));
+      dTinvdx.Scale((1.0-sin(normPsil)/normPsil)/(normPsil*normPsil));
 
       //first summand
-      auxmatrix.PutScalar(0);
+      auxmatrix.PutScalar(0.0);
       auxmatrix += spinPsil;
-      auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1-cos(normPsil)))/(normPsil*normPsil*normPsil*normPsil) );
+      auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1.0-cos(normPsil)))/(normPsil*normPsil*normPsil*normPsil) );
       dTinvdx += auxmatrix;
 
       //second summand
-      auxmatrix.PutScalar(0);
+      auxmatrix.PutScalar(0.0);
       auxmatrix += spinPsilprime;
-      //TODO: Check this term also in beam3cl
-      auxmatrix.Scale((1-cos(normPsil))/(normPsil*normPsil));
+      auxmatrix.Scale((1.0-cos(normPsil))/(normPsil*normPsil));
       dTinvdx += auxmatrix;
 
       //fourth summand
       auxmatrix.Multiply(spinPsil,spinPsil);
-      auxmatrix.Scale( scalarproductPsilPsilprime*(3*sin(normPsil) - normPsil*(2+cos(normPsil)))/(normPsil*normPsil*normPsil*normPsil*normPsil) );
+      auxmatrix.Scale( scalarproductPsilPsilprime*(3.0*sin(normPsil) - normPsil*(2.0+cos(normPsil)))/(normPsil*normPsil*normPsil*normPsil*normPsil) );
       dTinvdx += auxmatrix;
     }
 
@@ -408,7 +424,7 @@ namespace LARGEROTATIONS
   } //LARGEROTATIONS::computedTinvdx
 
   //!Transformation from node number according to Crisfield 1999 to storage position applied in BACI
-  int NumberingTrafo(const int j, const int numnode);
+  unsigned int NumberingTrafo(const unsigned int j, const unsigned int numnode);
 
   //! Rotate an arbitrary triad around its first base vector (tangent)
   template<typename T>
@@ -455,6 +471,7 @@ namespace LARGEROTATIONS
     // the simulation can continue, functionalities such as DIVERCONT==adapt_step will still work!
     if (std::fabs(abs_r_s + temp_scalar3) < 1.0e-10)
     {
+      // Todo @grill: think about using runtime error here
       std::cout << "Warning: SR-Denominator scaled!" << std::endl;
       temp_scalar3 = 0.99 * temp_scalar3;
     }
@@ -510,24 +527,6 @@ namespace LARGEROTATIONS
     LARGEROTATIONS::quaterniontoangle(quaternion, theta);
   }
 
-  //!compute a triad with an (interpolated) relative angle between triad_ref and triad
-  template<typename T>
-  void angletotriad(
-      const LINALG::TMatrix<T, 3, 1>& theta,
-      const LINALG::TMatrix<T, 3, 3>& triad_ref,
-      LINALG::TMatrix<T, 3, 3>& triad)
-  {
-    LINALG::TMatrix<T, 3, 3> rotation_matrix;
-    LINALG::TMatrix<T, 4, 1> quaternion;
-
-    rotation_matrix.Clear();
-    quaternion.Clear();
-    triad.Clear();
-
-    LARGEROTATIONS::angletoquaternion(theta, quaternion);
-    LARGEROTATIONS::quaterniontotriad(quaternion, rotation_matrix);
-    triad.Multiply(triad_ref, rotation_matrix);   // ???
-  }
 
 } // LARGEROTATIONS
 
