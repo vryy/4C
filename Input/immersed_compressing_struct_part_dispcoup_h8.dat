@@ -136,7 +136,7 @@ FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
 NUM_GP_FLUID_BOUND              125
 -----------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 NAME                            Structure_Solver
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver

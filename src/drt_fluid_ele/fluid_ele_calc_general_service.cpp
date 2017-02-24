@@ -3152,7 +3152,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
     dserror("no support for discretization guaranteed. check for valid material.");
 
   // determine whether fluid mesh is deformable or not
-  static int isALE = (DRT::Problem::Instance()->ProblemType()==prb_immersed_ale_fsi);
+  static int isALE =
+      (DRT::Problem::Instance()->ImmersedMethodParams().get<std::string>("DEFORM_BACKGROUND_MESH")=="yes");
 
   // resize vector to the size of the nsd_ times nsd_ independent entries of the velocity gradient du/dx and the pressure
   // causes seg fault -> therefore commented; needs to be investigated. elevec1 is directly built with a size of 10 for now
@@ -3321,8 +3322,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::UpdateImmersedInformation(
     )
 {
   DRT::Problem* globalproblem = DRT::Problem::Instance();
-  if(globalproblem->ProblemType()==prb_immersed_ale_fsi or globalproblem->ProblemType()==prb_immersed_fsi)
-    dserror("UpdateImmersedInformation() not intended to be used with ProblemType = prb_immersed_ale_fsi or prb_immersed_fsi");
+  if(globalproblem->ProblemType() != prb_immersed_cell)
+    dserror("UpdateImmersedInformation() not intended to be used with ProblemType other than prb_immersed_cell.\n"
+        "    First check implementation before using this method in another context!");
 
   //-------------------------------------------------------------------------------
   //  This method provides the fluid discretization with the information about the
@@ -3343,7 +3345,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::UpdateImmersedInformation(
 
   // determine whether fluid mesh is deformable or not.
   // true for immersed cell migration. Not used in any other case so far.
-  static int isALE = (globalproblem->ProblemType()==prb_immersed_cell);
+  static int isALE = (globalproblem->ImmersedMethodParams().get<std::string>("DEFORM_BACKGROUND_MESH")=="yes");
 
   // initialize vectors for interpolation
   std::vector<double> dummy(4);
@@ -3501,9 +3503,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
 
   // check if fluid interacton is switched ON
   // if NOT : just mark isimmersed and isboundaryimmersed elements
-  int isfluidinteraction = (globalproblem->CellMigrationParams().get<std::string>("FLUID_INTERACTION") == "yes");
-  if(globalproblem->ProblemType()==prb_immersed_fsi or globalproblem->ProblemType()==prb_immersed_ale_fsi)
-    isfluidinteraction=1;
+  int isfluidinteraction=1;
+  if(globalproblem->ProblemType()==prb_immersed_cell)
+    isfluidinteraction = (globalproblem->CellMigrationParams().get<std::string>("FLUID_INTERACTION") == "yes");
 
   std::string backgrddisname(discretization.Name());
   std::string immerseddisname(params.get<std::string>("immerseddisname"));
@@ -3519,14 +3521,15 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   int degree_gp_fluid_bound = params.get("intpoints_fluid_bound",0);
 
   // determine whether fluid mesh is deformable or not
-  static int isALE = (globalproblem->ProblemType()==prb_immersed_ale_fsi);
+  static int isALE =
+      (globalproblem->ImmersedMethodParams().get<std::string>("DEFORM_BACKGROUND_MESH")=="yes");
 
   // initialize vectors for interpolation
   std::vector<double> vel(numdofpernode_); // dofs 0,1,2
   std::vector<double> div(numdofpernode_); // dof  3
 
 
-  std::vector<double> targeteledisp(nsd_*nen_);
+  std::vector<double> targeteledisp(nsd_*nen_,0.0);
 
   // update fluid displacements
   if(isALE)
@@ -3537,12 +3540,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
     for(int node=0;node<nen_;++node)
       for(int dof=0; dof<nsd_;++dof)
         targeteledisp[node*nsd_+dof] = edispnp(dof,node);
-  }
-  else
-  {
-    // fluid target elements have no displacements in standard case. fill dummy vector.
-    for(int i=0;i<nsd_*nen_;++i)
-      targeteledisp[i]=0.0;
   }
 
   const std::string action="interpolate_velocity_to_given_point";
@@ -3969,7 +3966,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectImmersedBoundVelocities
   }
 
   // determine whether fluid mesh is deformable or not
-  static int isALE = (globalproblem->ProblemType()==prb_immersed_ale_fsi);
+  static int isALE =
+      (globalproblem->ImmersedMethodParams().get<std::string>("DEFORM_BACKGROUND_MESH")=="yes");
 
   // get element velocity at time n+1
   LINALG::Matrix<nsd_,nen_> evelnp;

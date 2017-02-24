@@ -139,6 +139,7 @@ public:
       const Teuchos::RCP<const DRT::Discretization>&  dis,
       const std::string                     condname,
       const Teuchos::RCP<const Epetra_Map>& cond_dofmap_orig,
+      const int                             numdof,
       Teuchos::RCP<Epetra_Map> &            cond_dofmap);
 
 
@@ -165,6 +166,7 @@ public:
       const Teuchos::RCP<DRT::Discretization>&  dis,
       const std::string                         condname,
       Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+      const int                                 numdof,
       const Teuchos::RCP<const Epetra_Vector>&  dirichvals);
 
 
@@ -179,6 +181,7 @@ public:
       const Teuchos::RCP<DRT::Discretization>&  dis,
       const std::string                         condname,
       Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+      const int                                 numdof,
       const Teuchos::RCP<const Epetra_Vector>&  dirichvals);
 
 
@@ -384,6 +387,10 @@ protected:
     // get the global problem
     DRT::Problem* problem = DRT::Problem::Instance();
 
+    // true in case we have to deal wit ha deformable background mesh
+    static int isALE =
+        (problem->ImmersedMethodParams().get<std::string>("DEFORM_BACKGROUND_MESH")=="yes");
+
     // dimension of global problem
     const int globdim = problem->NDim();
 
@@ -504,7 +511,7 @@ protected:
             bool converged = false;
             double residual = -1234.0;
 
-            if(problem->ProblemType()==prb_immersed_ale_fsi)
+            if(isALE)
             {
               Teuchos::RCP<const Epetra_Vector> state = sourcedis->GetState("dispnp");
 
@@ -612,7 +619,7 @@ protected:
               // loop over source element nodes and calc distance from targetpoint to those nodes
               for(int sourcenode=0; sourcenode<sourceele->NumNode(); sourcenode++)
               {
-                if(problem->ProblemType()==prb_immersed_ale_fsi)
+                if(isALE)
                 {
                   const double* X;
                   X = sourceele->Nodes()[sourcenode]->X();
@@ -643,7 +650,7 @@ protected:
 
               const double* X;
               double x[3];
-              if(problem->ProblemType()==prb_immersed_ale_fsi)
+              if(isALE)
               {
                 X = sourceele->Nodes()[maxdistanceindex]->X();
                 x[0] = X[0]+myvalues[maxdistanceindex*4+0];
@@ -1188,6 +1195,10 @@ protected:
     // get the global problem
     DRT::Problem* problem = DRT::Problem::Instance();
 
+    // true in case we have to deal wit ha deformable background mesh
+    static int isALE =
+        (problem->ImmersedMethodParams().get<std::string>("DEFORM_BACKGROUND_MESH")=="yes");
+
     // dimension of global problem
     const int globdim = problem->NDim();
 
@@ -1419,7 +1430,7 @@ protected:
         if(stored_dist < 1.5*char_fld_ele_length)
         {
           // get local coordinates of closest structural surface point in fluid element parameter space
-          if(problem->ProblemType()==prb_immersed_ale_fsi)
+          if(isALE)
             MORTAR::UTILS::GlobalToCurrentLocal<fluiddistype>(fluidele,&fluideledisp[0],&xvec[0],&fluid_xi(0),converged,residual);
           else
             MORTAR::UTILS::GlobalToLocal<fluiddistype>(fluidele,&xvec[0],&fluid_xi(0),converged);

@@ -46,6 +46,13 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::Setup()
   combined_newstate_ = Teuchos::rcp(new Epetra_Vector(*(immersedstructure_->CombinedInterface()->FullMap()),true));
 
   DRT::ImmersedFieldExchangeManager::Instance()->SetAdapter(immersedstructure_);
+
+  // check whether deformable background mesh is requested
+  isALE_ =
+      (globalproblem_->ImmersedMethodParams().
+          get<std::string>("DEFORM_BACKGROUND_MESH")=="yes");
+  if(isALE_ and myrank_==0)
+    std::cout<<" Deformable background mesh is used."<<std::endl;
 }
 
 /*----------------------------------------------------------------------*/
@@ -178,27 +185,31 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE:
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::UpdateCurrentPositionsFluidNodes()
 {
-  // get displacement state
-    Teuchos::RCP<const Epetra_Vector> displacements = fluid_->FluidField()->Dispnp();
+  // set and get displacement state (export happens inside)
+  fluiddis_->SetState("dispnp",fluid_->FluidField()->Dispnp());
+  Teuchos::RCP<const Epetra_Vector> displacements = fluiddis_->GetState("dispnp");
 
-   // update positions
-   for (int lid = 0; lid < fluiddis_->NumMyColNodes(); ++lid)
-   {
-     const DRT::Node* node = fluiddis_->lColNode(lid);
-     LINALG::Matrix<3,1> currpos;
-     std::vector<int> dofstoextract(4);
-     std::vector<double> mydisp(4);
+  // get number of column nodes on this proc
+  int nummycolnodes =fluiddis_->NumMyColNodes();
 
-     // get the current displacement
-     fluiddis_->Dof(node,0,dofstoextract);
-     DRT::UTILS::ExtractMyValues(*displacements,mydisp,dofstoextract);
+  // update positions
+  for (int lid = 0; lid < nummycolnodes; ++lid)
+  {
+    const DRT::Node* node = fluiddis_->lColNode(lid);
+    LINALG::Matrix<3,1> currpos;
+    std::vector<int> dofstoextract(4);
+    std::vector<double> mydisp(4);
 
-     currpos(0) = node->X()[0]+mydisp.at(0);
-     currpos(1) = node->X()[1]+mydisp.at(1);
-     currpos(2) = node->X()[2]+mydisp.at(2);
+    // get the current displacement
+    fluiddis_->Dof(node,0,dofstoextract);
+    DRT::UTILS::ExtractMyValues(*displacements,mydisp,dofstoextract);
 
-     currpositions_fluid_[node->Id()] = currpos;
-   }
+    currpos(0) = node->X()[0]+mydisp.at(0);
+    currpos(1) = node->X()[1]+mydisp.at(1);
+    currpos(2) = node->X()[2]+mydisp.at(2);
+
+    currpositions_fluid_[node->Id()] = currpos;
+  }
 
   return;
 }

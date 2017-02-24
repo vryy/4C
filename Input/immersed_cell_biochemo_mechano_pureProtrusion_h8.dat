@@ -230,7 +230,7 @@ NORMCOMBI_RESFINC               And
 MATCHINGGRID                    Yes
 -----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 ----------------------------------------------------------MATERIALS
 // cell
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.0 DENS 0.1

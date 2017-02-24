@@ -64,6 +64,7 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
   const Teuchos::RCP<const DRT::Discretization>&  dis,
   const std::string                         condname,
   const Teuchos::RCP<const Epetra_Map>&     cond_dofmap_orig,
+  const int                                 numdof,
   Teuchos::RCP<Epetra_Map> &                cond_dofmap)
 {
   // declare dof vector
@@ -89,9 +90,8 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
 
     // get dofs
     std::vector<int> dofs = dis->Dof(0,node_ptr);
-    int numdofpernode = dis->NumDof(node_ptr);
 
-    for (int dim=0;dim<numdofpernode;++dim)
+    for (int dim=0;dim<numdof;++dim)
     {
       // if not already in original dirich map
       if(cond_dofmap_orig->LID(dofs[dim]) == -1)
@@ -150,6 +150,7 @@ void IMMERSED::ImmersedBase::ApplyDirichlet(
     const Teuchos::RCP<DRT::Discretization>&  dis,
     const std::string                         condname,
     Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+    const int                                 numdof,
     const Teuchos::RCP<const Epetra_Vector>&  dirichvals)
 {
   // build map of dofs subjected to Dirichlet condition
@@ -157,6 +158,7 @@ void IMMERSED::ImmersedBase::ApplyDirichlet(
       dis,
       condname,
       field_wrapper->GetDBCMapExtractor()->CondMap(),
+      numdof,
       cond_dofrowmap);
 
   // add adhesion dofs to dbc map
@@ -179,6 +181,7 @@ void IMMERSED::ImmersedBase::ApplyDirichletToFluid(
     const Teuchos::RCP<DRT::Discretization>&  dis,
     const std::string                         condname,
     Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+    const int                                 numdof,
     const Teuchos::RCP<const Epetra_Vector>&  dirichvals)
 {
   // build map of dofs subjected to Dirichlet condition
@@ -186,6 +189,7 @@ void IMMERSED::ImmersedBase::ApplyDirichletToFluid(
       dis,
       condname,
       field_wrapper->GetDBCMapExtractor()->CondMap(),
+      numdof,
       cond_dofrowmap);
 
   // add adhesion dofs to dbc map

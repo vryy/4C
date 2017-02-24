@@ -122,7 +122,7 @@ NUM_GP_FLUID_BOUND              125
 TIMESTATS                       endofsim // everyiter
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR

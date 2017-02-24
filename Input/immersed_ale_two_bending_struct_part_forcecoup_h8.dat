@@ -168,12 +168,13 @@ CORRECT_BOUNDARY_VELOCITIES     yes
 TIMESTATS                       endofsim
 FLD_SRCHRADIUS_FAC              1
 STRCT_SRCHRADIUS_FAC            0.5
+DEFORM_BACKGROUND_MESH          yes
 -----------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 -----------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 -----------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_fluid   DYNVISCOSITY 0.01 DENSITY 1.2 GAMMA 0
 MAT 2   MAT_fluid   DYNVISCOSITY 0.01 DENSITY 1.2 GAMMA 0

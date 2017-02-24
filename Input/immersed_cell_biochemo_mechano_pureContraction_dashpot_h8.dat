@@ -239,7 +239,7 @@ TOLINC_SCALAR                   1.000e-08
 NORMCOMBI_RESFINC               And
 MATCHINGGRID                    Yes
 ----------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 ---------------------------------------------------------------MATERIALS
 // cell active material
 MAT 1 MAT_BIOCHEMOMECHANO_ACTIVE DENS 1.0 IDMATPASSIVE 2 KFOR 1.0 KBACK 200.0 KROCKETA 1.0e-1 KACTIN 3.0e-1 RATEMAX -1.0e-6 NMAX 3.183098862 KSTRESS 14.0 SOURCE 25.0e-5 METHOD 2DTrapez

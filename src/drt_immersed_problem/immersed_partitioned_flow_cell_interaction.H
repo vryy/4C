@@ -118,6 +118,9 @@ protected:
   /// set state necessary state vectors
   virtual void  SetStatesImmersedOP();
 
+  /// update nodal positions of ECM nodes
+  void UpdateCurrentPositionsBackgroundNodes();
+
   /// prepare the background solve
   void PrepareBackgroundOp();
 
@@ -129,6 +132,12 @@ protected:
 
   /// update fields
   virtual void Update();
+
+  /// apply given vector as Dirichlet to artificial fluid field
+  virtual void ApplyImmersedDirichlet(Teuchos::RCP<Epetra_Vector> artificial_velocity);
+
+  /// apply given vector as Dirichlet to scatra field
+  virtual void ApplyImmersedDirichletScatra(Teuchos::RCP<Epetra_Vector> scatra_values);
 
   /// call to special routine that removes dirichlet values from fluid field
   virtual void RemoveDirichCond();
@@ -209,6 +218,7 @@ protected:
   bool displacementcoupling_; //!< true if increment of displacement is chosen for convergence check of partitioned scheme.
   bool multicellmigration_;   //!< true if more than one cell is present. Each cell needs to be labeled with "ImmersedSearchbox" condition.
   bool isPseudo2D_;           //!< true if problem is modeled as a quasi 2D problem
+  bool isALE_;                //!< true if background mesh is suppose to be deformable
   //@}
 
   //! @name proteolytic migration control parameters
@@ -254,12 +264,6 @@ protected:
   //@}
 
 private:
-
-  /// apply given vector as Dirichlet to artificial fluid field
-  virtual void ApplyImmersedDirichlet(Teuchos::RCP<Epetra_Vector> artificial_velocity);
-
-  /// apply given vector as Dirichlet to scatra field
-  virtual void ApplyImmersedDirichletScatra(Teuchos::RCP<Epetra_Vector> scatra_values);
 
   /// improve quality of solution near the interface
   virtual void CorrectInterfaceVelocity();

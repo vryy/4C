@@ -29,6 +29,22 @@ namespace ELEMENTS
 
 class FluidImmersedBase;
 
+/*!
+  \brief Class for Evaluating special terms in case of immersed problems.
+
+  If a deformable structure is immersed in the porous medium, we have to make sure, that
+  the compressibility of this structure is compatible with the compressibilities of the
+  phases in the porous medium. the fluid phase on the porous medium is supposed to be
+  incompressible, i.e., div(v^f)=0. In our immersed method, the velocities of the immersed
+  structure are projected to the nodes of the porous medium. If the projected velocity field
+  is not divergence free, this would result in spurious oscillations, unreasonable pressure
+  solutions, and deterioration of fluid mass conservation. In this class we modify the continuity
+  equation of the porous medium for the artificial porous medium domain, i.e., the porous medium
+  elements covered by the immersed structure. In addition, we modifiy the equation for each
+  integration point in the poro elements intersecting the immersed boundary.
+
+ \author rauch 02/17
+ */
 template<DRT::Element::DiscretizationType distype>
 class FluidEleCalcPoroP1Immersed : public FluidEleCalcPoroP1<distype>
 {

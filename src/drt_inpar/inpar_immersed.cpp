@@ -100,6 +100,17 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  &immersedmethod);
 
   setStringToIntegralParameter<int>(
+                               "DEFORM_BACKGROUND_MESH","no",
+                               "switch between immersed with fixed or deformable background mesh",
+                               tuple<std::string>(
+                                 "yes",
+                                 "no"),
+                                 tuple<int>(
+                                 1,
+                                 0),
+                                 &immersedmethod);
+
+  setStringToIntegralParameter<int>(
                                "TIMESTATS","everyiter",
                                "summarize time monitor every nln iteration",
                                tuple<std::string>(

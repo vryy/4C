@@ -221,7 +221,7 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 -----------------------------------------------------------SOLVER 1
-SOLVER                         UMFPACK
+SOLVER                         Superlu
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 3 INITPOROSITY 0.8
 MAT 3 MAT_PoroLawConstant

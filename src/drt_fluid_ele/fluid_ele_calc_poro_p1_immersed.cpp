@@ -252,8 +252,9 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquatio
                                         preforce);
 
   // now the porosity time derivative (different for standard poro and poro_p1 elements)
-  if (my_p::fldparatimint_->IsStationary() == false)
-  {
+// now the porosity time derivative (different for standard poro and poro_p1 elements)
+if (my_p::porofldpara_->IsStationaryConti() == false)
+{
     // inertia terms on the right hand side for instationary fluids
 
     if(eporositydot)
@@ -327,21 +328,29 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquatio
       gp_has_projected_divergence = (int)(immersedele_->IntPointHasProjectedDivergence(gp_iquad_));
 
   // here the term that should not be contained in the formulation is subtracted
-  if((immersedele_->IsImmersed() or gp_has_projected_divergence) and exchange_manager_->IsFluidInteraction())
+  if(immersedele_->IsImmersed() and exchange_manager_->IsFluidInteraction())
   {
     if( my_p::porofldpara_->PoroContiPartInt() == false )
     {
+      double vel_grad_porosity = 0.0;
+      for (int idim = 0; idim <my::nsd_; ++idim)
+        vel_grad_porosity += my_p::grad_porosity_(idim)*my::velint_(idim);
+
       // left-hand side
       for (int idim = 0; idim <my::nsd_; ++idim)
       {
+        const double grad_porosity_idim = my_p::grad_porosity_(idim);
         for (int ui=0; ui<my::nen_; ++ui)
         {
           const int fui = my::nsd_*ui;
+          const double funct_ui = my::funct_(ui);
           const double derxy_idim_ui = my::derxy_(idim,ui);
 
           for (int vi=0; vi<my::nen_; ++vi)
           {
-            estif_q_u(vi,fui+idim) -= timefacfacpre*my::funct_(vi) * ( my_p::porosity_ * derxy_idim_ui);
+            estif_q_u(vi,fui+idim) -= timefacfacpre*my::funct_(vi) * my_p::porosity_ * derxy_idim_ui;
+            //estif_q_u(vi,fui+idim) -= timefacfacpre*my::funct_(vi) *  grad_porosity_idim * funct_ui
+
           }
         }
       }
@@ -351,11 +360,20 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquatio
       for (int vi=0; vi<my::nen_; ++vi)
       {
         preforce(vi) +=   rhsfac_vdiv * my_p::porosity_ * my::funct_(vi);
+     // preforce(vi) +=  -rhsfac * vel_grad_porosity * my::funct_(vi); // grad(phi)*v^f term
+     // preforce(vi) -= rhsfac  *my::funct_(vi) * my_p::porosity_ * my_p::gridvdiv_; // experimental
       }
     }
     else // my_p::porofldpara_->PoroContiPartInt() == true
     {
       dserror("no adaption of interstitial flow to compressibility of immersed body implementd for partially integrated poro-p1 formulation!");
+    }
+  }
+  else if (immersedele_->IsBoundaryImmersed() and gp_has_projected_divergence and exchange_manager_->IsFluidInteraction())
+  {
+    for (int vi=0; vi<my::nen_; ++vi)
+    {
+      preforce(vi) +=   rhsfac * immersedele_->ProjectedIntPointDivergence(gp_iquad_) * my::funct_(vi);
     }
   }
 

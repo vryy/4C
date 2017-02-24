@@ -52,6 +52,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
     multibodysimulation_(false),
     output_evry_nlniter_(false),
     is_relaxation_(false),
+    isALE_(false),
     correct_boundary_velocities_(0),
     degree_gp_fluid_bound_(0),
     artificial_velocity_isvalid_(false),
@@ -188,7 +189,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   }
 
   // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*fluiddis_,currpositions_fluid_);
+  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofPositions(currpositions_fluid_);
   fluid_SearchTree_->initializeTree(rootBox,*fluiddis_,GEO::TreeType(GEO::OCTTREE));
 
   if(myrank_==0)
@@ -651,7 +652,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     std::cout<<"Dis Structure NumColEles: "<<structdis_->NumMyColElements()<<" on PROC "<<myrank_<<std::endl;
 # endif
 
-    UpdateCurrentPositionsFluidNodes();
+    if(isALE_)
+      UpdateCurrentPositionsFluidNodes();
+
     SearchPotentiallyCoveredBackgrdElements(&curr_subset_of_fluiddis_,fluid_SearchTree_,*fluiddis_,currpositions_fluid_,boundingboxcenter,structsearchradiusfac*max_radius,0);
 
     if(curr_subset_of_fluiddis_.empty() == false)

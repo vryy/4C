@@ -63,6 +63,13 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
   immerseddis_            = globalproblem_->GetDis("cell");
   scatradis_              = globalproblem_->GetDis("scatra");
 
+  // check whether deformable background mesh is requested
+  isALE_ =
+      (globalproblem_->ImmersedMethodParams().
+          get<std::string>("DEFORM_BACKGROUND_MESH")=="yes");
+  if(isALE_ and myrank_==0)
+    std::cout<<" Deformable background mesh is used."<<std::endl;
+
   // get coupling variable
   displacementcoupling_ = globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<std::string>("COUPVARIABLE") == "Displacement";
   if(displacementcoupling_ and myrank_==0)
@@ -387,7 +394,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::BackgroundOp(Teuchos::RCP
     poroscatra_subproblem_->Solve();
 
     // remove immersed dirichlets from dbcmap of fluid (may be different in next iteration)
-    RemoveDirichCond();
+    //RemoveDirichCond();
 
     // correct the quality of the interface solution
     CorrectInterfaceVelocity();
@@ -641,6 +648,9 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::PrepareBackgroundOp()
     boundingboxcenter(1) = structBox(1,0)+(structBox(1,1)-structBox(1,0))*0.5;
     boundingboxcenter(2) = structBox(2,0)+(structBox(2,1)-structBox(2,0))*0.5;
 
+    if(isALE_)
+      UpdateCurrentPositionsBackgroundNodes();
+
     SearchPotentiallyCoveredBackgrdElements(&curr_subset_of_backgrounddis_,fluid_SearchTree_,*backgroundfluiddis_,*currpositions_ECM_,boundingboxcenter,structsearchradiusfac*max_radius,0);
 
     if(curr_subset_of_backgrounddis_.empty() == false)
@@ -705,7 +715,8 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFlowCellInteraction::RemoveDirichCond()
 {
-  poroscatra_subproblem_->FluidField()->RemoveDirichCond(dbcmap_immersed_);
+  if(dbcmap_immersed_ != Teuchos::null)
+    poroscatra_subproblem_->FluidField()->RemoveDirichCond(dbcmap_immersed_);
 }
 
 
@@ -792,6 +803,9 @@ Teuchos::RCP<Epetra_Vector> IMMERSED::ImmersedPartitionedFlowCellInteraction::Ca
   {
     // reinitialize the transfer vector
     porofluid_artificial_velocity_->Scale(0.0);
+
+    // remove previously applied immersed Dirichlet conditions
+    RemoveDirichCond();
 
     // declare parameter list
     Teuchos::ParameterList params;
@@ -999,14 +1013,20 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CorrectInterfaceVelocity(
                      true);
 
     // apply corrected dirichlet values
-    ApplyImmersedDirichlet(porofluid_artificial_velocity_);
+    DoImmersedDirichletCond(poroscatra_subproblem_->FluidField()->WriteAccessVelnp(),porofluid_artificial_velocity_, dbcmap_immersed_);
+    double normofvelocities = -1234.0;
+    poroscatra_subproblem_->FluidField()->ExtractVelocityPart(porofluid_artificial_velocity_)->Norm2(&normofvelocities);
+
+    if(myrank_ == 0)
+    {
+      std::cout<<"################################################################################################"<<std::endl;
+      std::cout<<"###   Norm of Dirichlet Values:   "<<std::setprecision(7)<<normofvelocities<<std::endl;
+      std::cout<<"################################################################################################"<<std::endl;
+    }
 
     // solve fluid again with new dirichlet values
     // solve poro
     poroscatra_subproblem_->Solve();
-
-    // remove immersed dirichlets from dbcmap of fluid (may be different in next iteration step)
-    RemoveDirichCond();
 
   } // correct_boundary_velocities_ finished
 
@@ -1043,9 +1063,11 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::ResetImmersedInformation(
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetStatesBackgroundOP()
 {
-  // for FluidOP
   immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
   immerseddis_->SetState(0,"velocity",cellstructure_->Velnp());
+
+  if(isALE_)
+    backgroundfluiddis_->SetState(0,"dispnp",poroscatra_subproblem_->FluidField()->Dispnp());
 
   return;
 }
@@ -1059,6 +1081,9 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetStatesVelocityCorrecti
   immerseddis_->SetState(0,"velocity",cellstructure_->Velnp());
   backgroundfluiddis_->SetState(0,"velnp",poroscatra_subproblem_->FluidField()->Velnp());
 
+  if(isALE_)
+    backgroundfluiddis_->SetState(0,"dispnp",poroscatra_subproblem_->FluidField()->Dispnp());
+
   return;
 }
 
@@ -1070,8 +1095,47 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetStatesImmersedOP()
   backgroundfluiddis_->SetState(0,"velnp",poroscatra_subproblem_->FluidField()->Velnp());
   backgroundfluiddis_->SetState(0,"veln", poroscatra_subproblem_->FluidField()->Veln());
   immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
+
+  if(isALE_)
+    backgroundfluiddis_->SetState(0,"dispnp",poroscatra_subproblem_->FluidField()->Dispnp());
+
   return;
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::UpdateCurrentPositionsBackgroundNodes()
+{
+  // get displacement state
+  // set and get displacement state (export happens inside)
+  backgroundfluiddis_->SetState("dispnp",poroscatra_subproblem_->FluidField()->Dispnp());
+  Teuchos::RCP<const Epetra_Vector> displacements = backgroundfluiddis_->GetState("dispnp");
+
+    int nummyrownodes = backgroundfluiddis_->NumMyRowNodes();
+
+   // update positions
+   for (int lid = 0; lid < nummyrownodes; ++lid)
+   {
+     const DRT::Node* node = backgroundfluiddis_->lRowNode(lid);
+     LINALG::Matrix<3,1> currpos;
+     std::vector<int> dofstoextract(4);
+     std::vector<double> mydisp(4);
+
+     // get the current displacement
+     backgroundfluiddis_->Dof(node,0,dofstoextract);
+     DRT::UTILS::ExtractMyValues(*displacements,mydisp,dofstoextract);
+
+     currpos(0) = node->X()[0]+mydisp.at(0);
+     currpos(1) = node->X()[1]+mydisp.at(1);
+     currpos(2) = node->X()[2]+mydisp.at(2);
+
+     (*currpositions_ECM_)[node->Id()] = currpos;
+   }
+
+  return;
+}
+
 
 
 /*----------------------------------------------------------------------*/

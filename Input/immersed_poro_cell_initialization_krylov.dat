@@ -354,7 +354,7 @@ AZITER                          1000
 AZTOL                           1e-08
 NAME                            Cell_Solver
 -----------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 NAME                            Poro_Solver
 ----------------------------------------------------------MATERIALS
 // CELL MATERIAL HYPERELASTIC VISCO
