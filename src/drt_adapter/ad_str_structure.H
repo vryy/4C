@@ -69,6 +69,8 @@ namespace TIMINT
   template <typename> class TimIntMStep;
 }
 
+namespace STR { namespace MODELEVALUATOR { class Generic ;}}
+
 namespace ADAPTER {
 
   /// general structural field interface
@@ -206,6 +208,15 @@ namespace ADAPTER {
 
     /// return contact/meshtying bridge
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() = 0;
+
+    /// do we have this model
+    virtual bool HaveModel(const INPAR::STR::ModelType& model)
+    { dserror("new time integration only"); return false;}
+
+    /// return model evaluator
+    virtual ::STR::MODELEVALUATOR::Generic* GetMutableModelEvaluator(
+        const INPAR::STR::ModelType& model)
+    { dserror("new time integration only"); return NULL;}
 
     // access to locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;

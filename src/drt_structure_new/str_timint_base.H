@@ -279,6 +279,15 @@ namespace TIMINT {
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge()
     { dserror("Not yet implemented!"); return Teuchos::null; }
 
+    /// do we have this model
+    virtual bool HaveModel(const INPAR::STR::ModelType& model) {
+      return datasdyn_->HaveModelType(model);
+    }
+
+    /// return model evaluator
+    virtual STR::MODELEVALUATOR::Generic* GetMutableModelEvaluator(
+        const INPAR::STR::ModelType& model);
+
     /// Add residual increment to Lagrange multipliers stored in Constraint manager (derived)
     /// FixMe Different behavior for the implicit and explicit case!!!
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)

@@ -18,6 +18,7 @@
 #include "str_factory.H"
 #include "str_model_evaluator_factory.H"
 #include "str_model_evaluator_data.H"
+#include "str_model_evaluator.H"
 #include "str_dbc.H"
 #include "str_integrator.H"
 #include "str_resulttest.H"
@@ -197,6 +198,13 @@ Teuchos::RCP<DRT::UTILS::LocsysManager> STR::TIMINT::Base::LocsysManager()
 {
   CheckInitSetup();
   return dbc_ptr_->LocSysManagerPtr();
+}
+
+STR::MODELEVALUATOR::Generic* STR::TIMINT::Base::GetMutableModelEvaluator(
+    const INPAR::STR::ModelType& model)
+{
+  CheckInitSetup();
+  return &int_ptr_->ModelEval().Evaluator(model);
 }
 
 /*----------------------------------------------------------------------------*

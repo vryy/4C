@@ -478,6 +478,15 @@ namespace ADAPTER
     virtual bool HaveMicroMat()
     { return structure_->HaveMicroMat(); }
 
+    /// do we have this model
+    virtual bool HaveModel(const INPAR::STR::ModelType& model)
+    { return structure_->HaveModel(model);}
+
+    /// return model evaluator
+    virtual ::STR::MODELEVALUATOR::Generic* GetMutableModelEvaluator(
+        const INPAR::STR::ModelType& model)
+    { return structure_->GetMutableModelEvaluator(model);}
+
   protected:
 
     Teuchos::RCP<Structure> structure_;   ///< underlying structural time integration

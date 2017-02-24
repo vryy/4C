@@ -928,6 +928,21 @@ namespace STR
     //! return contact/meshtying manager
     Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() {return cmtbridge_;}
 
+    /// do we have this model
+    virtual bool HaveModel(const INPAR::STR::ModelType& model)
+    {
+      dserror("new structural time integration only");
+      return false;
+    }
+
+    /// return model evaluator
+    virtual STR::MODELEVALUATOR::Generic* GetMutableModelEvaluator(
+        const INPAR::STR::ModelType& model)
+    {
+      dserror("new structural time integration only");
+      return NULL;
+    }
+
     //! return bool indicating if contact or meshtying are defined
     bool HaveSemiSmoothPlasticity() { return (plastman_ != Teuchos::null); }
 
