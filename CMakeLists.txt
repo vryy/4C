@@ -496,6 +496,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_utils_materials.cpp
   src/drt_lib/drt_utils_factory.cpp
   src/drt_lib/drt_utils_nullspace.cpp
+  src/drt_lib/drt_utils_discret.cpp
   src/drt_lib/drt_utils_discret_dbc.cpp
   src/drt_lib/drt_utils_discret_evaluate.cpp
 )

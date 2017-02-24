@@ -134,6 +134,41 @@ namespace UTILS {
         systemvectordd,toggle,Teuchos::null);
   }
 
+  /*!
+  \brief Evaluate a specified initial field (scalar or vector field)
+
+  Loop all intial field conditions attached to the discretization and
+  evaluate them if their names match the user-provided string fieldstring.
+  Information on which local DOFs ids are addressed by the condition
+  MUST be pre-defined and is represented by the locids vector.
+  As an example, if we provide an initial velocity for a 3D structural
+  dynamics simulation, locids must contain the local DOF ids {0,1,2}.
+  Another example would be prescribing an initial pressure in a 3D
+  fluid dynamics simulation, where locids would have to contain only
+  the local pressure DOF id, namely {3}.
+
+  */
+  void EvaluateInitialField(
+      const DRT::DiscretizationInterface & discret,
+      const std::string&                  fieldstring,
+      Teuchos::RCP<Epetra_Vector>         fieldvector,
+      const std::vector<int>              locids
+  );
+
+
+  /*!
+  \brief Evaluate a specified initial field (scalar or vector field)
+
+  This is the actual evaluation method.
+
+  */
+  void DoInitialField(
+      const DRT::DiscretizationInterface & discret,
+      DRT::Condition&                      cond,
+      Teuchos::RCP<Epetra_Vector>          fieldvector,
+      const std::vector<int>               locids
+  );
+
   /** \brief Build a Dbc object
    *
    *  The Dbc object is build in dependency of the given discretization.
