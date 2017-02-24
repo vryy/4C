@@ -565,6 +565,8 @@ namespace TIMINT {
     virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x) = 0;
     /// update displacement and evaluate elements (implicit only)
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
+    /// don't update displacement but evaluate elements (implicit only)
+    virtual void Evaluate() = 0;
     /// Update routine for coupled problems with monolithic approach with time adaptivity (implicit only)
     virtual void Update(double endtime) = 0;
     /// Get type of thickness scaling for thin shell structures (implicit only)

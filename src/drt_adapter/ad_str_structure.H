@@ -344,6 +344,9 @@ namespace ADAPTER {
         Teuchos::RCP<const Epetra_Vector> disiterinc ///< displacement increment between Newton iteration i and i+1
         ) = 0;
 
+    /// don't update displacement but evaluate elements (implicit only)
+    virtual void Evaluate() = 0;
+
     /// update at time step end
     virtual void Update() = 0;
 

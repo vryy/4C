@@ -307,3 +307,11 @@ void STR::TIMINT::LOCAContinuation::Evaluate(
   dserror("The LOCA integration is currently not supporting coupled monolithic"
       "problems, thus Evaluate() can not be called. Use the implicit integrator instead.");
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::LOCAContinuation::Evaluate()
+{
+  dserror("The LOCA integration is currently not supporting coupled monolithic"
+      "problems, thus Evaluate() can not be called. Use the implicit integrator instead.");
+}

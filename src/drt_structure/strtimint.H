@@ -301,6 +301,10 @@ namespace STR
      */
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
 
+    /// don't update displacement but evaluate elements (implicit only)
+    virtual void Evaluate()
+    {dserror("new structural time integration only");}
+
     /// update at time step end
     virtual void Update() = 0;
 

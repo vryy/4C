@@ -117,6 +117,7 @@ namespace TIMINT {
 
     ///  Evaluate routine for coupled problems with monolithic approach
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
+    virtual void Evaluate();
 
   protected:
     //! returns the current solution group

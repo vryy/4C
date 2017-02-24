@@ -188,6 +188,22 @@ void STR::TIMINT::Implicit::Evaluate(
   // updated the state vector in the nox group
   grp_ptr->computeX(*grp_ptr,*nox_disiterinc_ptr,1.0);
 
+  Evaluate();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Implicit::Evaluate()
+{
+  CheckInitSetup();
+  NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+
+  NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
+  if (grp_ptr == NULL)
+    dserror("Dynamic cast failed!");
+
   // compute the rhs vector and the stiffness matrix
   grp_ptr->computeFandJacobian();
 

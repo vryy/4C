@@ -60,6 +60,9 @@ namespace TIMINT {
     virtual void Evaluate(
         Teuchos::RCP<const Epetra_Vector> disiterinc);
 
+    /// don't update displacement but evaluate elements (implicit only)
+    virtual void Evaluate() ;
+
     /// set the state of the nox group and the global state data container
     virtual void SetState(const Teuchos::RCP<Epetra_Vector> & x);
 
