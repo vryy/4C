@@ -35,6 +35,7 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_timestepping/timintmstep.H"
 #include "../drt_lib/drt_discret_faces.H"
+#include "../drt_lib/drt_elements_paramsinterface.H"
 
 
 // forward declarations
@@ -713,6 +714,9 @@ namespace STR
     //! right-hand-side of Newton's method
     virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
 
+    /// set evaluation action
+    virtual void SetActionType(const DRT::ELEMENTS::ActionType& action)
+    { dserror("new structural time integration only..."); }
 
     //! @name Access from outside via adapter (needed for coupled problems)
     //@{

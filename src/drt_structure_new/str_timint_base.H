@@ -448,6 +448,9 @@ namespace TIMINT {
       CheckInitSetup();
       return datasdyn_->GetMutableDivConNumFineStep()=divconnumfinestep;
     }
+
+    /// set evaluation action
+    virtual void SetActionType(const DRT::ELEMENTS::ActionType& action);
     ///@}
 
     /// @name Structure with ale specific methods

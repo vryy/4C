@@ -791,3 +791,11 @@ Teuchos::RCP<DRT::DiscretizationInterface> STR::TIMINT::Base::DiscretizationInte
   CheckInit();
   return dataglobalstate_->GetMutableDiscret();
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::SetActionType(const DRT::ELEMENTS::ActionType& action)
+{
+  CheckInitSetup();
+  int_ptr_->EvalData().SetActionType(action);
+}

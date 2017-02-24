@@ -347,6 +347,10 @@ namespace ADAPTER
     )
     { structure_->SetRestart(step,time,disn,veln,accn,elementdata,nodedata); return; }
 
+    /// set evaluation action
+    virtual void SetActionType(const DRT::ELEMENTS::ActionType& action)
+    { structure_->SetActionType(action); }
+
     /// wrapper for things that should be done before PrepareTimeStep is called
     virtual void PrePredict()
     { structure_->PrePredict(); }

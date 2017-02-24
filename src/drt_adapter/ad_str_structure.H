@@ -24,6 +24,7 @@
 
 #include "../drt_inpar/inpar_structure.H"
 #include "ad_field.H"
+#include "../drt_lib/drt_elements_paramsinterface.H"
 
 // forward declarations:
 namespace DRT
@@ -250,6 +251,9 @@ namespace ADAPTER {
     {/* This is only needed for the old structural time integration.
         For the new structural time integration this is already
         implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */};
+
+    /// set evaluation action
+    virtual void SetActionType(const DRT::ELEMENTS::ActionType& action) = 0;
 
     //@}
 
