@@ -155,6 +155,7 @@ void IMMERSED::ImmersedPartitionedMultiphysics::CFIOperator()
        immerseddis_,
        "CellFocalAdhesion",
        dofmap_cell,
+       3,
        cellstructure_->Dispnp());
 
    // apply Dirichlet to ECM structure
@@ -163,6 +164,7 @@ void IMMERSED::ImmersedPartitionedMultiphysics::CFIOperator()
        backgroundstructuredis_,
        "PoroCoupling",
        dofmap_ecm,
+       4,
        poroscatra_subproblem_->PoroField()->StructureField()->Dispnp());
 
    // rebuild the monolithic poro dbc map
@@ -186,23 +188,21 @@ void IMMERSED::ImmersedPartitionedMultiphysics::CEIOperator()
   // declare epetra map
    Teuchos::RCP<Epetra_Map> dofmap_ecm  = Teuchos::null;
 
-   //////////////////////
-   //  ADHESON MODULE  //
-   //////////////////////
-   // apply Dirichlet to interstitial flow
-   ApplyDirichletToFluid(
-       poroscatra_subproblem_->FluidField(),
-       backgroundfluiddis_,
-       "PoroCoupling",
-       dofmap_ecm,
-       poroscatra_subproblem_->FluidField()->Velnp());
-
+//   // apply Dirichlet to interstitial flow
+//   ApplyDirichletToFluid(
+//       poroscatra_subproblem_->FluidField(),
+//       backgroundfluiddis_,
+//       "PoroCoupling",
+//       dofmap_ecm,
+//       4,
+//       poroscatra_subproblem_->FluidField()->Velnp());
+//
    // rebuild the monolithic poro dbc map
    poroscatra_subproblem_->PoroField()->BuildCombinedDBCMap();
    // solve adhesion module
    adh_module_->DoStep(adh_module_, Teuchos::null);
 
-   RemoveDirichletFromFluid(dofmap_ecm,poroscatra_subproblem_->FluidField());
+//   RemoveDirichletFromFluid(dofmap_ecm,poroscatra_subproblem_->FluidField());
 
   return;
 } // CEIOperator
