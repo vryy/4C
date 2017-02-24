@@ -177,3 +177,18 @@ int GEO::CUT::Pyramid5IntegrationCell::CubatureDegree(
 {
   return 4;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::IntegrationCell::Print( std::ostream & stream ) const
+{
+  stream << "--- integration cell ( address: " << std::setw( 10 ) << this << " )\n";
+  stream << "pos = " << Point::PointPosition2String( Position() ) << " "
+      << "shape = " << DRT::DistypeToString( Shape() ) << " "
+      << "volume = " << Volume() << "\n";
+  for( unsigned i=0; i<points_.size(); ++i )
+  {
+    (points_)[i]->Print( stream );
+    stream << "\n";
+  }
+}

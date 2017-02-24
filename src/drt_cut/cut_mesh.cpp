@@ -1888,6 +1888,26 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape,
     }
 #endif
 
+#ifdef DEBUGCUTLIBRARY
+    std::cout << "\n-------------------------------------------------------\n";
+    std::cout << "eleID " << e.Id() << " ( IsCut = "
+        << ( e.IsCut() ? "TRUE" : "FALSE" ) << " ) -- FAILED Element Volume Test!" << std::endl;
+    std::cout << "ve=" << ev << "  " << "vc=" << cv << "  " << "vd= "<< ev-cv << "  "
+        << "err=" << volume_error << "  " << "tol=" << LINSOLVETOL*max_norm << "\n";
+    std::cout << "#vcells = " << e.VolumeCells().size() << "  ";
+
+    unsigned bc_count = 0;
+    unsigned ic_count = 0;
+    for ( plain_volumecell_set::const_iterator cit = e.VolumeCells().begin();
+          cit != e.VolumeCells().end(); ++cit )
+    {
+      const VolumeCell & vc = **cit;
+
+      ic_count += vc.IntegrationCells().size();
+      bc_count += vc.BoundaryCells().size();
+    }
+    std::cout << "#icells (total) = " << ic_count << "  #bcells (total) = " << bc_count << std::endl;
+#endif
       //Cut test is written for level-set cases as well.
       DebugDump(&e,__FILE__,__LINE__);
   //    if(LINSOLVETOL < fabs( volume_error ) )
@@ -1897,7 +1917,24 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape,
     else
     {
 #ifdef DEBUGCUTLIBRARY
-      std::cout << GREEN << "Passed Element Volume Test!" << END_COLOR << std::endl;
+      std::cout << "\n-------------------------------------------------------\n";
+      std::cout << "eleID " << e.Id() << " ( IsCut = "
+          << ( e.IsCut() ? "TRUE" : "FALSE" ) << " ) -- PASSED Element Volume Test!" << std::endl;
+      std::cout << "ve=" << ev << "  " << "vc=" << cv << "  " << "vd= "<< ev-cv << "  "
+          << "err=" << volume_error << "  " << "tol=" << LINSOLVETOL*max_norm << "\n";
+      std::cout << "#vcells = " << e.VolumeCells().size() << "  ";
+
+      unsigned bc_count = 0;
+      unsigned ic_count = 0;
+      for ( plain_volumecell_set::const_iterator cit = e.VolumeCells().begin();
+            cit != e.VolumeCells().end(); ++cit )
+      {
+        const VolumeCell & vc = **cit;
+
+        ic_count += vc.IntegrationCells().size();
+        bc_count += vc.BoundaryCells().size();
+      }
+      std::cout << "#icells (total) = " << ic_count << "  #bcells (total) = " << bc_count << std::endl;
 #endif
     }
   }
@@ -1909,9 +1946,11 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape,
 void GEO::CUT::Mesh::PrintCellStats()
 {
   const int vectorlength = 21;
-  unsigned cutted = 0;
+  unsigned cut = 0;
   std::vector<int> numvc( vectorlength, 0 );
   std::map<DRT::Element::DiscretizationType, std::vector<int> > numcells;
+
+  // loop over elements
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )
@@ -1919,47 +1958,7 @@ void GEO::CUT::Mesh::PrintCellStats()
     Element & e = *i->second;
     if ( e.IsCut() )
     {
-      cutted += 1;
-      const plain_volumecell_set & volumecells = e.VolumeCells();
-      numvc[std::min( static_cast<int>( volumecells.size()-1 ), static_cast<int>( numvc.size()-1 ) )] += 1;
-      for ( plain_volumecell_set::const_iterator i=volumecells.begin(); i!=volumecells.end(); ++i )
-      {
-        VolumeCell * vc = *i;
-        std::map<DRT::Element::DiscretizationType, int> cell_count;
-        const plain_integrationcell_set & cells = vc->IntegrationCells();
-        for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-        {
-          IntegrationCell * cell = *i;
-          cell_count[cell->Shape()] += 1;
-        }
-        const plain_boundarycell_set & bcells = vc->BoundaryCells();
-        for ( plain_boundarycell_set::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
-        {
-          BoundaryCell * bcell = *i;
-          cell_count[bcell->Shape()] += 1;
-        }
-        for ( std::map<DRT::Element::DiscretizationType, int>::iterator i=cell_count.begin(); i!=cell_count.end(); ++i )
-        {
-          DRT::Element::DiscretizationType shape = i->first;
-          int count = i->second;
-          std::map<DRT::Element::DiscretizationType, std::vector<int> >::iterator j = numcells.find( shape );
-          if ( j==numcells.end() )
-          {
-            numcells[shape] = std::vector<int>( vectorlength, 0 );
-          }
-          numcells[shape][std::min( static_cast<int>( numcells[shape].size()-1 ), count-1 )] += 1;
-        }
-      }
-    }
-  }
-  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
-        i!=shadow_elements_.end();
-        ++i )
-  {
-    Element & e = *i->second;
-    if ( e.IsCut() )
-    {
-      cutted += 1;
+      cut += 1;
       const plain_volumecell_set & volumecells = e.VolumeCells();
       numvc[std::min( static_cast<int>( volumecells.size()-1 ), static_cast<int>( numvc.size()-1 ) )] += 1;
       for ( plain_volumecell_set::const_iterator i=volumecells.begin(); i!=volumecells.end(); ++i )
@@ -1993,7 +1992,52 @@ void GEO::CUT::Mesh::PrintCellStats()
     }
   }
 
-  std::cout << "#elements = " << cutted << " of " << ( elements_.size() + shadow_elements_.size() ) << " total\n";
+  // loop over shadow elements
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+    if ( e.IsCut() )
+    {
+      cut += 1;
+      const plain_volumecell_set & volumecells = e.VolumeCells();
+      numvc[std::min( static_cast<int>( volumecells.size()-1 ), static_cast<int>( numvc.size()-1 ) )] += 1;
+      for ( plain_volumecell_set::const_iterator i=volumecells.begin(); i!=volumecells.end(); ++i )
+      {
+        VolumeCell * vc = *i;
+        std::map<DRT::Element::DiscretizationType, int> cell_count;
+        const plain_integrationcell_set & cells = vc->IntegrationCells();
+        for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+        {
+          IntegrationCell * cell = *i;
+          cell_count[cell->Shape()] += 1;
+        }
+        const plain_boundarycell_set & bcells = vc->BoundaryCells();
+        for ( plain_boundarycell_set::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+        {
+          BoundaryCell * bcell = *i;
+          cell_count[bcell->Shape()] += 1;
+        }
+        for ( std::map<DRT::Element::DiscretizationType, int>::iterator i=cell_count.begin(); i!=cell_count.end(); ++i )
+        {
+          DRT::Element::DiscretizationType shape = i->first;
+          int count = i->second;
+          std::map<DRT::Element::DiscretizationType, std::vector<int> >::iterator j = numcells.find( shape );
+          if ( j==numcells.end() )
+          {
+            numcells[shape] = std::vector<int>( vectorlength, 0 );
+          }
+          numcells[shape][std::min( static_cast<int>( numcells[shape].size()-1 ), count-1 )] += 1;
+        }
+      }
+    }
+  }
+
+  std::cout << "#elements = " << cut << " were cut of "
+            << elements_.size() << " elements  and "
+            << shadow_elements_.size() << " shadow elements in total\n";
+
   std::cout << "volume  cells: ";
   //std::streamsize w = std::cout.width( 4 );
   //std::copy( numvc.begin(), numvc.end(), std::ostream_iterator<int>( std::cout, " " ) );

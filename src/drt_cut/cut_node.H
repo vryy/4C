@@ -284,6 +284,9 @@ public:
   /// return a vector of all nodal dofsets
   NodalDofSet* GetNodalDofSet(const int nds) const { return &*nodaldofsets_[nds]; }
 
+  /// remove non-standard nodal dofsets
+  void RemoveNonStandardNodalDofSets();
+
   /// get the unique standard NodalDofSet for a given nodal dofset position
   int GetStandardNodalDofSet( Point::PointPosition pos );
 

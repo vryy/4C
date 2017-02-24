@@ -70,6 +70,16 @@ public:
   template<unsigned probdim, DRT::Element::DiscretizationType celltype>
   bool Contains( LINALG::Matrix<probdim,1>& x);
 
+
+  /** Print the integration cells
+   *
+   *  \author hiermeier \date 02/17 */
+  void Print( std::ostream & stream ) const;
+  inline void Print() const
+  {
+    Print( std::cout );
+  };
+
 protected:
 
   Point::PointPosition position_;

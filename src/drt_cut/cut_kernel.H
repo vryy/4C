@@ -427,6 +427,38 @@ namespace KERNEL {
     failed = -1
   };
 
+  /** \brief Build an adaptive combined Newton tolerance
+   *
+   *  First a scaled absolute tolerance is calculated, based on the
+   *  inf-norm of the absolute coordinate values of the considered side
+   *  element and point.
+   *
+   *  In a second step a relative tolerance is added, which accounts for the
+   *  fact, that the point px_ is maybe far outside of the considered side.
+   *  If the point is inside or near the side, the additional term will stay
+   *  very low and will not distort the used tolerance too much.
+   *
+   *  \author hiermeier \date 02/17 */
+  template < class T1, class T2, class T3 >
+  double AdaptiveCombinedNewtonTolerance(
+      const T1 & xyze,
+      const T2 & px,
+      const T3 & initial_rhs )
+  {
+    /* --- Build the absolute tolerance */
+    double tol = xyze.NormInf();
+    double linescale = px.NormInf();
+    if (linescale > tol )
+      tol = linescale;
+    tol *= LINSOLVETOL;
+
+    /* --- Add the relative tolerance */
+    tol += LINSOLVETOL * initial_rhs.NormInf();
+
+    return tol;
+  }
+
+  /// Convert Newton Status enumerator to string
   static inline std::string NewtonStatus2String( const enum NewtonStatus & status )
   {
     switch ( status )
@@ -678,6 +710,11 @@ namespace KERNEL {
     void SetupSolve()
     {
       xsi_ = 0;
+
+      // calculate initial right hand side
+      PositionRHS( *xyze_, *px_, b_ );
+
+      tol_ = AdaptiveCombinedNewtonTolerance(*xyze_, *px_, b_ );
     }
 
     /** \brief evaluate the current right hand side
@@ -687,11 +724,22 @@ namespace KERNEL {
      *  \f] */
     void SetupStep( int iter )
     {
-      DRT::UTILS::shape_function<elementType>( xsi_, funct_ );
+      if ( iter > 0)
+      {
+        PositionRHS( *xyze_, *px_, b_ );
+      }
+    }
 
-      // calculate initial right hand side
-      b_ = *px_;
-      b_.Multiply( -1, *xyze_, funct_, 1 );
+    /// calculate the position rhs
+    void PositionRHS(
+        const LINALG::Matrix<probDim,numNodesElement> & xyze,
+        const LINALG::Matrix<probDim,1> & px,
+        LINALG::Matrix<probDim, 1> & b
+        )
+    {
+      DRT::UTILS::shape_function<elementType>( xsi_, funct_ );
+      b = px;
+      b.Multiply( -1, xyze, funct_, 1 );
     }
 
     /// check for convergence
@@ -709,7 +757,7 @@ namespace KERNEL {
                   << "b_.Norm2() ( RHS )       = " << b_.Norm2() << "\n"
                   << "b_.Norm2() / rsd.Norm2() = "
                   << (iter != 0 ? ( b_.Norm2() / xsi_.Norm2() ) : -1.0 ) << "\n"
-                  << "tol_             = " << tol_ << "\n"
+                  << "tol_                     = " << tol_ << "\n"
                   << "rsd_ ( aka xsi_ )        = " << xsi_
                   << "b_ (RHS)                 = " << b_ << "\n" << std::flush;
       }
@@ -951,19 +999,6 @@ namespace KERNEL {
       xyze_side_ = &xyze_side;
       px_ = &px;
 
-      /* use tol_ first just to store the scaling for the tolerance ..
-       * set it to the maximal absolute coordinate value of the involved surface
-       * or point!
-       *
-       * --> this defines accuracy of the intersection (for good conditioned
-       *     linear systems) */
-      tol_ = xyze_side.NormInf();
-      double linescale = px.NormInf();
-      if (linescale > tol_)
-        tol_ = linescale;
-
-      tol_ *= LINSOLVETOL;
-
       if ( debug )
       {
         std::cout << "\n=== ComputeDistance ===\n";
@@ -1003,6 +1038,11 @@ namespace KERNEL {
     void SetupSolve()
     {
       xsi_ = 0;
+
+      // evaluate initial rhs value (w/o distance contribution)
+      DistanceRHS( *xyze_side_, *px_, b_ );
+
+      tol_ = AdaptiveCombinedNewtonTolerance(*xyze_side_, *px_, b_ );
     }
 
     /** \brief Setup routine for a new Newton step
@@ -1010,9 +1050,26 @@ namespace KERNEL {
      *  Setup the system of equations. */
     void SetupStep( int iter )
     {
+      if ( iter > 0 )
+      {
+        DistanceRHS( *xyze_side_, *px_, b_ );
+      }
+
       // build the linear system of equations
       DistanceSystem( *xyze_side_,*px_, distance_,
           A_, B_, C_, N_, b_ );
+    }
+
+    /// compute the rhs value ( w/o distance contributions )
+    void DistanceRHS(
+        const LINALG::Matrix<probDim,numNodesSide> & xyze_side,
+        const LINALG::Matrix<probDim,1> & px,
+        LINALG::Matrix<probDim,1> & b )
+    {
+      const LINALG::Matrix<dimSide,1> xsi_side( xsi_.A(), true );
+      DRT::UTILS::shape_function<sideType>( xsi_side, sideFunct_ );
+      b = px;
+      b.Multiply( -1.0, xyze_side, sideFunct_, 1.0 );
     }
 
     /// Test the stop / convergence criterion of the Newton scheme
@@ -1241,9 +1298,8 @@ namespace KERNEL {
       LINALG::Matrix<probDim,1> n2( & N( 0, 1 ), true );
 
       /* get only the local side coordinates and use them to evaluate
-       * the shape functions as well as the 1-st and 2-nd derivatives */
+       * the 1-st and 2-nd derivatives */
       const LINALG::Matrix<dimSide,1> xsi_side( xsi_.A(), true );
-      DRT::UTILS::shape_function<sideType>( xsi_side, sideFunct_ );
 
       // pre-evaluate some important variables
       B = 0;
@@ -1269,9 +1325,7 @@ namespace KERNEL {
       // inverse of the normal direction norm
       double n1norm_inv = 1.0 / n1.Norm2();
 
-      // --- evaluate the right-hand-side
-      b = px;
-      b.Multiply( -1.0, xyze_side, sideFunct_, 1.0 );
+      // --- add the distance part to the right-hand-side
       b.Update(- distance[ 0 ] * n1norm_inv, n1, 1.0);
 
       // --- evaluate the linearization
@@ -1663,17 +1717,6 @@ namespace KERNEL {
       xyze_side_ = &xyze_side;
       xyze_edge_ = &xyze_edge;
 
-      /* use tol_ first just to store the scaling for the tolerance ..
-       * set it to the maximal coordinate of the involved surface or line!
-       * -- this defines accuracy of the intersection (for good conditioned
-       *    linear systems) */
-      tol_ = xyze_side.NormInf();
-      double linescale = xyze_edge.NormInf();
-      if (linescale > tol_)
-        tol_ = linescale;
-
-      tol_ *= LINSOLVETOL;
-
       if ( debug )
       {
         std::cout << "\n\n === ComputeIntersection ===\n";
@@ -1696,6 +1739,13 @@ namespace KERNEL {
       dx_ = 0;
       off_count_ = 0;
       residual_ = 0;
+
+      // evaluate initial rhs value
+      const LINALG::Matrix<dimSide,1> xsi_side(xsi_.A(),true);
+      const LINALG::Matrix<dimEdge,1> xsi_edge(xsi_.A()+dimSide,true);
+      IntersectionRHS( xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_ );
+
+      tol_ = AdaptiveCombinedNewtonTolerance(*xyze_side_, *xyze_edge_, c_ );
     }
 
     void SetupStep( int iter )
@@ -1703,8 +1753,30 @@ namespace KERNEL {
       // build linear system of equations
       const LINALG::Matrix<dimSide,1> xsi_side(xsi_.A(),true);
       const LINALG::Matrix<dimEdge,1> xsi_edge(xsi_.A()+dimSide,true);
-      IntersectionSystem(xsi_edge,xsi_side,*xyze_edge_,*xyze_side_,A_,B_,b_,c_);
+
+      if ( iter > 0 )
+      {
+        IntersectionRHS( xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_ );
+      }
+
+      IntersectionSystem(xsi_edge,xsi_side,*xyze_edge_,*xyze_side_,c_,A_,B_,b_);
     }
+
+    /// compute the right-hand-side
+    void IntersectionRHS(
+        const LINALG::Matrix< dimEdge,1 >& xsi_edge,
+        const LINALG::Matrix< dimSide,1 >& xsi_side,
+        const LINALG::Matrix<probDim,numNodesEdge> & xyze_edge,
+        const LINALG::Matrix<probDim,numNodesSide> & xyze_side,
+        LINALG::Matrix< probDim,1 >& c )
+    {
+      DRT::UTILS::shape_function<sideType>( xsi_side, sideFunct_ );
+      DRT::UTILS::shape_function<edgeType>( xsi_edge, edgeFunct_ );
+
+      c.Multiply( xyze_edge, edgeFunct_ );
+      c.Multiply( -1, xyze_side, sideFunct_, 1 );
+    }
+
 
     enum NewtonStatus TestConverged( int iter )
     {
@@ -1935,19 +2007,12 @@ namespace KERNEL {
         const LINALG::Matrix< dimSide,1 >& xsi_side,
         const LINALG::Matrix< probDim,numNodesEdge >& xyze_edge,
         const LINALG::Matrix< probDim,numNodesSide >& xyze_side,
+        LINALG::Matrix< probDim,1 >& c,
         LINALG::Matrix< dimEdge+dimSide,dimEdge+dimSide >& A,
         LINALG::Matrix< probDim,dimEdge+dimSide >& B,
-        LINALG::Matrix< dimEdge+dimSide,1 >& b,
-        LINALG::Matrix< probDim,1 >& c
+        LINALG::Matrix< dimEdge+dimSide,1 >& b
         )
     {
-      // --- compute the right-hand-side
-      DRT::UTILS::shape_function<sideType>( xsi_side, sideFunct_ );
-      DRT::UTILS::shape_function<edgeType>( xsi_edge, edgeFunct_ );
-
-      c.Multiply( xyze_edge, edgeFunct_ );
-      c.Multiply( -1, xyze_side, sideFunct_, 1 );
-
       // --- compute the linearization
       DRT::UTILS::shape_function_deriv1<sideType>( xsi_side, sideDeriv1_ );
       DRT::UTILS::shape_function_deriv1<edgeType>( xsi_edge, edgeDeriv1_ );

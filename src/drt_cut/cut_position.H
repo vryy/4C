@@ -40,11 +40,12 @@ namespace CUT {
      *  \author hiermeier \date 01/17 */
     enum Status
     {
-      position_invalid          = -2,   ///< The calculated position is invalid.
-      position_zero_area        = -1,   ///< A zero element was detected during the position calculation.
-      position_unevaluated      =  0,   ///< The Compute() routine has not been called, yet.
-      position_distance_valid   =  1,   ///< The distance but not the position is valid.
-      position_valid            =  2    ///< The distance and the position are valid.
+      position_outside_of_bbox = -3,   ///< The point is outside of the bounding-box. No computation has been performed.
+      position_invalid         = -2,   ///< The calculated position is invalid.
+      position_zero_area       = -1,   ///< A zero element was detected during the position calculation.
+      position_unevaluated     =  0,   ///< The Compute() routine has not been called, yet.
+      position_distance_valid  =  1,   ///< The distance but not the position is valid.
+      position_valid           =  2    ///< The distance and the position are valid.
     };
 
     //! Map Status enum to std::string
@@ -52,6 +53,8 @@ namespace CUT {
     {
       switch ( pstatus )
       {
+        case position_outside_of_bbox:
+          return "position_outside_of_bbox";
         case position_unevaluated :
           return "position_unevaluated";
         case position_zero_area :
@@ -261,9 +264,11 @@ namespace CUT {
         xyze_( xyze ),
         scale_( 1.0 ),
         pos_status_( position_unevaluated ),
-        compute_tolerance_( -1.0 )
+        compute_tolerance_( -1.0 ),
+        bbside_( Teuchos::null )
     {
       ScaleAndShift();
+      ConstructBoundingBox();
     }
 
     /// destructor
@@ -354,6 +359,10 @@ namespace CUT {
       px_.Update( -1, shift_, 1 );
     }
 
+    /** \brief Construct bounding box over the given element
+     *  (after scaling) */
+    void ConstructBoundingBox();
+
   protected:
     /// @name class internal variables
     /// @{
@@ -381,6 +390,9 @@ namespace CUT {
     /** contains the tolerance used for the internal Newton method
      *  ( see the Compute() routines ) */
     double compute_tolerance_;
+
+    //! Bounding box over the given embedded element (after scaling is performed)
+    Teuchos::RCP<BoundingBox> bbside_;
 
     /// @}
 
@@ -422,19 +434,7 @@ namespace CUT {
      *  element.
      *
      *  \param Tol (in) : User defined tolerance for the WithinLimits check. */
-    virtual bool Compute(const double& Tol)
-    {
-//      KERNEL::DebugComputePosition<probdim,eletype> cp( this->xsi_ );
-      KERNEL::ComputePosition<probdim,eletype> cp( this->xsi_ );
-      this->pos_status_ =
-          ( cp( this->xyze_, this->px_ ) ? Position::position_valid : Position::position_invalid );
-      this->compute_tolerance_ = cp.GetTolerance();
-
-      if ( this->pos_status_ == Position::position_valid )
-        return WithinLimitsTol(Tol);
-
-      return false;
-    }
+    virtual bool Compute(const double& Tol);
 
     virtual bool IsGivenPointWithinElement()
     {
@@ -465,7 +465,6 @@ namespace CUT {
         : PositionGeneric<probdim,eletype>(xyze,xyz)
     {
       this->xsi_.SetView(xsi_aug_.A());
-      ConstructBoundingBox();
     };
 
     /// destructor
@@ -538,9 +537,6 @@ namespace CUT {
     }
 
   private:
-    /** \brief Construct bounding box over the given embedded element
-     *  (after scaling) */
-    void ConstructBoundingBox();
 
     //not used in the actual version 02/17
 #if (0)
@@ -593,8 +589,6 @@ namespace CUT {
      *  coordinates are the distance values (embedded case only) */
     LINALG::Matrix<probdim,1> xsi_aug_;
 
-    //! Bounding box over the given embedded element (after scaling is performed)
-    Teuchos::RCP<BoundingBox> bbside_;
   }; // class ComputeEmbeddedPosition
 
   /*----------------------------------------------------------------------------*/
@@ -652,6 +646,53 @@ namespace CUT {
         DRT::Element::DiscretizationType distype = DRT::Element::dis_none) const;
 
   private:
+    /// template class for the actual position creation
+    template< bool isembedded,
+              unsigned probdim,
+              DRT::Element::DiscretizationType eletype,
+              unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement >
+    class PositionCreator
+    {
+    public:
+      static Position * Create(
+          const LINALG::Matrix<probdim,numNodesElement> & xyze,
+          const LINALG::Matrix<probdim,1> & xyz )
+      {
+        return NULL;
+      }
+    };
+
+    /// create a embedded position object
+    template< unsigned probdim,
+              DRT::Element::DiscretizationType eletype,
+              unsigned numNodesElement>
+    class PositionCreator< true, probdim, eletype, numNodesElement >
+    {
+    public:
+      static Position * Create(
+          const LINALG::Matrix<probdim,numNodesElement> & xyze,
+          const LINALG::Matrix<probdim,1> & xyz )
+      {
+        return new ComputeEmbeddedPosition<probdim,eletype>( xyze, xyz );
+      }
+    };
+
+    /// create a standard position object
+    template< unsigned probdim,
+              DRT::Element::DiscretizationType eletype,
+              unsigned numNodesElement>
+    class PositionCreator< false, probdim, eletype, numNodesElement >
+    {
+    public:
+      static Position * Create(
+          const LINALG::Matrix<probdim,numNodesElement> & xyze,
+          const LINALG::Matrix<probdim,1> & xyz )
+      {
+        return new ComputePosition<probdim,eletype>(xyze,xyz);
+      }
+    };
+
+  private:
     /*----------------------------------------------------------------------------*/
     /** @name VARIANT #1                                                          */
     /*----------------------------------------------------------------------------*/
@@ -668,21 +709,19 @@ namespace CUT {
     template <unsigned probdim,
         DRT::Element::DiscretizationType eletype
         >
-    Position * BuildPosition(
+    Teuchos::RCP<Position> BuildPosition(
         const Element & element,
         const Point & point ) const
     {
       const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
       const unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-      const bool isembedded = ( probdim > dim );
 #else
     template <unsigned probdim,
         DRT::Element::DiscretizationType eletype,
         unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
-        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        bool isembedded = (probdim>dim)
+        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement
         >
-    Position * BuildPosition(
+    Teuchos::RCP<Position> BuildPosition(
         const Element & element,
         const Point & point ) const
     {
@@ -692,18 +731,24 @@ namespace CUT {
       LINALG::Matrix<probdim,1> px;
       point.Coordinates( px.A() );
 
-      Position * position_ptr = NULL;
-      if ( isembedded )
-        position_ptr = new ComputeEmbeddedPosition<probdim,eletype>( xyze, px );
+      if ( probdim > dim )
+      {
+        return Teuchos::rcp( PositionCreator<true,probdim,eletype>::Create( xyze, px ) );
+      }
+      else if ( probdim == dim )
+      {
+        return Teuchos::rcp( PositionCreator<false,probdim,eletype>::Create( xyze, px ) );
+      }
       else
-        position_ptr = new ComputePosition<probdim,eletype>( xyze, px );
+        dserror( "The element dimension is larger than the problem dimension! \n"
+            "dim = %d, probdim = %d", dim, probdim );
 
-      return position_ptr;
+      exit(EXIT_FAILURE);
     }
 
     /// concrete create variant #1
     template< DRT::Element::DiscretizationType eletype>
-    Position * CreateConcretePosition(
+    Teuchos::RCP<Position> CreateConcretePosition(
         const Element & element,
         const Point & point) const
     {
@@ -749,13 +794,11 @@ namespace CUT {
     {
       const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
       const unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-      const bool isembedded = ( probdim > dim );
 #else
     template <unsigned probdim,
         DRT::Element::DiscretizationType eletype,
         unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
-        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        bool isembedded = (probdim>dim)
+        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement
         >
     static Teuchos::RCP<Position> BuildPosition(
         const Element & element,
@@ -765,13 +808,19 @@ namespace CUT {
       LINALG::Matrix<probdim,numNodesElement> xyze;
       element.Coordinates( xyze );
 
-      Teuchos::RCP<Position> position_ptr = Teuchos::null;
-      if ( isembedded )
-        position_ptr = Teuchos::rcp(new ComputeEmbeddedPosition<probdim,eletype>(xyze,xyz));
+      if ( probdim > dim )
+      {
+        return Teuchos::rcp( PositionCreator<true,probdim,eletype>::Create( xyze, xyz ) );
+      }
+      else if ( probdim == dim )
+      {
+        return Teuchos::rcp( PositionCreator<false,probdim,eletype>::Create( xyze, xyz ) );
+      }
       else
-        position_ptr = Teuchos::rcp(new ComputePosition<probdim,eletype>(xyze,xyz));
+        dserror( "The element dimension is larger than the problem dimension! \n"
+            "dim = %d, probdim = %d", dim, probdim );
 
-      return position_ptr;
+      exit(EXIT_FAILURE);
     }
 
   private:
@@ -827,26 +876,31 @@ namespace CUT {
         const LINALG::Matrix<probdim, 1> & xyz )
     {
       const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-      const bool isembedded = ( probdim > dim );
 #else
     template <unsigned probdim,
         DRT::Element::DiscretizationType eletype,
         unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
-        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        bool isembedded = (probdim>dim)
+        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement
         >
     static Teuchos::RCP<Position> BuildPosition(
         const LINALG::Matrix<probdim, numNodesElement> & xyze,
         const LINALG::Matrix<probdim, 1> & xyz )
     {
 #endif
-      Teuchos::RCP<Position> position_ptr = Teuchos::null;
-      if ( isembedded )
-        position_ptr = Teuchos::rcp(new ComputeEmbeddedPosition<probdim,eletype>(xyze,xyz));
-      else
-        position_ptr = Teuchos::rcp(new ComputePosition<probdim,eletype>(xyze,xyz));
 
-      return position_ptr;
+      if ( probdim > dim )
+      {
+        return Teuchos::rcp( PositionCreator<true,probdim,eletype>::Create( xyze, xyz ) );
+      }
+      else if ( probdim == dim )
+      {
+        return Teuchos::rcp( PositionCreator<false,probdim,eletype>::Create( xyze, xyz ) );
+      }
+      else
+        dserror( "The element dimension is larger than the problem dimension! \n"
+            "dim = %d, probdim = %d", dim, probdim );
+
+      exit(EXIT_FAILURE);
     }
 
   private:
@@ -856,11 +910,6 @@ namespace CUT {
         const double * xyze,
         const double * xyz ) const
     {
-      const int dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-      if ( dim > probdim_ )
-        dserror( "The element dimension is larger than the problem dimension! \n"
-            "dim = %d, probdim = %d", dim, probdim_ );
-
       const unsigned num_nodes_ele = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
       switch (probdim_)
       {
@@ -906,13 +955,11 @@ namespace CUT {
     {
       const unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
       const unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement;
-      const bool isembedded = ( probdim > dim );
 #else
     template <unsigned probdim,
         DRT::Element::DiscretizationType eletype,
         unsigned dim = DRT::UTILS::DisTypeToDim<eletype>::dim,
-        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement,
-        bool isembedded = (probdim>dim)
+        unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement
         >
     static Teuchos::RCP<Position> BuildPosition(
         const std::vector<Node*> nodes,
@@ -930,13 +977,19 @@ namespace CUT {
         n->Coordinates( &xyze( 0, i ) );
       }
 
-      Teuchos::RCP<Position> position_ptr = Teuchos::null;
-      if ( isembedded )
-        position_ptr = Teuchos::rcp( new ComputeEmbeddedPosition<probdim,eletype>(xyze,xyz) );
+      if ( probdim > dim )
+      {
+        return Teuchos::rcp( PositionCreator<true,probdim,eletype>::Create( xyze, xyz ) );
+      }
+      else if ( probdim == dim )
+      {
+        return Teuchos::rcp( PositionCreator<false,probdim,eletype>::Create( xyze, xyz ) );
+      }
       else
-        position_ptr = Teuchos::rcp( new ComputePosition<probdim,eletype>(xyze,xyz) );
+        dserror( "The element dimension is larger than the problem dimension! \n"
+            "dim = %d, probdim = %d", dim, probdim );
 
-      return position_ptr;
+      exit(EXIT_FAILURE);
     }
 
   private:
@@ -946,11 +999,6 @@ namespace CUT {
         const std::vector<Node*> nodes,
         const double * xyz) const
     {
-      const int dim = DRT::UTILS::DisTypeToDim<eletype>::dim;
-      if ( dim > probdim_ )
-        dserror( "The element dimension is larger than the problem dimension! \n"
-            "dim = %d, probdim = %d", dim, probdim_ );
-
       switch ( probdim_ )
       {
         case 2:

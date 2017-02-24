@@ -382,8 +382,18 @@ void GEO::CUT::VolumeCell::Print( std::ostream & stream ) const
   {
     BoundaryCell * bcell = *i;
     stream << "\n# BoundaryCell " << count++ << " of VolumeCell:\n";
-    bcell->Print();
+    bcell->Print( stream );
   }
+
+  count = 0;
+  for ( plain_integrationcell_set::const_iterator i=integrationcells_.begin();
+        i!=integrationcells_.end(); ++i )
+  {
+    IntegrationCell * icell = *i;
+    stream << "\n# IntegrationCell " << count++ << " of VolumeCell:\n";
+    icell->Print( stream );
+  }
+
   stream << "\n";
 }
 

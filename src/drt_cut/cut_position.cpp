@@ -133,13 +133,10 @@ template <unsigned probdim,
       DRT::Element::DiscretizationType eletype,
       unsigned numNodesElement,
       unsigned dim>
-void GEO::CUT::ComputeEmbeddedPosition<probdim,eletype,numNodesElement,dim>::
+void GEO::CUT::PositionGeneric<probdim,eletype,numNodesElement,dim>::
      ConstructBoundingBox()
 {
   bbside_ = Teuchos::rcp( BoundingBox::Create() );
-  // not necessary for the non-embedded case
-  if (dim==probdim)
-    return;
 
   for ( unsigned i=0; i<numNodesElement; ++i )
   {
@@ -154,13 +151,45 @@ template <unsigned probdim,
       DRT::Element::DiscretizationType eletype,
       unsigned numNodesElement,
       unsigned dim>
+bool GEO::CUT::ComputePosition<probdim,eletype,numNodesElement,dim>::Compute(
+    const double& Tol)
+{
+  /* If the given point is outside the element bounding box, no need
+   * to perform the complex calculations */
+//  if( not this->bbside_->Within( 1.0, &this->px_(0,0) ) )
+//  {
+//    this->pos_status_ = Position::position_outside_of_bbox;
+//    return false;
+//  }
+
+//      KERNEL::DebugComputePosition<probdim,eletype> cp( this->xsi_ );
+  KERNEL::ComputePosition<probdim,eletype> cp( this->xsi_ );
+  this->pos_status_ =
+      ( cp( this->xyze_, this->px_ ) ? Position::position_valid : Position::position_invalid );
+  this->compute_tolerance_ = cp.GetTolerance();
+
+  if ( this->pos_status_ == Position::position_valid )
+    return WithinLimitsTol(Tol);
+
+  return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template <unsigned probdim,
+      DRT::Element::DiscretizationType eletype,
+      unsigned numNodesElement,
+      unsigned dim>
 bool GEO::CUT::ComputeEmbeddedPosition<probdim,eletype,numNodesElement,dim>::
      IsGivenPointWithinElement()
 {
   // If the given point is outside the side's bounding box, no need to perform
   // the complex calculations
-  if( not bbside_->Within( 1.0, & this->px_( 0, 0 ) ) )
+  if( not this->bbside_->Within( 1.0, & this->px_( 0, 0 ) ) )
+  {
+    this->pos_status_ = Position::position_outside_of_bbox;
     return false;
+  }
 
   // try to compute the local coordinates and the distance using the Newton scheme
   KERNEL::ComputeDistance<probdim, eletype> cd( xsi_aug_ );
@@ -188,8 +217,11 @@ bool GEO::CUT::ComputeEmbeddedPosition<probdim,eletype,numNodesElement,dim>::
    * to perform the complex calculations */
   if( not allow_dist )
   {
-    if( not bbside_->Within( 1.0, &this->px_(0,0) ))
+    if( not this->bbside_->Within( 1.0, &this->px_(0,0) ))
+    {
+      this->pos_status_ = Position::position_outside_of_bbox;
       return false;
+    }
   }
 
   // try to compute the local coordinates and the distance using the Newton scheme
@@ -254,27 +286,27 @@ Teuchos::RCP<GEO::CUT::Position> GEO::CUT::PositionFactory::CreatePosition(
   switch ( distype )
   {
     case DRT::Element::line2:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::line2>( element, point ) );
+      return CreateConcretePosition<DRT::Element::line2>( element, point );
     case DRT::Element::tri3:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::tri3>( element, point ) );
+      return CreateConcretePosition<DRT::Element::tri3>( element, point );
     case DRT::Element::tri6:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::tri6>( element, point ) );
+      return CreateConcretePosition<DRT::Element::tri6>( element, point );
     case DRT::Element::quad4:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::quad4>( element, point ) );
+      return CreateConcretePosition<DRT::Element::quad4>( element, point );
     case DRT::Element::quad8:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::quad8>( element, point ) );
+      return CreateConcretePosition<DRT::Element::quad8>( element, point );
     case DRT::Element::quad9:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::quad9>( element, point ) );
+      return CreateConcretePosition<DRT::Element::quad9>( element, point );
     case DRT::Element::hex8:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::hex8>( element, point ) );
+      return CreateConcretePosition<DRT::Element::hex8>( element, point );
     case DRT::Element::hex20:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::hex20>( element, point ) );
+      return CreateConcretePosition<DRT::Element::hex20>( element, point );
     case DRT::Element::tet4:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::tet4>( element, point ) );
+      return CreateConcretePosition<DRT::Element::tet4>( element, point );
     case DRT::Element::pyramid5:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::pyramid5>( element, point ) );
+      return CreateConcretePosition<DRT::Element::pyramid5>( element, point );
     case DRT::Element::wedge6:
-      return Teuchos::rcp( CreateConcretePosition<DRT::Element::wedge6>( element, point ) );
+      return CreateConcretePosition<DRT::Element::wedge6>( element, point );
     default:
       dserror("Unsupported distype = %s", DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
@@ -430,6 +462,7 @@ template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<2>( const E
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<3>( const std::vector<Node*> nodes, const LINALG::Matrix<3, 1> & xyz, DRT::Element::DiscretizationType distype );
 template Teuchos::RCP<GEO::CUT::Position> GEO::CUT::Position::Create<2>( const std::vector<Node*> nodes, const LINALG::Matrix<2, 1> & xyz, DRT::Element::DiscretizationType distype );
 
+/* --- ComputeEmbeddedPosition --- */
 // embedded element types
 template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::tri3>;
 template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::tri6>;
@@ -439,10 +472,66 @@ template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::quad9>;
 template class GEO::CUT::ComputeEmbeddedPosition<2,DRT::Element::line2>;
 template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::line2>;
 
-// non-embedded element types for the embedded case (only necessary for the cluster compiler)
-template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::hex16>;
-template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::hex18>;
-template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::hex27>;
-template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::tet10>;
-template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::wedge15>;
+// non-embedded element types for the embedded case (only necessary due to compiler problems)
+//template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::hex16>;
+//template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::hex18>;
+//template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::hex27>;
+//template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::tet10>;
+//template class GEO::CUT::ComputeEmbeddedPosition<3,DRT::Element::wedge15>;
 
+/* --- ComputePosition --- */
+// non-embedded cases (only)
+template class GEO::CUT::ComputePosition<1,DRT::Element::line2>;
+
+template class GEO::CUT::ComputePosition<2,DRT::Element::tri3>;
+template class GEO::CUT::ComputePosition<2,DRT::Element::tri6>;
+template class GEO::CUT::ComputePosition<2,DRT::Element::quad4>;
+template class GEO::CUT::ComputePosition<2,DRT::Element::quad8>;
+template class GEO::CUT::ComputePosition<2,DRT::Element::quad9>;
+
+template class GEO::CUT::ComputePosition<3,DRT::Element::tet4>;
+template class GEO::CUT::ComputePosition<3,DRT::Element::tet10>;
+template class GEO::CUT::ComputePosition<3,DRT::Element::hex8>;
+template class GEO::CUT::ComputePosition<3,DRT::Element::hex16>;
+template class GEO::CUT::ComputePosition<3,DRT::Element::hex18>;
+template class GEO::CUT::ComputePosition<3,DRT::Element::hex20>;
+template class GEO::CUT::ComputePosition<3,DRT::Element::hex27>;
+template class GEO::CUT::ComputePosition<3,DRT::Element::pyramid5>;
+template class GEO::CUT::ComputePosition<3,DRT::Element::wedge6>;
+template class GEO::CUT::ComputePosition<3,DRT::Element::wedge15>;
+
+/* --- PositionGeneric --- */
+// embedded cases
+template class GEO::CUT::PositionGeneric<3,DRT::Element::tri3>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::tri6>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::quad4>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::quad8>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::quad9>;
+template class GEO::CUT::PositionGeneric<2,DRT::Element::line2>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::line2>;
+
+// non-embedded cases
+template class GEO::CUT::PositionGeneric<1,DRT::Element::line2>;
+
+template class GEO::CUT::PositionGeneric<2,DRT::Element::tri3>;
+template class GEO::CUT::PositionGeneric<2,DRT::Element::tri6>;
+template class GEO::CUT::PositionGeneric<2,DRT::Element::quad4>;
+template class GEO::CUT::PositionGeneric<2,DRT::Element::quad8>;
+template class GEO::CUT::PositionGeneric<2,DRT::Element::quad9>;
+
+template class GEO::CUT::PositionGeneric<3,DRT::Element::tet4>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::tet10>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::hex8>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::hex16>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::hex18>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::hex20>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::hex27>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::pyramid5>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::wedge6>;
+template class GEO::CUT::PositionGeneric<3,DRT::Element::wedge15>;
+
+// unused / impossible cases (only necessary due to compiler problems)
+//template class GEO::CUT::PositionGeneric<2,DRT::Element::hex8>;
+//template class GEO::CUT::PositionGeneric<2,DRT::Element::tet4>;
+//template class GEO::CUT::PositionGeneric<2,DRT::Element::pyramid5>;
+//template class GEO::CUT::PositionGeneric<2,DRT::Element::wedge6>;

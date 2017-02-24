@@ -318,9 +318,11 @@ void GEO::CutWizard::Cut(
   //--------------------------------------
   Prepare();
 
-  // wirtz 08/14:
-  // preprocessing: everything above should only be done once in a simulation; so it should be moved before the time loop into a preprocessing step
-  // runtime:       everything below should be done in every Newton increment
+  /* wirtz 08/14:
+   * preprocessing: everything above should only be done once in a simulation;
+   *                so it should be moved before the time loop into a preprocessing
+   *                step
+   * runtime:       everything below should be done in every Newton increment */
 
   //--------------------------------------
   // perform the actual cut, the intersection
@@ -718,7 +720,7 @@ void GEO::CutWizard::Run_Cut(
     comm_.Barrier();
 
     const double t_diff = Teuchos::Time::wallTime()-t_start;
-    if ( myrank_ == 0 and screenoutput_ ) IO::cout << "\t\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
+    if ( myrank_ == 0 and screenoutput_ ) IO::cout << "\t\t\t... Success (" << t_diff  <<  " secs)" << IO::endl;
   }
 
   intersection_->Status(VCellgausstype_);

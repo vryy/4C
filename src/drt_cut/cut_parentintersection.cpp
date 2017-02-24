@@ -558,7 +558,7 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 6/6 --- Cut_Finalize" );
 
-  if(myrank_==0 and screenoutput) IO::cout << "\t * 6/6 Cut_Finalize ...";
+  if(myrank_==0 and screenoutput) IO::cout << "\t * 6/6 Cut_Finalize ...\t";
 
 //  const double t_start = Teuchos::Time::wallTime();
 
@@ -580,8 +580,10 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
     //m.RemoveEmptyVolumeCells();
 
 //    // Test and Debug:
-//    m.TestElementVolume( true, VCellgausstype );
-//    m.TestFacetArea();
+    m.TestElementVolume( true, VCellgausstype );
+    if(myrank_==0 and screenoutput) IO::cout << "\n\t *     TestElementVolume ...";
+    m.TestFacetArea();
+    if(myrank_==0 and screenoutput) IO::cout << "\n\t *     TestFacetArea ...";
 //    DebugCut(m);
 
 #ifdef DEBUGCUTLIBRARY
