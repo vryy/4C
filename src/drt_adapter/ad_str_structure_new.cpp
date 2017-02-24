@@ -524,8 +524,8 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
         actele->ElementType() == DRT::ELEMENTS::So_sh18PlastType::Instance()
        )
     {
-      isplasticity_local=true;
-      break;
+      if (actele->Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+        isplasticity_local=true;
     }
 
     // Detect EAS --------------------------------------------------------------
