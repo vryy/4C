@@ -134,21 +134,24 @@ namespace TIMINT {
     //! Get discretization pointer
     Teuchos::RCP<DRT::Discretization> DiscretPtr();
 
+    //! Access the reaction force
+    Epetra_Vector & Freact() const;
+
     /*! Rotate the system matrix from a global to a local coordinate system,
      *  if the locsysman_ is defined.
      *
      *  Works only for LINALG::SparseMatrices! */
-    bool RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseOperator> A) const;
+    bool RotateGlobalToLocal(const Teuchos::RCP<LINALG::SparseOperator> & A) const;
 
     /*! Rotate the rhs vector from the global to the local coordinate system, if
      *  the locsysman_ is defined. */
-    bool RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> v) const;
-    bool RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> v, bool offset) const;
+    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector> & v) const;
+    bool RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector> & v, bool offset) const;
 
     /*! Rotate a vector from the local to the global coordinate system, if
      *  the locsysman_ is defined. */
-    bool RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> v) const;
-    bool RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> v, bool offset) const;
+    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector> & v) const;
+    bool RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector> & v, bool offset) const;
 
     //! Get the locsys transformation matrix
     Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
@@ -180,9 +183,6 @@ namespace TIMINT {
     //! Discretization pointer
     Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
 
-    //! Reaction force
-    Teuchos::RCP<Epetra_Vector> freact_ptr_;
-
     //! pointer to the overlying time integrator (read-only)
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
 
@@ -194,6 +194,10 @@ namespace TIMINT {
 
     //! Dirichlet boundary condition map extractor.
     Teuchos::RCP<LINALG::MapExtractor> dbcmap_ptr_;
+
+  private:
+    //! Reaction force
+    Epetra_Vector * freact_ptr_;
   };  // class  Dbc
 } // namespace STR
 

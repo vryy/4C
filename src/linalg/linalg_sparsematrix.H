@@ -201,7 +201,7 @@ class SparseMatrix : public SparseMatrixBase
     void Reset();
 
     /// destroy the underlying Epetra objects
-    virtual bool Destroy();
+    virtual bool Destroy( bool throw_exception = true );
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
     virtual void Assemble(int eid,

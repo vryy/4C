@@ -76,13 +76,18 @@ namespace TIMINT {
     /// destructor
     virtual ~BaseDataGlobalState() {};
 
+    /** \brief copy the init information only and set the issetup flag to false
+     *
+     *  \date 02/17 \author hiermeier */
+    virtual BaseDataGlobalState & operator=( const BaseDataGlobalState & source );
+
     /// initialize class variables
     void Init(const Teuchos::RCP<DRT::DiscretizationInterface> discret,
         const Teuchos::ParameterList& sdynparams,
         const Teuchos::RCP<const BaseDataSDyn> datasdyn);
 
     /// setup of the new class variables
-    void Setup();
+    virtual void Setup();
 
     /// read initial field conditions
     void SetInitialFields();
@@ -175,8 +180,11 @@ namespace TIMINT {
         const enum VecInitType& vecinittype,
         const Teuchos::RCP<const STR::ModelEvaluator>& modeleval) const;
 
+    /// Create the structural stiffness matrix block
+    LINALG::SparseOperator * CreateStructuralStiffnessMatrixBlock();
+
     /// Create the jacobian matrix
-    Teuchos::RCP<LINALG::SparseOperator> CreateJacobian();
+    Teuchos::RCP<LINALG::SparseOperator>& CreateJacobian();
 
   protected:
     inline const bool& IsInit() const
@@ -791,6 +799,18 @@ namespace TIMINT {
       return gproblem_map_ptr_;
     }
 
+    /** \brief mutable access to the structural stiffness member variable [PROTECTED ONLY]
+     *
+     *  Do NOT change this to PUBLIC! Use the ExtractMatrixBlock() function
+     *  instead.
+     *
+     *  \date 02/17
+     *  \author hiermier */
+    Teuchos::RCP<LINALG::SparseOperator> & StiffPtr()
+    {
+      return stiff_;
+    }
+
   protected:
     /// @name variables for internal use only
     ///@{
@@ -904,6 +924,16 @@ namespace TIMINT {
     ///@{
     /// supposed to hold the entire jacobian (saddle point system if desired)
     Teuchos::RCP<LINALG::SparseOperator> jac_;
+
+    /** \brief structural stiffness matrix block
+     *
+     *  This variable is not allowed to become directly accessible by any public
+     *  member function! Only indirect access, e.g. via ExtractModelBlock() or
+     *  protected access is allowed!
+     *
+     *  \date 02/17
+     *  \author hiermeier */
+    Teuchos::RCP<LINALG::SparseOperator> stiff_;
 
     /// mass matrix (constant)
     Teuchos::RCP<LINALG::SparseOperator> mass_;

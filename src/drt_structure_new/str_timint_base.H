@@ -589,6 +589,36 @@ namespace TIMINT {
         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
     /// @}
 
+    /// @name XFEM/XSTR related methods
+    ///@{
+
+    /// access the xfield state pointer
+    virtual Teuchos::RCP<XFEM::XFieldState> XFieldState();
+    virtual Teuchos::RCP<const XFEM::XFieldState> XFieldState() const;
+
+    /** \brief create a new XFieldState object by transferring the information to the new dofs
+     *
+     *  \author hiermeier \date 02/17 */
+    virtual void CreateNewXFieldState(
+        const Teuchos::RCP<XFEM::XFieldState> & new_xstate ) const;
+
+    /** \brief reset the non-standard / enrichment dofs of the xfield state object
+     *
+     *  \author hiermeier \date 02/17 */
+    virtual void ResetXFieldNonStandardDofs();
+
+    /** \brief destroy the current state
+     *
+     *  \author hiermeier \date 02/17 */
+    virtual bool DestroyState();
+
+    /** \brief destroy the nonlinear solver state
+     *
+     *  \author hiermeier \date 02/17 */
+    virtual bool DestroyNoxState() = 0;
+
+    ///@}
+
   public:
     /// @name External accessors for the class variables
     ///@{

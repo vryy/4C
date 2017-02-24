@@ -143,8 +143,8 @@ namespace MODELEVALUATOR{
 
     //! Set the ParamsInterface in the parameter list and call the other EvaluateNeumann routine
     void EvaluateNeumann(
-        Teuchos::RCP<Epetra_Vector> eval_vec,
-        Teuchos::RCP<LINALG::SparseOperator> eval_mat);
+        const Teuchos::RCP<Epetra_Vector> & eval_vec,
+        const Teuchos::RCP<LINALG::SparseOperator> & eval_mat);
 
     /*! \brief Check if the given parameter list is valid and call the
      *  EvaluateNeumann routine of the discretization
@@ -156,8 +156,8 @@ namespace MODELEVALUATOR{
      *  \author hiermeier */
     void EvaluateNeumann(
         Teuchos::ParameterList& p,
-        Teuchos::RCP<Epetra_Vector> eval_vec,
-        Teuchos::RCP<LINALG::SparseOperator> eval_mat);
+        const Teuchos::RCP<Epetra_Vector> & eval_vec,
+        const Teuchos::RCP<LINALG::SparseOperator> & eval_mat);
 
     //! Set the ParamsInterface in the parameter list and call the other EvaluateInternal routine
     void EvaluateInternal(
@@ -302,32 +302,54 @@ namespace MODELEVALUATOR{
         Teuchos::ParameterList& params);
 
   private:
-    //! @name pointers to the data container content
+    //! @name Accessors to the data container content
     //! @{
     //! global internal force at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fintnp_ptr_;
+    Epetra_Vector & FintNp();
+
+    //! global internal force at \f$t_{n+1}\f$ (read-only)
+    const Epetra_Vector & FintNp() const;
 
     //! global external force at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fextnp_ptr_;
+    Epetra_Vector & FextNp();
+
+    //! global external force at \f$t_{n+1}\f$ (read-only)
+    const Epetra_Vector & FextNp() const;
 
     //! inertial force at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> finertialnp_ptr_;
+    Epetra_Vector & FinertialNp();
+
+    //! inertial force at \f$t_{n+1}\f$ (read-only)
+    const Epetra_Vector & FinertialNp() const;
 
     //! viscous force at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
+    Epetra_Vector & FviscoNp();
+
+    //! viscous force at \f$t_{n+1}\f$ (read-only)
+    const Epetra_Vector & FviscoNp() const;
 
     //! structural displacement at \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> disnp_ptr_;
+    Epetra_Vector & DisNp();
 
-    //! structural stiffness matrix
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr_;
+    //! structural displacement at \f$t_{n+1}\f$ (read-only)
+    const Epetra_Vector & DisNp() const;
+
+    //! structural stiffness block
+    LINALG::SparseMatrix & Stiff() const;
 
     //! structural mass matrix
-    Teuchos::RCP<LINALG::SparseOperator> mass_ptr_;
+    LINALG::SparseOperator & Mass();
+
+    //! structural mass matrix (read-only)
+    const LINALG::SparseOperator & Mass() const;
 
     //! structural damping matrix
-    Teuchos::RCP<LINALG::SparseOperator> damp_ptr_;
+    LINALG::SparseOperator & Damp();
 
+    //! structural damping matrix
+    const LINALG::SparseOperator & Damp() const;
+
+  private:
     //! structural element evaluation time
     double* dt_ele_ptr_;
 
@@ -336,6 +358,9 @@ namespace MODELEVALUATOR{
     //! @}
 
     //! @name class only variables @{
+    //! structural stiffness matrix
+    LINALG::SparseMatrix * stiff_ptr_;
+
     /*! \brief displacement increment
      *  Necessary for the EAS reconstruction, incremental strain evaluation,
      *  etc.. */

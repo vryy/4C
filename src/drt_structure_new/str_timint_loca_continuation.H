@@ -84,6 +84,9 @@ namespace TIMINT {
     //! Returns the current solution group
     virtual const NOX::Abstract::Group& GetSolutionGroup() const;
 
+    //! Returns the current solution group ptr
+    virtual Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr();
+
     //! Check for necessary parameters which have to be supplied by the user.
     void CheckForNecessaryParameters() const;
 

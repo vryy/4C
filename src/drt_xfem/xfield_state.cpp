@@ -42,11 +42,6 @@ void XFEM::XFieldState::Init(
     const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
     const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret)
 {
-  /* If the member variables have been already created, we have to destroy
-   * them before we can reinitialize them. */
-  if (isinit_ and issetup_)
-    Destroy();
-
   // Ensure, that the Setup() routines are called afterwards.
   issetup_ = false;
 
@@ -64,4 +59,18 @@ void XFEM::XFieldState::Init(
   isinit_ = true;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFEM::XFieldState::SetNewState( const XFEM::XFieldState & xstate )
+{
+  this->isinit_ = xstate.isinit_;
+  this->issetup_ = xstate.issetup_;
 
+  this->condition_manager_ = xstate.condition_manager_;
+  this->wizard_ = xstate.wizard_;
+
+  this->xdofset_ = xstate.xdofset_;
+
+  this->field_discret_ptr_ = xstate.field_discret_ptr_;
+  this->xfield_discret_ptr_ = xstate.xfield_discret_ptr_;
+}

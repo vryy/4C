@@ -1811,6 +1811,8 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_timint_loca_continuation.cpp
   src/drt_structure_new/str_timint_locainterface.cpp
 #  src/drt_structure_new/loca_str_constraint_arclength.cpp
+  src/drt_structure_xstructure/str_timint_base_xfem.cpp
+  src/drt_structure_xstructure/str_timint_implicitbase_xfem.cpp
 )
 set(OBJS_DRT_STRUCTURE_XSTRUCTURE
   src/drt_structure_xstructure/xstr_xstructure_state.cpp

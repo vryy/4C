@@ -220,6 +220,14 @@ const NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<NOX::Abstract::Group> STR::TIMINT::Implicit::SolutionGroupPtr()
+{
+  CheckInitSetup();
+  return Teuchos::rcpFromRef( NlnSolver().SolutionGroup() );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv)
 {
   CheckInitSetup();

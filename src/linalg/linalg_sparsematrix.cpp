@@ -194,24 +194,39 @@ LINALG::SparseMatrix::SparseMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::SparseMatrix::Destroy()
+bool LINALG::SparseMatrix::Destroy( bool throw_exception )
 {
   // delete first the epetra matrix object
-  if(sysmat_.strong_count() > 1)
-    dserror("Epetra_CrsMatrix cannot be finally deleted - any other RCP (%i>1) still points to it", sysmat_.strong_count());
-
+  if( throw_exception and sysmat_.strong_count() > 1)
+  {
+    std::stringstream msg;
+    msg << "Epetra_CrsMatrix cannot be finally deleted: The strong counter "
+        "is still larger than 1. ( strong_count() = " << sysmat_.strong_count()
+        << " )";
+    run_time_error( msg.str() );
+  }
   sysmat_ = Teuchos::null;
 
   // delete now also the matrix' graph
-  if(graph_.strong_count() > 1)
-    dserror("Epetra_CrsGraph cannot be finally deleted - any RCP (%i>1) still points to it", graph_.strong_count());
-
+  if( throw_exception and graph_.strong_count() > 1)
+  {
+    std::stringstream msg;
+    msg << "Epetra_CrsGraph cannot be finally deleted: The strong counter is "
+        "still larger than 1. ( strong_count() = " << graph_.strong_count()
+        << " )";
+    run_time_error( msg.str() );
+  }
   graph_ = Teuchos::null;
 
   // delete now also the matrix' graph
-  if(dbcmaps_.strong_count() > 1)
-    dserror("DBCMaps cannot be finally deleted - any RCP (%i>1) still points to it", dbcmaps_.strong_count());
-
+  if( throw_exception and dbcmaps_.strong_count() > 1)
+  {
+    std::stringstream msg;
+    msg << "DBCMaps cannot be finally deleted: The strong counter is still "
+        "larger than 1. ( strong_count() = " << dbcmaps_.strong_count()
+        << " )";
+    run_time_error( msg.str() );
+  }
   dbcmaps_ = Teuchos::null;
 
   return true;

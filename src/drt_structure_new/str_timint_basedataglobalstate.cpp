@@ -69,6 +69,7 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
       fvisconp_(Teuchos::null),
       fstructold_(Teuchos::null),
       jac_(Teuchos::null),
+      stiff_(Teuchos::null),
       mass_(Teuchos::null),
       damp_(Teuchos::null),
       timer_(Teuchos::null),
@@ -80,6 +81,30 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
   // empty constructor
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::TIMINT::BaseDataGlobalState & STR::TIMINT::BaseDataGlobalState::operator=(
+    const STR::TIMINT::BaseDataGlobalState & source )
+{
+  this->datasdyn_ = source.datasdyn_;
+
+  this->discret_ = source.discret_;
+  this->comm_ = source.comm_;
+  this->myRank_ = source.myRank_;
+
+  this->timen_ = source.timen_;
+  this->dt_ = source.dt_;
+
+  this->timenp_ = source.timenp_;
+  this->stepnp_ = source.stepnp_;
+
+  this->isinit_ = source.isinit_;
+
+  // the setup information is not copied --> set boolean to false
+  this->issetup_ = false;
+
+  return *this;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -540,7 +565,18 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::
+LINALG::SparseOperator * STR::TIMINT::BaseDataGlobalState::
+    CreateStructuralStiffnessMatrixBlock()
+{
+  stiff_ = Teuchos::rcp( new LINALG::SparseMatrix( *DofRowMapView(), 81, true,
+      true ) );
+
+  return stiff_.get();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::
     CreateJacobian()
 {
   CheckInit();

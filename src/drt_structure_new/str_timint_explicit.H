@@ -70,6 +70,14 @@ namespace TIMINT {
     //! Access to scaling matrix for STC
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat();
 
+    /// @name XFEM/XSTR related methods
+    ///@{
+
+    /// There is nothing to destroy in the explicit case
+    virtual bool DestroyNoxState() { return true; };
+
+    ///@}
+
     /// @name Access linear system of equation via adapter (implicit only!)
     ///@{
     /// initial guess of Newton's method

@@ -123,6 +123,9 @@ namespace TIMINT {
     //! returns the current solution group
     virtual const NOX::Abstract::Group& GetSolutionGroup() const;
 
+    //! returns the current solution group ptr
+    virtual Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr();
+
     STR::IMPLICIT::Generic& ImplInt()
     {
       CheckInitSetup();

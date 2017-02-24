@@ -122,7 +122,7 @@ NOX::NLN::SolutionType NOX::NLN::SCATRA::LinearSystem::GetActiveLinSolver(
 {
   // check input
   if (solvers.size()>1)
-    dserror("There has to be exactly one LINALG::Solver (structure)!");
+    dserror("There has to be exactly one LINALG::Solver (SCATRA)!");
 
   currSolver = solvers.at(NOX::NLN::sol_scatra);
   return NOX::NLN::sol_scatra;

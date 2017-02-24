@@ -218,7 +218,27 @@ namespace LinSystem {
     void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp);
 
 
+    //! destroy the jacobian ptr
+    bool DestroyJacobian();
+
   protected:
+
+    inline LINALG::SparseOperator & Jacobian() const
+    {
+      if ( jacPtr_.is_null() )
+        throwError("JacPtr", "JacPtr is NULL!");
+
+      return *jacPtr_;
+    }
+
+    inline const Teuchos::RCP<LINALG::SparseOperator> & JacobianPtr() const
+    {
+      if ( jacPtr_.is_null() )
+        throwError("JacPtr", "JacPtr is NULL!");
+
+      return jacPtr_;
+    }
+
     //! PURE VIRTUAL FUNCTIONS: These functions have to be defined in the derived
     //! problem specific subclasses.
 
@@ -254,9 +274,6 @@ namespace LinSystem {
 
     //! Type of operator for the Jacobian.
     NOX::NLN::LinSystem::OperatorType jacType_;
-
-    //! Pointer to the Jacobian operator.
-    Teuchos::RCP<LINALG::SparseOperator> jacPtr_;
 
     //! Reference to the user supplied preconditioner interface functions
     Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> precInterfacePtr_;
@@ -297,6 +314,13 @@ namespace LinSystem {
 
     //! Pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.
     Teuchos::RCP<NOX::NLN::LinSystem::PrePostOperator> prePostOperatorPtr_;
+
+  private:
+    /*! \brief Pointer to the Jacobian operator.
+     *
+     *  Use the provided accessors to access this member. Direct access is prohibited
+     *  due to the pointer management by changing states (e.g. XFEM). */
+    Teuchos::RCP<LINALG::SparseOperator> jacPtr_;
 
   };
 } // namespace NLN

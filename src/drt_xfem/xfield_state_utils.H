@@ -53,19 +53,36 @@ inline void DestroyMatrix(
       {
         case NOX::NLN::LinSystem::LinalgSparseMatrix:
         {
-          Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mat)->Destroy();
+          try
+          {
+            Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mat)->Destroy();
+          }
+          catch ( const std::runtime_error & e )
+          {
+            run_time_error( e );
+          }
           break;
         }
         case NOX::NLN::LinSystem::LinalgBlockSparseMatrix:
         {
-          Teuchos::rcp_dynamic_cast
-              <LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(mat)->Destroy();
+          try
+          {
+            Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > block_mat =
+                Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> >(mat,true);
+            block_mat->Destroy( false );
+          }
+          catch ( const std::runtime_error & e )
+          {
+            run_time_error( e );
+          }
           break;
         }
         default:
         {
-          dserror("The given LINALG::SparseOperator type is not supported! (%s)",
-              NOX::NLN::LinSystem::OperatorType2String(optype).c_str());
+          std::stringstream msg;
+          msg << "The given LINALG::SparseOperator type is not supported! ( "
+              << NOX::NLN::LinSystem::OperatorType2String(optype) << " )";
+          run_time_error( msg.str() );
           break;
         }
       }
@@ -74,7 +91,11 @@ inline void DestroyMatrix(
     else if (mat.strong_count() > 1)
     {
       if(throw_exception)
-        dserror("could not destroy matrix object: %i!=1 pointers", mat.strong_count());
+      {
+        std::stringstream msg;
+        msg << "Could not destroy matrix object: " << mat.strong_count() << "!=1 pointers";
+        run_time_error( msg.str() );
+      }
       else
         mat = Teuchos::null; // decrement the strong reference counter
     }
@@ -83,8 +104,13 @@ inline void DestroyMatrix(
   {
     mat = Teuchos::null; // invalidate the RCP, reference-counted object won't be deleted by this weak pointer
   }
-  else dserror("invalid strength of RCP");
-
+  else
+  {
+    std::stringstream msg;
+    msg << "invalid strength of RCP: " <<
+        Teuchos::ToStringTraits<Teuchos::ERCPStrength>::toString( mat.strength() );
+    run_time_error( msg.str() );
+  }
 }
 
 /** \brief Destroy the LINALG::SparseMatrix object and it's date
@@ -110,7 +136,11 @@ inline void DestroyMatrix(
     else if (mat.strong_count() > 1)
     {
       if(throw_exception)
-        dserror("could not destroy matrix object: %i!=1 pointers", mat.strong_count());
+      {
+        std::ostringstream msg;
+        msg << "Could not destroy matrix object: " << mat.strong_count() << "!=1 pointers";
+        run_time_error( msg.str() );
+      }
       else
         mat = Teuchos::null; // decrement the strong reference counter
     }
@@ -119,7 +149,8 @@ inline void DestroyMatrix(
   {
     mat = Teuchos::null; // invalidate the RCP, reference-counted object won't be deleted by this weak pointer
   }
-  else dserror("invalid strength of RCP");
+  else
+    run_time_error("invalid strength of RCP");
 
 }
 
@@ -149,7 +180,12 @@ inline void DestroyRCPObject(
     else if (obj_rcp.strong_count() > 1)
     {
       if(throw_exception)
-        dserror("could not destroy reference-counted object: %i!=1 strong pointers", obj_rcp.strong_count());
+      {
+        std::ostringstream msg;
+        msg << "Could not destroy reference-counted object! strong_count() = "
+            << obj_rcp.strong_count() << " (!=1 pointers)";
+        run_time_error( msg.str() );
+      }
       else
         obj_rcp = Teuchos::null; // decrement the strong reference counter
     }
@@ -158,7 +194,8 @@ inline void DestroyRCPObject(
   {
     obj_rcp = Teuchos::null; // invalidate the RCP, reference-counted object won't be deleted by this weak pointer
   }
-  else dserror("invalid strength of RCP");
+  else
+    run_time_error("invalid strength of RCP");
 
 }
 

@@ -91,7 +91,7 @@ void dyn_nlnstructural_drt()
   }
 
   // create an adapterbase and adapter
-  Teuchos::RCP<ADAPTER::Structure> structadaptor = Teuchos::null;
+  Teuchos::RCP<ADAPTER::Structure> structadapter = Teuchos::null;
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
   const enum INPAR::STR::IntegrationStrategy intstrat =
@@ -106,8 +106,8 @@ void dyn_nlnstructural_drt()
       Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
           Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn,
               const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-      structadaptor = adapterbase_old_ptr->StructureField();
-      structadaptor->Setup();
+      structadapter = adapterbase_old_ptr->StructureField();
+      structadapter->Setup();
       break;
     }
     // -------------------------------------------------------------------
@@ -119,7 +119,7 @@ void dyn_nlnstructural_drt()
           ADAPTER::STR::BuildStructureAlgorithm(sdyn);
       adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
       adapterbase_ptr->Setup();
-      structadaptor = adapterbase_ptr->StructureField();
+      structadapter = adapterbase_ptr->StructureField();
       break;
     }
   }
@@ -127,7 +127,7 @@ void dyn_nlnstructural_drt()
   const int restart = DRT::Problem::Instance()->Restart();
   if (restart)
   {
-    structadaptor->ReadRestart(restart);
+    structadapter->ReadRestart(restart);
   }
   // write output at beginnning of calc
   else
@@ -142,7 +142,7 @@ void dyn_nlnstructural_drt()
 
 #if 1
   // run time integration
-  structadaptor->Integrate();
+  structadapter->Integrate();
 #else // this is a bone optimization hack - do not touch
   structadaptor->PrepareTimeStep();
   structadaptor->Solve();
@@ -159,8 +159,8 @@ void dyn_nlnstructural_drt()
 #endif
 
   // test results
-  DRT::Problem::Instance()->AddFieldTest(structadaptor->CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(structadaptor->DofRowMap()->Comm());
+  DRT::Problem::Instance()->AddFieldTest(structadapter->CreateFieldTest());
+  DRT::Problem::Instance()->TestAll(structadapter->DofRowMap()->Comm());
 
   // print monitoring of time consumption
   Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structdis->Comm());

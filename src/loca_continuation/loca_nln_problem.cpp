@@ -31,11 +31,11 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 LOCA::NLN::Problem::Problem(
-    Teuchos::RCP<NOX::NLN::GlobalData>& nox_nln_global_data_ptr,
-    Teuchos::RCP<LOCA::GlobalData>& loca_global_data_ptr,
-    Teuchos::RCP<NOX::Epetra::Vector>& x_ptr,
-    Teuchos::RCP<LINALG::SparseOperator> jac_ptr,
-    Teuchos::RCP<LOCA::ParameterVector> loca_param_vec_ptr)
+    const Teuchos::RCP<NOX::NLN::GlobalData>& nox_nln_global_data_ptr,
+    const Teuchos::RCP<LOCA::GlobalData>& loca_global_data_ptr,
+    const Teuchos::RCP<NOX::Epetra::Vector>& x_ptr,
+    const Teuchos::RCP<LINALG::SparseOperator>& jac_ptr,
+    const Teuchos::RCP<LOCA::ParameterVector>& loca_param_vec_ptr )
     : NOX::NLN::Problem(nox_nln_global_data_ptr,x_ptr,jac_ptr),
       loca_global_data_ptr_(loca_global_data_ptr),
       loca_param_vec_ptr_(loca_param_vec_ptr),
@@ -66,7 +66,7 @@ Teuchos::RCP<NOX::Abstract::Group> LOCA::NLN::Problem::CreateGroup(
   else
   {
     locagrp = Teuchos::rcp(new LOCA::NLN::Group(loca_global_data_ptr_,
-        pnox.sublist("Group Options"),pnox.sublist("Printing"),ireq,*xVector_,linsys,
+        pnox.sublist("Group Options"),pnox.sublist("Printing"),ireq,**xVector_,linsys,
         *loca_param_vec_ptr_));
   }
 

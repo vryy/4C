@@ -25,6 +25,8 @@
 #include "../drt_cut/cut_cutwizard.H"
 #include "../drt_structure_xstructure/xstr_xstructure_structure_state.H"
 
+#include "../drt_structure_new/str_timint_factory.H"
+
 #include "../drt_xfem/xfem_dofset.H"
 #include "../drt_xfem/xfem_condition_manager.H"
 
@@ -336,7 +338,7 @@ void XFEM::StateCreator::AddCutterStates(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldState()
+Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldState() const
 {
   Teuchos::RCP<XFEM::XFieldState> state = Teuchos::null;
   PROBLEM_TYP prb_type = DRT::Problem::Instance()->ProblemType();
@@ -345,10 +347,6 @@ Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldState()
     case prb_fluid_xfem:
       dserror( "Not yet considered!" );
       //state = Teuchos::rcp(new FLD::XFluidState());
-      break;
-    case prb_xcontact:
-      dserror( "Call the XFEM::State::Creator::CreateXFieldFieldState() "
-          "routine instead! ( ==> STR::XStructureStructureState )" );
       break;
     default:
       dserror( "Unsupported problem type ( %d )!",prb_type );
@@ -359,7 +357,7 @@ Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldFieldState()
+Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldFieldState() const
 {
   Teuchos::RCP<XFEM::XFieldState> state = Teuchos::null;
   PROBLEM_TYP prb_type = DRT::Problem::Instance()->ProblemType();
@@ -370,7 +368,8 @@ Teuchos::RCP<XFEM::XFieldState> XFEM::StateCreator::CreateXFieldFieldState()
 //      state = Teuchos::rcp( new FLD::XFluidFluidState() );
       break;
     case prb_xcontact:
-      state = Teuchos::rcp( new XSTR::XStructureStructureState() );
+      state = Teuchos::rcp_dynamic_cast<XFEM::XFieldState>(
+          STR::TIMINT::BuildDataGlobalState(), true );
       break;
     default:
       dserror( "Unsupported problem type (%d)!", prb_type );

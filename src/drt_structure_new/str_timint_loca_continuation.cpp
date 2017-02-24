@@ -285,6 +285,20 @@ const NOX::Abstract::Group& STR::TIMINT::LOCAContinuation::GetSolutionGroup() co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<NOX::Abstract::Group> STR::TIMINT::LOCAContinuation::SolutionGroupPtr()
+{
+  CheckInitSetup();
+  Teuchos::RCP<const NOX::Abstract::Group> solgrp_ptr=
+      loca_stepper_ptr_->getSolutionGroup();
+
+  Teuchos::RCP<NOX::Abstract::Group> mutable_solgrp_ptr =
+      Teuchos::rcp_const_cast<NOX::Abstract::Group>(solgrp_ptr);
+
+  return mutable_solgrp_ptr;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::TIMINT::LOCAContinuation::PrepareTimeStep()
 {
   dserror("The LOCA integration is currently not supposed to be used without the"

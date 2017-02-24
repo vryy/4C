@@ -127,9 +127,13 @@ namespace StatusTest {
 
     Teuchos::RCP<NOX::NLN::GlobalData> noxNlnGlobalData_;
 
-    Teuchos::RCP<NOX::Epetra::Vector> xVector_;
+    /** ptr to the state vector RCP. In this way the strong_count is neither lost
+     *  nor increased. */
+    const Teuchos::RCP<NOX::Epetra::Vector> * xVector_;
 
-    Teuchos::RCP<LINALG::SparseOperator> jac_;
+    /** ptr to the state matrix RCP. In this way the strong_count is neither lost
+     *  nor increased. */
+    const Teuchos::RCP<LINALG::SparseOperator> * jac_;
 
     Teuchos::RCP<LINALG::SparseOperator> precMat_;
 

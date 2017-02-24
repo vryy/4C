@@ -59,7 +59,7 @@ class BlockSparseMatrixBase : public SparseOperator
   virtual Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access) = 0;
 
   /// destroy the underlying Epetra objects
-  virtual bool Destroy();
+  virtual bool Destroy( bool throw_exception_for_blocks = true );
 
   /// setup of block preconditioners
   /*!

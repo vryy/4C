@@ -39,7 +39,8 @@ STR::Dbc::Dbc()
       timint_ptr_(Teuchos::null),
       locsysman_ptr_(Teuchos::null),
       zeros_ptr_(Teuchos::null),
-      dbcmap_ptr_(Teuchos::null)
+      dbcmap_ptr_(Teuchos::null),
+      freact_ptr_(NULL)
 {
   // empty constructor
 }
@@ -55,7 +56,7 @@ void STR::Dbc::Init(
   issetup_ = false;
 
   discret_ptr_ = discret_ptr;
-  freact_ptr_ = freact_ptr;
+  freact_ptr_ = freact_ptr.get();
   timint_ptr_ = timint_ptr;
 
   isinit_ = true;
@@ -295,7 +296,7 @@ void STR::Dbc::ApplyDirichletToLocalJacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> v) const
+bool STR::Dbc::RotateGlobalToLocal( const Teuchos::RCP<Epetra_Vector> & v ) const
 {
   CheckInitSetup();
   return RotateGlobalToLocal(v,false);
@@ -303,7 +304,7 @@ bool STR::Dbc::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> v) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> v, bool offset)
+bool STR::Dbc::RotateGlobalToLocal( const Teuchos::RCP<Epetra_Vector> & v, bool offset)
     const
 {
   CheckInitSetup();
@@ -317,7 +318,7 @@ bool STR::Dbc::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> v, bool offset)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseOperator> A)
+bool STR::Dbc::RotateGlobalToLocal( const Teuchos::RCP<LINALG::SparseOperator> & A )
     const
 {
   CheckInitSetup();
@@ -335,7 +336,7 @@ bool STR::Dbc::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseOperator> A)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> v) const
+bool STR::Dbc::RotateLocalToGlobal( const Teuchos::RCP<Epetra_Vector> & v ) const
 {
   CheckInitSetup();
   return RotateLocalToGlobal(v,false);
@@ -343,7 +344,7 @@ bool STR::Dbc::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> v) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> v, bool offset)
+bool STR::Dbc::RotateLocalToGlobal( const Teuchos::RCP<Epetra_Vector> & v, bool offset )
     const
 {
   CheckInitSetup();
@@ -373,13 +374,13 @@ void STR::Dbc::ExtractFreact(Teuchos::RCP<Epetra_Vector>& b) const
 {
   CheckInitSetup();
 
-  freact_ptr_->Update(-1.0,*b,0.0);
+  Freact().Update(-1.0,*b,0.0);
 
   // put zeros on all non-DBC dofs
-  InsertVectorInNonDbcDofs(zeros_ptr_,freact_ptr_);
+  InsertVectorInNonDbcDofs( zeros_ptr_, Teuchos::rcpFromRef( Freact() ) );
 
   // turn the reaction forces back to the global coordinate system if necessary
-  RotateLocalToGlobal(freact_ptr_);
+  RotateLocalToGlobal( Teuchos::rcpFromRef( Freact() ) );
 }
 
 /*----------------------------------------------------------------------------*
@@ -423,6 +424,16 @@ Teuchos::RCP<const Epetra_Vector> STR::Dbc::GetZerosPtr() const
 {
   CheckInitSetup();
   return zeros_ptr_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Epetra_Vector & STR::Dbc::Freact() const
+{
+  if ( not freact_ptr_ )
+    dserror( "NULL pointer" );
+
+  return *freact_ptr_;
 }
 
 /*----------------------------------------------------------------------*

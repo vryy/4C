@@ -44,17 +44,26 @@ namespace XFEM {
      *
      *  Examples are the XFluidFluid problem and the XContact problem. */
     void Init(
-        const Teuchos::RCP<XFEM::ConditionManager>&  condition_manager,
-        const Teuchos::RCP<GEO::CutWizard>&          wizard,
-        const Teuchos::RCP<XFEM::XFEMDofSet>&        xdofset,
-        const Teuchos::RCP<DRT::DiscretizationInterface>& xfielddiscret,
-        const Teuchos::RCP<DRT::DiscretizationInterface>& fielddiscret);
+        const Teuchos::RCP<XFEM::ConditionManager> &  condition_manager,
+        const Teuchos::RCP<GEO::CutWizard> &          wizard,
+        const Teuchos::RCP<XFEM::XFEMDofSet> &        xdofset,
+        const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
+        const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret);
 
     /// setup the stored state objects
     virtual void Setup() = 0;
 
     /// destroy the stored objects
     virtual bool Destroy() = 0;
+
+    /// transfer the old to a new state object
+    virtual void TransferToNewState(
+        const DRT::DiscretizationInterface& new_discret,
+        XFEM::XFieldState & new_xstate ) const = 0;
+
+    virtual void ResetNonStandardDofs( const DRT::DiscretizationInterface & full_discret ) = 0;
+
+    virtual void SetNewState( const XFEM::XFieldState & xstate );
 
     /// @name Accessors
     /// @{

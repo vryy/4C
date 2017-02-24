@@ -170,6 +170,14 @@ namespace GROUP {
     virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
     //! @}
 
+    //! @name XFEM related methods
+    //! @{
+
+    //! destroy the jacobian ptr in the linear system
+    bool DestroyJacobian();
+
+    //! @}
+
     //! compute and return some energy representative
     virtual double GetObjectiveModelValue(const std::string& name) const;
 

@@ -40,7 +40,9 @@ namespace LINALG{
 namespace DRT{
   class DiscretizationInterface;
 } // namespace DRT
-
+namespace XFEM {
+  class XFieldState;
+} // namespace XFEM
 namespace ADAPTER {
 
   class StructureNew : public Structure
@@ -51,10 +53,10 @@ namespace ADAPTER {
     /// virtual to get polymorph destruction
     virtual ~StructureNew() {};
 
-    /// @name Temporary
+    /// @name General methods
     ///@{
-    /// ToDo Remove as soon as old structure is deleted
-    virtual void Setup(){};
+    /// Setup the structure integrator
+    virtual void Setup() = 0;
     ///@}
 
     /// @name Vector access
@@ -501,6 +503,26 @@ namespace ADAPTER {
 
     ///@}
 
+
+    /// @name XFEM related methods
+    ///@{
+
+    /// access the xfield state pointer
+    virtual Teuchos::RCP<XFEM::XFieldState> XFieldState() = 0;
+
+    /// access the xfield state pointer ( read-only )
+    virtual Teuchos::RCP<const XFEM::XFieldState> XFieldState() const = 0;
+
+    /// destroy the current state variables
+    virtual bool DestroyState() = 0;
+
+    /// create a new xfield state ( should happen before you destroy the current state )
+    virtual void CreateNewXFieldState( const Teuchos::RCP<XFEM::XFieldState> & new_xstate ) const = 0;
+
+    /// reset the non-standard / enrichment dofs of the xfield state object
+    virtual void ResetXFieldNonStandardDofs() = 0;
+
+    ///@}
 
   };  // class StructureNew
 

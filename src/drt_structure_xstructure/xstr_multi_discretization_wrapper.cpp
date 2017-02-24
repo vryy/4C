@@ -811,7 +811,7 @@ void XSTR::MultiDiscretizationWrapper::Dof(std::vector<int>& dof,
 
   // first check if the node is a considered part of the wrapped discretization
   const int ngid = node->Id();
-  if (NodeRowMap()->MyGID(ngid))
+  if ( not NodeRowMap()->MyGID(ngid) )
     dserror("The given node is no part of the MultiDiscretizationWrapper. Maybe \n"
             "you have to call the routine directly on one of the wrapped \n"
             "discretizations to get what you want (i.e. ghosted nodes)?!");

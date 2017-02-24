@@ -50,7 +50,6 @@ NOX::NLN::LinearSystem::LinearSystem(
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
       jacType_(NOX::NLN::LinSystem::LinalgSparseOperator),
-      jacPtr_(jacobian),
       precInterfacePtr_(iPrec),
       precType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       precPtr_(preconditioner),
@@ -61,10 +60,11 @@ NOX::NLN::LinearSystem::LinearSystem(
       timeCreatePreconditioner_(0.0),
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
-      prePostOperatorPtr_(Teuchos::null)
+      prePostOperatorPtr_(Teuchos::null),
+      jacPtr_(jacobian)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::NLN::AUX::GetOperatorType(*jacPtr_);
+  jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
 
   reset(linearSolverParams);
 }
@@ -86,7 +86,6 @@ NOX::NLN::LinearSystem::LinearSystem(
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
       jacType_(NOX::NLN::LinSystem::LinalgSparseOperator),
-      jacPtr_(jacobian),
       precInterfacePtr_(iPrec),
       precType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       precPtr_(preconditioner),
@@ -97,10 +96,11 @@ NOX::NLN::LinearSystem::LinearSystem(
       timeCreatePreconditioner_(0.0),
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
-      prePostOperatorPtr_(Teuchos::null)
+      prePostOperatorPtr_(Teuchos::null),
+      jacPtr_(jacobian)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::NLN::AUX::GetOperatorType(*jacPtr_);
+  jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
 
   reset(linearSolverParams);
 }
@@ -121,7 +121,6 @@ NOX::NLN::LinearSystem::LinearSystem(
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
       jacType_(NOX::NLN::LinSystem::LinalgSparseOperator),
-      jacPtr_(jacobian),
       precInterfacePtr_(Teuchos::null),
       precType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       precPtr_(Teuchos::null),
@@ -132,10 +131,11 @@ NOX::NLN::LinearSystem::LinearSystem(
       timeCreatePreconditioner_(0.0),
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
-      prePostOperatorPtr_(Teuchos::null)
+      prePostOperatorPtr_(Teuchos::null),
+      jacPtr_(jacobian)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::NLN::AUX::GetOperatorType(*jacPtr_);
+  jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
 
   reset(linearSolverParams);
 }
@@ -155,7 +155,6 @@ NOX::NLN::LinearSystem::LinearSystem(
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
       jacType_(NOX::NLN::LinSystem::LinalgSparseOperator),
-      jacPtr_(jacobian),
       precInterfacePtr_(Teuchos::null),
       precType_(NOX::NLN::LinSystem::LinalgSparseOperator),
       precPtr_(Teuchos::null),
@@ -166,10 +165,11 @@ NOX::NLN::LinearSystem::LinearSystem(
       timeCreatePreconditioner_(0.0),
       timeApplyJacbianInverse_(0.0),
       resNorm2_(0.0),
-      prePostOperatorPtr_(Teuchos::null)
+      prePostOperatorPtr_(Teuchos::null),
+      jacPtr_(jacobian)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::NLN::AUX::GetOperatorType(*jacPtr_);
+  jacType_ = NOX::NLN::AUX::GetOperatorType(Jacobian());
 
   reset(linearSolverParams);
 }
@@ -207,8 +207,8 @@ bool NOX::NLN::LinearSystem::applyJacobian(
     const NOX::Epetra::Vector& input,
           NOX::Epetra::Vector& result) const
 {
-  jacPtr_->SetUseTranspose(false);
-  int status = jacPtr_->Apply(input.getEpetraVector(),
+  Jacobian().SetUseTranspose(false);
+  int status = Jacobian().Apply(input.getEpetraVector(),
                   result.getEpetraVector());
   return (status == 0);
 }
@@ -220,10 +220,10 @@ bool NOX::NLN::LinearSystem::applyJacobianTranspose(
           NOX::Epetra::Vector& result) const
 {
   // Apply the Jacobian
-  jacPtr_->SetUseTranspose(true);
-  int status = jacPtr_->Apply(input.getEpetraVector(),
+  Jacobian().SetUseTranspose(true);
+  int status = Jacobian().Apply(input.getEpetraVector(),
                   result.getEpetraVector());
-  jacPtr_->SetUseTranspose(false);
+  Jacobian().SetUseTranspose(false);
 
   return (status == 0);
 }
@@ -242,7 +242,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
    * possibility to change the linear system. */
   NOX::Epetra::Vector& nonConstInput = const_cast<NOX::Epetra::Vector&>(input);
 
-  prePostOperatorPtr_->runPreApplyJacobianInverse(nonConstInput,*jacPtr_,*this);
+  prePostOperatorPtr_->runPreApplyJacobianInverse(nonConstInput,Jacobian(),*this);
 
   double startTime = timer_.WallTime();
 
@@ -257,7 +257,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
   /* Note: We switch from LINALG_objects to pure Epetra_objects.
    * This is necessary for the linear solver.
    *     LINALG::SparseMatrix ---> Epetra_CrsMatrix */
-  Epetra_LinearProblem linProblem(jacPtr_->EpetraOperator().get(),
+  Epetra_LinearProblem linProblem(Jacobian().EpetraOperator().get(),
       &(result.getEpetraVector()),
       &(nonConstInput.getEpetraVector()));
 
@@ -304,7 +304,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
 //  std::cout << blockmat->Matrix(0,0) << std::endl;
 //  std::cout << blockmat->Matrix(1,1) << std::endl;
 
-  prePostOperatorPtr_->runPostApplyJacobianInverse(nonConstInput,*jacPtr_,*this);
+  prePostOperatorPtr_->runPostApplyJacobianInverse(nonConstInput,Jacobian(),*this);
 
   return true;
 }
@@ -325,13 +325,13 @@ bool NOX::NLN::LinearSystem::applyRightPreconditioning(bool useTranspose,
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::computeJacobian(const NOX::Epetra::Vector& x)
 {
-  prePostOperatorPtr_->runPreComputeJacobian(*jacPtr_,x.getEpetraVector(),
+  prePostOperatorPtr_->runPreComputeJacobian(Jacobian(),x.getEpetraVector(),
       *this);
 
   bool success = jacInterfacePtr_->computeJacobian(x.getEpetraVector(),
-                          *jacPtr_);
+                          Jacobian());
 
-  prePostOperatorPtr_->runPostComputeJacobian(*jacPtr_,x.getEpetraVector(),
+  prePostOperatorPtr_->runPostComputeJacobian(Jacobian(),x.getEpetraVector(),
       *this);
   return success;
 }
@@ -343,14 +343,14 @@ bool NOX::NLN::LinearSystem::computeFandJacobian(
     NOX::Epetra::Vector& rhs)
 {
   prePostOperatorPtr_->runPreComputeFandJacobian(rhs.getEpetraVector(),
-      *jacPtr_,x.getEpetraVector(),*this);
+      Jacobian(),x.getEpetraVector(),*this);
 
   bool success = Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>
       (jacInterfacePtr_)->computeFandJacobian(x.getEpetraVector(),
-      rhs.getEpetraVector(),*jacPtr_);
+      rhs.getEpetraVector(),Jacobian());
 
   prePostOperatorPtr_->runPostComputeFandJacobian(rhs.getEpetraVector(),
-      *jacPtr_,x.getEpetraVector(),*this);
+      Jacobian(),x.getEpetraVector(),*this);
   return success;
 }
 
@@ -388,7 +388,7 @@ void NOX::NLN::LinearSystem::adjustPseudoTimeStep(
       Teuchos::rcp(new Epetra_Vector(scalingDiagOp));
   v->Scale(ptcsolver.getInversePseudoTimeStep());
   Teuchos::RCP<LINALG::SparseMatrix> jac =
-      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(jacPtr_);
+      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(JacobianPtr());
   if (jac.is_null())
     throwError("adjustPseudoTimeStep()","Cast to LINALG::SparseMatrix failed!");
   // get the diagonal terms of the jacobian
@@ -487,14 +487,14 @@ Teuchos::RCP<const NOX::Epetra::Interface::Preconditioner>
 Teuchos::RCP<const Epetra_Operator>
     NOX::NLN::LinearSystem::getJacobianOperator() const
 {
-  return jacPtr_;
+  return JacobianPtr();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Operator> NOX::NLN::LinearSystem::getJacobianOperator()
 {
-  return jacPtr_;
+  return JacobianPtr();
 }
 
 /*----------------------------------------------------------------------*
@@ -601,4 +601,12 @@ void NOX::NLN::LinearSystem::setPrecOperatorForSolve(
 {
   throwError("setPrecOperatorForSolve", "no preconditioner supported");
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool NOX::NLN::LinearSystem::DestroyJacobian()
+{
+  jacPtr_ = Teuchos::null;
+  return true;
 }

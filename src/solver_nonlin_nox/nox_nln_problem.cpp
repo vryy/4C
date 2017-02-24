@@ -49,8 +49,8 @@ NOX::NLN::Problem::Problem(
     : isinit_(false),
       isjac_(false),
       noxNlnGlobalData_(noxNlnGlobalData),
-      xVector_(Teuchos::null),
-      jac_(Teuchos::null),
+      xVector_(NULL),
+      jac_(NULL),
       precMat_(Teuchos::null),
       scalingObject_(Teuchos::null)
 {
@@ -65,8 +65,8 @@ NOX::NLN::Problem::Problem(
     const Teuchos::RCP<LINALG::SparseOperator>& A)
     : isinit_(false),
       noxNlnGlobalData_(noxNlnGlobalData),
-      xVector_(Teuchos::null),
-      jac_(Teuchos::null),
+      xVector_(NULL),
+      jac_(NULL),
       precMat_(Teuchos::null),
       scalingObject_(Teuchos::null)
 {
@@ -84,9 +84,9 @@ void NOX::NLN::Problem::Initialize(
   if ( x.is_null() )
     dserror("You have to provide a state vector pointer unequal Teuchos::null!");
 
-  xVector_ = x;
+  xVector_ = & x;
   isjac_   = ( not A.is_null() );
-  jac_     = A;
+  jac_     = & A;
 
   isinit_ = true;
 }
@@ -103,9 +103,10 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem()
 
   const NOX::NLN::LinSystem::LinearSystemType linsystype =
       NOX::NLN::AUX::GetLinearSystemType( noxNlnGlobalData_->GetLinSolvers() );
+
   // build the linear system --> factory call
   return NOX::NLN::LinSystem::BuildLinearSystem(
-      linsystype,*noxNlnGlobalData_,jac_,xVector_,precMat_,scalingObject_);
+      linsystype,*noxNlnGlobalData_,*jac_,*xVector_,precMat_,scalingObject_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -125,12 +126,12 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iconstr =
           noxNlnGlobalData_->GetConstraintInterfaces();
     noxgrp = Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(params.sublist("Printing"),
-        params.sublist("Group Options"),iReq,*xVector_,linSys,iconstr));
+        params.sublist("Group Options"),iReq,**xVector_,linSys,iconstr));
   }
   else
   {
     noxgrp = Teuchos::rcp(new NOX::NLN::Group(params.sublist("Printing"),
-        params.sublist("Group Options"),iReq,*xVector_,linSys));
+        params.sublist("Group Options"),iReq,**xVector_,linSys));
   }
 
   return noxgrp;

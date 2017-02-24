@@ -79,6 +79,14 @@ namespace TIMINT {
         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
     /// @}
 
+    /// @name XFEM/XSTR related methods
+    ///@{
+
+    /// destroy the nonlinear solver state and all internal stored state variables
+    virtual bool DestroyNoxState();
+
+    ///@}
+
     //! print summary after step
     virtual void PrintStep();
 
@@ -101,6 +109,9 @@ namespace TIMINT {
   protected:
     /// Returns the current solution group (pure virtual)
     virtual const NOX::Abstract::Group& GetSolutionGroup() const = 0;
+
+    //! Returns the current solution group ptr
+    virtual Teuchos::RCP<NOX::Abstract::Group> SolutionGroupPtr() = 0;
   };
 }
 }

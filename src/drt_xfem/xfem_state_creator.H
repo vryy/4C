@@ -48,6 +48,22 @@ namespace XFEM {
     state_undefined = -1
   };
 
+  static inline std::string StateStatus2String( enum StateStatus status )
+  {
+    switch ( status )
+    {
+      case state_unchanged:
+        return "state_unchanged";
+      case state_changed:
+        return "state_changed";
+      case state_undefined:
+        return "state_undefined";
+      default:
+        return "Unknown XFEM::StateStatus";
+    }
+    exit (EXIT_FAILURE);
+  }
+
   class StateCreator
   {
   public:
@@ -167,13 +183,13 @@ namespace XFEM {
         Teuchos::ParameterList &               solver_params,
         DRT::DiscretizationXFEM &              xdiscret );
 
-  private:
-
     //! factory routine to create the right xfield state corresponding to the problem type
-    Teuchos::RCP<XFEM::XFieldState> CreateXFieldState();
+    Teuchos::RCP<XFEM::XFieldState> CreateXFieldState() const;
 
     //! factory routine to create the right xfield/field state corresponding to the problem type
-    Teuchos::RCP<XFEM::XFieldState> CreateXFieldFieldState();
+    Teuchos::RCP<XFEM::XFieldState> CreateXFieldFieldState() const;
+
+  private:
 
     /*! \brief create wizard, perform cut, create new dofset and update xfem discretization
      *

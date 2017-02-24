@@ -473,6 +473,19 @@ Teuchos::RCP<const Epetra_Vector> NOX::NLN::Group::GetLumpedMassMatrixPtr() cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+bool NOX::NLN::Group::DestroyJacobian()
+{
+  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
+        Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(
+        sharedLinearSystem.getObject(this));
+
+  isValidJacobian = false;
+
+  return nlnSharedLinearSystem->DestroyJacobian();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 bool NOX::NLN::Group::isJacobian() const
 {
   if (isValidJacobian and not sharedLinearSystem.isOwner(this))
