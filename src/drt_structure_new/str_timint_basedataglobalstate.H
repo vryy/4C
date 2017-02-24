@@ -84,6 +84,9 @@ namespace TIMINT {
     /// setup of the new class variables
     void Setup();
 
+    /// read initial field conditions
+    void SetInitialFields();
+
     int SetupBlockInformation(
         const STR::MODELEVALUATOR::Generic& me,
         const INPAR::STR::ModelType& mt);

@@ -20,6 +20,7 @@
 #include "str_model_evaluator_generic.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_discret.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_fem_general/largerotations.H"
@@ -190,10 +191,31 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
     }
   }
 
+  SetInitialFields();
+
   issetup_ = true;
 
   // Good bye
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
+{
+  // set initial velocity field if existing
+  const std::string field = "Velocity";
+  std::vector<int> localdofs;
+  localdofs.push_back(0);
+  localdofs.push_back(1);
+  localdofs.push_back(2);
+  DRT::UTILS::EvaluateInitialField(*discret_,field,velnp_,localdofs);
+
+  // set initial porosity field if existing
+  const std::string porosityfield = "Porosity";
+  std::vector<int> porositylocaldofs;
+  porositylocaldofs.push_back(DRT::Problem::Instance()->NDim());
+  DRT::UTILS::EvaluateInitialField(*discret_,porosityfield,(*dis_)(0),porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------------*
