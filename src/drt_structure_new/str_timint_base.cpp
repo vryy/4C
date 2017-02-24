@@ -200,17 +200,10 @@ Teuchos::RCP<DRT::UTILS::LocsysManager> STR::TIMINT::Base::LocsysManager()
   return dbc_ptr_->LocSysManagerPtr();
 }
 
-STR::MODELEVALUATOR::Generic* STR::TIMINT::Base::GetMutableModelEvaluator(
-    const INPAR::STR::ModelType& model)
-{
-  CheckInitSetup();
-  return &int_ptr_->ModelEval().Evaluator(model);
-}
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
-    const INPAR::STR::ModelType& mtype) const
+    INPAR::STR::ModelType mtype) const
 {
   return Integrator().ModelEval().Evaluator(mtype);
 }
@@ -218,7 +211,7 @@ const STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Generic& STR::TIMINT::Base::ModelEvaluator(
-    const INPAR::STR::ModelType& mtype)
+    INPAR::STR::ModelType mtype)
 {
   return Integrator().ModelEval().Evaluator(mtype);
 }

@@ -145,11 +145,11 @@ namespace TIMINT {
 
     //! Return the desired model evaluator (read-only)
     virtual const STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        const INPAR::STR::ModelType& mtype) const;
+        INPAR::STR::ModelType mtype) const;
 
     //! Return the desired model evaluator (read and write)
     virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        const INPAR::STR::ModelType& mtype);
+        INPAR::STR::ModelType mtype);
 
     ///@}
 
@@ -280,13 +280,9 @@ namespace TIMINT {
     { dserror("Not yet implemented!"); return Teuchos::null; }
 
     /// do we have this model
-    virtual bool HaveModel(const INPAR::STR::ModelType& model) {
+    virtual bool HaveModel(INPAR::STR::ModelType model) {
       return datasdyn_->HaveModelType(model);
     }
-
-    /// return model evaluator
-    virtual STR::MODELEVALUATOR::Generic* GetMutableModelEvaluator(
-        const INPAR::STR::ModelType& model);
 
     /// Add residual increment to Lagrange multipliers stored in Constraint manager (derived)
     /// FixMe Different behavior for the implicit and explicit case!!!

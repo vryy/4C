@@ -210,13 +210,12 @@ namespace ADAPTER {
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() = 0;
 
     /// do we have this model
-    virtual bool HaveModel(const INPAR::STR::ModelType& model)
+    virtual bool HaveModel(INPAR::STR::ModelType model)
     { dserror("new time integration only"); return false;}
 
     /// return model evaluator
-    virtual ::STR::MODELEVALUATOR::Generic* GetMutableModelEvaluator(
-        const INPAR::STR::ModelType& model)
-    { dserror("new time integration only"); return NULL;}
+    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
+        INPAR::STR::ModelType mtype) = 0 ;
 
     // access to locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;

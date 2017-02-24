@@ -479,13 +479,13 @@ namespace ADAPTER
     { return structure_->HaveMicroMat(); }
 
     /// do we have this model
-    virtual bool HaveModel(const INPAR::STR::ModelType& model)
+    virtual bool HaveModel(INPAR::STR::ModelType model)
     { return structure_->HaveModel(model);}
 
     /// return model evaluator
-    virtual ::STR::MODELEVALUATOR::Generic* GetMutableModelEvaluator(
-        const INPAR::STR::ModelType& model)
-    { return structure_->GetMutableModelEvaluator(model);}
+    virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
+        INPAR::STR::ModelType mtype)
+    { return structure_->ModelEvaluator(mtype);}
 
   protected:
 

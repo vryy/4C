@@ -438,11 +438,11 @@ namespace ADAPTER {
 
     /// access the desired model evaluator (read-only)
     virtual const ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        const INPAR::STR::ModelType& mtype) const = 0;
+        INPAR::STR::ModelType mtype) const = 0;
 
     /// access the desired model evaluator (read and write)
     virtual ::STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        const INPAR::STR::ModelType& mtype) = 0;
+        INPAR::STR::ModelType mtype) = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
