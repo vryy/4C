@@ -340,6 +340,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC", *list);
   reader.ReadGidSection("--PARTICLE DYNAMIC/GENALPHA", *list);
+  reader.ReadGidSection("--PASI DYNAMIC", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/PARTICLE", *list);
   reader.ReadGidSection("--LEVEL-SET CONTROL/REINITIALIZATION", *list);
@@ -2082,6 +2083,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_meshfree:
+  case prb_pasi:
   {
     if(distype == "Meshfree")
     {

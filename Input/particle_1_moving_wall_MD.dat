@@ -16,7 +16,7 @@ DIM                             3
 MATERIALS                       1
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Particle
+PROBLEMTYP                      Particle_Structure_Interaction
 RESTART                         0
 //RESTART                       74
 SHAPEFCT                        Meshfree
@@ -35,6 +35,7 @@ TYPE                            Particle
 CUTOFF_RADIUS                   3.2
 BOUNDINGBOX                     -10.000001 -10.000001 -10.000001 10.000001 10.000001 10.000001
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     1
 RESTARTEVRY                     1000000
@@ -76,6 +77,13 @@ NORMAL_DAMP_WALL                -1.0
 TANG_DAMP_WALL                  -1.0
 MOVING_WALLS                    Yes
 RANDOM_AMPLITUDE                0.0 //0.01
+----------------------------------------------------------------PASI DYNAMIC
+RESULTSEVRY                     1
+RESTARTEVRY                     1000000
+TIMESTEP                        0.5
+NUMSTEP                         6
+MAXTIME                         3
+COUPALGO                        partitioned_onewaycoup
 --------------------------------------------------------------------SOLVER 1
 NAME                            Dummy_Structure_Solver
 SOLVER                          UMFPACK

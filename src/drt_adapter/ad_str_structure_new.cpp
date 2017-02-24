@@ -27,6 +27,7 @@
 #include "ad_str_invana.H"
 #include "ad_str_xcontact.H"
 #include "ad_str_ssiwrapper.H"
+#include "ad_str_pasiwrapper.H"
 
 #include "../drt_structure/strtimada_create.H"
 
@@ -880,6 +881,11 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
     case prb_ssi:
     {
       str_wrapper_ = Teuchos::rcp(new SSIStructureWrapper(ti_strategy));
+      break;
+    }
+    case prb_pasi:
+    {
+      str_wrapper_ = Teuchos::rcp(new PASIStructureWrapper(ti_strategy));
       break;
     }
     case prb_redairways_tissue:

@@ -31,6 +31,7 @@
 #include "../drt_lubrication/lubrication_dyn.H"
 #include "../drt_opti/topopt_dyn.H"
 #include "../drt_particle/particle_dyn.H"
+#include "../drt_pasi/pasi_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
 #include "../drt_poromultiphase/poromultiphase_dyn.H"
 #include "../drt_poromultiphase_scatra/poromultiphase_scatra_dyn.H"
@@ -195,6 +196,10 @@ void ntacal()
     case prb_cavitation:
     case prb_meshfree:
       particle_drt();
+      break;
+
+    case prb_pasi:
+      pasi_dyn();
       break;
 
     case prb_level_set:

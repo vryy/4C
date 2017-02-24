@@ -76,7 +76,7 @@ TANG_DAMP                       0.0
 COEFF_RESTITUTION_WALL          0.8
 NORMAL_DAMP_WALL                -1.0
 TANG_DAMP_WALL                  -1.0
-MOVING_WALLS                    Yes
+MOVING_WALLS                    No
 RANDOM_AMPLITUDE                0.00 //0.01
 --------------------------------------------------------------------SOLVER 1
 NAME                            Dummy_Structure_Solver

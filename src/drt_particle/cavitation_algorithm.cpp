@@ -16,7 +16,6 @@
 #include "../drt_adapter/adapter_particle.H"
 #include "particle_node.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
-#include "../drt_adapter/ad_str_structure.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
@@ -846,7 +845,7 @@ void CAVITATION::Algorithm::InitCavitation()
       dserror("extended ghosting does not include standard ghosting");
 
   // assign wall elements based on the fluid discretization to bins initially once
-  SetupParticleWalls(fluiddis_);
+  SetupParticleWalls(fluiddis_,"BELE3_4");
   AssignWallElesToBins();
 
   // read out bubble inflow condition and set bubble inflows in corresponding row bins
@@ -1089,9 +1088,6 @@ void CAVITATION::Algorithm::PrepareTimeStep()
 
   // apply dirichlet boundary conditions
   particles_->PrepareTimeStep();
-
-  if(structure_ != Teuchos::null)
-    structure_->PrepareTimeStep();
 
   // do rough safety check if bin size is appropriate --> see also Timeloop()
   if(particles_->Time() > Time()-Dt()+0.1*count_*Dt())

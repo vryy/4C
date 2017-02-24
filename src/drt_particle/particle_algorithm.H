@@ -47,7 +47,6 @@ namespace DRT
 }
 namespace ADAPTER
 {
-  class Structure;
   class Particle;
 }
 namespace IO
@@ -118,8 +117,12 @@ namespace PARTICLE
     /// get wall discretization
     virtual Teuchos::RCP<DRT::Discretization> WallDiscret() { return particlewalldis_; }
 
-    /// get underlyling structural problem
-    virtual Teuchos::RCP<ADAPTER::Structure> Structure() { return structure_; }
+    /// set structural states
+    virtual void SetStructStates(
+        Teuchos::RCP<const Epetra_Vector> structdispn,   ///< structural displacements at t_n
+        Teuchos::RCP<const Epetra_Vector> structdispnp,  ///< structural displacements at t_n+1
+        Teuchos::RCP<const Epetra_Vector> structvelnp    ///< structural velocities at t_n
+        );
 
     /// return gravity acceleration
     virtual LINALG::Matrix<3,1> GetGravityAcc() {return gravity_acc_ ; }
@@ -168,10 +171,22 @@ namespace PARTICLE
 
     inline virtual void CalculateAndApplyForcesToParticles(bool init) { ; };
 
-  protected:
+    /// bins are redistributed according to the current fill level with particles
+    virtual void DynamicLoadBalancing();
+
+    /// update connectivity: mask to sort various connectivity updates
+    virtual void UpdateConnectivity();
 
     /// prepare time step
-    virtual void PrepareTimeStep();
+    virtual void PrepareTimeStep(bool print_header = true);
+
+    /// output particle time step
+    virtual void Output(bool forced_writerestart = false);
+
+    /// adaptions for Normal_DEM_thermo
+    virtual void NormDemThermoAdapt();
+
+  protected:
 
     /// solve the current particle time step
     virtual void Integrate();
@@ -182,14 +197,8 @@ namespace PARTICLE
     /// calculate stresses, strains, energies
     virtual void PrepareOutput();
 
-    /// output particle time step
-    virtual void Output(bool forced_writerestart = false);
-
     /// update state vectors which do not live in the time integrator to new layout
     virtual void UpdateStates(){};
-
-    // bins are redistributed according to the current fill level with particles
-    virtual void DynamicLoadBalancing();
 
     /// build connectivity from particle wall elements to bins
     virtual void BuildElementToBinPointers(
@@ -199,9 +208,13 @@ namespace PARTICLE
     /// rough safety check for proper bin size
     virtual void BinSizeSafetyCheck(const double dt);
 
+    /// access structure and setup particle wall
+    virtual void AccessStructure();
+
     /// particle walls are set up and assigned to bins
     virtual void SetupParticleWalls(
-      Teuchos::RCP<DRT::Discretization> basediscret
+      Teuchos::RCP<DRT::Discretization> basediscret,
+      const std::string elename
       );
 
     /// assign wall elements to bins
@@ -212,9 +225,6 @@ namespace PARTICLE
 
     /// update of the map bins->heat Sources
     virtual void UpdateHeatSourcesConnectivity(bool forceRestart);
-
-    /// update connectivity: mask to sort various connectivity updates
-    virtual void UpdateConnectivity();
 
     /// get particles and wall elements in given bins
     void GetBinContent(
@@ -251,13 +261,17 @@ namespace PARTICLE
 
     int writeresultsevery_;   ///< output interval
 
-    Teuchos::RCP<ADAPTER::Structure> structure_;     ///< structural (wall) time integration
-
     Teuchos::RCP<DRT::Discretization> particlewalldis_;     ///< fully redundant particle wall discretization
 
     Teuchos::RCP<Epetra_Map> particlewallelecolmap_standardghosting_;     ///< wall ele col map containing standard ghosting
 
     Teuchos::RCP<LINALG::MapExtractor> wallextractor_;   ///< map extractor for particle wall
+
+    Teuchos::RCP<const Epetra_Vector> structdispn_; ///< structural displacements at t_n
+
+    Teuchos::RCP<const Epetra_Vector> structdispnp_; ///< structural displacements at t_n+1
+
+    Teuchos::RCP<const Epetra_Vector> structvelnp_; ///< structural velocities at t_n
 
     const bool moving_walls_;   ///< flag whether walls are moving
 

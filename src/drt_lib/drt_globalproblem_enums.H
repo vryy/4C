@@ -61,6 +61,7 @@ typedef enum _PROBLEM_TYP
   prb_np_support,           // supporting procs for nested parallelism
   prb_opt,                  // structural optimization  problem
   prb_particle,             // particle simulation
+  prb_pasi,                 // particle structure interaction
   prb_polymernetwork,       // polymer network
   prb_poroelast,            // poroelasticity
   prb_poroscatra,           // passive scalar transport in porous media

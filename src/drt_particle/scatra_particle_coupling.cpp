@@ -976,17 +976,6 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
 
 
 /*----------------------------------------------------------------------*
- | prepare time step                                   rasthofer 09/13  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::PrepareTimeStep()
-{
-  // update time and step
-  Algorithm::PrepareTimeStep();
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | solve the current particle time step                 rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void PARTICLE::ScatraParticleCoupling::Integrate()
@@ -2614,18 +2603,6 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
 
   if (MyRank() == 0)
     std::cout << "----------------------------- " << std::endl;
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | output particle time step                            rasthofer 09/13 |
- *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::Output(bool forced_writerestart /* = false*/)
-{
-  // write data to file
-  PARTICLE::Algorithm::Output(forced_writerestart);
 
   return;
 }

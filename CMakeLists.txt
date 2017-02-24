@@ -703,6 +703,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_ssiwrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper.cpp
   src/drt_adapter/ad_str_fpsiwrapper.cpp
+  src/drt_adapter/ad_str_pasiwrapper.cpp
   src/drt_adapter/ad_str_structalewrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper_immersed.cpp
   src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
@@ -769,6 +770,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_crosslinking.cpp
   src/drt_inpar/inpar_particle.cpp
   src/drt_inpar/inpar_cavitation.cpp
+  src/drt_inpar/inpar_pasi.cpp
   src/drt_inpar/inpar_cell.cpp
   src/drt_inpar/inpar_combust.cpp
   src/drt_inpar/inpar_contact.cpp
@@ -2434,6 +2436,14 @@ src/drt_immersed_problem/ssi_partitioned_2wc_adhesiondynamics.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 )
 
+set(OBJS_DRT_PASI
+src/drt_pasi/pasi_dyn.cpp
+src/drt_pasi/pasi_partitioned.cpp
+src/drt_pasi/pasi_partitioned_onewaycoup.cpp
+src/drt_pasi/pasi_utils.cpp
+src/drt_pasi/pasi_str_model_evaluator_partitioned.cpp
+)
+
 set(OBJS_DRT_TUTORIAL
 src/drt_tutorial/tutorial_dyn.cpp
 src/drt_tutorial/tutorial_utils.cpp
@@ -2585,6 +2595,7 @@ add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 add_library(alg_ssi ${OBJS_DRT_SSI})
 add_library(alg_ehl ${OBJS_DRT_EHL})
+add_library(alg_pasi ${OBJS_DRT_PASI})
 
 set(MULTIFIELD_LIBRARIES
   alg_elch
@@ -2605,6 +2616,7 @@ set(MULTIFIELD_LIBRARIES
   alg_topopt
   alg_ssi
   alg_ehl
+  alg_pasi
   )
 
 # the adapter layer

@@ -60,9 +60,6 @@ namespace PARTICLE
     /// initialize particle field with particles
     virtual void InitialSeeding();
 
-    /// prepare time step
-    virtual void PrepareTimeStep();
-
     /// solve the current particle time step
     virtual void Integrate();
 
@@ -71,9 +68,6 @@ namespace PARTICLE
 
     /// correct level-set function using escaped particles
     Teuchos::RCP<Epetra_Vector> CorrectionStep();
-
-    /// output particle time step
-    virtual void Output(bool forced_writerestart = false);
 
     /// compute velocities of particles at intermediate time n+theta
     Teuchos::RCP<Epetra_Vector> GetVelocity(const double theta); /// intermediate point in time

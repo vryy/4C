@@ -627,6 +627,7 @@ void PostProblem::read_meshes()
 
       if ((currfield.problem()->Problemtype()==prb_particle
           or currfield.problem()->Problemtype()==prb_cavitation
+          or currfield.problem()->Problemtype()==prb_pasi
           or currfield.problem()->Problemtype()==prb_level_set
           or currfield.problem()->Problemtype()==prb_combust
           or currfield.problem()->Problemtype()==prb_two_phase_flow

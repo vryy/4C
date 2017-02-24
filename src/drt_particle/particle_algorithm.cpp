@@ -17,7 +17,6 @@
 #include "particleMeshFree_rendering.H"
 #include "particleMeshFree_interaction.H"
 #include "../drt_adapter/adapter_particle.H"
-#include "../drt_adapter/ad_str_structure.H"
 #include "binning_strategy.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -60,7 +59,6 @@ PARTICLE::Algorithm::Algorithm(
   ) : AlgorithmBase(comm,params), ParticleHandler(comm),
   particles_(Teuchos::null),
   writeresultsevery_(0),
-  structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
   particlewallelecolmap_standardghosting_(Teuchos::null),
   moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
@@ -76,6 +74,12 @@ PARTICLE::Algorithm::Algorithm(
   INPAR::MESHFREE::meshfreetype meshfreetype = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(meshfreeparams,"TYPE");
   if (meshfreetype!=INPAR::MESHFREE::particle)
     dserror("MESHFREE -> TYPE must be Particle in input file.");
+
+  if (moving_walls_ == true and DRT::Problem::Instance()->ProblemType() != prb_pasi)
+    dserror("MOVING_WALLS flag is activated!\n"
+        "Set parameter PROBLEMTYP to 'Particle_Structure_Interaction' in ---PROBLEM TYP section.\n"
+        "Set parameter COUPALGO to 'partitioned_onewaycoup' in ---PASI DYNAMIC section\n"
+        "and set the particle structure interaction time parameters.");
 
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
   gravity_acc_.PutScalar(0.0);
@@ -122,16 +126,8 @@ void PARTICLE::Algorithm::Timeloop()
     // particle time step is solved
     Integrate();
 
-    // dismembering if necessary
-    switch (particleInteractionType_)
-    {
-    case INPAR::PARTICLE::Normal_DEM_thermo :
-      ThermalExpansion();
-      ParticleDismemberer();
-      break;
-    default : //do nothing
-      break;
-    }
+    // adaptions for Normal_DEM_thermo
+    NormDemThermoAdapt();
 
     // calculate stresses, strains, energies
     PrepareOutput();
@@ -213,40 +209,8 @@ void PARTICLE::Algorithm::Init(bool restarted)
     // make sure that a particle material is defined in the dat-file
     InitMaterials();
 
-    // add fully redundant discret for particle walls with identical dofs to full structural discret
-
     // get input parameters for particles
     const Teuchos::ParameterList& particledyn = DRT::Problem::Instance()->ParticleParams();
-
-    // access the structural discretization
-    Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-
-    // initialize structure if necessary
-    int numstructnode = structdis->NumMyColElements();
-    int eleexist = 0;
-    structdis->Comm().MaxAll(&numstructnode, &eleexist, 1);
-    if(eleexist)
-    {
-      // get input parameters for structure
-      const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-      // initialize structural time integrator
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(particledyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-      structure_ = structure->StructureField();
-      structure_->Setup();
-
-      // add particle walls
-      SetupParticleWalls(structdis);
-
-      // assign wall elements to bins initially once for fixed walls (additionally rebuild pointers after ghosting)
-      if(!moving_walls_)
-        AssignWallElesToBins();
-    }
-
-    // safety check
-    else if(moving_walls_)
-      dserror("Moving walls indicated in input file despite empty structure discretization!");
 
     // create time integrator based on structural time integration
     Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
@@ -273,6 +237,8 @@ void PARTICLE::Algorithm::Init(bool restarted)
     SetUpHeatSources();
     UpdateHeatSourcesConnectivity(false);
 
+    // access structure and build particle walls
+    AccessStructure();
   }
   else
   {
@@ -356,16 +322,14 @@ void PARTICLE::Algorithm::InitMaterials()
 /*----------------------------------------------------------------------*
  | prepare time step                                       ghamm 10/12  |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::PrepareTimeStep()
+void PARTICLE::Algorithm::PrepareTimeStep(bool print_header)
 {
   IncrementTimeAndStep();
-  PrintHeader();
+  if (print_header)
+    PrintHeader();
 
   // apply dirichlet boundary conditions
   particles_->PrepareTimeStep();
-
-  if(moving_walls_)
-    structure_->PrepareTimeStep();
 
   // do rough safety check if bin size is appropriate
   BinSizeSafetyCheck(particles_->Dt());
@@ -396,9 +360,6 @@ void PARTICLE::Algorithm::Integrate()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Update()
 {
-  if(structure_ != Teuchos::null)
-    structure_->Update();
-
   // write state vectors from n+1 to n
   particles_->Update();
 
@@ -427,10 +388,6 @@ void PARTICLE::Algorithm::ReadRestart(int restart)
   SetTimeStep(particles_->TimeOld(),restart);
 
   UpdateHeatSourcesConnectivity(true);
-
-  // read restart for walls
-  if(structure_ != Teuchos::null)
-    structure_->ReadRestart(restart);
 
   return;
 }
@@ -629,10 +586,67 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
 }
 
 /*----------------------------------------------------------------------*
-| particle walls are added from the structural discret      ghamm 03/13 |
+ | set structural states                                   sfuchs 02/17 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> basediscret)
+void PARTICLE::Algorithm::SetStructStates(
+    Teuchos::RCP<const Epetra_Vector> structdispn,   ///< structural displacements at t_n
+    Teuchos::RCP<const Epetra_Vector> structdispnp,  ///< structural displacements at t_n+1
+    Teuchos::RCP<const Epetra_Vector> structvelnp    ///< structural velocities at t_n
+    )
 {
+  structdispn_ = structdispn;
+  structdispnp_ = structdispnp;
+  structvelnp_ = structvelnp;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | access structure and setup particle wall                 ghamm 03/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::AccessStructure()
+{
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+
+  // initialize structure if necessary
+  int numstructnode = structdis->NumMyColElements();
+  int eleexist = 0;
+  structdis->Comm().MaxAll(&numstructnode, &eleexist, 1);
+
+  if(eleexist)
+  {
+    // fill discretization
+    if (not structdis->Filled())
+      structdis->FillComplete();
+
+    // add fully redundant discretization for particle walls with identical dofs to full structural discret
+    SetupParticleWalls(structdis,"BELE3_3");
+
+    // assign wall elements to bins initially once for fixed walls (additionally rebuild pointers after ghosting)
+    if(!moving_walls_)
+      AssignWallElesToBins();
+  }
+
+  // safety check
+  else if(moving_walls_)
+    dserror("Moving walls indicated in input file despite empty structure discretization!");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | particle walls are added from the structural discret     ghamm 03/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> basediscret,const std::string elename)
+{
+  // elename = "BELE3_3" or "BELE3_4"
+  // number of dofs is important for transparent dof set
+  // only zeros are applied to the wall displacements when fluid domain is basediscret
+  // -> number of dofs is irrelevant when reading data for wall discret in this case
+  // future implementation using ALE needs to be handled like a structure
+
   //--------------------------------------------------------------------
   // 1st step: build fully redundant discretization with wall elements
   //--------------------------------------------------------------------
@@ -651,16 +665,6 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(basediscret->Comm().Clone());
   const std::string discret_name = "particlewalls";
   Teuchos::RCP<DRT::Discretization> particlewalldis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
-
-  // number of dofs is important for transparent dof set
-  // only zeros are applied to the wall displacements when fluid domain is basediscret
-  // -> number of dofs is irrelevant when reading data for wall discret in this case
-  // future implementation using ALE needs to be handled like a structure
-  std::stringstream elename;
-  if(structure_ != Teuchos::null)
-    elename << "BELE3_" << 3;
-  else
-    elename << "BELE3_" << 4;
 
   std::vector<int> nodeids;
   std::vector<int> eleids;
@@ -690,7 +694,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
       {
         eleids.push_back(currele->Id() );
         // structural surface elements cannot be distributed --> Bele3 element is used
-        Teuchos::RCP<DRT::Element> wallele = DRT::UTILS::Factory(elename.str(),"Polynomial", currele->Id(), currele->Owner());
+        Teuchos::RCP<DRT::Element> wallele = DRT::UTILS::Factory(elename,"Polynomial", currele->Id(), currele->Owner());
         wallele->SetNodeIds(currele->NumNode(), currele->NodeIds());
         particlewalldis->AddElement( wallele );
       }
@@ -743,7 +747,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
     std::cout << "after adding particle walls" << std::endl;
   DRT::UTILS::PrintParallelDistribution(*particlewalldis_);
   if(moving_walls_)
-    wallextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*(structure_->Discretization()->DofRowMap()),Teuchos::rcp(particlewalldis_->DofRowMap(), false)));
+    wallextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*(basediscret->DofRowMap()),Teuchos::rcp(particlewalldis_->DofRowMap(), false)));
 
   // write initial wall discret for visualization
   particlewalldis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particlewalldis_)));
@@ -941,12 +945,26 @@ void PARTICLE::Algorithm::TestResults(const Epetra_Comm& comm)
 void PARTICLE::Algorithm::PrepareOutput()
 {
   particles_->PrepareOutput();
-  if(structure_ != Teuchos::null)
-    structure_->PrepareOutput();
 
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | adaptions for Normal_DEM_thermo                        sfuchs 02/17  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::NormDemThermoAdapt()
+{
+  if (particleInteractionType_ == INPAR::PARTICLE::Normal_DEM_thermo)
+  {
+    // compute thermodynamic expansion
+    ThermalExpansion();
+
+    // particle dismembering
+    ParticleDismemberer();
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | output particle time step                                ghamm 10/12  |
@@ -956,19 +974,12 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
   // INFO regarding output: Bins are not written to file because they cannot
   // be post-processed anyway (no nodes and connectivity available)
   particles_->OutputStep(forced_writerestart);
-  if(structure_ != Teuchos::null)
-  {
-    structure_->Output();
-    // add missing restart information if necessary
-    if(forced_writerestart)
-      structure_->Output(forced_writerestart);
 
-    if(moving_walls_ and writeresultsevery_ and (Step()%writeresultsevery_ == 0))
-    {
-      Teuchos::RCP<Epetra_Vector> walldisnp = wallextractor_->ExtractCondVector(structure_->Dispnp());
-      particlewalldis_->Writer()->NewStep(Step(), Time());
-      particlewalldis_->Writer()->WriteVector("displacement", walldisnp);
-    }
+  if(moving_walls_ and writeresultsevery_ and (Step()%writeresultsevery_ == 0))
+  {
+    Teuchos::RCP<Epetra_Vector> walldisnp = wallextractor_->ExtractCondVector(structdispnp_);
+    particlewalldis_->Writer()->NewStep(Step(), Time());
+    particlewalldis_->Writer()->WriteVector("displacement", walldisnp);
   }
 
 //  const std::string filename = IO::GMSH::GetFileName("particle_data", Step(), true, Comm().MyPID());
@@ -1644,41 +1655,38 @@ void PARTICLE::Algorithm::ThermalExpansion()
   }
 }
 
-
 /*------------------------------------------------------------------------*
  | set up wall discretizations                               catta 06/16  |
  *------------------------------------------------------------------------*/
 void PARTICLE::Algorithm::SetUpWallDiscret()
 {
-if(particlewalldis_ != Teuchos::null)
-{
-  Teuchos::RCP<Epetra_Vector> walldisn = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> walldisnp = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> wallvelnp = Teuchos::null;
-
-  // solve for structural (wall) problem
-  if(moving_walls_)
+  if(particlewalldis_ != Teuchos::null)
   {
-    structure_->Solve();
+    Teuchos::RCP<Epetra_Vector> walldisn = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> walldisnp = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> wallvelnp = Teuchos::null;
 
-    // extract displacement and velocity from full structural field to obtain wall states
-    walldisn = wallextractor_->ExtractCondVector(structure_->Dispn());
-    walldisnp = wallextractor_->ExtractCondVector(structure_->Dispnp());
-    wallvelnp = wallextractor_->ExtractCondVector(structure_->Velnp());
+    // solve for structural (wall) problem
+    if(moving_walls_)
+    {
+      // extract displacement and velocity from full structural field to obtain wall states
+      walldisn = wallextractor_->ExtractCondVector(structdispn_);
+      walldisnp = wallextractor_->ExtractCondVector(structdispnp_);
+      wallvelnp = wallextractor_->ExtractCondVector(structvelnp_);
+    }
+    else
+    {
+      walldisn = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+      walldisnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+      wallvelnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+    }
+
+    particlewalldis_->SetState("walldisn", walldisn);
+    particlewalldis_->SetState("walldisnp", walldisnp);
+    particlewalldis_->SetState("wallvelnp", wallvelnp);
+
+    // assign wall elements dynamically to bins
+    if(moving_walls_)
+      AssignWallElesToBins();
   }
-  else
-  {
-    walldisn = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-    walldisnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-    wallvelnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-  }
-
-  particlewalldis_->SetState("walldisn", walldisn);
-  particlewalldis_->SetState("walldisnp", walldisnp);
-  particlewalldis_->SetState("wallvelnp", wallvelnp);
-
-  // assign wall elements dynamically to bins
-  if(moving_walls_)
-    AssignWallElesToBins();
-}
 }
