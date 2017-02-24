@@ -339,11 +339,11 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquatio
       // left-hand side
       for (int idim = 0; idim <my::nsd_; ++idim)
       {
-        const double grad_porosity_idim = my_p::grad_porosity_(idim);
+        //const double grad_porosity_idim = my_p::grad_porosity_(idim);
         for (int ui=0; ui<my::nen_; ++ui)
         {
           const int fui = my::nsd_*ui;
-          const double funct_ui = my::funct_(ui);
+          //const double funct_ui = my::funct_(ui);
           const double derxy_idim_ui = my::derxy_(idim,ui);
 
           for (int vi=0; vi<my::nen_; ++vi)
