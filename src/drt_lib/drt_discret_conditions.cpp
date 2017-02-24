@@ -263,7 +263,6 @@ bool DRT::Discretization::BuildLinesinCondition( const std::string name,
   const int ngnode = nodeids->size();
 
   // ptrs to my row/column nodes of those
-  std::map<int,DRT::Node*> rownodes;
   std::map<int,DRT::Node*> colnodes;
 
   for( int i=0; i<ngnode; ++i )
@@ -275,21 +274,12 @@ bool DRT::Discretization::BuildLinesinCondition( const std::string name,
       colnodes[actnode->Id()] = actnode;
     }
   }
-  for (int i=0; i<ngnode; ++i)
-  {
-    if (NodeRowMap()->MyGID((*nodeids)[i]))
-    {
-      DRT::Node* actnode = gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node");
-      rownodes[actnode->Id()] = actnode;
-    }
-  }
 
   // map of lines in our cloud: (node_ids) -> line
   std::map< std::vector<int>, Teuchos::RCP<DRT::Element> > linemap;
   // loop these nodes and build all lines attached to them
   std::map<int,DRT::Node*>::iterator fool;
-  for( fool = rownodes.begin(); fool != rownodes.end(); ++fool )
+  for( fool = colnodes.begin(); fool != colnodes.end(); ++fool )
   {
     // currently looking at actnode
     DRT::Node*     actnode  = fool->second;
@@ -336,7 +326,7 @@ bool DRT::Discretization::BuildLinesinCondition( const std::string name,
               {
                   Teuchos::RCP<DRT::Element> line = Teuchos::rcp( actline->Clone() );
                   // Set owning process of line to node with smallest gid.
-                  line->SetOwner( gNode( nodes[0] )->Owner() );
+                  line->SetOwner( elements[i]->Owner() );
                   linemap[nodes] = line;
               }
             }
@@ -580,8 +570,7 @@ bool DRT::Discretization::BuildSurfacesinCondition(
                 {
                   Teuchos::RCP<DRT::Element> surf = Teuchos::rcp( actsurf->Clone() );
                   // Set owning processor of surface owner of underlying volume element.
-                  //surf->SetOwner(elements[i]->Owner());
-                  surf->SetOwner(gNode(nodes[0])->Owner());
+                  surf->SetOwner( elements[i]->Owner() );
                   surfmap[nodes] = surf;
                 } // if surface not yet in map
               } // else if standard case

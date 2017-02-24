@@ -415,75 +415,68 @@ void DRT::Discretization::Print(std::ostream& os) const
     os << "Filled() = false\n";
     os << "--------------------------------------------------\n";
   }
-  // print elements
+  Comm().Barrier();
   for (int proc=0; proc < Comm().NumProc(); ++proc)
   {
     if (proc == Comm().MyPID())
     {
-      os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int,Teuchos::RCP<DRT::Element> >:: const_iterator curr;
-      for (curr = element_.begin(); curr != element_.end(); ++curr)
+      // print elements
       {
-        os << *(curr->second);
-        if (Filled() && HaveDofs())
-        {
-          std::vector<int> dof = Dof(0,&*(curr->second));
-          if (dof.size())
-          {
-            os << " Dofs ";
-            for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
-          }
-        }
-        os << std::endl;
-      }
-      os << std::endl;
-    }
-    Comm().Barrier();
-  }
-  // print nodes
-  for (int proc=0; proc < Comm().NumProc(); ++proc)
-  {
-    if (proc == Comm().MyPID())
-    {
-      os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int,Teuchos::RCP<DRT::Node> >:: const_iterator curr;
-      for (curr = node_.begin(); curr != node_.end(); ++curr)
-      {
-        os << *(curr->second);
-        if (Filled() && HaveDofs())
-        {
-          std::vector<int> dof = Dof(0,&*(curr->second));
-          if (dof.size())
-          {
-            os << " Dofs ";
-            for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
-          }
-        }
-        os << std::endl;
-      }
-      os << std::endl;
-    }
-    Comm().Barrier();
-  }
-  // print conditions
-  for (int proc=0; proc<Comm().NumProc(); ++proc)
-  {
-    if (proc==Comm().MyPID())
-    {
-      int numcond = condition_.size();
-      if (numcond)
         os << "-------------------------- Proc " << proc << " :\n";
-      if (numcond)
-      {
-        os << numcond << " Conditions:\n";
-        std::map<std::string,Teuchos::RCP<Condition> >::const_iterator curr;
-        for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+        std::map<int,Teuchos::RCP<DRT::Element> >:: const_iterator curr;
+        for (curr = element_.begin(); curr != element_.end(); ++curr)
         {
-          os << curr->first << " ";
-          os << *(curr->second) << std::endl;
+          os << *(curr->second);
+          if (Filled() && HaveDofs())
+          {
+            std::vector<int> dof = Dof(0,&*(curr->second));
+            if (dof.size())
+            {
+              os << " Dofs ";
+              for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
+            }
+          }
+          os << std::endl;
         }
+        os << std::endl;
       }
-      os << std::endl;
+      // print nodes
+      {
+        os << "-------------------------- Proc " << proc << " :\n";
+        std::map<int,Teuchos::RCP<DRT::Node> >:: const_iterator curr;
+        for (curr = node_.begin(); curr != node_.end(); ++curr)
+        {
+          os << *(curr->second);
+          if (Filled() && HaveDofs())
+          {
+            std::vector<int> dof = Dof(0,&*(curr->second));
+            if (dof.size())
+            {
+              os << " Dofs ";
+              for (unsigned i=0; i<dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
+            }
+          }
+          os << std::endl;
+        }
+        os << std::endl;
+      }
+      // print conditions
+      {
+        int numcond = condition_.size();
+        if (numcond)
+          os << "-------------------------- Proc " << proc << " :\n";
+        if (numcond)
+        {
+          os << numcond << " Conditions:\n";
+          std::map<std::string,Teuchos::RCP<Condition> >::const_iterator curr;
+          for (curr=condition_.begin(); curr != condition_.end(); ++curr)
+          {
+            os << curr->first << " ";
+            os << *(curr->second) << std::endl;
+          }
+        }
+        os << std::endl;
+      }
     }
     Comm().Barrier();
   }
