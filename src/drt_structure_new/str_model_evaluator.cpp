@@ -346,6 +346,18 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::Predict(const INPAR::STR::PredEnum& pred_type) const
+{
+  CheckInitSetup();
+  for (Vector::iterator me_iter=me_vec_ptr_->begin();
+      me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->Predict(pred_type);
+
+  return ;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::WriteRestart(
     IO::DiscretizationWriter& iowriter,
     const bool& forced_writerestart) const

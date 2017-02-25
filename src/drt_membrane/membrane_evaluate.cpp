@@ -554,6 +554,12 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
     }
     break;
 
+    case ELEMENTS::struct_calc_predict:
+    {
+      // do nothing here
+      break;
+    }
+
     /*===============================================================================*
      | default                                                                       |
      *===============================================================================*/

@@ -131,6 +131,13 @@ namespace MODELEVALUATOR {
       return timintfactor_vel_;
     }
 
+    //! get the predictor type of the structural time integration
+    virtual enum INPAR::STR::PredEnum GetPredictorType() const
+    {
+      CheckInitSetup();
+      return predict_type_;
+    }
+
     //! mutable access to the stress data vector
     virtual Teuchos::RCP<std::vector<char> >& MutableStressDataPtr();
 
@@ -317,6 +324,12 @@ namespace MODELEVALUATOR {
     inline void  SetTimIntFactorVel(const double& timintfactor_vel)
     {
       timintfactor_vel_ = timintfactor_vel;
+    }
+
+    //! set the predictor type of the structural time integration
+    inline void  SetPredictorType(const INPAR::STR::PredEnum& predictor_type)
+    {
+      predict_type_ = predictor_type;
     }
 
     //! set stress data vector
@@ -526,6 +539,9 @@ namespace MODELEVALUATOR {
     //! @{
     //! Current action type
     enum DRT::ELEMENTS::ActionType ele_action_;
+
+    //! Current predictor type
+    enum INPAR::STR::PredEnum predict_type_;
 
     //! element evaluation error flag
     enum STR::ELEMENTS::EvalErrorFlag ele_eval_error_flag_;

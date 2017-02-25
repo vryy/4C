@@ -73,6 +73,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_inversedesign_switch") act = So_weg6::inversedesign_switch;
   else if (action=="calc_global_gpstresses_map")       act = So_weg6::calc_global_gpstresses_map;
   else if (action=="calc_struct_recover") return 0;
+  else if (action=="calc_struct_predict") return 0;
   else dserror("Unknown type of action for So_weg6");
 
   // check for patient specific data

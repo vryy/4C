@@ -57,6 +57,7 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_reset_istep")          act = So_tet4av::calc_struct_reset_istep;
   else if (action=="calc_struct_reset_all")            act = So_tet4av::calc_struct_reset_all;
   else if (action=="calc_struct_recover") return 0;
+  else if (action=="calc_struct_predict") return 0;
   else dserror("Unknown type of action for So_tet4av");
 
 

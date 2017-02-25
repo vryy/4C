@@ -349,6 +349,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_reset_all")                       act = So_hex18::calc_struct_reset_all;
   else if (action=="postprocess_stress")                          act = So_hex18::postprocess_stress;
   else if (action=="calc_struct_recover")                         act = So_hex18::calc_recover;
+  else if (action=="calc_struct_predict") return 0;
   else dserror("Unknown type of action for So_hex8: %s", action.c_str());
 
   // what should the element do

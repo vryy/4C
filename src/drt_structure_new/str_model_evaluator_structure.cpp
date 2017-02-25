@@ -635,6 +635,24 @@ void STR::MODELEVALUATOR::Structure::ReadRestart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::Predict(const INPAR::STR::PredEnum& pred_type)
+{
+  // set the element action
+  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_predict);
+  EvalData().SetPredictorType(pred_type);
+
+  // set the matrix and vector pointers to Teuchos::null
+  Teuchos::RCP<Epetra_Vector> eval_vec [3] =
+      {Teuchos::null,Teuchos::null,Teuchos::null};
+  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
+      {Teuchos::null,Teuchos::null};
+
+  EvaluateInternal(eval_mat,eval_vec);
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::RecoverState(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
@@ -1069,6 +1087,7 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
   case  DRT::ELEMENTS::struct_interpolate_velocity_to_point  :   action="interpolate_velocity_to_given_point"  ;   break;
   case  DRT::ELEMENTS::struct_calc_mass_volume               :   action="calc_struct_mass_volume"              ;   break;
   case  DRT::ELEMENTS::struct_calc_recover                   :   action="calc_struct_recover"                  ;   break;
+  case  DRT::ELEMENTS::struct_calc_predict                   :   action="calc_struct_predict"                  ;   break;
   default                                                    :   action="unknown"                              ; break;
   }
   params.set<std::string>("action",action);

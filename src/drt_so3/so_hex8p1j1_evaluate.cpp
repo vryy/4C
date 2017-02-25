@@ -72,6 +72,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
   else if (action=="multi_calc_dens")             act = So_hex8::multi_calc_dens;
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
   else if (action=="calc_struct_recover")         act = So_hex8::calc_recover;
+  else if (action=="calc_struct_predict") return 0;
   else dserror("Unknown type of action for So_hex8");
 
   // what should the element do

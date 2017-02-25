@@ -83,6 +83,9 @@ namespace ELEMENTS {
     //! return the damping type
     virtual enum INPAR::STR::DampKind GetDampingType() const = 0;
 
+    //! return the predictor type
+    virtual enum INPAR::STR::PredEnum GetPredictorType() const = 0;
+
     virtual bool IsTolerateErrors() const = 0;
 
     //! @name General time integration parameters

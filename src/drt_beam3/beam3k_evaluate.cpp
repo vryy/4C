@@ -230,6 +230,12 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
+    case ELEMENTS::struct_calc_predict:
+    {
+      // do nothing here
+      break;
+    }
+
     default:
     {
       std::cout << "\ncalled element with action type " << ActionType2String(act);

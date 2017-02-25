@@ -105,6 +105,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     else if (action=="calc_global_gpstresses_map")                  act = ELEMENTS::struct_calc_global_gpstresses_map;
     else if (action=="interpolate_velocity_to_given_point")         act = ELEMENTS::struct_interpolate_velocity_to_point;
     else if (action=="calc_struct_mass_volume")                     act = ELEMENTS::struct_calc_mass_volume;
+    else if (action=="calc_struct_predict") return 0;
     else dserror("Unknown type of action for So_hex8: %s", action.c_str());
   }
 
@@ -1402,6 +1403,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   }
   break;
   //==================================================================================
+
+  case ELEMENTS::struct_calc_predict:
+  {
+    // do nothing here
+    break;
+  }
+
   default:
     dserror("Unknown type of action for So_hex8");
     break;

@@ -81,6 +81,10 @@ namespace MODELEVALUATOR {
     virtual void ReadRestart(IO::DiscretizationReader& ioreader)
     {return;};
 
+    //! [derived]
+    virtual void Predict(const INPAR::STR::PredEnum& pred_type)
+    {return;};
+
     //! recover condensed Lagrange multipliers
     virtual void RecoverState(
         const Epetra_Vector& xold,

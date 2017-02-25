@@ -169,6 +169,9 @@ namespace MODELEVALUATOR {
      *  \author hiermeier */
     virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
 
+    /*! \brief Predict the values for DoFs that are defined in
+     *         the respective model evaluators, e.g. condensed variables.*/
+    virtual void Predict(const INPAR::STR::PredEnum& pred_type) = 0;
 
     /*! \brief Recover condensed solution variables
      *

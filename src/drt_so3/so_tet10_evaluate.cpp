@@ -71,6 +71,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_global_gpstresses_map")       act = So_tet10::calc_global_gpstresses_map;
   else if (action=="postprocess_stress")        act = So_tet10::postprocess_stress;
   else if (action=="calc_struct_recover") return 0;
+  else if (action=="calc_struct_predict") return 0;
   else dserror("Unknown type of action for So_tet10");
 
   // check for patient specific data

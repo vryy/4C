@@ -267,6 +267,11 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
       }
     }
     break;
+    case ELEMENTS::struct_calc_predict:
+    {
+      // one could add a prediction of the EAS variables here...
+      break;
+    }
     default:
       dserror("Unknown type of action for Shell8: (%s|%i)",
           ActionType2String(act).c_str(),act);

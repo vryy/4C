@@ -68,6 +68,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_reset_istep")   act = So_weg6::calc_struct_reset_istep;
   else if (action=="postprocess_stress")        act = So_weg6::postprocess_stress;
   else if (action=="calc_struct_recover")       act = So_weg6::calc_recover;
+  else if (action=="calc_struct_predict")       return 0;
   else dserror("Unknown type of action for So_weg6");
 
   // what should the element do

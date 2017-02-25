@@ -19,6 +19,8 @@
 #include "str_dbc.H"
 #include "str_utils.H"
 #include "str_impl_generic.H"
+#include "str_model_evaluator.H"
+#include "str_model_evaluator_data.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
@@ -71,6 +73,8 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   if (grp_ptr == NULL)
     dserror("Dynamic cast failed!");
   grp_ptr->ResetPrePostOperator(NoxParams().sublist("Group Options"));
+
+  ImplInt().EvalData().SetPredictorType(INPAR::STR::pred_tangdis);
 
   // ---------------------------------------------------------------------------
   // calculate the dbc increment on the dirichlet boundary
@@ -135,6 +139,10 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
 
   // For safety purposes, we set the dbc_incr vector to zero
   dbc_incr_ptr_->PutScalar(0.0);
+
+  ImplInt().ModelEval().Predict(GetType());
+
+  ImplInt().EvalData().SetPredictorType(INPAR::STR::pred_vague);
 
   return;
 }

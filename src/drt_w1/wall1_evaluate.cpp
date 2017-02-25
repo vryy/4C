@@ -880,6 +880,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       break;
     }
     //==================================================================================
+    case ELEMENTS::struct_calc_predict:
+      break;
+    //==================================================================================
     default:
     {
       dserror("Unknown type of action for Wall1 %d", act);

@@ -70,6 +70,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_prestress_update")                act = So_pyramid5fbar::prestress_update;
   else if (action=="calc_struct_energy")                          act = So_pyramid5::calc_struct_energy;
   else if (action=="calc_struct_recover") return 0;
+  else if (action=="calc_struct_predict") return 0;
   else dserror("Unknown type of action for So_pyramid5fbar");
 
   // check for patient specific data

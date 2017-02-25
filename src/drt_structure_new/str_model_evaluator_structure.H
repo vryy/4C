@@ -92,6 +92,9 @@ namespace MODELEVALUATOR{
             const Epetra_Vector& xnew);
 
     //! derived
+    virtual void Predict(const INPAR::STR::PredEnum& pred_type);
+
+    //! derived
     virtual void UpdateStepState(const double& timefac_n);
 
     //! derived

@@ -78,6 +78,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     else if (action=="calc_struct_inversedesign_update")            act = ELEMENTS::inversedesign_update;
     else if (action=="calc_struct_inversedesign_switch")            act = ELEMENTS::inversedesign_switch;
     else if (action=="calc_struct_energy")                          act = ELEMENTS::struct_calc_energy;
+    else if (action=="calc_struct_predict") return 0;
+    else if (action=="calc_struct_recover") return 0;
     else dserror("Unknown type of action for So_hex8fbar");
   }
   // check for patient specific data
@@ -639,6 +641,12 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       elevec1_epetra(0) = intenergy;
     }
     break;
+
+    case ELEMENTS::struct_calc_predict:
+    {
+      // do nothing here
+      break;
+    }
 
     default:
       dserror("Unknown type of action for So_hex8fbar");

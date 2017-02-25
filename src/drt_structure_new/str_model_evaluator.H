@@ -98,6 +98,9 @@ namespace MODELEVALUATOR {
         LINALG::SparseOperator& jac,
         const double& timefac_np) const;
 
+    //! predict all internal variables in model evaluators
+    void Predict(const INPAR::STR::PredEnum& pred_type) const;
+
     //! @}
 
     /*! \brief reset all model states (incl. the structural dynamic state)

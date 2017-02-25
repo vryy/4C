@@ -109,6 +109,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="multi_calc_dens")                  act = So_tet4::multi_calc_dens;
   else if (action=="multi_readrestart")                act = So_tet4::multi_readrestart;
   else if (action=="calc_struct_recover") return 0;
+  else if (action=="calc_struct_predict") return 0;
   else dserror("Unknown type of action for So_tet4");
 
   // check for patient specific data

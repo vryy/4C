@@ -157,6 +157,10 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       //not necessary since no class variables are modified in predicting steps
     break;
 
+    case ELEMENTS::struct_calc_predict:
+      // do nothing here
+      break;
+
     default:
       dserror("Unknown type of action for Rigidsphere %d", act);
      break;

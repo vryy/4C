@@ -73,6 +73,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
   else if (action=="multi_readrestart")                           act = So_hex27::multi_readrestart;
   else if (action=="multi_calc_dens")                             act = So_hex27::multi_calc_dens;
   else if (action=="calc_struct_recover") return 0;
+  else if (action=="calc_struct_predict") return 0;
   else dserror("Unknown type of action for So_hex27: %s",action.c_str());
   // what should the element do
   switch(act)

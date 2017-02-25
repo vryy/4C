@@ -187,6 +187,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
   else if (action=="multi_calc_dens")                     act = NStet5::multi_calc_dens;
   else if (action=="multi_readrestart")                   act = NStet5::multi_readrestart;
   else if (action=="calc_struct_recover")                 return 0;
+  else if (action=="calc_struct_predict")                 return 0;
   else dserror("Unknown type of action for NStet5");
 
   // what should the element do

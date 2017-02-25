@@ -78,6 +78,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_stc_matrix")             act = So_hex8::calc_stc_matrix;
   else if (action=="calc_stc_matrix_inverse")     act = So_hex8::calc_stc_matrix_inverse;
   else if (action=="calc_struct_recover")         act = So_hex8::calc_recover;
+  else if (action=="calc_struct_predict")         return 0;
   else dserror("Unknown type of action for So_Sh8");
 
   // what should the element do

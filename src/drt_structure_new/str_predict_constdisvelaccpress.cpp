@@ -16,6 +16,7 @@
 #include "str_timint_base.H"
 #include "str_impl_generic.H"
 #include "str_predict_factory.H"
+#include "str_model_evaluator.H"
 
 #include <Epetra_Vector.h>
 
@@ -89,6 +90,7 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(NOX::Abstract::Group& grp)
       break;
     }
   }
+  ImplInt().ModelEval().Predict(GetType());
 
   // If the const predictors failed e.g. due to too little history information,
   // we use the tangdis predictor as fallback predictor.

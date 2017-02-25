@@ -36,6 +36,7 @@ namespace ELEMENTS {
     struct_calc_nlnstifflmass,              //!< evaluate the dynamic state: internal forces vector, stiffness and the lumped mass matrix
     struct_calc_nlnstiff_gemm,              //!< internal force, stiffness and mass for GEMM
     struct_calc_recover,                    //!< recover elementwise condensed internal variables
+    struct_calc_predict,                    //!< predict elementwise condensed internal variables
     struct_calc_stress,
     struct_calc_eleload,
     struct_calc_fsiload,

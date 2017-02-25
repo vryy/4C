@@ -120,6 +120,10 @@ public:
   virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const
   {return;};
 
+  //! [derived]
+  virtual void Predict(const INPAR::STR::PredEnum& pred_type)
+  {return;};
+
   //! derived
   virtual void ResetStepState()
   {return;};

@@ -488,6 +488,11 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
       // do nothing here
       break;
     }
+    case ELEMENTS::struct_calc_predict:
+    {
+      // do nothing here
+      break;
+    }
 
     default:
       dserror("Unknown type of action for Beam3 %d", act);
