@@ -140,9 +140,6 @@ private:
   /// context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output_;
 
-  ///  time integrator for structural dynamics
-  Teuchos::RCP<STR::TimInt> sti_;
-
   ///  number of measurment points the
   double tstep_;                    // timestep
 
@@ -242,7 +239,7 @@ public:
   void SetParameters(Epetra_SerialDenseVector p_cur);
 
   /// get current state of calculated curve
-  Epetra_SerialDenseVector GetCalculatedCurve(Epetra_Vector& disp);
+  Epetra_SerialDenseVector GetCalculatedCurve(const Epetra_Vector& disp);
 
   /// coarse fitting of parameters
   void PrecondParameters();

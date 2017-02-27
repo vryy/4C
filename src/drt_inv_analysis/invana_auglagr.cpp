@@ -27,6 +27,11 @@
 #include "optimizer_base.H"
 
 #include "../drt_adapter/ad_str_invana.H"
+#include "../drt_adapter/ad_str_factory.H"
+#include "../drt_adapter/ad_str_structure_new.H"
+#include "../drt_adapter/ad_str_structure.H"
+
+
 #include "timint_adjoint.H"
 #include "timint_adjoint_prestress.H"
 
@@ -146,18 +151,47 @@ int INVANA::InvanaAugLagr::SolveForwardProblem()
   {
     case INPAR::STR::dyna_statics:
     {
+      // create an adapterbase and adapter
+      Teuchos::RCP<ADAPTER::StructureInvana> structadapter = Teuchos::null;
+      // FixMe The following switch is just a temporal hack, such we can jump between the new and the
+      // old structure implementation. Has to be deleted after the clean-up has been finished!
+      const enum INPAR::STR::IntegrationStrategy intstrat =
+            DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
+      switch (intstrat)
+      {
+        // -------------------------------------------------------------------
+        // old implementation
+        // -------------------------------------------------------------------
+        case INPAR::STR::int_old:
+        {
+          ADAPTER::StructureBaseAlgorithm adapterbase_old(sdyn,sdyn, Discret());
+          structadapter = Teuchos::rcp_dynamic_cast<ADAPTER::StructureInvana>(adapterbase_old.StructureField());
+          structadapter->Setup();
 
-      ADAPTER::StructureBaseAlgorithm adapterbase(sdyn,sdyn, Discret());
-      Teuchos::RCP<ADAPTER::StructureInvana> structadaptor =
-          Teuchos::rcp_dynamic_cast<ADAPTER::StructureInvana>(adapterbase.StructureField());
-      structadaptor->Setup();
+          break;
+        }
+        // -------------------------------------------------------------------
+        // new implementation
+        // -------------------------------------------------------------------
+        default:
+        {
+          Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
+              ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+          adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), Discret());
+          adapterbase_ptr->Setup();
+          structadapter = Teuchos::rcp_dynamic_cast<ADAPTER::StructureInvana>(
+              adapterbase_ptr->StructureField(), true );
+
+          break;
+        }
+      }
 
       // do restart but the one which is explicitly given in the INVERSE ANALYSIS section
       // and only if we are not in parameter continuation mode
       if (FPRestart() and fpcounter_<=itertopc_)
       {
         DRT::Problem::Instance()->SetInputControlFile(InputControl());
-        structadaptor->ReadRestart(FPRestart());
+        structadapter->ReadRestart(FPRestart());
       }
 
       if (fpcounter_>itertopc_)
@@ -168,24 +202,24 @@ int INVANA::InvanaAugLagr::SolveForwardProblem()
           int mstep=ObjectiveFunct()->FindStep(time_[i]);
 
           // do this step only in case of measurements or when it is the last prestress step
-          if (mstep!=-1 or (time_[i]>pstime_-structadaptor->Dt() and time_[i]<pstime_))
+          if (mstep!=-1 or (time_[i]>pstime_-structadapter->Dt() and time_[i]<pstime_))
           {
-            structadaptor->SetTimeStepStateOld(time_[i],i+1,
+            structadapter->SetTimeStepStateOld(time_[i],i+1,
                 Teuchos::rcp((*dis_)(i),false),
                 Teuchos::rcp((*dis_)(i),false));  // veln is not used so far so just put disn
 
-            err = structadaptor->Integrate();
+            err = structadapter->Integrate();
           }
         }
       }
       else
       {
-        err = structadaptor->Integrate();
+        err = structadapter->Integrate();
       }
 
       // get displacement and time
-      MStepEpetraToEpetraMulti(structadaptor->DispSteps(), dis_);
-      MStepDToStdVecD(structadaptor->TimeSteps(), &time_);
+      MStepEpetraToEpetraMulti(structadapter->DispSteps(), dis_);
+      MStepDToStdVecD(structadapter->TimeSteps(), &time_);
 
       break;
     }

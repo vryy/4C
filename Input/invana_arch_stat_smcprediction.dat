@@ -55,7 +55,7 @@ SYNTHNOISE                      yes
 SYNTHNOISESEED                  1654
 NUM_PARTICLES                   24
 MAP_PRIOR_SCALE                 0.1
-MAP_REDUCT_RESTART              42
+MAP_REDUCT_RESTART              59//42
 MAP_REDUCT_RESTARTFILE          xxx
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
@@ -82,6 +82,18 @@ ADAPTCONV_BETTER                0.01
 MAXITER                         150
 UZAWAPARAM                      1.0
 LOADLIN                         yes
+INT_STRATEGY                    Standard
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = No
+Outer Iteration                 = No //Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_sym //UMFPACK

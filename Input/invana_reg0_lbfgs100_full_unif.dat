@@ -1,3 +1,4 @@
+// Maintainer: Sebastian Kehl
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -68,9 +69,33 @@ ADAPTCONV_BETTER                0.01
 MAXITER                         50
 UZAWAPARAM                      1.0
 LOADLIN                         yes
+INT_STRATEGY                    Standard
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = No
+Outer Iteration                 = No //Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
+-------------------------------------------------------------------MATERIALS
+// too stiff and too soft (measured)
+//MAT 1 MAT_Struct_AAANeoHooke YOUNG 5.22E-01 BETA 9.405E-01 NUE 0.49 DENS 0.001
+//MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.566E+00 BETA 2.8215E+00 NUE 0.49 DENS 0.001
+// standard AAA material parameters
+//MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
+//MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
+//use this to optimizie via stat inv analysis
+MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
+MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
+----------------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 3.200072e-02
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         12
 NDLINE                          20
@@ -437,18 +462,6 @@ NODE 52 COORD 1.850000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
 10 SOLIDH8 HEX8 9 11 15 13 10 12 16 14 MAT 2 KINEM nonlinear EAS none
 11 SOLIDH8 HEX8 5 6 11 9 7 8 12 10 MAT 2 KINEM nonlinear EAS none
 12 SOLIDH8 HEX8 3 1 6 5 4 2 8 7 MAT 2 KINEM nonlinear EAS none
--------------------------------------------------------------------MATERIALS
-// too stiff and too soft (measured)
-//MAT 1 MAT_Struct_AAANeoHooke YOUNG 5.22E-01 BETA 9.405E-01 NUE 0.49 DENS 0.001
-//MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.566E+00 BETA 2.8215E+00 NUE 0.49 DENS 0.001
-// standard AAA material parameters
-//MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
-//MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
-//use this to optimizie via stat inv analysis
-MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
-MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 0.001
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 3.200072e-02
 ----------------------------------------------------------RESULT DESCRIPTION
 INVANA DIS structure ELEMENT 1 QUANTITY  BETA  VALUE 9.405e-01 TOLERANCE 1.0e-06
 INVANA DIS structure ELEMENT 1 QUANTITY  YOUNG VALUE 5.22E-01 TOLERANCE 1.0e-06

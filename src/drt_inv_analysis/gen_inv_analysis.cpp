@@ -71,6 +71,10 @@
 #include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 
+#include "../drt_adapter/ad_str_factory.H"
+#include "../drt_adapter/ad_str_structure_new.H"
+#include "../drt_adapter/ad_str_structure.H"
+
 
 
 #include "../drt_structure/stru_resulttest.H"
@@ -84,8 +88,7 @@ STR::GenInvAnalysis::GenInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
                                     Teuchos::RCP<IO::DiscretizationWriter> output)
   : discret_(dis),
     solver_(solver),
-    output_(output),
-    sti_(Teuchos::null)
+    output_(output)
 {
   int myrank = dis->Comm().MyPID();
 
@@ -728,57 +731,88 @@ void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, s
 Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 {
   int myrank = discret_->Comm().MyPID();
-  // get input parameter lists
-  const Teuchos::ParameterList& ioflags
-    = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn
     = DRT::Problem::Instance()->StructuralDynamicParams();
   Teuchos::ParameterList xparams;
   xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
   xparams.set<int>("REDUCED_OUTPUT",0);
-  // create time integrator
-  sti_ = TimIntCreate(sdyn, ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
-  sti_->Init(sdyn,sdyn,xparams,discret_,solver_);
-  sti_->Setup();
-  if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
+
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  // use the same control file for every run since usually the last one is of interest
+  structdis->Writer()->OverwriteResultFile();
+  // create an adapterbase and adapter
+  Teuchos::RCP<ADAPTER::Structure> structadapter = Teuchos::null;
+  // FixMe The following switch is just a temporal hack, such we can jump between the new and the
+  // old structure implementation. Has to be deleted after the clean-up has been finished!
+  const enum INPAR::STR::IntegrationStrategy intstrat =
+        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
+  switch (intstrat)
+  {
+    // -------------------------------------------------------------------
+    // old implementation
+    // -------------------------------------------------------------------
+    case INPAR::STR::int_old:
+    {
+      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
+          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn,
+              const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+      structadapter = adapterbase_old_ptr->StructureField();
+      structadapter->Setup();
+      break;
+    }
+    // -------------------------------------------------------------------
+    // new implementation
+    // -------------------------------------------------------------------
+    default:
+    {
+      Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
+          ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+      adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+      adapterbase_ptr->Setup();
+      structadapter = adapterbase_ptr->StructureField();
+      break;
+    }
+  }
+
 
   int writestep=0;
   Epetra_SerialDenseVector cvector(nmp_);
 
   // time loop
-  while ( sti_->NotFinished() )
+  while ( structadapter->NotFinished() )
   {
 
     // call the predictor
-    sti_->PrepareTimeStep();
+    structadapter->PrepareTimeStep();
 
     // integrate time step
     // after this step we hold disn_, etc
-    sti_->Solve();
+    structadapter->Solve();
 
     // calculate stresses, strains, energies
-    sti_->PrepareOutput();
+    structadapter->PrepareOutput();
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
     // update time and step
     // update everything on the element level
-    sti_->Update();
+    structadapter->Update();
 
     // print info about finished time step
-    sti_->PrintStep();
+    structadapter->PrintStep();
 
     // write output
-    if (outputtofile) sti_->Output();
+    if (outputtofile) structadapter->Output();
 
     // get current time
-    double time = sti_->TimeOld();
+    double time = structadapter->TimeOld();
 
     // get the displacements of the monitored timesteps
     {
       if (abs(time-timesteps_[writestep]) < 1.0e-5)
       {
-        Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
+        Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(structadapter->Dispnp()));
         if (!myrank)
           for (int j=0; j<ndofs_; ++j)
             cvector[writestep*ndofs_+j] = cvector_arg[j];
@@ -786,7 +820,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
       }
 
       // check if timestepsize is smaller than the tolerance above
-      const double deltat = sti_->Dt();
+      const double deltat = structadapter->Dt();
       if (deltat < 1.0e-5)
         dserror("your time step size is too small, you will have problems with the monitored steps, thus adapt the tolerance");
     }
@@ -808,12 +842,8 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
   Teuchos::RCP<Epetra_Comm> gcomm = group->GlobalComm();
   const int lmyrank  = lcomm->MyPID();
   //const int gmyrank  = gcomm->MyPID();
-  const int groupid  = group->GroupId();
+  //const int groupid  = group->GroupId();
   //const int ngroup   = group->NumGroups();
-
-  // get input parameter lists (ioflags as deep copy to modify it)
-  Teuchos::ParameterList ioflags = DRT::Problem::Instance()->IOParams();
-  if (groupid != 0) ioflags.set("STDOUTEVRY",0);
 
   const Teuchos::ParameterList& sdyn
     = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -822,11 +852,46 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
   xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
   xparams.set<int>("REDUCED_OUTPUT",0);
 
-  // create time integrator
-  sti_ = TimIntCreate(sdyn, ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
-  sti_->Init(sdyn,sdyn,xparams,discret_,solver_);
-  sti_->Setup();
-  if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
+
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  // use the same control file for every run since usually the last one is of interest
+  structdis->Writer()->OverwriteResultFile();
+  // create an adapterbase and adapter
+  Teuchos::RCP<ADAPTER::Structure> structadapter = Teuchos::null;
+  // FixMe The following switch is just a temporal hack, such we can jump between the new and the
+  // old structure implementation. Has to be deleted after the clean-up has been finished!
+  const enum INPAR::STR::IntegrationStrategy intstrat =
+        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
+  switch (intstrat)
+  {
+    // -------------------------------------------------------------------
+    // old implementation
+    // -------------------------------------------------------------------
+    case INPAR::STR::int_old:
+    {
+      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
+          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn,
+              const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+      structadapter = adapterbase_old_ptr->StructureField();
+      structadapter->Setup();
+      break;
+    }
+    // -------------------------------------------------------------------
+    // new implementation
+    // -------------------------------------------------------------------
+    default:
+    {
+      Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
+          ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+      adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+      adapterbase_ptr->Setup();
+      structadapter = adapterbase_ptr->StructureField();
+      break;
+    }
+  }
+
+  if (structadapter == Teuchos::null) dserror("Failed in creating integrator.");
   fflush(stdout);
   gcomm->Barrier();
 
@@ -834,39 +899,39 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
   Epetra_SerialDenseVector cvector(nmp_);
 
   // time loop
-  while ( sti_->NotFinished() )
+  while ( structadapter->NotFinished() )
   {
     // call the predictor
-    sti_->PrepareTimeStep();
+    structadapter->PrepareTimeStep();
 
     // integrate time step
     // after this step we hold disn_, etc
-    sti_->Solve();
+    structadapter->Solve();
 
     // calculate stresses, strains, energies
-    sti_->PrepareOutput();
+    structadapter->PrepareOutput();
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
     // update time and step
     // update everything on the element level
-    sti_->Update();
+    structadapter->Update();
 
     // print info about finished time step
-    sti_->PrintStep();
+    structadapter->PrintStep();
 
     // write output
-    if (outputtofile) sti_->Output();
+    if (outputtofile) structadapter->Output();
 
     // get current time
-    double time = sti_->TimeOld();
+    double time = structadapter->TimeOld();
 
     // get the displacements of the monitored timesteps
     {
 
       if (abs(time-timesteps_[writestep]) < 1.0e-5)
       {
-        Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
+        Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(structadapter->Dispnp()));
         if (!lmyrank)
           for (int j=0; j<ndofs_; ++j)
             cvector[writestep*ndofs_+j] = cvector_arg[j];
@@ -874,7 +939,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
       }
 
       // check if timestepsize is smaller than the tolerance above
-      const double deltat = sti_->Dt();
+      const double deltat = structadapter->Dt();
       if (deltat < 1.0e-5)
         dserror("your time step size is too small, you will have problems with the monitored steps, thus adapt the tolerance");
     }
@@ -887,7 +952,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
 
 /*----------------------------------------------------------------------*/
 /* */
-Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(Epetra_Vector& disp)
+Epetra_SerialDenseVector STR::GenInvAnalysis::GetCalculatedCurve(const Epetra_Vector& disp)
 {
   int myrank = discret_->Comm().MyPID();
 

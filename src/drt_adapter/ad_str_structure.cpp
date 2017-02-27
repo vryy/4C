@@ -57,6 +57,8 @@
 
 #include "../drt_io/io_pstream.H"
 
+#include "../drt_comm/comm_utils.H"
+
 #include "../drt_contact/meshtying_contact_bridge.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -310,6 +312,20 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(
   if (DRT::INPUT::IntegralValue<int>(*ioflags,"OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);
+  }
+
+  // in case of nested inverse analysis
+  // we just want to print the output of group 0 on screen
+  // birzle 02/2017
+  if (probtype == prb_invana)
+  {
+    Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+    const int groupid  = group->GroupId();
+
+    if (groupid != 0)
+    {
+      ioflags->set("STDOUTEVRY",0);
+    }
   }
 
   // create marching time integrator

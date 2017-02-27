@@ -80,6 +80,18 @@ MAXITER                         1000
 UZAWAPARAM                      1.0
 LOADLIN                         yes
 MATERIALTANGENT                 analytical
+INT_STRATEGY                    Old //Standard
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = No
+Outer Iteration                 = No //Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

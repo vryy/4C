@@ -46,6 +46,8 @@
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
 
+#include "../drt_comm/comm_utils.H"
+
 #include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_inpar/inpar_fsi.H"
@@ -685,30 +687,67 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(
    * \author mayr.mt \date 12/2013
    */
   // ---------------------------------------------------------------------------
-  if (probtype == prb_fsi or probtype == prb_fsi_redmodels)
+  switch ( probtype )
   {
-    const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
-    const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
-    if (DRT::INPUT::IntegralValue<bool>(fsiada,"TIMEADAPTON"))
+    case prb_fsi:
+    case prb_fsi_redmodels:
     {
-      // overrule time step size adaptivity control parameters
-      if (taflags.get<std::string>("KIND") != "NONE")
+      const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+      const Teuchos::ParameterList& fsiada = fsidyn.sublist("TIMEADAPTIVITY");
+      if (DRT::INPUT::IntegralValue<bool>(fsiada,"TIMEADAPTON"))
       {
-        taflags.set<int>("ADAPTSTEPMAX", fsiada.get<int>("ADAPTSTEPMAX"));
-        taflags.set<double>("STEPSIZEMAX", fsiada.get<double>("DTMAX"));
-        taflags.set<double>("STEPSIZEMIN", fsiada.get<double>("DTMIN"));
-        taflags.set<double>("SIZERATIOMAX", fsiada.get<double>("SIZERATIOMAX"));
-        taflags.set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
-        taflags.set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
-
-        if (actdis_->Comm().MyPID() == 0)
+        // overrule time step size adaptivity control parameters
+        if (taflags.get<std::string>("KIND") != "NONE")
         {
-          IO::cout << "*** Due to FSI time step size adaptivity with structure based error estimation,\n"
-                      "algorithmic control parameters in STRUCTURAL DYNAMIC/TIMEADAPTIVITY have been\n"
-                      "overwritten by those from FSI DYNAMIC/TIMEADAPTIVITY."
-                   << IO::endl << IO::endl;
+          taflags.set<int>("ADAPTSTEPMAX", fsiada.get<int>("ADAPTSTEPMAX"));
+          taflags.set<double>("STEPSIZEMAX", fsiada.get<double>("DTMAX"));
+          taflags.set<double>("STEPSIZEMIN", fsiada.get<double>("DTMIN"));
+          taflags.set<double>("SIZERATIOMAX", fsiada.get<double>("SIZERATIOMAX"));
+          taflags.set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
+          taflags.set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
+
+          if (actdis_->Comm().MyPID() == 0)
+          {
+            IO::cout << "*** Due to FSI time step size adaptivity with structure based error estimation,\n"
+                        "algorithmic control parameters in STRUCTURAL DYNAMIC/TIMEADAPTIVITY have been\n"
+                        "overwritten by those from FSI DYNAMIC/TIMEADAPTIVITY."
+                     << IO::endl << IO::endl;
+          }
         }
       }
+      break;
+    }
+    // in case of nested inverse analysis
+    // we just want to print the output of group 0 on screen
+    // birzle 02/2017
+    case prb_invana:
+    {
+      Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+
+      const int groupid  = group->GroupId();
+
+      if (groupid != 0)
+      {
+        ioflags.set("STDOUTEVRY",0);
+        Teuchos::ParameterList & print_nox = nox.sublist( "Printing", true );
+
+        print_nox.set<std::string>( "Error", "No" );
+        print_nox.set<std::string>( "Warning", "No" );
+        print_nox.set<std::string>( "Outer Iteration", "No" );
+        print_nox.set<std::string>( "Inner Iteration", "No" );
+        print_nox.set<std::string>( "Parameters", "No" );
+        print_nox.set<std::string>( "Details", "No" );
+        print_nox.set<std::string>( "Outer Iteration StatusTest", "No" );
+        print_nox.set<std::string>( "Linear Solver Details", "No" );
+        print_nox.set<std::string>( "Test Details", "No" );
+        print_nox.set<std::string>( "Debug", "No" );
+      }
+      break;
+    }
+    default:
+    {
+      // do nothing
+      break;
     }
   }
 
@@ -739,11 +778,29 @@ void ADAPTER::StructureBaseAlgorithmNew::SetTimeIntegrationStrategy(
 {
   ti_strategy = STR::TIMINT::BuildStrategy(*sdyn_);
   ti_strategy->Init(dataio,datasdyn,dataglobalstate);
-  /* In the restart case, we Setup the structural time integration after the
-   * discretization has been redistributed. See STR::TIMINT::Base::ReadRestart()
-   * for more information.                                     hiermeier 05/16*/
-  if (not restart)
-    ti_strategy->Setup();
+
+  DRT::Problem* problem = DRT::Problem::Instance();
+  PROBLEM_TYP probtype = problem->ProblemType();
+
+  switch ( probtype )
+  {
+    case prb_invana:
+    {
+      ti_strategy->Setup();
+
+      break;
+    }
+    default:
+    {
+      /* In the restart case, we Setup the structural time integration after the
+         * discretization has been redistributed. See STR::TIMINT::Base::ReadRestart()
+         * for more information.                                     hiermeier 05/16*/
+      if (not restart)
+        ti_strategy->Setup();
+
+      break;
+    }
+  }
 }
 
 

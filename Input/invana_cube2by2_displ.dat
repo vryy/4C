@@ -1,3 +1,4 @@
+// Maintainer: Sebastian Kehl
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -65,6 +66,18 @@ ADAPTCONV_BETTER                0.01
 MAXITER                         150
 UZAWAPARAM                      1.0
 LOADLIN                         yes
+INT_STRATEGY                    Standard
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = No
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
