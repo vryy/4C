@@ -20,6 +20,7 @@
 #include "../drt_cut/cut_boundarycell.H"
 #include "../drt_cut/cut_position.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -81,7 +82,6 @@ void XCONTACT::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
     const GEO::CUT::BoundaryCell & bcell,
     DRT::Element::DiscretizationType distype_ele )
 {
-  std::cout << __PRETTY_FUNCTION__ << "\n";
   DRT::Element::DiscretizationType distype_bc = bcell.Shape();
   CheckBoundaryCellType( distype_bc );
 
@@ -98,9 +98,6 @@ void XCONTACT::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
     LINALG::Matrix<3,1> pcoord( & coord( 0, ivertex ), true );
     if ( pcoord.M() != static_cast<unsigned>( coord.M() ) )
       dserror( "row dimension mismatch!" );
-
-    std::cout << "--- global coordinates ---\n";
-    std::cout << pcoord << std::endl;
 
     Teuchos::RCP<GEO::CUT::Position> pos =
         GEO::CUT::Position::Create( xyze, pcoord, distype_ele );

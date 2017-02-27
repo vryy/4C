@@ -253,10 +253,11 @@ void XCONTACT::LEVELSET::Algorithm::CreateActiveMaps(
       continue;
 
     if ( ele->Owner() == dis.Comm().MyPID() )
-    {
       // store the row element GID's
       rele_gids.insert( ele->Id() );
 
+    if ( not ele->HasOnlyGhostNodes( dis.Comm().MyPID() ) )
+    {
       // store the row dof GID's
       for ( std::vector<int>::const_iterator cit = dof_gids_per_ele.begin();
           cit != dof_gids_per_ele.end(); ++cit )

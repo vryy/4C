@@ -117,9 +117,6 @@ namespace ADAPTER {
     //! @{
     void CompleteInitialState();
 
-    //! destroy the current state
-    void DestroyState();
-
     //! recreate the state object
     void RecreateState();
     //! @}

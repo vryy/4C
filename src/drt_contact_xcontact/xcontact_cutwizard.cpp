@@ -54,11 +54,13 @@ const DRT::Element * XCONTACT::CutWizard::BackMesh::lColElement( int lid ) const
 XCONTACT::CutWizard::CutWizard(
     const Teuchos::RCP<DRT::DiscretizationInterface> & backdis )
     : GEO::CutWizard( backdis->Comm() ),
-      cond_col_parent_face_element_pair_( 0 )
+      cond_col_parent_face_element_pair_( 0 ),
+      cond_face_node_col_map_( Teuchos::null )
 {
   // set background mesh as base class variable
   Teuchos::RCP<DRT::Discretization> backdis_ptr =
       Teuchos::rcp_dynamic_cast<DRT::Discretization>( backdis, true );
+
   BackMeshPtr() = Teuchos::rcp( new XCONTACT::CutWizard::BackMesh( backdis_ptr,
       this ) );
 }
@@ -71,11 +73,12 @@ void XCONTACT::CutWizard::SetBackgroundState(
     int level_set_sid )
 {
   cond_col_parent_face_element_pair_.clear();
+  cond_face_node_col_map_ = Teuchos::null;
 
   DRT::Discretization & back_dis = BackMeshPtr()->Get();
   Teuchos::RCP<Epetra_Vector> expanded_levelset_col =
       ExpandLevelSetValues( back_dis, *back_levelset_row, "Slave",
-          cond_col_parent_face_element_pair_ );
+          cond_col_parent_face_element_pair_, cond_face_node_col_map_ );
 
   GEO::CutWizard::SetBackgroundState( back_disp_col, expanded_levelset_col,
       level_set_sid );
@@ -119,6 +122,42 @@ void XCONTACT::CutWizard::Post_Run_Cut( bool include_inner )
            ciit != cit->second.end(); ++ciit )
       (*ciit)->Print();
 #endif
+
+  // ------------------------------------------------------------------------
+  // Remove non-interface non-standard nodal dof-sets
+  // ------------------------------------------------------------------------
+  RemoveNonInterfaceNonStandardNodalDofSets();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void XCONTACT::CutWizard::RemoveNonInterfaceNonStandardNodalDofSets()
+{
+  DRT::Discretization & back_dis = BackMeshPtr()->Get();
+  const Epetra_Map & node_col_map = *back_dis.NodeColMap();
+
+  unsigned my_num_col_nodes = node_col_map.NumMyElements();
+  int * my_num_col_node_gids = node_col_map.MyGlobalElements();
+
+  for ( unsigned mylid = 0; mylid < my_num_col_nodes; ++mylid )
+  {
+    int mygid = my_num_col_node_gids[ mylid ];
+
+    // look for non-condition nodes
+    if ( CondFaceNodeColMap().LID( mygid ) != -1 )
+      continue;
+
+    // look for the corresponding cut node
+    GEO::CUT::Node * node = GetNode( mygid );
+    if ( not node )
+      continue;
+
+    // find non-condition node which has a nodal dofset number larger than 1
+    if ( node->NumDofSets() <= 1 )
+      continue;
+
+    node->RemoveNonStandardNodalDofSets();
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -335,7 +374,8 @@ Teuchos::RCP<Epetra_Vector> XCONTACT::CutWizard::ExpandLevelSetValues(
     const DRT::Discretization & xdiscret,
     const Epetra_Vector & levelset_values,
     const std::vector<std::string> & desired_conds,
-    EleFacePair & cond_col_parent_face_element_pair
+    EleFacePair & cond_col_parent_face_element_pair,
+    Teuchos::RCP<Epetra_Map> & cond_face_node_col_map
     ) const
 {
   // get the contact condition groups
@@ -367,11 +407,12 @@ Teuchos::RCP<Epetra_Vector> XCONTACT::CutWizard::ExpandLevelSetValues(
   std::map<int, Teuchos::RCP<DRT::Element> > cond_elements;
   DRT::UTILS::FindConditionObjects( cond_elements, conds );
 
-  // build the structural node column map of the slave side
+  // collect all necessary information of the condition side
   Teuchos::RCP<Epetra_Map> cond_node_col_map = Teuchos::null;
 
   CollectConditionSideInfo( cond_elements, xdiscret.Comm(),
-      cond_node_col_map, cond_col_parent_face_element_pair );
+      cond_node_col_map, cond_col_parent_face_element_pair,
+      cond_face_node_col_map );
 
   // create the expanded level set vector
   Teuchos::RCP<Epetra_Vector> expanded_level_set_values =
@@ -411,6 +452,8 @@ Teuchos::RCP<Epetra_Vector> XCONTACT::CutWizard::ExpandLevelSetValues(
       common_line_node_lids.clear();
       common_line_node_lids.reserve( num_line_nodes );
 
+      /* find element edge lines, which have exactly one node in common
+       * with the current considered face element */
       for ( unsigned ln_lid=0; ln_lid < num_line_nodes; ++ln_lid )
       {
         for ( unsigned fn_lid=0; fn_lid < num_face_nodes; ++fn_lid )
@@ -422,7 +465,8 @@ Teuchos::RCP<Epetra_Vector> XCONTACT::CutWizard::ExpandLevelSetValues(
           }
         }
       }
-
+      /* project the level-set value of the node on the face element
+       * along the line */
       if ( common_line_node_lids.size() == 1 )
       {
         ProjectLevelSetValuesAlongLine( line_node_gids, num_line_nodes,
@@ -469,9 +513,11 @@ void XCONTACT::CutWizard::CollectConditionSideInfo(
     const std::map<int, Teuchos::RCP<DRT::Element> > & cond_elements,
     const Epetra_Comm & comm,
     Teuchos::RCP<Epetra_Map> & cond_node_col_map,
-    EleFacePair & cond_col_parent_face_element_pair ) const
+    EleFacePair & cond_col_parent_face_element_pair,
+    Teuchos::RCP<Epetra_Map> & cond_face_node_col_map ) const
 {
-  std::set<int> col_node_gids;
+  std::set<int> col_pnode_gids;
+  std::set<int> col_fnode_gids;
   unsigned pair_size = cond_col_parent_face_element_pair.size();
   for ( std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator cit = cond_elements.begin();
         cit!= cond_elements.end(); ++cit )
@@ -496,12 +542,44 @@ void XCONTACT::CutWizard::CollectConditionSideInfo(
       cond_col_parent_face_element_pair.at( parent_ele ).push_back( face_ele );
     }
 
-    const int * node_gids = parent_ele->NodeIds();
-    const int num_nodes = parent_ele->NumNode();
-    col_node_gids.insert( node_gids, node_gids+num_nodes );
+    // collect information of the parent element
+    const int * pnode_gids = parent_ele->NodeIds();
+    const int num_pnodes = parent_ele->NumNode();
+    col_pnode_gids.insert( pnode_gids, pnode_gids+num_pnodes );
+
+    // collect information of the face element
+    const int * fnode_gids = face_ele->NodeIds();
+    const int num_fnodes = face_ele->NumNode();
+    col_fnode_gids.insert( fnode_gids, fnode_gids+num_fnodes );
   }
-  std::vector<int> col_node_gids_vec( col_node_gids.begin(), col_node_gids.end() );
+  std::vector<int> col_pnode_gids_vec( col_pnode_gids.begin(), col_pnode_gids.end() );
   cond_node_col_map = Teuchos::rcp( new Epetra_Map( -1,
-      static_cast<int>( col_node_gids_vec.size() ), & col_node_gids_vec[0], 0, comm ) );
+      static_cast<int>( col_pnode_gids_vec.size() ), & col_pnode_gids_vec[0], 0, comm ) );
+
+  std::vector<int> col_fnode_gids_vec( col_fnode_gids.begin(), col_fnode_gids.end() );
+  cond_face_node_col_map = Teuchos::rcp( new Epetra_Map( -1,
+      static_cast<int>( col_fnode_gids_vec.size() ), & col_fnode_gids_vec[0], 0, comm ) );
+
+#ifdef DEBUG_XCONTACT_INTERSECTION
+  for ( unsigned p=0; p<comm.NumProc(); ++p)
+  {
+    comm.Barrier();
+    if ( p == 0 and comm.MyPID() == 0 )
+    {
+      std::cout << "---------------------------------\n";
+      std::cout << "cond_col_parent_face_element_pair\n";
+      std::cout << "---------------------------------\n";
+    }
+
+    if ( comm.MyPID() == p )
+    {
+      std::cout << "--- PROC " << p << " ---\n";
+      for ( EleFacePair::const_iterator cit = cond_col_parent_face_element_pair.begin();
+            cit != cond_col_parent_face_element_pair.end(); ++cit )
+        std::cout << "PID: " << comm.MyPID() << " -- ele-id: " << cit->first->Id()
+                  << " | owner = " << cit->first->Owner() << std::endl;
+    }
+  }
+#endif
 }
 

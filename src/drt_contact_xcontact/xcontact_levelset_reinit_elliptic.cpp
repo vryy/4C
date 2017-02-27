@@ -111,7 +111,6 @@ void XCONTACT::LEVELSET::REINIT::Elliptic::CreateJacobian(
     const Epetra_Map & active_dofs,
     Teuchos::RCP<LINALG::SparseOperator> & jac)
 {
-  Epetra_Map rowmap( active_dofs );
   if ( jac.is_null() or not jac->DomainMap().SameAs( active_dofs ) )
     jac = Teuchos::rcp( new LINALG::SparseMatrix( active_dofs, 9, false, true ) );
   else

@@ -347,6 +347,10 @@ void XCONTACT::ALGORITHM::Base::Timeloop()
     // do outer iteration loop for particular type of algorithm
     OuterLoop();
 
+    IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ <<
+        ": Not yet implemented!" << IO::endl;
+    break;
+
     // prepare output
     PrepareOutput();
 
@@ -355,7 +359,6 @@ void XCONTACT::ALGORITHM::Base::Timeloop()
 
     // write output to screen and files
     Output();
-
   } // time loop
 
   return;

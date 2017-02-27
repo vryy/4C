@@ -16,11 +16,16 @@
 #include "xcontact_state_creator.H"
 #include "xcontact_cutwizard.H"
 
+#include "../drt_adapter/ad_str_structure_new.H"
+
 #include "../drt_xfem/xfem_dofset.H"
+#include "../drt_xfem/xfield_state.H"
 
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_io/io_pstream.H"
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -34,6 +39,7 @@ XCONTACT::StateCreator::StateCreator()
  *----------------------------------------------------------------------------*/
 void XCONTACT::StateCreator::Recreate(
     Teuchos::RCP<XFEM::XFieldState> &                xstate,
+    const Teuchos::RCP<ADAPTER::Field> &             xfield,
     const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
     const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret,
     const Teuchos::RCP<const Epetra_Vector> &        back_disp_col,
@@ -50,7 +56,7 @@ void XCONTACT::StateCreator::Recreate(
         Teuchos::rcp_dynamic_cast<DRT::Discretization>( fielddiscret, true );
 
   // if success, do the actual function call
-  Recreate( xstate, xfielddiscret_ptr, fielddiscret_ptr, back_disp_col,
+  Recreate( xstate, xfield, xfielddiscret_ptr, fielddiscret_ptr, back_disp_col,
       levelset_field_row, solver_params, step, time, dosetup );
 }
 
@@ -58,6 +64,7 @@ void XCONTACT::StateCreator::Recreate(
  *----------------------------------------------------------------------------*/
 void XCONTACT::StateCreator::Recreate(
     Teuchos::RCP<XFEM::XFieldState> &             xstate,
+    const Teuchos::RCP<ADAPTER::Field> &          xfield,
     const Teuchos::RCP<DRT::DiscretizationXFEM> & xfielddiscret,
     const Teuchos::RCP<DRT::Discretization> &     fielddiscret,
     const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
@@ -67,19 +74,75 @@ void XCONTACT::StateCreator::Recreate(
     double                                        time,
     bool                                          dosetup)
 {
-  //----------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // create new cut wizard & dof-set
   Teuchos::RCP<GEO::CutWizard> wizard = Teuchos::null;
   Teuchos::RCP<XFEM::XFEMDofSet> xdofset = Teuchos::null;
 
-   if ( CreateNewCutState( xdofset, wizard, xfielddiscret, back_disp_col,
-       levelset_field_row, solver_params, step ) )
-   {
-     dserror( "create new cut state changed the dofset!" );
-   }
+  enum XFEM::StateStatus status = CreateNewCutState( xdofset, wizard,
+      xfielddiscret, back_disp_col, levelset_field_row, solver_params, step );
 
-  dserror("Stop, dofset did not change");
-  exit( EXIT_FAILURE );
+  IO::cout << "\nXCONTACT::StateCreator::Recreate:" << IO::endl;
+
+  switch ( status )
+  {
+    case XFEM::StateStatus::state_changed:
+    {
+      Teuchos::RCP<XFEM::XFieldState> xstate_new = Teuchos::null;
+      {
+        const double t_start = Teuchos::Time::wallTime();
+        IO::cout << "\t* 1/3 CreateNewXFieldState ...";
+
+        xstate_new = CreateNewXFieldState( xfield,
+            wizard, xdofset, xfielddiscret, fielddiscret );
+
+        const double t_diff = Teuchos::Time::wallTime() - t_start;
+        IO::cout << " Success (" << t_diff << " secs)" << IO::endl;
+      }
+
+      {
+        const double t_start = Teuchos::Time::wallTime();
+        IO::cout << "\t* 2/3 DestroyXFieldState .....";
+
+        DestroyXFieldState( xfield );
+
+        const double t_diff = Teuchos::Time::wallTime() - t_start;
+        IO::cout << " Success (" << t_diff << " secs)" << IO::endl;
+      }
+
+      {
+        const double t_start = Teuchos::Time::wallTime();
+        IO::cout << "\t* 3/3 SetNewState ............";
+
+        xstate->SetNewState( *xstate_new );
+
+        const double t_diff = Teuchos::Time::wallTime() - t_start;
+        IO::cout << " Success (" << t_diff << " secs)" << IO::endl;
+      }
+
+      break;
+    }
+    case XFEM::StateStatus::state_unchanged:
+    {
+      {
+        const double t_start = Teuchos::Time::wallTime();
+        IO::cout << "\t* 1/1 ResetXFieldNonStandardDofs ...";
+
+        ResetXFieldNonStandardDofs( xfield );
+
+        const double t_diff = Teuchos::Time::wallTime() - t_start;
+        IO::cout << " Success (" << t_diff << " secs)" << IO::endl;
+      }
+
+      break;
+    }
+    default:
+    {
+      dserror( "Unsupported StateStatus: %s",
+          XFEM::StateStatus2String( status ).c_str() );
+      exit( EXIT_FAILURE );
+    }
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -98,15 +161,15 @@ enum XFEM::StateStatus XCONTACT::StateCreator::CreateNewCutState(
   if ( levelset_field_row.is_null() )
     return XFEM::state_unchanged;
 
-  //----------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // create new cut wizard
   CreateCutWizard( xdiscret, back_disp_col, levelset_field_row, wizard );
 
-  //----------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // performs the "CUT"
   wizard->Cut( include_inner_ );
 
-  //----------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // set the new dofset after cut
   int max_num_my_reserved_dofs_per_node = ( maxnumdofsets_ ) * numdof_;
 
@@ -163,7 +226,7 @@ enum XFEM::StateStatus XCONTACT::StateCreator::FinishBackgroundDiscretization(
   if ( xdiscret.IsEqualXDofSet( 0, *xdofset ) )
     return XFEM::state_unchanged;
 
-  //field dofset has nds = 0
+  // field dofset has nds = 0
   xdiscret.ReplaceDofSet(0, xdofset, true );
 
   xdiscret.FillComplete( true, false, false );
@@ -171,11 +234,53 @@ enum XFEM::StateStatus XCONTACT::StateCreator::FinishBackgroundDiscretization(
   //print all dofsets
   xdiscret.GetDofSetProxy()->PrintAllDofsets( xdiscret.Comm() );
 
-  //----------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // recompute nullspace based on new number of dofs per node
   /* REMARK: this has to be done after replacing the discret' dofset
    * (via discret_->ReplaceDofSet) */
   xdiscret.ComputeNullSpaceIfNecessary( solver_params, true );
 
   return XFEM::state_changed;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<XFEM::XFieldState> XCONTACT::StateCreator::CreateNewXFieldState(
+    const Teuchos::RCP<ADAPTER::Field> &   xfield,
+    const Teuchos::RCP<GEO::CutWizard> &   wizard,
+    const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
+    const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
+    const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret ) const
+{
+  Teuchos::RCP<XFEM::XFieldState> new_xstate = CreateXFieldFieldState();
+  new_xstate->Init( Teuchos::null, wizard, xdofset, xfielddiscret, fielddiscret );
+
+  Teuchos::RCP<ADAPTER::StructureNew> xstructure =
+      Teuchos::rcp_dynamic_cast<ADAPTER::StructureNew>( xfield, true );
+
+  xstructure->CreateNewXFieldState( new_xstate );
+
+  return new_xstate;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void XCONTACT::StateCreator::DestroyXFieldState(
+    const Teuchos::RCP<ADAPTER::Field> & xfield ) const
+{
+  Teuchos::RCP<ADAPTER::StructureNew> xstructure =
+      Teuchos::rcp_dynamic_cast<ADAPTER::StructureNew>( xfield, true );
+
+  xstructure->DestroyState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void XCONTACT::StateCreator::ResetXFieldNonStandardDofs(
+    const Teuchos::RCP<ADAPTER::Field> & xfield ) const
+{
+  Teuchos::RCP<ADAPTER::StructureNew> xstructure =
+      Teuchos::rcp_dynamic_cast<ADAPTER::StructureNew>( xfield, true );
+
+  xstructure->ResetXFieldNonStandardDofs();
 }

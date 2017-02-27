@@ -34,6 +34,7 @@
 #include "../drt_contact_xcontact/xcontact_cutwizard.H"
 #include "../drt_contact_xcontact/xcontact_state_creator.H"
 
+#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -109,11 +110,7 @@ void ADAPTER::StructureXContact::Setup()
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureXContact::CompleteInitialState()
 {
-  Teuchos::RCP<STR::TIMINT::Base> ti_strategy_ptr =
-      Teuchos::rcp_dynamic_cast<STR::TIMINT::Base>( structure_ptr_, true );
-
-  state_ptr_ = Teuchos::rcp_dynamic_cast<XFEM::XFieldState>(
-      ti_strategy_ptr->GetMutableDataGlobalStatePtr(), true );
+  state_ptr_ = Structure().XFieldState();
 
   /* complete the state object (be aware that the condition manager is
    * undefined and we do not create a new cut wizard.) */
@@ -127,30 +124,7 @@ void ADAPTER::StructureXContact::CompleteInitialState()
       Structure().GetStepNp(),
       true);
 
-  // setup time integration strategy
-  ti_strategy_ptr->Setup();
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void ADAPTER::StructureXContact::DestroyState()
-{
-  if ( state_ptr_.is_null() )
-    return;
-
-  if( state_ptr_.strong_count() > 1 )
-    dserror( "deleting old state class object does not work properly, "
-        "there are still more than one rcp pointer!!!" );
-
-  if( not state_ptr_->Destroy() )
-    dserror( "destroying XFieldState object failed" );
-
-  /* Delete the old state object and its content (if there is no ownership
-   * anymore). The goal is that we have only one object in memory at the same
-   * time. */
-  state_ptr_ = Teuchos::null;
+  Structure().Setup();
 
   return;
 }
@@ -171,6 +145,7 @@ void ADAPTER::StructureXContact::RecreateState()
   // create the new state class ( vectors, matrices ... )
   StateCreator().Recreate(
       state_ptr_,
+      structure_ptr_,
       MultiDiscret().DiscretPtr( XFEM::xstructure ),
       MultiDiscret().DiscretPtr( XFEM::structure ),
       Teuchos::null,
@@ -239,7 +214,9 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureXContact::Solve()
   // ---------------------------------------------------------------------
   // Solve the direct contact problem
   // ---------------------------------------------------------------------
-  status = Structure().Solve();
+  IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ <<
+      ": Not yet implemented!" << IO::endl;
+//  status = Structure().Solve();
 
   // --- nothing more to do, if the contact state was not solved ---------
   if (not iscontact_)
@@ -264,8 +241,6 @@ void ADAPTER::StructureXContact::PreSolve()
     return;
 
   RecreateState();
-
-  dserror( "Not yet implemented!" );
 }
 
 

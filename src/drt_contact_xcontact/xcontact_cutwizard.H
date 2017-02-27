@@ -195,6 +195,8 @@ namespace XCONTACT {
         const std::vector<const DRT::Element * > & cut_elements,
         std::map<int, GEO::BoundaryIntCellPtrs> & bicells_map ) const;
 
+    void RemoveNonInterfaceNonStandardNodalDofSets();
+
     void CheckBoundaryCellType(
         DRT::Element::DiscretizationType distype_bc ) const;
 
@@ -206,6 +208,7 @@ namespace XCONTACT {
      *  \param desired_conds   (in) : desired conditions specifying the interface elements
      *  \param cond_col_parent_face_element_pair (out) : pair of parent and face elements at
      *                                condition interface
+     *  \param cond_face_node_col_map (out) : column map of all conditioned nodes on the interface
      *
      *  \return expanded level-set value vector
      *
@@ -214,20 +217,43 @@ namespace XCONTACT {
         const DRT::Discretization & xdiscret,
         const Epetra_Vector & levelset_values,
         const std::vector<std::string> & desired_conds,
-        EleFacePair & cond_col_parent_face_element_pair ) const;
+        EleFacePair & cond_col_parent_face_element_pair,
+        Teuchos::RCP<Epetra_Map> & cond_face_node_col_map ) const;
 
-    Teuchos::RCP<Epetra_Vector> ExpandLevelSetValues(
+    /** \brief Expand level-set values along the element edges perpendicular to
+     *  the slave interface in the parameter space
+     *
+     *  \param xdiscret        (in) : xfem discretization
+     *  \param levelset_values (in) : nodal level set values in row layout
+     *  \param desired_cond    (in) : desired condition specifying the interface elements
+     *  \param cond_col_parent_face_element_pair (out) : pair of parent and face elements at
+     *                                condition interface
+     *  \param cond_face_node_col_map (out) : column map of all conditioned nodes on the interface
+     *
+     *  \return expanded level-set value vector
+     *
+     *  \author hiermeier \date 01/17 */
+    inline Teuchos::RCP<Epetra_Vector> ExpandLevelSetValues(
         const DRT::Discretization & xdiscret,
         const Epetra_Vector & levelset_values,
         const std::string & desired_cond,
-        EleFacePair & cond_col_parent_face_element_pair ) const
+        EleFacePair & cond_col_parent_face_element_pair,
+        Teuchos::RCP<Epetra_Map> & cond_face_node_col_map ) const
     {
       const std::vector<std::string> desired_conds( 1, desired_cond );
       return ExpandLevelSetValues( xdiscret, levelset_values,
-          desired_conds, cond_col_parent_face_element_pair);
+          desired_conds, cond_col_parent_face_element_pair,
+          cond_face_node_col_map );
     }
 
     /** \brief project the level-set values along the given line
+     *
+     *  \param line_node_gids       (in) : node GIDs of the current line element
+     *  \param num_line_nodes       (in) : number of nodes of the line
+     *  \param common_line_node_lid (in) : LID of the line node on the face element
+     *                                     (holding the level-set value)
+     *  \param expanded_level_set_values (out) : vector which will contain the expanded
+     *                                     level-set values.
      *
      *  \author hiermeier \date 01/17 */
     void ProjectLevelSetValuesAlongLine(
@@ -240,7 +266,16 @@ namespace XCONTACT {
         const std::map<int, Teuchos::RCP<DRT::Element> > & cond_elements,
         const Epetra_Comm & comm,
         Teuchos::RCP<Epetra_Map> & cond_node_col_map,
-        EleFacePair & cond_col_parent_face_element_pair ) const;
+        EleFacePair & cond_col_parent_face_element_pair,
+        Teuchos::RCP<Epetra_Map> & cond_face_node_col_map ) const;
+
+    const Epetra_Map & CondFaceNodeColMap() const
+    {
+      if ( cond_face_node_col_map_.is_null() )
+        dserror( "NULL pointer!" );
+
+      return * cond_face_node_col_map_;
+    }
 
   public:
     /// debug output to check the cut algorithm
@@ -252,6 +287,7 @@ namespace XCONTACT {
 
     EleFacePair cond_col_parent_face_element_pair_;
 
+    Teuchos::RCP<Epetra_Map> cond_face_node_col_map_;
   };
 } // namespace XCONTACT
 

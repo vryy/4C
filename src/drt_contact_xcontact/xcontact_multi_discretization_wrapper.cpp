@@ -168,8 +168,6 @@ void XCONTACT::MultiDiscretizationWrapper::BuildSlaveMasterMaps()
       }
     }
 
-    std::cout << XFEM::FieldName2String( cit->first ) << std::endl;
-
     // build slave dof row map
     CreateNewMap( my_slave_row_dofs, slave_dof_row_maps_[ cit->first ] );
 

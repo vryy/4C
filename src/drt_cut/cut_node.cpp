@@ -813,6 +813,32 @@ bool GEO::CUT::Node::isAtSameLocation( const Node * nod ) const
   return false;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::Node::RemoveNonStandardNodalDofSets()
+{
+  std::vector<Teuchos::RCP<NodalDofSet> > std_nodaldofset;
+  std_nodaldofset.reserve( 1 );
+  for( unsigned i=0; i< static_cast<unsigned>( NumDofSets() ); ++i )
+  {
+    Teuchos::RCP<NodalDofSet> & nodaldofset = nodaldofsets_[i];
+    if( nodaldofset->Is_Standard_DofSet() )
+    {
+      std_nodaldofset.push_back( nodaldofset );
+    }
+    else
+    {
+      if ( nodaldofset.strong_count() > 1 )
+        dserror("nodaldofset cannot be destroyed! (strong_count = %d)",
+            nodaldofset.strong_count() );
+      nodaldofset = Teuchos::null;
+    }
+  }
+  nodaldofsets_.swap( std_nodaldofset );
+}
+
+
+
 /*-----------------------------------------------------------------------------------------*
  * get the unique standard NodalDofSet for a given nodal dofset position
  *-----------------------------------------------------------------------------------------*/

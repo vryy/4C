@@ -20,6 +20,8 @@
 
 #include "../drt_adapter/ad_str_xcontact.H"
 
+#include "../drt_io/io_pstream.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XCONTACT::ALGORITHM::Partitioned::Partitioned()
@@ -104,8 +106,9 @@ void XCONTACT::ALGORITHM::Partitioned::PrepareOuterIteration()
  *----------------------------------------------------------------------*/
 bool XCONTACT::ALGORITHM::Partitioned::ConvergenceCheck(const int& itnum)
 {
-  dserror("Not yet implemented!");
-  return false;
+  IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ <<
+      ": Not yet implemented!" << IO::endl;
+  return true;
 }
 
 /*----------------------------------------------------------------------*
