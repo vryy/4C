@@ -129,7 +129,10 @@ void CONTACT::CoNitscheStrategy::SetState(const enum MORTAR::StateType& statenam
     }
   }
   else
+  {
+    curr_state_eval_=false;
     CoAbstractStrategy::SetState(statename,vec);
+  }
   return;
 }
 
