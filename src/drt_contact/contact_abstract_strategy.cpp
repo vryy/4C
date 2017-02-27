@@ -238,7 +238,7 @@ void CONTACT::CoAbstractStrategy::RedistributeContact(
 
   // decide whether redistribution should be applied or not
   double taverage = 0.0;
-  double eaverage = 0;
+  double eaverage = 0.0;
   bool doredist = false;
   double max_balance = Params().get<double>("MAX_BALANCE");
 
@@ -523,7 +523,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     zold_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 
-    // setup global Mortar matrices Dold and Mold
+    // setup global mortar matrices Dold and Mold
     dold_ = Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true),1,true,false));
     dold_->Zero();
     dold_->Complete();
