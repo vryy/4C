@@ -212,6 +212,9 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   // dissipation mode
   AddtoPack(data,(int)DisMode());
 
+  AddtoPack(data,cpl());
+  AddtoPack(data,s());
+
   return;
 }
 
@@ -308,6 +311,10 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   // dissipation mode
   INPAR::TSI::DissipationMode mode = (INPAR::TSI::DissipationMode)ExtractInt(position,data);
   SetDissipationMode(mode);
+
+  double cpl = ExtractDouble(position,data);
+  double s = ExtractDouble(position,data);
+  GetParams(s,cpl);
 
   // in the postprocessing mode, we do not unpack everything we have packed
   // -> position check cannot be done in this case
