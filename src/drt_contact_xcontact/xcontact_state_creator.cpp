@@ -86,7 +86,7 @@ void XCONTACT::StateCreator::Recreate(
 
   switch ( status )
   {
-    case XFEM::StateStatus::state_changed:
+    case XFEM::state_changed:
     {
       Teuchos::RCP<XFEM::XFieldState> xstate_new = Teuchos::null;
       {
@@ -122,7 +122,7 @@ void XCONTACT::StateCreator::Recreate(
 
       break;
     }
-    case XFEM::StateStatus::state_unchanged:
+    case XFEM::state_unchanged:
     {
       {
         const double t_start = Teuchos::Time::wallTime();
