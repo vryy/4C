@@ -214,9 +214,13 @@ INPAR::STR::ConvergenceStatus ADAPTER::StructureXContact::Solve()
   // ---------------------------------------------------------------------
   // Solve the direct contact problem
   // ---------------------------------------------------------------------
-  IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ <<
-      ": Not yet implemented!" << IO::endl;
-//  status = Structure().Solve();
+  if ( iscontact_ )
+  {
+    IO::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ <<
+        ": Solve for the contact state is not yet implemented!" << IO::endl;
+  }
+  else
+    status = Structure().Solve();
 
   // --- nothing more to do, if the contact state was not solved ---------
   if (not iscontact_)
