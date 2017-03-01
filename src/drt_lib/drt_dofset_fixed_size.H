@@ -3,7 +3,7 @@
 
 \brief A modified set of degrees of freedom that always pretends to be
        of a certain size in order to reserve space for fields that vary
-       in size, i.e. XFEM fluid.
+       in size, i.e. XFEM field.
 
 <pre>
 \level 1
@@ -82,7 +82,7 @@ public:
   /// Get maximum GID of degree of freedom row map
   virtual int MaxAllGID() const
   {
-    return MinAllGID() + numMyReservedDofs_;
+    return DofSet::MaxAllGID() + numMyReservedDofsperNode_;
   }
 
   /// Get minimum GID of degree of freedom row map

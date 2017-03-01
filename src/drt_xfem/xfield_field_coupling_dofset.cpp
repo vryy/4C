@@ -38,7 +38,7 @@ void XFEM::XFieldField::CouplingDofSet::Dof(std::vector<int>& dofs,
   const int lid = node->LID();
   if (lid==-1)
     return;
-  const int & num_dof = NumStandardDofPerNode();
+  const int num_dof = NumStandardDofPerNode();
   const int idx = (*idxcolnodes_)[lid] + nodal_dofset_id*num_dof;
   dofs.resize( num_dof, 0 );
   for ( int i=0; i<num_dof; ++i )
@@ -54,7 +54,7 @@ int XFEM::XFieldField::CouplingDofSet::NumDofPerNode(const DRT::Node & node) con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const int& XFEM::XFieldField::CouplingDofSet::MyNumDofPerNode(
+int XFEM::XFieldField::CouplingDofSet::MyNumDofPerNode(
     const int& node_gid) const
 {
   std::map<int,int>::const_iterator pos =
@@ -66,7 +66,9 @@ const int& XFEM::XFieldField::CouplingDofSet::MyNumDofPerNode(
   return pos->second;
 }
 
-const int& XFEM::XFieldField::CouplingDofSet::NumStandardDofPerNode() const
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int XFEM::XFieldField::CouplingDofSet::NumStandardDofPerNode() const
 {
   return g_num_std_dof_per_node_;
 }

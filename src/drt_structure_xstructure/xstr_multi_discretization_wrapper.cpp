@@ -125,10 +125,10 @@ void XSTR::MultiDiscretizationWrapper::AddDiscretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XSTR::MultiDiscretizationWrapper::ExtractVector(
-    const Epetra_MultiVector& full,
-    const enum XFEM::FieldName & field,
-    Epetra_MultiVector& partial,
-    const enum ::IO::VectorType & vt) const
+    const Epetra_MultiVector & full,
+    enum XFEM::FieldName       field,
+    Epetra_MultiVector &       partial,
+    enum ::IO::VectorType      vt) const
 {
   switch (vt)
   {
@@ -158,10 +158,10 @@ void XSTR::MultiDiscretizationWrapper::ExtractVector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XSTR::MultiDiscretizationWrapper::InsertVector(
-    const Epetra_MultiVector& partial,
-    const enum XFEM::FieldName & field,
-    Epetra_MultiVector& full,
-    const enum ::IO::VectorType & vt) const
+    const Epetra_MultiVector & partial,
+    enum XFEM::FieldName       field,
+    Epetra_MultiVector &       full,
+    enum ::IO::VectorType      vt) const
 {
   switch (vt)
   {
@@ -191,11 +191,11 @@ void XSTR::MultiDiscretizationWrapper::InsertVector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XSTR::MultiDiscretizationWrapper::AddVector(
-    const Epetra_MultiVector& partial,
-    const enum XFEM::FieldName & field,
-    Epetra_MultiVector& full,
-    double scale,
-    const enum ::IO::VectorType & vt) const
+    const Epetra_MultiVector & partial,
+    enum XFEM::FieldName       field,
+    Epetra_MultiVector &       full,
+    double                     scale,
+    enum ::IO::VectorType      vt) const
 {
   switch (vt)
   {
@@ -249,7 +249,7 @@ Teuchos::RCP<IO::DiscretizationWriter> XSTR::MultiDiscretizationWrapper::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool XSTR::MultiDiscretizationWrapper::IsXFEM(const enum XFEM::FieldName & field)
+bool XSTR::MultiDiscretizationWrapper::IsXFEM( enum XFEM::FieldName field )
 const
 {
  return map_extractor_->IsXFemDis(field);
@@ -819,7 +819,7 @@ void XSTR::MultiDiscretizationWrapper::Dof(std::vector<int>& dof,
   // interface nodes
   if (map_extractor_->INodeRowMap()->MyGID(ngid))
   {
-    /* Necessary because of the nodes were cloned during the creation of the
+    /* Necessary because the nodes were cloned during the creation of the
      * interface discretization. */
     DRT::Node * inode = map_extractor_->gINode(ngid);
 
@@ -970,7 +970,7 @@ const Teuchos::RCP<LINALG::SparseOperator>& XSTR::MultiDiscretizationWrapper::
 {
    XSysMatMap::iterator mat_it = partial_system_matrices_.find(field);
    // ------------------------------------------------------------------------
-   // insert new elements, if there are none for the given field
+   // insert new matrix, if there is none for the given field
    // ------------------------------------------------------------------------
    if (mat_it==partial_system_matrices_.end())
    {
@@ -1066,7 +1066,7 @@ void XSTR::MultiDiscretizationWrapper::Evaluate(
 {
   CheckInitSetup();
   XDisMap::const_iterator cit;
-  // put input into arrays, such that as loop treatment becomes possible
+  // put input into arrays, such that a loop treatment becomes possible
   Teuchos::RCP<Epetra_Vector> full_systemvectors[3] = {full_systemvector1,
       full_systemvector2,full_systemvector3};
   Teuchos::RCP<LINALG::SparseOperator> full_systemmatrices[2] =

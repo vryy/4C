@@ -125,21 +125,21 @@ namespace IO {
         const bool & check_insertion);
 
     void ExtractVector(
-        const Epetra_MultiVector& full,
-        const enum XFEM::FieldName & field,
-        Epetra_MultiVector& partial,
-        const enum ::IO::VectorType & vt = ::IO::dofvector) const;
+        const Epetra_MultiVector & full,
+        enum XFEM::FieldName field,
+        Epetra_MultiVector & partial,
+        enum ::IO::VectorType vt = ::IO::dofvector) const;
 
-    void InsertVector(const Epetra_MultiVector& partial,
-        const enum XFEM::FieldName & field,
-        Epetra_MultiVector& full,
-        const enum ::IO::VectorType & vt = ::IO::dofvector) const;
+    void InsertVector(const Epetra_MultiVector & partial,
+        enum XFEM::FieldName field,
+        Epetra_MultiVector & full,
+        enum ::IO::VectorType vt = ::IO::dofvector) const;
 
-    void AddVector(const Epetra_MultiVector& partial,
-        const enum XFEM::FieldName & field,
-        Epetra_MultiVector& full,
+    void AddVector(const Epetra_MultiVector & partial,
+        enum XFEM::FieldName field,
+        Epetra_MultiVector & full,
         double scale,
-        const enum ::IO::VectorType & vt = ::IO::dofvector) const;
+        enum ::IO::VectorType vt = ::IO::dofvector) const;
 
     /** \brief Access all the wrapped discretizations as std::map
      *
@@ -153,12 +153,12 @@ namespace IO {
     /** \brief Access one of the wrapped discretizations (as reference)
      *
      *  \author hiermeier \date 10/16 */
-    const DRT::DiscretizationInterface& Discret(const XFEM::FieldName& field) const
+    const DRT::DiscretizationInterface& Discret( enum XFEM::FieldName field ) const
     {
       CheckInit();
       return *(GetDiscretPtr(field));
     }
-    DRT::DiscretizationInterface& Discret(const XFEM::FieldName& field)
+    DRT::DiscretizationInterface& Discret( enum XFEM::FieldName field )
     {
       CheckInit();
       return *(GetDiscretPtr(field));
@@ -512,9 +512,10 @@ namespace IO {
                                               bool recompute = false);
 
   protected:
-     inline const bool& IsInit() const { return isinit_; };
 
-     inline const bool& IsSetup() const { return issetup_; };
+     inline bool IsInit() const { return isinit_; };
+
+     inline bool IsSetup() const { return issetup_; };
 
      inline void CheckInitSetup() const
      {
@@ -528,7 +529,7 @@ namespace IO {
          dserror("XSTR::MultiDiscretizationWrapper::Init() has not been called, yet!");
      };
 
-     bool IsXFEM(const enum XFEM::FieldName & field) const;
+     bool IsXFEM(enum XFEM::FieldName field) const;
 
      void CreateNewMap( const std::vector<int> & my_entries, Teuchos::RCP<Epetra_Map> & new_map ) const;
 

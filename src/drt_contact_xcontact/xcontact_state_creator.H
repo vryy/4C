@@ -22,6 +22,9 @@
 namespace ADAPTER {
   class Field;
 } // namespace ADAPTER
+namespace XSTR {
+  class MultiDiscretizationWrapper;
+} // namespace XSTR
 
 namespace XCONTACT {
   class StateCreator : public XFEM::StateCreator
@@ -47,8 +50,7 @@ namespace XCONTACT {
     void Recreate(
         Teuchos::RCP<XFEM::XFieldState> &                xstate,
         const Teuchos::RCP<ADAPTER::Field> &             xfield,
-        const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
-        const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret,
+        const Teuchos::RCP<DRT::DiscretizationInterface> & full_discret,
         const Teuchos::RCP<const Epetra_Vector> &        back_disp_col,
         const Teuchos::RCP<const Epetra_Vector> &        levelset_field_row,
         Teuchos::ParameterList &                         solver_params,
@@ -58,8 +60,7 @@ namespace XCONTACT {
     void Recreate(
         Teuchos::RCP<XFEM::XFieldState> &             xstate,
         const Teuchos::RCP<ADAPTER::Field> &          xfield,
-        const Teuchos::RCP<DRT::DiscretizationXFEM> & xfielddiscret,
-        const Teuchos::RCP<DRT::Discretization> &     fielddiscret,
+        XSTR::MultiDiscretizationWrapper &            full_discret,
         const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
         const Teuchos::RCP<const Epetra_Vector> &     levelset_field_row,
         Teuchos::ParameterList &                      solver_params,
@@ -74,16 +75,16 @@ namespace XCONTACT {
         const Teuchos::RCP<const Epetra_Vector> &     levelset_field_row,
         Teuchos::RCP<GEO::CutWizard> &                wizard );
 
-    virtual enum XFEM::StateStatus FinishBackgroundDiscretization(
+  private:
+    enum XFEM::StateStatus FinishBackgroundDiscretization(
         const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
         Teuchos::ParameterList &               solver_params,
-        DRT::DiscretizationXFEM &              xdiscret );
+        XSTR::MultiDiscretizationWrapper &     full_discret );
 
-  private:
     enum XFEM::StateStatus CreateNewCutState(
         Teuchos::RCP<XFEM::XFEMDofSet> &              xdofset,
         Teuchos::RCP<GEO::CutWizard> &                wizard,
-        const Teuchos::RCP<DRT::DiscretizationXFEM> & xdiscret,
+        XSTR::MultiDiscretizationWrapper &            full_discret,
         const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
         const Teuchos::RCP<const Epetra_Vector> &     levelset_field_row,
         Teuchos::ParameterList &                      solver_params,
@@ -93,8 +94,7 @@ namespace XCONTACT {
         const Teuchos::RCP<ADAPTER::Field> &   xfield,
         const Teuchos::RCP<GEO::CutWizard> &   wizard,
         const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
-        const Teuchos::RCP<DRT::DiscretizationInterface> &  xfielddiscret,
-        const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret ) const;
+        XSTR::MultiDiscretizationWrapper &     full_discret ) const;
 
     void DestroyXFieldState(
         const Teuchos::RCP<ADAPTER::Field> & xfield ) const;

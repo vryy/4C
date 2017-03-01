@@ -462,15 +462,20 @@ void XFEM::MultiFieldMapExtractor::BuildSlaveNodeMapExtractors()
    * on each single proc */
   // ------------------------------------------------------------------------
   unsigned dis_count = 0;
-  for (cit_dis=SlDisVec().begin();cit_dis!=SlDisVec().end();++cit_dis)
+  for ( cit_dis=SlDisVec().begin(); cit_dis!=SlDisVec().end(); ++cit_dis )
   {
     std::vector<int> my_interface_row_node_gids(0);
     std::vector<int> my_non_interface_row_node_gids(0);
-    for (unsigned nlid=0; nlid<static_cast<unsigned>( (*cit_dis)->NumMyRowNodes() );++nlid)
+
+    const int num_my_rnodes = (*cit_dis)->NumMyRowNodes();
+    int * my_row_node_gids = (*cit_dis)->NodeRowMap()->MyGlobalElements();
+
+    for (unsigned nlid=0; nlid<static_cast<unsigned>( num_my_rnodes );++nlid)
     {
-      int ngid = (*cit_dis)->NodeRowMap()->GID(nlid);
+      int ngid = my_row_node_gids[nlid];
+
       // find the interface gids
-      if (IsInterfaceNode(ngid))
+      if ( IsInterfaceNode( ngid ) )
         my_interface_row_node_gids.push_back(ngid);
       else
         my_non_interface_row_node_gids.push_back(ngid);
@@ -489,11 +494,8 @@ void XFEM::MultiFieldMapExtractor::BuildSlaveNodeMapExtractors()
         &my_non_interface_row_node_gids[0], 0, Comm()));
 
     // setup node map extractor
-    slave_map_extractors_[dis_count][map_nodes]->Setup(
+    slave_map_extractors_[ dis_count++ ][ map_nodes ]->Setup(
         *((*cit_dis)->NodeRowMap()),partial_maps);
-
-    // increase discretization counter
-    ++dis_count;
   }
 }
 
@@ -509,32 +511,35 @@ void XFEM::MultiFieldMapExtractor::BuildSlaveDofMapExtractors()
   // loop over all slave discretizations
   XDisVec::const_iterator cit_dis;
   unsigned dis_count = 0;
-  for (cit_dis=SlDisVec().begin();cit_dis!=SlDisVec().end();++cit_dis)
+  for ( cit_dis=SlDisVec().begin(); cit_dis!=SlDisVec().end(); ++cit_dis )
   {
+    int * my_node_gids = (*cit_dis)->NodeRowMap()->MyGlobalElements();
+
     // loop over my nodes
-    for (int nlid=0; nlid<(*cit_dis)->NodeRowMap()->NumMyElements();++nlid)
+    for ( int nlid=0; nlid<(*cit_dis)->NodeRowMap()->NumMyElements(); ++nlid )
     {
-      int ngid = (*cit_dis)->NodeRowMap()->GID(nlid);
+      int ngid = my_node_gids[ nlid ];
       // ----------------------------------------------------------------------
       // interface DoF's
       // ----------------------------------------------------------------------
       if ( SlaveNodeRowMap( dis_count, MULTIFIELD::block_interface ).MyGID( ngid ) )
       {
-        const DRT::Node* node = (*cit_dis)->gNode(ngid);
+        const DRT::Node* node = (*cit_dis)->lRowNode(nlid);
         const unsigned numdof = (*cit_dis)->NumDof(node);
+
         for (unsigned i=0; i<numdof; ++i)
-          my_sl_interface_dofs.push_back((*cit_dis)->Dof(node,i));
+          my_sl_interface_dofs.push_back( (*cit_dis)->Dof(node,i) );
       }
       // ----------------------------------------------------------------------
       // non-interface DoF's
       // ----------------------------------------------------------------------
       else
       {
-        const DRT::Node* node = (*cit_dis)->gNode(ngid);
+        const DRT::Node* node = (*cit_dis)->lRowNode(nlid);
         const unsigned  numdof = (*cit_dis)->NumDof(node);
 
         for (unsigned i=0; i<numdof; ++i)
-          my_sl_non_interface_dofs.push_back((*cit_dis)->Dof(node,i));
+          my_sl_non_interface_dofs.push_back( (*cit_dis)->Dof(node,i) );
       }
     }
     // create slave interface dof row map
@@ -552,15 +557,12 @@ void XFEM::MultiFieldMapExtractor::BuildSlaveDofMapExtractors()
         &my_sl_non_interface_dofs[0], 0, Comm()));
 
     // setup dof map extractor
-    slave_map_extractors_[dis_count][map_dofs]->Setup(
+    slave_map_extractors_[ dis_count++ ][ map_dofs ]->Setup(
         *((*cit_dis)->DofRowMap()),partial_maps);
 
     // clear the vectors for a new round
     my_sl_interface_dofs.clear();
     my_sl_non_interface_dofs.clear();
-
-    // increase discretization counter
-    ++dis_count;
   }
 }
 
@@ -576,14 +578,14 @@ void XFEM::MultiFieldMapExtractor::BuildInterfaceCouplingDofSet()
     const Epetra_Map& sl_inodemap = SlaveNodeRowMap(i,MULTIFIELD::block_interface);
     const Epetra_Map& ma_inodemap = MasterInterfaceNodeRowMap(i);
 
-    int nnodes = sl_inodemap.NumMyElements();
-    int* ngids = sl_inodemap.MyGlobalElements();
+    int nnodes  = sl_inodemap.NumMyElements();
+    int * ngids = sl_inodemap.MyGlobalElements();
 
     int my_num_std_dof = -1;
 
     for (int j=0;j<nnodes;++j)
     {
-      const DRT::Node* node = SlDiscret(i).gNode(ngids[j]);
+      const DRT::Node* node = SlDiscret(i).gNode( ngids[j] );
       const int numdof = SlDiscret(i).NumDof(node);
       my_num_std_dof = SlDiscret(i).NumStandardDof(0,node);
       sl_max_num_dof_per_inode[ngids[j]] = numdof;
@@ -633,17 +635,21 @@ void XFEM::MultiFieldMapExtractor::BuildInterfaceCouplingDofSet()
 
   // set the new dof-set and finish the interface discretization
   idiscret_->ReplaceDofSet(0,icoupl_dofset_,true);
+
   idiscret_->FillComplete(true,false,false);
+#if (0)
+  idiscret_->Print( std::cout );
+#endif
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::MultiFieldMapExtractor::BuildMasterNodeMapExtractor()
 {
-  XDisVec::const_iterator cit_dis;
   Teuchos::RCP<Epetra_Map> fullmap = Teuchos::null;
   std::vector<Teuchos::RCP<const Epetra_Map> > partial_maps(2*NumSlDis(),
       Teuchos::null);
+
   // --------------------------------------------------------------------------
   // interface DoF's
   // --------------------------------------------------------------------------
@@ -684,6 +690,7 @@ void XFEM::MultiFieldMapExtractor::BuildMasterDofMapExtractor()
   Teuchos::RCP<Epetra_Map> fullmap = Teuchos::null;
   std::vector<Teuchos::RCP<const Epetra_Map> > partial_maps(2*NumSlDis(),
       Teuchos::null);
+
   // --------------------------------------------------------------------------
   // interface DoF's
   // --------------------------------------------------------------------------
@@ -691,23 +698,27 @@ void XFEM::MultiFieldMapExtractor::BuildMasterDofMapExtractor()
   {
     my_ma_interface_dofs.clear();
 
+    const int num_my_inodes = MasterInterfaceNodeRowMap(i).NumMyElements();
+    int * inode_gids = MasterInterfaceNodeRowMap(i).MyGlobalElements();
+
     // get the dofs of the master interface coupling nodes
-    for (int nlid=0;nlid<MasterInterfaceNodeRowMap(i).NumMyElements();++nlid)
+    for ( int nlid=0; nlid<num_my_inodes; ++nlid )
     {
-      int ngid = MasterInterfaceNodeRowMap(i).GID(nlid);
+      int ngid = inode_gids[ nlid ];
       const DRT::Node* inode = IDiscret().gNode(ngid);
       const unsigned numdof = IDiscret().NumDof(inode);
-      for (unsigned j=0; j<numdof; ++j)
-        my_ma_interface_dofs.push_back(IDiscret().Dof(inode,j));
+      for ( unsigned j=0; j<numdof; ++j )
+        my_ma_interface_dofs.push_back( IDiscret().Dof(inode,j) );
     }
     partial_maps.at(i) = Teuchos::rcp<const Epetra_Map>(new Epetra_Map(-1,
         static_cast<int>(my_ma_interface_dofs.size()),
         &my_ma_interface_dofs[0],0,Comm()));
   }
+
   // --------------------------------------------------------------------------
   // non-interface DoF's
   // --------------------------------------------------------------------------
-  for (unsigned i=0;i<NumSlDis();++i)
+  for ( unsigned i=0; i<NumSlDis(); ++i )
     partial_maps.at(NumSlDis()+i) =
         SlMapExtractor(i,map_dofs).Map(MULTIFIELD::block_non_interface);
 
@@ -720,8 +731,10 @@ void XFEM::MultiFieldMapExtractor::BuildMasterDofMapExtractor()
   fullmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(*IDiscret().DofRowMap()));
 
   // merge non-interface DoF's into the full map
-  for (unsigned i=NumSlDis(); i<partial_maps.size();++i)
+  for ( unsigned i=NumSlDis(); i<partial_maps.size(); ++i )
+  {
     fullmap = LINALG::MergeMap(*fullmap,*partial_maps[i],false);
+  }
 
   // setup map extractor
   master_map_extractor_[map_dofs]->Setup(*fullmap,partial_maps);

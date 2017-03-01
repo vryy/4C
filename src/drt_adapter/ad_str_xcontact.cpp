@@ -146,8 +146,7 @@ void ADAPTER::StructureXContact::RecreateState()
   StateCreator().Recreate(
       state_ptr_,
       structure_ptr_,
-      MultiDiscret().DiscretPtr( XFEM::xstructure ),
-      MultiDiscret().DiscretPtr( XFEM::structure ),
+      MultiDiscret(),
       Teuchos::null,
       levelset_values,
       Structure().LinearSolver()->Params(),

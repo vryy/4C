@@ -178,10 +178,6 @@ namespace XFEM {
         const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
         Teuchos::RCP<GEO::CutWizard> &                wizard );
 
-    virtual enum StateStatus FinishBackgroundDiscretization(
-        const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
-        Teuchos::ParameterList &               solver_params,
-        DRT::DiscretizationXFEM &              xdiscret );
 
     //! factory routine to create the right xfield state corresponding to the problem type
     Teuchos::RCP<XFEM::XFieldState> CreateXFieldState() const;
@@ -190,6 +186,11 @@ namespace XFEM {
     Teuchos::RCP<XFEM::XFieldState> CreateXFieldFieldState() const;
 
   private:
+
+    enum StateStatus FinishBackgroundDiscretization(
+        const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
+        Teuchos::ParameterList &               solver_params,
+        DRT::DiscretizationXFEM &              xdiscret );
 
     /*! \brief create wizard, perform cut, create new dofset and update xfem discretization
      *

@@ -214,7 +214,17 @@ void XSTR::XStructureState::NaturalExtensionOfNonStandardDofValues(
     case state_vec_velnp:
     case state_vec_accnp:
     {
-      NaturalExtensionOfNonStandardDofValues( new_discret, new_xstate_vec );
+      try
+      {
+        NaturalExtensionOfNonStandardDofValues( new_discret, new_xstate_vec );
+      }
+      catch ( const std::runtime_error & e )
+      {
+        std::stringstream msg;
+        msg << "Natural extension of \"" << StateVectorName2String( state_name )
+            << "\" failed.";
+        run_time_error( msg.str(), e );
+      }
       break;
     }
     default:
@@ -250,12 +260,12 @@ void XSTR::XStructureState::NaturalExtensionOfNonStandardDofValues(
       continue;
 
     if ( num_dofs % num_std_dofs != 0 )
-      dserror( "The dof number is no integer multiple of standard dof number!" );
+      run_time_error( "The dof number is no integer multiple of standard dof number!" );
 
     unsigned num_nodal_dofsets = num_dofs / num_std_dofs;
 
     dofs_std.clear();
-    new_discret.Dof(dofs_std, node, 0, 1 );
+    new_discret.Dof(dofs_std, node, 0, 0 );
 
     double * xstate_values = new_xstate_vec.Values();
 
@@ -271,6 +281,21 @@ void XSTR::XStructureState::NaturalExtensionOfNonStandardDofValues(
 
         int std_dof_lid = new_xstate_vec.Map().LID( std_dof_gid );
         int non_std_dof_lid = new_xstate_vec.Map().LID( non_std_dof_gid );
+
+        new_xstate_vec.Map();
+
+        if ( std_dof_lid == -1 )
+        {
+          std::stringstream msg;
+          msg << "Std-LID to GID " << std_dof_gid << " not found!";
+          run_time_error( msg.str() );
+        }
+        if ( non_std_dof_lid == -1 )
+        {
+          std::stringstream msg;
+          msg << "Non-std-LID to GID " << non_std_dof_gid << " not found!";
+          run_time_error( msg.str() );
+        }
 
         xstate_values[ non_std_dof_lid ] = xstate_values[ std_dof_lid ];
       }

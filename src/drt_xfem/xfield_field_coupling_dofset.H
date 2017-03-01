@@ -75,7 +75,7 @@ namespace XFieldField {
      *
      *  \author hiermeier
      *  \date 10/16 */
-    const int& NumStandardDofPerNode() const;
+    int NumStandardDofPerNode() const;
 
   protected:
     virtual int NumDofPerNode(const DRT::Node & node) const;
@@ -87,7 +87,7 @@ namespace XFieldField {
      *
      *  \author hiermeier
      *  \date 09/16 */
-    const int& MyNumDofPerNode(const int& node_gid) const;
+    int MyNumDofPerNode(const int& node_gid) const;
 
   private:
     /// map containing the number of DoF's per node

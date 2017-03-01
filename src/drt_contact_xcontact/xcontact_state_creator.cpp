@@ -21,6 +21,8 @@
 #include "../drt_xfem/xfem_dofset.H"
 #include "../drt_xfem/xfield_state.H"
 
+#include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
+
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -40,8 +42,7 @@ XCONTACT::StateCreator::StateCreator()
 void XCONTACT::StateCreator::Recreate(
     Teuchos::RCP<XFEM::XFieldState> &                xstate,
     const Teuchos::RCP<ADAPTER::Field> &             xfield,
-    const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
-    const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret,
+    const Teuchos::RCP<DRT::DiscretizationInterface> & full_discret,
     const Teuchos::RCP<const Epetra_Vector> &        back_disp_col,
     const Teuchos::RCP<const Epetra_Vector> &        levelset_field_row,
     Teuchos::ParameterList &                         solver_params,
@@ -50,13 +51,11 @@ void XCONTACT::StateCreator::Recreate(
     bool                                             dosetup)
 {
   // try to cast things
-  Teuchos::RCP<DRT::DiscretizationXFEM> xfielddiscret_ptr =
-      Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>( xfielddiscret, true );
-  Teuchos::RCP<DRT::Discretization> fielddiscret_ptr =
-        Teuchos::rcp_dynamic_cast<DRT::Discretization>( fielddiscret, true );
+  Teuchos::RCP<XSTR::MultiDiscretizationWrapper> discret_wrapper_ptr =
+      Teuchos::rcp_dynamic_cast<XSTR::MultiDiscretizationWrapper>( full_discret, true );
 
   // if success, do the actual function call
-  Recreate( xstate, xfield, xfielddiscret_ptr, fielddiscret_ptr, back_disp_col,
+  Recreate( xstate, xfield, discret_wrapper_ptr, back_disp_col,
       levelset_field_row, solver_params, step, time, dosetup );
 }
 
@@ -65,8 +64,7 @@ void XCONTACT::StateCreator::Recreate(
 void XCONTACT::StateCreator::Recreate(
     Teuchos::RCP<XFEM::XFieldState> &             xstate,
     const Teuchos::RCP<ADAPTER::Field> &          xfield,
-    const Teuchos::RCP<DRT::DiscretizationXFEM> & xfielddiscret,
-    const Teuchos::RCP<DRT::Discretization> &     fielddiscret,
+    XSTR::MultiDiscretizationWrapper &            full_discret,
     const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
     const Teuchos::RCP<const Epetra_Vector> &     levelset_field_row,
     Teuchos::ParameterList &                      solver_params,
@@ -80,7 +78,7 @@ void XCONTACT::StateCreator::Recreate(
   Teuchos::RCP<XFEM::XFEMDofSet> xdofset = Teuchos::null;
 
   enum XFEM::StateStatus status = CreateNewCutState( xdofset, wizard,
-      xfielddiscret, back_disp_col, levelset_field_row, solver_params, step );
+      full_discret, back_disp_col, levelset_field_row, solver_params, step );
 
   IO::cout << "\nXCONTACT::StateCreator::Recreate:" << IO::endl;
 
@@ -94,7 +92,7 @@ void XCONTACT::StateCreator::Recreate(
         IO::cout << "\t* 1/3 CreateNewXFieldState ...";
 
         xstate_new = CreateNewXFieldState( xfield,
-            wizard, xdofset, xfielddiscret, fielddiscret );
+            wizard, xdofset, full_discret );
 
         const double t_diff = Teuchos::Time::wallTime() - t_start;
         IO::cout << " Success (" << t_diff << " secs)" << IO::endl;
@@ -150,7 +148,7 @@ void XCONTACT::StateCreator::Recreate(
 enum XFEM::StateStatus XCONTACT::StateCreator::CreateNewCutState(
     Teuchos::RCP<XFEM::XFEMDofSet> &              xdofset,
     Teuchos::RCP<GEO::CutWizard> &                wizard,
-    const Teuchos::RCP<DRT::DiscretizationXFEM> & xdiscret,
+    XSTR::MultiDiscretizationWrapper &            full_discret,
     const Teuchos::RCP<const Epetra_Vector> &     back_disp_col,
     const Teuchos::RCP<const Epetra_Vector> &     levelset_field_row,
     Teuchos::ParameterList &                      solver_params,
@@ -160,6 +158,10 @@ enum XFEM::StateStatus XCONTACT::StateCreator::CreateNewCutState(
 
   if ( levelset_field_row.is_null() )
     return XFEM::state_unchanged;
+
+  Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret =
+      Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(
+          full_discret.DiscretPtr( XFEM::xstructure ), true );
 
   //---------------------------------------------------------------------------
   // create new cut wizard
@@ -184,7 +186,7 @@ enum XFEM::StateStatus XCONTACT::StateCreator::CreateNewCutState(
   // set the minimal GID of xfem dis
   xdofset->SetMinGID( minnumdofsets_ );
 
- return FinishBackgroundDiscretization( xdofset, solver_params, *xdiscret );
+ return FinishBackgroundDiscretization( xdofset, solver_params, full_discret );
 }
 
 /*----------------------------------------------------------------------------*
@@ -219,26 +221,30 @@ void XCONTACT::StateCreator::CreateCutWizard(
 enum XFEM::StateStatus XCONTACT::StateCreator::FinishBackgroundDiscretization(
     const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
     Teuchos::ParameterList &               solver_params,
-    DRT::DiscretizationXFEM &              xdiscret )
+    XSTR::MultiDiscretizationWrapper &     full_discret )
 {
+  Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret =
+      Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(
+          full_discret.DiscretPtr( XFEM::xstructure ), true );
+
   //---------------------------------------------------------------------------
   // check if it is necessary to create a new state object
-  if ( xdiscret.IsEqualXDofSet( 0, *xdofset ) )
+  if ( xdiscret->IsEqualXDofSet( 0, *xdofset ) )
     return XFEM::state_unchanged;
 
   // field dofset has nds = 0
-  xdiscret.ReplaceDofSet(0, xdofset, true );
+  xdiscret->ReplaceDofSet(0, xdofset, true );
 
-  xdiscret.FillComplete( true, false, false );
+  full_discret.FillComplete( true, false, false, true, true );
 
   //print all dofsets
-  xdiscret.GetDofSetProxy()->PrintAllDofsets( xdiscret.Comm() );
+  xdiscret->GetDofSetProxy()->PrintAllDofsets( xdiscret->Comm() );
 
   //---------------------------------------------------------------------------
   // recompute nullspace based on new number of dofs per node
   /* REMARK: this has to be done after replacing the discret' dofset
    * (via discret_->ReplaceDofSet) */
-  xdiscret.ComputeNullSpaceIfNecessary( solver_params, true );
+  full_discret.ComputeNullSpaceIfNecessary( solver_params, true );
 
   return XFEM::state_changed;
 }
@@ -249,11 +255,12 @@ Teuchos::RCP<XFEM::XFieldState> XCONTACT::StateCreator::CreateNewXFieldState(
     const Teuchos::RCP<ADAPTER::Field> &   xfield,
     const Teuchos::RCP<GEO::CutWizard> &   wizard,
     const Teuchos::RCP<XFEM::XFEMDofSet> & xdofset,
-    const Teuchos::RCP<DRT::DiscretizationInterface> & xfielddiscret,
-    const Teuchos::RCP<DRT::DiscretizationInterface> & fielddiscret ) const
+    XSTR::MultiDiscretizationWrapper &     full_discret ) const
 {
   Teuchos::RCP<XFEM::XFieldState> new_xstate = CreateXFieldFieldState();
-  new_xstate->Init( Teuchos::null, wizard, xdofset, xfielddiscret, fielddiscret );
+  new_xstate->Init( Teuchos::null, wizard, xdofset,
+      full_discret.DiscretPtr( XFEM::xstructure ),
+      full_discret.DiscretPtr( XFEM::structure ) );
 
   Teuchos::RCP<ADAPTER::StructureNew> xstructure =
       Teuchos::rcp_dynamic_cast<ADAPTER::StructureNew>( xfield, true );

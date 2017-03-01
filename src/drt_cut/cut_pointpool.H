@@ -151,11 +151,31 @@ class PointPool
 public:
 
   /// constructor
-  explicit PointPool( double norm=1 ) : tree_( norm ) {}
+  explicit PointPool( double norm=1 );
 
   /// create a new point in the point PointPool
   Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
-  { return tree_.NewPoint( x, cut_edge, cut_side, GetTolerance(x,tolerance)); }
+  {
+    switch ( probdim_ )
+    {
+      case 2:
+      {
+        // extend the point dimension
+        double x_ext[3] = { 0.0, 0.0, 0.0 };
+        std::copy( x, x+2, x_ext );
+
+        return tree_.NewPoint( x_ext, cut_edge, cut_side, GetTolerance(x_ext, tolerance) );
+      }
+      case 3:
+        return tree_.NewPoint( x, cut_edge, cut_side, GetTolerance(x,tolerance));
+      default:
+        dserror( "Unsupported problem dimension! (probdim = %d)", probdim_ );
+        exit( EXIT_FAILURE );
+    }
+
+    dserror("Impossible to reach this line!");
+    exit( EXIT_FAILURE );
+  }
 
   /// get the pointer to a stored point if possible
   Point* GetPoint( const double * x, Edge * cut_edge, Side * cut_side, double tolerance )
@@ -195,6 +215,9 @@ public:
 private:
 
   OctTreeNode tree_; ///< the PointPool class is represented by the first node in the OctTree
+
+  /// problem dimension
+  const unsigned probdim_;
 };
 
 }

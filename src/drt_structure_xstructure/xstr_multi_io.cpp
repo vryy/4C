@@ -415,10 +415,10 @@ void XSTR::IO::MultiDiscretizationWriter::WriteElementData(bool writeowner)
   XWriterMap::const_iterator cit;
   for (cit =writers_.begin(); cit!=writers_.end(); ++cit)
   {
-    Teuchos::RCP<char> buffer = Teuchos::null;
+    std::vector<char> buffer(0);
     unsigned bufferlength = cit->second->AugmentControlFile(curr_step_,buffer);
     cit->second->WriteElementData(writeowner);
-    cit->second->AugmentControlFile(buffer.get(), bufferlength);
+    cit->second->AugmentControlFile( &buffer[0], bufferlength);
   }
 }
 
@@ -527,7 +527,7 @@ XSTR::IO::DiscretizationWriter::DiscretizationWriter(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 unsigned XSTR::IO::DiscretizationWriter::AugmentControlFile(
-    const int & step, Teuchos::RCP<char>& ebuffer)
+    int step, std::vector<char> & ebuffer)
 {
   if (Comm().MyPID()!=0)
     return 0;
@@ -589,7 +589,7 @@ unsigned XSTR::IO::DiscretizationWriter::AugmentControlFile(
   // -----------------------
   // get the length and initialize a buffer
   int slength = icontrol.tellg();
-  char * sbuffer = new char [slength];
+  char sbuffer[slength];
 
   // go back to start first
   icontrol.seekg(0,icontrol.beg);
@@ -600,15 +600,15 @@ unsigned XSTR::IO::DiscretizationWriter::AugmentControlFile(
   // -----------------------
   icontrol.seekg(0,icontrol.end);
   int elength = static_cast<unsigned>(icontrol.tellg()) - slength;
-  ebuffer = Teuchos::rcp(new char [elength]);
+  ebuffer.resize(elength);
 
   // go to the end of the first block
   icontrol.seekg(slength,icontrol.beg);
-  icontrol.read(ebuffer.get(),elength);
+  icontrol.read( &ebuffer[0], elength );
 
 //  std::cout << " :::: " << dis_->Name() << " :::: \n";
 //  std::cout << "=== sbuffer ===\n";
-//  std::cout << sbuffer;
+//  std::cout << sbuffer.get();
 //
 //  std::cout << "=== ebuffer ===\n";
 //  std::cout << ebuffer.get();
@@ -619,15 +619,13 @@ unsigned XSTR::IO::DiscretizationWriter::AugmentControlFile(
   icontrol.write(sbuffer,slength);
   icontrol << std::flush;
 
-  delete[] sbuffer;
-
   return static_cast<unsigned>(elength);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XSTR::IO::DiscretizationWriter::AugmentControlFile(const char * buffer,
-    const unsigned & bufferlength)
+    unsigned bufferlength)
 {
   if (Comm().MyPID()!=0)
     return;

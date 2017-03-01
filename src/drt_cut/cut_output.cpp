@@ -170,7 +170,8 @@ void GEO::CUT::OUTPUT::GmshElementDump( std::ofstream & file, Element * ele , bo
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given element                                           sudhakar 03/14
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshElementDump( std::ofstream & file, const std::vector<GEO::CUT::Node*> & nodes, char elementtype , bool to_local, Element* ele)
+void GEO::CUT::OUTPUT::GmshElementDump( std::ofstream & file,
+    const std::vector<GEO::CUT::Node*> & nodes, char elementtype , bool to_local, Element* ele)
 {
   file << "S" << elementtype
        << "(";
@@ -395,7 +396,8 @@ void GEO::CUT::OUTPUT::GmshFacetDump( std::ofstream & file, Facet* facet,
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given volumecell                                       ager 08/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshVolumecellDump( std::ofstream & file, VolumeCell* VC, const std::string& visualizationtype, bool print_all, bool to_local, Element* ele)
+void GEO::CUT::OUTPUT::GmshVolumecellDump( std::ofstream & file, VolumeCell* VC,
+    const std::string& visualizationtype, bool print_all, bool to_local, Element* ele)
 {
   for( plain_facet_set::const_iterator j=VC->Facets().begin(); j!=VC->Facets().end(); j++ )
     GmshFacetDump(file,*j,visualizationtype,print_all, to_local, ele);
@@ -404,7 +406,8 @@ void GEO::CUT::OUTPUT::GmshVolumecellDump( std::ofstream & file, VolumeCell* VC,
 /*--------------------------------------------------------------------------------------*
  * Write GMSH output of given cycle                                                ager 08/15
  *--------------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshCycleDump( std::ofstream & file, Cycle* cycle, const std::string& visualizationtype, bool to_local, Element* ele)
+void GEO::CUT::OUTPUT::GmshCycleDump( std::ofstream & file, Cycle* cycle,
+    const std::string& visualizationtype, bool to_local, Element* ele)
 {
   if (visualizationtype == "points")
   {
@@ -811,17 +814,19 @@ void GEO::CUT::OUTPUT::GmshLevelSetOrientationDump( std::ofstream & file, Elemen
 
       std::vector<double> normal_ls = ele->GetLevelSetGradient(ls_coord);
 
-      double dotProduct = normal_ls[0]*normal_bc(0,0) + normal_ls[1]*normal_bc(1,0) + normal_ls[2]*normal_bc(2,0);
-      GmshScalar(file,midpoint_bc,dotProduct/fabs(dotProduct),to_local,ele);
+      double dotProduct = 0.0;
+      for ( unsigned d = 0; d < normal_ls.size(); ++d )
+        dotProduct += normal_ls[d]*normal_bc(d,0);
 
+      GmshScalar(file,midpoint_bc,dotProduct/std::abs(dotProduct),to_local,ele);
     }
   }
 }
 
+
 /*!
 \brief Write Eqn of plane normal for facet (used for DirectDivergence).
  */
-
 void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(std::ofstream & file, Element * ele, bool normalize, bool to_local)
 {
   const plain_facet_set facets = ele->Facets();
@@ -835,7 +840,6 @@ void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(std::ofstream & file, Element * el
 /*!
 \brief Write Eqn of plane normal for all facets (used for DirectDivergence).
  */
-
 void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(std::ofstream & file, Facet * facet, bool normalize, bool to_local, Element* ele)
 {
   LINALG::Matrix<3,1> facet_triang_midpoint_coord(true);
@@ -882,8 +886,10 @@ void GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(std::ofstream & file, Facet * face
 }
 
 
-
-void GEO::CUT::OUTPUT::GmshScalar( std::ofstream & file, LINALG::Matrix<3,1> coord, double scalar, bool to_local, Element* ele) //use gmshpoint?
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::OUTPUT::GmshScalar( std::ofstream & file, LINALG::Matrix<3,1> coord,
+    double scalar, bool to_local, Element* ele) //use gmshpoint?
 {
   file << "SP(";
   GmshWriteCoords( file, coord , to_local, ele);
@@ -892,7 +898,11 @@ void GEO::CUT::OUTPUT::GmshScalar( std::ofstream & file, LINALG::Matrix<3,1> coo
   file << "};\n";
 }
 
-void GEO::CUT::OUTPUT::GmshVector( std::ofstream & file, LINALG::Matrix<3,1> coord, std::vector<double> vector, bool normalize, bool to_local, Element* ele)
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::OUTPUT::GmshVector( std::ofstream & file, LINALG::Matrix<3,1> coord,
+    std::vector<double> vector, bool normalize, bool to_local, Element* ele)
 {
   file << "VP(";
   GmshWriteCoords( file, coord, to_local, ele);
@@ -900,41 +910,54 @@ void GEO::CUT::OUTPUT::GmshVector( std::ofstream & file, LINALG::Matrix<3,1> coo
 
   if(normalize)
   {
-    double norm2 = vector[0]*vector[0] + vector[1]*vector[1] + vector[2]*vector[2];
-    double norm = sqrt(norm2);
+    double norm = 0.0;
+    for ( unsigned i=0; i<vector.size(); ++i )
+      norm += vector[i]*vector[i];
+
+    norm = sqrt( norm );
     if(norm > 1e-15){
-      vector[0] = vector[0]/norm;
-      vector[1] = vector[1]/norm;
-      vector[2] = vector[2]/norm;
+      for ( unsigned i=0; i<vector.size(); ++i )
+        vector[i] = vector[i] / norm;
     }
-    else{
-      vector[0] = 0.0;
-      vector[1] = 0.0;
-      vector[2] = 0.0;
+    else
+    {
+      std::fill( vector.begin(), vector.end(), 0.0 );
     }
   }
   GmshWriteCoords( file , vector, to_local, ele);
   file << "};\n";
 }
 
-void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream & file, std::vector<double> coord, bool to_local, Element* ele)
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream & file, std::vector<double> coord,
+    bool to_local, Element* ele)
 {
+  LINALG::Matrix<3,1> xyz(true);
+
+  if ( coord.size() <= 3 )
+    std::copy( coord.begin(), coord.end(), xyz.A() );
+  else
+    dserror( "The coord vector dimension is wrong! (coord.size() = %d)", coord.size() );
+
   if (to_local)
   {
     if (ele == NULL)
       dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
 
-    LINALG::Matrix<3,1> xyz, rst;
-    xyz(0,0) = coord[0];
-    xyz(1,0) = coord[1];
-    xyz(2,0) = coord[2];
+    LINALG::Matrix<3,1> rst(true);
+
     ele->LocalCoordinates(xyz, rst);
     GmshWriteCoords( file , rst, false, NULL); //rst are already local coords!
     return;
   }
-  file << coord[0] << "," << coord[1] << "," << coord[2];
+  file << xyz(0) << "," << xyz(1) << "," << xyz(2);
 }
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream & file, LINALG::Matrix<3,1> coord,
     bool to_local, Element* ele)
 {
@@ -949,6 +972,9 @@ void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream & file, LINALG::Matrix<3,1>
   file << coord( 0, 0 ) << "," << coord( 1, 0 ) << "," << coord( 2, 0 );
 }
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream & file, Node* node,
     bool to_local, Element* ele)
 {
@@ -956,6 +982,8 @@ void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream & file, Node* node,
 }
 
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream & file, Point* point,
     bool to_local, Element* ele)
 {
@@ -965,6 +993,9 @@ void GEO::CUT::OUTPUT::GmshWriteCoords(std::ofstream & file, Point* point,
   GmshWriteCoords( file, coord, to_local, ele );
 }
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 std::string GEO::CUT::OUTPUT::GenerateGmshOutputFilename(const std::string& filename_tail)
 {
 //  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -973,13 +1004,20 @@ std::string GEO::CUT::OUTPUT::GenerateGmshOutputFilename(const std::string& file
   return filename;
 }
 
-void GEO::CUT::OUTPUT::GmshNewSection(std::ofstream & file, const std::string & section, bool first_endsection)
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::CUT::OUTPUT::GmshNewSection(std::ofstream & file, const std::string & section,
+    bool first_endsection)
 {
   if (first_endsection)
     file << "};\n";
   file << "View \"" << section << "\" {\n";
 }
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void GEO::CUT::OUTPUT::GmshEndSection(std::ofstream & file, bool close_file)
 {
   file << "};\n";
@@ -987,6 +1025,9 @@ void GEO::CUT::OUTPUT::GmshEndSection(std::ofstream & file, bool close_file)
     file.close();
 }
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 std::vector<double> GEO::CUT::OUTPUT::GetEqOfPlane(std::vector<Point*> pts)
 {
   int mm = 0;
@@ -1015,7 +1056,8 @@ std::vector<double> GEO::CUT::OUTPUT::GetEqOfPlane(std::vector<Point*> pts)
 /*-------------------------------------------------------------------------------*
  * Write cuttest for this element!                                     ager 04/15
  *-------------------------------------------------------------------------------*/
-void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele, bool haslevelsetside)
+void GEO::CUT::OUTPUT::GmshElementCutTest( std::ofstream & file, GEO::CUT::Element* ele,
+    bool haslevelsetside)
 {
   std::cout << "Write Cut Test for Element " << ele->Id() << " ... " << std::flush;
 

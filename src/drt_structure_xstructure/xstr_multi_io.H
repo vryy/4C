@@ -265,9 +265,9 @@ namespace IO {
     virtual ~DiscretizationWriter() {};
 
     /** Set the output stream at the right position in the control file  */
-    unsigned AugmentControlFile(const int & step, Teuchos::RCP<char>& buffer);
+    unsigned AugmentControlFile(int step, std::vector<char> & buffer);
 
-    void AugmentControlFile(const char * buffer, const unsigned & bufferlength);
+    void AugmentControlFile(const char * buffer, unsigned bufferlength);
 
   }; // class DiscretizationReader
 
