@@ -448,26 +448,6 @@ namespace ELEMENTS
         const LINALG::Matrix<numdofperelement_,1>* htensor=NULL
         );
 
-    /*! \brief Recover the condensed additional degrees of freedom.
-     *         Required data from the element evaluate is handed in,
-     *         with potential EAS matrices.
-     *         The template argument "spinype" decides, if
-     *         the additional dofs for the plastic
-     *         spin have to be recovered.
-     */
-    template<int spintype>
-    void RecoverPlasticity(
-        const LINALG::Matrix<numdofperelement_,1>& res_d,
-        const INPAR::STR::PredEnum& pred,
-        const int gp,
-        const int MyPID,
-        const double temp,
-        const Teuchos::ParameterList& params,
-        LINALG::Matrix<3,3>& deltaLp,
-        double& lp_inc,
-        bool recover
-        );
-
     void RecoverPlasticityAndEAS(
         const LINALG::Matrix<numdofperelement_,1>* res_d,
         const LINALG::Matrix<nen_,1>* res_t=NULL);
