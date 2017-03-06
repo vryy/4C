@@ -24,7 +24,7 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_adapter/ad_str_structure.H"
+#include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -51,6 +51,12 @@
 
 // plasticity
 #include "../drt_plastic_ssn/plastic_ssn_manager.H"
+
+#include "../drt_structure_new/str_timint_base.H"
+#include "../drt_structure_new/str_model_evaluator_contact.H"
+#include "../drt_structure_new/str_model_evaluator_structure.H"
+#include "../drt_structure_new/str_model_evaluator_data.H"
+#include "../drt_lib/drt_elements_paramsminimal.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -150,14 +156,16 @@ TSI::Monolithic::Monolithic(
   }  // end BlockMatrixMerge
 
   // structural and thermal contact
-  if (StructureField()->MeshtyingContactBridge() != Teuchos::null)
-    if(StructureField()->MeshtyingContactBridge()->HaveContact())
-    {
-      cmtman_ = StructureField()->MeshtyingContactBridge()->ContactManager();
-      dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).SetAlphafThermo(tdyn);
-      dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).SetCoupling(coupST_);
-    }
-
+  if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY")==INPAR::STR::int_standard)
+  if (StructureField()->HaveModel(INPAR::STR::model_contact))
+  {
+    STR::MODELEVALUATOR::Contact& a = static_cast<STR::MODELEVALUATOR::Contact&>(
+            StructureField()->ModelEvaluator(INPAR::STR::model_contact));
+    contact_strategy_ = Teuchos::rcp_dynamic_cast<CONTACT::CoTSILagrangeStrategy>(
+        a.StrategyPtr(),true);
+    contact_strategy_->SetAlphafThermo(tdyn);
+    contact_strategy_->SetCoupling(coupST_);
+  }
 
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
   //  Dirichlet BC
@@ -170,6 +178,8 @@ TSI::Monolithic::Monolithic(
     {
       locsysman_ = StructureField()->LocsysManager();
     }
+    else
+      locsysman_=Teuchos::null;
   }
 
 #ifndef TFSI
@@ -194,12 +204,14 @@ void TSI::Monolithic::ReadRestart(int step)
   StructureField()->ReadRestart(step);
 
   // pass the current coupling variables to the respective field
-  ApplyStructCouplingState(StructureField()->Dispnp(),StructureField()->Velnp());
-  ApplyThermoCouplingState(ThermoField()->Tempnp());
-
   // second ReadRestart needed due to the coupling variables
+  ApplyStructCouplingState(StructureField()->Dispnp(),StructureField()->Velnp());
   ThermoField()->ReadRestart(step);
+  ThermoField()->Discretization()->ClearState(true);
+
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
   StructureField()->ReadRestart(step);
+  StructureField()->Discretization()->ClearState(true);
 
   SetTimeStep(ThermoField()->TimeOld(),step);
 
@@ -215,6 +227,17 @@ void TSI::Monolithic::ReadRestart(int step)
                                ThermoField()->Discretization(),
                                strategy);
   }
+
+  Teuchos::ParameterList p;
+  //! pointer to the model evaluator data container
+  Teuchos::RCP<DRT::ELEMENTS::ParamsMinimal> EvalData =
+      Teuchos::rcp(new DRT::ELEMENTS::ParamsMinimal());
+  EvalData->SetActionType(DRT::ELEMENTS::struct_calc_reset_istep);
+  p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface",
+      EvalData);
+  p.set<std::string>("action","calc_struct_reset_istep");
+  StructureField()->Discretization()->Evaluate(p);
+
 
   return;
 }  // ReadRestart()
@@ -523,7 +546,7 @@ void TSI::Monolithic::NewtonFull()
   // --> On #systemmatrix_ is the effective dynamic TSI tangent matrix
 
   // initialise equilibrium loop
-  iter_ = 1;
+  iter_ = 0;
 
   // incremental solution vector with length of all TSI dofs
   iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
@@ -531,11 +554,6 @@ void TSI::Monolithic::NewtonFull()
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
-
-  // iter==1 is after predictor, i.e. no solver call yet
-  if (iter_==1)
-    if (StructureField()->HaveSemiSmoothPlasticity())
-      StructureField()->GetPlasticityManager()->SetData().no_recovery_=true;
 
   // compute residual forces #rhs_ and tangent #systemmatrix_
   // whose components are globally oriented
@@ -561,8 +579,8 @@ void TSI::Monolithic::NewtonFull()
   SetupRHS();
 
   // do the thermo contact modifications all at once
-  if (cmtman_!=Teuchos::null)
-    dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).Evaluate(
+  if (contact_strategy_!=Teuchos::null)
+    contact_strategy_->Evaluate(
         SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
         StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
 
@@ -571,6 +589,9 @@ void TSI::Monolithic::NewtonFull()
   // equilibrium iteration loop (loop over k)
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
+    // increment equilibrium loop index
+    ++iter_;
+
     // reset timer
     timernewton_.ResetStartTime();
 
@@ -611,10 +632,6 @@ void TSI::Monolithic::NewtonFull()
     normdisi_ = CalculateVectorNorm(iternormstr_, sx);
     normtempi_ = CalculateVectorNorm(iternormthr_, tx);
 
-    // iter==1 is after predictor, i.e. no solver call yet
-    if (StructureField()->HaveSemiSmoothPlasticity())
-      StructureField()->GetPlasticityManager()->SetData().no_recovery_=false;
-
     // compute residual forces #rhs_ and tangent #systemmatrix_
     // whose components are globally oriented
     // build linear system stiffness matrix and rhs/force residual for each
@@ -639,13 +656,13 @@ void TSI::Monolithic::NewtonFull()
     SetupRHS();
 
     // do the thermo contact modifications all at once
-    if (cmtman_!=Teuchos::null)
+    if (contact_strategy_!=Teuchos::null)
     {
       // *********** time measurement ***********
       double dtcpu = timernewton_.WallTime();
       // *********** time measurement ***********
 
-      dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).Evaluate(
+      contact_strategy_->Evaluate(
           SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
           StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
 
@@ -678,9 +695,6 @@ void TSI::Monolithic::NewtonFull()
 
     // print stuff
     PrintNewtonIter();
-
-    // increment equilibrium loop index
-    iter_ += 1;
 
   }  // end equilibrium loop
 
@@ -984,7 +998,10 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //     blank residual DOFs that are on Dirichlet BC
   //     in case of local coordinate systems rotate the residual forth and back
   //     Be AWARE: ApplyDirichlettoSystem has to be called with rotated stiff_!
-  StructureField()->Evaluate(sx);
+  if (iter_==0)
+    StructureField()->Evaluate();
+  else
+    StructureField()->Evaluate(sx);
   StructureField()->Discretization()->ClearState(true);
 
 #ifdef TSI_DEBUG
@@ -1178,6 +1195,23 @@ void TSI::Monolithic::SetupSystemMatrix()
   // k_ss: already applied ApplyDirichletWithTrafo() in PrepareSystemToNewtonSolve
   Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
 
+  if (locsysman_ != Teuchos::null)
+  {
+    // rotate k_ss to local coordinate system --> k_ss^{~}
+    locsysman_->RotateGlobalToLocal(k_ss);
+    // apply ApplyDirichletWithTrafo() on rotated block k_ss^{~}
+    // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
+    //     on diagonal of row, i.e. on diagonal of k_ss
+    k_ss->ApplyDirichletWithTrafo(
+            locsysman_->Trafo(),
+            *StructureField()->GetDBCMapExtractor()->CondMap(),
+            true
+            );
+  }  // end locsys
+  // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
+  else
+    k_ss->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),true);
+
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
@@ -1319,12 +1353,16 @@ void TSI::Monolithic::SetupRHS()
   // create full monolithic rhs vector
   rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
-  // fill the TSI rhs vector rhs_ with the single field rhs
-  SetupVector(
-    *rhs_,
-    StructureField()->RHS(),
-    ThermoField()->RHS()
-    );
+  // get the structural rhs
+  Teuchos::RCP<Epetra_Vector> str_rhs = Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
+  if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY")==INPAR::STR::int_standard)
+    str_rhs->Scale(-1.);
+  if (locsysman_!=Teuchos::null)
+    locsysman_->RotateGlobalToLocal(str_rhs);
+
+  // insert vectors to tsi rhs
+  Extractor()->InsertVector(*str_rhs,0,*rhs_);
+  Extractor()->InsertVector(*ThermoField()->RHS(),1,*rhs_);
 
 }  // SetupRHS()
 
@@ -1591,26 +1629,12 @@ bool TSI::Monolithic::Converged()
   else
     dserror("Something went terribly wrong with binary operator!");
 
-  // convergence of plasticity
-  if (StructureField()->HaveSemiSmoothPlasticity())
-  {
-    conv = conv
-        && StructureField()->GetPlasticityManager()->ActiveSetConverged()
-        && StructureField()->GetPlasticityManager()->ConstraintConverged()
-        && StructureField()->GetPlasticityManager()->IncrementConverged();
-    if (StructureField()->GetPlasticityManager()->EAS())
-      conv = conv && StructureField()->GetPlasticityManager()->EasIncrConverged()
-                  && StructureField()->GetPlasticityManager()->EasResConverged();
-  }
-
   // convergence of active contact set
-  if (cmtman_!=Teuchos::null)
+  if (contact_strategy_!=Teuchos::null)
   {
-    CONTACT::CoTSILagrangeStrategy& cs=dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(
-        cmtman_->GetStrategy());
-    conv = conv && (cs.mech_contact_res_ < cs.Params().get<double>("TOLCONTCONSTR"));
-    conv = conv && (cs.mech_contact_incr_ < cs.Params().get<double>("TOLLAGR"));
-    conv = conv && cmtman_->GetStrategy().ActiveSetSemiSmoothConverged();
+    conv = conv && (contact_strategy_->mech_contact_res_ < contact_strategy_->Params().get<double>("TOLCONTCONSTR"));
+    conv = conv && (contact_strategy_->mech_contact_incr_ < contact_strategy_->Params().get<double>("TOLLAGR"));
+    conv = conv && contact_strategy_->ActiveSetSemiSmoothConverged();
   }
 
   // return things
@@ -1760,24 +1784,13 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     break;
   }  // switch (normtypetempi_)
 
-  if (cmtman_!=Teuchos::null)
+  if (contact_strategy_!=Teuchos::null)
   {
     oss <<std::setw(16)<< "sLMres-norm";
     oss <<std::setw(16)<< "sLMinc-norm";
     oss <<std::setw(16)<< "tLMinc-norm";
   }
 
-  // ------------------------------------------------------------- plasticity
-  if (structure_->HaveSemiSmoothPlasticity())
-  {
-    oss <<std::setw(16)<< "abs-plRes-norm";
-    oss <<std::setw(16)<< "abs-plInc-norm";
-    if (structure_->GetPlasticityManager()->EAS())
-    {
-      oss <<std::setw(16)<< "abs-easRes-norm";
-      oss <<std::setw(16)<< "abs-easInc-norm";
-    }
-  }
 
   if (soltech_ == INPAR::TSI::soltech_ptc)
   {
@@ -1789,17 +1802,13 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::setw(12)<< "wct";
 
   // add contact set information
-  if (cmtman_!=Teuchos::null)
+  if (contact_strategy_!=Teuchos::null)
   {
     oss << std::setw(12)<< "tc";
       oss << std::setw(11)<< "#active";
-      if (cmtman_->GetStrategy().Friction())
+      if (contact_strategy_->Friction())
         oss << std::setw(10)<< "#slip";
   }
-
-  // add plasticity information
-  if (structure_->HaveSemiSmoothPlasticity())
-    oss << std::setw(10) << "#plastic";
 
   // finish oss
   oss << std::ends;
@@ -1934,25 +1943,11 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     break;
   }  // switch (normtypetempi_)
 
-  if (cmtman_!=Teuchos::null)
+  if (contact_strategy_!=Teuchos::null)
   {
-    CONTACT::CoTSILagrangeStrategy& cs=dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(
-        cmtman_->GetStrategy());
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << cs.mech_contact_res_;
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << cs.mech_contact_incr_;
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << cs.thr_contact_incr_;
-  }
-
-  // ------------------------------------------------------------- plasticity
-  if (structure_->HaveSemiSmoothPlasticity())
-  {
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << structure_->GetPlasticityManager()->DeltaLp_residual_norm();
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << structure_->GetPlasticityManager()->DeltaLp_increment_norm();
-    if (structure_->GetPlasticityManager()->EAS())
-    {
-      oss << std::setw(16) << std::setprecision(5) << std::scientific << structure_->GetPlasticityManager()->EAS_residual_norm();
-      oss << std::setw(16) << std::setprecision(5) << std::scientific << structure_->GetPlasticityManager()->EAS_increment_norm();
-    }
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << contact_strategy_->mech_contact_res_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << contact_strategy_->mech_contact_incr_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << contact_strategy_->thr_contact_incr_;
   }
 
   if (soltech_ == INPAR::TSI::soltech_ptc)
@@ -1965,17 +1960,13 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::setw(12) << std::setprecision(2) << std::scientific << timernewton_.ElapsedTime();
 
   // add contact information
-  if (cmtman_!=Teuchos::null)
+  if (contact_strategy_!=Teuchos::null)
   {
     oss << std::setw(12) << std::setprecision(2) << std::scientific << dtcmt_;
-    oss << std::setw(11) << cmtman_->GetStrategy().NumberOfActiveNodes();
-    if (cmtman_->GetStrategy().Friction())
-      oss << std::setw(10) << cmtman_->GetStrategy().NumberOfSlipNodes();
+    oss << std::setw(11) << contact_strategy_->NumberOfActiveNodes();
+    if (contact_strategy_->Friction())
+      oss << std::setw(10) << contact_strategy_->NumberOfSlipNodes();
   }
-
-  // add plasticity information
-  if (structure_->HaveSemiSmoothPlasticity())
-    oss << std::setw(10) << structure_->GetPlasticityManager()->NumActivePlasticGP();
 
   // finish oss
   oss << std::ends;
@@ -2021,6 +2012,15 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
 
   // create the parameters for the discretization
   Teuchos::ParameterList sparams;
+
+  //! pointer to the model evaluator data container
+  Teuchos::RCP<DRT::ELEMENTS::ParamsMinimal> EvalData = Teuchos::rcp(new DRT::ELEMENTS::ParamsMinimal());
+
+  // set parameters needed for element evalutation
+  EvalData->SetActionType(DRT::ELEMENTS::struct_calc_stifftemp);
+  EvalData->SetTotalTime(Time());
+  EvalData->SetDeltaTime(Dt());
+
   const std::string action = "calc_struct_stifftemp";
   sparams.set("action", action);
   // other parameters that might be needed by the elements
@@ -2048,7 +2048,9 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
                           Teuchos::null
                           );
 
-  // evaluate the mechanical-thermal system matrix on the structural element
+
+  sparams.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface",
+      EvalData);
   StructureField()->Discretization()->Evaluate(sparams,structuralstrategy);
   StructureField()->Discretization()->ClearState(true);
 
@@ -2308,7 +2310,7 @@ Teuchos::RCP<Epetra_Map> TSI::Monolithic::CombinedDBCMap()
 void TSI::Monolithic::RecoverStructThermLM()
 {
   // only in the case of contact
-  if (cmtman_ == Teuchos::null)
+  if (contact_strategy_ == Teuchos::null)
     return;
 
   // split the increment
@@ -2317,12 +2319,8 @@ void TSI::Monolithic::RecoverStructThermLM()
 
   // extract field vectors
   ExtractFieldVectors(iterinc_,sx,tx);
-  double norm_c,norm_t,norm_s;
-  iterinc_->NormInf(&norm_c);
-  sx->NormInf(&norm_s);
-  tx->NormInf(&norm_t);
 
-  dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).RecoverCoupled(sx,tx,coupST_);
+  contact_strategy_->RecoverCoupled(sx,tx,coupST_);
 
   return;
 }
@@ -2991,10 +2989,10 @@ void TSI::Monolithic::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector>
   TSI::Algorithm::ApplyThermoCouplingState(temp,temp_res);
 
   // set new temperatures to contact
-  if (cmtman_!=Teuchos::null)
+  if (contact_strategy_!=Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> temp2 = coupST_()->SlaveToMaster(ThermoField()->Tempnp());
-    cmtman_->GetStrategy().SetState(MORTAR::state_temperature,*temp2);
+    contact_strategy_->SetState(MORTAR::state_temperature,*temp2);
   }
 }  // ApplyThermoCouplingState()
 

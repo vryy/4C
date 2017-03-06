@@ -254,6 +254,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
       break;
     }
     case NOX::NLN::StatusTest::quantity_eas:
+    case NOX::NLN::StatusTest::quantity_plasticity:
     {
       rms = implint_ptr_->GetCondensedSolutionUpdateRMS(checkquantity);
       break;
@@ -308,6 +309,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
       break;
     }
     case NOX::NLN::StatusTest::quantity_eas:
+    case NOX::NLN::StatusTest::quantity_plasticity:
     {
       // get the update norm of the condensed quantities
       updatenorm =
@@ -367,6 +369,7 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
       break;
     }
     case NOX::NLN::StatusTest::quantity_eas:
+    case NOX::NLN::StatusTest::quantity_plasticity:
     {
       // get the update norm of the condensed quantities
       xoldnorm =

@@ -46,6 +46,7 @@
 #include "../drt_contact_xcontact/xcontact_interface.H"
 #include "../drt_contact_xcontact/xcontact_strategy.H"
 #include "contact_poro_lagrange_strategy.H"
+#include "contact_tsi_lagrange_strategy.H"
 #include "contact_lagrange_strategy.H"
 #include "contact_nitsche_strategy.H"
 
@@ -1305,15 +1306,32 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     }
     else if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
     {
-      dserror("This contact strategy is not yet considered!");
-//      strategy_ptr = Teuchos::rcp(new CoTSILagrangeStrategy(
-//          Discret().DofRowMap(),
-//          Discret().NodeRowMap(),
-//          cparams,
-//          interfaces,
-//          Dim(),
-//          Comm(),
-//          maxdof));
+      double alphaf = 0.0;
+      bool do_endtime = DRT::INPUT::IntegralValue<int>(cparams,"CONTACTFORCE_ENDTIME");
+      if (!do_endtime)
+      {
+        const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+            "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
+          alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+            "DYNAMICTYP") == INPAR::STR::dyna_gemm)
+          alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
+        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,
+            "DYNAMICTYP") == INPAR::STR::dyna_onesteptheta)
+          alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+      }
+      data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+      strategy_ptr = Teuchos::rcp(new CoTSILagrangeStrategy(
+          data_ptr,
+          Discret().DofRowMap(),
+          Discret().NodeRowMap(),
+          cparams,
+          interfaces,
+          Dim(),
+          CommPtr(),
+          alphaf,
+          dof_offset));
     }
     else
     {

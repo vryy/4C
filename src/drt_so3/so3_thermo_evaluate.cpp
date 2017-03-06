@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so3_thermo_evaluate.cpp
-\brief
-
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\brief Evaluation of thermo-structure-interaction elements
+       (structural part of coupling matrices)
+\level 1
+\maintainer Alexander Seitz
 */
 
 
@@ -28,6 +24,7 @@
 #include "../drt_mat/thermoplastichyperelast.H"
 #include "../drt_mat/robinson.H"
 
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 /*----------------------------------------------------------------------*
  | pre-evaluate the element (public)                         dano 08/12 |
@@ -47,11 +44,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::PreEvaluate(
     // the temperature field has only one dof per node, disregarded by the
     // dimension of the problem
     const int numdofpernode_thr = discretization.NumDof(1,Nodes()[0]);
-    if (la[1].Size() != nen_*numdofpernode_thr)
-      dserror("Location vector length for temperatures does not match!");
 
     if (discretization.HasState(1,"temperature"))
     {
+    if (la[1].Size() != nen_*numdofpernode_thr)
+      dserror("Location vector length for temperatures does not match!\n"
+          "la[1].Size()= %i\tnen_*numdofpernode_thr= %i", la[1].Size()
+          , nen_*numdofpernode_thr);
       // check if you can get the temperature state
       Teuchos::RCP<const Epetra_Vector> tempnp
         = discretization.GetState(1,"temperature");
@@ -87,6 +86,14 @@ int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
   Epetra_SerialDenseVector& elevec3_epetra
   )
 {
+  // set the pointer to the parameter list in element
+  so3_ele::SetParamsInterfacePtr(params);
+
+  static const bool young_temp =
+      DRT::INPUT::IntegralValue<int>(Problem::Instance()->StructuralDynamicParams()
+          ,"YOUNG_IS_TEMP_DEPENDENT") == 1;
+  params.set<int>("young_temp",young_temp);
+
   // what actions are available
   // (action == "calc_struct_stifftemp")
   // (action == "calc_struct_stress")
@@ -203,6 +210,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
   else if (action == "calc_struct_reset_istep")   act = calc_struct_reset_istep;
   else if (action == "calc_struct_update_istep")  act = calc_struct_update_istep;
   else if (action == "calc_struct_energy")        act = calc_struct_energy;
+  else if (action == "calc_struct_predict")       return 0;
+  else if (action == "calc_struct_recover")       return 0;
   else dserror("Unknown type of action for So3_Thermo: %s",action.c_str());
 
   // what should the element do
@@ -243,7 +252,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     {
       // check if you can get the temperature state
       Teuchos::RCP<const Epetra_Vector> tempnp
-        = discretization.GetState(1,"temperature");
+      = discretization.GetState(1,"temperature");
       if (tempnp == Teuchos::null)
         dserror("Cannot get state vector 'tempnp'");
 
@@ -254,62 +263,62 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         dserror("Location vector length for temperature does not match!");
       // extract the current temperatures
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
-    }
 
-    // default: geometrically non-linear analysis with Total Lagrangean approach
-    if (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
-    {
-      LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
+      // default: geometrically non-linear analysis with Total Lagrangean approach
+      if (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
+      {
+        LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
 
-      // in case we have a finite strain thermoplastic material use hex8fbar element
-      // to cirucumvent volumetric locking
-      DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
+        // in case we have a finite strain thermoplastic material use hex8fbar element
+        // to cirucumvent volumetric locking
+        DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8> * eleFBAR
         = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* >(this);
 
-      // default structural element
-      if (!eleFBAR)
-      {
-        nln_stifffint_tsi(
-          la,  // location array
-          discretization, // discr
-          mydisp,  // current displacements
-          mytempnp, // current temperature
-          NULL, // element stiffness matrix
-          &elevec1,  // element internal force vector
-          NULL,  // stresses at GP
-          params,  // algorithmic parameters e.g. time
-          INPAR::STR::stress_none  // stress output option
+        // default structural element
+        if (!eleFBAR)
+        {
+          nln_stifffint_tsi(
+              la,  // location array
+              discretization, // discr
+              mydisp,  // current displacements
+              mytempnp, // current temperature
+              NULL, // element stiffness matrix
+              &elevec1,  // element internal force vector
+              NULL,  // stresses at GP
+              params,  // algorithmic parameters e.g. time
+              INPAR::STR::stress_none  // stress output option
           );
-      }  // so3_ele
-      else  // Hex8Fbar
-      {
-        nln_stifffint_tsi_fbar(
-          la,  // location array
-          mydisp,  // current displacements
-          mytempnp, // current temperature
-          NULL, // element stiffness matrix
-          &elevec1,  // element internal force vector
-          NULL,  // stresses at GP
-          params,  // algorithmic parameters e.g. time
-          INPAR::STR::stress_none  // stress output option
+        }  // so3_ele
+        else  // Hex8Fbar
+        {
+          nln_stifffint_tsi_fbar(
+              la,  // location array
+              mydisp,  // current displacements
+              mytempnp, // current temperature
+              NULL, // element stiffness matrix
+              &elevec1,  // element internal force vector
+              NULL,  // stresses at GP
+              params,  // algorithmic parameters e.g. time
+              INPAR::STR::stress_none  // stress output option
           );
-      }  // Hex8Fbar
-    }  // (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
+        }  // Hex8Fbar
+      }  // (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
 
-    // geometric INPAR::STR::kinem_linear
-    else if (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
-    {
-      // calculate the THERMOmechanical term for fint
-      lin_fint_tsi(
-        la,
-        mydisp,
-        mytempnp,
-        &elevec1,
-        NULL,
-        params,
-        INPAR::STR::stress_none
+      // geometric INPAR::STR::kinem_linear
+      else if (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
+      {
+        // calculate the THERMOmechanical term for fint
+        lin_fint_tsi(
+            la,
+            mydisp,
+            mytempnp,
+            &elevec1,
+            NULL,
+            params,
+            INPAR::STR::stress_none
         );
-    }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
+      }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
+    }
     break;
   }  // calc_struct_internalforce
 
@@ -546,16 +555,26 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       std::vector<double> mydisp((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
-      Teuchos::RCP<std::vector<char> > couplstressdata
-        = params.get<Teuchos::RCP<std::vector<char> > >("couplstress", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > couplstressdata;
+      INPAR::STR::StressType iocouplstress;
+      if (this->IsParamsInterface())
+      {
+        couplstressdata =
+            this->StrParamsInterface().MutableCouplingStressDataPtr();
+        iocouplstress=
+            this->StrParamsInterface().GetCouplingStressOutputType();
+      }
+      else
+      {
+        couplstressdata =
+            params.get<Teuchos::RCP<std::vector<char> > >("couplstress", Teuchos::null);
+        iocouplstress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iocouplstress",
+                        INPAR::STR::stress_none);
+      }
 
-      if (couplstressdata == Teuchos::null) dserror("Cannot get 'couplstress' data");
       // get the temperature dependent stress
       LINALG::Matrix<numgpt_post,numstr_> couplstress(true);
-
-      INPAR::STR::StressType iocouplstress
-        = DRT::INPUT::get<INPAR::STR::StressType>(params, "iocouplstress",
-            INPAR::STR::stress_none);
+;
 
       // initialise the vectors
       // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the

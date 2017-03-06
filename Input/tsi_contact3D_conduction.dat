@@ -42,6 +42,7 @@ INTTYPE              Segments
 HEATTRANSSLAVE       10
 HEATTRANSMASTER      10
 -------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 NLNSOL                          fullnewton

@@ -342,6 +342,7 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
   Discret().ClearState();
   Discret().SetState(0,"residual displacement", dis_incr_ptr_);
   Discret().SetState(0,"displacement", GState().GetDisNp());
+  Discret().SetState(0,"velocity", GState().GetVelNp());
 
   // set action types and evaluate matrices/vectors
   StaticContributions(&eval_mat[0],&eval_vec[0]);

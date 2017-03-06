@@ -47,7 +47,12 @@ WRITE_TO_SCREEN                 Yes
 PROBLEMTYP                      Thermo_Structure_Interaction  // Structure,Thermo
 RESTART                         0
 SHAPEFCT                        Polynomial
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
@@ -121,12 +126,12 @@ RESTARTEVRY                     1
 TIMESTEP                        0.05
 RESULTSEVRY                           1
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
-CONVTOL                         1e-06
+CONVTOL                         1e-08
 ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
 LINEAR_SOLVER                   3
 NORM_RESF                       Rel  // Abs,Rel,Mix
-NORMCOMBI_RESFINC               Coupl_And_Singl  // And,Or,Coupl_Or_Singl,{And,Or}_Singl
-TOLINC                          1e-06
+NORMCOMBI_RESFINC               And // Coupl_And_Singl  // And,Or,Coupl_Or_Singl,{And,Or}_Singl
+TOLINC                          1e-08
 --------------------------------------------------------------------SOLVER 3
 AZBDIAG                         0
 AZCONV                          AZ_r0
@@ -255,9 +260,10 @@ NODE 12 COORD 2.0000000000000000e+00 0.0000000000000000e+00 5.5000000000000000e+
 1 SOLIDH8THERMO HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM linear EAS none
 2 SOLIDH8THERMO HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM linear EAS none
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -1.93645859082224615e-05 TOLERANCE 1.0e-09 NAME ux_in
-STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE -3.85582997290207768e-05 TOLERANCE 1.0e-09 NAME ux_out
-THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 2.92277488669956767e+02 TOLERANCE 1.0e-09 NAME T_in
-THERMAL DIS thermo NODE 10 QUANTITY temp VALUE 2.92298309632028861e+02 TOLERANCE 1.0e-09 NAME T_out
+// velocities with locsys_
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -1.94783496789191742e-05 TOLERANCE 1.0e-09 NAME ux_in
+STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE -3.87858281758515010e-05 TOLERANCE 1.0e-09 NAME ux_out
+THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 2.92272402122403832e+02 TOLERANCE 1.0e-09 NAME T_in
+THERMAL DIS thermo NODE 10 QUANTITY temp VALUE 2.92293223835184335e+02 TOLERANCE 1.0e-09 NAME T_out
 -------------------------------------------------------------------------END
 // END

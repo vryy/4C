@@ -19,6 +19,9 @@
 #include "so3_ssn_plast_eletypes.H"
 #include "../drt_thermo/thermo_ele_impl_utils.H"
 
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+
 // include header because number of Gauss points are determined
 // dependent on distype
 #include "../drt_fem_general/drt_utils_gausspoints.H"
@@ -98,6 +101,7 @@ namespace ELEMENTS
     //! this file.
     virtual int UniqueParObjectId() const;
 
+    bool HaveEAS() const { return (eastype_!=soh8p_easnone); };
 
     //! Pack this class so it can be communicated
     //! Pack and \ref Unpack are used to communicate this element
@@ -296,27 +300,6 @@ namespace ELEMENTS
     //! don't want = operator
     So3_Plast& operator = (const So3_Plast& old);
 
-    //! action parameters recognized by so_hex8
-    enum ActionType
-    {
-      none,
-      calc_struct_linstiff,      //!< geometrical linear analysis: stiffness matrix
-      calc_struct_nlnstiff,      //!< stiffness matrix
-      calc_struct_internalforce, //!< internal force
-      calc_struct_linstiffmass,  //!< geometrical linear analysis: internal force,
-                                 //!< its stiffness and mass matrix
-      calc_struct_nlnstiffmass,  //!< internal force, its stiffness and mass matrix
-      calc_struct_nlnstifflmass, //!< internal force, its stiffness and lumped mass matrix
-      calc_struct_stress,        //!< calculate stresses
-      calc_struct_update_istep,  //!< update all at element level
-      calc_struct_reset_istep,   //!< reset elementwise internal variables
-                                 //!< during iteration to last converged state
-                                 //!< needed for predictor TangDis
-      postprocess_stress,        //!< postprocess stresses
-      calc_struct_stifftemp,      //!< calculate the coupling block K_dT in monolithic TSI
-      calc_struct_energy          //!< compute internal elastic energy
-    };
-
     /*!
      * \brief EAS technology enhancement types of so_hex8
      *
@@ -397,12 +380,6 @@ namespace ELEMENTS
       LINALG::Matrix<nsd_,nen_>* N_XYZ
       );
 
-    //! calculate linear B-operator
-    virtual void CalculateBoplin(
-      LINALG::Matrix<numstr_,numdofperelement_>* boplin,
-      LINALG::Matrix<nsd_,nen_>* N_XYZ
-      );
-
     /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
     /// todo: Unfortunately, there is no universal extrapolation function in all base elements,
     /// i.e. the hex8 elements would call soh8_expol, hex27 would call soh27_expol...
@@ -464,8 +441,6 @@ namespace ELEMENTS
         Teuchos::ParameterList& params,
         LINALG::Matrix<numdofperelement_,1>* force,
         LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix,
-        int& num_active_gp,
-        double& lp_res,
         Epetra_SerialDenseMatrix* M=NULL,
         Epetra_SerialDenseMatrix* Kda=NULL,
         std::vector<Epetra_SerialDenseVector>* dHda=NULL,
@@ -493,6 +468,24 @@ namespace ELEMENTS
         bool recover
         );
 
+    void RecoverPlasticityAndEAS(
+        const LINALG::Matrix<numdofperelement_,1>* res_d,
+        const LINALG::Matrix<nen_,1>* res_t=NULL);
+
+    void RecoverEAS(
+        const LINALG::Matrix<numdofperelement_,1>* res_d,
+        const LINALG::Matrix<nen_,1>* temp=NULL);
+
+    template<int spintype>
+    void RecoverPlasticity(
+        const LINALG::Matrix<numdofperelement_,1>* res_d,
+        const int gp,
+        const double* temp=NULL);
+
+    void ReduceEasStep(const double new_step_length, const double old_step_length);
+    void ReducePlasticityStep(const double new_step_length, const double old_step_length, const int gp);
+
+    virtual void BuildDeltaLp(LINALG::Matrix<3,3>& deltaLp ,const int gp);
 
     /*! \brief Return if plastic spin is solved for.
      */
@@ -540,42 +533,42 @@ namespace ELEMENTS
     // algoirthmic parameters
     bool fbar_;
 
-//     Data container of plastic_ssn_manager
-    Teuchos::RCP<DRT::UTILS::PlastSsnData> data_;
-
     static const int VOIGT3X3SYM_[3][3];
     static const int VOIGT3X3NONSYM_[3][3];
 
 
     // plasticity ********************************************
     // Kbb^-1 at each Gauss point for recovery of inner variables
-    std::vector<Epetra_SerialDenseMatrix> KbbInv_;
+    std::vector<LINALG::SerialDenseMatrix> KbbInv_;
 
     // Kbd at each Gauss point for recovery of inner variables
-    std::vector<Epetra_SerialDenseMatrix> Kbd_;
+    std::vector<LINALG::SerialDenseMatrix> Kbd_;
 
     // f_b at each Gauss point for recovery of inner variables
-    std::vector<Epetra_SerialDenseVector> fbeta_;
+    std::vector<LINALG::SerialDenseVector> fbeta_;
 
     // plastic flow at each Gauss point at last Newton iteration
-    std::vector<Epetra_SerialDenseVector> dDp_last_iter_;
+    std::vector<LINALG::SerialDenseVector> dDp_last_iter_;
 
     // increment of plastic flow over last Newton step (needed for Newton line search)
-    std::vector<Epetra_SerialDenseVector> dDp_inc_;
+    std::vector<LINALG::SerialDenseVector> dDp_inc_;
 
     PlSpinType       plspintype_;
 
+    // line search parameter (old step length)
+    double                              old_step_length_;
+
     // EAS element technology ************************************
-    Teuchos::RCP<Epetra_SerialDenseMatrix> KaaInv_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> Kad_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> KaT_;
+    Teuchos::RCP<LINALG::SerialDenseMatrix> KaaInv_;
+    Teuchos::RCP<LINALG::SerialDenseMatrix> Kad_;
+    Teuchos::RCP<LINALG::SerialDenseMatrix> KaT_;
     Teuchos::RCP<LINALG::Matrix<numdofperelement_,nen_> > KdT_eas_;
-    Teuchos::RCP<Epetra_SerialDenseVector> feas_;
-    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > Kba_;
-    Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_;
-    Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_last_timestep_;
-    Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_delta_over_last_timestep_;
-    Teuchos::RCP<Epetra_SerialDenseVector> alpha_eas_inc_;
+    Teuchos::RCP<LINALG::SerialDenseVector> feas_;
+    Teuchos::RCP<std::vector<LINALG::SerialDenseMatrix> > Kba_;
+    Teuchos::RCP<LINALG::SerialDenseVector> alpha_eas_;
+    Teuchos::RCP<LINALG::SerialDenseVector> alpha_eas_last_timestep_;
+    Teuchos::RCP<LINALG::SerialDenseVector> alpha_eas_delta_over_last_timestep_;
+    Teuchos::RCP<LINALG::SerialDenseVector> alpha_eas_inc_;
     EASType                  eastype_;
     int                      neas_;
 
@@ -588,7 +581,7 @@ namespace ELEMENTS
     Teuchos::RCP<std::vector<LINALG::Matrix<numdofperelement_,1> > > dFintdT_;
 
     /// derivative of NCP w.r.t. temperatures at gp
-    Teuchos::RCP<std::vector<Epetra_SerialDenseVector> > KbT_;
+    Teuchos::RCP<std::vector<LINALG::SerialDenseVector> > KbT_;
 
     /// Temperature at each gp in last Newton iteration
     /// this is needed for the recovery of the plastic flow using KbT_

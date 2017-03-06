@@ -468,6 +468,7 @@ enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_eas:
+    case NOX::NLN::StatusTest::quantity_plasticity:
     case NOX::NLN::StatusTest::quantity_pressure:
       soltype = NOX::NLN::sol_structure;
       break;
@@ -484,7 +485,6 @@ enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
       soltype = NOX::NLN::sol_cardiovascular0d;
       break;
-    case NOX::NLN::StatusTest::quantity_plasticity:
     case NOX::NLN::StatusTest::quantity_unknown:
     default:
       dserror("Unknown conversion for the quantity type \"%s\".",

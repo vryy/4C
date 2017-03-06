@@ -42,19 +42,23 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-TIMESTEP                        0.4375
+TIMESTEP                        0.25
 NUMSTEP                         200000
 MAXTIME                         7.0
-DAMPING                         Yes
-M_DAMP                          0.1
-K_DAMP                          0.1
 TOLDISP                         1.0e-8
 TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
 MAXITER                         50
 MINITER                         2
-NLNSOL                          lsnewton
+NLNSOL                          fullnewton
 PREDICT                         ConstVel
+INT_STRATEGY                    Standard
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
+------------------------------------------------------STRUCT NOX/Status Test
+XML File                        = plastic_ssn_status_test.xml
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F                         0.5
@@ -548,10 +552,10 @@ NODE 171   COORD 0.0000000000000000e+00 6.4129999999999994e+00 1.333350000000000
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-12 NAME ux_top_in
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-12 NAME uy_top_in
 STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 7.0 TOLERANCE 1.0e-12 NAME uz_top_in
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -7.66867578903012437e-02 TOLERANCE 1.0e-12 NAME ux_top_out
+STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -7.82827500989886210e-02 TOLERANCE 1.0e-12 NAME ux_top_out
 STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-12 NAME uy_top_out
 STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE 7.0 TOLERANCE 1.0e-12 NAME uz_top_out
-STRUCTURE DIS structure NODE 80 QUANTITY dispx VALUE -1.54203130115329046e+00 TOLERANCE 1.0e-12 NAME ux_neck
+STRUCTURE DIS structure NODE 80 QUANTITY dispx VALUE -1.45732286616898699e+00 TOLERANCE 1.0e-12 NAME ux_neck
 STRUCTURE DIS structure NODE 80 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-12 NAME uy_neck
 STRUCTURE DIS structure NODE 80 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12 NAME uz_neck
 ---------------------------------------------------------------END

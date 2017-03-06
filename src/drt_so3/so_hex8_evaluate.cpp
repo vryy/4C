@@ -3551,7 +3551,10 @@ void DRT::ELEMENTS::So_hex8::GetTemperatureForStructuralMaterial(
 
   if (Material()->MaterialType() == INPAR::MAT::m_thermostvenant)
   {
-    bool young_temp = (params.get<int>("young_temp") == 1);
+    static const bool young_temp =
+        DRT::INPUT::IntegralValue<int>(Problem::Instance()->StructuralDynamicParams()
+            ,"YOUNG_IS_TEMP_DEPENDENT") == 1;
+    params.set<int>("young_temp",young_temp);
     if (young_temp == true)
     {
       // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null

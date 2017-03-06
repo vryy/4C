@@ -628,13 +628,13 @@ void runEnsightVtuFilter(PostProblem    &problem)
 
       std::string basename = problem.outname();
 
-      PostField* structfield = problem.get_discretization(0);
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
-      structwriter.WriteFiles();
-
-      PostField* thermfield = problem.get_discretization(1);
+      PostField* thermfield = problem.get_discretization(0);
       ThermoFilter thermwriter(thermfield, basename, problem.heatfluxtype(), problem.tempgradtype());
       thermwriter.WriteFiles();
+
+      PostField* structfield = problem.get_discretization(1);
+      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
       break;
     }
     case prb_red_airways:

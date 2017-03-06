@@ -43,6 +43,7 @@ HEATTRANSMASTER      2e-2 // 1.0e-3
 TEMP_REF             293
 TEMP_DAMAGE          293.5
 -------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

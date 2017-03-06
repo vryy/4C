@@ -52,11 +52,12 @@ PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop  // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
 DYNAMICTYP                      OneStepTheta  // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
-ITERNORM                        Rms  // L2
+ITERNORM                        L2
 LINEAR_SOLVER                   3
 MAXITER                         50
 MAXTIME                         1

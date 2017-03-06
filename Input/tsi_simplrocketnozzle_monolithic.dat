@@ -75,6 +75,7 @@ RESULTSEVRY                     1
 TIMESTEP                        0.05
 TOLDISP                         1e-10
 TOLRES                          1e-08
+INT_STRATEGY                    Standard
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC

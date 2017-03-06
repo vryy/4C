@@ -51,6 +51,7 @@ THERM_HEATFLUX                  Current            // None,No,NO,no,Current,Init
 THERM_TEMPERATURE               Yes                // Yes,No,yes,no,YES,NO
 THERM_TEMPGRAD                  Current            // None,No,NO,no,Current,Initial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta       // Statics
 TOLDISP                         1.0e-8

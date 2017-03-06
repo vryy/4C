@@ -38,6 +38,7 @@ THERM_HEATFLUX                  Current            // None,No,NO,no,Current,Init
 THERM_TEMPERATURE               Yes                // Yes,No,yes,no,YES,NO
 THERM_TEMPGRAD                  Current            // None,No,NO,no,Current,Initial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                  GenAlpha       //    Statics  //
 TOLDISP                         1.0e-8
@@ -49,14 +50,18 @@ MAXTIME                       8000
 MAXITER                       100
 TIMESTEP                      100
 NUMSTEP                       1
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
+------------------------------------------------------STRUCT NOX/Status Test
+XML File                        = plastic_ssn_status_test.xml
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5                // 0.66
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -82,8 +87,6 @@ RESTARTEVRY                     10
 TIMESTEP                        0.05
 TOLRES                          1e-05
 TOLTEMP                         1e-07
-------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5                // 0.66
 -----------------------------------------------------------------TSI DYNAMIC
 COUPALGO                        tsi_monolithic     // tsi_{oneway,sequstagg,iterstagg,monolithic}
 ITEMAX                          200
@@ -95,13 +98,13 @@ RESTARTEVRY                     0
 TIMESTEP                        250
 RESULTSEVRY                           5                  // 5
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
-CONVTOL                         1e-05
-TOLINC                          1e-02
+CONVTOL                         1e-10
+TOLINC                          1e-10
 CALC_NECKING_TSI_VALUES         No                 // Yes,No
-ITERNORM                        Rms                // Rms,L2,Inf,L1_Scaled
+ITERNORM                        L2                // Rms,L2,Inf,L1_Scaled
 LINEAR_SOLVER                   3
-NORMCOMBI_RESFINC               And_Singl    // And,Or,{Coupl_}{Or,And}_Singl
-NORM_RESF                       Rel                // Abs,Mix
+NORMCOMBI_RESFINC               And    // And,Or,{Coupl_}{Or,And}_Singl
+NORM_RESF                       Abs                // Abs,Mix
 MERGE_TSI_BLOCK_MATRIX          no
 --------------------------------------------------------------------SOLVER 3
 NAME                            TSI_MONOLITHIC_SOLVER

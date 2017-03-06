@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so3_ssn_plast_sosh18.cpp
-
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\file so3_ssn_plast_sosh18.H
+\brief 18 node solid shell with plasticity
+\level 3
+\maintainer Alexander Seitz
 */
 /*----------------------------------------------------------------------*/
 
@@ -77,6 +73,8 @@ public:
   //! Copy Constructor
   //! Makes a deep copy of a Element
   So_sh18Plast(const So_sh18Plast& old);
+
+  bool HaveEAS() const { return (eastype_!=soh8p_easnone); };
 
   //! resolve "no unique final overrider"
   virtual int NumVolume() const {return So_sh18::NumVolume();}

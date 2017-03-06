@@ -5,12 +5,8 @@
 \brief  Basis of all TSI algorithms that perform a coupling between the linear
         momentum equation and the heat conduction equation
 
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\maintainer Alexander Seitz
+\level 1
 */
 
 
@@ -198,131 +194,31 @@ void TSI::Partitioned::Solve()
  *----------------------------------------------------------------------*/
 void TSI::Partitioned::TimeLoop()
 {
-
-  // get active nodes from structural contact simulation
-  Teuchos::RCP<MORTAR::ManagerBase> cmtman = Teuchos::null;
-  if (StructureField()->MeshtyingContactBridge() != Teuchos::null)
-    cmtman = StructureField()->MeshtyingContactBridge()->ContactManager();
-
   // tsi with or without contact
   // only tsi
-  if (cmtman == Teuchos::null)
+  // time loop
+  while (NotFinished())
   {
-    // time loop
-    while (NotFinished())
-    {
-      // counter and print header
-      PrepareTimeStep();
+    // counter and print header
+    PrepareTimeStep();
 
-      // normally PrepareTimeStep() should be called outside the nonlinear loop,
-      // but at this point the coupling variables are not known, yet!
-      // call PrepareTimeStep() after ApplyCouplingState()/ApplyStructVariables()
+    // normally PrepareTimeStep() should be called outside the nonlinear loop,
+    // but at this point the coupling variables are not known, yet!
+    // call PrepareTimeStep() after ApplyCouplingState()/ApplyStructVariables()
 
-      // integrate time step
-      Solve();
+    // integrate time step
+    Solve();
 
-      // calculate stresses, strains, energies
-      PrepareOutput();
+    // calculate stresses, strains, energies
+    PrepareOutput();
 
-      // update all single field solvers
-      Update();
+    // update all single field solvers
+    Update();
 
-      // write output to screen and files
-      Output();
+    // write output to screen and files
+    Output();
 
-    }  // time loop
-
-  }  // tsi
-
-  // thermo-structure interaction with contact in seperate routine
-  else
-  {
-    // time loop
-    while (NotFinished())
-    {
-      // only for frictional contact so far
-      // as information are needed from the friction node
-      if ((cmtman->GetStrategy().Friction()) == false)
-        dserror ("Thermo-Structure interaction only for frictional contact so far");
-
-      // counter and print header
-      PrepareTimeStep();
-
-      //****************************************************************//
-      // this algorithm consists of two parts within one time step      //
-      // 1) solution of nonlinear structural system without influence   //
-      //    of temperature.                                             //
-      // 2) solution of temperature problem                             //
-      //    with heat transfer over the contacting surface (as a result //
-      //    from the structural problem).                               //
-      //******************************************************************
-      if (coupling_ == INPAR::TSI::OneWay)
-      {
-        // predict and solve structural system
-        StructureField()->PrepareTimeStep();
-        StructureField()->Solve();
-
-        ThermoField()->PrepareTimeStep();
-        ThermoField()->Solve();
-      }
-      //****************************************************************//
-      // this algorithm consists of the iteration between the           //
-      // two single fields until convergence is achieved. The two fields//
-      // influence each other:                                          //
-      // 1) The thermal field is influenced by the structural field with//
-      //    the contact surface (mortar matrices, active nodes....) and //
-      //    frictional heating.                                         //
-      // 2) The structural field is influenced by the thermal field     //
-      //    with a temperature dependent material law.                  //
-      //******************************************************************
-      else if (coupling_ == INPAR::TSI::IterStagg)
-      {
-        // prepare time step
-        ThermoField()->PrepareTimeStep();
-        StructureField()->PrepareTimeStep();
-
-        // iterate between the two fields
-        int  itnum = 0;
-        bool stopnonliniter = false;
-
-        while (stopnonliniter == false)
-        {
-          itnum ++;
-
-          // store temperature from first solution for convergence check (like in
-          // elch_algorithm: use current values)
-          tempincnp_->Update(1.0,*ThermoField()->Tempnp(),0.0);
-          dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
-
-          ThermoField()->PrepareTimeStep();
-          ThermoField()->Solve();
-
-          // extract current temperature field
-          const Teuchos::RCP<Epetra_Vector> tempnp = ThermoField()->WriteAccessTempnp();
-
-          // apply current temperatur field
-          ApplyThermoCouplingState(tempnp);
-
-          // solve structure system
-          StructureField()->Solve();
-
-          // check convergence of temperature field for "partitioned scheme"
-          stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);
-        }
-      }
-      else
-        dserror("No sequential staggered coupling algorithm with contact");
-
-      // calculate stresses, strains, energies
-      PrepareOutput();
-
-      // update all single field solvers
-      Update();
-
-      // write output to screen and files
-      Output();
-    } // time loop
-  }
+  }  // time loop
 
   // ==================================================================
 
@@ -625,9 +521,6 @@ void TSI::Partitioned::OuterIterationLoop()
         // prepare time step with coupled variables
         if (itnum == 1)
           StructureField()->PrepareTimeStep();
-        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
-        else if (itnum != 1)
-          StructureField()->PreparePartitionStep();
 
         // solve coupled structural equation
         DoStructureStep();
@@ -678,9 +571,6 @@ void TSI::Partitioned::OuterIterationLoop()
         // prepare time step with coupled variables
         if (itnum == 1)
           StructureField()->PrepareTimeStep();
-        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
-        else if (itnum != 1)
-          StructureField()->PreparePartitionStep();
 
         // solve coupled structural equation
         DoStructureStep();
@@ -831,9 +721,6 @@ void TSI::Partitioned::OuterIterationLoop()
         // prepare time step with coupled variables
         if (itnum == 1)
           StructureField()->PrepareTimeStep();
-        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep()
-        else if (itnum != 1)
-          StructureField()->PreparePartitionStep();
 
         if (coupling == INPAR::TSI::IterStaggFixedRel)
         {
@@ -1040,9 +927,6 @@ void TSI::Partitioned::OuterIterationLoop()
         // prepare time step with coupled variables
         if (itnum == 1)
           StructureField()->PrepareTimeStep();
-        // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
-        else if (itnum != 1)
-          StructureField()->PreparePartitionStep();
 
         // solve coupled structural equation
         DoStructureStep();

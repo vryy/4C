@@ -55,6 +55,7 @@ RESULTSEVRY                     1
 TIMESTEP                        0.05
 TOLDISP                         1e-7
 TOLRES                          1e-07
+INT_STRATEGY                    Standard
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC
@@ -89,9 +90,9 @@ ITEMIN                          1
 MAXTIME                         4.0
 NORM_INC                        Abs  // Abs,Rel
 NUMSTEP                         10  // 400,800
-RESTARTEVRY                     1
+RESTARTEVRY                     0 // 1
 TIMESTEP                        0.4  // 0.05
-RESULTSEVRY                           5  //
+RESULTSEVRY                     0 //      5  //
 MATCHINGGRID                    no
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06

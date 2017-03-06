@@ -32,6 +32,7 @@ PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
@@ -44,7 +45,7 @@ MINITER                         0
 NLNSOL                          fullnewton                      // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Rel                             // Abs,Rel,Mix
+NORM_RESF                       Abs                             // Abs,Rel,Mix
 NUMSTEP                         200
 PREDICT                         ConstDis                        // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
 RESEVRYERGY                     0
@@ -52,7 +53,7 @@ RESTARTEVRY                     1
 RESULTSEVRY                     1
 TIMESTEP                        0.05
 TOLDISP                         1e-10
-TOLRES                          1e-06
+TOLRES                          1e-04
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC

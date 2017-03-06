@@ -35,6 +35,7 @@ PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
@@ -47,7 +48,7 @@ MINITER                         0
 NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Rel  // Abs,Rel,Mix
+NORM_RESF                       Abs  // Abs,Rel,Mix
 NUMSTEP                         200
 PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
 RESEVRYERGY                     0

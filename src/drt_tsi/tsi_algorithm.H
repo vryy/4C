@@ -36,6 +36,10 @@ namespace DRT
   class Discretization;
 }
 
+namespace CONTACT
+{
+class CoTSILagrangeStrategy;
+}
 
 namespace FS3I
 {
@@ -169,6 +173,9 @@ namespace TSI
 
     //! underlying fluid of the FSI problem
     Teuchos::RCP< ::ADAPTER::Thermo> thermo_;
+
+    //! contact strategy
+    Teuchos::RCP<CONTACT::CoTSILagrangeStrategy> contact_strategy_;
 
     //@}
 

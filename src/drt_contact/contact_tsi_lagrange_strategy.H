@@ -63,7 +63,7 @@ public:
       Teuchos::ParameterList params,
       std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
       int dim,
-      Teuchos::RCP<Epetra_Comm> comm,
+      Teuchos::RCP<const Epetra_Comm> comm,
       double alphaf,
       int maxdof);
 

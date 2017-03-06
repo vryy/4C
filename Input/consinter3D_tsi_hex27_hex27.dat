@@ -47,7 +47,7 @@ MINITER                         0
 NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
-NORM_RESF                       Rel  // Abs,Rel,Mix
+NORM_RESF                       Abs // Rel  // Abs,Rel,Mix
 NUMSTEP                         200
 PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
 RESEVRYERGY                     0
@@ -56,6 +56,7 @@ RESULTSEVRY                     1
 TIMESTEP                        0.05
 TOLDISP                         1e-10
 TOLRES                          1e-06
+INT_STRATEGY                    Standard
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC

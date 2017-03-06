@@ -20,6 +20,7 @@
 #include "so_surface.H"
 #include "so_line.H"
 #include "../drt_inpar/inpar_tsi.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 // include this thermo-implementation to make sure, that the same Gauss-rule
 // is used in the structural and the thermal part in a TSI problem
@@ -36,12 +37,12 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(
   )
 : So_base(id,owner),
   fbar_(false),
-  data_(Teuchos::null),
-  KbbInv_(std::vector<Epetra_SerialDenseMatrix>(0)),
-  Kbd_(std::vector<Epetra_SerialDenseMatrix>(0)),
-  fbeta_(std::vector<Epetra_SerialDenseVector>(0)),
-  dDp_last_iter_(std::vector<Epetra_SerialDenseVector>(0)),
-  dDp_inc_(std::vector<Epetra_SerialDenseVector>(0)),
+//  data_(Teuchos::null),
+  KbbInv_(std::vector<LINALG::SerialDenseMatrix>(0)),
+  Kbd_(std::vector<LINALG::SerialDenseMatrix>(0)),
+  fbeta_(std::vector<LINALG::SerialDenseVector>(0)),
+  dDp_last_iter_(std::vector<LINALG::SerialDenseVector>(0)),
+  dDp_inc_(std::vector<LINALG::SerialDenseVector>(0)),
   plspintype_(plspin),
   KaaInv_(Teuchos::null),
   Kad_(Teuchos::null),
@@ -328,8 +329,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    if (tsi_)
    {
      dFintdT_=Teuchos::rcp(new std::vector<LINALG::Matrix<numdofperelement_,1> >(numgpt_));
-     KbT_=Teuchos::rcp(new std::vector<Epetra_SerialDenseVector>
-       (numgpt_,Epetra_SerialDenseVector(plspintype_)));
+     KbT_=Teuchos::rcp(new std::vector<LINALG::SerialDenseVector>
+       (numgpt_,LINALG::SerialDenseVector(plspintype_,true)));
      temp_last_=Teuchos::rcp(new std::vector<double>(numgpt_));
      int size=ExtractInt(position,data);
      for (int i=0; i<size; i++)
@@ -362,26 +363,26 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    }
    else
    {
-     KaaInv_                             =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,neas_));
-     Kad_                                =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,numdofperelement_));
+     KaaInv_                             =Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_,neas_,true));
+     Kad_                                =Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_,numdofperelement_,true));
      if (tsi_)
      {
-       KaT_                      =Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,nen_));
+       KaT_                      =Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_,nen_,true));
        KdT_eas_                  =Teuchos::rcp(new LINALG::Matrix<numdofperelement_,nen_>);
      }
-     feas_                               =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-     Kba_                                =Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(plspintype_,neas_)));
-     alpha_eas_                          =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-     alpha_eas_last_timestep_            =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-     alpha_eas_delta_over_last_timestep_ =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-     alpha_eas_inc_                      =Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
+     feas_                               =Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
+     Kba_                                =Teuchos::rcp(new std::vector<LINALG::SerialDenseMatrix>(numgpt_,LINALG::SerialDenseMatrix(plspintype_,neas_,true)));
+     alpha_eas_                          =Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
+     alpha_eas_last_timestep_            =Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
+     alpha_eas_delta_over_last_timestep_ =Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
+     alpha_eas_inc_                      =Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
    }
 
-     KbbInv_        .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_));
-     Kbd_           .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_));
-     fbeta_         .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
-     dDp_last_iter_ .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
-     dDp_inc_       .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
+     KbbInv_        .resize(numgpt_,LINALG::SerialDenseMatrix(plspintype_,plspintype_,true));
+     Kbd_           .resize(numgpt_,LINALG::SerialDenseMatrix(plspintype_,numdofperelement_,true));
+     fbeta_         .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
+     dDp_last_iter_ .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
+     dDp_inc_       .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
 
    if (eastype_!=soh8p_easnone)
    {
@@ -406,8 +407,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
      cauchy_      .resize(0);
      cauchy_deriv_.resize(0);
    }
-
-   data_=Teuchos::null;
 
    if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -593,11 +592,17 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   EasInit();
 
   // plasticity related stuff
-  KbbInv_        .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,plspintype_));
-  Kbd_           .resize(numgpt_,Epetra_SerialDenseMatrix(plspintype_,numdofperelement_));
-  fbeta_         .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
-  dDp_last_iter_ .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
-  dDp_inc_       .resize(numgpt_,Epetra_SerialDenseVector(plspintype_));
+  KbbInv_        .resize(numgpt_,LINALG::SerialDenseMatrix(plspintype_,plspintype_,true));
+  Kbd_           .resize(numgpt_,LINALG::SerialDenseMatrix(plspintype_,numdofperelement_,true));
+  fbeta_         .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
+  dDp_last_iter_ .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
+  dDp_inc_       .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
+
+  Teuchos::ParameterList plparams   =
+      DRT::Problem::Instance()->SemiSmoothPlastParams();
+  plparams.set<PROBLEM_TYP>("PROBLEM_TYP",DRT::Problem::Instance()->ProblemType());
+  ReadParameterList(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
+
 
   return true;
 
@@ -691,12 +696,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(Teuchos::RCP<Teuchos::
   double s=plparams->get<double>("STABILIZATION_S");
   if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
     static_cast<MAT::PlasticElastHyper*>(Material().get())->GetParams(s,cpl);
-  if (eastype_!=soh8p_easnone)
-    plparams->get<int>("have_EAS")=1;
 
   PROBLEM_TYP probtype = plparams->get<PROBLEM_TYP>("PROBLEM_TYP");
   if (probtype == prb_tsi)
     tsi_=true;
+  else
+    tsi_=false;
   if (tsi_)
   {
     // get plastic hyperelastic material
@@ -716,12 +721,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(Teuchos::RCP<Teuchos::
     // setup element data
     dFintdT_=Teuchos::rcp(new std::vector<LINALG::Matrix<numdofperelement_,1> >(numgpt_));
     temp_last_=Teuchos::rcp(new std::vector<double>(numgpt_,plmat->InitTemp()));
-    KbT_=Teuchos::rcp(new std::vector<Epetra_SerialDenseVector>
-    (numgpt_,Epetra_SerialDenseVector(plspintype_)));
+    KbT_=Teuchos::rcp(new std::vector<LINALG::SerialDenseVector>
+    (numgpt_,LINALG::SerialDenseVector(plspintype_,true)));
 
     if (eastype_!=soh8p_easnone)
     {
-      KaT_     = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,nen_));
+      KaT_     = Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_,nen_,true));
       KdT_eas_ = Teuchos::rcp(new LINALG::Matrix<numdofperelement_,nen_>);
     }
     else

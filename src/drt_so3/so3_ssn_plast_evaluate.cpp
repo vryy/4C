@@ -23,6 +23,10 @@
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/material_service.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+
 
 /*----------------------------------------------------------------------*
  | evaluate the element (public)                            seitz 07/13 |
@@ -39,36 +43,21 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   Epetra_SerialDenseVector& elevec3_epetra
   )
 {
+  SetParamsInterfacePtr(params);
+
   dsassert(kintype_==INPAR::STR::kinem_nonlinearTotLag,"only geometricallly nonlinear formluation for plasticity!");
 
   // start with "none"
-  ActionType act = none;
-
-  // get the required action
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")                        act =  calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")                        act =  calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce")                   act =  calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")                    act =  calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")                    act =  calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass")                   act =  calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_stress")                          act =  calc_struct_stress;
-  else if (action=="calc_struct_update_istep")                    act =  calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep")                     act =  calc_struct_reset_istep;
-  else if (action=="postprocess_stress")                          act =  postprocess_stress;
-  else if (action == "calc_struct_stifftemp")                     act =  calc_struct_stifftemp;
-  else if (action=="calc_struct_energy")                          act =  calc_struct_energy;
-  else
-    dserror("Unknown type of action for So3_Plast: %s",action.c_str());
+  ELEMENTS::ActionType act = ELEMENTS::none;
+  act = ParamsInterface().GetActionType();
 
   // what should the element do
   switch(act)
   {
   //============================================================================
   // linear stiffness
-  case calc_struct_linstiff:
-  case calc_struct_linstiffmass:
+  case DRT::ELEMENTS::struct_calc_linstiff:
+  case DRT::ELEMENTS::struct_calc_linstiffmass:
   {
     dserror("linear kinematics version out dated");
     break;
@@ -76,7 +65,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
 
   //============================================================================
   // nonlinear stiffness
-  case calc_struct_internalforce:
+  case DRT::ELEMENTS::struct_calc_internalforce:
   {
     // internal force vector
     LINALG::Matrix<numdofperelement_,1> elevec1(elevec1_epetra.A(),true);
@@ -158,7 +147,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
 
   //============================================================================
   // nonlinear stiffness
-  case calc_struct_nlnstiff:
+  case DRT::ELEMENTS::struct_calc_nlnstiff:
   {
     // stiffness
     LINALG::Matrix<numdofperelement_,numdofperelement_> elemat1(elemat1_epetra.A(),true);
@@ -238,8 +227,8 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
 
   //============================================================================
   // (non)linear stiffness, mass matrix and internal force vector
-  case calc_struct_nlnstiffmass:
-  case calc_struct_nlnstifflmass:
+  case DRT::ELEMENTS::struct_calc_nlnstiffmass:
+  case DRT::ELEMENTS::struct_calc_nlnstifflmass:
   {
     // need current displacement and residual forces
      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -314,7 +303,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
      nln_stiffmass(la[0].lm_,mydisp,myres,myvel,mytempnp,mytempres,&elemat1,&elemat2,&elevec1,&elevec3,NULL,NULL,params,
          INPAR::STR::stress_none,INPAR::STR::strain_none,discretization.Comm().MyPID());
 
-     if(act==calc_struct_nlnstifflmass)
+     if(act==DRT::ELEMENTS::struct_calc_nlnstifflmass)
        // lump mass matrix
        // we assume #elemat2 is a square matrix
        for (int c=0; c<elemat2_epetra.N(); ++c)  // parse columns
@@ -330,7 +319,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
     break;
   }  // calc_struct_nlnstiff(l)mass
 
-  case calc_struct_stress:
+  case DRT::ELEMENTS::struct_calc_stress:
   {
     // elemat1+2,elevec1-3 are not used anyway
 
@@ -421,7 +410,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
 
   //============================================================================
   // required for predictor TangDis --> can be helpful in compressible case!
-  case calc_struct_reset_istep:
+  case DRT::ELEMENTS::struct_calc_reset_istep:
   {
     for (int i=0; i<numgpt_; i++)
     {
@@ -433,7 +422,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   }
 
   //============================================================================
-  case calc_struct_update_istep:
+  case DRT::ELEMENTS::struct_calc_update_istep:
   {
     // update plastic deformation
     // default: geometrically non-linear analysis with Total Lagrangean approach
@@ -444,7 +433,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   // note that in the following, quantities are always referred to as
   // "stresses" etc. although they might also apply to strains
   // (depending on what this routine is called for from the post filter)
-  case postprocess_stress:
+  case DRT::ELEMENTS::struct_postprocess_stress:
   {
     const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
       params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
@@ -491,7 +480,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   }
 
   //============================================================================
-  case calc_struct_stifftemp: // here we want to build the K_dT block for monolithic TSI
+  case DRT::ELEMENTS::struct_calc_stifftemp: // here we want to build the K_dT block for monolithic TSI
   {
     // stiffness
     LINALG::Matrix<numdofperelement_,nen_> k_dT(elemat1_epetra.A(),true);
@@ -501,7 +490,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   }
   break;
 
-  case calc_struct_energy:
+  case DRT::ELEMENTS::struct_calc_energy:
   {
     // need current displacement
     Teuchos::RCP<const Epetra_Vector> disp
@@ -510,6 +499,68 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
     elevec1_epetra(0) = CalcIntEnergy(mydisp,params);
+  }
+  break;
+
+  case DRT::ELEMENTS::struct_calc_recover:
+  {
+    Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+    if (res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+    std::vector<double> myres((la[0].lm_).size());
+    DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
+    LINALG::Matrix<nen_*nsd_,1> res_d(&myres[0],true);
+
+    std::vector<double> mytempres(0);
+    LINALG::Matrix<nen_,1> res_t;
+    LINALG::Matrix<nen_,1>* res_t_ptr=NULL;
+    if (discretization.NumDofSets()>1)
+      if (discretization.HasState(1,"residual temperature"))
+      {
+        Teuchos::RCP<const Epetra_Vector> tempres = discretization.GetState(1,"residual temperature");
+        if (tempres==Teuchos::null)
+          dserror("Cannot get state vector 'tempres'");
+
+        // the temperature field has only one dof per node, disregarded by the dimension of the problem
+        const int numdofpernode_thr = discretization.NumDof(1,Nodes()[0]);
+        if (la[1].Size() != nen_*numdofpernode_thr)
+          dserror("Location vector length for temperature does not match!");
+        // extract the current temperatures
+        mytempres.resize( ( (la[0].lm_).size() )/nsd_, 0.0 );
+        DRT::UTILS::ExtractMyValues(*tempres,mytempres,la[1].lm_);
+        res_t=LINALG::Matrix<nen_,1>(&mytempres[0],true);
+        res_t_ptr=&res_t;
+      }
+
+    RecoverPlasticityAndEAS(&res_d,res_t_ptr);
+  }
+  break;
+
+  case DRT::ELEMENTS::struct_calc_predict:
+  {
+    switch(StrParamsInterface().GetPredictorType())
+    {
+    case INPAR::STR::pred_constdis:
+      for (int gp=0;gp<numgpt_;++gp)
+        dDp_last_iter_[gp].Scale(0.);
+      if (eastype_!=soh8p_easnone)
+        for (int i=0; i<neas_; i++)
+        (*alpha_eas_)(i)=(*alpha_eas_last_timestep_)(i);
+      break;
+    case INPAR::STR::pred_constvel:
+    case INPAR::STR::pred_tangdis:
+      // do nothing for plasticity
+      if (eastype_!=soh8p_easnone)
+        for (int i=0; i<neas_; i++)
+          (*alpha_eas_)(i) = 0.
+          + (*alpha_eas_last_timestep_)(i)
+          + (*alpha_eas_delta_over_last_timestep_)(i)
+          ;
+      break;
+    default:
+      dserror("unknown predictor type");
+      break;
+    }
+//    std::cout << "predict: " << LINALG::Matrix<7,1>(alpha_eas_->A()) << std::endl;
   }
   break;
 
@@ -589,51 +640,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::CalculateBop(
 }  // CalculateBop()
 
 
-/*----------------------------------------------------------------------*
- | calculate the linear B-operator                          seitz 07/13 |
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Plast<distype>::CalculateBoplin(
-  LINALG::Matrix<numstr_,numdofperelement_>* boplin,
-  LINALG::Matrix<nsd_,nen_>* N_XYZ
-  )
-{
-  // lump mass matrix
-  if (boplin != NULL)
-  {
-    // linear B-operator B = N_XYZ
-    // disperse global derivatives to bop-lines
-    // bop is arranged as usual (refer to script FE or elsewhere):
-    // [ N1,X  0  0  | N2,X  0  0  | ... | Ni,X  0  0  ]
-    // [ 0  N1,Y  0  | 0  N2,Y  0  | ... | 0  Ni,Y  0  ]
-    // [ 0  0  N1,Z  | 0  0  N2,Z  | ... | 0  0  Ni,Z  ]
-    // [ N1,Y N1,X 0 | N2,Y N2,X 0 | ... | Ni,Y Ni,X 0 ]
-    // [ 0 N1,Z N1,Y | 0 N2,Z N2,Y | ... | 0 Ni,Z Ni,Y ]
-    // [ N1,Z 0 N1,X | N2,Z 0 N2,X | ... | Ni,Z 0 Ni,X ]
-    for (int i=0; i<nen_; ++i)
-    {
-      (*boplin)(0,numdofpernode_*i+0) = (*N_XYZ)(0,i);
-      (*boplin)(0,numdofpernode_*i+1) = 0.0;
-      (*boplin)(0,numdofpernode_*i+2) = 0.0;
-      (*boplin)(1,numdofpernode_*i+0) = 0.0;
-      (*boplin)(1,numdofpernode_*i+1) = (*N_XYZ)(1,i);
-      (*boplin)(1,numdofpernode_*i+2) = 0.0;
-      (*boplin)(2,numdofpernode_*i+0) = 0.0;
-      (*boplin)(2,numdofpernode_*i+1) = 0.0;
-      (*boplin)(2,numdofpernode_*i+2) = (*N_XYZ)(2,i);
-      /* ~~~ */
-      (*boplin)(3,numdofpernode_*i+0) = (*N_XYZ)(1,i);
-      (*boplin)(3,numdofpernode_*i+1) = (*N_XYZ)(0,i);
-      (*boplin)(3,numdofpernode_*i+2) = 0.0;
-      (*boplin)(4,numdofpernode_*i+0) = 0.0;
-      (*boplin)(4,numdofpernode_*i+1) = (*N_XYZ)(2,i);
-      (*boplin)(4,numdofpernode_*i+2) = (*N_XYZ)(1,i);
-      (*boplin)(5,numdofpernode_*i+0) = (*N_XYZ)(2,i);
-      (*boplin)(5,numdofpernode_*i+1) = 0.0;
-      (*boplin)(5,numdofpernode_*i+2) = (*N_XYZ)(0,i);
-    }
-  }
-}  // CalculateBoplin()
 
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)  seitz 04/14 |
@@ -829,12 +835,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     const int MyPID  // processor id
     )
 {
-  if (data_==Teuchos::null)
-    if (params.isParameter("PlastSsnData"))
-    data_=params.get<Teuchos::RCP<UTILS::PlastSsnData> >("PlastSsnData");
-
   // do the evaluation of tsi terms
   const bool eval_tsi = (temp.size()!=0);
+
+  const bool is_tangDis = StrParamsInterface().GetPredictorType() == INPAR::STR::pred_tangdis;
 
   // update element geometry
   LINALG::Matrix<nen_,3> xrefe(false);      // X, material coord. of element
@@ -923,34 +927,23 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     if (tsi_==true)
       dserror("TSI with so3Plast elements only with PlasticElastHyper material");
   }
-  // get references from parameter list
-  double& lp_inc = data_->pl_inc_;
-  double& lp_res = data_->pl_res_;
-  double& eas_inc= data_->eas_inc_;
-  double& eas_res= data_->eas_res_;
-  int& num_active_gp = data_->num_active_;
-  INPAR::STR::PredEnum pred = data_->pred_type_;
-  bool no_condensation = data_->no_pl_condensation_;
 
   // do not recover condensed variables if it is a TSI predictor step
-  bool no_recovery=data_->no_recovery_;
-  // time integration factor (for TSI)
-  double theta=-1.;
   // time step size (for TSI)
   double dt=-1.;
+  double timefac_d=-1.;
   if (eval_tsi && (stiffmatrix!=NULL || force!=NULL))
   {
     // get time integration data
-    theta=data_->scale_timint_;
-    dt=data_->dt_;
-    if (theta<=0 || dt<=0)
+    timefac_d=StrParamsInterface().GetTimIntFactorVel()/StrParamsInterface().GetTimIntFactorDisp();
+    dt=StrParamsInterface().GetDeltaTime();
+    if (timefac_d<=0 || dt<=0)
       dserror("time integration parameters not provided in element for TSI problem");
   }
   // check if we need to split the residuals (for Newton line search)
   // if true an additional global vector is assembled containing
   // the internal forces without the condensed EAS entries and the norm
   // of the EAS residual is calculated
-  bool split_res = data_->split_res_;
 
   /* evaluation of EAS variables (which are constant for the following):
   ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -968,63 +961,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
   if (eastype_!=soh8p_easnone)
   {
     EasSetup(&M_GP,detJ0,T0invT,xrefe);
-
-    /* end of EAS Update ******************/
-    // add Kda . res_d to feas
-    // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    if (stiffmatrix!=NULL && !no_recovery)
-    {
-      // this is a line search step, i.e. the direction of the eas increments
-      // has been calculated by a Newton step and now it is only scaled
-      if (data_->ls_)
-      {
-        double alpha_ls=data_->alpha_ls_;
-        // undo step
-        alpha_eas_inc_->Scale(-1.);
-        alpha_eas_->operator +=(*alpha_eas_inc_);
-        // scale increment
-        alpha_eas_inc_->Scale(-1.*alpha_ls);
-        // add reduced increment
-        alpha_eas_->operator +=(*alpha_eas_inc_);
-      }
-      else
-      {
-        // constant predictor
-        if (pred == INPAR::STR::pred_constdis)
-          *alpha_eas_=*alpha_eas_last_timestep_;
-
-        // tangential predictor
-        else if (pred == INPAR::STR::pred_tangdis || pred == INPAR::STR::pred_constvel || pred == INPAR::STR::pred_constacc)
-          for (int i=0; i<neas_; i++)
-            (*alpha_eas_)(i) = 0.
-            + (*alpha_eas_last_timestep_)(i)
-            + (*alpha_eas_delta_over_last_timestep_)(i)
-            ;
-
-        // do usual recovery
-        else if (pred == INPAR::STR::pred_vague)
-        {
-          switch(eastype_)
-          {
-          case soh8p_easmild:
-            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
-            if (KaT_!=Teuchos::null) LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,nen_,1>(1.,feas_->A(),1.,KaT_->A(),res_T.A());
-            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,soh8p_easmild,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
-            LINALG::DENSEFUNCTIONS::update<double,soh8p_easmild,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
-            break;
-          case soh8p_easfull:
-            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d.A());
-            if (KaT_!=Teuchos::null) LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,nen_,1>(1.,feas_->A(),1.,KaT_->A(),res_T.A());
-            LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,soh8p_easfull,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
-            LINALG::DENSEFUNCTIONS::update<double,soh8p_easfull,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
-            break;
-          case soh8p_easnone: break;
-          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
-          }
-        }
-      }
-    }
-    eas_inc += pow(alpha_eas_inc_->Norm2(),2.);
 
     // reset EAS matrices
     KaaInv_->Shape(neas_,neas_);
@@ -1223,13 +1159,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     LINALG::Matrix<nsd_,nsd_> deltaLp;
 
     if (plmat!=NULL)
-    {
-      // recover plastic variables
-      if (HavePlasticSpin())
-          RecoverPlasticity<plspin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
-      else
-          RecoverPlasticity<zerospin>(res_d,pred,gp,MyPID,gp_temp,params,deltaLp,lp_inc,(stiffmatrix!=NULL && !no_recovery));
-    }
+      BuildDeltaLp(deltaLp,gp);
+
     // material call *********************************************
     LINALG::Matrix<numstr_,1> pk2;
     LINALG::Matrix<numstr_,numstr_> cmat;
@@ -1310,13 +1241,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       else
         force->MultiplyTN(detJ_w, bop, pk2, 1.0);
     }
-    if (force_str != NULL && split_res)
-    {
-      if (fbar_)
-        force_str->MultiplyTN(detJ_w/f_bar_factor, bop, pk2, 1.0);
-      else
-        force_str->MultiplyTN(detJ_w, bop, pk2, 1.0);
-    }
 
     // additional f-bar derivatives
     LINALG::Matrix<numdofperelement_,1> htensor(true);
@@ -1381,35 +1305,35 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       // end of integrate additional fbar matrix*****************************
 
       // EAS technology: integrate matrices --------------------------------- EAS
-      if (!no_condensation)
-        if (eastype_ != soh8p_easnone)
+      if(not is_tangDis)
+      if (eastype_ != soh8p_easnone)
+      {
+        // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
+        // integrate Kda: Kad += (M^T . cmat . B) * detJ * w(gp)
+        // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
+        LINALG::SerialDenseMatrix cM(numstr_, neas_); // temporary c . M
+        switch(eastype_)
         {
-          // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
-          // integrate Kda: Kad += (M^T . cmat . B) * detJ * w(gp)
-          // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
-          LINALG::SerialDenseMatrix cM(numstr_, neas_); // temporary c . M
-          switch(eastype_)
-          {
-          case soh8p_easfull:
-            LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easfull>(cM.A(), cmat.A(), M.A());
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,soh8p_easfull>(1.0, *KaaInv_, detJ_w, M, cM);
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,numdofperelement_>(1.0, Kad_->A(), detJ_w, M.A(), cb.A());
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,numdofperelement_,numstr_,soh8p_easfull>(1.0, Kda.A(), detJ_w,cb.A(), M.A());
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>(1.0, feas_->A(), detJ_w, M.A(), pk2.A());
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>(1.0, feas_uncondensed.A(), detJ_w, M.A(), pk2.A());
-            break;
-          case soh8p_easmild:
-            LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easmild>(cM.A(), cmat.A(), M.A());
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,soh8p_easmild>(1.0, *KaaInv_, detJ_w, M, cM);
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,numdofperelement_>(1.0, Kad_->A(), detJ_w, M.A(), cb.A());
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,numdofperelement_,numstr_,soh8p_easmild>(1.0, Kda.A(), detJ_w,cb.A(), M.A());
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>(1.0, feas_->A(), detJ_w, M.A(), pk2.A());
-            LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>(1.0, feas_uncondensed.A(), detJ_w, M.A(), pk2.A());
-            break;
-          case soh8p_easnone: break;
-          default: dserror("Don't know what to do with EAS type %d", eastype_); break;
-          }
-        } // ---------------------------------------------------------------- EAS
+        case soh8p_easfull:
+          LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easfull>(cM.A(), cmat.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,soh8p_easfull>(1.0, *KaaInv_, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,numdofperelement_>(1.0, Kad_->A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,numdofperelement_,numstr_,soh8p_easfull>(1.0, Kda.A(), detJ_w,cb.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>(1.0, feas_->A(), detJ_w, M.A(), pk2.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>(1.0, feas_uncondensed.A(), detJ_w, M.A(), pk2.A());
+          break;
+        case soh8p_easmild:
+          LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easmild>(cM.A(), cmat.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,soh8p_easmild>(1.0, *KaaInv_, detJ_w, M, cM);
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,numdofperelement_>(1.0, Kad_->A(), detJ_w, M.A(), cb.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,numdofperelement_,numstr_,soh8p_easmild>(1.0, Kda.A(), detJ_w,cb.A(), M.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>(1.0, feas_->A(), detJ_w, M.A(), pk2.A());
+          LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>(1.0, feas_uncondensed.A(), detJ_w, M.A(), pk2.A());
+          break;
+        case soh8p_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+        }
+      } // ---------------------------------------------------------------- EAS
     } // end of stiffness matrix
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
@@ -1503,7 +1427,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
             for (int n=0;n<numdofperelement_;++n)
               deriv_j_d(n) += detF_0 * invdefgrd_0(i,n%3) * N_XYZ_0(i,n/3);
 
-          double timefac_d=1./(theta*dt);
           LINALG::Matrix<3,3> tmp;
           tmp.Multiply(invdefgrd_0,defgrd_rate_0);
           LINALG::Matrix<3,3> tmp2;
@@ -1557,7 +1480,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
             for (int n=0;n<numdofperelement_;++n)
               deriv_j_d(n) += detF * invdefgrd(i,n%3) * N_XYZ(i,n/3);
 
-          double timefac_d=1./(theta*dt);
           LINALG::Matrix<3,3> tmp;
           tmp.Multiply(invdefgrd,defgrd_rate);
           LINALG::Matrix<3,3> tmp2;
@@ -1582,7 +1504,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       {
         LINALG::Matrix<3,3> defgrd_rate;
         defgrd_rate.MultiplyTT(xcurrrate,N_XYZ);
-        double timefac_d=1./(theta*dt);
+
         // Gough-Joule effect
         plmat->HepDiss(gp)=0.;
         plmat->dHepDT(gp) =0.;
@@ -1676,39 +1598,39 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     } // if (eval_tsi)
 
     // plastic modifications
-    if ( (stiffmatrix!=NULL || force!=NULL) && !no_condensation && plmat!=NULL)
+    if ( (stiffmatrix!=NULL || force!=NULL) && !is_tangDis && plmat!=NULL)
     {
       if (HavePlasticSpin())
       {
         if (fbar_)
           CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&N_XYZ,&RCG,MyPID,detJ_w,
-              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,
+              gp,gp_temp,params,force,stiffmatrix,
               NULL,NULL,NULL,&f_bar_factor,&htensor);
         else if (eastype_!=soh8p_easnone)
           CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
-              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda,&dHda);
+              gp,gp_temp,params,force,stiffmatrix,&M,&Kda,&dHda);
         else
           CondensePlasticity<plspin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
-              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
+              gp,gp_temp,params,force,stiffmatrix);
       }
       else
       {
         if (fbar_)
           CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&N_XYZ,&RCG,MyPID,detJ_w,
-              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,
+              gp,gp_temp,params,force,stiffmatrix,
               NULL,NULL,NULL,&f_bar_factor,&htensor);
         else if (eastype_!=soh8p_easnone)
           CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
-              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res,&M,&Kda,&dHda);
+              gp,gp_temp,params,force,stiffmatrix,&M,&Kda,&dHda);
         else
           CondensePlasticity<zerospin>(defgrd_mod,deltaLp,bop,&N_XYZ,NULL,MyPID,detJ_w,
-              gp,gp_temp,params,force,stiffmatrix,num_active_gp,lp_res);
+              gp,gp_temp,params,force,stiffmatrix);
       }
     }// plastic modifications
   } // gp loop
 
   // Static condensation EAS --> stiff ********************************
-  if (stiffmatrix != NULL && !no_condensation && eastype_!=soh8p_easnone)
+  if (stiffmatrix != NULL && !is_tangDis && eastype_!=soh8p_easnone)
   {
     Epetra_SerialDenseSolver solve_for_inverseKaa;
     solve_for_inverseKaa.SetMatrix(*KaaInv_);
@@ -1783,15 +1705,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       default: dserror("Don't know what to do with EAS type %d", eastype_); break;
       }
     }
-    eas_res += pow(feas_uncondensed.Norm2(),2.);
   }
 
-  // rhs norm of eas equations
-  if (eastype_!=soh8p_easnone)
-    if (split_res)
-      // only add for row-map elements
-      if (params.get<int>("MyPID")==Owner())
-        params.get<double>("cond_rhs_norm") += pow(feas_uncondensed.Norm2(),2.);
   return;
 }
 
@@ -1845,8 +1760,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     Teuchos::ParameterList& params,
     LINALG::Matrix<numdofperelement_,1>* force,
     LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix,
-    int& num_active_gp,
-    double& lp_res,
     Epetra_SerialDenseMatrix* M,
     Epetra_SerialDenseMatrix* Kda,
     std::vector<Epetra_SerialDenseVector>* dHda,
@@ -1897,15 +1810,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
   bool as_converged=true;
   if (!eval_tsi)
     plmat->EvaluatePlast(&defgrd,&deltaLp,0,params,&dpk2ddp,
-        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,NULL,NULL,NULL,data_->dt_,Id(),
+        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,NULL,NULL,NULL,StrParamsInterface().GetDeltaTime(),Id(),
         cauchy_ptr,d_cauchy_ddp_ptr,d_cauchy_dC_ptr,d_cauchy_dF_ptr);
   else
     plmat->EvaluatePlast(&defgrd,&deltaLp,temp,params,&dpk2ddp,
-        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,&dncpdT,&dHdC,&dHdLp,data_->dt_,Id());
+        &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,&dncpdT,&dHdC,&dHdLp,StrParamsInterface().GetDeltaTime(),Id());
 
-  if (MyPID==Owner()) lp_res+=pow(ncp.Norm2(),2.);
-  if (active && Owner()==MyPID) ++num_active_gp;
-  if (as_converged==false) data_->unconverged_active_set_=true;
   // *************************************************************************
 
   // Simple matrix do delete the linear dependent row in Voigt-notation.
@@ -2339,15 +2249,244 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
       KbT_->at(gp).Scale(0.);
   }
 
-  // rhs norm of eas equations
-  if (data_->split_res_)
-    // only add for row-map elements
-    if (data_->myPID==Owner())
-      params.get<double>("cond_rhs_norm") += detJ_w*detJ_w*pow(fbeta_[gp].Norm2(),2.);
-
   return;
 }
 
+
+
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::BuildDeltaLp(LINALG::Matrix<3,3>& deltaLp ,const int gp)
+{
+
+  // current plastic flow increment
+  deltaLp(0,0) = dDp_last_iter_[gp](0);
+  deltaLp(1,1) = dDp_last_iter_[gp](1);
+  deltaLp(2,2) = -1.0*(dDp_last_iter_[gp](0)+dDp_last_iter_[gp](1));
+  deltaLp(0,1) = dDp_last_iter_[gp](2);
+  deltaLp(1,0) = dDp_last_iter_[gp](2);
+  deltaLp(1,2) = dDp_last_iter_[gp](3);
+  deltaLp(2,1) = dDp_last_iter_[gp](3);
+  deltaLp(0,2) = dDp_last_iter_[gp](4);
+  deltaLp(2,0) = dDp_last_iter_[gp](4);
+  if (HavePlasticSpin())
+  {
+    deltaLp(0,1) += dDp_last_iter_[gp](5);
+    deltaLp(1,0) -= dDp_last_iter_[gp](5);
+    deltaLp(1,2) += dDp_last_iter_[gp](6);
+    deltaLp(2,1) -= dDp_last_iter_[gp](6);
+    deltaLp(0,2) += dDp_last_iter_[gp](7);
+    deltaLp(2,0) -= dDp_last_iter_[gp](7);
+  }
+
+}
+
+/*----------------------------------------------------------------------*
+ |  recover plastic degrees of freedom                      seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticityAndEAS(
+    const LINALG::Matrix<numdofperelement_,1>* res_d,
+    const LINALG::Matrix<nen_,1>* res_T
+)
+{
+  if (StrParamsInterface().IsDefaultStep())
+  {
+    if (eastype_!=soh8p_easnone)
+      RecoverEAS(res_d,res_T);
+
+
+    if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+    {
+      LINALG::Matrix<nen_,1> shapefunct;
+      double res_t =-1.;
+      double* res_t_ptr;
+      for (int gp=0;gp<numgpt_;++gp)
+      {
+        if (res_T)
+        {
+          DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+          res_t=shapefunct.Dot(*res_T);
+          res_t_ptr =&res_t;
+        }
+        else
+          res_t_ptr=NULL;
+
+        // recover plastic variables
+        if (HavePlasticSpin())
+            RecoverPlasticity<plspin>(res_d,gp,res_t_ptr);
+        else
+            RecoverPlasticity<zerospin>(res_d,gp,res_t_ptr);
+      }
+    }
+  }
+  else
+  {
+//    const double new_step_length   = StrParamsInterface().GetStepLength();
+//
+//    if (eastype_!=soh8p_easnone)
+//      ReduceEasStep(new_step_length,old_step_length_);
+//
+//    if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+//      for (int gp=0;gp<numgpt_;++gp)
+//        ReducePlasticityStep(new_step_length,old_step_length_,gp);
+//
+//    old_step_length_=new_step_length;
+  }
+
+}
+
+/*----------------------------------------------------------------------*
+ |  recover plastic degrees of freedom                      seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::RecoverEAS(
+    const LINALG::Matrix<numdofperelement_,1>* res_d,
+    const LINALG::Matrix<nen_,1>* res_T
+)
+{
+  if (eastype_==soh8p_easnone)
+    return;
+
+  const double step_length   = StrParamsInterface().GetStepLength();
+
+  // first, store the eas state of the previous accepted Newton step
+  StrParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+      neas_,alpha_eas_->A(),Owner());
+
+  if (StrParamsInterface().IsDefaultStep())
+    switch(neas_)
+    {
+    case soh8p_easmild:
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d->A());
+      if (KaT_!=Teuchos::null && res_T!=NULL) LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,nen_,1>(1.,feas_->A(),1.,KaT_->A(),res_T->A());
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easmild,soh8p_easmild,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
+      LINALG::DENSEFUNCTIONS::update<double,soh8p_easmild,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
+      break;
+    case soh8p_easfull:
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d->A());
+      if (KaT_!=Teuchos::null && res_T!=NULL) LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,nen_,1>(1.,feas_->A(),1.,KaT_->A(),res_T->A());
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8p_easfull,soh8p_easfull,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
+      LINALG::DENSEFUNCTIONS::update<double,soh8p_easfull,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
+      break;
+    case soh8p_eassosh8:
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,numdofperelement_,1>(1.0, feas_->A(), 1.0, Kad_->A(), res_d->A());
+      if (KaT_!=Teuchos::null && res_T!=NULL) LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,nen_,1>(1.,feas_->A(),1.,KaT_->A(),res_T->A());
+      LINALG::DENSEFUNCTIONS::multiply<double,soh8p_eassosh8,soh8p_eassosh8,1>(0.0,*alpha_eas_inc_,-1.0,*KaaInv_,*feas_);
+      LINALG::DENSEFUNCTIONS::update<double,soh8p_eassosh8,1>(1.0,*alpha_eas_,1.0,*alpha_eas_inc_);
+      break;
+    case soh8p_easnone: break;
+    default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+    }
+  else
+    dserror("no line search implemented yet");
+
+  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+      neas_,alpha_eas_inc_->A(),alpha_eas_->A(),step_length,Owner());
+
+//  std::cout << "recover: " << LINALG::Matrix<7,1>(alpha_eas_->A()) << std::endl;
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  recover plastic degrees of freedom                      seitz 05/14 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>template<int spintype>
+void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticity(
+    const LINALG::Matrix<numdofperelement_,1>* res_d,
+    const int gp,
+    const double* res_t
+)
+{
+  const double step_length   = StrParamsInterface().GetStepLength();
+
+  if (StrParamsInterface().IsDefaultStep()==false)
+    dserror("no line search implemented yet");
+
+  // first, store the state of the previous accepted Newton step
+  StrParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_plasticity,
+      spintype,dDp_last_iter_[gp].A(),Owner());
+
+  // temporary Epetra matrix
+  Epetra_SerialDenseVector tmp_v(spintype);
+  Epetra_SerialDenseMatrix tmp_m(spintype,numdofperelement_);
+
+  // first part
+  LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,1>
+  (0.,dDp_inc_[gp].A(),-1.,KbbInv_[gp].A(),fbeta_[gp].A());
+
+  // second part
+  LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,numdofperelement_>
+  (0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kbd_[gp].A());
+  LINALG::DENSEFUNCTIONS::multiply<double,spintype,numdofperelement_,1>
+  (1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),res_d->A());
+
+  // thermal part
+  if (KbT_!=Teuchos::null)
+    if (res_t)
+    {
+      LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,1>
+      (1.,dDp_inc_[gp].A(),-1.*(*res_t),KbbInv_[gp].A(),(*KbT_)[gp].A());
+    }
+
+  // EAS part
+  if (eastype_!=soh8p_easnone)
+  {
+    tmp_m.Shape(spintype,neas_);
+    switch (eastype_)
+    {
+    case soh8p_easmild:
+      LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easmild>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
+      LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easmild,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),alpha_eas_inc_->A());
+      break;
+    case soh8p_easfull:
+      LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_easfull>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
+      LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_easfull,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),alpha_eas_inc_->A());
+      break;
+    case soh8p_eassosh8:
+      LINALG::DENSEFUNCTIONS::multiply<double,spintype,spintype,soh8p_eassosh8>(0.,tmp_m.A(),1.,KbbInv_[gp].A(),Kba_->at(gp).A());
+      LINALG::DENSEFUNCTIONS::multiply<double,spintype,soh8p_eassosh8,1>(1.,dDp_inc_[gp].A(),-1.,tmp_m.A(),alpha_eas_inc_->A());
+      break;
+    case soh8p_easnone:
+      break;
+    default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+    }
+  }// EAS part
+
+  LINALG::DENSEFUNCTIONS::update<double,spintype,1>(1.,dDp_last_iter_[gp],1.,dDp_inc_[gp]);
+
+  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_plasticity,
+      spintype,dDp_inc_[gp].A(),dDp_inc_[gp].A(),step_length,Owner());
+
+//  if (!gp)
+//    std::cout << LINALG::Matrix<5,1>(dDp_inc_[gp].A()) << std::endl;
+
+}
+
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::ReduceEasStep(const double new_step_length, const double old_step_length)
+{
+  if (eastype_==soh8p_easnone)
+    return;
+
+  alpha_eas_->Update(-1.,*alpha_eas_inc_,1.);
+  alpha_eas_inc_->Scale(new_step_length/old_step_length);
+  alpha_eas_->Update(+1.,*alpha_eas_inc_,1.);
+
+  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+      neas_,alpha_eas_inc_->A(),alpha_eas_->A(),new_step_length,Owner());
+}
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Plast<distype>::ReducePlasticityStep(const double new_step_length, const double old_step_length, const int gp)
+{
+  dDp_last_iter_[gp].Update(-1.,dDp_inc_[gp],1.);
+  dDp_inc_[gp].Scale(new_step_length/old_step_length);
+  dDp_last_iter_[gp].Update(+1.,dDp_inc_[gp],1.);
+
+  StrParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_plasticity,
+      plspintype_,dDp_inc_[gp].A(),dDp_inc_[gp].A(),new_step_length,Owner());
+}
 /*----------------------------------------------------------------------*
  |  recover plastic degrees of freedom                      seitz 05/14 |
  *----------------------------------------------------------------------*/

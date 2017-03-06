@@ -40,8 +40,15 @@ NORM_RESF    Abs
 NORM_DISP    Abs
 NORMCOMBI_RESFDISP And
 MAXITER      9
-MINITER      0
+MINITER      1
 PREDICT     TangDis
+INT_STRATEGY Standard
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
+------------------------------------------------------STRUCT NOX/Status Test
+XML File                        = /home/seitz/my_status_test.xml
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER             2
 STRATEGY                  Nitsche

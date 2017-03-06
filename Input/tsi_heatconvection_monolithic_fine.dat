@@ -59,6 +59,7 @@ PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DIVERCONT                       stop
@@ -116,7 +117,7 @@ NORM_INC                        Abs
 NUMSTEP                         2  // 10  // 200000
 RESTARTEVRY                     5
 TIMESTEP                        0.1  // 0.05
-RESULTSEVRY                           5
+RESULTSEVRY                           1
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 TOLINC                          1e-07

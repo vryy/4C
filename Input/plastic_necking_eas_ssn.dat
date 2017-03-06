@@ -45,16 +45,20 @@ RESTARTEVRY                     1
 TIMESTEP                        0.5
 NUMSTEP                         200000
 MAXTIME                         7.0
-DAMPING                         Yes
-M_DAMP                          0.1
-K_DAMP                          0.1
 TOLDISP                         1.0e-8
 TOLRES                          1.0e-5
 NORMCOMBI_DISPPRES              Or
 MAXITER                         30
 MINITER                         2
 NLNSOL                          fullnewton
-PREDICT                         TangDis
+PREDICT                         ConstVel // TangDis
+INT_STRATEGY                    Standard
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
+------------------------------------------------------STRUCT NOX/Status Test
+XML File                        = plastic_ssn_eas_status_test.xml
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F                         0.5

@@ -6,13 +6,8 @@
        because of hard coded Gauss point in the so_hex8
        which do not coincide with the intrepid Gauss points
        used in the so3_ssn_plast.
-
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\level 2
+\maintainer Alexander Seitz
 */
 
 /*----------------------------------------------------------------------*
@@ -38,19 +33,19 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasInit()
 
   if (eastype_!=soh8p_easnone)
   {
-    KaaInv_                             = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,neas_));
-    Kad_                                = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,numdofperelement_));
-    feas_                               = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-    alpha_eas_                          = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-    alpha_eas_last_timestep_            = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-    alpha_eas_delta_over_last_timestep_ = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-    alpha_eas_inc_                      = Teuchos::rcp(new Epetra_SerialDenseVector(neas_));
-    Kba_                                = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numgpt_,Epetra_SerialDenseMatrix(5,neas_)));
+    KaaInv_                             = Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_,neas_,true));
+    Kad_                                = Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_,numdofperelement_,true));
+    feas_                               = Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
+    alpha_eas_                          = Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
+    alpha_eas_last_timestep_            = Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
+    alpha_eas_delta_over_last_timestep_ = Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
+    alpha_eas_inc_                      = Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
+    Kba_                                = Teuchos::rcp(new std::vector<LINALG::SerialDenseMatrix>(numgpt_,LINALG::SerialDenseMatrix(5,neas_,true)));
 
     PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
     if (probtype==prb_tsi)
     {
-      KaT_=Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_,nen_));
+      KaT_=Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_,nen_,true));
       KdT_eas_=Teuchos::rcp(new LINALG::Matrix<numdofperelement_,nen_>);
     }
   }

@@ -23,7 +23,9 @@
 #include "tsi_algorithm.H"
 #include "tsi_defines.H"
 #include "tsi_utils.H"
-#include "../drt_adapter/ad_str_structure.H"
+#include "../drt_adapter/ad_str_structure_new.H"
+#include "../drt_adapter/ad_str_factory.H"
+#include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -73,16 +75,35 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     volcoupl_->Setup();
   }
 
-  // access structural dynamic params list which will be possibly modified while creating the time integrator
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure
-    = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = structure->StructureField();
-  structure_->Setup();
+  if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(
+      DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY")
+      ==INPAR::STR::int_old)
+    dserror("old structural time integration no longer supported in tsi");
+  else
+  {
 
-  Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo
+    Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo
     = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(),thermodis));
-  thermo_ = thermo->ThermoFieldrcp();
+    thermo_ = thermo->ThermoFieldrcp();
+
+    //  // access structural dynamic params list which will be possibly modified while creating the time integrator
+    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr= ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+    adapterbase_ptr->Init(DRT::Problem::Instance()->TSIDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+
+    if (ThermoField()->Tempnp()==Teuchos::null)
+      dserror("this is NULL");
+
+    if (matchinggrid_)
+      structdis->SetState(1,"temperature",ThermoField()->Tempnp());
+    else
+      structdis->SetState(1,"temperature",volcoupl_->ApplyVectorMapping12(ThermoField()->Tempnp()));
+
+    adapterbase_ptr->Setup();
+
+    structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureWrapper>(adapterbase_ptr->StructureField());
+    StructureField()->Discretization()->ClearState(true);
+  }
 
   // initialise displacement field needed for Output()
   // (get noderowmap of discretisation for creating this multivector)
@@ -101,6 +122,10 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
         1,
         true);
   }
+
+  //reset states
+  StructureField()->Discretization()->ClearState(true);
+  ThermoField()->Discretization()->ClearState(true);
 
   return;
 }
@@ -123,10 +148,8 @@ void TSI::Algorithm::Update()
   ThermoField()->Update();
 
   // update contact
-  if (StructureField()->MeshtyingContactBridge()!=Teuchos::null)
-    if (StructureField()->MeshtyingContactBridge()->ContactManager()!=Teuchos::null)
-      dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->
-          ContactManager()->GetStrategy()).Update(StructureField()->WriteAccessDispnp(),coupST_);
+  if (contact_strategy_!=Teuchos::null)
+    contact_strategy_->Update(StructureField()->WriteAccessDispnp(),coupST_);
 
   return;
 }
@@ -143,46 +166,11 @@ void TSI::Algorithm::Output(bool forced_writerestart)
   // order in which the filters handle the Discretizations, which in turn
   // defines the dof number ordering of the Discretizations.
 
-  //===========================
-  // output for structurefield:
-  //===========================
-  ApplyThermoCouplingState(ThermoField()->Tempnp());
-  StructureField()->Output(forced_writerestart);
-
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
   // Get the parameters for the Newton iteration
   int upres = tsidyn.get<int>("RESULTSEVRY");
   int uprestart = tsidyn.get<int>("RESTARTEVRY");
-
-  // mapped temperatures for structure field
-  if ( (upres!=0 and (Step()%upres == 0))
-    or ( (uprestart != 0) and (Step()%uprestart == 0) )
-    or forced_writerestart == true )
-    if(not matchinggrid_)
-    {
-      //************************************************************************************
-      Teuchos::RCP<const Epetra_Vector> dummy1 = volcoupl_->ApplyVectorMapping12(ThermoField()->Tempnp());
-
-      // loop over all local nodes of thermal discretisation
-      for (int lnodeid=0; lnodeid<(StructureField()->Discretization()->NumMyRowNodes()); lnodeid++)
-      {
-        DRT::Node* structnode = StructureField()->Discretization()->lRowNode(lnodeid);
-        std::vector<int> structdofs = StructureField()->Discretization()->Dof(1,structnode);
-
-        // global and processor's local structure dof ID
-        const int sgid = structdofs[0];
-        const int slid = StructureField()->Discretization()->DofRowMap(1)->LID(sgid);
-
-        // get value of corresponding displacement component
-        double temp = (*dummy1)[slid];
-        // insert velocity value into node-based vector
-        int err = tempnp_->ReplaceMyValue(lnodeid, 0, temp);
-        if (err!= 0) dserror("error while inserting a value into tempnp_");
-      } // for lnodid
-
-      StructureField()->DiscWriter()->WriteVector("struct_temperature",tempnp_,IO::nodevector);
-    }
 
   //========================
   // output for thermofield:
@@ -196,9 +184,9 @@ void TSI::Algorithm::Output(bool forced_writerestart)
       ( (upres!=0 and (Step()%upres == 0)) or ((uprestart != 0) and (Step()%uprestart == 0)) ) )
   {
     // displacement has already been written into thermo field for this step
-    return;
+    ;
   }
-  if ( (upres!=0 and (Step()%upres == 0))
+  else if ( (upres!=0 and (Step()%upres == 0))
     or ( (uprestart != 0) and (Step()%uprestart == 0) )
     or forced_writerestart == true )
     {
@@ -253,6 +241,43 @@ void TSI::Algorithm::Output(bool forced_writerestart)
         ThermoField()->DiscWriter()->WriteVector("displacement",dispnp_,IO::nodevector);
       }
     }
+
+
+  //===========================
+  // output for structurefield:
+  //===========================
+  ApplyThermoCouplingState(ThermoField()->Tempnp());
+  StructureField()->Output(forced_writerestart);
+
+  // mapped temperatures for structure field
+  if ( (upres!=0 and (Step()%upres == 0))
+    or ( (uprestart != 0) and (Step()%uprestart == 0) )
+    or forced_writerestart == true )
+    if(not matchinggrid_)
+    {
+      //************************************************************************************
+      Teuchos::RCP<const Epetra_Vector> dummy1 = volcoupl_->ApplyVectorMapping12(ThermoField()->Tempnp());
+
+      // loop over all local nodes of thermal discretisation
+      for (int lnodeid=0; lnodeid<(StructureField()->Discretization()->NumMyRowNodes()); lnodeid++)
+      {
+        DRT::Node* structnode = StructureField()->Discretization()->lRowNode(lnodeid);
+        std::vector<int> structdofs = StructureField()->Discretization()->Dof(1,structnode);
+
+        // global and processor's local structure dof ID
+        const int sgid = structdofs[0];
+        const int slid = StructureField()->Discretization()->DofRowMap(1)->LID(sgid);
+
+        // get value of corresponding displacement component
+        double temp = (*dummy1)[slid];
+        // insert velocity value into node-based vector
+        int err = tempnp_->ReplaceMyValue(lnodeid, 0, temp);
+        if (err!= 0) dserror("error while inserting a value into tempnp_");
+      } // for lnodid
+
+      StructureField()->Discretization()->Writer()->WriteVector("struct_temperature",tempnp_,IO::nodevector);
+    }
+
 
   //reset states
   StructureField()->Discretization()->ClearState(true);

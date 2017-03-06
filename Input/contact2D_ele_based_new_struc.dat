@@ -59,6 +59,10 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.25
@@ -76,6 +80,7 @@ SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 INTTYPE                         elements
 NUMGP_PER_DIM                   3
+PARALLEL_REDIST dynamic
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

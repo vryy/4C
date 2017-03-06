@@ -63,6 +63,7 @@ PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 CONTROLNODE                     -1 -1 -1
@@ -70,7 +71,7 @@ CONTROLTYPE                     load
 DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta  // Statics,GenAlpha,OneStepTheta,GEMM,ExplicitEuler,CentrDiff,AdamsBashforth2,EulerMaruyama,EulerImpStoch,StatMech
-ITERNORM                        Rms  // L2
+ITERNORM                        L2
 K_DAMP                          0.5
 LINEAR_SOLVER                   1
 LOADLIN                         no

@@ -1,3 +1,4 @@
+// Maintainer: Alexander Seitz
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -41,6 +42,7 @@ WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   2
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.001
@@ -188,7 +190,7 @@ MAXTIME                         10
 NUMSTEP                         20
 RESTARTEVRY                     15
 TIMESTEP                        0.01
-RESULTSEVRY                           10
+RESULTSEVRY                           15
 ITEMIN                          1
 NORM_INC                        Abs
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC

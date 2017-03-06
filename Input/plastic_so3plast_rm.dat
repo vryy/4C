@@ -48,6 +48,11 @@ MAXTIME                       8000
 MAXITER                       100
 TIMESTEP                      500
 NUMSTEP                       20000000
+INT_STRATEGY                  Standard
+-------------------------------------STRUCT NOX/Printing
+Inner Iteration = no
+Outer Iteration = yes
+Outer Iteration StatusTest = no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

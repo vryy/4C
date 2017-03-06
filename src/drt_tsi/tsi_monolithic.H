@@ -4,6 +4,8 @@
 
 \maintainer Alexander Seitz
 
+\level 1
+
 \brief Basis of all monolithic TSI algorithms that perform a coupling between
        the structure field equation and temperature field equations
 
@@ -30,12 +32,6 @@
  |                                                           dano 11/10 |
  *----------------------------------------------------------------------*/
   // forward declarations
-namespace THR
-{
-  class ThermoContactMan;
-}
-
-
 namespace LINALG
 {
   class SparseMatrix;
@@ -51,11 +47,6 @@ namespace DRT
   {
     class LocsysManager;
   }
-}
-
-namespace MORTAR
-{
-  class ManagerBase;
 }
 
 namespace ADAPTER
@@ -431,20 +422,6 @@ namespace TSI
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
-
-    //@}
-
-    //! @name contact
-
-    //! contact manager
-    Teuchos::RCP<MORTAR::ManagerBase> cmtman_;
-
-    Teuchos::RCP<Epetra_Vector> zstruct_ ;
-    Teuchos::RCP<Epetra_Vector> ztherm_;
-    Teuchos::RCP<LINALG::SparseMatrix> contact_kst_;  //!< stiffness block K_ss (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> invd_;  //!< stiffness block K_ss (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> contact_kts_;  //!< stiffness block K_ss (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> invdtherm_;  //!< stiffness block K_ss (needed for LM)
 
     //@}
 

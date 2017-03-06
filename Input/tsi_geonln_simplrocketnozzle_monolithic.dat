@@ -54,6 +54,7 @@ PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DYNAMICTYP                      OneStepTheta  // ExplicitEuler,Centr_Diff,Gen_EMM,Gen_Alfa,Static,OneStepTheta,GenAlpha,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch,
