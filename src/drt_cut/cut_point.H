@@ -130,6 +130,14 @@ namespace IMPL {
       return cut_elements_.count( s )>0;
     }
 
+    /*
+     * Return if this point associated with a facet which is either a cut-side or a marked side
+     *  Needed for the tessellation.
+     *  TODO: Look into this
+     *  winter 02/2017
+     */
+    bool HasAssociatedBoundaryCellFacet();
+
     /*! \brief Get the coordinates of this point */
     virtual void Coordinates( double * x ) const = 0;
 

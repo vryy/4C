@@ -133,6 +133,11 @@ public:
 
   virtual bool HasMovingInterface(){ return true; }
 
+  bool CutGeometry(){return !mark_geometry_;}
+  virtual bool IsMarkedGeometry(){return mark_geometry_;}
+
+  //! do not cut, but only mark part of boundary loaded into cut
+  virtual void SetMarkedGeometry(bool markgeometry){mark_geometry_=markgeometry;}
 
   Teuchos::RCP<Epetra_Vector> IVelnp(){ return ivelnp_; }
   Teuchos::RCP<Epetra_Vector> IVeln() { return iveln_;  }
@@ -207,7 +212,7 @@ protected:
   Teuchos::RCP<Epetra_Vector>    idispn_;   ///< last displacements at t^n
   Teuchos::RCP<Epetra_Vector>    idispnpi_; ///< displacements of last Newton increment at t^n+1 (for monolithic approaches)
 
-
+  bool mark_geometry_;
   //@}
 
   //! @name output discretization writers

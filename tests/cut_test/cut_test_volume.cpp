@@ -1,3 +1,19 @@
+/*---------------------------------------------------------------------*/
+/*!
+\file cut_test_volume.cpp
+
+\brief cut test of volume, originally from kuettler
+
+\level 3
+
+<pre>
+\maintainer Magnus Winter
+            winter@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
 
 #include <iostream>
 #include <map>
@@ -23,7 +39,7 @@ void test_cut_volumes()
   create_hex8_mesh( mesh1, 4, 4, 4 );
   create_hex8_mesh( mesh2, 3, 5, 2 );
 
-  mesh2.CreateSideIds();
+  mesh2.CreateSideIds_CutTest();
 
   mesh1.Status();
   mesh2.Status();
@@ -34,7 +50,7 @@ void test_cut_volumes()
 
   cutmesh( mesh1 );
 
-  mesh2.AssignOtherVolumeCells( mesh1 );
+  mesh2.AssignOtherVolumeCells_CutTest( mesh1 );
 }
 
 void test_cut_volumes2()
@@ -62,7 +78,7 @@ void test_cut_volumes2()
         create_hex8_mesh( mesh2, 8, 9, 10 );
 #endif
 
-        mesh2.CreateSideIds();
+        mesh2.CreateSideIds_CutTest();
 
         mesh1.Status();
         mesh2.Status();
@@ -73,7 +89,7 @@ void test_cut_volumes2()
 
         cutmesh( mesh1 );
 
-        mesh2.AssignOtherVolumeCells( mesh1 );
+        mesh2.AssignOtherVolumeCells_CutTest( mesh1 );
       }
     }
   }

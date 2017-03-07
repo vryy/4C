@@ -920,7 +920,7 @@ void GEO::CUT::TetMeshIntersection::BuildSurfaceCellMap( VolumeCell * vc, ChildC
         ++i )
   {
     Facet * f = *i;
-    if ( f->OnCutSide() )
+    if ( f->OnBoundaryCellSide() )
     {
       Side * s = f->ParentSide();
       std::map<Side*, std::vector<Side*> >::iterator j = side_parent_to_child_.find( s );
@@ -972,7 +972,7 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
         Facet * parent_facet = NULL;
         Facet * child_facet = bc->GetFacet();
 
-        if ( not child_facet->OnCutSide() )
+        if ( not child_facet->OnBoundaryCellSide() )
           throw std::runtime_error( "boundary cell not on cut surface" );
 
         std::vector<Facet*> facets;
@@ -1118,7 +1118,7 @@ void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & 
           for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
           {
             Facet * f = *i;
-            if ( not f->OnCutSide() )
+            if ( not f->OnBoundaryCellSide() )
             {
               VolumeCell * nc = f->Neighbor( vc );
               if ( nc!=NULL )
@@ -1180,7 +1180,7 @@ void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & 
             Facet * f3 = *facets1.begin();
             Facet * f4 = *facets2.begin();
 
-            if ( not f3->OnCutSide() and not f4->OnCutSide() )
+            if ( not f3->OnBoundaryCellSide() and not f4->OnBoundaryCellSide() )
             {
               const plain_volumecell_set & cells3 = f3->Cells();
               const plain_volumecell_set & cells4 = f4->Cells();
@@ -1221,7 +1221,7 @@ void GEO::CUT::TetMeshIntersection::RegisterNewPoints( Mesh & parent_mesh, const
     for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
-      if ( f->OnCutSide() )
+      if ( f->OnBoundaryCellSide() )
       {
         PointSet points;
         f->AllPoints( points );

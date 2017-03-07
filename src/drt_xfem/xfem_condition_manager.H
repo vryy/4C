@@ -163,6 +163,21 @@ public:
     {
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
+
+    // If the background discretization is the same as the condition discretization
+    //   ONLY mark the surface in the cut, and do NOT cut anything.
+    //   IMPORTANT: Utilized for XTwo-Phase Flow
+    if(bg_dis_==cond_dis)
+    {
+      if(!(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
+           CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NEUMANN or
+           CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
+          )
+        dserror("So far only tested for WDBC, Neumann and NavSlip.");
+
+      mesh_coupl_.back()->SetMarkedGeometry(true);
+    }
+
   }
 
   /// add a new level-set-coupling object based on the given coupling discretization
@@ -696,10 +711,11 @@ public:
     const GEO::CUT::VolumeCell* vc
   );
 
-  /// set material pointer for (coupling) master side
+  /// set material pointer for volume cell for (coupling) master side
   void GetInterfaceMasterMaterial(
     DRT::Element* actele,
-    Teuchos::RCP<MAT::Material> & mat
+    Teuchos::RCP<MAT::Material> & mat,
+    const GEO::CUT::VolumeCell* vc
   );
 
   /// set material pointer for coupling slave side

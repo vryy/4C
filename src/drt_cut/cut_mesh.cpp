@@ -1693,24 +1693,6 @@ void GEO::CUT::Mesh::RemoveEmptyVolumeCells()
 
 
 /*-------------------------------------------------------------------------------------*
- * Not Implemented, is called, but is an empty function
- *-------------------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::SimplifyIntegrationCells()
-{
-  // There are obscure bugs. Do not try to be clever.
-#if 0
-  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
-        i!=cells_.end();
-        ++i )
-  {
-    VolumeCell * vc = &**i;
-    vc->SimplifyIntegrationCells( *this );
-  }
-#endif
-}
-
-
-/*-------------------------------------------------------------------------------------*
  * test if for all elements the element volume is equal to the volume of all integration cells
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::TestElementVolume( bool fatal, INPAR::CUT::VCellGaussPts VCellGP )
@@ -3530,14 +3512,14 @@ bool GEO::CUT::Mesh::WithinBB( Element & element )
 /*----------------------------------------------------------------------------*
  * ?
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::CreateSideIds(int lastid)
+void GEO::CUT::Mesh::CreateSideIds_CutTest(int lastid)
 {
   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
         i!=sides_.end();
         ++i )
   {
     Side * s = &*i->second;
-    if ( s->Id() < 0 )
+    if (  !s->IsCutSide() )
     {
       lastid += 1;
       s->SetId( lastid );
@@ -3551,7 +3533,7 @@ void GEO::CUT::Mesh::CreateSideIds(int lastid)
 /*----------------------------------------------------------------------------*
  * ?
  *----------------------------------------------------------------------------*/
-void GEO::CUT::Mesh::AssignOtherVolumeCells( const Mesh & other )
+void GEO::CUT::Mesh::AssignOtherVolumeCells_CutTest( const Mesh & other )
 {
   const std::list<Teuchos::RCP<VolumeCell> > & other_cells = other.VolumeCells();
   plain_volumecell_set cells;

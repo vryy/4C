@@ -158,7 +158,16 @@ void FLD::XFluid::Init(bool createinitialstate)
     include_inner_ = true;
 
     if(condition_manager_->HasMeshCoupling())
-      dserror("two-phase flow coupling and mesh coupling at once is not supported by the cut at the moment, as Node-position and include inner are not handled properly then");
+    {
+      // loop all mesh coupling objects
+      for(int mc_idx=0; mc_idx< condition_manager_->NumMeshCoupling(); mc_idx++)
+      {
+        Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx);
+
+        if (mc_coupl->CutGeometry()) //Mesh cut and Two-Phase cut not allowed at the same time.
+          dserror("two-phase flow coupling and mesh coupling at once is not supported by the cut at the moment, as Node-position and include inner are not handled properly then");
+      }
+    }
   }
   else
   {
@@ -791,10 +800,9 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
         {
           GEO::CUT::VolumeCell * vc = *i;
-          if ( vc->Position()==GEO::CUT::Point::outside )
-          {
-            vc->GetBoundaryCells( element_bcells );
-          }
+
+            vc->GetBoundaryCellsToBeIntegrated( element_bcells );
+
         }
 
         //Set material at interface (Master and Slave side)
@@ -802,7 +810,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         Teuchos::RCP<MAT::Material> matptr_s; //If not instantiated, it is left as null pointer.
 
         //Get material pointer for master side (LevelSet: positive side)
-        condition_manager_->GetInterfaceMasterMaterial(actele,matptr_m);
+        condition_manager_->GetInterfaceMasterMaterial(actele,matptr_m,*cells.begin());
 
         // split the boundary cells by the different mesh couplings / levelset couplings
         // coupling matrices have to be evaluated for each coupling time separtely and cannot be mixed up
@@ -870,6 +878,10 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
             {
               int coup_sid = bc->first; // all boundary cells within the current iterator belong to the same side
 
+              // Set material for coupling element
+              // Get slave material from the condition.
+              condition_manager_->GetInterfaceSlaveMaterial(actele,matptr_s,coup_sid);
+
               // boundary discretization for mesh coupling and background discretization for level-set coupling
               Teuchos::RCP<DRT::Discretization> coupl_dis = condition_manager_->GetCouplingDis( coup_sid );
 
@@ -880,11 +892,6 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
               {
                 // fill patchlm for the element we couple with
                 condition_manager_->GetCouplingEleLocationVector(coup_sid,patchlm);
-
-                // set material for coupling element
-                //Todo --> this is just used for XFF and takes the material of the master fluid element
-                //(just correct for equal material on master and slave side ...)
-                condition_manager_->GetInterfaceSlaveMaterial(actele,matptr_s,coup_sid);
               }
               else if(condition_manager_->IsLevelSetCoupling(coup_sid))
               {
@@ -912,8 +919,8 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
                   }
                 }
 
-                //Get material pointer for slave side (LevelSet: negative side)
-                condition_manager_->GetLevelSetCoupling(coup_sid)->GetInterfaceSlaveMaterial(actele,matptr_s);
+                if((*cells.begin())->Position() == GEO::CUT::Point::inside )
+                  dserror("For a two-sided level set coupling, we should not enter here with inside volume-cells!!!");
 
                 // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
                 actele->LocationVector(*coupl_dis,nds_other,la_other,false);

@@ -65,6 +65,7 @@ GEO::CUT::VolumeCell::VolumeCell( const plain_facet_set & facets,
   : element_( element ),
     position_( Point::undecided ),
     facets_( facets ),
+    volume_(0.0),
     isNegligibleSmall_( false )
 {
   for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
@@ -282,9 +283,9 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT:
   {
     BoundaryCell * bc = *i;
     Facet * f = bc->GetFacet();
-    int sid = f->SideId();
-    if ( sid > -1 )
+    if ( f->OnCutSide() )
     {
+      int sid = f->SideId(); //f->OnCutSide => sid>-1
       // usually there are more facets with the same side id as the cutting sides have been subdivided into subsides
       // which produce own facets for each subside
       bcells[sid].push_back( bc );
@@ -292,16 +293,54 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT:
   }
 }
 
+
+/// get a map of boundary cells for all cutting sides, key= side-Id, value= vector of boundary cells
+/// note that the boundary cells of subsides with the same side id are stored now in one key
+void GEO::CUT::VolumeCell::GetBoundaryCellsToBeIntegrated( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells )
+{
+  for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
+  {
+
+    BoundaryCell * bc = *i;
+    Facet * f = bc->GetFacet();
+    // Get all bc's for cuts from only the outside vc's
+    //  as to not integrate twice over the same surface
+    if ( ( f->OnCutSide() and
+        Position()==GEO::CUT::Point::outside) )
+    {
+      int sid = f->SideId();  //f->OnCutSide => sid>-1
+      // usually there are more facets with the same side id as the cutting sides have been subdivided into subsides
+      // which produce own facets for each subside
+      bcells[sid].push_back( bc );
+
+      //@ Christoph: Here one could add marked sides for the cut-mesh!
+    }
+    else if( f->OnMarkedBackgroundSide() )
+    {
+      // Loop over all marked actions and extract bc's for corresponding coupling object.
+      for (std::map<GEO::CUT::MarkedActions,int>::iterator markit = f->ParentSide()->GetMarkedsidemap().begin();
+          markit != f->ParentSide()->GetMarkedsidemap().end(); ++markit)
+      {
+        if (markit->first == GEO::CUT::mark_and_create_boundarycells)
+          bcells[markit->second].push_back( bc );
+      }
+    }
+
+  }
+
+}
+
 /*----------------------------------------------------------------------------*
+ * SideId() of Facet (used for timeintegration)
  *----------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::CollectCutSides( plain_int_set & cutside_ids)
 {
   for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
-    int sid = f->SideId();
-    if ( sid > -1 )
+    if ( f->OnCutSide() )
     {
+      int sid = f->SideId(); //f->OnCutSide => sid>-1
       // usually there are more facets with the same side id as the cutting sides have been subdivided into subsides
       // which produce own facets for each subside
       cutside_ids.insert(sid);
@@ -641,98 +680,6 @@ void GEO::CUT::VolumeCell::NewPyramid5Cell( Mesh & mesh, const std::vector<Point
     }
   }
 }
-
-void GEO::CUT::VolumeCell::SimplifyIntegrationCells( Mesh & mesh )
-{
-  // do whatever can be done to get simpler cells
-  //
-
-  std::map<int, std::vector<Facet*> > side_facets;
-
-  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-  {
-    Facet * f = *i;
-    if ( f->OnCutSide() )
-    {
-      side_facets[f->SideId()].push_back( f );
-    }
-  }
-
-  for ( std::map<int, std::vector<Facet*> >::iterator i=side_facets.begin();
-        i!=side_facets.end();
-        ++i )
-  {
-    int sideid = i->first;
-    std::vector<Facet*> & facets = i->second;
-    std::vector<BoundaryCell*> bcs;
-    point_line_set lines;
-
-    for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
-    {
-      BoundaryCell * bc = *i;
-      if ( bc->GetFacet()->SideId()==sideid )
-      {
-        const Cycle & cycle = bc->PointCycle();
-        cycle.Add( lines );
-        bcs.push_back( bc );
-      }
-    }
-    if ( bcs.size() > 1 )
-    {
-      Cycle cycle;
-      if ( Cycle::MakeCycle( lines, cycle ) )
-      {
-        std::vector<Point*> corner_points;
-        DRT::Element::DiscretizationType shape = KERNEL::CalculateShape( cycle(), corner_points );
-
-        if ( shape!=DRT::Element::dis_none )
-        {
-          for ( std::vector<BoundaryCell*>::iterator i=bcs.begin(); i!=bcs.end(); ++i )
-          {
-            BoundaryCell * bc = *i;
-            bcells_.erase( bc );
-            bc->Clear();
-          }
-          switch ( shape )
-          {
-          case DRT::Element::quad4:
-            // the facet is too small, but it knows the right side
-            if ( mesh.CreateOptions().GenQuad4() )
-            {
-              mesh.NewQuad4Cell( this, facets[0], corner_points );
-            }
-            else
-            {
-              std::vector<Point*> tri3_points = corner_points;
-              tri3_points.pop_back();
-              mesh.NewTri3Cell( this, facets[0], tri3_points );
-              tri3_points.erase( tri3_points.begin()+1 );
-              tri3_points.push_back( corner_points.back() );
-              mesh.NewTri3Cell( this, facets[0], tri3_points );
-            }
-            break;
-          case DRT::Element::tri3:
-            // the facet is too small, but it knows the right side
-            mesh.NewTri3Cell( this, facets[0], corner_points );
-            break;
-          default:
-            dserror( "unsupported boundary cell type" );
-            exit(EXIT_FAILURE);
-          }
-        }
-#if 0
-        std::cout << "found cycle with " << cycle.size()
-                  << " points on cut side " << sideid
-                  << " out of " << numbc
-                  << " boundary cells: shape=" << shape
-                  << " with " << line_points.size()
-                  << " points\n";
-#endif
-      }
-    }
-  }
-}
-
 
 /*--------------------------------------------------------------------*
  * Check wheter the point is inside, outside or on the boundary
@@ -1191,7 +1138,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
   {
     Facet *fac = *i;
 
-    if( fac->OnCutSide() == false )             //we need boundary cells only for the cut facets
+    if( fac->OnBoundaryCellSide() == false )             //we need boundary cells only for the cut facets
       continue;
 
     // For LevelSetSides generate Boundary Cells in own way.
@@ -1254,6 +1201,10 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
      rever = ToReverse( posi, eqnpar, eqnfac );
    }
 #endif
+
+   //For Marked sides the boundary-cells on outside vc's need to be the same as for inside.
+   if(fac->OnMarkedBackgroundSide() and posi==GEO::CUT::Point::outside)
+     rever=!rever;
 
    if(rever)                                       // normal from facet is in wrong direction
    {
@@ -1536,7 +1487,7 @@ bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,
   bool rever = false;
 
   // position is inside
-  if(posi==-3)
+  if(posi==GEO::CUT::Point::outside) //-3 before...
   {
     if(fabs(parEqn[0])>TOL_EQN_PLANE && parEqn[0]*facetEqn[0]>0.0)
       rever = true;
@@ -1549,7 +1500,7 @@ bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,
   }
 
   // position is outside
-  else if(posi==-2)
+  else if(posi==GEO::CUT::Point::inside) //-2 before...
   {
     if(fabs(parEqn[0])>TOL_EQN_PLANE && parEqn[0]*facetEqn[0]<0.0)
       rever = true;

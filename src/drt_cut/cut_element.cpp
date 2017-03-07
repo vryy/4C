@@ -1188,11 +1188,10 @@ void GEO::CUT::Element::CreateIntegrationCells(Mesh & mesh, int count,
   for (plain_facet_set::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
     Facet * f = *i;
-    if (f->OnCutSide() and f->HasHoles())
+    if (f->OnBoundaryCellSide() and f->HasHoles())
       run_time_error("no holes in cut facet possible");
-    //f->GetAllPoints( mesh, cut_points, f->OnCutSide() );
 #if 1
-    f->GetAllPoints(mesh, cut_points, f->BelongsToLevelSetSide() and f->OnCutSide());
+    f->GetAllPoints(mesh, cut_points, f->BelongsToLevelSetSide() and f->OnBoundaryCellSide());
 #else
     f->GetAllPoints( mesh, cut_points, false );
 #endif

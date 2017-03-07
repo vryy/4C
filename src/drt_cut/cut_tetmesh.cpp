@@ -394,7 +394,7 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
             ++i )
       {
         Facet * f = *i;
-        if ( f->OnCutSide() ) //This is entered for both sides of the volume cell.
+        if ( f->OnBoundaryCellSide() ) //This is entered for both sides of the volume cell.
         {
 
 #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
@@ -1177,9 +1177,11 @@ void GEO::CUT::TetMesh::CollectCoordinates( const std::vector<std::vector<int> >
     Point * p2 = points_[side[1]];
     Point * p3 = points_[side[2]];
 
-    if ( p1->Position()==Point::oncutsurface and
-         p2->Position()==Point::oncutsurface and
-         p3->Position()==Point::oncutsurface )
+    //Plausible: Might not need this check.
+    //  However, left as is, as Tetmeshintersection is still not well understood.
+    if ( p1->HasAssociatedBoundaryCellFacet() and
+         p2->HasAssociatedBoundaryCellFacet() and
+         p3->HasAssociatedBoundaryCellFacet() )
     {
       side_coords.push_back( p1 );
       side_coords.push_back( p2 );
@@ -1189,10 +1191,11 @@ void GEO::CUT::TetMesh::CollectCoordinates( const std::vector<std::vector<int> >
       surface_tris_.push_back( side );
 #endif
     }
+
 #ifdef DEBUGCUTLIBRARY
     else
     {
-      throw std::runtime_error("Side not on cut surface!!! Shouldn't it be?");
+      throw std::runtime_error("Side not on cut or marked surface!!! Shouldn't it be?");
     }
 #endif
   }

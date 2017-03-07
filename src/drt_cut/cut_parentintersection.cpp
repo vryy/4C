@@ -566,9 +566,6 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
 
   Mesh & m = NormalMesh();
 
-//  //FOR CURRENT DEBUG!
-//  std::cout << "WARNING: DIRECT DIVERGENCE IS FORCED FOR ALL PROBLEMS!" << std::endl;
-//  VCellgausstype = INPAR::CUT::VCellGaussPts_DirectDivergence;
 #ifdef DEBUGCUTLIBRARY
   include_inner = true; //Needed for debugging the volume
 #endif
@@ -584,15 +581,10 @@ void GEO::CUT::ParentIntersection::Cut_Finalize( bool include_inner,
     if(myrank_==0 and screenoutput) IO::cout << "\n\t *     TestElementVolume ...";
     m.TestFacetArea();
     if(myrank_==0 and screenoutput) IO::cout << "\n\t *     TestFacetArea ...";
-//    DebugCut(m);
 
 #ifdef DEBUGCUTLIBRARY
     //m.TestVolumeSurface(); //Broken test, needs to be fixed for proper usage.
     m.TestFacetArea();
-#endif
-    m.SimplifyIntegrationCells();
-
-#ifdef DEBUGCUTLIBRARY
     m.TestElementVolume( true, VCellgausstype );
     DebugCut(m);
 #endif

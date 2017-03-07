@@ -332,6 +332,12 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(
     case DRT::Element::hex8:
       GEO::fillInitialPositionArray<DRT::Element::hex8,3>( ele, xyze );
       break;
+    case DRT::Element::hex20:
+      GEO::fillInitialPositionArray<DRT::Element::hex20,3>( ele, xyze );
+      break;
+    case DRT::Element::hex27:
+      GEO::fillInitialPositionArray<DRT::Element::hex27,3>( ele, xyze );
+      break;
     case DRT::Element::line2:
       switch (probdim)
       {

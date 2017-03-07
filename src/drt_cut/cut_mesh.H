@@ -327,9 +327,6 @@ public:
   /// ?
   void RemoveEmptyVolumeCells();
 
-  /// Not Implemented, is called, but is an empty function
-  void SimplifyIntegrationCells();
-
   /// test if for all elements the element volume is equal to the volume of all integration cells
   void TestElementVolume( bool fatal, INPAR::CUT::VCellGaussPts VCellGP = INPAR::CUT::VCellGaussPts_Tessellation);
 
@@ -518,11 +515,11 @@ public:
   /// check if the element lies within the bounding box
   bool WithinBB( Element & element );
 
-  /// ?
-  void CreateSideIds(int lastid = 0);
+  //     Only used in cut_test_volume.cpp
+  void CreateSideIds_CutTest(int lastid = 0);
 
-  /// ?
-  void AssignOtherVolumeCells( const Mesh & other );
+  //     Only used in cut_test_volume.cpp
+  void AssignOtherVolumeCells_CutTest( const Mesh & other );
 
   /// return the options
   Options & CreateOptions() { return options_; }
@@ -607,6 +604,8 @@ private:
   Teuchos::RCP<BoundingBox> bb_;
 
   /// (output) flag for cut mesh
+  ///  TODO: Remove this!
+  //     Only used in cut_test_volume.cpp
   bool cutmesh_;
 
   /// the spatial partitioning octree for a fast collision detection in the self cut

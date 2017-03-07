@@ -77,11 +77,19 @@ public:
   bool OnCutSide() const;
 
   /*!
+  \brief Return true if this facet is on a marked side from the background mesh
+   */
+  bool OnMarkedBackgroundSide() const;
+
+  /* Check if the Facet belongs to a side which is either cut OR marked
+   * -> i.e. it should create boundary cells.
+   *  */
+  bool OnBoundaryCellSide() const;
+
+  /*!
   \brief Returns the parent side Id from which the facet is created
    */
   int SideId() const;
-
-  int PositionSideId();
 
   Side* ParentSide() const { return parentside_; }
 

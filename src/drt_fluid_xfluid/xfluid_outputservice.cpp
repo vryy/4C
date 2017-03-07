@@ -1123,6 +1123,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
     {
       GEO::CUT::BoundaryCell * bc = *i;
 
+      //Issue with boundary cell outputs for marked background sides
+      if(bc->GetFacet()->OnMarkedBackgroundSide()) continue;
+
       switch ( bc->Shape() )
       {
       case DRT::Element::quad4:

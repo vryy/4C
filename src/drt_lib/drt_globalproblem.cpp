@@ -1621,8 +1621,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_two_phase_flow:
   case prb_fluid_xfem_ls:
     {
-
       // create empty discretizations
+      structdis = Teuchos::rcp(new DRT::Discretization("structure" ,reader.Comm()));
       if(ProblemType()==prb_fluid_xfem_ls)
         fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
       else
@@ -1631,17 +1631,19 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
 
       // create discretization writer - in constructor set into and owned by corresponding discret
+      structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
       fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
       scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
       particledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(particledis)));
 
+      AddDis("structure", structdis);
       AddDis("fluid", fluiddis);
       AddDis("scatra", scatradis);
       AddDis("particle", particledis);
 
+      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
       nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
               DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(),"GEOMETRY"), 0);
-
       //nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
       nodereader.AddParticleReader(particledis, reader, "PARTICLE");

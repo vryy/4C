@@ -205,26 +205,23 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
   // get number of dofs for this boundary element
   const unsigned numdofpernode = bele->NumDofPerNode(*bele->Nodes()[0]);
 
-  // three dofs per node, for standard Dirichlet coupling, four dofs per node for fluid-fluid coupling
-  if (numdofpernode != 3)
+  // three dofs per node, for standard Dirichlet coupling, four dofs per node for background geometry coupling
+  if ( numdofpernode == 3 )
   {
-    dserror("Unsupported number of %d nodes for standard Dirichlet coupling.", numdofpernode);
-  }
-
-  switch ( bele->Shape() )
-  {
-//      case DRT::Element::tri3:
-//      {
-//        typedef NitscheCoupling<distype,DRT::Element::tri3,3> NitscheCouplType;
-//        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
-//        break;
-//      }
-//      case DRT::Element::tri6:
-//      {
-//        typedef NitscheCoupling<distype,DRT::Element::tri6,3> NitscheCouplType;
-//        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
-//        break;
-//      }
+    switch ( bele->Shape() )
+    {
+    //      case DRT::Element::tri3:
+    //      {
+    //        typedef NitscheCoupling<distype,DRT::Element::tri3,3> NitscheCouplType;
+    //        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
+    //        break;
+    //      }
+    //      case DRT::Element::tri6:
+    //      {
+    //        typedef NitscheCoupling<distype,DRT::Element::tri6,3> NitscheCouplType;
+    //        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
+    //        break;
+    //      }
     case DRT::Element::quad4:
     {
       typedef NitscheCoupling<distype,DRT::Element::quad4,3> NitscheCouplType;
@@ -245,7 +242,48 @@ Teuchos::RCP<NitscheInterface<distype> > NitscheInterface<distype>::CreateNitsch
     }
     default:
       dserror( "Unsupported boundary element shape %d", bele->Shape() ); break;
+    }
   }
+  else if ( numdofpernode == 4 )
+  {
+    switch ( bele->Shape() )
+    {
+    //      case DRT::Element::tri3:
+    //      {
+    //        typedef NitscheCoupling<distype,DRT::Element::tri3,3> NitscheCouplType;
+    //        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
+    //        break;
+    //      }
+    //      case DRT::Element::tri6:
+    //      {
+    //        typedef NitscheCoupling<distype,DRT::Element::tri6,3> NitscheCouplType;
+    //        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
+    //        break;
+    //      }
+    case DRT::Element::quad4:
+    {
+      typedef NitscheCoupling<distype,DRT::Element::quad4,4> NitscheCouplType;
+      nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,fldparaxfem);
+      break;
+    }
+    case DRT::Element::quad8:
+    {
+      typedef NitscheCoupling<distype,DRT::Element::quad8,4> NitscheCouplType;
+      nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,fldparaxfem);
+      break;
+    }
+    case DRT::Element::quad9:
+    {
+      typedef NitscheCoupling<distype,DRT::Element::quad9,4> NitscheCouplType;
+      nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,fldparaxfem);
+      break;
+    }
+    default:
+      dserror( "Unsupported boundary element shape %d", bele->Shape() ); break;
+    }
+  }
+  else
+    dserror("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
   return Teuchos::rcp(nit);
 }

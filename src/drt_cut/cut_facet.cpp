@@ -69,7 +69,7 @@ GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points,
       // If my side has an id this facet is actually on a cut
       // surface. Otherwise it could be an inside or outside facet. The actual
       // decision does not matter much.
-      if ( side->Id()>-1 )
+      if ( OnCutSide() )
       {
         position_ = Point::oncutsurface;
       }
@@ -137,6 +137,20 @@ bool GEO::CUT::Facet::OnCutSide() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool GEO::CUT::Facet::OnBoundaryCellSide() const
+{
+  return parentside_->IsBoundaryCellSide();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool GEO::CUT::Facet::OnMarkedBackgroundSide() const
+{
+  return parentside_->IsMarkedBackgroundSide();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 int GEO::CUT::Facet::SideId() const
 {
   return parentside_->Id();
@@ -144,32 +158,6 @@ int GEO::CUT::Facet::SideId() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int GEO::CUT::Facet::PositionSideId()
-{
-  int sid = SideId();
-  switch ( position_ )
-  {
-  case Point::undecided:
-    throw std::runtime_error( "undecided facet position" );
-  case Point::inside:
-    if ( sid > -1 )
-      return sid;
-    else
-      return Point::inside;
-  case Point::outside:
-    if ( sid > -1 )
-      return sid;
-    else
-      return Point::outside;
-  case Point::oncutsurface:
-    if ( sid > -1 )
-      return sid;
-    else
-      throw std::runtime_error( "cannot have facet on cut side without cut side" );
-  }
-  throw std::runtime_error( "unhandled position" );
-}
-
 void GEO::CUT::Facet::Coordinates( double * x )
 {
   for ( std::vector<Point*>::const_iterator i=points_.begin(); i!=points_.end(); ++i )
@@ -338,6 +326,7 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
 }
 
 /*----------------------------------------------------------------------------*
+ * Only used in tetmesh debugging!!
  *----------------------------------------------------------------------------*/
 bool GEO::CUT::Facet::ShareSameCutSide( Facet* f ) /* Does the facet share the same cut-side? */
 {
@@ -1378,6 +1367,7 @@ void GEO::CUT::Facet::Print( std::ostream & stream ) const
 
   stream << "--- Facet ( address: " << this << " )\n";
   stream << "# Facet: " << "numpoints " << points_.size()
+         << "\n# sideID: " << this->SideId()
          << "\n# OnCutSide: " << ( OnCutSide() ? "TRUE" : "FALSE" )
          << "\n# registered volume cells: ";
   std::copy( cells_.begin(), cells_.end(), std::ostream_iterator<VolumeCell*>( stream, " " ) );

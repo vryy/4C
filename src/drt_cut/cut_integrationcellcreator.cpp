@@ -157,7 +157,7 @@ bool GEO::CUT::IntegrationCellCreator::CreatePoint1Cell( Mesh & mesh,
     return false;
 
   // add the side for the boundary integration cell creation
-  if ( f->OnCutSide() )
+  if ( f->OnBoundaryCellSide() )
     AddSide( cell, f, DRT::Element::point1, f->CornerPoints() );
 
   return true;
@@ -176,7 +176,7 @@ void GEO::CUT::IntegrationCellCreator::AddSide(
   {
     case INPAR::CUT::bcells_on_cut_side:
     {
-      if ( facet->OnCutSide() )
+      if ( facet->OnBoundaryCellSide() )
         AddSide( vc, facet, shape, side );
       break;
     }
@@ -380,7 +380,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
         side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
       }
       Facet * f = FindFacet( facets, side );
-      if ( f->OnCutSide() )
+      if ( f->OnBoundaryCellSide() )
         AddSide( cell, f, DRT::Element::tri3, side );
     }
 
@@ -407,7 +407,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
         side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
       }
       Facet * f = FindFacet( facets, side );
-      if ( f->OnCutSide() )
+      if ( f->OnBoundaryCellSide() )
         AddSide( cell, f, DRT::Element::tri3, side );
     }
 
@@ -592,7 +592,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
           side[j] = rpoints[DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
@@ -609,7 +609,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
           side[j] = points[DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
@@ -800,7 +800,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh,
           side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::tri3, side );
       }
       for ( int i=0; i<3; ++i )
@@ -811,7 +811,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh,
           side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
@@ -828,7 +828,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh,
           side[j] = points[DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::tri3, side );
       }
       for ( int i=0; i<3; ++i )
@@ -839,7 +839,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh,
           side[j] = points[DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
@@ -958,7 +958,7 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh,
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::tri3, side );
       }
       for ( int i=0; i<1; ++i )
@@ -969,7 +969,7 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh,
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
@@ -996,7 +996,7 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh,
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::tri3, side );
       }
       for ( int i=0; i<1; ++i )
@@ -1007,7 +1007,7 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh,
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
         Facet * f = FindFacet( facets, side );
-        if ( f->OnCutSide() )
+        if ( f->OnBoundaryCellSide() )
           AddSide( cell, f, DRT::Element::quad4, side );
       }
 
@@ -1051,7 +1051,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateSpecialCases( Mesh & mesh,
     for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
-      if ( not f->OnCutSide() )
+      if ( not f->OnBoundaryCellSide() )
       {
         Side * s = f->ParentSide();
         std::vector<Side*>::const_iterator pos = std::find( sides.begin(), sides.end(), s );
@@ -1185,7 +1185,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
   for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
-    if ( f->OnCutSide() )
+    if ( f->OnBoundaryCellSide() )
     {
       inner_facets.push_back( f );
       const std::vector<Point*> & points = f->CornerPoints();

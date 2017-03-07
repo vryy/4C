@@ -257,6 +257,9 @@ void fluid_xfem_ls_drt(int restart)
   // define abbreviation
    DRT::Problem* problem = DRT::Problem::Instance();
 
+   Teuchos::RCP<DRT::Discretization> soliddis = problem->GetDis("structure");
+   soliddis->FillComplete();
+
    // access fluid and (typically empty) scatra discretization
    Teuchos::RCP<DRT::DiscretizationXFEM> fluiddis =
        Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(problem->GetDis("fluid"), true);

@@ -27,6 +27,12 @@ namespace CUT {
   class Cycle;
   class BoundingBox;
 
+  enum MarkedActions
+  {
+    mark_and_do_nothing = -1,
+    mark_and_create_boundarycells = 0
+  };
+
   /*! \brief Base class for dealing sides in cut algorithm
    *
    *  The maximal allowed dimension of sides is 2! */
@@ -96,10 +102,40 @@ namespace CUT {
       sid_ = sid;
     }
 
+    /// \brief Set the side ID to the input value
+    void SetMarkedSideProperties(int markedid, enum MarkedActions markedaction)
+    {
+      //No combination of cut-sides and marked sides!!
+      if(sid_ > -1)
+        dserror("Currently a marked side and a cut side can not co-exist");
+      //Number of markings on the surface should not be more than 1
+      if(markedsidemap_.size() > 0)
+        dserror("Currently more than one mark on a side is NOT possible.");
+
+      markedsidemap_.insert( std::pair<enum MarkedActions,int>(GEO::CUT::mark_and_create_boundarycells,markedid) );
+    }
+
+    std::map<enum MarkedActions,int>& GetMarkedsidemap()
+    {
+      return markedsidemap_;
+    }
+
     /// \brief Returns true if this is a cut side
     bool IsCutSide()
     {
-      return sid_ > -1;
+      return (sid_ > -1);
+    }
+
+    /// \brief Returns true if this is a cut side
+    bool IsBoundaryCellSide()
+    {
+      return (IsCutSide() or IsMarkedBackgroundSide());
+    }
+
+    /// \brief Returns true if this is a marked side
+    bool IsMarkedBackgroundSide()
+    {
+      return (!IsCutSide() and (markedsidemap_.size() > 0));
     }
 
     /// \brief Register this element in which the side is a part of
@@ -615,6 +651,10 @@ namespace CUT {
   private:
 
     int sid_;
+
+    // Marked side additions:
+    std::map<GEO::CUT::MarkedActions, int> markedsidemap_;
+    // -----------------------
 
     std::vector<Node*> nodes_;
 

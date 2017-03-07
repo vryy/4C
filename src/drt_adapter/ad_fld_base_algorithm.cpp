@@ -835,7 +835,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     break;
     case prb_fluid_xfem_ls:
     {
-      Teuchos::RCP<DRT::Discretization> soliddis = Teuchos::null;
+      Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
     }
     break;

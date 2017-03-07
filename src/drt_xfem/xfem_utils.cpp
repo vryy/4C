@@ -97,7 +97,6 @@ void XFEM::UTILS::GetVolumeCellMaterial(
     mat = material;
   }
 
-  //std::cout << "mat->MaterialType(): " << mat->MaterialType() << std::endl;
   return;
 }
 

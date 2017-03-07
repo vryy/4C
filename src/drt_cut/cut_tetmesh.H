@@ -828,7 +828,7 @@ namespace GEO
        */
       void SeedDomain( Domain<4> & cell_domain, Facet * f, bool force=false )
       {
-        if ( force or not f->OnCutSide() )
+        if ( force or not f->OnBoundaryCellSide() )
         {
           FacetMesh & fm = facet_mesh_[f];
           const PlainEntitySet<3> & tris = fm.SurfaceTris();
@@ -894,28 +894,6 @@ namespace GEO
                 cell_domain.Add( tets[0] );
             }
 #endif
-
-//            //Test this to see what happens...
-//            if(not tri_of_facet_given_VC)
-//            {
-//              std::cout << "tets.size(): " << tets.size() << std::endl;
-//              for(unsigned j=0; j<tets.size(); j++)
-//              {
-//                std::cout << "tets["   << j << "]->Id(): " << tets[j]->Id() << std::endl;
-//                std::cout << "tets["   << j << "](0):" << tets[j]->GetHandle()[0];
-//                std::cout << ", tets[" << j << "](1):" << tets[j]->GetHandle()[1];
-//                std::cout << ", tets[" << j << "](2):" << tets[j]->GetHandle()[2];
-//                std::cout << ", tets[" << j << "](3):" << tets[j]->GetHandle()[3];
-//                std::cout << std::endl;
-//
-//                std::cout << "accept_tets_[tets[j]->Id()]: " << accept_tets_[tets[j]->Id()] << std::endl;
-//              }
-//              if (tets.size() > 0 and not cell_domain.Contains( tets[0] ) )
-//              {
-//                cell_domain.Add( tets[0], false );
-//              }
-//              //throw std::runtime_error("A boundary tri is not assigned a tet-cell");
-//            }
 
 #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
             tri_counter++;

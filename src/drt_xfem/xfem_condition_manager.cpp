@@ -113,6 +113,35 @@ XFEM::ConditionManager::ConditionManager(
     }
   }
 
+  // create Matching-Mesh Coupling objects
+  //  --- In the case of matching boundary in the background mesh
+  {
+    std::vector<std::string> conditions_to_check;
+    conditions_to_check.push_back("XFEMSurfNeumann");
+    conditions_to_check.push_back("XFEMSurfWeakDirichlet");
+    conditions_to_check.push_back("XFEMSurfNavierSlip");
+
+    std::vector<std::string> names;
+    bg_dis_->GetConditionNames( names );
+
+    // check if background discretization has relevant conditioned nodes
+    // create new coupling object for each type of condition
+    for(size_t c=0; c<conditions_to_check.size(); c++)
+    {
+      if(std::find(names.begin(), names.end(), conditions_to_check[c]) == names.end())
+        continue;
+
+      // get all conditions of this type, if several conditions with different coupling ids
+      std::set<int> coupling_ids;
+      GetCouplingIds(*bg_dis_, conditions_to_check[c], coupling_ids);
+
+      // create new coupling object for each composite
+      for(std::set<int>::iterator cid=coupling_ids.begin();
+          cid != coupling_ids.end(); ++cid)
+        CreateNewMeshCoupling(conditions_to_check[c], bg_dis_, *cid);
+    }
+  }
+
 }
 
 void XFEM::ConditionManager::GetCouplingIds(
@@ -787,10 +816,11 @@ void XFEM::ConditionManager::GetVolumeCellMaterial(
 
 void XFEM::ConditionManager::GetInterfaceMasterMaterial(
   DRT::Element* actele,
-  Teuchos::RCP<MAT::Material> & mat
+  Teuchos::RCP<MAT::Material> & mat,
+  const GEO::CUT::VolumeCell* vc
 )
 {
-  XFEM::UTILS::GetVolumeCellMaterial(actele,mat);
+  XFEM::UTILS::GetVolumeCellMaterial(actele,mat,vc->Position());
 }
 
 void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
@@ -799,8 +829,18 @@ void XFEM::ConditionManager::GetInterfaceSlaveMaterial(
   int coup_sid
 )
 {
-  int mc = GetMeshCouplingIndex(coup_sid);
-  mesh_coupl_[mc]->GetInterfaceSlaveMaterial(actele,mat);
+  if(IsMeshCoupling(coup_sid))
+  {
+    int mc = GetMeshCouplingIndex(coup_sid);
+    mesh_coupl_[mc]->GetInterfaceSlaveMaterial(actele,mat);
+  }
+  else if(IsLevelSetCoupling(coup_sid))
+  {
+    int lc = GetLevelSetCouplingIndex(actele->Id());
+    levelset_coupl_[lc]->GetInterfaceSlaveMaterial(actele,mat);
+  }
+  else
+    dserror("The coupling-side id: %d does not correspond to a mesh or levelset coupling object.", coup_sid);
 }
 
 //Get Boundary Cell Clone Information <clone_coup_idx, clone_coup_sid>

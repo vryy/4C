@@ -818,7 +818,13 @@ void GEO::CUT::OUTPUT::GmshLevelSetOrientationDump( std::ofstream & file, Elemen
       for ( unsigned d = 0; d < normal_ls.size(); ++d )
         dotProduct += normal_ls[d]*normal_bc(d,0);
 
-      GmshScalar(file,midpoint_bc,dotProduct/std::abs(dotProduct),to_local,ele);
+      double normalized_dotproduct=0;
+      if(dotProduct < 1e-15)
+        normalized_dotproduct=0;
+      else
+        normalized_dotproduct=dotProduct/fabs(dotProduct);
+
+      GmshScalar(file,midpoint_bc,normalized_dotproduct,to_local,ele);
     }
   }
 }

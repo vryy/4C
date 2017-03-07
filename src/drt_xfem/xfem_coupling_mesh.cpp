@@ -54,7 +54,9 @@ XFEM::MeshCoupling::MeshCoupling(
     const double                        time,      ///< time
     const int                           step,       ///< time step
     const std::string &                 suffix     ///< suffix for cutterdisname
-) : CouplingBase(bg_dis, cond_name, cond_dis, coupling_id, time, step), firstoutputofrun_(true)
+) : CouplingBase(bg_dis, cond_name, cond_dis, coupling_id, time, step),
+    mark_geometry_(false),
+    firstoutputofrun_(true)
 {
 
   // set list of conditions that will be copied to the new cutter discretization

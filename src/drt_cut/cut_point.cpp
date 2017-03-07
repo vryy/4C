@@ -384,6 +384,18 @@ void GEO::CUT::Point::Position( Point::PointPosition pos )
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool GEO::CUT::Point::HasAssociatedBoundaryCellFacet()
+{
+  for ( plain_facet_set::const_iterator ifacet=facets_.begin(); ifacet!=facets_.end(); ++ifacet )
+  {
+    if ((*ifacet)->OnBoundaryCellSide())
+      return true;
+  }
+  return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 GEO::CUT::Side * GEO::CUT::Point::CutSide( Side * side, Point * other )
 {
   Side * found_side = NULL;

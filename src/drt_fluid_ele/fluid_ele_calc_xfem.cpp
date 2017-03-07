@@ -3240,6 +3240,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       dserror("Non-matching surface tension provided for Master and Slave side.");
     }
   }
+  else
+  {
+    densaf_slave_=0.0;
+    viscaf_slave_=0.0;
+    gamma_s_=0.0;
+  }
 
   //-----------------------------------------------------------------------------------
   //      surface integral --- loop sides

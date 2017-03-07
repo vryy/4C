@@ -123,6 +123,8 @@ public:
      note that the boundary cells of subsides with the same side id are stored now in one key
    */
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
+  void GetBoundaryCellsToBeIntegrated( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
+
 
   /// collect cut sides
   void CollectCutSides( plain_int_set & cutside_ids);
@@ -231,8 +233,6 @@ public:
   */
   void NewArbitraryCell( Mesh & mesh, Facet * f, const std::vector<Point*> & x, const DRT::UTILS::GaussIntegration& gp,
       const LINALG::Matrix<3,1>& normal );
-
-  void SimplifyIntegrationCells( Mesh & mesh );
 
   /*!
   \brief Return the volume of the cell
