@@ -92,7 +92,8 @@ GEO::CutWizard::CutWizard( const Epetra_Comm & comm )
       tetcellsonly_( false ),
       screenoutput_( false ),
       lsv_only_plus_domain_( false ),
-      is_set_options_( false )
+      is_set_options_( false ),
+      is_cut_prepare_performed_(false)
 {
 
 }
@@ -184,11 +185,54 @@ void GEO::CutWizard::AddCutterState(
 
 }
 
+/*-------------------------------------------------------------*
+ * Mark surfaces loaded into cut with background surfaces
+*--------------------------------------------------------------*/
+void GEO::CutWizard::SetMarkedConditionSides(
+    //const int mc_idx,                                       //Not needed (for now?)
+    Teuchos::RCP<DRT::Discretization> cutter_dis,
+    //Teuchos::RCP<const Epetra_Vector> cutter_disp_col,      //Not needed (for now?)
+    const int                         start_ele_gid
+)
+{
+  //Set the counter to the gid.
+  //  -- Set ids in correspondence to this ID.
+  //  -- Loop over the surface elements and find (if it exists) a corresponding side loaded into the cut
+  //  ## WARNING: Not sure what happens if it doesn't find a surface?
+  int counter=start_ele_gid;
+  for( int lid=0; lid < cutter_dis->NumMyRowElements(); ++lid)
+  {
+    DRT::Element* cutter_dis_ele = cutter_dis->lRowElement(lid);
+
+    const int numnode = cutter_dis_ele->NumNode();
+    const int * nodeids = cutter_dis_ele->NodeIds();
+    std::vector<int> node_ids_of_cutterele( nodeids, nodeids+numnode );
+
+    //Get sidehandle to corresponding background surface discretization
+    // -- if it exists!!!
+    GEO::CUT::SideHandle* cut_sidehandle = intersection_->GetMeshHandle().GetSide(node_ids_of_cutterele);
+
+    if(cut_sidehandle != NULL)
+    {
+      GEO::CUT::plain_side_set cut_sides;
+      cut_sidehandle->CollectSides(cut_sides);
+
+      // Set Id's and mark the sides in correspondence with the coupling manager object.
+      for (GEO::CUT::plain_side_set::iterator it=cut_sides.begin(); it!=cut_sides.end(); ++it)
+      {
+        (*it)->SetMarkedSideProperties(counter,GEO::CUT::mark_and_create_boundarycells);
+      }
+    }
+    else
+      dserror("If we don't find a marked side it's not sure what happens... You are on your own!");
+
+    ++counter;
+  }
+}
 
 /*========================================================================*/
 //! @name main Cut call
 /*========================================================================*/
-
 /*-------------------------------------------------------------*
 * main Cut call
 *--------------------------------------------------------------*/
@@ -196,115 +240,9 @@ void GEO::CutWizard::Cut(
     bool include_inner //!< perform cut in the interior of the cutting mesh
 )
 {
-/*
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- BuildDOFCellSets" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::CornerPointsLocal" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel): distribute DofSetData" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::VCIntegrationRule" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets-tmp1" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets-tmp2" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::IsPlanar" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::EqnPlaneOfPolygon" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::DeleteInlinePts" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaConvexQuad" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::BoundaryCell::TransformLocalCoords" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::FacetIntegration::DivergenceIntegrationRule" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::VolumeCell::GenerateInternalGaussRule" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Element::CreateSimpleShapedIntegrationCells" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::VolumeCell::GenerateBoundaryCells" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- creating map" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::LinearElementHandle::VolumeCellSets" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- AssignNodalCellSet" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- GEO::CUT::Cmp::Compare(vc,vc)" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindDOFSetsNEW" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- SortNodalDofSets" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CollectNodalDofSets" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CreateNodalDofSet" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- STEP 2" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindNodalCellSets" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- ConnectNodalDOFSets" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- GEO::CUT::Cmp::operator()" );
-  }
-  {
-    TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- GEO::CUT::NodalDofSet::NodalDofSet" );
-  }
-*/
-
 
   // safety checks if the cut is initialized correctly
-  if( !is_set_options_ )
-    dserror( "you have call SetOptions() before you can use the CutWizard" );
-
-  if( !do_mesh_intersection_ and !do_levelset_intersection_ )
-  {
-    if ( myrank_ == 0 )
-    {
-      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n";
-      std::cout << "WARNING: No mesh intersection and no level-set intersection! \n" <<
-                   "         Why do you call the CUT-library?\n";
-      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n";
-    }
-    return;
-  }
+  if(!SafetyChecks(false)) return;
 
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CutWizard::Cut" );
 
@@ -312,11 +250,6 @@ void GEO::CutWizard::Cut(
     IO::cout << "\nGEO::CutWizard::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
-
-  //--------------------------------------
-  // prepare the cut, add background elements and cutting sides
-  //--------------------------------------
-  Prepare();
 
   /* wirtz 08/14:
    * preprocessing: everything above should only be done once in a simulation;
@@ -343,16 +276,21 @@ void GEO::CutWizard::Cut(
 
 }
 
-
 /*-------------------------------------------------------------*
 * prepare the cut, add background elements and cutting sides
 *--------------------------------------------------------------*/
 void GEO::CutWizard::Prepare()
 {
 
+  // safety checks if the cut is initialized correctly
+  if(!SafetyChecks(true)) return;
+
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/6 --- Cut_Initialize" );
 
   const double t_start = Teuchos::Time::wallTime();
+
+  if ( myrank_ == 0 and screenoutput_ )
+    IO::cout << "\nGEO::CutWizard::Prepare:" << IO::endl;
 
   if( myrank_ == 0 and screenoutput_ )
     IO::cout << "\n\t * 1/6 Cut_Initialize ...";
@@ -390,6 +328,8 @@ void GEO::CutWizard::Prepare()
   {
     IO::cout << "\t\t\t... Success (" << t_mid  <<  " secs)" << IO::endl;
   }
+
+  is_cut_prepare_performed_=true;
 
 }
 
@@ -800,6 +740,31 @@ void GEO::CutWizard::FindPositionDofSets(bool include_inner)
   }
 }
 
+
+bool GEO::CutWizard::SafetyChecks(bool is_prepare_cut_call)
+{
+
+  if( !is_set_options_ )
+    dserror( "You have to call SetOptions() before you can use the CutWizard" );
+
+  if(!is_prepare_cut_call and !is_cut_prepare_performed_)
+    dserror( "You have to call PrepareCut() before you can call the Cut-routine" );
+
+  if( !do_mesh_intersection_ and !do_levelset_intersection_ )
+  {
+    if ( myrank_ == 0  and is_prepare_cut_call)
+    {
+      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n";
+      std::cout << "WARNING: No mesh intersection and no level-set intersection! \n" <<
+                   "         Why do you call the CUT-library?\n";
+      std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n";
+    }
+    return false;
+  }
+
+  return true;
+
+}
 
 /*------------------------------------------------------------------------------------------------*
  * write statistics and output to screen and files

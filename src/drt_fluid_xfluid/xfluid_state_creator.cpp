@@ -176,7 +176,7 @@ void FLD::XFluidStateCreator::CreateNewCutState(
   {
     Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx);
 
-    if (!mc_coupl->CutGeometry()) continue;
+    if (!mc_coupl->CutGeometry()) continue;    //If don't cut the background mesh.
 
     wizard->AddCutterState(
         mc_idx,
@@ -195,12 +195,28 @@ void FLD::XFluidStateCreator::CreateNewCutState(
       condition_manager_->GetLevelSetCouplingGid()//!< global side id for level-set coupling
       );
 
+  //--------------------------------------------------------------------------------------
+  //Initialize cut objects into the cut
+  wizard->Prepare();
+
+  // Loop all mesh coupling objects:
+  // -- Find corresponding marked surfaces loaded into the cut.
+  for(int mc_idx=0; mc_idx< condition_manager_->NumMeshCoupling(); mc_idx++)
+  {
+    Teuchos::RCP<XFEM::MeshCoupling> mc_coupl = condition_manager_->GetMeshCoupling(mc_idx);
+
+    if (mc_coupl->IsMarkedGeometry())
+    {
+      wizard->SetMarkedConditionSides(
+          mc_coupl->GetCutterDis(),
+          condition_manager_->GetMeshCouplingStartGID(mc_idx)
+          );
+    }
+  }
 
   //--------------------------------------------------------------------------------------
   // performs the "CUT"
   wizard->Cut(include_inner_);
-  //--------------------------------------------------------------------------------------
-
 
   //--------------------------------------------------------------------------------------
   // set the new dofset after cut

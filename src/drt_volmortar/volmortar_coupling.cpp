@@ -1734,6 +1734,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
     wizard->SetBackgroundState(Teuchos::null,Teuchos::null,-1);
     wizard->AddCutterState(0, sauxdis,Teuchos::null);
 
+    wizard->Prepare();
     wizard->Cut(true);  // include_inner
 
     GEO::CUT::plain_volumecell_set mcells_out;

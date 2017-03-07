@@ -232,11 +232,23 @@ namespace GEO
         const int                         start_ele_gid
     );
 
+    // Find marked background-boundary sides.
+    //  Extract these sides and create boundary cell for these!
+    void SetMarkedConditionSides(
+        //const int mc_idx,
+        Teuchos::RCP<DRT::Discretization> cutter_dis,
+        //Teuchos::RCP<const Epetra_Vector> cutter_disp_col,
+        const int                         start_ele_gid
+    );
+
     //@}
 
     /*========================================================================*/
     //! @name main Cut call
     /*========================================================================*/
+
+    //! prepare the cut, add background elements and cutting sides
+    void Prepare();
 
     void Cut(
         bool include_inner  //!< perform cut in the interior of the cutting mesh
@@ -334,9 +346,6 @@ namespace GEO
     //! @name Major steps to prepare the cut, to perform it and to do postprocessing
     /*========================================================================*/
 
-    //! prepare the cut, add background elements and cutting sides
-    void Prepare();
-
     //! perform the actual cut, the intersection
     void Run_Cut(
         bool include_inner  //!< perform cut in the interior of the cutting mesh
@@ -347,6 +356,9 @@ namespace GEO
 
     //! write statistics and output to screen and files
     void Output(bool include_inner);
+
+    //! Check that cut is initialized correctly
+    bool SafetyChecks(bool is_prepare_cut_call);
 
     //@}
 
@@ -407,6 +419,7 @@ namespace GEO
 
     //! @name Flags whether wizard is initialized correctly
     bool is_set_options_;
+    bool is_cut_prepare_performed_;
     //@}
 
   };  // class CutWizard

@@ -168,6 +168,9 @@ enum XFEM::StateStatus XCONTACT::StateCreator::CreateNewCutState(
   CreateCutWizard( xdiscret, back_disp_col, levelset_field_row, wizard );
 
   //---------------------------------------------------------------------------
+  //Initialize cut objects into the cut
+  wizard->Prepare();
+
   // performs the "CUT"
   wizard->Cut( include_inner_ );
 
