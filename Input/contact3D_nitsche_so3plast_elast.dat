@@ -48,7 +48,7 @@ Inner Iteration = no
 Outer Iteration = yes
 Outer Iteration StatusTest = no
 ------------------------------------------------------STRUCT NOX/Status Test
-XML File                        = /home/seitz/my_status_test.xml
+XML File                        = contact3D_nitsche_hex8_sym_coulomb_new_struc.xml
 -------------------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER             2
 STRATEGY                  Nitsche
