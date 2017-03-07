@@ -37,7 +37,7 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(const std::string&          eletype,
   {
     dserror( "The material parameter definition '%s' is not supported by Beam3k element! "
         "Choose MAT_BeamKirchhoffElastHyper or MAT_BeamKirchhoffElastHyper_ByModes!",
-        Material()->Parameter()->Name() );
+        Material()->Parameter()->Name().c_str() );
   }
 
 

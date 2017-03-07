@@ -33,7 +33,7 @@ bool DRT::ELEMENTS::Beam3::ReadElement(const std::string&          eletype,
   {
     dserror( "The material parameter definition '%s' is not supported by Beam3 element! "
         "Choose MAT_BeamReissnerElastHyper or MAT_BeamReissnerElastHyper_ByModes!",
-        Material()->Parameter()->Name() );
+        Material()->Parameter()->Name().c_str() );
   }
 
   /*read beam moments of inertia of area; currently the beam3 element works only with rotationally symmetric

@@ -39,7 +39,7 @@ bool DRT::ELEMENTS::Beam3eb::ReadElement(const std::string& eletype,
         "Beam3eb element! "
         "Choose MAT_BeamKirchhoffTorsionFreeElastHyper or "
         "MAT_BeamKirchhoffTorsionFreeElastHyper_ByModes!",
-        Material()->Parameter()->Name() );
+        Material()->Parameter()->Name().c_str() );
   }
 
   return true;

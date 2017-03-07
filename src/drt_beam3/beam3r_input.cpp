@@ -43,7 +43,7 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
   {
     dserror( "The material parameter definition '%s' is not supported by Beam3r element! "
         "Choose MAT_BeamReissnerElastHyper or MAT_BeamReissnerElastHyper_ByModes!",
-        Material()->Parameter()->Name() );
+        Material()->Parameter()->Name().c_str() );
   }
 
 
