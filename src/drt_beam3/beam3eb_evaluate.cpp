@@ -11,6 +11,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "beam3eb.H"
+
+// Todo check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
@@ -19,7 +21,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_mat/stvenantkirchhoff.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -625,6 +626,19 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
   kappa_max_=0.0;
   epsilon_max_=0.0;
 
+
+  // material constitutive matrices for forces and moments
+  // occurring in material law based on a general hyper-elastic stored energy function
+  LINALG::Matrix<3,3> C_forceresultant, C_momentresultant;
+  GetConstitutiveMatrices(C_forceresultant, C_momentresultant);
+
+  // in this reduced formulation, we only need two of the constitutive factors
+  // axial rigidity
+  double EA = C_forceresultant(0,0);
+  // bending/flexural rigidity
+  double EI = C_momentresultant(1,1);
+
+
 #ifdef SIMPLECALC
 {
   //dimensions of freedom per node
@@ -690,27 +704,6 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
   lin_epsilon_ANS.Clear();
   #endif
 
-  //first of all we get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym = 0;
-  //Uncomment the next line for the dynamic case: so far only the static case is implemented
-  //double density = 0;
-
-  //assignment of material parameters; only St.Venant material is accepted for this beam
-  switch(currmat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant:// only linear elastic material supported
-    {
-      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      ym = actmat->Youngs();
-      //Uncomment the next line for the dynamic case: so far only the static case is implemented
-      //density = actmat->Density();
-    }
-    break;
-    default:
-    dserror("unknown or improper type of material law");
-    break;
-  }
 
   //Get integrationpoints for exact integration
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
@@ -953,12 +946,12 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       R_tension = NTildex;
       R_tension.Scale(tension);
       R_tension.Update(1.0 / std::pow(rxrx,1.5),NxTrxrxTNx,1.0);
-      R_tension.Scale(ym * crosssec_ * wgt);
+      R_tension.Scale(EA * wgt);
       #else
       //attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are allready considered,
       //all the other jacobi factors due to differentiation and integration cancel out!!!
       R_tension_ANS.Update(epsilon_ANS/jacobi_,NTildex,1.0);
-      R_tension_ANS.Scale(ym * crosssec_ * wgt);
+      R_tension_ANS.Scale(EA * wgt);
       #endif
 
       //assemble parts from bending
@@ -966,7 +959,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       R_bending.Update(1.0,NTildexx,1.0);
       R_bending.UpdateT(- 2.0 / std::pow(jacobi_,2.0) , M2 , 1.0);
 
-      R_bending.Scale(ym * Izz_ * wgt / std::pow(jacobi_,3));
+      R_bending.Scale(EI * wgt / std::pow(jacobi_,3));
 
       //shifting values from fixed size matrix to epetra matrix *stiffmatrix
       for(int i = 0; i < dofpn*nnode; i++)
@@ -1004,10 +997,10 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
         }
       }
       #ifdef ANS_BEAM3EB
-      Res_tension_ANS.Update(ym * crosssec_ * wgt*epsilon_ANS / jacobi_,NxTrx,1.0);
+      Res_tension_ANS.Update(EA * wgt*epsilon_ANS / jacobi_,NxTrx,1.0);
       #endif
-      Res_bending.Scale(ym * Izz_ * wgt);
-      Res_tension.Scale(ym * crosssec_ * wgt);
+      Res_bending.Scale(EI * wgt);
+      Res_tension.Scale(EA * wgt);
 
       //shifting values from fixed size vector to epetra vector *force
       for(int i = 0; i < dofpn*nnode; i++)
@@ -1188,27 +1181,6 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     #endif
   #endif
 
-  //first of all we get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym = 0;
-  //Uncomment the next line for the dynamic case: so far only the static case is implemented
-  double density = 0;
-
-  //assignment of material parameters; only St.Venant material is accepted for this beam
-  switch(currmat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant:// only linear elastic material supported
-    {
-      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      ym = actmat->Youngs();
-      //Uncomment the next line for the dynamic case: so far only the static case is implemented
-      density = actmat->Density();
-    }
-    break;
-    default:
-    dserror("unknown or improper type of material law");
-    break;
-  }
 
   //Get integrationpoints for exact integration
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
@@ -1219,7 +1191,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if(BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp,nnode);
+    UnShiftNodePosition(disp);
 
   UpdateDispTotlag<nnode,dofpn>(disp,disp_totlag);
 
@@ -1370,13 +1342,13 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       {
         for(int k=0;k<3;k++)
         {
-          Res_inextensibility(j+7*i)+=INEXTENSIBLE*ym*crosssec_*lm_fad[k]*lin_epsilon_cp_fad(k,j+6*i);
+          Res_inextensibility(j+7*i)+=INEXTENSIBLE*EA*lm_fad[k]*lin_epsilon_cp_fad(k,j+6*i);
         }
       }
     }
-    Res_inextensibility(6)+=INEXTENSIBLE*ym*crosssec_*epsilon_cp_fad(0);
-    Res_inextensibility(13)+=INEXTENSIBLE*ym*crosssec_*epsilon_cp_fad(1);
-    Res_inextensibility(14)+=INEXTENSIBLE*ym*crosssec_*epsilon_cp_fad(2);
+    Res_inextensibility(6)+=INEXTENSIBLE*EA*epsilon_cp_fad(0);
+    Res_inextensibility(13)+=INEXTENSIBLE*EA*epsilon_cp_fad(1);
+    Res_inextensibility(14)+=INEXTENSIBLE*EA*epsilon_cp_fad(2);
 
     for(int i=0; i<15;i++)
     {
@@ -1619,13 +1591,13 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
           {
             for (int k=0;k<3;k++)
             {
-              Res_tension_ANS_fad(i)+=N_x(k,i)*rx_fad(k)/std::pow(rxrx_fad,0.5)*ym * crosssec_ * wgt*epsilon_ANS_fad;
+              Res_tension_ANS_fad(i)+=N_x(k,i)*rx_fad(k)/std::pow(rxrx_fad,0.5)*EA * wgt*epsilon_ANS_fad;
             }
           }
         #else
           for (int i=0;i<nnode*dofpn;i++)
           {
-            Res_tension_ANS_fad(i)+=lin_epsilon_ANS_fad(i)*jacobi_*ym * crosssec_ * wgt*epsilon_ANS_fad;
+            Res_tension_ANS_fad(i)+=lin_epsilon_ANS_fad(i)*jacobi_*EA * wgt*epsilon_ANS_fad;
           }
         #endif
         for (int i=0;i<nnode*dofpn;i++)
@@ -1648,7 +1620,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       R_tension = NTildex;
       R_tension.Scale(tension);
       R_tension.Update(1.0 / std::pow(rxrx,1.5),NxTrxrxTNx,1.0);
-      R_tension.Scale(ym * crosssec_ * wgt);
+      R_tension.Scale(EA * wgt);
       #else
         #ifndef CONSISTENTANSBEAM3EB
           //attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are allready considered,
@@ -1662,7 +1634,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
           }
           R_tension_ANS.Update(-epsilon_ANS / std::pow(rxrx,1.5),NxTrxrxTNx,1.0);
           R_tension_ANS.Update(epsilon_ANS / std::pow(rxrx,0.5),NTildex,1.0);
-          R_tension_ANS.Scale(ym * crosssec_ * wgt);
+          R_tension_ANS.Scale(EA * wgt);
         #else
           //since CONSISTENTANSBEAM3EB can so far only be calculated via FAD, R_tension_ANS has to be replaced by R_tension_ANS_fad
           for (int i=0;i<nnode*dofpn;i++)
@@ -1690,7 +1662,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       R_bending.UpdateT(- 2.0 / std::pow(rxrx,2.0) , M2 , 1.0);
       R_bending.Update(- 1.0 / std::pow(rxrx,2.0) , M3 , 1.0);
 
-      R_bending.Scale(ym * Izz_ * wgt / jacobi_);
+      R_bending.Scale(EI * wgt / jacobi_);
 
       #ifndef INEXTENSIBLE
         //shifting values from fixed size matrix to epetra matrix *stiffmatrix
@@ -1757,7 +1729,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
         #ifndef CONSISTENTANSBEAM3EB
           //attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are allready considered,
           //all the other jacobi factors due to differentiation and integration cancel out!!!
-          Res_tension_ANS.Update(ym * crosssec_ * wgt*epsilon_ANS / std::pow(rxrx,0.5),NxTrx,0.0);
+          Res_tension_ANS.Update(EA * wgt*epsilon_ANS / std::pow(rxrx,0.5),NxTrx,0.0);
         #else
           //since CONSISTENTANSBEAM3EB can so far only be calculated via FAD, Rrd_tension_ANS has to be replaced by Rrd_tension_ANS_fad
           for (int i=0;i<nnode*dofpn;i++)
@@ -1767,8 +1739,8 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
         #endif
       #endif
 
-      Res_bending.Scale(ym * Izz_ * wgt / jacobi_);
-      Res_tension.Scale(ym * crosssec_ * wgt);
+      Res_bending.Scale(EI * wgt / jacobi_);
+      Res_tension.Scale(EA * wgt);
 
       #ifndef INEXTENSIBLE
         //shifting values from fixed size vector to epetra vector *force
@@ -1809,9 +1781,9 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       if(kappa_quad<0)
         kappa_quad=-kappa_quad;
 
-      Eint_+=0.5*wgt*jacobi_*ym * crosssec_ * std::pow(epsilon_ANS,2);
-      Eint_axial_+=0.5*wgt*jacobi_*ym * crosssec_ * std::pow(epsilon_ANS,2);
-      Eint_+=0.5*wgt*jacobi_*ym *Izz_ * kappa_quad;
+      Eint_+=0.5*wgt*jacobi_*EA * std::pow(epsilon_ANS,2);
+      Eint_axial_+=0.5*wgt*jacobi_*EA * std::pow(epsilon_ANS,2);
+      Eint_+=0.5*wgt*jacobi_*EI * kappa_quad;
 
       //determine maximal curvature
       if(std::sqrt(kappa_quad)>kappa_max_)
@@ -1824,6 +1796,15 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
         epsilon_max_=epsilon_norm;
     #endif
   } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+
+
+
+
+  // tensor of mass moments of inertia for translational and rotational motion
+  double mass_inertia_translational = 0.0;
+
+  GetTranslationalMassInertiaFactor( mass_inertia_translational );
+
 
   std::vector<double > myvel(12,0.0);
 
@@ -1895,7 +1876,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       for (int i=0; i<6*nnode; i++)
         for (int j=0; j<6*nnode; j++)
         {
-          (*massmatrix)(i,j) += density*crosssec_*wgt*jacobi_*NTilde(i,j);
+          (*massmatrix)(i,j) += mass_inertia_translational*wgt*jacobi_*NTilde(i,j);
         }
     #else
       int i1=0;
@@ -1914,23 +1895,23 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
           else
             j1=j+1;
 
-          (*massmatrix)(i1,j1) += density*crosssec_*wgt*jacobi_*NTilde(i,j);
+          (*massmatrix)(i1,j1) += mass_inertia_translational*wgt*jacobi_*NTilde(i,j);
         }
       }
     #endif
     }//if (massmatrix != NULL)
 
-    Ekin_+=0.5*wgt*jacobi_*density*crosssec_*std::pow(r_t.Norm2(),2.0);
+    Ekin_+=0.5*wgt*jacobi_*mass_inertia_translational*std::pow(r_t.Norm2(),2.0);
 
     LINALG::Matrix<3,1> dL(true);
     LINALG::Matrix<3,3> S_r(true);
     LARGEROTATIONS::computespin(S_r,r);
     dL.Multiply(S_r,r_t);
-    dL.Scale(density*crosssec_);
+    dL.Scale(mass_inertia_translational);
     for (int i=0;i<3;i++)
     {
       L_(i)+=wgt*jacobi_*dL(i);
-      P_(i)+=wgt*jacobi_*density*crosssec_*r_t(i);
+      P_(i)+=wgt*jacobi_*mass_inertia_translational*r_t(i);
     }
 
   }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -2294,7 +2275,7 @@ void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& 
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if(BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp,nnode);
+    UnShiftNodePosition(disp);
 
   // update current total position state of element
   LINALG::Matrix<nnode*vpernode*ndim,1> disp_totlag(true);
@@ -2392,27 +2373,16 @@ double DRT::ELEMENTS::Beam3eb::GetAxialForce(double& xi, const LINALG::Matrix<12
 {
   double epsilon = GetAxialStrain(xi,disp_totlag);
 
-  //Next, we get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym=0.0;
+  // material constitutive matrices for forces and moments
+  // occurring in material law based on a general hyper-elastic stored energy function
+  LINALG::Matrix<3,3> C_forceresultant, C_momentresultant;
+  GetConstitutiveMatrices(C_forceresultant, C_momentresultant);
 
-  //assignment of material parameters; only St.Venant material is accepted for this beam
-  switch(currmat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant:// only linear elastic material supported
-    {
-      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      ym = actmat->Youngs();
-    }
-    break;
-    default:
-    dserror("unknown or improper type of material law");
-    break;
-  }
+  // here, we only need the axial rigidity
+  double EA = C_forceresultant(0,0);
 
-  //Finally, calcualte axial force
-  double EA = ym*crosssec_;
-  double axialforce=EA*epsilon;
+  //Finally, calculate axial force
+  double axialforce = EA * epsilon;
 
   return (axialforce);
 }
@@ -2428,6 +2398,20 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
 #if NODALDOFS == 3
     dserror("FADCheck are not implemented for the case NODALDOFS = 3!!!");
 #endif
+
+
+  // material constitutive matrices for forces and moments
+  // occurring in material law based on a general hyper-elastic stored energy function
+  LINALG::Matrix<3,3> C_forceresultant, C_momentresultant;
+  GetConstitutiveMatrices(C_forceresultant, C_momentresultant);
+
+  // in this reduced formulation, we only need two of the constitutive factors
+  // axial rigidity
+  double EA = C_forceresultant(0,0);
+  // bending/flexural rigidity
+  double EI = C_momentresultant(1,1);
+
+
   #ifdef SIMPLECALC
   {
     //see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
@@ -2486,27 +2470,6 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     LINALG::TMatrix<FAD,nnode*dofpn,nnode*dofpn> NTilde_xddTNTilde_xx;
     LINALG::TMatrix<FAD,nnode*dofpn,nnode*dofpn> NTilde_auxddTNTilde_aux;
 
-    //first of all we get the material law
-    Teuchos::RCP<const MAT::Material> currmat = Material();
-    double ym = 0;
-    //Uncomment the next line for the dynamic case: so far only the static case is implemented
-    //double density = 0;
-
-    //assignment of material parameters; only St.Venant material is accepted for this beam
-    switch(currmat->MaterialType())
-    {
-      case INPAR::MAT::m_stvenant:// only linear elastic material supported
-      {
-        const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-        ym = actmat->Youngs();
-        //Uncomment the next line for the dynamic case: so far only the static case is implemented
-        //density = actmat->Density();
-      }
-      break;
-      default:
-      dserror("unknown or improper type of material law");
-      break;
-    }
 
     //Get integrationpoints for exact integration
     DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
@@ -2649,26 +2612,26 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       R_tension.Scale(1.0 - 1.0/std::pow(dTNTilde_xd,0.5));
       R_tension.Update(1.0 / std::pow(dTNTilde_xd,1.5),NTilde_xddTNTilde_x,1.0);
 
-      R_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
+      R_tension.Scale(EA * jacobi_ * wgt);
 
       //assemble parts from bending
       R_bending.Update(-dTNTilde_xxd,NTilde_x,1.0);
       R_bending.Update(1.0,NTilde_xx,1.0);
       R_bending.Update(- 2.0 , NTilde_xddTNTilde_xx , 1.0);
 
-      R_bending.Scale(ym * Izz_ * wgt * jacobi_);
+      R_bending.Scale(EI * wgt * jacobi_);
 
       //assemble internal force vector f_internal / Res in thesis Meier
       //assemble parts from tension
       Res_tension = NTilde_xd;
       Res_tension.Scale(1.0 - 1.0 /std::pow(dTNTilde_xd,0.5));
 
-      Res_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
+      Res_tension.Scale(EA * jacobi_ * wgt);
 
       //assemble parts from bending
       Res_bending.Update(-dTNTilde_xxd,NTilde_xd,1.0);
       Res_bending.Update(1.0 ,NTilde_xxd,1.0);
-      Res_bending.Scale(ym * Izz_ * jacobi_ * wgt);
+      Res_bending.Scale(EI * jacobi_ * wgt);
 
       //shifting values from fixed size vector to epetra vector *force
       for(int i = 0; i < dofpn*nnode; i++)
@@ -2787,27 +2750,6 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
     LINALG::TMatrix<FAD,nnode*dofpn,nnode*dofpn> NTilde_xddTNTilde_xx;
     LINALG::TMatrix<FAD,nnode*dofpn,nnode*dofpn> NTilde_auxddTNTilde_aux;
 
-    //first of all we get the material law
-    Teuchos::RCP<const MAT::Material> currmat = Material();
-    double ym = 0;
-    //Uncomment the next line for the dynamic case: so far only the static case is implemented
-    //double density = 0;
-
-    //assignment of material parameters; only St.Venant material is accepted for this beam
-    switch(currmat->MaterialType())
-    {
-      case INPAR::MAT::m_stvenant:// only linear elastic material supported
-      {
-        const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-        ym = actmat->Youngs();
-        //Uncomment the next line for the dynamic case: so far only the static case is implemented
-        //density = actmat->Density();
-      }
-      break;
-      default:
-      dserror("unknown or improper type of material law");
-      break;
-    }
 
     //Get integrationpoints for exact integration
     DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleeb);
@@ -2950,7 +2892,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       R_tension.Scale(1.0 - 1.0/std::pow(dTNTilde_xd,0.5));
       R_tension.Update(1.0 / std::pow(dTNTilde_xd,1.5),NTilde_xddTNTilde_x,1.0);
 
-      R_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
+      R_tension.Scale(EA * jacobi_ * wgt);
 
       //assemble parts from bending
       R_bending = NTilde_x;
@@ -2966,14 +2908,14 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       R_bending.Update(- 2.0 / std::pow(dTNTilde_xd,2.0) , NTilde_xddTNTilde_xx , 1.0);
       R_bending.Update(- 1.0 / std::pow(dTNTilde_xd,2.0) , NTilde_auxddTNTilde_aux , 1.0);
 
-      R_bending.Scale(ym * Izz_ * jacobi_ * wgt);
+      R_bending.Scale(EI * jacobi_ * wgt);
 
       //assemble internal force vector f_internal / Res in thesis Meier
       //assemble parts from tension
       Res_tension = NTilde_xd;
       Res_tension.Scale(1.0 - 1.0 /std::pow(dTNTilde_xd,0.5));
 
-      Res_tension.Scale(ym * crosssec_ * jacobi_ * wgt);
+      Res_tension.Scale(EA * jacobi_ * wgt);
 
       //assemble parts from bending
       Res_bending = NTilde_xd;
@@ -2982,7 +2924,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
       Res_bending.Update(-dTNTilded / std::pow(dTNTilde_xd,2.0),NTilde_auxd,1.0);
       Res_bending.Update(1.0 / dTNTilde_xd,NTilde_xxd,1.0);
 
-      Res_bending.Scale(ym * Izz_ * jacobi_ * wgt);
+      Res_bending.Scale(EI * jacobi_ * wgt);
 
       std::cout << "Resbending: " << Res_bending << std::endl;
       std::cout << "Restension: " << Res_tension << std::endl;

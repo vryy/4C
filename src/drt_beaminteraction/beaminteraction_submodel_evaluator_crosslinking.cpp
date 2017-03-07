@@ -165,9 +165,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForce()
 
     // apply forces on binding spots to parent elements
     // and get their discrete element force vectors
-    BIOPOLYNET::UTILS::ApplyBpotForceToParentElements( Discret(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr,
-        bspotforce, eleforce );
+    BIOPOLYNET::UTILS::ApplyBindingSpotForceToParentElements( Discret(),
+        PeriodicBoundingBoxPtr(), BeamInteractionDataStatePtr()->GetMutableDisColNp(),
+        elepairptr, bspotforce, eleforce );
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
@@ -218,8 +218,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateStiff()
         bspotstiff[1][1] );
 
     // apply linearizations to parent elements and get their discrete element stiffness matrices
-    BIOPOLYNET::UTILS::ApplyBpotStiffToParentElements( Discret(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr, bspotstiff, elestiff);
+    BIOPOLYNET::UTILS::ApplyBindingSpotStiffToParentElements( Discret(),
+        PeriodicBoundingBoxPtr(), BeamInteractionDataStatePtr()->GetMutableDisColNp(),
+        elepairptr, bspotstiff, elestiff);
 
     // assemble the contributions into stiffness matrix class variable
     // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
@@ -275,8 +276,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForceStiff()
 
     // apply forces on binding spots and corresponding linearizations to parent elements
     // and get their discrete element force vectors and stiffness matrices
-    BIOPOLYNET::UTILS::ApplyBpotForceStiffToParentElements( Discret(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(),
+    BIOPOLYNET::UTILS::ApplyBindingSpotForceStiffToParentElements( Discret(),
+        PeriodicBoundingBoxPtr(), BeamInteractionDataStatePtr()->GetMutableDisColNp(),
         elepairptr, bspotforce, bspotstiff, eleforce, elestiff );
 
     // assemble the contributions into force and stiffness class variables
@@ -656,8 +657,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         // get current position of filament binding spot
         LINALG::Matrix<3,1> bbspotpos;
         std::vector<double> eledisp;
-        BIOPOLYNET::UTILS::GetCurrentElementDis( Discret(), ele,
-            BeamInteractionDataStatePtr()->GetMutableDisColNp(), eledisp );
+        BIOPOLYNET::UTILS::GetCurrentUnshiftedElementDis( Discret(), ele,
+            BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBoxPtr(), eledisp );
         ele->GetPosOfBindingSpot( bbspotpos, eledisp, cldata_i->GetClBSpotStatus()[occbspotid].second,
             PeriodicBoundingBoxPtr() );
 
@@ -699,8 +700,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         // get current position of filament binding spot
         LINALG::Matrix<3,1> bbspotposone;
         std::vector<double> eledisp;
-        BIOPOLYNET::UTILS::GetCurrentElementDis( Discret(), ele,
-            BeamInteractionDataStatePtr()->GetMutableDisColNp(), eledisp );
+        BIOPOLYNET::UTILS::GetCurrentUnshiftedElementDis( Discret(), ele,
+            BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBoxPtr(), eledisp );
         ele->GetPosOfBindingSpot( bbspotposone, eledisp, cldata_i->GetClBSpotStatus()[0].second,
             PeriodicBoundingBoxPtr() );
 
@@ -730,8 +731,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
         // get current position of filament binding spot
         LINALG::Matrix<3,1> bbspotpostwo;
-        BIOPOLYNET::UTILS::GetCurrentElementDis( Discret(), ele,
-            BeamInteractionDataStatePtr()->GetMutableDisColNp(), eledisp);
+        BIOPOLYNET::UTILS::GetCurrentUnshiftedElementDis( Discret(), ele,
+            BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBoxPtr(), eledisp);
         ele->GetPosOfBindingSpot( bbspotpostwo, eledisp, cldata_i->GetClBSpotStatus()[1].second,
             PeriodicBoundingBoxPtr() );
 
@@ -978,13 +979,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreComputeBeamData()
     BeamData& bdata = beam_data_[i];
 
     std::vector<double> eledisp;
-    BIOPOLYNET::UTILS::GetCurrentElementDis( Discret(), beamele_i,
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(), eledisp );
+    BIOPOLYNET::UTILS::GetCurrentUnshiftedElementDis( Discret(), beamele_i,
+        BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBoxPtr(), eledisp );
 
     // loop over all binding spots of current element
     const int numbbspot = static_cast<int>(beamele_i->GetBindingSpotStatus().size());
     for(int j=0; j<numbbspot; ++j)
-      BIOPOLYNET::UTILS::GetPosAndTriadOfBindingSpot( beamele_i, BeamInteractionDataStatePtr()->GetMutableDisColNp(),
+      BIOPOLYNET::UTILS::GetPosAndTriadOfBindingSpot( beamele_i,
           PeriodicBoundingBoxPtr(), j, bdata.bbspotpos[j], bdata.bbspottriad[j], eledisp );
 
     // get status of beam binding spots

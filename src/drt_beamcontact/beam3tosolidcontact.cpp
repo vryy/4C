@@ -279,9 +279,12 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
 
 
   // Calculate radius of beam element via moment of inertia (only valid for beams with circular cross section)
-  // TODO: Get radius from Beam3eb class?
-  const double Iyy1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->MomentOfInertiaY();
-  const double radius1 = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy1 / M_PI));
+  const DRT::ELEMENTS::Beam3Base* beamele1 = static_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
+
+  if (beamele1 == NULL)
+    dserror("cast to beam base failed!");
+
+  const double radius1 = MANIPULATERADIUS * beamele1->GetCircularCrossSectionRadiusForInteractions();
 
   // Get contact interval borders eta_a and eta_b
   TYPEBTS eta_a = parset_a.first(2);

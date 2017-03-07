@@ -11,6 +11,10 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "beam3r.H"
+
+#include "triad_interpolation_local_rotation_vectors.H"
+
+// Todo @grill: check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
@@ -22,8 +26,8 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include "triad_interpolation_local_rotation_vectors.H"
-
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3rType DRT::ELEMENTS::Beam3rType::instance_;
 
 /*------------------------------------------------------------------------------------------------*
@@ -99,253 +103,69 @@ void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3R"];
 
   // note: LIN2 refers to linear Lagrange interpolation of centerline AND triad field
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",6)
-    .AddOptionalTag("FAD")
-    ;
-
   defs["LIN2"]
     .AddIntVector("LIN2",2)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",6)
     .AddOptionalTag("FAD")
     ;
 
   // note: LIN3 refers to quadratic Lagrange interpolation of centerline AND triad field
-  defs["LINE3"]
-    .AddIntVector("LINE3",3)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",9)
-    .AddOptionalTag("FAD")
-    ;
-
   defs["LIN3"]
     .AddIntVector("LIN3",3)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",9)
     .AddOptionalTag("FAD")
     ;
 
   // note: LIN4 refers to cubic Lagrange interpolation of centerline AND triad field
-  defs["LINE4"]
-    .AddIntVector("LINE4",4)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",12)
-    .AddOptionalTag("FAD")
-    ;
-
   defs["LIN4"]
     .AddIntVector("LIN4",4)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",12)
     .AddOptionalTag("FAD")
     ;
 
   // note: LIN5 refers to quartic Lagrange interpolation of centerline AND triad field
-  defs["LINE5"]
-    .AddIntVector("LINE5",5)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",15)
-    .AddOptionalTag("FAD")
-    ;
-
   defs["LIN5"]
     .AddIntVector("LIN5",5)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",15)
     .AddOptionalTag("FAD")
     ;
 
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
    *       LIN2 refers to linear Lagrange interpolation of the triad field*/
-  defs["HERM2LINE2"]
-    .AddIntVector("HERM2LINE2",2)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",6)
-    .AddOptionalTag("FAD")
-    ;
-
   defs["HERM2LIN2"]
     .AddIntVector("HERM2LIN2",2)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",6)
     .AddOptionalTag("FAD")
     ;
 
   /* note: HERM2 refers to cubic order Hermite interpolation of centerline (2 nodes)
    *       LIN3 refers to quadratic Lagrange interpolation of the triad field*/
-  defs["HERM2LINE3"]
-    .AddIntVector("HERM2LINE3",3)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",9)
-    .AddOptionalTag("FAD")
-    ;
-
   defs["HERM2LIN3"]
     .AddIntVector("HERM2LIN3",3)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",9)
     .AddOptionalTag("FAD")
     ;
 
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
    *       LIN4 refers to cubic Lagrange interpolation of the triad field*/
-  defs["HERM2LINE4"]
-    .AddIntVector("HERM2LINE4",4)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",12)
-    .AddOptionalTag("FAD")
-    ;
-
   defs["HERM2LIN4"]
     .AddIntVector("HERM2LIN4",4)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",12)
     .AddOptionalTag("FAD")
     ;
 
   /* note: HERM2 refers to cubic Hermite interpolation of centerline (2 nodes)
    *       LIN5 refers to quartic Lagrange interpolation of the triad field*/
-  defs["HERM2LINE5"]
-    .AddIntVector("HERM2LINE5",5)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",15)
-    .AddOptionalTag("FAD")
-    ;
-
   defs["HERM2LIN5"]
     .AddIntVector("HERM2LIN5",5)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("IYY")
-    .AddNamedDouble("IZZ")
-    .AddNamedDouble("IRR")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",15)
     .AddOptionalTag("FAD")
     ;
@@ -458,14 +278,6 @@ DRT::ELEMENTS::Beam3Base(id,owner),
 useFAD_(false),
 centerline_hermite_(false),
 isinit_(false),
-crosssec_(0),
-crosssecshear_(0),
-Iyy_(0),
-Izz_(0),
-Irr_(0),
-inertscaletrans_(1.0),
-inertscalerot1_(1.0),
-inertscalerot2_(1.0),
 jacobiGPelastf_(0),
 jacobiGPelastm_(0),
 jacobiGPmass_(0),
@@ -489,14 +301,6 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  useFAD_(old.useFAD_),
  centerline_hermite_(old.centerline_hermite_),
  isinit_(old.isinit_),
- crosssec_(old.crosssec_),
- crosssecshear_(old.crosssecshear_),
- Iyy_(old.Iyy_),
- Izz_(old.Izz_),
- Irr_(old.Irr_),
- inertscaletrans_(old.inertscaletrans_),
- inertscalerot1_(old.inertscalerot1_),
- inertscalerot2_(old.inertscalerot2_),
  reflength_(old.reflength_),
  theta0node_(old.theta0node_),
  Trefnode_(old.Trefnode_),
@@ -615,14 +419,6 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,useFAD_);
   AddtoPack(data,centerline_hermite_);
   AddtoPack(data,isinit_);
-  AddtoPack(data,crosssec_);
-  AddtoPack(data,crosssecshear_);
-  AddtoPack(data,Iyy_);
-  AddtoPack(data,Izz_);
-  AddtoPack(data,Irr_);
-  AddtoPack(data,inertscaletrans_);
-  AddtoPack(data,inertscalerot1_);
-  AddtoPack(data,inertscalerot2_);
   AddtoPack(data,reflength_);
   AddtoPack<3,1>(data,theta0node_);
   AddtoPack<3,1>(data,Trefnode_);
@@ -686,14 +482,6 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   useFAD_ = ExtractInt(position,data);
   centerline_hermite_ = ExtractInt(position,data);
   isinit_ = ExtractInt(position,data);
-  ExtractfromPack(position,data,crosssec_);
-  ExtractfromPack(position,data,crosssecshear_);
-  ExtractfromPack(position,data,Iyy_);
-  ExtractfromPack(position,data,Izz_);
-  ExtractfromPack(position,data,Irr_);
-  ExtractfromPack(position,data,inertscaletrans_);
-  ExtractfromPack(position,data,inertscalerot1_);
-  ExtractfromPack(position,data,inertscalerot2_);
   ExtractfromPack(position,data,reflength_);
   ExtractfromPack<3,1>(position,data,theta0node_);
   ExtractfromPack<3,1>(position,data,Trefnode_);

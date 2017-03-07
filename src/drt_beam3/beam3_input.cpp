@@ -11,8 +11,11 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beam3.H"
+
 #include "../drt_lib/drt_linedefinition.H"
 
+#include "../drt_mat/material.H"
+#include "../drt_mat/matpar_parameter.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -25,11 +28,13 @@ bool DRT::ELEMENTS::Beam3::ReadElement(const std::string&          eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  linedef->ExtractDouble("CROSS",crosssec_);
-
-  double shear_correction = 0.0;
-  linedef->ExtractDouble("SHEARCORR",shear_correction);
-  crosssecshear_ = crosssec_ * shear_correction;
+  if ( Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper" and
+       Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper_ByModes" )
+  {
+    dserror( "The material parameter definition '%s' is not supported by Beam3 element! "
+        "Choose MAT_BeamReissnerElastHyper or MAT_BeamReissnerElastHyper_ByModes!",
+        Material()->Parameter()->Name() );
+  }
 
   /*read beam moments of inertia of area; currently the beam3 element works only with rotationally symmetric
    * crosssection so that the moment of inertia of area around both principal can be expressed by one input
@@ -40,55 +45,14 @@ bool DRT::ELEMENTS::Beam3::ReadElement(const std::string&          eletype,
    * cross sections can be done easily by allowing for more complex input right here and by calculating an approxipate
    * initial nodal triad in the frame of the registration; */
 
-  linedef->ExtractDouble("MOMIN",Iyy_);
-  linedef->ExtractDouble("MOMIN",Izz_);
-  linedef->ExtractDouble("MOMINPOL",Irr_);
+  // safety check:
+  LINALG::Matrix<3,3> Cm, Cb;
+  GetConstitutiveMatrices(Cm, Cb);
+
+  if ( Cb(1,1) != Cb(2,2) )
+    dserror("currently the beam3 element works only with rotationally symmetric crosssection, "
+        "i.e. the area moment of inertia w.r.t. first and second principal axis of inertia must "
+        "have the same value! check material parameters MOMIN2/MOMIN3 in your input file !");
 
   return true;
 }
-
-/*------------------------------------------------------------------------*
- | Set moment of inertia                            (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::SetIyy(const double& Iyy)
-{
-  Iyy_ = Iyy;
-  return;
-}
-
-/*------------------------------------------------------------------------*
- | Set moment of inertia                            (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::SetIzz(const double& Izz)
-{
-  Izz_ = Izz;
-  return;
-}
-
-/*------------------------------------------------------------------------*
- | Set moment of inertia                            (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::SetIrr(const double& Irr)
-{
-  Irr_ = Irr;
-  return;
-}
-
-/*------------------------------------------------------------------------*
- | Set cross section area                           (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::SetCrossSec(const double& crosssec)
-{
-  crosssec_ = crosssec;
-  return;
-}
-
-/*------------------------------------------------------------------------*
- | Set cross section area with shear correction     (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::SetCrossSecShear(const double& crosssecshear)
-{
-  crosssecshear_ = crosssecshear;
-  return;
-}
-

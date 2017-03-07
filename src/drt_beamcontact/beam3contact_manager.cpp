@@ -27,6 +27,7 @@
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
 #include "../drt_beam3/beam3k.H"
+#include "../drt_beam3/beam3_base.H"
 #include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 
@@ -4439,21 +4440,14 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
   Epetra_SerialDenseMatrix R(3,3);
   Epetra_SerialDenseMatrix coord(3,2);
 
-  double eleradius = 0;
 
   // get radius of element
-  const DRT::ElementType & eot = thisele->ElementType();
+  const DRT::ELEMENTS::Beam3Base* thisbeam = static_cast<const DRT::ELEMENTS::Beam3Base*>(thisele);
 
-    if ( eot == DRT::ELEMENTS::Beam3Type::Instance() )
-      {
-        const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
-        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaZ()) / M_PI));
-      }
-    if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
-      {
-        const DRT::ELEMENTS::Beam3r* thisbeam = static_cast<const DRT::ELEMENTS::Beam3r*>(thisele);
-        eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaZ()) / M_PI));
-      }
+  if (thisbeam == NULL)
+    dserror("cast to beam base failed!");
+
+  double eleradius = thisbeam->GetCircularCrossSectionRadiusForInteractions();
 
   // declaring variable for color of elements
   double color = 1.0;
@@ -4649,27 +4643,13 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
   Epetra_SerialDenseMatrix R(3,3);
   Epetra_SerialDenseMatrix coord(3,2);
 
-  double eleradius = 0;
+  // get radius of element
+  const DRT::ELEMENTS::Beam3Base* thisbeam = static_cast<const DRT::ELEMENTS::Beam3Base*>(thisele);
 
-  // only implemented for Kirchhoff beams so far!
-  const DRT::ElementType & eot = thisele->ElementType();
-  if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaZ()) / M_PI));
-  }
-  else if ( eot == DRT::ELEMENTS::Beam3kType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3k* thisbeam = static_cast<const DRT::ELEMENTS::Beam3k*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaY()) / M_PI));
-  }
-  else if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
-  {
-    const DRT::ELEMENTS::Beam3r* thisbeam = static_cast<const DRT::ELEMENTS::Beam3r*>(thisele);
-    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->MomentOfInertiaY()) / M_PI));
-  }
-  else
-    dserror("ERROR: GSMH_N_noded output not yet implemented for this beam element type");
+  if (thisbeam == NULL)
+    dserror("cast to beam base failed!");
+
+  double eleradius = thisbeam->GetCircularCrossSectionRadiusForInteractions();
 
 
   // declaring variable for color of elements

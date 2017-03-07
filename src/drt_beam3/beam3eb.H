@@ -257,50 +257,6 @@ public:
    *  \date 10/16 */
   virtual inline bool IsCenterlineNode(const DRT::Node& node) const { return true; }
 
-
-  /** \brief get the cross-section area
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double CrossSectionArea() const
-  {
-    return crosssec_;
-  }
-
-  /** \brief get the shear-corrected (i.e. scaled) cross-section area
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double CrossSectionAreaShearCorrected() const
-  {
-    // Kirchhoff formulation is shear-free
-    return crosssec_;
-  }
-
-  /** \brief Get moment of inertia of area Iyy_
-   *
-   *  \author grill
-   *  \date 02/17 */
-  virtual double MomentOfInertiaY() const;
-
-  /** \brief Get moment of inertia of area Izz_
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double MomentOfInertiaZ() const
-  {
-    return Izz_;
-  }
-
-  /** \brief get the polar area moment of inertia
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double PolarMomentOfInertia() const
-  {
-    return Irr_;
-  }
-
   /*!
    \brief Get jacobian this element
    */
@@ -437,25 +393,6 @@ public:
   }
 
   //! @name Construction
-  /*!
-  \brief Set moment of inertia of area Iyy_ of this element
-  */
-  void SetIyy(const double& Iyy);
-
-  /*!
-  \brief Set moment of inertia of area Iyy_ of this element
-  */
-  void SetIzz(const double& Izz);
-
-  /*!
-  \brief Set moment of inertia of area Iyy_ of this element
-  */
-  void SetIrr(const double& Irr);
-
-  /*!
-  \brief Set cross section area of this element
-  */
-  void SetCrossSec(const double& crosssec);
 
   /*!
   \brief Read input for this element
@@ -664,18 +601,6 @@ private:
 
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-
-  //! cross section area
-  double crosssec_;
-
-  //!moment of inertia of area around y-axis(orthognoal to rod axis in yz-plane)
-  double Iyy_;
-
-  //!moment of inertia of area around z-axis(forming cartesian system with rod- and y-axis)
-  double Izz_;
-
-  //!polar moment of inertia of area
-  double Irr_;
 
   //! Vector holding value of Jacobi determinant jacobi for each Gauss point for underintegration
   double jacobi_;

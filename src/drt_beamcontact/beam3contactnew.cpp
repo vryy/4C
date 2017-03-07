@@ -145,25 +145,22 @@ radius2_(0.0)
   if (element1->Id() >= element2->Id())
     dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
 
-  double Iyy1 = 0.0;
-  double Iyy2 = 0.0;
-  if (eot1 == DRT::ELEMENTS::Beam3Type::Instance())
-  {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->MomentOfInertiaY();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->MomentOfInertiaY();
-  }
-  else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
-  {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->MomentOfInertiaY();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3r*>(element2_))->MomentOfInertiaY();
-  }
-  else if (eot1 == DRT::ELEMENTS::Beam3ebType::Instance())
-  {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->MomentOfInertiaY();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->MomentOfInertiaY();
-  }
-  radius1_ = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy1 / M_PI));
-  radius2_ = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy2 / M_PI));
+
+  // get radius of elements
+  const DRT::ELEMENTS::Beam3Base* beamele1 = static_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
+
+  if (beamele1 == NULL)
+    dserror("cast to beam base failed!");
+
+  radius1_ = MANIPULATERADIUS * beamele1->GetCircularCrossSectionRadiusForInteractions();
+
+  const DRT::ELEMENTS::Beam3Base* beamele2 = static_cast<const DRT::ELEMENTS::Beam3Base*>(element2_);
+
+  if (beamele2 == NULL)
+    dserror("cast to beam base failed!");
+
+  radius2_ = MANIPULATERADIUS * beamele2->GetCircularCrossSectionRadiusForInteractions();
+
 
   if(DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(beamcontactparams,"BEAMS_OCTREE") != INPAR::BEAMCONTACT::boct_none)
   {

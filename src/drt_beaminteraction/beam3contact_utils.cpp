@@ -170,7 +170,7 @@ double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
   const DRT::ELEMENTS::Rigidsphere* thissphere = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(ele);
 
   if (beamele != NULL)
-    eleradius = MANIPULATERADIUS*std::sqrt(std::sqrt(4 * (beamele->MomentOfInertiaY()) / M_PI));
+    eleradius = MANIPULATERADIUS * beamele->GetCircularCrossSectionRadiusForInteractions();
   else if(thissphere != NULL)
     eleradius = thissphere->Radius();
   else

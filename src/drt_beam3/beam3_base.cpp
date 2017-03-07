@@ -12,7 +12,7 @@
 
 #include "beam3_base.H"
 
-#include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/beam_elasthyper.H"
 
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -170,6 +170,13 @@ std::vector<int> DRT::ELEMENTS::Beam3Base::GetRotVecDofGIDs(
   return dofgids;
 }
 
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+double DRT::ELEMENTS::Beam3Base::GetCircularCrossSectionRadiusForInteractions() const
+{
+  return GetBeamMaterial().GetInteractionRadius();
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(LINALG::Matrix<3,1>& refpos,
@@ -186,49 +193,66 @@ void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(LINALG::Matrix<3,1>& refpos,
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
+const MAT::BeamElastHyperMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
+{
+  // Todo @grill think about storing the casted pointer as class variable or other solution to
+  //      avoid cast in every element evaluation
+
+  const MAT::BeamElastHyperMaterial* beam_material_ptr = NULL;
+
+  // get the material law
+  Teuchos::RCP<const MAT::Material> material_ptr = Material();
+
+  switch ( material_ptr->MaterialType() )
+  {
+    case INPAR::MAT::m_beam_elast_hyper_generic:
+    {
+      beam_material_ptr =
+         static_cast<const MAT::BeamElastHyperMaterial*>( material_ptr.get() );
+
+      if (beam_material_ptr == NULL)
+        dserror("cast to beam material class failed!");
+
+      break;
+    }
+    default:
+    {
+      dserror("unknown or improper type of material law! expected beam material law!");
+      break;
+    }
+  }
+
+  return *beam_material_ptr;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices(
     LINALG::TMatrix<T,3,3>& CN,
     LINALG::TMatrix<T,3,3>& CM) const
 {
-  // get the material law
-   Teuchos::RCP<const MAT::Material> currmat = Material();
-   double youngs_modulus = 0.0;
-   double shear_modulus = 0.0;
+  GetBeamMaterial().GetConstitutiveMatrixOfForcesMaterialFrame( CN );
+  GetBeamMaterial().GetConstitutiveMatrixOfMomentsMaterialFrame( CM );
+}
 
-   // assignment of material parameters; only St.Venant material is accepted for this beam
-   switch ( currmat->MaterialType() )
-   {
-     case INPAR::MAT::m_stvenant:// only linear elastic material supported
-     {
-       const MAT::StVenantKirchhoff* actmat =
-           static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
+void DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor(
+    double& mass_inertia_translational,
+    LINALG::TMatrix<T,3,3>& J) const
+{
+  GetTranslationalMassInertiaFactor( mass_inertia_translational );
+  GetBeamMaterial().GetMassMomentOfInertiaTensorMaterialFrame( J );
+}
 
-       youngs_modulus = actmat->Youngs();
-       shear_modulus = actmat->ShearMod();
-
-       break;
-     }
-     default:
-     {
-       dserror("unknown or improper type of material law");
-       break;
-     }
-   }
-
-   // defining material constitutive matrix CN between Gamma and N
-   // according to Jelenic 1999, section 2.4
-   CN.Clear();
-   CN(0,0) = youngs_modulus * CrossSectionArea();
-   CN(1,1) = shear_modulus * CrossSectionAreaShearCorrected();
-   CN(2,2) = shear_modulus * CrossSectionAreaShearCorrected();
-
-   // defining material constitutive matrix CM between curvature and moment
-   // according to Jelenic 1999, section 2.4
-   CM.Clear();
-   CM(0,0) = shear_modulus * PolarMomentOfInertia();
-   CM(1,1) = youngs_modulus * MomentOfInertiaY();
-   CM(2,2) = youngs_modulus * MomentOfInertiaZ();
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3Base::GetTranslationalMassInertiaFactor(
+    double& mass_inertia_translational) const
+{
+  mass_inertia_translational = GetBeamMaterial().GetTranslationalMassInertiaFactor();
 }
 
 /*----------------------------------------------------------------------*
@@ -244,7 +268,7 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3,1>& gamma
   gamma(0) = 2.0 * PI * BrownianDynParamsInterface().GetViscosity();
   gamma(1) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity();
   gamma(2) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity()
-             * std::sqrt( 4*this->MomentOfInertiaY()/PI );
+             * std::pow( GetCircularCrossSectionRadiusForInteractions(), 2.0);
 
   // huge improvement in convergence of non-linear solver in case of artificial factor 4000
 //  gamma(2) *= 4000.0;
@@ -252,11 +276,12 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3,1>& gamma
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template<unsigned int ndim, typename T> //number of dimensions of embedding space
-void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(Teuchos::ParameterList&      params,  //!<parameter list
-                                                const LINALG::TMatrix<T,ndim,1>&  evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-                                                LINALG::TMatrix<T,ndim,1>&        velbackground,  //!< velocity of background fluid
-                                                LINALG::TMatrix<T,ndim,ndim>&     velbackgroundgrad) const//!<gradient of velocity of background fluid
+template<unsigned int ndim, typename T>
+void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
+    Teuchos::ParameterList&      params,  //!<parameter list
+    const LINALG::TMatrix<T,ndim,1>&  evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
+    LINALG::TMatrix<T,ndim,1>&        velbackground,  //!< velocity of background fluid
+    LINALG::TMatrix<T,ndim,ndim>&     velbackgroundgrad) const//!<gradient of velocity of background fluid
 {
   /*note: this function is not yet a general one, but always assumes a shear flow, where the velocity of the
    * background fluid is always directed in direction params.get<int>("DBCDISPDIR",0) and orthogonal to z-axis.
@@ -311,26 +336,28 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(Teuchos::ParameterList&    
  *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
     std::vector<double>& disp,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
-    unsigned int nnode) const
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const
 {
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
    * of freedom for each element node*/
   int numdof = NumDofPerNode(*(Nodes()[0]));
 
+  // get number of nodes that are used for centerline interpolation
+  unsigned int nnodecl = NumCenterlineNodes();
+
   // loop through all nodes except for the first node which remains
   // fixed as reference node
-  for(unsigned int i = 1; i < nnode; ++i)
+  for(unsigned int i = 1; i < nnodecl; ++i)
     for( int dim = 0; dim < 3; ++dim )
-      periodic_boundingbox->UnShift1D( dim, disp[numdof*i+dim], Nodes()[0]->X()[dim] + disp[numdof*0+dim], Nodes()[i]->X()[dim]);
+      periodic_boundingbox->UnShift1D( dim, disp[numdof*i+dim],
+          Nodes()[0]->X()[dim] + disp[numdof*0+dim], Nodes()[i]->X()[dim]);
 }
 
 //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
-void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp,
-                                        const unsigned int nnode) const
+void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp) const
 {
-  this->UnShiftNodePosition(disp,BrownianDynParamsInterface().GetPeriodicBoundingBox(),nnode);
+  this->UnShiftNodePosition(disp, BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 }
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
@@ -339,9 +366,6 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>& pos,
                                                    const int& bspotlocn,
                                                    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const
 {
-  // unshift node position to get correct position at xi
-  UnShiftNodePosition(disp,periodic_boundingbox,NumCenterlineNodes());
-
   const double xi = bspotposxi_[bspotlocn];
   // get position
   GetPosAtXi(pos,xi,disp);
@@ -357,12 +381,8 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>& pos,
 void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(
     LINALG::Matrix<3,3>&                            triad,
     std::vector<double>&                            disp,
-    const int&                                      bspotlocn,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const
+    const int&                                      bspotlocn) const
 {
-  // unshift node position to get correct position at xi
-  UnShiftNodePosition(disp,periodic_boundingbox,NumCenterlineNodes());
-
   const double xi = bspotposxi_[bspotlocn];
   // get position
   GetTriadAtXi(triad,xi,disp);
@@ -376,6 +396,13 @@ template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<double>(
 template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<Sacado::Fad::DFad<double> >(
     LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>& CN,
     LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>& CM) const;
+
+template void DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor<double>(
+    double&,
+    LINALG::TMatrix<double,3,3>&) const;
+template void DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor<Sacado::Fad::DFad<double> >(
+    double&,
+    LINALG::TMatrix<Sacado::Fad::DFad<double>,3,3>&) const;
 
 template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3,double>(
     Teuchos::ParameterList&,

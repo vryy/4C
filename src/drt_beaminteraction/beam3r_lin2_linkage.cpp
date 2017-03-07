@@ -11,6 +11,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "beam3r_lin2_linkage.H"
+#include "beam_to_beam_linkage.H"
 
 #include "../drt_beam3/beam3r.H"
 
@@ -20,12 +21,10 @@
 #include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_lib/drt_dserror.H"
-
 #include "../drt_lib/drt_utils_factory.H"
 
 #include <Teuchos_RCP.hpp>
 
-#include "beam_to_beam_linkage.H"
 
 BEAMINTERACTION::Beam3rLin2LinkageType BEAMINTERACTION::Beam3rLin2LinkageType::instance_;
 
@@ -72,12 +71,12 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Setup()
    *       (displacement-reaction force) relation here! */
   linkele_ = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(-1,0));
 
-  linkele_->SetCrossSec(4.751658e-06);
-  linkele_->SetCrossSecShear(4.751658e-06);
-  linkele_->SetMaterial(1);
-  linkele_->SetIyy(4.4918e-11);
-  linkele_->SetIzz(4.4918e-11);
-  linkele_->SetIrr(8.9836e-11);
+  // Fixme @grill: get the real material number from MAT_Crosslinker which is
+  //               associated with the crosslinker particle!
+  linkele_->SetMaterial(3);
+
+  // Todo @grill: safety check for proper material type?!
+
   linkele_->SetCenterlineHermite(false);
 
   // set dummy node Ids, in order to make NumNodes() method of element return the correct number of nodes
@@ -154,7 +153,7 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Unpack(const std::vector<char>& data)
     DRT::ParObject* object = DRT::UTILS::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Beam3r* linkele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(object);
     if (linkele==NULL)
-      dserror("failed to unpack elastic material");
+      dserror("failed to unpack Beam3r object within Beam3rLin2Linkage");
     linkele_ = Teuchos::rcp(linkele);
   }
   else linkele_ = Teuchos::null;

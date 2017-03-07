@@ -76,9 +76,17 @@ void GetCurrentElementDis(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
+void GetCurrentUnshiftedElementDis(
+    DRT::Discretization const& discret,
+    DRT::Element const* ele,
+    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
+    std::vector<double>& eledisp);
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
 void GetPosAndTriadOfBindingSpot(
     DRT::Element* ele,
-    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
     int const locbspotnum,
     LINALG::Matrix<3,1>& bspotpos,
@@ -126,8 +134,9 @@ void ExtractPosDofVecAbsoluteValues(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ApplyBpotForceToParentElements(
+void ApplyBindingSpotForceToParentElements(
     DRT::Discretization const&                             discret,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&        pbb,
     const Teuchos::RCP<Epetra_Vector>                      disp_np_col,
     const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr,
     std::vector< LINALG::SerialDenseVector > const&        bspotforce,
@@ -135,8 +144,9 @@ void ApplyBpotForceToParentElements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ApplyBpotStiffToParentElements(
+void ApplyBindingSpotStiffToParentElements(
     DRT::Discretization const&                                     discret,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
     const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage>         elepairptr,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
@@ -144,8 +154,9 @@ void ApplyBpotStiffToParentElements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ApplyBpotForceStiffToParentElements(
+void ApplyBindingSpotForceStiffToParentElements(
     DRT::Discretization const&                                     discret,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
     const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage>         elepairptr,
     std::vector< LINALG::SerialDenseVector > const&                bspotforce,

@@ -34,6 +34,7 @@
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
+#include "../drt_beam3/beam3_base.H"
 #include "../drt_beaminteraction/beam3contact_defines.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "beam3contact_manager.H"
@@ -499,12 +500,12 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
 
         (*diameter_)[i] = -1.0;     // TODO get diameter from call of abstract Beam3Base::Radius();
 
-        if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->MomentOfInertiaZ()) / M_PI));
-        else if (eot == DRT::ELEMENTS::Beam3rType::Instance())
-          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3r*>(element))->MomentOfInertiaZ()) / M_PI));
-        else if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
-          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element))->MomentOfInertiaZ()) / M_PI));
+        if ( eot == DRT::ELEMENTS::Beam3Type::Instance() or
+             eot == DRT::ELEMENTS::Beam3rType::Instance() or
+             eot == DRT::ELEMENTS::Beam3ebType::Instance() )
+        {
+          (*diameter_)[i] = 2.0 * (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element) )->GetCircularCrossSectionRadiusForInteractions();
+        }
         else if (eot == DRT::ELEMENTS::RigidsphereType::Instance())
           (*diameter_)[i] = 2.0 * (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(element))->Radius();
         //If we have a solid element, we don't need its diameter and can it set to zero:

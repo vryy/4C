@@ -907,27 +907,15 @@ template<const int numnodes , const int numnodalvalues>
 void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeGap(TYPE& gap,
                                                                          const TYPE& norm)
 {
-  // get moments of inertia of both elements
-  // NOTE: here Iyy_ = Izz_ due to the circular cross section
-  double MomentOfInertia_ele1 = 0;
-  double radius_ele2 = 0;
+  const DRT::ELEMENTS::Beam3Base* beamele = static_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
 
-  const DRT::ElementType & eot1 = element1_->ElementType();
-
-  if ( eot1 == DRT::ELEMENTS::Beam3Type::Instance() )
-    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->MomentOfInertiaY();
-  else if ( eot1 == DRT::ELEMENTS::Beam3rType::Instance() )
-    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->MomentOfInertiaY();
-  else if ( eot1 == DRT::ELEMENTS::Beam3ebType::Instance() )
-    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->MomentOfInertiaY();
-  else
-    dserror("unknown beam type!");
-
-  radius_ele2 = (static_cast<DRT::ELEMENTS::Rigidsphere*>(element2_))->Radius();
+  if (beamele == NULL)
+    dserror("cast to beam base failed!");
 
   // compute radii of both elements
-  double radius_ele1=0;
-  ComputeEleRadius(radius_ele1,MomentOfInertia_ele1);
+  double radius_ele1 = MANIPULATERADIUS * beamele->GetCircularCrossSectionRadiusForInteractions();
+
+  double radius_ele2 = (static_cast<DRT::ELEMENTS::Rigidsphere*>(element2_))->Radius();
 
   // compute gap to be returned
   gap = norm - radius_ele1 - radius_ele2;
@@ -936,17 +924,6 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeGap(TYPE& g
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  compute radius from moment of inertia                    grill 09/14|
- *----------------------------------------------------------------------*/
-template<const int numnodes , const int numnodalvalues>
-void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeEleRadius(double& radius, const double& moi)
-{
-  // fixed formula for circular cross sections: the factor f can be used to manipulate the geometrical radius if not equal to 1
-  radius = MANIPULATERADIUS * sqrt(sqrt(4 * moi / M_PI));
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  | compute contact point coordinates and their derivatives    grill 09/14|

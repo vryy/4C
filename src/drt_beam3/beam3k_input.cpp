@@ -11,7 +11,12 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "beam3k.H"
+
+#include "../drt_mat/material.H"
+#include "../drt_mat/matpar_parameter.H"
+
 #include "../drt_lib/drt_linedefinition.H"
+
 #include "../drt_fem_general/largerotations.H"
 
 
@@ -22,10 +27,19 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(const std::string&          eletype,
                                         DRT::INPUT::LineDefinition* linedef)
 {
 
-  // read number of material model
+  // read number of material model and cross-sections specs
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
+
+  if ( Material()->Parameter()->Name() != "MAT_BeamKirchhoffElastHyper" and
+       Material()->Parameter()->Name() != "MAT_BeamKirchhoffElastHyper_ByModes" )
+  {
+    dserror( "The material parameter definition '%s' is not supported by Beam3k element! "
+        "Choose MAT_BeamKirchhoffElastHyper or MAT_BeamKirchhoffElastHyper_ByModes!",
+        Material()->Parameter()->Name() );
+  }
+
 
   int rotvec = 0;
   linedef->ExtractInt("ROTVEC",rotvec);
@@ -54,34 +68,6 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(const std::string&          eletype,
     dserror("The variable WK can only take on the values 0 (Kirchhoff constraint enforced in a strong manner) and "
             "1 (Kirchhoff constraint enforced in a weak manner)!");
 
-  linedef->ExtractDouble("CROSS",crosssec_);
-
-  /*read beam moments of inertia of area; currently the Beam3k element works only with rotationally symmetric
-   * crosssection so that the moment of inertia of area around both principal axes can be expressed by one input
-   * number I_; however, the implementation itself is a general one and works also for other cases;*/
-
-  //currently only rotationally symmetric profiles for beam --> Iyy = Izz
-  linedef->ExtractDouble("MOMINY",Iyy_);
-  linedef->ExtractDouble("MOMINZ",Izz_);
-
-  //torsional moment of inertia
-  linedef->ExtractDouble("MOMINPOL",Irr_);
-
-  // optional: artificial scaling factors for translational/rotational inertia terms
-  if(linedef->HaveNamed("IT"))
-    linedef->ExtractDouble("IT",inertscaletrans_);
-  else
-    inertscaletrans_=1.0;
-
-  if(linedef->HaveNamed("IR1"))
-    linedef->ExtractDouble("IR1",inertscalerot1_);
-  else
-    inertscalerot1_=1.0;
-
-  if(linedef->HaveNamed("IR2"))
-    linedef->ExtractDouble("IR2",inertscalerot2_);
-  else
-    inertscalerot2_=1.0;
 
   //extract triads at element nodes in reference configuration as rotation vectors and save them as quaternions at each node, respectively
   std::vector<double> nodal_thetas;

@@ -34,6 +34,8 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3kType DRT::ELEMENTS::Beam3kType::instance_;
 
 /*------------------------------------------------------------------------------------------------*
@@ -94,51 +96,13 @@ void DRT::ELEMENTS::Beam3kType::ComputeNullSpace( DRT::Discretization & dis, std
 void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3K"];
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
-    .AddNamedInt("WK")
-    .AddNamedInt("ROTVEC")
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMINY")
-    .AddNamedDouble("MOMINZ")
-    .AddNamedDouble("MOMINPOL")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",6)
-    .AddOptionalTag("FAD")
-    ;
 
   defs["LIN2"]
     .AddIntVector("LIN2",2)
     .AddNamedInt("WK")
     .AddNamedInt("ROTVEC")
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMINY")
-    .AddNamedDouble("MOMINZ")
-    .AddNamedDouble("MOMINPOL")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",6)
-    .AddOptionalTag("FAD")
-    ;
-
-  defs["LINE3"]
-    .AddIntVector("LINE3",3)
-    .AddNamedInt("WK")
-    .AddNamedInt("ROTVEC")
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMINY")
-    .AddNamedDouble("MOMINZ")
-    .AddNamedDouble("MOMINPOL")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
-    .AddNamedDoubleVector("TRIADS",9)
     .AddOptionalTag("FAD")
     ;
 
@@ -147,45 +111,15 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
     .AddNamedInt("WK")
     .AddNamedInt("ROTVEC")
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMINY")
-    .AddNamedDouble("MOMINZ")
-    .AddNamedDouble("MOMINPOL")
-    .AddOptionalNamedDouble("IT")
-    .AddOptionalNamedDouble("IR1")
-    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",9)
     .AddOptionalTag("FAD")
     ;
-
-  defs["LINE4"]
-      .AddIntVector("LINE4",4)
-      .AddNamedInt("WK")
-      .AddNamedInt("ROTVEC")
-      .AddNamedInt("MAT")
-      .AddNamedDouble("CROSS")
-      .AddNamedDouble("MOMINY")
-      .AddNamedDouble("MOMINZ")
-      .AddNamedDouble("MOMINPOL")
-      .AddOptionalNamedDouble("IT")
-      .AddOptionalNamedDouble("IR1")
-      .AddOptionalNamedDouble("IR2")
-      .AddNamedDoubleVector("TRIADS",12)
-      .AddOptionalTag("FAD")
-      ;
 
     defs["LIN4"]
       .AddIntVector("LIN4",4)
       .AddNamedInt("WK")
       .AddNamedInt("ROTVEC")
       .AddNamedInt("MAT")
-      .AddNamedDouble("CROSS")
-      .AddNamedDouble("MOMINY")
-      .AddNamedDouble("MOMINZ")
-      .AddNamedDouble("MOMINPOL")
-      .AddOptionalNamedDouble("IT")
-      .AddOptionalNamedDouble("IR1")
-      .AddOptionalNamedDouble("IR2")
       .AddNamedDoubleVector("TRIADS",12)
       .AddOptionalTag("FAD")
       ;
@@ -245,10 +179,6 @@ DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner) :
  DRT::ELEMENTS::Beam3Base(id,owner),
 useFAD_(false),
 isinit_(false),
-crosssec_(0.0),
-Iyy_(0.0),
-Izz_(0.0),
-Irr_(0.0),
 T0_(0),
 T_(0),
 theta0_(0),
@@ -279,10 +209,7 @@ rttmodnewmass_(0),
 rtconvmass_(0),
 rtnewmass_(0),
 rconvmass_(0),
-rnewmass_(0),
-inertscaletrans_(0.0),
-inertscalerot1_(0.0),
-inertscalerot2_(0.0)
+rnewmass_(0)
 {
   return;
 }
@@ -293,10 +220,6 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
  DRT::ELEMENTS::Beam3Base(old),
  useFAD_(old.useFAD_),
  isinit_(old.isinit_),
- crosssec_(old.crosssec_),
- Iyy_(old.Iyy_),
- Izz_(old.Izz_),
- Irr_(old.Irr_),
  T0_(old.T0_),
  T_(old.T_),
  theta0_(old.theta0_),
@@ -327,10 +250,7 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
  rtconvmass_(old.rtconvmass_),
  rtnewmass_(old.rtnewmass_),
  rconvmass_(old.rconvmass_),
- rnewmass_(old.rnewmass_),
- inertscaletrans_(old.inertscaletrans_),
- inertscalerot1_(old.inertscalerot1_),
- inertscalerot2_(old.inertscalerot2_)
+ rnewmass_(old.rnewmass_)
 {
   return;
 }
@@ -405,10 +325,6 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
   //add all class variables
   AddtoPack(data,useFAD_);
   AddtoPack(data,isinit_);
-  AddtoPack(data,crosssec_);
-  AddtoPack(data,Iyy_);
-  AddtoPack(data,Izz_);
-  AddtoPack(data,Irr_);
   AddtoPack<3,1>(data,T0_);
   AddtoPack<3,1>(data,T_);
   AddtoPack<3,1>(data,theta0_);
@@ -440,9 +356,6 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,rtnewmass_);
   AddtoPack<3,1>(data,rconvmass_);
   AddtoPack<3,1>(data,rnewmass_);
-  AddtoPack(data,inertscaletrans_);
-  AddtoPack(data,inertscalerot1_);
-  AddtoPack(data,inertscalerot2_);
 
   return;
 }
@@ -465,10 +378,6 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   //extract all class variables of beam3k element
   useFAD_ = ExtractInt(position,data);
   isinit_ = ExtractInt(position,data);
-  ExtractfromPack(position,data,crosssec_);
-  ExtractfromPack(position,data,Iyy_);
-  ExtractfromPack(position,data,Izz_);
-  ExtractfromPack(position,data,Irr_);
   ExtractfromPack<3,1>(position,data,T0_);
   ExtractfromPack<3,1>(position,data,T_);
   ExtractfromPack<3,1>(position,data,theta0_);
@@ -500,9 +409,6 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,rtnewmass_);
   ExtractfromPack<3,1>(position,data,rconvmass_);
   ExtractfromPack<3,1>(position,data,rnewmass_);
-  ExtractfromPack(position,data,inertscaletrans_);
-  ExtractfromPack(position,data,inertscalerot1_);
-  ExtractfromPack(position,data,inertscalerot2_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -1283,19 +1189,29 @@ void DRT::ELEMENTS::Beam3k::GetScaledSecondAndThirdBaseVectorAtXi(
     const std::vector<double>& disp,
     LINALG::Matrix<3,2>&       scaledbasevectors) const
 {
-  LINALG::Matrix<3,3> triad(true);
+  // Todo @grill: delete or update this method. kept it for now as we might need it soon
+  dserror("Beam3k: method GetScaledSecondAndThirdBaseVectorAtXi is deprecated for now because it "
+      "was only valid for the implicit assumption of a rectangular cross-section! If need be, "
+      "generalize the definition of cross-section shape and dimensions and adapt this method. "
+      "For now, the cross-section shape and dimensions are only required explicitly if beam "
+      "interactions (contact, potentials, drag in background fluid) are to be evaluated. In this "
+      "case, we only support and hence assume a circular cross-section with a radius which is either "
+      "explicitly specified in the material definition line of the input file or per default computed "
+      "from the area moment of inertia Iyy.");
 
-  GetTriadAtXi(triad,xi,disp);
-
-  // ToDo careful, this is a hack for rectangular cross-sections ?!?
-  double Ly=std::pow(pow(12.0*Izz_,3)/(12.0*Iyy_),1.0/8.0);
-  double Lz=12.0*Izz_/pow(Ly,3);
-
-  for(int i=0;i<3;i++)
-  {
-    scaledbasevectors(i,0) = 0.5 * Ly * triad(i,1);
-    scaledbasevectors(i,1) = 0.5 * Lz * triad(i,2);
-  }
+//  LINALG::Matrix<3,3> triad(true);
+//
+//  GetTriadAtXi(triad,xi,disp);
+//
+//  // ToDo careful, this is a hack for rectangular cross-sections ?!?
+//  double Ly=std::pow(pow(12.0*Izz_,3)/(12.0*Iyy_),1.0/8.0);
+//  double Lz=12.0*Izz_/pow(Ly,3);
+//
+//  for(int i=0;i<3;i++)
+//  {
+//    scaledbasevectors(i,0) = 0.5 * Ly * triad(i,1);
+//    scaledbasevectors(i,1) = 0.5 * Lz * triad(i,2);
+//  }
 
 }
 

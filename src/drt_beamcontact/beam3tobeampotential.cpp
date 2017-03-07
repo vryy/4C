@@ -72,7 +72,7 @@ radius2_(0.0)
   }
   else
   {
-    radius1_ = MANIPULATERADIUS * std::pow(4 * element1_->MomentOfInertiaY() / M_PI,0.25);
+    radius1_ = MANIPULATERADIUS * element1_->GetCircularCrossSectionRadiusForInteractions();
     ele1length_ = element1_->RefLength();
   }
 
@@ -85,7 +85,7 @@ radius2_(0.0)
   }
   else
   {
-    radius2_ = MANIPULATERADIUS * std::pow(4 * element2_->MomentOfInertiaY() / M_PI,0.25);
+    radius2_ = MANIPULATERADIUS * element2_->GetCircularCrossSectionRadiusForInteractions();
     ele2length_ = element2_->RefLength();
   }
 

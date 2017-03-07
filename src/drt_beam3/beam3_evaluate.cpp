@@ -12,6 +12,7 @@
 
 
 #include "beam3.H"
+#include "beam3_base.H"
 #include "beam3r.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -646,7 +647,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------------------------------------------*/
 //computing basis of stiffness matrix of Crisfield, Vol. 2, equation (17.105)
 template<int nnode>
-inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,1>& Cm, const LINALG::Matrix<3,1>& Cb, const LINALG::Matrix<3,3>& S, LINALG::Matrix<6*nnode,6*nnode>& stiffmatrix, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv)
+inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,3>& Cm, const LINALG::Matrix<3,3>& Cb, const LINALG::Matrix<3,3>& S, LINALG::Matrix<6*nnode,6*nnode>& stiffmatrix, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv)
 {
   //calculating the first matrix of (17.105) directly involves multiplications of large matrices (e.g. with the 6*nnode x 6 - matrix X)
   //application of the definitions in (17.100) allows blockwise evaluation with multiplication and addition of 3x3-matrices only
@@ -669,8 +670,8 @@ inline void DRT::ELEMENTS::Beam3::computestiffbasis(const LINALG::Matrix<3,3>& T
       TCbTt(i,j) = 0.0;
       for (int k = 0; k < 3; ++k)
       {
-        TCmTt(i,j) += Tnew(i,k)*Cm(k)*Tnew(j,k);
-        TCbTt(i,j) += Tnew(i,k)*Cb(k)*Tnew(j,k);
+        TCmTt(i,j) += Tnew(i,k)*Cm(k,k)*Tnew(j,k);
+        TCbTt(i,j) += Tnew(i,k)*Cb(k,k)*Tnew(j,k);
       }
     }
   }
@@ -1077,9 +1078,9 @@ void DRT::ELEMENTS::Beam3::b3_energy( Teuchos::ParameterList& params,
 
   if(calcenergy)
   {
-    //constitutive laws from Crisfield, Vol. 2, equation (17.76)
-    LINALG::Matrix<3,1> Cm;
-    LINALG::Matrix<3,1> Cb;
+    //constitutive matrices from Crisfield, Vol. 2, equation (17.76)
+    LINALG::Matrix<3,3> Cm;
+    LINALG::Matrix<3,3> Cb;
 
     //normal/shear strain and bending strain(curvature)
     LINALG::Matrix<3,1> epsilonn;
@@ -1090,25 +1091,6 @@ void DRT::ELEMENTS::Beam3::b3_energy( Teuchos::ParameterList& params,
 
     //triad at GP, Crisfiel Vol. 2, equation (17.73)
     LINALG::Matrix<3,3> Tnew;
-
-    //first of all we get the material law
-    Teuchos::RCP<const MAT::Material> currmat = Material();
-    double ym = 0;
-    double sm = 0;
-
-    //assignment of material parameters; only St.Venant material is accepted for this beam
-    switch(currmat->MaterialType())
-    {
-      case INPAR::MAT::m_stvenant:// only linear elastic material supported
-      {
-        const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-        ym = actmat->Youngs();
-        sm = ym / (2*(1 + actmat->PoissonRatio()));
-      }
-      break;
-      default:
-      dserror("unknown or improper type of material law");
-    }
 
     /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
      *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
@@ -1143,12 +1125,7 @@ void DRT::ELEMENTS::Beam3::b3_energy( Teuchos::ParameterList& params,
       LARGEROTATIONS::quaterniontotriad(Qnew_[numgp],Tnew);
 
       //setting constitutive parameters , Crisfield, Vol. 2, equation (17.76)
-      Cm(0) = ym*crosssec_;
-      Cm(1) = sm*crosssecshear_;
-      Cm(2) = sm*crosssecshear_;
-      Cb(0) = sm*Irr_;
-      Cb(1) = ym*Iyy_;
-      Cb(2) = ym*Izz_;
+      GetConstitutiveMatrices(Cm, Cb);
 
       //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.97)
       epsilonn.Clear();
@@ -1164,16 +1141,16 @@ void DRT::ELEMENTS::Beam3::b3_energy( Teuchos::ParameterList& params,
       {
         for(int i=0; i<3; i++)
         {
-          (*intenergy)(0) += 0.5*epsilonn(i)*epsilonn(i)*Cm(i)*wgt*jacobi_[numgp];
-          (*intenergy)(0) += 0.5*epsilonm(i)*epsilonm(i)*Cb(i)*wgt*jacobi_[numgp];
+          (*intenergy)(0) += 0.5*epsilonn(i)*epsilonn(i)*Cm(i,i)*wgt*jacobi_[numgp];
+          (*intenergy)(0) += 0.5*epsilonm(i)*epsilonm(i)*Cb(i,i)*wgt*jacobi_[numgp];
         }
       }
       else if(intenergy->M()==6)
       {
         for(int i=0; i<3; i++)
         {
-          (*intenergy)(i) += 0.5*epsilonn(i)*epsilonn(i)*Cm(i)*wgt*jacobi_[numgp];
-          (*intenergy)(i+3) += 0.5*epsilonm(i)*epsilonm(i)*Cb(i)*wgt*jacobi_[numgp];
+          (*intenergy)(i) += 0.5*epsilonn(i)*epsilonn(i)*Cm(i,i)*wgt*jacobi_[numgp];
+          (*intenergy)(i+3) += 0.5*epsilonm(i)*epsilonm(i)*Cb(i,i)*wgt*jacobi_[numgp];
         }
       }
       else
@@ -1219,8 +1196,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList&   params,
   lcurr_ = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
 
   //constitutive laws from Crisfield, Vol. 2, equation (17.76)
-  LINALG::Matrix<3,1> Cm;
-  LINALG::Matrix<3,1> Cb;
+  LINALG::Matrix<3,3> Cm;
+  LINALG::Matrix<3,3> Cb;
 
   //normal/shear strain and bending strain(curvature)
   LINALG::Matrix<3,1> epsilonn;
@@ -1251,26 +1228,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList&   params,
   //triad at GP, Crisfiel Vol. 2, equation (17.73)
   LINALG::Matrix<3,3> Tnew;
 
-  //first of all we get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym = 0;
-  double sm = 0;
-  double density = 0;
-
-  //assignment of material parameters; only St.Venant material is accepted for this beam
-  switch(currmat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant:// only linear elastic material supported
-    {
-      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      ym = actmat->Youngs();
-      sm = ym / (2*(1 + actmat->PoissonRatio()));
-      density = actmat->Density();
-    }
-    break;
-    default:
-    dserror("unknown or improper type of material law");
-  }
+  //assignment of material parameters; only Reissner beam material based on hyperelastic
+  //stored energy function is accepted for this beam (analog to St. Venant-Kirchhoff for 3D continua)
+  GetConstitutiveMatrices(Cm, Cb);
 
   //"new" variables have to be adopted to current discplacement
 
@@ -1368,9 +1328,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList&   params,
     LARGEROTATIONS::computespin(S_gp,dxdxi_gp);
 
     //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
-    epsilonn(0) *= ym*crosssec_;
-    epsilonn(1) *= sm*crosssecshear_;
-    epsilonn(2) *= sm*crosssecshear_;
+    epsilonn(0) *= Cm(0,0);
+    epsilonn(1) *= Cm(1,1);
+    epsilonn(2) *= Cm(2,2);
 
     stressn.Clear();
 
@@ -1379,9 +1339,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList&   params,
     //turning bending strain epsilonm into bending stress stressm
     epsilonm = curvnew_[numgp];
 
-    epsilonm(0) *= sm*Irr_;
-    epsilonm(1) *= ym*Iyy_;
-    epsilonm(2) *= ym*Izz_;
+    epsilonm(0) *= Cb(0,0);
+    epsilonm(1) *= Cb(1,1);
+    epsilonm(2) *= Cb(2,2);
 
     stressm.Clear();
 
@@ -1413,13 +1373,6 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList&   params,
       Ksig1_gp.Clear();
       Ksig2_gp.Clear();
 
-      //setting constitutive parameters , Crisfield, Vol. 2, equation (17.76)
-      Cm(0) = ym*crosssec_;
-      Cm(1) = sm*crosssecshear_;
-      Cm(2) = sm*crosssecshear_;
-      Cb(0) = sm*Irr_;
-      Cb(1) = ym*Iyy_;
-      Cb(2) = ym*Izz_;
 
       //setting up basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.105)
       computestiffbasis<nnode>(Tnew,Cm,Cb,S_gp,Kstiff_gp,funct,deriv);
@@ -1451,6 +1404,11 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList&   params,
   //We use a consistent Timoshenko mass matrix here
   if (massmatrix != NULL)
   {
+    // tensor of mass moments of inertia for translational and rotational motion
+    double mass_inertia_translational = 0.0;
+    LINALG::Matrix<3,3> Jp(true);
+
+    GetTranslationalAndRotationalMassInertiaTensor(mass_inertia_translational, Jp);
 
     //Get the applied integrationpoints for complete integration
     DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
@@ -1478,10 +1436,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList&   params,
         for (int dof=0; dof<6; dof++)
           N(dof,6*node+dof)=funct(node);
 
-      //m= density*crosssec* integraloverxi [N_t*N]
-       massmatrixgp.MultiplyTN(density*crosssec_,N,N);
+      //m= integraloverxi [N_t*N]
+       massmatrixgp.MultiplyTN(1.0,N,N);
 
-      std::cout <<" Warning: Incorrect mass matrix implementation. This beam element is only applicable to static problems so far!" << std::endl;
+      std::cout <<"*** WARNING ***: Incorrect mass matrix implementation. This beam element is only applicable to static problems so far!" << std::endl;
        //According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant finite element
        //for statics and dynamics, 1999, page 146, a time integration scheme that delivers angular velocities and angular accelerations as needed
        //for the inertia terms of geometrically exact beams has to be based on multiplicative rotation angle increments between two successive time
@@ -1493,14 +1451,25 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList&   params,
        {
          for (int j=0; j<nnode; j++)
          {
-           massmatrixgp(i,6*j+3)= Irr_/crosssec_ * massmatrixgp(i,6*j+3);
-           massmatrixgp(i,6*j+4)= Irr_/crosssec_ * massmatrixgp(i,6*j+4);
-           massmatrixgp(i,6*j+5)= Irr_/crosssec_ * massmatrixgp(i,6*j+5);
-           //This function multiplies all entries associated with
+           // These lines multiply all entries associated with translational motion with the
+           // corresponging pre-factor (density*crosssec)
+           massmatrixgp(i,6*j+0)= mass_inertia_translational * massmatrixgp(i,6*j+0);
+           massmatrixgp(i,6*j+1)= mass_inertia_translational * massmatrixgp(i,6*j+1);
+           massmatrixgp(i,6*j+2)= mass_inertia_translational * massmatrixgp(i,6*j+2);
+
+           //These lines multiply all entries associated with
            //the rotations. The Irr_ comes from calculations considering
            //the moment created by a rotation theta and refers to the assumed direction
            //Note: This is an approximation for the rotational values around t2 and t3. For exact
            //one would have to differentiate again.
+
+           /* update:
+            * I had to adapt this to the more general material parameter definition from input
+            * file. The rotational mass inertia factor which was used before is now extracted as
+            * the axial component of the mass moment of inertia tensor */
+           massmatrixgp(i,6*j+3)= Jp(0,0) * massmatrixgp(i,6*j+3);
+           massmatrixgp(i,6*j+4)= Jp(0,0) * massmatrixgp(i,6*j+4);
+           massmatrixgp(i,6*j+5)= Jp(0,0) * massmatrixgp(i,6*j+5);
          }
        }
 
@@ -1642,7 +1611,7 @@ inline void DRT::ELEMENTS::Beam3::MyDampingConstants(LINALG::Matrix<3,1>& gamma)
 
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
    *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
-  double rsquare = std::pow((4*Iyy_/PI),0.5);
+  double rsquare = std::pow(GetCircularCrossSectionRadiusForInteractions(), 2.0);
   double artificial = 4000;//1000;  //1000 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
   gamma(2) = 4*PI*BrownianDynParamsInterface().GetViscosity()*rsquare*artificial;
 

@@ -85,6 +85,8 @@
 #include "matlist_chemotaxis.H"
 #include "matlist_chemoreac.H"
 #include "constraintmixture.H"
+#include "beam_elasthyper.H"
+#include "beam_elasthyper_parameter.H"
 #include "crosslinkermat.H"
 #include "optimization_density.H"
 #include "fluidporo.H"
@@ -833,6 +835,66 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       curmat->SetParameter(new MAT::PAR::ConstraintMixture(curmat));
     MAT::PAR::ConstraintMixture* params = static_cast<MAT::PAR::ConstraintMixture*>(curmat->Parameter());
     return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_beam_reissner_elast_hyper:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::BeamReissnerElastHyperMaterialParams(curmat) );
+
+    MAT::PAR::BeamReissnerElastHyperMaterialParams* params =
+        static_cast<MAT::PAR::BeamReissnerElastHyperMaterialParams*>(curmat->Parameter());
+
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_beam_reissner_elast_hyper_bymodes:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode(curmat) );
+
+    MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode* params_bymode =
+        static_cast<MAT::PAR::BeamReissnerElastHyperMaterialParamsByMode*>(curmat->Parameter());
+
+    return params_bymode->CreateMaterial();
+  }
+  case INPAR::MAT::m_beam_kirchhoff_elast_hyper:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::BeamKirchhoffElastHyperMaterialParams(curmat) );
+
+    MAT::PAR::BeamKirchhoffElastHyperMaterialParams* params =
+        static_cast<MAT::PAR::BeamKirchhoffElastHyperMaterialParams*>(curmat->Parameter());
+
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_beam_kirchhoff_elast_hyper_bymodes:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode(curmat) );
+
+    MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode* params_bymode =
+        static_cast<MAT::PAR::BeamKirchhoffElastHyperMaterialParamsByMode*>(curmat->Parameter());
+
+    return params_bymode->CreateMaterial();
+  }
+  case INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParams(curmat) );
+
+    MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParams* params =
+        static_cast<MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParams*>(curmat->Parameter());
+
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode(curmat) );
+
+    MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode* params_bymode =
+        static_cast<MAT::PAR::BeamKirchhoffTorsionFreeElastHyperMaterialParamsByMode*>(curmat->Parameter());
+
+    return params_bymode->CreateMaterial();
   }
   case INPAR::MAT::m_crosslinkermat:
   {

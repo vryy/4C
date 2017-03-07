@@ -215,51 +215,6 @@ public:
   */
   virtual void Print(std::ostream& os) const;
 
-  /** \brief get the cross-section area
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double CrossSectionArea() const
-  {
-    return crosssec_;
-  }
-
-  /** \brief get the shear-corrected (i.e. scaled) cross-section area
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double CrossSectionAreaShearCorrected() const
-  {
-    return crosssecshear_;
-  }
-
-  /** \brief get the first principal area moment of inertia
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double MomentOfInertiaY() const
-  {
-    return Iyy_;
-  }
-
-  /** \brief get the second principal area moment of inertia
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double MomentOfInertiaZ() const
-  {
-    return Izz_;
-  }
-
-  /** \brief get the polar area moment of inertia
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double PolarMomentOfInertia() const
-  {
-    return Irr_;
-  }
-
   /*!
   \brief Get jacobi_ factor of first gauss point
   */
@@ -811,21 +766,6 @@ private:
   //!derivative of angle displacement taken from discretization with respect to curve parameter at a specific Gauss point; derivative due to Crisfield, Vol. 2, equation (17.93); relates to the current iteration step
   std::vector<LINALG::Matrix<3,1> > thetaprimenew_;
 
-  //! cross section area
-  double crosssec_;
-
-   //! cross section area including shear corretion factor
-  double crosssecshear_;
-
-  //!moment of inertia of area around y-axis(orthognoal to beam axis in yz-plane)
-  double Iyy_;
-
-  //!moment of inertia of area around z-axis(forming cartesian system with beam- and y-axis)
-  double Izz_;
-
-  //!polar moment of inertia of area
-  double Irr_;
-
   //! Change in inclusive angles between filaments
   double deltatheta_;
 
@@ -882,7 +822,7 @@ private:
 
   //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.105)
   template<int nnode>
-  void computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,1>& Cm, const LINALG::Matrix<3,1>& Cb, const LINALG::Matrix<3,3>& S, LINALG::Matrix<6*nnode,6*nnode>& stiffmatrix, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
+  void computestiffbasis(const LINALG::Matrix<3,3>& Tnew, const LINALG::Matrix<3,3>& Cm, const LINALG::Matrix<3,3>& Cb, const LINALG::Matrix<3,3>& S, LINALG::Matrix<6*nnode,6*nnode>& stiffmatrix, const LINALG::Matrix<1,nnode>& funct, const LINALG::Matrix<1,nnode>& deriv);
 
   //!calculation of nonlinear stiffness and mass matrix
   template<int nnode>

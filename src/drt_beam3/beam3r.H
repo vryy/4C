@@ -257,39 +257,6 @@ public:
   */
   virtual void Print(std::ostream& os) const;
 
-  /** \brief get the cross-section area
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double CrossSectionArea() const
-  {
-    return crosssec_;
-  }
-
-  /** \brief get the shear-corrected (i.e. scaled) cross-section area
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double CrossSectionAreaShearCorrected() const
-  {
-    return crosssecshear_;
-  }
-
-  /*!
-  \brief Get moment of inertia of area Iyy_ of this element
-  */
-  inline virtual double MomentOfInertiaY() const { return Iyy_;}
-
-  /*!
-  \brief Get moment of inertia of area Izz_ of this element
-  */
-  inline virtual double MomentOfInertiaZ() const { return Izz_;}
-
-  /*!
-  \brief Get polar moment of inertia of area Irr_ of this element
-  */
-  inline virtual double PolarMomentOfInertia() const { return Irr_;}
-
   /*!
   \brief return flag whether Hermite polynomials are applied for centerline interpolation
   */
@@ -422,31 +389,31 @@ public:
   \brief Get initial nodal rotation vectors
   */
   const std::vector<LINALG::Matrix<3,1> >& InitialNodalRotVecs() const {return theta0node_;}
-
-  /*!
-  \brief Set moment of inertia of area Iyy_ of this element
-  */
-  void SetIyy(const double& Iyy);
-
-  /*!
-  \brief Set moment of inertia of area Iyy_ of this element
-  */
-  void SetIzz(const double& Izz);
-
-  /*!
-  \brief Set moment of inertia of area Iyy_ of this element
-  */
-  void SetIrr(const double& Irr);
-
-  /*!
-  \brief Set cross section area of this element
-  */
-  void SetCrossSec(const double& crosssec);
-
-  /*!
-  \brief Set cross section scaled with shear correction factor of this element
-  */
-  void SetCrossSecShear(const double& crosssecshear);
+//
+//  /*!
+//  \brief Set moment of inertia of area Iyy_ of this element
+//  */
+//  void SetIyy(const double& Iyy);
+//
+//  /*!
+//  \brief Set moment of inertia of area Iyy_ of this element
+//  */
+//  void SetIzz(const double& Izz);
+//
+//  /*!
+//  \brief Set moment of inertia of area Iyy_ of this element
+//  */
+//  void SetIrr(const double& Irr);
+//
+//  /*!
+//  \brief Set cross section area of this element
+//  */
+//  void SetCrossSec(const double& crosssec);
+//
+//  /*!
+//  \brief Set cross section scaled with shear correction factor of this element
+//  */
+//  void SetCrossSecShear(const double& crosssecshear);
 
   /*!
   \brief Set bool indicating Hermite centerline interpolation
@@ -1047,28 +1014,6 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
-
-  //! cross-section area
-  double crosssec_;
-
-   //! cross-section area scaled with shear correction factor
-  double crosssecshear_;
-
-  //! moment of inertia of area around y-axis (orthogonal to beam axis in yz-plane)
-  double Iyy_;
-
-  //! moment of inertia of area around z-axis (forming cartesian system with beam- and y-axis)
-  double Izz_;
-
-  //! polar moment of inertia of area
-  double Irr_;
-
-  //! scale factor for translational inertia terms
-  double inertscaletrans_;
-  //! scale factor for tangential component of rotational inertia terms
-  double inertscalerot1_;
-  //! scale factor for remaining components of rotational inertia terms
-  double inertscalerot2_;
 
   //! initial length of the element
   double reflength_;

@@ -74,104 +74,29 @@ void DRT::ELEMENTS::Beam3Type::SetupElementDefinition( std::map<std::string,std:
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3"];
 
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
-    ;
-
   defs["LIN2"]
     .AddIntVector("LIN2",2)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
-    ;
-
-  defs["LINE3"]
-    .AddIntVector("LINE3",3)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
     ;
 
   defs["LIN3"]
     .AddIntVector("LIN3",3)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
-    ;
-
-  defs["LINE4"]
-    .AddIntVector("LINE4",4)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
     ;
 
   defs["LIN4"]
     .AddIntVector("LIN4",4)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
-    ;
-
-  defs["LINE5"]
-    .AddIntVector("LINE5",5)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
     ;
 
   defs["LIN5"]
     .AddIntVector("LIN5",5)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
-    ;
-
-  defs["LINE6"]
-    .AddIntVector("LINE6",6)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
     ;
 
   defs["LIN6"]
     .AddIntVector("LIN6",6)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
     ;
 }
 
@@ -183,11 +108,6 @@ DRT::ELEMENTS::Beam3::Beam3(int id, int owner) :
  DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
 eps_(0.0),
-crosssec_(0),
-crosssecshear_(0),
-Iyy_(0),
-Izz_(0),
-Irr_(0),
 deltatheta_(0),
 jacobi_(0),
 jacobimass_(0),
@@ -219,11 +139,6 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  thetaprimeconv_(old.thetaprimeconv_),
  thetaprimeold_(old.thetaprimeold_),
  thetaprimenew_(old.thetaprimenew_),
- crosssec_(old.crosssec_),
- crosssecshear_(old.crosssecshear_),
- Iyy_(old.Iyy_),
- Izz_(old.Izz_),
- Irr_(old.Irr_),
  deltatheta_(old.deltatheta_),
  lcurr_(old.lcurr_),
  jacobi_(old.jacobi_),
@@ -394,17 +309,12 @@ void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,jacobi_);
   AddtoPack(data,jacobimass_);
   AddtoPack(data,jacobinode_);
-  AddtoPack(data,crosssec_);
-  AddtoPack(data,crosssecshear_);
   AddtoPack<3,1>(data,curvnew_);
   AddtoPack<3,1>(data,curvconv_);
   AddtoPack<3,1>(data,curvold_);
   AddtoPack(data,isinit_);
-  AddtoPack(data,Irr_);
   AddtoPack(data,deltatheta_);
   AddtoPack(data,lcurr_);
-  AddtoPack(data,Iyy_);
-  AddtoPack(data,Izz_);
   AddtoPack<4,1>(data,Qref_);
   AddtoPack<4,1>(data,Qconv_);
   AddtoPack<4,1>(data,Qnew_);
@@ -449,17 +359,12 @@ void DRT::ELEMENTS::Beam3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
-  ExtractfromPack(position,data,crosssec_);
-  ExtractfromPack(position,data,crosssecshear_);
   ExtractfromPack<3,1>(position,data,curvnew_);
   ExtractfromPack<3,1>(position,data,curvconv_);
   ExtractfromPack<3,1>(position,data,curvold_);
   isinit_ = ExtractInt(position,data);
-  ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,deltatheta_);
   ExtractfromPack(position,data,lcurr_);
-  ExtractfromPack(position,data,Iyy_);
-  ExtractfromPack(position,data,Izz_);
   ExtractfromPack<4,1>(position,data,Qref_);
   ExtractfromPack<4,1>(position,data,Qconv_);
   ExtractfromPack<4,1>(position,data,Qnew_);

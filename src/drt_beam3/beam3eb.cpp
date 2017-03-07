@@ -11,6 +11,8 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beam3eb.H"
+
+// Todo check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -75,36 +77,14 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,st
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3EB"];
 
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
-    ;
-
   defs["LIN2"]
     .AddIntVector("LIN2",2)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
-    ;
-
-  defs["LINE3"]
-    .AddIntVector("LINE3",3)
-    .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
     ;
 
   defs["LIN3"]
     .AddIntVector("LIN3",3)
     .AddNamedInt("MAT")
-    .AddNamedDouble("CROSS")
-    .AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
     ;
 }
 
@@ -158,10 +138,6 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner) :
  DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
-crosssec_(0),
-Iyy_(0),
-Izz_(0),
-Irr_(0),
 jacobi_(0),
 firstcall_(true),
 Ekin_(0.0),
@@ -186,10 +162,6 @@ epsilon_max_(0.0)
 DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
  DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
- crosssec_(old.crosssec_),
- Iyy_(old.Iyy_),
- Izz_(old.Izz_),
- Irr_(old.Irr_),
  jacobi_(old.jacobi_),
  Ekin_(old.Ekin_),
  Eint_(old.Eint_),
@@ -260,11 +232,7 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
 
   //add all class variables
   AddtoPack(data,jacobi_);
-  AddtoPack(data,crosssec_);
   AddtoPack(data,isinit_);
-  AddtoPack(data,Irr_);
-  AddtoPack(data,Iyy_);
-  AddtoPack(data,Izz_);
   AddtoPack(data,Ekin_);
   AddtoPack(data,Eint_);
   AddtoPack(data,Tref_);
@@ -298,11 +266,7 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
 
   //extract all class variables of beam3 element
   ExtractfromPack(position,data,jacobi_);
-  ExtractfromPack(position,data,crosssec_);
   isinit_ = ExtractInt(position,data);
-  ExtractfromPack(position,data,Irr_);
-  ExtractfromPack(position,data,Iyy_);
-  ExtractfromPack(position,data,Izz_);
   ExtractfromPack(position,data,Ekin_);
   ExtractfromPack(position,data,Eint_);
   ExtractfromPack(position,data,Tref_);
@@ -492,12 +456,12 @@ double DRT::ELEMENTS::Beam3eb::jacobi() const
   return jacobi_;
 }
 
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Beam3eb::MomentOfInertiaY() const
-{
-  return Iyy_;
-}
+///*-----------------------------------------------------------------------------------------------*
+// *-----------------------------------------------------------------------------------------------*/
+//double DRT::ELEMENTS::Beam3eb::MomentOfInertiaY() const
+//{
+//  return Iyy_;
+//}
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

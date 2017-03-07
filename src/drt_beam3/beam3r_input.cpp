@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 /*!
 \file beam3r_input.cpp
 
@@ -8,14 +8,19 @@
 
 \maintainer Maximilian Grill
 */
-/*----------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*/
 
 #include "beam3r.H"
+
+#include "../drt_mat/material.H"
+#include "../drt_mat/matpar_parameter.H"
+
 #include "../drt_lib/drt_linedefinition.H"
+
 #include "../drt_fem_general/largerotations.H"
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
                                         const std::string&          distype,
                                         DRT::INPUT::LineDefinition* linedef)
@@ -27,10 +32,25 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
    * first nodes with local ID 0...nnodecl-1 are used for interpolation of centerline AND triad field*/
   const int nnodetriad = NumNode();
 
-  if (linedef->HaveNamed("HERM2LIN2") or linedef->HaveNamed("HERM2LINE2") or
-      linedef->HaveNamed("HERM2LIN3") or linedef->HaveNamed("HERM2LINE3") or
-      linedef->HaveNamed("HERM2LIN4") or linedef->HaveNamed("HERM2LINE4") or
-      linedef->HaveNamed("HERM2LIN5") or linedef->HaveNamed("HERM2LINE5") )
+
+  // read number of material model and cross-section specs
+  int material = 0;
+  linedef->ExtractInt("MAT",material);
+  SetMaterial(material);
+
+  if ( Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper" and
+       Material()->Parameter()->Name() != "MAT_BeamReissnerElastHyper_ByModes" )
+  {
+    dserror( "The material parameter definition '%s' is not supported by Beam3r element! "
+        "Choose MAT_BeamReissnerElastHyper or MAT_BeamReissnerElastHyper_ByModes!",
+        Material()->Parameter()->Name() );
+  }
+
+
+  if (linedef->HaveNamed("HERM2LIN2") or
+      linedef->HaveNamed("HERM2LIN3") or
+      linedef->HaveNamed("HERM2LIN4") or
+      linedef->HaveNamed("HERM2LIN5") )
     centerline_hermite_ = true;
   else
     centerline_hermite_ = false;
@@ -38,35 +58,6 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
   // read whether automatic differentiation via Sacado::Fad package shall be used
   useFAD_ = linedef->HaveNamed("FAD") ? true : false;
 
-  // read number of material model and cross-section specs
-  int material = 0;
-  linedef->ExtractInt("MAT",material);
-  SetMaterial(material);
-
-  linedef->ExtractDouble("CROSS",crosssec_);
-
-  double shear_correction = 0.0;
-  linedef->ExtractDouble("SHEARCORR",shear_correction);
-  crosssecshear_ = crosssec_ * shear_correction;
-
-  linedef->ExtractDouble("IYY",Iyy_);
-  linedef->ExtractDouble("IZZ",Izz_);
-  linedef->ExtractDouble("IRR",Irr_);
-
-  if(linedef->HaveNamed("IT"))
-    linedef->ExtractDouble("IT", inertscaletrans_);
-  else
-    inertscaletrans_ = 1.0;
-
-  if(linedef->HaveNamed("IR1"))
-    linedef->ExtractDouble("IR1", inertscalerot1_);
-  else
-    inertscalerot1_ = 1.0;
-
-  if(linedef->HaveNamed("IR2"))
-    linedef->ExtractDouble("IR2", inertscalerot2_);
-  else
-    inertscalerot2_ = 1.0;
 
   // store nodal triads according to input file
   theta0node_.resize(nnodetriad);
@@ -87,48 +78,8 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
   return true;
 }
 
-/*------------------------------------------------------------------------*
- | Set moment of inertia                            (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::SetIyy(const double& Iyy)
-{
-  Iyy_ = Iyy;
-}
-
-/*------------------------------------------------------------------------*
- | Set moment of inertia                            (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::SetIzz(const double& Izz)
-{
-  Izz_ = Izz;
-}
-
-/*------------------------------------------------------------------------*
- | Set moment of inertia                            (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::SetIrr(const double& Irr)
-{
-  Irr_ = Irr;
-}
-
-/*------------------------------------------------------------------------*
- | Set cross section area                           (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::SetCrossSec(const double& crosssec)
-{
-  crosssec_ = crosssec;
-}
-
-/*------------------------------------------------------------------------*
- | Set cross section area with shear correction     (public) mueller 03/12|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3r::SetCrossSecShear(const double& crosssecshear)
-{
-  crosssecshear_ = crosssecshear;
-}
-
-/*------------------------------------------------------------------------*
- *------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3r::SetCenterlineHermite(const bool yesno)
 {
   centerline_hermite_ = yesno;

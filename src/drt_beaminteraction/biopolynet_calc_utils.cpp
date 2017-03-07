@@ -151,9 +151,31 @@ void GetCurrentElementDis(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
+void GetCurrentUnshiftedElementDis(
+    DRT::Discretization const& discret,
+    DRT::Element const* ele,
+    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
+    std::vector<double>& eledisp)
+{
+  GetCurrentElementDis(discret, ele, ia_discolnp, eledisp);
+
+  // cast to beambase element
+  DRT::ELEMENTS::Beam3Base const* beamele =
+      dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele);
+
+#ifdef DEBUG
+  if( beamele == NULL )
+    dserror("Dynamic cast to beam3base failed");
+#endif
+
+  beamele->UnShiftNodePosition(eledisp, pbb);
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
 void GetPosAndTriadOfBindingSpot(
     DRT::Element* ele,
-    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
     int const locbspotnum,
     LINALG::Matrix<3,1>& bspotpos,
@@ -173,7 +195,7 @@ void GetPosAndTriadOfBindingSpot(
   beamele->GetPosOfBindingSpot( bspotpos, eledisp, locbspotnum, pbb );
 
   // get current triad at binding spot xi
-  beamele->GetTriadOfBindingSpot( bspottriad, eledisp, locbspotnum, pbb );
+  beamele->GetTriadOfBindingSpot( bspottriad, eledisp, locbspotnum );
 
 }
 
@@ -189,9 +211,9 @@ void GetPosAndTriadOfBindingSpot(
     LINALG::Matrix<3,3>& bspottriad)
 {
   std::vector<double> eledisp;
-  GetCurrentElementDis(discret, ele, ia_discolnp, eledisp);
+  GetCurrentUnshiftedElementDis(discret, ele, ia_discolnp, pbb, eledisp);
 
-  GetPosAndTriadOfBindingSpot(ele, ia_discolnp, pbb, locbspotnum,
+  GetPosAndTriadOfBindingSpot(ele, pbb, locbspotnum,
       bspotpos, bspottriad, eledisp);
 }
 
@@ -365,8 +387,9 @@ void ExtractPosDofVecAbsoluteValues(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ApplyBpotForceToParentElements(
+void ApplyBindingSpotForceToParentElements(
     DRT::Discretization const&                             discret,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&        pbb,
     const Teuchos::RCP<Epetra_Vector>                      disp_np_col,
     const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr,
     std::vector< LINALG::SerialDenseVector > const&        bspotforce,
@@ -384,7 +407,7 @@ void ApplyBpotForceToParentElements(
 
     // get current element displacements
     std::vector<double> eledisp;
-    GetCurrentElementDis( discret, ele, disp_np_col, eledisp);
+    GetCurrentUnshiftedElementDis( discret, ele, disp_np_col, pbb, eledisp);
     const int numdof_ele = eledisp.size();
 
     // zero out and set correct size of transformation matrix
@@ -401,8 +424,9 @@ void ApplyBpotForceToParentElements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ApplyBpotStiffToParentElements(
+void ApplyBindingSpotStiffToParentElements(
     DRT::Discretization const&                                     discret,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
     const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage>         elepairptr,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& bspotstiff,
@@ -425,11 +449,11 @@ void ApplyBpotStiffToParentElements(
 
   // get current element displacements
   std::vector<double> ele1disp;
-  GetCurrentElementDis(discret, ele1,disp_np_col,ele1disp);
+  GetCurrentUnshiftedElementDis(discret, ele1,disp_np_col,pbb,ele1disp);
   const int numdof_ele1 = ele1disp.size();
 
   std::vector<double> ele2disp;
-  GetCurrentElementDis(discret,ele2,disp_np_col,ele2disp);
+  GetCurrentUnshiftedElementDis(discret,ele2,disp_np_col,pbb,ele2disp);
   const int numdof_ele2 = ele2disp.size();
 
   // transformation matrix, will be resized and reused for various needs
@@ -504,8 +528,9 @@ void ApplyBpotStiffToParentElements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ApplyBpotForceStiffToParentElements(
+void ApplyBindingSpotForceStiffToParentElements(
     DRT::Discretization const&                                     discret,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const&                pbb,
     const Teuchos::RCP<Epetra_Vector>                              disp_np_col,
     const Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage>         elepairptr,
     std::vector< LINALG::SerialDenseVector > const&                bspotforce,
@@ -542,11 +567,11 @@ void ApplyBpotForceStiffToParentElements(
 
   // get current element displacements
   std::vector<double> ele1disp;
-  GetCurrentElementDis(discret, ele1,disp_np_col,ele1disp);
+  GetCurrentUnshiftedElementDis(discret, ele1,disp_np_col,pbb,ele1disp);
   const int numdof_ele1 = ele1disp.size();
 
   std::vector<double> ele2disp;
-  GetCurrentElementDis(discret,ele2,disp_np_col,ele2disp);
+  GetCurrentUnshiftedElementDis(discret,ele2,disp_np_col,pbb,ele2disp);
   const int numdof_ele2 = ele2disp.size();
 
   // transformation matrix, will be resized and reused for various needs

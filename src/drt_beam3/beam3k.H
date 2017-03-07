@@ -232,52 +232,6 @@ public:
     return theta0_;
   }
 
-  /** \brief get the cross-section area
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double CrossSectionArea() const
-  {
-    return crosssec_;
-  }
-
-  /** \brief get the shear-corrected (i.e. scaled) cross-section area
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double CrossSectionAreaShearCorrected() const
-  {
-    // Kirchhoff formulation neglects shear
-    return crosssec_;
-  }
-
-  /** \brief get the first principal area moment of inertia
-   *
-   *  \author meier
-   *  \date 01/16 */
-  inline virtual double MomentOfInertiaY() const
-  {
-    return Iyy_;
-  }
-
-  /** \brief get the second principal area moment of inertia
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double MomentOfInertiaZ() const
-  {
-    return Izz_;
-  }
-
-  /** \brief get the polar area moment of inertia
-   *
-   *  \author grill
-   *  \date 02/17 */
-  inline virtual double PolarMomentOfInertia() const
-  {
-    return Irr_;
-  }
-
   /*!
    \brief Get centerline position at given parameter coordinate xi
   */
@@ -829,7 +783,7 @@ private:
       const LINALG::TMatrix<double,3,3>& triad_mat,
       const LINALG::TMatrix<double,3,3>& triad_mat_conv,
       const LINALG::TMatrix<double,3,6*nnodecl+BEAM3K_COLLOCATION_POINTS>& N,
-      double density,
+      double mass_inertia_translational,
       const LINALG::TMatrix<double,3,3>& tensor_mass_moment_of_inertia,
       double lin_prefactor_acc,
       double lin_prefactor_vel,
@@ -1632,14 +1586,6 @@ private:
 
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-  //! cross section area
-  double crosssec_;
-  //!moment of inertia of area around y-axis(orthognoal to rod axis in yz-plane)
-  double Iyy_;
-  //!moment of inertia of area around z-axis(forming cartesian system with rod- and y-axis)
-  double Izz_;
-  //!polar moment of inertia of area
-  double Irr_;
 
   //!tangent vectors at the two boundary nodes in the initial configuration
   std::vector<LINALG::Matrix<3,1> > T0_;
@@ -1707,13 +1653,6 @@ private:
   std::vector<LINALG::Matrix<3,1> > rconvmass_;
   //! current translational displacement vector at Gauss points for exact integration (required for computation of inertia terms)
   std::vector<LINALG::Matrix<3,1> > rnewmass_;
-
-  //! scale factor for translational inertia terms
-  double inertscaletrans_;
-  //! scale factor for tangential component of rotational inertia terms
-  double inertscalerot1_;
-  //! scale factor for remaining components of rotational inertia terms
-  double inertscalerot2_;
   //******************************End: Class variables required for time integration**************************************************//
 
 };

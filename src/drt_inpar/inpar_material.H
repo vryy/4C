@@ -6,12 +6,7 @@
 
 \level 1
 
-<pre>
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -49,6 +44,13 @@ namespace INPAR
       m_arrhenius_pv,                          ///< material with Arrhenius-type chemical kinetics (progress variable)
       m_arrhenius_spec,                        ///< material with Arrhenius-type chemical kinetics (species)
       m_arrhenius_temp,                        ///< material with Arrhenius-type chemical kinetics (temperature)
+      m_beam_elast_hyper_generic,              ///< material law for a beam: hyperelastic stored energy function
+      m_beam_reissner_elast_hyper,             ///< material parameters for a Simo-Reissner beam: hyperelastic stored energy function
+      m_beam_reissner_elast_hyper_bymodes,     ///< material parameters for a Simo-Reissner beam: hyperelastic stored energy function, specified for indivual deformation modes
+      m_beam_kirchhoff_elast_hyper,            ///< material parameters for a Kirchhoff-Love beam: hyperelastic stored energy function
+      m_beam_kirchhoff_elast_hyper_bymodes,    ///< material parameters for a Kirchhoff-Love beam: hyperelastic stored energy function, specified for indivual deformation modes
+      m_beam_kirchhoff_torsionfree_elast_hyper,///< material parameters for a torsion-free, isotropic Kirchhoff-Love beam: hyperelastic stored energy function
+      m_beam_kirchhoff_torsionfree_elast_hyper_bymodes, ///< material parameters for a torsion-free, isotropic Kirchhoff-Love beam: hyperelastic stored energy function, specified for indivual deformation modes
       m_biochemomechano_active,                ///< biochemo-mechano coupled model for stress fiber activity
       m_biochemomechano_passive,               ///< biochemo-mechano coupled model for homogenized cytoskeleton
       m_carreauyasuda,                         ///< fluid with nonlinear viscosity according to Carreau-Yasuda

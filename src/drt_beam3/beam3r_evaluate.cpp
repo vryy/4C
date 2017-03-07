@@ -14,6 +14,7 @@
 
 #include "triad_interpolation_local_rotation_vectors.H"
 
+// Todo @grill: check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
@@ -23,7 +24,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_mat/stvenantkirchhoff.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../headers/FAD_utils.H"
@@ -729,7 +729,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
   /* unshift node positions, i.e. manipulate element displacement vector
    * as if there where no periodic boundary conditions */
   if(BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp,nnodecl);
+    UnShiftNodePosition(disp);
 
   /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
    * style, i.e. initial values + displacements */
@@ -1173,33 +1173,11 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
   LINALG::Matrix<3,3> Lambdanewmass(true);
   LINALG::Matrix<3,3> Lambdaconvmass(true);
 
-  // get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double rho = 0.0;
-
-  // assignment of material parameters; only St.Venant material is accepted for this beam
-  switch(currmat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant:// only linear elastic material supported
-    {
-      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      rho = actmat->Density();
-    }
-    break;
-    default:
-      dserror("unknown or improper type of material law");
-    break;
-  }
-
-  /* tensor of mass moments of inertia and cross-section value. These values are used in order to artificially scale
-   * the the translational and rotational inertia terms with given input parameters if necessary*/
+  // tensor of mass moments of inertia for translational and rotational motion
+  double mass_inertia_translational = 0.0;
   LINALG::Matrix<3,3> Jp(true);
-  Jp(0,0)=inertscalerot1_*(Iyy_+Izz_);
-  Jp(1,1)=inertscalerot2_*Iyy_;
-  Jp(2,2)=inertscalerot2_*Izz_;
-  Jp.Scale(rho);
 
-  const double scaledcrosssec = inertscaletrans_*crosssec_;
+  GetTranslationalAndRotationalMassInertiaTensor(mass_inertia_translational, Jp);
 
   //********************************** shape functions ************************************
   /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
@@ -1376,14 +1354,14 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     LINALG::Matrix<3,3> S_r(true);
     LARGEROTATIONS::computespin<double>(S_r,r);
     dL.Multiply(S_r,r_t);
-    dL.Scale(rho*scaledcrosssec);
+    dL.Scale(mass_inertia_translational);
     LINALG::Matrix<3,1> Lambdanewmass_Jp_Wnewmass(true);
     Lambdanewmass_Jp_Wnewmass.Multiply(Lambdanewmass,Jp_Wnewmass);
     dL.Update(1.0,Lambdanewmass_Jp_Wnewmass,1.0);
     for (unsigned int i=0;i<3;i++)
     {
       L_(i)+=wgtmass*jacobiGPmass_[gp]*dL(i);
-      P_(i)+=wgtmass*jacobiGPmass_[gp]*rho*scaledcrosssec*r_t(i);
+      P_(i)+=wgtmass*jacobiGPmass_[gp]*mass_inertia_translational*r_t(i);
     }
 
     LINALG::Matrix<3,3> S_Pit(true);
@@ -1416,9 +1394,9 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
         for (unsigned int node=0; node<nnodecl; node++)
         {
           // translational contribution
-          (*inertia_force)(dofpercombinode*node+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node)*r_tt(i);
+          (*inertia_force)(dofpercombinode*node+i) += jacobiGPmass_[gp]*wgtmass*mass_inertia_translational*H_i[gp](vpernode*node)*r_tt(i);
           if (centerline_hermite_)
-            (*inertia_force)(dofpercombinode*node+6+i) += jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*node+1)*r_tt(i);
+            (*inertia_force)(dofpercombinode*node+6+i) += jacobiGPmass_[gp]*wgtmass*mass_inertia_translational*H_i[gp](vpernode*node+1)*r_tt(i);
           //rotational contribution
           (*inertia_force)(dofpercombinode*node+3+i) += jacobiGPmass_[gp]*wgtmass*I_i[gp](node)*Pi_t(i);
         }
@@ -1439,12 +1417,12 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
         for (unsigned int inode=0; inode<nnodecl; inode++)
           for (unsigned int k=0;k<3;k++)
           {
-            (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode);
+            (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*mass_inertia_translational*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode);
             if (centerline_hermite_)
             {
-              (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode+1);
-              (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode+1);
-              (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*rho*scaledcrosssec*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode);
+              (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*mass_inertia_translational*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode+1);
+              (*massmatrix)(dofpercombinode*inode+k,dofpercombinode*jnode+6+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*mass_inertia_translational*H_i[gp](vpernode*inode)*H_i[gp](vpernode*jnode+1);
+              (*massmatrix)(dofpercombinode*inode+6+k,dofpercombinode*jnode+k) += diff_factor_acc*jacobiGPmass_[gp]*wgtmass*mass_inertia_translational*H_i[gp](vpernode*inode+1)*H_i[gp](vpernode*jnode);
             }
           }
 
@@ -1489,11 +1467,11 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     LINALG::Matrix<1,1> ekintrans(true);
     ekinrot.MultiplyTN(Wnewmass,Jp_Wnewmass);
     ekintrans.MultiplyTN(r_t,r_t);
-    Ekin_+=0.5*(ekinrot.Norm2() + rho*scaledcrosssec*ekintrans.Norm2())*jacobiGPmass_[gp]*wgtmass;
+    Ekin_+=0.5*(ekinrot.Norm2() + mass_inertia_translational*ekintrans.Norm2())*jacobiGPmass_[gp]*wgtmass;
     Ekintorsion_+=0.5* Wnewmass(0)*Jp_Wnewmass(0)*jacobiGPmass_[gp]*wgtmass;
     Ekinbending_+=0.5* Wnewmass(1)*Jp_Wnewmass(1)*jacobiGPmass_[gp]*wgtmass;
     Ekinbending_+=0.5* Wnewmass(2)*Jp_Wnewmass(2)*jacobiGPmass_[gp]*wgtmass;
-    Ekintrans_+=0.5*rho*scaledcrosssec*ekintrans.Norm2()*jacobiGPmass_[gp]*wgtmass;
+    Ekintrans_+=0.5*mass_inertia_translational*ekintrans.Norm2()*jacobiGPmass_[gp]*wgtmass;
 
     Jp_Wnewmass.Multiply(Jp,Wnewmass);
   }
@@ -1988,7 +1966,7 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&  
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp, nnodecl);
+    UnShiftNodePosition(disp);
 
   /****** update/compute key variables describing displacement and velocity state of this element *****/
 

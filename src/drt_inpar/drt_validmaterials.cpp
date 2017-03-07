@@ -1522,21 +1522,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
-  // material for a crosslinker in a biopolymer simulation
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_Crosslinker",
-                                            "material or a linker in a biopolymer network",
-                                            INPAR::MAT::m_crosslinkermat));
-
-    AddNamedReal(m,"YOUNG","Young's modulus");
-    AddNamedReal(m,"NUE","Poisson's ratio");
-    AddNamedReal(m,"DENS","mass density");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*--------------------------------------------------------------------*/
   // volumetric contribution of Sussman Bathe
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -2476,6 +2461,297 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DENS","density");
 
     AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // materials for beam elements (grill 02/17):
+
+  /* The constitutive laws used in beam formulations are consistently
+   * derived from a 3D solid continuum mechanics material law, e.g. a hyperelastic
+   * stored energy function. The conceptual difference is that they are
+   * formulated for stress and strain resultants, i.e. cross-section quantities.
+   * Hence, the constitutive parameters that naturally occur in constitutive
+   * relations of beam formulations are strongly related to the cross-section
+   * specification (shape and dimensions) and can be identified as 'modal'
+   * constitutive parameters (axial/shear/torsion/bending rigidity). See
+   * Diss Meier, chapters 2.2.4 and 2.2.5 for formulae and details.
+   *
+   * This justifies the implementation and use of the following beam material
+   * definitions. They combine cross-section specification and material definition
+   * which can be done in two distinct ways:
+   *
+   * 1) by providing individual parameter values for cross-section specs
+   *    (area, (polar) area moment of inertia, shear-correction factor, ...) and
+   *    material (Young's modulus, Poisson's ratio).
+   *
+   * 2) by directly providing parameter values for modal constitutive parameters
+   *    (axial/shear/torsion/bending rigidity).
+   *    This is especially useful if experimentally determined values are used
+   *    or artificial scaling of individual modes is desired in tests/debugging.
+   *
+   * The same logic applies to parameters required to model mass inertia.
+   *
+   * Reduced formulations such as Kirchhoff and isotropic/torsion-free Kirchhoff
+   * beams of course require only a subset of parameters and hence use specific
+   * material parameter definitions. Nevertheless, the material relations are
+   * general enough such that only one class is used for the material relations of
+   *  all types of beam formulations.
+   */
+
+  /*--------------------------------------------------------------------*/
+  // material parameter definition for a Simo-Reissner type beam element
+  {
+    Teuchos::RCP<MaterialDefinition> matdef
+      = Teuchos::rcp(new MaterialDefinition(
+          "MAT_BeamReissnerElastHyper",
+          "material parameters for a Simo-Reissner type beam element based on "
+          "hyperelastic stored energy function",
+          INPAR::MAT::m_beam_reissner_elast_hyper) );
+
+
+    AddNamedReal(matdef, "YOUNG", "Young's modulus");
+
+    /* note: we define both of the two following (redundant) parameters to be optional.
+     *       upon initialization of the material, we assure that one of them is
+     *       properly defined. */
+    AddNamedReal(matdef, "SHEARMOD", "shear modulus", -1.0, true);
+    AddNamedReal(matdef, "POISSONRATIO", "Poisson's ratio", -1.0, true);
+
+    AddNamedReal(matdef, "DENS", "mass density");
+
+    AddNamedReal(matdef, "CROSSAREA", "cross-section area");
+    AddNamedReal(matdef, "SHEARCORR", "shear correction factor");
+
+    AddNamedReal(matdef, "MOMINPOL", "polar/axial area moment of inertia" );
+    AddNamedReal(matdef, "MOMIN2", "area moment of inertia w.r.t. first principal "
+        "axis of inertia (i.e. second base vector)" );
+    AddNamedReal(matdef, "MOMIN3", "area moment of inertia w.r.t. second principal "
+        "axis of inertia (i.e. third base vector)" );
+
+
+    /* The following is optional because it is only required if we evaluate interactions
+     * between beams such as contact, potential-based and whatever more to come.
+     * For now, we always assume a circular cross-section if interactions are considered.
+     *
+     * This should be generalized to a type of cross-section shape (circular, rectangular,
+     * elliptic, ...) and corresponding necessary dimensions (radius, sizes, ...) if needed. */
+    AddNamedReal(matdef, "INTERACTIONRADIUS", "radius of a circular cross-section which "
+        "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...", -1.0, true);
+
+    AppendMaterialDefinition(matlist, matdef);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // material parameter definition for a Simo-Reissner type beam element,
+  // specified via 'modal' constitutive parameters (see comment above)
+  {
+    Teuchos::RCP<MaterialDefinition> matdef
+      = Teuchos::rcp(new MaterialDefinition(
+          "MAT_BeamReissnerElastHyper_ByModes",
+          "material parameters for a Simo-Reissner type beam element based on "
+          "hyperelastic stored energy function, specified for individual "
+          "deformation modes",
+          INPAR::MAT::m_beam_reissner_elast_hyper_bymodes) );
+
+
+    AddNamedReal(matdef,"EA","axial rigidity");
+    AddNamedReal(matdef,"GA2","shear rigidity w.r.t first principal axis of inertia");
+    AddNamedReal(matdef,"GA3","shear rigidity w.r.t second principal axis of inertia");
+
+    AddNamedReal(matdef,"GI_T","torsional rigidity");
+    AddNamedReal(matdef,"EI2","flexural/bending rigidity w.r.t. first principal "
+        "axis of inertia");
+    AddNamedReal(matdef,"EI3","flexural/bending rigidity w.r.t. second principal "
+        "axis of inertia");
+
+    AddNamedReal(matdef,"RhoA","translational inertia: mass density * cross-section area");
+
+    AddNamedReal(matdef,"MASSMOMINPOL","polar mass moment of inertia, i.e. w.r.t. "
+        "rotation around beam axis");
+    AddNamedReal(matdef,"MASSMOMIN2","mass moment of inertia w.r.t. first principal "
+        "axis of inertia");
+    AddNamedReal(matdef,"MASSMOMIN3","mass moment of inertia w.r.t. second principal "
+        "axis of inertia");
+
+
+    /* The following is optional because it is only required if we evaluate interactions
+     * between beams such as contact, potential-based and whatever more to come.
+     * For now, we always assume a circular cross-section if interactions are considered.
+     *
+     * This should be generalized to a type of cross-section shape (circular, rectangular,
+     * elliptic, ...) and corresponding necessary dimensions (radius, sizes, ...) if needed. */
+    AddNamedReal(matdef, "INTERACTIONRADIUS", "radius of a circular cross-section which "
+        "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...", -1.0, true);
+
+    AppendMaterialDefinition(matlist,matdef);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // material parameter definition for a Kirchhoff-Love type beam element
+  {
+    Teuchos::RCP<MaterialDefinition> matdef
+      = Teuchos::rcp(new MaterialDefinition(
+          "MAT_BeamKirchhoffElastHyper",
+          "material parameters for a Kirchhoff-Love type beam element based on "
+          "hyperelastic stored energy function",
+          INPAR::MAT::m_beam_kirchhoff_elast_hyper) );
+
+
+    AddNamedReal(matdef, "YOUNG", "Young's modulus");
+
+    /* note: we define both of the two following (redundant) parameters to be optional.
+     *       upon initialization of the material, we assure that one of them is
+     *       properly defined. */
+    AddNamedReal(matdef, "SHEARMOD", "shear modulus", -1.0, true);
+    AddNamedReal(matdef, "POISSONRATIO", "Poisson's ratio", -1.0, true);
+
+    AddNamedReal(matdef, "DENS", "mass density");
+
+    AddNamedReal(matdef, "CROSSAREA", "cross-section area");
+
+    AddNamedReal(matdef, "MOMINPOL", "polar/axial area moment of inertia" );
+    AddNamedReal(matdef, "MOMIN2", "area moment of inertia w.r.t. first principal "
+        "axis of inertia (i.e. second base vector)" );
+    AddNamedReal(matdef, "MOMIN3", "area moment of inertia w.r.t. second principal "
+        "axis of inertia (i.e. third base vector)" );
+
+
+    /* The following is optional because it is only required if we evaluate interactions
+     * between beams such as contact, potential-based and whatever more to come.
+     * For now, we always assume a circular cross-section if interactions are considered.
+     *
+     * This should be generalized to a type of cross-section shape (circular, rectangular,
+     * elliptic, ...) and corresponding necessary dimensions (radius, sizes, ...) if needed. */
+    AddNamedReal(matdef, "INTERACTIONRADIUS", "radius of a circular cross-section which "
+        "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...", -1.0, true);
+
+    AppendMaterialDefinition(matlist, matdef);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // material parameter definition for a Kirchhoff-Love type beam element,
+  // specified via 'modal' constitutive parameters (see comment above)
+  {
+    Teuchos::RCP<MaterialDefinition> matdef
+      = Teuchos::rcp(new MaterialDefinition(
+          "MAT_BeamKirchhoffElastHyper_ByModes",
+          "material parameters for a Kirchhoff-Love type beam element based on "
+          "hyperelastic stored energy function, specified for individual "
+          "deformation modes",
+          INPAR::MAT::m_beam_kirchhoff_elast_hyper_bymodes) );
+
+
+    AddNamedReal(matdef,"EA","axial rigidity");
+
+    AddNamedReal(matdef,"GI_T","torsional rigidity");
+    AddNamedReal(matdef,"EI2","flexural/bending rigidity w.r.t. first principal "
+        "axis of inertia");
+    AddNamedReal(matdef,"EI3","flexural/bending rigidity w.r.t. second principal "
+        "axis of inertia");
+
+    AddNamedReal(matdef,"RhoA","translational inertia: mass density * cross-section area");
+
+    AddNamedReal(matdef,"MASSMOMINPOL","polar mass moment of inertia, i.e. w.r.t. "
+        "rotation around beam axis");
+    AddNamedReal(matdef,"MASSMOMIN2","mass moment of inertia w.r.t. first principal "
+        "axis of inertia");
+    AddNamedReal(matdef,"MASSMOMIN3","mass moment of inertia w.r.t. second principal "
+        "axis of inertia");
+
+
+    /* The following is optional because it is only required if we evaluate interactions
+     * between beams such as contact, potential-based and whatever more to come.
+     * For now, we always assume a circular cross-section if interactions are considered.
+     *
+     * This should be generalized to a type of cross-section shape (circular, rectangular,
+     * elliptic, ...) and corresponding necessary dimensions (radius, sizes, ...) if needed. */
+    AddNamedReal(matdef, "INTERACTIONRADIUS", "radius of a circular cross-section which "
+        "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...", -1.0, true);
+
+    AppendMaterialDefinition(matlist,matdef);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // material parameter definition for a torsion-free, isotropic
+  // Kirchhoff-Love type beam element
+  {
+    Teuchos::RCP<MaterialDefinition> matdef
+      = Teuchos::rcp(new MaterialDefinition(
+          "MAT_BeamKirchhoffTorsionFreeElastHyper",
+          "material parameters for a torsion-free, isotropic Kirchhoff-Love "
+          "type beam element based on hyperelastic stored energy function",
+          INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper) );
+
+
+    AddNamedReal(matdef, "YOUNG", "Young's modulus");
+
+    AddNamedReal(matdef, "DENS", "mass density");
+
+    AddNamedReal(matdef, "CROSSAREA", "cross-section area");
+
+    AddNamedReal(matdef, "MOMIN", "area moment of inertia" );
+
+
+    /* The following is optional because it is only required if we evaluate interactions
+     * between beams such as contact, potential-based and whatever more to come.
+     * For now, we always assume a circular cross-section if interactions are considered.
+     *
+     * This should be generalized to a type of cross-section shape (circular, rectangular,
+     * elliptic, ...) and corresponding necessary dimensions (radius, sizes, ...) if needed. */
+    AddNamedReal(matdef, "INTERACTIONRADIUS", "radius of a circular cross-section which "
+        "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...", -1.0, true);
+
+    AppendMaterialDefinition(matlist, matdef);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // material parameter definition for a torsion-free, isotropic
+  // Kirchhoff-Love type beam element,
+  // specified via 'modal' constitutive parameters (see comment above)
+  {
+    Teuchos::RCP<MaterialDefinition> matdef
+      = Teuchos::rcp(new MaterialDefinition(
+          "MAT_BeamKirchhoffTorsionFreeElastHyper_ByModes",
+          "material parameters for a torsion-free, isotropic Kirchhoff-Love "
+          "type beam element based on hyperelastic stored energy function, "
+          "specified for individual deformation modes",
+          INPAR::MAT::m_beam_kirchhoff_torsionfree_elast_hyper_bymodes) );
+
+
+    AddNamedReal(matdef,"EA","axial rigidity");
+
+    AddNamedReal(matdef,"EI","flexural/bending rigidity");
+
+
+    AddNamedReal(matdef,"RhoA","translational inertia: mass density * cross-section area");
+
+
+    /* The following is optional because it is only required if we evaluate interactions
+     * between beams such as contact, potential-based and whatever more to come.
+     * For now, we always assume a circular cross-section if interactions are considered.
+     *
+     * This should be generalized to a type of cross-section shape (circular, rectangular,
+     * elliptic, ...) and corresponding necessary dimensions (radius, sizes, ...) if needed. */
+    AddNamedReal(matdef, "INTERACTIONRADIUS", "radius of a circular cross-section which "
+        "is EXCLUSIVELY used to evaluate interactions such as contact, potentials, ...", -1.0, true);
+
+    AppendMaterialDefinition(matlist,matdef);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // material for a crosslinker in a biopolymer simulation
+  // Fixme @eichinger: this material should hold one of the other beam materials defined above
+  {
+    Teuchos::RCP<MaterialDefinition> matdef
+      = Teuchos::rcp(new MaterialDefinition("MAT_Crosslinker",
+                                            "material for a linkage between beams",
+                                            INPAR::MAT::m_crosslinkermat));
+
+    AddNamedReal(matdef,"YOUNG","Young's modulus");
+    AddNamedReal(matdef,"NUE","Poisson's ratio");
+    AddNamedReal(matdef,"DENS","mass density");
+
+    AppendMaterialDefinition(matlist,matdef);
   }
 
   /*--------------------------------------------------------------------*/

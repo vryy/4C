@@ -11,7 +11,12 @@
 /*----------------------------------------------------------------------------*/
 
 #include "beam3eb.H"
+
+#include "../drt_mat/material.H"
+#include "../drt_mat/matpar_parameter.H"
+
 #include "../drt_lib/drt_linedefinition.H"
+
 #include "../drt_fem_general/largerotations.H"
 
 
@@ -27,55 +32,15 @@ bool DRT::ELEMENTS::Beam3eb::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  linedef->ExtractDouble("CROSS",crosssec_);
-
-  /*read beam moments of inertia of area; currently the beam3eb element works only with rotationally symmetric
-   * crosssection so that the moment of inertia of area around both principal axes can be expressed by one input
-   * number I_; however, the implementation itself is a general one and works also for other cases;*/
-
-  //currently only rotationally symmetric profiles for beam --> Iyy = Izz
-  linedef->ExtractDouble("MOMIN",Iyy_);
-  linedef->ExtractDouble("MOMIN",Izz_);
-
-  //torsional moment of inertia
-  linedef->ExtractDouble("MOMINPOL",Irr_);
+  if ( Material()->Parameter()->Name() != "MAT_BeamKirchhoffTorsionFreeElastHyper" and
+       Material()->Parameter()->Name() != "MAT_BeamKirchhoffTorsionFreeElastHyper_ByModes" )
+  {
+    dserror( "The material parameter definition '%s' is not supported by "
+        "Beam3eb element! "
+        "Choose MAT_BeamKirchhoffTorsionFreeElastHyper or "
+        "MAT_BeamKirchhoffTorsionFreeElastHyper_ByModes!",
+        Material()->Parameter()->Name() );
+  }
 
   return true;
 }
-/*------------------------------------------------------------------------*
- | Set moment of inertia                          (public) mukherjee 11/13|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::SetIyy(const double& Iyy)
-{
-  Iyy_ = Iyy;
-  return;
-}
-
-/*------------------------------------------------------------------------*
- | Set moment of inertia                          (public) mukherjee 11/13|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::SetIzz(const double& Izz)
-{
-  Izz_ = Izz;
-  return;
-}
-
-/*------------------------------------------------------------------------*
- | Set moment of inertia                          (public) mukherjee 11/13|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::SetIrr(const double& Irr)
-{
-  Irr_ = Irr;
-  return;
-}
-
-/*------------------------------------------------------------------------*
- | Set cross section area                         (public) mukherjee 11/13|
- *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::SetCrossSec(const double& crosssec)
-{
-  crosssec_ = crosssec;
-  return;
-}
-
-

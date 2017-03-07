@@ -18,7 +18,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_mat/stvenantkirchhoff.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -279,7 +278,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp, nnodecl);
+    UnShiftNodePosition(disp);
 
 
   // vector for current nodal DoFs in total Lagrangian style, i.e. displacement + initial values:
@@ -1631,38 +1630,13 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(
     dt = params.get<double>("delta time",1000);
   }
 
-  // get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double rho = 0;
 
-  // assignment of material parameters; only St.Venant material is accepted for this beam
-  switch ( currmat->MaterialType() )
-  {
-    case INPAR::MAT::m_stvenant:// only linear elastic material supported
-    {
-      const MAT::StVenantKirchhoff* actmat =
-          static_cast<const MAT::StVenantKirchhoff*>( currmat.get() );
-      rho = actmat->Density();
-
-      break;
-    }
-    default:
-    {
-      dserror("unknown or improper type of material law");
-      break;
-    }
-  }
-
-  // tensor of mass moments of inertia
+  // tensor of mass moments of inertia for translational and rotational motion
+  double mass_inertia_translational = 0.0;
   LINALG::TMatrix<T,3,3> Jp(true);
-  /* inertscalerot1/2 are used in order to artificially scale the the translational and
-   * rotational inertia terms with given input parameters if desired */
-  Jp(0,0) = inertscalerot1_ * (Iyy_ + Izz_);
-  Jp(1,1) = inertscalerot2_ * Iyy_;
-  Jp(2,2) = inertscalerot2_ * Izz_;
-  Jp.Scale(rho);
 
-  double scaledcrosssec = inertscaletrans_ * crosssec_;
+  GetTranslationalAndRotationalMassInertiaTensor(mass_inertia_translational, Jp);
+
 
   LINALG::TMatrix<T,3,numdofelement> N(true);
   LINALG::TMatrix<double,1,2*nnodecl> N_i(true);
@@ -1809,7 +1783,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(
     Pi_t.Multiply(triad_mat_gp[numgp], auxvector1);
 
     LINALG::TMatrix<T,3,1> L_t(true);
-    L_t.Update(rho*scaledcrosssec, rttnewmass, 1.0);
+    L_t.Update(mass_inertia_translational, rttnewmass, 1.0);
 
     // residual contribution from inertia moment
     f_inert_aux.Clear();
@@ -1844,7 +1818,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(
             triad_mat_gp[numgp],
             triad_mat_old,
             N,
-            rho,
+            mass_inertia_translational,
             Jp,
             lin_prefactor_acc,
             lin_prefactor_vel,
@@ -1866,7 +1840,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(
     ekinrot.MultiplyTN(Wnewmass, Jp_Wnewmass);
     ekintrans.MultiplyTN(rtnewmass, rtnewmass);
     Ekin_ += 0.5 * ( FADUTILS::CastToDouble( ekinrot(0,0) )
-          + rho * scaledcrosssec * FADUTILS::CastToDouble( ekintrans(0,0) ) ) * wgt * jacobi_[numgp];
+          + mass_inertia_translational * FADUTILS::CastToDouble( ekintrans(0,0) ) ) * wgt * jacobi_[numgp];
 
     //**********begin: update class variables needed for storage**************
     LINALG::TMatrix<T,3,1> wnewmass(true);
@@ -1917,7 +1891,7 @@ void DRT::ELEMENTS::Beam3k::CalculateMassMatrixContributionsAnalyticWK(
     const LINALG::TMatrix<double,3,3>& triad_mat,
     const LINALG::TMatrix<double,3,3>& triad_mat_conv,
     const LINALG::TMatrix<double,3,6*nnodecl+BEAM3K_COLLOCATION_POINTS>& N,
-    double density,
+    double mass_inertia_translational,
     const LINALG::TMatrix<double,3,3>& tensor_mass_moment_of_inertia,
     double lin_prefactor_acc,
     double lin_prefactor_vel,
@@ -2057,7 +2031,7 @@ void DRT::ELEMENTS::Beam3k::CalculateMassMatrixContributionsAnalyticWK(
 
   // linearization of residual from inertia force
   auxmatrix.MultiplyTN(N, N);
-  auxmatrix.Scale(density * inertscaletrans_ * crosssec_ * lin_prefactor_acc);
+  auxmatrix.Scale(mass_inertia_translational * lin_prefactor_acc);
 
   massmatrix_fixedsize.Update(jacobifac_GPwgt, auxmatrix, 1.0);
 
@@ -2705,7 +2679,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
   if (BrownianDynParamsInterfacePtr() != Teuchos::null)
-    UnShiftNodePosition(disp, nnode);
+    UnShiftNodePosition(disp);
 
 
   // total position state of element

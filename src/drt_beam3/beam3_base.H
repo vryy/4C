@@ -50,6 +50,10 @@ namespace BROWNIANDYN {
   class ParamsInterface;
 }
 
+namespace MAT {
+  class BeamElastHyperMaterial;
+}
+
 namespace DRT {
 namespace ELEMENTS {
 
@@ -128,35 +132,15 @@ public:
    *  \date 05/16 */
   virtual double RefLength() const = 0;
 
-  /** \brief get the cross-section area
+  /** \brief get the radius of the element which is used for interactions (contact, viscous,
+   *         potential-based, ...)
+   *         - if needed, extend this to other than circular cross-section shapes and dimensions
+   *           to be specified via input file
+   *         - allow for different assumed shapes for different interaction types if needed
    *
    *  \author grill
    *  \date 02/17 */
-  virtual double CrossSectionArea() const = 0;
-
-  /** \brief get the shear-corrected (i.e. scaled) cross-section area
-   *
-   *  \author grill
-   *  \date 02/17 */
-  virtual double CrossSectionAreaShearCorrected() const = 0;
-
-  /** \brief get the first principal area moment of inertia
-   *
-   *  \author grill
-   *  \date 08/16 */
-  virtual double MomentOfInertiaY() const = 0;
-
-  /** \brief get the second principal area moment of inertia
-   *
-   *  \author grill
-   *  \date 02/17 */
-  virtual double MomentOfInertiaZ() const = 0;
-
-  /** \brief get the polar area moment of inertia
-   *
-   *  \author grill
-   *  \date 02/17 */
-  virtual double PolarMomentOfInertia() const = 0;
+  double GetCircularCrossSectionRadiusForInteractions() const;
 
   /** \brief get number of nodes used for centerline interpolation
    *
@@ -313,9 +297,9 @@ public:
   }
 
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
-  virtual void UnShiftNodePosition(std::vector<double>&       disp, //!<element disp vector
-                                   Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
-                                   const unsigned int         nnode) const;
+  virtual void UnShiftNodePosition(
+      std::vector<double>&       disp, //!<element disp vector
+      Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const;
 
   /** \brief extract values for those Dofs relevant for centerline-interpolation from total state vector
    *
@@ -534,6 +518,12 @@ protected:
     r_s.Scale(1.0/jacobi);
   }
 
+  /** \brief get applied beam material law object
+   *
+   *  \author grill
+   *  \date 02/17 */
+  const MAT::BeamElastHyperMaterial& GetBeamMaterial() const;
+
   /** \brief setup constitutive matrices from material law
    *
    *  \author grill
@@ -542,11 +532,27 @@ protected:
   void GetConstitutiveMatrices(LINALG::TMatrix<T,3,3>& CN,
                                LINALG::TMatrix<T,3,3>& CM) const;
 
+  /** \brief setup mass inertia tensors from material law
+   *
+   *  \author grill
+   *  \date 03/16 */
+  template <typename T>
+  void GetTranslationalAndRotationalMassInertiaTensor(
+      double& mass_inertia_translational,
+      LINALG::TMatrix<T,3,3>& J) const;
+
+  /** \brief setup only translational mass inertia factor from material law
+   *      this method is called by reduced beam formulation which don't inlcude
+   *      rotational mass inertia
+   *
+   *  \author grill
+   *  \date 03/17 */
+  void GetTranslationalMassInertiaFactor(double& mass_inertia_translational) const;
 
   //! @name Methods and variables for Brownian dynamics simulations
   //! @{
   //! computes damping coefficients
-  void GetDampingCoefficients(LINALG::Matrix<3,1>&    gamma) const;
+  void GetDampingCoefficients(LINALG::Matrix<3,1>& gamma) const;
 
   //! computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
   template<unsigned int ndim, typename T> //number of dimensions of embedding space
@@ -556,8 +562,7 @@ protected:
                            LINALG::TMatrix<T,ndim,ndim>&    velbackgroundgrad) const; //!<gradient of velocity of background fluid
 
   //! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
-  virtual void UnShiftNodePosition(std::vector<double>& disp,
-                                   const unsigned int nnode) const;
+  virtual void UnShiftNodePosition(std::vector<double>& disp) const;
 
 public:
 
@@ -571,8 +576,7 @@ public:
   void GetTriadOfBindingSpot(
       LINALG::Matrix<3,3>&                            triad,
       std::vector<double>&                            disp,
-      const int&                                      bspotlocn,
-      Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const;
+      const int&                                      bspotlocn) const;
 
   const std::map<int, int>& GetBindingSpotStatus()
   {

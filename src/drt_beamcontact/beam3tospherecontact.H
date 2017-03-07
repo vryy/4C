@@ -384,11 +384,6 @@ private:
   void ComputeGap(TYPE& gap, const TYPE& norm);
 
   /*!
-  \brief Compute radius of cross section based on moment of inertia
-  */
-  void ComputeEleRadius(double& radius, const double& moi);
-
-  /*!
   \brief Compute coordinates and their derivatives from the discretization
   */
   void ComputeCoordsAndDerivs(LINALG::TMatrix<TYPE,3,1>& x1,
