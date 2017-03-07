@@ -719,7 +719,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
 
     // find out if interface-specific coefficients of friction are given
     if (ftype == INPAR::CONTACT::friction_tresca  or
-        ftype == INPAR::CONTACT::friction_coulomb)
+        ftype == INPAR::CONTACT::friction_coulomb or
+        ftype == INPAR::CONTACT::friction_stick)
     {
       // read interface COFs
       std::vector<double> frcoeff(currentgroup.size());
@@ -749,6 +750,15 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
       {
         icparams.setEntry("FRCOEFF",
             static_cast<Teuchos::ParameterEntry>(frcoeff[0]));
+        icparams.setEntry("FRBOUND",
+            static_cast<Teuchos::ParameterEntry>(-1.0));
+      }
+      // dummy values for FRCOEFF and FRBOUND have to be set,
+      // since entries are accessed regardless of the friction law
+      else if (ftype == INPAR::CONTACT::friction_stick)
+      {
+        icparams.setEntry("FRCOEFF",
+            static_cast<Teuchos::ParameterEntry>(-1.0));
         icparams.setEntry("FRBOUND",
             static_cast<Teuchos::ParameterEntry>(-1.0));
       }
