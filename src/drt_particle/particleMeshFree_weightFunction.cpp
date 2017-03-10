@@ -289,20 +289,24 @@ double PARTICLE::WeightFunction_CubicBspline::DDW(const double &disRel, const do
 
 double PARTICLE::WeightFunction_CubicBspline::RszDim(const double &radius)
 {
-  switch (PARTICLE_DIM)
+  double rszdim=0.0;
+  switch (WF_DIM_)
   {
-  case 3 :
-    return 12.0 * M_1_PI / std::pow(radius,3);
-  case 2 :
-    return 60.0 * M_1_PI / (7.0*std::pow(radius,2));
-  case 1 :
-    return 2.0 / radius;
+  case INPAR::PARTICLE::WF_3D :
+    rszdim = 12.0 * M_1_PI / std::pow(radius,3);
+    break;
+  case INPAR::PARTICLE::WF_2D :
+    rszdim = 60.0 * M_1_PI / (7.0*std::pow(radius,2));
+    break;
+  case INPAR::PARTICLE::WF_1D :
+    rszdim = 2.0 / radius;
+    break;
   default :
     dserror("Only the problem dimensions 1, 2 and 3 are possible!");
   }
+
+  return rszdim;
 }
-
-
 
 /*----------------------------------------------------------------------*
  | compute the SqrtHyperbola w function          cattabiani 08/16  |
@@ -359,20 +363,20 @@ double PARTICLE::WeightFunction_SqrtHyperbola::DDW(const double &disRel, const d
 
 double PARTICLE::WeightFunction_SqrtHyperbola::RszDim(const double &radius)
 {
-  double rszDim;
-  switch (PARTICLE_DIM)
+  double rszDim=0.0;
+  switch (WF_DIM_)
   {
-  case 3 :
+  case INPAR::PARTICLE::WF_3D :
   {
     rszDim = 15.0 * M_1_PI / (4.0*std::pow(radius,3));
     break;
   }
-  case 2 :
+  case INPAR::PARTICLE::WF_2D :
   {
     rszDim =  3.0 * M_1_PI / (std::pow(radius,2));
     break;
   }
-  case 1 :
+  case INPAR::PARTICLE::WF_1D :
   {
     rszDim = 0.5 / radius;
     break;

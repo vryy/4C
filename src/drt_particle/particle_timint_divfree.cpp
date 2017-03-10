@@ -57,7 +57,7 @@ void PARTICLE::TimIntDivFree::Init()
 
   // set up the proper interaction handler
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams, restDensity_));
+  interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams, initDensity_, restDensity_, refdensfac_));
 
 }
 
@@ -169,7 +169,7 @@ void PARTICLE::TimIntDivFree::CorrectDensityError(const double dt)
     interHandler_->SetStateVector(densityn_, PARTICLE::Density);
 
     Teuchos::RCP<Epetra_Vector> densityDiff = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    densityDiff->PutScalar(- restDensity_);
+    densityDiff->PutScalar(-refdensfac_*restDensity_);
     densityDiff->Update(1.0, *densityn_, 1.0);
 
     // did we converge? Let's check the average

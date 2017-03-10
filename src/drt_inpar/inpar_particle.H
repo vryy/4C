@@ -98,12 +98,23 @@ namespace INPAR
       HyperbolaNoRsz
     };
 
+    /// Number of weight function space dimensions for MeshFree interactions
+    enum WeightFunctionDim
+    {
+      WF_3D,
+      WF_2D,
+      WF_1D
+    };
+
     /// wall interaction type for MeshFree interactions
     enum WallInteractionType
     {
       InitParticle,
       Mirror,
-      Custom
+      Custom,
+      BoundarParticle_NoSlip,
+      BoundarParticle_FreeSlip,
+      NoWallInteraction
     };
 
     /// time step choice

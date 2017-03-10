@@ -21,6 +21,8 @@ MAT::PAR::ExtParticleMat::ExtParticleMat(
     Teuchos::RCP<MAT::PAR::Material> matdata
     ) :
     ParticleMat(matdata),
+    restDensity_(matdata->GetDouble("RESTDENSITY")),
+    refdensfac_(matdata->GetDouble("REFDENSFAC")),
     dismemberRadius_(matdata->GetDouble("DISMEMBER_RADIUS")),
     initTemperature_(matdata->GetDouble("INITTEMPERATURE")),
     CPS_(matdata->GetDouble("CPS")),

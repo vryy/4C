@@ -28,9 +28,6 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-//TODO: Remove this include as soon as the defines in particle_algorithm.H are set as input parameters
-#include "particle_algorithm.H"
-
 /*----------------------------------------------------------------------*/
 /* print particle time logo */
 void PARTICLE::TimInt::Logo()
@@ -57,6 +54,7 @@ PARTICLE::TimInt::TimInt
 : discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
   dbcmaps_(Teuchos::null),
+  bpDoFs_(Teuchos::null),
   output_(output),
   printlogo_(true),
   printscreen_(ioparams.get<int>("STDOUTEVRY")),
@@ -71,6 +69,7 @@ PARTICLE::TimInt::TimInt
   writeorientation_(false),
   kinergy_(0),
   intergy_(0),
+  bpintergy_(0),
   extergy_(0),
   linmomentum_(LINALG::Matrix<3,1>(true)),
   time_(Teuchos::null),
@@ -113,7 +112,9 @@ PARTICLE::TimInt::TimInt
   temperature_(Teuchos::null),
   pressure_(Teuchos::null),
 
+  initDensity_(-1.0),
   restDensity_(-1.0),
+  refdensfac_(-1.0),
 
   dofmapexporter_(Teuchos::null),
   nodemapexporter_(Teuchos::null),
@@ -187,16 +188,21 @@ void PARTICLE::TimInt::Init()
     radiusDot_  = LINALG::CreateVector(*NodeRowMapView(), true);
   }
 
-  // set initial fields
-  SetInitialFields();
+  //Vector to identify possible boundary particle DoFs
+  const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
+  if(wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip)
+    bpDoFs_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // Apply Dirichlet BC and create dbc map extractor
   {
     dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
     Teuchos::ParameterList p;
     p.set("total time", (*time_)[0]);
-    discret_->EvaluateDirichlet(p, (*dis_)(0), (*vel_)(0), (*acc_)(0), Teuchos::null, dbcmaps_);
+    discret_->EvaluateDirichlet(p, (*dis_)(0), (*vel_)(0), (*acc_)(0), bpDoFs_, dbcmaps_);
   }
+
+  // set initial fields
+  SetInitialFields();
 
   // copy everything into the n+1 state vectors
   disn_ = Teuchos::rcp(new Epetra_Vector(*(*dis_)(0)));
@@ -267,15 +273,28 @@ void PARTICLE::TimInt::SetInitialFields()
 
   (*radius_)(0)->PutScalar(initRadius);
 
-  // mass-vector: m = rho * 4/3 * PI *r^3
-  // Also account for a SPH-consistent definition of the density (PARTICLE_CONSISTENT_VOLUME will be replaced by input parameter)
-#ifndef PARTICLE_CONSISTENT_VOLUME
-  mass_->PutScalar(initDensity * PARTICLE::Utils::Radius2Volume(initRadius));
-#else
-  const double initVolume=PARTICLE_CONSISTENT_VOLUME;
-  const double num_particles=discret_->NumMyRowNodes();
-  mass_->PutScalar(initDensity * initVolume / num_particles);
-#endif
+  double consistent_problem_volume=DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
+  if(consistent_problem_volume<0.0) // particle mass via m = rho * 4/3 * PI *r^3
+    mass_->PutScalar(initDensity * PARTICLE::Utils::Radius2Volume(initRadius));
+  else // particle mass via problem volume and density
+  {
+    //boundary particles are excluded for determination of particle mass since they are also not part of the consistent_problem_volume
+    int num_boundaryparticles=0;
+
+    const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
+    if(wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip)
+    {
+      double num_boundaryDoFs = 0.0;
+      bpDoFs_->Norm1(&num_boundaryDoFs);
+      num_boundaryparticles=(int)(num_boundaryDoFs/3);
+      int tot_num_boundaryparticles=0;
+      if(wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip)
+      discret_->Comm().SumAll(&num_boundaryparticles,&tot_num_boundaryparticles,1);
+    }
+
+    const int num_particles=discret_->NumGlobalNodes()-num_boundaryparticles;
+    mass_->PutScalar(initDensity * consistent_problem_volume / (double)(num_particles));
+  }
 
   // -----------------------------------------//
   // set initial radius condition if existing
@@ -283,6 +302,9 @@ void PARTICLE::TimInt::SetInitialFields()
 
   std::vector<DRT::Condition*> condition;
   discret_->GetCondition("InitialParticleRadius", condition);
+
+  if(consistent_problem_volume>0.0 and condition.size()>0)
+    dserror("The combination of InitialParticleRadius and CONSISTENT_PROBLEM_VOLUME not possible so far!");
 
   // loop over conditions
   for (size_t i=0; i<condition.size(); ++i)
@@ -322,10 +344,12 @@ void PARTICLE::TimInt::SetInitialFields()
       // do nothing
       break;
     }
-
     case INPAR::PARTICLE::radiusdistribution_lognormal:
     case INPAR::PARTICLE::radiusdistribution_normal:
     {
+      if(consistent_problem_volume>0.0)
+        dserror("The combination of RADIUS_DISTRIBUTION and CONSISTENT_PROBLEM_VOLUME not possible so far!");
+
       // get minimum and maximum radius for particles
       const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
       const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
@@ -410,8 +434,32 @@ void PARTICLE::TimInt::SetInitialFields()
   case INPAR::PARTICLE::MeshFree :
   {
     // set the rest density used for pressure-related dynamics
-    restDensity_ = PARTICLE_DELTADENSFAC * initDensity;
-  }// no break
+    restDensity_ = extParticleMat->restDensity_;
+    refdensfac_ = extParticleMat->refdensfac_;
+    initDensity_ = initDensity;
+
+    // set density in the density vector (useful only for thermodynamics)
+    (*density_)(0)->PutScalar(initDensity);
+
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
+    {
+      // initialize temperature of particles
+      const double initTemperature = extParticleMat->initTemperature_;
+      const double transitionTemperature = extParticleMat->transitionTemperature_;
+      const double tempDiff = initTemperature - transitionTemperature;
+
+      if (tempDiff > 0)
+        (*specEnthalpy_)(0)->PutScalar(extParticleMat->SpecEnthalpyTL() + tempDiff * extParticleMat->CPL_);
+      else if (initTemperature < transitionTemperature)
+        (*specEnthalpy_)(0)->PutScalar(initTemperature * extParticleMat->CPS_);
+      else
+        dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
+
+      UpdateTemperaturen();
+    }
+
+    break;
+  }
   case INPAR::PARTICLE::Normal_DEM_thermo :
   {
     // set density in the density vector (useful only for thermodynamics)
@@ -440,9 +488,10 @@ void PARTICLE::TimInt::SetInitialFields()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(restDensity_);
+    deltaDensity->PutScalar(refdensfac_*restDensity_);
     deltaDensity->Update(1.0, *(*density_)(0), -1.0);
-    PARTICLE::Utils::Density2Pressure(deltaDensity, (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true);
+    bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
+    PARTICLE::Utils::Density2Pressure(deltaDensity, (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true, solve_thermal_problem);
   }
 
   // set vector of initial particle radii if necessary
@@ -676,9 +725,10 @@ void PARTICLE::TimInt::ReadRestartState()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(restDensity_);
+    deltaDensity->PutScalar(refdensfac_*restDensity_);
     deltaDensity->Update(1.0,*densityn_,-1.0);
-    PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
+    bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
+    PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
   }
 
   // read in particle collision relevant data
@@ -916,9 +966,9 @@ void PARTICLE::TimInt::DetermineEnergy()
       extergy_ = 0.0;
       linmomentum_.Clear();
 
-      // compute speed of sound (only fluids considered so far!)
-      double c0 = particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
-      double c0_square = c0*c0;
+      //First add energy contributions of boundary particles (bpintergy_ has already been determined in IntegrateStep())
+      intergy_+=bpintergy_;
+
       for(int i=0; i<numrownodes; ++i)
       {
         double kinetic_energy = 0.0;
@@ -937,18 +987,18 @@ void PARTICLE::TimInt::DetermineEnergy()
         kinergy_ += 0.5 * (*mass_)[i] * kinetic_energy;
 
         // thermodynamic energy E with p=-dE/dV, T=dE/dS (see Espanol2003, Eq.(5))
-        // Attention: currently, only the first, pressure-dependent contribution of the thermodynamic energy is implemented! Thus, it is only valid for isentrop problems, i.e.dE/dS=0!
-        // Furthermore, it is only considered for the fluid phase so far (since SpeedOfSoundL is used)!
-        // From the considered pressure law p_i=c_0^2(rho_i+PARTICLE_DELTADENSFAC*rho_0) and the relation rho_i=m_i/V_i it is possible to gain the energy via integration:
-        // E_i=c_0^2 m_i [ln(rho_i/m_i)-PARTICLE_DELTADENSFAC*rho_0/rho_i]+const.  --> The integration constant const. can be determined following an arbitrary initial condition.
-        //In the following, we choose E_i(rho_i=rho_0)=0 leading to: E_i=c_0^2 m_i [ln(rho_i/rho_0)+PARTICLE_DELTADENSFAC*{1-rho_0/rho_i}]
-        if((*densityn_)[i]>1.0e-10)
-        {
-          double density_frac = (*densityn_)[i]/restDensity_;
-          intergy_ += c0_square * (*mass_)[i] * (log(density_frac)+PARTICLE_DELTADENSFAC*(1.0-1.0/density_frac));
-        }
-        else
-          dserror("Only positive density values admissible!");
+        // Attention: currently, only the first, pressure-dependent contribution of the thermodynamic energy is implemented!
+        // Thus, it is only valid for isentrop problems, i.e.dE/dS=0! Furthermore, it is only considered for the fluid phase so far (since SpeedOfSoundL is used)!
+        // In the following, for simplicity, all particles including also boundary particles are considered. The boundary particles are represented by their initial
+        // density (usually initDensity_=restDensity) in the vector densityn_ and do not yield energy changes in the following lines. However, the actual energy
+        // contributions of the boundary particles is contained in bpintergy_!
+
+        //TODO: So far, energy output is only considered in the context of fluid problems (use of SpeedOfSoundL())!
+        if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
+          dserror("Energy output is only considered in the context of pure fluid problems so far!");
+
+        double c0 = particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
+        intergy_+=PARTICLE::Utils::Density2Energy(c0, (*densityn_)[i], restDensity_, refdensfac_, (*mass_)[i]);
       }
     }
     else
@@ -1225,9 +1275,10 @@ void PARTICLE::TimInt::UpdatePressure()
   if (pressure_ != Teuchos::null && specEnthalpyn_ != Teuchos::null && densityn_ != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(restDensity_);
+    deltaDensity->PutScalar(refdensfac_*restDensity_);
     deltaDensity->Update(1.0,*densityn_,-1.0);
-    PARTICLE::Utils::Density2Pressure(deltaDensity, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat());
+    bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
+    PARTICLE::Utils::Density2Pressure(deltaDensity, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat(),false,solve_thermal_problem);
   }
 }
 

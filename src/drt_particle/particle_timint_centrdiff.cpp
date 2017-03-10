@@ -67,7 +67,7 @@ void PARTICLE::TimIntCentrDiff::Init()
   {
   case INPAR::PARTICLE::MeshFree:
   {
-    interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams, restDensity_));
+    interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams, initDensity_, restDensity_, refdensfac_));
     break;
   }
   case INPAR::PARTICLE::Normal_DEM:
@@ -106,9 +106,9 @@ void PARTICLE::TimIntCentrDiff::Init()
     }
   }
 
-  // simple check if the expansion speed is too elevated
+  // simple check if the expansion speed is too elevated --> Not relevant for Particle Meshfree Interaction
   const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
-  if (extParticleMat != NULL)
+  if (extParticleMat != NULL and particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree)
   {
     // extract the interesting values
     const double min_density = extParticleMat->initDensity_;//for now particle densities at the beginning are all equal. Since dismembering increases density it is also equal to the min_density. It can change in the future tho
@@ -160,19 +160,20 @@ void PARTICLE::TimIntCentrDiff::Init()
   //    (*(*specEnthalpy_)(0))[0] += 1e3;
   //    std::cout << *specEnthalpyn_ << std::endl;
   //    std::cin.get();
-  /////////////
+  ////////////
 }
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
 int PARTICLE::TimIntCentrDiff::IntegrateStep()
 {
+
     const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
     const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
     // new velocities \f$V_{n+1/2}\f$
-    //TODO Christoph: check, if the "postponed" subtraction of the accn_ term causes problems for SPH
-    // In DEM, this procedure is known to reduce the temporal convergence order if velocity-propoertional damping terms exist.
+    //TODO Meier: check, if the "postponed" subtraction of the accn_ term causes problems for SPH
+    // In DEM, this procedure is known to reduce the temporal convergence order if velocity-proportional damping terms exist.
     veln_->Update(dthalf, *(*acc_)(0), 1.0);
 
     // new displacements \f$D_{n+1}\f$
@@ -215,18 +216,55 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     {
       // the density update scheme is equal to the acceleration update scheme. It can change at your will
 
-      interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_);
+      interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_,bpDoFs_);
+      const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
 
-      // direct update of the accelerations
-      // mass balance
-      interHandler_->Inter_pvp_densityDot(densityDotn_);
-      interHandler_->Inter_pvw_densityDot(densityDotn_);
-      // momentum balance
-      interHandler_->Inter_pvp_acc(accn_);
-      interHandler_->Inter_pvw_acc(accn_);
+      // In case of density summation the new density and new pressure have been determined as very first step since they are required for all the following calculations
+      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION"))
+      {
+        if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::Custom or wallInteractionType==INPAR::PARTICLE::InitParticle)
+          interHandler_->MF_mW(densityn_);
+        else
+          interHandler_->MF_mW(densityn_,false);
+
+        //Determine also the new pressure and set state vectors for the new density and pressure
+        interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+        Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
+        deltaDensity->PutScalar(refdensfac_*restDensity_);
+        deltaDensity->Update(1.0,*densityn_,-1.0);
+        bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
+        PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+        interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
+      }
+
+      // Accelerations at Dirichlet DoFs are required for boundary particles
+      // TODO Meier: Check if here really acc(t_{n+1}) or rather acc(t_{n+0.5}) is required?
+      ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_,  false);
+      // asign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechancial energy contribution
+      if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
+      {
+        interHandler_->InitBoudaryData(accn_,bpintergy_);
+      }
+
+      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
+      {
+        // Determine time derivative of density in case integration formula is used
+        interHandler_->Inter_pvp_densityDot(densityDotn_);
+        if(wallInteractionType!=INPAR::PARTICLE::Mirror or wallInteractionType!=INPAR::PARTICLE::Custom or wallInteractionType!=INPAR::PARTICLE::InitParticle)
+          interHandler_->Inter_pvw_densityDot(densityDotn_);
+      }
+
+      interHandler_->Inter_pvp_acc(accn_,1.0,true,timen_);
+
+      if(wallInteractionType!=INPAR::PARTICLE::Mirror or wallInteractionType!=INPAR::PARTICLE::Custom or wallInteractionType!=INPAR::PARTICLE::InitParticle)
+        interHandler_->Inter_pvw_acc(accn_);
+
       // heat balance
-      interHandler_->Inter_pvp_specEnthalpyDot(specEnthalpyDotn_);
-      interHandler_->Inter_pvhs_specEnthalpyDot(specEnthalpyDotn_);
+      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
+      {
+        interHandler_->Inter_pvp_specEnthalpyDot(specEnthalpyDotn_);
+        interHandler_->Inter_pvhs_specEnthalpyDot(specEnthalpyDotn_);
+      }
 
       // do we need the second round and the surface tension? here we decide
       if (particle_algorithm_->ExtParticleMat()->surfaceVoidTension_ != 0)
@@ -255,8 +293,13 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     {
     case INPAR::PARTICLE::MeshFree :
     {
-      //Explicit Euler for Density
-      densityn_->Update(dt, *densityDotn_, 1.0);
+      //Density update in case integration formula is used
+      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
+      {
+        //Explicit Euler for Density
+        densityn_->Update(dt, *densityDotn_, 1.0);
+      }
+
     }// no break
     case INPAR::PARTICLE::Normal_DEM_thermo :
     {
@@ -266,7 +309,6 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     default :
       break;
     }
-
 
     if(collhandler_ != Teuchos::null)
     {
@@ -325,8 +367,9 @@ void PARTICLE::TimIntCentrDiff::ReadRestartState()
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(restDensity_);
+    deltaDensity->PutScalar(refdensfac_*restDensity_);
     deltaDensity->Update(1.0,*densityn_,-1.0);
-    PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
+    bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
+    PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
   }
 }

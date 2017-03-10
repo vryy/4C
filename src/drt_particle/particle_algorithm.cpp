@@ -75,6 +75,48 @@ PARTICLE::Algorithm::Algorithm(
   if (meshfreetype!=INPAR::MESHFREE::particle)
     dserror("MESHFREE -> TYPE must be Particle in input file.");
 
+  //Check number of space dimensions chosen for meshfree weight functions
+  if(particleInteractionType_==INPAR::PARTICLE::MeshFree)
+  {
+
+    if(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")!=INPAR::PARTICLE::particle_3D)
+      dserror("The general Particle Meshfree Interactions framework (binning strategy etc.) does so far only cover 3D problems (DIMENSION  3D).\n"
+              "However, if you want to treat quasi-2D or -1D problems, set the input parameter WEIGHT_FUNCTION_DIM to WF_2D or WF_1D, respectively.\n"
+              "In Particle Meshfree Interactions, the definition of the weight functions have to be adapted according to the number of space dimensions considered!");
+
+    switch(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION_DIM"))
+    {
+      case INPAR::PARTICLE::WF_3D :
+        IO::cout << "Welcome to Particle Meshfree Interactions in 3D!" << IO::endl;
+      break;
+      case INPAR::PARTICLE::WF_2D :
+        IO::cout << "Welcome to Particle Meshfree Interactions in 2D!" << IO::endl;
+      break;
+      case INPAR::PARTICLE::WF_1D :
+        IO::cout << "Welcome to Particle Meshfree Interactions in 1D!" << IO::endl;
+      break;
+      default :  //nothing to do here
+      break;
+    }
+
+    const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
+    //Perform some further compatibility checks:
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
+    {
+      if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
+      {
+        dserror("Boundary particles can currently not be combined with thermal problems!");
+      }
+    }
+
+    if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::InitParticle or wallInteractionType==INPAR::PARTICLE::Custom)
+    {
+      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION"))
+        dserror("Density summation has so far not been tested in combination with wall boundaries. Use Boundary particles when applying density summation!");
+    }
+
+  }
+
   if (moving_walls_ == true and DRT::Problem::Instance()->ProblemType() != prb_pasi)
     dserror("MOVING_WALLS flag is activated!\n"
         "Set parameter PROBLEMTYP to 'Particle_Structure_Interaction' in ---PROBLEM TYP section.\n"
@@ -259,7 +301,8 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
   if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RENDERING"))
   {
-    rendering_ = Teuchos::rcp(new PARTICLE::Rendering(Teuchos::rcp(this,false)));
+    INPAR::PARTICLE::WeightFunctionDim wf_dim=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION_DIM");
+    rendering_ = Teuchos::rcp(new PARTICLE::Rendering(Teuchos::rcp(this,false),wf_dim));
   }
 }
 
@@ -534,6 +577,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
         const int gid = particles_->Veln()->Map().GID(lid);
         dserror("Particle %i (gid) travels more than one bin per time step (%f > %f). Increase bin size or reduce step size."
             "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*dt), BinStrategy()->CutoffRadius(), maxrad);
+        std::cout << "Particle %i (gid) travels more than one bin per time step!!!!!!!" << std::endl;
       }
     }
   }
@@ -1205,7 +1249,7 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
 
   DRT::Element** CurrentBin = particle->Elements();
 
-  GetNeighbouringItems(CurrentBin[0]->Id(),neighboursLinf_p,neighboursLinf_w, neighboursLinf_hs);
+  GetNeighbouringItems(CurrentBin[0]->Id(),neighboursLinf_p,&neighboursLinf_w, neighboursLinf_hs);
 }
 
 
@@ -1215,7 +1259,7 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
 void PARTICLE::Algorithm::GetNeighbouringItems(
     const int binId,
     std::list<DRT::Node*>& neighboursLinf_p,
-    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
+    boost::unordered_map<int, DRT::Element*>* neighboursLinf_w,
     const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs)
 {
   std::vector<int> binIds;
@@ -1232,7 +1276,7 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::GetBinContent(
     std::list<DRT::Node*>& bin_p,
-    boost::unordered_map<int, DRT::Element*>& bin_w,
+    boost::unordered_map<int, DRT::Element*>* bin_w,
     const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > bin_hs,
   std::vector<int> &binIds)
 {
@@ -1256,11 +1300,14 @@ void PARTICLE::Algorithm::GetBinContent(
     bin_p.insert(bin_p.end(), nodes, nodes+neighboringbin->NumNode());
 
     // gather wall elements
-    DRT::Element** walleles = neighboringbin->AssociatedEles(bin_wallcontent_);
-    const int numwalls = neighboringbin->NumAssociatedEle(bin_wallcontent_);
-    for(int iwall=0;iwall<numwalls; ++iwall)
+    if (bin_w != NULL)
     {
-      bin_w[walleles[iwall]->Id()] = walleles[iwall];
+      DRT::Element** walleles = neighboringbin->AssociatedEles(bin_wallcontent_);
+      const int numwalls = neighboringbin->NumAssociatedEle(bin_wallcontent_);
+      for(int iwall=0;iwall<numwalls; ++iwall)
+      {
+        (*bin_w)[walleles[iwall]->Id()] = walleles[iwall];
+      }
     }
     // gather heat sources
     // it is a set so that there are no repetitions of the heat source

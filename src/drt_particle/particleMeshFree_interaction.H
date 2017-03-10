@@ -60,6 +60,11 @@ namespace BINSTRATEGY
   class Less;
 }
 
+namespace LINALG
+{
+  class SparseMatrix;
+}
+
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
 namespace PARTICLE
@@ -84,7 +89,9 @@ namespace PARTICLE
       Teuchos::RCP<DRT::Discretization> discret,
       Teuchos::RCP<PARTICLE::Algorithm> particlealgorithm,
       const Teuchos::ParameterList& particledynparams,
-      const double restDensity);
+      const double initDensity,
+      const double restDensity,
+      const double refdensfac);
 
     //! Destructor
     virtual ~ParticleMeshFreeInteractionHandler(){ ; }
@@ -101,7 +108,8 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> veln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<const Epetra_Vector> mass,
-        Teuchos::RCP<const Epetra_Vector> specEnthalpyn);
+        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
+        Teuchos::RCP<Epetra_Vector> bpDoFs=Teuchos::null);
 
     virtual void Init(
         const int step,
@@ -110,7 +118,8 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<const Epetra_Vector> mass,
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-        Teuchos::RCP<const Epetra_Vector> temperature);
+        Teuchos::RCP<const Epetra_Vector> temperature,
+        Teuchos::RCP<Epetra_Vector> bpDoFs=Teuchos::null);
 
     virtual void Init(
         const int step,
@@ -121,10 +130,14 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> temperature,
         Teuchos::RCP<const Epetra_Vector> densityn,
-        Teuchos::RCP<const Epetra_Vector> pressure);
+        Teuchos::RCP<const Epetra_Vector> pressure,
+        Teuchos::RCP<Epetra_Vector> bpDoFs=Teuchos::null);
 
     //! set up the ColParticles
-    virtual void InitColParticles();
+    virtual void InitColParticles(Teuchos::RCP<Epetra_Vector> bpDoFs=Teuchos::null);
+
+    //! accelerations, modified pressures and velocities for boundary particles
+    virtual void InitBoudaryData(Teuchos::RCP<const Epetra_Vector> accn, double &bpintergy);
 
     //! add to the neighbour maps the neighbours of the present time step
     virtual void AddNewNeighbours(const int step);
@@ -159,8 +172,20 @@ namespace PARTICLE
         const Teuchos::RCP<Epetra_Vector> densityDotn,
         const double extMulti = 1.0);
 
+    /// compute the density part of the boundary particle vs particle interactions
+    virtual void Inter_bpvp_densityDot(
+        const Teuchos::RCP<Epetra_Vector> densityDotn,
+        const double extMulti = 1.0);
+
     /// compute the momentum part of the particle vs particle interactions
     virtual void Inter_pvp_acc(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        const double extMulti = 1.0,
+        const bool clcPressure = true,
+        const double time=0.0);
+
+    /// compute the momentum part of the boundary particle vs particle interactions
+    virtual void Inter_bpvp_acc(
         const Teuchos::RCP<Epetra_Vector> accn,
         const double extMulti = 1.0,
         const bool clcPressure = true);
@@ -247,6 +272,15 @@ namespace PARTICLE
         const bool withWalls = true,
         const double extMulti = 1.0);
 
+    /// compute density - mesh free sense - boundary particle contributions
+    virtual void MF_mW_Boundary(
+        const Teuchos::RCP<Epetra_Vector> mW,
+        const double extMulti = 1.0);
+
+    /// compute pressure difference (for debugging)
+    virtual void MF_DeltaP(
+        const Teuchos::RCP<Epetra_Vector> PressureDiff);
+
     /// compute m * gradW - mesh free sense
     virtual void MF_mGradW(
         const Teuchos::RCP<Epetra_Vector> mGradW,
@@ -281,6 +315,12 @@ namespace PARTICLE
         const std::list<DRT::Node*>& neighboursLinf_p,
         const int step);
 
+    //! add to the neighbour maps the neighbours of the present time step - boundary particles
+    virtual void AddNewNeighbours_bp(
+        const ParticleMF& particle_i,
+        const std::list<DRT::Node*>& neighboursLinf_p,
+        const int step);
+
     //! add to the neighbour maps the neighbours of the present time step - walls
     virtual void AddNewNeighbours_w(
         const ParticleMF& particle_i,
@@ -297,6 +337,9 @@ namespace PARTICLE
 
     //! update the neighbours_w_ map
     virtual void UpdateWeights_w(const int step = -1);
+
+    //! update weights and distances of boundary particle neighbours
+    virtual void UpdateWeights_bp(const int step = -1);
 
     /// template to print neighbours
     template <typename obj>
@@ -348,7 +391,7 @@ namespace PARTICLE
     /// neighbours - heat sources
     std::vector<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighbours_hs_;
 
-    /// neighbours - heat sources
+    /// neighbours - walls
     std::vector<boost::unordered_map<int, InterDataPvW> > neighbours_w_;
 
     /// weight function
@@ -360,13 +403,28 @@ namespace PARTICLE
     /// temporary storage of wallMeshFree data
     WallMeshFreeData wallMeshFreeData_;
 
+    /// neighbours - boundary particles
+    std::map<int,std::map<int, InterDataPvP> > neighbours_bp_;
+
+    /// standard map that contains pointers to all boundary particles
+    std::map<int,ParticleMF* > boundaryparticles_;
+
+    /// number of space dimensions required for weight function definition
+    const INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+
     //@}
 
     //! @name wall interaction parameters
     //@{
 
-    /// rest density
+    //! rest density for meshFree-pressure dynamics
+    const double initDensity_;
+
+    //! rest density for meshFree-pressure dynamics defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_
     const double restDensity_;
+
+    /// factor defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_;
+    const double refdensfac_;
 
     /// lower cap of the alpha parameter
     const double alphaMin_;

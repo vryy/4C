@@ -78,7 +78,7 @@ void PARTICLE::TimIntGenAlpha::Init()
 
   // initialize the interaction handler
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams, restDensity_));
+  interHandler_ = Teuchos::rcp(new PARTICLE::ParticleMeshFreeInteractionHandler(discret_, particle_algorithm_, particleparams, initDensity_, restDensity_, refdensfac_));
 
   // set up the genalpha parameters...
   CalcCoeff();
@@ -92,6 +92,18 @@ void PARTICLE::TimIntGenAlpha::Init()
   // we do not need these vectors
   densityDotn_ = Teuchos::null;
   densityDot_ = Teuchos::null;
+
+  //Perform some compatibility checks:
+  const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
+  if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
+    dserror("Boundary particles are not possible in particle_timint_genalpha so far!");
+
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM")==false)
+    dserror("The avoidance of the thermal problem has not been tested in particle_timint_genalpha so far!");
+
+  if(DRT::Problem::Instance()->ParticleParams().get<double>("VISCOUS_DAMPING")>0)
+    dserror("The application of a viscous damping force has not been tested in particle_timint_genalpha so far!");
+
 
 }
 
@@ -356,7 +368,7 @@ void PARTICLE::TimIntGenAlpha::ReadRestartState()
 
   // set up the pressure
   Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-  deltaDensity->PutScalar(restDensity_);
+  deltaDensity->PutScalar(refdensfac_*restDensity_);
   deltaDensity->Update(1.0,*densityn_,-1.0);
   PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
 

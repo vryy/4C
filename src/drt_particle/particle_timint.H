@@ -508,6 +508,7 @@ namespace PARTICLE
                                                   //!< containing non-overlapping
                                                   //!< map of global DOFs on Dirichlet
                                                   //!< boundary conditions
+    Teuchos::RCP<Epetra_Vector> bpDoFs_; //!< vector indicating DoFs associated with boundary particles
     //@}
 
     //! @name Printing and output
@@ -528,6 +529,7 @@ namespace PARTICLE
 
     double kinergy_; //!< kinetic energy
     double intergy_; //!< internal energy
+    double bpintergy_; //!< internal energy of boundary particles (different definition of density/pressure)
     double extergy_; //!< external energy
     LINALG::Matrix<3,1> linmomentum_; //!< linear momentum
     //@}
@@ -608,8 +610,13 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> pressure_;
     //! m * grad(weightFunction) for meshfree methods
 
-    //! rest density for meshFree-pressure dynamics
+    //! initial density for meshFree-pressure dynamics
+    double initDensity_;
+    //! rest density for meshFree-pressure dynamics defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_
     double restDensity_;
+    /// factor defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_;
+    double refdensfac_;
+
 
     //@}
 

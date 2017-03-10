@@ -96,7 +96,8 @@ void PARTICLE::Utils::Density2Pressure(
   const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
   Teuchos::RCP<Epetra_Vector> &pressure,
   const MAT::PAR::ExtParticleMat* extParticleMat,
-  bool trg_createPressureVector)
+  bool trg_createPressureVector,
+  bool solve_thermal_problem)
 {
   // checks
   if (deltaDensity == Teuchos::null)
@@ -116,7 +117,13 @@ void PARTICLE::Utils::Density2Pressure(
   // compute inertia for every particle
   for (int lidNode = 0; lidNode < deltaDensity->MyLength(); ++lidNode)
   {
-    const double speedOfSound = SpeedOfSound((*specEnthalpy)[lidNode], extParticleMat);
+    double speedOfSound = 0.0;
+    //If no thermal problem is solved, only liquid phases are considered
+    if(solve_thermal_problem)
+      speedOfSound = SpeedOfSound((*specEnthalpy)[lidNode], extParticleMat);
+    else
+      speedOfSound = extParticleMat->SpeedOfSoundL();
+
     (*pressure)[lidNode] = Density2Pressure(speedOfSound, (*deltaDensity)[lidNode]);
   }
 }
@@ -146,6 +153,7 @@ double PARTICLE::Utils::SpeedOfSound(
     const double &specEnthalpy,
     const MAT::PAR::ExtParticleMat* extParticleMat)
 {
+
   if (specEnthalpy <= extParticleMat->SpecEnthalpyST())
   {
     return extParticleMat->SpeedOfSoundS();

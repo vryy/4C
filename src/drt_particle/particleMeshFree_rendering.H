@@ -47,7 +47,8 @@ namespace PARTICLE
     //@{
 
     //! Constructor (the writer should already be set)
-    Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm);
+    Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm,
+              INPAR::PARTICLE::WeightFunctionDim wf_dim);
 
     //! Destructor
     virtual ~Rendering() { ; }

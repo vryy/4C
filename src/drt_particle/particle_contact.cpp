@@ -598,7 +598,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     // list of heat sources that border on the CurrentBin
     const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboring_heatSources = Teuchos::rcp(new boost::unordered_map<int , Teuchos::RCP<HeatSource> >);
 
-    particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, neighboring_walls, neighboring_heatSources);
+    particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, &neighboring_walls, neighboring_heatSources);
 
     // loop over all particles in CurrentBin
     for(int i=0; i<currentBin->NumNode(); ++i)

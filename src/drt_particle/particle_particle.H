@@ -210,6 +210,36 @@ namespace PARTICLE
 
   }; // ParticleThermo
 
+// ---------------------------------------------------------- //
+  /// Class containing boundary data required in ParticleMF
+  class BoundaryData
+  {
+  public:
+
+  /// constructor: empty
+  BoundaryData(bool boundaryparticle) :
+  boundaryparticle_(boundaryparticle),
+  acc_(LINALG::Matrix<3,1>(true)),
+  velMod_(LINALG::Matrix<3,1>(true)),
+  pressureMod_(-1000),
+  densityMod_(-1000)
+  {
+    //set distinct value as long as not set from outside
+    for(int i=0;i<3;i++)
+    {
+      acc_(i)=-1000;
+      velMod_(i)=-1000;
+    }
+  }
+
+  /// internal variables
+  bool boundaryparticle_;         //bool to check if boundary particle or not?
+  LINALG::Matrix<3,1> acc_;       //acceleration vector of boundary particles
+  LINALG::Matrix<3,1> velMod_;    //modified velocity vector of boundary particle (see Ref. Adami2012)
+  double pressureMod_;            //modified pressure of boundary particle (see Ref. Adami2012)
+  double densityMod_;            //modified density of boundary particle consistently derived from modified pressure via equation of state
+
+  }; // BoundaryData
 
 // ---------------------------------------------------------- //
   /// particles for meshfree dynamics (thermodynamics and surface tensions incuded)
@@ -242,18 +272,19 @@ namespace PARTICLE
         pressure_(pressure),
         temperature_(temperature),
         densityDot_(densityDot),
-        alpha_(alpha) {}
+        alpha_(alpha),
+        boundarydata_(BoundaryData(false)) {}
 
   /// constructor: empty
   ParticleMF() : ParticleBase(), ParticleThermoBase(), ParticleSurfTensionBase(), ParticleMFmGradWbase(),
-      pressure_(-1), temperature_(-1), densityDot_(-1), alpha_(-1) {}
+      pressure_(-1), temperature_(-1), densityDot_(-1), alpha_(-1), boundarydata_(BoundaryData(false)) {}
 
   // contructor: only identifiers
   ParticleMF(
       const int gid,
       const int owner,
-      const std::vector<int> lm
-      ) :
+      const std::vector<int> lm,
+      bool boundaryparticle) :
         ParticleBase(gid, owner, lm),
         ParticleThermoBase(),
         ParticleSurfTensionBase(),
@@ -261,7 +292,8 @@ namespace PARTICLE
         pressure_(-1),
         temperature_(-1),
         densityDot_(-1),
-        alpha_(-1) {}
+        alpha_(-1),
+        boundarydata_(BoundaryData(boundaryparticle)) {}
 
   /// constructor: only the first round
   ParticleMF(
@@ -284,15 +316,15 @@ namespace PARTICLE
         pressure_(pressure),
         temperature_(temperature),
         densityDot_(-1),
-        alpha_(-1) {}
+        alpha_(-1),
+        boundarydata_(BoundaryData(false)) {}
 
   /// internal variables
-
   double pressure_;
   double temperature_;
   double densityDot_;
   double alpha_;
-
+  BoundaryData boundarydata_;
   }; // ParticleMF
 }
 

@@ -18,9 +18,6 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_particle.H"
 
-//TODO: remove this include as soon as the define flags in particle_algorithm.H have been set as input parameters!
-#include "particle_algorithm.H"
-
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
 namespace PARTICLE
@@ -77,6 +74,10 @@ public :
    //! @name Actions
    //@{
 
+   //! constructor
+   WeightFunction_CubicBspline(INPAR::PARTICLE::WeightFunctionDim dim):
+    WF_DIM_(dim){}
+
    //! compute the cubicBspline weight function
    virtual double W(const double &disRel, const double &radius);
 
@@ -103,6 +104,11 @@ private :
 
    virtual double RszDim(const double& radius);
 
+protected:
+
+   // store problem dimension required by weight functions
+   INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+
 };
 
 class WeightFunction_SqrtHyperbola : public WeightFunction_Base
@@ -111,6 +117,10 @@ public :
 
    //! @name Actions
    //@{
+
+   //! constructor
+   WeightFunction_SqrtHyperbola(INPAR::PARTICLE::WeightFunctionDim dim):
+    WF_DIM_(dim){}
 
    //! compute the SqrtHyperbola weight function
    virtual double W(const double &disRel, const double &radius);
@@ -135,6 +145,11 @@ public :
 private :
 
    virtual double RszDim(const double& radius);
+
+protected:
+
+   // store problem dimension required by weight functions
+   INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
 
 };
 

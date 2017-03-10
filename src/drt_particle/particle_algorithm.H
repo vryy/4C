@@ -31,10 +31,8 @@
 #include <vector>
 #include <boost/unordered_map.hpp>
 
-//TODO: Replace these defines by input parameters
-#define PARTICLE_DIM 3                        //space dimension
-//#define PARTICLE_CONSISTENT_VOLUME 0.2      //Value of problem/domain volume in order to apply SPH-consistent calculation of initial particle mass
-#define PARTICLE_DELTADENSFAC 1.0            //Scale factor for reference density in equation of state
+//Usefull defines (tolerances and debugging tools)
+#define PARTICLE_TENSILESAFETYFAC 0.000001          //Factor prescribing the minimal particle distance as compared to the average initial particle distance (tensile instabilites)
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |
@@ -143,7 +141,7 @@ namespace PARTICLE
     virtual void GetNeighbouringItems(
                     const int binId,
                     std::list<DRT::Node*>& neighboursLinf_p,
-                    boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
+                    boost::unordered_map<int, DRT::Element*>* neighboursLinf_w = NULL,
                     const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null);
 
     /// link to timInt
@@ -229,7 +227,7 @@ namespace PARTICLE
     /// get particles and wall elements in given bins
     void GetBinContent(
       std::list<DRT::Node*>& bin_p,
-      boost::unordered_map<int, DRT::Element*>& bin_w,
+      boost::unordered_map<int, DRT::Element*>* bin_w,
       const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > bin_hs,
       std::vector<int>& binIds);
 

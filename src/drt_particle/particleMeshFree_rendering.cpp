@@ -22,7 +22,9 @@
 /*----------------------------------------------------------------------*
  | constructor                                             katta 10/16  |
  *----------------------------------------------------------------------*/
-PARTICLE::Rendering::Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm) :
+PARTICLE::Rendering::Rendering(
+  Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm,
+  INPAR::PARTICLE::WeightFunctionDim wf_dim) :
   discret_(DRT::Problem::Instance()->GetDis("rendering")),
   particle_algorithm_(particleAlgorithm),
   weightFunctionHandler_(Teuchos::null),
@@ -60,12 +62,12 @@ PARTICLE::Rendering::Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorit
   {
   case INPAR::PARTICLE::CubicBspline :
   {
-    weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline);
+    weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline(wf_dim));
     break;
   }
   case INPAR::PARTICLE::SqrtHyperbola :
   {
-    weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_SqrtHyperbola);
+    weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_SqrtHyperbola(wf_dim));
     break;
   }
   case INPAR::PARTICLE::HyperbolaNoRsz :

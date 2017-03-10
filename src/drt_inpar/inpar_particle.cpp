@@ -141,17 +141,38 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                &particledyn);
 
    setStringToIntegralParameter<int>(
+                                  "WEIGHT_FUNCTION_DIM","WF_3D",
+                                  "number of weight function space dimensions for meshFree interaction dynamics",
+                                  tuple<std::string>(
+                                    "WF_3D",
+                                    "WF_2D",
+                                    "WF_1D"
+                                    ),
+                                  tuple<int>(
+                                    INPAR::PARTICLE::WF_3D,
+                                    INPAR::PARTICLE::WF_2D,
+                                    INPAR::PARTICLE::WF_1D
+                                    ),
+                                  &particledyn);
+
+   setStringToIntegralParameter<int>(
                                "WALL_INTERACTION_TYPE","InitParticle",
                                "wall interaction type for MeshFree interactions",
                                tuple<std::string>(
                                  "InitParticle",
                                  "Mirror",
-                                 "Custom"
+                                 "Custom",
+                                 "BoundarParticle_NoSlip",
+                                 "BoundarParticle_FreeSlip",
+                                 "NoWallInteraction"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::InitParticle,
                                  INPAR::PARTICLE::Mirror,
-                                 INPAR::PARTICLE::Custom
+                                 INPAR::PARTICLE::Custom,
+                                 INPAR::PARTICLE::BoundarParticle_NoSlip,
+                                 INPAR::PARTICLE::BoundarParticle_FreeSlip,
+                                 INPAR::PARTICLE::NoWallInteraction
                                  ),
                                &particledyn);
 
@@ -203,6 +224,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("RADIUS_DISTRIBUTION_SIGMA",-1.0,"standard deviation of particle radii distribution",&particledyn);
    IntParameter("RADIUS_CHANGE_CURVE",-1,"number of curve governing radius change",&particledyn);
    BoolParameter("RENDERING","no","switch on/off the rendering domain. If it is yes... you better have a RENDERING DOMAIN available",&particledyn);
+   BoolParameter("DENSITY_SUMMATION","no","determine density via summation formula instead of time integration",&particledyn);
+   DoubleParameter("CONSISTENT_PROBLEM_VOLUME",-1.0,"prescribe problem volume and determine particle masses consistently based on this volume and the initial density",&particledyn);
+   DoubleParameter("VISCOUS_DAMPING",-1.0,"apply artificial viscous damping force to particles in order to determine static equilibrium solutions",&particledyn);
+   BoolParameter("SOLVE_THERMAL_PROBLEM","yes","solve also the thermal problem?",&particledyn);
    setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
                              "Acceleration due to gravity in particle simulations.",
                              &particledyn);

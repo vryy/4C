@@ -60,6 +60,10 @@ namespace MAT
       //! create instance of particle additive manufacturing material
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// rest density defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_;
+      const double restDensity_;
+      /// factor defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_;
+      const double refdensfac_;
       /// dismembering radius
       const double dismemberRadius_;
       /// initial temperature
