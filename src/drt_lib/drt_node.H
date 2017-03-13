@@ -148,6 +148,11 @@ public:
   virtual inline const double* X() const { return &x_[0]; }
 
   /*!
+  \brief return spatial dimension of node coordinates
+  */
+  virtual inline int Dim() const { return x_.size(); }
+
+  /*!
   \brief Return bool whether node is a cosserat node and therefore has 6 coordinates
   */
   virtual inline bool IsCosserat() const { return (x_.size()==(unsigned)6); }
@@ -323,7 +328,6 @@ protected:
   //! proc owning this node
   int                                      owner_;
   //! nodal coords
-  //double                                   x_[3];
   std::vector<double>                      x_;
   //! pointers to adjacent elements
   std::vector<Element*>                    element_;
