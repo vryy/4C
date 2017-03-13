@@ -39,11 +39,23 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap,
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector  (public)                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_Map& rowmap,
+Teuchos::RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_BlockMap& rowmap,
     const bool init)
 {
   return Teuchos::rcp(new Epetra_Vector(rowmap, init));
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> LINALG::CreateMultiVector(
+    const Epetra_BlockMap& rowmap,
+    const int numrows,
+    const bool init
+)
+{
+  return Teuchos::rcp(new Epetra_MultiVector(rowmap, numrows, init));
+}
+
 /*----------------------------------------------------------------------*
  |  export a Epetra_Vector  (public)                         mwgee 12/06|
  *----------------------------------------------------------------------*/

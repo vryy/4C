@@ -19,6 +19,7 @@
 #include "Epetra_CrsGraph.h"
 #include "Epetra_CrsMatrix.h"
 #include "Epetra_Vector.h"
+#include "Epetra_MultiVector.h"
 #include "Epetra_Export.h"
 #include "Epetra_Import.h"
 #include "Epetra_SerialDenseMatrix.h"
@@ -56,7 +57,19 @@ Teuchos::RCP<Epetra_CrsMatrix> CreateMatrix(const Epetra_Map& rowmap,
  \param rowmap (in): row map of vector
  \param init (in): initializa vector to zero upon construction
  */
-Teuchos::RCP<Epetra_Vector> CreateVector(const Epetra_Map& rowmap,
+Teuchos::RCP<Epetra_Vector> CreateVector(const Epetra_BlockMap& rowmap,
+    const bool init = true);
+
+/*!
+ \brief Create a new Epetra_MultiVector and return RefcountPtr to it
+
+ \param rowmap (in): row map of vector
+ \param rowmap (in): number of vectors
+ \param init (in): initializa vector to zero upon construction
+ */
+Teuchos::RCP<Epetra_MultiVector> CreateMultiVector(
+    const Epetra_BlockMap& rowmap,
+    const int numrows,
     const bool init = true);
 
 /*!
