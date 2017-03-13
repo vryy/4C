@@ -19,6 +19,7 @@
 
 #include "drt_validparameters.H"
 #include "inpar_xfem.H"
+#include "inpar_twophase.H"
 #include "inpar_cut.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
@@ -549,6 +550,41 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
   {
     xfem_levelset_combustion->AddComponent(levelsetfield_components[i]);
   }
+
+  // "The laminar flamespeed incorporates all chemical kinetics into the problem for now"
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("LAMINAR_FLAMESPEED", false)));
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("laminar_flamespeed", 1, false)));
+
+  // "Molecular diffusivity"
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("MOL_DIFFUSIVITY", false)));
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("mol_diffusivity", 1, false)));
+
+  // "The Markstein length takes flame curvature into account"
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("MARKSTEIN_LENGTH", false)));
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("markstein_length", 1, false)));
+
+  // interface transport in all directions or just in normal direction?
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("TRANSPORT_DIRECTIONS")));
+  xfem_levelset_combustion->AddComponent(
+      Teuchos::rcp(
+          new StringConditionComponent(
+              "TRANSPORT_DIRECTIONS",
+              "all",
+              Teuchos::tuple<std::string>(
+                  "all",
+                  "normal"
+              ),
+              Teuchos::tuple<int>(
+                  INPAR::TWOPHASE::transport_dir_all,
+                  INPAR::TWOPHASE::transport_dir_normal),
+                  true
+          )));
+
+
+  // define if the curvature shall be accounted for in computing the transport velocity
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("TRANSPORT_CURVATURE")));
+  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("transport_curvature", 1, false, false, false)));
+
 
   condlist.push_back(xfem_levelset_combustion);
 

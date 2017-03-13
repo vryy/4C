@@ -4,8 +4,10 @@
 
 \brief Input parameters for combustion
 
+\level 2
+
 <pre>
-Maintainer: Magnus Winter
+\maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
