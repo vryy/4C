@@ -100,13 +100,6 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
     dserror("Cast of Fluid to XFluid failed! - Everything fine in SetupFluid()?");
   fluid_->Init(false);
 
-  if (ale)
-  {
-    // build a proxy of the fluid discretization for the structure field
-    Teuchos::RCP<DRT::DofSetInterface> aledofset = ale_->WriteAccessDiscretization()->GetDofSetProxy();
-    if (fluid_->Discretization()->AddDofSet(aledofset) != 1)
-      dserror("Fluid Discretization does not have two Dofsets (Fluid/Ale)!");
-  }
   return;
 }
 
