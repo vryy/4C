@@ -249,7 +249,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///
     LINALG::Matrix<6,1> checkStr;
     LINALG::Matrix<6,6> checkCmat;
     LINALG::Matrix<3,3> emptymat;
-    PlasticElastHyper::EvaluateElast(defgrd,&emptymat,params,stress,cmat,gp,eleGID);
+    PlasticElastHyper::EvaluateElast(defgrd,&emptymat,stress,cmat,gp,eleGID);
     ElastHyper::Evaluate(defgrd,&ee_test,params,&checkStr,&checkCmat,eleGID);
 
     // push back
@@ -515,7 +515,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///
 
     //Compute the total stresses
     LINALG::Matrix<6,6> tangent_elast;
-    PlasticElastHyper::EvaluateElast(defgrd,&dLp,params,stress,&tangent_elast,gp,eleGID);
+    PlasticElastHyper::EvaluateElast(defgrd,&dLp,stress,&tangent_elast,gp,eleGID);
 
     LINALG::Matrix<6,9> dPK2dFpinvIsoprinc;
     Dpk2dFpi(eleGID,defgrd,&plastic_defgrd_inverse_[gp],dPK2dFpinvIsoprinc);

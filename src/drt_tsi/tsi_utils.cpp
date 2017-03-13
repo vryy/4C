@@ -31,7 +31,7 @@
 
 #include "../drt_thermo/thermo_element.H"
 #include "../drt_so3/so3_thermo.H"
-#include "../drt_so3/so3_ssn_plast.H"
+#include "../drt_so3/so3_plast/so3_ssn_plast.H"
 
 #include "../drt_lib/drt_dofset.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"

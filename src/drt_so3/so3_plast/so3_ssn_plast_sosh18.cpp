@@ -8,16 +8,16 @@
 /*----------------------------------------------------------------------*/
 
 #include "so3_ssn_plast_sosh18.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/plasticelasthyper.H"
+#include "../../drt_lib/drt_linedefinition.H"
+#include "../../drt_mat/plasticelasthyper.H"
 #include "so3_ssn_plast_eletypes.H"
-#include "so_sh18.H"
-#include "so_hex18.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "../so_sh18.H"
+#include "../so_hex18.H"
+#include "../../linalg/linalg_serialdensevector.H"
 
-#include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "../../drt_structure_new/str_elements_paramsinterface.H"
+#include "../../linalg/linalg_serialdensematrix.H"
+#include "../../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -212,7 +212,7 @@ void DRT::ELEMENTS::So_sh18Plast::SyncEAS()
 {
   if (eas_==true)
   {
-    eastype_=(EASType)num_eas;
+    eastype_=soh18p_eassosh18;
     neas_=num_eas;
     So3_Plast<DRT::Element::hex18>::KaaInv_ =
         Teuchos::rcp(new LINALG::SerialDenseMatrix(View,So_sh18::KaaInv_.A(),num_eas,num_eas,num_eas));
@@ -232,7 +232,7 @@ void DRT::ELEMENTS::So_sh18Plast::SyncEAS()
   }
   else
   {
-    eastype_=(EASType)0;
+    eastype_=soh8p_easnone;
     neas_=0;
     So3_Plast<DRT::Element::hex18>::KaaInv_ = Teuchos::null;
     So3_Plast<DRT::Element::hex18>::Kad_ = Teuchos::null;
@@ -248,24 +248,21 @@ void DRT::ELEMENTS::So_sh18Plast::SyncEAS()
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
-    std::vector<int>&              lm,             // location matrix
     std::vector<double>&           disp,           // current displacements
-    std::vector<double>&           residual,       // current residual displ
     std::vector<double>&           vel,            // current velocities
     std::vector<double>&           temp,           // current temperatures
-    std::vector<double>&           temp_res,       // current temperatures
     LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
     LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
     LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
-    LINALG::Matrix<numdofperelement_,1>* force_str,          // structure force
     LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
     LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
     Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
     const INPAR::STR::StressType   iostress,  // stress output option
-    const INPAR::STR::StrainType   iostrain,  // strain output option
-    const int MyPID  // processor id
+    const INPAR::STR::StrainType   iostrain   // strain output option
     )
 {
+  InvalidEleData();
+
   // do the evaluation of tsi terms
   const bool eval_tsi = (temp.size()!=0);
   if (tsi_)
@@ -288,11 +285,6 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
     xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
   }
-
-  // we need the (residual) displacement at the previous step
-  LINALG::Matrix<numdofperelement_,1> res_d;
-  for (int i=0; i<numdofperelement_; ++i)
-    res_d(i) = residual[i];
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = NULL;
@@ -329,6 +321,8 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
   /* =========================================================================*/
   for (int gp=0; gp<NUMGPT_SOH18; ++gp)
   {
+    InvalidGpData();
+
     // in-plane shape functions and derivatives
     LINALG::Matrix<9,1> shapefunct_q9;
     DRT::UTILS::shape_function<DRT::Element::quad9>(So_sh18::xsi_[gp],shapefunct_q9);
@@ -422,14 +416,13 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
       }
 
       // plastic flow increment
-      LINALG::Matrix<nsd_,nsd_> deltaLp;
-      BuildDeltaLp(deltaLp,gp);
+      BuildDeltaLp(gp);
 
       // material call *********************************************
       LINALG::Matrix<numstr_,1> pk2;
       LINALG::Matrix<numstr_,numstr_> cmat;
       if (plmat!=NULL)
-        plmat->EvaluateElast(&defgrd,&deltaLp,params,&pk2,&cmat,gp,Id());
+        plmat->EvaluateElast(&defgrd,&DeltaLp(),&pk2,&cmat,gp,Id());
       else
       {
         params.set<int>("gp",gp);
@@ -586,19 +579,19 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(
       if (HavePlasticSpin())
       {
         if (eas_)
-          CondensePlasticity<plspin>(defgrd,deltaLp,bop,NULL,NULL,MyPID,detJ_w,
+          CondensePlasticity<plspin>(defgrd,DeltaLp(),bop,NULL,NULL,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,&M_ep,&Kda);
         else
-          CondensePlasticity<plspin>(defgrd,deltaLp,bop,NULL,NULL,MyPID,detJ_w,
+          CondensePlasticity<plspin>(defgrd,DeltaLp(),bop,NULL,NULL,detJ_w,
               gp,gp_temp,params,force,stiffmatrix);
       }
       else
       {
         if (eas_)
-          CondensePlasticity<zerospin>(defgrd,deltaLp,bop,NULL,NULL,MyPID,detJ_w,
+          CondensePlasticity<zerospin>(defgrd,DeltaLp(),bop,NULL,NULL,detJ_w,
               gp,gp_temp,params,force,stiffmatrix,&M_ep,&Kda);
         else
-          CondensePlasticity<zerospin>(defgrd,deltaLp,bop,NULL,NULL,MyPID,detJ_w,
+          CondensePlasticity<zerospin>(defgrd,DeltaLp(),bop,NULL,NULL,detJ_w,
               gp,gp_temp,params,force,stiffmatrix);
       }
     }// plastic modifications

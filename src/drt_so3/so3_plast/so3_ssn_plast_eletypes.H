@@ -1,20 +1,15 @@
 /*!----------------------------------------------------------------------
 \file so3_ssn_plast_eletypes.H
-
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
-
+\brief so3_plast element types
+\level 2
+\maintainer Alexander Seitz
 *----------------------------------------------------------------------*/
 #ifndef SO3_SSN_PLAST_ELETYPES_H_
 #define SO3_SSN_PLAST_ELETYPES_H_
 
-#include "so_hex8.H"
-#include "so_hex18.H"
-#include "so_hex27.H"
+#include "../so_hex8.H"
+#include "../so_hex18.H"
+#include "../so_hex27.H"
 
 namespace DRT
 {

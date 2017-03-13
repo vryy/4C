@@ -1,21 +1,17 @@
 /*!----------------------------------------------------------------------
 \file plastic_ssn_manager.cpp
-
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
+\brief
+\level 2
+\maintainer Alexander Seitz
 
 *----------------------------------------------------------------------*/
 
 #include "plastic_ssn_manager.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_so3/so3_ssn_plast.H"
-#include "../drt_so3/so3_ssn_plast_sosh8.H"
-#include "../drt_so3/so3_ssn_plast_sosh18.H"
+#include "../drt_so3/so3_plast/so3_ssn_plast.H"
+#include "../drt_so3/so3_plast/so3_ssn_plast_sosh8.H"
+#include "../drt_so3/so3_plast/so3_ssn_plast_sosh18.H"
 #include "../drt_lib/drt_globalproblem.H" // to get parameter list
 
 /*-------------------------------------------------------------------*

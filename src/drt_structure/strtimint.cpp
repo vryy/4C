@@ -67,9 +67,9 @@
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_so3/so_sh8p8.H"
-#include "../drt_so3/so3_ssn_plast_eletypes.H"
-#include "../drt_so3/so3_ssn_plast_sosh8.H"
-#include "../drt_so3/so3_ssn_plast_sosh18.H"
+#include "../drt_so3/so3_plast/so3_ssn_plast_eletypes.H"
+#include "../drt_so3/so3_plast/so3_ssn_plast_sosh8.H"
+#include "../drt_so3/so3_plast/so3_ssn_plast_sosh18.H"
 #include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_io/io_pstream.H"

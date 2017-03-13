@@ -1022,12 +1022,12 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_thermo.cpp
   src/drt_so3/so3_thermo_evaluate.cpp
   src/drt_so3/so3_thermo_eletypes.cpp
-  src/drt_so3/so3_ssn_plast.cpp
-  src/drt_so3/so3_ssn_plast_evaluate.cpp
-  src/drt_so3/so3_ssn_plast_eletypes.cpp
-  src/drt_so3/so3_ssn_plast_eas.cpp
-  src/drt_so3/so3_ssn_plast_sosh8.cpp
-  src/drt_so3/so3_ssn_plast_sosh18.cpp
+  src/drt_so3/so3_plast/so3_ssn_plast.cpp
+  src/drt_so3/so3_plast/so3_ssn_plast_evaluate.cpp
+  src/drt_so3/so3_plast/so3_ssn_plast_eletypes.cpp
+  src/drt_so3/so3_plast/so3_ssn_plast_eas.cpp
+  src/drt_so3/so3_plast/so3_ssn_plast_sosh8.cpp
+  src/drt_so3/so3_plast/so3_ssn_plast_sosh18.cpp
 )
 set(OBJS_DRT_ELCH
   src/drt_elch/elch_algorithm.cpp

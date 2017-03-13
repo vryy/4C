@@ -15,7 +15,7 @@
 
 #include "so3_ssn_plast.H"
 #include "so3_ssn_plast_eletypes.H"
-#include "so_sh18.H"
+#include "../so_sh18.H"
 
 namespace DRT
 {
@@ -162,22 +162,17 @@ protected:
 
   //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices
   virtual void nln_stiffmass(
-      std::vector<int>&              lm,             // location matrix
       std::vector<double>&           disp,           // current displacements
-      std::vector<double>&           residual,       // current residual displ
       std::vector<double>&           vel,            // current velocities
       std::vector<double>&           temp,           // current temperatures
-      std::vector<double>&           temp_res,       // current residual temperatures
       LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<numdofperelement_,numdofperelement_>* massmatrix,  // element mass matrix
       LINALG::Matrix<numdofperelement_,1>* force,                 // element internal force vector
-      LINALG::Matrix<numdofperelement_,1>* force_str,          // structure force
       LINALG::Matrix<numgpt_post,numstr_>* elestress,   // stresses at GP
       LINALG::Matrix<numgpt_post,numstr_>* elestrain,   // strains at GP
       Teuchos::ParameterList&        params,         // algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  // stress output option
-      const INPAR::STR::StrainType   iostrain,  // strain output option
-      const int MyPID  // processor id
+      const INPAR::STR::StrainType   iostrain   // strain output option
       );
 
   //! don't want sosh18 nlnstiffmass

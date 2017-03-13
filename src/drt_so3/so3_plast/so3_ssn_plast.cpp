@@ -13,19 +13,19 @@
  *----------------------------------------------------------------------*/
 #include "so3_ssn_plast.H"
 
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_fem_general/drt_utils_shapefunctions_service.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_mat/plasticelasthyper.H"
-#include "so_surface.H"
-#include "so_line.H"
-#include "../drt_inpar/inpar_tsi.H"
-#include "../linalg/linalg_serialdensevector.H"
+#include "../../drt_lib/drt_linedefinition.H"
+#include "../../drt_fem_general/drt_utils_shapefunctions_service.H"
+#include "../../drt_lib/drt_utils_factory.H"
+#include "../../drt_mat/plasticelasthyper.H"
+#include "../so_surface.H"
+#include "../so_line.H"
+#include "../../drt_inpar/inpar_tsi.H"
+#include "../../linalg/linalg_serialdensevector.H"
 
 // include this thermo-implementation to make sure, that the same Gauss-rule
 // is used in the structural and the thermal part in a TSI problem
-#include "../drt_thermo/thermo_ele_impl_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "../../drt_thermo/thermo_ele_impl_utils.H"
+#include "../../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 07/13 |
@@ -95,6 +95,87 @@ const int DRT::ELEMENTS::So3_Plast<distype>::VOIGT3X3SYM_[3][3] = {{0,3,5},{3,1,
 template<DRT::Element::DiscretizationType distype>
 const int DRT::ELEMENTS::So3_Plast<distype>::VOIGT3X3NONSYM_[3][3] = {{0,3,5},{6,1,4},{8,7,2}};
 
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,1> >
+DRT::ELEMENTS::So3_Plast<distype>::shapefunct_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nen_> >
+DRT::ELEMENTS::So3_Plast<distype>::deriv_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nen_> >
+DRT::ELEMENTS::So3_Plast<distype>::N_XYZ_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::defgrd_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::defgrd_mod_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::rcg_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::delta_Lp_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,DRT::ELEMENTS::So3_Plast<distype>::numdofperelement_> >
+DRT::ELEMENTS::So3_Plast<distype>::bop_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,1> >
+DRT::ELEMENTS::So3_Plast<distype>::pk2_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,DRT::ELEMENTS::So3_Plast<distype>::numstr_> >
+DRT::ELEMENTS::So3_Plast<distype>::cmat_;
+
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::xrefe_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::xcurr_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::xcurr_rate_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,1> >
+DRT::ELEMENTS::So3_Plast<distype>::etemp_;
+
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,double>
+DRT::ELEMENTS::So3_Plast<distype>::detF_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,double>
+DRT::ELEMENTS::So3_Plast<distype>::detF_0_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::inv_defgrd_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::inv_defgrd_0_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nen_> >
+DRT::ELEMENTS::So3_Plast<distype>::N_XYZ_0_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,1> >
+DRT::ELEMENTS::So3_Plast<distype>::rcg_vec_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,double>
+DRT::ELEMENTS::So3_Plast<distype>::f_bar_fac_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numdofperelement_,1> >
+DRT::ELEMENTS::So3_Plast<distype>::htensor_;
+
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,DRT::ELEMENTS::So3_Plast<distype>::numstr_> >
+DRT::ELEMENTS::So3_Plast<distype>::T0invT_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::jac_0_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,double>
+DRT::ELEMENTS::So3_Plast<distype>::det_jac_0_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::SerialDenseMatrix>
+DRT::ELEMENTS::So3_Plast<distype>::M_eas_;
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
@@ -342,10 +423,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    }
 
    // EAS element technology
-   eastype_=static_cast<EASType>(ExtractInt(position,data));
+   eastype_=static_cast<DRT::ELEMENTS::So3Plast_EASType>(ExtractInt(position,data));
    ExtractfromPack(position,data,neas_);
-   if ((int)eastype_!=neas_)
-     dserror("mismatch in EAS");
 
    // no EAS
    if (eastype_==soh8p_easnone)
@@ -378,11 +457,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
      alpha_eas_inc_                      =Teuchos::rcp(new LINALG::SerialDenseVector(neas_,true));
    }
 
-     KbbInv_        .resize(numgpt_,LINALG::SerialDenseMatrix(plspintype_,plspintype_,true));
-     Kbd_           .resize(numgpt_,LINALG::SerialDenseMatrix(plspintype_,numdofperelement_,true));
-     fbeta_         .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
-     dDp_last_iter_ .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
-     dDp_inc_       .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
+   KbbInv_        .resize(numgpt_,LINALG::SerialDenseMatrix(plspintype_,plspintype_,true));
+   Kbd_           .resize(numgpt_,LINALG::SerialDenseMatrix(plspintype_,numdofperelement_,true));
+   fbeta_         .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
+   dDp_last_iter_ .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
+   dDp_inc_       .resize(numgpt_,LINALG::SerialDenseVector(plspintype_,true));
 
    if (eastype_!=soh8p_easnone)
    {
@@ -841,5 +920,20 @@ bool DRT::ELEMENTS::So3_Plast<distype>::HavePlasticSpin()
 
   return false;
 }
+
+int DRT::ELEMENTS::PlastEasTypeToNumEasV(DRT::ELEMENTS::So3Plast_EASType et)
+{
+  switch (et)
+  {
+  case soh8p_easnone: return PlastEasTypeToNumEas<soh8p_easnone>::neas; break;
+  case soh8p_easmild: return PlastEasTypeToNumEas<soh8p_easmild>::neas; break;
+  case soh8p_easfull: return PlastEasTypeToNumEas<soh8p_easfull>::neas; break;
+  case soh8p_eassosh8: return PlastEasTypeToNumEas<soh8p_eassosh8>::neas; break;
+  case soh18p_eassosh18: return PlastEasTypeToNumEas<soh18p_eassosh18>::neas; break;
+  default: dserror("EAS type not implemented");
+  }
+  return -1;
+}
+
 
 #include "so3_ssn_plast_fwd.hpp"

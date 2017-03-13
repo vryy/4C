@@ -253,7 +253,6 @@ private:
     /// in consideration of plastic history/deformation
     virtual void EvaluateElast(const LINALG::Matrix<3,3>*defgrd,
                                const LINALG::Matrix<3,3>* deltaLp,
-                               Teuchos::ParameterList& params,
                                LINALG::Matrix<6,1>* pk2,
                                LINALG::Matrix<6,6>* cmat,
                                const int gp,
@@ -263,7 +262,6 @@ private:
     /// due to thermal expansion
     virtual void EvaluateThermalStress(const LINALG::Matrix<3,3>*defgrd,
                                        const double temp,
-                                       Teuchos::ParameterList& params,
                                        LINALG::Matrix<6,1>* pk2,
                                        LINALG::Matrix<6,6>* cmat,
                                        const int gp,
@@ -272,7 +270,6 @@ private:
     /// evaluate stresses and stiffness contribution
     /// due to thermal expansion
     virtual void EvaluateCTvol(const LINALG::Matrix<3,3>*defgrd,
-                               Teuchos::ParameterList& params,
                                LINALG::Matrix<6,1>* cTvol,
                                LINALG::Matrix<6,6>* dCTvoldE,
                                const int gp,
