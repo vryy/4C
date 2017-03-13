@@ -1800,7 +1800,7 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> s
  | Calculate the reconstructed nodal gradient of phi        winter 04/14|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector>  SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
-    const Teuchos::RCP<const Epetra_Vector> phi)
+    const Teuchos::RCP<const Epetra_Vector> & phi)
 {
 
   // create the parameters for the discretization
@@ -1862,7 +1862,7 @@ Teuchos::RCP<Epetra_MultiVector>  SCATRA::ScaTraTimIntImpl::ReconstructGradientA
  | Calculate the L2-projection of a scalar                  winter 04/14|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNodalL2Projection(
-    Teuchos::RCP<const Epetra_Vector> state,
+    const Teuchos::RCP<const Epetra_Vector> & state,
     const std::string statename,
     const int numvec,
     Teuchos::ParameterList& eleparams,
@@ -1874,11 +1874,15 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNodalL2Project
   if(not state->Map().SameAs(*discret_->DofRowMap()))
     dserror("input map is not a dof row map of the fluid");
 
+  // TODO: make a temporary copy, as SetState does not allow to use references to RCP (adapt SetState in discret)
+  const Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*discret_->DofRowMap(),false);
+  tmp->Update(1.0, *state, 0.0);
+
   // set given state for element evaluation
   discret_->ClearState();
-  discret_->SetState(statename,state);
+  discret_->SetState(statename,tmp);
 
-  return DRT::UTILS::ComputeNodalL2Projection(discret_,statename,numvec,eleparams,solvernumber);;
+  return DRT::UTILS::ComputeNodalL2Projection(discret_,statename,numvec,eleparams,solvernumber);
 }
 
 

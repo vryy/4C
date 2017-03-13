@@ -299,8 +299,8 @@ public:
   virtual void EvaluateErrorComparedToAnalyticalSol();
 
   //! Calculate the reconstructed nodal gradient of phi
-  Teuchos::RCP<Epetra_MultiVector>  ReconstructGradientAtNodes(
-      const Teuchos::RCP<const Epetra_Vector> phi);
+  Teuchos::RCP<Epetra_MultiVector> ReconstructGradientAtNodes(
+      const Teuchos::RCP<const Epetra_Vector> & phi);
 
   //! finite difference check for scalar transport system matrix
   virtual void FDCheck();
@@ -745,7 +745,7 @@ protected:
 
   //! Calculate the reconstructed nodal gradient of phi
   Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
-    Teuchos::RCP<const Epetra_Vector> state,
+    const Teuchos::RCP<const Epetra_Vector> & state,
     const std::string statename,
     const int numvec,
     Teuchos::ParameterList& params,
