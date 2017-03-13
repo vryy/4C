@@ -116,6 +116,9 @@ void FLD::XFluid::Init(bool createinitialstate)
   // check xfluid input parameter combination for consistency & valid choices
   CheckXFluidParams();
 
+  // set element time parameter as ghost penalty solve are called already in the Init for SetInitialFlowField
+  SetElementTimeParameter();
+
   // create internal faces, if not already done in base class init
   if (facediscret_ == Teuchos::null)
   {
@@ -212,7 +215,7 @@ void FLD::XFluid::Init(bool createinitialstate)
   FLD::UTILS::SetupFluidSplit(*discret_,xdiscret_->InitialDofSet(),numdim_,*velpressplitter_std_);
 
   // -------------------------------------------------------------------
-  // initialize ALE-specific fluid vectors based on the intial dof row map
+  // initialize ALE-specific fluid vectors based on the initial dof row map
   // -------------------------------------------------------------------
 
   if (alefluid_)
@@ -3142,6 +3145,10 @@ void FLD::XFluid::XTimint_StoreOldStateData(const bool firstcall_in_timestep)
     accn_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
     *accn_Intn_  = *(state_->accn_);
 
+    // for BDF2
+    velnm_Intn_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap()));
+    *velnm_Intn_  = *(state_->velnm_);
+
     // safe the old wizard and dofset w.r.t the interface position of the last time-step
     wizard_Intn_ = state_->Wizard();
     dofset_Intn_ = state_->DofSet();
@@ -3332,8 +3339,20 @@ void FLD::XFluid::XTimint_DoTimeStepTransfer(const bool screen_out)
     oldRowStateVectors.push_back(veln_Intn_);
     newRowStateVectors.push_back(state_->veln_);
 
-    oldRowStateVectors.push_back(accn_Intn_);
-    newRowStateVectors.push_back(state_->accn_);
+    if(timealgo_ == INPAR::FLUID::timeint_one_step_theta)
+    {
+      oldRowStateVectors.push_back(accn_Intn_);
+      newRowStateVectors.push_back(state_->accn_);
+    }
+    else if(timealgo_ == INPAR::FLUID::timeint_bdf2)
+    {
+      oldRowStateVectors.push_back(velnm_Intn_);
+      newRowStateVectors.push_back(state_->velnm_);
+      oldRowStateVectors.push_back(accn_Intn_);
+      newRowStateVectors.push_back(state_->accn_);
+    }
+    else
+      dserror("check which vectors have to be reconstructed for non-OST and non-BDF2-scheme");
 
     XTimint_TransferVectorsBetweenSteps(
         xfluid_timeint,
@@ -4230,6 +4249,10 @@ void FLD::XFluid::SetInitialFlowField(
 
     // initialize veln_ as well.
     state_->veln_->Update(1.0,*state_->velnp_ ,0.0);
+    state_->velnm_->Update(1.0,*state_->velnp_ ,0.0);
+
+    state_->accnp_->PutScalar(0.0);
+    state_->accn_->PutScalar(0.0);
 
   }
   // special initial function: Beltrami flow (3-D)
@@ -4312,7 +4335,7 @@ void FLD::XFluid::SetInitialFlowField(
   }
   else
   {
-    dserror("Only initial fields auch as a zero field, initial fields by (un-)disturbed functions and  Beltrami flow!");
+    dserror("Only initial fields auch as a zero field, initial fields by (un-)disturbed functions, flamevortes and Beltrami flow!");
   }
 
   //---------------------------------- GMSH START OUTPUT (reference solution fields for pressure, velocity) ------------------------
@@ -5049,6 +5072,7 @@ void FLD::XFluid::CalculateAcceleration(
       }
       case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
       {
+        //TODO: computed, even though not really used afterwards! CHECK!!!
         if (dta_*dtp_ < EPS15) dserror("Zero time step size!!!!!");
         const double sum = dta_ + dtp_;
 

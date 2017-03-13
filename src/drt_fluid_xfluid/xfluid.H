@@ -782,6 +782,7 @@ namespace FLD
     //! @name old time-step state data w.r.t old interface position and dofsets from t^n used for XFEM time-integration
     Teuchos::RCP<Epetra_Vector>         veln_Intn_;      //!< velocity solution from last time-step t^n
     Teuchos::RCP<Epetra_Vector>         accn_Intn_;      //!< acceleration from last time-step t^n
+    Teuchos::RCP<Epetra_Vector>         velnm_Intn_;     //!< velocity at t^{n-1} for BDF2 scheme
     Teuchos::RCP<GEO::CutWizard>        wizard_Intn_;    //!< cut wizard from last time-step t^n
     Teuchos::RCP<XFEM::XFEMDofSet>      dofset_Intn_;    //!< dofset from last time-step t^n
 
