@@ -67,9 +67,9 @@ void XFEM::UTILS::GetVolumeCellMaterial(
 )
 {
   int position_id = 0;
-  if (position == GEO::CUT::Point::inside)
+  if (position == GEO::CUT::Point::inside) // minus domain, Omega^i with i<j
     position_id = 1;
-  else if (position != GEO::CUT::Point::outside)
+  else if (position != GEO::CUT::Point::outside) // plus domain, \Omega^j with j>i
     dserror("Volume cell is either undecided or on surface. That can't be good....");
 
   Teuchos::RCP<MAT::Material> material = actele->Material();
@@ -90,7 +90,6 @@ void XFEM::UTILS::GetVolumeCellMaterial(
     int matid = -1;
     matid     = matlist->MatID(position_id);
     mat       = matlist->MaterialById(matid);
-
   }
   else
   {
