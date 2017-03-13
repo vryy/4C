@@ -967,6 +967,9 @@ void SCATRA::LevelSetAlgorithm::ReconstructedNodalCurvature(
    // action for elements
    eleparams.set<int>("action",SCATRA::recon_curvature_at_nodes);
 
+   if(nsd_!=3)
+     dserror("check functionality for nsd!=3");
+
    // set vector values needed by elements
    discret_->ClearState();
    discret_->SetState("phinp",phi);
