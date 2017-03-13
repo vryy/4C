@@ -138,6 +138,19 @@ namespace UTILS
     );
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
+  /*  \author schott
+   *  \date 12/16
+   */
+  void ExtractMyNodeBasedValues
+  (
+    const DRT::Node* node,                           ///< pointer to current element
+    Epetra_SerialDenseVector& local,                 ///< local vector on node-level
+    const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
+    const int nsd                                    ///< number of space dimensions
+    );
+
+
+  /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
   /// and fill a local matrix that has implemented the (.,.) operator
   /*  \author g.bau
    *  \date 04/09

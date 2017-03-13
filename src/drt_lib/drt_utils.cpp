@@ -146,6 +146,7 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
   const int iel = ele->NumNode(); // number of nodes
   if (local.Length()!=(iel*nsd)) dserror("vector size mismatch.");
 
+  //TODO: might we do change the loops?
   for (int i=0; i<nsd; i++)
   {
     // access actual component column of multi-vector
@@ -161,6 +162,34 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
   }
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::ExtractMyNodeBasedValues(
+    const DRT::Node* node,
+    Epetra_SerialDenseVector& local,
+    const Teuchos::RCP<Epetra_MultiVector>& global,
+    const int nsd
+    )
+{
+  if (global==Teuchos::null) dserror("received a TEUCHOS::null pointer");
+  if (nsd > global->NumVectors())
+    dserror("Requested %d of %d available columns", nsd,global->NumVectors());
+  if (local.Length()!=nsd) dserror("vector size mismatch.");
+
+  const int nodegid = node->Id();
+  const int lid = global->Map().LID(nodegid);
+
+  for (int i=0; i<nsd; i++)
+  {
+    // access actual component column of multi-vector
+    double* globalcolumn = (*global)[i];
+
+    local(i+nsd)=globalcolumn[lid];
+  }
+  return;
+}
+
 
 
 /*----------------------------------------------------------------------*
