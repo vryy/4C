@@ -140,6 +140,8 @@ namespace ELASTIC
                                                  const LINALG::Matrix<3,1>& prinv_iso,    ///< principal isotropic invariants
                                                  const int eleGID);                       ///< element GID
 
+    /// add the derivatives of a coupled strain energy functions associated with a purely isochoric deformation
+    virtual void AddCoupDerivVol(const double j, double& dPj1, double& dPj2, double& dPj3);
 
     /// add young's modulus equivalent
     virtual void AddYoungsMod(double& young, double& shear, double& bulk) {young+=2.*Mue()*(1.+Nue());};

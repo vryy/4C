@@ -133,3 +133,13 @@ void MAT::ELASTIC::CoupNeoHooke::AddThirdDerivativesPrincipalIso(LINALG::Matrix<
 }
 
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupNeoHooke::AddCoupDerivVol(const double J, double& dPj1, double& dPj2, double& dPj3)
+{
+  const double beta  = params_->beta_;
+  const double c     = params_->c_;
+
+  dPj1+=2.*c*pow(J,-1./3.)-2.*c*pow(J*J,-beta)/J;
+  dPj2+=-2./3.*c*pow(J,-4./3.)+4.*c*pow(J*J,-beta)*beta*pow(J,-2.)+2.*c*pow(J*J,-beta)*pow(J,-2.);
+  dPj3+=0.8e1/0.9e1*c*pow(J,-0.7e1/3.)-0.8e1*c*pow(J*J,-beta)*beta*beta*pow(J,-3.)-0.12e2*c*pow(J*J,-beta)*beta*pow(J,-3.)-4.*c*pow(J*J,-beta)*pow(J,-3.);
+}

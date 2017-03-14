@@ -197,6 +197,10 @@ namespace ELASTIC
         const int eleGID                  ///< element GID
         );
 
+    /// add the derivatives of a coupled strain energy functions associated with a purely isochoric deformation
+    virtual void AddCoupDerivVol(const double j, double& dPj1, double& dPj2, double& dPj3)
+    {dserror("not implemented");}
+
     /// @name Access methods
     //@{
     double Mue() const { return params_->mue_; }

@@ -136,6 +136,10 @@ namespace ELASTIC
       const LINALG::Matrix<3,1>& prstr  ///< principal stretches, [lambda_1, lambda_2, lambda_3]
       );
 
+    /// add the derivatives of a coupled strain energy functions associated with a purely isochoric deformation
+    virtual void AddCoupDerivVol(const double j, double& dPj1, double& dPj2, double& dPj3)
+    {dserror("not implemented");}
+
     /// @name Access methods
     //@{
     double Mue() const { return params_->mue_; }

@@ -91,3 +91,19 @@ void MAT::ELASTIC::CoupMooneyRivlin::AddDerivativesPrincipal(
 
   return;
 }
+
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupMooneyRivlin::AddCoupDerivVol(const double J, double& dPj1, double& dPj2, double& dPj3)
+{
+  const double c1 = params_ -> c1_;
+  const double c2 = params_ -> c2_;
+  const double c3 = params_ -> c3_;
+
+  //generated with maple:
+  dPj1+=2.*c1*pow(J,-1./3.)+4.*c2*pow(J,1./3.)-(2.*c1+4.*c2)/J+2.*c3*(sqrt(J*J)-1.)*pow(J*J,-1./2.)*J;
+  dPj2+=-2./3.*c1*pow(J,-4./3.)+4./3.*c2*pow(J,-2./3.)+(2.*c1+4.*c2)*pow(J,-2.)
+      +(2.*c3)-2.*c3*(sqrt(J*J)-1.)*pow(J*J,-3./2.)*J*J+2.*c3*(sqrt(J*J)-1.)*pow(J*J,-1./2.);
+  dPj3+=8./9.*c1*pow(J,-0.7e1/3.)-8./9.*c2*pow(J,-5./3.)-2.*(2.*c1+4.*c2)*pow(J,-3.)
+      +6.*c3*(sqrt(J*J)-1.)*pow(J*J,-5./2.)*pow(J,3.)-6.*c3*(sqrt(J*J)-1.)*pow(J*J,-3./2.)*J;
+
+}

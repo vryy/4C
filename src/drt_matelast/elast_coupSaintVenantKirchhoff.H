@@ -117,6 +117,10 @@ namespace ELASTIC
                                                  const LINALG::Matrix<3,1>& prinv_iso,    ///< principal isotropic invariants
                                                  const int eleGID);                       ///< element GID
 
+    /// add the derivatives of a coupled strain energy functions associated with a purely isochoric deformation
+    virtual void AddCoupDerivVol(const double j, double& dPj1, double& dPj2, double& dPj3)
+    {dserror("not implemented");}
+
     /// @name Access methods
     //@{
     double LAMBDA() const { return params_->lambda_; }

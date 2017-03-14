@@ -136,5 +136,24 @@ void MAT::ELASTIC::CoupBlatzKo::AddThirdDerivativesPrincipalIso(LINALG::Matrix<1
 
 
 }
+/*----------------------------------------------------------------------*/
 
+
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupBlatzKo::AddCoupDerivVol(const double J, double& dPj1, double& dPj2, double& dPj3)
+{
+  // material parameters for isochoric part
+  const double mu  = params_->mue_;  // Shear modulus
+  const double nue  = params_->nue_;  // Poisson's ratio
+  const double f    = params_->f_;    // interpolation parameter
+
+  // introducing beta for consistency with Holzapfel and simplification
+  const double beta = nue/(1. - 2.*nue);
+
+  // generated with maple:
+  dPj1+=f*mu*(2.*pow(J,-1./3.)-2.*pow(J*J,-beta)/J)/2.+(1.-f)*mu*(-2.*pow(J,-5./3.)+2.*pow(J*J,beta)/J)/2.;
+  dPj2+=f*mu*(-2./3.*pow(J,-4./3.)+4.*pow(J*J,-beta)*beta*pow(J,-2.)+2.*pow(J*J,-beta)*pow(J,-2.))/2.+(1.-f)*mu*(10./3.*pow(J,-8./3.)+4.*pow(J*J,beta)*beta*pow(J,-2.)-2.*pow(J*J,beta)*pow(J,-2.))/2.;
+  dPj3+=f*mu*(8./9.*pow(J,-7./3.)-8.*pow(J*J,-beta)*beta*beta*pow(J,-3.)-12.*pow(J*J,-beta)*beta*pow(J,-3.)-4.*pow(J*J,-beta)*pow(J,-3.))/2.+(1.-f)*mu*(-80./9.*pow(J,-11./3.)+8.*pow(J*J,beta)*beta*beta*pow(J,-3.)-12.*pow(J*J,beta)*beta*pow(J,-3.)+4.*pow(J*J,beta)*pow(J,-3.))/2.;
+
+}
 /*----------------------------------------------------------------------*/

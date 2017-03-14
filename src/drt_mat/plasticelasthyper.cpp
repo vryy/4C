@@ -665,9 +665,9 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
   // due to thermal expansion can be easily calculated by the volumetric
   // part of the strain energy function
-  if (isoprinc_ || anisomod_ || anisoprinc_)
+  if (anisomod_ || anisoprinc_)
     dserror("TSI with semi-Smooth Newton type plasticity algorithm only "
-        "with decoupled strain energy functions");
+        "with isotropic strain energy functions");
 
   // temperature difference
   double deltaT = temp-InitTemp();
@@ -686,6 +686,7 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(
   {
     potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
+    potsum_[p]->AddCoupDerivVol(modinv(2),dPmodI(2),ddPmodII(2),dddPmodIII);
   }
 
   // inverse RCG
@@ -719,9 +720,9 @@ void MAT::PlasticElastHyper::EvaluateCTvol(
   // do TSI only for decoupled isotropic materials. By doing so, the stresses
   // due to thermal expansion can be easily calculated by the volumetric
   // part of the strain energy function
-  if (isoprinc_ || anisomod_ || anisoprinc_ )
+  if (anisomod_ || anisoprinc_)
     dserror("TSI with semi-Smooth Newton type plasticity algorithm only "
-        "with decoupled strain energy functions");
+        "with isotropic strain energy functions");
 
   // we are only interested in the volumetric response
   // which is for decoupled strain energy functions defined by
@@ -737,6 +738,7 @@ void MAT::PlasticElastHyper::EvaluateCTvol(
   {
     potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
+    potsum_[p]->AddCoupDerivVol(modinv(2),dPmodI(2),ddPmodII(2),dddPmodIII);
   }
 
   // clear
@@ -785,6 +787,7 @@ void MAT::PlasticElastHyper::EvaluateGoughJoule(const double j,
   {
     potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
+    potsum_[p]->AddCoupDerivVol(modinv(2),dPmodI(2),ddPmodII(2),dddPmodIII);
   }
 
   he_fac = -3.*Cte()*ddPmodII(2);
