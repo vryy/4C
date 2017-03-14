@@ -126,6 +126,7 @@ protected:
       std::vector<GEN::pairedvector<int,double> >& derivmxi
       );
 
+private:
 
   /*!
   \brief evaluate GPTS forces and linearization at this gp
@@ -176,8 +177,6 @@ protected:
         LINALG::SerialDenseVector& adjoint_test,
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test
         );
-
-
 
     template <DRT::Element::DiscretizationType parentdistype, int dim>
     void inline SoEleGP(
