@@ -91,7 +91,7 @@ public:
   int GetCouplingDofsetNds(const std::string & name)
   {
     if(not(dofset_coupling_map_.count(name) ==1))
-        dserror("%s -dofset not set in dofset_coupling_map for fluid dis!", name);
+        dserror("%s -dofset not set in dofset_coupling_map for fluid dis!", name.c_str());
 
     return dofset_coupling_map_[name];
   }
