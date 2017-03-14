@@ -1674,7 +1674,7 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
     //------------------------
 
     // get the positioning of the node
-    GEO::CUT::Point::PointPosition pos = GEO::CUT::Point::PointPosition::undecided;
+    GEO::CUT::Point::PointPosition pos = GEO::CUT::Point::undecided;
 
     DRT::Node * bg_node = NULL;
 
