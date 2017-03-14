@@ -1,7 +1,14 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+lung inverse analysis (by Sophie Rausch)
+- removed in revision 22737 on 2016-12-27
+- This type of analysis was not used for many years. The features of this inverse analysis are also in gen_inv_analysis.
+- If you need it: Find one of Sophie's dat file and use it. Think if you could write a more general monitor-file, to use the gen_inv_analysis.
+- Removed by: A. Birzle
+
 crack propagation (by Sudhakar Yogaraj)
-- removed in revision 22725 on 2017-12-22
+- removed in revision 22725 on 2016-12-22
 - due to invasive implementation and difficulty to maintain and migrate to new structural time integration
+
 
 
