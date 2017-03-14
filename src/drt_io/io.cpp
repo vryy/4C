@@ -480,8 +480,8 @@ int IO::DiscretizationReader::GetNumOutputProc(int step)
 /*----------------------------------------------------------------------*/
 IO::DiscretizationWriter::DiscretizationWriter()           /* PROTECTED */
     : dis_(Teuchos::null),
-      step_(0),
-      time_(0),
+      step_(-1),
+      time_(-1.0),
       meshfile_(-1),
       resultfile_(-1),
       meshfilename_(),
@@ -500,8 +500,8 @@ IO::DiscretizationWriter::DiscretizationWriter()           /* PROTECTED */
 /*----------------------------------------------------------------------*/
 IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis)
     : dis_(Teuchos::rcp(dis.get(),false)), // no ownership to break circle discretization<>writer
-      step_(0),
-      time_(0),
+      step_(-1),
+      time_(-1.0),
       meshfile_(-1),
       resultfile_(-1),
       meshfilename_(),
@@ -692,6 +692,12 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
   if(binio_)
   {
     bool write_file = false;
+
+    if(step_ == step and fabs(time_-time)<1e-14)
+    {
+      // new step already created
+      return;
+    }
 
     step_ = step;
     time_ = time;
