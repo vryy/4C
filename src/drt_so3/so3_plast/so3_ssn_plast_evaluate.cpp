@@ -3023,3 +3023,85 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateThermoGp(const int gp,
     LINALG::DENSEFUNCTIONS::update<double,numdofperelement_,1>(plmat->dHepDissDd(gp).A(),dHedd.A());
   }
 }
+
+
+// template functions
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::
+CondensePlasticity<5>(
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<numstr_,numdofperelement_>&,
+    const LINALG::Matrix<nsd_,nen_>*,
+    const LINALG::Matrix<numstr_,1>*,
+    const double,
+    const int,
+    const double,
+    Teuchos::ParameterList&,
+    LINALG::Matrix<numdofperelement_,1>*,
+    LINALG::Matrix<numdofperelement_,numdofperelement_>*,
+    const Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    std::vector<Epetra_SerialDenseVector>*,
+    const double*,
+    const LINALG::Matrix<numdofperelement_,1>*
+    );
+
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::
+CondensePlasticity<8>(
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<numstr_,numdofperelement_>&,
+    const LINALG::Matrix<nsd_,nen_>*,
+    const LINALG::Matrix<numstr_,1>*,
+    const double,
+    const int,
+    const double,
+    Teuchos::ParameterList&,
+    LINALG::Matrix<numdofperelement_,1>*,
+    LINALG::Matrix<numdofperelement_,numdofperelement_>*,
+    const Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    std::vector<Epetra_SerialDenseVector>*,
+    const double*,
+    const LINALG::Matrix<numdofperelement_,1>*
+    );
+
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>::
+CondensePlasticity<5>(
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<numstr_,numdofperelement_>&,
+    const LINALG::Matrix<nsd_,nen_>*,
+    const LINALG::Matrix<numstr_,1>*,
+    const double,
+    const int,
+    const double,
+    Teuchos::ParameterList&,
+    LINALG::Matrix<numdofperelement_,1>*,
+    LINALG::Matrix<numdofperelement_,numdofperelement_>*,
+    const Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    std::vector<Epetra_SerialDenseVector>*,
+    const double*,
+    const LINALG::Matrix<numdofperelement_,1>*
+    );
+
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>::
+CondensePlasticity<8>(
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<nsd_,nsd_>&,
+    const LINALG::Matrix<numstr_,numdofperelement_>&,
+    const LINALG::Matrix<nsd_,nen_>*,
+    const LINALG::Matrix<numstr_,1>*,
+    const double,
+    const int,
+    const double,
+    Teuchos::ParameterList&,
+    LINALG::Matrix<numdofperelement_,1>*,
+    LINALG::Matrix<numdofperelement_,numdofperelement_>*,
+    const Epetra_SerialDenseMatrix*,
+    Epetra_SerialDenseMatrix*,
+    std::vector<Epetra_SerialDenseVector>*,
+    const double*,
+    const LINALG::Matrix<numdofperelement_,1>*
+    );
