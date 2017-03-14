@@ -73,51 +73,14 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Init(
       disname,
       isale);
 
-  // check whether fluid and scatra discret still have the same maps
-  // they may change due a modified ghosting required, i.e., for particle level-set methods
-  if(Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField()) != Teuchos::null)
-  {
-    const Epetra_Map* scatraelecolmap = ScaTraField()->Discretization()->ElementColMap();
-    if (not scatraelecolmap->PointSameAs(*FluidField()->Discretization()->ElementColMap()))
-    {
-      if (Comm().MyPID()==0)
-        std::cout << "----- adaption of fluid ghosting to scatra ghosting ------" << std::endl;
-
-      // adapt fluid ghosting to scatra ghosting
-      if (DRT::Problem::Instance()->ProblemType() != prb_combust
-          and DRT::Problem::Instance()->ProblemType() != prb_fluid_xfem_ls)
-        FluidField()->Discretization()->ExtendedGhosting(*scatraelecolmap,true,true,true,false);
-      else
-      {
-        FluidField()->Discretization()->ExtendedGhosting(*scatraelecolmap,false,false,false,false);
-        if(DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem_ls)
-        {
-          Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->DiscretisationXFEM()->ExtendedGhosting(*scatraelecolmap,false,false,false,false);
-
-          Teuchos::RCP<DRT::DiscretizationXFEM> xfluiddis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(FluidField()->Discretization(),true);
-
-          // Need to call InitialFillComplete again to get the correct Map after the Extended Ghosting of the fluid dofset.
-          // calls AssignDegreesOfFreedom for all non-proxy dofsets and the nds initialdofsets
-          std::vector<int> nds;
-          nds.push_back(0);
-          xfluiddis->InitialFillComplete(nds);
-
-          // replace the fluid-dofset proxy in the scatra discretization
-          ScaTraField()->Discretization()->ReplaceDofSet(1, xfluiddis->GetInitialDofSetProxy(0), false);
-
-          // does not have an effect (as wanted!), as the additional fluid proxy,
-          // which has been set in scatra, has its own AssignDegreesOfFreedom that does nothing!
-          ScaTraField()->Discretization()->FillComplete(true, false,false);
-
-        }
-      }
-    }
-  }
+  // perform algorithm specific initialization stuff
+  DoAlgorithmSpecificInit();
 
   // do potential volmortar business
   SetupFieldCoupling("fluid", scatra_disname_);
 
   SetIsInit(true);
+
   return;
 }
 

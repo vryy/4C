@@ -28,6 +28,8 @@
 
 #include "../drt_lib/drt_discret_xfem.H"
 
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/matlist.H"
 
 #include "xfluid_levelset_coupling_algorithm.H"
 
@@ -37,7 +39,8 @@
 XFLUIDLEVELSET::Algorithm::Algorithm(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn,
-    const Teuchos::ParameterList& solverparams
+    const Teuchos::ParameterList& solverparams,
+    const std::map<std::string, int>& dofset_coupling_map
     )
 :  ScaTraFluidCouplingAlgorithm(comm,prbdyn,false,"scatra",solverparams),
    dt_(0.0),
@@ -47,11 +50,10 @@ XFLUIDLEVELSET::Algorithm::Algorithm(
    ittol_(1.0),
    upres_(-1),
    write_center_of_mass_(false),
-   surftensapprox_(DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SurfaceTensionApprox>(prbdyn.sublist("SURFACE TENSION"),"SURFTENSAPPROX")),
-   laplacebeltrami_(DRT::INPUT::IntegralValue<INPAR::TWOPHASE::LaplaceBeltramiCalc>(prbdyn.sublist("SURFACE TENSION"),"LAPLACE_BELTRAMI")),
    velnpi_(Teuchos::null),
    phinpi_(Teuchos::null),
-   prbdyn_(prbdyn)
+   prbdyn_(prbdyn),
+   dofset_coupling_map_(dofset_coupling_map)
 {
   // Needs to stay emtpy
   return;
@@ -115,6 +117,57 @@ void XFLUIDLEVELSET::Algorithm::Init(
   return;
 }
 
+void XFLUIDLEVELSET::Algorithm::DoAlgorithmSpecificInit()
+{
+  //TODO: set as member, first initialized in the dyn!
+  const int nds_fluid_proxy_in_scatra  = dofset_coupling_map_["vel_fluid_proxy_in_scatra"];
+  const int nds_xfluid                 = dofset_coupling_map_["vel_in_xfluid"];
+
+  //TODO: do we need this after similar to the fluid-proxy in the fluid after redistributing scatra due to particles?
+  const int nds_phi_scatra             = dofset_coupling_map_["phi_in_scatra"];
+  const int nds_scatra_proxy_in_fluid  = dofset_coupling_map_["phi_scatra_proxy_in_fluid"];
+
+
+
+  // we expect a level-set algorithm here, which potentially carries a particle algorithm
+  Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField(), true);
+
+  // check whether fluid and scatra discret still have the same maps
+  // they may change due a modified ghosting required, i.e., for particle level-set methods
+
+  Teuchos::RCP<DRT::Discretization> fluiddis  = FluidField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> scatradis = ScaTraField()->Discretization();
+
+  const Epetra_Map* scatraelecolmap = scatradis->ElementColMap();
+  const Epetra_Map* fluidelecolmap  = fluiddis->ElementColMap();
+
+  //TODO: do we need this?
+  fluiddis->ReplaceDofSet(nds_scatra_proxy_in_fluid, scatradis->GetDofSetProxy(nds_phi_scatra), false);
+
+  if (not scatraelecolmap->PointSameAs(*fluidelecolmap))
+  {
+    if (Comm().MyPID()==0)
+      std::cout << "----- Adapt fluid ghosting to scatra ghosting ------" << std::endl;
+
+    // adapt fluid ghosting to scatra ghosting
+    fluiddis->ExtendedGhosting(*scatraelecolmap,true,true,true,false);
+
+    Teuchos::RCP<DRT::DiscretizationXFEM> xfluiddis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(fluiddis,true);
+
+    // Need to call InitialFillComplete again to get the correct Map after the Extended Ghosting of the fluid dofset.
+    // calls AssignDegreesOfFreedom for all non-proxy dofsets and the nds initialdofsets
+    std::vector<int> nds;
+    nds.push_back(nds_xfluid);
+    xfluiddis->InitialFillComplete(nds);
+
+    // replace the fluid-dofset proxy in the scatra discretization
+    scatradis->ReplaceDofSet(nds_fluid_proxy_in_scatra, xfluiddis->GetInitialDofSetProxy(nds_xfluid), false);
+
+    // does not have an effect (as wanted!), as the additional fluid proxy,
+    // which has been set in scatra, has its own AssignDegreesOfFreedom that does nothing!
+    scatradis->FillComplete(true, false,false);
+  }
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -124,15 +177,26 @@ void XFLUIDLEVELSET::Algorithm::Setup()
   ADAPTER::ScaTraFluidCouplingAlgorithm::Setup();
 
   // Fluid-Scatra Iteration vectors are initialized
-  velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField()->StdVelnp()->Map()),true);//*fluiddis->DofRowMap()),true);
+  velnpi_ = Teuchos::rcp(new Epetra_Vector(FluidField()->StdVelnp()->Map()),true);
   velnpi_->Update(1.0,*FluidField()->StdVelnp(),0.0);
   phinpi_ = Teuchos::rcp(new Epetra_Vector(ScaTraField()->Phinp()->Map()),true);
   phinpi_->Update(1.0,*ScaTraField()->Phinp(),0.0);
 
-  SetFluidValuesInScaTra(true);
-
+  // do not change the following order of calls
   // this cannot be done in Init() for some reason
-  SetProblemSpecificParameters(prbdyn_);
+
+  const int restart = DRT::Problem::Instance()->Restart();
+
+  if(!restart) // otherwise SetScaTraValuesInFluid would overwrite the restarted vectors in the cond-manager
+  {
+    // 1.) set reconstructed normals and curvature values of the initial scatra field
+    // to allow to obtain a right transport velocity field in the next call when setting fluid values in the scatra field.
+    SetScaTraValuesInFluid();
+
+    // 2.) set the interface transport velocity in the scatra field
+
+    SetFluidValuesInScaTra(true);
+  }
 
   return;
 }
@@ -208,16 +272,33 @@ void XFLUIDLEVELSET::Algorithm::OuterLoop()
   int  itnum = 0;
   bool stopnonliniter = false;
 
+  PrintToScreen(
+      "\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n"
+  );
+
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
-
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
            Time(),maxtime_,dt_,ScaTraField()->MethodTitle().c_str(),Step(),stepmax_);
   }
 
   // initially solve scalar transport equation
   // (values for intermediate time steps were calculated at the end of PerpareTimeStep)
+
+  // We always do s - f - s or more cyles s - [ f - s] -... -[f - s]
+  // Set relevant Fluid values in ScaTra field. (first transport with predicted fluid velocity = vel from last time-step)
+  // TODO: issue (the fluid solution and its interface position is not the same as the last computed for the scatra!!!)
+  // if we would use the transport velocity directly from the interface, the positions do not match!
+
+  bool scatra_init = false;
+
+  // initial time-derivative needed for particles restart
+  const int restart = DRT::Problem::Instance()->Restart();
+  if(Step() == restart+1)
+    scatra_init=true;
+
+  SetFluidValuesInScaTra(scatra_init);
+
   DoScaTraField();
 
   //Prepare variables for convergence check.
@@ -227,8 +308,14 @@ void XFLUIDLEVELSET::Algorithm::OuterLoop()
   {
     itnum++;
 
+    //Set relevant ScaTra values in Fluid field.
+    SetScaTraValuesInFluid();
+
     // solve fluid flow equations
     DoFluidField();
+
+    //Set relevant Fluid values in ScaTra field.
+    SetFluidValuesInScaTra(false);
 
     // solve scalar transport equation
     DoScaTraField();
@@ -245,12 +332,9 @@ void XFLUIDLEVELSET::Algorithm::OuterLoop()
 void XFLUIDLEVELSET::Algorithm::DoFluidField()
 {
 
-  if (Comm().MyPID()==0)
-    std::cout<<"\n****************************************\n              FLUID SOLVER\n****************************************\n";
-
-
-  //Set relevant ScaTra values in Fluid field.
-  SetScaTraValuesInFluid();
+  PrintToScreen(
+      "\n****************************************\n              FLUID SOLVER\n****************************************\n"
+  );
 
   //Solve the Fluid field.
   FluidField()->Solve();
@@ -262,13 +346,9 @@ void XFLUIDLEVELSET::Algorithm::DoFluidField()
 /*----------------------------------------------------------------------*/
 void XFLUIDLEVELSET::Algorithm::DoScaTraField()
 {
-
-  if (Comm().MyPID()==0)
-    std::cout<<"\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n";
-
-
-  //Set relevant Fluid values in ScaTra field.
-  SetFluidValuesInScaTra(false);
+  PrintToScreen(
+      "\n****************************************\n        SCALAR TRANSPORT SOLVER\n****************************************\n"
+  );
 
   //Solve the ScaTra field.
   ScaTraField()->Solve();
@@ -276,7 +356,13 @@ void XFLUIDLEVELSET::Algorithm::DoScaTraField()
   return;
 }
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void XFLUIDLEVELSET::Algorithm::PrintToScreen(const std::string str)
+{
+  if (Comm().MyPID()==0)
+    std::cout<< str;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -297,7 +383,7 @@ void XFLUIDLEVELSET::Algorithm::TimeUpdate()
 void XFLUIDLEVELSET::Algorithm::PrepareOuterIteration()
 {
 //  //Update phi for outer loop convergence check
-  phinpi_->Update(1.0,*ScaTraField()->Phinp(),0.0);
+  phinpi_->Update(1.0,*ScaTraField()->Phinp()  ,0.0);
   velnpi_->Update(1.0,*FluidField()->StdVelnp(),0.0);
 
   //Clear the vectors containing the data for the partitioned increments
@@ -319,97 +405,200 @@ void XFLUIDLEVELSET::Algorithm::PrepareTimeStep()
   // prepare fluid time step, among other things, predict velocity field
   FluidField()->PrepareTimeStep();
 
-  // synchronicity check between fluid algorithm and level set algorithms
+  // synchronicity check between algorithm and fields
+  SynchronicityTimeCheck();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void XFLUIDLEVELSET::Algorithm::SynchronicityTimeCheck()
+{
   if (FluidField()->Time() != Time())
     dserror("Time in Fluid time integration differs from time in two phase flow algorithm");
   if (ScaTraField()->Time() != Time())
     dserror("Time in ScaTra time integration differs from time in two phase flow algorithm");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | Set relevant values from ScaTra field in the Fluid field.            |
  *----------------------------------------------------------------------*/
 void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
 {
+
+  const Teuchos::RCP<const Epetra_Vector> & scatra_phinp = ScaTraField()->Phinp();
+
+  // compute smoothed geometric quantities based on scatra discretization
+  Teuchos::RCP<Epetra_MultiVector>  scatra_smoothedgradphi = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector>       scatra_nodalcurvature  = Teuchos::null;
+
+  // currently vectors based on the cutter dis stored in the conditionmanager
+  Teuchos::RCP<Epetra_Vector>       fluid_phinp           = Teuchos::null;
+  Teuchos::RCP<Epetra_MultiVector>  fluid_smoothedgradphi = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector>       fluid_nodalcurvature  = Teuchos::null;
+
+  Teuchos::RCP<FLD::XFluid> xfluid = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
+
+  // get access to the fluid node based vectors
+  xfluid->WriteAccess_GeometricQuantities(
+      fluid_phinp,
+      fluid_smoothedgradphi,
+      fluid_nodalcurvature
+  );
+
+  // are smoothed geometric quantities required? -- here we just allow for L2-projection based methods!!!
+  bool require_smoothedgradphi = (fluid_smoothedgradphi == Teuchos::null) ? false : true;
+  bool require_nodalcurvature  = (fluid_nodalcurvature  == Teuchos::null) ? false : true;
+
   // set level set in fluid field
+  ComputeGeometricQuantities(
+      require_smoothedgradphi,
+      require_nodalcurvature,
+      scatra_phinp,
+      scatra_smoothedgradphi,
+      scatra_nodalcurvature
+  );
 
-  switch(FluidField()->TimIntScheme())
+#if(0)
   {
-  case INPAR::FLUID::timeint_stationary:
-  case INPAR::FLUID::timeint_one_step_theta:
-  {
-    // set the new level set value to the fluid
-    Teuchos::RCP<FLD::XFluid> xfluid = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
+  std::cout << "scatra_phinp " << *scatra_phinp << std::endl;
 
-    Teuchos::RCP<Epetra_MultiVector>  smoothedgradphi;
-    Teuchos::RCP<Epetra_Vector> nodalcurvature;
+  if(require_smoothedgradphi)
+  std::cout << "scatra_smoothedgradphi " << *scatra_smoothedgradphi << std::endl;
 
-    if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_divgrad_normal)
-    {
-      smoothedgradphi = ScaTraField()->ReconstructGradientAtNodes(ScaTraField()->Phinp());
-    }
-    else if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_nodal_curvature)
-    {
-      nodalcurvature = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phinp());
-    }
-    else if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami)
-    {
-      if(not (laplacebeltrami_==INPAR::TWOPHASE::matrix_non_smoothed))
-        smoothedgradphi = ScaTraField()->ReconstructGradientAtNodes(ScaTraField()->Phinp());
-    }
-
-    xfluid->SetLevelSetField(ScaTraField()->Phinp(),
-                             nodalcurvature,
-                             smoothedgradphi,
-                             ScaTraField()->Discretization());
-
+  if(require_nodalcurvature)
+  std::cout << "scatra_nodalcurvature " << *scatra_nodalcurvature << std::endl;
   }
-  break;
-  default:
-    dserror("Time integration scheme not supported");
-    break;
+#endif
+
+  // map geometric quantities from scatra dof-based to fluid node based vectors
+  CopyGeometricQuantities(
+      require_smoothedgradphi,
+      require_nodalcurvature,
+      scatra_phinp,
+      scatra_smoothedgradphi,
+      scatra_nodalcurvature,
+      fluid_phinp,
+      fluid_smoothedgradphi,
+      fluid_nodalcurvature
+  );
+
+  // export row to col vectors
+  xfluid->ExportGeometricQuantities();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFLUIDLEVELSET::Algorithm::ComputeGeometricQuantities(
+    const bool require_smoothedgradphi,
+    const bool require_nodalcurvature,
+    const Teuchos::RCP<const Epetra_Vector> & phinp,
+    Teuchos::RCP<Epetra_MultiVector> & smoothedgradphi,
+    Teuchos::RCP<Epetra_Vector> & nodalcurvature
+)
+{
+  smoothedgradphi= Teuchos::null;
+  nodalcurvature = Teuchos::null;
+
+  // compute the smoothed geometric quantities
+  if(require_smoothedgradphi)
+    smoothedgradphi = ScaTraField()->ReconstructGradientAtNodes(phinp);
+
+  if(require_nodalcurvature)
+    nodalcurvature = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField(), true)->GetNodalCurvature(phinp);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFLUIDLEVELSET::Algorithm::CopyGeometricQuantities(
+    const bool require_smoothedgradphi,
+    const bool require_nodalcurvature,
+    const Teuchos::RCP<const Epetra_Vector> & scatra_phinp,
+    const Teuchos::RCP<const Epetra_MultiVector> & scatra_smoothedgradphi,
+    const Teuchos::RCP<const Epetra_Vector>      & scatra_nodalcurvature,
+    const Teuchos::RCP<Epetra_Vector> & fluid_phinp,
+    const Teuchos::RCP<Epetra_MultiVector> & fluid_smoothedgradphi,
+    const Teuchos::RCP<Epetra_Vector>      & fluid_nodalcurvature
+    )
+{
+  // this is simply a transform method between quantities w.r.t scatra dis to quantities in the condition manager
+
+  ///-------------------------------------------
+  // copy the level set values
+
+  if(fluid_phinp ==Teuchos::null) dserror("fluid null pointer");
+  if(scatra_phinp==Teuchos::null) dserror("scatra null pointer");
+
+  // safety checks for matching dof-based maps
+  if(!fluid_phinp->Map().PointSameAs(scatra_phinp->Map()))
+    dserror("unequal maps!");
+
+  fluid_phinp->Update(1.0, *scatra_phinp, 0.0);
+
+
+  ///-------------------------------------------
+  // copy the nodal gradients
+  if(require_smoothedgradphi)
+  {
+    if(fluid_smoothedgradphi ==Teuchos::null) dserror("fluid null pointer");
+    if(scatra_smoothedgradphi==Teuchos::null) dserror("scatra null pointer");
+
+    if(!fluid_smoothedgradphi->Map().PointSameAs(scatra_smoothedgradphi->Map()))
+      dserror("unequal maps!");
+
+    fluid_smoothedgradphi->Update(1.0, *scatra_smoothedgradphi, 0.0);
+  }
+
+  ///-------------------------------------------
+  // copy the nodal curvatures
+
+  if( require_nodalcurvature)
+  {
+    if(fluid_nodalcurvature ==Teuchos::null) dserror("fluid null pointer");
+    if(scatra_nodalcurvature==Teuchos::null) dserror("scatra null pointer");
+
+    if(!fluid_nodalcurvature->Map().PointSameAs(scatra_nodalcurvature->Map()))
+      dserror("unequal maps!");
+
+    fluid_nodalcurvature->Update(1.0, *scatra_nodalcurvature, 0.0);
   }
 
   return;
 }
+
+
 /*----------------------------------------------------------------------*
- | Set relevant values from Fluid field in the ScaTra field.            |
  *----------------------------------------------------------------------*/
 void XFLUIDLEVELSET::Algorithm::SetFluidValuesInScaTra(bool init)
 {
+  if (Comm().MyPID()==0)
+    std::cout<<"\n------  SetFluidValuesInScaTra ---------\n";
 
-  switch(FluidField()->TimIntScheme())
-  {
-  case INPAR::FLUID::timeint_stationary:
-  case INPAR::FLUID::timeint_one_step_theta:
-  {
 
-    const Teuchos::RCP<const Epetra_Vector> convel = FluidField()->StdVelnp();
+  Teuchos::RCP<SCATRA::LevelSetAlgorithm> levelsetalgo =
+      Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField(), true);
 
-    Teuchos::RCP<SCATRA::LevelSetAlgorithm> levelsetalgo = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField());
+  Teuchos::RCP<FLD::XFluid> xfluid =
+      Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
 
-    if(levelsetalgo==Teuchos::null)
-      dserror("Casting ScaTraTimInt onto LevelSetAlgorithm failed. (Null pointer returned)");
-
-    levelsetalgo->SetVelocityField(convel,
-        Teuchos::null,
-        Teuchos::null,
-        Teuchos::null, //FluidField()->FsVel(),
-        false,
-        init);
-
-  }
-  break;
-  default:
-    dserror("Time integration scheme not supported");
-    break;
-  }
-
+  levelsetalgo->SetVelocityField(
+      xfluid->GetTransportVelocity(),
+      Teuchos::null,
+      Teuchos::null,
+      Teuchos::null,
+      false,
+      init // TODO: what does this init??? how to set initial accelerations in the scatra?
+  );
 
   return;
 }
+
+
+
 
 /*------------------------------------------------------------------------------------------------*
  | Fluid - ScaTra partitioned convergence check                                                   |
@@ -596,11 +785,6 @@ void XFLUIDLEVELSET::Algorithm::Restart(int step)
     std::cout << "##################################################" << std::endl;
     std::cout << "#                                                #" << std::endl;
     std::cout << "#     Restart of T(wo) P(hase) F(low) problem    #" << std::endl;
-//    if (restartscatrainput)
-//    {
-//      std::cout << "#                                                #" << std::endl;
-//      std::cout << "#   -Restart with scalar field from input file   #" << std::endl;
-//    }
     std::cout << "#                                                #" << std::endl;
     std::cout << "##################################################" << std::endl;
 
@@ -611,46 +795,20 @@ void XFLUIDLEVELSET::Algorithm::Restart(int step)
     std::cout << "##########################################################################" << std::endl;
   }
 
-
+  // condition-manager restart has been called alredy in the xfluid's init!
 
   FluidField()->ReadRestart(step);
   ScaTraField()->ReadRestart(step);
+
   SetTimeStep(FluidField()->Time(),step);
 
-  //Needed for particle restart
-  SetFluidValuesInScaTra(true);
+  //TODO: issue: this however will overwrite the scatra solution (the xfluid cutter-state however is behind the scatra state!)
+  //Needed for particle restart, try to comment!
+//  SetFluidValuesInScaTra(true);
 
   return;
 }
 
-/* -------------------------------------------------------------------------------*
- | Set Problem Specific Parameters                                          winter|
- * -------------------------------------------------------------------------------*/
-void XFLUIDLEVELSET::Algorithm::SetProblemSpecificParameters(const Teuchos::ParameterList& prbdyn)
-{
-    surftensapprox_ = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SurfaceTensionApprox>(prbdyn.sublist("SURFACE TENSION"),"SURFTENSAPPROX");
-
-    if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami)
-      laplacebeltrami_ = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::LaplaceBeltramiCalc>(prbdyn.sublist("SURFACE TENSION"),"LAPLACE_BELTRAMI");
-
-    //SAFETY-CHECKS
-    if(DRT::INPUT::IntegralValue<bool>(prbdyn.sublist("SURFACE TENSION"),"L2_PROJECTION_SECOND_DERIVATIVES"))
-      dserror("Second L2-projected derivatives can not be calculated as of now for the Level Set.");
-
-    if(DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SmoothGradPhi>(prbdyn.sublist("SURFACE TENSION"),"SMOOTHGRADPHI")!=INPAR::TWOPHASE::smooth_grad_phi_l2_projection)
-      dserror("No other smoothing for the gradient of the level set other than L2 is allowed for now.");
-
-    if(DRT::INPUT::IntegralValue<INPAR::TWOPHASE::NodalCurvatureCalc>(prbdyn.sublist("SURFACE TENSION"),"NODAL_CURVATURE")!=INPAR::TWOPHASE::l2_projected)
-      dserror("No other way to calculate the nodal curvature than L2.");
-
-    if(prbdyn.sublist("SURFACE TENSION").get<double>("SMOOTHING_PARAMETER")!=0.0)
-     dserror("No smoothing available for now.");
-
-    Teuchos::RCP<FLD::XFluid> xfluid = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
-    xfluid->InitTwoPhaseSurftensParameters(surftensapprox_,laplacebeltrami_);
-
-  return;
-}
 
 void XFLUIDLEVELSET::Algorithm::GetOuterLoopIncFluid(double& fsvelincnorm, double& fspressincnorm, int itnum)
 {

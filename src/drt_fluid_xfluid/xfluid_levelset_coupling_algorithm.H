@@ -46,7 +46,8 @@ namespace XFLUIDLEVELSET
     explicit Algorithm(
         const Epetra_Comm& comm,             ///< communicator
         const Teuchos::ParameterList& prbdyn,///< problem-specific parameter list
-        const Teuchos::ParameterList& solverparams ///<solver-specific parameter list
+        const Teuchos::ParameterList& solverparams, ///<solver-specific parameter list
+        const std::map<std::string, int>& dofset_couling_map ///< key=meaning of a dofset in a dis, nodal dofset number
         );
 
     /// virtual destructor to support polymorph destruction
@@ -115,6 +116,8 @@ namespace XFLUIDLEVELSET
 
   protected:
 
+    virtual void DoAlgorithmSpecificInit();
+
     /// convergence Check for present iteration step
     bool ConvergenceCheck(int itnum);
     /// get increment of Fluid solution between time step i and i+1
@@ -128,13 +131,35 @@ namespace XFLUIDLEVELSET
     void DoFluidField();
     /// set values from Fluid and solve the scatra field
     void DoScaTraField();
-
+    /// print string to std cout
+    void PrintToScreen(const std::string str);
 
     //Communication between fields:
     /// set scatra values required in fluid
     void SetScaTraValuesInFluid();
-    /// set scatra values required in fluid
+    /// set fluid values required in scatra
     void SetFluidValuesInScaTra(bool init);
+
+    /// compute geometric quantities (normalvector field and curvatures) from level set field
+    void ComputeGeometricQuantities(
+        const bool require_smoothedgradphi,
+        const bool require_nodalcurvature,
+        const Teuchos::RCP<const Epetra_Vector> & phinp,
+        Teuchos::RCP<Epetra_MultiVector> & smoothedgradphi,
+        Teuchos::RCP<Epetra_Vector> & nodalcurvature
+    );
+
+    /// copy geometric quantities from scatra to cutter discretization stored in the conditionmanager
+    void CopyGeometricQuantities(
+        const bool require_smoothedgradphi,
+        const bool require_nodalcurvature,
+        const Teuchos::RCP<const Epetra_Vector> & scatra_phinp,
+        const Teuchos::RCP<const Epetra_MultiVector> & scatra_smoothedgradphi,
+        const Teuchos::RCP<const Epetra_Vector>      & scatra_nodalcurvature,
+        const Teuchos::RCP<Epetra_Vector> & fluid_phinp,
+        const Teuchos::RCP<Epetra_MultiVector> & fluid_smoothedgradphi,
+        const Teuchos::RCP<Epetra_Vector>      & fluid_nodalcurvature
+    );
 
 
     /// update time
@@ -144,15 +169,13 @@ namespace XFLUIDLEVELSET
     /// prepare outer iteration
     void PrepareOuterIteration();
 
+    /// synchronicity check between algorithm and fields
+    void SynchronicityTimeCheck();
 
     /// write output
     void Output();
     /// write output of initial field
     void OutputInitialField();
-
-
-    /// set problem specific parameters
-    void SetProblemSpecificParameters(const Teuchos::ParameterList& prbdyn);
 
 
   private:
@@ -172,10 +195,6 @@ namespace XFLUIDLEVELSET
     /// masscenter output
     bool    write_center_of_mass_;
 
-    /// Two Phase Specific parameter
-    INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox_;
-    INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami_;
-
     /// Outer-loop convergence variables:
     Teuchos::RCP<Epetra_Vector> velnpi_;
     Teuchos::RCP<Epetra_Vector> phinpi_;
@@ -186,6 +205,8 @@ namespace XFLUIDLEVELSET
 
     /// problem dynamic parameters
     Teuchos::ParameterList prbdyn_;
+
+    std::map<std::string, int> dofset_coupling_map_;
 
   };
 

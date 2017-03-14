@@ -23,6 +23,12 @@ xfluid class and the cut-library
 #include "xfem_coupling_base.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_twophase.H"
+#include "../drt_cut/cut_point.H"
+
+namespace GEO
+{
+  class CutWizard;
+}
 
 namespace XFEM
 {
@@ -38,6 +44,7 @@ public:
   explicit LevelSetCoupling(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< full discretization from which the cutter discretization is derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
@@ -50,10 +57,44 @@ public:
     return;
   }
 
+  void SetCouplingDofsets();
+
+  bool HaveMatchingNodes(
+      const Teuchos::RCP<DRT::Discretization> & dis_A,
+      const Teuchos::RCP<DRT::Discretization> & dis_B
+  );
+
+  void MapCutterToBgVector(
+      const Teuchos::RCP<DRT::Discretization> & source_dis,
+      const Teuchos::RCP<Epetra_Vector> &       source_vec_dofbased,
+      const int                                 source_nds,
+      const Teuchos::RCP<DRT::Discretization> & target_dis,
+      const Teuchos::RCP<Epetra_Vector> &       target_vec_nodebased,
+      const int                                 target_nds
+  );
+
+  //TODO: sort the functions...
+
+  virtual void SetCutterDiscretization();
+
+  virtual void SetConditionSpecificParameters(){};
+
+  virtual void PrepareCutterOutput();
+
+  virtual void DoConditionSpecificSetup();
+
 
   /// set levelset field by function, return if interface moved compared to last time step
   bool SetLevelSetField(const double time);
 
+  /// initialize level set based state vectors
+  virtual void InitStateVectors();
+
+  virtual void InitStateVectors_Bg();
+
+  virtual void InitStateVectors_Cutter();
+
+  /// set level-boolean type
   virtual void SetLevelSetBooleanType();
 
   virtual bool ApplyComplementaryOperator();
@@ -65,7 +106,14 @@ public:
       const int lsc_idx = 0
   );
 
-  Teuchos::RCP<Epetra_Vector> & GetLevelSetField(){ return phinp_; }
+  virtual void GmshOutput(
+      const std::string & filename_base,
+      const int step,
+      const int gmsh_step_diff,
+      const bool gmsh_debug_out_screen
+  );
+
+  Teuchos::RCP<Epetra_Vector> & GetLevelSetField(){ return cutter_phinp_; }
 
   virtual void ReadRestart(
       const int step,
@@ -84,6 +132,9 @@ public:
 
   XFEM::CouplingBase::LevelSetBooleanType GetBooleanCombination(){ return ls_boolean_type_; }
 
+  //! export row vectors storing geometric quantities to col vectors
+  virtual void ExportGeometricQuantities(){};
+
 
 private:
 
@@ -98,27 +149,47 @@ private:
 
 protected:
 
+  //! Output specific
+  Teuchos::RCP<IO::DiscretizationWriter> bg_output_;
 
-  //! @name state vectors
+  //! @name fluid discretization related state vectors
 
-  //! scatra-dis (cutterdis) state vectors for levelset applications, prepares nonmatching discretizations between scatra and fluid
+  //! fluid-dis (bgdis) state vectors for levelset applications
   Teuchos::RCP<Epetra_Vector>    phinp_;
 
-  //! The nodal curvature and smoothed gradient of the levelset field.
+
+  //@}
+
+  //! @name scatra discretization related state vectors
+
+  //! scatra-dis (cutterdis) state vectors for levelset applications, prepares nonmatching discretizations between scatra and fluid
+  Teuchos::RCP<Epetra_Vector>    cutter_phinp_;
+
+  //! The nodal curvature and smoothed gradient of the levelset field. (Stored w.r.t to the scatra-dis = cutter-dis)
   Teuchos::RCP<Epetra_Vector>        curvaturenp_node_;
   Teuchos::RCP<Epetra_MultiVector>   gradphinp_smoothed_node_;
-  Teuchos::RCP<Epetra_MultiVector>   gradphi2np_smoothed_node_;
+  //Teuchos::RCP<Epetra_MultiVector>   gradphi2np_smoothed_node_;
+
+  //! and column versions
+  Teuchos::RCP<Epetra_Vector>        curvaturenp_node_col_;
+  Teuchos::RCP<Epetra_MultiVector>   gradphinp_smoothed_node_col_;
 
   //! boolean operation type on level-set for current ls-field and previous combination of level-set fields
   XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type_;
 
-  //! Output specific
-  Teuchos::RCP<IO::DiscretizationWriter> ls_output_;
 
   // Specify way of creating the projection matrix
   INPAR::XFEM::ProjToSurface projtosurf_;
 
   //@}
+
+  int bg_nds_phi_;     ///<
+  int cutter_nds_phi_; ///<
+
+  double normal_orientation_; ///< correction factor between normal of phi-gradient and normal in xfluid
+
+  bool have_nodematching_dis_; ///< are bgdis and cutterdis node-matching?
+
 
 };
 
@@ -130,6 +201,7 @@ public:
   explicit LevelSetCouplingBC(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< full discretization from which the cutter discretization is derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
@@ -146,7 +218,7 @@ public:
 
   virtual bool HasMovingInterface();
 
-private:
+protected:
 
   bool has_interface_moved_; ///< did interface move compared to the last time step?
 
@@ -164,13 +236,12 @@ public:
   explicit LevelSetCouplingWeakDirichlet(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< full discretization from which the cutter discretization is derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCouplingBC(bg_dis, cond_name, coupling_id, time, step)
+  ) : LevelSetCouplingBC(bg_dis, cond_name, cond_dis, coupling_id, time, step)
   {
-    // initialize the configuration map
-    InitConfigurationMap();
   }
 
 
@@ -199,7 +270,7 @@ public:
 protected:
 
   //! Initializes configurationmap
-  void InitConfigurationMap();
+  virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
@@ -218,10 +289,11 @@ public:
   explicit LevelSetCouplingNeumann(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< full discretization from which the cutter discretization is derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCouplingBC(bg_dis, cond_name, coupling_id, time, step)
+  ) : LevelSetCouplingBC(bg_dis, cond_name, cond_dis, coupling_id, time, step)
   {}
 
 
@@ -260,22 +332,11 @@ public:
   explicit LevelSetCouplingNavierSlip(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< full discretization from which the cutter discretization is derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCouplingBC(bg_dis, cond_name, coupling_id, time, step)
-  {
-    SetConditionSpecificParameters();
-
-    //Might save these differently....
-    //  For instance in a std::map< robin_id, DRT::Condition* > as is done in NavSlip-Mesh
-    SetElementSpecificConditions(cutterele_cond_robin_dirichlet_,"XFEMRobinDirichletVol",robin_dirichlet_id_);
-    if(has_neumann_jump_)
-      SetElementSpecificConditions(cutterele_cond_robin_neumann_,"XFEMRobinNeumannVol",robin_neumann_id_);
-
-    // initialize the configuration map
-    InitConfigurationMap();
-  }
+  );
 
 
   //! destructor
@@ -285,12 +346,6 @@ public:
   }
 
 public:
-
-  void SetElementSpecificConditions(
-      std::vector<DRT::Condition* > &  cutterle_cond,
-      const std::string &              cond_name,
-      const int &                      robin_id
-  );
 
   void EvaluateCouplingConditions(
       LINALG::Matrix<3,1>& ivel,
@@ -534,7 +589,7 @@ public:
 
       //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
       std::vector<double> myphi;
-      DRT::UTILS::ExtractMyNodeBasedValues(actele,myphi,*phinp_);
+      DRT::UTILS::ExtractMyNodeBasedValues(actele,myphi,*cutter_phinp_);
 
       for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
       {
@@ -568,15 +623,7 @@ public:
       break;
     }
     case INPAR::XFEM::Proj_smoothed:
-    {
-      itraction_jump_matrix.Update(p_smoothed_matrix);
-      break;
-    }
     case INPAR::XFEM::Proj_normal_smoothed_comb:
-    {
-      itraction_jump_matrix.Update(p_smoothed_matrix);
-      break;
-    }
     case INPAR::XFEM::Proj_normal_phi:
     {
       itraction_jump_matrix.Update(p_smoothed_matrix);
@@ -594,7 +641,16 @@ public:
 
 protected:
 
-  void SetConditionSpecificParameters();
+
+  virtual void SetElementConditions();
+
+  void SetElementSpecificConditions(
+      std::vector<DRT::Condition* > &  cutterele_cond,
+      const std::string &              cond_name,
+      const int &                      robin_id
+  );
+
+  virtual void SetConditionSpecificParameters();
 
   void GetConditionByRobinId(
       const std::vector<DRT::Condition*> & mycond,
@@ -603,7 +659,7 @@ protected:
   );
 
   //! Initializes configurationmap
-  void InitConfigurationMap();
+  virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
@@ -636,34 +692,34 @@ public:
   explicit LevelSetCouplingTwoPhase(
       Teuchos::RCP<DRT::Discretization>&  bg_dis,    ///< background discretization
       const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which the cutter discretization is derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step       ///< time step
-  ) : LevelSetCoupling(bg_dis, cond_name, coupling_id, time, step),
-      surfacetension_init_(false),
-      surftensapprox_(INPAR::TWOPHASE::surface_tension_approx_none),
-      laplacebeltrami_(INPAR::TWOPHASE::matrix_mixed_smoothed)
-  {
-    // initialize the configuration map
-    InitConfigurationMap();
-  }
-
-  virtual ~LevelSetCouplingTwoPhase()
-  {}
-
-  /// set levelset field by given vector
-  void SetLevelSetField(
-      Teuchos::RCP<const Epetra_Vector> scalaraf,
-      Teuchos::RCP<const Epetra_Vector> curvatureaf,
-      Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
-      Teuchos::RCP<DRT::Discretization> scatradis
   );
 
-  /// initialize surface tension specific parameters
-  void SetSurfaceTensionSpecifcParameters(
-      INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox,
-      INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami
-      );
+  virtual ~LevelSetCouplingTwoPhase()
+  {
+    return;
+  }
+
+  virtual void SetCutterDiscretization();
+
+  virtual void InitStateVectors();
+
+  /// set levelset field by given vector
+  void WriteAccess_GeometricQuantities(
+      Teuchos::RCP<Epetra_Vector> &      scalaraf,
+      Teuchos::RCP<Epetra_MultiVector> & smoothed_gradphiaf,
+      Teuchos::RCP<Epetra_Vector> &      curvatureaf
+  );
+
+  //! export row vectors storing geometric quantities to col vectors
+  virtual void ExportGeometricQuantities();
+
+  //! set twophase flow specific parameters from the input file
+  virtual void SetConditionSpecificParameters();
+
 
   /// set material pointer for coupling slave side
   void GetInterfaceSlaveMaterial(
@@ -676,11 +732,21 @@ public:
   void EvaluateCurvature(
       double&   icurvature,         ///< curvature to be computed
       int       eid,                ///< element ID
-//      M1&       posXiDomain,        ///< position of gaussian point for evaluating of surface tension terms
       M1&       funct,              ///< local shape function for Gauss Point (from fluid element)
       M2&       derxy               ///< local derivatives of shape function for Gauss Point (from fluid element)
   )
   {
+    CheckForValidVectors();
+
+    if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_none)
+    {
+      icurvature=0.0;
+      return;
+    }
+
+    if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami)
+      dserror("wrong routine for laplace beltrami surface tension approximation!");
+
 
     // number space dimensions for element
     const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
@@ -688,184 +754,198 @@ public:
     // number of nodes of element
     const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-    // get element-wise velocity/pressure field for current time step
-    LINALG::Matrix<nen,1> ecurvature(true);
-    LINALG::Matrix<nsd,nen> esmoothedgradphi(true);
-    LINALG::Matrix<nsd*nsd,nen> esmoothedgradphi2(true);
-
     //Should this be provided as well by the input?
-    DRT::Element* actele = cutter_dis_->gElement(eid);
+    DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
 
-    if(curvaturenp_node_!=Teuchos::null)
+    // smoothed normal at cutter element nodes, the Gaussian point lies in
+    Epetra_SerialDenseMatrix esmoothedgradphi(nsd, nen);
+    Epetra_SerialDenseMatrix esmoothedcurvature(nen, 1);
+
+    LINALG::Matrix<nsd,nen> esmoothedgradphi_T(esmoothedgradphi, View);
+    LINALG::Matrix<nen,1>   esmoothedcurvature_T(esmoothedcurvature, View);
+
+
+    GetSmoothedQuantitiesAtElement(
+        esmoothedgradphi,
+        esmoothedcurvature,
+        cutter_ele,
+        gradphinp_smoothed_node_col_,
+        curvaturenp_node_col_,
+        cutter_dis_,
+        cutter_nds_phi_);
+
+    icurvature = InterpolateCurvature<DISTYPE>(
+        funct,
+        derxy,
+        esmoothedgradphi_T,
+        esmoothedcurvature_T,
+        nen);
+
+    return;
+  }
+
+  inline void CheckForValidVectors()
+  {
+    if(!col_vectors_valid_)
+      dserror("you need to call ExportGeometricQuantities() first");
+  }
+
+  template <DRT::Element::DiscretizationType DISTYPE, class M1, class M2, class M3, class M4>
+  double InterpolateCurvature(
+      const M1 & funct,
+      const M2 & derxy,
+      const M3 & esmoothedgradphi_T,
+      const M4 & esmoothedcurvature_T,
+      const int numnode
+  )
+  {
+    // number space dimensions for element
+    const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+
+    double icurvature = 0.0;
+
+    if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_divgrad_normal)
     {
-      //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
-      {
-        std::vector<double> mymatrix_curv;
-        DRT::UTILS::ExtractMyNodeBasedValues(actele,mymatrix_curv,*curvaturenp_node_);
+      LINALG::Matrix<nsd,1> grad_phi(false);
+      grad_phi.Multiply(esmoothedgradphi_T,funct);
 
-        for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
-        {
-          (ecurvature)(inode,0) = mymatrix_curv[(inode*1)];
-        }
-      }
-      //++++++++++++++++++++++
-      //       WARNING
-      //++++++++++++++++++++++
-      //This curvature calculation needs to be checked!!!!
-      // Should there really be a minus here?!?!
-      icurvature= (-1.0) * funct.Dot(ecurvature); //No idea why there is a minus here?!
-    }
-    else if(gradphinp_smoothed_node_!=Teuchos::null)
-    {
-      //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
-      {
-        std::vector<double> mygradphi;
-        DRT::UTILS::ExtractMyNodeBasedValues(actele,mygradphi,*gradphinp_smoothed_node_);
+      LINALG::Matrix<nsd*nsd,1> grad_phi2(true);
 
-        for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
-        {
-          for(unsigned int idim=0; idim<nsd; ++idim)   // number of dimensions
-          {
-            (esmoothedgradphi)(idim,inode) = mygradphi[idim+(inode*nsd)];
-          }  // end for(idim)
-        }
-      }
-      //Gradients @ GaussPoints
-      LINALG::Matrix<nsd,1> grad_phi;
-      LINALG::Matrix<nsd*nsd,1> grad_phi2;
+      // compute 2nd phi derivatives based on smoothed first derivatives
+      DeriveSmoothedGradPhi(grad_phi2, derxy, esmoothedgradphi_T, numnode);
 
-      grad_phi.Multiply(esmoothedgradphi,funct);
-      if(gradphi2np_smoothed_node_==Teuchos::null)
-      {
-        // loop over nodes
-        for(size_t i = 0; i< nen; ++i)
-        {
-          if(nsd==3)
-          {
-            grad_phi2(0) += derxy(0,i)*esmoothedgradphi(0,i); // ,xx
-            grad_phi2(1) += derxy(1,i)*esmoothedgradphi(1,i); // ,yy
-            grad_phi2(2) += derxy(2,i)*esmoothedgradphi(2,i); // ,zz
-            grad_phi2(3) += derxy(1,i)*esmoothedgradphi(0,i); // ,xy
-            grad_phi2(4) += derxy(2,i)*esmoothedgradphi(0,i); // ,xz
-            grad_phi2(5) += derxy(2,i)*esmoothedgradphi(1,i); // ,yz
-            grad_phi2(6) += derxy(0,i)*esmoothedgradphi(1,i); // ,yx
-            grad_phi2(7) += derxy(0,i)*esmoothedgradphi(2,i); // ,zx
-            grad_phi2(8) += derxy(1,i)*esmoothedgradphi(2,i); // ,zy
-          }
-          else
-            dserror("Only 3D-elements are supported as of now.");
-        }
-      }
-      else
-        dserror("Smoothed second derivatives are not supported as of yet.");
 
       //=========================================== calculate curvature =========================
-
       double grad_phi_norm = grad_phi.Norm2();
 
       // check norm of normal gradient
       if (fabs(grad_phi_norm) < 1.0E-5)// 'ngradnorm' == 0.0
       {
-        //std::cout << "grad phi is small -> set to 1.0E12" << grad_phi_norm << std::endl;
+        std::cout << "grad phi is small -> set to 1.0E12" << grad_phi_norm << std::endl;
         // phi gradient too small -> there must be a local max or min in the level-set field
         // set curvature to a large value (it will be cut off based on the element size)
         icurvature = 1.0E12;
       }
       else
       {
-        double val = grad_phi_norm*grad_phi_norm*grad_phi_norm;
-        double invval = 1.0 / val;
-        icurvature = -invval*(  grad_phi(0)*grad_phi(0)*grad_phi2(0)
-            + grad_phi(1)*grad_phi(1)*grad_phi2(1)
-            + grad_phi(2)*grad_phi(2)*grad_phi2(2)  )
-            -invval*(  grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
-                + grad_phi(0)*grad_phi(2)*( grad_phi2(4) + grad_phi2(7) )
-                + grad_phi(1)*grad_phi(2)*( grad_phi2(5) + grad_phi2(8)) )
-                +1.0/grad_phi_norm * ( grad_phi2(0) + grad_phi2(1) + grad_phi2(2) );
+        icurvature = EvaluateCurvatureFormula(grad_phi_norm, grad_phi, grad_phi2 );
       }
     }
+    else if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_nodal_curvature)
+    {
+      //++++++++++++++++++++++
+      //       WARNING
+      //++++++++++++++++++++++
+      //This curvature calculation needs to be checked!!!!
+      // Should there really be a minus here?!?!
+      icurvature= (-1.0) * funct.Dot(esmoothedcurvature_T); //No idea why there is a minus here?!
+    }
     else
-      dserror("Why are you evaluating the surface tension when you've specified to have none? Check your GAMMA in Material input.");
+      dserror("unsupported type of curvature computation!");
 
-    return;
+    return icurvature;
+  }
+
+  template <class M1, class M2, class M3>
+  void DeriveSmoothedGradPhi(
+      M1 & grad_phi2,
+      const M2 & derxy,
+      const M3 & esmoothedgradphi,
+      const int numnode
+  )
+  {
+    // loop over nodes
+    for(int i = 0; i< numnode; ++i)
+    {
+      if(nsd_==3)
+      {
+        grad_phi2(0) += derxy(0,i)*esmoothedgradphi(0,i); // ,xx
+        grad_phi2(1) += derxy(1,i)*esmoothedgradphi(1,i); // ,yy
+        grad_phi2(2) += derxy(2,i)*esmoothedgradphi(2,i); // ,zz
+        grad_phi2(3) += derxy(1,i)*esmoothedgradphi(0,i); // ,xy
+        grad_phi2(4) += derxy(2,i)*esmoothedgradphi(0,i); // ,xz
+        grad_phi2(5) += derxy(2,i)*esmoothedgradphi(1,i); // ,yz
+        grad_phi2(6) += derxy(0,i)*esmoothedgradphi(1,i); // ,yx
+        grad_phi2(7) += derxy(0,i)*esmoothedgradphi(2,i); // ,zx
+        grad_phi2(8) += derxy(1,i)*esmoothedgradphi(2,i); // ,zy
+      }
+      else
+        dserror("Only 3D-elements are supported as of now.");
+    }
+  }
+
+  template <class M1, class M2>
+  double EvaluateCurvatureFormula(
+      double & grad_phi_norm,
+      M1 & grad_phi,
+      M2 & grad_phi2
+  )
+  {
+    double val = grad_phi_norm*grad_phi_norm*grad_phi_norm;
+    double invval = 1.0 / val;
+    double curvature =
+        -invval*(
+            grad_phi(0)*grad_phi(0)*grad_phi2(0)
+          + grad_phi(1)*grad_phi(1)*grad_phi2(1)
+          + grad_phi(2)*grad_phi(2)*grad_phi2(2)
+        )
+        -invval*(
+            grad_phi(0)*grad_phi(1)*( grad_phi2(3) + grad_phi2(6) )
+          + grad_phi(0)*grad_phi(2)*( grad_phi2(4) + grad_phi2(7) )
+          + grad_phi(1)*grad_phi(2)*( grad_phi2(5) + grad_phi2(8) )
+        )
+        +1.0/grad_phi_norm*(
+            grad_phi2(0) + grad_phi2(1) + grad_phi2(2)
+        );
+
+    return curvature;
   }
 
   template <DRT::Element::DiscretizationType DISTYPE,
-  class T1, class M1, class M2, class M3>
+  class T1, class M1, class M2>
   void EvalProjectionMatrix(
       T1&       itraction_jump_matrix,         ///< Laplace-Beltrami matrix for surface tension calculations
       int       eid,                           ///< element ID
       M1&       funct,                         ///< local shape function for Gauss Point (from fluid element)
-      M2&       derxy,                         ///< local derivatives of shape function for Gauss Point (from fluid element)
-      M3&       normal                         ///< surface normal of cut element
+      M2&       normal                         ///< surface normal of cut element
   )
   {
+    CheckForValidVectors();
 
     // number space dimensions for element
     const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
-    // number of nodes of element
-    const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+    // Should this be provided as well by the input?
+    DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
 
-    //Should this be provided as well by the input?
-    DRT::Element* actele = cutter_dis_->gElement(eid);
+    LINALG::Matrix<nsd,nsd> p_matrix(false);
+    LINALG::Matrix<nsd,nsd> p_smoothed_matrix(false);
 
-    //Create the identity matrix (Probably not the fastest way...) Might make it global?
-    LINALG::Matrix<nsd,nsd> eye(true);
-    for(unsigned int i =0; i<nsd; ++i)
-      eye(i,i)=1;
-
-    //   Non-smoothed projection matrix
-    LINALG::Matrix<nsd,nsd> p_matrix(true);
+    //----------------------------------------------------
+    // Non-smoothed projection matrix
     if(laplacebeltrami_!=INPAR::TWOPHASE::matrix_smoothed)
-    {
-      for(unsigned int i =0; i<nsd; ++i)
-      {
-        for(unsigned int j =0; j<nsd; ++j)
-        {
-          p_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
-        }
-      }
-    }
+      SetupProjectionMatrix( p_matrix, normal);
 
-    //   Smoothed projection matrix
-    LINALG::Matrix<nsd,nsd> p_smoothed_matrix(true);
-    // Does the chosen Laplace-Beltrami configuration necessitate a smoothed projection matrix?
+    //----------------------------------------------------
+    // Smoothed projection matrix
     if(laplacebeltrami_!=INPAR::TWOPHASE::matrix_non_smoothed)
     {
-      if(gradphinp_smoothed_node_==Teuchos::null)
-        dserror("Laplace-Beltrami with smoothed gradient chosen but no smoothed normal vector provided!!");
+      CheckForValidVectors();
 
-      LINALG::Matrix<nsd,nen> esmoothedgradphi(true);
+      LINALG::Matrix<nsd,1> gradphi(true);
+      double curvature = 0.0;
 
-      //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
-      std::vector<double> mygradphi;
-      DRT::UTILS::ExtractMyNodeBasedValues(actele,mygradphi,*gradphinp_smoothed_node_);
+      GetSmoothedQuantitiesAtPoint<DISTYPE>(
+          gradphi,
+          curvature,
+          cutter_ele,
+          funct
+      );
 
-      for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
-      {
-        for(unsigned int idim=0; idim<nsd; ++idim)   // number of dimensions
-        {
-          (esmoothedgradphi)(idim,inode) = mygradphi[idim+(inode*nsd)];
-        }  // end for(idim)
-      }
-      //Gradients @ GaussPoints
-      LINALG::Matrix<nsd,1> gradphi;
-      gradphi.Multiply(esmoothedgradphi,funct);
+      LINALG::Matrix<nsd,1> normal_smoothed(true);
+      GetNormalFromLevelsetGradient(normal_smoothed, gradphi);
 
-      const double normgradphi=gradphi.Norm2();
-      if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
-        gradphi.Scale(1.0/normgradphi);
-      else
-        gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
-
-      for(unsigned int i =0; i<nsd; ++i)
-      {
-        for(unsigned int j =0; j<nsd; ++j)
-        {
-          p_smoothed_matrix(i,j) = eye(i,j) - gradphi(i,0) * gradphi(j,0);
-        }
-      }
+      SetupProjectionMatrix( p_smoothed_matrix, normal_smoothed);
     }
 
     //  -----------------------------------------------------------
@@ -882,34 +962,89 @@ public:
     //
     //  -----------------------------------------------------------
 
-    switch(laplacebeltrami_)
-    {
-     case INPAR::TWOPHASE::matrix_non_smoothed:
-     {
-       itraction_jump_matrix.Update(p_matrix);
-       break;
-     }
-     case INPAR::TWOPHASE::matrix_mixed_smoothed:
-     {
-       // As suggested by:
-       // S. Groß and A. Reusken. Finite element discretization error analysis of a surface
-       // tension force in two-phase incompressible flows. SIAM J. Numer. Anal., 45(4):1679–1700, 2007.
-       itraction_jump_matrix.Multiply(p_matrix,p_smoothed_matrix);
-       break;
-     }
-     case INPAR::TWOPHASE::matrix_smoothed:
-     {
-       itraction_jump_matrix.Update(p_smoothed_matrix);
-       break;
-     }
-     default:
-     {
-       dserror("The Laplace-Beltrami option does not exist. Please review your input.\n");
-       break;
-     }
-     }
+    SetupConcatenatedProjectionMatrix(
+        itraction_jump_matrix,
+        p_matrix,
+        p_smoothed_matrix
+    );
 
     return;
+  }
+
+  template <class M1, class M2>
+  inline void SetupProjectionMatrix(
+      M1 & proj_matrix,
+      const M2 & normal
+  )
+  {
+    double n_j = 0.0;
+
+    for(unsigned int j=0; j<nsd_; ++j)
+    {
+      n_j = normal(j,0);
+
+      for(unsigned int i=0; i<nsd_; ++i)
+      {
+        proj_matrix(i,j) = ((i==j) ? 1.0 : 0.0) - normal(i,0) * n_j;
+      }
+    }
+
+    return;
+  }
+
+
+  template <class M1>
+  inline void SetupConcatenatedProjectionMatrix(
+      M1 & itraction_jump_matrix,
+      const M1 & p_matrix,
+      const M1 & p_smoothed_matrix
+  )
+  {
+    switch(laplacebeltrami_)
+    {
+    case INPAR::TWOPHASE::matrix_non_smoothed:
+    {
+      itraction_jump_matrix.Update(1.0, p_matrix, 0.0);
+      break;
+    }
+    case INPAR::TWOPHASE::matrix_mixed_smoothed:
+    {
+      // As suggested by:
+      // S. Groß and A. Reusken. Finite element discretization error analysis of a surface
+      // tension force in two-phase incompressible flows. SIAM J. Numer. Anal., 45(4):1679–1700, 2007.
+      itraction_jump_matrix.Multiply(p_matrix,p_smoothed_matrix);
+      break;
+    }
+    case INPAR::TWOPHASE::matrix_smoothed:
+    {
+      itraction_jump_matrix.Update(1.0, p_smoothed_matrix, 0.0);
+      break;
+    }
+    default:
+    {
+      dserror("The Laplace-Beltrami option does not exist. Please review your input.\n");
+      break;
+    }
+    }
+  }
+
+  template <class M1>
+  void GetNormalFromLevelsetGradient(
+      M1 & normal_smoothed,
+      const M1 & gradphi
+  )
+  {
+    const double normgradphi=gradphi.Norm2();
+    double scale = 1.0;
+
+    if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
+      scale=1.0/normgradphi;
+    else
+      scale=0.0; //This to catch the cases when gradphi \approx 0
+
+    scale*=normal_orientation_;
+
+    normal_smoothed.Update(scale, gradphi, 0.0);
   }
 
   template <DRT::Element::DiscretizationType DISTYPE,
@@ -942,7 +1077,7 @@ public:
 
       // Calculations for evaluation of curvature
       double curvature_int = 0.0;
-      EvaluateCurvature<DISTYPE>(curvature_int,eid,funct,derxy);
+      EvaluateCurvature<DISTYPE>(curvature_int, eid, funct, derxy);
 
       itraction_jump.Update(curvature_int * surf_coeff, normal, 0.0);
     }
@@ -952,16 +1087,17 @@ public:
 
       // P = (\delta_{ij} - n_{i}n{j})
       // Calculations for evaluation with Laplace-Beltrami operator
-      EvalProjectionMatrix<DISTYPE>(itraction_jump_matrix,eid, funct, derxy, normal);
+      EvalProjectionMatrix<DISTYPE>(itraction_jump_matrix, eid, funct, normal);
       itraction_jump_matrix.Scale(surf_coeff);
     }
 
     return;
   }
 
-  void ReadRestart(
-      const int step,
-      const int lsc_idx = 0
+
+  virtual const Teuchos::RCP<const Epetra_Vector> ComputeTransportVelocity(
+      const Teuchos::RCP<GEO::CutWizard> & wizard,                   ///< the cut wizard
+      const Teuchos::RCP<const Epetra_Vector>& convective_velocity   ///< the convective fluid velocity based on initial dofmap (just velocity)
   );
 
   /// get viscosity of the slave fluid
@@ -987,18 +1123,261 @@ public:
 
 protected:
 
+  /// Check ifSetParameters_SurfaceTension() has been called
+  inline void CheckInit_SurfaceTension() const
+  {
+    if (not surfacetension_init_)
+      dserror("Call SetParameters_SurfaceTension() first!");
+  }
+
+  virtual void SetParameters_Physical( DRT::Condition* cond ){};
+
+  virtual void SetFlags_InterfaceTransport( DRT::Condition* cond );
+
+  virtual void SetFlags_GeometricQuantities();
+
+  void SetParameters_SurfaceTension();
+
+  //! get the smoothed level set gradient at a given node (not necessarily normalized to one)
+  void GetSmoothedQuantitiesAtNode(
+      Epetra_SerialDenseVector & normal,
+      double & curvature,
+      const DRT::Node* node,
+      const Teuchos::RCP<const Epetra_MultiVector> & gradphinp_smoothed_node_col,
+      const Teuchos::RCP<const Epetra_MultiVector> & curvaturenp_node_col,
+      Teuchos::RCP<DRT::Discretization> & dis,
+      const int nds
+  );
+
+
+  void GetSmoothedQuantitiesAtElement(
+      Epetra_SerialDenseMatrix & normal,
+      Epetra_SerialDenseMatrix & curvature,
+      const DRT::Element* element,
+      const Teuchos::RCP<const Epetra_MultiVector> & gradphinp_smoothed_node_col,
+      const Teuchos::RCP<const Epetra_MultiVector> & curvaturenp_node_col,
+      Teuchos::RCP<DRT::Discretization> & dis,
+      const int nds
+  );
+
+  template<DRT::Element::DiscretizationType DISTYPE,
+    class M1, class M2>
+    void GetSmoothedQuantitiesAtPoint(
+        M1 & gradphi,
+        double & curvature,
+        const DRT::Element * cutter_ele,
+        const M2 & funct
+    )
+  {
+    // number space dimensions for element
+    const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+
+    // number of nodes of element
+    const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+    Epetra_SerialDenseMatrix esmoothedgradphi(nsd, nen);
+    Epetra_SerialDenseMatrix esmoothedcurvature(nen, 1);
+
+    LINALG::Matrix<nsd,nen> esmoothedgradphi_T(esmoothedgradphi, View);
+    LINALG::Matrix<nen,1>   esmoothedcurvature_T(esmoothedcurvature, View);
+
+    GetSmoothedQuantitiesAtElement(
+        esmoothedgradphi,
+        esmoothedcurvature,
+        cutter_ele,
+        gradphinp_smoothed_node_col_,
+        curvaturenp_node_col_,
+        cutter_dis_,
+        cutter_nds_phi_);
+
+    //Gradients @ GaussPoints
+    if(require_smoothedgradphi_)
+      gradphi.Multiply(esmoothedgradphi_T,funct);
+
+    if(require_nodalcurvature_)
+      curvature = esmoothedcurvature_T.Dot(funct);
+
+  }
+
   //! Initializes configurationmap
-  void InitConfigurationMap();
+  virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
       double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 
+  //! do normalization or a manipulation of the smoothed normal vector
+  bool RescaleNormal( Epetra_SerialDenseVector & normal );
+
+  virtual void ComputeRelativeTransportVelocity(
+      Epetra_SerialDenseVector & flvelrel,
+      const GEO::CUT::Point::PointPosition & position,
+      const Epetra_SerialDenseVector & nvec,
+      const double & curv
+  );
+
+  virtual void Output(
+      const int step,
+      const double time,
+      const bool write_restart_data,
+      const int lsc_idx = 0
+  );
+
+  /// Read Restart data for ScaTra coupled level set
+  virtual void ReadRestart(
+      const int step,
+      const int lsc_idx = 0
+  );
+
+
+  Teuchos::RCP<Epetra_Vector>    cutter_transport_vel_;
+
+  const Teuchos::ParameterList& twophasedyn_;
+
+  INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox_;  ///< type of surface tension approximation
+  INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami_; ///< type of laplace beltrami surface tension operator
+
+  bool surfacetension_init_;     ///< have surface tension specific quantities been initialized?
+
+  bool require_smoothedgradphi_; ///< do we need to compute a smoothed normal field?
+  bool require_nodalcurvature_;  ///< do we require to compute nodal curvatures?
+
+  INPAR::TWOPHASE::Transport_Directions transport_direction_; ///< use just normal part of convective velocity for transporting the interface
+
+
+  int cutter_nds_vel_; // dofset id for transport velocity in cutter discretization
+
+  bool col_vectors_valid_; ///< are column vectors uptodate?
+
+};
+
+class LevelSetCouplingCombustion : public LevelSetCouplingTwoPhase
+{
+public:
+
+  //! constructor
+  explicit LevelSetCouplingCombustion(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,    ///< background discretization
+      const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which the cutter discretization is derived
+      const int                           coupling_id,///< id of composite of coupling conditions
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  );
+
+  //! destructor
+  virtual ~LevelSetCouplingCombustion()
+  {
+    return;
+  }
+
+
+  //! evaluate the element's coupling condition for the combustion interface
+  template <DRT::Element::DiscretizationType DISTYPE,
+  class T1, class M1, class M2, class M3>
+  void EvaluateCouplingConditions(
+      T1&       ivelint_jump,           ///< velocity jump vector
+      T1&       itraction_jump,         ///< Traction jump vector
+      const DRT::Condition* cond,       ///< coupling condition
+      int       eid,                    ///< element ID
+      M1&       funct,                  ///< local shape function for Gauss Point (from fluid element)
+      M2&       derxy,                  ///< local derivatives of shape function for Gauss Point (from fluid element)
+      M3&       normal,                 ///< surface normal of cut element
+      const double densaf_master,       ///< master density
+      const double densaf_slave         ///< slave density
+  )
+  {
+    CheckForValidVectors();
+
+    if(!have_nodematching_dis_) // TODO: use the information from the cutter dis and not from the bg_dis!!! template over cutterdis!
+      dserror("you need to evaluate at the Gaussian point and so interpolate the smoothed geometric quantities from the cutterdis");
+
+//    const int bg_eid     = eid;
+    const int cutter_eid = eid;
+
+    // number space dimensions for element
+    const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+
+    DRT::Element* cutter_ele = cutter_dis_->gElement(cutter_eid);
+    if(cutter_ele == NULL)
+      dserror("element not available");
+
+    LINALG::Matrix<nsd,1> gradphi(true);
+    double curvature = 0.0;
+
+    GetSmoothedQuantitiesAtPoint<DISTYPE>(
+        gradphi,
+        curvature,
+        cutter_ele,
+        funct
+    );
+
+    // smoothed normal interpolated at Gaussian point
+    LINALG::Matrix<nsd,1> normal_smoothed(true);
+    GetNormalFromLevelsetGradient(normal_smoothed, gradphi);
+
+    if(transport_curvature_)
+      dserror("how to account for curvature here?");
+
+    // convention from thesis by B. Schott
+    // where [*] = (*)^i - (*)^j = (*)^- - (*)^+ (i<j)
+    //           = (*)^m - (*)^s
+    // n = n^{ij} = n^i = -n^j = n^m = -n^s = n^+ = -n^-
+    // note: n^+ = -grad(phi)
+
+    // M = -(rho^i * sl) mass flow rate
+    // [u]       =  -M   * [rho^(-1)] * n_smoothed = -M   * [rho^(-1)] (-grad(phi))
+    // [sigma*n] =   M*M * [rho^(-1)] * n
+
+    // jump of inverse densities
+    const double dens_times_speed  =  densaf_master*laminar_flamespeed_;
+    const double mass_flow_rate    = -dens_times_speed;
+    const double inv_dens_jump     =  1.0/densaf_master - 1.0/densaf_slave;
+    const double vel_jump_fac      = -1.0*mass_flow_rate*inv_dens_jump;
+    const double traction_jump_fac =  mass_flow_rate * mass_flow_rate * inv_dens_jump;
+
+    ivelint_jump.Update  ( vel_jump_fac,      normal_smoothed, 0.0);
+    itraction_jump.Update( traction_jump_fac, normal         , 0.0);
+
+    //TODO: add dependency on interface curvature!
+
+    //std::cout << "ivelint_jump" << ivelint_jump << std::endl;
+    //std::cout << "itraction_jump" << itraction_jump << std::endl;
+    return;
+  }
+
+
+
+  //! get the material densities of the two adjacent phases
+  void GetPhaseDensities(
+      DRT::Element* ele,
+      double & rhoplus,
+      double & rhominus
+  );
+
+protected:
+
+  virtual void SetParameters_Physical( DRT::Condition* cond );
+
+  virtual void SetFlags_InterfaceTransport( DRT::Condition* cond );
+
+  virtual void SetFlags_GeometricQuantities();
+
+  virtual void ComputeRelativeTransportVelocity(
+      Epetra_SerialDenseVector & flvelrel,
+      const GEO::CUT::Point::PointPosition & position,
+      const Epetra_SerialDenseVector & nvec,
+      const double & curv
+  );
+
+
 private:
 
-  bool surfacetension_init_;
-  INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox_;
-  INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami_;
+  double laminar_flamespeed_;  /// the laminar flame speed
+  double mol_diffusivity_;     /// the molecular diffusivity
+  double markstein_length_;    /// the markstein length
+
+  bool transport_curvature_; ///< account for curvature in computing the transport velocity
 
 };
 

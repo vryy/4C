@@ -30,6 +30,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -78,7 +79,8 @@
  *----------------------------------------------------------------------*/
 FLD::XFluid::XFluid(
     const Teuchos::RCP<DRT::Discretization>&      actdis,
-    const Teuchos::RCP<DRT::Discretization>&      coupdis,
+    const Teuchos::RCP<DRT::Discretization>&      mesh_coupdis,
+    const Teuchos::RCP<DRT::Discretization>&      levelset_coupdis,
     const Teuchos::RCP<LINALG::Solver>&           solver,
     const Teuchos::RCP<Teuchos::ParameterList>&   params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output,
@@ -88,21 +90,98 @@ FLD::XFluid::XFluid(
     edgestab_(Teuchos::rcp(new XFEM::XFEM_EdgeStab())),
     turbmodel_(INPAR::FLUID::dynamic_smagorinsky)
 {
+  //TODO the initialization of coupling objects, dofsets, and so on is not that clear so far, however, strongly
+  // depends on the calling algorithms and adapters. Maybe we can improve this at some point.
+
   // all discretizations which potentially include mesh-based XFEM coupling/boundary conditions
   meshcoupl_dis_.clear();
-  meshcoupl_dis_.push_back(coupdis);
+  levelsetcoupl_dis_.clear();
+
+  if(mesh_coupdis != Teuchos::null)
+    meshcoupl_dis_.push_back(mesh_coupdis);
 
   //TODO: remove this after fixing the SemiLagrangean time integration for multiple mesh coupling objects!
   mc_idx_ = 0; // using this constructor only one mesh coupling discretization is supported so far
 
+  // add the background dis itself for boundary-fitted couplings
+  meshcoupl_dis_.push_back(actdis);
+
+  if(levelset_coupdis != Teuchos::null)
+    levelsetcoupl_dis_.push_back(levelset_coupdis);
+
+
+  if(levelsetcoupl_dis_.size()>1)
+    dserror("so far the framework is tested just for one level-set coupling object");
+
   return;
 }
+
+void FLD::XFluid::SetDofSetCouplingMap(
+    const std::map<std::string, int>& dofset_coupling_map
+)
+{
+  dofset_coupling_map_ = dofset_coupling_map;
+}
+
+void FLD::XFluid::AddAdditionalScalarDofsetAndCoupling()
+{
+  // ensure that dofset with idx=1 in bg_dis carries a dofset with one dof per node to carry the levelset field
+  // and to allow to use the bgdis also as a cutterdis (note: cutterdis vectors are based on a dofrowmap and not on a noderowmap...)
+
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0 ,0, true ));
+
+  // add the dofset to the xfluid dis
+  const int dofidx = xdiscret_->AddDofSet(dofsetaux);
+
+  // store the dof index in the dofset_coupling_map_ for right access through the coupling objects
+  dofset_coupling_map_.insert(std::pair<std::string, int>("phi_scatra_proxy_in_fluid", dofidx));
+
+  if (dofidx != 1) // the index for the phinp-dofset in the fluid dis we currently expect!!!
+    dserror("unexpected dof sets in fluid field - check if the framework works properly also if dofidx != 1?");
+
+  // assign degrees of freedom (as a new dofset has been added!)
+  xdiscret_->FillComplete(true, false,false);
+
+  //TODO: check if we can add this dofset and the actdis all the time, even if there is a scatra dis (maybe we would obtain two two-phase conditions?)
+  levelsetcoupl_dis_.push_back(xdiscret_);
+}
+
+void FLD::XFluid::CheckInitializedDofSetCouplingMap()
+{
+  if(meshcoupl_dis_.size()>0)
+  {
+    //TODO: use the dofset_coupling_map_ also for mesh coupling objects!
+//    if(dofset_coupling_map_.empty())
+//      dserror("you first have to call SetDofSetCouplingMap() if there is a mesh coupling discretization");
+  }
+
+  if(levelsetcoupl_dis_.size()>0)
+  {
+    if(dofset_coupling_map_.empty())
+      dserror("you first have to call SetDofSetCouplingMap() if there is a level-set coupling discretization");
+    else
+    {
+      // do not add the additional scalar dofset
+    }
+  }
+  else
+  {
+    // no scatra discretization is available and therefore also not scatra dofset proxy in the fluid dis
+    // this is needed for potential level-set based coupling objects defined on the background discretization
+
+    AddAdditionalScalarDofsetAndCoupling();
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                   schott 11/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::Init(bool createinitialstate)
 {
+
+  CheckInitializedDofSetCouplingMap();
+
 
   FluidImplicitTimeInt::Init();
 
@@ -127,10 +206,20 @@ void FLD::XFluid::Init(bool createinitialstate)
   // -------------------------------------------------------------------
   // create a Condition/Coupling Manager
   // -------------------------------------------------------------------
-  condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(discret_, meshcoupl_dis_, time_, step_));
+
+  condition_manager_ = Teuchos::rcp(new XFEM::ConditionManager(
+      dofset_coupling_map_,
+      discret_,
+      meshcoupl_dis_,
+      levelsetcoupl_dis_,
+      time_,
+      step_)
+  );
+
+  condition_manager_->Init();
 
   // build the whole object which then can be used
-  condition_manager_->Create();
+  condition_manager_->Setup();
 
 
   // -------------------------------------------------------------------
@@ -4219,6 +4308,7 @@ void FLD::XFluid::SetInitialFlowField(
   // no set initial flow field for restart
   if(step_ != 0) return;
 
+  if(myrank_ == 0) std::cout << "SetInitialFlowField " << std::endl;
 
   // initial field by (undisturbed) function (init==2)
   // or disturbed function (init==3)
@@ -4333,6 +4423,226 @@ void FLD::XFluid::SetInitialFlowField(
 
     if (err!=0) dserror("dof not on proc");
   }
+  //----------------------------------------------------------------------------------------------
+  // flame-vortex interaction problem: two counter-rotating vortices (2-D) moving the flame front
+  //----------------------------------------------------------------------------------------------
+  else if(initfield == INPAR::FLUID::initfield_flame_vortex_interaction)
+  {
+    //TODO: shift this function to the condition-manager!
+
+    //Only supported for 1 levelset so far.
+    if(condition_manager_->NumLevelSetCoupling() != 1)
+      dserror("There is either no LevelSetCoupling or more than 1. Exactly 1 is expected and supported at this point!");
+
+    Teuchos::RCP<XFEM::LevelSetCoupling>           levelset_condition   = condition_manager_->GetLevelSetCoupling("XFEMLevelsetCombustion");
+    Teuchos::RCP<XFEM::LevelSetCouplingCombustion> combustion_condition = Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingCombustion>(levelset_condition, true);
+
+
+    // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
+    Teuchos::RCP<std::set<int> > dbcgids = Teuchos::rcp(new std::set<int>());
+
+    const Teuchos::RCP<GEO::CutWizard>   & wizard = state_->Wizard();
+    const Teuchos::RCP<XFEM::XFEMDofSet> & dofset = state_->DofSet();
+    const Epetra_Map * dofrowmap = dofset->DofRowMap();
+
+    //------------------------
+    // get material parameters
+    //------------------------
+    // arbitrarily take first node on this proc
+    DRT::Node* lnode = discret_->lRowNode(0);
+    // get list of adjacent elements of the first node
+    DRT::Element** elelist = lnode->Elements();
+    DRT::Element* ele = elelist[0]; // (arbitrary!) first element
+    // get material from first (arbitrary!) element adjacent to this node
+    const Teuchos::RCP<MAT::Material> material = ele->Material();
+#ifdef DEBUG
+    // check if we really got a list of materials
+    dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
+#endif
+    // get material list for this element
+    const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+
+    // get burnt material (first material in material list)
+    Teuchos::RCP<const MAT::Material> matptr0 = matlist->MaterialById(matlist->MatID(0));
+    // get unburnt material (second material in material list)
+    Teuchos::RCP<const MAT::Material> matptr1 = matlist->MaterialById(matlist->MatID(1));
+#ifdef DEBUG
+    dsassert(matptr0->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+    dsassert(matptr1->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+#endif
+    const MAT::NewtonianFluid* mat0 = static_cast<const MAT::NewtonianFluid*>(matptr0.get());
+    const MAT::NewtonianFluid* mat1 = static_cast<const MAT::NewtonianFluid*>(matptr1.get());
+
+    // get the densities
+    const double dens_u = mat0->Density(); // outside, master, (i for i<j convention)
+    if (dens_u != 1.161) dserror("unburnt density should be 1.161 for the 'flame-vortex-interaction' case");
+    const double dens_b = mat1->Density(); // inside, slave, (j for i<j convention)
+    if (dens_b != 0.157) dserror("burnt density should be 0.157 for the 'flame-vortex-interaction' case");
+
+    double dens = dens_u;
+
+    // get interface specific parameter from condition manager and underlying conditions
+    const XFEM::EleCoupCond & coup_cond = combustion_condition->GetCouplingCondition(ele->Id());
+    double flamespeed = coup_cond.second->GetDouble("laminar_flamespeed");
+
+    // number space dimensions
+    const int nsd = 3;
+    // error indicator
+    int err = 0;
+
+    // define vectors for velocity field, node coordinates and coordinates of left and right vortices
+    LINALG::Matrix<nsd,1> vel(true);
+    double pres = 0.0;
+    LINALG::Matrix<nsd,1> xyz(true);
+    LINALG::Matrix<nsd,1> xyz0_left(true);
+    LINALG::Matrix<nsd,1> xyz0_right(true);
+
+    // set initial locations of vortices
+    xyz0_left(0)  = 37.5;//87.5+0.78125; //37.5; // x-coordinate left vortex
+    xyz0_left(1)  = 75.0; // y-coordinate left vortex
+    xyz0_left(2)  = 0.0;  // z-coordinate is 0 (2D problem)
+    xyz0_right(0) = 62.5;//12.5+0.78125; //62.5; // x-coordinate right vortex
+    xyz0_right(1) = 75.0; // y-coordinate right vortex
+    xyz0_right(2) = 0.0;  // z-coordinate is 0 (2D problem)
+
+    // get laminar burning velocity (flame speed)
+    if (flamespeed != 1.0) dserror("flame speed should be 1.0 for the 'flame-vortex-interaction' case");
+    // vortex strength C (scaled by laminar burning velocity)
+    const double C = 70.0*flamespeed;
+    // (squared) vortex radius R
+    const double R_squared = 16.0;
+
+    //--------------------------------
+    // loop all nodes on the processor
+    //--------------------------------
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+      // get node coordinates
+      for(int idim=0;idim<nsd;idim++)
+        xyz(idim)=lnode->X()[idim];
+
+      // get the node from the cut wizard
+      const int gid=lnode->Id();
+      GEO::CUT::Node * cut_node = wizard->GetNode(gid);
+
+      // ask for the number of dofsets
+      const int numDofSets = cut_node->NumDofSets();
+
+      const std::vector<Teuchos::RCP<GEO::CUT::NodalDofSet> > & nodaldofsets = cut_node->NodalDofSets();
+
+      // set values just for the standard dofset, all ghost sets are determined by a ghost-penalty time integration solve!
+      for(int i=0; i<numDofSets; ++i)
+      {
+        //-------------------------------------------
+        // STOP FOR GHOSTSETS
+        //-------------------------------------------
+        if(!nodaldofsets[i]->Is_Standard_DofSet())
+          continue; // do nothing for ghost dofsets!
+
+        //-------------------------------------------
+        // just FOR STD SETS
+        //-------------------------------------------
+        GEO::CUT::Point::PointPosition pos = nodaldofsets[i]->Position();
+
+        //-------------------------------------------
+        // get values for flamevortex interaction
+        //-------------------------------------------
+
+        // compute preliminary values for both vortices
+        const double r_squared_left  = ((xyz(0)-xyz0_left(0))*(xyz(0)-xyz0_left(0))
+            +(xyz(1)-xyz0_left(1))*(xyz(1)-xyz0_left(1)))/R_squared;
+        const double r_squared_right = ((xyz(0)-xyz0_right(0))*(xyz(0)-xyz0_right(0))
+            +(xyz(1)-xyz0_right(1))*(xyz(1)-xyz0_right(1)))/R_squared;
+
+        //----------------------------------------
+        // set density with respect to flame front
+        //----------------------------------------
+        const double tmp_vortex = -0.5*(C*C/R_squared)*(exp(-r_squared_left) + exp(-r_squared_right));
+
+        if (pos == GEO::CUT::Point::inside) // plus/burnt domain -> burnt material ( GEO::CUT::Position is inside ) / slave side
+        {
+          dens = dens_b;
+          pres = 0.0; // matching the zero pressure condition at outflow
+        }
+        else if( pos == GEO::CUT::Point::outside )// minus/unburnt domain -> unburnt material / master side
+        {
+          dens = dens_u;
+          double jump_dens_inverse = 1.0/dens_u - 1.0/dens_b;
+          pres = -flamespeed*flamespeed * dens_u*dens_u * jump_dens_inverse;
+        }
+        else
+        {
+          dserror("what to do now?");
+        }
+        pres += tmp_vortex;
+
+        //----------------------------------------------
+        // compute components of initial velocity vector
+        //----------------------------------------------
+#if(1)
+        vel(0) = (C/R_squared)*(-(xyz(1)-xyz0_left(1))*exp(-r_squared_left/2.0)
+            +(xyz(1)-xyz0_right(1))*exp(-r_squared_right/2.0));
+        vel(1) = (C/R_squared)*( (xyz(0)-xyz0_left(0))*exp(-r_squared_left/2.0)
+            -(xyz(0)-xyz0_right(0))*exp(-r_squared_right/2.0))
+            + flamespeed*dens_u/dens;
+        // 2D problem -> vel_z = 0.0
+        vel(2) = 0.0;
+#else // without vortices (just for testing)
+        vel(0) = 0.0;
+        vel(1) = flamespeed*dens_u/dens;
+        // 2D problem -> vel_z = 0.0
+        vel(2) = 0.0;
+#endif
+        // access standard FEM dofset (3 x vel + 1 x pressure) to get std-dof IDs for this node
+        std::vector<int> std_dofs;
+        dofset->Dof(std_dofs, lnode, i );
+
+        //-----------------------------------------
+        // set components of initial velocity field
+        //-----------------------------------------
+        for(int idim=0;idim<nsd+1;idim++)
+        {
+          const int gid = std_dofs[idim];
+          //local node id
+          int lid = dofrowmap->LID(gid);
+          if(idim==3)
+          { // pressure dof
+            err += state_->velnp_->ReplaceMyValues(1,&pres,&lid);
+          }
+          else
+          { // velocity dof
+            err += state_->velnp_->ReplaceMyValues(1,&vel(idim),&lid);
+          }
+
+          // set Dirichlet BC for ghost penalty reconstruction
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).insert(gid);
+          if (err!=0) dserror("dof not on proc");
+
+        }
+      } // loop nodal dofsets
+    } // end loop nodes lnodeid
+
+
+    // reconstruct ghost values / use the ghost penalty reconstruction technique as used within the XFEM time integration
+    std::vector<Teuchos::RCP<Epetra_Vector> > rowStateVectors_npip;
+    rowStateVectors_npip.push_back(state_->velnp_);
+
+    XTimint_GhostPenalty(
+        rowStateVectors_npip,       ///< vectors to be reconstructed
+        dofrowmap,                  ///< dofrowmap
+        dbcgids,                    ///< dbc global ids
+        true                        ///< screen output?
+    );
+
+    // set also veln and velnm
+    // initialize veln_ and velnm_ as well.
+    state_->veln_ ->Update(1.0,*state_->velnp_ ,0.0);
+    state_->velnm_->Update(1.0,*state_->velnp_ ,0.0);
+  }
   else
   {
     dserror("Only initial fields auch as a zero field, initial fields by (un-)disturbed functions, flamevortes and Beltrami flow!");
@@ -4347,25 +4657,35 @@ void FLD::XFluid::SetInitialFlowField(
 } // end SetInitialFlowField
 
 
-void FLD::XFluid::SetLevelSetField(
-   Teuchos::RCP<const Epetra_Vector> scalaraf,
-   Teuchos::RCP<const Epetra_Vector> curvatureaf,
-   Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
-   Teuchos::RCP<DRT::Discretization> scatradis
-   )
+void FLD::XFluid::WriteAccess_GeometricQuantities(
+    Teuchos::RCP<Epetra_Vector> &      scalaraf,
+    Teuchos::RCP<Epetra_MultiVector> & smoothed_gradphiaf,
+    Teuchos::RCP<Epetra_Vector> &      curvatureaf
+)
 {
-  condition_manager_->SetLevelSetField(scalaraf, curvatureaf, smoothed_gradphiaf, scatradis);
+  condition_manager_->WriteAccess_GeometricQuantities(scalaraf, smoothed_gradphiaf, curvatureaf);
 }
 
-void FLD::XFluid::InitTwoPhaseSurftensParameters(
-    INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox,
-    INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami)
+void FLD::XFluid::ExportGeometricQuantities()
+{
+  condition_manager_->ExportGeometricQuantities();
+}
+
+const Teuchos::RCP<const Epetra_Vector> FLD::XFluid::GetTransportVelocity()
 {
   //Only supported for 1 levelset so far.
   if(condition_manager_->NumLevelSetCoupling() != 1)
     dserror("There is either no LevelSetCoupling or more than 1. Exactly 1 is expected and supported at this point!");
 
-  Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(condition_manager_->GetLevelSetCoupling(0))->SetSurfaceTensionSpecifcParameters(surftensapprox,laplacebeltrami);
+  Teuchos::RCP<XFEM::LevelSetCouplingTwoPhase> levelsetcoupling_twophase =
+      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(condition_manager_->GetLevelSetCoupling(0), true);
+
+  const Teuchos::RCP<const Epetra_Vector> & transport_velocity =
+      levelsetcoupling_twophase->ComputeTransportVelocity(
+          state_->Wizard(),
+          state_->velnp_);
+
+  return transport_velocity;
 }
 
 // -------------------------------------------------------------------

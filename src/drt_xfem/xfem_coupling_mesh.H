@@ -102,13 +102,6 @@ public:
   /// update last iteration interface displacements
   virtual void UpdateDisplacementIterationVectors();
 
-  virtual void GmshOutput(
-      const std::string & filename_base,
-      const int step,
-      const int gmsh_step_diff,
-      const bool gmsh_debug_out_screen
-  ){};
-
   virtual void GmshOutputDiscretization(
     std::ostream& gmshfilecontent
   );
@@ -192,14 +185,16 @@ protected:
 private:
 
 
-  void SetConditionsToCopy();
-
   //! create cutting discretization from condition
   virtual void CreateCutterDisFromCondition(std::string suffix);
 
 protected:
 
-  void InitStateVectors();
+  virtual void SetCutterDiscretization();
+
+  virtual void SetConditionsToCopy();
+
+  virtual void InitStateVectors();
 
   //------------------------------- vectors -----------------------------
   //TODO: these vectors are not required for Neumann and WDBC conditions, derive class
@@ -220,6 +215,8 @@ protected:
   bool firstoutputofrun_;
 
   //@}
+
+  std::string suffix_;
 
 };
 
@@ -248,6 +245,8 @@ public:
   //! destructor
   virtual ~MeshVolCoupling()
   {    return;  }
+
+  virtual void Init();
 
   //! Initialize Volume Coupling
   void Init_VolCoupling();
@@ -381,6 +380,8 @@ private:
 
 protected:
 
+  virtual void DoConditionSpecificSetup();
+
   virtual void SetInterfaceDisplacement();
 
   virtual void SetInterfaceVelocity();
@@ -440,8 +441,10 @@ public:
 
 protected:
 
+  void DoConditionSpecificSetup();
+
   //! Initializes configurationmap
-  void InitConfigurationMap();
+  void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
@@ -551,9 +554,11 @@ public:
 
 protected:
 
-  void SetConditionSpecificParameters(
-      const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
-  );
+  virtual void SetConditionSpecificParameters();
+
+  virtual void DoConditionSpecificSetup();
+
+  virtual void SetInterfaceVelocity();
 
   void GetConditionByRobinId(
       const std::vector<DRT::Condition*> & mycond,
@@ -569,7 +574,7 @@ protected:
       );
 
   //! Initializes configurationmap
-  void InitConfigurationMap();
+  virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
@@ -663,7 +668,7 @@ private:
 
 protected:
 
-  void InitStateVectors_FSI();
+  virtual void InitStateVectors();
 
   virtual bool HasMovingInterface(){ return true; }
 
@@ -672,7 +677,7 @@ protected:
   );
 
   //! Initializes configurationmap
-  void InitConfigurationMap();
+  virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
@@ -691,6 +696,7 @@ protected:
   //@}
 
 };
+
 
 
 /*!
@@ -762,7 +768,7 @@ protected:
   virtual void EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele);
 
   //! Initializes configurationmap
-  void InitConfigurationMap();
+  virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,

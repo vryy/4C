@@ -134,20 +134,24 @@ private:
 
 protected:
 
+  //! Initialize
+  virtual void Init();
+
   //! Initializes configurationmap
-  void InitConfigurationMap();
+  virtual void InitConfigurationMap();
+
+  //! set the name of the coupling object based on the field coupling
+  virtual void SetCouplingName();
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
       double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
 
-  void InitStateVectors_FPI();
+  virtual void InitStateVectors();
 
   virtual bool HasMovingInterface(){ return true; }
 
-  void SetConditionSpecificParameters(
-      const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
-  );
+  virtual void SetConditionSpecificParameters();
 
 #if 0
   template <DRT::Element::DiscretizationType DISTYPE>

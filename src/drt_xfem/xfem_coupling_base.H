@@ -80,6 +80,51 @@ public:
     return;
   }
 
+  virtual void SetDofSetCouplingMap(
+      const std::map<std::string, int> & dofset_coupling_map )
+  {
+    dofset_coupling_map_ = dofset_coupling_map;
+  }
+
+  virtual void SetCouplingDofsets(){};
+
+  int GetCouplingDofsetNds(const std::string & name)
+  {
+    if(not(dofset_coupling_map_.count(name) ==1))
+        dserror("%s -dofset not set in dofset_coupling_map for fluid dis!", name);
+
+    return dofset_coupling_map_[name];
+  }
+
+
+  //! initialized the coupling object
+  virtual void Init();
+
+  //! setup the coupling object
+  virtual void Setup();
+
+  /// get the indicator state
+  inline const bool& IsInit() const
+  { return isinit_; };
+
+  /// get the indicator state
+  inline const bool& IsSetup() const
+  { return issetup_; };
+
+  /// Check if Init() and Setup() have been called, yet.
+  inline void CheckInitSetup() const
+  {
+    if (!IsInit() or !IsSetup())
+      dserror("Call Init() and Setup() first!");
+  }
+
+  /// Check if Init() has been called
+  inline void CheckInit() const
+  {
+    if (not IsInit())
+      dserror("Call Init() first!");
+  }
+
   //! cutter dis should be loaded into the cut?
   virtual bool CutGeometry(){return true;}
 
@@ -163,7 +208,15 @@ public:
     return cutterele_conds_[lid];
   }
 
-  virtual const std::string & GetName(){return cond_name_;}
+  //! get the coupling element (equal to the side for xfluid-sided, mesh-based coupling)
+  virtual DRT::Element* GetCouplingElement(
+      const int eid///< global side element id w.r.t coupling discretization (background element eid for levelset couplings)
+  )
+  {
+    return (coupl_dis_!=Teuchos::null) ? coupl_dis_->gElement(eid) : NULL;
+  }
+
+  virtual const std::string & GetName(){return coupl_name_;}
 
   Teuchos::RCP<DRT::Discretization> GetCutterDis(){return cutter_dis_;}
   Teuchos::RCP<DRT::Discretization> GetCouplingDis(){return coupl_dis_;}
@@ -263,6 +316,13 @@ public:
     return configuration_map_;
   }
 
+  virtual void GmshOutput(
+      const std::string & filename_base,
+      const int step,
+      const int gmsh_step_diff,
+      const bool gmsh_debug_out_screen
+  ){};
+
   /// get viscosity of the master fluid
   void GetViscosityMaster(
       DRT::Element * xfele,                      ///< xfluid ele
@@ -302,10 +362,32 @@ public:
       double& NIT_visc_stab_fac                            ///< viscous part of Nitsche's penalty term
       );
 
+
 protected:
 
-  //! Initializes configurationmap
-  virtual void InitConfigurationMap();
+  virtual void SetCouplingName()
+  {
+    coupl_name_ = cond_name_; // the standard case are equal name of condition and coupling object
+  }
+
+  virtual void SetConditionsToCopy(){};
+
+  virtual void SetCutterDiscretization(){};
+
+  virtual void SetConditionSpecificParameters(){};
+
+  virtual void SetElementConditions();
+
+  void SetAveragingStrategy();
+
+  void SetCouplingDiscretization();
+
+  virtual void PrepareCutterOutput(){};
+
+  virtual void DoConditionSpecificSetup(){};
+
+  //! set the configuration map up for the specific coupling object
+  virtual void SetupConfigurationMap(){};
 
   //! Updates configurationmap for specific Gausspoint
   virtual void UpdateConfigurationMap_GP(
@@ -316,13 +398,11 @@ protected:
       double& full_stab,  //< full NIT Penalty scaling
       const LINALG::Matrix<3,1>& x, //<Position x
       const DRT::Condition* cond //< Condition
-      ){return;}
+      ){};
 
-  void SetElementConditions();
+  virtual void InitStateVectors(){};
 
-  void SetAveragingStrategy();
-
-  void SetCouplingDiscretization();
+  virtual void PerpareCutterOutput(){};
 
   void EvaluateDirichletFunction(
       LINALG::Matrix<3,1>& ivel,
@@ -353,6 +433,9 @@ protected:
       const double time
   );
 
+  ///< number of spatial dimensions
+  size_t nsd_;
+
   ///< background discretization
   Teuchos::RCP<DRT::Discretization> bg_dis_;
 
@@ -377,6 +460,9 @@ protected:
 
   std::vector<std::string> conditions_to_copy_;   ///< list of conditions that will be copied to the new discretization and used to set for each cutter element
 
+  //! Output specific
+  Teuchos::RCP<IO::DiscretizationWriter> cutter_output_;
+
 
   ///------------------------
   // Coupling-DISCRETIZATION specific member
@@ -385,6 +471,10 @@ protected:
   ///< discretization with which the background discretization is coupled (structural dis, fluid dis, poro dis, scatra dis, boundary dis),
   ///< Teuchos::null in case that no coupling terms but only boundary terms are evaluated
   Teuchos::RCP<DRT::Discretization> coupl_dis_;
+
+  //TODO: be aware of the fact, that accesing the coupling object via Name is unsafe, it assumes that only one coupling of that type is available
+  //< name of the mesh/levelset coupling object
+  std::string coupl_name_;
 
   ///< averaging strategy, type of weighting
   INPAR::XFEM::AveragingStrategy averaging_strategy_;
@@ -399,6 +489,17 @@ protected:
 
   ///< map which configures element level (which terms are evaluated & scaled with which value)
   std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> > configuration_map_;
+
+  bool issetup_;
+
+  bool isinit_;
+
+  std::map<std::string, int> dofset_coupling_map_;
+
+private:
+
+  //! Initializes configurationmap to zero (non-virtual)
+  void InitConfigurationMap();
 
 };
 

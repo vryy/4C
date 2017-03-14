@@ -117,7 +117,8 @@ namespace FLD
     /// Constructor
     XFluid(
         const Teuchos::RCP<DRT::Discretization>&      actdis,          ///< background fluid discretization
-        const Teuchos::RCP<DRT::Discretization>&      soliddis,        ///< solid discretization
+        const Teuchos::RCP<DRT::Discretization>&      mesh_coupdis,
+        const Teuchos::RCP<DRT::Discretization>&      levelset_coupdis,
         const Teuchos::RCP<LINALG::Solver>&           solver,          ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>&   params,          ///< xfluid params
         const Teuchos::RCP<IO::DiscretizationWriter>& output,          ///< discretization writer for paraview output
@@ -129,6 +130,12 @@ namespace FLD
     /// initialization
     virtual void Init(){Init(true);}
     virtual void Init(bool createinitialstate);
+
+    void SetDofSetCouplingMap( const std::map<std::string, int>& dofset_coupling_map );
+
+    void AddAdditionalScalarDofsetAndCoupling();
+
+    void CheckInitializedDofSetCouplingMap();
 
     /// print information about current time step to screen
     void PrintTimeStepInfo();
@@ -311,16 +318,15 @@ namespace FLD
 
     virtual void CreateInitialState();
 
-    void SetLevelSetField(
-       Teuchos::RCP<const Epetra_Vector> scalaraf,
-       Teuchos::RCP<const Epetra_Vector> curvatureaf,
-       Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
-       Teuchos::RCP<DRT::Discretization> scatradis
-       );
+    void WriteAccess_GeometricQuantities(
+       Teuchos::RCP<Epetra_Vector> &      scalaraf,
+       Teuchos::RCP<Epetra_MultiVector> & smoothed_gradphiaf,
+       Teuchos::RCP<Epetra_Vector> &      curvatureaf
+    );
 
-    void InitTwoPhaseSurftensParameters(
-        INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox,
-        INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami);
+    void ExportGeometricQuantities();
+
+    const Teuchos::RCP<const Epetra_Vector> GetTransportVelocity();
 
     virtual void UpdateGridv();
 
@@ -654,6 +660,9 @@ namespace FLD
     //! vector of all coupling discretizations, the fluid is coupled with
     std::vector<Teuchos::RCP<DRT::Discretization> > meshcoupl_dis_;
 
+    //! vector of all coupling discretizations, which carry levelset fields, the fluid is coupled with
+    std::vector<Teuchos::RCP<DRT::Discretization> > levelsetcoupl_dis_;
+
     //@}
 
 
@@ -801,6 +810,8 @@ namespace FLD
     //! how did std/ghost dofs of nodes permute between the last two iterations
     Teuchos::RCP<std::map<int,int> > permutation_map_;
     //@}
+
+    std::map<std::string, int> dofset_coupling_map_;
 
   };
 }

@@ -85,10 +85,12 @@ public:
 
   //! constructor
   explicit ConditionManager(
-      Teuchos::RCP<DRT::Discretization> &               bg_dis,          ///< background discretization
-      std::vector<Teuchos::RCP<DRT::Discretization> > & meshcoupl_dis,   ///< mesh coupling discretizations
-      const double                                      time,            ///< time
-      const int                                         step             ///< time step
+      const std::map<std::string, int> &                dofset_coupling_map, ///< ???
+      Teuchos::RCP<DRT::Discretization> &               bg_dis,            ///< background discretization
+      std::vector<Teuchos::RCP<DRT::Discretization> > & meshcoupl_dis,     ///< mesh coupling discretizations
+      std::vector<Teuchos::RCP<DRT::Discretization> > & levelsetcoupl_dis, ///< levelset coupling discretizations
+      const double                                      time,              ///< time
+      const int                                         step               ///< time step
   );
 
   //! destructor
@@ -96,6 +98,8 @@ public:
   {
     return;
   }
+
+  //TODO: we need set private and public !!! this however causes moving functions in the header file!
 
   void SetTimeAndStep(
       const double time,
@@ -108,6 +112,10 @@ public:
       std::set<int> &             coupling_ids
   );
 
+  void SetDofSetCouplingMap(
+      const std::map<std::string, int> & dofset_coupling_map
+  );
+
   void Status();
 
   void IncrementTimeAndStep(
@@ -115,7 +123,14 @@ public:
 
   void CreateNewLevelSetCoupling(
       const std::string& cond_name,
+      Teuchos::RCP<DRT::Discretization> cond_dis,         ///< discretization from which the cutter discretization can be derived
       const int coupling_id
+  );
+
+  void CreateCouplings(
+      std::vector<Teuchos::RCP<DRT::Discretization> > & coupl_dis,   ///< coupling discretizations
+      const std::vector<std::string> & conditions_to_check,          ///< conditions for which coupling objects shall be created
+      bool create_mesh_coupling                                      ///< create mesh coupling or level-set coupling object
   );
 
   void CreateNewMeshCoupling(
@@ -183,35 +198,38 @@ public:
   /// add a new level-set-coupling object based on the given coupling discretization
   void AddLevelSetCoupling(
       const std::string &                 cond_name,
+      Teuchos::RCP<DRT::Discretization>   cond_dis,         ///< discretization from which the cutter discretization can be derived
       const int                           coupling_id
   )
   {
     if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
     {
-      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingWeakDirichlet(bg_dis_, cond_name, coupling_id, time_, step_)));
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingWeakDirichlet( bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN)
     {
-      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNeumann(bg_dis_, cond_name, coupling_id, time_, step_)));
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNeumann( bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
     {
-      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNavierSlip(bg_dis_, cond_name, coupling_id, time_, step_)));
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNavierSlip( bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
     else if (CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
     {
-      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingTwoPhase(bg_dis_, cond_name, coupling_id, time_, step_)));
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingTwoPhase( bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+    }
+    else if (CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION)
+    {
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingCombustion( bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
     else
     {
-      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling(bg_dis_, cond_name, coupling_id, time_, step_)));
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCoupling( bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
   }
 
 
 
-  // build the whole object which then can be used
-  void Create();
 
 
   /// Getters
@@ -614,12 +632,13 @@ public:
 
   void SetLevelSetField( const double time );
 
-  void SetLevelSetField(
-      Teuchos::RCP<const Epetra_Vector> scalaraf,
-      Teuchos::RCP<const Epetra_Vector> curvatureaf,
-      Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
-      Teuchos::RCP<DRT::Discretization> scatradis
+  void WriteAccess_GeometricQuantities(
+      Teuchos::RCP<Epetra_Vector> &      scalaraf,
+      Teuchos::RCP<Epetra_MultiVector> & smoothed_gradphiaf,
+      Teuchos::RCP<Epetra_Vector> &      curvatureaf
   );
+
+  void ExportGeometricQuantities();
 
   Teuchos::RCP<Epetra_Vector> & GetLevelSetField()
   {
@@ -725,8 +744,41 @@ public:
     int coup_sid
   );
 
+public:
+  //! initialized the coupling object
+  void Init();
+
+  //! setup the coupling object
+  void Setup();
+
+  /// get the indicator state
+  inline const bool& IsInit() const
+  { return isinit_; };
+
+  /// get the indicator state
+  inline const bool& IsSetup() const
+  { return issetup_; };
+
+  /// Check if Init() and Setup() have been called, yet.
+  inline void CheckInitSetup() const
+  {
+    if (!IsInit() or !IsSetup())
+      dserror("Call Init() and Setup() first!");
+  }
+
+  /// Check if Init() has been called
+  inline void CheckInit() const
+  {
+    if (not IsInit())
+      dserror("Call Init() first!");
+  }
+
 private:
 
+  // build the whole object which then can be used
+  void Create();
+
+  ///
   void UpdateLevelSetField();
 
   /// combine two levelset fields via boolean type set operations and set result into vec1
@@ -772,6 +824,9 @@ private:
 
   void BuildComplementaryLevelSet( Teuchos::RCP<Epetra_Vector> & vec1 );
 
+  ///<
+  std::map<std::string, int> dofset_coupling_map_;
+
   ///< background discretiaztion w.r.t for which the couling manager is constructed
   Teuchos::RCP<DRT::Discretization> bg_dis_;
 
@@ -803,6 +858,12 @@ private:
   Teuchos::RCP<Epetra_IntVector> ele_lsc_coup_idx_col_;
   Teuchos::RCP<Epetra_Vector>    bg_phinp_;
   //@}
+
+  bool isinit_; //! is conditionmanager initialized
+
+  bool issetup_; //! is conditionmanager set up
+
+
 
 };
 

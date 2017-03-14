@@ -3906,22 +3906,40 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
   {
-    // where [*] = (*)^m - (*)^s = (*)^+ - (*)^-
-    // n = n^m = n^+
-    // [sigma*n] = gamma * curv * n   with curv = div(grad(phi)/||grad(phi)||)
+    // where [*] = (*)^m - (*)^s = (*)^- - (*)^+
+    // n = n^m = n^-
+    // [sigma*n] = gamma * curv * n   with curv = div(grad(phi)/||grad(phi)||) //TODO: ???
 
     double surf_coeff    = gamma_m_;
 
     if(gamma_m_ != 0.0)
     {
-      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(coupling)->EvaluateTractionDiscontinuity<distype>(itraction_jump,LB_proj_matrix,my::eid_,my::funct_,my::derxy_,normal,surf_coeff);
+      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(coupling)->EvaluateTractionDiscontinuity<distype>(
+          itraction_jump,
+          LB_proj_matrix,
+          my::eid_,
+          my::funct_,
+          my::derxy_,
+          normal,
+          surf_coeff
+      );
     }
 
     break;
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION:
   {
-    // TODO: evaluate the ivelint_jump and the itraction_jump
+    Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingCombustion>(coupling)->EvaluateCouplingConditions<distype>(
+        ivelint_jump,
+        itraction_jump,
+        cond,
+        my::eid_,
+        my::funct_,
+        my::derxy_,
+        normal,
+        densaf_master_,
+        densaf_slave_
+    );
     break;
   }
   // Neumann boundary conditions for Mesh and Levelset

@@ -58,6 +58,7 @@ FLD::XFluidFluid::XFluidFluid(
 ) : XFluid(
   xfluiddis,
   embedded_fluid->Discretization(),
+  Teuchos::null,
   solver,
   params,
   xfluiddis->Writer(),
@@ -83,6 +84,7 @@ FLD::XFluidFluid::XFluidFluid(
 ) : XFluid(
   xfluiddis,
   soliddis,
+  Teuchos::null,
   solver,
   params,
   xfluiddis->Writer(),

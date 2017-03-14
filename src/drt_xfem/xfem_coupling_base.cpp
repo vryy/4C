@@ -35,8 +35,10 @@ INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& 
 {
   if     (condname == "XFEMSurfFSIPart")            return INPAR::XFEM::CouplingCond_SURF_FSI_PART;
   else if(condname == "XFEMSurfFSIMono")            return INPAR::XFEM::CouplingCond_SURF_FSI_MONO;
-  else if(condname == "XFEMSurfFPIMono"      || condname == "XFEMSurfFPIMono_ps_ps"
-      || condname == "XFEMSurfFPIMono_ps_pf" || condname == "XFEMSurfFPIMono_pf_ps"
+  else if(condname == "XFEMSurfFPIMono"
+      || condname == "XFEMSurfFPIMono_ps_ps"
+      || condname == "XFEMSurfFPIMono_ps_pf"
+      || condname == "XFEMSurfFPIMono_pf_ps"
       || condname == "XFEMSurfFPIMono_pf_pf")       return INPAR::XFEM::CouplingCond_SURF_FPI_MONO;
   else if(condname == "XFEMSurfFluidFluid")         return INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID;
   else if(condname == "XFEMLevelsetWeakDirichlet")  return INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET;
@@ -63,21 +65,108 @@ XFEM::CouplingBase::CouplingBase(
     const double                        time,      ///< time
     const int                           step       ///< time step
 ) :
+nsd_(DRT::Problem::Instance()->NDim()),
 bg_dis_(bg_dis),
 cond_name_(cond_name),
 cond_dis_(cond_dis),
 coupling_id_(coupling_id),
 cutter_dis_(Teuchos::null),
 coupl_dis_(Teuchos::null),
+coupl_name_(""),
 averaging_strategy_(INPAR::XFEM::invalid),
 myrank_(bg_dis_->Comm().MyPID()),
 dt_(-1.0),
 time_(time),
-step_(step)
+step_(step),
+issetup_(false),
+isinit_(false)
 {
+}
+
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::CouplingBase::Init()
+{
+  //TODO: correct handling of init and setup flags for derived classes
+
+  // ---------------------------------------------------------------------------
+  // We need to call Setup() after Init()
+  // ---------------------------------------------------------------------------
+  issetup_ = false;
+
+  // ---------------------------------------------------------------------------
+  // do Init
+  // ---------------------------------------------------------------------------
+
+  if(dofset_coupling_map_.empty())
+    dserror("Call SetDofSetCouplingMap() first!");
+
+  SetCouplingDofsets();
+
+  // set the name of the coupling object to allow access from outside via the name
+  SetCouplingName();
+
+  // set list of conditions that will be copied to the new cutter discretization
+  SetConditionsToCopy();
+
+  // create a cutter discretization from conditioned nodes of the given coupling discretization or simply clone the discretization
+  SetCutterDiscretization();
+
+  // set unique element conditions
+  SetElementConditions();
+
+  // set condition specific parameters
+  SetConditionSpecificParameters();
+
+  // set the averaging strategy
+  SetAveragingStrategy();
+
+  // set coupling discretization
+  SetCouplingDiscretization();
+
   // initialize element level configuration map (no evaluation)
   InitConfigurationMap();
+
+  // ---------------------------------------------------------------------------
+  // set isInit flag
+  // ---------------------------------------------------------------------------
+  isinit_ = true;
+
+  // good bye
+  return;
 }
+
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::CouplingBase::Setup()
+{
+  CheckInit();
+
+  // ---------------------------------------------------------------------------
+  // do setup
+  // ---------------------------------------------------------------------------
+
+  // initialize state vectors according to cutter discretization
+  InitStateVectors();
+
+  // prepare the output writer for the cutter discretization
+  PrepareCutterOutput();
+
+  // do condition specific setup
+  DoConditionSpecificSetup();
+
+  // initialize the configuration map
+  SetupConfigurationMap();
+
+  // ---------------------------------------------------------------------------
+  // set isSetup flag
+  // ---------------------------------------------------------------------------
+
+  issetup_ = true;
+}
+
 
 /*--------------------------------------------------------------------------*
  * Initialize Configuration Map --> No Terms are evaluated at the interface
@@ -101,7 +190,7 @@ void XFEM::CouplingBase::InitConfigurationMap()
   configuration_map_[INPAR::XFEM::F_Con_t_Col] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Con_t_Col] = std::pair<bool,double>(false,0.0);
 
-  //Configuration of Adjount Consistency Terms
+  //Configuration of Adjoint Consistency Terms
   //all components:
   configuration_map_[INPAR::XFEM::F_Adj_Row] = std::pair<bool,double>(false,0.0);
   configuration_map_[INPAR::XFEM::X_Adj_Row] = std::pair<bool,double>(false,0.0);

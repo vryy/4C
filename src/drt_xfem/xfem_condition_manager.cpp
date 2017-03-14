@@ -30,20 +30,24 @@ xfluid class and the cut-library
 
 //constructor
 XFEM::ConditionManager::ConditionManager(
-      Teuchos::RCP<DRT::Discretization> &               bg_dis,          ///< background discretization
-      std::vector<Teuchos::RCP<DRT::Discretization> > & meshcoupl_dis,   ///< mesh coupling discretizations
-      const double                                      time,            ///< time
-      const int                                         step             ///< time step
+    const std::map<std::string, int> &                dofset_coupling_map, ///< ???
+    Teuchos::RCP<DRT::Discretization> &               bg_dis,            ///< background discretization
+    std::vector<Teuchos::RCP<DRT::Discretization> > & meshcoupl_dis,     ///< mesh coupling discretizations
+    std::vector<Teuchos::RCP<DRT::Discretization> > & levelsetcoupl_dis, ///< levelset coupling discretizations
+    const double                                      time,              ///< time
+    const int                                         step               ///< time step
   ) :
+  dofset_coupling_map_(dofset_coupling_map),
   bg_dis_(bg_dis),
   levelset_gid_(-1),
   time_(time),
   step_(step),
   is_levelset_uptodate_(false),
   ele_lsc_coup_idx_col_(Teuchos::null),
-  bg_phinp_(Teuchos::null)
+  bg_phinp_(Teuchos::null),
+  isinit_(false),
+  issetup_(false)
 {
-
   // create Levelset Coupling objects
   {
     std::vector<std::string> conditions_to_check;
@@ -55,25 +59,7 @@ XFEM::ConditionManager::ConditionManager(
     conditions_to_check.push_back("XFEMLevelsetTwophase");
     conditions_to_check.push_back("XFEMLevelsetCombustion");
 
-    std::vector<std::string> names;
-    bg_dis_->GetConditionNames( names );
-
-    // check if background discretization has relevant conditioned nodes
-    // create new coupling object for each type of condition
-    for(size_t c=0; c<conditions_to_check.size(); c++)
-    {
-      if(std::find(names.begin(), names.end(), conditions_to_check[c]) == names.end())
-        continue;
-
-      // get all conditions of this type, if several conditions with different coupling ids
-      std::set<int> coupling_ids;
-      GetCouplingIds(*bg_dis_, conditions_to_check[c], coupling_ids);
-
-      // create new coupling object for each composite
-      for(std::set<int>::iterator cid=coupling_ids.begin();
-          cid != coupling_ids.end(); ++cid)
-        CreateNewLevelSetCoupling(conditions_to_check[c], *cid);
-    }
+    CreateCouplings(levelsetcoupl_dis, conditions_to_check, false);
   }
 
   // create Mesh Coupling objects
@@ -87,45 +73,29 @@ XFEM::ConditionManager::ConditionManager(
     conditions_to_check.push_back("XFEMSurfFluidFluid");
     conditions_to_check.push_back("XFEMSurfNavierSlip");
 
-    // check if a coupling discretization has relevant conditioned nodes
-    // create new coupling object for each type of condition and each coupling discretization
-    for(size_t mc_idx=0; mc_idx<meshcoupl_dis.size(); mc_idx++) // loop all specified mesh coupling discretizations
-    {
-      if(meshcoupl_dis[mc_idx] == Teuchos::null) continue;
-
-      std::vector<std::string> names;
-      meshcoupl_dis[mc_idx]->GetConditionNames( names );
-
-      for(size_t c=0; c<conditions_to_check.size(); c++)
-      {
-        if(std::find(names.begin(), names.end(), conditions_to_check[c]) == names.end())
-          continue;
-
-        // get all conditions of this type, if several conditions with different coupling ids
-        std::set<int> coupling_ids;
-        GetCouplingIds(*(meshcoupl_dis[mc_idx]), conditions_to_check[c], coupling_ids);
-
-        // create new coupling object for each composite
-        for(std::set<int>::iterator cid=coupling_ids.begin();
-            cid != coupling_ids.end(); ++cid)
-          CreateNewMeshCoupling(conditions_to_check[c], meshcoupl_dis[mc_idx], *cid);
-      }
-    }
+    CreateCouplings(meshcoupl_dis, conditions_to_check, true);
   }
 
-  // create Matching-Mesh Coupling objects
-  //  --- In the case of matching boundary in the background mesh
+  SetDofSetCouplingMap( dofset_coupling_map );
+
+}
+
+
+void XFEM::ConditionManager::CreateCouplings(
+    std::vector<Teuchos::RCP<DRT::Discretization> > & coupl_dis,   ///< coupling discretizations
+    const std::vector<std::string> & conditions_to_check,          ///< conditions for which coupling objects shall be created
+    bool create_mesh_coupling                                      ///< create mesh coupling or level-set coupling object
+)
+{
+  // check if a coupling discretization has relevant conditioned nodes
+  // create new coupling object for each type of condition and each coupling discretization
+  for(size_t c_idx=0; c_idx<coupl_dis.size(); c_idx++) // loop all specified mesh coupling discretizations
   {
-    std::vector<std::string> conditions_to_check;
-    conditions_to_check.push_back("XFEMSurfNeumann");
-    conditions_to_check.push_back("XFEMSurfWeakDirichlet");
-    conditions_to_check.push_back("XFEMSurfNavierSlip");
+    if(coupl_dis[c_idx] == Teuchos::null) continue;
 
     std::vector<std::string> names;
-    bg_dis_->GetConditionNames( names );
+    coupl_dis[c_idx]->GetConditionNames( names );
 
-    // check if background discretization has relevant conditioned nodes
-    // create new coupling object for each type of condition
     for(size_t c=0; c<conditions_to_check.size(); c++)
     {
       if(std::find(names.begin(), names.end(), conditions_to_check[c]) == names.end())
@@ -133,15 +103,19 @@ XFEM::ConditionManager::ConditionManager(
 
       // get all conditions of this type, if several conditions with different coupling ids
       std::set<int> coupling_ids;
-      GetCouplingIds(*bg_dis_, conditions_to_check[c], coupling_ids);
+      GetCouplingIds(*(coupl_dis[c_idx]), conditions_to_check[c], coupling_ids);
 
       // create new coupling object for each composite
       for(std::set<int>::iterator cid=coupling_ids.begin();
           cid != coupling_ids.end(); ++cid)
-        CreateNewMeshCoupling(conditions_to_check[c], bg_dis_, *cid);
+      {
+        if(create_mesh_coupling)
+          CreateNewMeshCoupling(conditions_to_check[c], coupl_dis[c_idx], *cid);
+        else
+          CreateNewLevelSetCoupling(conditions_to_check[c], coupl_dis[c_idx], *cid );
+      }
     }
   }
-
 }
 
 void XFEM::ConditionManager::GetCouplingIds(
@@ -164,6 +138,22 @@ void XFEM::ConditionManager::GetCouplingIds(
     coupling_ids.insert(couplingID);
   }
 }
+
+void XFEM::ConditionManager::SetDofSetCouplingMap(
+    const std::map<std::string, int> & dofset_coupling_map
+)
+{
+  for(int m=0; m<NumMeshCoupling(); m++)
+  {
+    mesh_coupl_[m]->SetDofSetCouplingMap(dofset_coupling_map_);
+  }
+
+  for(int l=0; l<NumLevelSetCoupling(); l++)
+  {
+    levelset_coupl_[l]->SetDofSetCouplingMap(dofset_coupling_map_);
+  }
+}
+
 
 
 void XFEM::ConditionManager::Status()
@@ -256,10 +246,11 @@ void XFEM::ConditionManager::SetTimeAndStep(
 
 void XFEM::ConditionManager::CreateNewLevelSetCoupling(
     const std::string& cond_name,
+    Teuchos::RCP<DRT::Discretization> cond_dis,
     const int coupling_id
 )
 {
-  AddLevelSetCoupling( cond_name, coupling_id );
+  AddLevelSetCoupling( cond_name, cond_dis, coupling_id );
 }
 
 
@@ -271,6 +262,54 @@ void XFEM::ConditionManager::CreateNewMeshCoupling(
 {
   AddMeshCoupling( cond_name, cond_dis, coupling_id );
 }
+
+void XFEM::ConditionManager::Init()
+{
+  issetup_ = false;
+
+  //--------------------------------------------------------
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->Init();
+  }
+
+  //--------------------------------------------------------
+  // loop all levelset coupling objects
+  for(int lc=0; lc<(int)levelset_coupl_.size(); lc++)
+  {
+    levelset_coupl_[lc]->Init();
+  }
+
+  isinit_=true;
+}
+
+
+void XFEM::ConditionManager::Setup()
+{
+  CheckInit();
+
+  // do setup
+
+  //--------------------------------------------------------
+  // loop all mesh coupling objects
+  for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
+  {
+    mesh_coupl_[mc]->Setup();
+  }
+
+  //--------------------------------------------------------
+  // loop all levelset coupling objects
+  for(int lc=0; lc<(int)levelset_coupl_.size(); lc++)
+  {
+    levelset_coupl_[lc]->Setup();
+  }
+
+  Create();
+
+  issetup_ = true;
+}
+
 
 
 void XFEM::ConditionManager::Create()
@@ -335,11 +374,10 @@ void XFEM::ConditionManager::SetLevelSetField( const double time )
 }
 
 
-void XFEM::ConditionManager::SetLevelSetField(
-   Teuchos::RCP<const Epetra_Vector> scalaraf,
-   Teuchos::RCP<const Epetra_Vector> curvatureaf,
-   Teuchos::RCP<Epetra_MultiVector>  smoothed_gradphiaf,
-   Teuchos::RCP<DRT::Discretization> scatradis
+void XFEM::ConditionManager::WriteAccess_GeometricQuantities(
+    Teuchos::RCP<Epetra_Vector> &      scalaraf,
+    Teuchos::RCP<Epetra_MultiVector> & smoothed_gradphiaf,
+    Teuchos::RCP<Epetra_Vector> &      curvatureaf
    )
 {
   // TOOD: when using two-phase in combination with other levelset, how to access to the right coupling twophase coupling object?
@@ -350,7 +388,7 @@ void XFEM::ConditionManager::SetLevelSetField(
   is_levelset_uptodate_ = false;
 
   // update the unique level-set field
-  Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(levelset_coupl_[0])->SetLevelSetField(scalaraf, curvatureaf, smoothed_gradphiaf, scatradis);
+  Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(levelset_coupl_[0], true)->WriteAccess_GeometricQuantities(scalaraf, smoothed_gradphiaf, curvatureaf);
 }
 
 
@@ -665,6 +703,15 @@ void XFEM::ConditionManager::ZeroStateVectors_FSI()
   }
 }
 
+void XFEM::ConditionManager::ExportGeometricQuantities()
+{
+  // loop all mesh coupling objects
+  for(int lsc=0; lsc<(int)levelset_coupl_.size(); lsc++)
+  {
+    levelset_coupl_[lsc]->ExportGeometricQuantities();
+  }
+}
+
 void XFEM::ConditionManager::GmshOutput(
     const std::string & filename_base,
     const int step,
@@ -676,6 +723,11 @@ void XFEM::ConditionManager::GmshOutput(
   for(int mc=0; mc<(int)mesh_coupl_.size(); mc++)
   {
     mesh_coupl_[mc]->GmshOutput(filename_base, step, gmsh_step_diff, gmsh_debug_out_screen);
+  }
+  // loop all level set coupling objects
+  for(int lc=0; lc<(int)levelset_coupl_.size(); lc++)
+  {
+    levelset_coupl_[lc]->GmshOutput(filename_base, step, gmsh_step_diff, gmsh_debug_out_screen);
   }
 }
 
@@ -890,11 +942,18 @@ DRT::Element* XFEM::ConditionManager::GetCouplingElement(
     // get the boundary discretization, the side belongs to
     return mesh_coupl_[mc_idx]->GetCouplingElement(cutterdis_sid);
   }
-  else
+  else if(IsLevelSetCoupling(coup_sid))
   {
-    if (GetCouplingCondition(coup_sid, ele->Id()).first == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
-      return ele;
+    // get the level-set coupling object index for given background element
+    const int lsc_idx = GetLevelSetCouplingIndex(coup_sid);
+
+    // coupling of element with the element itself!
+    const int coupldis_eid = ele->Id();
+
+    return levelset_coupl_[lsc_idx]->GetCouplingElement(coupldis_eid);
   }
+  else dserror("there is no valid mesh-/levelset-coupling condition object for side: %i", coup_sid);
+
 
   return NULL;
 }

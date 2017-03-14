@@ -55,30 +55,21 @@ XFEM::MeshCoupling::MeshCoupling(
     const int                           step,       ///< time step
     const std::string &                 suffix     ///< suffix for cutterdisname
 ) : CouplingBase(bg_dis, cond_name, cond_dis, coupling_id, time, step),
-    mark_geometry_(false),
-    firstoutputofrun_(true)
+mark_geometry_(false),
+firstoutputofrun_(true),
+suffix_(suffix)
 {
-
-  // set list of conditions that will be copied to the new cutter discretization
-  SetConditionsToCopy();
-
-  // create a cutter discretization from conditioned nodes of the given coupling discretization
-  CreateCutterDisFromCondition(suffix);
-
-  // set unique element conditions
-  SetElementConditions();
-
-  // set the averaging strategy
-  SetAveragingStrategy();
-
-  // set coupling discretization
-  SetCouplingDiscretization();
-
-  // initialize state vectors based on cutter discretization
-  InitStateVectors();
-
-  PrepareCutterOutput();
 }
+
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCoupling::SetCutterDiscretization()
+{
+  // create a cutter discretization from conditioned nodes of the given coupling discretization
+  CreateCutterDisFromCondition(suffix_);
+}
+
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -106,7 +97,6 @@ void XFEM::MeshCoupling::SetConditionsToCopy()
 
 
 /*--------------------------------------------------------------------------*
- | Create the cutter discretization                                         |
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCoupling::CreateCutterDisFromCondition(std::string suffix)
 {
@@ -203,6 +193,8 @@ void XFEM::MeshCoupling::Output(
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCoupling::InitStateVectors()
 {
+  // move state vectors to extra container class!
+
   const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
 
   ivelnp_   = LINALG::CreateVector(*cutterdofrowmap,true);
@@ -307,17 +299,26 @@ XFEM::MeshVolCoupling::MeshVolCoupling(
 ) : MeshCoupling(bg_dis, cond_name, cond_dis, coupling_id, time, step, suffix),
     init_volcoupling_(false)
 {
+}
+
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshVolCoupling::Init()
+{
+  XFEM::MeshCoupling::Init();
+
+  // do additional redistributino of embedded discretization and create an auxiliary dis
   if (GetAveragingStrategy() != INPAR::XFEM::Xfluid_Sided)
-  {
-    //Initialize Volume Coupling
-    Init_VolCoupling();
+   {
+     //Initialize Volume Coupling
+     Init_VolCoupling();
 
-    // Todo: create only for Nitsche+EVP & EOS on outer embedded elements
-    CreateAuxiliaryDiscretization();
+     // Todo: create only for Nitsche+EVP & EOS on outer embedded elements
+     CreateAuxiliaryDiscretization();
 
-    ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int,double> ());
-  }
-  return;
+     ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int,double> ());
+   }
 }
 
 /*--------------------------------------------------------------------------*
@@ -597,6 +598,12 @@ XFEM::MeshCouplingBC::MeshCouplingBC(
     const int                           step       ///< time step
 ) : MeshCoupling(bg_dis,cond_name,cond_dis, coupling_id, time, step)
 {
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingBC::DoConditionSpecificSetup()
+{
   // set the initial interface displacements as they are used for initial cut position at the end of Xfluid::Init()
   SetInterfaceDisplacement();
 
@@ -604,7 +611,6 @@ XFEM::MeshCouplingBC::MeshCouplingBC(
   idispn_->Update(1.0,*idispnp_,0.0);
 
   idispnpi_->Update(1.0,*idispnp_,0.0);
-
 }
 
 /*--------------------------------------------------------------------------*
@@ -930,15 +936,22 @@ XFEM::MeshCouplingWeakDirichlet::MeshCouplingWeakDirichlet(
     const int                           step       ///< time step
 ) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step)
 {
+}
+
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingWeakDirichlet::DoConditionSpecificSetup()
+{
+  XFEM::MeshCouplingBC::DoConditionSpecificSetup();
+
   // set the initial interface velocity and possible initialization function
   SetInterfaceVelocity();
 
   // set the initial interface velocities also to iveln
   iveln_->Update(1.0,*ivelnp_,0.0);
-
-  // initialize the configuration map
-  InitConfigurationMap();
 }
+
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -985,7 +998,7 @@ void XFEM::MeshCouplingWeakDirichlet::PrepareSolve()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingWeakDirichlet::InitConfigurationMap()
+void XFEM::MeshCouplingWeakDirichlet::SetupConfigurationMap()
 {
   //Configuration of Consistency Terms
   configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
@@ -1071,19 +1084,38 @@ XFEM::MeshCouplingNavierSlip::MeshCouplingNavierSlip(
     const int                           step       ///< time step
 ) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step)
 {
-  //Build necessary maps to limit getting integers and strings on Gausspoint level.
-  SetConditionSpecificParameters(cond_name);
+}
 
-  if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
-  EvaluateCondition( ivelnp_,"XFEMRobinDirichletSurf", time_, dt_);
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingNavierSlip::DoConditionSpecificSetup()
+{
+  //TODO: actually the same as in weak Dirichlet!!! move to base class...
+
+  XFEM::MeshCouplingBC::DoConditionSpecificSetup();
+
+  // set the initial interface velocity and possible initialization function
+  SetInterfaceVelocity();
 
   // set the initial interface velocities also to iveln
   iveln_->Update(1.0,*ivelnp_,0.0);
-
-  // initialize the configuration map
-  InitConfigurationMap();
 }
 
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingNavierSlip::SetInterfaceVelocity()
+{
+  if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
+
+  //  EvaluateCondition( ivelnp_, cond_name_, time_, dt_);
+  EvaluateCondition( ivelnp_,"XFEMRobinDirichletSurf", time_, dt_);
+}
+
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
     LINALG::Matrix<3,1>& ivel,
     LINALG::Matrix<3,1>& itraction,
@@ -1290,8 +1322,9 @@ void XFEM::MeshCouplingNavierSlip::CreateRobinIdMap(
 
 }
 
-void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters(  const std::string &  cond_name)
+void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
 {
+  // Build necessary maps to limit getting integers and strings on Gausspoint level.
 
   // Get conditions based on cutter discretization.
   std::vector< DRT::Condition* >  conditions_dirich;
@@ -1311,7 +1344,7 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters(  const std::s
   }
 
   std::vector< DRT::Condition* >  conditions_NS;
-  cutter_dis_->GetCondition(cond_name, conditions_NS);
+  cutter_dis_->GetCondition(cond_name_, conditions_NS);
 
   //Establishes unique connection between Navier Slip section and Robin Dirichlet Neumann sections
   CreateRobinIdMap(
@@ -1388,7 +1421,7 @@ void XFEM::MeshCouplingNavierSlip::GetConditionByRobinId(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingNavierSlip::InitConfigurationMap()
+void XFEM::MeshCouplingNavierSlip::SetupConfigurationMap()
 {
   //Configuration of Consistency Terms
   configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);
@@ -1466,17 +1499,16 @@ XFEM::MeshCouplingFSI::MeshCouplingFSI(
     const int                           step       ///< time step
 ) : MeshVolCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step)
 {
-  SetConditionSpecificParameters(cond_name);
-  InitStateVectors_FSI();
-
-  // initialize the configuration map
-  InitConfigurationMap();
 }
+
+
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::InitStateVectors_FSI()
+void XFEM::MeshCouplingFSI::InitStateVectors()
 {
+  XFEM::MeshCoupling::InitStateVectors();
+
   const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
 
@@ -1682,8 +1714,6 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters(  const std::string &
       ++i)
   {
 
-    (*i)->Print(std::cout);
-
     int cond_int = (*i)->Id();
 
     double sliplength = (*i)->GetDouble("slipcoeff");
@@ -1769,7 +1799,7 @@ void XFEM::MeshCouplingFSI::LiftDrag(
 /*--------------------------------------------------------------------------*
  * first version without possibility to use Navier Slip
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFSI::InitConfigurationMap()
+void XFEM::MeshCouplingFSI::SetupConfigurationMap()
 {
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided)
   {
@@ -1817,8 +1847,7 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(
   return;
 }
 
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
+
 XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
@@ -1829,12 +1858,8 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
 ) : MeshVolCoupling(bg_dis,cond_name,cond_dis,coupling_id,time,step),
     moving_interface_(false)
 {
-  DRT::ELEMENTS::FluidEleParameterXFEM::Instance()->CheckParameterConsistencyForAveragingStrategy(bg_dis->Comm().MyPID(),
-    GetAveragingStrategy());
-
-  // initialize the configuration map
-  InitConfigurationMap();
 }
+
 
 /*--------------------------------------------------------------------------*
  * this function should go finally!
@@ -1863,7 +1888,7 @@ void XFEM::MeshCouplingFluidFluid::RedistributeForErrorCalculation()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFluidFluid::InitConfigurationMap()
+void XFEM::MeshCouplingFluidFluid::SetupConfigurationMap()
 {
   //Configuration of Consistency Terms
   configuration_map_[INPAR::XFEM::F_Con_Row] = std::pair<bool,double>(true,1.0);

@@ -47,7 +47,7 @@ XFEM::MeshCouplingFPI::MeshCouplingFPI(
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
     const int                           step,       ///< time step
-    MeshCouplingFPI::coupled_field     field      ///< which field is coupled to the fluid
+    MeshCouplingFPI::coupled_field      field      ///< which field is coupled to the fluid
     ) : MeshCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step,
         (field==MeshCouplingFPI::ps_ps ? "_ps_ps" : (field==MeshCouplingFPI::ps_pf ? "_ps_pf" : (field==MeshCouplingFPI::pf_ps ? "_pf_ps" : "_pf_pf")))),
         coupled_field_(field)
@@ -58,17 +58,16 @@ XFEM::MeshCouplingFPI::MeshCouplingFPI(
   std::cout << RED << "## WARNING: At the moment we suppose to have a constant porosity of 0.5! ##" << END_COLOR << std::endl;
   std::cout << RED << "###########################################################################" << END_COLOR << std::endl;
   std::cout << RED << "###########################################################################" << END_COLOR << std::endl;
-  //Set Condname dependent on the field type ... to be able to differentiate between the two fpi coupling objects!
-  std::stringstream str;
-  str << cond_name << (field==MeshCouplingFPI::ps_ps ? "_ps_ps" : (field==MeshCouplingFPI::ps_pf ? "_ps_pf" : (field==MeshCouplingFPI::pf_ps ? "_pf_ps" : "_pf_pf")));
 
-  SetConditionSpecificParameters(cond_name);
-
-  cond_name_ = str.str();
-
+  //TODO: init here, but set in SetConditionSpecificParameters
   full_BJ_ = true; //Todo Ager: Will create an Input parameter in the *.dat-file ...
+}
 
-  InitStateVectors_FPI();
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFPI::Init()
+{
+  XFEM::MeshCoupling::Init();
 
   // create map from side to embedded element ID
   CreateCuttingToEmbeddedElementMap();
@@ -76,8 +75,25 @@ XFEM::MeshCouplingFPI::MeshCouplingFPI(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::MeshCouplingFPI::InitStateVectors_FPI()
+void XFEM::MeshCouplingFPI::SetCouplingName()
 {
+  //Set couling name dependent on the field type ... to be able to differentiate between the two fpi coupling objects!
+  std::stringstream str;
+  str << cond_name_ << (coupled_field_==MeshCouplingFPI::ps_ps ? "_ps_ps" : (coupled_field_==MeshCouplingFPI::ps_pf ? "_ps_pf" : (coupled_field_==MeshCouplingFPI::pf_ps ? "_pf_ps" : "_pf_pf")));
+
+  // replace the set condname by its specification given by the coupling field
+  coupl_name_ = str.str();
+
+  std::cout << " the name of the fpi coupling is " << coupl_name_ << std::endl;
+}
+
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void XFEM::MeshCouplingFPI::InitStateVectors()
+{
+  XFEM::MeshCoupling::InitStateVectors();
+
   const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
 
@@ -372,11 +388,11 @@ void XFEM::MeshCouplingFPI::Output(
   }
 }
 
-void XFEM::MeshCouplingFPI::SetConditionSpecificParameters(  const std::string &  cond_name)
+void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
 {
 
   std::vector< DRT::Condition* >  conditions_XFPI;
-  cutter_dis_->GetCondition(cond_name, conditions_XFPI);
+  cutter_dis_->GetCondition(cond_name_, conditions_XFPI);
 
   // Create maps for easy extraction at gausspoint level
   for(std::vector<DRT::Condition*>::iterator i=conditions_XFPI.begin();

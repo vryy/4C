@@ -761,7 +761,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       }
 
       Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
-      Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
+      Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
+
+      if (DRT::Problem::Instance()->DoesExistDis("scatra"))
+        scatradis = DRT::Problem::Instance()->GetDis("scatra");
+
+      Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale));
 
       std::string condition_name = "";
 
@@ -825,7 +830,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
             tmpfluid_emb,xfluiddis,soliddis,solver,fluidtimeparams,isale));
       }
       else
-        tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
+      {
+        Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
+
+        if (DRT::Problem::Instance()->DoesExistDis("scatra"))
+          scatradis = DRT::Problem::Instance()->GetDis("scatra");
+
+        tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale));
+      }
 
       if (coupling == fsi_iter_xfem_monolithic )
         fluid_ = tmpfluid;
@@ -835,8 +847,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     break;
     case prb_fluid_xfem_ls:
     {
-      Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
-      fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));
+      Teuchos::RCP<DRT::Discretization> soliddis  = DRT::Problem::Instance()->GetDis("structure");
+      Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
+
+      if (DRT::Problem::Instance()->DoesExistDis("scatra"))
+        scatradis = DRT::Problem::Instance()->GetDis("scatra");
+
+      fluid_ = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, scatradis, solver, fluidtimeparams, output));
     }
     break;
     case prb_combust:
@@ -972,7 +989,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         else if (probtype == prb_fpsi_xfem)
         {
           Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
-          fluid_= Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output,isale));
+          Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
+
+          if (DRT::Problem::Instance()->DoesExistDis("scatra"))
+            scatradis = DRT::Problem::Instance()->GetDis("scatra");
+
+          fluid_= Teuchos::rcp( new FLD::XFluid( actdis, soliddis, scatradis, solver, fluidtimeparams, output,isale));
         }
       }
     }
