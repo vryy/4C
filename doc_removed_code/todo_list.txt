@@ -1,5 +1,22 @@
-List of code projects that need to be done in the near future
+List of code projects that need to be done in the near future, e.g. student projects / BACI cleaning week
 
-New structural time integration
 ===============================
+New structural time integration
+(things that were available in the old structural time integration, but have not yet been moved)
+for questions: Alexander Popp
+===============================
+- explicit time integration (explicit Euler, central differences, Adams-Bashforth, critical time step)
+- explicit time integration (also for penalty-based contact)
+- time adaptivity for structural dynamics (Zienkiewicz-Xie, auxiliary time integrators, e.g. explicit see above)
+- time adaptivity for FSI (work of Matthias Mayr)
+- physics-based preconditioners for shells (scaled thickness conditioning (STC) for solid-shells)
+- energy-momentum conservation (GEMM, GEMM for contact, velocity update method for contact)
+- MueLu-based solvers / preconditioners for mesh tying and contact (work of Tobias Wiesner)
 
+===============================
+New structural time integration
+(things that we did not have in the old structural time integration, but would be very useful)
+for questions: Alexander Popp
+===============================
+- axisymmetric 2D wall element (as an extension to the wall element)
+- explicit dynamics (critical time step estimates for most common solid elements, contact, etc.)
