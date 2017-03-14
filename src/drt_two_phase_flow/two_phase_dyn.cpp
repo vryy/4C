@@ -278,12 +278,13 @@ void fluid_xfem_ls_drt(int restart)
    int numglobalnodes = fluiddis->NumGlobalNodes();
    int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
-   fluiddis->ReplaceDofSet(0, maxdofset, true ); //fluid dofset has nds = 0
-   fluiddis->InitialFillComplete();
+   const int xfluid_dofset = 0;
+   fluiddis->ReplaceDofSet(xfluid_dofset, maxdofset, true );
 
-   // access parameter for levelset (Not needed as of yet)
-   //const Teuchos::ParameterList& levelsetcontrol = problem->LevelSetControl();
+   std::vector<int> nds;
+   nds.push_back(xfluid_dofset); // dofsets to be initialized as initial dofset
 
+   fluiddis->InitialFillComplete(nds);
    // access parameter list for scatra
    const Teuchos::ParameterList& scatradyn = problem->ScalarTransportDynamicParams();
 
@@ -319,7 +320,7 @@ void fluid_xfem_ls_drt(int restart)
      }
 
      // add proxy of fluid degrees of freedom to scatra discretization
-     if(scatradis->AddDofSet(Teuchos::rcp(new DRT::DofSet(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(fluiddis)->InitialDofSet()))) != 1)
+     if(scatradis->AddDofSet(fluiddis->GetInitialDofSetProxy(0)) != 1)
        dserror("Scatra discretization has illegal number of dofsets!");
 
      // print all dofsets

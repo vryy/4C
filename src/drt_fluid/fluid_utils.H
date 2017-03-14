@@ -27,6 +27,7 @@
 namespace DRT
 {
   class DofSet;
+  class DofSetInterface;
 }
 
 namespace LINALG
@@ -464,7 +465,7 @@ void SetupFluidSplit(const DRT::Discretization& dis,
   \date 02/08
  */
 void SetupFluidSplit(const DRT::Discretization& dis,
-                     const DRT::DofSet& dofset,
+                     const DRT::DofSetInterface& dofset,
                      int ndim,
                      LINALG::MapExtractor& extractor);
 

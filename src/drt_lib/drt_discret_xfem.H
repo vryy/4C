@@ -18,6 +18,9 @@
 
 #include "drt_discret_faces.H"
 #include "drt_dofset.H"
+#include "drt_dofset_interface.H"
+#include "drt_dofset_proxy.H"
+
 
 /*!
 \brief DRT: namespace of the baci discretization module
@@ -75,6 +78,8 @@ public:
   - calls all element register initialize methods
   - build geometries of all Dirichlet and Neumann boundary conditions
 
+  \param nds (in) :  vector of dofset numbers to be initialized as initialdofset
+
   \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
                                        assigning of degrees of freedoms to nodes and
                                        elements.
@@ -91,9 +96,12 @@ public:
 
   \note Sets Filled()=true
   */
-  virtual int InitialFillComplete(bool assigndegreesoffreedom = true,
-                           bool initelements = true,
-                           bool doboundaryconditions = true);
+  virtual int InitialFillComplete(
+      const std::vector<int> & nds,
+      bool assigndegreesoffreedom = true,
+      bool initelements = true,
+      bool doboundaryconditions = true
+  );
 
   /// Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector with all active dofs
   void ExportInitialtoActiveVector(
@@ -168,11 +176,19 @@ public:
 
 
   /// Access to initial dofset
-  const DofSet& InitialDofSet(unsigned int nds=0) const
+  const DofSetInterface& InitialDofSet(unsigned int nds=0) const
   {
     Initialized();
     return *initialdofsets_[nds];
   }
+
+
+  Teuchos::RCP<DRT::DofSetInterface> GetInitialDofSetProxy(int nds)
+  {
+    dsassert(nds<(int)initialdofsets_.size(),"undefined dof set");
+    return Teuchos::rcp(new DofSetProxy(&*initialdofsets_[nds]));
+  }
+
   /*!
   \brief Get initial degree of freedom row map (Initialized()==true prerequisite)
 
@@ -242,7 +258,7 @@ public:
 private:
 
   ///Store Initial Dofs
-  void StoreInitialDofs();
+  void StoreInitialDofs(const std::vector<int> & nds);
 
   /*!
   ///Extend initialdofrowmap
@@ -258,7 +274,7 @@ private:
                                      bool uniquenumbering);
 
   /// initial set of dofsets
-  std::vector<Teuchos::RCP<DofSet> >             initialdofsets_;
+  std::vector<Teuchos::RCP<DofSetInterface> >             initialdofsets_;
 
   /// bool if discretisation is initialized
   bool initialized_;

@@ -37,9 +37,12 @@ initialpermdofrowmap_(Teuchos::null)
 /*----------------------------------------------------------------------*
  |  Finalize construction (public)                             ager 11/14|
  *----------------------------------------------------------------------*/
-int DRT::DiscretizationXFEM::InitialFillComplete(bool assigndegreesoffreedom,
-                                      bool initelements,
-                                      bool doboundaryconditions)
+int DRT::DiscretizationXFEM::InitialFillComplete(
+    const std::vector<int> & nds,
+    bool assigndegreesoffreedom,
+    bool initelements,
+    bool doboundaryconditions
+)
 {
   //Call from BaseClass
   int val = DRT::Discretization::FillComplete(assigndegreesoffreedom, initelements, doboundaryconditions);
@@ -48,7 +51,7 @@ int DRT::DiscretizationXFEM::InitialFillComplete(bool assigndegreesoffreedom,
     dserror("DiscretizationXFEM: Call InitialFillComplete() with assigndegreesoffreedom = true!");
 
   //Store initial dofs of the discretisation
-  StoreInitialDofs();
+  StoreInitialDofs(nds);
   return val;
 }
 
@@ -64,14 +67,25 @@ int DRT::DiscretizationXFEM::InitialFillComplete(bool assigndegreesoffreedom,
 /*----------------------------------------------------------------------*
  |  Store Initial Dofs (private)                               ager 11/14|
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::StoreInitialDofs()
+void DRT::DiscretizationXFEM::StoreInitialDofs(const std::vector<int> & nds)
 {
+  if(nds.size()!=1)
+    dserror("DiscretizationXFEM: At the moment just one initial dofset to be initialized is supported by DiscretisationXFEM!");
+
   // store copy of initial dofset
   initialdofsets_.clear();
-  for (unsigned int dofset = 0; dofset < dofsets_.size(); ++dofset)
-  {
-    initialdofsets_.push_back(Teuchos::rcp_dynamic_cast<DRT::DofSet>(dofsets_[dofset])->Clone());
-  }
+
+//  for (unsigned int dofset = 0; dofset < dofsets_.size(); ++dofset)
+//  {
+//    std::cout << "Dofset " << dofset << std::endl;
+//    initialdofsets_.push_back(Teuchos::rcp_dynamic_cast<DRT::DofSet>(dofsets_[dofset], true)->Clone());
+////    initialdofsets_.push_back(Teuchos::rcp_dynamic_cast<DRT::DofSet>(dofsets_[dofset], true)->Clone());
+////    initialdofsets_.push_back(dofsets_[dofset]->Clone());
+//    // use a dofsetproxy here!
+////    initialdofsets_.push_back(GetDofSetProxy(dofset));
+//  }
+
+  initialdofsets_.push_back(Teuchos::rcp_dynamic_cast<DRT::DofSet>(dofsets_[nds[0]], true)->Clone());
 
   // store map required for export to active dofs
   if (initialdofsets_.size() > 1)

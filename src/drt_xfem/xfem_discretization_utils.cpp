@@ -200,8 +200,12 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   int numglobalnodes = xdis->NumGlobalNodes();
   int maxNumMyReservedDofsperNode = (xgen_params.get<int>("MAX_NUM_DOFSETS"))*numdof;
     Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
-  xdis->ReplaceDofSet(0, maxdofset, true ); //fluid dofset has nds = 0
-  xdis->InitialFillComplete();
+
+  const int fluid_nds = 0;
+  xdis->ReplaceDofSet(fluid_nds, maxdofset, true ); //fluid dofset has nds = 0
+  std::vector<int> nds;
+  nds.push_back(fluid_nds);
+  xdis->InitialFillComplete(nds);
 
   // print all dofsets
   xdis->GetDofSetProxy()->PrintAllDofsets(xdis->Comm());

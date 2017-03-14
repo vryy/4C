@@ -93,8 +93,22 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::Init(
         if(DRT::Problem::Instance()->ProblemType() == prb_fluid_xfem_ls)
         {
           Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->DiscretisationXFEM()->ExtendedGhosting(*scatraelecolmap,false,false,false,false);
-          //Need to call InitialFillComplete again to get the correct Map after the Extended Ghosting.
-          Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->DiscretisationXFEM()->InitialFillComplete();
+
+          Teuchos::RCP<DRT::DiscretizationXFEM> xfluiddis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(FluidField()->Discretization(),true);
+
+          // Need to call InitialFillComplete again to get the correct Map after the Extended Ghosting of the fluid dofset.
+          // calls AssignDegreesOfFreedom for all non-proxy dofsets and the nds initialdofsets
+          std::vector<int> nds;
+          nds.push_back(0);
+          xfluiddis->InitialFillComplete(nds);
+
+          // replace the fluid-dofset proxy in the scatra discretization
+          ScaTraField()->Discretization()->ReplaceDofSet(1, xfluiddis->GetInitialDofSetProxy(0), false);
+
+          // does not have an effect (as wanted!), as the additional fluid proxy,
+          // which has been set in scatra, has its own AssignDegreesOfFreedom that does nothing!
+          ScaTraField()->Discretization()->FillComplete(true, false,false);
+
         }
       }
     }

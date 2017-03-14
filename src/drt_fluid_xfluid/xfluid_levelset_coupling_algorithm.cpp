@@ -129,9 +129,6 @@ void XFLUIDLEVELSET::Algorithm::Setup()
   phinpi_ = Teuchos::rcp(new Epetra_Vector(ScaTraField()->Phinp()->Map()),true);
   phinpi_->Update(1.0,*ScaTraField()->Phinp(),0.0);
 
-  //Values of velocity field are transferred to ScaTra field. This function overwrites the previous initialization in the constructor
-  //of ScaTraFluidCouplingAlgorithm(). This is necessary to correctly initialize a particle algorithm.
-  ScaTraField()->Discretization()->ReplaceDofSet(1,Teuchos::rcp(new DRT::DofSet(Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(FluidField()->Discretization())->InitialDofSet())),false);
   SetFluidValuesInScaTra(true);
 
   // this cannot be done in Init() for some reason
@@ -395,10 +392,6 @@ void XFLUIDLEVELSET::Algorithm::SetFluidValuesInScaTra(bool init)
 
     if(levelsetalgo==Teuchos::null)
       dserror("Casting ScaTraTimInt onto LevelSetAlgorithm failed. (Null pointer returned)");
-
-    //Transform output:
-    DRT::DofSet stddofset_noptr = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->DiscretisationXFEM()->InitialDofSet();
-    Teuchos::RCP<const DRT::DofSet> stddofs = Teuchos::rcp(new DRT::DofSet(stddofset_noptr));
 
     levelsetalgo->SetVelocityField(convel,
         Teuchos::null,

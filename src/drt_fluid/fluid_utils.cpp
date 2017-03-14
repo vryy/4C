@@ -17,6 +17,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dofset.H"
+#include "../drt_lib/drt_dofset_interface.H"
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_solver.H"
@@ -659,7 +660,7 @@ void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::SetupFluidSplit(const DRT::Discretization& dis,
-                                 const DRT::DofSet& dofset,
+                                 const DRT::DofSetInterface& dofset,
                                  int ndim,
                                  LINALG::MapExtractor& extractor)
 {
