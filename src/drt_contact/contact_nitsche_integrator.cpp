@@ -153,11 +153,6 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
         -1,
         LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
 
-    MAT::ElastHyper* mmat = dynamic_cast<MAT::ElastHyper*>(&*mele.ParentElement()->Material());
-    MAT::ElastHyper* smat = dynamic_cast<MAT::ElastHyper*>(&*sele.ParentElement()->Material());
-    if (smat==NULL || mmat==NULL)
-      dserror("Nitsche contact only for elast hyper material");
-
     double ws=0.;
     double wm=0.;
     switch(nit_wgt_)
