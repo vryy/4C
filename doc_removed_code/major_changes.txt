@@ -1,3 +1,7 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+crack propagation (by Sudhakar Yogaraj)
+- removed in revision 22725 on 2017-12-22
+- due to invasive implementation and difficulty to maintain and migrate to new structural time integration
+
 
