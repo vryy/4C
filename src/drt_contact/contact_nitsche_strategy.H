@@ -114,7 +114,7 @@ public:
   virtual void SetState(const enum MORTAR::StateType& statename,
         const Epetra_Vector& vec);
 
-  virtual void SetParentState(const std::string& statename,
+  virtual void SetParentState(const enum MORTAR::StateType& statename,
       const Epetra_Vector& vec);
 
   virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultN(const bool& redist) const

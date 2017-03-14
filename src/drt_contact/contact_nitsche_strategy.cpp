@@ -125,7 +125,7 @@ void CONTACT::CoNitscheStrategy::SetState(const enum MORTAR::StateType& statenam
       curr_state_eval_=false;
       (*curr_state_)=vec;
       CoAbstractStrategy::SetState(statename,vec);
-      SetParentState("displacement",vec);
+      SetParentState(statename,vec);
     }
   }
   else
@@ -139,13 +139,13 @@ void CONTACT::CoNitscheStrategy::SetState(const enum MORTAR::StateType& statenam
 /*------------------------------------------------------------------------*
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
-void CONTACT::CoNitscheStrategy::SetParentState(const std::string& statename,
+void CONTACT::CoNitscheStrategy::SetParentState(const enum MORTAR::StateType& statename,
     const Epetra_Vector& vec)
 {
   Teuchos::RCP<DRT::Discretization> dis = DRT::Problem::Instance()->GetDis("structure");
   if (dis==Teuchos::null)
     dserror("didn't get my discretization");
-  if (statename == "displacement")
+  if (statename==MORTAR::state_new_displacement)
   {
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(),true));
     LINALG::Export(vec,*global);
