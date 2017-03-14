@@ -1,0 +1,3 @@
+List of major features that were removed from BACI, including date and revision where code was removed
+
+
