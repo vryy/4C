@@ -27,10 +27,8 @@
 #include "../drt_io/io_pstream.H"
 #include "../drt_nurbs_discret/drt_knotvector.H"
 
-#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/trim_all.hpp>
-#endif
+#include "drt_utils_reader.H"
+
 #include <boost/lexical_cast.hpp>
 
 #include <Epetra_Time.h>
@@ -46,36 +44,7 @@
 #endif
 #define TOL_N 1.0e-14
 
-/*----------------------------------------------------------------------*/
-/*!
-  \brief remove all leading and trailing whitespaces from a string.
 
-  Note: consecutive whitespaces inside the std::string will be reduced to a
-  single space.
-
-  \author u.kue
-  \date 03/07
-*/
-/*----------------------------------------------------------------------*/
-static std::string trim(const std::string& line)
-{
-#if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
-  return boost::algorithm::trim_all_copy(boost::algorithm::replace_all_copy(line,"\t"," "));
-#else
-  std::istringstream t;
-  std::string s;
-  std::string newline;
-  t.str(line);
-  while (t >> s)
-  {
-    newline.append(s);
-    newline.append(" ");
-  }
-  if (newline.size()>0)
-    newline.resize(newline.size()-1);
-  return newline;
-#endif
-}
 
 
 namespace DRT
@@ -1003,16 +972,13 @@ void DatFileReader::ReadDat()
     // loop all input lines
     while (getline(file, line))
     {
-      // remove comments
-      std::string::size_type loc = line.find("//");
-      if (loc != std::string::npos)
-      {
-        line = line.substr(0,loc);
-      }
-
-      // remove trailing and leading whitespaces
+      // remove comments, trailing and leading whitespaces
       // compact internal whitespaces
-      line = trim(line);
+      line = DRT::UTILS::strip_comment(line);
+
+      // line is now empty
+      if(line.size() == 0)
+        continue;
 
       // exclude all special sections
       // this includes the section header and all lines in that section

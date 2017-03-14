@@ -21,6 +21,7 @@
 #include "drt_utils_parmetis.H"
 #include "drt_utils_factory.H"
 #include "drt_utils_parallel.H"
+#include "drt_utils_reader.H"
 #include "drt_discret.H"
 #include "drt_parobject.H"
 #include "../drt_particle/particle_node.H"
@@ -147,6 +148,14 @@ void DomainReader::Partition(int* nodeoffset)
       std::string line;
       for (int i=0; getline(file, line); ++i)
       {
+        // remove comments, trailing and leading whitespaces
+        // compact internal whitespaces
+        line = DRT::UTILS::strip_comment(line);
+
+        // line is now empty
+        if(line.size() == 0)
+          continue;
+
         if (line.find("--")==0)
         {
           break;
