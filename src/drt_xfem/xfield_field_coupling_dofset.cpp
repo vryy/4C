@@ -20,10 +20,10 @@
  *----------------------------------------------------------------------------*/
 XFEM::XFieldField::CouplingDofSet::CouplingDofSet(
     const int& my_num_reserve_dof_per_node,
-    const int& g_num_nodes,
+    const int& g_node_index_range,
     const int& g_num_std_dof_per_node,
     const std::map<int,int>& my_num_dofs_per_node)
-    : DRT::FixedSizeDofSet(my_num_reserve_dof_per_node,g_num_nodes),
+    : DRT::FixedSizeDofSet(my_num_reserve_dof_per_node,g_node_index_range),
       my_num_dof_per_node_(my_num_dofs_per_node),
       g_num_std_dof_per_node_(g_num_std_dof_per_node)
 {

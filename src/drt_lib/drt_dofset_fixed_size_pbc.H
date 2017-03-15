@@ -57,8 +57,8 @@ public:
   \return void
 
   */
-  FixedSizePBCDofSet(Teuchos::RCP<map<int,std::vector<int> > >  couplednodes, int numreservedofpernode, int numnodes)
-    :FixedSizeDofSet(numreservedofpernode,numnodes), PBCDofSet(couplednodes)
+  FixedSizePBCDofSet(Teuchos::RCP<map<int,std::vector<int> > >  couplednodes, int numreservedofpernode, int nodeindexrange)
+    :FixedSizeDofSet(numreservedofpernode,nodeindexrange), PBCDofSet(couplednodes)
   {
     return;
   }

@@ -627,10 +627,18 @@ void XFEM::MultiFieldMapExtractor::BuildInterfaceCouplingDofSet()
     sl_max_num_dof_per_inode.clear();
   }
 
+  // get the node index range over all procs
+  if(g_interface_node_gid_set_.empty())
+    dserror("set of global nodes is empty?!");
+  const int min_all_gid = *(g_interface_node_gid_set_.begin());
+  const int max_all_gid = *(g_interface_node_gid_set_.rbegin());
+
+  const int g_node_index_range = max_all_gid-min_all_gid+1;
+
   // create a new xfield/field coupling DoF set
   icoupl_dofset_ =
       Teuchos::rcp(new XFEM::XFieldField::CouplingDofSet(
-          max_num_reserved_dofs_per_node_,GInterfaceNodeGidSet().size(),
+          max_num_reserved_dofs_per_node_,g_node_index_range,
           g_num_std_dof,ma_max_num_dof_per_inode));
 
   // set the new dof-set and finish the interface discretization

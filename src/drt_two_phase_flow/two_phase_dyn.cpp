@@ -479,9 +479,13 @@ void fluid_xfem_ls_drt(int restart)
    const Teuchos::ParameterList& xdyn = problem->XFEMGeneralParams();
 
    // Reserve DoF's for fluid
-   int numglobalnodes = fluiddis->NumGlobalNodes();
+   const Epetra_Map * noderowmap = xfluiddis->NodeRowMap();
+   if(noderowmap == NULL)
+     dserror("we expect a fill-complete call before!");
+   int nodeindexrange = noderowmap->MaxAllGID()-noderowmap->MinAllGID()+1; //if id's are not continuous numbered
+
    int maxNumMyReservedDofsperNode = (xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
+   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,nodeindexrange));
 
    fluiddis->ReplaceDofSet(xfluid_dofset, maxdofset, true );
 

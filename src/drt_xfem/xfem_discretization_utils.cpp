@@ -196,10 +196,14 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   if (!xdis->Filled())
     xdis->FillComplete();
 
+  const Epetra_Map * noderowmap = xdis->NodeRowMap();
+  if(noderowmap == NULL)
+    dserror("we expect a fill-complete call before!");
+
   // now we can reserve dofs for xfem discretization
-  int numglobalnodes = xdis->NumGlobalNodes();
+  int nodeindexrange = noderowmap->MaxAllGID()-noderowmap->MinAllGID()+1; //if id's are not continuous numbered
   int maxNumMyReservedDofsperNode = (xgen_params.get<int>("MAX_NUM_DOFSETS"))*numdof;
-    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,numglobalnodes));
+    Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofsperNode,nodeindexrange));
 
   const int fluid_nds = 0;
   xdis->ReplaceDofSet(fluid_nds, maxdofset, true ); //fluid dofset has nds = 0

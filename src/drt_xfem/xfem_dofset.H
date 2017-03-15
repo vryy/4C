@@ -46,7 +46,7 @@ namespace XFEM
     XFEMDofSet( GEO::CutWizard& wizard,
         int numMyReservedDofsperNode,
         DRT::Discretization& dis )
-        : FixedSizeDofSet(numMyReservedDofsperNode,dis.NumGlobalNodes()),
+        : FixedSizeDofSet(numMyReservedDofsperNode, dis.NodeRowMap()->MaxAllGID()-dis.NodeRowMap()->MinAllGID()+1),
           wizard_( wizard ),
           dis_(dis)
     {

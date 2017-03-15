@@ -35,7 +35,7 @@ namespace XFieldField {
      *
      *  \param my_num_reserve_dof_per_node (in): reserve this number of DoF's for all nodes
      *                                           (e.g. standard DoFs + enrichment DoFs)
-     *  \param g_num_nodes                 (in): global number of nodes
+     *  \param g_node_index_range          (in): index range of nodes
      *  \param g_num_std_dof_per_node      (in): number of standard DoF's per node (w/o enriched DoFs)
      *  \param my_num_dofs_per_node        (in): map containing the actual number of DoFs per node
      *
@@ -43,7 +43,7 @@ namespace XFieldField {
      *  \date 09/16 */
     CouplingDofSet(
         const int& numreservedofpernode,
-        const int& numnodes,
+        const int& g_node_index_range,
         const int& g_num_std_dof_per_node,
         const std::map<int,int>& my_num_dofs_per_node);
 

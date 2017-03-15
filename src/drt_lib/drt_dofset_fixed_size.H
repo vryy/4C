@@ -55,9 +55,9 @@ public:
   \return void
 
   */
-  FixedSizeDofSet(int numreservedofpernode, int numnodes)
+  FixedSizeDofSet(int numreservedofpernode, int nodeindexrange)
     :DofSet(),
-     numMyReservedDofs_(numreservedofpernode*numnodes),
+     numMyReservedDofs_(numreservedofpernode*nodeindexrange),
      numMyReservedDofsperNode_(numreservedofpernode)
   {
     minGID_ = -1;
@@ -82,7 +82,7 @@ public:
   /// Get maximum GID of degree of freedom row map
   virtual int MaxAllGID() const
   {
-    return DofSet::MaxAllGID() + numMyReservedDofsperNode_;
+    return MinAllGID() + numMyReservedDofs_;
   }
 
   /// Get minimum GID of degree of freedom row map
