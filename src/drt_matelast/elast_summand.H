@@ -304,7 +304,7 @@ namespace MAT
       /// add the derivatives of a coupled strain energy functions associated with a purely isochoric deformation
       /// This is not to be called in "usual" calculation of stress/stiffness since the effects are already included
       /// in the derivatives w.r.t. to the invariants. For special applications, those derivatives may be interesting.
-      virtual void AddCoupDerivVol(const double j, double& dPj1, double& dPj2, double& dPj3)
+      virtual void AddCoupDerivVol(const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
       {
         return; // do nothing
       }

@@ -686,7 +686,7 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(
   {
     potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(modinv(2),dPmodI(2),ddPmodII(2),dddPmodIII);
+    potsum_[p]->AddCoupDerivVol(modinv(2),&dPmodI(2),&ddPmodII(2),&dddPmodIII,NULL);
   }
 
   // inverse RCG
@@ -738,7 +738,7 @@ void MAT::PlasticElastHyper::EvaluateCTvol(
   {
     potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(modinv(2),dPmodI(2),ddPmodII(2),dddPmodIII);
+    potsum_[p]->AddCoupDerivVol(modinv(2),&dPmodI(2),&ddPmodII(2),&dddPmodIII,NULL);
   }
 
   // clear
@@ -787,7 +787,7 @@ void MAT::PlasticElastHyper::EvaluateGoughJoule(const double j,
   {
     potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(modinv(2),dPmodI(2),ddPmodII(2),dddPmodIII);
+    potsum_[p]->AddCoupDerivVol(modinv(2),&dPmodI(2),&ddPmodII(2),&dddPmodIII,NULL);
   }
 
   he_fac = -3.*Cte()*ddPmodII(2);

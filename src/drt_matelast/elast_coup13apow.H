@@ -127,7 +127,7 @@ namespace ELASTIC
         );
 
     /// add the derivatives of a coupled strain energy functions associated with a purely isochoric deformation
-    virtual void AddCoupDerivVol(const double j, double& dPj1, double& dPj2, double& dPj3)
+    virtual void AddCoupDerivVol(const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
     {dserror("not implemented");}
 
     /// @name Access methods

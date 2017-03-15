@@ -141,7 +141,7 @@ namespace ELASTIC
                                                  const int eleGID);                       ///< element GID
 
     /// add the derivatives of a coupled strain energy functions associated with a purely isochoric deformation
-    virtual void AddCoupDerivVol(const double j, double& dPj1, double& dPj2, double& dPj3);
+    virtual void AddCoupDerivVol(const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4);
 
     /// add young's modulus equivalent
     virtual void AddYoungsMod(double& young, double& shear, double& bulk) {young+=2.*Mue()*(1.+Nue());};

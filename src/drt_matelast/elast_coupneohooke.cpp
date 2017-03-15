@@ -134,12 +134,21 @@ void MAT::ELASTIC::CoupNeoHooke::AddThirdDerivativesPrincipalIso(LINALG::Matrix<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::CoupNeoHooke::AddCoupDerivVol(const double J, double& dPj1, double& dPj2, double& dPj3)
+void MAT::ELASTIC::CoupNeoHooke::AddCoupDerivVol(
+    const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {
   const double beta  = params_->beta_;
   const double c     = params_->c_;
 
-  dPj1+=2.*c*pow(J,-1./3.)-2.*c*pow(J*J,-beta)/J;
-  dPj2+=-2./3.*c*pow(J,-4./3.)+4.*c*pow(J*J,-beta)*beta*pow(J,-2.)+2.*c*pow(J*J,-beta)*pow(J,-2.);
-  dPj3+=0.8e1/0.9e1*c*pow(J,-0.7e1/3.)-0.8e1*c*pow(J*J,-beta)*beta*beta*pow(J,-3.)-0.12e2*c*pow(J*J,-beta)*beta*pow(J,-3.)-4.*c*pow(J*J,-beta)*pow(J,-3.);
+  if (dPj1)
+    *dPj1+=2.*c*pow(J,-1./3.)-2.*c*pow(J*J,-beta)/J;
+  if (dPj2)
+    *dPj2+=-2./3.*c*pow(J,-4./3.)+4.*c*pow(J*J,-beta)*beta*pow(J,-2.)+2.*c*pow(J*J,-beta)*pow(J,-2.);
+  if (dPj3)
+    *dPj3+=0.8e1/0.9e1*c*pow(J,-0.7e1/3.)-0.8e1*c*pow(J*J,-beta)*beta*beta*pow(J,-3.)
+          -0.12e2*c*pow(J*J,-beta)*beta*pow(J,-3.)-4.*c*pow(J*J,-beta)*pow(J,-3.);
+  if (dPj4)
+    *dPj4+=-56./27.*c*pow(J,-10./3.)+16.*c*pow(J*J,-beta)*pow(beta,3.)*pow(J,-4.)
+    +48.*c*pow(J*J,-beta)*beta*beta*pow(J,-4.)+44.*c*pow(J*J,-beta)*beta*pow(J,-4.)
+  +12.*c*pow(J*J,-beta)*pow(J,-4.);
 }
