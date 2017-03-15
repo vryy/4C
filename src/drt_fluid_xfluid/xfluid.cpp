@@ -142,6 +142,8 @@ void FLD::XFluid::AddAdditionalScalarDofsetAndCoupling()
   // assign degrees of freedom (as a new dofset has been added!)
   xdiscret_->FillComplete(true, false,false);
 
+  xdiscret_->GetDofSetProxy()->PrintAllDofsets(xdiscret_->Comm());
+
   //TODO: check if we can add this dofset and the actdis all the time, even if there is a scatra dis (maybe we would obtain two two-phase conditions?)
   levelsetcoupl_dis_.push_back(xdiscret_);
 }
