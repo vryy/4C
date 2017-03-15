@@ -176,7 +176,7 @@ void test_tet10_quad9_moved();
 void test_tet4_quad4_double();
 void test_tet4_tri3_double();
 void test_benedikt1();
-void test_christoph_1();
+//void test_christoph_1();
 
 void test_ls_hex8_florian1();
 void test_ls_hex8_florian2();
@@ -594,7 +594,7 @@ int main( int argc, char ** argv )
   std::cout << "functable[tet4_tri3_double] = test_tet4_tri3_double; RUNS INTO DSERROR IN GLOBAL CONFIGURATION!" << std::endl;
 #endif
   functable["benedikt1"] = test_benedikt1;
-  functable["test_christoph_1"] = test_christoph_1;
+  //functable["test_christoph_1"] = test_christoph_1;
 
   functable["ls_hex8_florian1"] = test_ls_hex8_florian1;
   functable["ls_hex8_florian2"] = test_ls_hex8_florian2;
