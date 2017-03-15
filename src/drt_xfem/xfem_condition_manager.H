@@ -790,6 +790,12 @@ private:
       XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type
   );
 
+  /// check if the vector maps are equal
+  void CheckForEqualMaps(
+      const Teuchos::RCP<Epetra_Vector> & vec1,
+      const Teuchos::RCP<Epetra_Vector> & vec2
+  );
+
   /// combine two levelset fields via boolean type "union" set operation and put result into vec1
   void SetMinimum(
       Teuchos::RCP<Epetra_Vector> & vec1,

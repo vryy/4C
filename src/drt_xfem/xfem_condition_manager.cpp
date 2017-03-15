@@ -438,14 +438,18 @@ void XFEM::ConditionManager::UpdateLevelSetField()
       if(coupling->GetBooleanCombination() != CouplingBase::ls_none)
         dserror("the first Boundary-Condition level-set coupling (WDBC or NEUMANN) should always use BOOLEANTYPE=none ! Check your boolean operations");
 
-      bg_phinp_->Update(1.0, *(coupling->GetLevelSetField()), 0.0);
+      Teuchos::RCP<Epetra_Vector> tmp = coupling->GetLevelSetFieldAsNodeRowVector();
+      const int err = bg_phinp_->Update(1.0, *tmp, 0.0);
+      if(err) dserror("update did not work - vectors based on wrong maps?");
     }
     else  // apply boolean combinations for the further level-set fields
     {
       if(ls_boolean_type == CouplingBase::ls_none)
         dserror("there is a level-set coupling for which you did not specify the the BOOLEANTYPE! Check your boolean operations");
 
-      CombineLevelSetField(bg_phinp_, coupling->GetLevelSetField(), lsc, node_lsc_coup_idx, ls_boolean_type);
+      //need to live here
+      Teuchos::RCP<Epetra_Vector> tmp = coupling->GetLevelSetFieldAsNodeRowVector();
+      CombineLevelSetField(bg_phinp_, tmp, lsc, node_lsc_coup_idx, ls_boolean_type);
     }
 
     if(coupling->ApplyComplementaryOperator())
@@ -521,6 +525,17 @@ void XFEM::ConditionManager::CombineLevelSetField(
 
 }
 
+
+void XFEM::ConditionManager::CheckForEqualMaps(
+    const Teuchos::RCP<Epetra_Vector> & vec1,
+    const Teuchos::RCP<Epetra_Vector> & vec2
+)
+{
+  if(not vec1->Map().PointSameAs(vec2->Map()))
+    dserror("maps do not match!");
+}
+
+
 void XFEM::ConditionManager::SetMinimum(
     Teuchos::RCP<Epetra_Vector> & vec1,
     Teuchos::RCP<Epetra_Vector> & vec2,
@@ -529,6 +544,8 @@ void XFEM::ConditionManager::SetMinimum(
 )
 {
   int err=-1;
+
+  CheckForEqualMaps(vec1, vec2);
 
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<bg_dis_->NumMyRowNodes();lnodeid++)
@@ -549,6 +566,7 @@ void XFEM::ConditionManager::SetMinimum(
   }
 }
 
+
 void XFEM::ConditionManager::SetMaximum(
     Teuchos::RCP<Epetra_Vector> & vec1,
     Teuchos::RCP<Epetra_Vector> & vec2,
@@ -557,6 +575,8 @@ void XFEM::ConditionManager::SetMaximum(
 )
 {
   int err=-1;
+
+  CheckForEqualMaps(vec1, vec2);
 
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<bg_dis_->NumMyRowNodes();lnodeid++)
@@ -586,6 +606,8 @@ void XFEM::ConditionManager::SetDifference(
 {
   int err=-1;
 
+  CheckForEqualMaps(vec1, vec2);
+
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<bg_dis_->NumMyRowNodes();lnodeid++)
   {
@@ -612,6 +634,8 @@ void XFEM::ConditionManager::SetSymmetricDifference(
 )
 {
   int err=-1;
+
+  CheckForEqualMaps(vec1, vec2);
 
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<bg_dis_->NumMyRowNodes();lnodeid++)

@@ -63,6 +63,8 @@ XFEM::LevelSetCoupling::LevelSetCoupling(
 {
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCoupling::SetCouplingDofsets()
 {
   bg_nds_phi_ = GetCouplingDofsetNds("phi_scatra_proxy_in_fluid");
@@ -462,9 +464,15 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
     double final_val = curvefac*value;
 
-    // now copy the values
-    err = cutter_phinp_->ReplaceMyValue(lnodeid,0,final_val);
-    if (err != 0) dserror("error while inserting value into cutter_phinp_");
+    const std::vector<int> lm = cutter_dis_->Dof(cutter_nds_phi_, lnode);
+
+    if(lm.size()!=1)
+      dserror("assume 1 dof in cutterdis-Dofset for phi vector");
+
+    const int gid = lm[0];
+    const int lid = cutter_phinp_->Map().LID(gid);
+    err = cutter_phinp_->ReplaceMyValues(1,&final_val,&lid);
+    if (err) dserror("could not replace values for phi vector");
   }
 
 
@@ -614,6 +622,31 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
   {
     dserror("nonmatching discretizations not supported so far! - Implement a mesh projector?");
   }
+}
+
+Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::GetLevelSetFieldAsNodeRowVector()
+{
+  Teuchos::RCP<Epetra_Vector> bg_phinp_nodemap_ = LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
+
+  // loop the nodes
+  for(int lnodeid=0; lnodeid<bg_dis_->NumMyRowNodes(); ++lnodeid)
+  {
+    DRT::Node* node = bg_dis_->lRowNode(lnodeid);
+    std::vector<int> lm_source;
+    bg_dis_->Dof( bg_nds_phi_, node, lm_source );
+
+    std::vector<double> val_source;
+    DRT::UTILS::ExtractMyValues(*phinp_, val_source, lm_source);
+
+    if(val_source.size()!= 1)
+      dserror("we expect only one dof");
+
+    const int lid_target = bg_dis_->NodeRowMap()->LID(node->Id());
+    const int err = bg_phinp_nodemap_->ReplaceMyValues(1,&val_source[0],&lid_target);
+    if (err) dserror("could not replace values for phi vector");
+  }
+
+  return bg_phinp_nodemap_;
 }
 
 
@@ -1603,7 +1636,14 @@ void XFEM::LevelSetCouplingTwoPhase::WriteAccess_GeometricQuantities(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingTwoPhase::ExportGeometricQuantities()
 {
-  std::cout << "CALLED EXPORT ROUTINE!!!" << std::endl;
+  // map the cutterdis-based phinp to the bgdis-noderowmap based phinp
+  MapCutterToBgVector(
+      cutter_dis_,
+      cutter_phinp_,
+      cutter_nds_phi_,
+      bg_dis_,
+      phinp_,
+      bg_nds_phi_);
 
   if(require_smoothedgradphi_)
       LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
@@ -1611,7 +1651,7 @@ void XFEM::LevelSetCouplingTwoPhase::ExportGeometricQuantities()
   if(require_nodalcurvature_)
     LINALG::Export(*curvaturenp_node_, *curvaturenp_node_col_);
 
-  // column vectors are uptodate gain
+  // column vectors are up to date gain
   col_vectors_valid_=true;
 }
 

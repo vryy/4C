@@ -69,7 +69,7 @@ public:
       const Teuchos::RCP<Epetra_Vector> &       source_vec_dofbased,
       const int                                 source_nds,
       const Teuchos::RCP<DRT::Discretization> & target_dis,
-      const Teuchos::RCP<Epetra_Vector> &       target_vec_nodebased,
+      const Teuchos::RCP<Epetra_Vector> &       target_vec_dofbased,
       const int                                 target_nds
   );
 
@@ -113,7 +113,7 @@ public:
       const bool gmsh_debug_out_screen
   );
 
-  Teuchos::RCP<Epetra_Vector> & GetLevelSetField(){ return cutter_phinp_; }
+  Teuchos::RCP<Epetra_Vector> GetLevelSetFieldAsNodeRowVector();
 
   virtual void ReadRestart(
       const int step,
