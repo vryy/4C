@@ -693,10 +693,13 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
   {
     bool write_file = false;
 
-    if(step_ == step and fabs(time_-time)<1e-14)
+    if(not HaveResultOrMeshFileChanged())
     {
-      // new step already created
-      return;
+      // do not perform the step if already called
+      if(step_ == step and fabs(time_-time)<1e-14)
+      {
+        return;
+      }
     }
 
     step_ = step;

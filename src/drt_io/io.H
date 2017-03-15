@@ -276,6 +276,15 @@ public:
 
   //! write new mesh and result file next time it is possible
   virtual void CreateNewResultAndMeshFile(){resultfile_changed_=-1;meshfile_changed_=-1;};
+
+  virtual bool HaveResultOrMeshFileChanged()
+  {
+    if(resultfile_changed_==-1 or meshfile_changed_==-1)
+      return true;
+
+    return false;
+  }
+
   //! write new "field" group to control file including node and element chunks
   virtual void WriteMesh(const int step, const double time);
   // for MLMC purposes do not write new meshfile but write name of base mesh file to controlfile
