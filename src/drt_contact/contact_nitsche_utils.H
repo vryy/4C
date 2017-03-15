@@ -20,6 +20,7 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_mortar/mortar_element.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
 namespace MORTAR
@@ -43,7 +44,7 @@ public:
 
 };
 
-template<int num_parent_dof>
+template<DRT::Element::DiscretizationType parent_distype>
 class MortarElementNitscheData : public MortarElementNitscheContainer
 {
 public:
@@ -60,8 +61,14 @@ public:
 
 
 private:
-  LINALG::Matrix<num_parent_dof,1> rhs_;
-  std::map<int,LINALG::Matrix<num_parent_dof,1> > k_;
+  LINALG::Matrix<
+  DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement
+  *
+  DRT::UTILS::DisTypeToDim<parent_distype>::dim,1> rhs_;
+  std::map<int,LINALG::Matrix<
+  DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement
+    *
+    DRT::UTILS::DisTypeToDim<parent_distype>::dim,1> > k_;
 };
 
 }

@@ -1865,14 +1865,18 @@ void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalueCombined()
  *----------------------------------------------------------------------*/
 MORTAR::MortarElementNitscheContainer& MORTAR::MortarElement::GetNitscheContainer()
 {
+  if (!ParentElement())
+    dserror("parent element pointer not set");
   if (nitsche_container_==Teuchos::null)
-    switch (MoData().ParentDof().size())
+    switch (ParentElement()->Shape())
     {
-    case 0: dserror("parent dofs not set"); break;
-    case  8: nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData< 8>()); break;
-    case 12: nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData<12>()); break;
-    case 24: nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData<24>()); break;
-    default: dserror("this size of Nitsche data container not ready. Just add it here...");
+    case  DRT::Element::hex8:
+      nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData<DRT::Element::hex8>());
+      break;
+    case  DRT::Element::tet4:
+      nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData<DRT::Element::tet4>());
+      break;
+    default: dserror("Nitsche data container not ready. Just add it here...");
     }
   return *nitsche_container_;
 }
