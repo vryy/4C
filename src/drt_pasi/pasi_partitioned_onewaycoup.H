@@ -47,23 +47,6 @@ public:
   //! timeloop of coupled problem
   virtual void Timeloop();
 
-protected:
-
-  //! structural time step
-  virtual void StructStep();
-
-  //! update particle wall
-  virtual void UpdateParticleWall();
-
-  //! structural output
-  virtual void StructOutput();
-
-  //! particle time step
-  virtual void ParticleStep();
-
-  //! particle output
-  virtual void ParticleOutput();
-
 }; // class PASI_PartOneWayCoup: public PartitionedAlgo
 
 } // namespace PASI

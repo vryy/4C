@@ -52,6 +52,13 @@ public:
   //! setup class variables [derived]
   virtual void Setup();
 
+  //! get pointer to force vector at time level n+1 (full structural map)
+  //! interface part is inserted in ADAPTER::PASIStructureWrapper
+  const Teuchos::RCP<Epetra_Vector>& GetInterfaceForceNpPtr()
+  {
+    return interface_force_np_ptr_;
+  };
+
   //! @name Functions which are derived from the base generic class
   //! @{
   //! [derived]
@@ -141,6 +148,11 @@ public:
   //! [derived]
   virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
   //! @}
+
+private:
+
+  //! pasi interface force at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> interface_force_np_ptr_;
 
 }; // class PartitionedPASI: public Generic
 

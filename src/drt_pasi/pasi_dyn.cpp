@@ -17,6 +17,7 @@
  *----------------------------------------------------------------------*/
 #include "pasi_dyn.H"
 #include "pasi_partitioned_onewaycoup.H"
+#include "pasi_partitioned_twowaycoup.H"
 #include "pasi_utils.H"
 
 #include <Epetra_MpiComm.h>
@@ -72,10 +73,27 @@ void pasi_dyn()
     break;
   } // case INPAR::PASI::partitioned_onewaycoup (default)
 
+  case INPAR::PASI::partitioned_twowaycoup:
+  {
+    algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup(comm,pasi_params));
+    break;
+  } // case INPAR::PASI::partitioned_twowaycoup
+
+  case INPAR::PASI::partitioned_twowaycoup_forcerelax:
+  {
+    algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup_ForceRelax(comm,pasi_params));
+    break;
+  } // case INPAR::PASI::partitioned_twowaycoup_forcerelax
+
+  case INPAR::PASI::partitioned_twowaycoup_forcerelaxaitken:
+  {
+    algo = Teuchos::rcp(new PASI::PASI_PartTwoWayCoup_ForceRelaxAitken(comm,pasi_params));
+    break;
+  } // case INPAR::PASI::partitioned_twowaycoup_forcerelaxaitken
+
   default:
   {
-    dserror("No valid coupling type for particle structure interaction specified.\n"
-            "Make sure that the parameter COUPALGO is set to 'partitioned_onewaycoup'.");
+    dserror("No valid coupling type for particle structure interaction specified.");
     break;
   } // default
 

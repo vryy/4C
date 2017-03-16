@@ -139,16 +139,22 @@ protected:
   virtual void PrepareTimeStep(bool printheader);
 
   //! structural time step
-  virtual void StructStep() = 0;
-
-  //! structural output
-  virtual void StructOutput() = 0;
+  virtual void StructStep();
 
   //! particle time step
-  virtual void ParticleStep() = 0;
+  virtual void ParticleStep();
+
+  //! set structural displacements
+  virtual void SetStructDispVel(
+      Teuchos::RCP<const Epetra_Vector> dispnp,  //! structural displacements \f$t_{n+1}\f$
+      Teuchos::RCP<const Epetra_Vector> velnp    //! structural velocities at \f$t_{n+1}\f$
+      );
+
+  //! structural output
+  virtual void StructOutput();
 
   //! particle output
-  virtual void ParticleOutput() = 0;
+  virtual void ParticleOutput();
 
   //! check if \ref Setup() was called
   void CheckIsSetup()

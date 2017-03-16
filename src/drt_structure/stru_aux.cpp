@@ -4,12 +4,13 @@
 
 \brief structure-specific utils and auxiliary functions
 
-<pre>
-Maintainer: Alexander Popp
+\level 1
+
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -80,6 +81,7 @@ void STR::AUX::MapExtractor::Setup(const DRT::Discretization& dis, const Epetra_
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"AleWear",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FPSICoupling",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"IMMERSEDCoupling",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"ParticleWall",0,ndim)));
 
   mcs.SetupExtractor(dis,fullmap,*this);
 }
@@ -95,6 +97,7 @@ Teuchos::RCP<std::set<int> > STR::AUX::MapExtractor::ConditionedElementMap(const
   Teuchos::RCP<std::set<int> > condelements4 = DRT::UTILS::ConditionedElementMap(dis,"AleWear");
   Teuchos::RCP<std::set<int> > condelements5 = DRT::UTILS::ConditionedElementMap(dis,"FPSICoupling");
   Teuchos::RCP<std::set<int> > condelements6 = DRT::UTILS::ConditionedElementMap(dis,"IMMERSEDCoupling");
+  Teuchos::RCP<std::set<int> > condelements7 = DRT::UTILS::ConditionedElementMap(dis,"ParticleWall");
 
 
   std::copy(condelements2->begin(),condelements2->end(),
@@ -104,6 +107,10 @@ Teuchos::RCP<std::set<int> > STR::AUX::MapExtractor::ConditionedElementMap(const
   std::copy(condelements4->begin(),condelements4->end(),
             std::inserter(*condelements,condelements->begin()));
   std::copy(condelements5->begin(),condelements5->end(),
+            std::inserter(*condelements,condelements->begin()));
+  std::copy(condelements6->begin(),condelements6->end(),
+            std::inserter(*condelements,condelements->begin()));
+  std::copy(condelements7->begin(),condelements7->end(),
             std::inserter(*condelements,condelements->begin()));
   return condelements;
 }

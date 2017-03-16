@@ -2445,6 +2445,7 @@ set(OBJS_DRT_PASI
 src/drt_pasi/pasi_dyn.cpp
 src/drt_pasi/pasi_partitioned.cpp
 src/drt_pasi/pasi_partitioned_onewaycoup.cpp
+src/drt_pasi/pasi_partitioned_twowaycoup.cpp
 src/drt_pasi/pasi_utils.cpp
 src/drt_pasi/pasi_str_model_evaluator_partitioned.cpp
 )

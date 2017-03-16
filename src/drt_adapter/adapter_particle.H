@@ -23,6 +23,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
+#include <Epetra_FEVector.h>
 
 
 /*----------------------------------------------------------------------*
@@ -84,6 +85,9 @@ namespace ADAPTER
 
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
+
+    //! calculate particle force on wall discretization
+    virtual void ParticleWallForce(Teuchos::RCP<Epetra_FEVector> f_structure) = 0;
 
     //! initialize particle problem
     virtual void Init() = 0;

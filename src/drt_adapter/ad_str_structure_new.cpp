@@ -429,6 +429,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
     case prb_fsi_xfem:
+    case prb_pasi:
     {
       if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
           isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic> > ("Partitioned Coupling Model"))

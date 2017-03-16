@@ -138,6 +138,9 @@ namespace PARTICLE
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
 
+    //! calculate particle force on wall discretization
+    virtual void ParticleWallForce(Teuchos::RCP<Epetra_FEVector> f_structure);
+
     /// initialize time integration
     virtual void Init();
 

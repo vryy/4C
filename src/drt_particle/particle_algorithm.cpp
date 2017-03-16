@@ -254,6 +254,9 @@ void PARTICLE::Algorithm::Init(bool restarted)
     // get input parameters for particles
     const Teuchos::ParameterList& particledyn = DRT::Problem::Instance()->ParticleParams();
 
+    // access structure and build particle walls
+    AccessStructure();
+
     // create time integrator based on structural time integration
     Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
         Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(particledyn, BinStrategy()->BinDiscret()));
@@ -278,9 +281,6 @@ void PARTICLE::Algorithm::Init(bool restarted)
     // set up Heat Sources in a map
     SetUpHeatSources();
     UpdateHeatSourcesConnectivity(false);
-
-    // access structure and build particle walls
-    AccessStructure();
   }
   else
   {

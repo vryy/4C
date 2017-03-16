@@ -90,7 +90,8 @@ namespace PARTICLE
       double dt,
       Teuchos::RCP<Epetra_Vector> sysvec1,
       Teuchos::RCP<Epetra_Vector> sysvec2,
-      Teuchos::RCP<Epetra_Vector> sysvec3 = Teuchos::null
+      Teuchos::RCP<Epetra_Vector> sysvec3 = Teuchos::null,
+      Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::null
       ) = 0;
 
     /// assemble energies of particles
@@ -255,7 +256,8 @@ namespace PARTICLE
     const double dt,
     Teuchos::RCP<Epetra_Vector> f_contact,
     Teuchos::RCP<Epetra_Vector> m_contact,
-    Teuchos::RCP<Epetra_Vector> specEnthalpyDotn);
+    Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
+    Teuchos::RCP<Epetra_FEVector> f_structure);
 
   /// calculate contact with neighboring particles
   virtual void CalcNeighboringParticlesContact(
@@ -428,7 +430,8 @@ namespace PARTICLE
       double dt,
       Teuchos::RCP<Epetra_Vector> disn,
       Teuchos::RCP<Epetra_Vector> veln,
-      Teuchos::RCP<Epetra_Vector> specEnthalpyn);
+      Teuchos::RCP<Epetra_Vector> specEnthalpyn,
+      Teuchos::RCP<Epetra_FEVector> f_structure);
 
     /// contact for one event is evaluated
     void HandleCollision(

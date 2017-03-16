@@ -849,14 +849,14 @@ void PARTICLE::TimInt::OutputRestart
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and ((step_-restart_)%printscreen_==0))
   {
-    printf("====== Restart written in step %d\n", step_);
+    printf("====== Restart for field 'Particle' written in step %d\n", step_);
     fflush(stdout);
   }
 
   // info dedicated to processor error file
   if (printerrfile_)
   {
-    fprintf(errfile_, "====== Restart written in step %d\n", step_);
+    fprintf(errfile_, "====== Restart for field 'Particle' written in step %d\n", step_);
     fflush(errfile_);
   }
 
@@ -1544,4 +1544,33 @@ void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc, const double 
   {
     dserror("You are trying to apply gravity accelerations to a null pointer");
   }
+}
+
+/*----------------------------------------------------------------------*
+ | calculate particle force on wall discretization      sfuchs 03/2017  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimInt::ParticleWallForce(Teuchos::RCP<Epetra_FEVector> f_structure)
+{
+  // in IntegrateStep() the particle field is solved and thus here the
+  // states disn_, veln_ and accn_ correspond to time t_{n+1}
+
+  // apply Dirichlet BCs
+  ApplyDirichletBC(timen_, disn_, veln_, accn_, false);
+
+  // collision handler for particles
+  if(collhandler_ != Teuchos::null)
+  {
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+    {
+      collhandler_->Init(disn_, veln_, angVeln_, radiusn_, mass_, densityn_, specEnthalpyn_);
+    }
+    else
+    {
+      collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
+    }
+
+    intergy_ = collhandler_->EvaluateParticleContact((*dt_)[0], Teuchos::null, Teuchos::null, Teuchos::null, f_structure);
+  }
+
+  return;
 }

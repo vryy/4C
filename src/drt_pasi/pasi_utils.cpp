@@ -52,10 +52,25 @@ void PASI::UTILS::ChangeTimeParameter(
   if (comm.MyPID() == 0)
   {
     std::cout << "================= Overview of chosen time stepping: ==================" << std::endl;
-    std::cout << std::setw(20) << "Timestep:" << std::setw(15) << std::scientific  << std::setprecision(4) << pasi_params.get<double>("TIMESTEP") << std::endl;
-    std::cout << std::setw(20) << "Numstep:" << std::setw(15) << std::scientific  << std::setprecision(4) << pasi_params.get<int>("NUMSTEP") << std::endl;
-    std::cout << std::setw(20) << "Maxtime:" << std::setw(15) << std::scientific  << std::setprecision(4) << pasi_params.get<double>("MAXTIME") << std::endl;
+    std::cout << std::setw(20) << "" << std::setw(15) << "PASI" << std::setw(15) << "Particles" << std::setw(15) << "Structure" << std::endl;
+    // Timestep
+    std::cout << std::setw(20) << "Timestep:" << std::scientific << std::setprecision(4)
+    << std::setw(15) << pasi_params.get<double>("TIMESTEP")
+    << std::setw(15) << particle_params.get<double>("TIMESTEP")
+    << std::setw(15) << struct_params.get<double>("TIMESTEP") << std::endl;
+    // Numstep
+    std::cout << std::setw(20) << "Numstep:" << std::scientific << std::setprecision(4)
+    << std::setw(15) << pasi_params.get<int>("NUMSTEP")
+    << std::setw(15) << particle_params.get<int>("NUMSTEP")
+    << std::setw(15) << struct_params.get<int>("NUMSTEP") << std::endl;
+    // Maxtime
+    std::cout << std::setw(20) << "Maxtime:" << std::scientific << std::setprecision(4)
+    << std::setw(15) << pasi_params.get<double>("MAXTIME")
+    << std::setw(15) << particle_params.get<double>("MAXTIME")
+    << std::setw(15) << struct_params.get<double>("MAXTIME") << std::endl;
+    // Result every step
     std::cout << std::setw(20) << "Result every step:" << std::setw(15) << pasi_params.get<int>("RESULTSEVRY") << std::endl;
+    // Restart every step
     std::cout << std::setw(20) << "Restart every step:" << std::setw(15) << pasi_params.get<int>("RESTARTEVRY") << std::endl;
     std::cout << "======= currently equal for both structure and particle field ========" << std::endl;
   }
@@ -68,7 +83,6 @@ void PASI::UTILS::ChangeTimeParameter(
  *----------------------------------------------------------------------*/
 void PASI::UTILS::Logo()
 {
-  //FUCHS todo a Logo
   std::cout << "============================ Welcome to ==============================" << std::endl;
   std::cout << "  ___          _   _    _       ___ _               _                 " << std::endl;
   std::cout << " | _ \\__ _ _ _| |_(_)__| |___  / __| |_ _ _ _  _ __| |_ _  _ _ _ ___  " << std::endl;

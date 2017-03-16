@@ -17,12 +17,9 @@
  *----------------------------------------------------------------------*/
 #include "pasi_partitioned_onewaycoup.H"
 
-#include "../drt_adapter/adapter_particle.H"
 #include "../drt_adapter/ad_str_pasiwrapper.H"
 
 #include "../drt_particle/particle_algorithm.H"
-
-#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  | constructor                                           sfuchs 02/2017 |
@@ -62,14 +59,14 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
     // solve structural time step
     StructStep();
 
-    // update particle wall
-    UpdateParticleWall();
-
-    // output of structure field
-    StructOutput();
+    // set structural displacements and velocities in particle field
+    SetStructDispVel(structure_->Dispnp(),structure_->Velnp());
 
     // solve particle time step
     ParticleStep();
+
+    // output of structure field
+    StructOutput();
 
     // output of particle field
     ParticleOutput();
@@ -77,96 +74,3 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
 
   return;
 } // PASI::PASI_PartOneWayCoup::Timeloop()
-
-/*----------------------------------------------------------------------*
- | structural time step                                  sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartOneWayCoup::StructStep()
-{
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << "----------------------------------------------------------------------" << std::endl;
-    std::cout << "                           STRUCTURE SOLVER                           " << std::endl;
-    std::cout << "----------------------------------------------------------------------" << std::endl;
-  }
-
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartOneWayCoup::StructStep");
-
-  // Newton-Raphson iteration
-  structure_->Solve();
-
-  return;
-} // PASI::PASI_PartOneWayCoup::StructStep()
-
-/*----------------------------------------------------------------------*
- | structural output                                     sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartOneWayCoup::StructOutput()
-{
-  // calculate stresses, strains, energies
-  structure_->PrepareOutput();
-
-  // update all single field solvers
-  structure_->Update();
-
-  // write output to files
-  structure_->Output();
-
-  // write output to screen
-  structure_->PrintStep();
-
-  return;
-} // PASI::PASI_PartOneWayCoup::StructOutput()
-
-/*----------------------------------------------------------------------*
- | particle time step                                    sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartOneWayCoup::ParticleStep()
-{
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << "----------------------------------------------------------------------" << std::endl;
-    std::cout << "                           PARTICLE SOLVER                            " << std::endl;
-    std::cout << "----------------------------------------------------------------------" << std::endl;
-  }
-
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartOneWayCoup::ParticleStep");
-
-  particles_->AdapterParticle()->UpdateExtActions();
-
-  particles_->AdapterParticle()->IntegrateStep();
-
-  particles_->NormDemThermoAdapt();
-
-  return;
-} // PASI::PASI_PartOneWayCoup::ParticleStep()
-
-/*----------------------------------------------------------------------*
- | particle output                                       sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartOneWayCoup::ParticleOutput()
-{
-  particles_->AdapterParticle()->PrepareOutput();
-
-  particles_->UpdateConnectivity();
-
-  particles_->AdapterParticle()->Update();
-
-  particles_->Output();
-
-  return;
-} // PASI::PASI_PartOneWayCoup::ParticleOutput()
-
-/*----------------------------------------------------------------------*
- | update particle wall                                  sfuchs 02/2017 |
- *----------------------------------------------------------------------*/
-void PASI::PASI_PartOneWayCoup::UpdateParticleWall()
-{
-  // hand structural states to particle field
-  particles_->SetStructStates(structure_->Dispn(),structure_->Dispnp(),structure_->Velnp());
-
-  // set structural displacements to particle wall
-  particles_->SetUpWallDiscret();
-
-  return;
-} // PASI::PASI_PartOneWayCoup::UpdateParticleWall()

@@ -31,16 +31,24 @@
 #include "Epetra_Comm.h"
 
 /*----------------------------------------------------------------------*
+ | constructor                                           sfuchs 01/2017 |
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
+STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI(
+    ) :
+    interface_force_np_ptr_(Teuchos::null)
 {
   // empty
 } // STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
 
 /*----------------------------------------------------------------------*
+ | setup class variables                                 sfuchs 03/2017 |
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::PartitionedPASI::Setup()
 {
+  // pasi interface force at t_{n+1}
+  interface_force_np_ptr_ =
+      Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
+
   // set flag
   issetup_ = true;
 
@@ -80,6 +88,8 @@ bool STR::MODELEVALUATOR::PartitionedPASI::
     AssembleForce(Epetra_Vector& f,
       const double & timefac_np) const
 {
+  STR::AssembleVector(1.0,f,-timefac_np,*interface_force_np_ptr_);
+
   return true;
 } // STR::MODELEVALUATOR::PartitionedPASI::AssembleForce()
 

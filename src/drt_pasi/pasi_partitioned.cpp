@@ -16,7 +16,6 @@
  | headers                                               sfuchs 01/2017 |
  *----------------------------------------------------------------------*/
 #include "pasi_partitioned.H"
-#include "pasi_str_model_evaluator_partitioned.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -26,6 +25,8 @@
 #include "../drt_adapter/ad_str_pasiwrapper.H"
 
 #include "../drt_particle/particle_algorithm.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  | constructor                                           sfuchs 01/2017 |
@@ -65,8 +66,16 @@ void PASI::PartitionedAlgo::Init(
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // get parameter lists
-  const Teuchos::ParameterList& pasi_params = problem->PASIDynamicParams();
+  // note that time parameters for subproblems are set in PASI::UTILS::ChangeTimeParameter
   const Teuchos::ParameterList& struct_params = problem->StructuralDynamicParams();
+  const Teuchos::ParameterList& particle_params = problem->ParticleParams();
+
+  // safety check: moving_walls_ flag in particle algorithm is always set to 'Yes' for pasi simulations
+  if ((bool)DRT::INPUT::IntegralValue<int>(particle_params,"MOVING_WALLS") == false)
+  {
+    const_cast<Teuchos::ParameterList&>(particle_params).set<std::string>("MOVING_WALLS","Yes");
+    std::cout << "WARNING: MOVING_WALLS flag overwritten to 'Yes' for Particle Structure Interaction simulations!!!" << std::endl;
+  }
 
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
@@ -78,7 +87,7 @@ void PASI::PartitionedAlgo::Init(
 
     // initialize structure base algorithm
     struct_adapterbase_ptr_->Init(
-        pasi_params,
+        struct_params,
         const_cast<Teuchos::ParameterList&>(struct_params),
         structdis);
   }
@@ -90,7 +99,7 @@ void PASI::PartitionedAlgo::Init(
         "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!");
 
   // build particle algorithm with pasi_params for time settings
-  particles_ = Teuchos::rcp(new PARTICLE::Algorithm(comm,pasi_params));
+  particles_ = Teuchos::rcp(new PARTICLE::Algorithm(comm,particle_params));
 
   // init particle simulation
   particles_->Init(false);
@@ -173,6 +182,121 @@ void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
 
   return;
 } // PASI::PartitionedAlgo::PrepareTimeStep()
+
+/*----------------------------------------------------------------------*
+ | structural time step                                  sfuchs 02/2017 |
+ *----------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::StructStep()
+{
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "----------------------------------------------------------------------" << std::endl;
+    std::cout << "                           STRUCTURE SOLVER                           " << std::endl;
+    std::cout << "----------------------------------------------------------------------" << std::endl;
+  }
+
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::StructStep");
+
+  // Newton-Raphson iteration
+  structure_->Solve();
+
+  return;
+} // PASI::PartitionedAlgo::StructStep()
+
+/*----------------------------------------------------------------------*
+ | particle time step                                    sfuchs 02/2017 |
+ *----------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::ParticleStep()
+{
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "----------------------------------------------------------------------" << std::endl;
+    std::cout << "                           PARTICLE SOLVER                            " << std::endl;
+    std::cout << "----------------------------------------------------------------------" << std::endl;
+  }
+
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::ParticleStep");
+
+  // apply external forces or accelerations and to erase outdated vectors
+  particles_->AdapterParticle()->UpdateExtActions();
+
+  // integrate particle time step
+  particles_->AdapterParticle()->IntegrateStep();
+
+  // adaptions for Normal_DEM_thermo
+  particles_->NormDemThermoAdapt();
+
+  return;
+} // PASI::PartitionedAlgo::ParticleStep()
+
+/*----------------------------------------------------------------------*
+ | set structural displacements and velocities           sfuchs 02/2017 |
+ *----------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::SetStructDispVel(
+    Teuchos::RCP<const Epetra_Vector> dispnp,  //! structural displacements \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> velnp    //! structural velocities at \f$t_{n+1}\f$
+    )
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetStructDispVel");
+
+  double normbdrydispnp;
+  double normbdryvelnp;
+  dispnp->Norm2(&normbdrydispnp);
+  velnp->Norm2(&normbdryvelnp);
+
+  if(Comm().MyPID() == 0)
+  {
+    std::cout << "----------------------------------------------------------------------" << std::endl;
+    std::cout << " Norm of boundary displacements:  " << std::setprecision(7) << normbdrydispnp <<std::endl;
+    std::cout << " Norm of boundary velocities:     " << std::setprecision(7) << normbdryvelnp <<std::endl;
+    std::cout << "----------------------------------------------------------------------" << std::endl;
+  }
+
+  // hand structural states to particle field
+  particles_->SetStructStates(structure_->Dispn(),dispnp,velnp);
+
+  // set structural displacements to particle wall
+  particles_->SetUpWallDiscret();
+
+  return;
+} // PASI::PartitionedAlgo::UpdateParticleWall()
+
+/*----------------------------------------------------------------------*
+ | structural output                                     sfuchs 02/2017 |
+ *----------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::StructOutput()
+{
+  // calculate stresses, strains, energies
+  structure_->PrepareOutput();
+
+  // update all single field solvers
+  structure_->Update();
+
+  // write output to files
+  structure_->Output();
+
+  return;
+} // PASI::PartitionedAlgo::StructOutput()
+
+/*----------------------------------------------------------------------*
+ | particle output                                       sfuchs 02/2017 |
+ *----------------------------------------------------------------------*/
+void PASI::PartitionedAlgo::ParticleOutput()
+{
+  // calculate all output quantities
+  particles_->AdapterParticle()->PrepareOutput();
+
+  // update particle connectivity
+  particles_->UpdateConnectivity();
+
+  // update all single field solvers
+  particles_->AdapterParticle()->Update();
+
+  // write output to files
+  particles_->Output();
+
+  return;
+} // PASI::PartitionedAlgo::ParticleOutput()
 
 /*----------------------------------------------------------------------*
  | single fields are tested                              sfuchs 01/2017 |

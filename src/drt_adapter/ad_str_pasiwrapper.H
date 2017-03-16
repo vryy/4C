@@ -29,11 +29,15 @@
  *----------------------------------------------------------------------*/
 namespace STR
 {
+namespace AUX
+{
+class MapExtractor;
+} // namespace AUX
 namespace MODELEVALUATOR
 {
 class PartitionedPASI;
-}
-}
+} // namespace MODELEVALUATOR
+} // namespace STR
 
 /*----------------------------------------------------------------------*
  | pasi adapter                                          sfuchs 01/2017 |
@@ -59,6 +63,15 @@ public:
     return;
   }
 
+  //! communication object at the interface
+  virtual Teuchos::RCP<const ::STR::AUX::MapExtractor> Interface() const
+  {
+    return interface_;
+  }
+
+  //! apply particle wall force to structure interface
+  void ApplyInterfaceForce(Teuchos::RCP<Epetra_Vector> wallforce);
+
 protected:
 
   //! The structural model evaluator object.
@@ -70,6 +83,9 @@ protected:
 
   //! access the pasi model evaluator
   Teuchos::RCP< ::STR::MODELEVALUATOR::PartitionedPASI> PASIModelEvaluator(){return pasi_model_evaluator_;};
+
+  //! the interface map setup for interface <-> full translation
+  Teuchos::RCP< ::STR::AUX::MapExtractor> interface_;
 
 }; // class PASIStructureWrapper : public StructureWrapper
 

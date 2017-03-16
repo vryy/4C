@@ -539,7 +539,8 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   const double dt,
   Teuchos::RCP<Epetra_Vector> f_contact,
   Teuchos::RCP<Epetra_Vector> m_contact,
-  Teuchos::RCP<Epetra_Vector> specEnthalpyDotn)
+  Teuchos::RCP<Epetra_Vector> specEnthalpyDotn,
+  Teuchos::RCP<Epetra_FEVector> f_structure)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerDEM::ContactSearchAndCalculation");
 
@@ -554,9 +555,6 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     walldisn = walldiscret->GetState("walldisnp");
     wallveln = walldiscret->GetState("wallvelnp");
   }
-
-  // define vector for contact force
-  Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap()));
 
   const bool havepbc = particle_algorithm_->BinStrategy()->HavePBC();
 
@@ -613,13 +611,16 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       CalcNeighboringWallsContact(particle_i, data_i, neighboring_walls, dt,
           walldiscret, walldisn, wallveln, f_contact, m_contact, f_structure);
 
-      // compute contact with neighboring particles
-      CalcNeighboringParticlesContact(particle_i, data_i, neighboring_particles,
-          havepbc, dt, f_contact, m_contact, specEnthalpyDotn);
-
-      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+      if (f_contact != Teuchos::null and m_contact != Teuchos::null)
       {
-        CalcNeighboringHeatSourcesContact(particle_i, data_i, neighboring_heatSources, specEnthalpyDotn);
+        // compute contact with neighboring particles
+        CalcNeighboringParticlesContact(particle_i, data_i, neighboring_particles,
+            havepbc, dt, f_contact, m_contact, specEnthalpyDotn);
+
+        if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
+        {
+          CalcNeighboringHeatSourcesContact(particle_i, data_i, neighboring_heatSources, specEnthalpyDotn);
+        }
       }
     }
   }
@@ -634,51 +635,6 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 
   // erase temporary storage for collision data
   particleData_.clear();
-
-  // assemble and apply contact-forces
-//  {
-//    // call global assemble for particle forces on walls
-//    const int err = f_structure->GlobalAssemble(Add, false);
-//    if (err<0)
-//      dserror("global assemble into fluidforces failed");
-//
-//    particle_algorithm_->Structure()->SetForceInterface(f_structure);
-//  }
-
-
-//  Teuchos::RCP<Epetra_Vector> forces_col_vector = LINALG::CreateVector(*structure->Discretization()->DofColMap());
-//  LINALG::Export(*f_structure, *forces_col_vector);
-//
-//  double force=0.0;
-//  double total_force=0.0;
-//  for(int n=0; n<structure->Discretization()->NumMyRowElements(); n++)
-//  {
-//    DRT::Element* Ele = structure->Discretization()->lRowElement(n);
-//    //only second element
-//    if(Ele->Id()==1)
-//    {
-//      DRT::Node** Nodes=Ele->Nodes();
-//      int numnodes = Ele->NumNode();
-//      for(int i=0;i<numnodes;++i)
-//      {
-//        std::vector<int> lm;
-//        lm.reserve(3);
-//        structure->Discretization()->Dof(Nodes[i], lm);
-//        std::vector<double> nodal_force_vector(3);
-//        DRT::UTILS::ExtractMyValues(*forces_col_vector,nodal_force_vector,lm);
-//        //force in y-direction
-//        force += nodal_force_vector[1];
-//      }
-//    }
-//  }
-
-//  structure->Discretization()->Comm().SumAll(&force,&total_force,1);
-//
-//  if(timen_>=0.25 and timen_ <= 1.0)
-//  {
-//    //delta_work= force * velocity * delta_t
-//    work_ += total_force*0.16*dt;
-//  }
 
   return contact_energy_;
 }
@@ -1212,27 +1168,33 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     contactmoment.CrossProduct(normal,tangentcontactforce);
     contactmoment.Scale(radius_i+g);
 
-    // do assembly of contact forces
-    LINALG::Assemble(*f_contact,contactforce,lm_i,owner_i);
-    // do assembly of contact moments
-    LINALG::Assemble(*m_contact,contactmoment,lm_i,owner_i);
-
-    // forces on wall elements
-    double nodal_forces[numnodes * 3];
-    for(int node=0; node<numnodes; ++node)
+    if (f_contact != Teuchos::null and m_contact != Teuchos::null)
     {
-      for(int dim=0; dim<3; ++dim)
-      {
-        nodal_forces[node * 3 + dim] = funct[node] *(- contactforce(dim));
-      }
+      // do assembly of contact forces
+      LINALG::Assemble(*f_contact,contactforce,lm_i,owner_i);
+      // do assembly of contact moments
+      LINALG::Assemble(*m_contact,contactmoment,lm_i,owner_i);
     }
 
-    // assembly of contact forces on walls
-    if(owner_i == myrank_)
+    if (f_structure != Teuchos::null)
     {
-      const int err = f_structure->SumIntoGlobalValues(numnodes * 3, &(wallcontact.lm)[0], &nodal_forces[0]);
-      if (err<0)
-        dserror("summing into Epetra_FEVector failed");
+      // forces on wall elements
+      double nodal_forces[numnodes * 3];
+      for(int node=0; node<numnodes; ++node)
+      {
+        for(int dim=0; dim<3; ++dim)
+        {
+          nodal_forces[node * 3 + dim] = funct[node] *(- contactforce(dim));
+        }
+      }
+
+      // assembly of contact forces on walls
+      if(owner_i == myrank_)
+      {
+        const int err = f_structure->SumIntoGlobalValues(numnodes * 3, &(wallcontact.lm)[0], &nodal_forces[0]);
+        if (err<0)
+          dserror("summing into Epetra_FEVector failed");
+      }
     }
   } // end for contact points on surfaces
 
@@ -1757,7 +1719,8 @@ double PARTICLE::ParticleCollisionHandlerMD::EvaluateParticleContact(
   double dt,
   Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector> veln,
-  Teuchos::RCP<Epetra_Vector> specEnthalpyn)
+  Teuchos::RCP<Epetra_Vector> specEnthalpyn,
+  Teuchos::RCP<Epetra_FEVector> f_structure)
 {
 
   // ddt is the most advanced collision time (between [0,dt))

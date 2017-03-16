@@ -49,7 +49,10 @@ namespace PASI
  *----------------------------------------------------------------------*/
 enum _PASI_COUPLING
 {
-  partitioned_onewaycoup
+  partitioned_onewaycoup,
+  partitioned_twowaycoup,
+  partitioned_twowaycoup_forcerelax,
+  partitioned_twowaycoup_forcerelaxaitken
 };
 
 //! set valid parameters for particle structure interaction
