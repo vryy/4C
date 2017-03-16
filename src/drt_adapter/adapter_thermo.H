@@ -62,19 +62,6 @@ namespace LINALG
   class MultiMapExtractor;
 }
 
-
-namespace MORTAR
-{
-  class ManagerBase;
-}
-
-
-namespace THR
-{
-  class ThermoContactMan;
-}
-
-
 /*----------------------------------------------------------------------*
  | adapting adapter                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
