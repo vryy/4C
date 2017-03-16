@@ -23,6 +23,9 @@
 #include <boost/unordered_map.hpp>
 #include "particle_algorithm.H"
 
+#include <Sacado.hpp>
+typedef Sacado::Fad::DFad<double> FAD;
+
 //! forward declarations
 namespace MAT
 {
@@ -94,6 +97,11 @@ namespace PARTICLE
     //! Compute the pressure from the proper speed of sound and the density (small density variation hypothesis)
     /// if you change this function you need to touch Inter_pvp_gradAccP too!
     static double Density2Pressure(const double& speedOfSound, const double& deltaDensity)
+      { return speedOfSound * speedOfSound * deltaDensity; };
+
+    //! Compute the pressure from the proper speed of sound and the density (small density variation hypothesis)
+    /// if you change this function you need to touch Inter_pvp_gradAccP too! (FAD version)
+    static FAD Density2Pressure(const double& speedOfSound, const FAD& deltaDensity)
       { return speedOfSound * speedOfSound * deltaDensity; };
 
     //! Compute the density from the proper speed of sound and the pressure (small density variation hypothesis)

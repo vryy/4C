@@ -1,0 +1,74 @@
+//
+// Maintainer: Cattabiani Alessandro
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+Waterfall with meshfree interactions an implicit time integration scheme. No real damping, only numerical.
+This example takes way too long to make a test
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      MeshFree
+SHAPEFCT                        Meshfree
+RANDSEED                        1
+--------------------------------------------------------------------MESHFREE
+TYPE                            Particle
+CUTOFF_RADIUS                   3
+BOUNDINGBOX                     -0.000001 -0.000001 -0.000001 50.000001 20.000001 10.000001
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      GenAlpha
+RESULTSEVRY                     50
+RESTARTEVRY                     500
+TIMESTEP                        1e-3
+NUMSTEP                         10000
+MAXTIME                         30
+GRAVITY_ACCELERATION            0.0 -9.81 0.0
+PARTICLE_INTERACTION            MeshFree
+WEIGHT_FUNCTION                 CubicBspline
+RADIUS_DISTRIBUTION             no
+RANDOM_AMPLITUDE                0.001
+WALL_INTERACTION_TYPE           InitParticle
+---------------------------------------------------PARTICLE DYNAMIC/GENALPHA
+TOL                             1e-6
+MAXIT                           3000
+---------------------------------------------------MESHFREE RENDERING DOMAIN
+------------------------------------------------DESIGN HEAT SOURCE CONDITION
+--------------------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+----------------------------------------------------------DESIGN DESCRIPTION
+NDSURF                          1
+------------------------------------------------DESIGN SURFACE PARTICLE WALL
+DSURF                           1
+E 1 - 1
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0e9 NUE 0.3 DENS 1.0
+// mercury, dynamic viscosity, bulk modulus, and thermal conductivity modified
+MAT 2 MAT_ExtParticle DENSITY 1353.4 RESTDENSITY 1353.4 REFDENSFAC 1.0 INITRADIUS 1 DISMEMBER_RADIUS 0.01 NUE 0.1 YOUNG 0.1 INITTEMPERATURE 293.15 CPS 0.1 CPL 140 LATENT_HEAT 11450 TRANSITION_TEMPERATURE 234.3210 THERMAL_EXPANSION_S 0 THERMAL_EXPANSION_L 0 THERMAL_EXPANSION_T 0 BULK_MODULUS 28.5e9 DYNAMIC_VISCOSITY 0 BULK_VISCOSITY 0 THERMAL_CONDUCTIVITY 8.3e4 SURFACE_VOID_TENSION 0 SURFACE_WALL_TENSION 0
+----------------------------------------------------------RESULT DESCRIPTION
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 8 DSURFACE 1
+----------------------------------------------------------PARTICLE DOMAIN
+LOWER_BOUND 1 1 1
+UPPER_BOUND 9 19 9
+INTERVALS   9 19 9
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD 0 0 0
+NODE 2 COORD 50 0 0
+NODE 3 COORD 50 20 0
+NODE 4 COORD 0 20 0
+NODE 5 COORD 0 0 10
+NODE 6 COORD 50 0 10
+NODE 7 COORD 50 20 10
+NODE 8 COORD 0 20 10
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+-------------------------------------------------------------------------END

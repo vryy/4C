@@ -202,7 +202,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
     Teuchos::RCP<Epetra_Vector> bpDoFs)
 {
   // check
-  if (colParticles_.size() != 0)
+  if (colParticles_.size() != 0 or colFADParticles_.size() != 0)
   {
     dserror("you did not call Clear before Init, colParticles_ is not empty");
   }
@@ -211,7 +211,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
   trg_updatedColorFieldGradient_ = false;
 
   // set up the local data storage and fill it with the state vectors
-  if (!neighbours_p_.empty() || !neighbours_w_.empty() || !neighbours_hs_.empty())
+  if (!neighbours_p_.empty() || !neighbours_w_.empty() || !neighbours_hs_.empty() || !overlappingneighbours_p_.empty())
   {
     std::cout << "The neighbours have memory (They are not empty)!\n";
     std::cout << "However, lid row/col ids were not updated (because not yet updated). It is safe only when not parallel\n";
@@ -307,6 +307,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(Teuchos::RCP
   const int numcolelements = discret_->NodeColMap()->NumMyElements();
 
   colParticles_.resize(numcolelements);
+  colFADParticles_.resize(numcolelements);
   boundaryparticles_.clear();
 
   Epetra_Vector bpDoFs_col(*(discret_->DofColMap()),true);
@@ -354,6 +355,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(Teuchos::RCP
 
 
     colParticles_[lidNodeCol] = ParticleMF(particle->Id(), particle->Owner(), lm, boundaryparticle);
+    colFADParticles_[lidNodeCol] = Teuchos::rcp(new ParticleFAD(particle->Id()));
+
     if(boundaryparticle)
     {
       boundaryparticles_[particle->Id()]=&colParticles_[lidNodeCol];
@@ -475,10 +478,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Clear()
 {
   // erase colParticles_. keep the memory
   colParticles_.clear();
+  colFADParticles_.clear();
   // erase neighbours keep memory
   neighbours_p_.clear();
   neighbours_w_.clear();
   neighbours_hs_.clear();
+  overlappingneighbours_p_.clear();
   neighbours_bp_.clear();
   boundaryparticles_.clear();
 }
@@ -491,6 +496,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Clear(const int step, const i
 {
   // erase colParticles_. keep the memory
   colParticles_.clear();
+  colFADParticles_.clear();
   // erase neighbours keep memory
   neighbours_hs_.clear();
   neighbours_bp_.clear();
@@ -514,6 +520,19 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Clear(const int step, const i
       }
     }
   }
+
+  #ifdef PARTICLE_OVERLAPPINGNEIGHBORS
+  for (unsigned int lidNodeCol_i = 0; lidNodeCol_i != overlappingneighbours_p_.size(); ++lidNodeCol_i)
+  {
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = overlappingneighbours_p_[lidNodeCol_i].begin(); jj != overlappingneighbours_p_[lidNodeCol_i].end(); ++jj)
+    {
+      if (jj->second.step_ + memory <= step)
+      {
+        jj = overlappingneighbours_p_[lidNodeCol_i].erase(jj);
+      }
+    }
+  }
+  #endif
 
 }
 
@@ -676,6 +695,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
   neighbours_w_.resize(numRowParticles);
   neighbours_hs_.resize(numRowParticles);
 
+  #ifdef PARTICLE_OVERLAPPINGNEIGHBORS
+  const int numColParticles = discret_->NodeColMap()->NumMyElements();
+  overlappingneighbours_p_.resize(numColParticles);
+  #endif
+
   // bin checker
   std::set<int> examinedbins;
 
@@ -792,6 +816,59 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
     }
   }
 
+
+  //***********loop over the (real/fluid) particles (overlapping vector)****************************************************************************************************************
+  #ifdef PARTICLE_OVERLAPPINGNEIGHBORS// clear bin checker
+  examinedbins.clear();
+
+  const int numcolparticles = discret_->NodeColMap()->NumMyElements();
+
+  for(int colPar_i=0; colPar_i<numcolparticles; ++colPar_i)
+  {
+    // extract the particle
+    DRT::Node *currparticle = discret_->lColNode(colPar_i);
+
+    //find the bin it belongs to
+    DRT::Element* currentBin = currparticle->Elements()[0];
+
+    const int binId = currentBin->Id();
+
+    // if a bin has already been examined --> continue with next particle
+    if( examinedbins.find(binId) != examinedbins.end() )
+      continue;
+    //else: bin is examined for the first time --> new entry in examinedbins_
+    examinedbins.insert(binId);
+
+    // extract the pointer to the particles
+    DRT::Node** currentBinParticles = currentBin->Nodes();
+
+    // list of particles in Bin
+    std::list<DRT::Node*> neighboursLinf_p;
+
+    // list of walls that border on the CurrentBin
+    boost::unordered_map<int, DRT::Element*> neighboursLinf_w;
+
+    // list of heat sources that border on the CurrentBin
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::rcp(new boost::unordered_map<int , Teuchos::RCP<HeatSource> >);
+
+    // first neighbours_ round
+    particle_algorithm_->GetNeighbouringItems(binId, neighboursLinf_p);
+
+
+
+    // loop over all particles in CurrentBin
+    for(int i=0; i<currentBin->NumNode(); ++i)
+    {
+
+      // determine the particle we are analizing the the important addresses
+      const int lidNodeCol_i = currentBinParticles[i]->LID();
+      const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+
+      AddNewNeighbours_op(particle_i, neighboursLinf_p, step);
+    }
+  }
+  #endif
 }
 
 
@@ -812,6 +889,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
     const int lidNodeCol_j = (*jj)->LID();
     const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
 
+    //Attention: In the current framework, two different neighbor vectors neighbours_p_ and overlappingneighbours_p_ are filled,
+    //neighbours_p_ (node row map) takes advantage of the symmetry of contact interaction and only stores the pair ij but not the pair ji for i<j
+    //For debugging purposes and non-symmetric interaction laws additionally the fully overlapping vector vectorneighbours_p_ is filled.
+    //The latter contains both pairs ij and ji and is furthermore based on a node column map
+    //(which will be relevant for the calculation of linearizations where "the neighbors of neighbors" will be required).
+    //Moreover, the vector overlappingneighbours_p_ also contains auto/self interaction pairs ii!
     if(particle_j.owner_ != myrank_ || (particle_i.gid_ < particle_j.gid_))
     {
       // create the data that we have to insert
@@ -871,6 +954,90 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
     }
   }
 }
+
+/*----------------------------------------------------------------------*
+ | set the neighbours - particles (overlapping vector)     meier 03/17  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_op(
+    const ParticleMF& particle_i,
+    const std::list<DRT::Node*>& neighboursLinf_p,
+    const int step)
+{
+  // self-neighbours not allowed
+  // insert the interaction only if meaningful
+
+  // loop over the neighbours particles
+  for(std::list<DRT::Node*>::const_iterator jj=neighboursLinf_p.begin(); jj!=neighboursLinf_p.end(); ++jj)
+  {
+
+    const int lidNodeCol_j = (*jj)->LID();
+    const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+
+
+    //Attention: In the current framework, two different neighbor vectors neighbours_p_ and overlappingneighbours_p_ are filled,
+    //neighbours_p_ (node row map) takes advantage of the symmetry of contact interaction and only stores the pair ij but not the pair ji for i<j
+    //For debugging purposes and non-symmetric interaction laws additionally the fully overlapping vector vectorneighbours_p_ is filled.
+    //The latter contains both pairs ij and ji and is furthermore based on a node column map
+    //(which will be relevant for the calculation of linearizations where "the neighbors of neighbors" will be required).
+    //Moreover, the vector overlappingneighbours_p_ also contains auto/self interaction pairs ii!
+
+
+
+    double rRelNorm2 = 0.0;
+    LINALG::Matrix<3,1> rRelVersor_ij(true);
+    double w_ij = 0.0;
+    double dw_ij = 0.0;
+    double ddw_ij = 0.0;
+
+    const int lidNodeCol_i = discret_->NodeColMap()->LID(particle_i.gid_);
+    if(lidNodeCol_i!=lidNodeCol_j)//standard case: interaction ij with i != j
+    {
+      // create the data that we have to insert
+      LINALG::Matrix<3,1> rRel_ij;
+      rRel_ij.Update(1.0, particle_i.dis_, -1.0, particle_j.dis_); // inward vector
+      rRelNorm2 = rRel_ij.Norm2();
+      rRelVersor_ij.Update(1.0,rRel_ij,0.0);
+      rRelVersor_ij.Scale(1/rRelNorm2);
+
+      w_ij = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
+      dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+      ddw_ij = weightFunctionHandler_->DDW(rRelNorm2, particle_i.radius_);
+
+      #ifdef PARTICLE_TENSILESAFETYFAC
+        //Check that the particle distance does not become to small (danger of tensile instabilities).
+        //The quantity initAverageDist represents the average initial distance between  particles considering there mass and initial density.
+        double initAverageDist = PARTICLE::Utils::Volume2EffDist(std::max(particle_i.mass_,particle_j.mass_)/initDensity_,WF_DIM_);
+        if(rRelNorm2<PARTICLE_TENSILESAFETYFAC*initAverageDist)
+          dserror("Particle distance to small: rRelNorm2=%f, initAverageDist=%f. Danger of tensile instability!",rRelNorm2,initAverageDist);
+      #endif
+    }
+    else //auto/self interaction ii
+    {
+      rRelNorm2 = 0.0;
+      rRelVersor_ij.Clear();
+      w_ij = weightFunctionHandler_->W0(particle_i.radius_);
+      dw_ij = 0.0;
+      ddw_ij = weightFunctionHandler_->DDW0(particle_i.radius_);
+    }
+
+    //For the overlapping vector, only paris ij but not ji are required!
+    double w_ji = -1000;
+    double dw_ji = -1000;
+    double ddw_ji = -1000;
+
+      (overlappingneighbours_p_[lidNodeCol_i])[lidNodeCol_j] = InterDataPvP(
+          rRelVersor_ij,
+          rRelNorm2,
+          step,
+          w_ij,
+          w_ji,
+          dw_ij,
+          dw_ji,
+          ddw_ij,
+          ddw_ji);
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  | set the neighbours - boundary particles                 meier 02/17  |
@@ -1185,6 +1352,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights(
   UpdateWeights_p(step);
   UpdateWeights_w(step);
 
+  #ifdef PARTICLE_OVERLAPPINGNEIGHBORS
+  UpdateWeights_op(step);
+  #endif
+
   if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
     UpdateWeights_bp(step);
 }
@@ -1195,6 +1366,13 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights(
  *---------------------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int step)
 {
+  //Attention: In the current framework, two different neighbor vectors neighbours_p_ and overlappingneighbours_p_ are filled,
+  //neighbours_p_ (node row map) takes advantage of the symmetry of contact interaction and only stores the pair ij but not the pair ji for i<j
+  //For debugging purposes and non-symmetric interaction laws additionally the fully overlapping vector vectorneighbours_p_ is filled.
+  //The latter contains both pairs ij and ji and is furthermore based on a node column map
+  //(which will be relevant for the calculation of linearizations where "the neighbors of neighbors" will be required).
+  //Moreover, the vector overlappingneighbours_p_ also contains auto/self interaction pairs ii!
+
   for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
   {
     // determine the particle_i
@@ -1332,6 +1510,93 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_bp(const int st
           dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
           ddw_ji = weightFunctionHandler_->DDW(rRelNorm2, particle_j.radius_);
         }
+
+        // insert the new weights, do not touch the step
+        interData_ij = InterDataPvP(
+          rRelVersor_ij,
+          rRelNorm2,
+          interData_ij.step_,
+          w_ij,
+          w_ji,
+          dw_ij,
+          dw_ji,
+          ddw_ij,
+          ddw_ji);
+      }
+    }
+  }
+}
+
+/*------------------------------------------------------------------------------------------------------*
+ | update weights and distances in all the neighbours - particles (overlapping vector)     meier 03/17  |
+ *------------------------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_op(const int step)
+{
+  //Attention: In the current framework, two different neighbor vectors neighbours_p_ and overlappingneighbours_p_ are filled,
+  //neighbours_p_ (node row map) takes advantage of the symmetry of contact interaction and only stores the pair ij but not the pair ji for i<j
+  //For debugging purposes and non-symmetric interaction laws additionally the fully overlapping vector vectorneighbours_p_ is filled.
+  //The latter contains both pairs ij and ji and is furthermore based on a node column map
+  //(which will be relevant for the calculation of linearizations where "the neighbors of neighbors" will be required).
+  //Moreover, the vector overlappingneighbours_p_ also contains auto/self interaction pairs ii!
+
+  for (unsigned int lidNodeCol_i = 0; lidNodeCol_i != overlappingneighbours_p_.size(); ++lidNodeCol_i)
+  {
+    // determine the particle_i
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+    // loop over the interaction particle list
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = overlappingneighbours_p_[lidNodeCol_i].begin(); jj != overlappingneighbours_p_[lidNodeCol_i].end(); ++jj)
+    {
+      // shall I skip?
+      const int& lidNodeCol_j = jj->first;
+      InterDataPvP& interData_ij =(overlappingneighbours_p_[lidNodeCol_i])[lidNodeCol_j];
+      if (step != interData_ij.step_)
+      {
+        // extract data for faster access
+        const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+
+        // --- extract and compute general data --- //
+
+        double rRelNorm2 = 0.0;
+        LINALG::Matrix<3,1> rRelVersor_ij(true);
+        double w_ij = 0.0;
+        double dw_ij = 0.0;
+        double ddw_ij = 0.0;
+
+        if(lidNodeCol_i!=(unsigned int)(lidNodeCol_j))//standard case: interaction ij with i != j
+        {
+          // create the data that we have to insert
+          LINALG::Matrix<3,1> rRel_ij;
+          rRel_ij.Update(1.0, particle_i.dis_, -1.0, particle_j.dis_); // inward vector
+          rRelNorm2 = rRel_ij.Norm2();
+          rRelVersor_ij.Update(1.0,rRel_ij,0.0);
+          rRelVersor_ij.Scale(1/rRelNorm2);
+
+          #ifdef PARTICLE_TENSILESAFETYFAC
+            //Check that the particle distance does not become to small (danger of tensile instabilities).
+            //The quantity initAverageDist represents the average initial distance between  particles considering there mass and initial density.
+            double initAverageDist = PARTICLE::Utils::Volume2EffDist(std::max(particle_i.mass_,particle_j.mass_)/initDensity_,WF_DIM_);
+            if(rRelNorm2<PARTICLE_TENSILESAFETYFAC*initAverageDist)
+              dserror("Particle distance to small: rRelNorm2=%f, initAverageDist=%f. Danger of tensile instability!",rRelNorm2,initAverageDist);
+          #endif
+
+          w_ij = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
+          dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+          ddw_ij = weightFunctionHandler_->DDW(rRelNorm2, particle_i.radius_);
+        }
+        else //auto/self interaction ii
+        {
+          rRelNorm2 = 0.0;
+          rRelVersor_ij.Clear();
+          w_ij = weightFunctionHandler_->W0(particle_i.radius_);
+          dw_ij = 0.0;
+          ddw_ij = weightFunctionHandler_->DDW0(particle_i.radius_);
+        }
+
+        //For the overlapping vector, only paris ij but not ji are required!
+        double w_ji = -1000;
+        double dw_ji = -1000;
+        double ddw_ji = -1000;
 
         // insert the new weights, do not touch the step
         interData_ij = InterDataPvP(
@@ -3329,5 +3594,381 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::PrintNeighbours(const PARTICL
     PrintNeighbours(neighbours_hs_);
     break;
   }
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ | Compute the consistent linearizaton of AccP - mesh free style  meier 03/17  |
+ *-----------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP_consistent(
+    const Teuchos::RCP<Epetra_Vector> res,
+    const Teuchos::RCP<LINALG::SparseMatrix> stiff)
+{
+  //checks
+  if (res == Teuchos::null)
+  {
+    dserror("res is empty");
+  }
+
+  if (stiff == Teuchos::null)
+  {
+    dserror("stiff is empty");
+  }
+
+  res->PutScalar(0.0);
+  stiff->PutScalar(0.0);
+
+  if (wallInteractionType_ == INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType_ == INPAR::PARTICLE::BoundarParticle_FreeSlip)
+    dserror("Method is currently not compatible with boundry particles!");
+
+  //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
+    dserror("The FAD linearization of AccP is only considered in the context of pure fluid problems so far!");
+
+  // loop over the column particles i
+  for (unsigned int lidNodeCol_i = 0; lidNodeCol_i != overlappingneighbours_p_.size(); ++lidNodeCol_i)
+  {
+    // determine the particle_i
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+    //Only the owner of particle_i (which determines the assembled row) will assemble contributions
+    //We still loop over the column map here in order to directly reuse the lidNodeCol_i for the following loop over the column neighbors
+    //Theoretically, particle_i, particle_j and particle_k could be in three different bins owned by three different processors. In such a
+    //case, the node column map of the processor owing particle_i might not necessarily contain particle_k (the neighbor of the neighbor particle_j)
+    //However, this case can only occur if the particle interaction radius is at least have of the bin size, which is not allowed anyways.
+    if(particle_i.owner_!=discret_->Comm().MyPID())
+      continue;
+
+    std::vector<int>  rowowner_i(3);
+    for(int dim=0;dim<3;dim++)
+      rowowner_i[dim]=particle_i.owner_;
+
+    //auxiliary quantity
+    LINALG::Matrix<3,1> sumj_f2_ijGradWij(true);
+
+    // loop over neighbors j of particle_i
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = overlappingneighbours_p_[lidNodeCol_i].begin(); jj != overlappingneighbours_p_[lidNodeCol_i].end(); ++jj)
+    {
+      // determine the particle_j
+      const int& lidNodeCol_j = jj->first;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      const InterDataPvP& interData_ij = jj->second;
+
+      //For the considered residual definition, we have no contributions due to auto/self interaction of i and j=i
+      //Furthermore, contributions outside the support radius (interData_ij.w_ij_) vanish
+      if(lidNodeCol_i==(unsigned int)(lidNodeCol_j) or interData_ij.w_ij_ == 0)
+        continue;
+
+      //****************residuum and linearization terms resulting from \Delta (grad W)********************************************************************************************************
+      const double density_i=particle_i.density_;
+      const double density_j=particle_j.density_;
+      const double sos=particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
+      const double p_i=PARTICLE::Utils::Density2Pressure(sos,density_i-refdensfac_*restDensity_);
+      const double p_j=PARTICLE::Utils::Density2Pressure(sos,density_j-refdensfac_*restDensity_);
+      const double density_i_2=density_i*density_i;
+      const double density_j_2=density_j*density_j;
+      const double gradP_Rho2=p_i/(density_i*density_i)+p_j/(density_j*density_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
+      // Compute mass times gradient weight function term
+      LINALG::Matrix<3,1> mjGradWij = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
+      mjGradWij.Scale(particle_j.mass_);
+      LINALG::Matrix<3,1> accn_ij(true);
+      accn_ij.Update(-gradP_Rho2, mjGradWij);
+      const double f3_ij=particle_j.mass_*(p_i/(density_i_2)+p_j/(density_j_2));
+      const LINALG::Matrix<3,3> HessW_ij=weightFunctionHandler_->HessW(interData_ij.rRelVersor_ij_,interData_ij.dw_ij_,interData_ij.rRelNorm2_,interData_ij.ddw_ij_);
+      Epetra_SerialDenseMatrix lin3_ij(3,3);
+      for(int row=0;row<3;row++)
+        for(int col=0;col<3;col++)
+        {
+          lin3_ij(row,col)=-f3_ij*HessW_ij(row,col);
+        }
+
+      //residual
+      LINALG::Assemble(*res, accn_ij, particle_i.lm_, particle_i.owner_);
+      //stiffness contribution of \Delta r_i
+      stiff->Assemble(0,lin3_ij,particle_i.lm_,rowowner_i,particle_i.lm_);
+      //stiffness contribution of \Delta r_j
+      lin3_ij.Scale(-1.0);
+      stiff->Assemble(0,lin3_ij,particle_i.lm_,rowowner_i,particle_j.lm_);
+      //***********************************************************************************************************************************************************
+
+      //****************Pre-calculations for terms resulting from \Delta density_i and \Delta density_j************************************************************
+      //Attention: The calculation of \Delta density_i requires two (non-nested) loops, which can be evaluated independent of each other!
+      //Attention: The calculation of \Delta density_j requires two loops that are nested!
+      LINALG::Matrix<3,1> GradWij = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
+      const double sos_2=sos*sos;
+      const double f1_ij=particle_j.mass_*(sos_2/density_j_2-2.0*p_j/(density_j*density_j_2));
+      const double f2_ij=particle_j.mass_*(sos_2/density_i_2-2.0*p_i/(density_i*density_i_2));
+
+      sumj_f2_ijGradWij.Update(f2_ij,GradWij,1.0);
+      //***********************************************************************************************************************************************************
+
+      // loop over neighbors k of neighbors j of particle_i
+      for (boost::unordered_map<int, InterDataPvP>::const_iterator kk = overlappingneighbours_p_[lidNodeCol_j].begin(); kk != overlappingneighbours_p_[lidNodeCol_j].end(); ++kk)
+      {
+        // determine the particle_k
+        const int& lidNodeCol_k = kk->first;
+        const InterDataPvP& interData_jk = kk->second;
+        const ParticleMF& particle_k = colParticles_[lidNodeCol_k];
+
+        //************Terms resulting from \Delta density_j***********************************************************************************************************
+        if(lidNodeCol_j!=lidNodeCol_k and interData_jk.dw_ij_ != 0)
+        {
+          LINALG::Matrix<3,1> GradWjk = weightFunctionHandler_->GradW(interData_jk.rRelVersor_ij_, interData_jk.dw_ij_);
+          Epetra_SerialDenseMatrix lin1_jk(3,3);
+          for(int row=0;row<3;row++)
+            for(int col=0;col<3;col++)
+            {
+              lin1_jk(row,col)=-f1_ij*particle_k.mass_*GradWij(row)*GradWjk(col);
+            }
+
+          //stiffness contribution of \Delta r_j
+          stiff->Assemble(0,lin1_jk,particle_i.lm_,rowowner_i,particle_j.lm_);
+          //stiffness contribution of \Delta r_k
+          lin1_jk.Scale(-1.0);
+          stiff->Assemble(0,lin1_jk,particle_i.lm_,rowowner_i,particle_k.lm_);
+        }
+        //************************************************************************************************************************************************************
+      }// loop over neighbors k of neighbors j of particle_i
+    }// loop over neighbors j of particle_i
+
+    // loop over neighbors k of particle_i
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator kk = overlappingneighbours_p_[lidNodeCol_i].begin(); kk != overlappingneighbours_p_[lidNodeCol_i].end(); ++kk)
+    {
+      // determine the particle_k
+      const int& lidNodeCol_k = kk->first;
+      const ParticleMF& particle_k = colParticles_[lidNodeCol_k];
+      const InterDataPvP& interData_ik = kk->second;
+
+      //For the considered residual definition, we have no contributions due to auto/self interaction of i and k=i
+      //Furthermore, contributions outside the support radius (interData_ik.w_ij_ == 0) vanish
+
+      //************Terms resulting from \Delta density_i***********************************************************************************************************
+      if(lidNodeCol_i!=(unsigned int)(lidNodeCol_k) or interData_ik.w_ij_ != 0)
+      {
+        LINALG::Matrix<3,1> GradWik = weightFunctionHandler_->GradW(interData_ik.rRelVersor_ij_, interData_ik.dw_ij_);
+        Epetra_SerialDenseMatrix lin2_ik(3,3);
+        for(int row=0;row<3;row++)
+          for(int col=0;col<3;col++)
+          {
+            lin2_ik(row,col)=-sumj_f2_ijGradWij(row)*particle_k.mass_*GradWik(col);
+          }
+
+        //stiffness contribution of \Delta r_i
+        stiff->Assemble(0,lin2_ik,particle_i.lm_,rowowner_i,particle_i.lm_);
+        //stiffness contribution of \Delta r_k
+        lin2_ik.Scale(-1.0);
+        stiff->Assemble(0,lin2_ik,particle_i.lm_,rowowner_i,particle_k.lm_);
+      }
+      //************************************************************************************************************************************************************
+    }// loop over neighbors k of particle_i
+  }// loop over the column particles i
+}
+
+
+/*--------------------------------------------------------------------------------------*
+ | Compute linearizaton of AccP via FAD (for debugging) - mesh free style  meier 03/17  |
+ *--------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP_FAD(
+    const Teuchos::RCP<Epetra_Vector> res,
+    const Teuchos::RCP<LINALG::SparseMatrix> stiff)
+{
+
+  //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
+    dserror("The FAD linearization of AccP is only considered in the context of pure fluid problems so far!");
+
+
+  // loop over the particles and assign FAD DoFs
+  for (unsigned int lidNodeCol_i = 0; lidNodeCol_i != overlappingneighbours_p_.size(); ++lidNodeCol_i)
+  {
+    int numglobalDoFs=discret_->DofRowMap()->NumGlobalElements();
+
+    // determine the particle_i
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+    Teuchos::RCP<ParticleFAD> FADparticle_i = colFADParticles_[lidNodeCol_i];
+
+    for(int dim=0;dim<3;dim++)
+    {
+      FADparticle_i->dis_(dim)=particle_i.dis_(dim);
+      FADparticle_i->dis_(dim).diff(particle_i.lm_[dim],numglobalDoFs);
+    }
+  }
+
+  // loop over the particles (no superpositions)
+  for (unsigned int lidNodeCol_i = 0; lidNodeCol_i != overlappingneighbours_p_.size(); ++lidNodeCol_i)
+  {
+    FAD density_i=0.0;
+
+    // determine the particle_i
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+    Teuchos::RCP<ParticleFAD> FADparticle_i = colFADParticles_[lidNodeCol_i];
+
+    // auto-interaction
+    double mW_ii = weightFunctionHandler_->W0(particle_i.radius_) * particle_i.mass_;
+    density_i+=mW_ii;
+
+    // loop over the interaction particle list
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = overlappingneighbours_p_[lidNodeCol_i].begin(); jj != overlappingneighbours_p_[lidNodeCol_i].end(); ++jj)
+    {
+      // extract data for faster access
+      const int& lidNodeCol_j = jj->first;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      Teuchos::RCP<ParticleFAD> FADparticle_j = colFADParticles_[lidNodeCol_j];
+
+      //The auto/self interaction contribution ii has already been considered above
+      if(lidNodeCol_i==(unsigned int)(lidNodeCol_j))
+        continue;
+
+      LINALG::TMatrix<FAD,3,1> rRel_ij(FADparticle_i->dis_);
+      rRel_ij.Update(-1.0,FADparticle_j->dis_,1.0);
+
+
+      FAD rRelNorm2=0.0;
+      for(int dim=0;dim<3;dim++)
+      {
+        rRelNorm2+=rRel_ij(dim)*rRel_ij(dim);
+      }
+      rRelNorm2=sqrt(rRelNorm2);
+
+      const FAD w_ij = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
+
+      // write on particle i if appropriate specializing the quantities
+      if (w_ij.val() != 0)
+      {
+        // assemble and write
+
+        FAD mW_ij = w_ij * particle_j.mass_;
+        density_i+=mW_ij;
+      }
+    }
+    colFADParticles_[lidNodeCol_i]->density_=density_i;
+  }
+
+  std::vector<LINALG::TMatrix<FAD,3,1> > global_res;
+  global_res.resize(discret_->NodeColMap()->NumMyElements());
+
+  // loop over the overlapping particles
+  for (unsigned int lidNodeCol_i = 0; lidNodeCol_i != overlappingneighbours_p_.size(); ++lidNodeCol_i)
+  {
+    // determine the particle_i
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+    Teuchos::RCP<ParticleFAD> FADparticle_i = colFADParticles_[lidNodeCol_i];
+
+    //Only the owner of particle_i (which determines the assembled row) will assemble contributions
+    //We still loop over the column map here in order to directly reuse the lidNodeCol_i for the following loop over the column neighbors
+    //Theoretically, particle_i, particle_j and particle_k could be in three different bins owned by three different processors. In such a
+    //case, the node column map of the processor owing particle_i might not necessarily contain particle_k (the neighbor of the neighbor particle_j)
+    //However, this case can only occur if the particle interaction radius is at least have of the bin size, which is not allowed anyways.
+    if(particle_i.owner_!=discret_->Comm().MyPID())
+      continue;
+
+    LINALG::TMatrix<FAD,3,1> res_local(true);
+
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = overlappingneighbours_p_[lidNodeCol_i].begin(); jj != overlappingneighbours_p_[lidNodeCol_i].end(); ++jj)
+    {
+      // determine the particle_j
+      const int& lidNodeCol_j = jj->first;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      Teuchos::RCP<ParticleFAD> FADparticle_j = colFADParticles_[lidNodeCol_j];
+      const InterDataPvP& interData_ij = jj->second;
+
+      //In the considered residual definition of the pressure gradient term, we have no contribution due to auto/self interaction
+      if(lidNodeCol_i==(unsigned int)(lidNodeCol_j))
+        continue;
+
+      // Only consider pairs which are inside the support radius for the residual definition: accP_ij=m_j*(p_i/\rho_i^2 + p_j/\rho_j^2)*GradW_ij
+      if (interData_ij.w_ij_ != 0)
+      {
+        // Compute pressures and densities
+        const FAD density_i=FADparticle_i->density_;
+        const FAD density_j=FADparticle_j->density_;
+        const FAD p_i=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),density_i-refdensfac_*restDensity_);
+        const FAD p_j=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),density_j-refdensfac_*restDensity_);
+        const FAD gradP_Rho2=p_i/(density_i*density_i)+p_j/(density_j*density_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
+
+        // create interaction data on the fly (efficiency not important for FAD debugging tool...)
+        LINALG::TMatrix<FAD,3,1> rRel_ij;
+        rRel_ij.Update(1.0, FADparticle_i->dis_, -1.0, FADparticle_j->dis_); // inward vector
+        FAD rRelNorm2=0.0;
+        for(int dim=0;dim<3;dim++)
+        {
+          rRelNorm2+=rRel_ij(dim)*rRel_ij(dim);
+        }
+        rRelNorm2=sqrt(rRelNorm2);
+        LINALG::TMatrix<FAD,3,1> rRelVersor_ij(rRel_ij);
+        rRelVersor_ij.Scale(1/rRelNorm2);
+        const FAD dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
+
+        // Compute mass times gradient weight function term
+        LINALG::TMatrix<FAD,3,1> mjGradWij = weightFunctionHandler_->GradW(rRelVersor_ij, dw_ij);
+        mjGradWij.Scale(particle_j.mass_);
+        LINALG::TMatrix<FAD,3,1> accn_ij(true);
+        accn_ij.Update(-gradP_Rho2, mjGradWij);
+        res_local.Update(1.0,accn_ij,1.0);
+
+//        std::cout << "particle_i.gid_: " << particle_i.gid_ << std::endl;
+//        std::cout << "particle_j.gid_: " << particle_j.gid_ << std::endl;
+//        std::cout << "density_i: " << density_i << std::endl;
+//        std::cout << "p_i: " << p_i << std::endl;
+//        std::cout << "density_j: " << density_j << std::endl;
+//        std::cout << "p_j: " << p_j << std::endl;
+//        std::cout << "mjGradWij: " << mjGradWij << std::endl;
+//        std::cout << "accn_ij: " << accn_ij << std::endl << std::endl;
+      }
+    }
+    global_res[lidNodeCol_i]=res_local;
+  }
+
+  // loop over the overlapping particles
+  for (unsigned int lidNodeCol_i = 0; lidNodeCol_i != overlappingneighbours_p_.size(); ++lidNodeCol_i)
+  {
+    // determine the particle_i
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+    //Only the owner of particle_i (which determines the assembled row) will assemble contributions
+    //We still loop over the column map here in order to directly reuse the lidNodeCol_i for the following loop over the column neighbors
+    //Theoretically, particle_i, particle_j and particle_k could be in three different bins owned by three different processors. In such a
+    //case, the node column map of the processor owing particle_i might not necessarily contain particle_k (the neighbor of the neighbor particle_j)
+    //However, this case can only occur if the particle interaction radius is at least have of the bin size, which is not allowed anyways.
+    if(particle_i.owner_!=discret_->Comm().MyPID())
+      continue;
+
+    std::vector<int>  rowowner_i(3);
+    for(int dim=0;dim<3;dim++)
+      rowowner_i[dim]=particle_i.owner_;
+
+    LINALG::Matrix<3,1> res_vec(true);
+    for(int row=0;row<3;row++)
+      res_vec(row)=(global_res[lidNodeCol_i])(row).val();
+
+    //std::cout << "lidNodeCol_i: " << lidNodeCol_i <<" (global_res[lidNodeCol_i])(0): " << (global_res[lidNodeCol_i])(0) << std::endl;
+    LINALG::Assemble(*res, res_vec, particle_i.lm_, particle_i.owner_);
+
+    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = overlappingneighbours_p_[lidNodeCol_i].begin(); jj != overlappingneighbours_p_[lidNodeCol_i].end(); ++jj)
+    {
+      // determine the particle_j
+      const int& lidNodeCol_j = jj->first;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+
+      Epetra_SerialDenseMatrix stiff_mat(3,3);
+
+      //Attention: It is important to notice that in general we will have a auto/self contribution in the linearization, i.e. d res(i)/d dis(i)!=0!
+      //This auto/self contribution is considered here automatically since the auto/self neighbors are contained in overlappingneighbours_p_.
+      for(int row=0;row<3;row++)
+        for(int col=0;col<3;col++)
+        {
+          stiff_mat(row,col)=(global_res[lidNodeCol_i])(row).dx(particle_j.lm_[col]);
+//          std::cout << "particle_i.gid_: " << particle_i.gid_ << std::endl;
+//          std::cout << "particle_j.gid_: " << particle_j.gid_ << std::endl;
+//          std::cout << "row: " << row << std::endl;
+//          std::cout << "col: " << col << std::endl;
+//          std::cout << "lidNodeCol_i: " << lidNodeCol_i <<" (global_res[lidNodeCol_i])(0): " << (global_res[lidNodeCol_i])(0) << std::endl;
+//          std::cout << "particle_j.lm_[col]: " << particle_j.lm_[col] << std::endl;
+//          std::cout << "particle_i.lm_[row]: " << particle_i.lm_[row] << std::endl;
+//          std::cout << "stiff_mat(row,col): " << stiff_mat(row,col) << std::endl;
+        }
+
+      stiff->Assemble(0,stiff_mat,particle_i.lm_,rowowner_i,particle_j.lm_);
+    }
   }
 }

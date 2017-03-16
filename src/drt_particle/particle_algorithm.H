@@ -33,6 +33,7 @@
 
 //Usefull defines (tolerances and debugging tools)
 #define PARTICLE_TENSILESAFETYFAC 0.000001          //Factor prescribing the minimal particle distance as compared to the average initial particle distance (tensile instabilites)
+//#define PARTICLE_OVERLAPPINGNEIGHBORS               //Determine also fully overlapping variant of neighbors vectors
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |

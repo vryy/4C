@@ -16,6 +16,9 @@
 /* headers */
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#include <Sacado.hpp>
+typedef Sacado::Fad::DFad<double> FAD;
+
 namespace PARTICLE
 {
 // ---------------------------------------------------------- //
@@ -327,5 +330,27 @@ namespace PARTICLE
   BoundaryData boundarydata_;
   }; // ParticleMF
 }
+
+/// class for particles based on FAD (for debugging)
+class ParticleFAD
+{
+public:
+
+/// constructors
+
+  ParticleFAD(
+      const int gid
+      ) :
+        gid_(gid),
+        dis_(LINALG::TMatrix<FAD,3,1>(0.0)),
+        density_(0.0) {}
+
+/// internal variables
+
+int gid_;
+LINALG::TMatrix<FAD,3,1> dis_;
+FAD density_;
+
+}; // ParticleBase
 
 #endif /* SRC_DRT_PARTICLE_PARTICLE_PARTICLE_H_ */

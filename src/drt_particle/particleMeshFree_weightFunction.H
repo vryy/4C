@@ -18,6 +18,9 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_particle.H"
 
+#include <Sacado.hpp>
+typedef Sacado::Fad::DFad<double> FAD;
+
 /*----------------------------------------------------------------------*/
 /* belongs to particle namespace */
 namespace PARTICLE
@@ -33,14 +36,23 @@ public :
   // weight function
   virtual double W(const double &disRel, const double &radius) = 0;
 
+  // weight function (FAD)
+  virtual FAD W(const FAD &disRel, const double &radius) = 0;
+
   // weight function 1 derivative
   virtual double DW(const double &disRel, const double &radius) = 0;
+
+  // weight function 1 derivative (FAD)
+  virtual FAD DW(const FAD &disRel, const double &radius) = 0;
 
   // weight function 2 derivative
   virtual double DDW(const double &disRel, const double &radius) = 0;
 
   // gradient, r = r_i - r_j
   virtual LINALG::Matrix<3,1> GradW(const LINALG::Matrix<3,1> &rVersor, const double& dw);
+
+  // gradient, r = r_i - r_j (FAD)
+  virtual LINALG::TMatrix<FAD,3,1> GradW(const LINALG::TMatrix<FAD,3,1> &rVersor, const FAD& dw);
 
   // hessian, r = r_i - r_j
   virtual LINALG::Matrix<3,3> HessW(const LINALG::Matrix<3,1> &rVersor, const double& dw, const double& rNorm2, const double& ddw);\
@@ -81,8 +93,14 @@ public :
    //! compute the cubicBspline weight function
    virtual double W(const double &disRel, const double &radius);
 
+   //! compute the cubicBspline weight function (FAD)
+   virtual FAD W(const FAD &disRel, const double &radius);
+
    //! compute the weight function 1 derivative of the cubicBspline weight function
    virtual double DW(const double &disRel, const double &radius);
+
+   //! compute the weight function 1 derivative of the cubicBspline weight function (FAD)
+   virtual FAD DW(const FAD &disRel, const double &radius);
 
    //! compute the weight function 2 derivative of the cubicBspline weight function
    virtual double DDW(const double &disRel, const double &radius);
@@ -101,6 +119,8 @@ public :
 private :
 
    virtual double RszDisRel(const double& disRel, const double& radius) {return 2 * disRel / radius; }
+
+   virtual FAD RszDisRel(const FAD& disRel, const double& radius) {return 2 * disRel / radius; }
 
    virtual double RszDim(const double& radius);
 
@@ -125,8 +145,14 @@ public :
    //! compute the SqrtHyperbola weight function
    virtual double W(const double &disRel, const double &radius);
 
+   //! compute the SqrtHyperbola weight function
+   virtual FAD W(const FAD &disRel, const double &radius);
+
    //! compute the weight function 1 derivative of the SqrtHyperbola weight function
    virtual double DW(const double &disRel, const double &radius);
+
+   //! compute the weight function 1 derivative of the SqrtHyperbola weight function (FAD)
+   virtual FAD DW(const FAD &disRel, const double &radius);
 
    //! compute the weight function 2 derivative of the SqrtHyperbola weight function
    virtual double DDW(const double &disRel, const double &radius);
@@ -164,8 +190,14 @@ public :
    //! compute the HyperbolaNoRsz weight function
    virtual double W(const double &disRel, const double &radius);
 
+   //! compute the HyperbolaNoRsz weight function
+   virtual FAD W(const FAD &disRel, const double &radius);
+
    //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function
    virtual double DW(const double &disRel, const double &radius);
+
+   //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function (FAD)
+   virtual FAD DW(const FAD &disRel, const double &radius);
 
    //! compute the weight function 1 derivative of the HyperbolaNoRsz weight function
    virtual double DDW(const double &disRel, const double &radius);

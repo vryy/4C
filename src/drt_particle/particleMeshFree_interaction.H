@@ -34,6 +34,9 @@
 #include "particle_enums.H"
 #include "../linalg/linalg_sparsematrix.H"
 
+#include <Sacado.hpp>
+typedef Sacado::Fad::DFad<double> FAD;
+
 // forward declarations
 namespace DRT
 {
@@ -293,6 +296,16 @@ namespace PARTICLE
         const bool withWalls = true,
         const double extMulti = 1.0);
 
+    /// Compute linearizaton of AccP via FAD (for debugging) - mesh free style
+    void Inter_pvp_gradAccP_FAD(
+        const Teuchos::RCP<Epetra_Vector> res,
+        const Teuchos::RCP<LINALG::SparseMatrix> stiff);
+
+    /// Compute consistent linearizaton of AccP - mesh free style
+    void Inter_pvp_gradAccP_consistent(
+        const Teuchos::RCP<Epetra_Vector> res,
+        const Teuchos::RCP<LINALG::SparseMatrix> stiff);
+
     //@}
 
     //! @name mesh free debug tools
@@ -311,6 +324,12 @@ namespace PARTICLE
 
     //! add to the neighbour maps the neighbours of the present time step - particles
     virtual void AddNewNeighbours_p(
+        const ParticleMF& particle_i,
+        const std::list<DRT::Node*>& neighboursLinf_p,
+        const int step);
+
+    //! add to the neighbour maps the neighbours of the present time step - particles (overlapping vector)
+    virtual void AddNewNeighbours_op(
         const ParticleMF& particle_i,
         const std::list<DRT::Node*>& neighboursLinf_p,
         const int step);
@@ -340,6 +359,9 @@ namespace PARTICLE
 
     //! update weights and distances of boundary particle neighbours
     virtual void UpdateWeights_bp(const int step = -1);
+
+     //! update the neighbours_op_ map
+     virtual void UpdateWeights_op(const int step = -1);
 
     /// template to print neighbours
     template <typename obj>
@@ -385,8 +407,15 @@ namespace PARTICLE
     /// temporary storage of particleMeshFree data
     std::vector<ParticleMF> colParticles_;
 
+    /// temporary storage for FAD version of particleMeshFree data
+    std::vector<Teuchos::RCP<ParticleFAD> > colFADParticles_;
+
     /// neighbours - particles
     std::vector<boost::unordered_map<int, InterDataPvP> > neighbours_p_;
+
+    /// neighbours - particles
+    std::vector<boost::unordered_map<int, InterDataPvP> > overlappingneighbours_p_;
+
 
     /// neighbours - heat sources
     std::vector<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighbours_hs_;

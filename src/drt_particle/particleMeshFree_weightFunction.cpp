@@ -28,6 +28,17 @@ LINALG::Matrix<3,1> PARTICLE::WeightFunction_Base::GradW(const LINALG::Matrix<3,
   return gradW;
 }
 
+/*----------------------------------------------------------------------*
+ | gradient, r_ij = r_i - r_j (FAD version)                meier 03/17  |
+ *----------------------------------------------------------------------*/
+LINALG::TMatrix<FAD,3,1> PARTICLE::WeightFunction_Base::GradW(const LINALG::TMatrix<FAD,3,1> &rVersor, const FAD& dw)
+{
+  LINALG::TMatrix<FAD,3,1> gradW(rVersor);
+  gradW.Scale(dw);
+
+  return gradW;
+}
+
 
 /*----------------------------------------------------------------------*
  | hessian, r_ij = r_i - r_j                          cattabiani 08/16  |
@@ -221,6 +232,40 @@ double PARTICLE::WeightFunction_CubicBspline::W(
   return w;
 }
 
+/*----------------------------------------------------------------------*
+ | compute the cubicBspline w function (FAD version)       meier 03/17  |
+ *----------------------------------------------------------------------*/
+
+// The 3D variant can be found in Monaghan2005, Eq. (2.6)
+// [see also Eq. (9) in Antoci2007]
+
+FAD PARTICLE::WeightFunction_CubicBspline::W(
+  const FAD &disRel,
+  const double &radius
+  )
+{
+
+  //Attention: The support of our kernel functions is (in 3D) defined by a sphere with radius measured by our variable "radius".
+  //In the SLM literature, typically the smoothing length h:=radius/2 is used for defining the kernel functions!!!
+  //rszDisRel=q:=||r_{ij}||/h=2*||r_{ij}||/radius
+  const FAD rszDisRel = RszDisRel(disRel,radius);
+
+  FAD w = 0;
+  if (rszDisRel.val() < 1)
+  {
+    w = (2.0/3.0) - std::pow(rszDisRel,2) + 0.5 * std::pow(rszDisRel,3);
+  }
+  else if (rszDisRel.val() < 2)
+  {
+    w = std::pow(2-rszDisRel,3)/6;
+  }
+
+  // resizing to have an integral = 1
+  w *= RszDim(radius);
+
+  return w;
+}
+
 
 /*-----------------------------------------------------------------------------*
  | compute the cubicBspline w function derivative       cattabiani 08/16  |
@@ -243,6 +288,37 @@ double PARTICLE::WeightFunction_CubicBspline::DW(const double &disRel, const dou
     dw = (- 4 * rszDisRel + 3 * std::pow(rszDisRel,2) ) / radius;
   }
   else if (rszDisRel < 2)
+  {
+    dw = - std::pow(2 - rszDisRel,2) / radius;
+  }
+
+  // resizing to have an integral = 1
+  dw *= RszDim(radius);
+
+  return dw;
+}
+
+/*--------------------------------------------------------------------------------*
+ | compute the cubicBspline w function derivative (FAD version)      meier 03/17  |
+ *-------------------------------------------------------------------------------*/
+
+// empowered by mathematica:
+// https://www.wolframalpha.com/input/?i=Piecewise+%5B%7B%7B+(6+x+(3+x+-+4))%2F8,+0%3C%3Dx%2F2%3C%3D1%2F2%7D,%7B+-(6+(2+-+x)%5E2)%2F8,1%2F2%3Cx%2F2%3C%3D1%7D%7D%5D
+// See again Monaghan2005, Eq. (2.6)
+
+FAD PARTICLE::WeightFunction_CubicBspline::DW(const FAD &disRel, const double &radius)
+{
+
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * r_{ij}/||r_{ij}||
+  // Here, we determine DW = dW/dq * 1/h while the part e_{ij}:=r_{ij}/||r_{ij}|| is multiplied outside!
+  const FAD rszDisRel = RszDisRel(disRel,radius);
+
+  FAD dw = 0;
+  if (rszDisRel.val() < 1)
+  {
+    dw = (- 4 * rszDisRel + 3 * std::pow(rszDisRel,2) ) / radius;
+  }
+  else if (rszDisRel.val() < 2)
   {
     dw = - std::pow(2 - rszDisRel,2) / radius;
   }
@@ -325,6 +401,23 @@ double PARTICLE::WeightFunction_SqrtHyperbola::W(
   return w;
 }
 
+/*----------------------------------------------------------------------*
+ | compute the SqrtHyperbola w function (FAD version)      meier 03/17  |
+ *----------------------------------------------------------------------*/
+FAD PARTICLE::WeightFunction_SqrtHyperbola::W(
+  const FAD &disRel,
+  const double &radius
+  )
+{
+  FAD w = 0;
+  if (disRel.val()<radius)
+  {
+    w = (std::pow(radius/disRel,0.5) - 1) * RszDim(radius);
+  }
+
+  return w;
+}
+
 
 /*-----------------------------------------------------------------------------*
  | compute the SqrtHyperbola 1 function derivative      cattabiani 08/16  |
@@ -333,6 +426,20 @@ double PARTICLE::WeightFunction_SqrtHyperbola::DW(const double &disRel, const do
 {
   double dw = 0;
   if (disRel<radius)
+  {
+    dw = (- radius / (2 * std::pow(radius/disRel,0.5) * disRel)) * RszDim(radius);
+  }
+
+  return dw;
+}
+
+/*------------------------------------------------------------------------------*
+ | compute the SqrtHyperbola 1 function derivative (FAD version)   meier 03/17  |
+ *------------------------------------------------------------------------------*/
+FAD PARTICLE::WeightFunction_SqrtHyperbola::DW(const FAD &disRel, const double &radius)
+{
+  FAD dw = 0;
+  if (disRel.val()<radius)
   {
     dw = (- radius / (2 * std::pow(radius/disRel,0.5) * disRel)) * RszDim(radius);
   }
@@ -410,6 +517,23 @@ double PARTICLE::WeightFunction_HyperbolaNoRsz::W(
   return w;
 }
 
+/*----------------------------------------------------------------------*
+ | compute the HyperbolaNoRsz w function (FAD version)     meier 03/17  |
+ *----------------------------------------------------------------------*/
+FAD PARTICLE::WeightFunction_HyperbolaNoRsz::W(
+  const FAD &disRel,
+  const double &radius
+  )
+{
+  FAD w = 0;
+  if (disRel.val()<radius)
+  {
+    w = (radius/disRel - 1) * RszDim(radius);
+  }
+
+  return w;
+}
+
 
 /*-----------------------------------------------------------------------------*
  | compute the HyperbolaNoRsz w function derivative     cattabiani 08/16  |
@@ -418,6 +542,20 @@ double PARTICLE::WeightFunction_HyperbolaNoRsz::DW(const double &disRel, const d
 {
   double dw = 0;
   if (disRel<radius)
+  {
+    dw = - radius/(disRel * disRel) * RszDim(radius);
+  }
+
+  return dw;
+}
+
+/*---------------------------------------------------------------------------------*
+ | compute the HyperbolaNoRsz w function derivative (FAD version)     meier 03/17  |
+ *---------------------------------------------------------------------------------*/
+FAD PARTICLE::WeightFunction_HyperbolaNoRsz::DW(const FAD &disRel, const double &radius)
+{
+  FAD dw = 0;
+  if (disRel.val()<radius)
   {
     dw = - radius/(disRel * disRel) * RszDim(radius);
   }
