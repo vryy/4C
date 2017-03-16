@@ -456,6 +456,9 @@ namespace TIMINT {
 
     /// set evaluation action
     virtual void SetActionType(const DRT::ELEMENTS::ActionType& action);
+
+    // group id in nested parallelity
+    int GroupId() const;
     ///@}
 
     /// @name Structure with ale specific methods

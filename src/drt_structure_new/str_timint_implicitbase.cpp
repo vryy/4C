@@ -125,7 +125,8 @@ void STR::TIMINT::ImplicitBase::Update(double endtime)
 void STR::TIMINT::ImplicitBase::PrintStep()
 {
   CheckInitSetup();
-  if (DataGlobalState().GetMyRank()!=0)
+
+  if (DataGlobalState().GetMyRank()!=0 or GroupId() != 0)
     return;
 
   const int& newtoniter = DataSDyn().GetMutableNoxParams().sublist("Output").

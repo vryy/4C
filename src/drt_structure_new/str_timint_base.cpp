@@ -27,6 +27,8 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
+#include "../drt_comm/comm_utils.H"
+
 #include "../linalg/linalg_blocksparsematrix.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -799,4 +801,12 @@ void STR::TIMINT::Base::SetActionType(const DRT::ELEMENTS::ActionType& action)
 {
   CheckInitSetup();
   int_ptr_->EvalData().SetActionType(action);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Base::GroupId() const
+{
+  Teuchos::RCP<COMM_UTILS::NestedParGroup> group = DRT::Problem::Instance()->GetNPGroup();
+  return group->GroupId();
 }
