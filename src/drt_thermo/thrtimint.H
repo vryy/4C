@@ -37,8 +37,6 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
-//#include "../drt_mortar/mortar_manager_base.H"
-
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
  *----------------------------------------------------------------------*/
