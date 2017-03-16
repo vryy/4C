@@ -182,6 +182,26 @@ void COMBUST::Algorithm::Setup()
   return;
 }
 
+
+void COMBUST::Algorithm::DoAlgorithmSpecificInit()
+{
+  // check whether fluid and scatra discret still have the same maps
+  // they may change due a modified ghosting required, i.e., for particle level-set methods
+  if(Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField()) != Teuchos::null)
+  {
+    const Epetra_Map* scatraelecolmap = ScaTraField()->Discretization()->ElementColMap();
+    if (not scatraelecolmap->PointSameAs(*FluidField()->Discretization()->ElementColMap()))
+    {
+      if (Comm().MyPID()==0)
+        std::cout << "----- adaption of fluid ghosting to scatra ghosting ------" << std::endl;
+
+      // adapt fluid ghosting to scatra ghosting
+      FluidField()->Discretization()->ExtendedGhosting(*scatraelecolmap,false,false,false,false);
+    }
+  }
+}
+
+
 /*------------------------------------------------------------------------------------------------*
  | public: algorithm for a dynamic combustion problem                                 henke 06/08 |
  *------------------------------------------------------------------------------------------------*/

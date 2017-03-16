@@ -69,6 +69,8 @@ namespace COMBUST
     /// Setup this class
     virtual void Setup();
 
+    virtual void DoAlgorithmSpecificInit();
+
     /// time loop of algorithm for dynamic combustion problem
     void TimeLoop();
 
