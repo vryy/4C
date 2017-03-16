@@ -21,7 +21,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 
-#include "str_enum_lists.H"
+#include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_mapextractor.H"
@@ -142,7 +142,7 @@ namespace TIMINT {
     Teuchos::RCP<LINALG::SparseMatrix> ExtractModelBlock(
         LINALG::SparseOperator& jac,
         const INPAR::STR::ModelType& mt,
-        const MatBlockType& bt) const;
+        const DRT::UTILS::MatBlockType& bt) const;
 
     /** \brief Assign a LINALG::SparseMatrix to one of the blocks of the corresponding model
      *
@@ -157,13 +157,13 @@ namespace TIMINT {
         LINALG::SparseOperator& jac,
         const LINALG::SparseMatrix& matrix,
         const INPAR::STR::ModelType& mt,
-        const MatBlockType& bt) const
+        const DRT::UTILS::MatBlockType& bt) const
     { AssignModelBlock(jac,matrix,mt,bt,LINALG::View); };
     void AssignModelBlock(
         LINALG::SparseOperator& jac,
         const LINALG::SparseMatrix& matrix,
         const INPAR::STR::ModelType& mt,
-        const MatBlockType& bt,
+        const DRT::UTILS::MatBlockType& bt,
         const LINALG::DataAccess& access) const;
 
     /// Get the displacement block of the global jacobian matrix in the global
@@ -177,7 +177,7 @@ namespace TIMINT {
     /// Create the global solution vector
     Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector() const;
     Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector(
-        const enum VecInitType& vecinittype,
+        const enum DRT::UTILS::VecInitType& vecinittype,
         const Teuchos::RCP<const STR::ModelEvaluator>& modeleval) const;
 
     /// Create the structural stiffness matrix block

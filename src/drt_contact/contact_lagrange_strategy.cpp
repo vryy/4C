@@ -2731,7 +2731,7 @@ void CONTACT::CoLagrangeStrategy::AssembleContactStiff()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPtr(
-        const enum STR::MatBlockType& bt) const
+        const enum DRT::UTILS::MatBlockType& bt) const
 {
   // if there are no active contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
@@ -2740,7 +2740,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
   Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case STR::block_displ_displ:
+    case DRT::UTILS::block_displ_displ:
     {
       mat_ptr = Teuchos::rcp(
           new LINALG::SparseMatrix(SlMaDoFRowMap(true),100,false,true));
@@ -2758,7 +2758,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
 
       break;
     }
-    case STR::block_displ_lm:
+    case DRT::UTILS::block_displ_lm:
     {
       // build constraint matrix kdz
       Teuchos::RCP<LINALG::SparseMatrix> kdz_ptr =
@@ -2779,7 +2779,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
 
       break;
     }
-    case STR::block_lm_displ:
+    case DRT::UTILS::block_lm_displ:
     {
       // build constraint matrix kzd
       Teuchos::RCP<LINALG::SparseMatrix> kzd_ptr =
@@ -2815,7 +2815,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoLagrangeStrategy::GetMatrixBlockPt
 
       break;
     }
-    case STR::block_lm_lm:
+    case DRT::UTILS::block_lm_lm:
     {
       // build constraint matrix kzz
       Teuchos::RCP<LINALG::SparseMatrix> kzz_ptr =
@@ -2883,7 +2883,7 @@ void CONTACT::CoLagrangeStrategy::RecoverState(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
-       const enum STR::VecBlockType& bt) const
+       const enum DRT::UTILS::VecBlockType& bt) const
 {
   // if there are no active contact contributions
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
@@ -2892,12 +2892,12 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoLagrangeStrategy::GetRhsBlockPtr(
   Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case STR::block_displ:
+    case DRT::UTILS::block_displ:
     {
       vec_ptr = strcontactrhs_;
       break;
     }
-    case STR::block_constraint:
+    case DRT::UTILS::block_constraint:
     {
       vec_ptr = constrrhs_;
       break;

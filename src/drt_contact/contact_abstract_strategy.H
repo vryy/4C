@@ -21,7 +21,7 @@
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
-#include "../drt_structure_new/str_enum_lists.H"
+#include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
 // forward declarations
 namespace DRT {
@@ -722,7 +722,7 @@ public:
    *  \date 05/2016
    *  \author hiermeier */
   virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-     const enum STR::VecBlockType& bt) const
+     const enum DRT::UTILS::VecBlockType& bt) const
   { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
 
   /*! Return the condensed right-hand-side (read-only)
@@ -745,7 +745,7 @@ public:
    *  \date 05/2016
    *  \author hiermeier */
   virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-      const enum STR::MatBlockType& bt) const
+      const enum DRT::UTILS::MatBlockType& bt) const
   { dserror("Not yet implemented!"); exit(EXIT_FAILURE); };
 
   /*! Return the condensed matrix block pointer (read-only)

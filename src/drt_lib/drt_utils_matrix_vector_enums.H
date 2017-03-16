@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------*/
 /*!
-\file str_enum_lists.H
+\file drt_utils_matrix_vector_enums.H
 
 \brief Contains ONLY lists of enumerators and is supposed to be included
        into the header files, if necessary and till the C++11 standard is
@@ -15,10 +15,11 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef SRC_DRT_STRUCTURE_NEW_STR_ENUM_LISTS_H_
-#define SRC_DRT_STRUCTURE_NEW_STR_ENUM_LISTS_H_
+#ifndef SRC_DRT_LIB_DRT_UTILS_MATRIX_VECTOR_ENUMS_H_
+#define SRC_DRT_LIB_DRT_UTILS_MATRIX_VECTOR_ENUMS_H_
 
-namespace STR {
+namespace DRT {
+namespace UTILS {
   /// enum, which specifies the desired global vector initialization during creation
   enum VecInitType
   {
@@ -66,7 +67,8 @@ namespace STR {
     block_displ,      ///< displacement block (structural block)
     block_constraint  ///< lagrange multiplier/constraint block of the corresponding model
   };
-} // namespace STR
+} // namespace UTILS
+} // namespace DRT
 
 
-#endif /* SRC_DRT_STRUCTURE_NEW_STR_ENUM_LISTS_H_ */
+#endif /* SRC_DRT_LIB_DRT_UTILS_MATRIX_VECTOR_ENUMS_H_ */

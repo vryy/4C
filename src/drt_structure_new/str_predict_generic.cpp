@@ -105,7 +105,7 @@ void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
 
   // Create the new solution vector
   Teuchos::RCP<NOX::Epetra::Vector> x_vec =
-      GlobalState().CreateGlobalVector(vec_init_current_state,
+      GlobalState().CreateGlobalVector(DRT::UTILS::vec_init_current_state,
           ImplInt().ModelEvalPtr());
   // resets all isValid flags
   grp.setX(*x_vec);

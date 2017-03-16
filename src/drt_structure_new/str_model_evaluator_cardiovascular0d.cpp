@@ -198,21 +198,21 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleJacobian(
   // scale with str time-integrator dependent value
   block_ptr->Scale(timefac_np);
   GState().AssignModelBlock(jac,*block_ptr,Type(),
-      STR::block_displ_lm);
+      DRT::UTILS::block_displ_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
   // --- Kzd - block - already scaled correctly by 0D model !-----------
   block_ptr = cardvasc0dman_->GetMatDcardvasc0dDd()->Transpose();
   GState().AssignModelBlock(jac,*block_ptr,Type(),
-      STR::block_lm_displ);
+      DRT::UTILS::block_lm_displ);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 
   // --- Kzz - block - already scaled with 0D theta by 0D model !-------
   block_ptr = cardvasc0dman_->GetCardiovascular0DStiffness();
   GState().AssignModelBlock(jac,*block_ptr,Type(),
-      STR::block_lm_lm);
+      DRT::UTILS::block_lm_lm);
   // reset the block pointer, just to be on the safe side
   block_ptr = Teuchos::null;
 

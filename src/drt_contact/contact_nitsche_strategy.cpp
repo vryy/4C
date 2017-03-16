@@ -220,9 +220,9 @@ void CONTACT::CoNitscheStrategy::Integrate(CONTACT::ParamsInterface& cparams)
   return;
 }
 Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
-     const enum STR::VecBlockType& bt) const
+     const enum DRT::UTILS::VecBlockType& bt) const
 {
-  if (bt!=STR::block_displ)
+  if (bt!=DRT::UTILS::block_displ)
     return Teuchos::null;
 
   if (curr_state_eval_==false)
@@ -242,9 +242,9 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
 }
 
 Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(
-    const enum STR::MatBlockType& bt) const
+    const enum DRT::UTILS::MatBlockType& bt) const
 {
-  if (bt!=STR::block_displ_displ)
+  if (bt!=DRT::UTILS::block_displ_displ)
     return Teuchos::null;
 
   if (curr_state_eval_==false)

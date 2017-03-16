@@ -199,11 +199,11 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f,
   }
   else if (Strategy().IsSaddlePointSystem())
   {
-    block_vec_ptr = Strategy().GetRhsBlockPtr(STR::block_displ);
+    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
     STR::AssembleVector(1.0,f,timefac_np,*block_vec_ptr);
-    block_vec_ptr = Strategy().GetRhsBlockPtr(STR::block_constraint);
+    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_constraint);
     if (block_vec_ptr.is_null())
       dserror("The constraint vector is a NULL pointer, although \n"
           "the structural part indicates, that contact contributions \n"
@@ -213,7 +213,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f,
   else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
       Strategy().Params(),"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
   {
-    block_vec_ptr = Strategy().GetRhsBlockPtr(STR::block_displ);
+    block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
     STR::AssembleVector(1.0,f,timefac_np,*block_vec_ptr);
@@ -246,7 +246,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
   else if (Strategy().SystemType() == INPAR::CONTACT::system_saddlepoint)
   {
     // --- Kdd - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(STR::block_displ_displ);
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_displ);
     /* if there are no active contact contributions, we put a identity
      * matrix at the (lm,lm)-block */
     if (block_ptr.is_null())
@@ -256,7 +256,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
       err = ones->PutScalar(1.0);
       block_ptr = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
       GState().AssignModelBlock(jac,*block_ptr,Type(),
-          STR::block_lm_lm);
+          DRT::UTILS::block_lm_lm);
       // done ...
       return (err==0);
     }
@@ -266,29 +266,29 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
     // reset the block pointers, just to be on the safe side
     block_ptr     = Teuchos::null;
     // --- Kdz - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(STR::block_displ_lm);
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_lm);
     block_ptr->Scale(timefac_np);
     GState().AssignModelBlock(jac,*block_ptr,Type(),
-        STR::block_displ_lm);
+        DRT::UTILS::block_displ_lm);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
     // --- Kzd - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(STR::block_lm_displ);
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_lm_displ);
     GState().AssignModelBlock(jac,*block_ptr,Type(),
-        STR::block_lm_displ);
+        DRT::UTILS::block_lm_displ);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
     // --- Kzz - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(STR::block_lm_lm);
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_lm_lm);
     GState().AssignModelBlock(jac,*block_ptr,Type(),
-        STR::block_lm_lm);
+        DRT::UTILS::block_lm_lm);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
   }
   else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
       Strategy().Params(),"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
   {
-    block_ptr = Strategy().GetMatrixBlockPtr(STR::block_displ_displ);
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_displ);
     Teuchos::RCP<LINALG::SparseMatrix> jac_dd =
         GState().ExtractDisplBlock(jac);
     jac_dd->Add(*block_ptr,false,timefac_np,1.0);
@@ -347,7 +347,7 @@ void STR::MODELEVALUATOR::Contact::UpdateStepState(
   // add the contact forces to the old structural residual state
   // vector
   Teuchos::RCP<const Epetra_Vector> strcontactrhs_ptr =
-      Strategy().GetRhsBlockPtr(STR::block_displ);
+      Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
   if (not strcontactrhs_ptr.is_null())
   {
     Teuchos::RCP<Epetra_Vector>& fstructold_ptr =

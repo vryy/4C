@@ -207,7 +207,7 @@ bool STR::MODELEVALUATOR::Structure::AssembleJacobian(
     const double & timefac_np) const
 {
   int err = Stiff().Scale(timefac_np);
-  GState().AssignModelBlock(jac,Stiff(),Type(),STR::block_displ_displ);
+  GState().AssignModelBlock(jac,Stiff(),Type(),DRT::UTILS::block_displ_displ);
   return (err==0);
 }
 

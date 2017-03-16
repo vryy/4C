@@ -136,7 +136,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::
 
   // create new state vector
   Teuchos::RCP<NOX::Epetra::Vector> x_ptr =
-      GState().CreateGlobalVector(STR::vec_init_last_time_step,
+      GState().CreateGlobalVector(DRT::UTILS::vec_init_last_time_step,
           ti_impl->ImplIntPtr()->ModelEvalPtr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.

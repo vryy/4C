@@ -106,7 +106,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
      *
      *  \param bt (in): Desired vector block type, e.g. block_displ, block_constraint,*/
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-       const enum STR::VecBlockType& bt) const;
+       const enum DRT::UTILS::VecBlockType& bt) const;
 
     /*! \brief Recover the current state
      *
@@ -133,7 +133,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
      *
      *  \param bt (in): Desired matrix block type, e.g. block_displ_displ, block_displ_lm, ...*/
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum STR::MatBlockType& bt) const;
+        const enum DRT::UTILS::MatBlockType& bt) const;
 
     //! Evaluate contact contributions to stiff matrix
     virtual void AssembleContactStiff();

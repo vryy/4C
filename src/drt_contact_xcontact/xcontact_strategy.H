@@ -248,11 +248,11 @@ namespace XCONTACT
 
     //! [derived]
     virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum STR::VecBlockType& bt) const;
+        const enum DRT::UTILS::VecBlockType& bt) const;
 
     //! [derived]
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum STR::MatBlockType& bt) const;
+        const enum DRT::UTILS::MatBlockType& bt) const;
 
     //! [derived]
     virtual Teuchos::RCP<const Epetra_Map> SlNormalDoFRowMapPtr(const bool& redist) const

@@ -74,10 +74,10 @@ public:
   void Integrate(CONTACT::ParamsInterface& cparams);
 
   virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-     const enum STR::VecBlockType& bt) const;
+     const enum DRT::UTILS::VecBlockType& bt) const;
 
   virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-      const enum STR::MatBlockType& bt) const ;
+      const enum DRT::UTILS::MatBlockType& bt) const ;
 
   /*! \brief Setup this strategy object (maps, vectors, etc.)
 

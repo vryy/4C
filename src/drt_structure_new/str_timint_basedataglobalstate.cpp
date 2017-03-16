@@ -248,7 +248,7 @@ void STR::TIMINT::BaseDataGlobalState::SetInitialFields()
 Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
     CreateGlobalVector() const
 {
-  return CreateGlobalVector(vec_init_zero,Teuchos::null);
+  return CreateGlobalVector(DRT::UTILS::vec_init_zero,Teuchos::null);
 }
 
 /*----------------------------------------------------------------------------*
@@ -503,7 +503,7 @@ const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
-    CreateGlobalVector(const enum VecInitType& vecinittype,
+    CreateGlobalVector(const enum DRT::UTILS::VecInitType& vecinittype,
     const Teuchos::RCP<const STR::ModelEvaluator>& modeleval_ptr) const
 {
   CheckInit();
@@ -514,7 +514,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
   switch (vecinittype)
   {
     /* use the last converged state to construct a new solution vector */
-    case vec_init_last_time_step:
+    case DRT::UTILS::vec_init_last_time_step:
     {
       if (modeleval_ptr.is_null())
         dserror("We need access to the STR::ModelEvaluator object!");
@@ -533,7 +533,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
       break;
     }
     /* use the current global state to construct a new solution vector */
-    case vec_init_current_state:
+    case DRT::UTILS::vec_init_current_state:
     {
       if (modeleval_ptr.is_null())
         dserror("We need access to the STR::ModelEvaluator object!");
@@ -551,7 +551,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
       break;
     }
     /* construct a new solution vector filled with zeros */
-    case vec_init_zero:
+    case DRT::UTILS::vec_init_zero:
     default:
     {
       // nothing to do.
@@ -711,7 +711,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(
     LINALG::SparseOperator& jac,
     const LINALG::SparseMatrix& matrix,
     const INPAR::STR::ModelType& mt,
-    const MatBlockType& bt,
+    const DRT::UTILS::MatBlockType& bt,
     const LINALG::DataAccess& access) const
 {
   LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
@@ -725,22 +725,22 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(
     const int& b_id = model_block_id_.at(mt);
     switch (bt)
     {
-      case block_displ_displ:
+      case DRT::UTILS::block_displ_displ:
       {
         blockmat_ptr->Matrix(0,0).Assign(access,matrix);
         break;
       }
-      case block_displ_lm:
+      case DRT::UTILS::block_displ_lm:
       {
         blockmat_ptr->Matrix(0,b_id).Assign(access,matrix);
         break;
       }
-      case block_lm_displ:
+      case DRT::UTILS::block_lm_displ:
       {
         blockmat_ptr->Matrix(b_id,0).Assign(access,matrix);
         break;
       }
-      case block_lm_lm:
+      case DRT::UTILS::block_lm_lm:
       {
         blockmat_ptr->Matrix(b_id,b_id).Assign(access,matrix);
         break;
@@ -766,7 +766,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
     ExtractModelBlock(
     LINALG::SparseOperator& jac,
     const INPAR::STR::ModelType& mt,
-    const MatBlockType& bt) const
+    const DRT::UTILS::MatBlockType& bt) const
 {
   Teuchos::RCP<LINALG::SparseMatrix> block = Teuchos::null;
   LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
@@ -779,22 +779,22 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
     const int& b_id = model_block_id_.at(mt);
     switch (bt)
     {
-      case block_displ_displ:
+      case DRT::UTILS::block_displ_displ:
       {
         block = Teuchos::rcp(&(blockmat_ptr->Matrix(0,0)),false);
         break;
       }
-      case block_displ_lm:
+      case DRT::UTILS::block_displ_lm:
       {
         block = Teuchos::rcp(&(blockmat_ptr->Matrix(0,b_id)),false);
         break;
       }
-      case block_lm_displ:
+      case DRT::UTILS::block_lm_displ:
       {
         block = Teuchos::rcp(&(blockmat_ptr->Matrix(b_id,0)),false);
         break;
       }
-      case block_lm_lm:
+      case DRT::UTILS::block_lm_lm:
       {
         block = Teuchos::rcp(&(blockmat_ptr->Matrix(b_id,b_id)),false);
         break;
@@ -820,7 +820,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
 Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
     ExtractDisplBlock(LINALG::SparseOperator& jac) const
 {
-  return ExtractModelBlock(jac,INPAR::STR::model_structure,block_displ_displ);
+  return ExtractModelBlock(jac,INPAR::STR::model_structure,DRT::UTILS::block_displ_displ);
 }
 
 /*----------------------------------------------------------------------------*

@@ -443,7 +443,7 @@ public:
 
   //! derived
   virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-      const enum STR::VecBlockType& bt) const;
+      const enum DRT::UTILS::VecBlockType& bt) const;
 
   //! Return the condensed right hand side vector (currently unsupported!)
   virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr() const
@@ -452,7 +452,7 @@ public:
 
   //! Return the desired matrix block pointer
   virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
-      const enum STR::MatBlockType& bt) const;
+      const enum DRT::UTILS::MatBlockType& bt) const;
 
   //! Return the condensed matrix block pointer (currently unsupported!)
   virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr() const
