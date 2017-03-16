@@ -22,14 +22,6 @@
 #include "thr_aux.H"
 #include "thermo_ele_action.H"
 
-#include "../drt_mortar/mortar_manager_base.H"
-#include "../drt_contact/meshtying_manager.H"
-#include "../drt_contact/contact_manager.H"
-#include "../drt_contact/contact_interface.H"
-#include "../drt_contact/contact_abstract_strategy.H"
-#include "../drt_contact/contact_node.H"
-#include "../drt_contact/friction_node.H"
-
 /*----------------------------------------------------------------------*
  | constructor                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
