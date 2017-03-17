@@ -224,8 +224,7 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
   /* We use the parameter list to define a PrePostOperator class for the
    * non-linear iteration process. */
   prePostOpPtr_ = Teuchos::rcp(new NOX::NLN::Solver::PrePostOp::Generic());
-  solverOptionsList.set<Teuchos::RCP<NOX::Abstract::PrePostOperator> >
-    ("User Defined Pre/Post Operator",prePostOpPtr_);
+  NOX::NLN::AUX::AddToPrePostOpVector( solverOptionsList, prePostOpPtr_ );
 
   return;
 }

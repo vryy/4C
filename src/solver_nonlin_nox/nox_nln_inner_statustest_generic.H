@@ -14,7 +14,6 @@
 #ifndef NOX_NLN_INNER_STATUSTEST_GENERIC_H_
 #define NOX_NLN_INNER_STATUSTEST_GENERIC_H_
 
-#include "nox_nln_inner_statustest_generic.H"
 #include <NOX_StatusTest_Generic.H>
 
 // forward declaration ...

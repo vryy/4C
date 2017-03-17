@@ -27,6 +27,7 @@
 #include <Epetra_Vector.h>
 
 #include <NOX_Abstract_ImplicitWeighting.H>
+#include <NOX_PrePostOperator_Vector.H>
 
 #include "../drt_inpar/drt_boolifyparameters.H"
 
@@ -512,6 +513,39 @@ enum NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(
         name.c_str());
 
   return norm_type;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void NOX::NLN::AUX::AddToPrePostOpVector(
+    Teuchos::ParameterList& p_nox_opt,
+    const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr )
+{
+
+  if ( p_nox_opt.isType< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
+          "User Defined Pre/Post Operator") )
+  {
+    Teuchos::RCP<NOX::Abstract::PrePostOperator> user_ppo =
+        p_nox_opt.get< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
+            "User Defined Pre/Post Operator");
+
+    Teuchos::RCP<NOX::PrePostOperatorVector> user_ppo_vec =
+        Teuchos::rcp_dynamic_cast<NOX::PrePostOperatorVector>( user_ppo, false );
+
+    if ( user_ppo_vec.is_null() )
+    {
+      user_ppo_vec = Teuchos::rcp( new NOX::PrePostOperatorVector() );
+      user_ppo_vec->pushBack( user_ppo );
+    }
+
+    user_ppo_vec->pushBack( ppo_ptr );
+
+    p_nox_opt.set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
+        "User Defined Pre/Post Operator", user_ppo_vec );
+  }
+  else
+    p_nox_opt.set< Teuchos::RCP<NOX::Abstract::PrePostOperator> >(
+        "User Defined Pre/Post Operator", ppo_ptr);
 }
 
 /*----------------------------------------------------------------------------*

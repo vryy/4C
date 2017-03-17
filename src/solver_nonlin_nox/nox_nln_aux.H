@@ -30,6 +30,9 @@ namespace LINALG {
   class SparseOperator;
 } // namespace LINALG
 namespace NOX {
+namespace Abstract {
+  class PrePostOperator;
+} // namespace Abstract
 namespace StatusTest {
   class Generic;
 } // namespace StatusTest
@@ -128,6 +131,10 @@ namespace AUX {
    */
   enum NOX::Abstract::Vector::NormType String2NormType(
       const std::string& name);
+
+  void AddToPrePostOpVector(
+      Teuchos::ParameterList& p_nox_opt,
+      const Teuchos::RCP<NOX::Abstract::PrePostOperator>& ppo_ptr );
 
 } // namepsace AUX
 } // namespace NLN

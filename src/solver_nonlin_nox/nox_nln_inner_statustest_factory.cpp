@@ -24,6 +24,7 @@
 
 // supported inner status tests
 #include "nox_nln_inner_statustest_armijo.H"
+#include "nox_nln_inner_statustest_filter.H"
 #include "nox_nln_inner_statustest_upperbound.H"
 
 
@@ -57,6 +58,8 @@ NOX::NLN::INNER::StatusTest::Factory::BuildInnerStatusTests(
     status_test =  this->BuildComboTest(p, u, tagged_tests);
   else if (test_type == "Armijo")
     status_test = this->BuildArmijoTest(p, u);
+  else if (test_type == "Filter")
+    status_test = this->BuildFilterTest(p, u);
   else if (test_type == "UpperBound")
     status_test = this->BuildUpperBoundTest(p, u);
   // supported StatusTests of the NOX::StatusTest classes for the inner check
@@ -118,6 +121,19 @@ NOX::NLN::INNER::StatusTest::Factory::BuildArmijoTest(
         Teuchos::rcp(new NOX::NLN::INNER::StatusTest::Armijo(c_1,isMonotone,maxHistSize));
 
   return status_test;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>
+NOX::NLN::INNER::StatusTest::Factory::BuildFilterTest(
+    Teuchos::ParameterList& p,
+    const NOX::Utils& u) const
+{
+  Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter> status_test_ptr =
+      Teuchos::rcp( new NOX::NLN::INNER::StatusTest::Filter() );
+
+  return status_test_ptr;
 }
 
 /*----------------------------------------------------------------------------*

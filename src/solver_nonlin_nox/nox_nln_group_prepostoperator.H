@@ -31,10 +31,10 @@ namespace GROUP {
   //! Currently supported group pre/post operators.
   enum PrePostOpType
   {
-    prepost_ptc,          //!< pseudo transient continuation pre/post operator
-    prepost_tangdis,      //!< tangdis (predictor) pre/post operator
-    prepost_impl_generic, //!< implicit generic (time integrator) pre/post operator
-    prepost_rotvecupdate  //!< update of non-additive rotation vector DoFs
+    prepost_ptc,                        //!< pseudo transient continuation pre/post operator
+    prepost_tangdis,                    //!< tangdis (predictor) pre/post operator
+    prepost_impl_generic,               //!< implicit generic (time integrator) pre/post operator
+    prepost_rotvecupdate                //!< update of non-additive rotation vector DoFs
   };
 
 /*!

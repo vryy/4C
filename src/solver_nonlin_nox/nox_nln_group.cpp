@@ -111,6 +111,7 @@ void NOX::NLN::Group::computeX(
 
   if (isPreconditioner())
     sharedLinearSystem.getObject(this)->destroyPreconditioner();
+
   resetIsValid();
 
   if (not skipUpdateX_)
@@ -170,7 +171,9 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
       RHSVector.getEpetraVector(),NOX::Epetra::Interface::Required::Residual);
 
   if (status == false)
+  {
     throw "NOX::NLN::Group::computeF() - fill failed";
+  }
 
   isValidRHS = true;
 

@@ -92,9 +92,9 @@ void LAGPENCONSTRAINT::NoxInterfacePrec::Setup()
  *----------------------------------------------------------------------------*/
 double LAGPENCONSTRAINT::NoxInterface::GetConstraintRHSNorms(
     const Epetra_Vector& F,
-    const NOX::NLN::StatusTest::QuantityType& chQ,
-    const NOX::Abstract::Vector::NormType& type,
-    const bool& isScaled) const
+    NOX::NLN::StatusTest::QuantityType chQ,
+    NOX::Abstract::Vector::NormType type,
+    bool isScaled) const
 {
 
   if (chQ != NOX::NLN::StatusTest::quantity_lag_pen_constraint)
@@ -123,10 +123,10 @@ double LAGPENCONSTRAINT::NoxInterface::GetConstraintRHSNorms(
 double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateRMS(
     const Epetra_Vector& xNew,
     const Epetra_Vector& xOld,
-    const double& aTol,
-    const double& rTol,
-    const NOX::NLN::StatusTest::QuantityType& chQ,
-    const bool& disable_implicit_weighting) const
+    double aTol,
+    double rTol,
+    NOX::NLN::StatusTest::QuantityType chQ,
+    bool disable_implicit_weighting) const
 {
 
   if (chQ != NOX::NLN::StatusTest::quantity_lag_pen_constraint)
@@ -155,9 +155,9 @@ double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateRMS(
 double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateNorms(
     const Epetra_Vector& xNew,
     const Epetra_Vector& xOld,
-    const NOX::NLN::StatusTest::QuantityType& chQ,
-    const NOX::Abstract::Vector::NormType& type,
-    const bool& isScaled) const
+    NOX::NLN::StatusTest::QuantityType chQ,
+    NOX::Abstract::Vector::NormType type,
+    bool isScaled) const
 {
 
   if (chQ != NOX::NLN::StatusTest::quantity_lag_pen_constraint)
@@ -187,9 +187,9 @@ double LAGPENCONSTRAINT::NoxInterface::GetLagrangeMultiplierUpdateNorms(
  *----------------------------------------------------------------------------*/
 double LAGPENCONSTRAINT::NoxInterface::GetPreviousLagrangeMultiplierNorms(
     const Epetra_Vector& xOld,
-    const NOX::NLN::StatusTest::QuantityType& chQ,
-    const NOX::Abstract::Vector::NormType& type,
-    const bool& isScaled) const
+    NOX::NLN::StatusTest::QuantityType chQ,
+    NOX::Abstract::Vector::NormType type,
+    bool isScaled) const
 {
 
   if (chQ != NOX::NLN::StatusTest::quantity_lag_pen_constraint)
@@ -271,7 +271,8 @@ void LAGPENCONSTRAINT::NoxInterfacePrec::FillMapsForPreconditioner(std::vector<T
  *----------------------------------------------------------------------------*/
 bool LAGPENCONSTRAINT::NoxInterfacePrec::computePreconditioner(
     const Epetra_Vector& x,
-    Epetra_Operator& M, Teuchos::ParameterList* precParams)
+    Epetra_Operator& M,
+    Teuchos::ParameterList* precParams)
 {
 //  std::cout << "computePreconditioner" << std::endl;
   CheckInitSetup();

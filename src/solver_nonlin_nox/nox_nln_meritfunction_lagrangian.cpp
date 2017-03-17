@@ -17,14 +17,15 @@
 #include "nox_nln_meritfunction_lagrangian.H"   // class header
 #include "nox_nln_constraint_group.H"
 
+#include "../linalg/linalg_serialdensevector.H"
+
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Utils.H>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::MeritFunction::Lagrangian::Lagrangian(const Teuchos::RCP<NOX::Utils>& u) :
-  meritFunctionName_("Lagrangian"),
-  meritFunctionEnum_(mrtfct_lagrangian)
+NOX::NLN::MeritFunction::Lagrangian::Lagrangian(const Teuchos::RCP<NOX::Utils>& u)
+    : meritFunctionName_("Lagrangian")
 {
   utils_ = u;
 }
@@ -49,17 +50,19 @@ double NOX::NLN::MeritFunction::Lagrangian::computef(const NOX::Abstract::Group&
     throwError("computef()","Dynamic cast to NOX::NLN::Constraint::Group failed!");
   }
 
-  // Get the structural energy
-  mrtFctVal = constr_grp_ptr->GetObjectiveModelValue("energy");
+  // Get the primary contribution
+  mrtFctVal = constr_grp_ptr->GetObjectiveModelValue( "energy" );
+
   // Get the part of the merit function, which is based on the constraint equations.
   // Get the constraint interfaces map
   const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
       constr_interfaces = constr_grp_ptr->GetConstrInterfaces();
   std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >::const_iterator
       constr_iter;
+
   // loop over the second entries of the stl_map
   for (constr_iter=constr_interfaces.begin();constr_iter!=constr_interfaces.end();++constr_iter)
-    mrtFctVal += constr_iter->second->GetConstrObjectiveModelValue(nameAsEnum());
+    mrtFctVal += constr_iter->second->GetConstrObjectiveModelValue( nameAsEnum() );
 
   return mrtFctVal;
 }
@@ -82,22 +85,21 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSlope(const NOX::Abstract::Ve
     throwError("computeSlope()","Dynamic cast to NOX::NLN::Constraint::Group failed!");
 
   // Get the constraint interfaces map
-  const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
-      constr_interfaces = constr_grp_ptr->GetConstrInterfaces();
-  std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >::const_iterator
-      constr_iter;
+  const NOX::NLN::CONSTRAINT::ReqInterfaceMap & constr_interfaces =
+      constr_grp_ptr->GetConstrInterfaces();
 
   // compute the slope
   double slope = 0.0;
-  for (constr_iter=constr_interfaces.begin();constr_iter!=constr_interfaces.end();++constr_iter)
+  for ( NOX::NLN::CONSTRAINT::ReqInterfaceMap::const_iterator constr_iter =
+        constr_interfaces.begin(); constr_iter != constr_interfaces.end(); ++constr_iter )
   {
     // get the first order linearization terms of the Lagrangian objective model
-    Teuchos::RCP<const std::vector<double> > firstOrderTerms =
-        constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
-            linorder_first);
+    const LINALG::SerialDenseVector & allfirstOrderTerms =
+        constr_iter->second->GetLinearizedObjectiveModelTerms( nameAsEnum(),
+        linorder_first );
 
-    for (std::size_t i=0;i<firstOrderTerms->size();++i)
-      slope += firstOrderTerms->at(i);
+    for ( unsigned i=0; i < static_cast<unsigned>( allfirstOrderTerms.M() ); ++i )
+      slope += allfirstOrderTerms[i];
   }
   return slope;
 }
@@ -124,44 +126,44 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
 
   double model = 0.0;
   // Get the constraint interfaces map
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
-        constr_interfaces = constr_grp_ptr->GetConstrInterfaces();
-    std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >::const_iterator
-        constr_iter;
-  for (constr_iter=constr_interfaces.begin();constr_iter!=constr_interfaces.end();++constr_iter)
+  const NOX::NLN::CONSTRAINT::ReqInterfaceMap & constr_interfaces =
+      constr_grp_ptr->GetConstrInterfaces();
+
+  for ( NOX::NLN::CONSTRAINT::ReqInterfaceMap::const_iterator constr_iter =
+        constr_interfaces.begin(); constr_iter != constr_interfaces.end(); ++constr_iter )
   {
     // --------------------------------------------
-    // Get the 1st order linearization terms of the Lagrangian objective model
+    // Get the 1-st order linearization terms of the Lagrangian objective model
     // w.r.t the primary degrees of freedom
     // --------------------------------------------
-    Teuchos::RCP<const std::vector<double> > pFirstOrderTerms =
-        constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
-        linorder_first,lin_wrt_primary_dofs);
+    const LINALG::SerialDenseVector & pFirstOrderTerms =
+        constr_iter->second->GetLinearizedObjectiveModelTerms( nameAsEnum(),
+        linorder_first,lin_wrt_primary_dofs );
 
-    for (std::size_t i=0;i<pFirstOrderTerms->size();++i)
-      model += stepPV * pFirstOrderTerms->at(i);
+    for ( unsigned i=0; i < static_cast<unsigned>( pFirstOrderTerms.M() ); ++i )
+      model += stepPV * pFirstOrderTerms[i];
 
     // --------------------------------------------
-    // Get the 1st order linearization terms of the Lagrangian objective model
+    // Get the 1-st order linearization terms of the Lagrangian objective model
     // w.r.t the Lagrange multiplier degrees of freedom
     // --------------------------------------------
-    Teuchos::RCP<const std::vector<double> > lmFirstOrderTerms =
-        constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
-        linorder_first,lin_wrt_lagrange_multiplier_dofs);
+    const LINALG::SerialDenseVector & lmFirstOrderTerms =
+        constr_iter->second->GetLinearizedObjectiveModelTerms( nameAsEnum(),
+        linorder_first,lin_wrt_lagrange_multiplier_dofs );
 
-    for (std::size_t i=0;i<lmFirstOrderTerms->size();++i)
-      model += stepLM * lmFirstOrderTerms->at(i);
+    for ( unsigned i=0; i < static_cast<unsigned>( lmFirstOrderTerms.M() ); ++i )
+      model += stepLM * lmFirstOrderTerms[i];
 
     // --------------------------------------------
-    // Get the 2nd order linearization terms of the Lagrangian objective model
+    // Get the 2-nd order linearization terms of the Lagrangian objective model
     // w.r.t the Lagrange multiplier AND primary degrees of freedom
     // --------------------------------------------
-    Teuchos::RCP<const std::vector<double> > pLmSecondOrderTerms =
-        constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
-        linorder_second,lin_wrt_mixed_dofs);
+    const LINALG::SerialDenseVector & pLmSecondOrderTerms =
+        constr_iter->second->GetLinearizedObjectiveModelTerms( nameAsEnum(),
+        linorder_second,lin_wrt_mixed_dofs );
 
-    for (std::size_t i=0;i< pLmSecondOrderTerms->size();++i)
-      model += stepLM * stepPV * pLmSecondOrderTerms->at(i);
+    for ( unsigned i=0; i < static_cast<unsigned>( pLmSecondOrderTerms.M() ); ++i )
+      model += stepLM * stepPV * pLmSecondOrderTerms[i];
   }
 
   return model;
@@ -180,14 +182,6 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
 const std::string& NOX::NLN::MeritFunction::Lagrangian::name() const
 {
   return meritFunctionName_;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-const NOX::NLN::MeritFunction::MeritFctName&
-    NOX::NLN::MeritFunction::Lagrangian::nameAsEnum() const
-{
-  return meritFunctionEnum_;
 }
 
 /*----------------------------------------------------------------------*

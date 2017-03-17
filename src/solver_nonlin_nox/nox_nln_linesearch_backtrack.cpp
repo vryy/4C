@@ -150,10 +150,13 @@ bool NOX::NLN::LineSearch::Backtrack::compute
      * errors and related numerical artifacts. */
     // check the outer status test for the full step length
     outerTestsPtr_->checkStatus(s,checkType_);
+
     const NOX::NLN::Solver::LineSearchBased& lsSolver =
-        dynamic_cast<const NOX::NLN::Solver::LineSearchBased&>(s);
-    NOX::StatusTest::StatusType ostatus = lsSolver.
-        GetStatus<NOX::NLN::StatusTest::NormF>();
+        static_cast<const NOX::NLN::Solver::LineSearchBased&>(s);
+
+    const NOX::StatusTest::StatusType ostatus =
+        lsSolver.GetStatus<NOX::NLN::StatusTest::NormF>();
+
     /* Skip the inner status test, if the outer NormF test is
      * already converged! */
     if (ostatus == NOX::StatusTest::Converged)

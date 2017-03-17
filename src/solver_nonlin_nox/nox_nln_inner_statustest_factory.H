@@ -49,6 +49,10 @@ namespace StatusTest {
     Teuchos::RCP<Generic> BuildArmijoTest(
         Teuchos::ParameterList& p, const NOX::Utils& u) const;
 
+    //! Build the filter test
+    Teuchos::RCP<Generic> BuildFilterTest(
+        Teuchos::ParameterList& p, const NOX::Utils& u) const;
+
     //! Build the upper bound test
     Teuchos::RCP<Generic> BuildUpperBoundTest(
         Teuchos::ParameterList& p, const NOX::Utils& u) const;

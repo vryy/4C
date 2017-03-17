@@ -48,30 +48,33 @@ namespace LAGPENCONSTRAINT {
     //! Returns the constraint right-hand-side norms [derived]
     virtual double GetConstraintRHSNorms(
         const Epetra_Vector& F,
-        const NOX::NLN::StatusTest::QuantityType& chQ,
-        const NOX::Abstract::Vector::NormType& type,
-        const bool& isScaled) const;
+        NOX::NLN::StatusTest::QuantityType chQ,
+        NOX::Abstract::Vector::NormType type,
+        bool isScaled) const;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
     virtual double GetLagrangeMultiplierUpdateRMS(
-        const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-        const double& aTol, const double& rTol,
-        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-        const bool& disable_implicit_weighting) const;
+        const Epetra_Vector& xNew,
+        const Epetra_Vector& xOld,
+        double aTol,
+        double rTol,
+        NOX::NLN::StatusTest::QuantityType checkQuantity,
+        bool disable_implicit_weighting ) const;
 
     /// Returns the increment norm of the largange multiplier DoFs
     virtual double GetLagrangeMultiplierUpdateNorms(
-        const Epetra_Vector& xNew, const Epetra_Vector& xOld,
-        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-        const NOX::Abstract::Vector::NormType& type,
-        const bool& isScaled) const;
+        const Epetra_Vector& xNew,
+        const Epetra_Vector& xOld,
+        NOX::NLN::StatusTest::QuantityType checkQuantity,
+        NOX::Abstract::Vector::NormType type,
+        bool isScaled) const;
 
     /// Returns the previous solution norm of the largange multiplier DoFs
     virtual double GetPreviousLagrangeMultiplierNorms(
         const Epetra_Vector& xOld,
-        const NOX::NLN::StatusTest::QuantityType& checkQuantity,
-        const NOX::Abstract::Vector::NormType& type,
-        const bool& isScaled) const;
+        NOX::NLN::StatusTest::QuantityType checkQuantity,
+        NOX::Abstract::Vector::NormType type,
+        bool isScaled) const;
     /// @}
 
   protected:

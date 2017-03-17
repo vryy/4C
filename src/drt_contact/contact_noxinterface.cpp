@@ -62,9 +62,9 @@ void CONTACT::NoxInterface::Setup()
  *----------------------------------------------------------------------------*/
 double CONTACT::NoxInterface::GetConstraintRHSNorms(
     const Epetra_Vector& F,
-    const NOX::NLN::StatusTest::QuantityType& chQ,
-    const NOX::Abstract::Vector::NormType& type,
-    const bool& isScaled) const
+    NOX::NLN::StatusTest::QuantityType chQ,
+    NOX::Abstract::Vector::NormType type,
+    bool isScaled) const
 {
   if (chQ != NOX::NLN::StatusTest::quantity_contact_normal and
       chQ != NOX::NLN::StatusTest::quantity_contact_friction)
@@ -91,8 +91,8 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(
     {
       // create vector with redistributed slave dof row map in normal direction
       Teuchos::RCP<Epetra_Vector> nConstrRhs =
-          Teuchos::rcp(new Epetra_Vector(Strategy().SlNormalDoFRowMap(true)));
-      LINALG::Export(*constrRhs_red,*nConstrRhs);
+          LINALG::ExtractMyVector( *constrRhs_red, Strategy().SlNormalDoFRowMap(true) );
+
 
       constrRhs_nox = Teuchos::rcp(new NOX::Epetra::Vector(nConstrRhs,
           NOX::Epetra::Vector::CreateView));
@@ -102,8 +102,7 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(
     {
       // create vector with redistributed slave dof row map in tangential directions
       Teuchos::RCP<Epetra_Vector> tConstrRhs =
-          Teuchos::rcp(new Epetra_Vector(Strategy().SlTangentialDoFRowMap(true)));
-      LINALG::Export(*constrRhs_red,*tConstrRhs);
+          LINALG::ExtractMyVector( *constrRhs_red, Strategy().SlTangentialDoFRowMap(true) );
 
       constrRhs_nox = Teuchos::rcp(new NOX::Epetra::Vector(tConstrRhs,
           NOX::Epetra::Vector::CreateView));
@@ -127,10 +126,10 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(
 double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateRMS(
     const Epetra_Vector& xNew,
     const Epetra_Vector& xOld,
-    const double& aTol,
-    const double& rTol,
-    const NOX::NLN::StatusTest::QuantityType& chQ,
-    const bool& disable_implicit_weighting) const
+    double aTol,
+    double rTol,
+    NOX::NLN::StatusTest::QuantityType chQ,
+    bool disable_implicit_weighting) const
 {
   if (chQ != NOX::NLN::StatusTest::quantity_contact_normal and
       chQ != NOX::NLN::StatusTest::quantity_contact_friction)
@@ -143,17 +142,17 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateRMS(
   {
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
-      // create vectors with redistributed slave dof row map in normal direction
-      z_ptr = Teuchos::rcp(new Epetra_Vector(Strategy().SlNormalDoFRowMap(true)));
-      zincr_ptr = Teuchos::rcp(new Epetra_Vector(Strategy().SlNormalDoFRowMap(true)));
+      // extract vectors with redistributed slave dof row map in normal direction
+      z_ptr = LINALG::ExtractMyVector( *Strategy().GetLagrMultNp(true), Strategy().SlNormalDoFRowMap(true) );
+      zincr_ptr = LINALG::ExtractMyVector( *Strategy().GetLagrMultSolveIncr(), Strategy().SlNormalDoFRowMap(true) );
 
       break;
     }
     case NOX::NLN::StatusTest::quantity_contact_friction:
     {
-      // create vectors with redistributed slave dof row map in tangential directions
-      z_ptr = Teuchos::rcp(new Epetra_Vector(Strategy().SlTangentialDoFRowMap(true)));
-      zincr_ptr = Teuchos::rcp(new Epetra_Vector(Strategy().SlTangentialDoFRowMap(true)));
+      // extract vectors with redistributed slave dof row map in tangential directions
+      z_ptr = LINALG::ExtractMyVector( *Strategy().GetLagrMultNp(true), Strategy().SlTangentialDoFRowMap(true) );
+      zincr_ptr = LINALG::ExtractMyVector( *Strategy().GetLagrMultSolveIncr(), Strategy().SlTangentialDoFRowMap(true) );
 
       break;
     }
@@ -163,8 +162,6 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateRMS(
       break;
     }
   }
-  LINALG::Export(*Strategy().GetLagrMultNp(true),*z_ptr);
-  LINALG::Export(*Strategy().GetLagrMultSolveIncr(),*zincr_ptr);
 
   rms = NOX::NLN::AUX::RootMeanSquareNorm(aTol,rTol,
       Strategy().GetLagrMultNp(true),Strategy().GetLagrMultSolveIncr(),
@@ -178,9 +175,9 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateRMS(
 double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateNorms(
     const Epetra_Vector& xNew,
     const Epetra_Vector& xOld,
-    const NOX::NLN::StatusTest::QuantityType& chQ,
-    const NOX::Abstract::Vector::NormType& type,
-    const bool& isScaled) const
+    NOX::NLN::StatusTest::QuantityType chQ,
+    NOX::Abstract::Vector::NormType type,
+    bool isScaled) const
 {
   if (chQ != NOX::NLN::StatusTest::quantity_contact_normal and
       chQ != NOX::NLN::StatusTest::quantity_contact_friction)
@@ -195,15 +192,16 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateNorms(
   {
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
-      // create vector with redistributed slave dof row map in normal direction
-      zincr_ptr = Teuchos::rcp(new Epetra_Vector(Strategy().SlNormalDoFRowMap(true)));
-
+      // extract vector with redistributed slave dof row map in normal direction
+      zincr_ptr = LINALG::ExtractMyVector( *Strategy().GetLagrMultSolveIncr(),
+          Strategy().SlNormalDoFRowMap(true) );
       break;
     }
     case NOX::NLN::StatusTest::quantity_contact_friction:
     {
-      // create vector with redistributed slave dof row map in tangential directions
-      zincr_ptr = Teuchos::rcp(new Epetra_Vector(Strategy().SlTangentialDoFRowMap(true)));
+      // extract vector with redistributed slave dof row map in tangential directions
+      zincr_ptr = LINALG::ExtractMyVector( *Strategy().GetLagrMultSolveIncr(),
+          Strategy().SlTangentialDoFRowMap(true) );
 
       break;
     }
@@ -213,7 +211,7 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateNorms(
       break;
     }
   }
-  LINALG::Export(*Strategy().GetLagrMultSolveIncr(),*zincr_ptr);
+
   Teuchos::RCP<const NOX::Epetra::Vector> zincr_nox_ptr =
       Teuchos::rcp(new NOX::Epetra::Vector(zincr_ptr,NOX::Epetra::Vector::CreateView));
 
@@ -229,9 +227,9 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateNorms(
  *----------------------------------------------------------------------------*/
 double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(
     const Epetra_Vector& xOld,
-    const NOX::NLN::StatusTest::QuantityType& chQ,
-    const NOX::Abstract::Vector::NormType& type,
-    const bool& isScaled) const
+    NOX::NLN::StatusTest::QuantityType chQ,
+    NOX::Abstract::Vector::NormType type,
+    bool isScaled) const
 {
   if (chQ != NOX::NLN::StatusTest::quantity_contact_normal and
       chQ != NOX::NLN::StatusTest::quantity_contact_friction)
@@ -253,8 +251,7 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
       Teuchos::RCP<Epetra_Vector> znold_ptr =
-          Teuchos::rcp(new Epetra_Vector(Strategy().SlNormalDoFRowMap(true)));
-      LINALG::Export(*zold_ptr,*znold_ptr);
+          LINALG::ExtractMyVector( *zold_ptr, Strategy().SlNormalDoFRowMap(true) );
 
       zold_nox_ptr =
           Teuchos::rcp(new NOX::Epetra::Vector(znold_ptr,NOX::Epetra::Vector::CreateView));
@@ -263,8 +260,7 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(
     case NOX::NLN::StatusTest::quantity_contact_friction:
     {
       Teuchos::RCP<Epetra_Vector> ztold_ptr =
-          Teuchos::rcp(new Epetra_Vector(Strategy().SlTangentialDoFRowMap(true)));
-      LINALG::Export(*zold_ptr,*ztold_ptr);
+          LINALG::ExtractMyVector( *zold_ptr, Strategy().SlTangentialDoFRowMap(true) );
 
       zold_nox_ptr =
           Teuchos::rcp(new NOX::Epetra::Vector(ztold_ptr,NOX::Epetra::Vector::CreateView));
@@ -288,7 +284,7 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 enum NOX::StatusTest::StatusType CONTACT::NoxInterface::GetActiveSetInfo(
-    const NOX::NLN::StatusTest::QuantityType& chQ,
+    NOX::NLN::StatusTest::QuantityType chQ,
     int& activesetsize) const
 {
   bool semismooth = DRT::INPUT::IntegralValue<int>(Strategy().Params(),
@@ -329,7 +325,7 @@ enum NOX::StatusTest::StatusType CONTACT::NoxInterface::GetActiveSetInfo(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetCurrentActiveSetMap(
-    const enum NOX::NLN::StatusTest::QuantityType& chQ) const
+    enum NOX::NLN::StatusTest::QuantityType chQ) const
 {
   switch (chQ)
   {
@@ -356,7 +352,7 @@ Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetCurrentActiveSetMap(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetOldActiveSetMap(
-    const enum NOX::NLN::StatusTest::QuantityType& chQ) const
+    enum NOX::NLN::StatusTest::QuantityType chQ) const
 {
   switch (chQ)
   {
