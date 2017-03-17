@@ -274,89 +274,43 @@ namespace DRT
           const bool isale
       );
 
-      //! Provid pressure and viscous u (EOS) ghost penalty stabilization for full! 2nd order derivatives
+      //! Provide pressure and viscous u (EOS) ghost penalty stabilization for full! 2nd order derivatives
       void GhostPenalty2ndFull(
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
-          LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
-          const double &                                                timefacfac,
-          const double &                                                timefacfacpre,
-          const double &                                                tau_u_2nd,
-          const double &                                                tau_p_2nd
+          const double & tau_timefacfac_u_2nd,
+          const double & tau_timefacfac_p_2nd
       );
 
-      //! Provid pressure and viscous u (EOS) ghost penalty stabilization for 2nd order normal derivatives
+      //! Provide pressure and viscous u (EOS) ghost penalty stabilization for 2nd order normal derivatives
       void GhostPenalty2ndNormal(
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
-          LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
-          const double &                                                timefacfac,
-          const double &                                                timefacfacpre,
-          const double &                                                tau_u_2nd,
-          const double &                                                tau_p_2nd
+          const double & tau_timefacfac_u_2nd,
+          const double & tau_timefacfac_p_2nd
       );
 
       //! Provide pressure (EOS) stabilization assembly for fluid
       void pressureEOS(
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
-          const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
-          const double &                                                 tau_pres       ///< pressure stabilization parameter
+          const double & tau_timefacfacpre, ///< tau * (time factor pressure) x (integration factor)
+          const double & tau_timefacfacrhs  ///< tau * (time factor rhs)      x (integration factor)
       );
 
       //! Provide divergence and streamline (EOS) stabilization assembly for fluid
       void div_streamline_EOS(
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,        ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,        ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,        ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,        ///< element matrix slave-slave block
-          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,         ///< element vector master block
-          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,         ///< element vector slave block
-          const double &                                                 timefacfac,          ///< timefac x integration factor
-          const double &                                                 timefacfacrhs,       ///< (time factor rhs) x (integration factor)
-          const double &                                                 tau_div_streamline,  ///< streamline stabilization parameter
-          LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff        ///< difference of velocity gradients
+          const LINALG::Matrix<nsd_,nsd_>& vderxyaf_diff_scaled ///< difference of velocity gradients * tau x (time factor rhs) x (integration factor)
       );
 
       //! Provide divergence (EOS) stabilization assembly for fluid
       void div_EOS(
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
-          const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
-          const double &                                                 tau_div        ///< combined penalty parameter for divergence stabilization terms
+          const double & tau_timefacfac_div, ///< tau_div * (time factor div) x (integration factor)
+          const double & tau_timefacfac_rhs  ///< tau_div * (time factor rhs) x (integration factor)
       );
 
       //! Provide special condition to fix uncoupled pressure layers for pseudo 2D examples in combination with Krylov projection
       void pressureKrylov2Dz(
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
-          const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
-          const double &                                                 tau_pres       ///< pressure stabilization parameter
+          const double & tau_timefacfacpre, ///< tau * (time factor pressure) x (integration factor)
+          const double & tau_timefacfacrhs  ///< tau * (time factor rhs)      x (integration factor)
       );
 
       //! compute h_k w.r.t master and slave element
-      double compute_patch_hk(
+      void compute_patch_hk(
           Fluid*                                    master,            ///< master fluid element
           Fluid*                                    slave,             ///< slave fluid element
           DRT::ELEMENTS::FluidIntFace*              intface,           ///< intface element
@@ -942,13 +896,16 @@ namespace DRT
         \brief computation of the EOS-stabilization parameter and ghost penalty parameter
        */
       void ComputeStabilizationParams(
+          const bool    is_ghost_penalty_reconstruct,
+          const bool    use2ndderiv,
           const INPAR::FLUID::EOS_TauType tautype,
-          const double  normal_vel_lin_space,
+          const bool    do_crosswind_stabilization_CIP,
           const double  max_vel_L2_norm,
           const double  timefac,
-          const bool    instationary,
           const double  gamma_ghost_penalty_visc,
-          const double  gamma_ghost_penalty_trans
+          const double  gamma_ghost_penalty_trans,
+          const double  gamma_ghost_penalty_u_2nd,
+          const double  gamma_ghost_penalty_p_2nd
       );
 
     private:
@@ -1163,12 +1120,26 @@ namespace DRT
 
       // effective stabilization parameters
       // ---------------------------------------------------
-      double tau_grad_; ///< viscous ghost penalty stabilization factor for velocity gradient jump ghost-penalty term
-
       double tau_u_;    ///< stabilization factor for component-wise velocity gradient jump stabilization terms
       double tau_div_;  ///< stabilization factor for coupled divergence jump stabilization term
       double tau_p_;    ///< stabilization factor for pressure gradient jump stabilization term
 
+      double tau_u_GP1_visc_reaction_; ///< 1st order viscous and reactive stabilization factor for ghost penalty stabilization factor for velocity gradient jump ghost-penalty term
+      double tau_u_GP1_;    ///< 1st order stabilization factor for component-wise velocity gradient jump higher-order ghost penalty stabilization terms
+      double tau_div_GP1_;  ///< 1st order stabilization factor for coupled divergence jump higher-order ghost penalty stabilization term
+      double tau_p_GP1_;    ///< 1st order stabilization factor for pressure gradient jump higher-order ghost penalty stabilization term
+
+      double tau_u_GP2_visc_reaction_; ///< 2nd order viscous and reactive stabilization factor for ghost penalty stabilization factor for velocity gradient jump ghost-penalty term
+      double tau_u_GP2_;    ///< 2nd order stabilization factor for component-wise velocity gradient jump higher-order ghost penalty stabilization terms
+      double tau_div_GP2_;  ///< 2nd order stabilization factor for coupled divergence jump higher-order ghost penalty stabilization term
+      double tau_p_GP2_;    ///< 2nd order stabilization factor for pressure gradient jump higher-order ghost penalty stabilization term
+
+      double tau_vel_1st_final_; ///< final scaling for 1st order velocity cips and gps
+      double tau_pre_1st_final_; ///< final scaling for 1st order pressure cips and gps
+      double tau_div_1st_final_; ///< final scaling for 1st order divergence cips and gps
+
+      double tau_vel_2nd_final_; ///< final scaling for 2nd order velocity gps
+      double tau_pre_2nd_final_; ///< final scaling for 2nd order pressure gps
 
       bool ishigherorder_; ///< is the face a higher order face with higher order neighboring elements?
 

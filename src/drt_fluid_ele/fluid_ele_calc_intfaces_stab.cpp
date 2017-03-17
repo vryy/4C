@@ -491,28 +491,31 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
   const bool GP_visc         = fldintfacepara.Face_GP_visc();              // ghost penalty stabilization according to Nitsche's method
   double GP_visc_fac         = fldintfacepara.Ghost_Penalty_visc_fac();    // ghost penalty stabilization factor according to Nitsche's method
-  if(!GP_visc) GP_visc_fac = 0.0;
+  if(!GP_visc) GP_visc_fac   = 0.0;
 
   const bool GP_trans        = fldintfacepara.Face_GP_trans();             // ghost penalty stabilization according to Nitsche's method
   double GP_trans_fac        = fldintfacepara.Ghost_Penalty_trans_fac();   // ghost penalty stabilization factor according to Nitsche's method
   if(!GP_trans) GP_trans_fac = 0.0;
 
   const bool GP_u_p_2nd      = fldintfacepara.Face_GP_u_p_2nd();             // 2nd order ghost penalty stabilization for velocity und pressure
-  double GP_visc_2nd_fac     = fldintfacepara.Ghost_Penalty_visc_2nd_fac();  // 2nd order ghost penalty stabilization factor according to Nitsche's method
-  double GP_press_2nd_fac    = fldintfacepara.Ghost_Penalty_press_2nd_fac(); // 2nd order (pressure) ghost penalty stabilization factor according to Nitsche's method
+  double GP_u_2nd_fac        = fldintfacepara.Ghost_Penalty_visc_2nd_fac();  // 2nd order velocity ghost penalty stabilization factor according to Nitsche's method
+  double GP_p_2nd_fac        = fldintfacepara.Ghost_Penalty_press_2nd_fac(); // 2nd order pressure ghost penalty stabilization factor according to Nitsche's method
   if(!GP_u_p_2nd)
   {
-    GP_visc_2nd_fac = 0.0;
-    GP_press_2nd_fac = 0.0;
+    GP_u_2nd_fac = 0.0;
+    GP_p_2nd_fac = 0.0;
   }
 
   const bool GP_u_p_2nd_normal = fldintfacepara.Is_General_Ghost_Penalty_u_p_2nd_Normal();      // 2nd order ghost penalty stabilization for velocity und pressure in normal direction?
 
 
   // flags to integrate velocity gradient jump based stabilization terms
-  const bool EOS_div_div_jump= fldintfacepara.Face_EOS_Div_div_jump();     // eos/gp divergence stabilization based on divergence jump
+  bool EOS_div= fldintfacepara.Face_EOS_Div_div_jump();     // eos/gp divergence stabilization based on divergence jump
 
-  bool EOS_vel         = false;
+  // special treatment of this specific tau definition
+  EOS_div = fldintfacepara.EOS_WhichTau() == INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump ? false : EOS_div;
+
+   bool EOS_vel         = false;
   // decide if velocity gradient based term has to be assembled
   if(EOS_conv_stream or EOS_conv_cross or EOS_div_vel_jump or GP_visc or GP_trans)
   {
@@ -523,14 +526,27 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   {
     EOS_vel  = true;
     EOS_pres = true;
+    EOS_div  = false; // EOS_vel is sufficient
   }
 
 
-  if( (!EOS_vel) and (!EOS_pres) and (!EOS_div_div_jump))
+  if( (!EOS_vel) and (!EOS_pres) and (!EOS_div))
   {
     dserror("do not call EvaluateEdgeBasedStabilization if no stab is required!");
   }
 
+  if(EOS_div_vel_jump)
+  {
+    if (fldparatimint.IsGenalphaNP())
+      dserror("No combined divergence and streamline(EOS) stabilization for np-gen alpha");
+  }
+
+
+  if(EOS_div) // safety check
+  {
+    if(elemat_blocks.size() < nsd_*nsd_+1)
+      dserror("do not choose diagonal pattern for div_EOS stabilization!");
+  }
   //---------------------------------------------------
 
 
@@ -833,9 +849,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   // compute element length w.r.t patch of master and slave parent element
 
   // compute the element length w.r.t master and slave element
-  p_hk_ = compute_patch_hk(pele, nele, intface, fldintfacepara.EOS_element_length());
+  compute_patch_hk(pele, nele, intface, fldintfacepara.EOS_element_length());
 
-  p_hk_squared_ = p_hk_*p_hk_;
 
   //--------------------------------------------------
   // compute velocity norm patch of master and slave parent element
@@ -1049,8 +1064,6 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
     //-----------------------------------------------------
     vderxyaf_diff_.Update(1.0, nvderxyaf_, -1.0, pvderxyaf_, 0.0);
-
-    //-----------------------------------------------------
     vderxynp_diff_.Update(1.0, nvderxynp_, -1.0, pvderxynp_, 0.0);
 
     //-----------------------------------------------------
@@ -1064,18 +1077,19 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     // get the stabilization parameters
     SetConvectiveVelint(fldintfacepara, pele->IsAle());
 
-    // normal velocity
-    const double normal_vel_lin_space = fabs(convvelint_.Dot(n_));
-
-
     ComputeStabilizationParams(
+        ghost_penalty_reconstruct,
+        use2ndderiv,
         fldintfacepara.EOS_WhichTau(),
-        normal_vel_lin_space,
+        EOS_conv_cross,
         max_vel_L2_norm,
         timefac,
-        (!(fldparatimint.IsStationary())),
         GP_visc_fac,
-        GP_trans_fac);
+        GP_trans_fac,
+        GP_u_2nd_fac,
+        GP_p_2nd_fac
+    );
+
 
 
     if(EOS_pres or EOS_vel)
@@ -1093,50 +1107,25 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     // EOS stabilization term for pressure
     if(EOS_pres)
     {
+      const double tau_timefacfac_pre = tau_pre_1st_final_*timefacfac_pre;
+      const double tau_timefacfac_rhs = tau_pre_1st_final_*timefacfac_rhs;
 
-      // final pressure stabilization parameter
-      double tau_pres = 0.0;
-
-      // no need for stabilization parameter in ghost penalty reconstruction
-      if( ghost_penalty_reconstruct )
-      {
-        tau_pres = 1.0;
-      }
-      else
-      {
-        tau_pres = tau_p_;
-      }
-
-      const double tau_timefacfacpre = tau_pres*timefacfac_pre;
-
-      pderiv_dyad_pderiv_tau_timefacfacpre_.Update(tau_timefacfacpre,pderiv_dyad_pderiv_,0.0);
-      pderiv_dyad_nderiv_tau_timefacfacpre_.Update(tau_timefacfacpre,pderiv_dyad_nderiv_,0.0);
-      nderiv_dyad_nderiv_tau_timefacfacpre_.Update(tau_timefacfacpre,nderiv_dyad_nderiv_,0.0);
+      pderiv_dyad_pderiv_tau_timefacfacpre_.Update(tau_timefacfac_pre,pderiv_dyad_pderiv_,0.0);
+      pderiv_dyad_nderiv_tau_timefacfacpre_.Update(tau_timefacfac_pre,pderiv_dyad_nderiv_,0.0);
+      nderiv_dyad_nderiv_tau_timefacfacpre_.Update(tau_timefacfac_pre,nderiv_dyad_nderiv_,0.0);
 
       // assemble pressure (EOS) stabilization terms for fluid
-      pressureEOS(    elematrix_mm_,
-                      elematrix_ms_,
-                      elematrix_sm_,
-                      elematrix_ss_,
-                      elevector_m_,
-                      elevector_s_,
-                      timefacfac_pre,
-                      timefacfac_rhs,
-                      tau_pres
+      pressureEOS(
+          tau_timefacfac_pre,
+          tau_timefacfac_rhs
       );
 
       // assemble special pressure least-squares condition for pseudo 2D examples where pressure level is determined via Krylov-projection
       if(fldintfacepara.presKrylov2Dz() and fldintfacepara.EOS_Pres() == INPAR::FLUID::EOS_PRES_std_eos)
       {
-        pressureKrylov2Dz( elematrix_mm_,
-                           elematrix_ms_,
-                           elematrix_sm_,
-                           elematrix_ss_,
-                           elevector_m_,
-                           elevector_s_,
-                           timefacfac_pre,
-                           timefacfac_rhs,
-                           tau_pres
+        pressureKrylov2Dz(
+            tau_timefacfac_pre,
+            tau_timefacfac_rhs
         );
       }
     }
@@ -1145,130 +1134,71 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     // EOS stabilization term for velocity components ux, uy, uz
     if(EOS_vel)
     {
+      // TODO: shift this to ComputeStab...
       // assemble combined divergence and streamline(EOS) stabilization terms for fluid
+      double tau_vel_sum = 0.0;
+      tau_vel_sum += tau_u_GP1_visc_reaction_; // add viscous and transient ghost penalty contributions
 
-      // final stabilization parameter for component-wise velocity stabilization
-      double tau_vel = 0.0;
+      if(EOS_conv_stream or EOS_conv_cross)
+        tau_vel_sum += tau_u_;
 
-      if( ghost_penalty_reconstruct )
-      {
-        tau_vel=1.0;
-      }
-      else
-      {
-        if(EOS_conv_stream) tau_vel += tau_u_;
-        if(EOS_conv_cross)  {tau_vel += tau_u_ * 1.0; dserror("check the EOS_conv_cross implementation!"); } // that's still wrong
-        if(EOS_div_vel_jump)
-        {
-          if (fldparatimint.IsGenalphaNP()) dserror("No combined divergence and streamline(EOS) stabilization for np-gen alpha");
-          else tau_vel += tau_div_;
-        }
-        if(GP_visc or GP_trans)  tau_vel += tau_grad_;
+      // add potential contribution from divergence CIP term
+      if(EOS_div_vel_jump)
+        tau_vel_sum += tau_div_;
 
-        // just to be sure
-        if (fldintfacepara.EOS_WhichTau() == INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
-         tau_vel = tau_u_;
-      }
+      // final pressure stabilization parameter ( no need for stabilization parameter in ghost penalty reconstruction )
+      tau_vel_1st_final_ = ghost_penalty_reconstruct ? 1.0 : tau_vel_sum; //std::max(tau_vel, tau_u_GP1_);
 
-      const double tau_timefacfac = tau_vel * timefacfac;
+      const double tau_timefacfac     = tau_vel_1st_final_ * timefacfac;
+      const double tau_timefacfac_rhs = tau_vel_1st_final_ * timefacfac_rhs;
 
       pderiv_dyad_pderiv_tau_timefacfac_.Update(tau_timefacfac,pderiv_dyad_pderiv_,0.0);
       pderiv_dyad_nderiv_tau_timefacfac_.Update(tau_timefacfac,pderiv_dyad_nderiv_,0.0);
       nderiv_dyad_nderiv_tau_timefacfac_.Update(tau_timefacfac,nderiv_dyad_nderiv_,0.0);
 
+      LINALG::Matrix<nsd_,nsd_> vderxyaf_diff_scaled(false);
+      vderxyaf_diff_scaled.Update(tau_timefacfac_rhs, vderxyaf_diff_, 0.0);
+
       //-----------------------------------------------------
       // assemble velocity (EOS) stabilization terms for fluid
-      div_streamline_EOS(   elematrix_mm_,
-                            elematrix_ms_,
-                            elematrix_sm_,
-                            elematrix_ss_,
-                            elevector_m_,
-                            elevector_s_,
-                            timefacfac,
-                            timefacfac_rhs,
-                            tau_vel,
-                            vderxyaf_diff_);
+      div_streamline_EOS( vderxyaf_diff_scaled );
     }
 
     //-----------------------------------------------------
     // assemble 2nd order ghost penalty terms for xfluid application
     if(use2ndderiv)
     {
-      double tau_u_2nd = 0.0;
-      double tau_p_2nd = 0.0;
+      const double tau_timefacfac_u_2nd = tau_vel_2nd_final_ * timefacfac;
+      const double tau_timefacfac_p_2nd = tau_pre_2nd_final_ * timefacfac_pre;
 
-      // no need for stabilization parameter in ghost penalty reconstruction
-      if( ghost_penalty_reconstruct )
+      if(GP_u_p_2nd_normal) // just the theoretically sufficient 2nd order normal derivatives!
       {
-        tau_u_2nd = p_hk_squared_; // tau_u = 1.0
-        tau_p_2nd = p_hk_squared_; // tau_p = 1.0
-      }
-      else
-      {
-        // TODO:
-        // REMARK:
-        // at the moment the 2nd order derivatives in velocity are stabilized just with the viscous ghost penalty part
-        // for the moment there is no "streamline convective" or "divergence" part for the 2nd order u-derivatives
-        // (this could be changed similar to the first order gradients!)
-        tau_u_2nd = GP_visc_2nd_fac*tau_grad_*p_hk_squared_;
-
-        // for the pressure we use the pressure stabilization scaling accounting for the different flow regimes
-        tau_p_2nd = GP_press_2nd_fac*tau_p_*p_hk_squared_;
-      }
-
-      if(GP_u_p_2nd_normal)
-      {
-        // just the theoretically sufficient 2nd order normal derivatives!
         GhostPenalty2ndNormal(
-            elematrix_mm_,
-            elematrix_ms_,
-            elematrix_sm_,
-            elematrix_ss_,
-            elevector_m_,
-            elevector_s_,
-            timefacfac,
-            timefacfac_pre,
-            tau_u_2nd,
-            tau_p_2nd);
+            tau_timefacfac_u_2nd,
+            tau_timefacfac_p_2nd
+        );
       }
       else // the full 2nd order derivatives (even the tangential contributions)
       {
         GhostPenalty2ndFull(
-            elematrix_mm_,
-            elematrix_ms_,
-            elematrix_sm_,
-            elematrix_ss_,
-            elevector_m_,
-            elevector_s_,
-            timefacfac,
-            timefacfac_pre,
-            tau_u_2nd,
-            tau_p_2nd);
+            tau_timefacfac_u_2nd,
+            tau_timefacfac_p_2nd
+        );
       }
     }
 
 
-    if(EOS_div_div_jump)
+    if(EOS_div)
     {
+      const double tau_timefacfac_div = tau_div_1st_final_ * timefacfac_pre;
+      const double tau_timefacfac_rhs = tau_div_1st_final_ * timefacfac_rhs;
 
-      if(elemat_blocks.size() < nsd_*nsd_+1) dserror("do not choose diagonal pattern for div_EOS stabilization!");
-
-      if(!ghost_penalty_reconstruct and
-         fldintfacepara.EOS_WhichTau() != INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump)
-      {
-        //-----------------------------------------------------
-        // assemble divergence (EOS) stabilization terms for fluid
-        div_EOS(  elematrix_mm_,
-                  elematrix_ms_,
-                  elematrix_sm_,
-                  elematrix_ss_,
-                  elevector_m_,
-                  elevector_s_,
-                  timefacfac_pre,
-                  timefacfac_rhs,
-                  tau_div_);
-      }
-
+      //-----------------------------------------------------
+      // assemble divergence (EOS) stabilization terms for fluid
+      div_EOS(
+          tau_timefacfac_div,
+          tau_timefacfac_rhs
+      );
     }
   } // end gaussloop
 
@@ -2403,16 +2333,8 @@ template <DRT::Element::DiscretizationType distype,
 DRT::Element::DiscretizationType pdistype,
 DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostPenalty2ndNormal(
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
-    LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
-    LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
-    const double &                                                timefacfac,
-    const double &                                                timefacfacpre,
-    const double &                                                tau_u_2nd,
-    const double &                                                tau_p_2nd
+    const double & tau_timefacfac_u_2nd,
+    const double & tau_timefacfac_p_2nd
 )
 {
 
@@ -2420,10 +2342,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
 
 
   if(numderiv2_n != numderiv2_p) dserror("different dimensions for parent and master element");
-
-  const double tau_timefacfac_u_2nd = tau_u_2nd * timefacfac;
-  const double tau_timefacfac_p_2nd = tau_p_2nd * timefacfacpre;
-
 
   double tau_timefacfac_tmp = 0.0;
 
@@ -2505,7 +2423,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
       //parent row
       for (int vi=0; vi<piel; ++vi)
       {
-        elematrix_mm(vi*numdofpernode_+ijdim, col) += tau_timefacfac_tmp*pderxy2_n_scaled_sum(vi)*pderxy2_n_scaled_sum(ui);
+        elematrix_mm_(vi*numdofpernode_+ijdim, col) += tau_timefacfac_tmp*pderxy2_n_scaled_sum(vi)*pderxy2_n_scaled_sum(ui);
       }
 
 
@@ -2513,7 +2431,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
       //parent row
       for (int vi=0; vi<niel; ++vi)
       {
-        elematrix_sm(vi*numdofpernode_+ijdim, col) -= tau_timefacfac_tmp*nderxy2_n_scaled_sum(vi)*pderxy2_n_scaled_sum(ui);
+        elematrix_sm_(vi*numdofpernode_+ijdim, col) -= tau_timefacfac_tmp*nderxy2_n_scaled_sum(vi)*pderxy2_n_scaled_sum(ui);
       }
     }
   }
@@ -2533,14 +2451,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
       //parent row
       for (int vi=0; vi<piel; ++vi)
       {
-        elematrix_ms(vi*numdofpernode_+ijdim, col) -= tau_timefacfac_tmp*pderxy2_n_scaled_sum(vi)*nderxy2_n_scaled_sum(ui);
+        elematrix_ms_(vi*numdofpernode_+ijdim, col) -= tau_timefacfac_tmp*pderxy2_n_scaled_sum(vi)*nderxy2_n_scaled_sum(ui);
       }
 
       // v_parent * u_parent
       //parent row
       for (int vi=0; vi<niel; ++vi)
       {
-        elematrix_ss(vi*numdofpernode_+ijdim, col) += tau_timefacfac_tmp*nderxy2_n_scaled_sum(vi)*nderxy2_n_scaled_sum(ui);
+        elematrix_ss_(vi*numdofpernode_+ijdim, col) += tau_timefacfac_tmp*nderxy2_n_scaled_sum(vi)*nderxy2_n_scaled_sum(ui);
       }
     }
   }
@@ -2582,13 +2500,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
     // v_parent (u_neighbor-u_parent)
     for (int vi=0; vi<piel; ++vi)
     {
-      elevector_m(vi*numdofpernode_+idim,0) +=  pderxy2_n_scaled_sum(vi)*tmp_col_diff;
+      elevector_m_(vi*numdofpernode_+idim,0) +=  pderxy2_n_scaled_sum(vi)*tmp_col_diff;
     }
 
     // v_neighbor (u_neighbor-u_parent)
     for (int vi=0; vi<niel; ++vi)
     {
-      elevector_s(vi*numdofpernode_+idim,0) -=  nderxy2_n_scaled_sum(vi)*tmp_col_diff;
+      elevector_s_(vi*numdofpernode_+idim,0) -=  nderxy2_n_scaled_sum(vi)*tmp_col_diff;
     }
   }
 
@@ -2600,27 +2518,14 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostPenalty2ndFull(
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
-            LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
-            const double &                                                timefacfac,
-            const double &                                                timefacfacpre,
-            const double &                                                tau_u_2nd,
-            const double &                                                tau_p_2nd
+    const double & tau_timefacfac_u_2nd,
+    const double & tau_timefacfac_p_2nd
 )
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: GhostPenalty2ndFull" );
 
-
   if(numderiv2_n != numderiv2_p) dserror("different dimensions for parent and master element");
-
-  const double tau_timefacfac_u_2nd = tau_u_2nd * timefacfac;
-  const double tau_timefacfac_p_2nd = tau_p_2nd * timefacfacpre;
-
 
   double tau_timefacfac_tmp = 0.0;
 
@@ -2630,7 +2535,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
   {
     for (int ijdim = 0; ijdim <nsd_+1; ++ijdim) // combined components of u and v, p and q
     {
-
       // decide between p and viscous u stabilization
       if(ijdim == nsd_) tau_timefacfac_tmp = tau_timefacfac_p_2nd;
       else              tau_timefacfac_tmp = tau_timefacfac_u_2nd;
@@ -2642,15 +2546,11 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
         // v_parent * u_parent
         //parent row
         for (int vi=0; vi<piel; ++vi)
-        {
-          elematrix_mm(vi*numdofpernode_+ijdim, col) += tau_timefacfac_tmp*pderxy2_(k,vi)*pderxy2_(k,ui);
-        }
+          elematrix_mm_(vi*numdofpernode_+ijdim, col) += tau_timefacfac_tmp*pderxy2_(k,vi)*pderxy2_(k,ui);
 
         // neighbor row
         for (int vi=0; vi<niel; ++vi)
-        {
-          elematrix_sm(vi*numdofpernode_+ijdim, col) -= tau_timefacfac_tmp*nderxy2_(k,vi)*pderxy2_(k,ui);
-        }
+          elematrix_sm_(vi*numdofpernode_+ijdim, col) -= tau_timefacfac_tmp*nderxy2_(k,vi)*pderxy2_(k,ui);
       }
     }
   }
@@ -2672,15 +2572,11 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
         // v_parent * u_parent
         //parent row
         for (int vi=0; vi<piel; ++vi)
-        {
-          elematrix_ms(vi*numdofpernode_+ijdim, col) -= tau_timefacfac_tmp*pderxy2_(k,vi)*nderxy2_(k,ui);
-        }
+          elematrix_ms_(vi*numdofpernode_+ijdim, col) -= tau_timefacfac_tmp*pderxy2_(k,vi)*nderxy2_(k,ui);
 
         //neighbor row
         for (int vi=0; vi<niel; ++vi)
-        {
-          elematrix_ss(vi*numdofpernode_+ijdim, col) += tau_timefacfac_tmp*nderxy2_(k,vi)*nderxy2_(k,ui);
-        }
+          elematrix_ss_(vi*numdofpernode_+ijdim, col) += tau_timefacfac_tmp*nderxy2_(k,vi)*nderxy2_(k,ui);
       }
     }
   }
@@ -2694,25 +2590,17 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
       double diff_2nderiv = 0.0;
       // decide between p and viscous u stabilization
       if(idim == nsd_)
-      {
         diff_2nderiv = tau_timefacfac_p_2nd * (npderxy2af_(0,k)-ppderxy2af_(0,k));
-      }
       else
-      {
         diff_2nderiv = tau_timefacfac_u_2nd * (nvderxy2af_(idim,k)-pvderxy2af_(idim,k));
-      }
 
       // v_parent (u_neighbor-u_parent)
       for (int vi=0; vi<piel; ++vi)
-      {
-        elevector_m(vi*numdofpernode_+idim,0) +=  pderxy2_(k,vi)*diff_2nderiv;
-      }
+        elevector_m_(vi*numdofpernode_+idim,0) +=  pderxy2_(k,vi)*diff_2nderiv;
 
       // v_neighbor (u_neighbor-u_parent)
       for (int vi=0; vi<niel; ++vi)
-      {
-        elevector_s(vi*numdofpernode_+idim,0) -=  nderxy2_(k,vi)*diff_2nderiv;
-      }
+        elevector_s_(vi*numdofpernode_+idim,0) -=  nderxy2_(k,vi)*diff_2nderiv;
     }
   }
 
@@ -2725,15 +2613,8 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressureEOS(
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
-            LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
-            const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
-            const double &                                                 tau_pres       ///< pressure stabilization parameter
+    const double & tau_timefacfacpre, ///< tau * (time factor pressure) x (integration factor)
+    const double & tau_timefacfacrhs  ///< tau * (time factor rhs)      x (integration factor)
 )
 {
 
@@ -2755,9 +2636,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
            //
    */
 
-//  const double tau_timefacfacpre = tau_pres*timefacfacpre;
-  const double tau_timefacfacrhs = tau_pres*timefacfacrhs;
-
   // grad(p_neighbor) - grad(p_parent)
   LINALG::Matrix<nsd_,1> prederxy_jump(false);
   prederxy_jump.Update(1.0, nprederxy_, -1.0, pprederxy_);
@@ -2770,19 +2648,11 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
 
     // q_master * p_master
     for (int vi=0; vi<piel; ++vi)
-    {
-      int row = vi*numdofpernode_+nsd_;
-
-      elematrix_mm(row, col) += pderiv_dyad_pderiv_tau_timefacfacpre_(vi,ui);
-    }
+      elematrix_mm_(vi*numdofpernode_+nsd_, col) += pderiv_dyad_pderiv_tau_timefacfacpre_(vi,ui);
 
     // q_slave * p_master
     for (int vi=0; vi<niel; ++vi)
-    {
-      const int row = vi*numdofpernode_+nsd_;
-
-      elematrix_sm(row,col) -= pderiv_dyad_nderiv_tau_timefacfacpre_(ui,vi);
-    }
+      elematrix_sm_(vi*numdofpernode_+nsd_,col) -= pderiv_dyad_nderiv_tau_timefacfacpre_(ui,vi);
   }
 
   for (int ui=0; ui<niel; ++ui)
@@ -2791,19 +2661,11 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
 
     // q_master * p_slave
     for (int vi=0; vi<piel; ++vi)
-    {
-      const int row = vi*numdofpernode_+nsd_;
-
-      elematrix_ms(row, col) -= pderiv_dyad_nderiv_tau_timefacfacpre_(vi,ui);
-    }
+      elematrix_ms_(vi*numdofpernode_+nsd_, col) -= pderiv_dyad_nderiv_tau_timefacfacpre_(vi,ui);
 
     // q_slave * p_slave
     for (int vi=0; vi<niel; ++vi)
-    {
-      const int row = vi*numdofpernode_+nsd_;
-
-      elematrix_ss(row, col) += nderiv_dyad_nderiv_tau_timefacfacpre_(vi,ui);
-    }
+      elematrix_ss_(vi*numdofpernode_+nsd_, col) += nderiv_dyad_nderiv_tau_timefacfacpre_(vi,ui);
   }
 
   // q_master (p_slave-p_master)
@@ -2811,22 +2673,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
   pderxy_times_prederxy_jump.MultiplyTN(pderxy_,prederxy_jump);
 
   for (int vi=0; vi<piel; ++vi)
-  {
-    const int row = vi*numdofpernode_+nsd_;
-
-    elevector_m(row,0) += pderxy_times_prederxy_jump(vi);
-  }
+    elevector_m_(vi*numdofpernode_+nsd_,0) += pderxy_times_prederxy_jump(vi);
 
   // -q_slave (p_slave-p_master)
   LINALG::Matrix<niel,1> nderxy_times_prederxy_jump(false);
   nderxy_times_prederxy_jump.MultiplyTN(nderxy_,prederxy_jump);
 
   for (int vi=0; vi<niel; ++vi)
-  {
-    int row = vi*numdofpernode_+nsd_;
-
-    elevector_s(row,0) -= nderxy_times_prederxy_jump(vi);
-  }
+    elevector_s_(vi*numdofpernode_+nsd_,0) -= nderxy_times_prederxy_jump(vi);
 
   return;
 }
@@ -2836,17 +2690,7 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_streamline_EOS(
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,        ///< element matrix master-master block
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,        ///< element matrix master-slave block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,        ///< element matrix slave-master block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,        ///< element matrix slave-slave block
-    LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,         ///< element vector master block
-    LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,         ///< element vector slave block
-    const double &                                                 timefacfac,          ///< timefac x integration factor
-    const double &                                                 timefacfacrhs,       ///< (time factor rhs) x (integration factor)
-    const double &                                                 tau_div_streamline,  ///< streamline stabilization parameter
-    LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff        ///< difference of velocity gradients
-
+    const LINALG::Matrix<nsd_,nsd_>& vderxyaf_diff_scaled
 )
 {
 
@@ -2881,8 +2725,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
            //
   */
 
-  const double tau_timefacfacrhs = tau_div_streamline * timefacfacrhs;
-
 
   // master col
   for (int ui=0; ui<piel; ++ui)
@@ -2896,7 +2738,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
         int row = vi*numdofpernode_+idim;
         int col = ui*numdofpernode_+idim;
 
-        elematrix_mm(row, col) += tmp;
+        elematrix_mm_(row, col) += tmp;
       }
     }
 
@@ -2910,7 +2752,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
         const int row = vi*numdofpernode_+idim;
         const int col = ui*numdofpernode_+idim;
 
-        elematrix_sm(row, col) -= tmp;
+        elematrix_sm_(row, col) -= tmp;
       }
     }
   }
@@ -2928,7 +2770,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
         int col = ui*numdofpernode_+idim;
         int row = vi*numdofpernode_+idim;
 
-        elematrix_ms(row, col) -= tmp;
+        elematrix_ms_(row, col) -= tmp;
       }
     }
 
@@ -2942,41 +2784,27 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
         const int row = vi*numdofpernode_+idim;
         const int col = ui*numdofpernode_+idim;
 
-        elematrix_ss(row, col) += tmp;
+        elematrix_ss_(row, col) += tmp;
       }
     }
   }
 
 
   LINALG::Matrix<nsd_,piel> pderxy_times_vderxyaf_diff(false);
-  pderxy_times_vderxyaf_diff.Multiply(vderxyaf_diff,pderxy_);
-  pderxy_times_vderxyaf_diff.Scale(tau_timefacfacrhs);
+  pderxy_times_vderxyaf_diff.Multiply(vderxyaf_diff_scaled,pderxy_);
 
   // master row
   for (int vi=0; vi<piel; ++vi)
-  {
     for (int idim = 0; idim <nsd_; ++idim) // combined components of u and v
-    {
-      const int row = vi*numdofpernode_+idim;
-
-      elevector_m(row, 0) += pderxy_times_vderxyaf_diff(idim,vi);
-    }
-  }
+      elevector_m_(vi*numdofpernode_+idim, 0) += pderxy_times_vderxyaf_diff(idim,vi);
 
   LINALG::Matrix<nsd_,niel> nderxy_times_vderxyaf_diff(false);
-  nderxy_times_vderxyaf_diff.Multiply(vderxyaf_diff,nderxy_);
-  nderxy_times_vderxyaf_diff.Scale(tau_timefacfacrhs);
+  nderxy_times_vderxyaf_diff.Multiply(vderxyaf_diff_scaled,nderxy_);
 
   // slave row
   for (int vi=0; vi<niel; ++vi)
-  {
     for (int idim = 0; idim <nsd_; ++idim) // combined components of u and v
-    {
-      const int row = vi*numdofpernode_+idim;
-
-      elevector_s(row, 0) -= nderxy_times_vderxyaf_diff(idim,vi);
-    }
-  }
+      elevector_s_(vi*numdofpernode_+idim, 0) -= nderxy_times_vderxyaf_diff(idim,vi);
 
 
   return;
@@ -2987,22 +2815,11 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EOS(
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
-    LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
-    LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-    const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
-    const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
-    const double &                                                 tau_div        ///< combined penalty parameter for divergence stabilization terms
+    const double &                                                 tau_timefacfac_div, ///< (time factor div) x (integration factor)
+    const double &                                                 tau_timefacfac_rhs ///< (time factor rhs) x (integration factor)
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: div_EOS" );
-
-
-  const double tau_timefacfacpre = tau_div * timefacfacpre;
-  const double tau_timefacfacrhs = tau_div * timefacfacrhs;
 
 
   // edge stabilization: divergence
@@ -3017,8 +2834,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
            //
    */
 
-  pderxy_tau_timefacfac_.Update(tau_timefacfacpre, pderxy_, 0.0);
-  nderxy_tau_timefacfac_.Update(tau_timefacfacpre, nderxy_, 0.0);
+  pderxy_tau_timefacfac_.Update(tau_timefacfac_div, pderxy_, 0.0);
+  nderxy_tau_timefacfac_.Update(tau_timefacfac_div, nderxy_, 0.0);
 
   // v_parent * u_parent
 
@@ -3032,21 +2849,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
 
       //parent row
       for (int vi=0; vi<piel; ++vi)
-      {
         for (int jdim = 0; jdim <nsd_; ++jdim) // components of v
-        {
-          elematrix_mm(vi*numdofpernode_+jdim, col) += pderxy_(jdim,vi)*tmp;
-        }
-      }
+          elematrix_mm_(vi*numdofpernode_+jdim, col) += pderxy_(jdim,vi)*tmp;
 
       //neighbor row
       for (int vi=0; vi<niel; ++vi)
-      {
         for (int jdim = 0; jdim <nsd_; ++jdim) // components of v
-        {
-          elematrix_sm(vi*numdofpernode_+jdim, col) -= nderxy_(jdim,vi)*tmp;
-        }
-      }
+          elematrix_sm_(vi*numdofpernode_+jdim, col) -= nderxy_(jdim,vi)*tmp;
     }
   }
 
@@ -3060,50 +2869,38 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
 
       //parent row
       for (int vi=0; vi<piel; ++vi)
-      {
         for (int jdim = 0; jdim <nsd_; ++jdim) // components of v
-        {
-          elematrix_ms(vi*numdofpernode_+jdim, col) -= pderxy_(jdim,vi)*tmp;
-        }
-      }
+          elematrix_ms_(vi*numdofpernode_+jdim, col) -= pderxy_(jdim,vi)*tmp;
 
       //neighbor row
       for (int vi=0; vi<niel; ++vi)
-      {
         for (int jdim = 0; jdim <nsd_; ++jdim) // components of v
-        {
-          elematrix_ss(vi*numdofpernode_+jdim, col) += nderxy_(jdim,vi)*tmp;
-        }
-      }
+          elematrix_ss_(vi*numdofpernode_+jdim, col) += nderxy_(jdim,vi)*tmp;
     }
   }
 
 
   // parent divergence
-  const double p_div = pvderxynp_(0,0) + pvderxynp_(1,1) + pvderxynp_(2,2);
-  // neighbor divergence
-  const double n_div = nvderxynp_(0,0) + nvderxynp_(1,1) + nvderxynp_(2,2);
+  double p_div = 0.0;
+  for(int i=0; i<nsd_; ++i)
+    p_div += pvderxynp_(i,i);
 
-  const double div_diff_tau_timefacfacrhs = tau_timefacfacrhs*(n_div - p_div);
+  // neighbor divergence
+  double n_div = 0.0;
+  for(int i=0; i<nsd_; ++i)
+    n_div += nvderxynp_(i,i);
+
+  const double div_diff_tau_timefacfacrhs = tau_timefacfac_rhs*(n_div - p_div);
 
   // v_parent (u_neighbor-u_parent)
   for (int vi=0; vi<piel; ++vi)
-  {
     for (int idim = 0; idim <nsd_; ++idim) // components of v
-    {
-      elevector_m(vi*numdofpernode_+idim,0) += div_diff_tau_timefacfacrhs * pderxy_(idim,vi);
-    }
-  }
+      elevector_m_(vi*numdofpernode_+idim,0) += div_diff_tau_timefacfacrhs * pderxy_(idim,vi);
 
   // -v_neighbor (u_neighbor-u_parent)
   for (int vi=0; vi<niel; ++vi)
-  {
     for (int idim = 0; idim <nsd_; ++idim) // components of v
-    {
-      elevector_s(vi*numdofpernode_+idim,0) -= div_diff_tau_timefacfacrhs * nderxy_(idim,vi);
-    }
-  }
-
+      elevector_s_(vi*numdofpernode_+idim,0) -= div_diff_tau_timefacfacrhs * nderxy_(idim,vi);
 
   return;
 }
@@ -3113,15 +2910,8 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressureKrylov2Dz(
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
-            LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
-            const double &                                                 timefacfacrhs, ///< (time factor rhs) x (integration factor)
-            const double &                                                 tau_pres       ///< pressure stabilization parameter
+    const double & tau_timefacfacpre, ///< tau * (time factor pressure) x (integration factor)
+    const double & tau_timefacfacrhs  ///< tau * (time factor rhs)      x (integration factor)
 )
 {
 
@@ -3156,9 +2946,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
 
   if(index_symmetry >= nsd_) dserror("the symmetry index exceeds the number of spatial dimensions of the problem!");
 
-  const double tau_timefacfacpre = tau_pres*timefacfacpre;
-  const double tau_timefacfacrhs = tau_pres*timefacfacrhs;
-
 
   // q_master * p_master
   for (int ui=0; ui<piel; ++ui)
@@ -3168,11 +2955,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     const double tmp = pderxy_(index_symmetry,ui)*tau_timefacfacpre;
 
     for (int vi=0; vi<piel; ++vi)
-    {
-      const int row = vi*numdofpernode_+nsd_;
-
-      elematrix_mm(row, col) += pderxy_(index_symmetry,vi)*tmp;
-    }
+      elematrix_mm_(vi*numdofpernode_+nsd_, col) += pderxy_(index_symmetry,vi)*tmp;
   }
 
   // q_slave * p_slave
@@ -3183,11 +2966,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
     const double tmp = nderxy_(index_symmetry,ui)*tau_timefacfacpre;
 
     for (int vi=0; vi<niel; ++vi)
-    {
-      int row = vi*numdofpernode_+nsd_;
-
-      elematrix_ss(row, col) += nderxy_(index_symmetry,vi)*tmp;
-    }
+      elematrix_ss_(vi*numdofpernode_+nsd_, col) += nderxy_(index_symmetry,vi)*tmp;
   }
 
 
@@ -3195,18 +2974,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
   const double tmp_elevec_s = nprederxy_(index_symmetry)*tau_timefacfacrhs;
 
   for (int vi=0; vi<piel; ++vi)
-  {
-    int row = vi*numdofpernode_+nsd_;
-
-    elevector_m(row,0) -= pderxy_(index_symmetry,vi)*tmp_elevec_m;
-  }
+    elevector_m_(vi*numdofpernode_+nsd_,0) -= pderxy_(index_symmetry,vi)*tmp_elevec_m;
 
   for (int vi=0; vi<niel; ++vi)
-  {
-    int row = vi*numdofpernode_+nsd_;
-
-    elevector_s(row,0) -= nderxy_(index_symmetry,vi)*tmp_elevec_s;
-  }
+    elevector_s_(vi*numdofpernode_+nsd_,0) -= nderxy_(index_symmetry,vi)*tmp_elevec_s;
 
   return;
 }
@@ -3219,7 +2990,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
 template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
-double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::compute_patch_hk(
+void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::compute_patch_hk(
     Fluid*                                    master,            ///< master fluid element
     Fluid*                                    slave,             ///< slave fluid element
     DRT::ELEMENTS::FluidIntFace*              intface,           ///< intface element
@@ -3235,19 +3006,19 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comp
   switch(eos_element_length)
   {
   case INPAR::FLUID::EOS_he_max_diameter_to_opp_surf:
-    return compute_patch_hk_diameter_to_opp_surf(master, slave, intface); break;
+    p_hk_ = compute_patch_hk_diameter_to_opp_surf(master, slave, intface); break;
   case INPAR::FLUID::EOS_he_max_dist_to_opp_surf:
-    return compute_patch_hk_dist_to_opp_surf(master, slave, intface); break;
+    p_hk_ = compute_patch_hk_dist_to_opp_surf(master, slave, intface); break;
   case INPAR::FLUID::EOS_he_surf_with_max_diameter:
-    return compute_patch_hk_surf_with_max_diameter(master, slave, intface); break;
+    p_hk_ = compute_patch_hk_surf_with_max_diameter(master, slave, intface); break;
   case INPAR::FLUID::EOS_he_surf_diameter:
-    return compute_surf_diameter(intface); break;
+    p_hk_ = compute_surf_diameter(intface); break;
   case INPAR::FLUID::EOS_hk_max_diameter:
-    return compute_patch_hk_ele_diameter(master, slave); break;
+    p_hk_ = compute_patch_hk_ele_diameter(master, slave); break;
   default: dserror("not a valid element length type for EOS stabilization"); break;
   }
 
-  return 0.0;
+  p_hk_squared_ = p_hk_*p_hk_;
 }
 
 //------------------------------------------------------------------------------------------------
@@ -3798,18 +3569,34 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::ComputeStabilizationParams(
+  const bool    is_ghost_penalty_reconstruct,
+  const bool    use2ndderiv,
   const INPAR::FLUID::EOS_TauType tautype,
-  const double  normal_vel_lin_space,
+  const bool    do_crosswind_stabilization_CIP,
   const double  max_vel_L2_norm,
   const double  timefac,
-  const bool    instationary,
   const double  gamma_ghost_penalty_visc,
-  const double  gamma_ghost_penalty_trans
+  const double  gamma_ghost_penalty_trans,
+  const double  gamma_ghost_penalty_u_2nd,
+  const double  gamma_ghost_penalty_p_2nd
   )
 {
+  // in a first view, the CIP term decide about crosswind stabilization (yes, no)
+  bool require_cross_stab = do_crosswind_stabilization_CIP;
+
+  if(use2ndderiv) // higher order ghost-penalty terms required
+  {
+    // in this case, the higher order terms definitely require the full velocity (not only the normal part)
+    // the mixed tangential parts can be controlled via applying an inverse estiamte, such that also the original 1st order CIP terms now require the crosswind part
+    // ( see discussion in Massing, Schott and Wall (2017) on Oseen equations
+    require_cross_stab = false; // TODO: true now!
+  }
+
+  // the final velocity scaling used in the for the streamline/crosswind CIP and related higher order GP terms
+  const double stream_cross_vel =  require_cross_stab ? max_vel_L2_norm : fabs(convvelint_.Dot(n_));
+
 
   // dimensionless factors
-
   double gamma_u   = 0.0; //scaling factor for streamline stabilization
   double gamma_div = 0.0; //scaling factor for divergence stabilization
   double gamma_p   = 0.0; //scaling factor for pressure stabilization
@@ -3880,7 +3667,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * xi * p_hk_squared_ * normal_vel_lin_space;
+    tau_u_ = density_ * gamma_u * xi * p_hk_squared_ * stream_cross_vel;
 
     //-----------------------------------------------
     // pressure
@@ -3954,7 +3741,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * p_hk_squared_ * normal_vel_lin_space / r_min_conv; // Braack et al. 2006
+    tau_u_ = density_ * gamma_u * p_hk_squared_ * stream_cross_vel / r_min_conv; // Braack et al. 2006
 
     //-----------------------------------------------
     // divergence
@@ -4024,7 +3811,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = gamma_u * normal_vel_lin_space * normal_vel_lin_space * p_hk_squared_*p_hk_ / regime_scaling;
+    tau_u_ = gamma_u * stream_cross_vel * stream_cross_vel * p_hk_squared_*p_hk_ / regime_scaling;
     //TODO: change to full velocity norm in case of 2nd order gp! and others than tri/tet elements
     // tau_u_ = gamma_u * max_vel_L2_norm * max_vel_L2_norm * p_hk_squared_*p_hk_ / regime_scaling;
 
@@ -4112,7 +3899,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * p_hk_squared_ * normal_vel_lin_space;
+    tau_u_ = density_ * gamma_u * p_hk_squared_ * stream_cross_vel;
 
     //-----------------------------------------------
     // divergence
@@ -4163,7 +3950,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * p_hk_*p_hk_ * normal_vel_lin_space;
+    tau_u_ = density_ * gamma_u * p_hk_*p_hk_ * stream_cross_vel;
 
     //-----------------------------------------------
     // pressure
@@ -4214,7 +4001,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * p_hk_squared_ * normal_vel_lin_space;
+    tau_u_ = density_ * gamma_u * p_hk_squared_ * stream_cross_vel;
 
     //-----------------------------------------------
     // pressure
@@ -4289,7 +4076,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     //-----------------------------------------------
     // streamline
     // face-oriented style
-    //tau_u = density * gamma_u * p_hk_*p_hk_ * normal_vel_lin_space;
+    //tau_u = density * gamma_u * p_hk_*p_hk_ * stream_cross_vel;
     // residual-based style
     tau_u_ = tau_div_;
   }
@@ -4321,7 +4108,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     gamma_u = 1.0/40.0; //gamma_p;
   //  tau_u   = gamma_u * p_hk_*p_hk_*p_hk_*mk/(4.0*density*kinvisc*xi);
-    tau_u_   = gamma_u * p_hk_squared_/(2.0*density_) * normal_vel_lin_space;
+    tau_u_   = gamma_u * p_hk_squared_/(2.0*density_) * stream_cross_vel;
 
 
     gamma_div = gamma_p*1.0/10.0;//1.0/10.0;
@@ -4331,20 +4118,41 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
   default: dserror("unknown definition for tau\n %i  ", tautype); break;
   }
 
-
   //--------------------------------------------------------------------------------------------------------------
-  //                                               ghost penalty
+  //                                               ghost penalty scalings
   //--------------------------------------------------------------------------------------------------------------
 
-  // viscous part of velocity ghost penalty
-  tau_grad_ = gamma_ghost_penalty_visc*kinvisc_*density_*p_hk_;
 
-  // transient part of velocity ghost penalty
-  tau_grad_ += gamma_ghost_penalty_trans*density_*p_hk_*p_hk_squared_/timefac;
+  // first order ghost penalty scaling
+  tau_u_GP1_visc_reaction_ =
+        gamma_ghost_penalty_visc*kinvisc_*density_*p_hk_
+      + gamma_ghost_penalty_trans*density_*p_hk_*p_hk_squared_/timefac; // viscous and reactive part of velocity ghost penalty
+
+  tau_u_GP1_   = tau_u_   ;
+  tau_div_GP1_ = tau_div_ ;
+  tau_p_GP1_   = tau_p_   ;
+
+  // second order ghost penalty scalings (scale with h^2)
+  tau_u_GP2_visc_reaction_ = tau_u_GP1_visc_reaction_ * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
+  tau_div_GP2_             = tau_div_                 * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
+  tau_u_GP2_               = tau_u_                   * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
+  tau_p_GP2_               = tau_p_                   * p_hk_squared_ * gamma_ghost_penalty_p_2nd;
+
+  // final velocity stabilization parameter ( no need for stabilization parameter in ghost penalty reconstruction )
+
+  // final pressure stabilization parameter ( no need for stabilization parameter in ghost penalty reconstruction )
+  tau_vel_1st_final_ = 0.0; // will be set outside!
+  tau_pre_1st_final_ = is_ghost_penalty_reconstruct ? 1.0 : std::max(tau_p_, tau_p_GP1_);
+  tau_div_1st_final_ = is_ghost_penalty_reconstruct ? 0.0 : tau_div_;
+
+
+  // TODO:
+  // REMARK:
+  // at the moment the 2nd order derivatives in velocity are stabilized just with the viscous ghost penalty part
+  // for the moment there is no "streamline convective" or "divergence" part for the 2nd order u-derivatives
+  // (this could be changed similar to the first order gradients!)
+  tau_vel_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_u_GP2_visc_reaction_; // TODO: + tau_u_GP2_ + tau_div_GP2_;
+  tau_pre_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_p_GP2_;
 
   return;
 }
-
-
-
-
