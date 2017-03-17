@@ -293,6 +293,91 @@ void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void LINALG::AssembleMyVector(double scalar_target, Epetra_Vector& target,
+    double scalar_source, const Epetra_Vector& source)
+{
+  for (int slid=0; slid<source.Map().NumMyElements();++slid)
+  {
+    const int sgid = source.Map().GID(slid);
+    const int tlid = target.Map().LID(sgid);
+    if (tlid==-1)
+      dserror("The target vector has no global row %i"
+          " on processor %i!",sgid,target.Comm().MyPID());
+
+    // update the vector row
+    target[tlid] = scalar_target*target[tlid] + scalar_source*source[slid];
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> LINALG::ExtractMyVector(
+    const Epetra_Vector& source,
+    const Epetra_Map& target_map )
+{
+  Teuchos::RCP<Epetra_Vector> target = Teuchos::rcp( new Epetra_Vector( target_map ) );
+
+  ExtractMyVector( source, *target );
+
+  return target;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void LINALG::ExtractMyVector( const Epetra_Vector& source,
+    Epetra_Vector& target )
+{
+  const int my_num_target_gids = target.Map().NumMyElements();
+  const int * my_target_gids = target.Map().MyGlobalElements();
+
+  double* target_values = target.Values();
+
+  const double* src_values = source.Values();
+
+  for ( int tar_lid=0; tar_lid<my_num_target_gids; ++tar_lid )
+  {
+    const int target_gid = my_target_gids[ tar_lid ];
+
+    const int src_lid = source.Map().LID( target_gid );
+    // check if the target_map is a local sub-set of the source map on each proc
+    if ( src_lid == -1 )
+      dserror("Couldn't find the target GID %d in the source map on proc %d.",
+          target_gid, source.Comm().MyPID() );
+
+    target_values[ tar_lid ] = src_values[ src_lid ];
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void LINALG::ExtractMyVector(
+    double scalar_source, const Epetra_Vector& source,
+    double scalar_target, Epetra_Vector& target )
+{
+  const int my_num_target_gids = target.Map().NumMyElements();
+  const int * my_target_gids = target.Map().MyGlobalElements();
+
+  double * target_values = target.Values();
+
+  const double* src_values = source.Values();
+
+  for ( int tar_lid=0; tar_lid<my_num_target_gids; ++tar_lid )
+  {
+    const int target_gid = my_target_gids[ tar_lid ];
+
+    const int src_lid = source.Map().LID( target_gid );
+    // check if the target_map is a local sub-set of the source map on each proc
+    if ( src_lid == -1 )
+      dserror("Couldn't find the target GID %d in the source map on proc %d.",
+          target_gid, source.Comm().MyPID() );
+
+    target_values[ tar_lid ] *= scalar_target;
+    target_values[ tar_lid ] += scalar_source * src_values[ src_lid ];
+  }
+}
+
 /*----------------------------------------------------------------------*
  |  assemble a vector  (wrapper for LINALG::Matrix<3,1>)     katta 10/16|
  *----------------------------------------------------------------------*/
@@ -1556,6 +1641,55 @@ bool LINALG::SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
   A22 = Teuchos::rcp(new SparseMatrix((*Ablock)(1, 1), View));
 
   return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int LINALG::InsertMyRowDiagonalIntoUnfilledMatrix( LINALG::SparseMatrix& mat,
+    const Epetra_Vector& diag )
+{
+  if ( mat.Filled() )
+    return -1;
+
+  Teuchos::RCP<Epetra_CrsMatrix> dst_mat_ptr = mat.EpetraMatrix();
+  Epetra_CrsMatrix& dst_mat = *dst_mat_ptr;
+
+  const int my_num_entries = diag.Map().NumMyElements();
+  const int * my_gids      = diag.Map().MyGlobalElements();
+
+  double * diag_values = diag.Values();
+
+  for ( int lid = 0; lid < my_num_entries; ++lid )
+  {
+    const int rgid = my_gids[ lid ];
+
+    // skip rows which are not part of the matrix
+    if ( not dst_mat.RangeMap().MyGID( rgid ) )
+      dserror( "Could not find the row GID %d in the destination matrix RowMap"
+          " on proc %d.", rgid, dst_mat.Comm().MyPID() );
+
+    if ( dst_mat.NumAllocatedGlobalEntries( rgid ) )
+    {
+      // add all values, including zeros, as we need a proper matrix graph
+      int err = dst_mat.SumIntoGlobalValues( rgid, 1, ( diag_values + lid ), &rgid );
+      if (err>0)
+      {
+        err = dst_mat.InsertGlobalValues( rgid, 1, ( diag_values + lid ), &rgid );
+        if (err<0)
+          dserror("InsertGlobalValues error: %d", err);
+      }
+      else if (err<0)
+        dserror("SumIntoGlobalValues error: %d", err);
+    }
+    else
+    {
+      const int err = dst_mat.InsertGlobalValues(rgid, 1, ( diag_values + lid ), &rgid);
+      if ( err < 0 )
+        dserror("InsertGlobalValues error: %d", err);
+    }
+  }
+
+  return 0;
 }
 
 /*----------------------------------------------------------------------*

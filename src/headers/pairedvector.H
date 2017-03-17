@@ -252,6 +252,12 @@ class pairedvector
     return it->second;
   }
 
+  /** Returns the current capacity of the %pairedvector.  */
+  size_t capacity() const
+  {
+    return _m.size();
+  }
+
   /**  Returns the number of elements in the %pairedvector.  */
   size_t size() const
   {

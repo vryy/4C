@@ -762,6 +762,66 @@ void Assemble(Epetra_MultiVector& V, const int n,
     const Epetra_SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner);
 
+/*! \brief Assemble a source Epetra_Vector into a target Epetra_Vector
+ *
+ *  The map of the source vector has to be a sub-map of the target vector and
+ *  the maps must have the same processor distribution. This method does not
+ *  build up any communication between different processors!
+ *  The entries of the source vector are added to the target vector:
+ *
+ *      target_vector[gid] = source_scalar * source[gid] + target_scalar * target[gid]
+ *
+ *  \note The remaining gids, which are no part of the source map stay untouched!
+ *
+ *  \param scalar_target (in) : scale the target entries by this factor
+ *  \param target        (out): target vector (part of the source)
+ *  \param scalar_source (in) : scale the source entries by this factor
+ *  \param source        (in) : source vector
+ *
+ *  \author hiermeier \date 03/17 */
+void AssembleMyVector(
+    double scalar_target, Epetra_Vector& target,
+    double scalar_source, const Epetra_Vector& source);
+
+/*! \brief Extract a partial Eptra_Vector from a given source vector
+ *         on each proc without communication
+ *
+ *  This methods uses a given partial map to create the partial target vector.
+ *
+ *  \param source     (in) : source vector ( read-only )
+ *  \param target_map (in) : map of the new target vector ( read-only )
+ *
+ *  \author hiermeier \date 03/17 */
+Teuchos::RCP<Epetra_Vector> ExtractMyVector(
+    const Epetra_Vector& source,
+    const Epetra_Map& target_map );
+
+/*! \brief Extract a partial Eptra_Vector from a given source vector
+ *         on each proc without communication
+ *
+ *  \param source (in) : source vector ( read-only )
+ *  \param target (out): this target vector is going to be filled
+ *
+ *  \author hiermeier \date 03/17 */
+void ExtractMyVector(
+    const Epetra_Vector& source,
+    Epetra_Vector& target );
+
+/*! \brief Extract a partial Eptra_Vector from a given source vector
+ *         and scale the entries on each proc without communication
+ *
+ *  \param scalar_source (in) : scale the target entries by this factor
+ *  \param source        (in) : source vector ( read-only )
+ *  \param scalar_target (in) : scale the source entries by this factor
+ *  \param target        (out): this target vector is going to be filled with
+ *                              the combined scaled values of the source and
+ *                              target vectors
+ *
+ *  \author hiermeier \date 03/17 */
+void ExtractMyVector(
+    double scalar_source, const Epetra_Vector& source,
+    double scalar_target, Epetra_Vector& target );
+
 /*!
  \brief Call FillComplete on a Epetra_CrsMatrix (for square matrices only!)
  */
@@ -1250,6 +1310,20 @@ bool SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A,
     Teuchos::RCP<LINALG::SparseMatrix>& A12,
     Teuchos::RCP<LINALG::SparseMatrix>& A21,
     Teuchos::RCP<LINALG::SparseMatrix>& A22);
+
+/** \brief Insert a diagonal row vector into a unfilled SparseMatrix
+ *         on each proc without communication
+ *
+ *  \param mat (out) : Unfilled matrix
+ *  \param diag (in) : Given diagonal (row-layout)
+ *
+ *  Return 0, if successful. If the given matrix is already filled, the method
+ *  returns -1. In this case you should use ReplaceDiagonalValues(), instead.
+ *
+ *  \author hiermeier \date 03/17 */
+int InsertMyRowDiagonalIntoUnfilledMatrix(
+    LINALG::SparseMatrix& mat,
+    const Epetra_Vector& diag );
 
 /*!
  \brief split a rowmap of matrix A
