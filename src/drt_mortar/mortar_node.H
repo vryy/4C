@@ -564,6 +564,9 @@ public:
     return hassegment_;
   }
 
+  /// get the upper bound for the number of D-entries
+  int GetNumDentries() const { return dentries_; };
+
   /*!
    \brief Return of data container of this node
 

@@ -69,7 +69,7 @@ public:
 
   void Evaluate(
       CONTACT::ParamsInterface& cparams,
-      const std::vector<Teuchos::RCP<const Epetra_Vector> >& eval_vec);
+      const std::vector<Teuchos::RCP<const Epetra_Vector> >* eval_vec);
 
   void Integrate(CONTACT::ParamsInterface& cparams);
 

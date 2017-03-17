@@ -152,8 +152,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells(
     // *******************************************************************
     // cases (2) and (3)
     // *******************************************************************
-    else if (stype_ != INPAR::CONTACT::solution_augmented and
-             Quad()                                       and
+    else if (Quad()                                       and
              (lmtype==INPAR::MORTAR::lagmult_quad         or
               lmtype==INPAR::MORTAR::lagmult_lin))
     {
@@ -183,8 +182,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells(
     // *******************************************************************
     // case (4)
     // *******************************************************************
-    else if (stype_ != INPAR::CONTACT::solution_augmented && Quad() &&
-        lmtype==INPAR::MORTAR::lagmult_pwlin)
+    else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin)
     {
       // check for dual shape functions
       if (ShapeFcn() == INPAR::MORTAR::shape_dual
@@ -1768,11 +1766,11 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
       // the Gauss point loop
       if (currcell->Shape()!=DRT::Element::tri3)
         dserror("only tri3 integration cells at the moment. See comment in the code");
-      double eta[2]={0.,0.};
-      detg=currcell->Jacobian(eta);
+
+      detg=currcell->Jacobian();
       // directional derivative of cell Jacobian
       GEN::pairedvector<int,double> derivjaccell((nnodes+ncol)*ndof);
-      currcell->DerivJacobian(eta, derivjaccell);
+      currcell->DerivJacobian(derivjaccell);
 
       for (int gp=0;gp<integrator.nGP(); ++gp)
       {

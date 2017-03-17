@@ -22,19 +22,24 @@
 #include <Teuchos_Time.hpp>
 #include <Epetra_Time.h>
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::AugmentedInterface::AugmentedInterface(const int id,
+CONTACT::AUG::Interface::Interface(
+    int id,
     const Epetra_Comm& comm,
-    const int dim,
+    int dim,
     const Teuchos::ParameterList& icontact,
     bool selfcontact,
     INPAR::MORTAR::RedundantStorage redundant)
     : CONTACT::CoInterface(id,comm,dim,icontact,selfcontact,redundant),
-      penBound_(-1.0),
-      sndofrowmap_(Teuchos::null),
-      stdofrowmap_(Teuchos::null)
+      penBound_( -1.0 ),
+      ct_( IParams().get<double>("SEMI_SMOOTH_CT") ),
+      maxNumMasterElements_( 0 ),
+      issetup_( false ),
+      sndofrowmap_( Teuchos::null ),
+      stdofrowmap_( Teuchos::null )
 {
   // empty constructor body
   return;
@@ -42,61 +47,141 @@ CONTACT::AugmentedInterface::AugmentedInterface(const int id,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FillComplete(
+void CONTACT::AUG::Interface::FillComplete(
     int maxdof,
     bool newghosting)
 {
   // call the standard mortar routine first
   MortarInterface::FillComplete(maxdof,newghosting);
-
-  /* check if a user defined penetration bound is provided, if not we
-   * use an automatic routine. */
-  if (penBound_ < 0.0)
-  {
-    // find smallest interface element edge length
-    double myMinEdgeLength = 1.0e12;
-    // loop over all slave elements
-    for (int i=0; i<selerowmap_->NumMyElements(); ++i)
-    {
-      int gid = selerowmap_->GID(i);
-      DRT::Element* ele = idiscret_->gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find slave element with gid %i",gid);
-
-      MORTAR::MortarElement* sele = dynamic_cast<MORTAR::MortarElement*>(ele);
-      if (myMinEdgeLength > sele->MinEdgeSize())
-        myMinEdgeLength = sele->MinEdgeSize();
-    }
-
-    // loop over all master elements
-    for (int i=0; i<melerowmap_->NumMyElements(); ++i)
-    {
-      int gid = melerowmap_->GID(i);
-      DRT::Element* ele = idiscret_->gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find master element with gid %i",gid);
-
-      MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
-      if (myMinEdgeLength > mele->MinEdgeSize())
-        myMinEdgeLength = mele->MinEdgeSize();
-    }
-    // communicate the minimal edge length over all procs
-    double gMinEdgeLength = 1.0e12;
-    Comm().MinAll(&myMinEdgeLength,&gMinEdgeLength,1);
-
-    if (gMinEdgeLength == 1.0e12 or gMinEdgeLength < 0.0)
-      dserror("ERROR: Global minimal interface edge length couldn't"
-          " be calculated! (value: %d)",gMinEdgeLength);
-
-    // set penetration bound to 50% of the minimal interface element edge length,
-    // if no user defined value is provided.
-    penBound_ = 0.5*gMinEdgeLength;
-  }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::Initialize()
+void CONTACT::AUG::Interface::Setup()
+{
+  if ( issetup_ )
+    return;
+
+  // find smallest interface element edge length
+  double myMinEdgeLength = 1.0e12;
+
+  // find largest slave element area
+  double myMaxAreaSl = 0.0;
+
+  // find smallest master element area
+  double myMinAreaMa = 1.0e12;
+
+  int myTriangleOnMaster = 0;
+
+  // ------------------------------------------------------------------------
+  // loop over all slave elements
+  for (int i=0; i<selerowmap_->NumMyElements(); ++i)
+  {
+    int gid = selerowmap_->GID(i);
+    DRT::Element* ele = idiscret_->gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find slave element with gid %i",gid);
+
+    MORTAR::MortarElement* sele = static_cast<MORTAR::MortarElement*>(ele);
+    if (myMinEdgeLength > sele->MinEdgeSize())
+      myMinEdgeLength = sele->MinEdgeSize();
+
+    if ( myMaxAreaSl < sele->MoData().Area() )
+      myMaxAreaSl = sele->MoData().Area();
+  }
+
+  // ------------------------------------------------------------------------
+  // loop over all master elements
+  for (int i=0; i<melerowmap_->NumMyElements(); ++i)
+  {
+    int gid = melerowmap_->GID(i);
+    DRT::Element* ele = idiscret_->gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find master element with gid %i",gid);
+
+    MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
+    if (myMinEdgeLength > mele->MinEdgeSize())
+      myMinEdgeLength = mele->MinEdgeSize();
+
+    // no Mortar Data container on the master side
+    double myarea = mele->ComputeArea();
+    if ( myMinAreaMa > myarea )
+      myMinAreaMa = myarea;
+
+    switch ( ele->Shape() )
+    {
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+        myTriangleOnMaster = 1;
+        break;
+      default:
+        // do nothing
+        break;
+    }
+  }
+
+  // ------------------------------------------------------------------------
+  // communicate the minimal edge length and element area over all procs
+  double lMins[2] = { myMinEdgeLength, myMinAreaMa };
+  double gMins[2] = { 1.0e12, 1.0e12 };
+  Comm().MinAll(&lMins[0],&gMins[0],2);
+
+  if (gMins[0] == 1.0e12 or gMins[0] < 0.0)
+    dserror("ERROR: Global minimal interface edge length couldn't"
+        " be calculated! (value: %d)",gMins[0]);
+
+  // set penetration bound to 50% of the minimal interface element edge length,
+  // if no user defined value is provided.
+  if (penBound_ < 0.0)
+    penBound_ = 0.5*gMins[0];
+
+  if (gMins[1] == 1.0e12 or gMins[1] < 0.0)
+    dserror("ERROR: Global minimal master element area couldn't"
+        " be calculated! (value: %d)",gMins[1]);
+
+  const double gMinAreaMa = gMins[1];
+
+  // ------------------------------------------------------------------------
+  // communicate the maximal slave element area over all procs
+  double lMaxs[2] = { myMaxAreaSl, static_cast<double>( myTriangleOnMaster ) };
+  double gMaxs[2] = { 0.0, 0.0 };
+  Comm().MaxAll( &lMaxs[0], &gMaxs[0], 2 );
+
+  const double gMaxAreaSl = gMaxs[0];
+  const bool isTriangleOnMaster = static_cast<bool>( gMaxs[1] );
+
+  maxNumMasterElements_ = std::ceil( gMaxAreaSl / gMinAreaMa );
+
+  if ( isTriangleOnMaster )
+  {
+    // approximated number of surrounding elements
+    const int maxNumSurrounding = 4 * std::ceil(
+        std::sqrt( static_cast<double>( maxNumMasterElements_ ) / 2.0 ) );
+
+    // two elements in the corner
+    const int numCornerEles = 2;
+
+    // complete number of approximated master elements
+    maxNumMasterElements_ += maxNumSurrounding + numCornerEles;
+  }
+  else
+  {
+    // approximated number of surrounding elements
+    const int maxNumSurrounding = 2 * std::ceil(
+        std::sqrt( static_cast<double>( maxNumMasterElements_ ) ) );
+
+    // one element in the corner
+    const int numCornerEles = 1;
+
+    maxNumMasterElements_ += maxNumSurrounding + numCornerEles;
+  }
+
+  std::cout << "maxNumMasterElements_ = " << maxNumMasterElements_ << std::endl;
+
+  issetup_ = true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Interface::Initialize()
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -104,40 +189,49 @@ void CONTACT::AugmentedInterface::Initialize()
   // call initialization routine of the contact_interface
   CoInterface::Initialize();
 
+  // setup member variables (has to be done only once)
+  Setup();
+
   // *** Reset all augmented quantities *********************************
   // loop over all slave nodes to reset stuff (standard column map)
   // (include slave side boundary nodes / crosspoints)
-  for (int i=0;i<SlaveColNodesBound()->NumMyElements();++i)
+  const int nummynodes = SlaveColNodesBound()->NumMyElements();
+  int * mynodegids = SlaveColNodesBound()->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = SlaveColNodesBound()->GID(i);
+    const int gid = mynodegids[i];
+
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
+    cnode->InitializeAugDataContainer( maxNumMasterElements_ );
+
     // reset nodal weighted gap
-    cnode->CoData().GetWGap() = 1.0e12;
+    cnode->AugData().GetWGap() = 1.0e12;
 
     // reset nodal scaling factor
-    cnode->CoData().GetKappa() = 1.0e12;
-    cnode->CoData().GetAugA()  = 0.0;
+    cnode->AugData().GetKappa() = 1.0e12;
+    cnode->AugData().GetAugA()  = 0.0;
 
     // reset variation of the weighted gap
-    cnode->CoData().GetVarWGapSl().clear();
-    cnode->CoData().GetVarWGapMa().clear();
+    cnode->AugData().GetVarWGapSl().clear();
+    cnode->AugData().GetVarWGapMa().clear();
 
     // reset kappaLin
-    cnode->CoData().GetKappaLin().clear();
-    cnode->CoData().GetAugALin().clear();
+    cnode->AugData().GetKappaLin().clear();
+    cnode->AugData().GetAugALin().clear();
 
     // reset varWGapLin
-    cnode->CoData().GetVarWGapLinSl().clear();
-    cnode->CoData().GetVarWGapLinMa().clear();
+    cnode->AugData().GetVarWGapLinSl().clear();
+    cnode->AugData().GetVarWGapLinMa().clear();
 
     // reset linearization of the averaged weighted gap
-    cnode->CoData().GetAWGapLin().clear();
+    cnode->AugData().GetAWGapLin().clear();
 
     // reset linearization of the averaged weighted gap
-    cnode->CoData().GetWGapLin().clear();
+    cnode->AugData().GetWGapLin().clear();
   }
 
   return;
@@ -145,7 +239,7 @@ void CONTACT::AugmentedInterface::Initialize()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::UpdateMasterSlaveSets()
+void CONTACT::AUG::Interface::UpdateMasterSlaveSets()
 {
   MORTAR::MortarInterface::UpdateMasterSlaveSets();
   SplitSlaveDofs();
@@ -153,7 +247,7 @@ void CONTACT::AugmentedInterface::UpdateMasterSlaveSets()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::RedEvaluate(
+void CONTACT::AUG::Interface::RedEvaluate(
     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
 // interface needs to be complete
@@ -165,9 +259,13 @@ void CONTACT::AugmentedInterface::RedEvaluate(
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
-  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  const int nummyelements = selecolmap_->NumMyElements();
+  int * myelementgids = selecolmap_->MyGlobalElements();
+
+  for ( int i=0; i<nummyelements; ++i )
   {
-    int gid1 = selecolmap_->GID(i);
+    const int gid1 = myelementgids[i];
+
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
@@ -179,13 +277,17 @@ void CONTACT::AugmentedInterface::RedEvaluate(
      *    Integrate all remaining quantities only over the slave interface    *
      **************************************************************************/
     // create a Augmented Lagrangian integrator instance with correct NumGP and Dim
-    CONTACT::AugmentedIntegrator augIntegrator(IParams(),selement->Shape(),Comm());
-    if (Dim()==2)
-      augIntegrator.IntegrateDerivSlEle2D((*selement),Comm(),mparams_ptr);
-    else if (Dim()==3)
-      augIntegrator.IntegrateDerivSlEle3D((*selement),Comm(),mparams_ptr);
-    else
-      dserror("ERROR: RedEvaluate: Dim value has to be 2 or 3!");
+    CONTACT::AUG::IntegrationWrapper augIntegrationWrapper(IParams(),selement->Shape(),Comm());
+    switch ( Dim() )
+    {
+      case 2:
+      case 3:
+        augIntegrationWrapper.IntegrateDerivSlaveElement((*selement),Comm(),mparams_ptr);
+        break;
+      default:
+        dserror("ERROR: RedEvaluate: Dim value has to be 2 or 3!");
+        exit( EXIT_FAILURE );
+    }
     /**************************************************************************
      *                       !!! end integration !!!                          *
      **************************************************************************/
@@ -196,9 +298,9 @@ void CONTACT::AugmentedInterface::RedEvaluate(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleAugDnMnMatrix(
+void CONTACT::AUG::Interface::AssembleAugDnMnMatrix(
     LINALG::SparseMatrix& augDnMatrix,
-    LINALG::SparseMatrix& augMnMatrix)
+    LINALG::SparseMatrix& augMnMatrix) const
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -206,9 +308,13 @@ void CONTACT::AugmentedInterface::AssembleAugDnMnMatrix(
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  const int nummynodes = snoderowmap_->NumMyElements();
+  int * mynodegids = snoderowmap_->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = snoderowmap_->GID(i);
+    const int gid = mynodegids[i];
+
     DRT::Node* node = idiscret_->gNode(gid);
 
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
@@ -226,7 +332,8 @@ void CONTACT::AugmentedInterface::AssembleAugDnMnMatrix(
     typedef std::map<int,std::pair<int,double> >::const_iterator CI;
 
     /************************************* augDn-Matrix ******/
-    GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap = cnode->CoData().GetVarWGapSl();
+    const GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap =
+        cnode->AugData().GetVarWGapSl();
 
     for(CII pp=varWGapSlMap.begin();pp!=varWGapSlMap.end();++pp)
     {
@@ -235,7 +342,8 @@ void CONTACT::AugmentedInterface::AssembleAugDnMnMatrix(
       augDnMatrix.Assemble(cval,rowId,cDofId);
     }
     /************************************* augMn-Matrix ******/
-    std::map<int,std::pair<int,double> >& varWGapMaMap = cnode->CoData().GetVarWGapMa();
+    const std::map<int,std::pair<int,double> >& varWGapMaMap =
+        cnode->AugData().GetVarWGapMa();
 
     for(CI pp=varWGapMaMap.begin();pp!=varWGapMaMap.end();++pp)
     {
@@ -250,9 +358,9 @@ void CONTACT::AugmentedInterface::AssembleAugDnMnMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleDGLmLinMatrix(
+void CONTACT::AUG::Interface::AssembleDGLmLinMatrix(
     LINALG::SparseMatrix& dGLmSlLinMatrix,
-    LINALG::SparseMatrix& dGLmMaLinMatrix)
+    LINALG::SparseMatrix& dGLmMaLinMatrix) const
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -260,9 +368,13 @@ void CONTACT::AugmentedInterface::AssembleDGLmLinMatrix(
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  const int nummynodes = activenodes_->NumMyElements();
+  int * mynodegids = activenodes_->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid  = activenodes_->GID(i);
+    const int gid  = mynodegids[i];
+
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
 
@@ -270,38 +382,30 @@ void CONTACT::AugmentedInterface::AssembleDGLmLinMatrix(
     double lm_n = cnode->MoData().lm()[0];
 
     // typedef of the map iterator
-    typedef std::map<int,double>::const_iterator CI;
     typedef std::map<int,std::map<int,double> >::const_iterator CII;
 
     /* --------------------------- SLAVE SIDE ----------------------------------- */
-    std::map<int,std::map<int,double> >& varWGapLinSlMap = cnode->CoData().GetVarWGapLinSl();
+    const std::map<int,std::map<int,double> >& varWGapLinSlMap =
+        cnode->AugData().GetVarWGapLinSl();
+
     // iteration over ALL slave Dof Ids
     for (CII p=varWGapLinSlMap.begin();p!=varWGapLinSlMap.end();++p)
     {
-      int sRow = p->first;
-      int col = 0;
+      const int sRow = p->first;
+
       // *** linearization of varWGap w.r.t. displacements ***
-      for (CI pp=varWGapLinSlMap[sRow].begin();pp!=varWGapLinSlMap[sRow].end();++pp)
-      {
-        double val = - (pp->second) * lm_n;
-        col = pp->first;
-        if (abs(val)>1.0e-12) dGLmSlLinMatrix.FEAssemble(val,sRow,col);
-      }
+      AssembleMapIntoMatrix( sRow, -lm_n, varWGapLinSlMap.at(sRow), dGLmSlLinMatrix );
     }
     /* --------------------------- MASTER SIDE ---------------------------------- */
-    std::map<int,std::map<int,double> >& varWGapLinMaMap = cnode->CoData().GetVarWGapLinMa();
+    const std::map<int,std::map<int,double> >& varWGapLinMaMap = cnode->AugData().GetVarWGapLinMa();
+
     // iteration over ALL master Dof Ids
     for (CII p=varWGapLinMaMap.begin();p!=varWGapLinMaMap.end();++p)
     {
-      int mRow = p->first;
-      int col = 0;
+      const int mRow = p->first;
+
       // *** linearization of varWGap w.r.t. displacements ***
-      for (CI pp=varWGapLinMaMap[mRow].begin();pp!=varWGapLinMaMap[mRow].end();++pp)
-      {
-        double val = (pp->second) * lm_n;
-        col = pp->first;
-        if (abs(val)>1.0e-12) dGLmMaLinMatrix.FEAssemble(val,mRow,col);
-      }
+      AssembleMapIntoMatrix( mRow, lm_n, varWGapLinMaMap.at(mRow), dGLmMaLinMatrix );
     }
   }
 
@@ -310,100 +414,52 @@ void CONTACT::AugmentedInterface::AssembleDGLmLinMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleDGGLinMatrix(
+void CONTACT::AUG::Interface::AssembleDGGLinMatrix(
     LINALG::SparseMatrix& dGGSlLinMatrix,
     LINALG::SparseMatrix& dGGMaLinMatrix,
-    const Epetra_Vector& cnVec,
-    const bool& completeLin)
+    const Epetra_Vector& cnVec ) const
 {
   // get out of here if not participating in interface
   if (!lComm())
     return;
 
-  // get cn
-//  const double cn = IParams().get<double>("SEMI_SMOOTH_CN");
-
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  const int nummynodes = activenodes_->NumMyElements();
+  int * mynodegids = activenodes_->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = activenodes_->GID(i);
+    const int gid = mynodegids[i];
 
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
 
-    // typedef of the map iterator
-    typedef std::map<int,double>::const_iterator CI;
-    typedef std::map<int,std::pair<int,double> >::const_iterator CII;
-    typedef GEN::pairedvector<int,std::pair<int,double> >::const_iterator CIII;
-
     // get nodal values
     double cn     = cnVec[cnVec.Map().LID(gid)];
-    double aWGap  = cnode->CoData().GetWGap();
-    double ckappa = cnode->CoData().GetKappa();
+    double aWGap  = cnode->AugData().GetWGap();
+    double ckappa = cnode->AugData().GetKappa();
     double ckappainv = 1/ckappa;
-    if (aWGap!=1.0e12 and ckappa!=1.0e12)
+
+    if ( aWGap != 1.0e12 and ckappa != 1.0e12 )
       aWGap *= ckappainv;
     else
       dserror("ERROR: GID % seems to be no active slave node!",gid);
-    std::map<int,double>& aWGapLinMap = cnode->CoData().GetAWGapLin();
 
-    GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap = cnode->CoData().GetVarWGapSl();
-    std::map<int,std::pair<int,double> >& varWGapMaMap = cnode->CoData().GetVarWGapMa();
-    /* --------------------------- SLAVE SIDE ----------------------------------- */
-    // iteration over ALL slave Dof Ids
-    for (CIII p=varWGapSlMap.begin();p!=varWGapSlMap.end();++p)
-    {
-      int sRow = p->first;
-      int col = 0;
-      // *** asymptotic convergence phase: consistent linearization ***
-      // This term is only considered, when the current node shows no large penetration.
-      if (completeLin)
-      {
-        // *** linearization of varWGap w.r.t. displacements ***
-        std::map<int,double>& varWGapLinSlMap = cnode->CoData().GetVarWGapLinSl()[sRow];
-        for (CI pp=varWGapLinSlMap.begin();pp!=varWGapLinSlMap.end();++pp)
-        {
-          double val = cn*(pp->second)*aWGap;
-          col = pp->first;
-          if (abs(val)>1.0e-12) dGGSlLinMatrix.FEAssemble(val,sRow,col);
-        }
-      }
-      // *** linearization of the averaged weighted gap w.r.t. displacements ***
-      for (CI pp=aWGapLinMap.begin();pp!=aWGapLinMap.end();++pp)
-      {
-        double val = cn*(p->second).second*(pp->second);
-        col = pp->first;
-        if (abs(val)>1.0e-12) dGGSlLinMatrix.FEAssemble(val,sRow,col);
-      }
-    }
-    /* --------------------------- MASTER SIDE ---------------------------------- */
-    // iteration over ALL master Dof Ids
-    for (CII p=varWGapMaMap.begin();p!=varWGapMaMap.end();++p)
-    {
-      int mRow = p->first;
-      int col = 0;
-      // *** asymptotic convergence phase: consistent linearization ***
-      // This term is only considered, when the current node shows no large penetration.
-      if (completeLin)
-      {
-        // *** linearization of varWGap w.r.t. displacements ***
-        std::map<int,double>& varWGapLinMaMap = cnode->CoData().GetVarWGapLinMa()[mRow];
-        for (CI pp=varWGapLinMaMap.begin();pp!=varWGapLinMaMap.end();++pp)
-        {
-          double val = -cn*(pp->second)*aWGap;
-          col = pp->first;
-          if (abs(val)>1.0e-12) dGGMaLinMatrix.FEAssemble(val,mRow,col);
-        }
-      }
-      // *** linearization of the averaged weighted gap w.r.t. displacements ***
-      for (CI pp=aWGapLinMap.begin();pp!=aWGapLinMap.end();++pp)
-      {
-        double val = -cn*(p->second).second*(pp->second);
-        col = pp->first;
-        if (abs(val)>1.0e-12) dGGMaLinMatrix.FEAssemble(val,mRow,col);
-      }
-    }
+    const std::map<int,double>& aWGapLinMap = cnode->AugData().GetAWGapLin();
+
+    const GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap =
+        cnode->AugData().GetVarWGapSl();
+    const std::map<int,std::pair<int,double> >& varWGapMaMap =
+        cnode->AugData().GetVarWGapMa();
+
+    /* --------------------------- SLAVE SIDE --------------------------------*/
+    AssembleDGGLinMatrixOnSlaveSide( *cnode, varWGapSlMap, aWGapLinMap, cn,
+        aWGap, dGGSlLinMatrix );
+
+    /* --------------------------- MASTER SIDE -------------------------------*/
+    AssembleDGGLinMatrixOnMasterSide( *cnode, varWGapMaMap, aWGapLinMap, cn,
+        aWGap, dGGMaLinMatrix );
   }
 
   return;
@@ -411,10 +467,62 @@ void CONTACT::AugmentedInterface::AssembleDGGLinMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleResidualVectors(
+void CONTACT::AUG::Interface::AssembleDGGLinMatrixOnSlaveSide(
+    const CoNode& cnode,
+    const GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap,
+    const std::map<int,double>& aWGapLinMap,
+    double cn,
+    double aWGap,
+    LINALG::SparseMatrix& dGGSlLinMatrix ) const
+{
+  typedef GEN::pairedvector<int,std::pair<int,double> >::const_iterator CI;
+
+  // iteration over ALL slave Dof Ids
+  for ( CI p=varWGapSlMap.begin(); p!=varWGapSlMap.end(); ++p )
+  {
+    const int sRow = p->first;
+
+    // *** linearization of varWGap w.r.t. displacements ***
+    const std::map<int,double>& varWGapLinSlMap = cnode.AugData().GetVarWGapLinSl().at(sRow);
+    AssembleMapIntoMatrix( sRow, cn*aWGap, varWGapLinSlMap, dGGSlLinMatrix );
+
+    // *** linearization of the averaged weighted gap w.r.t. displacements ***
+    AssembleMapIntoMatrix( sRow, cn*(p->second).second, aWGapLinMap, dGGSlLinMatrix );
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Interface::AssembleDGGLinMatrixOnMasterSide(
+    const CoNode& cnode,
+    const std::map<int,std::pair<int,double> >& varWGapMaMap,
+    const std::map<int,double>& aWGapLinMap,
+    double cn,
+    double aWGap,
+    LINALG::SparseMatrix& dGGMaLinMatrix ) const
+{
+  typedef std::map<int,std::pair<int,double> >::const_iterator CI;
+
+  // iteration over ALL master Dof Ids
+  for ( CI p=varWGapMaMap.begin(); p!=varWGapMaMap.end(); ++p )
+  {
+    const int mRow = p->first;
+
+    // *** linearization of varWGap w.r.t. displacements ***
+    const std::map<int,double>& varWGapLinMaMap = cnode.AugData().GetVarWGapLinMa().at(mRow);
+    AssembleMapIntoMatrix( mRow, -cn*aWGap, varWGapLinMaMap, dGGMaLinMatrix );
+
+    // *** linearization of the averaged weighted gap w.r.t. displacements ***
+    AssembleMapIntoMatrix( mRow, -cn*(p->second).second, aWGapLinMap, dGGMaLinMatrix );
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Interface::AssembleResidualVectors(
     Epetra_Vector& lmNVec,
     Epetra_Vector& aWGapVec,
-    Epetra_Vector& wGapVec)
+    Epetra_Vector& wGapVec) const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -424,9 +532,21 @@ void CONTACT::AugmentedInterface::AssembleResidualVectors(
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  const int nummynodes = activenodes_->NumMyElements();
+  int* mynodegids = activenodes_->MyGlobalElements();
+
+  int* myactiven_gids = activen_->MyGlobalElements();
+  if ( nummynodes != activen_->NumMyElements() )
+    dserror( "Dimension mismatch!" );
+
+  double* lmNVec_vals = lmNVec.Values();
+  double* aWGapVec_vals = aWGapVec.Values();
+  double* wGapVec_vals = wGapVec.Values();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = activenodes_->GID(i);
+    const int gid = mynodegids[i];
+
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: AssembleDGLmrhs: Cannot find slave"
         " node with gid %",gid);
@@ -435,26 +555,35 @@ void CONTACT::AugmentedInterface::AssembleResidualVectors(
     double lmn  = cnode->MoData().lm()[0];
 
     // calculate averaged weighted gap
-    double wGap = cnode->CoData().GetWGap();
+    const double wGap = cnode->AugData().GetWGap();
     double aWGap = wGap;
-    double kappa = cnode->CoData().GetKappa();
-    if (kappa!=1.0e12 && aWGap!=1.0e12)
+    double kappa = cnode->AugData().GetKappa();
+    if ( kappa != 1.0e12 and aWGap != 1.0e12 )
     {
       aWGap /= kappa;
 
-      Epetra_SerialDenseVector lmNV(1);
-      Epetra_SerialDenseVector aWGapV(1);
-      Epetra_SerialDenseVector wGapV(1);
-      lmNV[0]   = lmn;
-      aWGapV[0] = aWGap;
-      wGapV[0]  = wGap;
+      const int rgid = myactiven_gids[ i ];
 
-      std::vector<int> rgid(1,activen_->GID(i));
-      std::vector<int> rowner(1,cnode->Owner());
+      // --- normal lagrange multiplier vector
+      int rlid = lmNVec.Map().LID( rgid );
+      if ( rlid == -1 )
+        dserror("Sparse vector lmNVec does not have global row %d", rgid);
 
-      LINALG::Assemble(lmNVec,lmNV,rgid,rowner);
-      LINALG::Assemble(aWGapVec,aWGapV,rgid,rowner);
-      LINALG::Assemble(wGapVec,wGapV,rgid,rowner);
+      lmNVec_vals[ rlid ] += lmn;
+
+      // --- averaged weighted gap vector
+      rlid = aWGapVec.Map().LID( rgid );
+      if ( rlid == -1 )
+        dserror("Sparse vector aWGapVec does not have global row %d", rgid);
+
+      aWGapVec_vals[ rlid ] += aWGap;
+
+      // --- weighted gap vector
+      rlid = wGapVec.Map().LID( rgid );
+      if ( rlid == -1 )
+        dserror("Sparse vector wGapVec does not have global row %d", rgid);
+
+      wGapVec_vals[ rlid ] += wGap;
     }
     else
       dserror("ERROR: Kappa and/or the weighted gap should "
@@ -466,42 +595,35 @@ void CONTACT::AugmentedInterface::AssembleResidualVectors(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleDLmNWGapLinMatrix(
-    LINALG::SparseMatrix& dLmNWGapLinMatrix)
+void CONTACT::AUG::Interface::AssembleDLmNWGapLinMatrix(
+    LINALG::SparseMatrix& dLmNWGapLinMatrix) const
 {
   // get out of here if not participating in interface
   if (!lComm())
     return;
 
   // loop over all active augmented slave nodes of the interface
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  const int nummynodes = activenodes_->NumMyElements();
+  int * mynodegids = activenodes_->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = activenodes_->GID(i);
+    const int gid = mynodegids[i];
+
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find node with gid %",gid);
 
-    // typedef of the map iterator
-    typedef std::map<int,double>::const_iterator CI;
-
-    double wGap = cnode->CoData().GetWGap();
+    double wGap = cnode->AugData().GetWGap();
 
     if (wGap==1.0e12)
       dserror("ERROR: The weighted gap should not be equal 1.0e12 "
           "for active nodes!");
 
-    std::map<int,double>& wGapLinMap = cnode->CoData().GetWGapLin();
-    double val = 0.0;
+    const int rowId = activen_->GID(i);
 
     // linearization of the weighted gap
-    for (CI p=wGapLinMap.begin();p!=wGapLinMap.end();++p)
-    {
-      int rowId = activen_->GID(i);
-      int colId = p->first;
-      val = p->second;
-
-      if (abs(val)>1.0e-12)
-        dLmNWGapLinMatrix.Assemble(val,rowId,colId);
-    }
+    const std::map<int,double>& wGapLinMap = cnode->AugData().GetWGapLin();
+    AssembleMapIntoMatrix( rowId, 1.0, wGapLinMap, dLmNWGapLinMatrix );
   }
 
   return;
@@ -509,9 +631,9 @@ void CONTACT::AugmentedInterface::AssembleDLmNWGapLinMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleAugInactiveRhs(
+void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
     Epetra_Vector& augInactiveRhs,
-    Epetra_Vector& cnVec)
+    Epetra_Vector& cnVec) const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -523,9 +645,13 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveRhs(
   double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1/ct_inv;
 
-  for (int i=0;i<augInactiveSlaveNodes->NumMyElements();++i)
+  const int nummynodes = augInactiveSlaveNodes->NumMyElements();
+  int * mynodegids = augInactiveSlaveNodes->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = augInactiveSlaveNodes->GID(i);
+    const int gid = mynodegids[i];
+
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find inactive slave node with gid %",gid);
 
@@ -535,7 +661,7 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveRhs(
 
     double cn_inv   = 1/cnVec[cnVec.Map().LID(gid)];
     double* lm  = cnode->MoData().lm();
-    double augA = cnode->CoData().GetAugA();
+    double augA = cnode->AugData().GetAugA();
 
     std::vector<int> rGid(Dim());
     std::vector<int> rOwner(Dim(),cnode->Owner());
@@ -560,8 +686,8 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveRhs(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleDLmTLmTRhs(
-    Epetra_Vector& dLmTLmTRhs)
+void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(
+    Epetra_Vector& dLmTLmTRhs) const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -572,9 +698,13 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTRhs(
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for(int i=0;i<activenodes_->NumMyElements();++i)
+  const int nummynodes = activenodes_->NumMyElements();
+  int * mynodegids = activenodes_->MyGlobalElements();
+
+  for( int i=0; i<nummynodes; ++i )
   {
-    int gid = activenodes_->GID(i);
+    const int gid = mynodegids[i];
+
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: AssembleDLmTLmTRhs: Cannot find active"
         " slave node with gid %",gid);
@@ -585,7 +715,7 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTRhs(
     // Get the Lagrange multiplier and txi of the current node
     double* lm  = cnode->MoData().lm();
     // Get weighted element area
-    double augA  = cnode->CoData().GetAugA();
+    double augA  = cnode->AugData().GetAugA();
 
     std::vector<int> rGid(Dim()-1);
     std::vector<int> rOwner(Dim()-1,cnode->Owner());
@@ -627,8 +757,8 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTRhs(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleDLmTLmTMatrix(
-    LINALG::SparseMatrix& dLmTLmTMatrix)
+void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(
+    LINALG::SparseMatrix& dLmTLmTMatrix) const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -639,9 +769,13 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTMatrix(
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for(int i=0;i<activenodes_->NumMyElements();++i)
+  const int nummynodes = activenodes_->NumMyElements();
+  int * mynodegids = activenodes_->MyGlobalElements();
+
+  for( int i=0; i<nummynodes; ++i )
   {
-    int gid = activenodes_->GID(i);
+    const int gid = mynodegids[i];
+
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: AssembleDLmTLmTrhs: Cannot find slave"
         " node with gid %",gid);
@@ -650,7 +784,7 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTMatrix(
       dserror("ERROR: AssembleDLmTLmTrhs: Node ownership inconsistency!");
 
     // get weighted element area
-    double augA = cnode->CoData().GetAugA();
+    double augA = cnode->AugData().GetAugA();
 
     for (int j=0;j<(Dim()-1);++j)
     {
@@ -672,8 +806,8 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleDLmTLmTLinMatrix(
-    LINALG::SparseMatrix& dLmTLmTLinMatrix)
+void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(
+    LINALG::SparseMatrix& dLmTLmTLinMatrix) const
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -685,9 +819,13 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTLinMatrix(
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  const int nummynodes = activenodes_->NumMyElements();
+  int * mynodegids = activenodes_->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = activenodes_->GID(i);
+    const int gid = mynodegids[i];
+
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
@@ -696,10 +834,7 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTLinMatrix(
       dserror("ERROR: AssembleDGLmLin: Node ownership inconsistency!");
 
     double* lm  = cnode->MoData().lm();
-    std::map<int,double>& augALinMap = cnode->CoData().GetAugALin();
-
-    // typedef of the map iterator
-    typedef std::map<int,double>::const_iterator CI;
+    GEN::pairedvector<int,double>& augALinMap = cnode->AugData().GetAugALin();
 
     /*---------------------------------------------------------*
      | Attention:                                              |
@@ -707,16 +842,11 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTLinMatrix(
      *---------------------------------------------------------*/
     for (int j=0;j<(Dim()-1);++j)
     {
-      int rowId = activet_->GID((Dim()-1)*i+j);
+      const int rowId = activet_->GID((Dim()-1)*i+j);
 
       double tmp = ct_inv*lm[j+1];
-      for (CI p=augALinMap.begin();p!=augALinMap.end();++p)
-      {
-        int colId = p->first;
-        double val = tmp*(p->second);
 
-        if (abs(val)>1.0e-12) dLmTLmTLinMatrix.Assemble(val,rowId,colId);
-      }
+      AssembleMapIntoMatrix( rowId, tmp, augALinMap, dLmTLmTLinMatrix );
     }
   }
 
@@ -725,9 +855,9 @@ void CONTACT::AugmentedInterface::AssembleDLmTLmTLinMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleAugInactiveMatrix(
-    LINALG::SparseMatrix& augInactiveMatrix,
-    const Epetra_Vector& cnVec)
+void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(
+    Epetra_Vector& augInactiveDiagMatrix,
+    const Epetra_Vector& cnVec) const
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -740,9 +870,17 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveMatrix(
   double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1/ct_inv;
 
-  for (int i=0;i<augInactiveSlaveNodes->NumMyElements();++i)
+  const int nummynodes = augInactiveSlaveNodes->NumMyElements();
+  int * mynodegids = augInactiveSlaveNodes->MyGlobalElements();
+
+  LINALG::SerialDenseVector vals;
+  std::vector<int> rowIds(0);
+  std::vector<int> rowner(0);
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = augInactiveSlaveNodes->GID(i);
+    const int gid = mynodegids[i];
+
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: AssembleAugInactiveMatrix: Cannot find"
         " inactive slave node with gid %",gid);
@@ -752,23 +890,30 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveMatrix(
           " Node ownership inconsistency!");
 
     double cn_inv = 1/cnVec[cnVec.Map().LID(gid)];
-    double augA   = cnode->CoData().GetAugA();
+    double augA   = cnode->AugData().GetAugA();
 
-    for (int j=0; j<cnode->NumDof();++j)
+    const int numdof = cnode->NumDof();
+
+    if ( vals.Length() != numdof )
     {
-      int rowId = cnode->Dofs()[j];
-      int colId = rowId;
-      double val = 0.0;
-
-      // normal part
-      if (j==0)
-        val = cn_inv*augA;
-      // tangential part
-      else
-        val = ct_inv*augA;
-
-      if (abs(val)>1.0e-12) augInactiveMatrix.Assemble(val,rowId,colId);
+      vals.Resize( numdof );
+      rowIds.resize( numdof, -1 );
+      rowner.resize( numdof, -1 );
     }
+
+    // normal direction
+    vals( 0 ) = cn_inv*augA;
+
+    // tangential directions
+    std::fill( vals.A() + 1, vals.A() + numdof, ct_inv*augA );
+
+    // copy dof ids
+    std::copy( cnode->Dofs(), cnode->Dofs() + numdof, &rowIds[0] );
+
+    // insert owner
+    std::fill( &rowner[0], &rowner[0] + numdof, cnode->Owner() );
+
+    LINALG::Assemble( augInactiveDiagMatrix, vals, rowIds, rowner );
   }
 
   return;
@@ -776,9 +921,9 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleAugInactiveLinMatrix(
+void CONTACT::AUG::Interface::AssembleAugInactiveLinMatrix(
     LINALG::SparseMatrix& augInactiveLinMatrix,
-    const Epetra_Vector& cnVec)
+    const Epetra_Vector& cnVec) const
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -791,9 +936,13 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveLinMatrix(
   double ct_inv = IParams().get<double>("SEMI_SMOOTH_CT");
   ct_inv = 1/ct_inv;
 
-  for (int i=0;i<augInactiveSlaveNodes->NumMyElements();++i)
+  const int nummynodes = augInactiveSlaveNodes->NumMyElements();
+  int * mynodegids = augInactiveSlaveNodes->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = augInactiveSlaveNodes->GID(i);
+    const int gid = mynodegids[i];
+
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: AssembleAugInactiveMatrix: Cannot find"
         " inactive slave node with gid %",gid);
@@ -804,10 +953,10 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveLinMatrix(
 
     double cn_inv = 1/cnVec[cnVec.Map().LID(gid)];
     double* lm  = cnode->MoData().lm();
-    std::map<int,double>& augALinMap = cnode->CoData().GetAugALin();
+    GEN::pairedvector<int,double>& augALinMap = cnode->AugData().GetAugALin();
 
     // typedef of the map iterator
-    typedef std::map<int,double>::const_iterator CI;
+    typedef GEN::pairedvector<int,double>::const_iterator CI;
 
     for (int j=0; j<Dim();++j)
     {
@@ -825,7 +974,8 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveLinMatrix(
         int colId = p->first;
         double val = tmp*(p->second);
 
-        if (abs(val)>1.0e-12) augInactiveLinMatrix.Assemble(val,rowId,colId);
+        if (abs(val)>1.0e-12)
+          augInactiveLinMatrix.Assemble(val,rowId,colId);
       }
     }
   }
@@ -835,16 +985,20 @@ void CONTACT::AugmentedInterface::AssembleAugInactiveLinMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::WGap()
+void CONTACT::AUG::Interface::WGap() const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  const int nummynodes = snoderowmap_->NumMyElements();
+  int * mynodegids = snoderowmap_->MyGlobalElements();
+
+  for ( int i=0;i<nummynodes; ++i )
   {
-    int gid  =snoderowmap_->GID(i);
+    const int gid = mynodegids[i];
+
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: AssembleDGGrhs: Cannot find slave"
         " node with gid %",gid);
@@ -853,8 +1007,8 @@ void CONTACT::AugmentedInterface::WGap()
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: Node ownership inconsistency!");
 
-    GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap =
-        cnode->CoData().GetVarWGapSl();
+    const GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap =
+        cnode->AugData().GetVarWGapSl();
 
     if (varWGapSlMap.size()!=0)
     {
@@ -880,7 +1034,8 @@ void CONTACT::AugmentedInterface::WGap()
         cnode->AddWGapValue(val);
       }
       // *** Master fraction ***************************************************
-      std::map<int,std::pair<int,double> >& varWGapMaMap = cnode->CoData().GetVarWGapMa();
+      const std::map<int,std::pair<int,double> >& varWGapMaMap =
+          cnode->AugData().GetVarWGapMa();
       if (varWGapMaMap.size()==0) dserror("ERROR: AugmentedInterface::WGap(): "
           "Variation of the slave side is not empty, but the master side is empty!");
       for (CI p=varWGapMaMap.begin();p!=varWGapMaMap.end();++p)
@@ -899,7 +1054,7 @@ void CONTACT::AugmentedInterface::WGap()
 
         double val = (p->second).second*xm;
 
-          cnode->AddWGapValue(val);
+        cnode->AddWGapValue(val);
       }
     }
   }
@@ -909,121 +1064,117 @@ void CONTACT::AugmentedInterface::WGap()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AWGapLin(bool completeLin)
+void CONTACT::AUG::Interface::AWGapLin()
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  const int nummynodes = activenodes_->NumMyElements();
+  int * mynodegids = activenodes_->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = activenodes_->GID(i);
+    const int gid = mynodegids[i];
+
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: AssembleDGGrhs: Cannot find slave node with gid %",gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+    CoNode* cnode = static_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleGGrhs: Node ownership inconsistency!");
 
     // get some pre-calculated results for the current slave node:
-    double kappainv = 1.0/cnode->CoData().GetKappa();
-    if (cnode->CoData().GetKappa()!=1.0e12)
-    {
-      std::map<int,double>& kappaLinMap  = cnode->CoData().GetKappaLin();
+    double kappainv = 1.0/cnode->AugData().GetKappa();
 
-      // Get std::map to save the linearization of the weighted gap
-      std::map<int,double>& wGapLinMap = cnode->CoData().GetWGapLin();
-      // Get std::map to save the linearization of the averaged weighted gap
-      std::map<int,double>& aWGapLinMap = cnode->CoData().GetAWGapLin();
-
-      // typedef of the constant map iterators
-      typedef std::map<int,double> ::const_iterator CI;
-      typedef std::map<int,std::pair<int,double> >::const_iterator CII;
-      typedef GEN::pairedvector<int,std::pair<int,double> >::const_iterator CIII;
-      // *** Slave side **************************************************
-      GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap = cnode->CoData().GetVarWGapSl();
-      // loop over ALL Dofs of the slave side
-      for (CIII p=varWGapSlMap.begin();p!=varWGapSlMap.end();++p)
-      {
-        int sGid = (p->second).first;
-
-        CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(sGid));
-        if (!snode) dserror("ERROR: Cannot find slave node with gid %",sGid);
-        // Check if Slave node
-        if (!snode->IsSlave()) dserror("ERROR: This has to be a slave node!");
-
-        // Switch from the global DofId to the local DofId
-        int sDof  = ((p->first)-snode->Dofs()[0])%Dim();
-
-        double xs = snode->xspatial()[sDof];
-
-        double val = 0.0;
-        // Lin(kappa)
-        if (completeLin)
-        {
-          val = (p->second).second*xs*kappainv*kappainv;
-          for (CI pp=kappaLinMap.begin();pp!=kappaLinMap.end();++pp)
-            aWGapLinMap[pp->first] += (pp->second)*val;
-        }
-
-        // Lin(varWGapLinSl)
-        std::map<int,double>& varWGapLinSlMap = cnode->CoData().GetVarWGapLinSl()[p->first];
-        for (CI pp=varWGapLinSlMap.begin();pp!=varWGapLinSlMap.end();++pp)
-        {
-          val = (pp->second)*xs;
-          wGapLinMap[pp->first]  -= val;
-          aWGapLinMap[pp->first] -= val*kappainv;
-        }
-
-        // Lin(xs)
-        wGapLinMap[p->first]  -= (p->second).second;
-        aWGapLinMap[p->first] -= (p->second).second*kappainv;
-      }
-
-      // *** Master side *************************************************
-      std::map<int,std::pair<int,double> >& varWGapMaMap = cnode->CoData().GetVarWGapMa();
-      // loop over ALL Dofs of the master side
-      for (CII p=varWGapMaMap.begin();p!=varWGapMaMap.end();++p)
-      {
-        int mGid = (p->second).first;
-
-        CoNode* mnode = dynamic_cast<CoNode*>(idiscret_->gNode(mGid));
-        if (!mnode) dserror("ERROR: Cannot find master node with gid %",mGid);
-        // Check if master node
-        if (mnode->IsSlave()) dserror("ERROR: This has to be a master node!");
-
-        // Switch from the global DofId to the local DofId
-        int mDof = ((p->first)-mnode->Dofs()[0])%Dim();
-
-        double xm = mnode->xspatial()[mDof];
-
-        double val = 0.0;
-        // Lin(kappa)
-        if (completeLin)
-        {
-          val = (p->second).second*xm*kappainv*kappainv;
-          for (CI pp=kappaLinMap.begin();pp!=kappaLinMap.end();++pp)
-            aWGapLinMap[pp->first] -= (pp->second)*val;
-        }
-
-        // Lin(varWGapLinMa)
-        std::map<int,double>& varWGapLinMaMap = cnode->CoData().GetVarWGapLinMa()[p->first];
-        for (CI pp=varWGapLinMaMap.begin();pp!=varWGapLinMaMap.end();++pp)
-        {
-          val = (pp->second)*xm;
-          wGapLinMap[pp->first]  += val;
-          aWGapLinMap[pp->first] += val*kappainv;
-        }
-
-        // Lin(xm)
-        wGapLinMap[p->first]  += (p->second).second;
-        aWGapLinMap[p->first] += (p->second).second*kappainv;
-      }
-    }
-    else
+    if (cnode->AugData().GetKappa() == 1.0e12)
       dserror("ERROR: CONTACT::AugmentedInterface::AWGapLin(): kappa shouldn't be "
-          "equal 1.0e12 for active nodes!");
+        "equal 1.0e12 for active nodes!");
+
+    const std::map<int,double>& kappaLinMap  = cnode->AugData().GetKappaLin();
+
+    // Get std::map to save the linearization of the weighted gap
+    std::map<int,double>& wGapLinMap = cnode->AugData().GetWGapLin();
+    // Get std::map to save the linearization of the averaged weighted gap
+    std::map<int,double>& aWGapLinMap = cnode->AugData().GetAWGapLin();
+
+    // typedef of the constant map iterators
+    typedef std::map<int,double> ::const_iterator CI;
+    typedef std::map<int,std::pair<int,double> >::const_iterator CII;
+    typedef GEN::pairedvector<int,std::pair<int,double> >::const_iterator CIII;
+
+    // *** Slave side **************************************************
+    GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap = cnode->AugData().GetVarWGapSl();
+    // loop over ALL Dofs of the slave side
+    for (CIII p=varWGapSlMap.begin();p!=varWGapSlMap.end();++p)
+    {
+      int sGid = (p->second).first;
+
+      CoNode* snode = static_cast<CoNode*>(idiscret_->gNode(sGid));
+      if (!snode) dserror("ERROR: Cannot find slave node with gid %",sGid);
+      // Check if Slave node
+      if (!snode->IsSlave()) dserror("ERROR: This has to be a slave node!");
+
+      // Switch from the global DofId to the local DofId
+      int sDof  = ((p->first)-snode->Dofs()[0])%Dim();
+
+      const double xs = snode->xspatial()[sDof];
+
+      // Lin(kappa)
+      AddKappaLinToGapLinearization( kappaLinMap, xs, kappainv,
+          (p->second).second, 1.0, aWGapLinMap );
+
+      // Lin(varWGapLinSl)
+      std::map<int,double>& varWGapLinSlMap = cnode->AugData().GetVarWGapLinSl()[p->first];
+      for (CI pp=varWGapLinSlMap.begin();pp!=varWGapLinSlMap.end();++pp)
+      {
+        const double val = (pp->second)*xs;
+        wGapLinMap[pp->first]  -= val;
+        aWGapLinMap[pp->first] -= val*kappainv;
+      }
+
+      // Lin(xs)
+      wGapLinMap[p->first]  -= (p->second).second;
+      aWGapLinMap[p->first] -= (p->second).second*kappainv;
+    }
+
+    // *** Master side *************************************************
+    std::map<int,std::pair<int,double> >& varWGapMaMap = cnode->AugData().GetVarWGapMa();
+    // loop over ALL Dofs of the master side
+    for (CII p=varWGapMaMap.begin();p!=varWGapMaMap.end();++p)
+    {
+      int mGid = (p->second).first;
+
+      CoNode* mnode = dynamic_cast<CoNode*>(idiscret_->gNode(mGid));
+      if (!mnode) dserror("ERROR: Cannot find master node with gid %",mGid);
+      // Check if master node
+      if (mnode->IsSlave()) dserror("ERROR: This has to be a master node!");
+
+      // Switch from the global DofId to the local DofId
+      int mDof = ((p->first)-mnode->Dofs()[0])%Dim();
+
+      const double xm = mnode->xspatial()[mDof];
+
+      // Lin(kappa)
+      AddKappaLinToGapLinearization( kappaLinMap, xm, kappainv,
+          (p->second).second, -1.0, aWGapLinMap );
+
+
+      // Lin(varWGapLinMa)
+      std::map<int,double>& varWGapLinMaMap = cnode->AugData().GetVarWGapLinMa()[p->first];
+      for (CI pp=varWGapLinMaMap.begin();pp!=varWGapLinMaMap.end();++pp)
+      {
+        const double val = (pp->second)*xm;
+        wGapLinMap[pp->first]  += val;
+        aWGapLinMap[pp->first] += val*kappainv;
+      }
+
+      // Lin(xm)
+      wGapLinMap[p->first]  += (p->second).second;
+      aWGapLinMap[p->first] += (p->second).second*kappainv;
+    }
+
   }
 
   return;
@@ -1031,58 +1182,76 @@ void CONTACT::AugmentedInterface::AWGapLin(bool completeLin)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleAugContactPotential(
-    double& conPot,
-    double& augConPot,
-    Epetra_Vector& cnVec)
+void CONTACT::AUG::Interface::AddKappaLinToGapLinearization(
+    const std::map<int,double>& kappaLinMap,
+    double x,
+    double kappainv,
+    double varWGap,
+    double scale,
+    std::map<int,double>& aWGapLinMap ) const
+{
+  const double val = scale * varWGap * x * kappainv * kappainv;
+  for ( std::map<int,double> ::const_iterator pp=kappaLinMap.begin();
+        pp!=kappaLinMap.end(); ++pp )
+    aWGapLinMap[pp->first] += (pp->second)*val;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
+    const Epetra_Vector& cnVec,
+    double& zn_gn,
+    double& gn_gn,
+    double& zn_zn,
+    double& zt_zt ) const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  // get cn
-//  double cn     = IParams().get<double>("SEMI_SMOOTH_CN");
-//  double cn_inv = 1.0/cn;
-  double ct_inv = 1.0/IParams().get<double>("SEMI_SMOOTH_CT");
+  double ct_inv = 1.0 / ct_;
 
   // *** Active part *************************************************
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  const int nummynodes = activenodes_->NumMyElements();
+  int * mynodegids = activenodes_->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = activenodes_->GID(i);
+    const int gid = mynodegids[i];
+
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: Node ownership inconsistency!");
 
-    double cn = cnVec[cnVec.Map().LID(gid)];
+    const double cn = cnVec[cnVec.Map().LID(gid)];
 
-    double wgap = cnode->CoData().GetWGap();
-    if (wgap==1.0e12) dserror("ERROR: WGap is equal 1.e12 for a active node! (node-id: %d)",gid);
-    double kappa = cnode->CoData().Kappa();
-    if (kappa==1.0e12) dserror("ERROR: Kappa is equal 1.e12 for a active node! (node-id: %d)",gid);
-    double augA = cnode->CoData().GetAugA();
+    const double wgap = cnode->AugData().GetWGap();
+    dsassert( wgap!=1.0e12, "ERROR: WGap is equal 1.e12 for a active node!" );
+
+    const double kappa = cnode->AugData().GetKappa();
+    dsassert( kappa!=1.0e12, "ERROR: Kappa is equal 1.e12 for a active node! (node-id: %d)" );
+
+    const double augA = cnode->AugData().GetAugA();
 
     // get the Lagrange multiplier
-    double* lm  = cnode->MoData().lm();
+    const double* lm  = cnode->MoData().lm();
 
     // *** ACTIVE - NORMAL DIRECTION ***
     if (wgap != 0.0)
     {
-      // ** - (zn_i * awgap_i * A_i) **
-      conPot -= wgap*lm[0];
-      // ** - (zn_i * awgap_i * A_i - cn/2 * awgap * awgap * A_i) **
-      augConPot -= wgap*lm[0];
-      augConPot += 0.5*cn*wgap*wgap/kappa;
+      // ** zn_i * awgap_i * A_i **
+      zn_gn += wgap*lm[0];
+      // ** cn/2 * awgap * awgap * A_i **
+      gn_gn += 0.5 * cn * wgap * wgap / kappa;
     }
+
     // *** ACTIVE - TANGENTIAL DIRECTION ***
     for (int d=1;d<Dim();++d)
     {
-      // ** - 1/(ct) * zt_i^T*zt_i * A_i **
-      conPot -= ct_inv*lm[d]*lm[d]*augA;
-      // ** - 1/(2*ct) * zt_i^T*zt_i * A_i **
-      augConPot -= 0.5*ct_inv*lm[d]*lm[d]*augA;
+      // ** 1/(ct) * zt_i^T*zt_i * A_i **
+      zt_zt += ct_inv * lm[d] * lm[d] * augA;
     }
   }
 
@@ -1095,28 +1264,25 @@ void CONTACT::AugmentedInterface::AssembleAugContactPotential(
   {
     int gid = augInactiveSlaveNodes->GID(i);
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: Node ownership inconsistency!");
 
-    double cn_inv = 1/cnVec[cnVec.Map().LID(gid)];
-    double augA = cnode->CoData().GetAugA();
+    const double cn_inv = 1/cnVec[cnVec.Map().LID(gid)];
+    const double augA = cnode->AugData().GetAugA();
 
     // get the lagrange multiplier
-    double* lm  = cnode->MoData().lm();
+    const double* lm  = cnode->MoData().lm();
 
     // *** INACTIVE - NORMAL DIRECTION ***
-    // ** - 1/(cn) * zn_i * zn_i * A_i **
-    augConPot -= cn_inv*lm[0]*lm[0]*augA;
-    // ** - 1/(2*cn) * zn_i * zn_i * A_i **
-    augConPot -= 0.5*cn_inv*lm[0]*lm[0]*augA;
+    // ** 1/(cn) * zn_i * zn_i * A_i **
+    zn_zn += cn_inv * lm[0] * lm[0] * augA;
+
     // *** INACTIVE - TANGENTIAL DIRECTION ***
-    // ** - 1/(2*ct) * zt_i^T*zt_i * A_i
     for (int d=1;d<Dim();++d)
     {
-      conPot -= ct_inv*lm[d]*lm[d]*augA;
-      augConPot -= 0.5*ct_inv*lm[d]*lm[d]*augA;
+      // ** 1/(ct) * zt_i^T*zt_i * A_i **
+      zt_zt += ct_inv * lm[d] * lm[d] * augA;
     }
   }
 
@@ -1125,16 +1291,20 @@ void CONTACT::AugmentedInterface::AssembleAugContactPotential(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::AugmentedInterface::BuildActiveSet(bool init)
+bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
 {
   // define local variables
-  std::vector<int> mynodegids(0);
-  std::vector<int> mydofgids(0);
+  std::vector<int> myactivenodegids(0);
+  std::vector<int> myactivedofgids(0);
 
   // loop over all slave nodes
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  const int nummynodes = snoderowmap_->NumMyElements();
+  int * mynodegids = snoderowmap_->MyGlobalElements();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = snoderowmap_->GID(i);
+    const int gid = mynodegids[i];
+
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
     if (!cnode) dserror("ERROR: Cannot find node with gid %i",gid);
 
@@ -1164,13 +1334,13 @@ bool CONTACT::AugmentedInterface::BuildActiveSet(bool init)
 
       // check if node is initially active or, if initialization with nodal, gap,
       // the gap is smaller than the prescribed value
-      if (cnode->IsInitActive() or (initcontactbygap and cnode->CoData().GetWGap() < initcontactval))
+      if (cnode->IsInitActive() or (initcontactbygap and cnode->AugData().GetWGap() < initcontactval))
       {
         cnode->Active()=true;
-        mynodegids.push_back(cnode->Id());
+        myactivenodegids.push_back(cnode->Id());
 
         for (int j=0;j<numdof;++j)
-          mydofgids.push_back(cnode->Dofs()[j]);
+          myactivedofgids.push_back(cnode->Dofs()[j]);
       }
     }
     // -------------------------------------------------------------------
@@ -1181,17 +1351,19 @@ bool CONTACT::AugmentedInterface::BuildActiveSet(bool init)
       // check if node is active
       if (cnode->Active())
       {
-        mynodegids.push_back(cnode->Id());
+        myactivenodegids.push_back(cnode->Id());
 
         for (int j=0;j<numdof;++j)
-          mydofgids.push_back(cnode->Dofs()[j]);
+          myactivedofgids.push_back(cnode->Dofs()[j]);
       }
     }
   } // end loop over all slave nodes
 
   // create interface local augmented active node map and augmented active dof map
-  activenodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)mynodegids.size(),&mynodegids[0],0,Comm()));
-  activedofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)mydofgids.size(),&mydofgids[0],0,Comm()));
+  activenodes_ = Teuchos::rcp(new Epetra_Map(-1,(int)myactivenodegids.size(),
+      &myactivenodegids[0],0,Comm()));
+  activedofs_  = Teuchos::rcp(new Epetra_Map(-1,(int)myactivedofgids.size(),
+      &myactivedofgids[0],0,Comm()));
 
   SplitAugActiveDofs();
 
@@ -1200,7 +1372,7 @@ bool CONTACT::AugmentedInterface::BuildActiveSet(bool init)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::SplitAugActiveDofs()
+void CONTACT::AUG::Interface::SplitAugActiveDofs()
 {
   // get out of here if augmented active set is empty
   if (activenodes_==Teuchos::null or
@@ -1225,8 +1397,12 @@ void CONTACT::AugmentedInterface::SplitAugActiveDofs()
   for (int i=0;i<activenodes_->NumMyElements();++i)
   {
     int gid = activenodes_->GID(i);
-    CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find slave node with gid %",gid);
+
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node)
+      dserror("ERROR: Cannot find slave node with gid %",gid);
+
+    CoNode* cnode = static_cast<CoNode*>( node );
 
     // add first dof to nMap
     myNGids[countN] = cnode->Dofs()[0];
@@ -1262,7 +1438,7 @@ void CONTACT::AugmentedInterface::SplitAugActiveDofs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::SplitSlaveDofs()
+void CONTACT::AUG::Interface::SplitSlaveDofs()
 {
   // get out of here if augmented active set is empty
   if (snoderowmap_==Teuchos::null or
@@ -1324,34 +1500,39 @@ void CONTACT::AugmentedInterface::SplitSlaveDofs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::AssembleAugAVector(
+void CONTACT::AUG::Interface::AssembleAugAVector(
     Epetra_Vector& augAVec,
-    Epetra_Vector& kappaVec)
+    Epetra_Vector& kappaVec) const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
 
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  const int nummynodes = snoderowmap_->NumMyElements();
+  int * mynodegids = snoderowmap_->MyGlobalElements();
+
+  double* augA_values = augAVec.Values();
+  double* kappa_values = kappaVec.Values();
+
+  for ( int i=0; i<nummynodes; ++i )
   {
-    int gid = snoderowmap_->GID(i);
+    const int gid = mynodegids[i];
+
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-    std::vector<int> rgid(1,gid);
-    std::vector<int> rowner(1,cnode->Owner());
+    CoNode* cnode = static_cast<CoNode*>(node);
 
     // *** augmented Area ***
-    double augA  = cnode->CoData().GetAugA();
+    const double augA  = cnode->AugData().GetAugA();
 
     if (augA > 0.0)
     {
-      Epetra_SerialDenseVector augAV(1);
-      augAV[0] = augA;
+      const int lid = augAVec.Map().LID( gid );
+      if ( lid == -1 )
+        dserror("Sparse vector augAVec does not have global row %d", gid);
 
-      LINALG::Assemble(augAVec,augAV,rgid,rowner);
+      augA_values[ lid ] += augA;
     }
     else
       dserror("ERROR: The augmented nodal area shouldn't be equal/lower than zero! "
@@ -1360,14 +1541,15 @@ void CONTACT::AugmentedInterface::AssembleAugAVector(
     // *** kappa ***
     if (cnode->Active())
     {
-      double kappa  = cnode->CoData().GetKappa();
+      const double kappa  = cnode->AugData().GetKappa();
 
       if (kappa > 0.0)
       {
-        Epetra_SerialDenseVector kappaV(1);
-        kappaV[0] = kappa;
+        const int lid = kappaVec.Map().LID( gid );
+        if ( lid == -1 )
+          dserror("Sparse vector kappaVec does not have global row %d", gid);
 
-        LINALG::Assemble(kappaVec,kappaV,rgid,rowner);
+        kappa_values[ lid ] += kappa;
       }
       else
         dserror("ERROR: The weighted area kappa shouldn't be equal/lower than zero! "
@@ -1377,3 +1559,49 @@ void CONTACT::AugmentedInterface::AssembleAugAVector(
 
   return;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template < class T >
+void CONTACT::AUG::Interface::AssembleMapIntoMatrix(
+    int row,
+    double scal,
+    const T& values,
+    LINALG::SparseMatrix& mat,
+    double threshold ) const
+{
+  dsassert( threshold >= 0.0, "The threshold value has to be positive!" );
+
+  for ( typename T::const_iterator pp = values.begin();
+        pp != values.end(); ++pp )
+  {
+    double val = scal * ( pp->second );
+    const int col = pp->first;
+
+    if ( std::abs( val ) < threshold )
+      continue;
+
+    switch ( mat.GetMatrixtype() )
+    {
+      case LINALG::SparseMatrix::FE_MATRIX:
+        mat.FEAssemble( val, row, col );
+        break;
+      case LINALG::SparseMatrix::CRS_MATRIX:
+        mat.Assemble( val, row, col );
+        break;
+    }
+  }
+}
+
+template void CONTACT::AUG::Interface::AssembleMapIntoMatrix< GEN::pairedvector<int,double> >(
+    int row,
+    double scal,
+    const GEN::pairedvector<int,double>& values,
+    LINALG::SparseMatrix& mat,
+    double threshold ) const;
+template void CONTACT::AUG::Interface::AssembleMapIntoMatrix< std::map<int,double> >(
+    int row,
+    double scal,
+    const std::map<int,double>& values,
+    LINALG::SparseMatrix& mat,
+    double threshold ) const;

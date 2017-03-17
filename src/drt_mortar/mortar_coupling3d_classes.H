@@ -338,14 +338,14 @@ public:
   \brief Evaluate Jacobian determinant for parameter space integration
 
   */
-  virtual double Jacobian(double* xi);
+  virtual double Jacobian();
 
   /*!
   \brief Compute Jacobian determinant derivative
          Note that this is a linearization with respect to the intcell
          vertices, which themselves have to be linearized later, of course!
   */
-  virtual void DerivJacobian(double* xi, GEN::pairedvector<int,double>& derivjac);
+  virtual void DerivJacobian(GEN::pairedvector<int,double>& derivjac);
 
   //@}
 

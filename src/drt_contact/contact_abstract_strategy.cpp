@@ -93,7 +93,8 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       inttime_(0.0),
       ivel_(0),
       stype_(INPAR::CONTACT::solution_vague),
-      constr_direction_(INPAR::CONTACT::constr_vague)
+      constr_direction_(INPAR::CONTACT::constr_vague),
+      partype_(INPAR::MORTAR::parredist_none)
 {
   return;
 }
@@ -104,10 +105,10 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
-    Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+    const Teuchos::ParameterList& params,
+    const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interface,
     int dim,
-    Teuchos::RCP<const Epetra_Comm> comm,
+    const Teuchos::RCP<const Epetra_Comm>& comm,
     double alphaf,
     int maxdof)
     : MORTAR::StrategyBase(data_ptr,DofRowMap,NodeRowMap,params,dim,
@@ -181,6 +182,8 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
   data_ptr_->ConstrDirection() =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>
       (params,"CONSTRAINT_DIRECTIONS");
+  data_ptr_->ParType() = DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>
+      (params,"PARALLEL_REDIST");
 
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)
@@ -2901,7 +2904,7 @@ void CONTACT::CoAbstractStrategy::Reset(
     const Epetra_Vector& xnew)
 {
   SetState(MORTAR::state_new_displacement, dispnp);
-  ResetLagrangeMultipliers(cparams,xnew);
+  ResetLagrangeMultipliers( cparams, xnew );
 
   return;
 }
@@ -2910,7 +2913,8 @@ void CONTACT::CoAbstractStrategy::Reset(
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::Evaluate(
     CONTACT::ParamsInterface& cparams,
-    const std::vector<Teuchos::RCP<const Epetra_Vector> >& eval_vec)
+    const std::vector<Teuchos::RCP<const Epetra_Vector> >* eval_vec,
+    const std::vector<Teuchos::RCP<Epetra_Vector> >* eval_vec_mutable )
 {
   PreEvaluate(cparams);
 
@@ -2944,12 +2948,14 @@ void CONTACT::CoAbstractStrategy::Evaluate(
     // -------------------------------------------------------------------
     case MORTAR::eval_reset:
     {
-      if (eval_vec.size()!=2)
+      if ( not eval_vec )
+        dserror( "Missing evaluation vectors!" );
+      if (eval_vec->size()!=2)
         dserror("The \"MORTAR::eval_reset\" action expects \n"
             "exactly 2 evaluation vector pointers! But you \n"
-            "passed %i vector pointers!",eval_vec.size());
-      const Epetra_Vector& dispnp = *(eval_vec[0]);
-      const Epetra_Vector& xnew   = *(eval_vec[1]);
+            "passed %i vector pointers!",eval_vec->size());
+      const Epetra_Vector& dispnp = *((*eval_vec)[0]);
+      const Epetra_Vector& xnew   = *((*eval_vec)[1]);
       Reset(cparams,dispnp, xnew);
 
       break;
@@ -2959,20 +2965,64 @@ void CONTACT::CoAbstractStrategy::Evaluate(
     // -------------------------------------------------------------------
     case MORTAR::eval_recover:
     {
-      if (eval_vec.size()!=3)
+      if ( not eval_vec )
+        dserror( "Missing evaluation vectors!" );
+
+      if (eval_vec->size()!=3)
         dserror("The \"MORTAR::eval_recover\" action expects \n"
             "exactly 3 evaluation vector pointers! But you \n"
-            "passed %i vector pointers!",eval_vec.size());
-      Teuchos::RCP<const Epetra_Vector> xold_ptr = eval_vec[0];
+            "passed %i vector pointers!",eval_vec->size());
+
+      const Teuchos::RCP<const Epetra_Vector>& xold_ptr = (*eval_vec)[0];
       if (xold_ptr.is_null() or !xold_ptr.is_valid_ptr())
         dserror("xold_ptr is undefined!");
-      Teuchos::RCP<const Epetra_Vector> dir_ptr  = eval_vec[1];
+
+      const Teuchos::RCP<const Epetra_Vector>& dir_ptr  = (*eval_vec)[1];
       if (dir_ptr.is_null() or !dir_ptr.is_valid_ptr())
         dserror("dir_ptr is undefined!");
-      Teuchos::RCP<const Epetra_Vector> xnew_ptr = eval_vec[2];
+
+      const Teuchos::RCP<const Epetra_Vector>& xnew_ptr = (*eval_vec)[2];
       if (xnew_ptr.is_null() or !xnew_ptr.is_valid_ptr())
         dserror("xnew_ptr is undefined!");
+
       RecoverState(cparams,*xold_ptr,*dir_ptr,*xnew_ptr);
+
+      break;
+    }
+    case MORTAR::eval_run_pre_compute_x:
+    {
+      if ( not eval_vec )
+        dserror( "Missing constant evaluation vectors!" );
+      if ( not eval_vec_mutable )
+        dserror( "Missing mutable evaluation vectors!" );
+
+      if (eval_vec->size()!=1)
+        dserror("The \"MORTAR::eval_augment_direction\" action expects \n"
+            "exactly 1 constant evaluation vector pointer! But you \n"
+            "passed %i vector pointers!",eval_vec->size());
+
+      if (eval_vec_mutable->size()!=1)
+        dserror("The \"MORTAR::eval_augment_direction\" action expects \n"
+            "exactly 1 mutable evaluation vector pointer! But you \n"
+            "passed %i vector pointers!",eval_vec->size());
+
+      const Teuchos::RCP<const Epetra_Vector>& xold_ptr = eval_vec->front();
+      if ( xold_ptr.is_null() )
+        dserror( "Missing xold vector!" );
+
+      const Teuchos::RCP<Epetra_Vector>& dir_mutable_ptr =
+          eval_vec_mutable->front();
+      if ( dir_mutable_ptr.is_null() )
+        dserror( "Missing dir_mutable vector!" );
+
+      RunPreComputeX( cparams, *xold_ptr, *dir_mutable_ptr );
+
+      break;
+    }
+    case MORTAR::eval_run_post_iterate:
+    {
+      RunPostIterate( cparams );
+
       break;
     }
     // -------------------------------------------------------------------
@@ -3028,6 +3078,26 @@ void CONTACT::CoAbstractStrategy::RecoverState(
 {
   dserror("Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::RunPreComputeX(
+    const CONTACT::ParamsInterface& cparams,
+    const Epetra_Vector& xold,
+    Epetra_Vector& dir_mutable )
+{
+  // do nothing
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::RunPostIterate(
+    const CONTACT::ParamsInterface& cparams )
+{
+  // do nothing
+  return;
 }
 
 /*----------------------------------------------------------------------*

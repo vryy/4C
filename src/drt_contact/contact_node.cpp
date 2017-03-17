@@ -40,7 +40,6 @@ activeold_(false),
 derivn_(0,0),    //init deriv normal to length 0 with 0 entries per direction
 derivtxi_(0,0),  //init deriv txi    to length 0 with 0 entries per direction
 derivteta_(0,0), //init deriv teta   to length 0 with 0 entries per direction
-varWGapSl_(0),
 alpha_(0),
 kappa_(1.0),
 Wc_lm_(0),
@@ -96,6 +95,86 @@ void CONTACT::CoNodeDataContainer::Unpack(std::vector<char>::size_type& position
   DRT::ParObject::ExtractfromPack(position,data,kappa_);
   // activeold_
   activeold_ = DRT::ParObject::ExtractInt(position,data);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+CONTACT::AUG::NodeDataContainer::NodeDataContainer( CoNode& parentNode)
+    : maxNumMasterElements_( -1 ),
+      kappa_( 1.0e12 ),
+      wGap_( 1.0e12 ),
+      augA_( 1.0e12 ),
+      varWGapSl_( 0 ),
+      augALin_( 0 ),
+      parentNode_( parentNode )
+{
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+CONTACT::AUG::NodeDataContainer::NodeDataContainer( CoNode& parentNode,
+    int maxNumMasterElements )
+    : maxNumMasterElements_( maxNumMasterElements ),
+      kappa_( 1.0e12 ),
+      wGap_( 1.0e12 ),
+      augA_( 1.0e12 ),
+      varWGapSl_( 0 ),
+      augALin_( 0 ),
+      parentNode_( parentNode )
+{
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::NodeDataContainer::Setup()
+{
+  if ( maxNumMasterElements_ == -1 )
+    dserror( "maxNumMasterElements_ must be initialized!" );
+
+  const int linsize = parentNode_.GetLinsize();
+  const int dentries = parentNode_.GetNumDentries();
+
+  augALin_.resize( linsize );
+  varWGapSl_.resize( dentries );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::NodeDataContainer::Pack(DRT::PackBuffer& data) const
+{
+  // add maxNumMasterElements
+  DRT::ParObject::AddtoPack(data,maxNumMasterElements_);
+  // add kappa_
+  DRT::ParObject::AddtoPack(data,kappa_);
+  // add grow_
+  DRT::ParObject::AddtoPack(data,wGap_);
+  // add augA_
+  DRT::ParObject::AddtoPack(data,augA_);
+
+  // no need to pack derivs_
+  // (these will evaluated new anyway)
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::NodeDataContainer::Unpack(
+    std::vector<char>::size_type& position,
+    const std::vector<char>& data)
+{
+  // maxNumMasterElements
+  DRT::ParObject::ExtractfromPack(position,data,maxNumMasterElements_);
+  // kappa_
+  DRT::ParObject::ExtractfromPack(position,data,kappa_);
+  // grow_
+  DRT::ParObject::ExtractfromPack(position,data,wGap_);
+  // augA_
+  DRT::ParObject::ExtractfromPack(position,data,augA_);
 
   return;
 }
@@ -213,14 +292,23 @@ void CONTACT::CoNodeTSIDataContainer::Clear()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoNode::CoNode(int id, const double* coords, const int owner,
-                        const int numdof, const std::vector<int>& dofs, const bool isslave,
-                        const bool initactive) :
-MORTAR::MortarNode(id,coords,owner,numdof,dofs,isslave),
-active_(false),
-initactive_(initactive),
-involvedm_(false),
-linsize_(0)   // length of linearization
+CONTACT::CoNode::CoNode(
+    int id,
+    const double* coords,
+    const int owner,
+    const int numdof,
+    const std::vector<int>& dofs,
+    const bool isslave,
+    const bool initactive)
+    : MORTAR::MortarNode(id,coords,owner,numdof,dofs,isslave),
+      active_(false),
+      initactive_(initactive),
+      involvedm_(false),
+      linsize_(0),   // length of linearization
+      codata_(Teuchos::null),
+      augdata_(Teuchos::null),
+      coporodata_(Teuchos::null),
+      cTSIdata_(Teuchos::null)
 {
 
   return;
@@ -229,11 +317,16 @@ linsize_(0)   // length of linearization
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoNode::CoNode(const CONTACT::CoNode& old) :
-MORTAR::MortarNode(old),
-active_(old.active_),
-initactive_(old.initactive_),
-involvedm_(false)
+CONTACT::CoNode::CoNode(const CONTACT::CoNode& old)
+    : MORTAR::MortarNode(old),
+      active_(old.active_),
+      initactive_(old.initactive_),
+      involvedm_(false),
+      linsize_(0),
+      codata_(Teuchos::null),
+      augdata_(Teuchos::null),
+      coporodata_(Teuchos::null),
+      cTSIdata_(Teuchos::null)
 {
   // not yet used and thus not necessarily consistent
   dserror("ERROR: CoNode copy-ctor not yet implemented");
@@ -302,6 +395,11 @@ void CONTACT::CoNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,hasdata);
   if (hasdata) codata_->Pack(data);
 
+  // add augdata_
+  bool hasdataaug = (augdata_!=Teuchos::null);
+  AddtoPack(data,hasdataaug);
+  if (hasdataaug) augdata_->Pack(data);
+
   // add porodata_
   bool hasdataporo = (coporodata_!=Teuchos::null);
   AddtoPack(data,hasdataporo);
@@ -354,6 +452,17 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
   {
     codata_ = Teuchos::null;
   }
+
+  // augdata_
+  bool hasdataaug = ExtractInt(position,data);
+  if (hasdataaug)
+  {
+    augdata_ = Teuchos::rcp( new CONTACT::AUG::NodeDataContainer( *this ));
+    augdata_->Unpack(position,data);
+    augdata_->Setup();
+  }
+  else
+    augdata_ = Teuchos::null;
 
   // porodata_
   bool hasdataporo = ExtractInt(position,data);
@@ -415,10 +524,10 @@ void CONTACT::CoNode::AddWGapValue(double& val)
     dserror("ERROR: AddWGapValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
-  if (CoData().GetWGap()==1.0e12) CoData().GetWGap()=0;
+  if (AugData().GetWGap()==1.0e12) AugData().GetWGap()=0;
 
   // add given value to wGap_
-  CoData().GetWGap()+=val;
+  AugData().GetWGap()+=val;
 
   return;
 }
@@ -493,10 +602,10 @@ void CONTACT::CoNode::AddKappaValue(double& val)
     dserror("ERROR: AddKappaValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
-  if (CoData().GetKappa()==1.0e12) CoData().GetKappa()=0;
+  if (AugData().GetKappa()==1.0e12) AugData().GetKappa()=0;
 
   // add given value to kappa_
-  CoData().GetKappa()+=val;
+  AugData().GetKappa()+=val;
 
   return;
 }
@@ -504,7 +613,7 @@ void CONTACT::CoNode::AddKappaValue(double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the variation of the weighted gap     hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddVarWGapSl(int& col, int& gid, double& val)
+void CONTACT::CoNode::AddVarWGapSl(int col, int gid, double val)
 {
   // check if this is a master node or slave boundary node
   if (!IsSlave())
@@ -513,8 +622,7 @@ void CONTACT::CoNode::AddVarWGapSl(int& col, int& gid, double& val)
     dserror("ERROR: AddVarWGapSl: function called for boundary node %i", Id());
 
    // add the pair (col,val) to the given row
-  GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap = CoData().GetVarWGapSl();
-  varWGapSlMap.resize(dentries_);
+  GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap = AugData().GetVarWGapSl();
   varWGapSlMap[col].first   = gid;
   varWGapSlMap[col].second += val;
 
@@ -524,7 +632,7 @@ void CONTACT::CoNode::AddVarWGapSl(int& col, int& gid, double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the variation of the weighted gap     hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddVarWGapMa(int& col, int& gid, double &val)
+void CONTACT::CoNode::AddVarWGapMa(int col, int gid, double val)
 {
   // check if this is a master node or slave boundary node
   if (!IsSlave())
@@ -533,7 +641,7 @@ void CONTACT::CoNode::AddVarWGapMa(int& col, int& gid, double &val)
     dserror("ERROR: AddVarWGapSl: function called for boundary node %i", Id());
 
    // add the pair (col,val) to the given column
-  std::map<int,std::pair<int,double> >& varWGapMaMap = CoData().GetVarWGapMa();
+  std::map<int,std::pair<int,double> >& varWGapMaMap = AugData().GetVarWGapMa();
   varWGapMaMap[col].first   = gid;
   varWGapMaMap[col].second += val;
 
@@ -543,7 +651,7 @@ void CONTACT::CoNode::AddVarWGapMa(int& col, int& gid, double &val)
 /*----------------------------------------------------------------------*
  | TODO                                                     Hofer 08/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddWcLm(const double& val)
+void CONTACT::CoNode::AddWcLm( double val )
 {
   // Notes:
   // - This is a adapted version of CONTACT::CoNode::AddgValue with changed variable.
@@ -573,7 +681,7 @@ void CONTACT::CoNode::AddWcLm(const double& val)
 /*----------------------------------------------------------------------*
  | TODO                                                     Hofer 08/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddWcSuLm(const int& col, const double& val)
+void CONTACT::CoNode::AddWcSuLm( int col, double val )
 {
   // Notes:
   // - This is a adapted version of MORTAR::MortarNode::AddDValue with changed variable.
@@ -605,7 +713,7 @@ void CONTACT::CoNode::AddWcSuLm(const int& col, const double& val)
 /*----------------------------------------------------------------------*
  | TODO                                                     Hofer 08/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddWcMuLm(const int& col, const double& val)
+void CONTACT::CoNode::AddWcMuLm( int col, double val )
 {
   // Notes:
   // - This is a adapted version of MORTAR::MortarNode::AddMValue with changed variable.
@@ -661,10 +769,6 @@ void CONTACT::CoNode::InitializeDataContainer()
 {
   // get maximum size of lin vectors
   linsize_ = 0;
-  for(int i=0;i<NumElement();++i)
-    for(int j=0;j<Elements()[i]->NumNode();++j)
-      linsize_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
-
   // get maximum size of nodal D-entries
   dentries_ = 0;
   std::set<int> sIdCheck;
@@ -672,10 +776,17 @@ void CONTACT::CoNode::InitializeDataContainer()
   for(int i=0;i<NumElement();++i)
   {
     const int* snodeIds = Elements()[i]->NodeIds();
+    const DRT::Node* const * nodes = Elements()[i]->Nodes();
     for(int j=0;j<Elements()[i]->NumNode();++j)
     {
+      const int numdof = Elements()[i]->NumDofPerNode(*(nodes[j]));
+
       check = sIdCheck.insert(snodeIds[j]);
-      if (check.second) dentries_ += Elements()[i]->NumDofPerNode(*(Elements()[i]->Nodes()[j]));
+      if (check.second)
+      {
+        dentries_ += numdof;
+      }
+      linsize_ += numdof;
     }
   }
 
@@ -692,6 +803,19 @@ void CONTACT::CoNode::InitializeDataContainer()
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::CoNode::InitializeAugDataContainer( int maxNumMasterEles )
+{
+  // Do it only, if the container has not been initialized, yet.
+  if ( augdata_.is_null() )
+  {
+    augdata_ = Teuchos::rcp( new CONTACT::AUG::NodeDataContainer( *this,
+        maxNumMasterEles ) );
+    augdata_->Setup();
+  }
 }
 
 /*-----------------------------------------------------------------------*

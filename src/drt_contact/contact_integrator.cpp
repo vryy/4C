@@ -56,7 +56,8 @@ wearshapefcn_(INPAR::WEAR::wear_shape_standard),
 sswear_(DRT::INPUT::IntegralValue<int>(imortar_,"SSWEAR")),
 wearcoeff_(-1.0),
 wearcoeffm_(-1.0),
-ssslip_(imortar_.get<double>("SSSLIP"))
+ssslip_(imortar_.get<double>("SSSLIP")),
+integrationtype_( DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE") )
 {
   // init gp
   InitializeGP(eletype);
@@ -1524,11 +1525,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   // the Gauss point loop
   if (cell->Shape()!=DRT::Element::tri3)
     dserror("only tri3 integration cells at the moment. See comment in the code");
-  double eta[2]={0.,0.};
-  double jac=cell->Jacobian(eta);
+
+  double jac=cell->Jacobian();
   // directional derivative of cell Jacobian
   GEN::pairedvector<int,double> jacintcellmap((nrow+ncol)*ndof);
-  cell->DerivJacobian(eta, jacintcellmap);
+  cell->DerivJacobian(jacintcellmap);
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -1726,12 +1727,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(
   // the Gauss point loop
   if (cell->Shape()!=DRT::Element::line2)
     dserror("only line2 integration cells for LTS");
-  double eta[2]={0.0 ,0.0};
-  double jac=cell->Jacobian(eta);
+
+  double jac=cell->Jacobian();
 
   // directional derivative of cell Jacobian
   GEN::pairedvector<int,double> jacintcellmap((nrow+ncolL)*ndof);
-  cell->DerivJacobian(eta, jacintcellmap);
+  cell->DerivJacobian(jacintcellmap);
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -2482,12 +2483,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
   // the Gauss point loop
   if (cell->Shape()!=DRT::Element::line2)
     dserror("only line2 integration cells for LTS");
-  double eta[2]={0.0 ,0.0};
-  const double jac=cell->Jacobian(eta);
+
+  const double jac=cell->Jacobian();
 
   // directional derivative of cell Jacobian
   GEN::pairedvector<int,double> jacintcellmap((nrowL+ncol)*ndof + linsize);
-  cell->DerivJacobian(eta, jacintcellmap);
+  cell->DerivJacobian(jacintcellmap);
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -3571,11 +3572,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   // the Gauss point loop
   if (cell->Shape()!=DRT::Element::tri3)
     dserror("only tri3 integration cells at the moment. See comment in the code");
-  double eta[2]={0.,0.};
-  double jac=cell->Jacobian(eta);
+
+  double jac=cell->Jacobian();
   // directional derivative of cell Jacobian
   GEN::pairedvector<int,double> jacintcellmap((nrow+ncol)*ndof);
-  cell->DerivJacobian(eta, jacintcellmap);
+  cell->DerivJacobian(jacintcellmap);
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -4773,8 +4774,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     // add derivatives of slave node normals
     for (int i=0;i<numsnode;++i)
     {
-      GEN::pairedvector<int,double>& nxmap_curr = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
-      GEN::pairedvector<int,double>& nymap_curr = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+      GEN::pairedvector<int,double>& nxmap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      GEN::pairedvector<int,double>& nymap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
       for (_CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
         dmap_sxia[p->first] -= valsxia[i]*fac_yslm_a*(p->second);
@@ -4851,8 +4852,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
     // add derivatives of slave node normals
     for (int i=0;i<numsnode;++i)
     {
-      GEN::pairedvector<int,double>& nxmap_curr = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
-      GEN::pairedvector<int,double>& nymap_curr = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+      GEN::pairedvector<int,double>& nxmap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+      GEN::pairedvector<int,double>& nymap_curr = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
       for (_CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
         dmap_sxib[p->first] -= valsxib[i]*fac_yslm_b*(p->second);
@@ -4876,7 +4877,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele,
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
                                     MORTAR::MortarElement& mele,
-                                    double& sxigp, double& mxigp,
+                                    double sxigp,
+                                    double mxigp,
                                     const GEN::pairedvector<int,double>& derivsxi,
                                     GEN::pairedvector<int,double>& derivmxi,
                                     int& linsize)
@@ -5024,8 +5026,8 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
 
   for (int i=0;i<numsnode;++i)
   {
-    GEN::pairedvector<int,double>& dmap_nxsl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& dmap_nysl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+    GEN::pairedvector<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+    GEN::pairedvector<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
 
     for (_CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
       dmap_nxsl_gp_mod[p->first] += valsxigp[i]*(p->second);
@@ -5096,10 +5098,10 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele,
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
                                       MORTAR::MortarElement& mele,
-                                      double* sxigp, double* mxigp,
+                                      const double* sxigp, const double* mxigp,
                                       const std::vector<GEN::pairedvector<int,double> >& derivsxi,
                                       std::vector<GEN::pairedvector<int,double> >& derivmxi,
-                                      double& alpha)
+                                      const double alpha)
 {
   //check for problem dimension
   if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
@@ -5175,9 +5177,9 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
 
   for (int i=0;i<numsnode;++i)
   {
-    GEN::pairedvector<int,double>& dmap_nxsl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& dmap_nysl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
-    GEN::pairedvector<int,double>& dmap_nzsl_i = dynamic_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[2];
+    GEN::pairedvector<int,double>& dmap_nxsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[0];
+    GEN::pairedvector<int,double>& dmap_nysl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[1];
+    GEN::pairedvector<int,double>& dmap_nzsl_i = static_cast<CONTACT::CoNode*>(smrtrnodes[i])->CoData().GetDerivN()[2];
 
     for (_CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
       dmap_nxsl_gp[p->first] += valsxigp[i]*(p->second);

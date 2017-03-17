@@ -1942,7 +1942,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::EvaluateShape(const double* xi,
     LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
-    const int& valdim, bool dualquad3d)
+    const int valdim, bool dualquad3d)
 {
   if (!xi)
     dserror("ERROR: EvaluateShape called with xi=NULL");
@@ -2186,9 +2186,12 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi,
  |  Evaluate Lagrange multiplier shape functions              popp 12/07|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::EvaluateShapeLagMult(
-    const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
-    LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
-    const int& valdim, bool boundtrafo)
+    const INPAR::MORTAR::ShapeFcn& lmtype,
+    const double* xi,
+    LINALG::SerialDenseVector& val,
+    LINALG::SerialDenseMatrix& deriv,
+    const int valdim,
+    bool boundtrafo)
 {
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none)
@@ -2680,7 +2683,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
 bool MORTAR::MortarElement::EvaluateShapeLagMultLin(
     const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi,
     LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
-    const int& valdim)
+    const int valdim)
 {
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none)
@@ -4339,8 +4342,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(
 /*----------------------------------------------------------------------*
  |  Evaluate 2nd derivative of shape functions                popp 05/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::Evaluate2ndDerivShape(const double* xi,
-    LINALG::SerialDenseMatrix& secderiv, const int& valdim)
+bool MORTAR::MortarElement::Evaluate2ndDerivShape(
+    const double* xi,
+    LINALG::SerialDenseMatrix& secderiv,
+    const int& valdim)
 {
   if (!xi)
     dserror("ERROR: Evaluate2ndDerivShape called with xi=NULL");

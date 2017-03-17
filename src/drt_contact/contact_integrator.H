@@ -72,6 +72,12 @@ public:
   {
   }
 
+  //! get specified integration type
+  inline enum INPAR::MORTAR::IntType IntegrationType() const
+  {
+    return integrationtype_;
+  }
+
   //! @name 2D and 3D integration methods
 
   /*!
@@ -225,7 +231,8 @@ public:
 
    */
   void DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-      double& sxigp, double& mxigp,
+      double sxigp,
+      double mxigp,
       const GEN::pairedvector<int, double>& derivsxi,
       GEN::pairedvector<int, double>& derivmxi,
       int& linsize);
@@ -236,10 +243,10 @@ public:
 
    */
   void DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-      double* sxigp, double* mxigp,
+      const double* sxigp, const double* mxigp,
       const std::vector<GEN::pairedvector<int, double> >& derivsxi,
       std::vector<GEN::pairedvector<int, double> >& derivmxi,
-      double& alpha);
+      const double alpha);
 
   /*!
    \brief Compute directional derivative of slave / master Gauss point
@@ -283,7 +290,7 @@ public:
    \brief Return coordinates of a specific GP in 1D/2D CElement
 
    */
-  double& Coordinate(int& gp, int dir)
+  double& Coordinate(int gp, int dir)
   {
     return coords_(gp, dir);
   }
@@ -292,7 +299,7 @@ public:
    \brief Return weight of a specific GP in 1D/2D CElement
 
    */
-  double& Weight(int& gp)
+  double& Weight(int gp)
   {
     return weights_[gp];
   }
@@ -1040,7 +1047,7 @@ protected:
    (dim_==2) and 2D integration (dim_==3) on the interface!
 
    */
-  virtual const int& Dim()
+  int Dim() const
   {
     return dim_;
   }
@@ -1077,6 +1084,10 @@ protected:
     double                                           wearcoeff_;   // wear coefficient
     double                                           wearcoeffm_;  // wear coefficient master
     double                                           ssslip_;      // fixed slip for steady state wear
+
+private:
+    /// integration type from the parameter-list
+    INPAR::MORTAR::IntType                           integrationtype_;
 
 }; // class CoIntegrator
 }  // namespace CONTACT

@@ -21,7 +21,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::AugFDCheckGP(
+void CONTACT::AUG::Strategy::AugFDCheckGP(
     CONTACT::ParamsInterface& cparams)
 {
 #ifdef CONTACTFD_KAPPA
@@ -61,7 +61,7 @@ void CONTACT::AugmentedLagrangeStrategy::AugFDCheckGP(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::AugFDCheckGlobal(
+void CONTACT::AUG::Strategy::AugFDCheckGlobal(
     CONTACT::ParamsInterface& cparams)
 {
   // *** linearization w.r.t. displ. *********************************
@@ -131,7 +131,7 @@ void CONTACT::AugmentedLagrangeStrategy::AugFDCheckGlobal(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::EvalFDCheckGlobalDispl(
+void CONTACT::AUG::Strategy::EvalFDCheckGlobalDispl(
     LINALG::SparseMatrix derivMatrix,
     Teuchos::RCP<Epetra_Vector>& rhsVector,
     CONTACT::ParamsInterface& cparams)
@@ -307,48 +307,54 @@ void CONTACT::AugmentedLagrangeStrategy::EvalFDCheckGlobalDispl(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::MultiplyElementwise(
+void CONTACT::AUG::MultiplyElementwise(
     const Epetra_Vector& source,
     const Epetra_Map& source2targetMap,
     Epetra_Vector& target,
-    const bool inverse) const
+    const bool inverse)
 {
   // consistency check
   if (source2targetMap.NumMyElements()!=target.Map().NumMyElements())
   {
+    const Epetra_Comm& comm = source.Comm();
     dserror("The number of local elements of the source2targetMap and the "
         "target.Map() have to be equal! \n"
         ".........................................................\n"
         "source2targetMap.NumMyElements() = %i on proc %i \n"
         "target.Map().NumMyElements() = %i on proc %i \n"
         ".........................................................\n",
-        source2targetMap.NumMyElements(),Comm().MyPID(),
-        target.Map().NumMyElements(),Comm().MyPID());
+        source2targetMap.NumMyElements(),comm.MyPID(),
+        target.Map().NumMyElements(),comm.MyPID());
   }
 
   // nothing to do, if the target map size is equal zero
   if (source2targetMap.NumGlobalElements()==0)
     return;
 
-  Epetra_Vector source_exp = Epetra_Vector(source2targetMap);
-  LINALG::Export(source,source_exp);
-  int error = 0;
-  error = source_exp.ReplaceMap(target.Map());
-  if (error) dserror("The source map couldn't be replaced by the target map! (error=%i)", error);
+  Teuchos::RCP<Epetra_Vector> source_exp_ptr =
+      LINALG::ExtractMyVector( source, source2targetMap );
+
+  Epetra_Vector& source_exp = *source_exp_ptr;
+  int error = source_exp.ReplaceMap(target.Map());
+
+  if (error)
+    dserror("The source map couldn't be replaced by the target map! (error=%i)",
+        error);
 
   if (inverse)
     error = target.ReciprocalMultiply(1.0,source_exp,target,0.0);
   else
     error = target.Multiply(1.0,source_exp,target,0.0);
 
-  if (error) dserror("The element-wise multiplication failed! (error=%i)",error);
+  if (error)
+    dserror("The element-wise multiplication failed! (error=%i)",error);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::RedistributeRowMap(
+void CONTACT::AUG::Strategy::RedistributeRowMap(
     const Epetra_Map& refMap,
     Epetra_Map& modMap)
 {

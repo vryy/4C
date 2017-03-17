@@ -181,7 +181,7 @@ void CONTACT::CoNitscheStrategy::SetParentState(const enum MORTAR::StateType& st
 
 void CONTACT::CoNitscheStrategy::Evaluate(
     CONTACT::ParamsInterface& cparams,
-    const std::vector<Teuchos::RCP<const Epetra_Vector> >& eval_vec)
+    const std::vector<Teuchos::RCP<const Epetra_Vector> >* eval_vec)
 {
   PreEvaluate(cparams);
   const enum MORTAR::ActionType& act = cparams.GetActionType();
@@ -193,7 +193,7 @@ void CONTACT::CoNitscheStrategy::Evaluate(
     Integrate(cparams);
     break;
   case MORTAR::eval_reset:
-    SetState(MORTAR::state_new_displacement, *(eval_vec[0])); break;
+    SetState(MORTAR::state_new_displacement, *((*eval_vec)[0])); break;
   case MORTAR::eval_recover: break;
   default: dserror("unknown action"); break;
   }

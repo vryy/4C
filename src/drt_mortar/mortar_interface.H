@@ -212,12 +212,13 @@ public:
   problem dimension. On interface level this corresponds to 1D interfaces
   (dim_==2) and 2D interfaces (dim_==3)!
   */
-  virtual const int& Dim() {return dim_;};
+  int Dim() const {return dim_;};
 
   /*!
   \brief Get interface contact parameter list
   */
   virtual Teuchos::ParameterList& IParams() {return imortar_;};
+  const Teuchos::ParameterList& IParams() const {return imortar_;};
 
   /*!
   \brief binning strategy for efficient ghosting

@@ -1121,7 +1121,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
     UTILS::dual_shape_function<distypeS>(lmval,sxi,sele);
 
     // evaluate the integration cell Jacobian
-    double jac = cell->Jacobian(eta);
+    double jac = cell->Jacobian();
 
     // compute segment D/M matrix ****************************************
     // standard shape functions

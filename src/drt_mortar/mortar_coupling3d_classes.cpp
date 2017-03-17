@@ -763,7 +763,7 @@ bool MORTAR::IntCell::EvaluateShape(const double* xi,
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian determinant (IntCell)                   popp 11/08|
  *----------------------------------------------------------------------*/
-double MORTAR::IntCell::Jacobian(double* xi)
+double MORTAR::IntCell::Jacobian()
 {
   double jac = 0.0;
 
@@ -782,7 +782,7 @@ double MORTAR::IntCell::Jacobian(double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det. AuxPlane     popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::IntCell::DerivJacobian(double* xi, GEN::pairedvector<int,double>& derivjac)
+void MORTAR::IntCell::DerivJacobian(GEN::pairedvector<int,double>& derivjac)
 {
   // define iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;

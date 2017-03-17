@@ -184,9 +184,9 @@ class StrategyBase : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
         const Teuchos::RCP<MORTAR::StratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap,
         const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params,
+        const Teuchos::ParameterList& params,
         int dim,
-        Teuchos::RCP<const Epetra_Comm> comm,
+        const Teuchos::RCP<const Epetra_Comm>& comm,
         double alphaf,
         int maxdof);
 

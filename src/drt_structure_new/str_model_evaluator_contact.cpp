@@ -142,7 +142,7 @@ void STR::MODELEVALUATOR::Contact::Reset(const Epetra_Vector& x)
   eval_vec[1] = Teuchos::rcpFromRef(x);
   EvalContact().SetActionType(MORTAR::eval_reset);
   // reset displacement state and lagrange multiplier values
-  Strategy().Evaluate(EvalData().Contact(),eval_vec);
+  Strategy().Evaluate(EvalData().Contact(),&eval_vec);
 }
 
 /*----------------------------------------------------------------------*
@@ -399,7 +399,7 @@ void STR::MODELEVALUATOR::Contact::RecoverState(
   eval_vec[1] = Teuchos::rcpFromRef(dir);
   eval_vec[2] = Teuchos::rcpFromRef(xnew);
   EvalContact().SetActionType(MORTAR::eval_recover);
-  Strategy().Evaluate(EvalData().Contact(),eval_vec);
+  Strategy().Evaluate(EvalData().Contact(),&eval_vec);
   return;
 }
 
@@ -631,8 +631,8 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(
   #endif //CONTACTFORCEOUTPUT
 
   // Evaluate the interface forces for the augmented Lagrange formulation
-  const CONTACT::AugmentedLagrangeStrategy* aug_strat_ptr =
-      dynamic_cast<const CONTACT::AugmentedLagrangeStrategy*>(&Strategy());
+  const CONTACT::AUG::Strategy* aug_strat_ptr =
+      dynamic_cast<const CONTACT::AUG::Strategy*>(&Strategy());
   if (aug_strat_ptr != NULL)
   {
     Teuchos::RCP<Epetra_Vector> augfs_lm = Teuchos::rcp(new Epetra_Vector(*problemdofs));

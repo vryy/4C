@@ -1872,7 +1872,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     UTILS::EvaluateShape_Displ(mxi, mval,mele, false);
 
     // evaluate the integration cell Jacobian
-    double jac = cell->Jacobian(eta);
+    double jac = cell->Jacobian();
 
     // compute cell D/M matrix *******************************************
     GP_DM(sele,mele,lmval,sval,mval,jac,wgt,nrow,ncol,ndof,bound,comm);
@@ -2136,7 +2136,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
     UTILS::EvaluateShape_Displ(pmxi, mval, mele, false);
 
     // evaluate the integration cell Jacobian
-    double jac = cell->Jacobian(eta);
+    double jac = cell->Jacobian();
 
     // compute cell D/M matrix *******************************************
     GP_3D_DM_Quad(sele, mele, sintele, lmval, lmintval, sval, mval, jac, wgt,

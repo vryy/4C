@@ -802,15 +802,17 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
     // create the desired interface object
     // ------------------------------------------------------------------------
     Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
-    if (stype==INPAR::CONTACT::solution_augmented)
-       newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,
-           Comm(),Dim(),icparams,isself[0],redundant));
-    else if (stype == INPAR::CONTACT::solution_xcontact)
+    if ( stype==INPAR::CONTACT::solution_augmented )
+    {
+       newinterface = Teuchos::rcp(new CONTACT::AUG::Interface( groupid1,
+           Comm(), Dim(), icparams, isself[0], redundant ) );
+    }
+    else if ( stype == INPAR::CONTACT::solution_xcontact )
     {
       icparams.set<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> >(
-          "ParentDiscretPair",parent_dis_pair);
-      newinterface = Teuchos::rcp(new XCONTACT::Interface(groupid1, Comm(),
-          Dim(), icparams, isself[0], redundant));
+          "ParentDiscretPair", parent_dis_pair );
+      newinterface = Teuchos::rcp( new XCONTACT::Interface( groupid1, Comm(),
+          Dim(), icparams, isself[0], redundant ) );
     }
     else if(wlaw!=INPAR::WEAR::wear_none)
       newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),Dim(),
@@ -1385,8 +1387,8 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   }
   else if (stype == INPAR::CONTACT::solution_augmented)
   {
-    data_ptr = Teuchos::rcp(new CONTACT::AugStratDataContainer());
-    strategy_ptr = Teuchos::rcp(new AugmentedLagrangeStrategy(
+    data_ptr = Teuchos::rcp(new AUG::DataContainer());
+    strategy_ptr = Teuchos::rcp(new AUG::Strategy(
         data_ptr,
         Discret().DofRowMap(),
         Discret().NodeRowMap(),

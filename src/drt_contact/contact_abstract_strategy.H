@@ -298,43 +298,43 @@ public:
 
   //! return time step index at \f$t_{n+1}\f$
   int& StepNp() { return stepnp_; };
-  const int& StepNp() const { return stepnp_;};
+  int StepNp() const { return stepnp_;};
 
   //! return non-linear (Newton) iteration index
   int& NlnIter() { return iter_; };
-  const int& NlnIter() const { return iter_; };
+  int NlnIter() const { return iter_; };
 
   //! return nonlinear (Line Search) iteration index
   int& IterLS() { return iterls_; };
-  const int& IterLS() const { return iterls_; };
+  int IterLS() const { return iterls_; };
 
   //! return flag indicating global contact status
   bool& IsInContact() { return isincontact_; };
-  const bool& IsInContact() const { return isincontact_; };
+  bool IsInContact() const { return isincontact_; };
 
   //! return flag indicating global contact status of this time step (history)
   bool& WasInContact() { return wasincontact_; };
-  const bool& WasInContact() const { return wasincontact_; };
+  bool WasInContact() const { return wasincontact_; };
 
   //! return flag indicating global contact status of last time step
   bool& WasInContactLastTimeStep() { return wasincontactlts_; };
-  const bool& WasInContactLastTimeStep() const { return wasincontactlts_; };
+  bool WasInContactLastTimeStep() const { return wasincontactlts_; };
 
   //! return flag indicating potential self contact
   bool& IsSelfContact() { return isselfcontact_; };
-  const bool& IsSelfContact() const { return isselfcontact_; };
+  bool IsSelfContact() const { return isselfcontact_; };
 
   //! return flag for frictional contact
   bool& IsFriction() { return friction_; };
-  const bool& IsFriction() const { return friction_; };
+  bool IsFriction() const { return friction_; };
 
   //! return flag for regularized contact
   bool& IsRegularized() { return regularized_; };
-  const bool& IsRegularized() const { return regularized_; };
+  bool IsRegularized() const { return regularized_; };
 
   //! return flag indicating whether trafo should be applied
   bool& IsDualQuadSlave3D() { return dualquadslave3d_; };
-  const bool& IsDualQuadSlave3D() const { return dualquadslave3d_; };
+  bool IsDualQuadSlave3D() const { return dualquadslave3d_; };
 
   //! return transformation matrix T for dual quad 3D case
   Teuchos::RCP<LINALG::SparseMatrix>& TrafoPtr() { return trafo_; };
@@ -354,7 +354,7 @@ public:
 
   //! return integration time
   double& IntTime() { return inttime_; };
-  const double& IntTime() const { return inttime_; };
+  double IntTime() const { return inttime_; };
 
   //! return mean interface velocity
   std::vector<double>& MeanInterfaceVels() { return ivel_; };
@@ -362,12 +362,14 @@ public:
 
   //! return current used solving strategy
   INPAR::CONTACT::SolvingStrategy& SolType() { return stype_; };
-  const INPAR::CONTACT::SolvingStrategy& SolType() const { return stype_; };
+  INPAR::CONTACT::SolvingStrategy SolType() const { return stype_; };
 
   //! return direction in which the contact constraints are formulated
   INPAR::CONTACT::ConstraintDirection& ConstrDirection() { return constr_direction_; };
-  const INPAR::CONTACT::ConstraintDirection& ConstrDirection() const { return constr_direction_; };
+  INPAR::CONTACT::ConstraintDirection ConstrDirection() const { return constr_direction_; };
 
+  INPAR::MORTAR::ParRedist& ParType() { return partype_; };
+  INPAR::MORTAR::ParRedist ParType() const { return partype_; };
   //! @}
 
 private:
@@ -546,6 +548,10 @@ private:
 
   //! direction in which the contact constraints are formulated
   INPAR::CONTACT::ConstraintDirection constr_direction_;
+
+  //! parallel redistribution type
+  INPAR::MORTAR::ParRedist partype_;
+
 };  // class AbstractStratDataContainer
 
 
@@ -573,10 +579,10 @@ public:
       const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& stratData,
       const Epetra_Map* DofRowMap,
       const Epetra_Map* NodeRowMap,
-      Teuchos::ParameterList params,
-      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+      const Teuchos::ParameterList& params,
+      const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interface,
       int dim,
-      Teuchos::RCP<const Epetra_Comm> comm,
+      const Teuchos::RCP<const Epetra_Comm>& comm,
       double alphaf,
       int maxdof);
 
@@ -594,6 +600,12 @@ public:
 
   //! Destructor
   virtual ~CoAbstractStrategy() {};
+
+  //! return the current solution type
+  INPAR::CONTACT::SolvingStrategy Type() const
+  {
+    return stype_;
+  }
 
   //! @name Access methods
   //! @{
@@ -900,22 +912,16 @@ public:
   ;
 
   //! Return parallel redistribution status (yes or no)
-  bool ParRedist() const
+  inline bool ParRedist() const
   {
-    INPAR::MORTAR::ParRedist partype = DRT::INPUT::IntegralValue<
-        INPAR::MORTAR::ParRedist>(Params(), "PARALLEL_REDIST");
-    if (partype != INPAR::MORTAR::parredist_none)
-      return true;
-    else
-      return false;
+    return (Data().ParType() != INPAR::MORTAR::parredist_none);
   }
 
 
   //! Return specific parallel redistribution status
-  INPAR::MORTAR::ParRedist WhichParRedist()
+  inline INPAR::MORTAR::ParRedist WhichParRedist() const
   {
-    return DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(Params(),
-        "PARALLEL_REDIST");
+    return Data().ParType();
   }
 
   //! Return matrix T
@@ -968,12 +974,18 @@ public:
    *  \author hiermeier */
   virtual void Evaluate(CONTACT::ParamsInterface& cparams)
   {
-    std::vector<Teuchos::RCP<const Epetra_Vector> > eval_vec(0);
-    Evaluate(cparams,eval_vec);
+    Evaluate(cparams,NULL);
   }
   virtual void Evaluate(
       CONTACT::ParamsInterface& cparams,
-      const std::vector<Teuchos::RCP<const Epetra_Vector> >& eval_vec);
+      const std::vector<Teuchos::RCP<const Epetra_Vector> >* eval_vec)
+  {
+    Evaluate(cparams,eval_vec,NULL);
+  }
+  void Evaluate(
+      CONTACT::ParamsInterface& cparams,
+      const std::vector<Teuchos::RCP<const Epetra_Vector> >* eval_vec,
+      const std::vector<Teuchos::RCP<Epetra_Vector> >* eval_vec_mutable );
 
   /*! \brief Set current deformation state
 
@@ -1251,6 +1263,36 @@ protected:
       const Epetra_Vector& xold,
       const Epetra_Vector& dir,
       const Epetra_Vector& xnew);
+
+  /*! \brief run pre-compute x routine for contact
+   *
+   *  This method is called at the very beginning of the NOX::NLN::Group::ComputeX()
+   *  routine and gives you the opportunity to modify/augment the current Newton
+   *  direction.
+   *
+   *  \param cparams (in)    : parameter interface between the contact objects
+   *                           and the structural time integration
+   *  \param xold    (in)    : old solution vector of the NOX solver
+   *  \param dir     (in/out): current search direction (in general NOT the actual
+   *                           step, keep in mind that the step length can differ from 1.0)
+   *
+   *  \date 03/2017
+   *  \author hiermeier */
+  virtual void RunPreComputeX(
+      const CONTACT::ParamsInterface& cparams,
+      const Epetra_Vector& xold,
+      Epetra_Vector& dir_mutable );
+
+  /*! \brief run pre-compute x routine for contact
+   *
+   *  This routine is called in the end of a NOX::Solver::step() call.
+   *
+   *  \param cparams (in)    : parameter interface between the contact objects
+   *                           and the structural time integration
+   *
+   *  \author hiermeier \date 03/2017  */
+  virtual void RunPostIterate(
+      const CONTACT::ParamsInterface& cparams );
 
   /*! \brief Reset the internal stored Lagrange multipliers
    *

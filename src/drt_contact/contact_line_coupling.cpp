@@ -276,11 +276,11 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   // the Gauss point loop
   if (currcell->Shape()!=DRT::Element::line2)
     dserror("only line2 integration cells at the moment. See comment in the code");
-  double eta[2]={0.,0.};
-  detg=currcell->Jacobian(eta);
+
+  detg=currcell->Jacobian();
   // directional derivative of cell Jacobian
   GEN::pairedvector<int,double> derivjaccell((nnodes+ncol)*ndof);
-  currcell->DerivJacobian(eta, derivjaccell);
+  currcell->DerivJacobian(derivjaccell);
 
   for (int gp=0;gp<integrator.nGP(); ++gp)
   {

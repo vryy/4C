@@ -1,14 +1,17 @@
-/*!----------------------------------------------------------------------
+/*!----------------------------------------------------------------------*/
+/*!
 \file contact_element.H
 
+\level 2
+
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
 </pre>
-
-*-----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 #ifndef CONTACT_ELEMENT_H
 #define CONTACT_ELEMENT_H
 
@@ -226,6 +229,17 @@ public:
    */
   virtual void DJacDXi(double* djacdxi, double* xi,
       const LINALG::SerialDenseMatrix& secderiv);
+
+  /*! \brief Evaluate derivative J,xi of Jacobian determinant
+   *
+   *  \author hiermeier \date 03/17 */
+  template < unsigned elenumnode >
+  inline void DJacDXi( double* djacdxi, double* xi,
+      LINALG::Matrix<elenumnode,3>& secderiv )
+  {
+    LINALG::SerialDenseMatrix sdm_secderiv( View, secderiv.A(), elenumnode, elenumnode, 3 );
+    DJacDXi( djacdxi, xi, sdm_secderiv );
+  }
 
   /*!
    \brief Prepare D-Matrix deriv integration of contribution of one slave element

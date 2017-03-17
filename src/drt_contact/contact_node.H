@@ -22,6 +22,9 @@
 namespace CONTACT
 {
 
+// foward declaration
+class CoNode;
+
 class CoNodeType: public DRT::ParObjectType
 {
 public:
@@ -120,75 +123,6 @@ public:
   \brief Return the weighted gap (scalar) of this node for LTL
   */
  virtual double& Getgltl() { return gltl_; }
-  /*!
-  \brief Return the weighted gap (scalar) of this node
-
-  */
-  virtual double& GetWGap() { return wGap_; }
-
-  /*!
-  \brief Return the scaling factor kappa for this node
-
-  */
-  virtual double& GetKappa() { return kappa_; }
-
-  /*!
-  \brief Return the linearization of the scaling factor kappa
-
-  */
-  virtual std::map<int,double>& GetKappaLin() { return kappaLin_; }
-
-  /*!
-  \brief Return the scaling factor augA
-
-  Integration over the whole slave interface, without consideration of
-  the segments
-  */
-  virtual double& GetAugA() { return augA_; }
-
-  /*!
-  \brief Return the linearization of the scaling factor augA
-
-  Integration over the whole slave interface, without consideration of
-  the segments
-  */
-  virtual std::map<int,double>& GetAugALin() { return augALin_; }
-
-  /*!
-  \brief Return the linearization of the averaged weighted gap
-
-  */
-  virtual std::map<int,double>& GetAWGapLin() {return aWGapLin_; }
-
-  /*!
-  \brief Return the linearization of the weighted gap
-
-  */
-  virtual std::map<int,double>& GetWGapLin() {return wGapLin_; }
-
-  /*!
-  \brief Return the variation of the weighted gap (slave part)
-
-  */
-  virtual GEN::pairedvector<int,std::pair<int,double> >& GetVarWGapSl() {return varWGapSl_; }
-
-  /*!
-  \brief Return the variation of the weighted gap (slave part)
-
-  */
-  virtual std::map<int,std::pair<int,double> >& GetVarWGapMa() {return varWGapMa_; }
-
-  /*!
-  \brief Return the linearization of the variation of the weighted gap (slave part)
-
-  */
-  virtual std::map<int,std::map<int,double> >& GetVarWGapLinSl() {return varWGapLinSl_; }
-
-  /*!
-  \brief Return the linearization of the variation of the weighted gap (master part)
-
-  */
-  virtual std::map<int,std::map<int,double> >& GetVarWGapLinMa() {return varWGapLinMa_; }
 
   //! @name Extended contact
   //! @{
@@ -415,25 +349,7 @@ protected:
   std::map<int, double> derivw_lm_;                        // directional derivative of nodal weighted wear value
   std::map<int, double> derivscalefac_;                    // directional derivative of nodal scale factor value
 
-  // *** Augmented Lagrangian formulation ********************
-  // nodal scalar values
-  double                                  wGap_;         // nodal entry of weighted gap vector
-  double                                  augA_;         // nodal scaling factor
-
-  // Variation -- RHS
-  GEN::pairedvector<int,std::pair<int,double> > varWGapSl_; // variation of the weighted gap (slave)
-  std::map<int,std::pair<int,double> > varWGapMa_;          // variation of the weighted gap (master)
-
-  // Linearization
-  std::map<int,std::map<int,double> > varWGapLinSl_;  // linearization of the weighted gap variation (slave)
-  std::map<int,std::map<int,double> > varWGapLinMa_; // linearization of the weighted gap variation (master)
-  std::map<int,double> kappaLin_;     // linearization of the scaling factor (segment based integration)
-  std::map<int,double> augALin_;      // linearization of the scaling factor (element based integration)
-  std::map<int,double> aWGapLin_;     // linearization of the averaged weighted gap
-  std::map<int,double> wGapLin_;      // linearization of the weighted gap
-
   GEN::pairedvector<int, double> alpha_;    // lin. of scaling factor for hybrid formulation
-
 
   // *** Penalty-related quantities **************************
   double kappa_;                               // gap-scaling factor kappa
@@ -462,6 +378,128 @@ protected:
 
   //! @}
 };
+
+namespace AUG {
+  class NodeDataContainer
+  {
+  public:
+    /// @name General methods
+    /// @{
+
+    /// constructor
+    NodeDataContainer( CoNode& parentNode );
+
+    /// constructor
+    NodeDataContainer( CoNode& parentNode, int maxNumMasterElements );
+
+    virtual ~NodeDataContainer() {};
+
+    void Setup();
+
+    /*! \brief Pack this class so that it can be communicated
+     *
+     *  This function packs the datacontainer. This is only called
+     *  when the class has been initialized and the pointer to this
+     *  class exists. */
+    void Pack( DRT::PackBuffer& data ) const;
+
+    /*! \brief Unpack data from a vector into this class
+     *
+     *  This function unpacks the data container. This is only called
+     *  when the class has been initialized and the pointer to this
+     *  class exists. */
+    void Unpack( std::vector<char>::size_type& position,
+                 const std::vector<char>& data );
+
+    /// @}
+
+    /// @name accessors
+    /// @{
+
+    /*! \brief Return the weighted gap (scalar) of this node */
+    inline double& GetWGap() { return wGap_; }
+    inline double GetWGap() const { return wGap_; }
+
+    /*! \brief Return the scaling factor kappa for this node */
+    inline double& GetKappa() { return kappa_; }
+    inline double GetKappa() const { return kappa_; }
+
+    /*!
+    \brief Return the linearization of the scaling factor kappa
+
+    */
+    std::map<int,double>& GetKappaLin() { return kappaLin_; }
+    const std::map<int,double>& GetKappaLin() const { return kappaLin_; }
+
+    /*! \brief Return the scaling factor augA
+     *
+     *  Integration over the whole slave interface, without consideration of
+     *  the segments */
+    inline double& GetAugA() { return augA_; }
+    inline double GetAugA() const { return augA_; }
+
+    /*! \brief Return the linearization of the scaling factor augA
+     *
+     *  Integration over the whole slave interface, without consideration of
+     *  the segments */
+    inline GEN::pairedvector<int,double>& GetAugALin() { return augALin_; }
+    inline const GEN::pairedvector<int,double>& GetAugALin() const { return augALin_; }
+
+    /*! \brief Return the linearization of the averaged weighted gap */
+    std::map<int,double>& GetAWGapLin() {return aWGapLin_; }
+    const std::map<int,double>& GetAWGapLin() const {return aWGapLin_; }
+
+    /*! \brief Return the linearization of the weighted gap */
+    std::map<int,double>& GetWGapLin() {return wGapLin_; }
+    const std::map<int,double>& GetWGapLin() const {return wGapLin_; }
+
+    /*! \brief Return the variation of the weighted gap (slave part) */
+    inline GEN::pairedvector<int,std::pair<int,double> >& GetVarWGapSl() {return varWGapSl_; }
+    inline const GEN::pairedvector<int,std::pair<int,double> >& GetVarWGapSl() const {return varWGapSl_; }
+
+    /*! \brief Return the variation of the weighted gap (master part) */
+    std::map<int,std::pair<int,double> >& GetVarWGapMa() {return varWGapMa_; }
+    const std::map<int,std::pair<int,double> >& GetVarWGapMa() const {return varWGapMa_; }
+
+    /*! \brief Return the linearization of the variation of the weighted gap
+     *  (slave part) */
+    std::map<int,std::map<int,double> >& GetVarWGapLinSl() {return varWGapLinSl_; }
+    const std::map<int,std::map<int,double> >& GetVarWGapLinSl() const {return varWGapLinSl_; }
+
+    /*! \brief Return the linearization of the variation of the weighted gap
+     *  (master part) */
+    std::map<int,std::map<int,double> >& GetVarWGapLinMa() {return varWGapLinMa_; }
+    const std::map<int,std::map<int,double> >& GetVarWGapLinMa() const {return varWGapLinMa_; }
+
+    /// @}
+
+  private:
+    // *** Augmented Lagrangian formulation ********************
+
+    /// one slave element projects approximately maximal in this number of master elements
+    int maxNumMasterElements_;
+
+    // nodal scalar values
+    double kappa_;        ///< gap-scaling factor kappa
+    double wGap_;         ///< nodal entry of weighted gap vector
+    double augA_;         ///< nodal scaling factor
+
+    // Variation -- RHS
+    GEN::pairedvector<int,std::pair<int,double> > varWGapSl_; ///< variation of the weighted gap (slave)
+    std::map<int,std::pair<int,double> > varWGapMa_;          ///< variation of the weighted gap (master)
+
+    // Linearization
+    std::map<int,std::map<int,double> > varWGapLinSl_;  ///< linearization of the weighted gap variation (slave)
+    std::map<int,std::map<int,double> > varWGapLinMa_;  ///< linearization of the weighted gap variation (master)
+    std::map<int,double> kappaLin_;     ///< linearization of the scaling factor (segment based integration)
+    GEN::pairedvector<int,double> augALin_;             ///< linearization of the scaling factor (element based integration)
+    std::map<int,double> aWGapLin_;     ///< linearization of the averaged weighted gap
+    std::map<int,double> wGapLin_;      ///< linearization of the weighted gap
+
+    const CoNode& parentNode_;
+  };  // class NodeDataContainer
+} // namespace AUG
+
 // class CoNodeDataContainer
 
 /*!
@@ -828,6 +866,25 @@ public:
    */
   inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
 
+  /*! \brief Return data container of this augmented contact node
+   *
+   *  This method returns the data container of this node where additional
+   *  augmented contact specific quantities/information are stored.
+   *
+   *  \author hiermeier \date 03/17 */
+  inline CONTACT::AUG::NodeDataContainer& AugData()
+  {
+    if ( augdata_.is_null() )
+      dserror("There are no augmented contact node data available!" );
+    return *augdata_;
+  };
+  inline const CONTACT::AUG::NodeDataContainer& AugData() const
+  {
+    if ( augdata_.is_null() )
+      dserror("There are no augmented contact node data available!" );
+    return *augdata_;
+  };
+
   inline CONTACT::CoNodePoroDataContainer& CoPoroData() { return *coporodata_; }
   inline CONTACT::CoNodeTSIDataContainer& CoTSIData() { return *cTSIdata_; }
 
@@ -899,7 +956,7 @@ public:
   \param gid : slave gid
   \param val : value to be added
   */
-  void AddVarWGapSl(int& col, int& gid, double& val);
+  void AddVarWGapSl(int col, int gid, double val);
 
   /*!
   \brief Add a value to the variation of weighted gap (master)
@@ -908,22 +965,22 @@ public:
   \param gid : master gid
   \param val : value to be added
   */
-  void AddVarWGapMa(int& col, int& gid, double& val);
+  void AddVarWGapMa(int col, int gid, double val);
 
   /*!
   \brief TODO
   */
-  void AddWcLm(const double& val);
+  void AddWcLm( double val );
 
   /*!
   \brief TODO
   */
-  void AddWcSuLm(const int& col, const double& val);
+  void AddWcSuLm( int col, double val );
 
   /*!
   \brief TODO
   */
-  void AddWcMuLm(const int& col, const double& val);
+  void AddWcMuLm(int col, double val);
 
   /*!
   \brief Add a value to the map of LM derivatives of this node
@@ -963,6 +1020,15 @@ public:
   virtual void InitializeDataContainer();
 
   /*!
+   \brief Initializes the data container of the augmented contact node
+
+   With this function, the container with augmented contact specific
+   quantities/information is initialized.
+
+   */
+  void InitializeAugDataContainer( int maxNumMasterEles );
+
+  /*!
   \brief Initializes the poro data container of the node
 
   With this function, the container with contact specific quantities/information
@@ -989,9 +1055,8 @@ public:
    \brief Get number of linearization entries
 
    */
-  virtual int& GetLinsize() { return linsize_; }
-  ;
-
+  virtual int& GetLinsize() { return linsize_; };
+  int GetLinsize() const { return linsize_; };
   //@}
 
   //! @name Empty functions (friction only)
@@ -1035,6 +1100,8 @@ protected:
   int  linsize_;     // number of lin entries per direction vector
 
   Teuchos::RCP<CONTACT::CoNodeDataContainer> codata_; // additional information of proc's contact nodes
+
+  Teuchos::RCP<CONTACT::AUG::NodeDataContainer> augdata_; // additional information of proc's augmented contact nodes
 
   Teuchos::RCP<CONTACT::CoNodePoroDataContainer> coporodata_;   // additional information of proc's poro contact nodes
 

@@ -411,7 +411,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
     // decide between contactinterface, augmented interface and wearinterface
     Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
     if (stype==INPAR::CONTACT::solution_augmented)
-      newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
+      newinterface=Teuchos::rcp(new CONTACT::AUG::Interface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else if(wlaw!=INPAR::WEAR::wear_none)
       newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else

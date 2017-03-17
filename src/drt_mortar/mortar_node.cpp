@@ -217,6 +217,8 @@ void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,dbcdofs_[2]);
   // add numdof_
   AddtoPack(data,numdof_);
+  // dentries_
+  AddtoPack(data,dentries_);
   // add dofs_
   AddtoPack(data,dofs_);
   // add xspatial_
@@ -272,6 +274,8 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
   dbcdofs_[2] = ExtractInt(position,data);
   // numdof_
   ExtractfromPack(position,data,numdof_);
+  // dentries_
+  ExtractfromPack(position,data,dentries_);
   // dofs_
   ExtractfromPack(position,data,dofs_);
   // xspatial_

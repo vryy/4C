@@ -1087,7 +1087,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
       gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
 
       for(int i=0;i<ns_;++i)
-      val(i)=auxval(i);
+        val(i)=auxval(i);
     }
     else
     {

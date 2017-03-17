@@ -3877,7 +3877,7 @@ double SCATRA::MortarCellCalc<distypeS,distypeM>::EvalShapeFuncAndDomIntFacAtInt
   const double weight = intpoints.IP().qwgt[iquad];
 
   // Jacobian determinant
-  const double jacobian = cell.Jacobian(coordinates_ref);
+  const double jacobian = cell.Jacobian();
 
   // domain integration factor
   return jacobian*weight;

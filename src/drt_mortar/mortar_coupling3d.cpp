@@ -4669,7 +4669,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
 
         // evaluate trace space shape functions at Gauss point
         SlaveElement().EvaluateShape(sxi, sval, sderiv, nnodes);
-        detg = currcell->Jacobian(eta);
+        detg = currcell->Jacobian();
 
         // computing de, me
         for (int j = 0; j < nnodes; ++j)

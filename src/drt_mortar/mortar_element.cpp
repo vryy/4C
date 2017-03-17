@@ -862,7 +862,7 @@ void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult,
 /*----------------------------------------------------------------------*
  |  Evaluate element metrics (local basis vectors)            popp 08/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::Metrics(double* xi, std::vector<double>& gxi,
+void MORTAR::MortarElement::Metrics(const double* xi, std::vector<double>& gxi,
                                     std::vector<double>& geta)
 {
   int nnodes = NumPoint();
@@ -926,7 +926,7 @@ void MORTAR::MortarElement::Metrics(double* xi, std::vector<double>& gxi,
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian determinant                             popp 12/07|
  *----------------------------------------------------------------------*/
-double MORTAR::MortarElement::Jacobian(double* xi)
+double MORTAR::MortarElement::Jacobian(const double* xi)
 {
   double jac = 0.0;
   std::vector<double> gxi(3);
@@ -971,7 +971,8 @@ double MORTAR::MortarElement::Jacobian(double* xi)
 /*----------------------------------------------------------------------*
  |  Evaluate directional deriv. of Jacobian det.              popp 05/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::DerivJacobian(double* xi, GEN::pairedvector<int,double>& derivjac)
+void MORTAR::MortarElement::DerivJacobian(const double* xi,
+    GEN::pairedvector<int,double>& derivjac)
 {
   // get element nodes
   int nnodes = NumNode();

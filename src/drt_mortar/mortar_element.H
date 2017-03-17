@@ -644,6 +644,16 @@ public:
   */
   virtual void GetNodalCoords(LINALG::SerialDenseMatrix& coord);
 
+  /*! \brief Get nodal reference / spatial coords of current element
+   *
+   *  \author hiermeier \date 03/17 */
+  template< unsigned elenumnode >
+  inline void GetNodalCoords(LINALG::Matrix<3,elenumnode>& coord)
+  {
+    LINALG::SerialDenseMatrix sdm_coord( View, coord.A(), 3, 3, elenumnode );
+    GetNodalCoords( sdm_coord );
+  }
+
   double inline GetNodalCoords(const int direction, const int node)
   {
   #ifdef DEBUG
@@ -687,17 +697,17 @@ public:
   /*!
   \brief Evaluate element metrics (local basis vectors)
   */
-  virtual void Metrics(double* xi, std::vector<double>& gxi, std::vector<double>& geta);
+  virtual void Metrics(const double* xi, std::vector<double>& gxi, std::vector<double>& geta);
 
   /*!
   \brief Evaluate Jacobian determinant for parameter space integration
   */
-  virtual double Jacobian(double* xi);
+  virtual double Jacobian( const double* xi );
 
   /*!
   \brief Compute Jacobian determinant derivative
   */
-  virtual void DerivJacobian(double* xi, GEN::pairedvector<int,double>& derivjac);
+  virtual void DerivJacobian( const double* xi, GEN::pairedvector<int,double>& derivjac);
 
   /*!
   \brief Compute length/area of the element
@@ -725,16 +735,52 @@ public:
   \brief Evaluate displacement shape functions and derivatives
   */
   virtual bool EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
-                             LINALG::SerialDenseMatrix& deriv, const int& valdim,
+                             LINALG::SerialDenseMatrix& deriv,
+                             const int valdim,
                              bool dualquad3d = false);
+
+  /*! \brief Evaluate displacement shape functions and derivatives
+   *
+   *  \author hiermeier \date 03/17 */
+  template <unsigned elenumnode, unsigned eledim>
+  inline bool EvaluateShape(
+      const double* xi,
+      LINALG::Matrix<elenumnode,1>& val,
+      LINALG::Matrix<elenumnode,eledim>& deriv,
+      unsigned valdim,
+      bool dualquad3d)
+  {
+    LINALG::SerialDenseVector sdv_val( View, val.A(), elenumnode );
+    LINALG::SerialDenseMatrix sdm_deriv( View, deriv.A(),elenumnode, elenumnode, eledim );
+    return EvaluateShape( xi, sdv_val, sdm_deriv, valdim, dualquad3d );
+  }
 
   /*!
   \brief Evaluate Lagrange multiplier shape functions and derivatives
   */
   virtual bool EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype,
-                                    const double* xi, LINALG::SerialDenseVector& val,
-                                    LINALG::SerialDenseMatrix& deriv, const int& valdim,
+                                    const double* xi,
+                                    LINALG::SerialDenseVector& val,
+                                    LINALG::SerialDenseMatrix& deriv,
+                                    const int valdim,
                                     bool boundtrafo = true);
+
+  /*! \brief Evaluate Lagrange multiplier shape functions and derivatives
+   *
+   *  \author hiermeier \date 03/17 */
+  template <unsigned elenumnode, unsigned eledim>
+  inline bool EvaluateShapeLagMult(
+      INPAR::MORTAR::ShapeFcn lmtype,
+      const double* xi,
+      LINALG::Matrix<elenumnode,1>& val,
+      LINALG::Matrix<elenumnode,eledim>& deriv,
+      unsigned valdim,
+      bool boundtrafo )
+  {
+    LINALG::SerialDenseVector sdv_val( View, val.A(), elenumnode );
+    LINALG::SerialDenseMatrix sdm_deriv( View, deriv.A(),elenumnode, elenumnode, eledim );
+    return EvaluateShapeLagMult( lmtype, xi, sdv_val, sdm_deriv, valdim, boundtrafo );
+  }
 
   /*!
   \brief Evaluate Lagrange multiplier shape functions and derivatives
@@ -742,13 +788,40 @@ public:
   */
   virtual bool EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype,
                                        const double* xi, LINALG::SerialDenseVector& val,
-                                       LINALG::SerialDenseMatrix& deriv, const int& valdim);
+                                       LINALG::SerialDenseMatrix& deriv, const int valdim);
+
+  /*! \brief Evaluate Lagrange multiplier shape functions and derivatives
+   *  (special version for 3D quadratic mortar with linear Lagrange multipliers)
+   *
+   *  \author hiermeier \date 03/17 */
+  template<unsigned elenumnode, unsigned eledim>
+  inline bool EvaluateShapeLagMultLin(
+      INPAR::MORTAR::ShapeFcn lmtype,
+      const double* xi,
+      LINALG::Matrix<elenumnode,1>& val,
+      LINALG::Matrix<elenumnode,eledim>& deriv,
+      int valdim)
+  {
+    LINALG::SerialDenseVector sdv_val( View, val.A(), elenumnode );
+    LINALG::SerialDenseMatrix sdm_deriv( View, deriv.A(),elenumnode, elenumnode, eledim );
+    return EvaluateShapeLagMultLin( lmtype, xi, sdv_val, sdm_deriv, valdim );
+  }
 
   /*!
   \brief Evaluate 2nd derivative of shape functions
   */
   virtual bool Evaluate2ndDerivShape(const double* xi, LINALG::SerialDenseMatrix& val,
                                      const int& valdim);
+
+  template <unsigned elenumnode>
+  inline bool Evaluate2ndDerivShape(
+      const double* xi,
+      LINALG::Matrix<elenumnode,3>& secderiv,
+      const int& valdim )
+  {
+    LINALG::SerialDenseMatrix sdm_secderiv( View, secderiv.A(),elenumnode, elenumnode, 3 );
+    return Evaluate2ndDerivShape( xi, sdm_secderiv, valdim );
+  }
 
   /*!
   \brief Compute directional derivative of dual shape functions

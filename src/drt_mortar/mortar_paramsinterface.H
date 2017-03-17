@@ -29,7 +29,10 @@ namespace MORTAR {
                                   and meaningful for line search strategies for example. */
     eval_weighted_gap,       /*!< Evaluate the weighted gap only. */
     eval_recover,            /*!< recover internal quantities, e.g. Lagrange multipliers */
-    eval_reset               /*!< reset internal quantities, e.g. displacement state and/or Lagrange multipliers */
+    eval_reset,              /*!< reset internal quantities, e.g. displacement state and/or Lagrange multipliers */
+    eval_run_pre_compute_x,  /*!< augment the solution direction at the very beginning of a ComputeX call */
+    eval_run_post_iterate,   /*!< run in the end of a NOX::Solver::Step() call */
+    eval_contact_potential   /*!< Evaluate the contact potential */
   };
 
   static inline const std::string ActionType2String(const enum ActionType& act)
@@ -38,19 +41,24 @@ namespace MORTAR {
     {
       case eval_none:
         return "eval_none";
-        break;
       case eval_force_stiff:
         return "eval_force_stiff";
-        break;
       case eval_force:
         return "eval_force";
-        break;
       case eval_weighted_gap:
         return "eval_weighted_gap";
-        break;
+      case MORTAR::eval_reset:
+        return "eval_reset";
+      case MORTAR::eval_recover:
+        return "eval_recover";
+      case MORTAR::eval_run_pre_compute_x:
+        return "eval_run_pre_compute_x";
+      case MORTAR::eval_run_post_iterate:
+        return "eval_run_post_iterate";
+      case MORTAR::eval_contact_potential:
+        return "eval_contact_potential";
       default:
         return "unknown";
-        break;
     }
     return "";
   };

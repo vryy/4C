@@ -15,6 +15,8 @@
 /*----------------------------------------------------------------------*/
 #include "contact_augmented_strategy.H"
 #include "contact_augmented_interface.H"
+#include "contact_aug_potential.H"
+
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_lagrange_strategy.H"
 #include "../drt_contact/contact_defines.H"
@@ -27,30 +29,36 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::AugStratDataContainer::AugStratDataContainer()
-    : gFdCheck_(false),
-      wasincontactlastiter_(false),
-      isactivesetconverged_(false),
-      printlinearconservation_(false),
-      printangularconservation_(false),
-      dGLmSlLinMatrixPtr_(Teuchos::null),
-      dGLmMaLinMatrixPtr_(Teuchos::null),
-      dGGSlLinMatrixPtr_(Teuchos::null),
-      dGGMaLinMatrixPtr_(Teuchos::null),
-      dLmNWGapLinMatrixPtr_(Teuchos::null),
-      dLmTLmTMatrixPtr_(Teuchos::null),
-      dLmTLmTLinMatrixPtr_(Teuchos::null),
-      inactiveMatrixPtr_(Teuchos::null),
-      inactiveLinMatrixPtr_(Teuchos::null),
-      aPtr_(Teuchos::null),
-      kappaPtr_(Teuchos::null),
-      lmNPtr_(Teuchos::null),
-      dLmTLmTRhsPtr_(Teuchos::null),
-      cnPtr_(Teuchos::null),
-      uCnPtr_(Teuchos::null),
-      gsndofrowmapPtr_(Teuchos::null),
-      gstdofrowmapPtr_(Teuchos::null),
-      gOldActiveSlaveNodesPtr_(Teuchos::null)
+CONTACT::AUG::DataContainer::DataContainer()
+    : gFdCheck_( false ),
+      wasincontactlastiter_( false ),
+      isactivesetconverged_( false ),
+      printlinearconservation_( false ),
+      printangularconservation_( false ),
+      is_semi_smooth_newton_( false ),
+      matrix_maps_valid_( false ),
+      vector_maps_valid_( false ),
+      cn_( -1.0 ),
+      parallel_strategy_( INPAR::MORTAR::ghosting_redundant ),
+      potentialPtr_( Teuchos::null ),
+      dGLmSlLinMatrixPtr_( Teuchos::null ),
+      dGLmMaLinMatrixPtr_( Teuchos::null ),
+      dGGSlLinMatrixPtr_( Teuchos::null ),
+      dGGMaLinMatrixPtr_( Teuchos::null ),
+      dLmNWGapLinMatrixPtr_( Teuchos::null ),
+      dLmTLmTMatrixPtr_( Teuchos::null ),
+      dLmTLmTLinMatrixPtr_( Teuchos::null ),
+      inactiveLinMatrixPtr_( Teuchos::null ),
+      inactiveDiagMatrixPtr_( Teuchos::null ),
+      aPtr_( Teuchos::null ),
+      kappaPtr_( Teuchos::null ),
+      lmNPtr_( Teuchos::null ),
+      dLmTLmTRhsPtr_( Teuchos::null ),
+      cnPtr_( Teuchos::null ),
+      uCnPtr_( Teuchos::null ),
+      gsndofrowmapPtr_( Teuchos::null ),
+      gstdofrowmapPtr_( Teuchos::null ),
+      gOldActiveSlaveNodesPtr_( Teuchos::null )
 {
   // empty constructor
 
@@ -59,32 +67,46 @@ CONTACT::AugStratDataContainer::AugStratDataContainer()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::AugmentedLagrangeStrategy::AugmentedLagrangeStrategy(
+CONTACT::AUG::Strategy::Strategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
     const Teuchos::ParameterList& params,
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
-    const int& dim,
+    const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+    int dim,
     const Teuchos::RCP<const Epetra_Comm>& comm,
-    const int& maxdof)
-    : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,interfaces,dim,comm,0.0,maxdof)
+    int maxdof)
+    : ::CONTACT::CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,
+                                    interfaces,dim,comm,0.0,maxdof)
 {
-  augDataPtr_ = Teuchos::rcp_dynamic_cast<CONTACT::AugStratDataContainer>(data_ptr);
+  augDataPtr_ = Teuchos::rcp_dynamic_cast<CONTACT::AUG::DataContainer>(data_ptr, true);
+
   // store values of the parameter list
   Data().PrintLinearMomConservation() =
-      DRT::INPUT::IntegralValue<bool>(params.sublist("AUGMENTED"),
+      DRT::INPUT::IntegralValue<bool>(params.sublist( "AUGMENTED" ),
           "PRINT_LINEAR_CONSERVATION");
+
   Data().PrintAngularMomConservation() =
-      DRT::INPUT::IntegralValue<bool>(params.sublist("AUGMENTED"),
+      DRT::INPUT::IntegralValue<bool>(params.sublist( "AUGMENTED" ),
           "PRINT_ANGULAR_CONSERVATION");
 
+  Data().SetIsSemiSmoothNewton( DRT::INPUT::IntegralValue<bool>( params,
+      "SEMI_SMOOTH_NEWTON") );
+
+  Data().SetConstantCn( Params().get<double>( "SEMI_SMOOTH_CN" ) );
+
+  Data().SetParallelStrategy( DRT::INPUT::IntegralValue<
+      INPAR::MORTAR::ParallelStrategy>(Params(), "PARALLEL_STRATEGY") );
+
+  Data().SetPotential( Teuchos::rcp( new Potential( *this, *augDataPtr_ ) ) );
+
   // cast to augmented interfaces
-  for (int i=0; i<(int) interfaces.size(); ++i)
+  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+        interfaces.begin(); cit != interfaces.end(); ++cit )
   {
-    interface_.push_back(Teuchos::rcp_dynamic_cast<CONTACT::AugmentedInterface>(interfaces[i]));
-    if (interface_[i]==Teuchos::null)
-      dserror("AugmentedLagrangeStartegy: Interface-cast failed!");
+    const Teuchos::RCP<CONTACT::CoInterface> & interface = *cit;
+    interface_.push_back( Teuchos::rcp_dynamic_cast<CONTACT::AUG::Interface>(
+        interface, true ) );
   }
 
   return;
@@ -92,39 +114,50 @@ CONTACT::AugmentedLagrangeStrategy::AugmentedLagrangeStrategy(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::PostSetup(
+void CONTACT::AUG::Strategy::PostSetup(
     const bool& redistributed,
     const bool& init)
 {
-  if (init)
+  if ( init )
   {
     // re-setup the global sndofrowmap_ and stdofrowmap_ for the augmented Lagrangian case
     AssembleGlobalSlNTDofRowMaps();
 
     // initialize cn
-    InitializeCn(false,true);
+    InitializeCn( false, true );
   }
 
   // just used for the redistributed case
-  if (redistributed)
+  if ( redistributed )
   {
     // redistribute the slave/master dirichlet boundary condition row map
-    AssembleSlMaNoDbcDofRowMap(Teuchos::null);
+    AssembleSlMaNoDbcDofRowMap( Teuchos::null );
+
     // reassemble the global slave normal/tangential dof row maps
     AssembleGlobalSlNTDofRowMaps();
+
     // redistribute the cn-vector
-    InitializeCn(redistributed,false);
+    InitializeCn( redistributed, false );
+
     // redistribute the global augmented old active slave nodes map
-    if ((not Data().GOldActiveSlaveNodesPtr().is_null())and
-        (Data().GOldActiveSlaveNodes().NumGlobalElements()>0))
-      RedistributeRowMap(SlRowNodes(),Data().GOldActiveSlaveNodes());
+    if ( ( not Data().GOldActiveSlaveNodesPtr().is_null() ) and
+         ( Data().GOldActiveSlaveNodes().NumGlobalElements() > 0 ) )
+      RedistributeRowMap( SlRowNodes(), Data().GOldActiveSlaveNodes() );
   }
+
+  // in both cases the maps change and we have to re-build all matrices
+  Data().SetMatrixMapsValid( false );
+  Data().SetVectorMapsValid( false );
+
+  // setup the potential class with the current maps
+  Data().Potential().Setup();
+
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::AssembleGlobalSlNTDofRowMaps()
+void CONTACT::AUG::Strategy::AssembleGlobalSlNTDofRowMaps()
 {
   Data().GSlNormalDofRowMapPtr()     = Teuchos::null;
   Data().GSlTangentialDofRowMapPtr() = Teuchos::null;
@@ -142,14 +175,14 @@ void CONTACT::AugmentedLagrangeStrategy::AssembleGlobalSlNTDofRowMaps()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::InitializeCn(
+void CONTACT::AUG::Strategy::InitializeCn(
     bool redistributed,
     bool init)
 {
   if (init)
   {
     // get cn from the input file
-    double cn = Params().get<double>("SEMI_SMOOTH_CN");
+    double cn = Data().ConstantdCn();
 
     if (Data().CnPtr().is_null() or Data().Cn().GlobalLength()==0)
       Data().CnPtr() = LINALG::CreateVector(SlRowNodes(),true);
@@ -179,7 +212,7 @@ void CONTACT::AugmentedLagrangeStrategy::InitializeCn(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::InitMortar()
+void CONTACT::AUG::Strategy::InitMortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing Dn, Mn etc.
@@ -194,7 +227,7 @@ void CONTACT::AugmentedLagrangeStrategy::InitMortar()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::AssembleMortar()
+void CONTACT::AUG::Strategy::AssembleMortar()
 {
   // for all interfaces
   for (std::size_t i = 0; i < interface_.size(); ++i)
@@ -208,7 +241,7 @@ void CONTACT::AugmentedLagrangeStrategy::AssembleMortar()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::SplitMortar()
+void CONTACT::AUG::Strategy::SplitMortar()
 {
   // temporal variables
   Teuchos::RCP<LINALG::SparseMatrix> DnActive, MnActive;
@@ -260,9 +293,28 @@ void CONTACT::AugmentedLagrangeStrategy::SplitMortar()
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::Initialize()
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::ZeroizeMatrices()
+{
+  // *** zeroize existing global matrices ***
+  Data().DGLmSlLinMatrix().Zero();
+  Data().DGLmMaLinMatrix().Zero();
+  Data().DGGSlLinMatrix().Zero();
+  Data().DGGMaLinMatrix().Zero();
+
+  Data().DLmNWGapLinMatrix().Zero();
+  Data().DLmTLmTMatrix().Zero();
+  Data().DLmTLmTLinMatrix().Zero();
+
+  Data().InactiveLinMatrix().Zero();
+  Data().InactiveDiagMatrix().PutScalar( 0.0 );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::CreateMatrices( const Epetra_Map &
+    gAugInactiveSlaveDofs )
 {
   // *** (re)setup global matrices ***
   Data().DGLmSlLinMatrixPtr() = Teuchos::rcp(new LINALG::SparseMatrix(
@@ -281,30 +333,96 @@ void CONTACT::AugmentedLagrangeStrategy::Initialize()
   Data().DLmTLmTLinMatrixPtr()  = Teuchos::rcp(
       new LINALG::SparseMatrix(Data().GActiveTDofRowMap(),100));
 
+  Data().InactiveDiagMatrixPtr() =
+      LINALG::CreateVector( gAugInactiveSlaveDofs, true );
+  Data().InactiveLinMatrixPtr() =
+      Teuchos::rcp(new LINALG::SparseMatrix(gAugInactiveSlaveDofs,100));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::ZeroizeVectors()
+{
+  // *** zeroize existing global matrices ***
+  Data().LmN().PutScalar( 0.0 );
+  Data().AWGap().PutScalar( 0.0 );
+
+  Data().DLmTLmTRhs().PutScalar( 0.0 );
+  Data().InactiveRhs().PutScalar( 0.0 );
+
+  Data().AVec().PutScalar( 0.0 );
+  Data().KappaVec().PutScalar( 0.0 );
+  Data().WGap().PutScalar( 0.0 );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::CreateVectors( const Epetra_Map &
+    gAugInactiveSlaveDofs )
+{
+  // *** (re)setup global augmented Epetra_Vectors ***
+  Data().LmNPtr()         = Teuchos::rcp( new Epetra_Vector(
+      Data().GActiveNDofRowMap(), true ) );
+  Data().AWGapPtr()       = Teuchos::rcp( new Epetra_Vector(
+      Data().GActiveNDofRowMap(), true ) );
+  Data().DLmTLmTRhsPtr()  = Teuchos::rcp( new Epetra_Vector(
+      Data().GActiveTDofRowMap(), true ) );
+  Data().InactiveRhsPtr() = Teuchos::rcp( new Epetra_Vector(
+      gAugInactiveSlaveDofs, true ) );
+
+  Data().AVecPtr()     = Teuchos::rcp( new Epetra_Vector( SlRowNodes(), true ) );
+  Data().KappaVecPtr() = Teuchos::rcp( new Epetra_Vector(
+      Data().GActiveNodeRowMap(), true ) );
+  Data().WGapPtr()  = Teuchos::rcp( new Epetra_Vector(
+      Data().GActiveNDofRowMap(), true ) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::Initialize( enum MORTAR::ActionType actiontype )
+{
   // get inactive slave dofs
-  Teuchos::RCP<Epetra_Map> gAugInactiveSlaveDofs =
+  Teuchos::RCP<Epetra_Map> gAugInactiveSlaveDofs = Teuchos::null;
       LINALG::SplitMap(SlDoFRowMap(true), Data().GActiveDofRowMap());
 
-  Data().InactiveMatrixPtr()    =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gAugInactiveSlaveDofs,100));
-  Data().InactiveLinMatrixPtr() =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gAugInactiveSlaveDofs,100));
+  switch ( actiontype )
+  {
+    case MORTAR::eval_force_stiff:
+    {
+      if ( Data().MatrixMapsValid() )
+      {
+        ZeroizeMatrices();
+      }
+      else
+      {
+        gAugInactiveSlaveDofs = LINALG::SplitMap( SlDoFRowMap(true),
+            Data().GActiveDofRowMap() );
+        CreateMatrices( *gAugInactiveSlaveDofs );
+        Data().SetMatrixMapsValid( true );
+      }
+    }
+    case MORTAR::eval_force:
+    {
+      if ( Data().VectorMapsValid() )
+      {
+        ZeroizeVectors();
+      }
+      else
+      {
+        if ( gAugInactiveSlaveDofs.is_null() )
+          gAugInactiveSlaveDofs = LINALG::SplitMap( SlDoFRowMap(true),
+                      Data().GActiveDofRowMap() );
+        CreateVectors( *gAugInactiveSlaveDofs );
+        Data().SetVectorMapsValid( true );
+      }
 
-  // *** (re)setup global augmented Epetra_Vectors ***
-  Data().LmNPtr()         = LINALG::CreateVector(
-      Data().GActiveNDofRowMap(),true);
-  Data().AWGapPtr()       = LINALG::CreateVector(
-      Data().GActiveNDofRowMap(),true);
-  Data().DLmTLmTRhsPtr()  = LINALG::CreateVector(
-      Data().GActiveTDofRowMap(),true);
-  Data().InactiveRhsPtr() = LINALG::CreateVector(
-      *gAugInactiveSlaveDofs,true);
-
-  Data().AVecPtr()     = LINALG::CreateVector(SlRowNodes(),true);
-  Data().KappaVecPtr() = LINALG::CreateVector(
-      Data().GActiveNodeRowMap(),true);
-  Data().WGapPtr()  = LINALG::CreateVector(
-      Data().GActiveNDofRowMap(),true);
+      break;
+    }
+    default:
+      dserror("Unsupported action type detected: %s",
+          MORTAR::ActionType2String( actiontype ).c_str() );
+      exit( EXIT_FAILURE );
+  }
 
   if (Data().IsFriction())
     dserror("AugmentedLagrangeStrategy::Initialize: "
@@ -315,7 +433,7 @@ void CONTACT::AugmentedLagrangeStrategy::Initialize()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::EvalForceStiff(
+void CONTACT::AUG::Strategy::EvalForceStiff(
     CONTACT::ParamsInterface& cparams)
 {
   // call the evaluate force routine
@@ -336,15 +454,14 @@ void CONTACT::AugmentedLagrangeStrategy::EvalForceStiff(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::InitEvalInterface(
+void CONTACT::AUG::Strategy::InitEvalInterface(
     Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   // time measurement (on each processor)
   const double t_start = Teuchos::Time::wallTime();
 
   // get type of parallel strategy
-  INPAR::MORTAR::ParallelStrategy strat = DRT::INPUT::IntegralValue<
-      INPAR::MORTAR::ParallelStrategy>(Params(), "PARALLEL_STRATEGY");
+  INPAR::MORTAR::ParallelStrategy strat = Data().ParallelStrategy();
 
   // Evaluation for all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
@@ -384,46 +501,50 @@ void CONTACT::AugmentedLagrangeStrategy::InitEvalInterface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::RecoverState(
+void CONTACT::AUG::Strategy::RecoverState(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
     const Epetra_Vector& xnew)
 {
-  /* Since the augmented Lagrangian strategy does not support any kind
-   * of condensation, we use this routine just to store the lagrange
+  // set the new search direction in the potential object
+  Data().Potential().SetDirection( dir );
+
+   /* Since the augmented Lagrangian strategy does not support any kind
+   * of condensation, we use this routine just to store the Lagrange
    * multiplier increment. */
-  Teuchos::RCP<Epetra_Vector> zdir_ptr =
-      Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
-  LINALG::Export(dir,*zdir_ptr);
+  Epetra_Vector zincr_exp( LMDoFRowMap( true ) );
+  LINALG::Export( dir, zincr_exp );
+
   // get the current step length
   const double stepLength = cparams.GetStepLength();
   // ---------------------------------------------------------------------
   // store the SCALED Lagrange multiplier increment in the contact
   // strategy
   // ---------------------------------------------------------------------
-  zdir_ptr->ReplaceMap(Data().LmIncrPtr()->Map());
-  Data().LmIncrPtr()->Scale(stepLength,*zdir_ptr);
+  Data().LmIncrPtr()->Update( stepLength, zincr_exp, 0.0 );
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::ResetLagrangeMultipliers(
+void CONTACT::AUG::Strategy::ResetLagrangeMultipliers(
     const CONTACT::ParamsInterface& cparams,
     const Epetra_Vector& xnew)
 {
   /* Since the augmented Lagrangian strategy does not support any kind
    * of condensation, we do not have to check if it is a saddle
    * point system. */
-  Teuchos::RCP<Epetra_Vector> znew_ptr =
-      Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(true),true));
-  LINALG::Export(xnew,*znew_ptr);
-  // ---------------------------------------------------------------------
-  // Update the current lagrange multiplier
-  // ---------------------------------------------------------------------
-  znew_ptr->ReplaceMap(Data().LmPtr()->Map());
+  Epetra_Vector& z = *Data().LmPtr();
 
-  Data().LmPtr()->Scale(1.0,*znew_ptr);
+  z.PutScalar( 0.0 );
+
+  if ( z.ReplaceMap( LMDoFRowMap( true ) ) )
+    dserror( "ReplaceMap failed!" );
+
+  LINALG::Export( xnew, z );
+
+  if ( z.ReplaceMap( SlDoFRowMap( true ) ) )
+    dserror( "ReplaceMap failed!" );
 
   // ---------------------------------------------------------------------
   // store the new Lagrange multiplier in the nodes
@@ -433,7 +554,7 @@ void CONTACT::AugmentedLagrangeStrategy::ResetLagrangeMultipliers(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::EvalForce(
+void CONTACT::AUG::Strategy::EvalForce(
     CONTACT::ParamsInterface& cparams)
 {
   /*--------------------------------------------------------------*
@@ -479,7 +600,7 @@ void CONTACT::AugmentedLagrangeStrategy::EvalForce(
   SplitMortar();
 
   // initialize all rhs vectors and linearization matrices
-  Initialize();
+  Initialize( cparams.GetActionType() );
 
   // --- Assemble the ride hand side terms -------------------------------
   AssembleContactRHS();
@@ -495,12 +616,12 @@ void CONTACT::AugmentedLagrangeStrategy::EvalForce(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::AssembleContactRHS()
+bool CONTACT::AUG::Strategy::AssembleContactRHS()
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
-    return;
+    return false;
   /*--------------------------------------------------------------------*
    |             ASSEMBLE THE CONTACT RIGHT HAND SIDE                   |
    *--------------------------------------------------------------------*/
@@ -527,12 +648,12 @@ void CONTACT::AugmentedLagrangeStrategy::AssembleContactRHS()
     interface_[i]->AssembleAugInactiveRhs(Data().InactiveRhs(),Data().Cn());
   }
 
-  return;
+  return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::AssembleContactStiff()
+void CONTACT::AUG::Strategy::AssembleContactStiff()
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -556,7 +677,7 @@ void CONTACT::AugmentedLagrangeStrategy::AssembleContactStiff()
     // --- Constraints --------------------------------------------------
     // linearization w.r.t. LM
     interface_[i]->AssembleDLmTLmTMatrix(Data().DLmTLmTMatrix());
-    interface_[i]->AssembleAugInactiveMatrix(Data().InactiveMatrix(),Data().Cn());
+    interface_[i]->AssembleAugInactiveDiagMatrix(Data().InactiveDiagMatrix(),Data().Cn());
     // linearization w.r.t. displ.
     // active - normal direction
     interface_[i]->AssembleDLmNWGapLinMatrix(Data().DLmNWGapLinMatrix());
@@ -589,7 +710,6 @@ void CONTACT::AugmentedLagrangeStrategy::AssembleContactStiff()
   // --- Constraints ----------------------------------------------------
   // linearization w.r.t. LM
   Data().DLmTLmTMatrix().Complete(Data().GActiveTDofRowMap(),Data().GActiveTDofRowMap());
-  Data().InactiveMatrix().Complete(*gAugInactiveSlaveDofs,*gAugInactiveSlaveDofs);
   // linearization w.r.t. displ.
   Data().DLmNWGapLinMatrix().Complete(SlMaDoFRowMap(true),Data().GActiveNDofRowMap());
   Data().DLmTLmTLinMatrix().Complete(SlDoFRowMap(true),Data().GActiveTDofRowMap());
@@ -601,13 +721,12 @@ void CONTACT::AugmentedLagrangeStrategy::AssembleContactStiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::UpdateActiveSetSemiSmooth(
+void CONTACT::AUG::Strategy::UpdateActiveSetSemiSmooth(
     const bool& correction)
 {
   // get out of here if not in the semi-smooth Newton case
   // (but before doing this, check if there are invalid active nodes)
-  bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
-  if (!semismooth)
+  if ( not Data().IsSemiSmoothNewton() )
   {
     // loop over all interfaces
     for (std::size_t i=0; i<interface_.size();++i)
@@ -639,7 +758,7 @@ void CONTACT::AugmentedLagrangeStrategy::UpdateActiveSetSemiSmooth(
   Data().IsActiveSetConverged() = true;
 
   // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for (unsigned i=0; i<interface_.size(); ++i)
   {
     // loop over all slave nodes of the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
@@ -658,8 +777,8 @@ void CONTACT::AugmentedLagrangeStrategy::UpdateActiveSetSemiSmooth(
       const double& cn = Data().Cn()[Data().Cn().Map().LID(gid)];
 
       // compute averaged weighted gap
-      double kappa = cnode->CoData().GetKappa();
-      double awgap = cnode->CoData().GetWGap();
+      double kappa = cnode->AugData().GetKappa();
+      double awgap = cnode->AugData().GetWGap();
       // TODO
       //std::cout << cnode->Id() << " | " << cnode->X()[0] << ", " << cnode->X()[1] <<
       //    " | " << cnode->CoData().GetWGap() << std::endl;
@@ -723,8 +842,22 @@ void CONTACT::AugmentedLagrangeStrategy::UpdateActiveSetSemiSmooth(
   }
 
   // check the convergence of the active set
-  Data().IsActiveSetConverged() =
-      Data().GActiveNodeRowMap().SameAs(Data().GOldActiveSlaveNodes());
+  if ( Data().GActiveNodeRowMap().SameAs(Data().GOldActiveSlaveNodes()) )
+  {
+    Data().IsActiveSetConverged() = true;
+  }
+  else
+  {
+    Data().IsActiveSetConverged() = false;
+    Data().SetVectorMapsValid( false );
+    Data().SetMatrixMapsValid( false );
+
+    // reset the active/inactive state vectors
+    Data().Potential().Setup( true );
+  }
+
+  // set the new active/inactive state
+  Data().Potential().SetActiveInactiveState();
 
   // update the history information only if it's no correction step of the active set
   if (!correction)
@@ -749,7 +882,7 @@ void CONTACT::AugmentedLagrangeStrategy::UpdateActiveSetSemiSmooth(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::EvalStrContactRHS()
+void CONTACT::AUG::Strategy::EvalStrContactRHS()
 {
   if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
   {
@@ -765,41 +898,38 @@ void CONTACT::AugmentedLagrangeStrategy::EvalStrContactRHS()
   // thus we have to export the products Mold^T * zold / M^T * z to fit
   if (IsSelfContact())
     dserror("ERROR: Augmented Lagrange Formulation: Self contact is not yet considered!");
-  // if there is no self contact everything is ok
-  else
-  {
-    Teuchos::RCP<Epetra_Vector> augLmN = LINALG::CreateVector(Data().GActiveNDofRowMap(),true);
-    // build the augmented Lagrangian multiplier vector
-    augLmN->Update(1.0,Data().AWGap(),0.0);
-    // scale by cn
-    MultiplyElementwise(Data().Cn(),Data().GActiveNodeRowMap(),*augLmN,false);
-    augLmN->Update(1.0,Data().LmN(),-1.0);
 
-    // --- add contact force terms
-    // *** Slave side ***
-    Teuchos::RCP<Epetra_Vector> augfs = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-    Data().DMatrix().Multiply(true,*augLmN,*augfs);
-    Teuchos::RCP<Epetra_Vector> augfs_exp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*augfs,*augfs_exp);
-    Data().StrContactRhs().Scale(-1.0,*augfs_exp);
+  Teuchos::RCP<Epetra_Vector> augLmN = LINALG::CreateVector(Data().GActiveNDofRowMap(),true);
+  // build the augmented Lagrangian multiplier vector
+  augLmN->Update(1.0,Data().AWGap(),0.0);
+  // scale by cn
+  MultiplyElementwise(Data().Cn(),Data().GActiveNodeRowMap(),*augLmN,false);
+  augLmN->Update(1.0,Data().LmN(),-1.0);
 
-    // Master side
-    Teuchos::RCP<Epetra_Vector> augfm = Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true)));
-    Data().MMatrix().Multiply(true,*augLmN,*augfm);
-    Teuchos::RCP<Epetra_Vector> augfm_exp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*augfm,*augfm_exp);
-    Data().StrContactRhs().Update(-1.0,*augfm_exp,1.0);
+  // --- add contact force terms
+  // *** Slave side ***
+  Teuchos::RCP<Epetra_Vector> augfs = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+  Data().DMatrix().Multiply(true,*augLmN,*augfs);
+  Teuchos::RCP<Epetra_Vector> augfs_exp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  LINALG::Export(*augfs,*augfs_exp);
+  Data().StrContactRhs().Scale(-1.0,*augfs_exp);
 
-    // Check linear and angular momentum conservation
-    CheckConservationLaws(*augfs,*augfm);
-  }
+  // Master side
+  Teuchos::RCP<Epetra_Vector> augfm = Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true)));
+  Data().MMatrix().Multiply(true,*augLmN,*augfm);
+  Teuchos::RCP<Epetra_Vector> augfm_exp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  LINALG::Export(*augfm,*augfm_exp);
+  Data().StrContactRhs().Update(-1.0,*augfm_exp,1.0);
+
+  // Check linear and angular momentum conservation
+  CheckConservationLaws(*augfs,*augfm);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::EvalConstrRHS()
+void CONTACT::AUG::Strategy::EvalConstrRHS()
 {
   if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
   {
@@ -809,30 +939,15 @@ void CONTACT::AugmentedLagrangeStrategy::EvalConstrRHS()
   }
 
   // initialize constraint r.h.s. (still with wrong map)
-  Teuchos::RCP<Epetra_Vector> augConstrRhs = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true),true));
+  Teuchos::RCP<Epetra_Vector> augConstrRhs =
+      Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true),true));
 
   // We solve for the incremental Lagrange multiplier dz_. Hence,
   // we can keep the contact force terms on the right-hand side!
-
-  // ToDo Three export vectors seem unnecessary and can be replaced by scaling a general export vector
-  // with zero, between the different steps! Check for possible performance gain!
-  // Add active constraints in normal direction:
-  Teuchos::RCP<Epetra_Vector> wGapRhs_exp = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  LINALG::Export(Data().WGap(),*wGapRhs_exp);
-  augConstrRhs->Update(1.0,*wGapRhs_exp,0.0);
-
-  // Add inactive constraints
-  Teuchos::RCP<Epetra_Vector> augInactiveRhs_exp = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  LINALG::Export(Data().InactiveRhs(),*augInactiveRhs_exp);
-  augConstrRhs->Update(1.0,*augInactiveRhs_exp,1.0);
-
-  // Add tangential frictionless constraints
-  Teuchos::RCP<Epetra_Vector> dLmTLmTRhs_exp = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  LINALG::Export(Data().DLmTLmTRhs(),*dLmTLmTRhs_exp);
-  augConstrRhs->Update(1.0,*dLmTLmTRhs_exp,1.0);
+  AddContributionsToConstrRHS( *augConstrRhs );
 
   // replace row map
-  augConstrRhs->ReplaceMap(LMDoFRowMap(true));
+  augConstrRhs->ReplaceMap( LMDoFRowMap(true) );
 
   // export and set constraint rhs vector
   if (ParRedist())
@@ -849,7 +964,22 @@ void CONTACT::AugmentedLagrangeStrategy::EvalConstrRHS()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::CheckConservationLaws(
+void CONTACT::AUG::Strategy::AddContributionsToConstrRHS(
+    Epetra_Vector& augConstrRhs ) const
+{
+  // Add active constraints in normal direction:
+  LINALG::AssembleMyVector( 0.0, augConstrRhs, 1.0, *Data().WGapPtr() );
+
+  // Add inactive constraints
+  LINALG::AssembleMyVector( 1.0, augConstrRhs, 1.0, *Data().InactiveRhsPtr() );
+
+  // Add tangential frictionless constraints
+  LINALG::AssembleMyVector( 1.0, augConstrRhs, 1.0, *Data().DLmTLmTRhsPtr() );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::CheckConservationLaws(
     const Epetra_Vector& augfs,
     const Epetra_Vector& augfm)
 {
@@ -859,8 +989,7 @@ void CONTACT::AugmentedLagrangeStrategy::CheckConservationLaws(
   /****************** SLAVE SIDE ********************************************************/
   // standard Lagrange multiplier fraction
   Teuchos::RCP<Epetra_Vector> augfs_lm = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  Teuchos::RCP<Epetra_Vector> z_exp = Teuchos::rcp(new Epetra_Vector(Data().GActiveNDofRowMap()));
-  LINALG::Export(*z_,*z_exp);
+  Teuchos::RCP<Epetra_Vector> z_exp = LINALG::ExtractMyVector( *z_, Data().GActiveNDofRowMap() );
   Data().DMatrix().Multiply(true,*z_exp,*augfs_lm);
   // regularization fraction
   Teuchos::RCP<Epetra_Vector> augfs_g = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
@@ -1014,7 +1143,7 @@ void CONTACT::AugmentedLagrangeStrategy::CheckConservationLaws(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::AugForces(
+void CONTACT::AUG::Strategy::AugForces(
     Epetra_Vector& gAugFs_lm,
     Epetra_Vector& gAugFs_g,
     Epetra_Vector& gAugFm_lm,
@@ -1070,7 +1199,7 @@ void CONTACT::AugmentedLagrangeStrategy::AugForces(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedLagrangeStrategy::OutputStresses()
+void CONTACT::AUG::Strategy::OutputStresses()
 {
   // reset contact stress class variables
   Data().StressNormalPtr() = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
@@ -1134,7 +1263,7 @@ void CONTACT::AugmentedLagrangeStrategy::OutputStresses()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::AugmentedLagrangeStrategy::
+Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::
     GetRhsBlockPtr(const enum DRT::UTILS::VecBlockType& bt) const
 {
   // if there are no active contact contributions
@@ -1167,7 +1296,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AugmentedLagrangeStrategy::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AugmentedLagrangeStrategy::
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::Strategy::
     GetMatrixBlockPtr(const enum DRT::UTILS::MatBlockType& bt) const
 {
   // if there are no active contact contributions
@@ -1183,10 +1312,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AugmentedLagrangeStrategy::
           new LINALG::SparseMatrix(SlMaDoFRowMap(true),100,false,true));
 
       // build matrix kdd
-      mat_ptr->Add(*Data().DGLmSlLinMatrixPtr(),false,-1.0,1.0);
-      mat_ptr->Add(*Data().DGLmMaLinMatrixPtr(),false,-1.0,1.0);
-      mat_ptr->Add(*Data().DGGSlLinMatrixPtr(),false,-1.0,1.0);
-      mat_ptr->Add(*Data().DGGMaLinMatrixPtr(),false,-1.0,1.0);
+      AddContributionsToMatrixBlockDisplDispl( *mat_ptr );
       mat_ptr->Complete(SlMaDoFRowMap(true),SlMaDoFRowMap(true));
 
       // transform parallel row/column distribution of matrix kdd
@@ -1199,11 +1325,11 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AugmentedLagrangeStrategy::
     }
     case DRT::UTILS::block_displ_lm:
     {
-      // build constraint matrix kdz
       Teuchos::RCP<LINALG::SparseMatrix> kdz_ptr =
           Teuchos::rcp(new LINALG::SparseMatrix(*Data().GDispDofRowMapPtr(),100,false,true));
-      kdz_ptr->Add(*Data().DMatrixPtr(),true,-1.0,1.0);
-      kdz_ptr->Add(*Data().MMatrixPtr(),true,-1.0,1.0);
+
+      // build constraint matrix kdz
+      AddContributionsToMatrixBlockDisplLm( *kdz_ptr );
       kdz_ptr->Complete(SlDoFRowMap(true),*Data().GDispDofRowMapPtr());
 
       // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
@@ -1219,14 +1345,13 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AugmentedLagrangeStrategy::
     }
     case DRT::UTILS::block_lm_displ:
     {
-      // build constraint matrix kzd
       Teuchos::RCP<Epetra_Map> gAugInactiveSlaveDofs =
           LINALG::SplitMap(SlDoFRowMap(true),*Data().GActiveDofRowMapPtr());
       Teuchos::RCP<LINALG::SparseMatrix> kzd_ptr =
           Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true),100,false,true));
-      kzd_ptr->Add(*Data().DLmNWGapLinMatrixPtr(),false,1.0,1.0);
-      kzd_ptr->Add(*Data().DLmTLmTLinMatrixPtr(),false,1.0,1.0);
-      kzd_ptr->Add(*Data().InactiveLinMatrixPtr(),false,1.0,1.0);
+
+      // build constraint matrix kzd
+      AddContributionsToMatrixBlockLmDispl( *kzd_ptr );
       kzd_ptr->Complete(*Data().GDispDofRowMapPtr(),SlDoFRowMap(true));
 
       // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
@@ -1242,11 +1367,11 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AugmentedLagrangeStrategy::
     }
     case DRT::UTILS::block_lm_lm:
     {
-      // build constraint matrix kzz
       Teuchos::RCP<LINALG::SparseMatrix> kzz_ptr =
           Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true),100,false,true));
-      kzz_ptr->Add(*Data().InactiveMatrixPtr(),false,1.0,1.0);
-      kzz_ptr->Add(*Data().DLmTLmTMatrixPtr(),false,1.0,1.0);
+
+      // build constraint matrix kzz
+      AddContributionsToMatrixBlockLmLm( *kzz_ptr );
       kzz_ptr->Complete(SlDoFRowMap(true),SlDoFRowMap(true));
 
       // transform constraint matrix kzz to lmdofmap
@@ -1273,7 +1398,57 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AugmentedLagrangeStrategy::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::AugmentedLagrangeStrategy::ConstraintNorm() const
+void CONTACT::AUG::Strategy::AddContributionsToMatrixBlockDisplDispl(
+    LINALG::SparseMatrix& kdd ) const
+{
+  kdd.Add(*Data().DGLmSlLinMatrixPtr(),false,-1.0,1.0);
+  kdd.Add(*Data().DGLmMaLinMatrixPtr(),false,-1.0,1.0);
+  kdd.Add(*Data().DGGSlLinMatrixPtr(),false,-1.0,1.0);
+  kdd.Add(*Data().DGGMaLinMatrixPtr(),false,-1.0,1.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::AddContributionsToMatrixBlockDisplLm(
+    LINALG::SparseMatrix& kdz ) const
+{
+  kdz.Add(*Data().DMatrixPtr(),true,-1.0,1.0);
+  kdz.Add(*Data().MMatrixPtr(),true,-1.0,1.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::AddContributionsToMatrixBlockLmDispl(
+    LINALG::SparseMatrix& kzd ) const
+{
+  kzd.Add(*Data().DLmNWGapLinMatrixPtr(),false,1.0,1.0);
+  kzd.Add(*Data().DLmTLmTLinMatrixPtr(),false,1.0,1.0);
+  kzd.Add(*Data().InactiveLinMatrixPtr(),false,1.0,1.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::AddContributionsToMatrixBlockLmLm(
+    LINALG::SparseMatrix& kzz ) const
+{
+
+  if ( LINALG::InsertMyRowDiagonalIntoUnfilledMatrix( kzz,
+      *Data().InactiveDiagMatrixPtr() ) )
+  {
+    Epetra_Vector kzz_diag = Epetra_Vector( kzz.RangeMap(), true );
+    LINALG::AssembleMyVector( 0.0, kzz_diag, 1.0, *Data().InactiveDiagMatrixPtr() );
+
+    // if the matrix is filled, we try to replace the diagonal
+    if ( kzz.ReplaceDiagonalValues( kzz_diag ) )
+      dserror( "ReplaceDiagonalValues failed!" );
+  }
+
+  kzz.Add( *Data().DLmTLmTMatrixPtr(), false, 1.0, 1.0 );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double CONTACT::AUG::Strategy::ConstraintNorm() const
 {
   double nrm2 = 0.0;
   Data().ConstrRhsPtr()->Norm2(&nrm2);

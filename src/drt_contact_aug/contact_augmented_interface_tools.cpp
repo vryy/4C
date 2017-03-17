@@ -25,11 +25,13 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
 
+#include "../headers/pairedvector.H"
+
 
 /*----------------------------------------------------------------------*
  | Finite difference check for KappaLin                  hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckKappaLin(
+void CONTACT::AUG::Interface::FDCheckKappaLin(
     CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
@@ -57,11 +59,11 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin(
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if ((int) cnode->CoData().GetKappaLin().size()==0)
+    if ((int) cnode->AugData().GetKappaLin().size()==0)
       continue;
 
-    refKappa[gid]    = cnode->CoData().GetKappa();
-    refKappaLin[gid] = cnode->CoData().GetKappaLin();
+    refKappa[gid]    = cnode->AugData().GetKappa();
+    refKappaLin[gid] = cnode->AugData().GetKappaLin();
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
@@ -117,10 +119,10 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin(
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if ((int) kcnode->CoData().GetKappaLin().size()==0)
+      if ((int) kcnode->AugData().GetKappaLin().size()==0)
         continue;
 
-      newKappa = kcnode->CoData().GetKappa();
+      newKappa = kcnode->AugData().GetKappa();
 
       // print results (derivatives) to screen
       if (abs(newKappa-refKappa[kgid]) > 1e-12)
@@ -226,10 +228,10 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin(
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if ((int) kcnode->CoData().GetKappaLin().size()==0)
+      if ((int) kcnode->AugData().GetKappaLin().size()==0)
               continue;
 
-      newKappa = kcnode->CoData().GetKappa();
+      newKappa = kcnode->AugData().GetKappa();
 
       // print results (derivatives) to screen
 
@@ -305,7 +307,7 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin(
 /*----------------------------------------------------------------------*
  | Finite difference check for AWGapLin                  hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckAWGapLin(
+void CONTACT::AUG::Interface::FDCheckAWGapLin(
     CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
@@ -333,18 +335,18 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin(
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if ((int) cnode->CoData().GetAWGapLin().size()==0)
+    if ((int) cnode->AugData().GetAWGapLin().size()==0)
       dserror("Linearization map shouldn't be empty for active nodes!");
 
-    double wg = cnode->CoData().GetWGap();
-    double kappa = cnode->CoData().GetKappa();
+    double wg = cnode->AugData().GetWGap();
+    double kappa = cnode->AugData().GetKappa();
     if (wg==1.0e12 or wg==0.0)
       dserror("The weighted gap is at the active node % equal 0.0 or 1.0e12!",gid);
     if (kappa==1.0e12 or kappa==0.0)
       dserror("The scaling factor kappa is at the active node % equal 0.0 or 1.0e12!",gid);
 
     refAWGap[gid]    = wg/kappa;
-    refAWGapLin[gid] = cnode->CoData().GetAWGapLin();
+    refAWGapLin[gid] = cnode->AugData().GetAWGapLin();
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
@@ -402,11 +404,11 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin(
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if ((int) kcnode->CoData().GetAWGapLin().size()==0)
+      if ((int) kcnode->AugData().GetAWGapLin().size()==0)
         dserror("Linearization map shouldn't be empty for active nodes!");
 
-      double wg = kcnode->CoData().GetWGap();
-      double kappa = kcnode->CoData().GetKappa();
+      double wg = kcnode->AugData().GetWGap();
+      double kappa = kcnode->AugData().GetKappa();
       if (wg==1.0e12 or wg==0.0)
         dserror("The weighted gap is at the active node % equal 0.0 or 1.0e12!",kgid);
       if (kappa==1.0e12 or kappa==0.0)
@@ -520,11 +522,11 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin(
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if ((int) kcnode->CoData().GetAWGapLin().size()==0)
+      if ((int) kcnode->AugData().GetAWGapLin().size()==0)
         dserror("Linearization map shouldn't be empty for active nodes!");
 
-      double wg = kcnode->CoData().GetWGap();
-      double kappa = kcnode->CoData().GetKappa();
+      double wg = kcnode->AugData().GetWGap();
+      double kappa = kcnode->AugData().GetKappa();
       if (wg==1.0e12 or wg==0.0)
         dserror("The weighted gap is at the active node % equal 0.0 or 1.0e12!",kgid);
       if (kappa==1.0e12 or kappa==0.0)
@@ -603,7 +605,7 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin(
 /*----------------------------------------------------------------------*
  | Finite difference check for VarWGapLinSl              hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl(
+void CONTACT::AUG::Interface::FDCheckVarWGapLinSl(
     CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
@@ -634,13 +636,13 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl(
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if ((int) cnode->CoData().GetVarWGapSl().size()==0)
+    if ((int) cnode->AugData().GetVarWGapSl().size()==0)
       continue;
 
     // get reference values
-    refVarWGapSl[gid].insert(cnode->CoData().GetVarWGapSl().begin(),cnode->CoData().GetVarWGapSl().end());
+    refVarWGapSl[gid].insert(cnode->AugData().GetVarWGapSl().begin(),cnode->AugData().GetVarWGapSl().end());
 
-    refVarWGapLinSl[gid] = cnode->CoData().GetVarWGapLinSl();
+    refVarWGapLinSl[gid] = cnode->AugData().GetVarWGapLinSl();
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
@@ -696,12 +698,12 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl(
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if ((int)(kcnode->CoData().GetVarWGapSl().size())==0)
+      if ((int)(kcnode->AugData().GetVarWGapSl().size())==0)
         continue;
 
       typedef GEN::pairedvector<int,std::pair<int,double> >::const_iterator CI;
 
-      GEN::pairedvector<int,std::pair<int,double> >& newVarWGapSl = kcnode->CoData().GetVarWGapSl();
+      GEN::pairedvector<int,std::pair<int,double> >& newVarWGapSl = kcnode->AugData().GetVarWGapSl();
 
       // print results (derivatives) to screen
       for (CI p=newVarWGapSl.begin(); p!=newVarWGapSl.end(); ++p)
@@ -812,12 +814,12 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl(
 
       int dim = kcnode->NumDof();
 
-      if ((int)(kcnode->CoData().GetVarWGapLinSl().size())==0)
+      if ((int)(kcnode->AugData().GetVarWGapLinSl().size())==0)
         continue;
 
       typedef GEN::pairedvector<int,std::pair<int,double> >::const_iterator CI;
 
-      GEN::pairedvector<int,std::pair<int,double> >& newVarWGapSl = kcnode->CoData().GetVarWGapSl();
+      GEN::pairedvector<int,std::pair<int,double> >& newVarWGapSl = kcnode->AugData().GetVarWGapSl();
 
       // print results (derivatives) to screen
       for (CI p=newVarWGapSl.begin(); p!=newVarWGapSl.end(); ++p)
@@ -895,7 +897,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl(
 /*----------------------------------------------------------------------*
  | Finite difference check for VarWGapLinMa              hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa(
+void CONTACT::AUG::Interface::FDCheckVarWGapLinMa(
     CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
@@ -926,13 +928,13 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa(
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if ((int) cnode->CoData().GetVarWGapSl().size()==0)
+    if ((int) cnode->AugData().GetVarWGapSl().size()==0)
       continue;
 
     // get reference values
-    refVarWGapMa[gid]    = cnode->CoData().GetVarWGapMa();
+    refVarWGapMa[gid]    = cnode->AugData().GetVarWGapMa();
 
-    refVarWGapLinMa[gid] = cnode->CoData().GetVarWGapLinMa();
+    refVarWGapLinMa[gid] = cnode->AugData().GetVarWGapLinMa();
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
@@ -988,12 +990,12 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa(
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if ((int)(kcnode->CoData().GetVarWGapMa().size())==0)
+      if ((int)(kcnode->AugData().GetVarWGapMa().size())==0)
         continue;
 
       typedef std::map<int,std::pair<int,double> >::const_iterator CI;
 
-      newVarWGapMa = kcnode->CoData().GetVarWGapMa();
+      newVarWGapMa = kcnode->AugData().GetVarWGapMa();
 
       // print results (derivatives) to screen
       for (CI p=newVarWGapMa.begin(); p!=newVarWGapMa.end(); ++p)
@@ -1104,12 +1106,12 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa(
 
       int dim = kcnode->NumDof();
 
-      if ((int)(kcnode->CoData().GetVarWGapMa().size())==0)
+      if ((int)(kcnode->AugData().GetVarWGapMa().size())==0)
         continue;
 
       typedef std::map<int,std::pair<int,double> >::const_iterator CI;
 
-      newVarWGapMa = kcnode->CoData().GetVarWGapMa();
+      newVarWGapMa = kcnode->AugData().GetVarWGapMa();
 
       // print results (derivatives) to screen
       for (CI p=newVarWGapMa.begin(); p!=newVarWGapMa.end(); ++p)
@@ -1187,7 +1189,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa(
 /*----------------------------------------------------------------------*
  | Finite difference check for AugALin                  hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckAugALin(
+void CONTACT::AUG::Interface::FDCheckAugALin(
     CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
@@ -1201,7 +1203,6 @@ void CONTACT::AugmentedInterface::FDCheckAugALin(
 
   std::map<int,double> refAugA;
   std::map<int,std::map<int,double> > refAugALin;
-
   double newAugA = 0.0;
 
   int dim = Dim();
@@ -1215,11 +1216,13 @@ void CONTACT::AugmentedInterface::FDCheckAugALin(
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if ((int) cnode->CoData().GetAugALin().size()==0)
+    if ((int) cnode->AugData().GetAugALin().size()==0)
       continue;
 
-    refAugA[gid]    = cnode->CoData().GetAugA();
-    refAugALin[gid] = cnode->CoData().GetAugALin();
+    std::map<int,double> augALinMap( cnode->AugData().GetAugALin().begin(),
+        cnode->AugData().GetAugALin().end() );
+    refAugA[gid]    = cnode->AugData().GetAugA();
+    refAugALin[gid] = augALinMap;
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
@@ -1275,10 +1278,10 @@ void CONTACT::AugmentedInterface::FDCheckAugALin(
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if ((int) kcnode->CoData().GetAugALin().size()==0)
+      if ((int) kcnode->AugData().GetAugALin().size()==0)
         continue;
 
-      newAugA = kcnode->CoData().GetAugA();
+      newAugA = kcnode->AugData().GetAugA();
 
       // print results (derivatives) to screen
       if (abs(newAugA-refAugA[kgid]) > 1e-12)
@@ -1384,10 +1387,10 @@ void CONTACT::AugmentedInterface::FDCheckAugALin(
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if ((int) kcnode->CoData().GetAugALin().size()==0)
+      if ((int) kcnode->AugData().GetAugALin().size()==0)
               continue;
 
-      newAugA = kcnode->CoData().GetAugA();
+      newAugA = kcnode->AugData().GetAugA();
 
       // print results (derivatives) to screen
 
@@ -1464,7 +1467,7 @@ void CONTACT::AugmentedInterface::FDCheckAugALin(
  | Update of interface related quantities                hiermeier 06/14|
  | during the global FD-check                                           |
  *----------------------------------------------------------------------*/
-bool CONTACT::AugmentedInterface::UpdateInterfaces(
+bool CONTACT::AUG::Interface::UpdateInterfaces(
     int gid,
     int dof,
     double delta,
