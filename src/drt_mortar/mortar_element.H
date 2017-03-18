@@ -17,6 +17,7 @@
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../headers/pairedvector.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "mortar_node.H"
 
 // forward declarations
