@@ -81,6 +81,8 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
   else if (action=="calc_stc_matrix")             act = So_hex8::calc_stc_matrix;
   else if (action=="calc_stc_matrix_inverse")     act = So_hex8::calc_stc_matrix_inverse;
+  else if (action=="calc_struct_predict") return 0;
+  else if (action== "calc_struct_recover") return 0;
   else
     {
       std::cout<<action<<std::endl;
@@ -158,7 +160,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         BuildElementMatrix(&elemat1,&stiffmatrix,&gradmatrix,NULL,&stabmatrix);
       }
       BuildElementVector(&elevec1,&force,&incomp);
-      AssembleVolume(params,volume);
+//      AssembleVolume(params,volume);
       // a desperate call for help
       //GnuplotOut(params,mystat,elevec1,elemat1);
     }
@@ -195,7 +197,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
                      NULL,&stiffmatrix,&gradmatrix,NULL,&stabmatrix,&force,&incomp,
                      NULL,NULL,&volume,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
       BuildElementVector(&elevec1,&force,&incomp);
-      AssembleVolume(params,volume);
+//      AssembleVolume(params,volume);
     }
     break;
 
@@ -251,7 +253,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       // assemble displacement pressure parts
       BuildElementMatrix(&elemat2,&massmatrix,NULL,NULL,NULL);
       BuildElementVector(&elevec1,&force,&incomp);
-      AssembleVolume(params,volume);
+//      AssembleVolume(params,volume);
     }
     break;
 

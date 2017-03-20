@@ -194,6 +194,7 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the model specific solution if necessary
       Teuchos::RCP<Epetra_Vector> rhs_ptr =
@@ -240,6 +241,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_incr_ptr =
@@ -289,6 +291,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_incr_ptr =
@@ -352,6 +355,7 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
   {
     case NOX::NLN::StatusTest::quantity_structure:
     case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    case NOX::NLN::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> model_xold_ptr =

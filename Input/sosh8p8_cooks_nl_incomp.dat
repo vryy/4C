@@ -40,6 +40,7 @@ THERM_TEMPERATURE               No
 PROBLEMTYP                      Structure
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DAMPING                         No
 DYNAMICTYP                      Statics

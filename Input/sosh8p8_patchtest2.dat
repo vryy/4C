@@ -35,6 +35,7 @@ FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
