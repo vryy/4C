@@ -1,18 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupanisopow.cpp
-\brief
 
+\brief MAT 1 CoupAnisoPow C 100 D 2.0 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
 
-the input line should read
-   MAT 1 CoupAnisoPow C 100 D 2.0 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+\level 3
 
-<pre>
-Maintainer: Nagler Andreas
-            nagler@lnm.mw.tum.de
-            089/289 15249
-</pre>
-*/
+\maintainer Martin Pfaller
+            pfaller@lnm.mw.tum.de
+            089/289 15264
 
 /*----------------------------------------------------------------------*/
 /* headers */

@@ -1,15 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupanisoneohooke_VarProp.H
-\brief
-This file contains the routines required for the anisotropic material
-using a neo-Hooke material according to
 
-<pre>
-Maintainer: Cristobal Bertoglio
-            bertoglio@lnm.mw.tum.de
+\brief This file contains the routines required for the anisotropic material using a neo-Hooke material according to
+
+\level 3
+
+\maintainer Martin Pfaller
+            pfaller@lnm.mw.tum.de
             089/289 15264
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISONEOHOOKE_VARPROP_H_

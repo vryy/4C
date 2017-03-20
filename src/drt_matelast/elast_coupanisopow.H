@@ -1,15 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupanisopow.H
-\brief
-This file contains the routines required for the anisotropic material
-using a pow-like material
 
-<pre>
-Maintainer: Andreas Nagler
-            nagler@lnm.mw.tum.de
+\brief This file contains the routines required for the anisotropic material using a pow-like material
+
+\level 3
+
+\maintainer Martin Pfaller
+            pfaller@lnm.mw.tum.de
             089/289 15264
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOPOW_H_

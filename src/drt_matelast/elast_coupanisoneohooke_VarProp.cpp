@@ -1,17 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupanisoneohooke_VarProp.cpp
-\brief
 
+\brief MAT 1 CoupAnisoNeoHooke_VarProp C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
 
-the input line should read
-  MAT 1 CoupAnisoNeoHooke_VarProp C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+\level 3
 
-<pre>
-Maintainer: Cristobal Bertoglio
-            bertoglio@lnm.mw.tum.de
+\maintainer Martin Pfaller
+            pfaller@lnm.mw.tum.de
             089/289 15264
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
