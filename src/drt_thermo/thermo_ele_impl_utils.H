@@ -96,7 +96,7 @@ namespace THR
   struct DisTypeToSTRNumGaussPoints {};
   template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::hex8>    { static const int nquad =  8; };
   template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::tet4>    { static const int nquad =  5; };
-  template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::tet10>   { static const int nquad =  5; };
+  template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::tet10>   { static const int nquad = 11; };
   template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::hex27>   { static const int nquad = 27; };
   template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::hex20>   { static const int nquad = 27; };
   template<> struct DisTypeToSTRNumGaussPoints<DRT::Element::hex18>   { static const int nquad = 18; };
