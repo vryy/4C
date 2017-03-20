@@ -3115,7 +3115,8 @@ void CONTACT::CoAbstractStrategy::ResetLagrangeMultipliers(
 bool CONTACT::CoAbstractStrategy::IsSaddlePointSystem() const
 {
   if ((stype_==INPAR::CONTACT::solution_lagmult or
-      stype_==INPAR::CONTACT::solution_augmented) and
+       stype_==INPAR::CONTACT::solution_augmented or
+       stype_==INPAR::CONTACT::solution_steepest_ascent) and
       SystemType()==INPAR::CONTACT::system_saddlepoint)
   {
     if (IsInContact() or WasInContact() or WasInContactLastTimeStep())

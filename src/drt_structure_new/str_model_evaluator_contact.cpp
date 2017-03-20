@@ -923,6 +923,12 @@ void STR::MODELEVALUATOR::Contact::PrintBanner() const
           std::cout << "===== (Saddle point formulation) ===============================\n";
           std::cout << "================================================================\n\n";
         }
+        else if (soltype == INPAR::CONTACT::solution_steepest_ascent && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          std::cout << "================================================================\n";
+          std::cout << "===== Steepest Ascent strategy =================================\n";
+          std::cout << "================================================================\n\n";
+        }
         else if (soltype == INPAR::CONTACT::solution_xcontact && shapefcn == INPAR::MORTAR::shape_standard)
         {
           std::cout << "================================================================\n";

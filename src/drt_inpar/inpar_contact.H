@@ -44,13 +44,14 @@ namespace INPAR
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy
     {
-      solution_vague,    ///< no solving strategy defined
-      solution_lagmult,  ///< method of Lagrange multipliers
-      solution_penalty,  ///< penalty approach
-      solution_uzawa,    ///< Uzawa augmented Lagrange approach
-      solution_augmented,///< augmented Lagrange approach
-      solution_xcontact, ///< eXtended contact approach
-      solution_nitsche   ///< Nitsche contact solution method
+      solution_vague,           ///< no solving strategy defined
+      solution_lagmult,         ///< method of Lagrange multipliers
+      solution_penalty,         ///< penalty approach
+      solution_uzawa,           ///< Uzawa augmented Lagrange approach
+      solution_augmented,       ///< augmented Lagrange approach
+      solution_steepest_ascent, ///< steepest ascent approach (based on the augmented formulation)
+      solution_xcontact,        ///< eXtended contact approach
+      solution_nitsche          ///< Nitsche contact solution method
     };
 
     /// Type of linear system setup and solution

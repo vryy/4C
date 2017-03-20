@@ -43,6 +43,8 @@
 #include "contact_tsi_interface.H"
 #include "../drt_contact_aug/contact_augmented_interface.H"
 #include "../drt_contact_aug/contact_augmented_strategy.H"
+#include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
+#include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
 #include "../drt_contact_xcontact/xcontact_interface.H"
 #include "../drt_contact_xcontact/xcontact_strategy.H"
 #include "contact_poro_lagrange_strategy.H"
@@ -807,6 +809,11 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
        newinterface = Teuchos::rcp(new CONTACT::AUG::Interface( groupid1,
            Comm(), Dim(), icparams, isself[0], redundant ) );
     }
+    else if ( stype == INPAR::CONTACT::solution_steepest_ascent )
+    {
+      newinterface = Teuchos::rcp(new CONTACT::AUG::STEEPESTASCENT::Interface( groupid1,
+           Comm(), Dim(), icparams, isself[0], redundant ) );
+    }
     else if ( stype == INPAR::CONTACT::solution_xcontact )
     {
       icparams.set<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> >(
@@ -1389,6 +1396,19 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   {
     data_ptr = Teuchos::rcp(new AUG::DataContainer());
     strategy_ptr = Teuchos::rcp(new AUG::Strategy(
+        data_ptr,
+        Discret().DofRowMap(),
+        Discret().NodeRowMap(),
+        cparams,
+        interfaces,
+        Dim(),
+        CommPtr(),
+        dof_offset));
+  }
+  else if (stype == INPAR::CONTACT::solution_steepest_ascent )
+  {
+    data_ptr = Teuchos::rcp(new AUG::STEEPESTASCENT::DataContainer());
+    strategy_ptr = Teuchos::rcp(new AUG::STEEPESTASCENT::Strategy(
         data_ptr,
         Discret().DofRowMap(),
         Discret().NodeRowMap(),
