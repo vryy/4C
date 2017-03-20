@@ -24,6 +24,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
 
 #include <Epetra_Vector.h>
 
@@ -245,9 +246,9 @@ void STR::IMPLICIT::GenAlphaLieGroup::AddViscoMassContributions(
     Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
-  STR::AssembleVector(1.0,f,1.0,*fvisconp_ptr_);
+  LINALG::AssembleMyVector(1.0,f,1.0,*fvisconp_ptr_);
   // inertia forces at t_{n+1}
-  STR::AssembleVector(1.0,f,1.0,*finertianp_ptr_);
+  LINALG::AssembleMyVector(1.0,f,1.0,*finertianp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*

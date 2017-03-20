@@ -23,6 +23,8 @@
 
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
+
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -196,7 +198,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForceStiff()
 bool STR::MODELEVALUATOR::SpringDashpot::AssembleForce(Epetra_Vector& f,
     const double & timefac_np) const
 {
-  STR::AssembleVector(1.0,f,timefac_np,*fspring_np_ptr_);
+  LINALG::AssembleMyVector(1.0,f,timefac_np,*fspring_np_ptr_);
   return true;
 }
 

@@ -179,10 +179,29 @@ namespace IMPLICIT {
   {
   public:
     //! constructor
-    Generic(const Teuchos::RCP<const ::STR::IMPLICIT::Generic>& implicit_ptr);
+    Generic( const ::STR::IMPLICIT::Generic& implicit )
+        : impl_(implicit),
+          default_step_(implicit.GetDefaultStepLength())
+    { /* empty */ };
 
     //! destructor
     virtual ~Generic() {};
+
+    /*! \brief Derived function, which is called at the very beginning of a call to
+     *  NOX::NLN::Group::computeX()
+     *
+     *  This method is used to get access to the current direction vector and
+     *  to augment/modify the direction vector before the actual solution update is
+     *  performed. One possible scenario is the CONTACT::AUG::STEEPESTASCENT::Strategy,
+     *  where we calculate the Lagrange multiplier increment in a post-processing
+     *  step.
+     *
+     *  \author hiermeier \date 03/17 */
+    virtual void runPreComputeX(
+        const NOX::NLN::Group& input_grp,
+        const Epetra_Vector& dir,
+        const double& step,
+        const NOX::NLN::Group& curr_grp);
 
     /*! \brief Derived function, which is called at the end of a call to
      * NOX::NLN::Group::computeX()
@@ -192,7 +211,9 @@ namespace IMPLICIT {
      *  examples on element level are the EAS recovery, since the EAS DoFs are
      *  condensed and the calculation of the strain increments. The displacement
      *  increment plays also a role in other condensation approaches, like the
-     *  mortar dual strategies. */
+     *  mortar dual strategies.
+     *
+     *  \author hiermeier \date 07/16 */
     virtual void runPostComputeX(
         const NOX::NLN::Group& input_grp,
         const Epetra_Vector& dir,
@@ -200,14 +221,61 @@ namespace IMPLICIT {
         const NOX::NLN::Group& curr_grp);
 
   private:
-    //! pointer to the STR::IMPLICIT::Generic objects (read-only)
-    Teuchos::RCP<const ::STR::IMPLICIT::Generic> impl_ptr_;
+    //! reference to the STR::IMPLICIT::Generic object (read-only)
+    const ::STR::IMPLICIT::Generic& impl_;
 
+    //! default step length
     const double default_step_;
+
   }; // class Generic
 } // namespace IMPLICIT
 } // namespace PrePostOp
 } // namespace GROUP
+namespace Solver {
+namespace PrePostOp {
+namespace IMPLICIT {
+  /*! \brief Implicit time integration helper class
+   *
+   *  This class is an implementation of the NOX::Abstract::PrePostOperator
+   *  and is used to modify the step() routine of the given NOX::Solver::Generic
+   *  class.
+   *  It's called by the wrapper classes NOX::Solver::PrePostOperator and
+   *  NOX::PrePostOperatorVector.
+   *
+   *  \author Michael Hiermeier \date 03/17 */
+  class Generic : public NOX::Abstract::PrePostOperator
+  {
+  public:
+    /// constructor
+    Generic( const ::STR::IMPLICIT::Generic& implicit )
+        : impl_( implicit ),
+          default_step_(implicit.GetDefaultStepLength())
+    { /* empty */ };
+
+    /// destructor
+    virtual ~Generic() {};
+
+    /*! \brief Derived function, which is called at the very end of a call to
+     *  NOX::Solver::Generic::step()
+     *
+     *  This method gives you the opportunity to do something in the end of
+     *  a successful or unsuccessful nonlinear solver step. It is called after
+     *  a possible LineSearch or other globalization method has been used.
+     *
+     *  \author hiermeier \date 03/17 */
+    virtual void runPostIterate(const NOX::Solver::Generic& solver);
+
+  private:
+    //! reference to the STR::IMPLICIT::Generic object (read-only)
+    const ::STR::IMPLICIT::Generic& impl_;
+
+    //! default step length
+    const double default_step_;
+
+  };  // class Generic
+} // namespace IMPLICIT
+} // namespace PrePostOp
+} // namespace Solver
 } // namespace NLN
 } // namespace NOX
 

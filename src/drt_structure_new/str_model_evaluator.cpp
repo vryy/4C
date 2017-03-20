@@ -385,7 +385,7 @@ void STR::ModelEvaluator::RecoverState(
     const Epetra_Vector& dir,
     const double& step,
     const Epetra_Vector& xnew,
-    const bool& isdefaultstep) const
+    const bool isdefaultstep) const
 {
   CheckInitSetup();
   // set some parameters for the element evaluation
@@ -397,6 +397,40 @@ void STR::ModelEvaluator::RecoverState(
     (*me_iter)->RecoverState(xold,dir,xnew);
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::RunPreComputeX(
+    const Epetra_Vector& xold,
+    Epetra_Vector& dir_mutable,
+    const double& step,
+    const NOX::NLN::Group& curr_grp,
+    const bool isdefaultstep) const
+{
+  eval_data_ptr_->SetIsDefaultStep( isdefaultstep );
+  eval_data_ptr_->SetStepLength( step );
+
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin(); me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->RunPreComputeX( xold, dir_mutable, curr_grp );
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::RunPostIterate(
+    const NOX::Solver::Generic& solver,
+    const double step,
+    const bool isdefaultstep ) const
+{
+  eval_data_ptr_->SetIsDefaultStep( isdefaultstep );
+  eval_data_ptr_->SetStepLength( step );
+
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin(); me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->RunPostIterate( solver );
 }
 
 /*----------------------------------------------------------------------------*

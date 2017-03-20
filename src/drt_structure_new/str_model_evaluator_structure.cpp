@@ -26,6 +26,8 @@
 
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
+
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -188,14 +190,14 @@ bool STR::MODELEVALUATOR::Structure::EvaluateForceStiff()
 bool STR::MODELEVALUATOR::Structure::AssembleForce(Epetra_Vector& f,
     const double & timefac_np) const
 {
-  STR::AssembleVector(1.0,f,-timefac_np,FextNp());
-  STR::AssembleVector(1.0,f,timefac_np,FintNp());
+  LINALG::AssembleMyVector(1.0,f,-timefac_np,FextNp());
+  LINALG::AssembleMyVector(1.0,f,timefac_np,FintNp());
 
   // add the scaled force contributions of the old time step
   // structural dofs of the right-hand-side vector at t_{n+timefac_n} (read-only)
   Teuchos::RCP<const Epetra_Vector> fstructold_ptr =
       GState().GetFstructureOld();
-  STR::AssembleVector(1.0,f,1.0,*fstructold_ptr);
+  LINALG::AssembleMyVector(1.0,f,1.0,*fstructold_ptr);
 
   return true;
 }

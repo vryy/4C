@@ -903,7 +903,7 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   xnew->Update(1.0, xold, step, dir,0.0);
 
   // now replace the rotvec entries by the correct value computed before
-  STR::AssembleVector(0.0,*xnew,1.0,x_rotvec);
+  LINALG::AssembleMyVector(0.0,*xnew,1.0,x_rotvec);
   curr_grp_mutable.setX(xnew);
 
   /* tell the NOX::NLN::Group that the x vector has already been updated in

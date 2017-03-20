@@ -23,6 +23,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
 
 #include <Epetra_Vector.h>
 
@@ -320,11 +321,11 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
 void STR::IMPLICIT::GenAlpha::AddViscoMassContributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1-alpha_f}
-  STR::AssembleVector(1.0,f,alphaf_,*fviscon_ptr_);
-  STR::AssembleVector(1.0,f,1-alphaf_,*fvisconp_ptr_);
+  LINALG::AssembleMyVector(1.0,f,alphaf_,*fviscon_ptr_);
+  LINALG::AssembleMyVector(1.0,f,1-alphaf_,*fvisconp_ptr_);
   // inertial forces at t_{n+1-alpha_m}
-  STR::AssembleVector(1.0,f,1-alpham_,*finertianp_ptr_);
-  STR::AssembleVector(1.0,f,alpham_,*finertian_ptr_);
+  LINALG::AssembleMyVector(1.0,f,1-alpham_,*finertianp_ptr_);
+  LINALG::AssembleMyVector(1.0,f,alpham_,*finertian_ptr_);
 }
 
 /*----------------------------------------------------------------------------*

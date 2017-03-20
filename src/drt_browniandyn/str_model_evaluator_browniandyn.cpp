@@ -18,7 +18,6 @@
 
 #include "../drt_structure_new/str_model_evaluator_data.H"
 #include "../drt_structure_new/str_timint_base.H"
-#include "../drt_structure_new/str_utils.H"
 #include "../drt_structure_new/str_integrator.H"
 
 #include <Epetra_Vector.h>
@@ -264,8 +263,8 @@ bool STR::MODELEVALUATOR::BrownianDyn::AssembleForce(Epetra_Vector& f,
   // build residual  Res = F_{brw;n+1}
   //                     - F_{ext;n+1}
   // -------------------------------------------------------------------------
-  STR::AssembleVector(1.0,f,-timefac_np,*f_ext_np_ptr_);
-  STR::AssembleVector(1.0,f,timefac_np,*f_brown_np_ptr_);
+  LINALG::AssembleMyVector(1.0,f,-timefac_np,*f_ext_np_ptr_);
+  LINALG::AssembleMyVector(1.0,f,timefac_np,*f_brown_np_ptr_);
 
   return true;
 }

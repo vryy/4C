@@ -159,7 +159,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
   // assemble and scale with str time-integrator dependent value
-  STR::AssembleVector(1.0,f,timefac_np,*fstructcardio_np_ptr_);
+  LINALG::AssembleMyVector(1.0,f,timefac_np,*fstructcardio_np_ptr_);
 
   // assemble 0D model rhs - already at the generalized mid-point t_{n+theta} !
   block_vec_ptr = cardvasc0dman_->GetCardiovascular0DRHS();
@@ -174,7 +174,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
   // only call when f is the full rhs of the coupled problem (not for structural
   // equilibriate initial state call)
   if (elements_f==max_gid+1)
-    STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
+    LINALG::AssembleMyVector(1.0,f,1.0,*block_vec_ptr);
 
   return true;
 }

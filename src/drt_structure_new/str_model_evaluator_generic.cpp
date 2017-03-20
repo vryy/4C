@@ -170,6 +170,13 @@ STR::Integrator& STR::MODELEVALUATOR::Generic::Int()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::Integrator>& STR::MODELEVALUATOR::Generic::IntPtr()
+{
+  return int_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const STR::TIMINT::Base& STR::MODELEVALUATOR::Generic::TimInt() const
 {
   CheckInit();

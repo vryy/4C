@@ -25,6 +25,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
 
 #include <Epetra_Vector.h>
 
@@ -290,14 +291,14 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
 void STR::IMPLICIT::OneStepTheta::AddViscoMassContributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n}
-  STR::AssembleVector(1.0,f,1.0-theta_,*fviscon_ptr_);
+  LINALG::AssembleMyVector(1.0,f,1.0-theta_,*fviscon_ptr_);
   // viscous damping forces at t_{n+1}
-  STR::AssembleVector(1.0,f,theta_,*fvisconp_ptr_);
+  LINALG::AssembleMyVector(1.0,f,theta_,*fvisconp_ptr_);
 
   // inertial forces at t_{n}
-  STR::AssembleVector(1.0,f,(1.0-theta_),*finertian_ptr_);
+  LINALG::AssembleMyVector(1.0,f,(1.0-theta_),*finertian_ptr_);
   // inertial forces at t_{n+1}
-  STR::AssembleVector(1.0,f,(theta_),*finertianp_ptr_);
+  LINALG::AssembleMyVector(1.0,f,(theta_),*finertianp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*

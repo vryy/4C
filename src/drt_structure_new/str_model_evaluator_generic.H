@@ -23,6 +23,14 @@
 // forward declaration
 class Epetra_Vector;
 class Epetra_Map;
+namespace NOX {
+namespace Solver {
+  class Generic;
+} // namespace Solver
+namespace NLN {
+  class Group;
+} // namespace NLN
+} // namespace NOX
 namespace LINALG {
   class SparseOperator;
 } // namespace LINALG
@@ -176,12 +184,30 @@ namespace MODELEVALUATOR {
     /*! \brief Recover condensed solution variables
      *
      *  This method is supposed to be used to recover condensed solution variables.
-     *  Typical examples are the eas degrees of freedom or the dual lagrange multipliers.
-     *  Do NOT use it to reset your model variables! Use the Reset() method instead.  */
+     *  Typical examples are the EAS degrees of freedom or the dual Lagrange multipliers.
+     *  Do NOT use it to reset your model variables! Use the Reset() method instead.
+     *
+     *  \author hiermeier \date 07/2016 */
     virtual void RecoverState(
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
         const Epetra_Vector& xnew) = 0;
+
+    /*! \brief Executed before the solution vector is going to be updated
+     *
+     *  \author hiermeier \date 03/17 */
+    virtual void RunPreComputeX(
+        const Epetra_Vector& xold,
+        Epetra_Vector& dir_mutable,
+        const NOX::NLN::Group& curr_grp ) = 0;
+
+    /*! \brief Executed at the end of the NOX::Solver::Generic::Step() (f.k.a. Iterate()) method
+     *
+     *  \param solver (in) : reference to the non-linear nox solver object (read-only)
+     *
+     *  \author hiermeier \date 03/17 */
+    virtual void RunPostIterate( const NOX::Solver::Generic& solver ) = 0;
+
 
     virtual void UpdateStepState(const double& timefac_n) = 0;
 
@@ -261,6 +287,7 @@ namespace MODELEVALUATOR {
 
     //! Returns the underlying STR::Integrator object
     STR::Integrator& Int();
+    Teuchos::RCP<STR::Integrator>& IntPtr();
 
     //! Returns the underlying STR::TIMINT object
     const STR::TIMINT::Base& TimInt() const;

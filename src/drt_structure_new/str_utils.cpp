@@ -316,19 +316,3 @@ void STR::NLN::CreateConstraintPreconditioner(
   }
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::AssembleVector(const double& scalar_target, Epetra_Vector& target,
-    const double& scalar_source, const Epetra_Vector& source)
-{
-  for (int slid=0; slid<source.Map().NumMyElements();++slid)
-  {
-    int sgid = source.Map().GID(slid);
-    int tlid = target.Map().LID(sgid);
-    if (tlid==-1)
-      dserror("The target vector has no global row %i"
-          " on processor %i!",sgid,target.Comm().MyPID());
-    // update the vector row
-    target[tlid] = scalar_target*target[tlid] + scalar_source*source[slid];
-  }
-}

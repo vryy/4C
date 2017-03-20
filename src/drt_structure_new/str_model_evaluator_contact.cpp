@@ -18,7 +18,7 @@
 #include "str_model_evaluator_data.H"
 #include "str_model_evaluator.H"
 #include "str_timint_base.H"
-#include "str_integrator.H"
+#include "str_impl_generic.H"
 #include "str_dbc.H"
 #include "str_utils.H"
 
@@ -29,6 +29,11 @@
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
+
+#include "../solver_nonlin_nox/nox_nln_group_prepostoperator.H"
+#include "../solver_nonlin_nox/nox_nln_group.H"
+#include "../solver_nonlin_nox/nox_nln_solver_linesearchbased.H"
+#include "../solver_nonlin_nox/nox_nln_aux.H"
 
 #include "../drt_contact/contact_poro_lagrange_strategy.H"
 #include "../drt_contact/contact_strategy_factory.H"
@@ -141,6 +146,7 @@ void STR::MODELEVALUATOR::Contact::Reset(const Epetra_Vector& x)
   eval_vec[0] = GState().GetDisNp();
   eval_vec[1] = Teuchos::rcpFromRef(x);
   EvalContact().SetActionType(MORTAR::eval_reset);
+
   // reset displacement state and lagrange multiplier values
   Strategy().Evaluate(EvalData().Contact(),&eval_vec);
 }
@@ -195,20 +201,23 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f,
     block_vec_ptr = Strategy().GetCondensedRhsPtr();
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
-    STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
+    LINALG::AssembleMyVector(1.0,f,1.0,*block_vec_ptr);
   }
   else if (Strategy().IsSaddlePointSystem())
   {
+    // --- displ. - block ---------------------------------------------------
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
-    STR::AssembleVector(1.0,f,timefac_np,*block_vec_ptr);
+    LINALG::AssembleMyVector(1.0,f,timefac_np,*block_vec_ptr);
+
+    // --- constr. - block --------------------------------------------------
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_constraint);
     if (block_vec_ptr.is_null())
       dserror("The constraint vector is a NULL pointer, although \n"
           "the structural part indicates, that contact contributions \n"
           "are present!");
-    STR::AssembleVector(1.0,f,1.0,*block_vec_ptr);
+    LINALG::AssembleMyVector(1.0,f,1.0,*block_vec_ptr);
   }
   else if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(
       Strategy().Params(),"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
@@ -216,7 +225,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f,
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::block_displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
-    STR::AssembleVector(1.0,f,timefac_np,*block_vec_ptr);
+    LINALG::AssembleMyVector(1.0,f,timefac_np,*block_vec_ptr);
   }
   return true;
 }
@@ -249,7 +258,44 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
     block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_displ);
     /* if there are no active contact contributions, we put a identity
      * matrix at the (lm,lm)-block */
-    if (block_ptr.is_null())
+    if ( not block_ptr.is_null())
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr =
+          GState().ExtractDisplBlock(jac);
+      jac_dd_ptr->Add(*block_ptr,false,timefac_np,1.0);
+      // reset the block pointers, just to be on the safe side
+      block_ptr     = Teuchos::null;
+    }
+
+    // --- Kdz - block ---------------------------------------------------
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_lm);
+    if ( not block_ptr.is_null() )
+    {
+      block_ptr->Scale(timefac_np);
+      GState().AssignModelBlock(jac,*block_ptr,Type(),
+          DRT::UTILS::block_displ_lm);
+      // reset the block pointer, just to be on the safe side
+      block_ptr = Teuchos::null;
+    }
+
+    // --- Kzd - block ---------------------------------------------------
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_lm_displ);
+    if ( not block_ptr.is_null() )
+    {
+      GState().AssignModelBlock(jac,*block_ptr,Type(),
+          DRT::UTILS::block_lm_displ);
+      // reset the block pointer, just to be on the safe side
+      block_ptr = Teuchos::null;
+    }
+
+    // --- Kzz - block ---------------------------------------------------
+    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_lm_lm);
+    if ( not block_ptr.is_null() )
+    {
+      GState().AssignModelBlock(jac,*block_ptr,Type(),
+          DRT::UTILS::block_lm_lm);
+    }
+    else
     {
       Teuchos::RCP<Epetra_Vector> ones =
           Teuchos::rcp(new Epetra_Vector(GState().BlockMap(Type()),false));
@@ -257,31 +303,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
       block_ptr = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
       GState().AssignModelBlock(jac,*block_ptr,Type(),
           DRT::UTILS::block_lm_lm);
-      // done ...
-      return (err==0);
     }
-    Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr =
-        GState().ExtractDisplBlock(jac);
-    jac_dd_ptr->Add(*block_ptr,false,timefac_np,1.0);
-    // reset the block pointers, just to be on the safe side
-    block_ptr     = Teuchos::null;
-    // --- Kdz - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_displ_lm);
-    block_ptr->Scale(timefac_np);
-    GState().AssignModelBlock(jac,*block_ptr,Type(),
-        DRT::UTILS::block_displ_lm);
-    // reset the block pointer, just to be on the safe side
-    block_ptr = Teuchos::null;
-    // --- Kzd - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_lm_displ);
-    GState().AssignModelBlock(jac,*block_ptr,Type(),
-        DRT::UTILS::block_lm_displ);
-    // reset the block pointer, just to be on the safe side
-    block_ptr = Teuchos::null;
-    // --- Kzz - block ---------------------------------------------------
-    block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::block_lm_lm);
-    GState().AssignModelBlock(jac,*block_ptr,Type(),
-        DRT::UTILS::block_lm_lm);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
   }
@@ -394,11 +416,14 @@ void STR::MODELEVALUATOR::Contact::RecoverState(
     const Epetra_Vector& xnew)
 {
   CheckInitSetup();
+
   std::vector<Teuchos::RCP<const Epetra_Vector> > eval_vec(3,Teuchos::null);
   eval_vec[0] = Teuchos::rcpFromRef(xold);
   eval_vec[1] = Teuchos::rcpFromRef(dir);
   eval_vec[2] = Teuchos::rcpFromRef(xnew);
+
   EvalContact().SetActionType(MORTAR::eval_recover);
+
   Strategy().Evaluate(EvalData().Contact(),&eval_vec);
   return;
 }
@@ -898,7 +923,6 @@ void STR::MODELEVALUATOR::Contact::PrintBanner() const
           std::cout << "===== (Saddle point formulation) ===============================\n";
           std::cout << "================================================================\n\n";
         }
-        // TODO: added
         else if (soltype == INPAR::CONTACT::solution_xcontact && shapefcn == INPAR::MORTAR::shape_standard)
         {
           std::cout << "================================================================\n";
@@ -987,3 +1011,36 @@ void STR::MODELEVALUATOR::Contact::PrintBanner() const
   }
   return;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::RunPreComputeX(
+    const Epetra_Vector& xold,
+    Epetra_Vector& dir_mutable,
+    const NOX::NLN::Group& curr_grp )
+{
+  CheckInitSetup();
+
+  std::vector<Teuchos::RCP<const Epetra_Vector> > eval_vec( 1, Teuchos::null );
+  eval_vec[0] = Teuchos::rcpFromRef(xold);
+
+  std::vector<Teuchos::RCP<Epetra_Vector> > eval_vec_mutable( 1, Teuchos::null );
+  eval_vec_mutable[0] = Teuchos::rcpFromRef( dir_mutable );
+
+  EvalContact().SetActionType( MORTAR::eval_run_pre_compute_x );
+
+  // augment the search direction
+  Strategy().Evaluate( EvalData().Contact(), &eval_vec, &eval_vec_mutable );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::RunPostIterate(
+    const NOX::Solver::Generic& solver )
+{
+  CheckInitSetup();
+
+  EvalContact().SetActionType( MORTAR::eval_run_post_iterate );
+  Strategy().Evaluate( EvalData().Contact() );
+}
+

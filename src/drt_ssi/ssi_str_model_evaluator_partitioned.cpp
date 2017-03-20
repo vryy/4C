@@ -17,7 +17,6 @@
 #include "ssi_str_model_evaluator_partitioned.H"
 
 #include "../drt_structure_new/str_dbc.H"
-#include "../drt_structure_new/str_utils.H"
 #include "../drt_structure_new/str_impl_generic.H"
 #include "../drt_structure_new/str_timint_implicit.H"
 #include "../drt_structure_new/str_nln_solver_generic.H"

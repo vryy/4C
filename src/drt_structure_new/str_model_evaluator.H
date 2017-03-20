@@ -23,6 +23,14 @@
 
 // forward declaration ...
 class Epetra_Vector;
+namespace NOX {
+namespace Solver {
+  class Generic;
+} // namespace Solver
+namespace NLN {
+  class Group;
+} // namespace NLN
+} // namespace NOX
 namespace LINALG {
   class SparseOperator;
 } // namespace LINALG
@@ -168,7 +176,26 @@ namespace MODELEVALUATOR {
         const Epetra_Vector& dir,
         const double& step,
         const Epetra_Vector& xnew,
-        const bool& isdefaultstep) const;
+        const bool isdefaultstep) const;
+
+    /*! \brief Executed before the solution vector is going to be updated
+     *
+     *  \author hiermeier \date 03/17 */
+    void RunPreComputeX(
+        const Epetra_Vector& xold,
+        Epetra_Vector& dir_mutable,
+        const double& step,
+        const NOX::NLN::Group& curr_grp,
+        const bool isdefaultstep) const;
+
+    /*! \brief Executed at the end of the NOX::Solver::Step() (f.k.a. Iterate()) method
+     *
+     *  \author hiermeier \date 03/17 */
+    void RunPostIterate(
+        const NOX::Solver::Generic& solver,
+        const double step,
+        const bool isdefaultstep ) const;
+
     //! @}
 
   protected:

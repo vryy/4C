@@ -182,6 +182,7 @@ namespace TIMINT {
 
     //! Return the Dirichlet boundary condition object (read-only)
     const STR::Dbc& GetDbc() const;
+
     //! @}
 
   protected:

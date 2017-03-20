@@ -86,10 +86,21 @@ namespace MODELEVALUATOR{
     virtual void ReadRestart(IO::DiscretizationReader& ioreader);
 
     //! derived
+    virtual void RunPreComputeX(
+        const Epetra_Vector& xold,
+        Epetra_Vector& dir_mutable,
+        const NOX::NLN::Group& curr_grp )
+    { return; };
+
+    //! derived
     virtual void RecoverState(
             const Epetra_Vector& xold,
             const Epetra_Vector& dir,
             const Epetra_Vector& xnew);
+
+    //! derived
+    virtual void RunPostIterate( const NOX::Solver::Generic& solver )
+    { return; };
 
     //! derived
     virtual void Predict(const INPAR::STR::PredEnum& pred_type);

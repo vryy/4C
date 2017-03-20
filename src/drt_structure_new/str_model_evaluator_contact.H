@@ -89,6 +89,15 @@ namespace MODELEVALUATOR {
         const Epetra_Vector& xnew);
 
     //! [derived]
+    virtual void RunPreComputeX(
+        const Epetra_Vector& xold,
+        Epetra_Vector& dir_mutable,
+        const NOX::NLN::Group& curr_grp );
+
+    //! [derived]
+    virtual void RunPostIterate( const NOX::Solver::Generic& solver);
+
+    //! [derived]
     virtual void UpdateStepState(const double& timefac_n);
 
     //! [derived]
@@ -121,12 +130,14 @@ namespace MODELEVALUATOR {
 
     //! @name Accessors
     //! @{
+
     //! Returns a pointer to the underlying contact strategy object
     const Teuchos::RCP<CONTACT::CoAbstractStrategy>& StrategyPtr();
 
     //! Returns the underlying contact strategy object
     CONTACT::CoAbstractStrategy& Strategy();
     const CONTACT::CoAbstractStrategy& Strategy() const;
+
     //! @}
   protected:
 
@@ -146,8 +157,8 @@ namespace MODELEVALUATOR {
     //! contact strategy
     Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr_;
   }; // class Contact
+
 } // namespace MODELEVALUATOR
 } // namespace STR
-
 
 #endif /* SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_CONTACT_H_ */

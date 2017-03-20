@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "xcontact_levelset_timint_ost.H"
-#include "../drt_structure_new/str_utils.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -202,5 +202,5 @@ void XCONTACT::LEVELSET::TIMINT::OneStepTheta::UpdateReinit()
 void XCONTACT::LEVELSET::TIMINT::OneStepTheta::SetState(
     const Epetra_Vector & sol_state )
 {
-  STR::AssembleVector( 0.0, *phinp_, 1.0, sol_state );
+  LINALG::AssembleMyVector( 0.0, *phinp_, 1.0, sol_state );
 }

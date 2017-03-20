@@ -207,7 +207,7 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
     dserror("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs
-  ::STR::AssembleVector(1.0,F,1.0,*freact_ptr);
+  ::LINALG::AssembleMyVector(1.0,F,1.0,*freact_ptr);
 
   return;
 }

@@ -493,7 +493,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::AssembleForce(Epetra_Vector& f,
 {
   CheckInitSetup();
 
-  STR::AssembleVector( 1.0, f, timefac_np, *force_beaminteraction_ );
+  LINALG::AssembleMyVector( 1.0, f, timefac_np, *force_beaminteraction_ );
 
   return true;
 }

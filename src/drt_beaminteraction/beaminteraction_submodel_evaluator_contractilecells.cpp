@@ -15,7 +15,6 @@
 #include "beaminteraction_submodel_evaluator_contractilecells.H"
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
-#include "../drt_structure_new/str_utils.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"

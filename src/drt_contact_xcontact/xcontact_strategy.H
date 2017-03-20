@@ -305,7 +305,7 @@ namespace XCONTACT
     //! @{
 
     //! Initialize all matrices
-    void Initialize()
+    virtual void Initialize()
     {
       Initialize( MORTAR::eval_force_stiff );
     }

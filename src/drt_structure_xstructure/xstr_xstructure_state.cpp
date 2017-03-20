@@ -15,7 +15,7 @@
 
 #include "xstr_xstructure_state.H"
 
-#include "../drt_structure_new/str_utils.H"
+#include "../linalg/linalg_utils.H"
 
 #include "../drt_xfem/xfield_state_utils.H"
 
@@ -184,7 +184,7 @@ void XSTR::XStructureState::TransferToNewState(
       dserror( "Export failed!" );
 
     new_xstate_vec.PutScalar( 0.0 );
-    STR::AssembleVector( 0.0, new_xstate_vec, 1.0, *xstate_std );
+    LINALG::AssembleMyVector( 0.0, new_xstate_vec, 1.0, *xstate_std );
 
     NaturalExtensionOfNonStandardDofValues( cit->first, new_discret, new_xstate_vec );
 

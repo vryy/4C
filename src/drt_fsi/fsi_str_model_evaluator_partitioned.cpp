@@ -17,7 +17,6 @@
 #include "fsi_str_model_evaluator_partitioned.H"
 
 #include "../drt_structure_new/str_dbc.H"
-#include "../drt_structure_new/str_utils.H"
 #include "../drt_structure_new/str_impl_generic.H"
 #include "../drt_structure_new/str_timint_implicit.H"
 #include "../drt_structure_new/str_nln_solver_generic.H"
@@ -86,7 +85,7 @@ bool STR::MODELEVALUATOR::PartitionedFSI::
     AssembleForce(Epetra_Vector& f,
       const double & timefac_np) const
 {
-  STR::AssembleVector(1.0,f,-timefac_np,*interface_force_np_ptr_);
+  LINALG::AssembleMyVector(1.0,f,-timefac_np,*interface_force_np_ptr_);
   return true;
 }
 

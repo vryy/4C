@@ -13,7 +13,6 @@
 #include "str_model_evaluator_beaminteraction_old.H"
 
 #include "../drt_structure_new/str_timint_base.H"
-#include "../drt_structure_new/str_utils.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
@@ -21,6 +20,8 @@
 
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
+
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -152,7 +153,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::AssembleForce(Epetra_Vector& f,
     const double & timefac_np) const
 {
   // Todo take care of the minus sign in front of timefac_np
-  STR::AssembleVector(1.0,f,-timefac_np,*f_beaminteract_np_ptr_);
+  LINALG::AssembleMyVector(1.0,f,-timefac_np,*f_beaminteract_np_ptr_);
   return true;
 }
 
