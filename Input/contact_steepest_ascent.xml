@@ -45,12 +45,30 @@
         </ParameterList>
       </ParameterList>
       <!-- END: Combo AND - Test 1: "NormUpdate" -->
+      <!-- BEGIN: Combo AND - Test 2: "NormUpdate" -->
+      <ParameterList name="Test 2">
+        <Parameter name="Test Type"          type="string" value="NormUpdate" />
+        <Parameter name="Alpha"              type="double" value="1.0" />
+        <Parameter name="Beta"               type="double" value="0.5" />
+        <!-- NormUpdate - Quantity 0: Check the increment of the structural displacements -->
+        <ParameterList name="Quantity 0">
+          <Parameter name="Quantity Type"    type="string" value="Structure" />
+          <Parameter name="Tolerance Type"   type="string" value="Relative" />
+          <Parameter name="Tolerance"        type="double" value="1.0e-10" />
+          <Parameter name="Norm Type"        type="string" value="Two Norm" />
+          <Parameter name="Scale Type"       type="string" value="Unscaled" />
+        </ParameterList>
+      </ParameterList>
+      <!-- END: Combo AND - Test 2: "NormUpdate" -->
       <!-- BEGIN: Combo AND - Test 2: "NormWRMS" -->
+      <!--
       <ParameterList name="Test 2">
         <Parameter name="Test Type"          type="string" value="NormWRMS" />
         <Parameter name="Alpha"              type="double" value="1.0" />
         <Parameter name="Beta"               type="double" value="0.5" />
+      -->
         <!-- NormWRMS - Quantity 0: Check the increment of the structural displacements -->
+        <!--
         <ParameterList name="Quantity 0">
           <Parameter name="Quantity Type"              type="string" value="Structure" />
           <Parameter name="Absolute Tolerance"         type="double" value="1.0e-07" />
@@ -59,16 +77,21 @@
           <Parameter name="BDF Multiplier"             type="double" value="1.0" />
           <Parameter name="Disable Implicit Weighting" type="string" value="Yes" />
         </ParameterList>
+        -->
         <!-- NormWRMS - Quantity 1: Check the increment of the contact lagrange multiplier increment -->
+        <!--
         <ParameterList name="Quantity 1">
-          <Parameter name="Quantity Type"              type="string" value="Contact-Normal" />
+          <Parameter name="Quantity Type"              type="string" value="Contact" />
           <Parameter name="Absolute Tolerance"         type="double" value="1.0e-07" />
           <Parameter name="Relative Tolerance"         type="double" value="1.0e-05" />
           <Parameter name="Tolerance"                  type="double" value="1.0" />
           <Parameter name="BDF Multiplier"             type="double" value="1.0" />
           <Parameter name="Disable Implicit Weighting" type="string" value="Yes" />
         </ParameterList>
+        -->
+      <!--
       </ParameterList>
+      -->
       <!-- END: Combo AND - Test 2: "NormWRMS" -->
       <!-- BEGIN: Combo AND - Test 3: "ActiveSet" -->
       <ParameterList name="Test 3">
@@ -82,7 +105,7 @@
   <!-- Combo OR - Test 1: "MaxIters" -->
   <ParameterList name="Test 1">
     <Parameter name="Test Type"          type="string" value="MaxIters" />
-    <Parameter name="Maximum Iterations" type="int"    value="100" />
+    <Parameter name="Maximum Iterations" type="int"    value="200" />
   </ParameterList>
 </ParameterList>
  <!-- Inner Status Test: line search stopping criteria -->
