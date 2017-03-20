@@ -265,6 +265,7 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
   Discret().ClearState();
   Discret().SetState(0,"residual displacement", dis_incr_ptr_);
   Discret().SetState(0,"displacement", GState().GetDisNp());
+  Discret().SetState(0,"velocity", GState().GetVelNp());
 
   // set action type and evaluation matrix and vector pointers
   StaticContributions(&eval_vec[0]);
