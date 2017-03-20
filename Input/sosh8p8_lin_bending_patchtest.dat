@@ -46,79 +46,22 @@ PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
 ------------------------------------------------------------------STRUCT NOX
-Nonlinear                       Solver = Line Search Based
+Nonlinear Solver                = Line Search Based
 --------------------------------------------------------STRUCT NOX/Direction
-Method = Newton
--------------------------------------------------STRUCT NOX/Direction/Newton
-Forcing                         Term Alpha = 1.5
-Forcing                         Term Gamma = 0.9
-Forcing                         Term Initial Tolerance = 0.1
-Forcing                         Term Maximum Tolerance = 0.01
-Forcing                         Term Method = Constant
-Forcing                         Term Minimum Tolerance = 1e-06
-Rescue                          Bad Newton Solver = Yes
----------------------------------------STRUCT NOX/Direction/Steepest Descent
-Scaling                         Type = None
-------------------------------------------------------STRUCT NOX/Line Search
-Method                          = Full Step
---------------------------------------------STRUCT NOX/Line Search/Backtrack
-Default                         Step = 1
-Max                             Iters = 50
-Minimum                         Step = 1e-12
-Recovery                        Step = 1
-Reduction                       Factor = 0.5
---------------------------------------------STRUCT NOX/Line Search/Full Step
-Full                            Step = 1
-----------------------------------------STRUCT NOX/Line Search/More'-Thuente
-Curvature                       Condition = 0.9999
-Default                         Step = 1
-Interval                        Width = 1e-15
-Max                             Iters = 20
-Maximum                         Step = 1e+06
-Minimum                         Step = 1e-12
-Optimize                        Slope Calculation = No
-Recovery                        Step = 1
-Recovery                        Step Type = Constant
-Sufficient                      Decrease = 0.0001
-Sufficient                      Decrease Condition = Armijo-Goldstein
--------------------------------------------STRUCT NOX/Line Search/Polynomial
-Allowed                         Relative Increase = 100
-Alpha                           Factor = 0.0001
-Default                         Step = 1
-Force                           Interpolation = No
-Interpolation                   Type = Cubic
-Max                             Bounds Factor = 0.5
-Max                             Iters = 100
-Maximum                         Iteration for Increase = 0
-Min                             Bounds Factor = 0.1
-Minimum                         Step = 1e-12
-Recovery                        Step = 1
-Recovery                        Step Type = Constant
-Sufficient                      Decrease Condition = Armijo-Goldstein
-Use                             Counters = Yes
----------------------------------------------------------STRUCT NOX/Printing
-Debug = No
-Details = No
-Error = No
-Inner                           Iteration = Yes
-Linear                          Solver Details = No
-Outer                           Iteration = Yes
-Outer                           Iteration StatusTest = No
-Parameters = No
-Test                            Details = No
-Warning = Yes
------------------------------------------------------STRUCT NOX/Trust Region
-Contraction                     Factor = 0.25
-Contraction                     Trigger Ratio = 0.1
-Expansion                       Factor = 4
-Expansion                       Trigger Ratio = 0.75
-Maximum                         Trust Region Radius = 1e+09
-Minimum                         Improvement Ratio = 0.0001
-Minimum                         Trust Region Radius = 1e-06
-Recovery                        Step = 1
--------------------------------------------------------------CONTACT DYNAMIC
+Method                          = Newton
 ------------------------------------------------------STRUCT NOX/Status Test
 XML File                        = sosh8p8_lin_bending_patchtest.xml
+---------------------------------------------------------STRUCT NOX/Printing
+Debug                           = No
+Details                         = No
+Error                           = No
+Inner Iteration                 = No
+Linear Solver Details           = No
+Outer Iteration                 = Yes
+Outer Iteration StatusTest      = No
+Parameters                      = No
+Test Details                    = No
+Warning                         = No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
