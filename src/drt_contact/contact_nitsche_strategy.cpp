@@ -195,6 +195,8 @@ void CONTACT::CoNitscheStrategy::Evaluate(
   case MORTAR::eval_reset:
     SetState(MORTAR::state_new_displacement, *((*eval_vec)[0])); break;
   case MORTAR::eval_recover: break;
+  case MORTAR::eval_run_pre_compute_x: break;
+  case MORTAR::eval_run_post_iterate: break;
   default: dserror("unknown action"); break;
   }
   return;
