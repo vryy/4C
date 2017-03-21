@@ -1081,7 +1081,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
         ghost_penalty_reconstruct,
         use2ndderiv,
         fldintfacepara.EOS_WhichTau(),
+        EOS_conv_stream,
         EOS_conv_cross,
+        EOS_div_vel_jump,
         max_vel_L2_norm,
         timefac,
         GP_visc_fac,
@@ -1134,21 +1136,6 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     // EOS stabilization term for velocity components ux, uy, uz
     if(EOS_vel)
     {
-      // TODO: shift this to ComputeStab...
-      // assemble combined divergence and streamline(EOS) stabilization terms for fluid
-      double tau_vel_sum = 0.0;
-      tau_vel_sum += tau_u_GP1_visc_reaction_; // add viscous and transient ghost penalty contributions
-
-      if(EOS_conv_stream or EOS_conv_cross)
-        tau_vel_sum += tau_u_;
-
-      // add potential contribution from divergence CIP term
-      if(EOS_div_vel_jump)
-        tau_vel_sum += tau_div_;
-
-      // final pressure stabilization parameter ( no need for stabilization parameter in ghost penalty reconstruction )
-      tau_vel_1st_final_ = ghost_penalty_reconstruct ? 1.0 : tau_vel_sum; //std::max(tau_vel, tau_u_GP1_);
-
       const double tau_timefacfac     = tau_vel_1st_final_ * timefacfac;
       const double tau_timefacfac_rhs = tau_vel_1st_final_ * timefacfac_rhs;
 
@@ -2338,7 +2325,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostP
 )
 {
 
-  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: GhostPenalty2nd" );
+  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: GhostPenalty2ndNormal" );
 
 
   if(numderiv2_n != numderiv2_p) dserror("different dimensions for parent and master element");
@@ -3019,6 +3006,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
   }
 
   p_hk_squared_ = p_hk_*p_hk_;
+  p_hk_cubed_   = p_hk_*p_hk_squared_;
 }
 
 //------------------------------------------------------------------------------------------------
@@ -3572,7 +3560,9 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
   const bool    is_ghost_penalty_reconstruct,
   const bool    use2ndderiv,
   const INPAR::FLUID::EOS_TauType tautype,
-  const bool    do_crosswind_stabilization_CIP,
+  const bool    EOS_conv_stream,
+  const bool    EOS_conv_cross,
+  const bool    EOS_div_vel_jump,
   const double  max_vel_L2_norm,
   const double  timefac,
   const double  gamma_ghost_penalty_visc,
@@ -3582,12 +3572,12 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
   )
 {
   // in a first view, the CIP term decide about crosswind stabilization (yes, no)
-  bool require_cross_stab = do_crosswind_stabilization_CIP;
+  bool require_cross_stab = EOS_conv_cross;
 
   if(use2ndderiv) // higher order ghost-penalty terms required
   {
     // in this case, the higher order terms definitely require the full velocity (not only the normal part)
-    // the mixed tangential parts can be controlled via applying an inverse estiamte, such that also the original 1st order CIP terms now require the crosswind part
+    // the mixed tangential parts can be controlled via applying an inverse estimate, such that also the original 1st order CIP terms now require the crosswind part
     // ( see discussion in Massing, Schott and Wall (2017) on Oseen equations
     require_cross_stab = false; // TODO: true now!
   }
@@ -3651,47 +3641,47 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     // to compute turbulent flows
     // therefore, we suggest to use the same values as given in Burman 2007
     // note: we integrate each face once; Burman twice -> factor two for gamma compared to Burman
-    gamma_p = 0.02;
-    gamma_u = 0.02;
+    gamma_p   = 0.02;
+    gamma_u   = 0.02;
     gamma_div = 0.05 * gamma_u;
 
     // original values of E.Burman, M.A.Fernandez and P.Hansbo 2006
-    // gamma_p = 2.0 / 8.0;
-    // gamma_u = 2.0 / 8.0;
+    // gamma_p   = 2.0 / 8.0;
+    // gamma_u   = 2.0 / 8.0;
     // gamma_div = 2.0 / 8.0;
 
     // element Reynold's number Re_K
     const double Re_K = max_vel_L2_norm*p_hk_/ (kinvisc_ * 6.0);
-    const double xi = std::min(1.0,Re_K);
+    const double xi  = std::min(1.0,Re_K);
     const double xip = std::max(1.0,Re_K);
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * xi * p_hk_squared_ * stream_cross_vel;
+    tau_u_ = gamma_u * xi * p_hk_squared_ * stream_cross_vel;
 
     //-----------------------------------------------
     // pressure
     //    if (max_vel_L2_norm > 1.0e-9)
-    //      tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
+    //      tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_squared_ / density;
     //    else
-    //      tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+    //      tau_p = gamma_p * p_hk_ * p_hk_squared_/ kinvisc / density;
     // this does the same, but avoids division by velocity
     // note: this expression is closely related to the definition of
     //       tau_Mp according to Franca_Barrenechea_Valentin_Frey_Wall
     if (tautype == INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_wo_dt)
-      tau_p_ = gamma_p * p_hk_ * p_hk_squared_/ (kinvisc_ * density_ * xip);
+      tau_p_ = gamma_p * p_hk_ * p_hk_squared_/ (kinvisc_ * xip);
     else
     {
       // respective "switching" parameter for transient / reactive part
-      const double Re_R = 12.0 * kinvisc_ * timefac / (p_hk_*p_hk_);
+      const double Re_R = 12.0 * kinvisc_ * timefac / (p_hk_squared_);
       const double xir = std::max(1.0,Re_R);
 
-      tau_p_ = gamma_p * p_hk_ * p_hk_squared_/ (kinvisc_ * density_ * xip + density_ * p_hk_squared_ * xir / (timefac * 12.0));
+      tau_p_ = gamma_p * p_hk_ * p_hk_squared_/ (kinvisc_ * xip + p_hk_squared_ * xir / (timefac * 12.0));
     }
 
     //-----------------------------------------------
     // divergence
-    tau_div_= density_ * gamma_div * xi * max_vel_L2_norm * p_hk_*p_hk_;
+    tau_div_= gamma_div * xi * max_vel_L2_norm * p_hk_squared_;
   }
   break;
   case INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino:
@@ -3741,18 +3731,18 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * p_hk_squared_ * stream_cross_vel / r_min_conv; // Braack et al. 2006
+    tau_u_ = gamma_u * p_hk_squared_ * stream_cross_vel / r_min_conv; // Braack et al. 2006
 
     //-----------------------------------------------
     // divergence
-    tau_div_= density_ * gamma_div * max_vel_L2_norm * p_hk_squared_ / r_min_conv; // Braack et al. 2006
+    tau_div_= gamma_div * max_vel_L2_norm * p_hk_squared_ / r_min_conv; // Braack et al. 2006
 
     //-----------------------------------------------
     // pressure
     if (tautype == INPAR::FLUID::EOS_tau_burman_hansbo_dangelo_zunino_wo_dt)
-      tau_p_ = gamma_p * p_hk_squared_ / (r_min_visc * kinvisc_ * density_ / p_hk_ + r_min_conv * density_ * max_vel_L2_norm / 6.0);
+      tau_p_ = gamma_p * p_hk_squared_ / (r_min_visc * kinvisc_ / p_hk_ + r_min_conv * max_vel_L2_norm / 6.0);
     else
-      tau_p_ = gamma_p * p_hk_squared_ / (density_* p_hk_ / (timefac * 12.0) + r_min_visc * kinvisc_ * density_ / p_hk_ + r_min_conv * density_ * max_vel_L2_norm / 6.0);
+      tau_p_ = gamma_p * p_hk_squared_ / (p_hk_ / (timefac * 12.0) + r_min_visc * kinvisc_ / p_hk_ + r_min_conv * max_vel_L2_norm / 6.0);
 
   }
   break;
@@ -3812,8 +3802,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     //-----------------------------------------------
     // streamline
     tau_u_ = gamma_u * stream_cross_vel * stream_cross_vel * p_hk_squared_*p_hk_ / regime_scaling;
-    //TODO: change to full velocity norm in case of 2nd order gp! and others than tri/tet elements
-    // tau_u_ = gamma_u * max_vel_L2_norm * max_vel_L2_norm * p_hk_squared_*p_hk_ / regime_scaling;
 
     //-----------------------------------------------
     // divergence
@@ -3822,12 +3810,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     //-----------------------------------------------
     // pressure
     tau_p_ = gamma_p*p_hk_squared_*p_hk_ / regime_scaling;
-
-    // final scalings with density
-    // scaling with density
-    tau_u_  *= density_;
-    tau_div_*= density_;
-    tau_p_  /= density_;
   }
   break;
   case INPAR::FLUID::EOS_tau_burman_fernandez:
@@ -3888,8 +3870,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     // pressure
     bool nu_weighting = true;
 
-//    gamma_p = 0.5 / 100.0;
-//    gamma_p = 1.0 / 100.0;
     // each face has to be evaluated only once -> doubled stabfac, either unstable for multibody test case!
     gamma_p = 0.05;
     gamma_u = 0.05;
@@ -3899,11 +3879,11 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * p_hk_squared_ * stream_cross_vel;
+    tau_u_ = gamma_u * p_hk_squared_ * stream_cross_vel;
 
     //-----------------------------------------------
     // divergence
-    tau_div_= 0.05*density_ * gamma_u * p_hk_squared_;
+    tau_div_= 0.05 * gamma_u * p_hk_squared_;
 
     // nu-weighting
     if(nu_weighting) // viscous -> non-viscous case
@@ -3915,17 +3895,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
       if(kinvisc_ >= p_hk_) tau_p_ /= (kinvisc_/p_hk_);
     }
 
-    // to have a consistent formulation we need only one density factor for
-    // pressure stabilization. That is because we have two times pressure
-    // (test functions and the shape function) in the formulation. If we do not
-    // cross out one density, we would multiply the term two times with
-    // density, which is not correct.
-    tau_p_ /= density_;
-
   }
   break;
   case INPAR::FLUID::EOS_tau_burman:
   {
+    // TODO: delete!
+    // TODO: pressure and div are not scaled properly with u!!!
+
     // E.Burman 2007
     // "Interior penalty variational multiscale method for the incompressible Navier-Stokes equation: Monitoring artificial dissipation"
     //
@@ -3944,21 +3920,21 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     //                                                                                        100.0
 
     // we integrate each face once; Burman twice -> factor two for gamma compared to Burman
-    gamma_p = 0.02;
-    gamma_u = 0.02;
+    gamma_p   = 0.02;
+    gamma_u   = 0.02;
     gamma_div = 0.05 * gamma_u;
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * p_hk_*p_hk_ * stream_cross_vel;
+    tau_u_ = gamma_u * p_hk_squared_ * stream_cross_vel;
 
     //-----------------------------------------------
     // pressure
-    tau_p_ = gamma_p * p_hk_squared_ / density_;
+    tau_p_ = gamma_p * p_hk_squared_;
 
     //-----------------------------------------------
     // divergence
-    tau_div_= density_ * gamma_div * p_hk_squared_;
+    tau_div_= gamma_div * p_hk_squared_;
 
   }
   break;
@@ -3986,45 +3962,40 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     //  with    Re_K =  --------------------------------   and  xi = min(1,Re_K)
     //                                n
 
-//    gamma_p = 2.0 / 100.0;
-//    gamma_u = 2.0 / 100.0;
-//    gamma_div = 0.05 * gamma_u;
-
-    gamma_p = 1.0;
-    gamma_u = 1.0;
+    gamma_p   = 1.0;
+    gamma_u   = 1.0;
     gamma_div = 1.0;
 
     // element Reynold's number Re_K
     double Re_K = max_vel_L2_norm*p_hk_/ kinvisc_;
-    // double xi = std::min(1.0,Re_K);
     double xip = std::max(1.0,Re_K);
 
     //-----------------------------------------------
     // streamline
-    tau_u_ = density_ * gamma_u * p_hk_squared_ * stream_cross_vel;
+    tau_u_ = gamma_u * p_hk_squared_ * stream_cross_vel;
 
     //-----------------------------------------------
     // pressure
     // if (max_vel_L2_norm > 1.0e-9)
-    //   tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
+    //   tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_squared_;
     // else
-    //   tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+    //   tau_p = gamma_p * p_hk_ * p_hk_squared_/ kinvisc;
     // this does the same, but avoids division by velocity
     // note: this expression is closely related to the definition of
     //       tau_Mp according to Franca_Barrenechea_Valentin_Frey_Wall
-    tau_p_ = gamma_p * p_hk_ * p_hk_squared_/ (kinvisc_ * density_ * xip);
+    tau_p_ = gamma_p * p_hk_ * p_hk_squared_/ (kinvisc_ * xip);
 
     //-----------------------------------------------
     // divergence
-    tau_div_= density_ * gamma_div * max_vel_L2_norm * p_hk_squared_;
+    tau_div_= gamma_div * max_vel_L2_norm * p_hk_squared_;
   }
   break;
   case INPAR::FLUID::EOS_tau_braack_burman_john_lube_wo_divjump:
   {
     // M. Braack, E. Burman, V. John, G. Lube 2007
     // "Stabilized finite element methods for the generalized Oseen problem"
-    gamma_p = 1.0;
-    gamma_u = 1.0;
+    gamma_p   = 1.0;
+    gamma_u   = 1.0;
     gamma_div = 1.0;
 
     // element Reynold's number Re_K
@@ -4034,7 +4005,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     //-----------------------------------------------
     // streamline and divergence
-    tau_u_ = gamma_u * density_ * Re_K * p_hk_ * kinvisc_;
+    tau_u_ = gamma_u * Re_K * p_hk_ * kinvisc_;
     //-----------------------------------------------
     // divergence
     tau_div_ = 0.0;
@@ -4042,41 +4013,41 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     //-----------------------------------------------
     // pressure
     // if (max_vel_L2_norm > 1.0e-9)
-    //   tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_*p_hk_ / density;
+    //   tau_p = gamma_p * xi/max_vel_L2_norm * p_hk_squared_;
     // else
-    //   tau_p = gamma_p * p_hk_ * p_hk_*p_hk_/ kinvisc / density;
+    //   tau_p = gamma_p * p_hk_ * p_hk_squared_/ kinvisc;
     // this does the same, but avoids division by velocity
     // note: this expression is closely related to the definition of
     //       tau_Mp according to Franca_Barrenechea_Valentin_Frey_Wall
-    tau_p_ = gamma_p * p_hk_ * p_hk_squared_/ (kinvisc_ * density_ * xip);
+    tau_p_ = gamma_p * p_hk_cubed_/ (kinvisc_ * xip);
   }
   break;
   case INPAR::FLUID::EOS_tau_Taylor_Hughes_Zarins_Whiting_Jansen_Codina_scaling:
   {
-    gamma_p = 0.02;
-    gamma_u = 0.02;
+    gamma_p   = 0.02;
+    gamma_u   = 0.02;
     gamma_div = 0.05 * gamma_u;
 
     //-----------------------------------------------
     // pressure
     // Taylor_Hughes_Zarins style
-    tau_p_ = gamma_p * p_hk_ / sqrt(max_vel_L2_norm*max_vel_L2_norm/p_hk_squared_ + kinvisc_*kinvisc_/(p_hk_squared_*p_hk_squared_)) / density_;
+    tau_p_ = gamma_p * p_hk_ / sqrt(max_vel_L2_norm*max_vel_L2_norm/p_hk_squared_ + kinvisc_*kinvisc_/(p_hk_squared_*p_hk_squared_));
     // Codina style
-    //tau_p = gamma_p * p_hk_ / (max_vel_L2_norm/p_hk_ + kinvisc/(p_hk_*p_hk_)) / density;
+    //tau_p = gamma_p * p_hk_ / (max_vel_L2_norm/p_hk_ + kinvisc/(p_hk_squared_));
 
     //-----------------------------------------------
     // divergence
     // Taylor_Hughes_Zarins style
-    //tau_div= density * gamma_div * max_vel_L2_norm * p_hk_*p_hk_;
+    //tau_div= gamma_div * max_vel_L2_norm * p_hk_squared_;
     // Taylor_Hughes_Zarins_Whiting_Jansen
-    tau_div_= density_ * gamma_div * p_hk_*p_hk_squared_ * sqrt(max_vel_L2_norm*max_vel_L2_norm/p_hk_squared_ + kinvisc_*kinvisc_/(p_hk_squared_*p_hk_squared_));
+    tau_div_=  gamma_div * p_hk_cubed_ * sqrt(max_vel_L2_norm*max_vel_L2_norm/p_hk_squared_ + kinvisc_*kinvisc_/(p_hk_squared_*p_hk_squared_));
     // Codina style
-    //tau_div= density * gamma_div * p_hk_*p_hk_*p_hk_ * (max_vel_L2_norm/p_hk_ + kinvisc/(p_hk_*p_hk_));
+    //tau_div= gamma_div * p_hk_cubed_ * (max_vel_L2_norm/p_hk_ + kinvisc/(p_hk_squared_));
 
     //-----------------------------------------------
     // streamline
     // face-oriented style
-    //tau_u = density * gamma_u * p_hk_*p_hk_ * stream_cross_vel;
+    //tau_u = density * gamma_u * p_hk_squared_ * stream_cross_vel;
     // residual-based style
     tau_u_ = tau_div_;
   }
@@ -4091,7 +4062,9 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
 
     double xi = std::max(1.0, Re_K);
 
-    gamma_p = 1.0/30.0;
+    gamma_p   = 1.0/30.0;
+    gamma_u   = 1.0/40.0;
+    gamma_div = gamma_p/10.0;
 
     //multibody
     //1.0, 1.0/8.0 not possible, 1.0/10.0 okay, 1.0/50.0, 1.0/100.0 unstable for multibody
@@ -4099,60 +4072,75 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Comput
     //cylinder2D fine
     // 1.0/10.0, 1.0/20.0 not okay, 1.0/30.0 okay, 1.0/50.0 okay
 
-    tau_p_ = gamma_p * p_hk_*p_hk_squared_*mk/(4.0*density_*kinvisc_*xi);
+    tau_p_ = gamma_p * p_hk_cubed_*mk/(4.0*kinvisc_*xi);
 
-    tau_p_ = gamma_p * p_hk_*p_hk_squared_*mk/(4.0*density_*kinvisc_);
-  //  tau_p = 1.0/40.0    *        p_hk_* p_hk_/max(1.0, max_vel_L2_norm);
+    tau_p_ = gamma_p * p_hk_cubed_*mk/(4.0*kinvisc_); //TODO: which one???
 
-    tau_div_ = 0.0;
+    tau_u_   = gamma_u * p_hk_squared_/2.0 * stream_cross_vel;
 
-    gamma_u = 1.0/40.0; //gamma_p;
-  //  tau_u   = gamma_u * p_hk_*p_hk_*p_hk_*mk/(4.0*density*kinvisc*xi);
-    tau_u_   = gamma_u * p_hk_squared_/(2.0*density_) * stream_cross_vel;
-
-
-    gamma_div = gamma_p*1.0/10.0;//1.0/10.0;
-    tau_div_ = gamma_div  * p_hk_squared_ * max_vel_L2_norm * density_; // * min(1.0, Re_K);
+    tau_div_ = gamma_div  * p_hk_squared_ * max_vel_L2_norm;   // * min(1.0, Re_K);
   }
   break;
   default: dserror("unknown definition for tau\n %i  ", tautype); break;
   }
 
+  // scale CIP scalings with density
+  tau_u_  *= density_;
+  tau_div_*= density_;
+  tau_p_  /= density_;
+
   //--------------------------------------------------------------------------------------------------------------
-  //                                               ghost penalty scalings
+  //                                     final 1st order CIP and ghost penalty scalings
   //--------------------------------------------------------------------------------------------------------------
 
-
-  // first order ghost penalty scaling
+  // viscous and transient ghost penalty contributions
   tau_u_GP1_visc_reaction_ =
-        gamma_ghost_penalty_visc*kinvisc_*density_*p_hk_
-      + gamma_ghost_penalty_trans*density_*p_hk_*p_hk_squared_/timefac; // viscous and reactive part of velocity ghost penalty
+        gamma_ghost_penalty_visc  * density_ * p_hk_       * kinvisc_
+      + gamma_ghost_penalty_trans * density_ * p_hk_cubed_ / timefac;   // viscous and reactive part of velocity ghost penalty
 
+  // CIP related 1st order ghost penalty scalings are set being equal to the original CIP scalings
   tau_u_GP1_   = tau_u_   ;
   tau_div_GP1_ = tau_div_ ;
   tau_p_GP1_   = tau_p_   ;
 
-  // second order ghost penalty scalings (scale with h^2)
-  tau_u_GP2_visc_reaction_ = tau_u_GP1_visc_reaction_ * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
-  tau_div_GP2_             = tau_div_                 * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
-  tau_u_GP2_               = tau_u_                   * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
-  tau_p_GP2_               = tau_p_                   * p_hk_squared_ * gamma_ghost_penalty_p_2nd;
+  // add viscous and transient ghost penalty contributions
+  tau_vel_1st_final_ = tau_u_GP1_visc_reaction_;
 
-  // final velocity stabilization parameter ( no need for stabilization parameter in ghost penalty reconstruction )
+  // assemble combined divergence and streamline(EOS) stabilization terms for fluid
+  tau_vel_1st_final_ += (EOS_conv_stream or EOS_conv_cross) ? tau_u_ : 0.0;
 
-  // final pressure stabilization parameter ( no need for stabilization parameter in ghost penalty reconstruction )
-  tau_vel_1st_final_ = 0.0; // will be set outside!
-  tau_pre_1st_final_ = is_ghost_penalty_reconstruct ? 1.0 : std::max(tau_p_, tau_p_GP1_);
-  tau_div_1st_final_ = is_ghost_penalty_reconstruct ? 0.0 : tau_div_;
+  // add potential contribution from divergence CIP term
+  tau_vel_1st_final_ += EOS_div_vel_jump ? tau_div_ : 0.0;
 
+  // final stabilization parameter scalings for 1st order CIP jump terms (note: no div terms for ghost penalty reconstruction)
+  tau_vel_1st_final_ = is_ghost_penalty_reconstruct ? 1.0 : tau_vel_1st_final_;
+  tau_div_1st_final_ = is_ghost_penalty_reconstruct ? 0.0 : std::max(tau_div_, tau_div_GP1_);
+  tau_pre_1st_final_ = is_ghost_penalty_reconstruct ? 1.0 : std::max(tau_p_  , tau_p_GP1_  );
 
-  // TODO:
-  // REMARK:
-  // at the moment the 2nd order derivatives in velocity are stabilized just with the viscous ghost penalty part
-  // for the moment there is no "streamline convective" or "divergence" part for the 2nd order u-derivatives
-  // (this could be changed similar to the first order gradients!)
-  tau_vel_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_u_GP2_visc_reaction_; // TODO: + tau_u_GP2_ + tau_div_GP2_;
-  tau_pre_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_p_GP2_;
+  //--------------------------------------------------------------------------------------------------------------
+  //                                     final 2nd order ghost penalty scalings
+  //--------------------------------------------------------------------------------------------------------------
+
+  // final stabilization parameter scalings for 2nd order GP jump terms
+  if(use2ndderiv)
+  {
+    // second order ghost penalty scalings (scale with additional h^2)
+    tau_u_GP2_visc_reaction_ = tau_u_GP1_visc_reaction_ * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
+    tau_u_GP2_               = tau_u_                   * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
+    tau_div_GP2_             = tau_div_                 * p_hk_squared_ * gamma_ghost_penalty_u_2nd;
+    tau_p_GP2_               = tau_p_                   * p_hk_squared_ * gamma_ghost_penalty_p_2nd;
+
+#if(1) // TODO: additional contribution to second order gps + tau_u_GP2_ + tau_div_GP2_;
+    // REMARK:
+    // at the moment the 2nd order derivatives in velocity are stabilized just with the viscous ghost penalty part
+    // for the moment there is no "streamline convective" or "divergence" part for the 2nd order u-derivatives
+    // (this could be changed similar to the first order gradients!)
+    tau_vel_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_u_GP2_visc_reaction_;
+#else
+    tau_vel_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_u_GP2_visc_reaction_ + tau_u_GP2_ + tau_div_GP2_;
+#endif
+    tau_pre_2nd_final_ = is_ghost_penalty_reconstruct ? p_hk_squared_ : tau_p_GP2_;
+  }
 
   return;
 }

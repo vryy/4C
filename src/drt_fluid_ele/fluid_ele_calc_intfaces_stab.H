@@ -899,7 +899,9 @@ namespace DRT
           const bool    is_ghost_penalty_reconstruct,
           const bool    use2ndderiv,
           const INPAR::FLUID::EOS_TauType tautype,
-          const bool    do_crosswind_stabilization_CIP,
+          const bool    EOS_conv_stream,
+          const bool    EOS_conv_cross,
+          const bool    EOS_div_vel_jump,
           const double  max_vel_L2_norm,
           const double  timefac,
           const double  gamma_ghost_penalty_visc,
@@ -1117,6 +1119,9 @@ namespace DRT
 
       //! longest edge in parent element squared
       double p_hk_squared_;
+
+      //! longest edge in parent element cubed
+      double p_hk_cubed_;
 
       // effective stabilization parameters
       // ---------------------------------------------------
