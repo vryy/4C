@@ -1813,26 +1813,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType 
     // loop over all Gauss points
     for (int gp=0; gp<numgpt_; gp++)
     {
-      LINALG::Matrix<3,3> deltaLp;
-      deltaLp(0,0) = dDp_last_iter_[gp](0);
-      deltaLp(1,1) = dDp_last_iter_[gp](1);
-      deltaLp(2,2) = -1.0*(dDp_last_iter_[gp](0)+dDp_last_iter_[gp](1));
-      deltaLp(0,1) = dDp_last_iter_[gp](2);
-      deltaLp(1,0) = dDp_last_iter_[gp](2);
-      deltaLp(1,2) = dDp_last_iter_[gp](3);
-      deltaLp(2,1) = dDp_last_iter_[gp](3);
-      deltaLp(0,2) = dDp_last_iter_[gp](4);
-      deltaLp(2,0) = dDp_last_iter_[gp](4);
-      if (spintype==plspin)
-      {
-        deltaLp(0,1) += dDp_last_iter_[gp](5);
-        deltaLp(1,0) -= dDp_last_iter_[gp](5);
-        deltaLp(1,2) += dDp_last_iter_[gp](6);
-        deltaLp(2,1) -= dDp_last_iter_[gp](6);
-        deltaLp(0,2) += dDp_last_iter_[gp](7);
-        deltaLp(2,0) -= dDp_last_iter_[gp](7);
-      }
-      static_cast<MAT::PlasticElastHyper*>(Material().get())->UpdateGP(gp,&deltaLp);
+      BuildDeltaLp(gp);
+      static_cast<MAT::PlasticElastHyper*>(Material().get())->UpdateGP(gp,&DeltaLp());
 
       KbbInv_[gp].Scale(0.);
       Kbd_[gp].Scale(0.);
