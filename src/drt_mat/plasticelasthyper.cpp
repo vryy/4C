@@ -201,6 +201,14 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,last_alpha_isotropic_);
   AddtoPack<3,3>(data,last_alpha_kinematic_);
 
+  AddtoPack(data,(int)activity_state_.size());
+  for (int i=0;i<(int)activity_state_.size();++i)
+    AddtoPack(data,(int)activity_state_.at(i));
+
+  AddtoPack(data,(int)delta_alpha_i_.size());
+  for (int i=0;i<(int)delta_alpha_i_.size();++i)
+    AddtoPack(data,delta_alpha_i_.at(i));
+
   // tsi data
   bool tsi = HepDiss_!=Teuchos::null;
   AddtoPack(data,(int)tsi);
@@ -282,9 +290,13 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,last_alpha_isotropic_);
   ExtractfromPack<3,3>(position,data,last_alpha_kinematic_);
 
-  // no need to pack this
-  delta_alpha_i_ .resize(last_alpha_isotropic_.size(),0.);
-  activity_state_.resize(last_alpha_isotropic_.size(),false);
+  activity_state_.resize(ExtractInt(position,data));
+  for (int i=0;i<(int)activity_state_.size();++i)
+    activity_state_.at(i)=(bool)ExtractInt(position,data);
+
+  delta_alpha_i_.resize(ExtractInt(position,data));
+  for (int i=0;i<(int)delta_alpha_i_.size();++i)
+    delta_alpha_i_.at(i)=ExtractDouble(position,data);
 
   bool tsi = (bool)ExtractInt(position,data);
   bool tsi_eas = (bool)ExtractInt(position,data);
@@ -1823,60 +1835,63 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(
   d_cauchy_dFpi.Clear();
 
   cauchy.Update(sqrt(prinv_(2))*dPI(2),id2V_,1.);
-  cauchy.Update(prinv_(2)*(dPI(0)+prinv_(1)*dPI(1)),bev_,1.);
-  cauchy.Update(-prinv_(2)*dPI(1),be2v_,1.);
+  cauchy.Update((dPI(0)+prinv_(0)*dPI(1))/sqrt(prinv_(2)),bev_,1.);
+  cauchy.Update(-dPI(1)/sqrt(prinv_(2)),be2v_,1.);
   cauchy.Scale(2.);
 
   d_cauchy_dC.MultiplyNT(sqrt(prinv_(2))*(ddPII(4)+prinv_(0)*ddPII(3)),id2V_,Cpi_,1.);
   d_cauchy_dC.MultiplyNT(-sqrt(prinv_(2))*ddPII(3),id2V_,CpiCCpi_,1.);
   d_cauchy_dC.MultiplyNT(sqrt(prinv_(2))*(.5*dPI(2)+prinv_(2)*ddPII(2)),id2V_,ircg_,1.);
 
+  d_cauchy_dC.MultiplyNT((ddPII(0)+dPI(1)+2.*prinv_(0)*ddPII(5)+prinv_(0)*prinv_(0)*ddPII(1)
+       )/sqrt(prinv_(2))
+          ,bev_,Cpi_,1.);
   d_cauchy_dC.MultiplyNT(
-      prinv_(2)*ddPII(0)
-      +prinv_(1)*prinv_(2)*ddPII(5)
-      +prinv_(0)*prinv_(2)*ddPII(5)
-      +prinv_(0)*prinv_(2)*dPI(1)
-      +prinv_(0)*prinv_(1)*prinv_(2)*ddPII(1)
-                                    ,bev_,Cpi_,1.);
-  d_cauchy_dC.MultiplyNT(
-      -prinv_(2)*ddPII(5)
-      -prinv_(2)*dPI(1)
-      -prinv_(1)*prinv_(2)*ddPII(1)
+      (-ddPII(5)-prinv_(0)*ddPII(1))/sqrt(prinv_(2))
       ,bev_,CpiCCpi_,1.);
-  d_cauchy_dC.MultiplyNT(
-      prinv_(2)*dPI(0)
-      +prinv_(1)*prinv_(2)*dPI(1)
-      +prinv_(2)*prinv_(2)*ddPII(4)
-      +prinv_(2)*prinv_(2)*prinv_(1)*ddPII(3)
+  d_cauchy_dC.MultiplyNT((-.5*dPI(0)-.5*prinv_(0)*dPI(1)+prinv_(2)*ddPII(4)+prinv_(0)*prinv_(2)*ddPII(3)
+      )/sqrt(prinv_(2))
       ,bev_,ircg_,1.);
 
-  d_cauchy_dC.MultiplyNT(-prinv_(2)*(ddPII(5)+prinv_(0)*ddPII(1)),be2v_,Cpi_,1.);
-  d_cauchy_dC.MultiplyNT(prinv_(2)*ddPII(1),be2v_,CpiCCpi_,1.);
-  d_cauchy_dC.MultiplyNT(-prinv_(2)*(dPI(1)+prinv_(2)*ddPII(3)),be2v_,ircg_,1.);
+  d_cauchy_dC.MultiplyNT(-(ddPII(5)-prinv_(0)*ddPII(1))/sqrt(prinv_(2))
+      ,be2v_,Cpi_,1.);
+  d_cauchy_dC.MultiplyNT(ddPII(1)/sqrt(prinv_(2))
+      ,be2v_,CpiCCpi_,1.);
+  d_cauchy_dC.MultiplyNT((.5*dPI(1)/prinv_(2)-ddPII(3))/sqrt(prinv_(2))
+      ,be2v_,ircg_,1.);
   d_cauchy_dC.Scale(4.);
 
   d_cauchy_dFpi.MultiplyNT(sqrt(prinv_(2))*(ddPII(4)+prinv_(0)*ddPII(3)),id2V_,CFpi_,1.);
   d_cauchy_dFpi.MultiplyNT(-sqrt(prinv_(2))*ddPII(3),id2V_,CFpiCe_,1.);
   d_cauchy_dFpi.MultiplyNT(sqrt(prinv_(2))*(.5*dPI(2)+prinv_(2)*ddPII(2)),id2V_,CFpiCei_,1.);
 
-  d_cauchy_dFpi.MultiplyNT(prinv_(2)*(prinv_(0)*prinv_(0)*ddPII(1)+2.*prinv_(0)*ddPII(5)
-                                    +ddPII(0)+dPI(1)),bev_,CFpi_,1.);
-  d_cauchy_dFpi.MultiplyNT(-prinv_(2)*(ddPII(5)+prinv_(0)*ddPII(1)),bev_,CFpiCe_,1.);
-  d_cauchy_dFpi.MultiplyNT(prinv_(2)*(dPI(0)+prinv_(0)*dPI(1)+prinv_(2)*ddPII(4)
-                                    +prinv_(0)*prinv_(2)*ddPII(3)),bev_,CFpiCei_,1.);
+  d_cauchy_dFpi.MultiplyNT((ddPII(0)+dPI(1)+2.*prinv_(0)*ddPII(5)+prinv_(0)*prinv_(0)*ddPII(1)
+       )/sqrt(prinv_(2))
+          ,bev_,CFpi_,1.);
+  d_cauchy_dFpi.MultiplyNT(
+      (-ddPII(5)-prinv_(0)*ddPII(1))/sqrt(prinv_(2))
+      ,bev_,CFpiCe_,1.);
+  d_cauchy_dFpi.MultiplyNT((-.5*dPI(0)-.5*prinv_(0)*dPI(1)+prinv_(2)*ddPII(4)+prinv_(0)*prinv_(2)*ddPII(3)
+      )/sqrt(prinv_(2))
+      ,bev_,CFpiCei_,1.);
 
-  d_cauchy_dFpi.MultiplyNT(-prinv_(2)*(ddPII(5)+prinv_(0)*ddPII(1)),be2v_,CFpi_,1.);
-  d_cauchy_dFpi.MultiplyNT(prinv_(2)*ddPII(1),be2v_,CFpiCe_,1.);
-  d_cauchy_dFpi.MultiplyNT(-prinv_(2)*(dPI(1)+prinv_(2)*ddPII(3)),be2v_,CFpiCei_,1.);
+  d_cauchy_dFpi.MultiplyNT(-(ddPII(5)-prinv_(0)*ddPII(1))/sqrt(prinv_(2))
+      ,be2v_,CFpi_,1.);
+  d_cauchy_dFpi.MultiplyNT(ddPII(1)/sqrt(prinv_(2))
+      ,be2v_,CFpiCe_,1.);
+  d_cauchy_dFpi.MultiplyNT((.5*dPI(1)/prinv_(2)-ddPII(3))/sqrt(prinv_(2))
+      ,be2v_,CFpiCei_,1.);
+  d_cauchy_dFpi.Scale(2.);
 
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi,*defgrd,Fe_,prinv_(2)*(dPI(0)+prinv_(1)*dPI(1)));
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi,*defgrd,beFe_,-prinv_(2)*dPI(1));
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi,beF_,Fe_,prinv_(2)*(dPI(0)+prinv_(1)*dPI(1)));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi,*defgrd,Fe_,(dPI(0)+prinv_(0)*dPI(1))/sqrt(prinv_(2)));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi,*defgrd,beFe_,-dPI(1)/sqrt(prinv_(2)));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dFpi,beF_   ,Fe_  ,-dPI(1)/sqrt(prinv_(2)));
 
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,id2_,FCpi_,prinv_(2)*(dPI(0)+prinv_(1)*dPI(1)));
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,id2_,beFCpi_,-prinv_(2)*dPI(1));
-  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,be_,FCpi_,-prinv_(2)*dPI(1));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,id2_,FCpi_,(dPI(0)+prinv_(0)*dPI(1))/sqrt(prinv_(2)));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,id2_,beFCpi_,-dPI(1)/sqrt(prinv_(2)));
+  AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,be_ ,FCpi_  ,-dPI(1)/sqrt(prinv_(2)));
   d_cauchy_dF.Scale(2.);
+  d_cauchy_dFpi.Scale(2.);
 }
 
 void MAT::PlasticElastHyper::UpdateGP(const int gp, const LINALG::Matrix<3,3>* deltaDp)

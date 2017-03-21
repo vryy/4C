@@ -497,7 +497,6 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
       dserror("unknown predictor type");
       break;
     }
-//    std::cout << "predict: " << LINALG::Matrix<7,1>(alpha_eas_->A()) << std::endl;
   }
   break;
 
