@@ -9,8 +9,8 @@
 \maintainer Martin Pfaller
             pfaller@lnm.mw.tum.de
             089/289 15264
-
-/*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 /* headers */
 #include "elast_coupanisopow.H"
 #include "../drt_mat/matpar_material.H"
