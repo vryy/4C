@@ -1328,8 +1328,7 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
   INPAR::MORTAR::AlgorithmType atype = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(GetStrategy().Params(), "ALGORITHM");
   if (atype == INPAR::MORTAR::algorithm_gpts )
     for (int i=0;i<(int)dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces().size();++i)
-      dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces()[i]->CreateVolumeGhosting(
-          dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces()[i]->Discret(),false);
+      dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces()[i]->CreateVolumeGhosting();
 
 
   //If Parent Elements are required, we need to reconnect them before contact restart!

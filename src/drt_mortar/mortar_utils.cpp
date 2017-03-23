@@ -12,7 +12,9 @@
 #include "mortar_utils.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
 
 /*!
 \brief Sort vector in ascending order
@@ -603,3 +605,125 @@ int MORTAR::SortConvexHullPoints(bool out,
   return removed;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MORTAR::UTILS::CreateVolumeGhosting(
+    const DRT::Discretization& dis_src,
+    const std::vector<std::string> dis_tar,
+    std::vector<std::pair<int,int> > material_links,
+    bool check_on_in,
+    bool check_on_exit
+    )
+{
+  if (dis_tar.size()==0)
+    return;
+
+  DRT::Problem* problem = DRT::Problem::Instance();
+  std::vector<Teuchos::RCP<DRT::Discretization> > voldis;
+  for (int name=0;name<(int)dis_tar.size();++name)
+    voldis.push_back(problem->GetDis(dis_tar.at(name)));
+
+  if (check_on_in)
+    for (int c=1;c<(int)voldis.size();++c)
+      if (voldis.at(c)->ElementRowMap()->SameAs(*voldis.at(0)->ElementRowMap()) == false)
+        dserror("row maps on input do not coincide");
+
+  const Epetra_Map* ielecolmap = dis_src.ElementColMap();
+
+  //1 Ghost all Volume Element + Nodes,for all col elements in dis_src
+  for (unsigned disidx = 0; disidx < voldis.size(); ++disidx)
+  {
+    std::vector<int> rdata;
+
+    //Fill rdata with existing colmap
+
+    const Epetra_Map* elecolmap = voldis[disidx]->ElementColMap();
+    const Teuchos::RCP<Epetra_Map> allredelecolmap = LINALG::AllreduceEMap(*voldis[disidx]->ElementRowMap());
+
+    for (int i = 0; i < elecolmap->NumMyElements(); ++i)
+    {
+      int gid = elecolmap->GID(i);
+      rdata.push_back(gid);
+    }
+
+    //Find elements, which are ghosted on the interface but not in the volume discretization
+    for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
+    {
+      int gid = ielecolmap->GID(i);
+
+      DRT::Element* ele = dis_src.gElement(gid);
+      if (!ele)
+        dserror("ERROR: Cannot find element with gid %", gid);
+      DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+      if (!faceele)
+        dserror("source element is not a face element");
+      int volgid = faceele->ParentElementId();
+      //Ghost the parent element additionally
+      if (elecolmap->LID(volgid) == -1 && allredelecolmap->LID(volgid) != -1) //Volume Discretization has not Element on this proc but on another
+        rdata.push_back(volgid);
+    }
+
+      // re-build element column map
+      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+          new Epetra_Map(-1, (int) rdata.size(), &rdata[0], 0, voldis[disidx]->Comm()));
+      rdata.clear();
+
+      // redistribute the volume discretization according to the
+      // new (=old) element column layout & and ghost also nodes!
+      voldis[disidx]->ExtendedGhosting(*newelecolmap,true,true,true,false); //no check!!!
+  }
+
+  //2 Reconnect Face Element -- Parent Element Pointers to first dis in dis_tar
+  {
+    const Epetra_Map* elecolmap = voldis[0]->ElementColMap();
+
+    for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
+    {
+      int gid = ielecolmap->GID(i);
+
+      DRT::Element* ele = dis_src.gElement(gid);
+      if (!ele)
+        dserror("ERROR: Cannot find element with gid %", gid);
+      DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+      if (!faceele)
+        dserror("source element is not a face element");
+      int volgid = faceele->ParentElementId();
+
+      if (elecolmap->LID(volgid) == -1) //Volume Discretization has not Element
+        dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!",volgid);
+
+      DRT::Element* vele = voldis[0]->gElement(volgid);
+      if (!vele)
+        dserror("ERROR: Cannot find element with gid %", volgid);
+
+      faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
+    }
+  }
+
+  if (check_on_exit)
+    for (int c=1;c<(int)voldis.size();++c)
+    {
+      if (voldis.at(c)->ElementRowMap()->SameAs(*voldis.at(0)->ElementRowMap()) == false)
+        dserror("row maps on exit do not coincide");
+      if (voldis.at(c)->ElementColMap()->SameAs(*voldis.at(0)->ElementColMap()) == false)
+        dserror("col maps on exit do not coincide");
+    }
+
+  //3 setup material pointers between newly ghosted elements
+  for (std::vector<std::pair<int,int> >::const_iterator m=material_links.begin();
+      m!=material_links.end();++m)
+  {
+    Teuchos::RCP<DRT::Discretization> dis_src_mat=voldis.at(m->first);
+    Teuchos::RCP<DRT::Discretization> dis_tar_mat=voldis.at(m->second);
+
+    for (int i=0;i<dis_tar_mat->NumMyColElements();++i)
+    {
+      DRT::Element* targetele = dis_tar_mat->lColElement(i);
+      const int gid = targetele->Id();
+
+      DRT::Element* sourceele = dis_src_mat->gElement(gid);
+
+      targetele->AddMaterial(sourceele->Material());
+    }
+  }
+}

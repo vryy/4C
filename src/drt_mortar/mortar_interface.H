@@ -762,7 +762,7 @@ public:
   /*!
   \brief Ghost underlying volume elements
   */
-  void CreateVolumeGhosting(DRT::Discretization& idiscret,bool onlyslave);
+  void CreateVolumeGhosting();
 
   /*!
   \brief Binary tree search algorithm for potentially coupling

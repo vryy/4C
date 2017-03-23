@@ -25,6 +25,7 @@
 #include "mortar_binarytree.H"
 #include "mortar_defines.H"
 #include "mortar_projector.H"
+#include "mortar_utils.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -552,7 +553,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
     POROELAST::UTILS::CreateVolumeGhosting(Discret());
   if (imortar_.isParameter("STRATEGY"))
     if (newghosting && DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_,"ALGORITHM")==INPAR::MORTAR::algorithm_gpts)
-      CreateVolumeGhosting(Discret(),false);
+      CreateVolumeGhosting();
 
   // need row and column maps of slave and master nodes / elements / dofs
   // separately so we can easily address them
@@ -4360,96 +4361,21 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
 /*----------------------------------------------------------------------*
  | create volume ghosting (public)                            ager 06/15|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::CreateVolumeGhosting(DRT::Discretization& idiscret,bool onlyslave)
+void MORTAR::MortarInterface::CreateVolumeGhosting()
 {
-  //**********************************************************************
-  // Prerequisites of this funtion:
-  // All Contact Elements need a set parent_id_ (member of faceelement!) before
-  // calling CreateInterfaceGhosting as this id will be communicated to all
-  // processors! Otherwise any information which connects face and volume
-  // element is lost! (Parent Element Pointer is not communicated)
-  //**********************************************************************
+  INPAR::CONTACT::Problemtype prb = (INPAR::CONTACT::Problemtype)IParams().get<int>("PROBTYPE",
+      (int)INPAR::CONTACT::other);
 
-  //We get the discretizations from the global problem, as the contact does not have
-  //both structural and porofluid discretization, but we should guarantee consistent ghosting!
-
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  std::vector<Teuchos::RCP<DRT::Discretization> > voldis;
-  voldis.push_back(problem->GetDis("structure"));
-  //voldis.push_back(problem->GetDis("porofluid"));
-
-  const Epetra_Map* ielecolmap = idiscret.ElementColMap();
-
-  for (uint disidx = 0; disidx < voldis.size(); ++disidx)
+  switch (prb)
   {
-    //1 Ghost all Volume Element + Nodes,for all ghosted mortar elements!
-    std::vector<int> rdata;
+  default:
+  {
+    std::vector<std::string> tar_dis;
+    tar_dis.push_back("structure");
+    MORTAR::UTILS::CreateVolumeGhosting(Discret(),tar_dis,std::vector<std::pair<int,int> >(0));
 
-    //Fill rdata with existing colmap
-
-    const Epetra_Map* elecolmap = voldis[disidx]->ElementColMap();
-    const Teuchos::RCP<Epetra_Map> allredelecolmap = LINALG::AllreduceEMap(*voldis[disidx]->ElementRowMap());
-
-    for (int i = 0; i < elecolmap->NumMyElements(); ++i)
-    {
-      int gid = elecolmap->GID(i);
-      rdata.push_back(gid);
-    }
-
-    //Find elements, which are ghosted on the interface but not in the volume discretization
-    for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
-    {
-      int gid = ielecolmap->GID(i);
-
-      DRT::Element* ele = idiscret.gElement(gid);
-      if (!ele)
-        dserror("ERROR: Cannot find element with gid %", gid);
-      MORTAR::MortarElement* faceele = dynamic_cast<MORTAR::MortarElement*>(ele);
-      if (onlyslave && !faceele->IsSlave())
-        continue;
-      int volgid = faceele->ParentElementId();
-      //Ghost the parent element additionally
-      if (elecolmap->LID(volgid) == -1 && allredelecolmap->LID(volgid) != -1) //Volume Discretization has not Element on this proc but on another
-        rdata.push_back(volgid);
-      }
-
-      // re-build element column map
-      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-          new Epetra_Map(-1, (int) rdata.size(), &rdata[0], 0, voldis[disidx]->Comm()));
-      rdata.clear();
-
-      // redistribute the volume discretization according to the
-      // new (=old) element column layout & and ghost also nodes!
-      voldis[disidx]->ExtendedGhosting(*newelecolmap,true,true,true,false); //no check!!!
+    break;
   }
-
-  //2 Reconnect Face Element -- Porostructural Parent Element Pointers!
-  {
-    const Epetra_Map* elecolmap = voldis[0]->ElementColMap();
-
-    for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
-    {
-      int gid = ielecolmap->GID(i);
-
-      DRT::Element* ele = idiscret.gElement(gid);
-      if (!ele)
-        dserror("ERROR: Cannot find element with gid %", gid);
-
-      MORTAR::MortarElement* faceele = dynamic_cast<MORTAR::MortarElement*>(ele);
-      if (onlyslave && !faceele->IsSlave())
-        continue;
-
-      int volgid = faceele->ParentElementId();
-      if (elecolmap->LID(volgid) == -1) //Volume Discretization has not Element
-        dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!",volgid);
-
-      DRT::Element* vele = voldis[0]->gElement(volgid);
-      if (!vele)
-        dserror("ERROR: Cannot find element with gid %", volgid);
-
-      faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
-    }
   }
 }
 

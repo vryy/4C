@@ -3,8 +3,10 @@
 
 \brief A set of utility functions for mortar methods
 
+\level 1
+
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -157,6 +159,22 @@ namespace MORTAR
                            std::vector<Vertex>& respoly,
                            double& tol);
 
+namespace UTILS
+{
+  /*!
+  \brief copy the ghosting of dis_src to all discretizations with names in
+         vector dis_tar. They are fetched from the global problem, which is
+         not very safe, so be sure, what you do. Material pointers can be
+         added according to link_materials
+  */
+  void CreateVolumeGhosting(
+      const DRT::Discretization& dis_src,
+      const std::vector<std::string> dis_tar,
+      std::vector<std::pair<int,int> > material_links,
+      bool check_on_in=true,
+      bool check_on_exit=true
+      );
+}
 } // namespace MORTAR
 
 #endif  // #ifndef MORTAR_UTILS_H
