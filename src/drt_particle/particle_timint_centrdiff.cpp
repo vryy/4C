@@ -30,6 +30,8 @@
 #include "particle_algorithm.H"
 #include "particle_heatSource.H"
 
+#include "../drt_io/io_control.H"
+
 /*----------------------------------------------------------------------*/
 /* Constructor */
 PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
@@ -168,160 +170,173 @@ void PARTICLE::TimIntCentrDiff::Init()
 int PARTICLE::TimIntCentrDiff::IntegrateStep()
 {
 
-    const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
-    const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
+  const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
+  const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
-    // new velocities \f$V_{n+1/2}\f$
-    //TODO Meier: check, if the "postponed" subtraction of the accn_ term causes problems for SPH
-    // In DEM, this procedure is known to reduce the temporal convergence order if velocity-proportional damping terms exist.
-    veln_->Update(dthalf, *(*acc_)(0), 1.0);
+  // new velocities \f$V_{n+1/2}\f$
+  //TODO Meier: check, if the "postponed" subtraction of the accn_ term causes problems for SPH
+  // In DEM, this procedure is known to reduce the temporal convergence order if velocity-proportional damping terms exist.
+  veln_->Update(dthalf, *(*acc_)(0), 1.0);
 
-    // new displacements \f$D_{n+1}\f$
-    disn_->Update(dt, *veln_, 1.0);
+  // new displacements \f$D_{n+1}\f$
+  disn_->Update(dt, *veln_, 1.0);
 
-    // apply Dirichlet BCs
-    ApplyDirichletBC(timen_, disn_, Teuchos::null, Teuchos::null, false);
-    ApplyDirichletBC(timen_-dthalf, Teuchos::null, veln_, Teuchos::null, false);
+  // apply Dirichlet BCs
+  ApplyDirichletBC(timen_, disn_, Teuchos::null, Teuchos::null, false);
+  ApplyDirichletBC(timen_-dthalf, Teuchos::null, veln_, Teuchos::null, false);
 
-    // define vector for contact force and moment
-    Teuchos::RCP<Epetra_Vector> f_contact = Teuchos::null;
-    Teuchos::RCP<Epetra_Vector> m_contact = Teuchos::null;
+  // define vector for contact force and moment
+  Teuchos::RCP<Epetra_Vector> f_contact = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> m_contact = Teuchos::null;
 
-    // total internal energy (elastic spring and potential energy)
-    intergy_ = 0.0;
-    //---------------------Compute Collisions-----------------------
-    if(collhandler_ != Teuchos::null)
+  // total internal energy (elastic spring and potential energy)
+  intergy_ = 0.0;
+  //---------------------Compute Collisions-----------------------
+  if(collhandler_ != Teuchos::null)
+  {
+    // new angular-velocities \f$ang_V_{n+1/2}\f$
+    angVeln_->Update(dthalf, *(*angAcc_)(0), 1.0);
+
+    // initialize vectors for contact force and moment
+    f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    m_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+
+    if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
     {
-      // new angular-velocities \f$ang_V_{n+1/2}\f$
-      angVeln_->Update(dthalf, *(*angAcc_)(0), 1.0);
-
-      // initialize vectors for contact force and moment
-      f_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-      m_contact = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-
-      if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo)
-      {
-        collhandler_->Init(disn_, veln_, angVeln_, radiusn_, mass_, densityn_, specEnthalpyn_);
-      }
-      else
-      {
-        collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
-      }
-
-      intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_);
-    }
-    //--------------------------------------------------------------
-
-    if (interHandler_ != Teuchos::null)
-    {
-      // the density update scheme is equal to the acceleration update scheme. It can change at your will
-
-      interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_,bpDoFs_);
-      const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
-
-      // In case of density summation the new density and new pressure have been determined as very first step since they are required for all the following calculations
-      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION"))
-      {
-        if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::Custom or wallInteractionType==INPAR::PARTICLE::InitParticle)
-          interHandler_->MF_mW(densityn_);
-        else
-          interHandler_->MF_mW(densityn_,false);
-
-        //Determine also the new pressure and set state vectors for the new density and pressure
-        interHandler_->SetStateVector(densityn_, PARTICLE::Density);
-        Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-        deltaDensity->PutScalar(refdensfac_*restDensity_);
-        deltaDensity->Update(1.0,*densityn_,-1.0);
-        bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-        PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
-        interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
-      }
-
-      // Accelerations at Dirichlet DoFs are required for boundary particles
-      // TODO Meier: Check if here really acc(t_{n+1}) or rather acc(t_{n+0.5}) is required?
-      ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_,  false);
-      // asign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechancial energy contribution
-      if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
-      {
-        interHandler_->InitBoudaryData(accn_,bpintergy_);
-      }
-
-      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
-      {
-        // Determine time derivative of density in case integration formula is used
-        interHandler_->Inter_pvp_densityDot(densityDotn_);
-        if(wallInteractionType!=INPAR::PARTICLE::Mirror or wallInteractionType!=INPAR::PARTICLE::Custom or wallInteractionType!=INPAR::PARTICLE::InitParticle)
-          interHandler_->Inter_pvw_densityDot(densityDotn_);
-      }
-
-      interHandler_->Inter_pvp_acc(accn_,1.0,true,timen_);
-
-      if(wallInteractionType!=INPAR::PARTICLE::Mirror or wallInteractionType!=INPAR::PARTICLE::Custom or wallInteractionType!=INPAR::PARTICLE::InitParticle)
-        interHandler_->Inter_pvw_acc(accn_);
-
-      // heat balance
-      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
-      {
-        interHandler_->Inter_pvp_specEnthalpyDot(specEnthalpyDotn_);
-        interHandler_->Inter_pvhs_specEnthalpyDot(specEnthalpyDotn_);
-      }
-
-      // do we need the second round and the surface tension? here we decide
-      if (particle_algorithm_->ExtParticleMat()->surfaceVoidTension_ != 0)
-      {
-        Teuchos::RCP<Epetra_Vector> colorFieldGradientn = LINALG::CreateVector(*discret_->DofRowMap(),true);
-        // compute the color field gradient
-        interHandler_->Inter_pvp_colorFieldGradient(colorFieldGradientn);
-        // update the ParticleMeshFreeData
-        interHandler_->SetStateVector(colorFieldGradientn, PARTICLE::ColorFieldGradient);
-        // compute the surface tension
-        interHandler_->Inter_pvp_surfaceTensionCFG(accn_);
-      }
-
-      // clear vectors, keep memory
-      interHandler_->Clear();
+      collhandler_->Init(disn_, veln_, angVeln_, radiusn_, mass_, densityn_, specEnthalpyn_);
     }
     else
-      ComputeAcc(f_contact, m_contact, accn_, angAccn_);
-
-    //--- update with the new accelerations ---//
-
-    // update of end-velocities \f$V_{n+1}\f$
-    veln_->Update(dthalf, *accn_, 1.0);
-
-    switch (particle_algorithm_->ParticleInteractionType())
     {
-    case INPAR::PARTICLE::MeshFree :
-    {
-      //Density update in case integration formula is used
-      if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
-      {
-        //Explicit Euler for Density
-        densityn_->Update(dt, *densityDotn_, 1.0);
-      }
-
-    }// no break
-    case INPAR::PARTICLE::Normal_DEM_thermo :
-    {
-      specEnthalpyn_->Update(dt, *specEnthalpyDotn_, 1.0);
-      break;
-    }
-    default :
-      break;
+      collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
     }
 
-    if(collhandler_ != Teuchos::null)
+    intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_);
+  }
+  //--------------------------------------------------------------
+
+  if (interHandler_ != Teuchos::null)
+  {
+
+    //In case of periodic boundary conditions, the connectivity (assigmenment of particles to bins etc.) has to be updated
+    //in every time step and directly after the displacement update.
+    if(particle_algorithm_->BinStrategy()->HavePBC()==true)
     {
-      angVeln_->Update(dthalf,*angAccn_,1.0);
-      // for visualization of orientation vector
-      if(writeorientation_)
-        RotateOrientVector(dt);
+      particle_algorithm_->TransferParticles(true);
+      particle_algorithm_->UpdateHeatSourcesConnectivity(false);
     }
 
-    // apply Dirichlet BCs
-    ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
+    // the density update scheme is equal to the acceleration update scheme. It can change at your will
 
-    return 0;
+    interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_,bpDoFs_);
+    const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
+
+    // In case of density summation the new density and new pressure have been determined as very first step since they are required for all the following calculations
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION"))
+    {
+      if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::Custom or wallInteractionType==INPAR::PARTICLE::InitParticle)
+        interHandler_->MF_mW(densityn_);
+      else
+        interHandler_->MF_mW(densityn_,false);
+
+      //Determine also the new pressure and set state vectors for the new density and pressure
+      interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+      Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
+      deltaDensity->PutScalar(refdensfac_*restDensity_);
+      deltaDensity->Update(1.0,*densityn_,-1.0);
+      bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
+      PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+      interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
+    }
+
+    // Accelerations at Dirichlet DoFs are required for boundary particles
+    // TODO Meier: Check if here really acc(t_{n+1}) or rather acc(t_{n+0.5}) is required?
+    ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_,  false);
+    // asign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechancial energy contribution
+    if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
+    {
+      interHandler_->InitBoundaryData(accn_,particle_algorithm_->GetGravityAcc(),bpintergy_);
+    }
+
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
+    {
+      // Determine time derivative of density in case integration formula is used
+      interHandler_->Inter_pvp_densityDot(densityDotn_);
+      if(wallInteractionType!=INPAR::PARTICLE::Mirror or wallInteractionType!=INPAR::PARTICLE::Custom or wallInteractionType!=INPAR::PARTICLE::InitParticle)
+        interHandler_->Inter_pvw_densityDot(densityDotn_);
+    }
+
+    // F_ext - gravity
+    GravityAcc(accn_, 1.0);
+
+    // Acceleration contributiolns due to internal forces
+    interHandler_->Inter_pvp_acc(accn_,1.0,true,timen_);
+
+    if(wallInteractionType!=INPAR::PARTICLE::Mirror or wallInteractionType!=INPAR::PARTICLE::Custom or wallInteractionType!=INPAR::PARTICLE::InitParticle)
+      interHandler_->Inter_pvw_acc(accn_);
+
+    // heat balance
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
+    {
+      interHandler_->Inter_pvp_specEnthalpyDot(specEnthalpyDotn_);
+      interHandler_->Inter_pvhs_specEnthalpyDot(specEnthalpyDotn_);
+    }
+
+    // do we need the second round and the surface tension? here we decide
+    if (particle_algorithm_->ExtParticleMat()->surfaceVoidTension_ != 0)
+    {
+      Teuchos::RCP<Epetra_Vector> colorFieldGradientn = LINALG::CreateVector(*discret_->DofRowMap(),true);
+      // compute the color field gradient
+      interHandler_->Inter_pvp_colorFieldGradient(colorFieldGradientn);
+      // update the ParticleMeshFreeData
+      interHandler_->SetStateVector(colorFieldGradientn, PARTICLE::ColorFieldGradient);
+      // compute the surface tension
+      interHandler_->Inter_pvp_surfaceTensionCFG(accn_);
+    }
+
+    // clear vectors, keep memory
+    interHandler_->Clear();
+  }
+  else
+    ComputeAcc(f_contact, m_contact, accn_, angAccn_);
+
+  //--- update with the new accelerations ---//
+
+  // update of end-velocities \f$V_{n+1}\f$
+  veln_->Update(dthalf, *accn_, 1.0);
+
+  switch (particle_algorithm_->ParticleInteractionType())
+  {
+  case INPAR::PARTICLE::MeshFree :
+  {
+    //Density update in case integration formula is used
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
+    {
+      //Explicit Euler for Density
+      densityn_->Update(dt, *densityDotn_, 1.0);
+    }
+
+  }// no break
+  case INPAR::PARTICLE::Normal_DEM_thermo :
+  {
+    specEnthalpyn_->Update(dt, *specEnthalpyDotn_, 1.0);
+    break;
+  }
+  default :
+    break;
+  }
+
+  if(collhandler_ != Teuchos::null)
+  {
+    angVeln_->Update(dthalf,*angAccn_,1.0);
+    // for visualization of orientation vector
+    if(writeorientation_)
+      RotateOrientVector(dt);
+  }
+
+  // apply Dirichlet BCs
+  ApplyDirichletBC(timen_, Teuchos::null, veln_, accn_, false);
+
+  return 0;
 }
 
 

@@ -967,7 +967,9 @@ void PARTICLE::TimInt::DetermineEnergy()
       linmomentum_.Clear();
 
       //First add energy contributions of boundary particles (bpintergy_ has already been determined in IntegrateStep())
-      intergy_+=bpintergy_;
+      //intergy_+=bpintergy_;
+
+      std::cout << "bpintergy_: " << bpintergy_ << std::endl;
 
       for(int i=0; i<numrownodes; ++i)
       {

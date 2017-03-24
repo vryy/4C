@@ -140,7 +140,10 @@ namespace PARTICLE
     virtual void InitColParticles(Teuchos::RCP<Epetra_Vector> bpDoFs=Teuchos::null);
 
     //! accelerations, modified pressures and velocities for boundary particles
-    virtual void InitBoudaryData(Teuchos::RCP<const Epetra_Vector> accn, double &bpintergy);
+    virtual void InitBoundaryData(
+        Teuchos::RCP<const Epetra_Vector> accn,
+        const LINALG::Matrix<3,1>& g,
+        double &bpintergy);
 
     //! add to the neighbour maps the neighbours of the present time step
     virtual void AddNewNeighbours(const int step);
@@ -363,6 +366,16 @@ namespace PARTICLE
      //! update the neighbours_op_ map
      virtual void UpdateWeights_op(const int step = -1);
 
+     //! build periodic boundary conditions                       meier 03/17 |
+     virtual void BuildPeriodicBC();
+
+     //! Apply coordinate shift in case of periodic boundary conditions
+     virtual void ShiftPeriodicBoundaryPair(
+         const LINALG::Matrix<3,1>& dis_i,
+         LINALG::Matrix<3,1>& dis_j,
+         const double& radius_1,
+         const double& radius_2);
+
     /// template to print neighbours
     template <typename obj>
     void PrintNeighbours(const std::vector< boost::unordered_map<int, obj> >& neighbours)
@@ -413,9 +426,8 @@ namespace PARTICLE
     /// neighbours - particles
     std::vector<boost::unordered_map<int, InterDataPvP> > neighbours_p_;
 
-    /// neighbours - particles
+    /// neighbours - particles (overlapping storage)
     std::vector<boost::unordered_map<int, InterDataPvP> > overlappingneighbours_p_;
-
 
     /// neighbours - heat sources
     std::vector<boost::unordered_map<int, Teuchos::RCP<HeatSource> > > neighbours_hs_;
@@ -440,11 +452,6 @@ namespace PARTICLE
 
     /// number of space dimensions required for weight function definition
     const INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
-
-    //@}
-
-    //! @name wall interaction parameters
-    //@{
 
     //! rest density for meshFree-pressure dynamics
     const double initDensity_;
@@ -472,6 +479,9 @@ namespace PARTICLE
 
     // security trigger in case the color field gradient was not set properly
     bool trg_updatedColorFieldGradient_;
+
+    // length of periodic box if appicable (=-1.0 if not)
+    double periodic_length_;
 
     //@}
 

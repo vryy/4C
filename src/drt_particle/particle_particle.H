@@ -296,7 +296,7 @@ namespace PARTICLE
         temperature_(-1),
         densityDot_(-1),
         alpha_(-1),
-        boundarydata_(BoundaryData(boundaryparticle)) {}
+        boundarydata_(BoundaryData(boundaryparticle)){}
 
   /// constructor: only the first round
   ParticleMF(
@@ -320,7 +320,7 @@ namespace PARTICLE
         temperature_(temperature),
         densityDot_(-1),
         alpha_(-1),
-        boundarydata_(BoundaryData(false)) {}
+        boundarydata_(BoundaryData(false)){}
 
   /// internal variables
   double pressure_;
@@ -350,7 +350,6 @@ public:
 int gid_;
 LINALG::TMatrix<FAD,3,1> dis_;
 FAD density_;
-
-}; // ParticleBase
+}; // ParticleFAD
 
 #endif /* SRC_DRT_PARTICLE_PARTICLE_PARTICLE_H_ */

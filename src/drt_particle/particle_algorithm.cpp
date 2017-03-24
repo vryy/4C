@@ -1160,6 +1160,10 @@ void PARTICLE::Algorithm::SetUpHeatSources()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
 {
+
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM")==false)
+    return;
+
   // clear the map in case of force restart
   if (trg_forceRestart)
     bins2heatSources_.clear();
@@ -1225,12 +1229,14 @@ void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::UpdateConnectivity()
 {
+
   if(Step()%transfer_every_ == 0)
   {
     // transfer particles into their correct bins
     TransferParticles(true);
   }
-  // update heat sources
+
+  // in case of thermal SPH problems: update heat sources
   UpdateHeatSourcesConnectivity(false);
 }
 
@@ -1266,6 +1272,10 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
   binIds.reserve(27);
 
   BinStrategy()->GetNeighborAndOwnBinIds(binId,binIds);
+
+  //std::cout << "Neighbor bins of bin " << binId << ": " << std::endl;
+//  for(int i=0;i<binIds.size();i++)
+//    std::cout << binIds[i]<< std::endl;
 
   GetBinContent(neighboursLinf_p, neighboursLinf_w, neighboursLinf_hs, binIds);
 }

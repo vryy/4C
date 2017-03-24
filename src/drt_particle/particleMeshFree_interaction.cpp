@@ -56,136 +56,205 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   restDensity_(restDensity),
   refdensfac_(refdensfac),
   alphaMin_(DRT::Problem::Instance()->ParticleParams().get<double>("ALPHA_MIN")),
-  trg_updatedColorFieldGradient_(false)
+  trg_updatedColorFieldGradient_(false),
+  periodic_length_(-1.0)
 {
-// checks
-if (particle_algorithm_->ExtParticleMat() == NULL)
-  dserror("extParticleMat_ is empty");
-// extract wall parameters
-const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
+  // checks
+  if (particle_algorithm_->ExtParticleMat() == NULL)
+    dserror("extParticleMat_ is empty");
+  // extract wall parameters
+  const MAT::PAR::ExtParticleMat* extParticleMat = particle_algorithm_->ExtParticleMat();
 
-switch(wallInteractionType_)
-{
-case INPAR::PARTICLE::InitParticle :
+  switch(wallInteractionType_)
   {
-    wallMeshFreeData_.density_ = extParticleMat->initDensity_;
-    wallMeshFreeData_.mass_ = extParticleMat->initDensity_ * PARTICLE::Utils::Radius2Volume(extParticleMat->initRadius_);
-    // the pressure is linked to the deltaDensity_ with the initial density. In case of this wall it is always 0
-    wallMeshFreeData_.pressure_ = 0;
-    /*
-    if (extParticleMat->initTemperature_ < extParticleMat->transitionTemperature_)
+  case INPAR::PARTICLE::InitParticle :
     {
-      wallMeshFreeData_.pressure_ = PARTICLE::Utils::Density2Pressure(extParticleMat->SpeedOfSoundS(),extParticleMat->initDensity_);
+      wallMeshFreeData_.density_ = extParticleMat->initDensity_;
+      wallMeshFreeData_.mass_ = extParticleMat->initDensity_ * PARTICLE::Utils::Radius2Volume(extParticleMat->initRadius_);
+      // the pressure is linked to the deltaDensity_ with the initial density. In case of this wall it is always 0
+      wallMeshFreeData_.pressure_ = 0;
+      /*
+      if (extParticleMat->initTemperature_ < extParticleMat->transitionTemperature_)
+      {
+        wallMeshFreeData_.pressure_ = PARTICLE::Utils::Density2Pressure(extParticleMat->SpeedOfSoundS(),extParticleMat->initDensity_);
+      }
+      else if (extParticleMat->initTemperature_ > extParticleMat->transitionTemperature_)
+      {
+        wallMeshFreeData_.pressure_ = PARTICLE::Utils::Density2Pressure(extParticleMat->SpeedOfSoundL(),extParticleMat->initDensity_);
+      }
+      else
+      {
+        dserror("Start from the transition state not implemented");
+      }
+      */
+      break;
     }
-    else if (extParticleMat->initTemperature_ > extParticleMat->transitionTemperature_)
+  case INPAR::PARTICLE::Mirror :
     {
-      wallMeshFreeData_.pressure_ = PARTICLE::Utils::Density2Pressure(extParticleMat->SpeedOfSoundL(),extParticleMat->initDensity_);
+      wallMeshFreeData_.density_ = -1;
+      wallMeshFreeData_.mass_ = -1;
+      wallMeshFreeData_.pressure_ = -1;
+      break;
+    }
+  case INPAR::PARTICLE::Custom :
+    {
+      const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
+      wallMeshFreeData_.density_ = particleparams.get<double>("WALL_FAKE_DENSITY");
+      wallMeshFreeData_.mass_ = particleparams.get<double>("WALL_FAKE_MASS");
+      wallMeshFreeData_.pressure_ = particleparams.get<double>("WALL_FAKE_PRESSURE");
+      break;
+    }
+  case INPAR::PARTICLE::BoundarParticle_NoSlip :
+  case INPAR::PARTICLE::BoundarParticle_FreeSlip :
+  case INPAR::PARTICLE::NoWallInteraction :
+    {
+      //nothing to do
+    }
+  }
+
+  // other checks
+  if (wallInteractionType_ == INPAR::PARTICLE::InitParticle or wallInteractionType_ == INPAR::PARTICLE::Custom)
+  {
+    if (wallMeshFreeData_.density_ < 0)
+      dserror("the value of WALL_FAKE_DENSITY is unacceptable");
+    if (wallMeshFreeData_.mass_ < 0)
+      dserror("the value of WALL_FAKE_MASS is unacceptable");
+  }
+
+  //Attention: The trace of a tensor as required to derive equation (28) from equation (25) in Espanol2003 depends
+  //on the spatial dimension --> SPH approximations of the Laplace operator typically differ for different dimensions!
+  switch (WF_DIM_)
+  {
+    case INPAR::PARTICLE::WF_3D :
+    {
+      diffusionCoeff_ = 5.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+      break;
+    }
+    case INPAR::PARTICLE::WF_2D :
+    {
+      diffusionCoeff_ = 8.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+      break;
+    }
+    case INPAR::PARTICLE::WF_1D :
+    {
+      diffusionCoeff_ = 11.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+      break;
+    }
+    default :
+    {
+      dserror("Only the problem dimensions 1, 2 and 3 are possible!");
+    }
+  }
+
+  convectionCoeff_ = 5.0 * (extParticleMat->dynamicViscosity_ / 3.0  + extParticleMat->bulkViscosity_);
+
+  // checks
+  if (diffusionCoeff_<0)
+  {
+    dserror("The diffusion coefficient is negative! The following equation should hold: 5*dynamicViscosity >= 3*bulkViscosity");
+  }
+
+  if (convectionCoeff_<0)
+  {
+    dserror("The convection coefficient is negative! Are you sure that the dynamic viscosity and the bulk modulus are positive?");
+  }
+
+  surfaceVoidTension_ = extParticleMat->surfaceVoidTension_;
+  surfaceWallTension_ = extParticleMat->surfaceWallTension_;
+
+  // set the correct WeightFunction
+
+  switch (DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunction>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION"))
+  {
+    case INPAR::PARTICLE::CubicBspline :
+    {
+      weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline(WF_DIM_));
+      break;
+    }
+    case INPAR::PARTICLE::SqrtHyperbola :
+    {
+      weightFunctionHandler_ = Teuchos::rcp(new WeightFunction_SqrtHyperbola(WF_DIM_));
+      break;
+    }
+    case INPAR::PARTICLE::HyperbolaNoRsz :
+    {
+      weightFunctionHandler_ = Teuchos::rcp(new WeightFunction_HyperbolaNoRsz);
+      break;
+    }
+  }
+
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM")==false and extParticleMat->initTemperature_<extParticleMat->transitionTemperature_)
+    dserror("Pure mechanical problems, i.e. SOLVE_THERMAL_PROBLEM==No, are currently only considered as pure fluid problems. "
+        "To remain consistent, the initial temperature has to be higher than the transition temperature!");
+
+  //Check if periodic boundary conditions are applied
+  BuildPeriodicBC();
+}
+
+/*----------------------------------------------------------------------*
+ | build periodic boundary conditions                       meier 03/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::BuildPeriodicBC()
+{
+
+  std::istringstream periodicbc(Teuchos::getNumericStringParameter(
+      DRT::Problem::Instance()->MeshfreeParams(),"PERIODICONOFF"));
+
+  bool periodic_bcs=false;
+
+  // loop over all spatial directions
+  for(int dim=0; dim<3; ++dim)
+  {
+    int val = -1;
+    if (periodicbc >> val)
+    {
+      if( val )
+      {
+        if(dim==0)
+        {
+          if(myrank_ == 0)
+            std::cout << "INFO: Periodic boundary conditions in x-direction are applied!" << std::endl;
+
+          periodic_bcs=true;
+        }
+        else
+          dserror("Periodic boundary conditions only possible in x-direction so far!");
+      }
     }
     else
     {
-      dserror("Start from the transition state not implemented");
+      dserror("Enter three values to specify each direction as periodic or non periodic (y and z value has to be zero). Fix input file ...");
     }
-    */
-    break;
   }
-case INPAR::PARTICLE::Mirror :
-  {
-    wallMeshFreeData_.density_ = -1;
-    wallMeshFreeData_.mass_ = -1;
-    wallMeshFreeData_.pressure_ = -1;
-    break;
-  }
-case INPAR::PARTICLE::Custom :
-  {
-    const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-    wallMeshFreeData_.density_ = particleparams.get<double>("WALL_FAKE_DENSITY");
-    wallMeshFreeData_.mass_ = particleparams.get<double>("WALL_FAKE_MASS");
-    wallMeshFreeData_.pressure_ = particleparams.get<double>("WALL_FAKE_PRESSURE");
-    break;
-  }
-case INPAR::PARTICLE::BoundarParticle_NoSlip :
-case INPAR::PARTICLE::BoundarParticle_FreeSlip :
-case INPAR::PARTICLE::NoWallInteraction :
-  {
-    //nothing to do
-  }
-}
 
-// other checks
-if (wallInteractionType_ == INPAR::PARTICLE::InitParticle or wallInteractionType_ == INPAR::PARTICLE::Custom)
-{
-  if (wallMeshFreeData_.density_ < 0)
-    dserror("the value of WALL_FAKE_DENSITY is unacceptable");
-  if (wallMeshFreeData_.mass_ < 0)
-    dserror("the value of WALL_FAKE_MASS is unacceptable");
-}
-
-//Attention: The trace of a tensor as required to derive equation (28) from equation (25) in Espanol2003 depends
-//on the spatial dimension --> SPH approximations of the Laplace operator typically differ for different dimensions!
-switch (WF_DIM_)
-{
-  case INPAR::PARTICLE::WF_3D :
+  if(periodic_bcs)
   {
-    diffusionCoeff_ = 5.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
-    break;
+    LINALG::Matrix<3,2> box(true);
+
+    // get bounding box specified in the input file
+    box.PutScalar(1.0e12);
+    std::istringstream xaabbstream( Teuchos::getNumericStringParameter(
+        DRT::Problem::Instance()->MeshfreeParams(),"BOUNDINGBOX") );
+    for( int col = 0; col < 2; ++col )
+    {
+      for( int row = 0; row < 3; ++row )
+      {
+        double value = 1.0e12;
+        if( xaabbstream >> value )
+          box( row, col ) = value;
+        else
+          dserror(" Specify six values for bounding box in three dimensional problem."
+                  " Fix your input file.");
+      }
+    }
+
+    if(fabs(box(0,0)+box(0,1))>0 or box(0,0)>box(0,1))
+      dserror("Left and Right periodic boundary have to be of the form x_b=-periodic_length_/2 and x_b=periodic_length_/2!");
+    else
+      periodic_length_=2.0*fabs(box(0,1));
   }
-  case INPAR::PARTICLE::WF_2D :
-  {
-    diffusionCoeff_ = 8.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
-    break;
-  }
-  case INPAR::PARTICLE::WF_1D :
-  {
-    diffusionCoeff_ = 11.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
-    break;
-  }
-  default :
-  {
-    dserror("Only the problem dimensions 1, 2 and 3 are possible!");
-  }
-}
 
-convectionCoeff_ = 5.0 * (extParticleMat->dynamicViscosity_ / 3.0  + extParticleMat->bulkViscosity_);
-
-// checks
-if (diffusionCoeff_<0)
-{
-  dserror("The diffusion coefficient is negative! The following equation should hold: 5*dynamicViscosity >= 3*bulkViscosity");
-}
-
-if (convectionCoeff_<0)
-{
-  dserror("The convection coefficient is negative! Are you sure that the dynamic viscosity and the bulk modulus are positive?");
-}
-
-surfaceVoidTension_ = extParticleMat->surfaceVoidTension_;
-surfaceWallTension_ = extParticleMat->surfaceWallTension_;
-
-// set the correct WeightFunction
-
-switch (DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunction>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION"))
-{
-  case INPAR::PARTICLE::CubicBspline :
-  {
-    weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline(WF_DIM_));
-    break;
-  }
-  case INPAR::PARTICLE::SqrtHyperbola :
-  {
-    weightFunctionHandler_ = Teuchos::rcp(new WeightFunction_SqrtHyperbola(WF_DIM_));
-    break;
-  }
-  case INPAR::PARTICLE::HyperbolaNoRsz :
-  {
-    weightFunctionHandler_ = Teuchos::rcp(new WeightFunction_HyperbolaNoRsz);
-    break;
-  }
-}
-
-if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM")==false and extParticleMat->initTemperature_<extParticleMat->transitionTemperature_)
-  dserror("Pure mechanical problems, i.e. SOLVE_THERMAL_PROBLEM==No, are currently only considered as pure fluid problems. "
-      "To remain consistent, the initial temperature has to be higher than the transition temperature!");
-
+  return;
 }
 
 
@@ -362,17 +431,16 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(Teuchos::RCP
       boundaryparticles_[particle->Id()]=&colParticles_[lidNodeCol];
     }
   }
-
 }
 
 /*-------------------------------------------------------------------------------------------------*
  | accelerations, modified pressures, velocities and energy for boundary particles    meier 02/17  |
  *-------------------------------------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoudaryData(Teuchos::RCP<const Epetra_Vector> accn, double &bpintergy)
+void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoundaryData(
+        Teuchos::RCP<const Epetra_Vector> accn,
+        const LINALG::Matrix<3,1>& g,
+        double &bpintergy)
 {
-
-
-
   //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
     dserror("Boundary particles are only considered in the context of pure fluid problems so far!");
@@ -416,9 +484,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoudaryData(Teuchos::RCP<
 
     //TODO: So far, the gravity is assumed to be zero. In case gravity or any other type of body forces are applied,
     // these terms are required in Ref. Adami2012, Eq.(23) and have to be considered in the vector "gravity"!
-    LINALG::Matrix<3,1> gravity(true);
     LINALG::Matrix<3,1> gminusacci(true);
-    gminusacci.Update(1.0,gravity,1.0);
+    gminusacci.Update(1.0,g,1.0);
     gminusacci.Update(-1.0,particle_i->boundarydata_.acc_,1.0);
 
     // loop over the boundary particles
@@ -582,6 +649,7 @@ for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lid
   case PARTICLE::Dis :
   {
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.dis_, data.lm_);
+
     break;
   }
   case PARTICLE::Vel :
@@ -649,7 +717,6 @@ for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lid
   }
 }
 }
-
 
 /*----------------------------------------------------------------------*
  | set colVectors in the local data structs                katta 10/16  |
@@ -737,6 +804,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
     // first neighbours_ round
     particle_algorithm_->GetNeighbouringItems(binId, neighboursLinf_p, &neighboursLinf_w, neighboursLinf_hs);
 
+    //std::cout << "binId: " << binId << std::endl;
+
     // do some checks
     if(neighboursLinf_hs->size()!=0)
     {
@@ -761,6 +830,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
       const int lidNodeCol_i = currentBinParticles[i]->LID();
       const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
 
+      //std::cout << "particle_i.gid_: " << particle_i.gid_ << std::endl;
+
       AddNewNeighbours_p(particle_i, neighboursLinf_p, step);
 
       if(wallInteractionType_==INPAR::PARTICLE::Mirror or wallInteractionType_==INPAR::PARTICLE::InitParticle or wallInteractionType_==INPAR::PARTICLE::Custom)
@@ -769,7 +840,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
       AddNewNeighbours_hs(particle_i, neighboursLinf_hs);
     }
   }
-
 
   //*************loop over the boundary particles (for boundary particles we need superposition --> column map)**************************************************
   // clear bin checker
@@ -899,7 +969,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
     {
       // create the data that we have to insert
       LINALG::Matrix<3,1> rRel_ij;
-      rRel_ij.Update(1.0, particle_i.dis_, -1.0, particle_j.dis_); // inward vector
+      LINALG::Matrix<3,1> dis_i=particle_i.dis_;
+      LINALG::Matrix<3,1> dis_j=particle_j.dis_;
+
+      if(periodic_length_>0)
+      {
+        //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
+        //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
+        //particles but not on the absolut positions.
+        ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+      }
+
+      rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       const double rRelNorm2 = rRel_ij.Norm2();
 
       #ifdef PARTICLE_TENSILESAFETYFAC
@@ -994,7 +1075,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_op(
     {
       // create the data that we have to insert
       LINALG::Matrix<3,1> rRel_ij;
-      rRel_ij.Update(1.0, particle_i.dis_, -1.0, particle_j.dis_); // inward vector
+      LINALG::Matrix<3,1> dis_i=particle_i.dis_;
+      LINALG::Matrix<3,1> dis_j=particle_j.dis_;
+
+      if(periodic_length_>0)
+      {
+        //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
+        //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
+        //particles but not on the absolut positions.
+        ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+      }
+
+      rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       rRelNorm2 = rRel_ij.Norm2();
       rRelVersor_ij.Update(1.0,rRel_ij,0.0);
       rRelVersor_ij.Scale(1/rRelNorm2);
@@ -1060,7 +1152,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_bp(
     {
       // create the data that we have to insert
       LINALG::Matrix<3,1> rRel_ij;
-      rRel_ij.Update(1.0, particle_i.dis_, -1.0, particle_j.dis_); // inward vector
+      LINALG::Matrix<3,1> dis_i=particle_i.dis_;
+      LINALG::Matrix<3,1> dis_j=particle_j.dis_;
+
+      if(periodic_length_>0)
+      {
+        //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
+        //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
+        //particles but not on the absolut positions.
+        ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+      }
+
+      rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       const double rRelNorm2 = rRel_ij.Norm2();
 
       #ifdef PARTICLE_TENSILESAFETYFAC
@@ -1344,6 +1447,33 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_hs(
 }
 
 /*---------------------------------------------------------------------------------*
+ | Apply coordinate shift in case of periodic boundary conditions     meier 01/17  |
+ *---------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::ShiftPeriodicBoundaryPair(
+    const LINALG::Matrix<3,1>& dis_1,
+    LINALG::Matrix<3,1>& dis_2,
+    const double& radius_1,
+    const double& radius_2)
+{
+  //We dont want to have particles that can interact directly AND across the periodic boundary
+  //(which would be possible in case of periodic_length_<4*particle_i.radius_)
+  if(periodic_length_<4.5*std::max(radius_1,radius_2))
+    dserror("The length periodic_length_ of the periodic box has to be larger than four times the particle radius!");
+
+  double x_coord_1=dis_1(0);
+  double x_coord_2=dis_2(0);
+
+  if(x_coord_1>periodic_length_/2 or x_coord_1<-periodic_length_/2 or x_coord_2>periodic_length_/2 or x_coord_2<-periodic_length_/2)
+    dserror("Particle outside the periodic domain!");
+
+  //Within this method, only the position of particle 2 (required for interaction with particle 1) is shifted, while particle 1 remains untouched.
+  if(x_coord_1>=periodic_length_/2-std::max(radius_1,radius_2) and x_coord_2<=-periodic_length_/2+std::max(radius_1,radius_2))
+    dis_2(0)+=periodic_length_;
+  else if(x_coord_2>=periodic_length_/2-std::max(radius_1,radius_2) and x_coord_1<=-periodic_length_/2+std::max(radius_1,radius_2))
+    dis_2(0)-=periodic_length_;
+}
+
+/*---------------------------------------------------------------------------------*
  | update weights and distances in all the neighbours                 katta 01/17  |
  *---------------------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights(
@@ -1395,6 +1525,17 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int ste
 
         // create the data that we have to insert
         LINALG::Matrix<3,1> rRel_ij;
+        LINALG::Matrix<3,1> dis_i=particle_i.dis_;
+        LINALG::Matrix<3,1> dis_j=particle_j.dis_;
+
+        if(periodic_length_>0)
+        {
+          //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
+          //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
+          //particles but not on the absolut positions.
+          ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+        }
+
         rRel_ij.Update(1.0, particle_i.dis_, -1.0, particle_j.dis_); // inward vector
         const double rRelNorm2 = rRel_ij.Norm2();
         LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
@@ -1477,7 +1618,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_bp(const int st
 
         // create the data that we have to insert
         LINALG::Matrix<3,1> rRel_ij;
-        rRel_ij.Update(1.0, particle_i->dis_, -1.0, particle_j.dis_); // inward vector
+        LINALG::Matrix<3,1> dis_i=particle_i->dis_;
+        LINALG::Matrix<3,1> dis_j=particle_j.dis_;
+
+        if(periodic_length_>0)
+        {
+          //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
+          //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
+          //particles but not on the absolut positions.
+          ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i->radius_,particle_j.radius_);
+        }
+
+        rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
         const double rRelNorm2 = rRel_ij.Norm2();
         LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
         rRelVersor_ij.Scale(1/rRelNorm2);
@@ -1567,7 +1719,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_op(const int st
         {
           // create the data that we have to insert
           LINALG::Matrix<3,1> rRel_ij;
-          rRel_ij.Update(1.0, particle_i.dis_, -1.0, particle_j.dis_); // inward vector
+          LINALG::Matrix<3,1> dis_i=particle_i.dis_;
+          LINALG::Matrix<3,1> dis_j=particle_j.dis_;
+
+          if(periodic_length_>0)
+          {
+            //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
+            //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
+            //particles but not on the absolut positions.
+            ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+          }
+
+          rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
           rRelNorm2 = rRel_ij.Norm2();
           rRelVersor_ij.Update(1.0,rRel_ij,0.0);
           rRelVersor_ij.Scale(1/rRelNorm2);
@@ -1738,6 +1901,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
       LINALG::Matrix<3,1> vRel_ij;
       vRel_ij.Update(1.0, particle_i.vel_, -1.0, particle_j.vel_);
 
+//      std::cout << "particle_i.gid: " << particle_i.gid_ << std::endl;
+//      std::cout << "particle_j.gid: " << particle_j.gid_ << std::endl;
+
       // write on particle i if appropriate specializing the quantities
       if (interData_ij.dw_ij_ != 0)
       {
@@ -1745,6 +1911,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
         LINALG::Matrix<3,1> gradW = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
         double densityDotn_ij = gradW.Dot(vRel_ij) * particle_j.mass_;
         densityDotn_ij *= extMulti;
+//        std::cout << "densityDotn_ij: " << densityDotn_ij << std::endl;
         LINALG::Assemble(*densityDotn, densityDotn_ij, particle_i.gid_, particle_i.owner_);
       }
 
@@ -1756,6 +1923,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
         LINALG::Matrix<3,1> gradW = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ji_);
         double densityDotn_ji = gradW.Dot(vRel_ij) * particle_i.mass_;
         densityDotn_ji *= extMulti;
+//        std::cout << "densityDotn_ji: " << densityDotn_ji << std::endl;
         LINALG::Assemble(*densityDotn, densityDotn_ji, particle_j.gid_, particle_j.owner_);
       }
     }
@@ -1816,7 +1984,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_densityDot(
   }
 
 }
-
 
 /*----------------------------------------------------------------------*
  | evaluate acceleration - pvp                             katta 10/16  |
@@ -3271,7 +3438,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
 
   if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
     MF_mW_Boundary(mW,extMulti);
-
 }
 
 /*------------------------------------------------------------------------------------------*

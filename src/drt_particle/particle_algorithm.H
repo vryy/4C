@@ -33,7 +33,7 @@
 
 //Usefull defines (tolerances and debugging tools)
 #define PARTICLE_TENSILESAFETYFAC 0.000001          //Factor prescribing the minimal particle distance as compared to the average initial particle distance (tensile instabilites)
-//#define PARTICLE_OVERLAPPINGNEIGHBORS               //Determine also fully overlapping variant of neighbors vectors
+//#define PARTICLE_OVERLAPPINGNEIGHBORS             //Determine also fully overlapping variant of neighbors vectors
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |
@@ -131,6 +131,9 @@ namespace PARTICLE
     virtual Teuchos::RCP<std::list<int> > TransferParticles(const bool updatestates,
                                    const bool ghosting = true);
 
+    /// update of the map bins->heat Sources
+    virtual void UpdateHeatSourcesConnectivity(bool forceRestart);
+
     /// get bins in range and call FindNeighbors
     virtual void GetNeighbouringItems(
                     DRT::Node* particle,
@@ -221,9 +224,6 @@ namespace PARTICLE
 
     /// set up heat sources
     virtual void SetUpHeatSources();
-
-    /// update of the map bins->heat Sources
-    virtual void UpdateHeatSourcesConnectivity(bool forceRestart);
 
     /// get particles and wall elements in given bins
     void GetBinContent(

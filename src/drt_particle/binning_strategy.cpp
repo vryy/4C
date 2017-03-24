@@ -2065,7 +2065,7 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
           std::cout << "INFO: PBC bounds for particles is computed automatically for direction " << dim
                     << " based on XAABB of bins (left: " <<  XAABB_(dim,0) << " , right: " <<  XAABB_(dim,1) << " )" << std::endl;
 
-        // additional safety check whether at least some bin layers exist in pbc direction
+        //additional safety check whether at least some bin layers exist in pbc direction
         if(bin_per_dir_[dim] < 3)
           dserror("There are just very few bins in pbc direction -> maybe nasty for neighborhood search (especially in contact)");
 
