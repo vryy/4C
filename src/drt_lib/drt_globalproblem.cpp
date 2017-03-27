@@ -257,6 +257,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BROWNIAN DYNAMICS", *list);
   reader.ReadGidSection("--BEAM INTERACTION", *list);
   reader.ReadGidSection("--BEAM INTERACTION/CONTRACTILE CELLS", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/BEAM TO BEAM CONTACT", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SPHERE CONTACT", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/BEAM TO SOLID CONTACT", *list);
   reader.ReadGidSection("--BEAM INTERACTION/CROSSLINKING", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/GENALPHA", *list);

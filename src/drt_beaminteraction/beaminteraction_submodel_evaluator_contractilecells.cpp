@@ -29,10 +29,10 @@
 
 #include "../drt_particle/particle_handler.H"
 #include <Teuchos_TimeMonitor.hpp>
-#include "../drt_beaminteraction/biopolynet_calc_utils.H"
 #include "../drt_beaminteraction/contractilecells_params.H"
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "beaminteraction_calc_utils.H"
 #include "beaminteraction_submodel_evaluator_crosslinking.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
@@ -153,9 +153,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::PostUpdateStepElement
 
   std::set<int> spherebingids;
   int spheregid = -1;
-  for( int i = 0; i < EleTypeMapExtractorPtr()->Map(1)->NumMyElements(); ++i )
+  for( int i = 0; i < EleTypeMapExtractorPtr()->SphereMap()->NumMyElements(); ++i )
   {
-    spheregid =  EleTypeMapExtractorPtr()->Map(1)->GID(i);
+    spheregid =  EleTypeMapExtractorPtr()->SphereMap()->GID(i);
     spherebingids.insert( BeamInteractionDataStatePtr()->GetRowEleToBinSet(spheregid).begin(),
                           BeamInteractionDataStatePtr()->GetRowEleToBinSet(spheregid).end() );
   }
@@ -282,14 +282,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::UpdateCellsPositionRa
   CheckInit();
 
   DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
-  int const numcells = EleTypeMapExtractorPtr()->Map(1)->NumMyElements();
+  int const numcells = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
   std::vector<double> randpos;
   DRT::Problem::Instance()->Random()->Uni( randpos, 3 * numcells );
 
   //todo: this is of course not nice, this needs to be done somewhere else
   for( int i = 0; i < numcells; ++i )
   {
-    DRT::Element* eleptr = Discret().gElement(EleTypeMapExtractorPtr()->Map(1)->GID(i) );
+    DRT::Element* eleptr = Discret().gElement(EleTypeMapExtractorPtr()->SphereMap()->GID(i) );
 
     std::vector<int> dofnode  = Discret().Dof(eleptr->Nodes()[0]);
 
@@ -311,7 +311,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::UpdateCellsPositionRa
       int doflid = BeamInteractionDataStatePtr()->GetMutableDisNp()->Map().LID(dofnode[dim]);
       (*BeamInteractionDataStatePtr()->GetMutableDisNp() )[doflid] = Xnew[i][dim] - eleptr->Nodes()[0]->X()[dim];
     }
- /*   int const elegid = EleTypeMapExtractorPtr()->Map(1)->GID(i);
+ /*   int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(i);
     DiscretPtr()->gElement(elegid)->Nodes()[0]->SetPos(Xnew);*/
    }
 }

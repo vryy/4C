@@ -16,7 +16,7 @@
 #include "inpar_biopolynet_dbc.H"
 
 
-void INPAR::BIOPOLYNETDBC::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void INPAR::BEAMINTERACTIONDBC::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
   using Teuchos::tuple;
@@ -25,7 +25,7 @@ void INPAR::BIOPOLYNETDBC::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
   Teuchos::Array<std::string> yesnotuple = tuple<std::string>("Yes","No","yes","no","YES","NO");
   Teuchos::Array<int> yesnovalue = tuple<int>(true,false,true,false,true,false);
 
-  Teuchos::ParameterList& biopolynetdbc = list->sublist("BIOPOLYNET DBC",false,"");
+  Teuchos::ParameterList& biopolynetdbc = list->sublist("BEAMINTERACTION DBC",false,"");
 
 
 

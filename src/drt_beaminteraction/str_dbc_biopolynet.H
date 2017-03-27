@@ -11,8 +11,8 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_DBC_BIOPOLYNET_H_
-#define STR_DBC_BIOPOLYNET_H_
+#ifndef STR_DBC_BEAMINTERACTION_H_
+#define STR_DBC_BEAMINTERACTION_H_
 
 #include <Teuchos_RCP.hpp>
 #include "str_dbc.H"
@@ -177,4 +177,4 @@ namespace TIMINT {
 }
 
 
-#endif /* STR_DBC_BIOPOLYNET_H_ */
+#endif /* STR_DBC_BEAMINTERACTION_H_ */

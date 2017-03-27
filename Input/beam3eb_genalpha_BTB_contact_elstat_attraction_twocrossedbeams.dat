@@ -47,6 +47,8 @@ Outer Iteration StatusTest      = No
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.9
+----------------------------------------------------------------BEAM INTERACTION/BEAM TO BEAM CONTACT
+STRATEGY                        penalty
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard
 BEAMS_STRATEGY                  Penalty

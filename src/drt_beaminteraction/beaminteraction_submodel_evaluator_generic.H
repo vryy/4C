@@ -17,7 +17,6 @@
 
 #include "../drt_inpar/inpar_beaminteraction.H"
 #include "str_model_evaluator_beaminteraction.H"
-#include "../linalg/linalg_mapextractor.H"
 
 // forward declaration
 namespace BINSTRATEGY{
@@ -47,6 +46,9 @@ namespace MODELEVALUATOR {
 }
 }
 namespace BEAMINTERACTION {
+namespace UTILS {
+  class MapExtractor;
+}
 namespace SUBMODELEVALUATOR {
   class Crosslinking;
 
@@ -73,7 +75,7 @@ namespace SUBMODELEVALUATOR {
         Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
         Teuchos::RCP<PARTICLE::ParticleHandler> const& particlehandler,
         Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
-        Teuchos::RCP<LINALG::MultiMapExtractor> const& eletypeextractor
+        Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor
     );
 
     //! setup class variables
@@ -182,9 +184,9 @@ namespace SUBMODELEVALUATOR {
     Teuchos::RCP<GEO::MESHFREE::BoundingBox>& PeriodicBoundingBoxPtr();
     GEO::MESHFREE::BoundingBox const& PeriodicBoundingBox() const;
 
-    LINALG::MultiMapExtractor& EleTypeMapExtractor();
-    Teuchos::RCP<LINALG::MultiMapExtractor>& EleTypeMapExtractorPtr();
-    LINALG::MultiMapExtractor const& EleTypeMapExtractor() const;
+    BEAMINTERACTION::UTILS::MapExtractor& EleTypeMapExtractor();
+    Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& EleTypeMapExtractorPtr();
+    BEAMINTERACTION::UTILS::MapExtractor const& EleTypeMapExtractor() const;
 
     //! @}
   protected:
@@ -214,7 +216,7 @@ namespace SUBMODELEVALUATOR {
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
 
     /// map extractor for split of different element types
-    Teuchos::RCP<LINALG::MultiMapExtractor> eletypeextractor_;
+    Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> eletypeextractor_;
 
   }; // class Generic
 

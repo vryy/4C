@@ -1,6 +1,6 @@
 /*-----------------------------------------------------------*/
 /*!
-\file biopolynet_calc_utils.H
+\file beaminteraction_calc_utils.H
 
 \brief utils for biopolymer network business
 
@@ -11,11 +11,12 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef BIOPOLYNET_CALC_UTILS_H_
-#define BIOPOLYNET_CALC_UTILS_H_
+#ifndef BEAMINTERACTION_CALC_UTILS_H_
+#define BEAMINTERACTION_CALC_UTILS_H_
 
 #include "Teuchos_RCP.hpp"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_mapextractor.H"
 
 
 // forward declaration
@@ -25,7 +26,6 @@ namespace LINALG {
   class SerialDenseVector;
   class SerialDenseMatrix;
   class SparseMatrix;
-  class MultiMapExtractor;
 }
 namespace DRT {
   class Element;
@@ -43,10 +43,27 @@ class CrosslinkingParams;
 class BeamToBeamLinkage;
 }
 
-namespace BIOPOLYNET
+namespace BEAMINTERACTION
 {
 namespace UTILS
 {
+
+/// specific MultiMapExtractor to handle different types of element during beam interaction
+class MapExtractor : public LINALG::MultiMapExtractor
+{
+public:
+
+  enum
+  {
+    beam   = 0,
+    sphere = 1,
+    solid  = 2
+  };
+
+  MAP_EXTRACTOR_VECTOR_METHODS( Beam, beam )
+  MAP_EXTRACTOR_VECTOR_METHODS( Sphere, sphere )
+  MAP_EXTRACTOR_VECTOR_METHODS( Solid, solid )
+};
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

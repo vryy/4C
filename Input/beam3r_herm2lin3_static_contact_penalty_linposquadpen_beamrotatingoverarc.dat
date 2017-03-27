@@ -41,6 +41,8 @@ MAXITER                         30
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
+----------------------------------------------------------------BEAM INTERACTION/BEAM TO BEAM CONTACT
+STRATEGY                        penalty
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard
 BEAMS_STRATEGY                  Penalty

@@ -27,10 +27,10 @@
 //#include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_beaminteraction/beam3contact_utils.H"
-#include "../drt_beaminteraction/biopolynet_calc_utils.H"
 #include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
 #include "beam_potential_pair.H"
 #include "beam_potential_params.H"
+#include "beaminteraction_calc_utils.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -101,7 +101,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
     for ( unsigned int ielement = 0; ielement < 2; ++ielement )
     {
       // extract the Dof values of this element from displacement vector
-      BIOPOLYNET::UTILS::ExtractPosDofVecAbsoluteValues(
+      BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(
           Discret(),
           element_ptr[ielement],
           BeamInteractionDataStatePtr()->GetMutableDisColNp(),
@@ -190,7 +190,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
 
             // assemble force vector affecting the centerline DoFs only
             // into element force vector ('all DoFs' format, as usual)
-            BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+            BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
                 Discret(),
                 elegids,
                 eleforce_centerlineDOFs,
@@ -200,7 +200,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-            BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
+            BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
                 eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
           }
 
@@ -288,7 +288,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
 
             // assemble stiffness matrix affecting the centerline DoFs only
             // into element stiffness matrix ('all DoFs' format, as usual)
-            BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+            BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
                 Discret(),
                 elegids,
                 dummyforce,
@@ -298,7 +298,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-            BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+            BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
                 elegids, dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
           }
 
@@ -394,7 +394,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
 
             // assemble force vector and stiffness matrix affecting the centerline DoFs only
             // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-            BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+            BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
                 Discret(),
                 elegids,
                 eleforce_centerlineDOFs,
@@ -404,7 +404,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-            BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+            BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
                 elegids, eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
                 BeamInteractionDataStatePtr()->GetMutableStiff() );
           }
@@ -534,10 +534,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringE
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::FindAndStoreNeighboringElements");
 
   // loop over all row elements
-  int const numroweles = EleTypeMapExtractorPtr()->Map(0)->NumMyElements();
+  int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
   for( int rowele_i = 0; rowele_i < numroweles; ++rowele_i )
   {
-    int const elegid = EleTypeMapExtractorPtr()->Map(0)->GID(rowele_i);
+    int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
     DRT::Element* currele = DiscretPtr()->gElement(elegid);
 
     // (unique) set of neighboring bins for all col bins assigned to current element

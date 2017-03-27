@@ -28,7 +28,6 @@
 #include "../drt_geometry/intersection_math.H"
 
 #include "../drt_beaminteraction/beam_to_beam_linkage.H"
-#include "../drt_beaminteraction/biopolynet_calc_utils.H"
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_particle/particle_handler.H"
@@ -39,6 +38,7 @@
 #include "../drt_mat/crosslinkermat.H"
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
+#include "beaminteraction_calc_utils.H"
 
 
 /*-------------------------------------------------------------------------------*
@@ -402,7 +402,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
       int locbspotnum = elepairptr->GetLocBSpotNum(i);
       DRT::Element* ele = DiscretPtr()->gElement(elegid);
 
-      BIOPOLYNET::UTILS::GetPosAndTriadOfBindingSpot( Discret(), ele,
+      BEAMINTERACTION::UTILS::GetPosAndTriadOfBindingSpot( Discret(), ele,
           BeamInteractionDataStatePtr()->GetMutableDisColNp(),
           PeriodicBoundingBoxPtr(), locbspotnum, pos[i], triad[i] );
     }
@@ -449,13 +449,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForce()
 
     // apply forces on binding spots to parent elements
     // and get their discrete element force vectors
-    BIOPOLYNET::UTILS::ApplyBindingSpotForceToParentElements( Discret(),
+    BEAMINTERACTION::UTILS::ApplyBindingSpotForceToParentElements( Discret(),
         PeriodicBoundingBoxPtr(), BeamInteractionDataStatePtr()->GetMutableDisColNp(),
         elepairptr, bspotforce, eleforce );
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
+    BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
         eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
   }
 
@@ -502,13 +502,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateStiff()
         bspotstiff[1][1] );
 
     // apply linearizations to parent elements and get their discrete element stiffness matrices
-    BIOPOLYNET::UTILS::ApplyBindingSpotStiffToParentElements( Discret(),
+    BEAMINTERACTION::UTILS::ApplyBindingSpotStiffToParentElements( Discret(),
         PeriodicBoundingBoxPtr(), BeamInteractionDataStatePtr()->GetMutableDisColNp(),
         elepairptr, bspotstiff, elestiff);
 
     // assemble the contributions into stiffness matrix class variable
     // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+    BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
         elegids, dummyforce, elestiff, Teuchos::null,
         BeamInteractionDataStatePtr()->GetMutableStiff());
    }
@@ -560,13 +560,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForceStiff()
 
     // apply forces on binding spots and corresponding linearizations to parent elements
     // and get their discrete element force vectors and stiffness matrices
-    BIOPOLYNET::UTILS::ApplyBindingSpotForceStiffToParentElements( Discret(),
+    BEAMINTERACTION::UTILS::ApplyBindingSpotForceStiffToParentElements( Discret(),
         PeriodicBoundingBoxPtr(), BeamInteractionDataStatePtr()->GetMutableDisColNp(),
         elepairptr, bspotforce, bspotstiff, eleforce, elestiff );
 
     // assemble the contributions into force and stiffness class variables
     // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-    BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
+    BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
         eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
         BeamInteractionDataStatePtr()->GetMutableStiff() );
   }
@@ -922,7 +922,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         // get current position of filament binding spot
         LINALG::Matrix<3,1> bbspotpos;
         std::vector<double> eledisp;
-        BIOPOLYNET::UTILS::GetCurrentUnshiftedElementDis( Discret(), ele,
+        BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis( Discret(), ele,
             BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBoxPtr(), eledisp );
         ele->GetPosOfBindingSpot( bbspotpos, eledisp, cldata_i->GetClBSpotStatus()[occbspotid].second,
             PeriodicBoundingBoxPtr() );
@@ -965,7 +965,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         // get current position of filament binding spot
         LINALG::Matrix<3,1> bbspotposone;
         std::vector<double> eledisp;
-        BIOPOLYNET::UTILS::GetCurrentUnshiftedElementDis( Discret(), ele,
+        BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis( Discret(), ele,
             BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBoxPtr(), eledisp );
         ele->GetPosOfBindingSpot( bbspotposone, eledisp, cldata_i->GetClBSpotStatus()[0].second,
             PeriodicBoundingBoxPtr() );
@@ -996,7 +996,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
         // get current position of filament binding spot
         LINALG::Matrix<3,1> bbspotpostwo;
-        BIOPOLYNET::UTILS::GetCurrentUnshiftedElementDis( Discret(), ele,
+        BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis( Discret(), ele,
             BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBoxPtr(), eledisp);
         ele->GetPosOfBindingSpot( bbspotpostwo, eledisp, cldata_i->GetClBSpotStatus()[1].second,
             PeriodicBoundingBoxPtr() );
@@ -1255,13 +1255,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreComputeBeamData()
     BeamData& bdata = beam_data_[i];
 
     std::vector<double> eledisp;
-    BIOPOLYNET::UTILS::GetCurrentUnshiftedElementDis( Discret(), beamele_i,
+    BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis( Discret(), beamele_i,
         BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBoxPtr(), eledisp );
 
     // loop over all binding spots of current element
     const int numbbspot = static_cast<int>(beamele_i->GetBindingSpotStatus().size());
     for(int j=0; j<numbbspot; ++j)
-      BIOPOLYNET::UTILS::GetPosAndTriadOfBindingSpot( beamele_i,
+      BEAMINTERACTION::UTILS::GetPosAndTriadOfBindingSpot( beamele_i,
           PeriodicBoundingBoxPtr(), j, bdata.bbspotpos[j], bdata.bbspottriad[j], eledisp );
 
     // get status of beam binding spots
@@ -1316,7 +1316,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FindPotentialBindingEvent
   // loop over all column crosslinker in random order
   // create random order of indices
   std::vector<int> rordercolcl =
-      BIOPOLYNET::UTILS::Permutation( BinDiscretPtr()->NumMyColNodes() );
+      BEAMINTERACTION::UTILS::Permutation( BinDiscretPtr()->NumMyColNodes() );
   std::vector<int>::const_iterator icl;
   for( icl = rordercolcl.begin(); icl != rordercolcl.end(); ++icl )
   {
@@ -1386,7 +1386,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   const int numcrosslinker = bin->NumNode();
 
   // obtain random order in which crosslinker are addressed
-  std::vector<int> randorder = BIOPOLYNET::UTILS::Permutation( numcrosslinker );
+  std::vector<int> randorder = BEAMINTERACTION::UTILS::Permutation( numcrosslinker );
 
   // loop over all crosslinker in CurrentBin in random order
   std::vector<int>::const_iterator randcliter;
@@ -1432,7 +1432,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
   // -------------------------------------------------------------------------
   std::sort( beamvec.begin(), beamvec.end(), Less() );
 
-  std::vector<int> randorder = BIOPOLYNET::UTILS::Permutation( static_cast<int>( beamvec.size() ) );
+  std::vector<int> randorder = BEAMINTERACTION::UTILS::Permutation( static_cast<int>( beamvec.size() ) );
   for( std::vector<int> ::const_iterator randiter = randorder.begin(); randiter != randorder.end();  ++randiter )
   {
     // get neighboring (nb) beam element
@@ -1454,7 +1454,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
       continue;
 
     // loop over all binding spots of current element in random order
-    std::vector<int> randbspot = BIOPOLYNET::UTILS::Permutation( static_cast<int>( beamdata_i.bbspotstatus.size() ) );
+    std::vector<int> randbspot = BEAMINTERACTION::UTILS::Permutation( static_cast<int>( beamdata_i.bbspotstatus.size() ) );
     std::vector<int> ::const_iterator rbspotiter;
     for( rbspotiter = randbspot.begin(); rbspotiter != randbspot.end(); ++rbspotiter )
     {
@@ -2174,7 +2174,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
    * to col element, we potentially need to communicate if such an element
    * needs to be updated*/
   const int numrowcl = BinDiscretPtr()->NumMyRowNodes();
-  std::vector<int> rorderrowcl = BIOPOLYNET::UTILS::Permutation(numrowcl);
+  std::vector<int> rorderrowcl = BEAMINTERACTION::UTILS::Permutation(numrowcl);
   std::vector<int>::const_iterator rowcli;
   for( rowcli = rorderrowcl.begin(); rowcli != rorderrowcl.end(); ++rowcli )
   {
@@ -2216,7 +2216,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
           p_unlink_db[0] = p_unlink_db[1] = p_unlink;
 
         // loop through crosslinker bonds in random order
-        std::vector<int> ro = BIOPOLYNET::UTILS::Permutation( cldata_i.clnumbond );
+        std::vector<int> ro = BEAMINTERACTION::UTILS::Permutation( cldata_i.clnumbond );
         std::vector<int>::const_iterator clbspotiter;
         for( clbspotiter = ro.begin(); clbspotiter != ro.end(); ++clbspotiter )
         {
@@ -2503,7 +2503,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
         case 2:
         {
           // dissolve random bond and update states
-          DissolveBond( crosslinker_i, BIOPOLYNET::UTILS::Permutation( cldata_i.clnumbond )[0],
+          DissolveBond( crosslinker_i, BEAMINTERACTION::UTILS::Permutation( cldata_i.clnumbond )[0],
               cldata_i.clnumbond, sendunbindevents, myrankunbindevents );
 
           // in case we want to allow transition from double bonded to free, take same linker

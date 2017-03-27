@@ -187,7 +187,7 @@ namespace MODELEVALUATOR{
     void InitAndSetupSubModeEvaluators();
 
     //! give submodels a certain order in which they are evaluated
-    virtual Teuchos::RCP< STR::MODELEVALUATOR::BeamInteraction::Vector > Sort(
+    virtual Teuchos::RCP< STR::MODELEVALUATOR::BeamInteraction::Vector > TransformToVector(
         STR::MODELEVALUATOR::BeamInteraction::Map submodel_map,
         std::vector<INPAR::BEAMINTERACTION::SubModelType>& sorted_submodel_types
     ) const;
@@ -218,14 +218,6 @@ namespace MODELEVALUATOR{
         Teuchos::RCP<Epetra_Vector>&      dofmapvec,
         Teuchos::RCP<Epetra_Vector> old = Teuchos::null
     );
-
-    /// get eletype map extractor pointer
-    Teuchos::RCP<LINALG::MultiMapExtractor>& EleTypeMapExtractorPtr()
-    {
-      CheckInit();
-      eletypeextractor_->CheckForValidMapExtractor();
-      return eletypeextractor_;
-    }
 
     //! @}
 
@@ -305,8 +297,6 @@ namespace MODELEVALUATOR{
 
     //! elerowmap of bindis
     Teuchos::RCP<Epetra_Map> rowbins_;
-
-//    Epetra_Map* colbins_;  // Todo kept line for future improvement
 
     //! @}
 

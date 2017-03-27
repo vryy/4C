@@ -53,6 +53,7 @@
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_beamcontact.H"
+#include "../drt_inpar/inpar_beaminteraction.H"
 #include "../drt_inpar/drt_validparameters.H"
 
 #include "../drt_so3/so_sh8p8.H"
@@ -481,14 +482,18 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     modeltypes.insert(INPAR::STR::model_browniandyn);
 
   // ---------------------------------------------------------------------------
-  // check for beaminteraction
+  // check for beam interaction
   // ---------------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING"), "CROSSLINKER") or
-      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamInteractionParams().sublist("CONTRACTILE CELLS"), "CONTRACTILECELLS") or
-      (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
-      DRT::Problem::Instance()->BeamContactParams(),"BEAMS_STRATEGY") != INPAR::BEAMCONTACT::bstr_none and
-      modelevaluator == INPAR::BEAMCONTACT::bstr_standard ) or
-      ( beampotconditions.size() > 0 and modelevaluator == INPAR::BEAMCONTACT::bstr_standard) )
+  if ( DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamInteractionParams().sublist("CROSSLINKING"), "CROSSLINKER")           or
+       DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->BeamInteractionParams().sublist("CONTRACTILE CELLS"), "CONTRACTILECELLS") or
+       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none   or
+       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
+       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none  or
+       ( beampotconditions.size() > 0 and modelevaluator == INPAR::BEAMCONTACT::bstr_standard)
+     )
     modeltypes.insert(INPAR::STR::model_beaminteraction);
 
   // hopefully we haven't forgotten anything

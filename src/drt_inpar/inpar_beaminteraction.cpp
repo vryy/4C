@@ -56,14 +56,62 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   Teuchos::ParameterList& contraccells = beaminteraction.sublist("CONTRACTILE CELLS",false,"");
 
-
-  setStringToIntegralParameter<int>("CONTRACTILECELLS","No",
+  setStringToIntegralParameter<int>( "CONTRACTILECELLS", "No",
                                  "Contractile cells in problem",
-                                 yesnotuple,yesnovalue,&contraccells);
+                                 yesnotuple, yesnovalue, &contraccells );
 
   //number of overall crosslink molecules in the boundary volume
-  IntParameter("NUMCELLS",0,"number of contracting cells in simulation volume",&contraccells);
+  IntParameter( "NUMCELLS", 0, "number of contracting cells in simulation volume", &contraccells );
 
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for beam to ? contact submodel*/
+  /*----------------------------------------------------------------------*/
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for beam to beam contact */
+
+  Teuchos::ParameterList& beamtobeamcontact = beaminteraction.sublist("BEAM TO BEAM CONTACT",false,"");
+
+  setStringToIntegralParameter<int>("STRATEGY","None","Type of employed solving strategy",
+        tuple<std::string>("None","none",
+                           "Penalty", "penalty"),
+        tuple<int>(
+                bstr_none, bstr_none,
+                bstr_penalty, bstr_penalty),
+        &beamtobeamcontact);
+
+  // ...
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for beam to sphere contact */
+
+  Teuchos::ParameterList& beamtospherecontact = beaminteraction.sublist("BEAM TO SPHERE CONTACT",false,"");
+
+  setStringToIntegralParameter<int>("STRATEGY","None","Type of employed solving strategy",
+        tuple<std::string>("None","none",
+                           "Penalty", "penalty"),
+        tuple<int>(
+                bstr_none, bstr_none,
+                bstr_penalty, bstr_penalty),
+        &beamtospherecontact);
+
+  // ...
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for beam to solid contact */
+
+  Teuchos::ParameterList& beamtosolidcontact = beaminteraction.sublist("BEAM TO SOLID CONTACT",false,"");
+
+  setStringToIntegralParameter<int>("STRATEGY","None","Type of employed solving strategy",
+        tuple<std::string>("None","none",
+                           "Penalty", "penalty"),
+        tuple<int>(
+                bstr_none, bstr_none,
+                bstr_penalty, bstr_penalty),
+        &beamtosolidcontact);
+
+  // ...
 
 
 }

@@ -14,6 +14,7 @@
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -26,9 +27,9 @@
 
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_beam3/beam3_base.H"
-#include "../drt_beaminteraction/biopolynet_calc_utils.H"
 #include "beam_contact_pair.H"
 #include "beam_contact_params.H"
+#include "beaminteraction_calc_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
 
@@ -37,7 +38,7 @@
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::BeamContact()
     : beam_contact_params_ptr_(Teuchos::null),
-      BTB_contact_elepairs_(Teuchos::null)
+      contact_elepairs_(Teuchos::null)
 {
   // clear stl stuff
   nearby_elements_map_.clear();
@@ -54,6 +55,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
   beam_contact_params_ptr_ =Teuchos::rcp(new BEAMINTERACTION::BeamContactParams() );
   beam_contact_params_ptr_->Init();
   beam_contact_params_ptr_->Setup();
+
+  // initialize element types that are considered for beamt to ? contact
+  InitElementTypesConsideredForContact();
 
   // set flag
   issetup_ = true;
@@ -83,12 +87,36 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitSubmodelDependencies(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::InitElementTypesConsideredForContact()
+{
+  CheckInit();
+
+  contactelementtypes_.clear();
+
+  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
+     )
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Beam);
+
+  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
+     )
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::RigidSphere);
+
+  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
+     )
+    contactelementtypes_.push_back(BINSTRATEGY::UTILS::Solid);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
 {
   CheckInitSetup();
 
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator iter;
-  for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
+  for ( iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
@@ -103,7 +131,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
     for ( unsigned int ielement = 0; ielement < 2; ++ielement )
     {
       // extract the Dof values of this element from displacement vector
-      BIOPOLYNET::UTILS::ExtractPosDofVecAbsoluteValues(
+      BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(
           Discret(),
           element_ptr[ielement],
           BeamInteractionDataStatePtr()->GetMutableDisColNp(),
@@ -141,7 +169,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
 
 
   std::vector< Teuchos::RCP< BEAMINTERACTION::BeamContactPair > >::const_iterator iter;
-  for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
+  for ( iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
@@ -160,7 +188,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
 
       // assemble force vector affecting the centerline DoFs only
       // into element force vector ('all DoFs' format, as usual)
-      BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+      BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
           Discret(),
           elegids,
           eleforce_centerlineDOFs,
@@ -174,7 +202,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
 
       // assemble the contributions into force vector class variable
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-      BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
+      BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(), elegids,
           eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
     }
 
@@ -206,7 +234,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
 
 
   std::vector< Teuchos::RCP< BEAMINTERACTION::BeamContactPair > >::const_iterator iter;
-  for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
+  for ( iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
@@ -225,7 +253,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
 
       // assemble stiffness matrix affecting the centerline DoFs only
       // into element stiffness matrix ('all DoFs' format, as usual)
-      BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+      BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
           Discret(),
           elegids,
           dummyforce,
@@ -235,7 +263,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
 
       // assemble the contributions into force vector class variable
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-      BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+      BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
           elegids, dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
     }
 
@@ -272,7 +300,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
 
 
   std::vector< Teuchos::RCP< BEAMINTERACTION::BeamContactPair > >::const_iterator iter;
-  for ( iter = BTB_contact_elepairs_.begin(); iter != BTB_contact_elepairs_.end(); ++iter )
+  for ( iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter )
   {
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> elepairptr = *iter;
 
@@ -294,7 +322,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
 
       // assemble force vector and stiffness matrix affecting the centerline DoFs only
       // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-      BIOPOLYNET::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
+      BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
           Discret(),
           elegids,
           eleforce_centerlineDOFs,
@@ -308,7 +336,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
 
       // assemble the contributions into force vector class variable
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-      BIOPOLYNET::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
+      BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix( Discret(),
           elegids, eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
           BeamInteractionDataStatePtr()->GetMutableStiff() );
     }
@@ -434,17 +462,19 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
   // measure time for evaluating this function
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringElements");
 
-  // loop over all row elements
-  const int numroweles = EleTypeMapExtractorPtr()->Map(0)->NumMyElements();
+  // loop over all row beam elements
+  // note: like this we ensure that first element of pair is always a beam element, also only
+  // only beam to something contact considered
+  const int numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
   for( int rowele_i = 0; rowele_i < numroweles; ++rowele_i )
   {
-    const int elegid = EleTypeMapExtractorPtr()->Map(0)->GID(rowele_i);
+    const int elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
     DRT::Element* currele = DiscretPtr()->gElement(elegid);
 
     // (unique) set of neighboring bins for all col bins assigned to current element
     std::set<int> neighboring_binIds;
 
-    // loop over all bind touched by currele
+    // loop over all bins touched by currele
     std::set<int>::const_iterator biniter;
     for( biniter = BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).begin();
         biniter != BeamInteractionDataStatePtr()->GetRowEleToBinSet(elegid).end(); ++biniter )
@@ -465,12 +495,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
         neighboring_binIds.end() );
 
     // set of elements that lie in neighboring bins
-    std::vector< BINSTRATEGY::UTILS::BinContentType > bc(2);
-    bc[0] = BINSTRATEGY::UTILS::Beam;
-    bc[1] = BINSTRATEGY::UTILS::RigidSphere;
     std::set<DRT::Element*> neighboring_elements;
     BinStrategyPtr()->GetBinContent( neighboring_elements,
-        bc, glob_neighboring_binIds );
+        contactelementtypes_, glob_neighboring_binIds );
 
     // sort out elements that should not be considered in contact evaluation
     SelectElesToBeConsideredForContactEvaluation( currele, neighboring_elements );
@@ -494,15 +521,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
     bool toerase = false;
     // 1) ensure each contact only evaluated once (keep in mind that we are
     //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
-    if ( not ( currele->Id() < (*eiter)->Id() ) )
+    // note: as we are only looping over beam elements, only beam to beam contact needs id check here
+    if ( dynamic_cast<DRT::ELEMENTS::Beam3Base*>(*eiter) != NULL and not ( currele->Id() < (*eiter)->Id() ) )
     {
       toerase = true;
     }
     // 2) ensure that two elements sharing the same node do not get into contact
     else
     {
-      for ( int i = 0; i < 2; i++ )
-        for ( int j = 0; j < 2 ; j++ )
+      for ( int i = 0; i < 2; ++i )
+        for ( int j = 0; j < 2 ; ++j )
           if( (*eiter)->NodeIds()[i] == currele->NodeIds()[j] )
             toerase = true;
     }
@@ -520,39 +548,40 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     CreateBeamContactElementPairs()
 {
   // Todo maybe keep existing pairs and reuse them ?
-  BTB_contact_elepairs_.clear();
+  contact_elepairs_.clear();
 
   std::map<int, std::set<DRT::Element*> >::const_iterator nearbyeleiter;
 
-  for (nearbyeleiter=nearby_elements_map_.begin(); nearbyeleiter!=nearby_elements_map_.end(); ++nearbyeleiter)
+  for ( nearbyeleiter = nearby_elements_map_.begin(); nearbyeleiter != nearby_elements_map_.end(); ++nearbyeleiter )
   {
     const int elegid = nearbyeleiter->first;
     std::vector< DRT::Element const *> ele_ptrs(2);
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
+#ifdef DEBUG
+    if( dynamic_cast< DRT::ELEMENTS::Beam3Base const* >(ele_ptrs[0]) == NULL )
+      dserror("first element of element pair must be a beam element");
+#endif
 
     std::set<DRT::Element*>::const_iterator secondeleiter;
-    for (secondeleiter=nearbyeleiter->second.begin(); secondeleiter!=nearbyeleiter->second.end(); ++secondeleiter)
+    for ( secondeleiter = nearbyeleiter->second.begin(); secondeleiter != nearbyeleiter->second.end(); ++secondeleiter )
     {
       ele_ptrs[1] = *secondeleiter;
 
+      // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
           BEAMINTERACTION::BeamContactPair::Create(ele_ptrs);
-
-      newbeaminteractionpair->Init(
-          beam_contact_params_ptr_,
-          ele_ptrs[0],
-          ele_ptrs[1]);
-
+      newbeaminteractionpair->Init( beam_contact_params_ptr_, ele_ptrs );
       newbeaminteractionpair->Setup();
 
-      BTB_contact_elepairs_.push_back(newbeaminteractionpair);
+      // add to list of current contact pairs
+      contact_elepairs_.push_back(newbeaminteractionpair);
     }
   }
 
   IO::cout(IO::standard) <<"\n\n************************************************"<<IO::endl;
   IO::cout(IO::standard) << "PID " << GState().GetMyRank() << " currently monitors " <<
-      BTB_contact_elepairs_.size() << " beam contact pairs" << IO::endl;
+      contact_elepairs_.size() << " beam contact pairs" << IO::endl;
   IO::cout(IO::standard) <<"************************************************"<<IO::endl;
 
 }
@@ -564,7 +593,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
 {
   out << "\n\nCurrent BeamContactElementPairs: ";
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator iter;
-  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  for (iter=contact_elepairs_.begin(); iter!=contact_elepairs_.end(); ++iter)
     (*iter)->Print(out);
 }
 
@@ -577,7 +606,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
   out << "    ID1            ID2              T xi       eta      angle    gap         force\n";
 
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> >::const_iterator iter;
-  for (iter=BTB_contact_elepairs_.begin(); iter!=BTB_contact_elepairs_.end(); ++iter)
+  for (iter=contact_elepairs_.begin(); iter!=contact_elepairs_.end(); ++iter)
     (*iter)->PrintSummaryOneLinePerActiveSegmentPair(out);
 
   out << std::endl;

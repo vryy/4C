@@ -14,6 +14,7 @@
 
 #include "beaminteraction_submodel_evaluator_generic.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_calc_utils.H"
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_lib/drt_dserror.H"
@@ -47,7 +48,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
     Teuchos::RCP<PARTICLE::ParticleHandler> const& particlehandler,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
-    Teuchos::RCP<LINALG::MultiMapExtractor> const& eletypeextractor)
+    Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor)
 {
   issetup_ = false;
 
@@ -249,7 +250,7 @@ GEO::MESHFREE::BoundingBox const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::P
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::MultiMapExtractor& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor()
+BEAMINTERACTION::UTILS::MapExtractor& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor()
 {
   CheckInit();
   eletypeextractor_->CheckForValidMapExtractor();
@@ -258,7 +259,7 @@ LINALG::MultiMapExtractor& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeM
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::MultiMapExtractor>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractorPtr()
+Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractorPtr()
 {
   CheckInit();
   eletypeextractor_->CheckForValidMapExtractor();
@@ -267,7 +268,7 @@ Teuchos::RCP<LINALG::MultiMapExtractor>& BEAMINTERACTION::SUBMODELEVALUATOR::Gen
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::MultiMapExtractor const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor() const
+BEAMINTERACTION::UTILS::MapExtractor const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::EleTypeMapExtractor() const
 {
   CheckInit();
   eletypeextractor_->CheckForValidMapExtractor();

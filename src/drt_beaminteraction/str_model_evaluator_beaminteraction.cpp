@@ -37,10 +37,10 @@
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.H"
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_factory.H"
 #include "../drt_beaminteraction/beaminteraction_submodel_evaluator_generic.H"
-#include "../drt_beaminteraction/biopolynet_calc_utils.H"
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
+#include "beaminteraction_calc_utils.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -139,8 +139,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   PrintBinningInfoToScreen();
 
   // extract map for each eletype that is in discretization
-  eletypeextractor_ = Teuchos::rcp( new LINALG::MultiMapExtractor );
-  BIOPOLYNET::UTILS::SetupEleTypeMapExtractor( ia_discret_, eletypeextractor_ );
+  eletypeextractor_ = Teuchos::rcp( new BEAMINTERACTION::UTILS::MapExtractor );
+  BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor( ia_discret_, eletypeextractor_ );
 
   // initialize and setup submodel evaluators
   InitAndSetupSubModeEvaluators();
@@ -182,17 +182,22 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
   // ---------------------------------------------------------------------------
   // check for beam contact
   // ---------------------------------------------------------------------------
-  if ( DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(
-      DRT::Problem::Instance()->BeamContactParams(),"BEAMS_STRATEGY") != INPAR::BEAMCONTACT::bstr_none )
+  if ( DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO BEAM CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
+       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SPHERE CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none or
+       DRT::INPUT::IntegralValue<INPAR::BEAMINTERACTION::Strategy>(
+       DRT::Problem::Instance()->BeamInteractionParams().sublist("BEAM TO SOLID CONTACT"), "STRATEGY") != INPAR::BEAMINTERACTION::bstr_none
+     )
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_beamcontact);
 
   // ---------------------------------------------------------------------------
   // check for beam potential-based interactions
   // ---------------------------------------------------------------------------
   std::vector<DRT::Condition*> beampotconditions(0);
-  Discret().GetCondition("BeamPotentialLineCharge",beampotconditions);
-  if (beampotconditions.size() > 0)
-    submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_potential);
+  Discret().GetCondition( "BeamPotentialLineCharge", beampotconditions );
+  if ( beampotconditions.size() > 0 )
+    submodeltypes_->insert( INPAR::BEAMINTERACTION::submodel_potential );
 }
 
 /*----------------------------------------------------------------------------*
@@ -207,13 +212,14 @@ void STR::MODELEVALUATOR::BeamInteraction::InitAndSetupSubModeEvaluators()
   std::vector< enum INPAR::BEAMINTERACTION::SubModelType > sorted_submodeltypes(0);
 
   // build and sort submodel vector
-  me_vec_ptr_ = Sort( *me_map_ptr_, sorted_submodeltypes );
+  me_vec_ptr_ = TransformToVector( *me_map_ptr_, sorted_submodeltypes );
 
   Vector::iterator sme_iter;
   for ( sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter )
   {
     (*sme_iter)->Init( ia_discret_, bindis_, GStatePtr(), ia_state_ptr_, particlehandler_,
-        TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(), eletypeextractor_ );
+        TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
+        Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>( eletypeextractor_, true ) );
     (*sme_iter)->Setup();
   }
 
@@ -227,7 +233,7 @@ void STR::MODELEVALUATOR::BeamInteraction::InitAndSetupSubModeEvaluators()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP< STR::MODELEVALUATOR::BeamInteraction::Vector >
-    STR::MODELEVALUATOR::BeamInteraction::Sort(
+    STR::MODELEVALUATOR::BeamInteraction::TransformToVector(
         STR::MODELEVALUATOR::BeamInteraction::Map submodel_map,
         std::vector<INPAR::BEAMINTERACTION::SubModelType>& sorted_submodel_types ) const
 {
@@ -826,7 +832,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
   ia_state_ptr_->GetMutableStiff() = Teuchos::rcp( new LINALG::SparseMatrix(
       *ia_discret_->DofRowMap(), 81, true, true, LINALG::SparseMatrix::FE_MATRIX ) );
 
-  BIOPOLYNET::UTILS::SetupEleTypeMapExtractor( ia_discret_, eletypeextractor_ );
+  BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor( ia_discret_, eletypeextractor_ );
 }
 
 /*----------------------------------------------------------------------------*

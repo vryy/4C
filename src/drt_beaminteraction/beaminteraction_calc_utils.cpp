@@ -1,6 +1,6 @@
 /*-----------------------------------------------------------*/
 /*!
-\file biopolynet_calc_utils.cpp
+\file beaminteraction_calc_utils.cpp
 
 \brief utils for biopolymer network business
 
@@ -11,7 +11,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "../drt_beaminteraction/biopolynet_calc_utils.H"
+#include "beaminteraction_calc_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils.H"
@@ -19,14 +19,16 @@
 #include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_beaminteraction/beam3contact_utils.H"
-#include "../drt_beaminteraction/beam_to_beam_linkage.H"
-#include <Epetra_FEVector.h>
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_rigidsphere/rigidsphere.H"
+#include "../drt_so3/so_base.H"
 
-namespace BIOPOLYNET
+#include "../drt_beaminteraction/beam_to_beam_linkage.H"
+#include <Epetra_FEVector.h>
+
+namespace BEAMINTERACTION
 {
 namespace UTILS
 {
@@ -688,20 +690,24 @@ void SetupEleTypeMapExtractor(
     Teuchos::RCP<DRT::Discretization> const& discret,
     Teuchos::RCP<LINALG::MultiMapExtractor>& eletypeextractor)
 {
-  std::vector< std::set<int> > eletypeset(2);
+  std::vector< std::set<int> > eletypeset(3);
 
   for ( int i = 0; i < discret->NumMyRowElements(); ++i )
   {
     // get ele pointer
     DRT::Element* eleptr = discret->lRowElement(i);
 
-    if( dynamic_cast< const DRT::ELEMENTS::Beam3Base* >(eleptr) != NULL )
+    if( dynamic_cast< DRT::ELEMENTS::Beam3Base const* >(eleptr) != NULL )
     {
       eletypeset[0].insert( eleptr->Id() );
     }
-    else if ( dynamic_cast< const DRT::ELEMENTS::Rigidsphere* >(eleptr) != NULL)
+    else if ( dynamic_cast< DRT::ELEMENTS::Rigidsphere const* >(eleptr) != NULL )
     {
       eletypeset[1].insert( eleptr->Id() );
+    }
+    else if ( dynamic_cast< DRT::ELEMENTS::So_base const* >(eleptr) != NULL )
+    {
+      eletypeset[2].insert( eleptr->Id() );
     }
     else
     {
@@ -713,9 +719,9 @@ void SetupEleTypeMapExtractor(
   for( int i = 0; i < static_cast<int>( eletypeset.size() ); ++i )
   {
     std::vector<int> mapvec( eletypeset[i].begin(), eletypeset[i].end() );
-    eletypeset[0].clear();
-    maps[i] = Teuchos::rcp( new Epetra_Map(-1, mapvec.size(),
-        &mapvec[0], 0, discret->Comm()));
+    eletypeset[i].clear();
+    maps[i] = Teuchos::rcp( new Epetra_Map( -1, mapvec.size(),
+        &mapvec[0], 0, discret->Comm() ) );
   }
 
   eletypeextractor->Setup( *discret()->ElementRowMap(), maps );

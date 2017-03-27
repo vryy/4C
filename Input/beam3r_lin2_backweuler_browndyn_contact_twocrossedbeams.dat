@@ -39,6 +39,8 @@ TOLRES                 1.0E-06
 MAXITER                50
 NEGLECTINERTIA         yes
 MASSLIN                rotations
+----------------------------------------------------------------BEAM INTERACTION/BEAM TO BEAM CONTACT
+STRATEGY                        penalty
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard
 BEAMS_STRATEGY                  Penalty

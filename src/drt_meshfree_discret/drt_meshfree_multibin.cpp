@@ -30,10 +30,11 @@ DRT::ParObject* DRT::MESHFREE::MeshfreeMultiBinType::Create( const std::vector<c
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create( const std::string eletype,
-                                                                         const std::string eledistype,
-                                                                         const int id,
-                                                                         const int owner )
+Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create(
+    const std::string eletype,
+    const std::string eledistype,
+    const int id,
+    const int owner )
 {
   if (eletype=="MESHFREEMULTIBIN")
   {
@@ -55,7 +56,7 @@ Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeMultiBinType::Create( const in
 /*--------------------------------------------------------------------------*
  |  ctor                                               (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
+DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin( int id, int owner )
 :   DRT::MESHFREE::MeshfreeBin<DRT::Element>(id,owner)
 {
   return;
@@ -64,7 +65,7 @@ DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(int id, int owner)
 /*--------------------------------------------------------------------------*
  |  copy-ctor                                          (public) ghamm 04/13 |
  *--------------------------------------------------------------------------*/
-DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin(const DRT::MESHFREE::MeshfreeMultiBin& old)
+DRT::MESHFREE::MeshfreeMultiBin::MeshfreeMultiBin( const DRT::MESHFREE::MeshfreeMultiBin& old )
 :   DRT::MESHFREE::MeshfreeBin<DRT::Element>(old)
 {
   for(int i=0;i<BINSTRATEGY::UTILS::enumsize;++i)
@@ -135,18 +136,26 @@ void DRT::MESHFREE::MeshfreeMultiBin::Print(std::ostream& os) const
 
   const int nbeamele = NumAssociatedEle(BINSTRATEGY::UTILS::Beam);
   const int* wbeameleids = AssociatedEleIds(BINSTRATEGY::UTILS::Beam);
-  if (nbeamele > 0)
+  if ( nbeamele > 0 )
   {
     os << " Associated beam elements ";
-    for (int j=0; j<nbeamele; ++j) os << std::setw(10) << wbeameleids[j] << " ";
+    for ( int j = 0; j < nbeamele; ++j ) os << std::setw(10) << wbeameleids[j] << " ";
   }
 
   const int nsphereele = NumAssociatedEle(BINSTRATEGY::UTILS::RigidSphere);
   const int* wsphereeleids = AssociatedEleIds(BINSTRATEGY::UTILS::RigidSphere);
-  if (nsphereele > 0)
+  if ( nsphereele > 0 )
   {
     os << " Associated rigid sphere elements ";
-    for (int j=0; j<nsphereele; ++j) os << std::setw(10) << wsphereeleids[j] << " ";
+    for ( int j = 0; j < nsphereele; ++j ) os << std::setw(10) << wsphereeleids[j] << " ";
+  }
+
+  const int nsolidele = NumAssociatedEle(BINSTRATEGY::UTILS::Solid);
+  const int* wsolideleids = AssociatedEleIds(BINSTRATEGY::UTILS::Solid);
+  if ( nsolidele > 0 )
+  {
+    os << " Associated solid elements ";
+    for ( int j = 0; j < nsolidele; ++j ) os << std::setw(10) << wsolideleids[j] << " ";
   }
 
   return;

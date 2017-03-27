@@ -41,15 +41,14 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair() :
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamContactPair::Init(
     const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-    const DRT::Element* element1,
-    const DRT::Element* element2)
+    std::vector< DRT::Element const*> elements)
 {
   issetup_ = false;
 
   params_ = params_ptr;
 
-  element1_ = element1;
-  element2_ = element2;
+  element1_ = elements[0];
+  element2_ =  elements[1];
 
 
   isinit_ = true;
@@ -91,6 +90,8 @@ BEAMINTERACTION::BeamContactPair::Create(
         {
           if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
             return Teuchos::rcp (new BEAMINTERACTION::BeamToSphereContactPair<2,1>());
+//          else if( dynamic_cast< DRT::ELEMENTS::So_base const* >(ele_ptrs[1]) != NULL )
+//            return Teuchos::rcp (new BEAMINTERACTION::BeamToSolidContactPair<2,1>());
           else
             return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamContactPair<2,1>());
         }
@@ -98,6 +99,8 @@ BEAMINTERACTION::BeamContactPair::Create(
         {
           if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
             return Teuchos::rcp (new BEAMINTERACTION::BeamToSphereContactPair<3,1>());
+//          else if( dynamic_cast< DRT::ELEMENTS::So_base const* >(ele_ptrs[1]) != NULL )
+//            return Teuchos::rcp (new BEAMINTERACTION::BeamToSolidContactPair<3,1>());
           else
             return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamContactPair<3,1>());
         }
@@ -105,6 +108,8 @@ BEAMINTERACTION::BeamContactPair::Create(
         {
           if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
             return Teuchos::rcp (new BEAMINTERACTION::BeamToSphereContactPair<4,1>());
+//          else if( dynamic_cast< DRT::ELEMENTS::So_base const* >(ele_ptrs[1]) != NULL )
+//            return Teuchos::rcp (new BEAMINTERACTION::BeamToSolidContactPair<4,1>());
           else
             return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamContactPair<4,1>());
         }
@@ -112,6 +117,8 @@ BEAMINTERACTION::BeamContactPair::Create(
         {
           if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
             return Teuchos::rcp (new BEAMINTERACTION::BeamToSphereContactPair<5,1>());
+//          else if( dynamic_cast< DRT::ELEMENTS::So_base const* >(ele_ptrs[1]) != NULL )
+//            return Teuchos::rcp (new BEAMINTERACTION::BeamToSolidContactPair<5,1>());
           else
             return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamContactPair<5,1>());
         }
@@ -133,6 +140,8 @@ BEAMINTERACTION::BeamContactPair::Create(
         {
           if ( ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance() )
             return Teuchos::rcp (new BEAMINTERACTION::BeamToSphereContactPair<2,2>());
+//          else if( dynamic_cast< DRT::ELEMENTS::So_base const* >(ele_ptrs[1]) != NULL )
+//            return Teuchos::rcp (new BEAMINTERACTION::BeamToSolidContactPair<2,2>());
           else
             return Teuchos::rcp (new BEAMINTERACTION::BeamToBeamContactPair<2,2>());
         }

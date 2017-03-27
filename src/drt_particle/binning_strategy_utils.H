@@ -36,8 +36,9 @@ namespace UTILS
     BELE3,                  ///< bele3 element
     Beam,                   ///< beam element
     RigidSphere,            ///< rigid sphere element
-    enumsize                ///< NOTE: This entry gives the size of the enum and is used somewhere else in baci
-                              // therefore put it ALWAYS in last place
+    Solid,                  ///< solid element (all elements derived from So_base, if more distinction is needed, split this type)
+
+    enumsize                ///< NOTE: This entry gives the size of the enum and is used somewhere else in baci therefore put it ALWAYS in last place
   };
 
   /// convert element to bin content type

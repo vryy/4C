@@ -10,8 +10,8 @@
 
 */
 /*-----------------------------------------------------------*/
-#ifndef INPAR_BIOPOLYNET_DBC_H_
-#define INPAR_BIOPOLYNET_DBC_H_
+#ifndef INPAR_BEAMINTERACTION_DBC_H_
+#define INPAR_BEAMINTERACTION_DBC_H_
 
 #include "inpar_parameterlist_utils.H"
 
@@ -20,7 +20,7 @@ namespace INPAR
 {
 
   /// Input parameters used in statistical mechanics
-  namespace BIOPOLYNETDBC
+  namespace BEAMINTERACTIONDBC
   {
 
     /// (this enum represents the input file parameter DBCTYPE)
@@ -51,4 +51,4 @@ namespace INPAR
 
 
 
-#endif /* SRC_DRT_INPAR_INPAR_BIOPOLYNET_DBC_H_ */
+#endif /* SRC_DRT_INPAR_INPAR_BEAMINTERACTION_DBC_H_ */

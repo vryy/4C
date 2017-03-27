@@ -53,8 +53,7 @@ public:
   //! Initialization
   void Init(
       const Teuchos::RCP<BEAMINTERACTION::BeamContactParams> params_ptr,
-      const DRT::Element* element1,
-      const DRT::Element* element2);
+      std::vector< DRT::Element const*> elements);
 
   //! Setup
   virtual void Setup();

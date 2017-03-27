@@ -1782,7 +1782,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
-  src/drt_beaminteraction/biopolynet_calc_utils.cpp
+  src/drt_beaminteraction/beaminteraction_calc_utils.cpp
   src/drt_beaminteraction/crosslinking_params.cpp
   src/drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.cpp
   src/drt_beaminteraction/contractilecells_params.cpp

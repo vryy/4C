@@ -48,6 +48,8 @@ BOUNDINGBOX                     -5 -5 -5 5 5 5
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.9
+----------------------------------------------------------------BEAM INTERACTION/BEAM TO SPHERE CONTACT
+STRATEGY                        penalty
 ----------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                  Standard
 BEAMS_STRATEGY                  Penalty

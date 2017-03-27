@@ -15,7 +15,7 @@
 #include "../drt_bele3/bele3.H"
 #include "../drt_beam3/beam3_base.H"
 #include "../drt_rigidsphere/rigidsphere.H"
-
+#include "../drt_so3/so_base.H"
 
 #include "binning_strategy_utils.H"
 
@@ -29,32 +29,37 @@ namespace UTILS
 BINSTRATEGY::UTILS::BinContentType ConvertElementToBinContentType(
     DRT::Element const * const eleptr )
 {
-  if( dynamic_cast<const DRT::ELEMENTS::Transport*>(eleptr) != NULL )
+  // (Todo make this nicer and cheaper)
+
+  if( dynamic_cast< DRT::ELEMENTS::Transport const* >(eleptr) != NULL )
   {
     return BINSTRATEGY::UTILS::Scatra;
   }
-  else if( dynamic_cast<const DRT::ELEMENTS::Fluid*>(eleptr) != NULL )
+  else if( dynamic_cast< DRT::ELEMENTS::Fluid const* >(eleptr) != NULL )
   {
     return BINSTRATEGY::UTILS::Fluid;
   }
-  else if( dynamic_cast<const DRT::ELEMENTS::Bele3*>(eleptr) != NULL )
+  else if( dynamic_cast< DRT::ELEMENTS::Bele3 const* >(eleptr) != NULL )
   {
     return BINSTRATEGY::UTILS::BELE3;
   }
-  else if( dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(eleptr) != NULL )
+  else if( dynamic_cast< DRT::ELEMENTS::Beam3Base const* >(eleptr) != NULL )
   {
     return BINSTRATEGY::UTILS::Beam;
   }
-  else if ( dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(eleptr) != NULL)
+  else if ( dynamic_cast< DRT::ELEMENTS::Rigidsphere const* >(eleptr) != NULL )
   {
     return BINSTRATEGY::UTILS::RigidSphere;
+  }
+  else if ( dynamic_cast< DRT::ELEMENTS::So_base const* >(eleptr) != NULL )
+  {
+    return BINSTRATEGY::UTILS::Solid;
   }
   else
   {
     dserror(" Element you are about to assign to a bin could not be converted"
             " to a valid bin content type. ");
-    // to make compiler happy
-    return BINSTRATEGY::UTILS::enumsize;
+    exit(EXIT_FAILURE);
   }
 }
 
@@ -67,6 +72,7 @@ void GetCurrentNodePos(
     double* currpos )
 {
   // Todo make this nicer
+
   // the problem is that we might have nodes without position DoFs
   // (e.g. for beam elements with 'interior' nodes that are only used for
   // triad interpolation)

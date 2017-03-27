@@ -117,6 +117,10 @@ namespace SUBMODELEVALUATOR {
   private:
     //!@name routines that are not derived and handle beam to beam contact
     //! @{
+
+    // init element types considered for beam to ? contact
+    void InitElementTypesConsideredForContact();
+
     /// get neighbouring eles in discret
     void FindAndStoreNeighboringElements();
 
@@ -136,11 +140,11 @@ namespace SUBMODELEVALUATOR {
     //! data container holding all beam contact related parameters
     Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
 
-    //! type of eles in bins  // Todo kept line for future improvement
-//    BINSTRATEGY::UTILS::BinContentType bin_beamcontent_;
+    //! element types considered for beam to ? contact
+    std::vector< BINSTRATEGY::UTILS::BinContentType > contactelementtypes_;
 
      //! interacting pairs of beam elements that might exert forces on each other
-    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> > BTB_contact_elepairs_;
+    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair> > contact_elepairs_;
 
     //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
     std::map<int, std::set<DRT::Element*> > nearby_elements_map_;

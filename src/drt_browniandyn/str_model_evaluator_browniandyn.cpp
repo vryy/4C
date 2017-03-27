@@ -28,12 +28,12 @@
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_discret.H"
 
-#include "../drt_beaminteraction/biopolynet_calc_utils.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 
 #include "../drt_beam3/beam3_base.H"
+#include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 
 
@@ -94,22 +94,22 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
     dserror("The reference length of one of your beam elements is larger than half"
         "of the periodic box length. Shifting algorithm will fail!");
 
-  BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDisVector(
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
       GStatePtr()->GetMutableDisN(),                            // disn
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
       discret_ptr_ );
 
-  BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDisVector(
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
       GStatePtr()->GetMutableDisNp(),                           // disnp
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
       discret_ptr_);
 
-  BIOPOLYNET::UTILS::UpdateCellsPositionRandomly(
+  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
       GStatePtr()->GetMutableDisN(),                           // disp
       discret_ptr_,
       GState().GetStepN() );
 
-  BIOPOLYNET::UTILS::UpdateCellsPositionRandomly(
+  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
       GStatePtr()->GetMutableDisNp(),                           // disnp
       discret_ptr_,
       GState().GetStepN() );
@@ -148,11 +148,11 @@ void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
   // adapt displacement vector so that node positions are consistent with
   // periodic boundary condition.
   // -------------------------------------------------------------------------
-  BIOPOLYNET::UTILS::PeriodicBoundaryConsistentDisVector(
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
       GStatePtr()->GetMutableDisNp(),                           // disnp
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
       discret_ptr_ );
-  BIOPOLYNET::UTILS::UpdateCellsPositionRandomly(
+  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
       GStatePtr()->GetMutableDisNp(),                           // disnp
       discret_ptr_,
       GState().GetStepN() );
@@ -677,7 +677,7 @@ void STR::MODELEVALUATOR::BrownianDyn::RandomNumbersPerElement()
     }
     else
     {
-      dserror("Determination not implemented for this element type.");
+      dserror("Brownian dynamics simulation not (yet) implemented for this element type.");
     }
   }
   // -------------------------------------------------------------------------

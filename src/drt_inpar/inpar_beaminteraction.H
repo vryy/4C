@@ -33,6 +33,14 @@ namespace INPAR
     submodel_vague                 ///< undefined model type
   };
 
+  /// Type of employed solving strategy for contact
+  /// (this enum represents the input file parameter STRATEGY)
+  enum Strategy
+  {
+    bstr_none,        ///< no beam contact
+    bstr_penalty      ///< penalty method
+  };
+
   /// set the beaminteraction parameters
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
