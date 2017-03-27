@@ -253,10 +253,10 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS", *list);
   reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING/RESPIRATORY PARAMETERS", *list);
   reader.ReadGidSection("--FLUCTUATING HYDRODYNAMICS", *list);
+  reader.ReadGidSection("--BROWNIAN DYNAMICS", *list);
   reader.ReadGidSection("--BEAM INTERACTION", *list);
   reader.ReadGidSection("--BEAM INTERACTION/CONTRACTILE CELLS", *list);
-  reader.ReadGidSection("--BROWNIAN DYNAMICS", *list);
-  reader.ReadGidSection("--CROSSLINKING", *list);
+  reader.ReadGidSection("--BEAM INTERACTION/CROSSLINKING", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/GENALPHA", *list);
   reader.ReadGidSection("--THERMAL DYNAMIC/ONESTEPTHETA", *list);

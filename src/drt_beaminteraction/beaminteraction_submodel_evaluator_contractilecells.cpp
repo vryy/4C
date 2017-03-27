@@ -160,7 +160,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::PostUpdateStepElement
                           BeamInteractionDataStatePtr()->GetRowEleToBinSet(spheregid).end() );
   }
 
-  sm_crosslinkink_ptr->UnbindCrosslinkerInBinsAndNeighborhood( spherebingids, true );
+  sm_crosslinkink_ptr->UnbindCrosslinkerInBinsAndNeighborhood( spherebingids, false );
 
 //  int const updateevery = 200;
 //

@@ -294,7 +294,7 @@ public:
    Matnum needs to be assigned to a crosslinker type in the input file
 
    */
-  virtual void SetMaterial(int matnum);
+  virtual void SetMaterial( int const matnum );
 
   /*!
    \brief Resets the data container of the node

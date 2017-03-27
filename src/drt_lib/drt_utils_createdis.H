@@ -66,7 +66,10 @@ public:
   //  are copied to returned new discretization)
   Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretization(
       const Teuchos::RCP<DRT::Discretization>& sourcedis,
-      const std::string&                       targetdisname) const;
+      const std::string&                       targetdisname,
+      bool                                     assigndegreesoffreedom=true,
+      bool                                     initelements = true,
+      bool                                     doboundaryconditions = true) const;
 
   //! Base class version for creation of matching discretization without material
   Teuchos::RCP<DRT::Discretization> CreateMatchingDiscretizationFromCondition(

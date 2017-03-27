@@ -2,7 +2,8 @@
 /*!
 \file str_model_evaluator_beaminteraction.cpp
 
-\brief Evaluation of all beam interaction terms
+\brief Evaluation of all beam interaction terms, managing
+       everything that has to do with parallelity
 
 \maintainer Jonas Eichinger
 
@@ -22,7 +23,6 @@
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_inpar/inpar_beamcontact.H"
-#include "../drt_inpar/inpar_crosslinking.H"
 
 #include "../drt_fsi/fsi_matrixtransform.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -88,7 +88,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // print logo
   Logo();
 
-  // get submodel types
+  // set submodel types
   SetSubModelTypes();
 
   // -------------------------------------------------------------------------
@@ -101,7 +101,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase>  discloner =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
-  ia_discret_ = discloner->CreateMatchingDiscretization(discret_ptr_,"ia_structure");
+  ia_discret_ = discloner->CreateMatchingDiscretization( discret_ptr_, "ia_structure", true, false, true );
   // create discretization writer
   ia_discret_->SetWriter( Teuchos::rcp( new IO::DiscretizationWriter( ia_discret_ ) ) );
 
@@ -123,7 +123,11 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   // initialize and setup binning strategy and particle handler
   // -------------------------------------------------------------------------
-  CreateBinDiscretization();
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(DiscretPtr()->Comm().Clone());
+  bindis_ = Teuchos::rcp(new DRT::Discretization("particle" ,com));
+  // create discretization writer
+  bindis_->SetWriter( Teuchos::rcp(new IO::DiscretizationWriter(bindis_) ) );
+  bindis_->FillComplete( false, false, false );
 
   // construct, init and setup particle handler and binning strategy
   particlehandler_ = Teuchos::rcp( new PARTICLE::ParticleHandler( myrank_ ) );
@@ -131,8 +135,11 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   particlehandler_->BinStrategy()->Setup();
   binstrategy_ = particlehandler_->BinStrategy();
 
+  // some screen output for binning
+  PrintBinningInfoToScreen();
+
   // extract map for each eletype that is in discretization
-  eletypeextractor_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+  eletypeextractor_ = Teuchos::rcp( new LINALG::MultiMapExtractor );
   BIOPOLYNET::UTILS::SetupEleTypeMapExtractor( ia_discret_, eletypeextractor_ );
 
   // initialize and setup submodel evaluators
@@ -144,8 +151,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
     PartitionProblem();
 
   // post setup submodel loop
-  Vector::iterator sme_iter;
-  for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
+  for ( Vector::iterator sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->PostSetup();
 
   issetup_ = true;
@@ -162,13 +168,15 @@ void STR::MODELEVALUATOR::BeamInteraction::SetSubModelTypes()
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if ( DRT::INPUT::IntegralValue<int>( DRT::Problem::Instance()->BeamInteractionParams().sublist("CONTRACTILE CELLS"), "CONTRACTILECELLS") )
+  if ( DRT::INPUT::IntegralValue<int>( DRT::Problem::Instance()->BeamInteractionParams().sublist(
+      "CONTRACTILE CELLS"), "CONTRACTILECELLS") )
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_contractilecells);
 
   // ---------------------------------------------------------------------------
   // check for crosslinking in biopolymer networks
   // ---------------------------------------------------------------------------
-  if ( DRT::INPUT::IntegralValue<int>( DRT::Problem::Instance()->CrosslinkingParams(), "CROSSLINKER") )
+  if ( DRT::INPUT::IntegralValue<int>( DRT::Problem::Instance()->BeamInteractionParams().sublist(
+      "CROSSLINKING"), "CROSSLINKER") )
     submodeltypes_->insert(INPAR::BEAMINTERACTION::submodel_crosslinking);
 
   // ---------------------------------------------------------------------------
@@ -305,8 +313,24 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   binstrategy_->StandardDiscretizationGhosting( ia_discret_,
       rowbins_, ia_state_ptr_->GetMutableDisNp(), stdelecolmap, stdnodecolmapdummy );
 
-  // redistribute, extend ghosting and assign element to bins
-  ExtendGhostingAndAssign();
+  // distribute elements that can be cut by the periodic boundary to bins
+  Teuchos::RCP<Epetra_Vector> iadiscolnp =
+      Teuchos::rcp( new Epetra_Vector( *ia_discret_->DofColMap() ) );
+  LINALG::Export( *ia_state_ptr_->GetMutableDisNp(), *iadiscolnp );
+
+  binstrategy_->DistributeRowElementsToBinsUsingEleXAABB(
+      ia_discret_, ia_state_ptr_->GetMutableBinToRowEleMap(), iadiscolnp );
+
+  // build row elements to bin map
+  BuildRowEleToBinMap();
+
+  // extend ghosting
+  std::map< int, std::set< int > > extbintoelemap;
+  ExtendGhosting(extbintoelemap);
+
+  // assign Elements to bins
+  binstrategy_->RemoveAllElesFromBins();
+  binstrategy_->AssignElesToBins( ia_discret_, extbintoelemap );
 
   // update maps of state vectors and matrices
   UpdateMaps();
@@ -317,32 +341,34 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::ExtendGhostingAndAssign()
+void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting(
+    std::map< int, std::set< int > >& extbintoelemap)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting");
+
   CheckInit();
 
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::ExtendGhostingAndAssign");
+  std::set<int> colbins;
 
-  // ----------------------------------------------------------------------
-  // extended ghosting
-  // ----------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> iadiscolnp =
-      Teuchos::rcp( new Epetra_Vector( *ia_discret_->DofColMap() ) );
-  LINALG::Export( *ia_state_ptr_->GetMutableDisNp(), *iadiscolnp );
+  // first, add default one layer ghosting
+  std::set<int> const& boundcolbins = binstrategy_->BoundaryColBinsIds();
+  colbins.insert( boundcolbins.begin(), boundcolbins.end() );
 
-  // distribute elements that can be cut by the periodic boundary to bins
-  binstrategy_->DistributeElesToBinsUsingEleXAABB(
-      ia_discret_, ia_state_ptr_->GetMutableBinToRowEleMap(), iadiscolnp );
-
-  BuildRowEleToBinMap();
-
-  std::set< int > colbins;
+  // if the bounding box of a row element of myrank touches a boundary col bin, we need
+  // to ghost its neighborhood as well
   std::map< int, std::set< int > >::const_iterator it;
+  std::vector<int> binvec(27);
   for( it = ia_state_ptr_->GetBinToRowEleMap().begin(); it != ia_state_ptr_->GetBinToRowEleMap().end() ; ++it )
   {
-    std::vector<int> binvec;
-    binstrategy_->GetNeighborAndOwnBinIds( it->first, binvec );
-    colbins.insert( binvec.begin(), binvec.end() );
+    // not the following if is only valid if you ensure that the largest element
+    // in the discretization (in deformed state) is smaller than the cutoff
+    // which is not necessarily needed e.g. for beam contact
+//    if( boundcolbins.find( it->first ) != boundcolbins.end() )
+    {
+      binstrategy_->GetNeighborAndOwnBinIds( it->first, binvec );
+      colbins.insert( binvec.begin(), binvec.end() );
+      binvec.clear();
+    }
   }
 
   // enable submodel specific ghosting contributions to bin col map
@@ -364,17 +390,12 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhostingAndAssign()
   Teuchos::RCP<Epetra_Map> auxmap = Teuchos::rcp( new Epetra_Map( -1,
       static_cast<int>( auxgids.size() ), &auxgids[0], 0, bindis_->Comm() ) );
 
-  std::map< int, std::set< int > > extbintoelemap;
   Teuchos::RCP<Epetra_Map> ia_elecolmap =
-  binstrategy_->ExtendGhosting( &(*ia_discret_->ElementColMap()),
-      ia_state_ptr_->GetMutableBinToRowEleMap(), extbintoelemap, Teuchos::null, auxmap );
+  binstrategy_->ExtendGhosting( ia_state_ptr_->GetMutableBinToRowEleMap(),
+      extbintoelemap, auxmap );
 
   // 2) extend ghosting of discretization
   binstrategy_->ExtendDiscretizationGhosting( ia_discret_, ia_elecolmap , true );
-
-  // assign elements to bins
-  binstrategy_->RemoveAllElesFromBins();
-  binstrategy_->AssignElesToBins( ia_discret_, extbintoelemap );
 }
 
 /*----------------------------------------------------------------------------*
@@ -475,12 +496,12 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForceStiff()
   if ( ia_force_beaminteraction_->Update( 1., *ia_state_ptr_->GetMutableForceNp(), 1. ) )
     dserror("update went wrong");
 
-  if (not ia_state_ptr_->GetMutableStiff()->Filled())
+  if ( not ia_state_ptr_->GetMutableStiff()->Filled() )
     ia_state_ptr_->GetMutableStiff()->Complete();
 
   TransformForceStiff();
 
-  if (not stiff_beaminteraction_->Filled())
+  if ( not stiff_beaminteraction_->Filled() )
     stiff_beaminteraction_->Complete();
 
   return true;
@@ -592,14 +613,18 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->PreUpdateStepElement();
 
-  Teuchos::RCP<Epetra_Vector> iadiscolnp =
-      Teuchos::rcp( new Epetra_Vector( *ia_discret_->DofColMap() ) );
-  LINALG::Export( *ia_state_ptr_->GetMutableDisNp(), *iadiscolnp );
+  binstrategy_->TransferNodesAndElements( ia_discret_, ia_state_ptr_->GetMutableDisColNp(),
+      ia_state_ptr_->GetMutableBinToRowEleMap() );
 
-  binstrategy_->TransferNodesAndElements( ia_discret_, iadiscolnp );
+  BuildRowEleToBinMap();
 
-  // extend ghosting and assign eles to bins
-  ExtendGhostingAndAssign();
+  // extend ghosting
+  std::map< int, std::set< int > > extbintoelemap;
+  ExtendGhosting(extbintoelemap);
+
+  // assign Elements to bins
+  binstrategy_->RemoveAllElesFromBins();
+  binstrategy_->AssignElesToBins( ia_discret_, extbintoelemap );
 
   // update maps of state vectors and matrices
   UpdateMaps();
@@ -740,12 +765,13 @@ void STR::MODELEVALUATOR::BeamInteraction::CreateNewBins(bool newxaabb,
 
   // create XAABB and optionally set cutoff radius
   if(newxaabb)
-    binstrategy_->CreateXAABB( discret_vec, disnp, newcutoff );
+    binstrategy_->ComputeMinXAABBContainingAllElementsOfInputDiscrets(
+        discret_vec, disnp, binstrategy_->XAABB(), newcutoff );
   // just set cutoff radius
   else if (newcutoff)
-    binstrategy_->ComputeMinCutoff( discret_vec, disnp );
+    binstrategy_->SetCutoffRadius( binstrategy_->ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLargestEle( discret_vec, disnp ) );
 
-  binstrategy_->CreateBins();
+  binstrategy_->CreateBinsBasedOnCutoffAndXAABB();
 }
 
 /*----------------------------------------------------------------------------*
@@ -768,141 +794,6 @@ void STR::MODELEVALUATOR::BeamInteraction::BuildRowEleToBinMap()
       int bingid = biniter->first;
       // assign bins to elements
       ia_state_ptr_->GetMutableRowEleToBinMap()[elegid].insert(bingid);
-    }
-  }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::CreateBinDiscretization()
-{
-  CheckInit();
-
-  // clone communicator
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(DiscretPtr()->Comm().Clone());
-  bindis_ = Teuchos::rcp(new DRT::Discretization("particle" ,com));
-  // create discretization writer
-  bindis_->SetWriter( Teuchos::rcp(new IO::DiscretizationWriter(bindis_) ) );
-
-  if( HaveSubModelType( INPAR::BEAMINTERACTION::submodel_crosslinking ) )
-    AddCrosslinkerToBinDiscret();
-
-  // set row map of newly created particle discretization
-  bindis_->FillComplete( false, false, false );
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------
-void STR::MODELEVALUATOR::BeamInteraction::AddCrosslinkerToBinDiscret()
-{
-  CheckInit();
-
-  const int numcrosslinker =
-      DRT::Problem::Instance()->CrosslinkingParams().get<int> ("NUMCROSSLINK");
-
-  // -------------------------------------------------------------------------
-  // set range for uniform random number generator
-  // -------------------------------------------------------------------------
-  DRT::Problem::Instance()->Random()->SetRandRange(0.0,1.0);
-  std::vector<double> randpos;
-  DRT::Problem::Instance()->Random()->Uni(randpos,3*numcrosslinker);
-
-  // -------------------------------------------------------------------------
-  // initialize crosslinker, i.e. add nodes (according to number of crosslinker
-  // you want) to bin discretization and set their random reference position
-  // -------------------------------------------------------------------------
-  // only proc 0 is doing this (as the number of crosslinker is manageable)
-  if( myrank_ == 0 )
-  {
-    for ( int i = 0; i < numcrosslinker; ++i )
-    {
-      // random reference position of crosslinker in bounding box
-      std::vector<double> X(3);
-      for ( int dim = 0; dim < 3; ++dim )
-      {
-        double min = 0;
-        double edgelength = 15;
-        if(dim == 0)
-        {
-          min = 5.0;
-          edgelength = 15;
-        }
-        if(dim == 2)
-        {
-          min = 7.0;
-          edgelength = 1;
-        }
-        X[dim] = min + ( edgelength * randpos[ i + dim ] );
-      }
-
-      Teuchos::RCP<DRT::Node> newcrosslinker =
-          Teuchos::rcp(new CROSSLINKING::CrosslinkerNode( i, &X[0], myrank_ ) );
-
-      // todo: put next two calls in constructor of CrosslinkerNode?
-      // init crosslinker data container
-      Teuchos::RCP< CROSSLINKING::CrosslinkerNode > clnode =
-          Teuchos::rcp_dynamic_cast<CROSSLINKING::CrosslinkerNode>(newcrosslinker);
-      clnode->InitializeDataContainer();
-      // set material
-      // fixme: assign matnum to crosslinker type in crosslinker section in input file
-      //       for now, only one linker type with matnum 2
-      clnode->SetMaterial(2);
-
-      // add crosslinker to bin discretization
-      bindis_->AddNode(newcrosslinker);
-    }
-  }
-}*/
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::AddCrosslinkerToBinDiscret()
-{
-  CheckInit();
-
-  const int numcrosslinker =
-      DRT::Problem::Instance()->CrosslinkingParams().get<int> ("NUMCROSSLINK");
-
-  // -------------------------------------------------------------------------
-  // set range for uniform random number generator
-  // -------------------------------------------------------------------------
-  DRT::Problem::Instance()->Random()->SetRandRange(0.0,1.0);
-  std::vector<double> randpos;
-  DRT::Problem::Instance()->Random()->Uni(randpos,3*numcrosslinker);
-
-  // -------------------------------------------------------------------------
-  // initialize crosslinker, i.e. add nodes (according to number of crosslinker
-  // you want) to bin discretization and set their random reference position
-  // -------------------------------------------------------------------------
-  // only proc 0 is doing this (as the number of crosslinker is manageable)
-  if( myrank_ == 0 )
-  {
-    for ( int i = 0; i < numcrosslinker; i++ )
-    {
-      // random reference position of crosslinker in bounding box
-      std::vector<double> X(3);
-      for ( int dim = 0; dim < 3; ++dim )
-      {
-        double edgelength = TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->EdgeLength(dim);
-        double min = TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->min(dim);
-        X[dim] = min + ( edgelength * randpos[ i+dim ] );
-      }
-
-      Teuchos::RCP<DRT::Node> newcrosslinker =
-          Teuchos::rcp(new CROSSLINKING::CrosslinkerNode( i, &X[0], myrank_ ) );
-
-      // todo: put next two calls in constructor of CrosslinkerNode?
-      // init crosslinker data container
-      Teuchos::RCP<CROSSLINKING::CrosslinkerNode> clnode =
-          Teuchos::rcp_dynamic_cast<CROSSLINKING::CrosslinkerNode>(newcrosslinker);
-      clnode->InitializeDataContainer();
-      // set material
-      // fixme: assign matnum to crosslinker type in crosslinker section in input file
-      //       for now, only one linker type with matnum 2
-      clnode->SetMaterial(2);
-
-      // add crosslinker to bin discretization
-      bindis_->AddNode(newcrosslinker);
     }
   }
 }
@@ -996,6 +887,32 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformForceStiff()
   TransformStiff();
 }
 
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::BeamInteraction::PrintBinningInfoToScreen() const
+{
+  std::vector< Teuchos::RCP< DRT::Discretization > > discret_vec( 1, ia_discret_);
+  std::vector< Teuchos::RCP<Epetra_Vector> > disnp_vec( 1, Teuchos::null );
+
+  double calc_cutoff = binstrategy_->ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLargestEle(
+      discret_vec, disnp_vec );
+  LINALG::Matrix<3,2> XAABB(true);
+  binstrategy_->ComputeMinXAABBContainingAllElementsOfInputDiscrets(
+      discret_vec, disnp_vec, XAABB, false );
+  if( GState().GetMyRank() == 0 )
+  {
+    IO::cout(IO::verbose) << " \n---------------------------------------------------------- " << IO::endl;
+    IO::cout(IO::verbose) << " chosen/computed cutoff radius                      : " <<
+        binstrategy_->CutoffRadius() << IO::endl;
+    IO::cout(IO::verbose) << " largest edge length of largest element xaabb       : " <<
+        calc_cutoff << IO::endl;
+    IO::cout(IO::verbose) << "BOUNDINGBOX containing all elements of input discretization:\n " <<
+        XAABB(0, 0) << " " << XAABB(1, 0) << " " << XAABB(2, 0) << " " <<
+        XAABB(0, 1) << " " << XAABB(1, 1) << " " << XAABB(2, 1) << IO::endl;
+    IO::cout(IO::verbose) << " ----------------------------------------------------------\n " << IO::endl;
+  }
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::Logo() const
@@ -1037,73 +954,3 @@ void STR::MODELEVALUATOR::BeamInteraction::Logo() const
   }
 }
 
-///*-----------------------------------------------------------------------------*
-// *-----------------------------------------------------------------------------*/
-//Teuchos::RCP<std::list<int> > BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
-//    Teuchos::RCP<DRT::Discretization> & discret,
-//    Teuchos::RCP<Epetra_Vector> disnp)
-//{
-//  // if not yet done, determine boundary row bins
-//  if( boundaryrowbins_.size() == 0 )
-//    DetermineBoundaryRowBins();
-//
-//  // loop over boundary row bins and adapt ownerships of therein residing row elements
-//  std::list< DRT::Element* >::const_iterator biniter;
-//  for( biniter = boundaryrowbins_.begin(); biniter != boundaryrowbins_.end(); ++biniter )
-//  {
-//    // get all row elements in current bin
-//    std::set< DRT::Element* > boundaryeles;
-//    std::vector< BINSTRATEGY::UTILS::BinContentType > types( 1, bin_beamcontent_ );
-//    GetBinContent( *biniter, boundaryeles, types, true );
-//
-//    std::set< DRT::Element* >::const_iterator eleiter;
-//    for( eleiter = boundaryeles.begin(); eleiter != boundaryeles.end(); ++eleiter )
-//    {
-//      DRT::Element* currele = *eleiter;
-//      DRT::Node** nodes = currele->Nodes();
-//      std::vector<int> tobemoved(0);
-//      std::map<int, int> owner;
-//      for( int inode = 0; inode < currele->NumNode(); ++inode )
-//      {
-//        // get current node and its position
-//        DRT::Node* currnode = nodes[inode];
-//        double currpos[3] = { 0.0, 0.0, 0.0 };
-//        BINSTRATEGY::UTILS::GetCurrentNodePos( discret, currnode, disnp, currpos );
-//
-//        int const gidofbin = ConvertPosToGid(currpos);
-//        // check if node has left current bin to bin not owned by myrank or still not in bin
-//        // owned by myrank
-//        if( bindis_->ElementRowMap()->LID( gidofbin ) < 0 )
-//        {
-//          // gather all node Ids that will be removed and remove them afterwards
-//          tobemoved.push_back(currnode->Id());
-//          // find new bin for particle
-//          PlaceNodeCorrectly(Teuchos::rcp(currnode,false), currpos, homelessparticles);
-//        }
-//        else
-//        {
-//          owner[myrank_] += 1;
-//        }
-//      }
-//
-//      // check if any proc owns more nodes than myrank
-//      int newowner = myrank_;
-//      std::map< int, int >::const_iterator i;
-//      for( i = owner.begin(); i != owner.end(); ++i )
-//        if( i->second > owner[myrank_] )
-//          newowner = i->first;
-//
-//
-//
-//    }
-//
-//   #ifdef DEBUG
-//    if(homelessparticles.size())
-//      std::cout << "There are " << homelessparticles.size() << " homeless particles on proc" << myrank_ << std::endl;
-//   #endif
-//
-//  }
-//
-//  }
-//  return deletedparticles;
-//}

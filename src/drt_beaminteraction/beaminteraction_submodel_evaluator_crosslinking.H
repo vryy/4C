@@ -32,6 +32,9 @@ namespace DRT {
   class PackBuffer;
   class Node;
 }
+namespace CROSSLINKING {
+  class CrosslinkerNode;
+}
 namespace BEAMINTERACTION {
 class CrosslinkingParams;
 class BeamToBeamLinkage;
@@ -117,13 +120,11 @@ namespace SUBMODELEVALUATOR {
     /// unbind all crosslinker residing in bingid and its neighborhood
     virtual void UnbindCrosslinkerInBinsAndNeighborhood(
         std::set<int> const& bingids,
-        bool const doubleunbind
-    );
+        bool const doubleunbind);
 
     /// unbind all crosslinker residing in bingid and its neighborhood
     virtual void UnbindCrosslinkerInBinsAndNeighborhood(
-        std::set<int> const& bingids
-    );
+        std::set<int> const& bingids);
 
     /// determine which proc is responsible for forced crosslinker unbinding in certain bins
     /// by checking bin ownership
@@ -137,9 +138,7 @@ namespace SUBMODELEVALUATOR {
 
     /// set all double bonds in bind and neighborhood
     virtual void DoubleBindCrosslinkerInBinsAndNeighborhood(
-        std::set<int> const& bingids
-    );
-
+        std::set<int> const& bingids);
 
     //! @}
 
@@ -169,8 +168,8 @@ private:
 
     //! struct that stores all necessary data to handle the crosslining between two elements on each proc
     struct NewDoubleBonds {
-        int id;                                    // gid of crosslinker
-        std::vector<std::pair<int, int> > eleids;  // elegid and local binding spot number of first element
+        int id;                                           // gid of crosslinker
+        std::vector< std::pair<int, int> > eleids;         // elegid and local binding spot number of first element
       };
 
     //! @}
@@ -196,11 +195,41 @@ private:
     //!@name routines that are not derived and handle crosslinking
     //! @{
 
+    /// add crosslinker to bin discretization initially
+    virtual void AddCrosslinkerToBinDiscretization();
+
+    /// set binding spot positions on filaments initially
+    virtual void SetFilamentBindingSpotPositions();
+
+    /// extent ghosting so that each proc has all nodes and elemens of a filament containing
+    /// at least one of its nodes
+    virtual void ExtendGhostingForFilamentBspotSetup(
+        std::set<int>& relevantfilaments);
+
+    /// determine nodes with relevant element cloud
+    virtual void DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
+        std::set<int>& examinedfilaments,
+        std::set<int>& setofrequirednodes) const;
+
+    // compute total filament length using its elements reference length and sort elements
+    virtual void ComputeFilamentLengthAndSortItsElements(
+        std::vector< DRT::Element* >& sortedfilamenteles,
+        std::vector<int> const* nodeids,
+        double & filreflength) const;
+
+    /// set binding spot positions on element of a filament
+    virtual void SetBindingSpotsPositionsOnFilament(
+        std::vector< DRT::Element* >& sortedfilamenteles,
+        double const start,
+        int const    numbspot,
+        double const filamentbspotinterval,
+        double const tol);
+
     /// diffuse crosslinker depending on number of bonds they have
     virtual void DiffuseCrosslinker();
 
     /// diffuse unbound crosslinker according to brownian dynamics
-    virtual void DiffuseUnboundCrosslinker(DRT::Node* crosslinker) const;
+    virtual void DiffuseUnboundCrosslinker(CROSSLINKING::CrosslinkerNode* crosslinker) const;
 
     /// get binding spot of crosslinker that is currently occupied
     virtual int GetSingleOccupiedClBspot(
@@ -222,7 +251,7 @@ private:
 
     /// new position after transition from single to not bonded
     virtual void SetPositionOfNewlyFreeCrosslinker(
-        DRT::Node* crosslinker,
+        CROSSLINKING::CrosslinkerNode* crosslinker,
         LINALG::Matrix<3,1>& clpos
     ) const;
 
@@ -319,7 +348,7 @@ private:
 
     /// check criteria if binding event is feasible
     virtual bool CheckBindEventCriteria(
-        DRT::Node const * const crosslinker_i,
+        CROSSLINKING::CrosslinkerNode const * const crosslinker_i,
         DRT::Element const * const potbeampartner,
         CrosslinkerData const& cldata_i,
         BeamData const& beamdata_i,
@@ -410,6 +439,7 @@ private:
     /// calclulate force dependent unbind probability for double bonded crosslinker
     /// according to Bell's equation (Howard, eq 5.10, p.89)
     void CalcBellsForceDependentUnbindProbability(
+        CROSSLINKING::CrosslinkerNode* linker,
         Teuchos::RCP< BEAMINTERACTION::BeamToBeamLinkage > const& elepairptr,
         std::vector< double >& punlinkforcedependent
     ) const;
@@ -520,6 +550,9 @@ private:
 
   private:
 
+    //!@name crosslinking member variables
+    //! @{
+
     //! data container holding all beam contact related parameters
     Teuchos::RCP<BEAMINTERACTION::CrosslinkingParams> crosslinking_params_ptr_;
 
@@ -531,12 +564,31 @@ private:
     std::vector<CrosslinkerData> crosslinker_data_;
 
     //! temporary storage for all relevant beam data during crosslinking
-    //  (vector key is col lid of beamele)
+    //  (vector index is col lid of beamele)
     std::vector<BeamData> beam_data_;
 
-    //! double bonded crosslinker that exert forces on network (key is crosslinker gid)
+    //! double bonded crosslinker that exert forces on network (map key is crosslinker gid)
     std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> > doublebondcl_;
 
+    //! @}
+
+  };
+
+  /// class for comparing DRT::Elements* in a std::set
+  /*! -------------------------------------------------------------------------
+   * overwrites standard < for pointers, this is necessary to ensure same order
+   * of neighboring elements for crosslink check and therefore for random numbers
+   * independent of memory address search and set crosslinker. Without this,
+   * computation with crosslinker is not wrong, but depends randomly on memory
+   * allocation, i.e. pointer addresses. Without random numbers, everything is fine
+   * wiht default compare operator
+  *  \author J. Eichinger March 2017
+   -------------------------------------------------------------------------*/
+  class Less
+  {
+  public:
+    template <typename ELEMENT>
+    bool operator()( ELEMENT const* first, ELEMENT const* second) const { return first->Id() < second->Id(); }
   };
 
 }

@@ -40,14 +40,14 @@
  *-----------------------------------------------------------------------------------------------*/
 template<unsigned int numnodes, unsigned int numnodalvalues>
 BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSpherePotentialPair():
-BeamPotentialPair(),
-beam_element_(NULL),
-sphere_element_(NULL),
-k_(0.0),
-m_(0.0),
-beamele_reflength_(0.0),
-radius1_(0.0),
-radius2_(0.0)
+    BeamPotentialPair(),
+    beam_element_(NULL),
+    sphere_element_(NULL),
+    k_(0.0),
+    m_(0.0),
+    beamele_reflength_(0.0),
+    radius1_(0.0),
+    radius2_(0.0)
 {
   // empty constructor
 }
@@ -275,6 +275,39 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
 
     norm_dist = FADUTILS::VectorNorm<3>(dist);
 
+
+
+    // temporary hacks for cell-ecm interaction
+//    // get radius of rigid sphere element
+//    double radius = 4.0;//sphere_element_->Radius();
+//    double deltaradius = radius/10.0;
+//    if(
+//        norm_dist < (radius-2.0*deltaradius)
+//        or
+//        norm_dist > (radius +2.0* deltaradius)
+//        )
+//    {
+//      fpot1_.PutScalar(0.0);
+//      fpot2_.PutScalar(0.0);
+//      stiffpot1_.PutScalar(0.0);
+//      stiffpot2_.PutScalar(0.0);;
+//      return;
+//    }
+//    else if (
+//        norm_dist > ( radius - 2.0 * deltaradius)
+//        and
+//        norm_dist < ( radius + 2.0 * deltaradius)
+//        )
+//    if( norm_dist < sphere_element_->Radius() )
+//    {
+//      dist.Scale( sphere_element_->Radius() / norm_dist );
+//      norm_dist = FADUTILS::VectorNorm<3>(dist);
+//    }
+//
+//    if(norm_dist > 0.5)
+//      dist.Scale(10.0/norm_dist);
+//    norm_dist = FADUTILS::VectorNorm<3>(dist);
+
     // auxiliary variables to store pre-calculated common terms
     TYPE norm_dist_exp1 = 0.0;
     if(norm_dist !=0.0)
@@ -486,9 +519,10 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template<unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::ComputeCoords(LINALG::TMatrix<TYPE,3,1>& r,
-                                                                            const LINALG::Matrix<1,numnodes*numnodalvalues>& N_i,
-                                                                            const LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> elepos)
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::ComputeCoords(
+    LINALG::TMatrix<TYPE,3,1>& r,
+    const LINALG::Matrix<1,numnodes*numnodalvalues>& N_i,
+    const LINALG::TMatrix<TYPE,3*numnodes*numnodalvalues,1> elepos)
 {
   r.Clear();
 

@@ -40,13 +40,13 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BrownianDyn::BrownianDyn():
-  eval_browniandyn_ptr_(Teuchos::null),
-  f_brown_np_ptr_(Teuchos::null),
-  f_ext_np_ptr_(Teuchos::null),
-  stiff_brownian_ptr_(Teuchos::null),
-  maxrandnumelement_(0),
-  rs_(DRT::Problem::Instance()->getParameterList()->sublist("PROBLEM TYP").get<int>("RANDSEED")),
-  discret_ptr_(Teuchos::null)
+    eval_browniandyn_ptr_(Teuchos::null),
+    f_brown_np_ptr_(Teuchos::null),
+    f_ext_np_ptr_(Teuchos::null),
+    stiff_brownian_ptr_(Teuchos::null),
+    maxrandnumelement_(0),
+    rs_(DRT::Problem::Instance()->getParameterList()->sublist("PROBLEM TYP").get<int>("RANDSEED")),
+    discret_ptr_(Teuchos::null)
 {
   // empty
 }

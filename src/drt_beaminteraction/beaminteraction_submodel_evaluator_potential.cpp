@@ -695,13 +695,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
     }
   }
 
-  IO::cout(IO::standard) <<"\n\n************************************************"<<IO::endl;
-  IO::cout(IO::standard) << "PID " << GState().GetMyRank() << " currently monitors " <<
-      beam_potential_element_pairs_.size() << " beam potential pairs" << IO::endl;
-  IO::cout(IO::standard) <<"************************************************"<<IO::endl;
-
+  if( static_cast<int>( beam_potential_element_pairs_.size() ) > 0 )
+  {
+    IO::cout(IO::standard) <<"\n\n************************************************"<<IO::endl;
+    IO::cout(IO::standard) << "PID " << GState().GetMyRank() << " currently monitors " <<
+        beam_potential_element_pairs_.size() << " beam potential pairs" << IO::endl;
+    IO::cout(IO::standard) <<"************************************************"<<IO::endl;
+  }
 }
-
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

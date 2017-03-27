@@ -770,7 +770,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_browniandyn.cpp
   src/drt_inpar/inpar_bio.cpp
   src/drt_inpar/inpar_cardiac_monodomain.cpp
-  src/drt_inpar/inpar_crosslinking.cpp
   src/drt_inpar/inpar_particle.cpp
   src/drt_inpar/inpar_cavitation.cpp
   src/drt_inpar/inpar_pasi.cpp
@@ -1088,6 +1087,7 @@ set(OBJS_DRT_UTILS
   src/drt_lib/drt_utils.cpp
   src/drt_lib/drt_utils_metis.cpp
   src/drt_lib/drt_utils_parallel.cpp
+  src/drt_beaminteraction/drt_utils_parallel_proctoproc.cpp
   src/drt_lib/drt_utils_parmetis.cpp
   src/pss_full/pss_am.c
   src/pss_full/pss_table.c

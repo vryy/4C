@@ -17,7 +17,7 @@ endmacro (baci_test)
 
 # Restart test case from test case previously run
 macro (baci_test_restartonly arg nproc restart)
-  # set additional output prefix identifier to empty string "" in default case or to specific string if specified as optional input argument
+  # set additional output prefix identifier to empty string "" in default claase or to specific string if specified as optional input argument
   if(${ARGC} GREATER 3)
     set(IDENTIFIER ${ARGV3})
   else()
@@ -1806,9 +1806,10 @@ endif (HAVE_DEAL_II)
 if (${Boost_MINOR_VERSION} GREATER 56)
 baci_test(beam3eb_backweuler_browndyn_singlefil 3 "")
 baci_test(beam3r_herm2lin3_backweuler_browndyn_crosslinking_beam3rlin2 2 "")
+baci_test(beam3r_herm2lin3_backweuler_browndyn_crosslinking_beam3rlin2_belloffrate 2 "")
 baci_test(beam3r_herm2lin3_backweuler_browndyn_singlefil 3 "")
 baci_test(beam3r_lin2_backweuler_browndyn_crosslinking_beam3rlin2 2 "")
-baci_test(beam3r_lin2_backweuler_crosslinking_binning_largesys 3 "")
+baci_test(beam3r_lin2_backweuler_browndyn_crosslinking_beam3rlin2_largesys 3 "")
 baci_test(beam3r_lin2_backweuler_browndyn_largesys 3 "")
 baci_test(beam3r_lin3_backweuler_browndyn_singlefil 3 "")
 baci_test(beam3wk_lin3tan_backweuler_browndyn_crosslinking_beam3rlin2 2 "")

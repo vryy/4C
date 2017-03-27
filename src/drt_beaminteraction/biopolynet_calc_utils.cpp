@@ -106,7 +106,7 @@ void UpdateCellsPositionRandomly(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<int> Permutation( const int& number )
+std::vector<int> Permutation( int const number )
 {
   //auxiliary variable
   int j = 0;

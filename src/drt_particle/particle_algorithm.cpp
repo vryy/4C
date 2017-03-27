@@ -212,7 +212,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
   Teuchos::RCP<Epetra_Map> binrowmap;
   if(not restarted)
   {
-    BinStrategy()->CreateBins(BinStrategy()->BinDiscret());
+    BinStrategy()->CreateBinsBasedOnCutoffAndXAABB(BinStrategy()->BinDiscret());
     // setup pbcs after bins have been created
     BinStrategy()->BuildPeriodicBC();
     binrowmap = DistributeBinsToProcs();

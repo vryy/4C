@@ -140,7 +140,10 @@ void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> DRT::UTILS::DiscretizationCreatorBase::
 CreateMatchingDiscretization(const Teuchos::RCP<DRT::Discretization>& sourcedis,
-                             const std::string& targetdisname) const
+                             const std::string& targetdisname,
+                             bool assigndegreesoffreedom,
+                             bool initelements,
+                             bool doboundaryconditions) const
 {
   // initialize identical clone discretization
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(sourcedis->Comm().Clone());
@@ -185,8 +188,8 @@ CreateMatchingDiscretization(const Teuchos::RCP<DRT::Discretization>& sourcedis,
   Teuchos::RCP<DRT::DofSet> newdofset =
       Teuchos::rcp(new DRT::TransparentIndependentDofSet(sourcedis,parallel));
   // do not call this with true (no replacement in static dofsets intended)
-  targetdis->ReplaceDofSet(newdofset,false);
-  targetdis->FillComplete(true,false,false);
+  targetdis->ReplaceDofSet( newdofset, false );
+  targetdis->FillComplete( assigndegreesoffreedom, initelements, doboundaryconditions );
 
   // at the end, we do several checks to ensure that we really have generated
   // an identical discretization

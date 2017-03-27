@@ -304,7 +304,6 @@ public:
   const Teuchos::ParameterList& FluctuatingHydrodynamicsParams() const { return getParameterList()->sublist("FLUCTUATING HYDRODYNAMICS"); }
   const Teuchos::ParameterList& BeamInteractionParams() const { return getParameterList()->sublist("BEAM INTERACTION"); }
   const Teuchos::ParameterList& BrownianDynamicsParams() const { return getParameterList()->sublist("BROWNIAN DYNAMICS"); }
-  const Teuchos::ParameterList& CrosslinkingParams() const { return getParameterList()->sublist("CROSSLINKING"); }
   const Teuchos::ParameterList& ThermalDynamicParams() const { return getParameterList()->sublist("THERMAL DYNAMIC"); }
   const Teuchos::ParameterList& TSIDynamicParams() const { return getParameterList()->sublist("TSI DYNAMIC"); }
   const Teuchos::ParameterList& FluidDynamicParams() const { return getParameterList()->sublist("FLUID DYNAMIC"); }

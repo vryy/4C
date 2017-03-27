@@ -857,7 +857,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::ParticleHandler::
   // 1st step: exploiting bounding box idea for scatra elements and bins
   //--------------------------------------------------------------------
 
-  binstrategy_->DistributeElesToBinsUsingEleXAABB(underlyingdis, rowelesinbin);
+  binstrategy_->DistributeRowElementsToBinsUsingEleXAABB(underlyingdis, rowelesinbin);
 
   //--------------------------------------------------------------------
   // 2nd step: decide which proc will be owner of each bin

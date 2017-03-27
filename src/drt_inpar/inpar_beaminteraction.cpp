@@ -30,7 +30,29 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
 
   /*----------------------------------------------------------------------*/
-  /* parameters for one-step-theta structural integrator */
+  /* parameters for crosslinking submodel */
+
+  Teuchos::ParameterList& crosslinking = beaminteraction.sublist("CROSSLINKING",false,"");
+
+  // remove this some day
+  setStringToIntegralParameter<int>("CROSSLINKER","No", "Crosslinker in problem", yesnotuple,yesnovalue,&crosslinking);
+
+  // number of crosslinker of certain type
+  setNumericStringParameter("NUMCROSSLINKERPERTYPE","0","number of crosslinker of certain type ",&crosslinking);
+  // material number characterizing crosslinker type
+  setNumericStringParameter("MATCROSSLINKERPERTYPE","-1","material number characterizing crosslinker type ",&crosslinking);
+  //Reading double parameter for viscosity of background fluid
+  DoubleParameter("VISCOSITY",0.0,"viscosity",&crosslinking);
+  //Reading double parameter for thermal energy in background fluid (temperature * Boltzmann constant)
+  DoubleParameter("KT",0.0,"thermal energy",&crosslinking);
+  // distance between two binding spots on a filament
+  DoubleParameter("FILAMENTBSPOTINTERVAL",-1.0 ,"distance between two binding spots on a filament",&crosslinking);
+  // start and end for bspots on a filament
+  setNumericStringParameter("FILAMENTBSPOTRANGE","-1.0 -1.0", "Lower and upper arc parameter bound for binding spots on a filament", &crosslinking);
+
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for contractile cell submodel */
 
   Teuchos::ParameterList& contraccells = beaminteraction.sublist("CONTRACTILE CELLS",false,"");
 

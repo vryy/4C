@@ -2740,16 +2740,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
   /*--------------------------------------------------------------------*/
   // material for a crosslinker in a biopolymer simulation
-  // Fixme @eichinger: this material should hold one of the other beam materials defined above
   {
     Teuchos::RCP<MaterialDefinition> matdef
-      = Teuchos::rcp(new MaterialDefinition("MAT_Crosslinker",
+      = Teuchos::rcp( new MaterialDefinition( "MAT_Crosslinker",
                                             "material for a linkage between beams",
-                                            INPAR::MAT::m_crosslinkermat));
+                                            INPAR::MAT::m_crosslinkermat) );
 
-    AddNamedReal(matdef,"YOUNG","Young's modulus");
-    AddNamedReal(matdef,"NUE","Poisson's ratio");
-    AddNamedReal(matdef,"DENS","mass density");
+    AddNamedReal( matdef, "MATNUM", "number of beam elasthyper material" );
+    AddNamedReal( matdef, "LINKINGLENGTH", "distance between the two binding domains of a linker" );
+    AddNamedReal( matdef, "LINKINGLENGTHTOL", "tolerance for linker length in the sense: length +- tolerance" );
+    AddNamedReal( matdef, "LINKINGANGLE", "preferred binding angle enclosed by two filaments' axes in radians" );
+    AddNamedReal( matdef, "LINKINGANGLETOL", "tolerance for preferred binding angle in radians in the sense of: angle +- tolerance" );
+    AddNamedReal( matdef, "K_ON", "chemical association-rate" );
+    AddNamedReal( matdef, "K_OFF", "chemical dissociation-rate" );
+
+    // opitional parameter
+    AddNamedReal( matdef, "DELTABELLEQ","deltaD in Bell's equation for force dependent off rate", 0.0, true );
 
     AppendMaterialDefinition(matlist,matdef);
   }

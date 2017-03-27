@@ -73,6 +73,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     else if (action=="calc_struct_nlnstiffmass")                           act = ELEMENTS::struct_calc_nlnstiffmass;
     else if (action=="calc_struct_nlnstifflmass")                          act = ELEMENTS::struct_calc_nlnstifflmass; //with lumped mass matrix
     else if (action=="calc_struct_stress")                                 act = ELEMENTS::struct_calc_stress;
+    else if (action=="postprocess_stress")                                 act = ELEMENTS::struct_postprocess_stress;
     else if (action=="calc_struct_eleload")                                act = ELEMENTS::struct_calc_eleload;
     else if (action=="calc_struct_fsiload")                                act = ELEMENTS::struct_calc_fsiload;
     else if (action=="calc_struct_update_istep")                           act = ELEMENTS::struct_calc_update_istep;
@@ -445,17 +446,20 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       break;
     }
 
+    // write stress and strain output
     case ELEMENTS::struct_calc_stress:
     {
+
       dserror("stress output for Beam3r not implemented yet!");
+
 //      // nothing to do for ghost elements
 //      if ( discretization.Comm().MyPID() == Owner() )
 //      {
 //        // need current displacement
 //        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-//        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-//        std::vector<double> mydisp(lm.size());
-//        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+//        if ( disp == Teuchos::null ) dserror("Cannot get state vectors 'displacement'");
+//        std::vector<double> mydisp( lm.size() );
+//        DRT::UTILS::ExtractMyValues( *disp, mydisp, lm );
 //
 //        Teuchos::RCP<std::vector<char> > stressdata = Teuchos::null;
 //        Teuchos::RCP<std::vector<char> > straindata = Teuchos::null;
@@ -484,29 +488,115 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
 //
 //        // todo: check if stress/strain types are the ones for beams
 //
-//        LINALG::Matrix<BEAMSVTUVISUALSUBSEGMENTS,6> stress;
-//        LINALG::Matrix<BEAMSVTUVISUALSUBSEGMENTS,6> strain;
+//        LINALG::Matrix< BEAMSVTUVISUALSUBSEGMENTS, 6 > stress;
+//        LINALG::Matrix< BEAMSVTUVISUALSUBSEGMENTS, 6 > strain;
 //
 //        // determine strains and/or stresses
-////        CalcInternalAndInertiaForcesAndStiff(lm,mydisp,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+////        CalcStressesAndStrainsAtVisPoints();
 //
 //        // add data to pack
 //        {
 //          DRT::PackBuffer data;
-//          AddtoPack(data, stress);
+//          AddtoPack( data, stress );
 //          data.StartPacking();
-//          AddtoPack(data, stress);
-//          std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
+//          AddtoPack( data, stress );
+//          std::copy( data().begin(), data().end(), std::back_inserter(*stressdata) );
 //        }
 //
 //        {
 //          DRT::PackBuffer data;
-//          AddtoPack(data, strain);
+//          AddtoPack( data, strain );
 //          data.StartPacking();
-//          AddtoPack(data, strain);
-//          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+//          AddtoPack( data, strain );
+//          std::copy( data().begin(), data().end(), std::back_inserter(*straindata) );
+//        }
+//      }
+      break;
+    }
+    // post process stress and strain
+    case ELEMENTS::struct_postprocess_stress:
+    {
+//      // stresses/strains were already interpolated to vis points during runtime, no need for any
+//      // extrapolation stuff during postprocessing anymore
+//      const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > vispointstressmap=
+//        params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+//      if ( vispointstressmap == Teuchos::null )
+//        dserror("no gp stress/strain map available for postprocessing");
+//
+//      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
+//
+//      int gid = Id();
+//      LINALG::Matrix< BEAMSVTUVISUALSUBSEGMENTS, 6 > vispointstresses( ( (*vispointstressmap)[gid])->A(), true );
+//
+//      Teuchos::RCP<Epetra_MultiVector> poststress = params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
+//      if ( poststress == Teuchos::null )
+//        dserror("No element stress/strain vector available");
+//
+//      if ( stresstype == "ndxyz")
+//      {
+//        // extrapolation matrix, static because equal for all elements of the same discretizations type
+//        static LINALG::Matrix<numnod_,numgpt_post_> extrapol;
+//
+//        // fill extrapolation matrix just once, equal for all elements
+//        static bool isfilled;
+//
+//        if (isfilled==false)
+//        {
+//          // check for correct gaussrule
+//          if (intpoints_.nquad!=numgpt_post_)
+//            dserror("number of gauss points of gaussrule_ does not match numgpt_post_ used for postprocessing");
+//
+//          // allocate vector for shape functions and matrix for derivatives at gp
+//          LINALG::Matrix<numnod_,1> shapefcts(true);
+//
+//          // loop over the nodes and gauss points
+//          // interpolation matrix, inverted later to be the extrapolation matrix
+//          for (int nd=0;nd<numnod_;++nd)
+//          {
+//            // gaussian coordinates
+//            const double e1 = intpoints_.qxg[nd][0];
+//            const double e2 = intpoints_.qxg[nd][1];
+//
+//            // shape functions for the extrapolated coordinates
+//            LINALG::Matrix<numgpt_post_,1> funct;
+//            DRT::UTILS::shape_function_2D(funct,e1,e2,Shape());
+//
+//            for (int i=0;i<numgpt_post_;++i)
+//              extrapol(nd,i) = funct(i);
+//          }
+//
+//          // fixedsizesolver for inverting extrapol
+//          LINALG::FixedSizeSerialDenseSolver<numnod_,numgpt_post_,1> solver;
+//          solver.SetMatrix(extrapol);
+//          int err = solver.Invert();
+//          if (err != 0.)
+//          dserror("Matrix extrapol is not invertible");
+//
+//          // matrix is filled
+//          isfilled = true;
 //        }
 //
+//        // extrapolate the nodal stresses for current element
+//        LINALG::Matrix<numnod_,6> nodalstresses;
+//        nodalstresses.Multiply(1.0,extrapol,gpstress,0.0);
+//
+//        // "assembly" of extrapolated nodal stresses
+//        for (int i=0;i<numnod_;++i)
+//        {
+//          int gid = NodeIds()[i];
+//          if (poststress->Map().MyGID(NodeIds()[i])) // rownode
+//          {
+//            int lid = poststress->Map().LID(gid);
+//            int myadjele = Nodes()[i]->NumElement();
+//            for (int j=0;j<6;j++)
+//              (*((*poststress)(j)))[lid] += nodalstresses(i,j)/myadjele;
+//          }
+//        }
+//
+//      }
+//      else
+//      {
+//        dserror("unknown type of stress/strain output on element level");
 //      }
 
       break;

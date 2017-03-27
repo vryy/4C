@@ -24,16 +24,26 @@
  *----------------------------------------------------------------------*/
 MAT::PAR::CrosslinkerMat::CrosslinkerMat(
   Teuchos::RCP<MAT::PAR::Material> matdata
-  )
-: Parameter(matdata),
-  youngs_(matdata->GetDouble("YOUNG")),
-  poissonratio_(matdata->GetDouble("NUE")),
-  density_(matdata->GetDouble("DENS"))
+  ) :
+    Parameter(matdata),
+    beamelasthypermatnum_( matdata->GetDouble("MATNUM") ),
+    linkinglength_( matdata->GetDouble("LINKINGLENGTH") ),
+    linkinglengthtol_( matdata->GetDouble("LINKINGLENGTHTOL") ),
+    linkingangle_( matdata->GetDouble("LINKINGANGLE") ),
+    linkingangletol_( matdata->GetDouble("LINKINGANGLETOL") ),
+    k_on_( matdata->GetDouble("K_ON") ),
+    k_off_( matdata->GetDouble("K_OFF") ),
+    deltabelleq_( matdata->GetDouble("DELTABELLEQ") )
 {
-  if (youngs_<=0.)
-    dserror("Young's modulus must be greater zero");
-  if (poissonratio_>0.5 || poissonratio_<-1.)
-    dserror("Poisson's ratio must be in [-1;0.5]");
+  if ( beamelasthypermatnum_ < 0 )
+    dserror("Material number defining beam elasthyper material for crosslinker"
+        "must be greater than zero");
+  if ( linkinglength_ < 1e-08 )
+    dserror("Linking length (distance of two binding spots of a linker) must be\n"
+        "greater than zero (as you need to divide by it during crosslinker diffusion).");
+  if ( linkinglengthtol_ < 0.0 || linkinglengthtol_ > linkinglength_ )
+    dserror(" Value for tolerance of linking does not make sense.");
+
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::CrosslinkerMat::CreateMaterial()

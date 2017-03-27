@@ -77,7 +77,6 @@ Maintainer: Martin Kronbichler
 #include "../drt_tutorial/inpar_tutorial.H"
 #include "inpar_beaminteraction.H"
 #include "inpar_browniandyn.H"
-#include "inpar_crosslinking.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_contact_xcontact.H"
 #include "inpar_plasticity.H"
@@ -639,7 +638,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::BEAMPOTENTIAL::SetValidParameters(list);
   INPAR::BEAMINTERACTION::SetValidParameters(list);
   INPAR::BROWNIANDYN::SetValidParameters(list);
-  INPAR::CROSSLINKING::SetValidParameters(list);
 
   INPAR::LOCA::SetValidParameters(list);
   INPAR::PLASTICITY::SetValidParameters(list);

@@ -594,6 +594,19 @@ public:
 
     return bspotposxi_[bspotlocn];
   }
+  /** \brief set binding spot positions and status in crosslinker simulation
+   *
+   *  \author eichinger
+   *  \date 03/17 */
+  void SetBindingSpotPositionsAndStatus(
+      std::vector<double> const& bspotposxi,
+      std::map<int, int> const&  bspotstatus)
+  {
+    bspotposxi_.clear();
+    bspotstatus_.clear();
+    bspotposxi_ = bspotposxi;
+    bspotstatus_ = bspotstatus;
+  }
 
   void SetBindingSpotStatus(std::map<int, int> bspotstatus)
   {

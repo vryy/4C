@@ -62,9 +62,19 @@ void UpdateCellsPositionRandomly(
     Teuchos::RCP<DRT::Discretization> const& discret,
     int const step);
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+inline int CalculateNumberOfBeamElementsFromNumberOfNodesOnFilament(
+    int const numnodes,
+    int const numnodesperele)
+{
+  // from: nodesperfil = nodesperele + ( numele - 1 ) * ( nodesperele - 1 )
+  return ( (numnodes - numnodesperele ) / ( numnodesperele - 1.0 ) ) + 1.0;
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<int> Permutation(const int& number);
+std::vector<int> Permutation( int const number );
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
@@ -107,12 +117,12 @@ void GetPosAndTriadOfBindingSpot(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void FEAssembleEleForceStiffIntoSystemVectorMatrix(
-    const DRT::Discretization&         discret,
-    std::vector<int> const&            elegid,
-    std::vector< LINALG::SerialDenseVector > const& elevec,
+    const DRT::Discretization&                                     discret,
+    std::vector<int> const&                                        elegid,
+    std::vector< LINALG::SerialDenseVector > const&                elevec,
     std::vector< std::vector< LINALG::SerialDenseMatrix > > const& elemat,
-    Teuchos::RCP<Epetra_FEVector>      fe_sysvec,
-    Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat);
+    Teuchos::RCP<Epetra_FEVector>                                  fe_sysvec,
+    Teuchos::RCP<LINALG::SparseMatrix>                             fe_sysmat);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

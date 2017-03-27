@@ -69,7 +69,7 @@ public:
   virtual ~Beam3rLin2Linkage() {};
 
   //! Setup [derived]
-  virtual void Setup();
+  virtual void Setup( const int matnum );
 
   /*!
   \brief Return unique ParObject id [derived]

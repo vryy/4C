@@ -189,12 +189,6 @@ namespace MODELEVALUATOR{
         std::vector<INPAR::BEAMINTERACTION::SubModelType>& sorted_submodel_types
     ) const;
 
-    /// create bin discretization
-    void CreateBinDiscretization();
-
-    /// set random initial position of crosslinker and add them to bin discretization
-    void AddCrosslinkerToBinDiscret();
-
     //! @}
 
     //!@name routines that manage to discretizations with distinct parallel distribution
@@ -236,13 +230,16 @@ namespace MODELEVALUATOR{
     //! @{
 
     /// change parallel distribution of bindis and ia_discret and assign (beam) eles to bins
-    void ExtendGhostingAndAssign();
+    virtual void ExtendGhosting( std::map< int, std::set< int > >& extbintoelemap );
 
     /// build ele to bin map
     virtual void BuildRowEleToBinMap();
 
     /// create new bins
     virtual void CreateNewBins(bool newxaabb, bool newcutoff);
+
+    /// print some information about binning
+    virtual void PrintBinningInfoToScreen() const;
 
     //! @}
 

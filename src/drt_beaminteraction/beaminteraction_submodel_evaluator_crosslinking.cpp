@@ -24,19 +24,20 @@
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_beaminteraction/drt_utils_parallel_proctoproc.H"
+#include "../drt_geometry/intersection_math.H"
 
-#include "../drt_beam3/beam3_base.H"
 #include "../drt_beaminteraction/beam_to_beam_linkage.H"
 #include "../drt_beaminteraction/biopolynet_calc_utils.H"
 #include "../drt_beaminteraction/crosslinker_node.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_particle/particle_handler.H"
-#include "beam3r_lin2_linkage.H"
-#include "crosslinking_params.H"
-#include "str_model_evaluator_beaminteraction_datastate.H"
+#include "../drt_beaminteraction/beam3r_lin2_linkage.H"
+#include "../drt_beaminteraction/crosslinking_params.H"
+#include "../drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.H"
 
-
-
+#include "../drt_mat/crosslinkermat.H"
+#include "../drt_beam3/beam3_base.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 
 
@@ -62,6 +63,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Setup()
   crosslinking_params_ptr_->Init();
   crosslinking_params_ptr_->Setup();
 
+  // set binding spot positions on filament elements according input file specifications
+  SetFilamentBindingSpotPositions();
+
+  // add crosslinker to bin discretization
+  AddCrosslinkerToBinDiscretization();
+
   // set flag
   issetup_ = true;
 }
@@ -71,6 +78,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Setup()
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PostSetup()
 {
   CheckInitSetup();
+
 }
 
 /*----------------------------------------------------------------------*
@@ -80,6 +88,283 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitSubmodelDependencies(
 {
   CheckInitSetup();
   // no active influence on other submodels
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddCrosslinkerToBinDiscretization()
+{
+  CheckInit();
+
+  // loop over all linker types that should be added to simulation volume
+  // (only proc 0 is doing this (as the number of crosslinker is manageable)
+  std::vector<int> const& numcrosslinkerpertype = crosslinking_params_ptr_->NumCrosslinkerPerType();
+  std::vector<int> const& matcrosslinkerpertype = crosslinking_params_ptr_->MatCrosslinkerPerType();
+  int gid = 0;
+  if( GState().GetMyRank() == 0 )
+  {
+    for ( int cltype_i = 0; cltype_i < static_cast<int>( numcrosslinkerpertype.size() ); ++cltype_i )
+    {
+      for ( int cltype_i_cl_j = 0; cltype_i_cl_j < numcrosslinkerpertype[cltype_i]; ++cltype_i_cl_j )
+      {
+        // random reference position of crosslinker in bounding box
+        std::vector<double> X(3);
+        PeriodicBoundingBoxPtr()->RandomPosWithin(X);
+
+        // construct node, init data container, set material and add to bin discret
+        Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
+            Teuchos::rcp(new CROSSLINKING::CrosslinkerNode( gid++, &X[0], GState().GetMyRank() ) );
+        newcrosslinker->InitializeDataContainer();
+        newcrosslinker->SetMaterial( matcrosslinkerpertype[cltype_i] );
+        BinDiscretPtr()->AddNode(newcrosslinker);
+      }
+    }
+  }
+
+  // set row map of newly created particle discretization
+  BinDiscretPtr()->FillComplete( false, false, false );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentBindingSpotPositions()
+{
+  CheckInit();
+
+  // get pointers to all filament number conditions set
+  std::vector<DRT::Condition*> filamentnumberconditions(0);
+  DiscretPtr()->GetCondition( "FilamentNumber", filamentnumberconditions );
+
+  // get distance between two binding spots on a filament
+  double const filamentbspotinterval = crosslinking_params_ptr_->FilamentBspotInterval();
+  // get arc parameter range on which binding spot positions are set on filament
+  std::pair<double, double> const filamentbspotrange =
+      std::make_pair( ( crosslinking_params_ptr_->FilamentBspotRange()[0] < 0.0 ) ? 0.0 : crosslinking_params_ptr_->FilamentBspotRange()[0],
+          crosslinking_params_ptr_->FilamentBspotRange()[1] );
+  // todo: set somewhere else
+  double tol = GEO::TOL7;
+
+  // temporarily extend ghosting, should be reverted somewhere later on as it is needed
+  // in this fashion only here
+  std::set<int> relevantfilaments;
+  ExtendGhostingForFilamentBspotSetup( relevantfilaments );
+
+  // loop over all relevant (on myrank) filaments
+  std::set<int>::const_iterator filiter;
+  for( filiter = relevantfilaments.begin(); filiter != relevantfilaments.end(); ++filiter )
+  {
+    // loop over all nodes of current filament, sort elements and calculate total filament length
+    std::vector<int> const* nodeids = filamentnumberconditions[*filiter]->Nodes();
+    std::vector< DRT::Element* > sortedfilamenteles(0);
+    double filreflength = 0.0;
+    ComputeFilamentLengthAndSortItsElements( sortedfilamenteles, nodeids, filreflength);
+
+    // get arc parameter range for binding spot positions for current filament
+    double const start = ( filreflength < filamentbspotrange.first ) ?
+        ( filreflength + 1.0 ) : (filamentbspotrange.first);
+    double const end = ( filreflength < filamentbspotrange.second or filamentbspotrange.second < 0.0 ) ?
+        filreflength : filamentbspotrange.second;
+    // get number of binding spots for current filament in bonds
+    int numbspot = ( start < filreflength and ( (end - start) > 0.0 ) ) ?
+        ( std::floor( (end + tol - start) / filamentbspotinterval ) + 1 ) : 0;
+
+    // in case current filament has no binding spots, we go to next filament
+    if( numbspot == 0 ) continue;
+
+    // print number of binding spots for current filament
+    IO::cout(IO::verbose) << "\n---------------------------------------------------------------"<< IO::endl;
+    IO::cout(IO::verbose) << numbspot << " binding spots on filament " << *filiter << " (consists of " <<
+        static_cast<int>(sortedfilamenteles.size()) << " elements)" << " with: " << IO::endl;
+
+    // set xis on element level
+    SetBindingSpotsPositionsOnFilament( sortedfilamenteles, start, numbspot,
+        filamentbspotinterval, tol );
+
+    IO::cout(IO::verbose) << "---------------------------------------------------------------\n"<< IO::endl;
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ExtendGhostingForFilamentBspotSetup(
+    std::set<int>& relevantfilaments)
+{
+  CheckInit();
+
+  std::set<int> setofnodegidswithrequiredelecloud;
+  DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
+      relevantfilaments, setofnodegidswithrequiredelecloud );
+
+  // collect element gids that need to be ghosted so that each proc ghosts all
+  // elements of a filament containing at least one node of myrank
+  // do communication to gather all elements to temporarily extend ghosting
+  std::set<int> coleleset;
+  for ( int iproc = 0; iproc < DiscretPtr()->Comm().NumProc(); ++iproc )
+  {
+    // myrank == iproc: copy set to vector in order to broadcast data
+    std::vector<int> requirednodes(0);
+    if( iproc == GState().GetMyRank() )
+      requirednodes.insert( requirednodes.begin(), setofnodegidswithrequiredelecloud.begin(),
+          setofnodegidswithrequiredelecloud.end() );
+
+    // proc i tells all procs how many nodegids it has
+    int numnodes = requirednodes.size();
+    DiscretPtr()->Comm().Broadcast( &numnodes, 1, iproc );
+
+    // proc i actually sends nodegids
+    requirednodes.resize(numnodes);
+    DiscretPtr()->Comm().Broadcast( &requirednodes[0], numnodes, iproc );
+
+    std::set<int> sdata;
+    std::set<int> rdata;
+
+    // each proc looks in node row map and adds element clouds of owned nodes to sdata
+    for( int i = 0; i < numnodes; ++i )
+    {
+      // only if myrank is owner of requested node
+      if( DiscretPtr()->NodeRowMap()->LID(requirednodes[i]) < 0 )
+        continue;
+
+      // insert element cloud of current node
+      DRT::Node* currnode = DiscretPtr()->gNode(requirednodes[i]);
+      for( int j = 0; j < currnode->NumElement(); ++j )
+        sdata.insert( currnode->Elements()[j]->Id() );
+    }
+
+    // gather and store information on iproc
+    LINALG::Gather<int>( sdata, rdata, 1, &iproc, DiscretPtr()->Comm() );
+    if( iproc == GState().GetMyRank() )
+      coleleset = rdata;
+  }
+
+  // insert previous ghosting
+  for( int lid = 0; lid < DiscretPtr()->NumMyColElements(); ++lid )
+    coleleset.insert( DiscretPtr()->ElementColMap()->GID(lid) );
+  std::vector<int> colgids( coleleset.begin(), coleleset.end() );
+
+  // create new ele col map
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp( new Epetra_Map( -1,
+      static_cast<int>( colgids.size() ), &colgids[0], 0, DiscretPtr()->Comm() ) );
+
+  // temporarily extend ghosting
+  BinStrategyPtr()->ExtendDiscretizationGhosting( DiscretPtr(), newelecolmap, true );
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
+    DetermineOffMyRankNodesWithRelevantEleCloudForFilamentBspotSetup(
+        std::set<int>& relevantfilaments,
+        std::set<int>& setofrequirednodes) const
+{
+  CheckInit();
+
+  // loop over all row nodes
+  for( int rown = 0; rown < Discret().NumMyRowNodes(); ++rown )
+  {
+    // get filament number of current node ( requirement: node belongs to only one filament)
+    DRT::Condition* cond = Discret().lRowNode(rown)->GetCondition("FilamentNumber");
+
+    // in case node (e.g. node of rigid sphere element) does not belong to a filament, go to next node
+    if ( cond == NULL )
+      continue;
+
+    // get filament number
+    int const currfilnum = cond->GetInt("Filament Number");
+
+    // if a filament has already been examined --> continue with next node
+    if( relevantfilaments.find(currfilnum) != relevantfilaments.end() )
+      continue;
+    // filament is examined for the first time --> new entry for relevant filaments on myrank
+    else
+      relevantfilaments.insert(currfilnum);
+
+    // loop over all nodes of current filament and store gids of nodes not owned by myrank
+    std::vector<int> const* nodeids = cond->Nodes();
+    for( int i = 0; i < static_cast<int>( nodeids->size() ) ; ++i )
+      if( Discret().NodeRowMap()->LID((*nodeids)[i]) < 0 )
+        setofrequirednodes.insert( (*nodeids)[i] );
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ComputeFilamentLengthAndSortItsElements(
+    std::vector< DRT::Element* >& sortedfilamenteles,
+    std::vector<int> const* nodeids,
+    double & filreflength) const
+{
+  CheckInit();
+
+  // loop over all nodes associated with current filament
+  for( int nodei = 0; nodei < static_cast<int>( nodeids->size() ); ++nodei )
+  {
+    // insert element cloud of current node
+    DRT::Node* node = Discret().gNode( (*nodeids)[nodei] );
+    for( int j = 0; j < node->NumElement(); ++j )
+    {
+      // only if element has not yet been added to the filaments elements
+      if ( std::find( sortedfilamenteles.begin(), sortedfilamenteles.end(), node->Elements()[j] )
+                != sortedfilamenteles.end() )
+        continue;
+
+      // add element reference length of new element to filament reference length
+      filreflength += dynamic_cast<DRT::ELEMENTS::Beam3Base*>(node->Elements()[j])->RefLength();
+      // add element
+      sortedfilamenteles.push_back( node->Elements()[j] );
+    }
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetBindingSpotsPositionsOnFilament(
+    std::vector< DRT::Element* >& sortedfilamenteles,
+    double const start,
+    int const    numbspot,
+    double const filamentbspotinterval,
+    double const tol)
+{
+  CheckInit();
+
+  // default no occupied binding spots
+  std::pair<double, double > elearcinterval = std::make_pair( 0.0, 0.0 );
+  int bspotcounter = 0;
+  double currbspotarcparam = start;
+  // loop over all elements in sorted order
+  for( int se_iter = 0; se_iter < static_cast<int>( sortedfilamenteles.size() ); ++se_iter )
+  {
+    DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(sortedfilamenteles[se_iter]);
+
+    // init variables set in beam eles
+    std::map<int, int> bspotstatus;
+    std::vector<double> bspotposxi;
+
+    // get arc parameter range of current element
+    elearcinterval = std::make_pair( elearcinterval.second, elearcinterval.second + beamele->RefLength() );
+
+    while ( ( currbspotarcparam > ( elearcinterval.first - tol) and currbspotarcparam <= ( elearcinterval.second + tol ) )
+        and bspotcounter < numbspot )
+    {
+     // default unoccupied binding spots
+      bspotstatus[bspotposxi.size()] = -1;
+
+      // linear mapping from arc pos to xi (local element system)
+      double xi = ( 2.0 * currbspotarcparam - elearcinterval.first - elearcinterval.second ) / beamele->RefLength();
+      xi = ( abs( round(xi) - xi ) < tol ) ? round(xi) : xi;
+      bspotposxi.push_back(xi);
+
+      // print to screen
+      IO::cout(IO::verbose) << bspotcounter +1 << ". binding spot: "<< "xi = " << xi << " on element "
+          << se_iter << " (gid " << beamele->Id() << ")"<< IO::endl;
+
+      ++bspotcounter;
+      currbspotarcparam += filamentbspotinterval;
+    }
+
+    // set element variables for binding spot position and status
+    beamele->SetBindingSpotPositionsAndStatus( bspotposxi, bspotstatus );
+  }
 }
 
 /*-------------------------------------------------------------------------------*
@@ -521,15 +806,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PostReadRestart()
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddBinsToBinColMap(
     std::set< int >& colbins)
 {
-  CheckInitSetup();
-
-  std::set< int >& bindisboundarycolbins =
-      ParticleHandler().BinStrategy()->BoundaryColBinsIds();
-
-/*  ParticleHandler().
-      GetNeighbouringBinsOfParticleContainingBoundaryRowBins( bindisboundarycolbins );*/
-
-  colbins.insert( bindisboundarycolbins.begin(), bindisboundarycolbins.end() );
+  // nothing to do
 }
 
 /*----------------------------------------------------------------------*
@@ -586,17 +863,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 {
   CheckInitSetup();
-
-  // get standard deviation and mean value for crosslinker that are free to
-  // diffuse
-  double standarddev = std::sqrt( 2.0 * crosslinking_params_ptr_->KT() /
-                       ( 3.0*M_PI * crosslinking_params_ptr_->Viscosity()
-                       * crosslinking_params_ptr_->LinkingLength() )     // Todo check the scalar factor
-                       * (*GState().GetDeltaTime())[0]);
-  double meanvalue = 0.0;
-  // Set mean value and standard deviation of normal distribution
-  // FixMe standard deviation = sqrt(variance) check this for potential error !!!
-  DRT::Problem::Instance()->Random()->SetMeanVariance( meanvalue, standarddev );
 
   // loop over all row crosslinker (beam binding status not touched here)
   const int numrowcl = BinDiscretPtr()->NumMyRowNodes();
@@ -663,7 +929,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
         // note: a crosslinker can not leave the computational domain here, as no beam binding
         // spot can be outside the periodic box at this point
-        SetCrosslinkerPosition(crosslinker_i, bbspotpos);
+        SetCrosslinkerPosition( crosslinker_i, bbspotpos );
 
         break;
       }
@@ -756,19 +1022,30 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker(
-    DRT::Node* crosslinker) const
+    CROSSLINKING::CrosslinkerNode* crosslinker) const
 {
   CheckInit();
+
+  // get standard deviation and mean value for crosslinker that are free to
+  // diffuse
+  double standarddev = std::sqrt( 2.0 * crosslinking_params_ptr_->KT() /
+                       ( 3.0*M_PI * crosslinking_params_ptr_->Viscosity()
+                       * crosslinker->GetMaterial()->LinkingLength() )
+                       * (*GState().GetDeltaTime())[0]);
+  double meanvalue = 0.0;
+  // Set mean value and standard deviation of normal distribution
+  // FixMe standard deviation = sqrt(variance) check this for potential error !!!
+  DRT::Problem::Instance()->Random()->SetMeanVariance( meanvalue, standarddev );
 
   // diffuse crosslinker according to brownian dynamics
   LINALG::Matrix<3,1> newclpos ( true );
   std::vector<double> randvec;
   int count = 3;
+  // maximal diffusion given by cutoff radius (sqrt(3) = 1.73..)
   double const maxmov = BinStrategy().CutoffRadius() / 1.74;
   DRT::Problem::Instance()->Random()->Normal( randvec, count );
   for( int dim = 0; dim < 3; ++dim )
   {
-    // maximal diffusion given by cutoff radius (sqrt(3) = 1.73..)
     if( abs(randvec[dim]) > maxmov )
     {
       double old = randvec[dim];
@@ -838,16 +1115,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetCrosslinkerPosition(
 {
   CheckInit();
 
-  double const& cutoff = BinStrategy().CutoffRadius();
-  double dist = 0.0;
-  for( int dim = 0; dim < 3; ++dim )
-  {
-    dist = abs( newclpos(dim) - crosslinker->X()[dim] );
-    if( dist > cutoff and (PeriodicBoundingBox().EdgeLength(dim) - dist) > cutoff )
-      dserror(" Crosslinker %i moved further than the bin length. %f > %f",
-          crosslinker->Id(), (dist > PeriodicBoundingBox().EdgeLength(dim)/2.0) ?
-              (PeriodicBoundingBox().EdgeLength(dim) - dist) : dist, cutoff );
-  }
+//  double const& cutoff = BinStrategy().CutoffRadius();
+//  double dist = 0.0;
+//  for( int dim = 0; dim < 3; ++dim )
+//  {
+//    dist = abs( newclpos(dim) - crosslinker->X()[dim] );
+//    if( dist > cutoff and (PeriodicBoundingBox().EdgeLength(dim) - dist) > cutoff )
+//      dserror(" Crosslinker %i moved further than the bin length. %f > %f",
+//          crosslinker->Id(), (dist > PeriodicBoundingBox().EdgeLength(dim)/2.0) ?
+//              (PeriodicBoundingBox().EdgeLength(dim) - dist) : dist, cutoff );
+//  }
 
   std::vector<double> newpos(3,0.0);
   for( int dim = 0; dim < 3; ++dim )
@@ -859,7 +1136,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetCrosslinkerPosition(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetPositionOfNewlyFreeCrosslinker(
-    DRT::Node* crosslinker,
+    CROSSLINKING::CrosslinkerNode* crosslinker,
     LINALG::Matrix<3,1>& clpos) const
 {
   CheckInit();
@@ -871,16 +1148,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetPositionOfNewlyFreeCro
   LINALG::Matrix<3,1> cldeltapos_i;
   std::vector<double> randunivec(3);
   int count = 3;
-  DRT::Problem::Instance()->Random()->Uni(randunivec, count);
+  DRT::Problem::Instance()->Random()->Uni( randunivec, count );
   for ( int dim = 0 ; dim < 3; ++dim )
     cldeltapos_i(dim) = randunivec[dim];
 
-  cldeltapos_i.Scale(crosslinking_params_ptr_->LinkingLength() / cldeltapos_i.Norm2());
+  cldeltapos_i.Scale( crosslinker->GetMaterial()->LinkingLength() / cldeltapos_i.Norm2() );
 
   clpos.Update( 1.0, cldeltapos_i, 1.0 );
 
   PeriodicBoundingBox().Shift3D(clpos);
-  SetCrosslinkerPosition(crosslinker, clpos);
+  SetCrosslinkerPosition( crosslinker, clpos );
 }
 
 /*----------------------------------------------------------------------------*
@@ -1039,7 +1316,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FindPotentialBindingEvent
   // loop over all column crosslinker in random order
   // create random order of indices
   std::vector<int> rordercolcl =
-      BIOPOLYNET::UTILS::Permutation(BinDiscretPtr()->NumMyColNodes());
+      BIOPOLYNET::UTILS::Permutation( BinDiscretPtr()->NumMyColNodes() );
   std::vector<int>::const_iterator icl;
   for( icl = rordercolcl.begin(); icl != rordercolcl.end(); ++icl )
   {
@@ -1148,6 +1425,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
   // loop over all neighboring beam elements in random order (keep in mind
   // we are only looping over row elements)
   std::vector< DRT::Element* > beamvec( neighboring_beams.begin(), neighboring_beams.end() );
+
+  // -------------------------------------------------------------------------
+  // NOTE: This is crucial to ensure that computation does not depend on pointer
+  // addresses (see also comment of class Less)
+  // -------------------------------------------------------------------------
+  std::sort( beamvec.begin(), beamvec.end(), Less() );
+
   std::vector<int> randorder = BIOPOLYNET::UTILS::Permutation( static_cast<int>( beamvec.size() ) );
   for( std::vector<int> ::const_iterator randiter = randorder.begin(); randiter != randorder.end();  ++randiter )
   {
@@ -1170,7 +1454,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
       continue;
 
     // loop over all binding spots of current element in random order
-    std::vector<int> randbspot = BIOPOLYNET::UTILS::Permutation( beamdata_i.bbspotstatus.size() );
+    std::vector<int> randbspot = BIOPOLYNET::UTILS::Permutation( static_cast<int>( beamdata_i.bbspotstatus.size() ) );
     std::vector<int> ::const_iterator rbspotiter;
     for( rbspotiter = randbspot.begin(); rbspotiter != randbspot.end(); ++rbspotiter )
     {
@@ -1178,7 +1462,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
       const int locnbspot = *rbspotiter;
 
       // we are now doing some additional checks if a binding event is feasible
-      if ( not CheckBindEventCriteria( crosslinker_i, nbbeam, cldata_i, beamdata_i,
+      if ( not CheckBindEventCriteria( dynamic_cast< CROSSLINKING::CrosslinkerNode* >( crosslinker_i ), nbbeam, cldata_i, beamdata_i,
           locnbspot, intendedbeambonds, checklinkingprop ) )
         continue;
 
@@ -1220,7 +1504,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
-    DRT::Node const * const crosslinker_i,
+    CROSSLINKING::CrosslinkerNode const * const crosslinker_i,
     DRT::Element const * const potbeampartner,
     CrosslinkerData const& cldata_i,
     BeamData const& beamdata_i,
@@ -1233,7 +1517,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
   // 3. criterion:
   // a crosslink is set if and only if it passes the probability check
   // for a binding event to happen
-  double plink = 1.0 - exp( -(*GState().GetDeltaTime())[0] * crosslinking_params_ptr_->KOn() );
+  double plink = 1.0 - exp( -(*GState().GetDeltaTime())[0] * crosslinker_i->GetMaterial()->KOn() );
 
   if( checklinkingprop and ( DRT::Problem::Instance()->Random()->Uni() > plink ) )
     return false;
@@ -1257,10 +1541,17 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
 
   // minimum and maximum distance at which a double-bond crosslink can be established
   // todo: this needs to go crosslinker material
-  double const& linkdistmin = crosslinking_params_ptr_->LinkingLength()
-                             - crosslinking_params_ptr_->LinkingLengthTolerance();
-  double const& linkdistmax = crosslinking_params_ptr_->LinkingLength()
-                             + crosslinking_params_ptr_->LinkingLengthTolerance();
+  double const linkdistmin = crosslinker_i->GetMaterial()->LinkingLength()
+                             - crosslinker_i->GetMaterial()->LinkingLengthTolerance();
+  double const linkdistmax = crosslinker_i->GetMaterial()->LinkingLength()
+                             + crosslinker_i->GetMaterial()->LinkingLengthTolerance();
+
+#ifdef DEBUG
+  //safety check
+  if( linkdistmax > BinStrategy().CutoffRadius() )
+    dserror("The allowed binding distance of linker %i (in case it is single bonded) is"
+            "\ngreater than the cutoff radius, this could lead to missing a binding event", crosslinker_i->Id() );
+#endif
 
   if( ( cldata_i.clnumbond == 0 and IsDistanceOutOfBindingRange( cldata_i.clpos,
       currbbspos, 0.5 * linkdistmin, 0.5 * linkdistmax ) )
@@ -1274,10 +1565,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
   // a crosslink (double-bonded crosslinker) will only be established if the
   // enclosed angle is in the specified range
 
-  double const& linkanglemin = crosslinking_params_ptr_->LinkingAngle()
-                              - crosslinking_params_ptr_->LinkingAngleTolerance();
-  double const& linkanglemax = crosslinking_params_ptr_->LinkingAngle()
-                              + crosslinking_params_ptr_->LinkingAngleTolerance();
+  double const linkanglemin = crosslinker_i->GetMaterial()->LinkingAngle()
+                              - crosslinker_i->GetMaterial()->LinkingAngleTolerance();
+  double const linkanglemax = crosslinker_i->GetMaterial()->LinkingAngle()
+                              + crosslinker_i->GetMaterial()->LinkingAngleTolerance();
 
   // if crosslinker is singly bound, we fetch the orientation vector
   LINALG::Matrix<3,1> occ_bindingspot_beam_tangent(true);
@@ -1308,8 +1599,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
      * to beam binding spots. Additionally missing one event would not change any physics.
      * (Could be cured with additional communication)
      */
-    if ( Discret().Comm().NumProc() > 1 and GState().GetMyRank() == 0 )
-      std::cout << " Warning: There is a minimal chance of missing a regular binding event" << std::endl;
+    if ( Discret().Comm().NumProc() > 1 )
+      std::cout << " Warning: There is a minimal chance of missing a regular binding event on "
+          "rank " << GState().GetMyRank() << std::endl;
     return false;
   }
 
@@ -1767,7 +2059,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CreateNewDoubleBondedCros
 
     // finally initialize and setup object
     linkelepairptr->Init( iter->first, newdoublebond_i.eleids, pos, triad );
-    linkelepairptr->Setup();
+    linkelepairptr->Setup( dynamic_cast<CROSSLINKING::CrosslinkerNode*>(
+        BinDiscretPtr()->gNode(iter->first) )->GetMaterial()->BeamElastHyperMatNum() );
 
     // add to my double bonds
     doublebondcl_[linkelepairptr->Id()] = linkelepairptr;
@@ -1868,17 +2161,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 {
   CheckInit();
 
-  // todo: this needs to go somewhere else
-  //------------------------------------------------------------------------------
-  // get current off-rate for crosslinkers
-  double const& koff = crosslinking_params_ptr_->KOff();
-  const double dt = (*GState().GetDeltaTime())[0];
-
-  // probability with which a crosslink breaks up in the current time step
-  double p_unlink = 1.0 - exp(-dt * koff);
-
-  //------------------------------------------------------------------------------
-
   // data containing information about elements that need to be updated on
   // procs != myrank
   std::map< int, std::vector< UnBindEventData > > sendunbindevents;
@@ -1896,9 +2178,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
   std::vector<int>::const_iterator rowcli;
   for( rowcli = rorderrowcl.begin(); rowcli != rorderrowcl.end(); ++rowcli )
   {
-    DRT::Node* linker = BinDiscretPtr()->lRowNode( *rowcli );
+    CROSSLINKING::CrosslinkerNode* linker =
+        dynamic_cast< CROSSLINKING::CrosslinkerNode* >( BinDiscretPtr()->lRowNode( *rowcli ) );
     const int clcollid = linker->LID();
     CrosslinkerData& cldata_i = crosslinker_data_[clcollid];
+
+    // probability with which a crosslink breaks up in the current time step
+    double p_unlink = 1.0 - exp( -(*GState().GetDeltaTime())[0] * linker->GetMaterial()->KOff() );
 
     // different treatment according to number of bonds of a crosslinker
     switch( cldata_i.clnumbond )
@@ -1924,8 +2210,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
       {
         // calc unbind probability in case of force dependent off rate
         std::vector< double > p_unlink_db( 2, 0.0 );
-        if( abs( crosslinking_params_ptr_->DeltaBellEq() ) > 1.0e-8 )
-          CalcBellsForceDependentUnbindProbability( doublebondcl_[linker->Id()], p_unlink_db );
+        if( abs( linker->GetMaterial()->DeltaBellEq() ) > 1.0e-8 )
+          CalcBellsForceDependentUnbindProbability( linker, doublebondcl_[linker->Id()], p_unlink_db );
         else
           p_unlink_db[0] = p_unlink_db[1] = p_unlink;
 
@@ -1966,6 +2252,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CalcBellsForceDependentUnbindProbability(
+    CROSSLINKING::CrosslinkerNode* linker,
     Teuchos::RCP< BEAMINTERACTION::BeamToBeamLinkage > const& elepairptr,
     std::vector< double >& punlinkforcedependent) const
 {
@@ -1976,9 +2263,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CalcBellsForceDependentUn
    * Fig 2: slip pathway, ADP, delta = 0.0004;
    * Note: delta < 0 -> catch bond, delta > 0 -> bond-weakening
    * see Kai Müller Dis p. 67/68 */
-  double const& delta = crosslinking_params_ptr_->DeltaBellEq();
-  double const& kt = crosslinking_params_ptr_->KT();
-  double const& koff = crosslinking_params_ptr_->KOff();
+  double const delta = linker->GetMaterial()->DeltaBellEq();
+  double const kt = crosslinking_params_ptr_->KT();
+  double const koff = linker->GetMaterial()->KOff();
+
+  // safety check
+  if( kt < 1e-08 )
+    dserror(" Thermal energy (KT) set to zero, although you are about to divide by it. ");
 
   // force and moment exerted on the two binding sites of crosslinker with clgid
   std::vector< LINALG::SerialDenseVector > bspotforce( 2, LINALG::SerialDenseVector(6) );
@@ -1990,16 +2281,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CalcBellsForceDependentUn
   LINALG::Matrix<3,1> bspotforceone(true);
   dist_vec.Update( 1.0, elepairptr->GetBindSpotPos1(), -1.0, elepairptr->GetBindSpotPos2() );
   for( int j = 0; j < 3; ++j )
-    bspotforceone(j) = bspotforce[j](j);
+    bspotforceone(j) = bspotforce[0](j);
   double sgn = (dist_vec.Dot( bspotforceone ) < 0.0 ) ? -1.0 : 1.0;
 
   /* note: you have a sign criterion that is dependent on the axial strain, but the force you are
    * using also contains shear parts. This means in cases of axial strains near 0 and (large) shear
    * forces you are doing something strange (e.g. jumping between behaviour). Think about a two or
    * three dimensional calculation of the new koff, considering shear and axial forces independently */
-  if( GState().GetMyRank() )
-    std::cout << "Warning: in cases of high shear forces and low axial strain you might "
-                 "be doing something strange using the force dependent off rate ..." << std::endl;
+//  if( GState().GetMyRank() == 0 )
+//    std::cout << "Warning: in cases of high shear forces and low axial strain you might "
+//                 "be doing something strange using the force dependent off rate ..." << std::endl;
 
   // calculate new off rate
   std::vector< double > clbspotforcenorm ( 2, 0.0 );
@@ -2388,7 +2679,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DissolveBond(
 
   if( numbondsold == 1 )
   {
-    SetPositionOfNewlyFreeCrosslinker( linker, cldata.clpos );
+    SetPositionOfNewlyFreeCrosslinker( crosslinker, cldata.clpos );
   }
   else if( numbondsold == 2 )
   {
@@ -2984,6 +3275,69 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrintAndCheckBindEventDat
       or bindeventdata.requestproc < 0 or not (bindeventdata.permission == 0 or bindeventdata.permission == 1 ) )
     dserror(" your bindevent does not make sense.");
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------
+void STR::MODELEVALUATOR::BeamInteraction::AddCrosslinkerToBinDiscret()
+{
+  CheckInit();
+
+  const int numcrosslinker =
+      DRT::Problem::Instance()->CrosslinkingParams().get<int> ("NUMCROSSLINK");
+
+  // -------------------------------------------------------------------------
+  // set range for uniform random number generator
+  // -------------------------------------------------------------------------
+  DRT::Problem::Instance()->Random()->SetRandRange(0.0,1.0);
+  std::vector<double> randpos;
+  DRT::Problem::Instance()->Random()->Uni(randpos,3*numcrosslinker);
+
+  // -------------------------------------------------------------------------
+  // initialize crosslinker, i.e. add nodes (according to number of crosslinker
+  // you want) to bin discretization and set their random reference position
+  // -------------------------------------------------------------------------
+  // only proc 0 is doing this (as the number of crosslinker is manageable)
+  if( myrank_ == 0 )
+  {
+    for ( int i = 0; i < numcrosslinker; ++i )
+    {
+      // random reference position of crosslinker in bounding box
+      std::vector<double> X(3);
+      for ( int dim = 0; dim < 3; ++dim )
+      {
+        double min = 0;
+        double edgelength = 15;
+//        if(dim == 0)
+//        {
+//          min = 5.0;
+//          edgelength = 15;
+//        }
+        if(dim == 2)
+        {
+          min = 7.0;
+          edgelength = 1;
+        }
+        X[dim] = min + ( edgelength * randpos[ i + dim ] );
+      }
+
+      Teuchos::RCP<DRT::Node> newcrosslinker =
+          Teuchos::rcp(new CROSSLINKING::CrosslinkerNode( i, &X[0], myrank_ ) );
+
+      // todo: put next two calls in constructor of CrosslinkerNode?
+      // init crosslinker data container
+      Teuchos::RCP< CROSSLINKING::CrosslinkerNode > clnode =
+          Teuchos::rcp_dynamic_cast<CROSSLINKING::CrosslinkerNode>(newcrosslinker);
+      clnode->InitializeDataContainer();
+      // set material
+      // fixme: assign matnum to crosslinker type in crosslinker section in input file
+      //       for now, only one linker type with matnum 2
+      clnode->SetMaterial(2);
+
+      // add crosslinker to bin discretization
+      bindis_->AddNode(newcrosslinker);
+    }
+  }
+}*/
 
 
 //-----------------------------------------------------------------------------

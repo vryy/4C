@@ -81,11 +81,17 @@ public:
    *       that the distance between given point and reference point
    *       decreases by either adding or subtracting the period length. */
   void UnShift1D( const int dim, double& d, double const& ref, double const& X = 0.0) const;
+
   /*!
   \brief shift node out of box if it was shifted in previously
   */
   void UnShift3D( LINALG::Matrix<3,1>& d, LINALG::Matrix<3,1> const& ref,
       LINALG::Matrix<3,1> const X = LINALG::Matrix<3,1>( true ) ) const;
+
+  /*!
+  \brief get random position inside box
+  */
+  void RandomPosWithin( std::vector<double>& pos ) const;
 
   /*!
    \brief If necessary make the boundingbox larger to include this point as one of the corners of the box

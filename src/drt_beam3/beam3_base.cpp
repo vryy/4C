@@ -25,27 +25,21 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner) :
-DRT::Element(id,owner),
-interface_ptr_(Teuchos::null),
-browndyn_interface_ptr_(Teuchos::null)
+    DRT::Element(id,owner),
+    interface_ptr_(Teuchos::null),
+    browndyn_interface_ptr_(Teuchos::null)
 {
-  // todo: this is a temporary hack, should of course be set from outside
-  for (unsigned int i=0; i<1; ++i)
-  {
-    bspotposxi_.push_back(0.0);
-    bspotstatus_[i] = -1;
-  }
   // empty
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old) :
- DRT::Element(old),
- bspotposxi_(old.bspotposxi_),
- bspotstatus_(old.bspotstatus_)
+   DRT::Element(old),
+   bspotposxi_(old.bspotposxi_),
+   bspotstatus_(old.bspotstatus_)
 {
-
+  //empty
 }
 
 /*----------------------------------------------------------------------*
@@ -272,16 +266,17 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3,1>& gamma
 
   // huge improvement in convergence of non-linear solver in case of artificial factor 4000
 //  gamma(2) *= 4000.0;
+
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<unsigned int ndim, typename T>
 void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
-    Teuchos::ParameterList&      params,  //!<parameter list
-    const LINALG::TMatrix<T,ndim,1>&  evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
-    LINALG::TMatrix<T,ndim,1>&        velbackground,  //!< velocity of background fluid
-    LINALG::TMatrix<T,ndim,ndim>&     velbackgroundgrad) const//!<gradient of velocity of background fluid
+    Teuchos::ParameterList&           params,                  //!<parameter list
+    const LINALG::TMatrix<T,ndim,1>&  evaluationpoint,         //!<point at which background velocity and its gradient has to be computed
+    LINALG::TMatrix<T,ndim,1>&        velbackground,           //!< velocity of background fluid
+    LINALG::TMatrix<T,ndim,ndim>&     velbackgroundgrad) const //!<gradient of velocity of background fluid
 {
   /*note: this function is not yet a general one, but always assumes a shear flow, where the velocity of the
    * background fluid is always directed in direction params.get<int>("DBCDISPDIR",0) and orthogonal to z-axis.
@@ -354,17 +349,20 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
           Nodes()[0]->X()[dim] + disp[numdof*0+dim], Nodes()[i]->X()[dim]);
 }
 
-//! shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
+/*---------------------------------------------------------------------------------------------   *
+ | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions|
+ *------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(std::vector<double>& disp) const
 {
   this->UnShiftNodePosition(disp, BrownianDynParamsInterface().GetPeriodicBoundingBox() );
 }
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>& pos,
-                                                   std::vector<double>& disp,
-                                                   const int& bspotlocn,
-                                                   Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const
+void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(
+    LINALG::Matrix<3,1>& pos,
+    std::vector<double>& disp,
+    const int& bspotlocn,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox) const
 {
   const double xi = bspotposxi_[bspotlocn];
   // get position
@@ -372,8 +370,6 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3,1>& pos,
 
   // check if pos at xi lies outside the periodic box, if it does, shift it back in
   periodic_boundingbox->Shift3D(pos);
-
-  return;
 }
 
 /*--------------------------------------------------------------------------------------------*
@@ -383,13 +379,17 @@ void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(
     std::vector<double>&                            disp,
     const int&                                      bspotlocn) const
 {
+
   const double xi = bspotposxi_[bspotlocn];
   // get position
-  GetTriadAtXi(triad,xi,disp);
-
+  GetTriadAtXi( triad, xi, disp );
 }
 
-// explicit template instantiations
+
+
+/*--------------------------------------------------------------------------------------------*
+ | explicit template instantiations                                                           |
+ *--------------------------------------------------------------------------------------------*/
 template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<double>(
     LINALG::TMatrix<double,3,3>& CN,
     LINALG::TMatrix<double,3,3>& CM) const;

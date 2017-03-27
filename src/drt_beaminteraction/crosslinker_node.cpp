@@ -238,7 +238,7 @@ void CROSSLINKING::CrosslinkerNode::InitializeDataContainer()
 /*----------------------------------------------------------------------------*
  |  create material class (public)                             eichinger 10/16|
  *---------------------------------------------------------------------------*/
-void CROSSLINKING::CrosslinkerNode::SetMaterial(int matnum)
+void CROSSLINKING::CrosslinkerNode::SetMaterial( int const matnum )
 {
   Teuchos::RCP<MAT::CrosslinkerMat> mat =
       Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(MAT::Material::Factory(matnum));

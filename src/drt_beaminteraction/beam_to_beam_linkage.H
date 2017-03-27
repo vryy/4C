@@ -73,7 +73,7 @@ public:
       const std::vector<LINALG::Matrix<3,3> >& inittriad);
 
   //! Setup
-  virtual void Setup();
+  virtual void Setup( const int matnum);
 
   /*!
   \brief Return unique ParObject id

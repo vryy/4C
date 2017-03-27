@@ -14,7 +14,7 @@
 #define CROSSLINKINGPARAMS_H
 
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_inpar/inpar_crosslinking.H"
+#include "../drt_inpar/inpar_beaminteraction.H"
 
 // forward declaration
 namespace BEAMINTERACTION {
@@ -58,11 +58,18 @@ namespace BEAMINTERACTION {
         dserror("Init() has not been called, yet!");
     }
 
-    /// number of crosslinkers in the simulated volume
-    int const& NumCrosslink() const
+    /// number of crosslinkers per type
+    std::vector<int> const& NumCrosslinkerPerType() const
     {
       CheckInitSetup();
-      return numcrosslink_;
+      return numcrosslinkerpertype_;
+    };
+
+    /// material number for crosslinker types
+    std::vector<int> const& MatCrosslinkerPerType() const
+    {
+      CheckInitSetup();
+      return matcrosslinkerpertype_;
     };
 
     /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
@@ -79,74 +86,18 @@ namespace BEAMINTERACTION {
       return kt_;
     };
 
-    /// distance between the two binding domains of a linker
-    double const& LinkingLength() const
+    // distance between two binding spots on a filament
+    double const& FilamentBspotInterval() const
     {
       CheckInitSetup();
-      return linkinglength_;
+      return filamentbspotinterval_;
     };
 
-    /// tolerance for linker length in the sense: length +- tolerance
-    double const& LinkingLengthTolerance() const
+    // start and end arc parameter for binding spots on a filament
+    std::vector<double> const& FilamentBspotRange() const
     {
       CheckInitSetup();
-      return linkinglengthtol_;
-    };
-
-    /// assuming circular cross section of crosslinker with diameter according to phd tharmann
-    double const& ALink() const
-    {
-      CheckInitSetup();
-      return alink_;
-    };
-
-    /// must set ilink=0.0 ->truss!
-    double const& ILink() const
-    {
-      CheckInitSetup();
-      return ilink_;
-    };
-
-    /// 2xilink
-    double const& IpLink() const
-    {
-      CheckInitSetup();
-      return iplink_;
-    };
-
-    /// preferred binding angle enclosed by two filaments' axes in radians
-    double const& LinkingAngle() const
-    {
-     CheckInitSetup();
-     return linkingangle_;
-    };
-
-    /// tolerance for preferred binding angle in radians in the sense of: angle +- tolerance
-    double const& LinkingAngleTolerance() const
-    {
-     CheckInitSetup();
-     return linkingangletol_;
-    };
-
-    /// chemical dissociation-rate after ktswitchtime // 100.0 1000.0
-    double const& KOn() const
-    {
-      CheckInitSetup();
-      return k_on_;
-    };
-
-    /// in analogy to k_on
-    double const& KOff() const
-    {
-      CheckInitSetup();
-      return k_off_;
-    };
-
-    /// in analogy to k_on
-    double const& DeltaBellEq() const
-    {
-      CheckInitSetup();
-      return deltabelleq_;
+      return filamentbspotrange_;
     };
 
   private:
@@ -155,36 +106,20 @@ namespace BEAMINTERACTION {
 
     bool issetup_;
 
-    // number of crosslinkers in the simulated volume
-    int numcrosslink_;
-    // viscosity
+    /// number of crosslinkers in the simulated volume
+    std::vector<int> numcrosslinkerpertype_;
+    /// material numbers for crosslinker types
+    std::vector<int> matcrosslinkerpertype_;
+    /// viscosity
     double viscosity_;
-    // thermal energy
+    /// thermal energy
     double kt_;
-    // distance between the two binding domains of a linker
-    double linkinglength_;
-    // deviation from r_link
-    double linkinglengthtol_;
-    // assuming circular cross section of crosslinker with diameter according to phd tharmann
-    double alink_;
-    // must set ilink=0.0 ->truss!
-    double ilink_;
-    // 2xilink
-    double iplink_;
-    // preferred binding angle betw. two filaments
-    double linkingangle_;
-    // deviation from phi0
-    double linkingangletol_;
-    // chemical association-rate before ktswitchtime
-    double k_on_;
-    // chemical dissociation-rate after ktswitchtime // 100.0 1000.0
-    // in analogy to k_on
-    double k_off_;
-    // deltaD in Bell's equation for force dependent off rate
-    double deltabelleq_;
+    /// distance between two binding spots on a filament
+    double filamentbspotinterval_;
+    /// start and end arc parameter for binding spots on a filament
+    std::vector<double> filamentbspotrange_;
 
   };
-
 }
 
 #endif

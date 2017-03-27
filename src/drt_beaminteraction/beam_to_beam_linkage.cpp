@@ -145,7 +145,7 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamToBeamLinkage::Setup()
+void BEAMINTERACTION::BeamToBeamLinkage::Setup( const int matnum )
 {
   CheckInit();
 

@@ -42,19 +42,29 @@ namespace MAT
       /// destructor
       virtual ~CrosslinkerMat() { ; }
 
-      /// @name material parameters
-      //@{
+      /// number of beam elasthyper material
+      int const beamelasthypermatnum_;
 
-      /// Young's modulus
-      const double youngs_;
-      /// Possion's ratio
-      const double poissonratio_;
-      /// mass density
-      const double density_;
-//      const double rlink_;
-//      const double deltarlink_;
-//      const double alink_;
-//      const double iplink;
+      /// distance between the two binding domains of a linker
+      double const linkinglength_;
+
+      /// tolerance for linker length in the sense: length +- tolerance
+      double const linkinglengthtol_;
+
+      /// preferred binding angle enclosed by two filaments' axes in radians
+      double const linkingangle_;
+
+      /// tolerance for preferred binding angle in radians in the sense of: angle +- tolerance
+      double const linkingangletol_;
+
+      /// chemical association-rate
+      double const k_on_;
+
+      /// chemical dissociation-rate
+      double const k_off_;
+
+      /// deltaD in Bell's equation for force dependent off rate
+      double const deltabelleq_;
 
 
       //@}
@@ -139,17 +149,29 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new CrosslinkerMat( *this ) ); }
 
-    /// Young's modulus
-    double Youngs() const { return params_->youngs_; }
+    /// number of beam elasthyper material
+    virtual double BeamElastHyperMatNum() const { return params_->beamelasthypermatnum_; }
 
-    /// Poisson's ratio
-    double PoissonRatio() const { return params_->poissonratio_; }
+    /// distance between the two binding domains of a linker
+    virtual double LinkingLength() const { return params_->linkinglength_; }
 
-    /// density
-    virtual double Density() const { return params_->density_; }
+    /// tolerance for linker length in the sense: length +- tolerance
+    virtual double LinkingLengthTolerance() const { return params_->linkinglengthtol_; }
 
-    /// shear modulus
-    double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->poissonratio_); }
+    /// preferred binding angle enclosed by two filaments' axes in radians
+    virtual double LinkingAngle() const { return params_->linkingangle_; }
+
+    /// tolerance for preferred binding angle in radians in the sense of: angle +- tolerance
+    virtual double LinkingAngleTolerance() const { return params_->linkingangletol_; }
+
+    /// chemical association rate
+    virtual double const& KOn() const { return params_->k_on_; }
+
+    /// chemical dissociation rate
+    virtual double KOff() const { return params_->k_off_; }
+
+    /// force depedent off rate according to bells equation
+    virtual double DeltaBellEq() const { return params_->deltabelleq_; };
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

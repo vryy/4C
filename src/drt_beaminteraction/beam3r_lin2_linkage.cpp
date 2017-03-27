@@ -51,12 +51,12 @@ BEAMINTERACTION::Beam3rLin2Linkage::Beam3rLin2Linkage() :
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::Beam3rLin2Linkage::Setup()
+void BEAMINTERACTION::Beam3rLin2Linkage::Setup( const int matnum )
 {
   CheckInit();
 
   // call setup of base class first
-  BeamToBeamLinkage::Setup();
+  BeamToBeamLinkage::Setup( matnum );
 
   /* the idea is to use a beam element as auxiliary object that provides us with a
    * response force (and moment) depending on the position and orientation of the
@@ -71,11 +71,10 @@ void BEAMINTERACTION::Beam3rLin2Linkage::Setup()
    *       (displacement-reaction force) relation here! */
   linkele_ = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(-1,0));
 
-  // Fixme @grill: get the real material number from MAT_Crosslinker which is
-  //               associated with the crosslinker particle!
-  linkele_->SetMaterial(3);
+  // set material
+  linkele_->SetMaterial(matnum);
 
-  // Todo @grill: safety check for proper material type?!
+  // Todo @grill: safety check for proper material type (done on element anyway, but do it here as well)?!
 
   linkele_->SetCenterlineHermite(false);
 

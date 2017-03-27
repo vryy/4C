@@ -113,17 +113,24 @@ namespace BINSTRATEGY
     /// get cutoff radius
     virtual inline double const& CutoffRadius() const {return cutoff_radius_;}
 
+    /// set cutoff radius
+    virtual inline void SetCutoffRadius( double cutoff_radius )
+    {
+      cutoff_radius_ = cutoff_radius;
+    }
+
     /// get bin size
     virtual inline double const* BinSize() const { return &bin_size_[0]; }
 
     /// return flag whether pbcs are applied to the problem
-    virtual bool HavePBC(const int dim = -1) { if(dim == -1) return havepbc_; else return pbconoff_[dim]; };
+    virtual bool HavePBC( const int dim = -1 ) { if(dim == -1) return havepbc_; else return pbconoff_[dim]; };
 
     /// return delta for pbc in x, y, or z direction
     virtual double PBCDelta(const int dim) { return pbcdeltas_[dim]; };
 
     /// get bounding box dimensions
-    virtual inline LINALG::Matrix<3,2> const& XAABB(){return XAABB_;}
+    virtual inline LINALG::Matrix<3,2>& XAABB(){return XAABB_;}
+    virtual inline LINALG::Matrix<3,2> const& XAABB() const {return XAABB_;}
 
     /// get inverse bin size
     virtual inline double const* InvBinSize() const { return &inv_bin_size_[0]; }
@@ -136,21 +143,36 @@ namespace BINSTRATEGY
       ) const;
 
     /// distribute elements to bins exploiting axis aligned bounding box idea
-    virtual void DistributeElesToBinsUsingEleXAABB(
+    virtual void DistributeRowElementsToBinsUsingEleXAABB(
         Teuchos::RCP<DRT::Discretization> const& discret,           ///< discret of which the elements are distributed to bins
         std::map<int, std::set<int> >& bintorowelemap,              ///< map of bins and assigned row elements
         Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null           ///< statevector holding current displacements of discret's nodes
       ) const;
 
+    /// distribute element to bins using axis aligned bounding box idea
+    virtual void DistributeElementToBinsUsingEleXAABB(
+        Teuchos::RCP< DRT::Discretization > const& discret,
+        DRT::Element * eleptr,
+        std::vector<int>& binIds,
+        Teuchos::RCP< Epetra_Vector > const& disnp
+      ) const;
+
     /// transfer nodes and elements of input discret
     virtual void TransferNodesAndElements(
         Teuchos::RCP<DRT::Discretization> & discret,
-        Teuchos::RCP<Epetra_Vector> disnp);
+        Teuchos::RCP<Epetra_Vector> disnp,
+        std::map<int, std::set<int> >& bintorowelemap);
 
     /// communicate elements for element transfer
     virtual void CommunicateElements(
         Teuchos::RCP<DRT::Discretization> & discret,
         std::map< int, std::vector<DRT::Element*> > const& toranktosendeles) const;
+
+    /// communicate distribution of transferred elements to bins
+    virtual void CommunicateDistributionOfTransferredElementsToBins(
+        Teuchos::RCP<DRT::Discretization> & discret,
+        std::map< int, std::vector<std::pair< int, std::vector<int> > > > const& toranktosendbinids,
+        std::map<int, std::set<int> >& bintorowelemap) const;
 
     /// number of bins in ijk range
     virtual int GetNumberOfBinsInijkRange( int const ijk_range[6] ) const;
@@ -254,18 +276,19 @@ namespace BINSTRATEGY
 
     /// extend ghosting according to bin distribution
     virtual Teuchos::RCP<Epetra_Map> ExtendGhosting(
+      std::map<int, std::set<int> >& binelemap,
+      std::map<int, std::set<int> >& ext_bintoele_ghosting,
+      Teuchos::RCP<Epetra_Map>       bincolmap
+      ) const;
+
+    /// extend ghosting according to bin distribution
+    virtual Teuchos::RCP<Epetra_Map> ExtendGhosting(
       const Epetra_Map*              initial_elecolmap,
       std::map<int, std::set<int> >& binelemap,
       std::map<int, std::set<int> >& ext_bintoele_ghosting,
       Teuchos::RCP<Epetra_Map>       rowbins = Teuchos::null,
       Teuchos::RCP<Epetra_Map>       bincolmap = Teuchos::null
       ) const;
-
-    virtual void ExtendBinToEleMap(
-      std::map<int, std::set<int> > & bintoelemap,
-      std::map<int, std::set<int> > & extbintoelemap,
-      Teuchos::RCP<Epetra_Map>        rowbins = Teuchos::null
-    ) const;
 
     /// extend ghosting according to bin distribution
     virtual void ExtendDiscretizationGhosting(
@@ -353,15 +376,15 @@ namespace BINSTRATEGY
       int* ijk   ///< resulting i,j,k
       ) const;
 
-    /// convert position into bin id
-    virtual int ConvertPosToGid(
-      const LINALG::Matrix<3,1>& pos   ///< position of which the corresponding bin id is asked for
-      ) const;
-
     ///convert position into i,j,k
     virtual void ConvertPosToijk(
       const LINALG::Matrix<3,1>& pos,   ///< position to be converted into i,j,k
       int* ijk  ///< resulting i,j,k
+      ) const;
+
+    /// convert position into bin id
+    virtual int ConvertPosToGid(
+      const LINALG::Matrix<3,1>& pos   ///< position of which the corresponding bin id is asked for
       ) const;
 
     /// get 26 neighboring bin ids to binId (if existing)
@@ -392,20 +415,21 @@ namespace BINSTRATEGY
         std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap) const;
 
     // create XAABB for discretizations and compute cutoff with largest element in discret
-    void CreateXAABB(
+    virtual void ComputeMinXAABBContainingAllElementsOfInputDiscrets(
       std::vector<Teuchos::RCP<DRT::Discretization> > discret,
       std::vector<Teuchos::RCP<Epetra_Vector> >       disnp,
-      bool setcutoff
+      LINALG::Matrix<3,2>& XAABB,
+      bool setmincutoff
       );
 
     // compute max cutoff as largest element in discret
-    virtual void ComputeMinCutoff(
+    virtual double ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLargestEle(
       std::vector<Teuchos::RCP<DRT::Discretization> > discret,
       std::vector<Teuchos::RCP<Epetra_Vector> >disnp
       );
 
     /// bins are created based on XAABB and cutoff radius
-    virtual void CreateBins(
+    virtual void CreateBinsBasedOnCutoffAndXAABB(
       Teuchos::RCP<DRT::Discretization> dis = Teuchos::null   ///< underlying discret which can be used to compute bounding box
       );
 
@@ -426,10 +450,11 @@ namespace BINSTRATEGY
     virtual void CreateXAABB(Teuchos::RCP<DRT::Discretization> dis);
 
     // create XAABB for discretization and compute cutoff with largest element in discret
-    virtual void CreateXAABB(Teuchos::RCP<DRT::Discretization> discret,
-                             Teuchos::RCP<Epetra_Vector>       disnp,
-                             LINALG::Matrix<3,2>&              XAABB,
-                             bool                              setcutoff = false);
+    virtual void CreateXAABB(
+        Teuchos::RCP<DRT::Discretization> discret,
+        Teuchos::RCP<Epetra_Vector>       disnp,
+        LINALG::Matrix<3,2>&              XAABB,
+        bool                              setcutoff = false);
 
     /// build periodic boundary conditions
     virtual void BuildPeriodicBC();

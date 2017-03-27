@@ -122,7 +122,7 @@ void GEO::MESHFREE::BoundingBox::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox:: Shift1D( const int dim, double& d, double const& X ) const
+void GEO::MESHFREE::BoundingBox::Shift1D( const int dim, double& d, double const& X ) const
 {
   CheckInitSetup();
 
@@ -140,7 +140,7 @@ void GEO::MESHFREE::BoundingBox:: Shift1D( const int dim, double& d, double cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox:: Shift3D( LINALG::Matrix<3,1>& d,
+void GEO::MESHFREE::BoundingBox::Shift3D( LINALG::Matrix<3,1>& d,
     LINALG::Matrix<3,1> const X ) const
 {
   CheckInitSetup();
@@ -154,7 +154,7 @@ void GEO::MESHFREE::BoundingBox:: Shift3D( LINALG::Matrix<3,1>& d,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox:: UnShift1D( const int dim, double& d,
+void GEO::MESHFREE::BoundingBox::UnShift1D( const int dim, double& d,
     double const& ref, double const& X ) const
 {
   CheckInitSetup();
@@ -172,7 +172,7 @@ void GEO::MESHFREE::BoundingBox:: UnShift1D( const int dim, double& d,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox:: UnShift3D( LINALG::Matrix<3,1>& d,
+void GEO::MESHFREE::BoundingBox::UnShift3D( LINALG::Matrix<3,1>& d,
     LINALG::Matrix<3,1> const& ref, LINALG::Matrix<3,1> const X ) const
 {
   CheckInitSetup();
@@ -183,6 +183,21 @@ void GEO::MESHFREE::BoundingBox:: UnShift3D( LINALG::Matrix<3,1>& d,
   for( int dim = 0; dim < 3 ; ++dim)
     UnShift1D( dim, d(dim), ref(dim), X(dim) );
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::RandomPosWithin( std::vector<double>& pos ) const
+{
+  CheckInitSetup();
+
+  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
+  std::vector<double> randuni;
+  DRT::Problem::Instance()->Random()->Uni( randuni, 3 );
+
+  for ( int dim = 0; dim < 3; ++dim )
+    pos[dim] = min(dim) + ( edgelength_[dim] * randuni[dim] );
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::AddPoint( const double * x )

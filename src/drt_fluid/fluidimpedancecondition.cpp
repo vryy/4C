@@ -167,11 +167,11 @@ std::vector<double> FLD::UTILS::FluidImpedanceWrapper::getWKrelerrors( )
   std::vector<double> wk_rel_error;
 
   // get an iterator to my map
-    std::map<const int, Teuchos::RCP<class FluidImpedanceBc> >::iterator mapiter;
+    std::map<const int, Teuchos::RCP<class FLD::UTILS::FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
-    wk_rel_error.push_back( mapiter->second->FluidImpedanceBc::getWKrelerror() );
+    wk_rel_error.push_back( mapiter->second->FLD::UTILS::FluidImpedanceBc::getWKrelerror() );
   }
 
  return wk_rel_error;

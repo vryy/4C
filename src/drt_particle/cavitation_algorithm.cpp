@@ -808,7 +808,7 @@ void CAVITATION::Algorithm::InitCavitation()
   // extract noderowmap because it will be called Reset() after adding elements
   Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*BinStrategy()->BinDiscret()->NodeRowMap()));
   Teuchos::RCP<Epetra_Map> fluidelecolmapold = Teuchos::rcp(new Epetra_Map(*fluiddis_->ElementColMap()));
-  BinStrategy()->CreateBins(fluiddis_);
+  BinStrategy()->CreateBinsBasedOnCutoffAndXAABB(fluiddis_);
 
 
   // set up the links to the materials for easy access
