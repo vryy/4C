@@ -684,6 +684,11 @@ void PARTICLE::TimInt::ReadRestart
 
   ReadRestartState();
 
+  // short screen output
+  if (myrank_ == 0)
+    IO::cout << "====== Restart of the particle simulation from step "
+        << step_ << IO::endl;
+
   return;
 }
 
@@ -1571,7 +1576,7 @@ void PARTICLE::TimInt::ParticleWallForce(Teuchos::RCP<Epetra_FEVector> f_structu
       collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
     }
 
-    intergy_ = collhandler_->EvaluateParticleContact((*dt_)[0], Teuchos::null, Teuchos::null, Teuchos::null, f_structure);
+    collhandler_->EvaluateParticleContact((*dt_)[0], Teuchos::null, Teuchos::null, Teuchos::null, f_structure);
   }
 
   return;

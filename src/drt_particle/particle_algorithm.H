@@ -118,9 +118,9 @@ namespace PARTICLE
 
     /// set structural states
     virtual void SetStructStates(
-        Teuchos::RCP<const Epetra_Vector> structdispn,   ///< structural displacements at t_n
-        Teuchos::RCP<const Epetra_Vector> structdispnp,  ///< structural displacements at t_n+1
-        Teuchos::RCP<const Epetra_Vector> structvelnp    ///< structural velocities at t_n
+        Teuchos::RCP<const Epetra_Vector> structdispn,   ///< structural displacements at \f$t_{n}\f$
+        Teuchos::RCP<const Epetra_Vector> structdispnp,  ///< structural displacements at \f$t_{n+1}\f$
+        Teuchos::RCP<const Epetra_Vector> structvelnp    ///< structural velocities at \f$t_{n+1}\f$
         );
 
     /// return gravity acceleration

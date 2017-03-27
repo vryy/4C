@@ -232,17 +232,14 @@ void PASI::PartitionedAlgo::ParticleStep()
 /*----------------------------------------------------------------------*
  | set structural displacements and velocities           sfuchs 02/2017 |
  *----------------------------------------------------------------------*/
-void PASI::PartitionedAlgo::SetStructDispVel(
-    Teuchos::RCP<const Epetra_Vector> dispnp,  //! structural displacements \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> velnp    //! structural velocities at \f$t_{n+1}\f$
-    )
+void PASI::PartitionedAlgo::SetStructDispVel()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetStructDispVel");
 
   double normbdrydispnp;
   double normbdryvelnp;
-  dispnp->Norm2(&normbdrydispnp);
-  velnp->Norm2(&normbdryvelnp);
+  structure_->Dispnp()->Norm2(&normbdrydispnp);
+  structure_->Velnp()->Norm2(&normbdryvelnp);
 
   if(Comm().MyPID() == 0)
   {
@@ -253,7 +250,7 @@ void PASI::PartitionedAlgo::SetStructDispVel(
   }
 
   // hand structural states to particle field
-  particles_->SetStructStates(structure_->Dispn(),dispnp,velnp);
+  particles_->SetStructStates(structure_->Dispn(),structure_->Dispnp(),structure_->Velnp());
 
   // set structural displacements to particle wall
   particles_->SetUpWallDiscret();

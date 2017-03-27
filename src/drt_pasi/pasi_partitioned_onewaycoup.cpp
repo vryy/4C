@@ -60,7 +60,7 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
     StructStep();
 
     // set structural displacements and velocities in particle field
-    SetStructDispVel(structure_->Dispnp(),structure_->Velnp());
+    SetStructDispVel();
 
     // solve particle time step
     ParticleStep();

@@ -89,6 +89,11 @@ public:
   \author rauch  */
   virtual void Setup();
 
+  //! read restart data
+  virtual void ReadRestart(
+      int step  //! time step for restart
+      );
+
   //! timeloop of coupled problem
   virtual void Timeloop();
 
@@ -97,8 +102,11 @@ protected:
   //! iteration loop between coupled fields
   virtual void Outerloop();
 
-  //! reset particle displacements and velocities to state \f$t_{n}\f$
-  virtual void ResetParticleDisVel();
+  //! update and output
+  virtual void UpdateOutput();
+
+  //! reset particle states in outerloop iteration
+  virtual void ResetParticleStates();
 
   //! determine particle forces
   virtual void DetermineParticleForces();
@@ -133,6 +141,9 @@ protected:
 
   //! maximum iteration steps
   int itmax_;
+
+  //! write restart every n steps
+  int writerestartevery_;
 
 }; // class PASI_PartTwoWayCoup: public PartitionedAlgo
 
@@ -196,10 +207,18 @@ public:
   \author rauch  */
   virtual void Setup();
 
+  //! read restart data
+  virtual void ReadRestart(
+      int step  //! time step for restart
+      );
+
 protected:
 
   //! iteration loop between coupled fields with relaxed forces
   virtual void Outerloop();
+
+  //! update and output
+  virtual void UpdateOutput();
 
   //! calculate relaxation parameter
   virtual void CalcOmega(

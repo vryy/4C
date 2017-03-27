@@ -28,6 +28,8 @@
 
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_io/io.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_FEVector.h>
 
@@ -44,7 +46,8 @@ PASI::PASI_PartTwoWayCoup::PASI_PartTwoWayCoup(
     dispincnp_(Teuchos::null),
     forceincnp_(Teuchos::null),
     ittol_(-1.0),
-    itmax_(-1)
+    itmax_(-1),
+    writerestartevery_(-1)
 {
 
   // Keep this constructor empty!
@@ -68,9 +71,12 @@ void PASI::PASI_PartTwoWayCoup::Init(
   const Teuchos::ParameterList& pasi_params = DRT::Problem::Instance()->PASIDynamicParams();
   const Teuchos::ParameterList& pasi_params_part = DRT::Problem::Instance()->PASIDynamicParams().sublist("PARTITIONED");
 
-  // Get the parameters for the ConvergenceCheck
+  // get the parameters for the ConvergenceCheck
   itmax_ = pasi_params.get<int>("ITEMAX");
   ittol_ = pasi_params_part.get<double>("CONVTOL");
+
+  // write restart every n steps
+  writerestartevery_ = pasi_params.get<int>("RESTARTEVRY");
 
   // safety check: two way coupled pasi not implemented for all Particle Interaction Types
   if (particles_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM
@@ -100,6 +106,26 @@ void PASI::PASI_PartTwoWayCoup::Setup()
 } // PASI::PASI_PartTwoWayCoup::Setup()
 
 /*----------------------------------------------------------------------*
+ | read restart data                                     sfuchs 03/2017 |
+ *----------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup::ReadRestart(
+    int step  //! time step for restart
+    )
+{
+  // call ReadRestart() in base class
+  PASI::PartitionedAlgo::ReadRestart(step);
+
+  IO::DiscretizationReader reader(structure_->Discretization(), step);
+  if (step != reader.ReadInt("step"))
+    dserror("Time step on file not equal to given step");
+
+  // get forcenp_ from restart
+  reader.ReadVector(forcenp_,"forcenp_");
+
+  return;
+} // PASI::PASI_PartTwoWayCoup::ReadRestart()
+
+/*----------------------------------------------------------------------*
  | partitioned two way coupled timeloop                  sfuchs 02/2017 |
  *----------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup::Timeloop()
@@ -119,11 +145,8 @@ void PASI::PASI_PartTwoWayCoup::Timeloop()
     // iteration loop between coupled fields
     Outerloop();
 
-    // output of structure field
-    StructOutput();
-
-    // output of particle field
-    ParticleOutput();
+    // update and output
+    UpdateOutput();
   }
 
   return;
@@ -159,10 +182,10 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
     StructStep();
 
     // set structural displacements and velocities in particle field
-    SetStructDispVel(structure_->Dispnp(),structure_->Velnp());
+    SetStructDispVel();
 
-    // reset particle displacements and velocities
-    ResetParticleDisVel();
+    // reset particle states
+    ResetParticleStates();
 
     // solve particle time step
     ParticleStep();
@@ -178,16 +201,57 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
 } // PASI::PASI_PartTwoWayCoup::Outerloop()
 
 /*----------------------------------------------------------------------*
- | reset particle displacements and velocities           sfuchs 03/2017 |
+ | update and output                                     sfuchs 03/2017 |
  *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup::ResetParticleDisVel()
+void PASI::PASI_PartTwoWayCoup::UpdateOutput()
 {
-  // reset the displacements and velocities in order to solve the partitioned coupling
-  particles_->AdapterParticle()->WriteAccessDispnp()->Update(1.0,*(particles_->AdapterParticle()->Dispn()),0.0);
-  particles_->AdapterParticle()->WriteAccessVelnp()->Update(1.0,*(particles_->AdapterParticle()->Veln()),0.0);
+  // output of structure field
+  StructOutput();
+
+  // write interface force in restart
+  if (writerestartevery_ and Step() % writerestartevery_ == 0)
+    structure_->Discretization()->Writer()->WriteVector("forcenp_",forcenp_);
+
+  // output of particle field
+  ParticleOutput();
 
   return;
-} // PASI::PASI_PartTwoWayCoup::ResetParticleDisVel()
+} // PASI::PASI_PartTwoWayCoup::UpdateOutput()
+
+/*----------------------------------------------------------------------*
+ | reset particle states                                 sfuchs 03/2017 |
+ *----------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
+{
+  // reset displacements, velocities and accelerations
+  particles_->AdapterParticle()->WriteAccessDispnp()->Update(1.0,*(particles_->AdapterParticle()->Dispn()),0.0);
+  particles_->AdapterParticle()->WriteAccessVelnp()->Update(1.0,*(particles_->AdapterParticle()->Veln()),0.0);
+  particles_->AdapterParticle()->WriteAccessAccnp()->Update(1.0,*(particles_->AdapterParticle()->Accn()),0.0);
+
+  // reset angular velocities and accelerations
+  if (particles_->ParticleInteractionType() != INPAR::PARTICLE::None)
+  {
+    particles_->AdapterParticle()->WriteAccessAngVelnp()->Update(1.0,*(particles_->AdapterParticle()->AngVeln()),0.0);
+    particles_->AdapterParticle()->WriteAccessAngAccnp()->Update(1.0,*(particles_->AdapterParticle()->AngAccn()),0.0);
+  }
+
+  // reset radius, density and specific enthalpy (and its derivative)
+  if (particles_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo or
+      particles_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+  {
+    particles_->AdapterParticle()->WriteAccessRadiusnp()->Update(1.0,*(particles_->AdapterParticle()->Radiusn()),0.0);
+    particles_->AdapterParticle()->WriteAccessDensitynp()->Update(1.0,*(particles_->AdapterParticle()->Densityn()),0.0);
+    particles_->AdapterParticle()->WriteAccessSpecEnthalpynp()->Update(1.0,*(particles_->AdapterParticle()->SpecEnthalpyn()),0.0);
+    particles_->AdapterParticle()->WriteAccessSpecEnthalpyDotnp()->Update(1.0,*(particles_->AdapterParticle()->SpecEnthalpyDotn()),0.0);
+
+    if (particles_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
+    {
+      particles_->AdapterParticle()->WriteAccessDensityDotnp()->Update(1.0,*(particles_->AdapterParticle()->DensityDotn()),0.0);
+    }
+  }
+
+  return;
+} // PASI::PASI_PartTwoWayCoup::ResetParticleStates()
 
 /*----------------------------------------------------------------------*
  | determine particle forces                             sfuchs 03/2017 |
@@ -393,6 +457,29 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Setup()
 } // PASI::PASI_PartTwoWayCoup_ForceRelax::Setup()
 
 /*----------------------------------------------------------------------*
+ | read restart data                                     sfuchs 03/2017 |
+ *----------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup_ForceRelax::ReadRestart(
+    int step  //! time step for restart
+    )
+{
+  // call ReadRestart() in base class
+  PASI::PartitionedAlgo::ReadRestart(step);
+
+  IO::DiscretizationReader reader(structure_->Discretization(), step);
+  if (step != reader.ReadInt("step"))
+    dserror("Time step on file not equal to given step");
+
+  // get forcenp_ from restart
+  reader.ReadVector(forcenp_,"forcenp_");
+
+  // get omega_ from restart
+  omega_ = reader.ReadDouble("omega_");
+
+  return;
+} // PASI::PASI_PartTwoWayCoup_ForceRelax::ReadRestart()
+
+/*----------------------------------------------------------------------*
  | iteration loop with relaxed forces                    sfuchs 03/2017 |
  *----------------------------------------------------------------------*/
 void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
@@ -427,10 +514,10 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
     StructStep();
 
     // set structural displacements and velocities in particle field
-    SetStructDispVel(structure_->Dispnp(),structure_->Velnp());
+    SetStructDispVel();
 
-    // reset particle displacements and velocities
-    ResetParticleDisVel();
+    // reset particle states
+    ResetParticleStates();
 
     // solve particle time step
     ParticleStep();
@@ -452,6 +539,27 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
 
   return;
 } // PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
+
+/*----------------------------------------------------------------------*
+ | update and output                                     sfuchs 03/2017 |
+ *----------------------------------------------------------------------*/
+void PASI::PASI_PartTwoWayCoup_ForceRelax::UpdateOutput()
+{
+  // output of structure field
+  StructOutput();
+
+  // write interface force and relaxation parameter in restart
+  if (writerestartevery_ and Step() % writerestartevery_ == 0)
+  {
+    structure_->Discretization()->Writer()->WriteVector("forcenp_",forcenp_);
+    structure_->Discretization()->Writer()->WriteDouble("omega_",omega_);
+  }
+
+  // output of particle field
+  ParticleOutput();
+
+  return;
+} // PASI::PASI_PartTwoWayCoup_ForceRelax::UpdateOutput()
 
 /*----------------------------------------------------------------------*
  | calculate relaxation parameter                        sfuchs 03/2017 |

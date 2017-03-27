@@ -145,10 +145,7 @@ protected:
   virtual void ParticleStep();
 
   //! set structural displacements
-  virtual void SetStructDispVel(
-      Teuchos::RCP<const Epetra_Vector> dispnp,  //! structural displacements \f$t_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> velnp    //! structural velocities at \f$t_{n+1}\f$
-      );
+  virtual void SetStructDispVel();
 
   //! structural output
   virtual void StructOutput();
