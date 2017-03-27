@@ -304,6 +304,12 @@ namespace XCONTACT
     //! @name Definition of purely virtual functions
     //! @{
 
+    //! derived
+    virtual std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces();
+
+    //! derived
+    virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() const;
+
     //! Initialize all matrices
     virtual void Initialize()
     {
@@ -414,7 +420,7 @@ namespace XCONTACT
     Teuchos::RCP<DataContainer> xDataPtr_;
 
     //! Interfaces
-    std::vector<Teuchos::RCP<XCONTACT::Interface> > interface_;
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface_;
 
     //! pointer to the interface discretizations
     GEN::pairedvector<XFEM::FieldName, DRT::Discretization * > idiscrets_;

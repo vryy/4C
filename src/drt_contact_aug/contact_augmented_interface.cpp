@@ -26,20 +26,41 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+CONTACT::AUG::IDataContainer::IDataContainer()
+    : penBound_( -1.0 ),
+      ct_( -1.0 ),
+      maxNumMasterElements_( 0.0 ),
+      issetup_( false ),
+      sndofrowmap_( Teuchos::null ),
+      stdofrowmap_( Teuchos::null )
+{
+  /* nothing to do */
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 CONTACT::AUG::Interface::Interface(
+    const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr )
+    : ::CONTACT::CoInterface( idata_ptr ),
+      idata_ptr_( idata_ptr ),
+      idata_( *idata_ptr_ )
+{
+  /* do nothing */
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+CONTACT::AUG::Interface::Interface(
+    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
     int id,
     const Epetra_Comm& comm,
     int dim,
     const Teuchos::ParameterList& icontact,
     bool selfcontact,
     INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(id,comm,dim,icontact,selfcontact,redundant),
-      penBound_( -1.0 ),
-      ct_( IParams().get<double>("SEMI_SMOOTH_CT") ),
-      maxNumMasterElements_( 0 ),
-      issetup_( false ),
-      sndofrowmap_( Teuchos::null ),
-      stdofrowmap_( Teuchos::null )
+    : CONTACT::CoInterface(idata_ptr,id,comm,dim,icontact,selfcontact,redundant),
+      idata_ptr_( Teuchos::rcp_dynamic_cast<AUG::IDataContainer>( idata_ptr, true ) ),
+      idata_( *idata_ptr_ )
 {
   // empty constructor body
   return;
@@ -59,7 +80,7 @@ void CONTACT::AUG::Interface::FillComplete(
  *----------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::Setup()
 {
-  if ( issetup_ )
+  if ( idata_.IsSetup() )
     return;
 
   // find smallest interface element edge length
@@ -130,8 +151,8 @@ void CONTACT::AUG::Interface::Setup()
 
   // set penetration bound to 50% of the minimal interface element edge length,
   // if no user defined value is provided.
-  if (penBound_ < 0.0)
-    penBound_ = 0.5*gMins[0];
+  if ( idata_.PenBound() < 0.0)
+    idata_.PenBound() = 0.5*gMins[0];
 
   if (gMins[1] == 1.0e12 or gMins[1] < 0.0)
     dserror("ERROR: Global minimal master element area couldn't"
@@ -148,35 +169,35 @@ void CONTACT::AUG::Interface::Setup()
   const double gMaxAreaSl = gMaxs[0];
   const bool isTriangleOnMaster = static_cast<bool>( gMaxs[1] );
 
-  maxNumMasterElements_ = std::ceil( gMaxAreaSl / gMinAreaMa );
+  idata_.MaxNumMasterElements() = std::ceil( gMaxAreaSl / gMinAreaMa );
 
   if ( isTriangleOnMaster )
   {
     // approximated number of surrounding elements
     const int maxNumSurrounding = 4 * std::ceil(
-        std::sqrt( static_cast<double>( maxNumMasterElements_ ) / 2.0 ) );
+        std::sqrt( static_cast<double>( idata_.MaxNumMasterElements() ) / 2.0 ) );
 
     // two elements in the corner
     const int numCornerEles = 2;
 
     // complete number of approximated master elements
-    maxNumMasterElements_ += maxNumSurrounding + numCornerEles;
+    idata_.MaxNumMasterElements() += maxNumSurrounding + numCornerEles;
   }
   else
   {
     // approximated number of surrounding elements
     const int maxNumSurrounding = 2 * std::ceil(
-        std::sqrt( static_cast<double>( maxNumMasterElements_ ) ) );
+        std::sqrt( static_cast<double>( idata_.MaxNumMasterElements() ) ) );
 
     // one element in the corner
     const int numCornerEles = 1;
 
-    maxNumMasterElements_ += maxNumSurrounding + numCornerEles;
+    idata_.MaxNumMasterElements() += maxNumSurrounding + numCornerEles;
   }
 
-  std::cout << "maxNumMasterElements_ = " << maxNumMasterElements_ << std::endl;
+  std::cout << "maxNumMasterElements_ = " << idata_.MaxNumMasterElements() << std::endl;
 
-  issetup_ = true;
+  idata_.IsSetup() = true;
 }
 
 /*----------------------------------------------------------------------*
@@ -206,7 +227,7 @@ void CONTACT::AUG::Interface::Initialize()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    cnode->InitializeAugDataContainer( maxNumMasterElements_ );
+    cnode->InitializeAugDataContainer( idata_.MaxNumMasterElements() );
 
     // reset nodal weighted gap
     cnode->AugData().GetWGap() = 1.0e12;
@@ -519,8 +540,7 @@ void CONTACT::AUG::Interface::AssembleDGGLinMatrixOnMasterSide(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleResidualVectors(
-    Epetra_Vector& lmNVec,
+void CONTACT::AUG::Interface::AssembleGapVectors(
     Epetra_Vector& aWGapVec,
     Epetra_Vector& wGapVec) const
 {
@@ -539,7 +559,6 @@ void CONTACT::AUG::Interface::AssembleResidualVectors(
   if ( nummynodes != activen_->NumMyElements() )
     dserror( "Dimension mismatch!" );
 
-  double* lmNVec_vals = lmNVec.Values();
   double* aWGapVec_vals = aWGapVec.Values();
   double* wGapVec_vals = wGapVec.Values();
 
@@ -551,8 +570,8 @@ void CONTACT::AUG::Interface::AssembleResidualVectors(
     if (!node) dserror("ERROR: AssembleDGLmrhs: Cannot find slave"
         " node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-    double lmn  = cnode->MoData().lm()[0];
+    if ( cnode == NULL )
+      dserror( "Dynamic_cast to CoNode failed!" );
 
     // calculate averaged weighted gap
     const double wGap = cnode->AugData().GetWGap();
@@ -564,15 +583,8 @@ void CONTACT::AUG::Interface::AssembleResidualVectors(
 
       const int rgid = myactiven_gids[ i ];
 
-      // --- normal lagrange multiplier vector
-      int rlid = lmNVec.Map().LID( rgid );
-      if ( rlid == -1 )
-        dserror("Sparse vector lmNVec does not have global row %d", rgid);
-
-      lmNVec_vals[ rlid ] += lmn;
-
       // --- averaged weighted gap vector
-      rlid = aWGapVec.Map().LID( rgid );
+      int rlid = aWGapVec.Map().LID( rgid );
       if ( rlid == -1 )
         dserror("Sparse vector aWGapVec does not have global row %d", rgid);
 
@@ -588,6 +600,52 @@ void CONTACT::AUG::Interface::AssembleResidualVectors(
     else
       dserror("ERROR: Kappa and/or the weighted gap should "
           "not be equal 1.0e12 for active nodes!");
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Interface::AssembleLmNVector(
+    Epetra_Vector& lmNVec) const
+{
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // get cn
+//  const double cn = IParams().get<double>("SEMI_SMOOTH_CN");
+
+  // loop over proc's active slave nodes of the interface for assembly
+  // use standard row map to assemble each node only once
+  const int nummynodes = activenodes_->NumMyElements();
+  int* mynodegids = activenodes_->MyGlobalElements();
+
+  int* myactiven_gids = activen_->MyGlobalElements();
+  if ( nummynodes != activen_->NumMyElements() )
+    dserror( "Dimension mismatch!" );
+
+  double* lmNVec_vals = lmNVec.Values();
+
+  for ( int i=0; i<nummynodes; ++i )
+  {
+    const int gid = mynodegids[i];
+
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: AssembleDGLmrhs: Cannot find slave"
+        " node with gid %",gid);
+    CoNode* cnode = static_cast<CoNode*>(node);
+
+    double lmn  = cnode->MoData().lm()[0];
+
+    const int rgid = myactiven_gids[ i ];
+
+    // --- normal lagrange multiplier vector
+    int rlid = lmNVec.Map().LID( rgid );
+    if ( rlid == -1 )
+      dserror("Sparse vector lmNVec does not have global row %d", rgid);
+
+    lmNVec_vals[ rlid ] += lmn;
   }
 
   return;
@@ -1064,7 +1122,7 @@ void CONTACT::AUG::Interface::WGap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AWGapLin()
+void CONTACT::AUG::Interface::AWGapLin() const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
@@ -1208,7 +1266,7 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  double ct_inv = 1.0 / ct_;
+  double ct_inv = 1.0 /  idata_.Ct();
 
   // *** Active part *************************************************
   // loop over proc's active slave nodes of the interface for assembly
@@ -1444,8 +1502,8 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
   if (snoderowmap_==Teuchos::null or
       snoderowmap_->NumGlobalElements() == 0)
   {
-    sndofrowmap_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
-    stdofrowmap_ = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    idata_.SNDofRowMap() = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
+    idata_.STDofRowMap() = Teuchos::rcp(new Epetra_Map(0,0,Comm()));
     return;
   }
 
@@ -1483,17 +1541,20 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
   myTGids.resize(countT);
 
   // communicate countN and countT among procs
-  int gCountN, gCountT;
-  Comm().SumAll(&countN,&gCountN,1);
-  Comm().SumAll(&countT,&gCountT,1);
+  int lCount[2] = { countN, countT };
+  int gCount[2] = { 0, 0 };
+  Comm().SumAll( &lCount[0], &gCount[0], 2 );
+
+  const int gCountN = gCount[0];
+  const int gCountT = gCount[1];
 
   // check global dimensions
   if ((gCountN+gCountT)!=sdofrowmap_->NumGlobalElements())
     dserror("ERROR: SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  sndofrowmap_ = Teuchos::rcp(new Epetra_Map(gCountN,countN,&myNGids[0],0,Comm()));
-  stdofrowmap_ = Teuchos::rcp(new Epetra_Map(gCountT,countT,&myTGids[0],0,Comm()));
+  idata_.SNDofRowMap() = Teuchos::rcp(new Epetra_Map(gCountN,countN,&myNGids[0],0,Comm()));
+  idata_.STDofRowMap() = Teuchos::rcp(new Epetra_Map(gCountT,countT,&myTGids[0],0,Comm()));
 
   return;
 }
@@ -1558,6 +1619,33 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> CONTACT::AUG::Interface::BuildActiveForceMap(
+    const Epetra_Vector& force,
+    const double threshold ) const
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return Teuchos::null;
+
+  const int num_my_entries = force.Map().NumMyElements();
+  const int* my_entry_gids       = force.Map().MyGlobalElements();
+  const double* fvalues    = force.Values();
+
+  std::vector<int> my_active_gids( 0 );
+  my_active_gids.reserve( num_my_entries );
+
+  for ( int i=0; i< num_my_entries; ++i )
+  {
+    if ( std::abs( fvalues[i] ) > threshold )
+      my_active_gids.push_back( my_entry_gids[i] );
+  }
+
+  return Teuchos::rcp( new Epetra_Map( -1, static_cast<int>( my_active_gids.size() ),
+      &my_active_gids[0], 0, force.Comm() ) );
 }
 
 /*----------------------------------------------------------------------------*

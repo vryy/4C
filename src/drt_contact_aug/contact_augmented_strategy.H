@@ -18,12 +18,17 @@
 #define CONTACT_AUGMENTED_STRATEGY_H_
 
 #include "../drt_contact/contact_lagrange_strategy.H"
+#include "contact_aug_utils.H"
 
+// forward declaration
 namespace CONTACT {
 namespace AUG {
-  // forward declaration
+namespace STEEPESTASCENT {
+  class DataContainer;
+} // namespace STEEPESTASCENT
   class Interface;
   class Potential;
+  class ComboStrategy;
 
   /*--------------------------------------------------------------------------*/
   class DataContainer : public ::CONTACT::AbstractStratDataContainer
@@ -36,10 +41,33 @@ namespace AUG {
 
     //! Destructor
     virtual ~DataContainer() { return; }
+
+    //! initialize optional sub-data container
+    void InitSubDataContainer( const INPAR::CONTACT::SolvingStrategy strat_type);
+
     //! @}
 
     //! @name Access methods
     //! @{
+
+    //! @name Sub-data container accessors
+    //! @{
+
+    CONTACT::AUG::STEEPESTASCENT::DataContainer& SaData()
+    {
+      if ( sa_data_ptr_.is_null() )
+        dserror( "The steepest ascent sub data container was not initialized!" );
+      return *sa_data_ptr_;
+    }
+
+    const CONTACT::AUG::STEEPESTASCENT::DataContainer& SaData() const
+    {
+      if ( sa_data_ptr_.is_null() )
+        dserror( "The steepest ascent sub data container was not initialized!" );
+      return *sa_data_ptr_;
+    }
+
+    //! @}
 
     //! @name Booleans accessors
     //! @{
@@ -296,6 +324,46 @@ namespace AUG {
       return *dLmTLmTRhsPtr_;
     }
 
+    /*! \brief Return the slave force due to Lagrange multiplier values */
+    Teuchos::RCP<Epetra_Vector>& SlForceLmPtr() { return slForceLmPtr_; }
+    Teuchos::RCP<const Epetra_Vector> SlForceLmPtr() const { return slForceLmPtr_.getConst(); }
+    Epetra_Vector& SlForceLm()
+    {
+      if ( slForceLmPtr_.is_null() )
+        dserror( "The slForceLmPtr_ is not initialized!" );
+      return *slForceLmPtr_;
+    }
+
+    /*! \brief Return the slave force due to gap values */
+    Teuchos::RCP<Epetra_Vector>& SlForceGPtr() { return slForceGPtr_; }
+    Teuchos::RCP<const Epetra_Vector> SlForceGPtr() const { return slForceGPtr_.getConst(); }
+    Epetra_Vector& SlForceG()
+    {
+      if ( slForceGPtr_.is_null() )
+        dserror( "The slForceGPtr_ is not initialized!" );
+      return *slForceGPtr_;
+    }
+
+    /*! \brief Return the master force due to Lagrange multiplier values */
+    Teuchos::RCP<Epetra_Vector>& MaForceLmPtr() { return maForceLmPtr_; }
+    Teuchos::RCP<const Epetra_Vector> MaForceLmPtr() const { return maForceLmPtr_.getConst(); }
+    Epetra_Vector& MaForceLm()
+    {
+      if ( maForceLmPtr_.is_null() )
+        dserror( "The maForceLmPtr_ is not initialized!" );
+      return *maForceLmPtr_;
+    }
+
+    /*! \brief Return the master force due to gap values */
+    Teuchos::RCP<Epetra_Vector>& MaForceGPtr() { return maForceGPtr_; }
+    Teuchos::RCP<const Epetra_Vector> MaForceGPtr() const { return maForceGPtr_.getConst(); }
+    Epetra_Vector& MaForceG()
+    {
+      if ( maForceGPtr_.is_null() )
+        dserror( "The maForceGPtr_ is not initialized!" );
+      return *maForceGPtr_;
+    }
+
     //! Returns the nodal c_n vector
     Teuchos::RCP<Epetra_Vector>& CnPtr() { return cnPtr_; }
     Teuchos::RCP<const Epetra_Vector> CnPtr() const { return cnPtr_; }
@@ -312,15 +380,6 @@ namespace AUG {
       return *cnPtr_;
     }
 
-    //! Returns the nodal c_n update vector
-    Teuchos::RCP<Epetra_Vector>& UCnPtr() { return uCnPtr_; }
-    Teuchos::RCP<const Epetra_Vector> UCnPtr() const { return uCnPtr_; }
-    Epetra_Vector& UCn()
-    {
-      if (uCnPtr_.is_null())
-        dserror("The uCnPtr_ is not initialized!");
-      return *uCnPtr_;
-    }
     //! @}
 
     //! @name Global map accessors
@@ -432,11 +491,20 @@ namespace AUG {
     //! inactive tangential lagrange multiplier right-hand-side
     Teuchos::RCP<Epetra_Vector> dLmTLmTRhsPtr_;
 
+    //! interface force due to Lagrange multiplier values on the slave-side
+    Teuchos::RCP<Epetra_Vector> slForceLmPtr_;
+
+    //! interface force due to gap values on the slave-side
+    Teuchos::RCP<Epetra_Vector> slForceGPtr_;
+
+    //! interface force due to Lagrange multiplier values on the master-side
+    Teuchos::RCP<Epetra_Vector> maForceLmPtr_;
+
+    //! interface force due to gap values on the master-side
+    Teuchos::RCP<Epetra_Vector> maForceGPtr_;
+
     //! cn-values of each node
     Teuchos::RCP<Epetra_Vector> cnPtr_;
-
-    //! Vector which is used to decide if the cn-value of the node should be updated or not.
-    Teuchos::RCP<Epetra_Vector> uCnPtr_;
 
     //! global slave dof row map in normal direction (for all interfaces)
     Teuchos::RCP<Epetra_Map> gsndofrowmapPtr_;
@@ -446,6 +514,13 @@ namespace AUG {
 
     //! global map of all active slave nodes of the previous Newton step
     Teuchos::RCP<Epetra_Map> gOldActiveSlaveNodesPtr_;
+
+    /// @name sub-data container
+    /// @{
+
+    Teuchos::RCP<CONTACT::AUG::STEEPESTASCENT::DataContainer> sa_data_ptr_;
+
+    /// @}
   };  // class DataContainer
 
   /*--------------------------------------------------------------------------*/
@@ -459,6 +534,9 @@ namespace AUG {
    *  \date 04/15*/
   class Strategy : public ::CONTACT::CoAbstractStrategy
   {
+    /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
+     *  strategies and needs access to all methods. */
+
   public:
     //! Standard constructor
     Strategy(
@@ -474,16 +552,29 @@ namespace AUG {
     //! Destructor
     virtual ~Strategy() {};
 
+    virtual INPAR::CONTACT::SolvingStrategy Type() const
+    {
+      return INPAR::CONTACT::solution_augmented;
+    }
+
+    virtual bool IsSaddlePointSystem() const;
+
     //! reset active set convergence flags
     virtual void ResetActiveSet()
     { Data().IsActiveSetConverged() = false; };
 
-    //! Return the L2-norm of the constraint right-hand-side
+    //! Return the L2-norm of the constraint right-hand-side [deprecated]
     virtual double ConstraintNorm() const;
 
     //! Save the reference state
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
     { };
+
+    //! Read the restart information and adjust the members accordingly
+    virtual void DoReadRestart(
+        IO::DiscretizationReader& reader,
+        Teuchos::RCP<const Epetra_Vector> dis,
+        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr );
 
     //! @name Accessors
     //! @{
@@ -491,7 +582,7 @@ namespace AUG {
      *
      *  The augmented Lagrangian strategy supports only the semi-smooth Newton
      *  check at the moment, so no difference is made! */
-    bool ActiveSetSemiSmoothConverged() const
+    virtual bool ActiveSetSemiSmoothConverged() const
     {
       return Data().IsActiveSetConverged();
     }
@@ -567,8 +658,6 @@ namespace AUG {
     //! Return augmented constraint rhs vector
     virtual Teuchos::RCP<Epetra_Vector> ConstrRhs() { return Data().ConstrRhsPtr(); }
 
-    //! Dummy function which is necessary in a derived nln-strategy class
-    virtual bool IsPreAsymptotic() const {return false; }
     //! @}
 
     //! @name Evaluate routines
@@ -581,12 +670,13 @@ namespace AUG {
     //! @}
 
 
-    inline const std::vector<Teuchos::RCP<CONTACT::AUG::Interface> >& Interfaces() const
-    {
-      return interface_;
-    }
-
   protected:
+    //! derived
+    virtual plain_interface_set& Interfaces();
+
+    //! derived
+    virtual const plain_interface_set& Interfaces() const;
+
     /*! \brief  Assemble the global sets gsndofrowmap_ and gstdofrowmap_
      *
      *   These maps contain all slave dofs in normal and tangential direction, over all
@@ -665,21 +755,13 @@ namespace AUG {
      *  A better and more realistic visualization is the corresponding contact force.
      *
      *  Function overwrites the basic function in the abstract lagrange strategy. */
-    void OutputStresses();
+    virtual void OutputStresses();
 
     /*! @name Auxiliary routines, debugging and visualization methods
      *        (all these methods are defined in the contact_augmented_strategy_tools.cpp) */
     //! @{
 
-    /*! \brief Redistribute a row map by using a reference map
-     *
-     *  The reference map must have the right distribution and the modMap
-     *  has to be a subset of the reference map. In this way we can look up
-     *  the right processor in the reference map and the redistribution is easily
-     *  performed. */
-    void RedistributeRowMap(const Epetra_Map& refMap, Epetra_Map& modMap);
-
-    //! Check linear and angular momentum conservation
+     //! Check linear and angular momentum conservation
     void CheckConservationLaws(const Epetra_Vector& augfs, const Epetra_Vector& augfm);
 
     //! Finite Difference check of the augmented Lagrange terms at GP level
@@ -700,8 +782,13 @@ namespace AUG {
 
     //! @name (Derived) internal evaluate routines
     //! @{
-    /*! \brief Redistribute augmented Lagrangian stuff ... */
-    virtual void PostSetup(const bool& redistributed, const bool& init);
+    /*! \brief Redistribute and setup augmented Lagrangian members
+     *
+     *  \param redistributed (in) : currently a redistribution is taking place
+     *  \param init          (in) : initialization is running
+     *
+     *  \author hiermeier \date 03/2016 */
+    virtual void PostSetup( bool redistributed, bool init );
 
     /*! \brief Compute force terms
      *
@@ -711,6 +798,15 @@ namespace AUG {
      *  \author hiermeier */
     virtual void EvalForce(CONTACT::ParamsInterface& cparams);
 
+    void EvalAugmentedForces();
+
+    /*! \brief Run at the beginning of a call to EvalForce
+     *
+     *  Prepare the evaluation and assembly and integrate all necessary quantities.
+     *
+     *  \author hiermeier \date 03/17 */
+    void PreEvalForce( CONTACT::ParamsInterface& cparams );
+
     /*! \brief Compute force and stiffness terms
      *
      * \param cparams (in): parameter interface between the contact objects and the structural time integration
@@ -718,6 +814,11 @@ namespace AUG {
      *  \date 03/2016
      *  \author hiermeier */
     virtual void EvalForceStiff(CONTACT::ParamsInterface& cparams);
+
+    /*! \brief Run in the end of a call to EvalForceStiff
+     *
+     *  \author hiermeier \date 03/17 */
+    void PostEvalForceStiff( CONTACT::ParamsInterface& cparams );
 
     /*! \brief Recover contact specific solution variables
      *
@@ -762,17 +863,13 @@ namespace AUG {
     //! @}
 
     //! Assemble contact contributions to the rhs (frictionless)
+    void AssembleGap();
+
+    //! Assemble contact contributions to the rhs (frictionless)
     virtual bool AssembleContactRHS();
 
     //! Evaluate contact contributions to stiff matrix (frictionless)
     virtual void AssembleContactStiff();
-
-    //! @name Functions which are implemented in some of the derived classes
-    //! @{
-
-    //! Assemble the global slave/master dof row map without DBC DoFs
-    virtual void AssembleSlMaNoDbcDofRowMap(Teuchos::RCP<LINALG::MapExtractor> dbcmaps) {};
-    //! @}
 
     /*! \brief Create new state matrices
      *
@@ -818,10 +915,8 @@ namespace AUG {
      *  \author hiermeier \date 03/17 */
     virtual void AddContributionsToMatrixBlockLmLm( LINALG::SparseMatrix& kzz ) const;
 
-  private:
+  protected:
     /*! \brief Get access to the internal data container of the strategy (mutable)
-     *
-     * \remark This has to stay PRIVATE, otherwise this function becomes ambiguous.
      *
      * \author hiermeier
      * \date 05/16 */
@@ -833,8 +928,6 @@ namespace AUG {
     }
 
     /*! \brief Get access to the internal data container of the strategy (read-only)
-     *
-     * \remark This has to stay PRIVATE, otherwise this function becomes ambiguous.
      *
      * \author hiermeier
      * \date 05/16 */
@@ -922,7 +1015,7 @@ namespace AUG {
 
   private:
     Teuchos::RCP<CONTACT::AUG::DataContainer> augDataPtr_;
-    std::vector<Teuchos::RCP<CONTACT::AUG::Interface> > interface_;
+    plain_interface_set interface_;
   };  // class Strategy
 
   /*--------------------------------------------------------------------------*/
@@ -950,6 +1043,20 @@ namespace AUG {
   {
     MultiplyElementwise(source,source2targetMap,target,false);
   };
+
+  /*--------------------------------------------------------------------------*/
+  /*! \brief Redistribute a row map by using a reference map
+   *
+   *  The reference map is used as blue-print for the redistribution of the
+   *  red_map entries.
+   *  The reference map must have the right distribution and the %red_map
+   *  has to be a subset of the reference map. In this way we can look up
+   *  the right processor in the reference map and the redistribution is
+   *  achieved easily.
+   *
+   *  \author hiermeier \date 03/17 */
+   void RedistributeRowMap(const Epetra_Map& ref_map,
+       Epetra_Map& red_map);
 
 } // namespace AUG
 } // namespace CONTACT

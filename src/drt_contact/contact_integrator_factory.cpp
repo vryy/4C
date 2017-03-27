@@ -39,6 +39,7 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
   {
     case INPAR::CONTACT::solution_augmented:
     case INPAR::CONTACT::solution_steepest_ascent:
+    case INPAR::CONTACT::solution_combo:
     {
       integrator = Teuchos::rcp<CONTACT::CoIntegrator>(
           new CONTACT::AUG::IntegrationWrapper( p_mortar,slave_type,comm) );

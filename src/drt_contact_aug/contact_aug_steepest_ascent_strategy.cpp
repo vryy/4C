@@ -28,8 +28,7 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::STEEPESTASCENT::DataContainer::DataContainer()
-    : AUG::DataContainer(),
-      old_infeasibility_measure_( 0.0 ),
+    : old_infeasibility_measure_( 0.0 ),
       cn_upper_bound_( 0.0 )
 {
   /* intentionally left blank */
@@ -42,27 +41,26 @@ CONTACT::AUG::STEEPESTASCENT::Strategy::Strategy(
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
     const Teuchos::ParameterList& params,
-    const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+    const plain_interface_set& interfaces,
     int dim,
     const Teuchos::RCP<const Epetra_Comm>& comm,
     int maxdof )
     : CONTACT::AUG::Strategy( data_ptr, DofRowMap, NodeRowMap, params, interfaces,
         dim, comm, maxdof )
 {
-  saDataPtr_ = Teuchos::rcp_dynamic_cast<CONTACT::AUG::STEEPESTASCENT::DataContainer>(
-      data_ptr, true );
-
+  Data().InitSubDataContainer( INPAR::CONTACT::solution_steepest_ascent );
   const Teuchos::ParameterList& sa_params =
       Params().sublist("AUGMENTED",true).sublist("STEEPESTASCENT",true);
-  Data().SetCnUpperBound( sa_params.get<double>( "CN_UPPER_BOUND" ) );
+  Data().SaData().SetCnUpperBound( sa_params.get<double>( "CN_UPPER_BOUND" ) );
 
   // cast to steepest ascent interfaces
-  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-        interfaces.begin(); cit != interfaces.end(); ++cit )
+  for ( plain_interface_set::const_iterator cit = interfaces.begin();
+        cit != interfaces.end(); ++cit )
   {
     const Teuchos::RCP<CONTACT::CoInterface> & interface = *cit;
-    interface_.push_back( Teuchos::rcp_dynamic_cast<CONTACT::AUG::STEEPESTASCENT::Interface>(
-        interface, true ) );
+    // test interfaces for the correct type
+    Teuchos::rcp_dynamic_cast<CONTACT::AUG::STEEPESTASCENT::Interface>(
+        interface, true );
   }
 }
 
@@ -73,10 +71,11 @@ bool CONTACT::AUG::STEEPESTASCENT::Strategy::AssembleContactRHS()
   if ( not AUG::Strategy::AssembleContactRHS() )
     return false;
 
-  for ( InterfaceVector::const_iterator cit=interface_.begin();
-        cit!=interface_.end(); ++cit )
+  for ( plain_interface_set::const_iterator cit=Interfaces().begin();
+        cit!=Interfaces().end(); ++cit )
   {
-    const STEEPESTASCENT::Interface& interface = **cit;
+    const STEEPESTASCENT::Interface& interface =
+        dynamic_cast<STEEPESTASCENT::Interface&>( **cit );
     interface.AssembleAugAVector( Data().AVec(), Data().KappaVec() );
   }
 
@@ -342,7 +341,7 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::PostAugmentDirection()
           AUG::Potential::type_infeasibility_measure,
           AUG::Potential::term_all );
 
-  Data().SetOldInfeasibilityMeasure( infeasibility_measure );
+  Data().SaData().SetOldInfeasibilityMeasure( infeasibility_measure );
 
 //  Data().Potential().ComputeLin();
 //  const double gndzn = Data().Potential().GetLin(
@@ -368,7 +367,7 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::UpdateCn(
           AUG::Potential::type_infeasibility_measure,
           AUG::Potential::term_all );
 
-  const double old_infeasibility_measure = Data().GetOldInfeasibilityMeasure();
+  const double old_infeasibility_measure = Data().SaData().GetOldInfeasibilityMeasure();
 
   const double constr_violation     = std::sqrt( infeasibility_measure );
   const double old_constr_violation = std::sqrt( old_infeasibility_measure );
@@ -383,7 +382,7 @@ void CONTACT::AUG::STEEPESTASCENT::Strategy::UpdateCn(
   double cn_max = 0.0;
   cn_vec.MaxValue( &cn_max );
 
-  const double cn_upper_bound = Data().GetCnUpperBound();
+  const double cn_upper_bound = Data().SaData().GetCnUpperBound();
   if ( cn_max >= cn_upper_bound )
     return;
 

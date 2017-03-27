@@ -26,6 +26,7 @@
 #include "contact_defines.H"
 #include "contact_lagrange_strategy.H"
 #include "friction_node.H"
+#include "contact_strategy_factory.H"
 
 #include "../drt_contact_aug/contact_augmented_interface.H"
 
@@ -363,12 +364,9 @@ CONTACT::SmoothingManager::SmoothingManager(
 
     // decide between contactinterface, augmented interface and wearinterface
     Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
-    if (stype==INPAR::CONTACT::solution_augmented)
-      newinterface=Teuchos::rcp(new CONTACT::AUG::Interface(groupid1,Comm(),dim,icparams,isself[0],redundant));
-    else if(wlaw!=INPAR::WEAR::wear_none)
-      newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
-    else
-      newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],redundant));
+    newinterface = STRATEGY::Factory::CreateInterface( groupid1, Comm(), dim, icparams,
+        isself[0], redundant, Teuchos::null );
+
     cinterfaces.push_back(newinterface);
 
     // get it again
@@ -720,7 +718,7 @@ CONTACT::SmoothingManager::SmoothingManager(
         DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(cparams,"REDUNDANT_STORAGE");
 //    if (redundant != INPAR::MORTAR::redundant_master)
 //      dserror("ERROR: MtManager: Meshtying requires redundant master storage");
-    mtinterfaces.push_back(Teuchos::rcp(new MORTAR::MortarInterface(groupid1,Comm(),dim,cparams,redundant)));
+    mtinterfaces.push_back(MORTAR::MortarInterface::Create(groupid1,Comm(),dim,cparams,redundant));
 
     // get it again
     Teuchos::RCP<MORTAR::MortarInterface> interface = mtinterfaces[(int)mtinterfaces.size()-1];

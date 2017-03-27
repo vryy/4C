@@ -86,7 +86,7 @@ namespace AUG {
 
     inline const Epetra_Vector& GetZnIncrActive() const
     {
-      if ( not isvalidDirection_ )
+      if ( not isvalidState_ )
         dserror( "znincr_active_ is not valid!" );
 
       return *znincr_active_;
@@ -94,7 +94,7 @@ namespace AUG {
 
     inline const Epetra_Vector& GetZnIncrInactive() const
     {
-      if ( not isvalidDirection_ )
+      if ( not isvalidState_ )
         dserror( "znincr_inactive_ is not valid!" );
 
       return *znincr_inactive_;

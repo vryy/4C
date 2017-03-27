@@ -234,8 +234,9 @@ mastermaxeleid_(0)
     MortarParams(input);
 
     // create mortar interface for each coupling interface with INCA
-    Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(
-        new MORTAR::MortarInterface(interf, lcomm, ndim, input, INPAR::MORTAR::redundant_master));
+    Teuchos::RCP<MORTAR::MortarInterface> interface =
+        MORTAR::MortarInterface::Create(interf, lcomm, ndim, input,
+            INPAR::MORTAR::redundant_master);
 
     // feeding master nodes to the interface including ghosted nodes
     // transfer of four degrees of freedom per node
@@ -452,8 +453,8 @@ mastermaxeleid_(0)
     MortarParams(input);
 
     // create mortar interface for each coupling interface with INCA
-    Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(
-        new MORTAR::MortarInterface(interf, lcomm, ndim, input, INPAR::MORTAR::redundant_master));
+    Teuchos::RCP<MORTAR::MortarInterface> interface = MORTAR::MortarInterface::Create(
+        interf, lcomm, ndim, input, INPAR::MORTAR::redundant_master);
 
     // feeding master nodes to the interface including ghosted nodes
     // transfer of three degrees of freedom per node

@@ -37,6 +37,271 @@ class CoNode;
 class CoElement;
 class SelfBinaryTree;
 
+/*----------------------------------------------------------------------------*/
+/** \brief Contact interface data container
+ *
+ *  This class is supposed to contain all relevant members for the contact
+ *  interfaces. The external storage in this object, instead of the actual
+ *  interface class itself, makes it possible to share the interface
+ *  data between different interface objects w/o the need of copying them.
+ *
+ *  \author hiermeier \date 03/17 */
+class IDataContainer : public MORTAR::IDataContainer
+{
+public:
+  /// constructor
+  IDataContainer();
+
+  /// destructor
+  virtual ~IDataContainer() {};
+
+  /// @name Accessors
+  /// @{
+
+  inline bool& IsSelfContact()
+  {
+    return selfcontact_;
+  }
+
+  inline bool IsSelfContact() const
+  {
+    return selfcontact_;
+  }
+
+  inline bool& IsFriction()
+  {
+    return friction_;
+  }
+
+  inline bool IsFriction() const
+  {
+    return friction_;
+  }
+
+  inline bool& IsNonSmoothContact()
+  {
+    return nonSmoothContact_;
+  }
+
+  inline bool IsNonSmoothContact() const
+  {
+    return nonSmoothContact_;
+  }
+
+  inline enum INPAR::CONTACT::ConstraintDirection& ConstraintDirection()
+  {
+    return constr_direction_;
+  }
+
+  inline enum INPAR::CONTACT::ConstraintDirection ConstraintDirection() const
+  {
+    return constr_direction_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& ActiveNodes()
+  {
+    return activenodes_;
+  }
+
+  inline const Teuchos::RCP<Epetra_Map>& ActiveNodes() const
+  {
+    return activenodes_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& ActiveDofs()
+  {
+    return activedofs_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> ActiveDofs() const
+  {
+    return activedofs_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& ActiveN()
+  {
+    return activen_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> ActiveN() const
+  {
+    return activen_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& ActiveT()
+  {
+    return activet_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> ActiveT() const
+  {
+    return activet_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SlipNodes()
+  {
+    return slipnodes_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SlipNodes() const
+  {
+    return slipnodes_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SlipDofs()
+  {
+    return slipdofs_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SlipDofs() const
+  {
+    return slipdofs_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SlipT()
+  {
+    return slipt_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SlipT() const
+  {
+    return slipt_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& NonSmoothNodes()
+  {
+    return nonsmoothnodes_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> NonSmoothNodes() const
+  {
+    return nonsmoothnodes_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SmoothNodes()
+  {
+    return smoothnodes_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SmoothNodes() const
+  {
+    return smoothnodes_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& NExtendedGhosting()
+  {
+    return nextendedghosting_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> NExtendedGhosting() const
+  {
+    return nextendedghosting_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& EExtendedGhosting()
+  {
+    return eextendedghosting_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> EExtendedGhosting() const
+  {
+    return eextendedghosting_;
+  }
+
+  inline Teuchos::RCP<SelfBinaryTree>& BinaryTreeSelf()
+  {
+    return binarytreeself_;
+  }
+
+  inline Teuchos::RCP<const SelfBinaryTree> BinaryTreeSelf() const
+  {
+    return binarytreeself_;
+  }
+
+  inline Teuchos::RCP<Epetra_Vector>& CnValues()
+  {
+    return cnValues_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Vector> CnValues() const
+  {
+    return cnValues_;
+  }
+
+  inline Teuchos::RCP<Epetra_Vector>& CtValues()
+  {
+    return ctValues_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Vector> CtValues() const
+  {
+    return ctValues_;
+  }
+
+  inline int& SMPairs()
+  {
+    return smpairs_;
+  }
+
+  inline int SMPairs() const
+  {
+    return smpairs_;
+  }
+
+  inline int& SMIntPairs()
+  {
+    return smintpairs_;
+  }
+
+  inline int SMIntPairs() const
+  {
+    return smintpairs_;
+  }
+
+  inline int& IntCells()
+  {
+    return intcells_;
+  }
+
+  inline int IntCells() const
+  {
+    return intcells_;
+  }
+
+  /// @}
+
+private:
+  bool                          selfcontact_;            ///< flag indicating if this is a self contact interface
+  bool                          friction_;               ///< flag for frictional contact
+  bool                          nonSmoothContact_;       ///< flag for non-smooth contact algorithm
+  INPAR::CONTACT::ConstraintDirection constr_direction_; ///< direction in which the contact constraints are formulated
+
+  Teuchos::RCP<Epetra_Map>      activenodes_;    ///< row map of all active slave nodes
+  Teuchos::RCP<Epetra_Map>      activedofs_;     ///< row map of all active slave dofs
+  Teuchos::RCP<Epetra_Map>      activen_;        ///< row map of global N-matrix
+  Teuchos::RCP<Epetra_Map>      activet_;        ///< row map of global T-matrix
+  Teuchos::RCP<Epetra_Map>      slipnodes_;      ///< row map of all slip slave nodes
+  Teuchos::RCP<Epetra_Map>      slipdofs_;       ///< row map of all slip slave dofs
+  Teuchos::RCP<Epetra_Map>      slipt_;          ///< row map of part of T-matrix (slip nodes)
+
+  Teuchos::RCP<Epetra_Map>      nonsmoothnodes_; ///< row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>      smoothnodes_;    ///< row map of all smooth slave nodes
+
+  Teuchos::RCP<Epetra_Map>      nextendedghosting_;
+  Teuchos::RCP<Epetra_Map>      eextendedghosting_;
+
+  Teuchos::RCP<SelfBinaryTree>  binarytreeself_; ///< binary tree for self contact search
+
+  //! cn-values of each node
+  Teuchos::RCP<Epetra_Vector>   cnValues_;         ///< cn
+  Teuchos::RCP<Epetra_Vector>   ctValues_;         ///< ct
+
+  int                           smpairs_;        ///< proc local number of slave/master pairs
+  int                           smintpairs_;     ///< proc local number of slave/master integration pairs
+  int                           intcells_;       ///< proc local number of integration cells
+}; // class CONTACT::IDataContainer
+
+/*----------------------------------------------------------------------------*/
 /*!
 \brief One contact interface
 
@@ -44,7 +309,27 @@ class SelfBinaryTree;
 */
 class CoInterface : public MORTAR::MortarInterface
 {
+protected:
+  /// constructor ( only for derived classes )
+  CoInterface( const Teuchos::RCP<CONTACT::IDataContainer>& idata_ptr );
+
 public:
+  /** \brief Create a new contact interface object
+   *
+   *  This method creates first a new interface data object and subsequently
+   *  a new interface object.
+   *
+   *  \param id        (in) : unique interface ID
+   *  \param comm      (in) : communicator object
+   *  \param dim       (in) : problem dimension
+   *  \param imortar   (in) : global contact parameter-list
+   *  \param redundant (in) : type of redundancy in interface storage
+   *
+   *  \author hiermeier \date 03/17 */
+  static Teuchos::RCP<CoInterface> Create(
+        const int id, const Epetra_Comm& comm, const int dim,
+        const Teuchos::ParameterList& icontact,
+        const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
   /*!
   \brief Standard constructor creating empty contact interface
@@ -61,9 +346,10 @@ public:
   \param redundant (in): type of redundancy in interface storage
 
   */
-  CoInterface(const int id, const Epetra_Comm& comm, const int dim,
-              const Teuchos::ParameterList& icontact,
-              bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
+  CoInterface(const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
+      const int id, const Epetra_Comm& comm, const int dim,
+      const Teuchos::ParameterList& icontact,
+      bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
   /*!
   \brief Destructor
@@ -613,7 +899,7 @@ public:
 
   */
   void EvalResultantMoment(const Epetra_Vector& fs,
-                           const Epetra_Vector& fm);
+                           const Epetra_Vector& fm) const;
 
   /*!
   \brief Visualize contact stuff with gmsh
@@ -919,40 +1205,56 @@ protected:
   virtual void DetectNonSmoothGeometries();
   virtual void EvaluateAveragedNodalNormals();
 
+private:
+  /// pointer to the interface data object
+  Teuchos::RCP<CONTACT::IDataContainer> idata_ptr_;
+
+  /// reference to the interface data object
+  CONTACT::IDataContainer&              idata_;
+
 protected:
   // don't want = operator and cctor
   CoInterface operator = (const CoInterface& old);
   CoInterface(const CoInterface& old);
 
-  bool                          selfcontact_;           // flag indicating if this is a self contact interface
-  bool                          friction_;              // flag for frictional contact
-  bool                          nonSmoothContact_;      // flag for non-smooth contact algorithm
-  INPAR::CONTACT::ConstraintDirection constr_direction_;// direction in which the contact constraints are formulated
+  /** @name References to the interface data container content
+   *
+   * \remark Please add no new member variables to this class and use the
+   *  corresponding data container, instead! If you have any questions
+   *  concerning this, do not hesitate and ask me.
+   *                                                          hiermeier 03/17 */
+  /// @{
 
-  Teuchos::RCP<Epetra_Map>      activenodes_;    // row map of all active slave nodes
-  Teuchos::RCP<Epetra_Map>      activedofs_;     // row map of all active slave dofs
-  Teuchos::RCP<Epetra_Map>      activen_;        // row map of global N-matrix
-  Teuchos::RCP<Epetra_Map>      activet_;        // row map of global T-matrix
-  Teuchos::RCP<Epetra_Map>      slipnodes_;      // row map of all slip slave nodes
-  Teuchos::RCP<Epetra_Map>      slipdofs_;       // row map of all slip slave dofs
-  Teuchos::RCP<Epetra_Map>      slipt_;          // row map of part of T-matrix (slip nodes)
+  bool&                          selfcontact_;           ///< ref. to flag indicating if this is a self contact interface
+  bool&                          friction_;              ///< ref. to flag for frictional contact
+  bool&                          nonSmoothContact_;      ///< ref. to flag for non-smooth contact algorithm
+  INPAR::CONTACT::ConstraintDirection& constr_direction_;///< ref. to direction in which the contact constraints are formulated
 
-  Teuchos::RCP<Epetra_Map>      nonsmoothnodes_; // row map of all nonsmooth slave nodes
-  Teuchos::RCP<Epetra_Map>      smoothnodes_;    // row map of all smooth slave nodes
+  Teuchos::RCP<Epetra_Map>&      activenodes_;    ///< ref. to row map of all active slave nodes
+  Teuchos::RCP<Epetra_Map>&      activedofs_;     ///< ref. to row map of all active slave dofs
+  Teuchos::RCP<Epetra_Map>&      activen_;        ///< ref. to row map of global N-matrix
+  Teuchos::RCP<Epetra_Map>&      activet_;        ///< ref. to row map of global T-matrix
+  Teuchos::RCP<Epetra_Map>&      slipnodes_;      ///< ref. to row map of all slip slave nodes
+  Teuchos::RCP<Epetra_Map>&      slipdofs_;       ///< ref. to row map of all slip slave dofs
+  Teuchos::RCP<Epetra_Map>&      slipt_;          ///< ref. to row map of part of T-matrix (slip nodes)
 
-  Teuchos::RCP<Epetra_Map>      nextendedghosting_;
-  Teuchos::RCP<Epetra_Map>      eextendedghosting_;
+  Teuchos::RCP<Epetra_Map>&      nonsmoothnodes_; ///< ref. to row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>&      smoothnodes_;    ///< ref. to row map of all smooth slave nodes
 
-  Teuchos::RCP<SelfBinaryTree>  binarytreeself_; // binary tree for self contact search
+  Teuchos::RCP<Epetra_Map>&      nextendedghosting_;
+  Teuchos::RCP<Epetra_Map>&      eextendedghosting_;
+
+  Teuchos::RCP<SelfBinaryTree>&  binarytreeself_; ///< ref. to binary tree for self contact search
 
   //! cn-values of each node
-  Teuchos::RCP<Epetra_Vector>   cnValues_;         // cn
-  Teuchos::RCP<Epetra_Vector>   ctValues_;         // ct
+  Teuchos::RCP<Epetra_Vector>&   cnValues_;         ///< ref. to cn
+  Teuchos::RCP<Epetra_Vector>&   ctValues_;         ///< ref. to ct
 
-  int                           smpairs_;        // proc local number of slave/master pairs
-  int                           smintpairs_;     // proc local number of slave/master integration pairs
-  int                           intcells_;       // proc local number of integration cells
+  int&                           smpairs_;        ///< ref. to proc local number of slave/master pairs
+  int&                           smintpairs_;     ///< ref. to proc local number of slave/master integration pairs
+  int&                           intcells_;       ///< ref. to proc local number of integration cells
 
+  /// @}
 private:
   static bool abs_compare(int a, int b)
   {

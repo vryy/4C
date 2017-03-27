@@ -136,6 +136,512 @@ static inline enum MORTAR::StateType String2StateType(const std::string& name)
   return type;
 };
 
+/*----------------------------------------------------------------------------*/
+/** \brief Mortar interface data container
+ *
+ *  This class is supposed to contain all relevant members for the mortar
+ *  contact/mesh-tying interfaces. The external storage in this object, instead
+ *  of the actual interface class itself, makes it possible to share the interface
+ *  data between different interface objects w/o the need of copying them.
+ *
+ *  \author hiermeier \date 03/17 */
+class IDataContainer
+{
+public:
+  /// constructor
+  IDataContainer();
+
+  /// destructor
+  virtual ~IDataContainer() {};
+
+  /// @name accessors
+  /// @{
+
+  inline int& Id()
+  {
+    return id_;
+  }
+
+  inline int Id() const
+  {
+    return id_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Comm>& CommPtr()
+  {
+    return comm_;
+  }
+
+  inline const Epetra_Comm& Comm() const
+  {
+    return *comm_;
+  }
+
+  inline Teuchos::RCP<Epetra_Comm>& lComm()
+  {
+    return lcomm_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Comm> lComm() const
+  {
+    return lcomm_;
+  }
+
+  inline std::map<int,int>& ProcMap()
+  {
+    return procmap_;
+  }
+
+  inline const std::map<int,int>& ProcMap() const
+  {
+    return procmap_;
+  }
+
+  inline bool& IsRedistributed()
+  {
+    return redistributed_;
+  }
+
+  inline bool IsRedistributed() const
+  {
+    return redistributed_;
+  }
+
+  inline Teuchos::RCP<DRT::Discretization>& IDiscret()
+  {
+    return idiscret_;
+  }
+
+  inline Teuchos::RCP<const DRT::Discretization> IDiscret() const
+  {
+    return idiscret_;
+  }
+
+  inline int& Dim()
+  {
+    return dim_;
+  }
+
+  inline int Dim() const
+  {
+    return dim_;
+  }
+
+  inline Teuchos::ParameterList& IMortar()
+  {
+    return imortar_;
+  }
+
+  inline const Teuchos::ParameterList& IMortar() const
+  {
+    return imortar_;
+  }
+
+  inline enum INPAR::MORTAR::ShapeFcn& ShapeFcn()
+  {
+    return shapefcn_;
+  }
+
+  inline enum INPAR::MORTAR::ShapeFcn ShapeFcn() const
+  {
+    return shapefcn_;
+  }
+
+  inline bool& IsQuadSlave()
+  {
+    return quadslave_;
+  }
+
+  inline bool IsQuadSlave() const
+  {
+    return quadslave_;
+  }
+
+  inline bool& IsLmNodalScale()
+  {
+    return lmnodalscale_;
+  }
+
+  inline bool IsLmNodalScale() const
+  {
+    return lmnodalscale_;
+  }
+
+  inline enum INPAR::MORTAR::RedundantStorage& RedundantStorage()
+  {
+    return redundant_;
+  }
+
+  inline enum INPAR::MORTAR::RedundantStorage RedundantStorage() const
+  {
+    return redundant_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& OldNodeColMap()
+  {
+    return oldnodecolmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> OldNodeColMap() const
+  {
+    return oldnodecolmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& OldEleColMap()
+  {
+    return oldelecolmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> OldEleColMap() const
+  {
+    return oldelecolmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SNodeRowMap()
+  {
+    return snoderowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SNodeRowMap() const
+  {
+    return snoderowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SNodeColMap()
+  {
+    return snodecolmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SNodeColMap() const
+  {
+    return snodecolmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& MNodeRowMap()
+  {
+    return mnoderowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> MNodeRowMap() const
+  {
+    return mnoderowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& MNodeColMap()
+  {
+    return mnodecolmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> MNodeColMap() const
+  {
+    return mnodecolmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SNodeRowMapBound()
+  {
+    return snoderowmapbound_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SNodeRowMapBound() const
+  {
+    return snoderowmapbound_;
+  }
+
+
+  inline Teuchos::RCP<Epetra_Map>& SNodeColMapBound()
+  {
+    return snodecolmapbound_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SNodeColMapBound() const
+  {
+    return snodecolmapbound_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& MNodeRowMapNoBound()
+  {
+    return mnoderowmapnobound_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> MNodeRowMapNoBound() const
+  {
+    return mnoderowmapnobound_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& MNodeColMapNoBound()
+  {
+    return mnodecolmapnobound_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> MNodeColMapNoBound() const
+  {
+    return mnodecolmapnobound_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SEleRowMap()
+  {
+    return selerowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SEleRowMap() const
+  {
+    return selerowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SEleColMap()
+  {
+    return selecolmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SEleColMap() const
+  {
+    return selecolmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& MEleRowMap()
+  {
+    return melerowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> MEleRowMap() const
+  {
+    return melerowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& MEleColMap()
+  {
+    return melecolmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> MEleColMap() const
+  {
+    return melecolmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SDofRowMap()
+  {
+    return sdofrowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SDofRowMap() const
+  {
+    return sdofrowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SDofColMap()
+  {
+    return sdofcolmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SDofColMap() const
+  {
+    return sdofcolmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& MDofRowMap()
+  {
+    return mdofrowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> MDofRowMap() const
+  {
+    return mdofrowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& MDofColMap()
+  {
+    return mdofcolmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> MDofColMap() const
+  {
+    return mdofcolmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& PSDofRowMap()
+  {
+    return psdofrowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> PSDofRowMap() const
+  {
+    return psdofrowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& PLmDofRowMap()
+  {
+    return plmdofmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> PLmDofRowMap() const
+  {
+    return plmdofmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& LmDofRowMap()
+  {
+    return lmdofmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> LmDofRowMap() const
+  {
+    return lmdofmap_;
+  }
+
+  inline int& MaxDofGlobal()
+  {
+    return maxdofglobal_;
+  }
+
+  inline int MaxDofGlobal() const
+  {
+    return maxdofglobal_;
+  }
+
+  inline INPAR::MORTAR::SearchAlgorithm& SearchAlgorithm()
+  {
+    return searchalgo_;
+  }
+
+  inline enum INPAR::MORTAR::SearchAlgorithm SearchAlgorithm() const
+  {
+    return searchalgo_;
+  }
+
+  inline Teuchos::RCP<MORTAR::BinaryTree>& BinaryTree()
+  {
+    return binarytree_;
+  }
+
+  inline Teuchos::RCP<const MORTAR::BinaryTree> BinaryTree() const
+  {
+    return binarytree_;
+  }
+
+  inline double& SearchParam()
+  {
+    return searchparam_;
+  }
+
+  inline double SearchParam() const
+  {
+    return searchparam_;
+  }
+
+  inline bool& SearchUseAuxPos()
+  {
+    return searchuseauxpos_;
+  }
+
+  inline bool SearchUseAuxPos() const
+  {
+    return searchuseauxpos_;
+  }
+
+  inline double& IntTimeInterface()
+  {
+    return inttime_interface_;
+  }
+
+  inline double IntTimeInterface() const
+  {
+    return inttime_interface_;
+  }
+
+  inline bool& IsNurbs()
+  {
+    return nurbs_;
+  }
+
+  inline bool IsNurbs() const
+  {
+    return nurbs_;
+  }
+
+  inline bool& IsPoro()
+  {
+    return poro_;
+  }
+
+  inline bool IsPoro() const
+  {
+    return poro_;
+  }
+  /// @}
+
+  /// @name DataContainer specific functions
+  /// @{
+
+  inline bool IsInit() const
+  {
+    return isinit_;
+  }
+
+  inline void SetIsInit( bool isinit )
+  {
+    isinit_ = isinit;
+  }
+
+  /// @}
+
+private:
+  int                                id_;            ///< unique interface id
+  Teuchos::RCP<const Epetra_Comm>    comm_;          ///< communicator
+  Teuchos::RCP<Epetra_Comm>          lcomm_;         ///< interface local communicator
+  std::map<int,int>                  procmap_;       ///< mapping global -> local communicator PIDs
+  bool                               redistributed_; ///< redistribution for this time step?
+
+  Teuchos::RCP<DRT::Discretization>  idiscret_;      ///< the discretization of the mortar interface
+  int                                dim_;           ///< dimension of problem (2D or 3D)
+  Teuchos::ParameterList             imortar_;       ///< containing contact input parameters of interface
+  INPAR::MORTAR::ShapeFcn            shapefcn_;      ///< employed type of shape function set
+  bool                               quadslave_;     ///< flag indicating quadratic 2d/3d slave elements
+  bool                               lmnodalscale_;  ///< flag indicating scaling of lm
+  INPAR::MORTAR::RedundantStorage    redundant_;     ///< employed type of redundancy in storage of interface
+
+  Teuchos::RCP<Epetra_Map>           oldnodecolmap_; ///< column map of all interface nodes (overlap=1)
+  Teuchos::RCP<Epetra_Map>           oldelecolmap_;  ///< column map of all interface elements (overlap=1)
+
+  Teuchos::RCP<Epetra_Map>           snoderowmap_;   ///< row map of all slave nodes
+  Teuchos::RCP<Epetra_Map>           snodecolmap_;   ///< column map of all slave nodes
+  Teuchos::RCP<Epetra_Map>           mnoderowmap_;   ///< row map of all master nodes
+  Teuchos::RCP<Epetra_Map>           mnodecolmap_;   ///< column map of all master nodes
+
+  Teuchos::RCP<Epetra_Map>           snoderowmapbound_;    ///< row map of slave nodes (+ boundary nodes)
+  Teuchos::RCP<Epetra_Map>           snodecolmapbound_;    ///< col map of slave nodes (+ boundary nodes)
+  Teuchos::RCP<Epetra_Map>           mnoderowmapnobound_;  ///< row map of master nodes (- boundary nodes)
+  Teuchos::RCP<Epetra_Map>           mnodecolmapnobound_;  ///< col map of master nodes (- boundary nodes)
+
+  Teuchos::RCP<Epetra_Map>           selerowmap_;    ///< row map of all slave elements
+  Teuchos::RCP<Epetra_Map>           selecolmap_;    ///< column map of all slave elements
+  Teuchos::RCP<Epetra_Map>           melerowmap_;    ///< row map of all master elements
+  Teuchos::RCP<Epetra_Map>           melecolmap_;    ///< column map of all master elements
+
+  Teuchos::RCP<Epetra_Map>           sdofrowmap_;    ///< row map of all slave dofs
+  Teuchos::RCP<Epetra_Map>           sdofcolmap_;    ///< column map of all slave dofs
+  Teuchos::RCP<Epetra_Map>           mdofrowmap_;    ///< row map of all master dofs
+  Teuchos::RCP<Epetra_Map>           mdofcolmap_;    ///< column map of all master dofs
+
+  Teuchos::RCP<Epetra_Map>           psdofrowmap_;   ///< row map of all slave dofs before any redistribution took place
+  Teuchos::RCP<Epetra_Map>           plmdofmap_;     ///< row map of all lm dofs before any redistribution took place
+
+  Teuchos::RCP<Epetra_Map>           lmdofmap_;      ///< row map of all Lagrange multiplier dofs
+  int                                maxdofglobal_;  ///< maximum dof ID in global discretization
+
+  INPAR::MORTAR::SearchAlgorithm     searchalgo_;       ///< type of search algorithm
+  Teuchos::RCP<MORTAR::BinaryTree>   binarytree_;       ///< binary searchtree
+  double                             searchparam_;      ///< search parameter
+  bool                               searchuseauxpos_;  ///< use auxiliary position when computing dops
+  double                             inttime_interface_;///< integration time
+
+  bool                               nurbs_; ///< flag for nurbs shape functions
+  bool                               poro_;  ///< flag if poro contact problem!
+
+private:
+  bool isinit_;                     ///< Is this data container object initialized?
+};  // class IDataContainer
+
+/*----------------------------------------------------------------------------*/
 /*!
 \brief One mortar coupling interface
 
@@ -143,14 +649,30 @@ static inline enum MORTAR::StateType String2StateType(const std::string& name)
 */
 class MortarInterface
 {
+protected:
+  /// constructor ( only for derived classes )
+  MortarInterface( const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr );
+
 public:
+  /** \brief Create a new Mortar interface object
+   *
+   *  This method creates first a new interface data object and subsequently
+   *  a new interface object.
+   *
+   *  \param id        (in) : unique interface ID
+   *  \param comm      (in) : communicator object
+   *  \param dim       (in) : problem dimension
+   *  \param imortar   (in) : global contact/mesh-tying parameter-list
+   *  \param redundant (in) : type of redundancy in interface storage
+   *
+   *  \author hiermeier \date 03/17 */
+  static Teuchos::RCP<MortarInterface> Create(
+      const int id, const Epetra_Comm& comm, const int dim,
+      const Teuchos::ParameterList& imortar,
+      INPAR::MORTAR::RedundantStorage redundant);
 
   /*!
   \brief Standard constructor creating empty mortar interface
-
-  This initializes the employed shape function set for lagrangian mutlipliers
-  to a specific setting. Throughout the evaluation process, this set will be employed
-  for the field of lagrangian multipliers.
 
   \param id (in): Unique interface id
   \param comm (in): A communicator object
@@ -158,9 +680,11 @@ public:
   \param imortar (in): Global contact parameter list
   \param redundant (in): type of redundancy in interface storage
   */
-  MortarInterface(const int id, const Epetra_Comm& comm, const int dim,
-                  const Teuchos::ParameterList& imortar,
-                  INPAR::MORTAR::RedundantStorage redundant);
+  MortarInterface(
+      const Teuchos::RCP<IDataContainer>& idata_ptr,
+      const int id, const Epetra_Comm& comm, const int dim,
+      const Teuchos::ParameterList& imortar,
+      INPAR::MORTAR::RedundantStorage redundant);
 
   /*!
   \brief Destructor
@@ -185,7 +709,7 @@ public:
   /*!
   \brief Get communicator
   */
-  virtual const Epetra_Comm& Comm() const { return comm_;}
+  virtual const Epetra_Comm& Comm() const { return *comm_;}
 
   /*!
   \brief Get local interface communicator (Filled()==true is prerequisite)
@@ -974,64 +1498,80 @@ private:
   */
   void InitializeLagMultLin();
 
+private:
+  /// pointer to the interface data object
+  Teuchos::RCP<IDataContainer> idata_ptr_;
+
+  /// reference to the interface data object
+  IDataContainer&              idata_;
+
 protected:
 
   // don't want = operator and cctor
   MortarInterface operator = (const MortarInterface& old);
   MortarInterface(const MortarInterface& old);
 
-  int                                id_;            // unique interface id
-  const Epetra_Comm&                 comm_;          // communicator
-  Teuchos::RCP<Epetra_Comm>          lcomm_;         // interface local communicator
-  std::map<int,int>                  procmap_;       // mapping global -> local communicator PIDs
-  bool                               redistributed_; // redistribution for this time step?
+  /** @name References to the interface data container content
+   *
+   * \remark Please add no new member variables to this class and use the
+   *  corresponding data container, instead! If you have any questions
+   *  concerning this, do not hesitate and ask me.
+   *                                                          hiermeier 03/17 */
+  /// @{
 
-  Teuchos::RCP<DRT::Discretization>  idiscret_;      // the discretization of the mortar interface
-  int                                dim_;           // dimension of problem (2D or 3D)
-  Teuchos::ParameterList             imortar_;      // containing contact input parameters of interface
-  INPAR::MORTAR::ShapeFcn            shapefcn_;      // employed type of shape function set
-  bool                               quadslave_;     // flag indicating quadratic 2d/3d slave elements
-  bool                               lmnodalscale_;  // flag indicating scaling of lm
-  INPAR::MORTAR::RedundantStorage    redundant_;     // employed type of redundancy in storage of interface
+  int&                                id_;            ///< ref. to unique interface id
+  Teuchos::RCP<const Epetra_Comm>&    comm_;          ///< ref. to communicator
+  Teuchos::RCP<Epetra_Comm>&          lcomm_;         ///< ref. to interface local communicator
+  std::map<int,int>&                  procmap_;       ///< ref. to mapping global -> local communicator PIDs
+  bool&                               redistributed_; ///< ref. to redistribution for this time step?
 
-  Teuchos::RCP<Epetra_Map>           oldnodecolmap_; // column map of all interface nodes (overlap=1)
-  Teuchos::RCP<Epetra_Map>           oldelecolmap_;  // column map of all interface elements (overlap=1)
+  Teuchos::RCP<DRT::Discretization>&  idiscret_;      ///< ref. to the discretization of the mortar interface
+  int&                                dim_;           ///< ref. to dimension of problem (2D or 3D)
+  Teuchos::ParameterList&             imortar_;       ///< ref. to containing contact input parameters of interface
+  INPAR::MORTAR::ShapeFcn&            shapefcn_;      ///< ref. to employed type of shape function set
+  bool&                               quadslave_;     ///< ref. to flag indicating quadratic 2d/3d slave elements
+  bool&                               lmnodalscale_;  ///< ref. to flag indicating scaling of lm
+  INPAR::MORTAR::RedundantStorage&    redundant_;     ///< ref. to employed type of redundancy in storage of interface
 
-  Teuchos::RCP<Epetra_Map>           snoderowmap_;   // row map of all slave nodes
-  Teuchos::RCP<Epetra_Map>           snodecolmap_;   // column map of all slave nodes
-  Teuchos::RCP<Epetra_Map>           mnoderowmap_;   // row map of all master nodes
-  Teuchos::RCP<Epetra_Map>           mnodecolmap_;   // column map of all master nodes
+  Teuchos::RCP<Epetra_Map>&           oldnodecolmap_; ///< ref. to column map of all interface nodes (overlap=1)
+  Teuchos::RCP<Epetra_Map>&           oldelecolmap_;  ///< ref. to column map of all interface elements (overlap=1)
 
-  Teuchos::RCP<Epetra_Map>           snoderowmapbound_;    // row map of slave nodes (+ boundary nodes)
-  Teuchos::RCP<Epetra_Map>           snodecolmapbound_;    // col map of slave nodes (+ boundary nodes)
-  Teuchos::RCP<Epetra_Map>           mnoderowmapnobound_;  // row map of master nodes (- boundary nodes)
-  Teuchos::RCP<Epetra_Map>           mnodecolmapnobound_;  // col map of master nodes (- boundary nodes)
+  Teuchos::RCP<Epetra_Map>&           snoderowmap_;   ///< ref. to row map of all slave nodes
+  Teuchos::RCP<Epetra_Map>&           snodecolmap_;   ///< ref. to column map of all slave nodes
+  Teuchos::RCP<Epetra_Map>&           mnoderowmap_;   ///< ref. to row map of all master nodes
+  Teuchos::RCP<Epetra_Map>&           mnodecolmap_;   ///< ref. to column map of all master nodes
 
-  Teuchos::RCP<Epetra_Map>           selerowmap_;    // row map of all slave elements
-  Teuchos::RCP<Epetra_Map>           selecolmap_;    // column map of all slave elements
-  Teuchos::RCP<Epetra_Map>           melerowmap_;    // row map of all master elements
-  Teuchos::RCP<Epetra_Map>           melecolmap_;    // column map of all master elements
+  Teuchos::RCP<Epetra_Map>&           snoderowmapbound_;    ///< ref. to row map of slave nodes (+ boundary nodes)
+  Teuchos::RCP<Epetra_Map>&           snodecolmapbound_;    ///< ref. to col map of slave nodes (+ boundary nodes)
+  Teuchos::RCP<Epetra_Map>&           mnoderowmapnobound_;  ///< ref. to row map of master nodes (- boundary nodes)
+  Teuchos::RCP<Epetra_Map>&           mnodecolmapnobound_;  ///< ref. to col map of master nodes (- boundary nodes)
 
-  Teuchos::RCP<Epetra_Map>           sdofrowmap_;    // row map of all slave dofs
-  Teuchos::RCP<Epetra_Map>           sdofcolmap_;    // column map of all slave dofs
-  Teuchos::RCP<Epetra_Map>           mdofrowmap_;    // row map of all master dofs
-  Teuchos::RCP<Epetra_Map>           mdofcolmap_;    // column map of all master dofs
+  Teuchos::RCP<Epetra_Map>&           selerowmap_;    ///< ref. to row map of all slave elements
+  Teuchos::RCP<Epetra_Map>&           selecolmap_;    ///< ref. to column map of all slave elements
+  Teuchos::RCP<Epetra_Map>&           melerowmap_;    ///< ref. to row map of all master elements
+  Teuchos::RCP<Epetra_Map>&           melecolmap_;    ///< ref. to column map of all master elements
 
-  Teuchos::RCP<Epetra_Map>           psdofrowmap_;   // row map of all slave dofs before any redistribution took place
-  Teuchos::RCP<Epetra_Map>           plmdofmap_;     // row map of all lm dofs before any redistribution took place
+  Teuchos::RCP<Epetra_Map>&           sdofrowmap_;    ///< ref. to row map of all slave dofs
+  Teuchos::RCP<Epetra_Map>&           sdofcolmap_;    ///< ref. to column map of all slave dofs
+  Teuchos::RCP<Epetra_Map>&           mdofrowmap_;    ///< ref. to row map of all master dofs
+  Teuchos::RCP<Epetra_Map>&           mdofcolmap_;    ///< ref. to column map of all master dofs
 
-  Teuchos::RCP<Epetra_Map>           lmdofmap_;      // row map of all Lagrange multiplier dofs
-  int                                maxdofglobal_;  // maximum dof ID in global discretization
+  Teuchos::RCP<Epetra_Map>&           psdofrowmap_;   ///< ref. to row map of all slave dofs before any redistribution took place
+  Teuchos::RCP<Epetra_Map>&           plmdofmap_;     ///< ref. to row map of all lm dofs before any redistribution took place
 
-  const INPAR::MORTAR::SearchAlgorithm searchalgo_;     // type of search algorithm
-  Teuchos::RCP<MORTAR::BinaryTree>   binarytree_;       // binary searchtree
-  const double                       searchparam_;      // search parameter
-  const bool                         searchuseauxpos_;  // use auxiliary position when computing dops
-  double                             inttime_interface_;// integration time
+  Teuchos::RCP<Epetra_Map>&           lmdofmap_;      ///< ref. to row map of all Lagrange multiplier dofs
+  int&                                maxdofglobal_;  ///< ref. to maximum dof ID in global discretization
 
-  bool                               nurbs_; // flag for nurbs shape functions
-  bool                               poro_;  // flag if poro contact problem!
+  INPAR::MORTAR::SearchAlgorithm& searchalgo_;           ///< ref. to type of search algorithm
+  Teuchos::RCP<MORTAR::BinaryTree>&   binarytree_;       ///< ref. to binary searchtree
+  double&                       searchparam_;            ///< ref. to search parameter
+  bool&                         searchuseauxpos_;        ///< ref. to use auxiliary position when computing dops
+  double&                             inttime_interface_;///< ref. to integration time
 
+  bool&                               nurbs_; ///< ref. to flag for nurbs shape functions
+  bool&                               poro_;  ///< ref. to flag if poro contact problem!
+
+  /// @}
 }; // class MortarInterface
 } // namespace MORTAR
 

@@ -38,19 +38,22 @@
 
 #include "contact_utils.H"
 
-// supported interfaces
+// supported strategies and interfaces
+// -- standard strategies and interfaces
 #include "contact_wear_interface.H"
 #include "contact_tsi_interface.H"
-#include "../drt_contact_aug/contact_augmented_interface.H"
-#include "../drt_contact_aug/contact_augmented_strategy.H"
-#include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
-#include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
-#include "../drt_contact_xcontact/xcontact_interface.H"
-#include "../drt_contact_xcontact/xcontact_strategy.H"
 #include "contact_poro_lagrange_strategy.H"
 #include "contact_tsi_lagrange_strategy.H"
 #include "contact_lagrange_strategy.H"
 #include "contact_nitsche_strategy.H"
+// --augmented strategies and interfaces
+#include "../drt_contact_aug/contact_augmented_interface.H"
+#include "../drt_contact_aug/contact_augmented_strategy.H"
+#include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
+#include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
+// --xcontact strategies and interfaces
+#include "../drt_contact_xcontact/xcontact_interface.H"
+#include "../drt_contact_xcontact/xcontact_strategy.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -69,8 +72,8 @@ void CONTACT::STRATEGY::Factory::CheckDimension() const
     dserror("ERROR: Contact problem must be 2D or 3D");
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
     Teuchos::ParameterList& cparams) const
 {
@@ -600,8 +603,8 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::BuildInterfaces(
     const Teuchos::ParameterList& cparams,
     std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
@@ -803,39 +806,13 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
     // ------------------------------------------------------------------------
     // create the desired interface object
     // ------------------------------------------------------------------------
-    Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
-    if ( stype==INPAR::CONTACT::solution_augmented )
-    {
-       newinterface = Teuchos::rcp(new CONTACT::AUG::Interface( groupid1,
-           Comm(), Dim(), icparams, isself[0], redundant ) );
-    }
-    else if ( stype == INPAR::CONTACT::solution_steepest_ascent )
-    {
-      newinterface = Teuchos::rcp(new CONTACT::AUG::STEEPESTASCENT::Interface( groupid1,
-           Comm(), Dim(), icparams, isself[0], redundant ) );
-    }
-    else if ( stype == INPAR::CONTACT::solution_xcontact )
-    {
-      icparams.set<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> >(
-          "ParentDiscretPair", parent_dis_pair );
-      newinterface = Teuchos::rcp( new XCONTACT::Interface( groupid1, Comm(),
-          Dim(), icparams, isself[0], redundant ) );
-    }
-    else if(wlaw!=INPAR::WEAR::wear_none)
-      newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),Dim(),
-          icparams,isself[0],redundant));
-    else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
-      newinterface=Teuchos::rcp(new CONTACT::CoTSIInterface(groupid1,Comm(),
-          Dim(),icparams,isself[0],redundant));
-    else
-      newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(),
-          Dim(), icparams, isself[0],redundant));
-
+    Teuchos::RCP<CONTACT::CoInterface> newinterface =
+        CreateInterface( groupid1, Comm(), Dim(), icparams, isself[0],
+            redundant, parent_dis_pair );
     interfaces.push_back(newinterface);
 
     // get it again
-    Teuchos::RCP<CONTACT::CoInterface> interface =
-        interfaces[(int) interfaces.size() - 1];
+    const Teuchos::RCP<CONTACT::CoInterface>& interface = interfaces.back();
 
     /* note that the nodal ids are unique because they come from
      * one global problem discretization containing all nodes of the
@@ -1101,8 +1078,130 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
     std::cout << "done!" << std::endl;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP< ::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
+    const int id,
+    const Epetra_Comm& comm,
+    const int dim,
+    Teuchos::ParameterList& icparams,
+    const bool selfcontact,
+    const enum INPAR::MORTAR::RedundantStorage redundant,
+    const Teuchos::RCP<std::pair<enum XFEM::FieldName,
+        Teuchos::RCP<const DRT::DiscretizationInterface> > >& parent_dis_pair,
+    Teuchos::RCP<CONTACT::IDataContainer> idata_ptr )
+{
+  INPAR::CONTACT::SolvingStrategy stype = DRT::INPUT::IntegralValue<
+      INPAR::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
+
+  return CreateInterface( stype, id, comm, dim, icparams, selfcontact,
+      redundant, parent_dis_pair, idata_ptr );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP< ::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
+    const enum INPAR::CONTACT::SolvingStrategy stype,
+    const int id,
+    const Epetra_Comm& comm,
+    const int dim,
+    Teuchos::ParameterList& icparams,
+    const bool selfcontact,
+    const enum INPAR::MORTAR::RedundantStorage redundant,
+    const Teuchos::RCP<std::pair<enum XFEM::FieldName,
+        Teuchos::RCP<const DRT::DiscretizationInterface> > >& parent_dis_pair,
+    Teuchos::RCP<CONTACT::IDataContainer> idata_ptr )
+{
+  Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
+
+  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<
+      INPAR::WEAR::WearLaw>(icparams, "WEARLAW");
+
+  switch ( stype )
+  {
+    // ------------------------------------------------------------------------
+    // Create an augmented contact interface
+    // ------------------------------------------------------------------------
+    case INPAR::CONTACT::solution_augmented:
+    case INPAR::CONTACT::solution_combo:
+    {
+      if ( idata_ptr.is_null() )
+      {
+        idata_ptr = Teuchos::rcp( new CONTACT::AUG::IDataContainer() );
+
+        newinterface = Teuchos::rcp(new CONTACT::AUG::Interface( idata_ptr, id,
+            comm, dim, icparams, selfcontact, redundant ) );
+      }
+      else
+      {
+        Teuchos::RCP<CONTACT::AUG::IDataContainer> iaugdata_ptr =
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::IDataContainer>( idata_ptr, true );
+        newinterface = Teuchos::rcp(new CONTACT::AUG::Interface( iaugdata_ptr ) );
+      }
+
+      break;
+    }
+    // ------------------------------------------------------------------------
+    // Create an augmented steepest ascent contact interface
+    // ------------------------------------------------------------------------
+    case INPAR::CONTACT::solution_steepest_ascent:
+    {
+      if ( idata_ptr.is_null() )
+      {
+        idata_ptr = Teuchos::rcp( new CONTACT::AUG::IDataContainer() );
+
+        newinterface = Teuchos::rcp(new CONTACT::AUG::STEEPESTASCENT::Interface(
+            idata_ptr, id, comm, dim, icparams, selfcontact, redundant ) );
+      }
+      else
+      {
+        Teuchos::RCP<CONTACT::AUG::IDataContainer> iaugdata_ptr =
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::IDataContainer>( idata_ptr, true );
+        newinterface = Teuchos::rcp(new CONTACT::AUG::STEEPESTASCENT::Interface(
+            iaugdata_ptr ) );
+      }
+
+      break;
+    }
+    // ------------------------------------------------------------------------
+    // Create an extended finite element contact interface (XCONTACT)
+    // ------------------------------------------------------------------------
+    case INPAR::CONTACT::solution_xcontact:
+    {
+      idata_ptr = Teuchos::rcp( new CONTACT::IDataContainer() );
+
+      icparams.set<Teuchos::RCP<XSTR::MultiDiscretizationWrapper::cXDisPair> >(
+          "ParentDiscretPair", parent_dis_pair );
+      newinterface = Teuchos::rcp( new XCONTACT::Interface( idata_ptr, id,
+          comm, dim, icparams, selfcontact, redundant ) );
+
+      break;
+    }
+    // ------------------------------------------------------------------------
+    // Default case for the wear, TSI and standard Lagrangian case
+    // ------------------------------------------------------------------------
+    default:
+    {
+      idata_ptr = Teuchos::rcp( new CONTACT::IDataContainer() );
+
+      if (wlaw!=INPAR::WEAR::wear_none)
+        newinterface=Teuchos::rcp( new WEAR::WearInterface( idata_ptr, id ,
+            comm , dim, icparams, selfcontact, redundant ) );
+      else if ( icparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
+        newinterface=Teuchos::rcp( new CONTACT::CoTSIInterface(
+            idata_ptr, id, comm, dim, icparams, selfcontact, redundant) );
+      else
+        newinterface = Teuchos::rcp( new CONTACT::CoInterface( idata_ptr, id,
+            comm, dim, icparams, selfcontact, redundant ) );
+      break;
+    }
+  }
+
+  return newinterface;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::SetPoroParentElement(
     enum MORTAR::MortarElement::PhysicalType& slavetype,
     enum MORTAR::MortarElement::PhysicalType& mastertype,
@@ -1175,8 +1274,8 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(
     bool& poromaster,
     bool& poroslave,
@@ -1262,8 +1361,8 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(
   }
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrategy(
     const Teuchos::ParameterList& cparams,
     const bool& poroslave,
@@ -1271,19 +1370,39 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     const int& dof_offset,
     std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces) const
 {
-  if (Comm().MyPID() == 0)
+  const INPAR::CONTACT::SolvingStrategy stype = DRT::INPUT::IntegralValue<
+      enum INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
+  Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
+
+  return BuildStrategy( stype, cparams, poroslave, poromaster,
+      dof_offset, interfaces, Discret().DofRowMap(), Discret().NodeRowMap(),
+      Dim(), CommPtr(), data_ptr );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrategy(
+    const INPAR::CONTACT::SolvingStrategy stype,
+    const Teuchos::ParameterList& cparams,
+    const bool& poroslave,
+    const bool& poromaster,
+    const int& dof_offset,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+    const Epetra_Map* dof_row_map,
+    const Epetra_Map* node_row_map,
+    const int dim,
+    const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
+    Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr )
+{
+  if (comm_ptr->MyPID() == 0)
   {
     std::cout << "Building contact strategy object............";
     fflush(stdout);
   }
   Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr =
       Teuchos::null;
-  Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
-      Teuchos::null;
 
   // get input par.
-  INPAR::CONTACT::SolvingStrategy stype = DRT::INPUT::IntegralValue<
-      INPAR::CONTACT::SolvingStrategy>(cparams, "STRATEGY");
   INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<
       INPAR::WEAR::WearLaw>(cparams, "WEARLAW");
   INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<
@@ -1299,12 +1418,12 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   {
     dserror("This contact strategy is not yet considered!");
 //    strategy_ptr = Teuchos::rcp(new WEAR::WearLagrangeStrategy(
-//        Discret().DofRowMap(),
-//        Discret().NodeRowMap(),
+//        dof_row_map,
+//        node_row_map,
 //        cparams,
 //        interfaces,
-//        Dim(),
-//        Comm(),
+//        dim,
+//        comm_ptr,
 //        maxdof));
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
@@ -1313,12 +1432,12 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     {
       dserror("This contact strategy is not yet considered!");
 //      strategy_ptr = Teuchos::rcp(new PoroLagrangeStrategy(
-//          Discret().DofRowMap(),
-//          Discret().NodeRowMap(),
+//          dof_row_map,
+//          node_row_map,
 //          cparams,
 //          interfaces,
-//          Dim(),
-//          Comm(),
+//          dim,
+//          comm_ptr,
 //          maxdof,
 //          poroslave,
 //          poromaster));
@@ -1343,12 +1462,12 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoTSILagrangeStrategy(
           data_ptr,
-          Discret().DofRowMap(),
-          Discret().NodeRowMap(),
+          dof_row_map,
+          node_row_map,
           cparams,
           interfaces,
-          Dim(),
-          CommPtr(),
+          dim,
+          comm_ptr,
           alphaf,
           dof_offset));
     }
@@ -1357,12 +1476,12 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoLagrangeStrategy(
           data_ptr,
-          Discret().DofRowMap(),
-          Discret().NodeRowMap(),
+          dof_row_map,
+          node_row_map,
           cparams,
           interfaces,
-          Dim(),
-          CommPtr(),
+          dim,
+          comm_ptr,
           0.0,        // TODO: time integration factor --> 0.0 for statics. remove this!
           dof_offset));
     }
@@ -1372,11 +1491,11 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   {
     dserror("This contact strategy is not yet considered!");
 //    strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
-//        Discret().DofRowMap(),
-//        Discret().NodeRowMap(),
+//        dof_row_map,
+//        node_row_map,
 //        cparams,
 //        interfaces,
-//        Dim(),
+//        dim,
 //        Comm(),
 //        maxdof));
   }
@@ -1384,52 +1503,61 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   {
     dserror("This contact strategy is not yet considered!");
 //    strategy_ptr = Teuchos::rcp(new CoPenaltyStrategy(
-//        Discret().DofRowMap(),
-//        Discret().NodeRowMap(),
+//        dof_row_map,
+//        node_row_map,
 //        cparams,
 //        interfaces,
-//        Dim(),
-//        Comm(),
+//        dim,
+//        comm_ptr,
 //        maxdof));
+  }
+  else if (stype == INPAR::CONTACT::solution_combo)
+  {
+    data_ptr = Teuchos::rcp( new AUG::DataContainer() );
+    dserror("Not yet implemented!");
   }
   else if (stype == INPAR::CONTACT::solution_augmented)
   {
-    data_ptr = Teuchos::rcp(new AUG::DataContainer());
-    strategy_ptr = Teuchos::rcp(new AUG::Strategy(
+    if ( data_ptr.is_null() )
+      data_ptr = Teuchos::rcp( new AUG::DataContainer() );
+
+    strategy_ptr = Teuchos::rcp( new AUG::Strategy(
         data_ptr,
-        Discret().DofRowMap(),
-        Discret().NodeRowMap(),
+        dof_row_map,
+        node_row_map,
         cparams,
         interfaces,
-        Dim(),
-        CommPtr(),
-        dof_offset));
+        dim,
+        comm_ptr,
+        dof_offset ) );
   }
   else if (stype == INPAR::CONTACT::solution_steepest_ascent )
   {
-    data_ptr = Teuchos::rcp(new AUG::STEEPESTASCENT::DataContainer());
-    strategy_ptr = Teuchos::rcp(new AUG::STEEPESTASCENT::Strategy(
+    if ( data_ptr.is_null() )
+      data_ptr = Teuchos::rcp( new AUG::DataContainer() );
+
+    strategy_ptr = Teuchos::rcp( new AUG::STEEPESTASCENT::Strategy(
         data_ptr,
-        Discret().DofRowMap(),
-        Discret().NodeRowMap(),
+        dof_row_map,
+        node_row_map,
         cparams,
         interfaces,
-        Dim(),
-        CommPtr(),
-        dof_offset));
+        dim,
+        comm_ptr,
+        dof_offset ) );
   }
   else if (stype == INPAR::CONTACT::solution_xcontact)
   {
-    data_ptr = Teuchos::rcp(new XCONTACT::DataContainer());
-    strategy_ptr = Teuchos::rcp(new XCONTACT::Strategy(
+    data_ptr = Teuchos::rcp( new XCONTACT::DataContainer() );
+    strategy_ptr = Teuchos::rcp( new XCONTACT::Strategy(
         data_ptr,
-        Discret().DofRowMap(),
-        Discret().NodeRowMap(),
+        dof_row_map,
+        node_row_map,
         cparams,
         interfaces,
-        Dim(),
-        CommPtr(),
-        dof_offset));
+        dim,
+        comm_ptr,
+        dof_offset ) );
   }
   else if (algo == INPAR::MORTAR::algorithm_gpts &&
       (stype==INPAR::CONTACT::solution_nitsche || stype==INPAR::CONTACT::solution_penalty ))
@@ -1437,12 +1565,12 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
     strategy_ptr = Teuchos::rcp(new CoNitscheStrategy(
         data_ptr,
-        Discret().DofRowMap(),
-        Discret().NodeRowMap(),
+        dof_row_map,
+        node_row_map,
         cparams,
         interfaces,
-        Dim(),
-        CommPtr(),
+        dim,
+        comm_ptr,
         0,
         dof_offset));
   }
@@ -1454,24 +1582,24 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   // setup the stategy object
   strategy_ptr->Setup(false,true);
 
-  if (Comm().MyPID() == 0)
+  if (comm_ptr->MyPID() == 0)
     std::cout << "done!" << std::endl;
 
   return strategy_ptr;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::BuildSearchTree(
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces) const
+    const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces) const
 {
   // create binary search tree
-  for (int i = 0; i < (int) interfaces.size(); ++i)
+  for (unsigned i = 0; i < interfaces.size(); ++i)
     interfaces[i]->CreateSearchTree();
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::Print(
     std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
     const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr,
@@ -1513,11 +1641,16 @@ void CONTACT::STRATEGY::Factory::Print(
     DRT::INPUT::PrintDefaultParameters(IO::cout, strategy_ptr->Params());
   }
 
+  if ( Comm().MyPID() == 0 )
+  {
+    PrintStrategyBanner( strategy_ptr->Type() );
+  }
+
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::ExtractParentDiscretization(
     const DRT::DiscretizationInterface & full_discret,
     const std::vector<DRT::Condition*> & given_ccgroup,
@@ -1590,4 +1723,222 @@ void CONTACT::STRATEGY::Factory::ExtractParentDiscretization(
     IO::cout << *(given_ccgroup[i]) << "\n";
   dserror("There is no wrapped discretization which belongs to the given "
       "contact condition group!");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
+    const enum INPAR::CONTACT::SolvingStrategy soltype )
+{
+  // some parameters
+  const Teuchos::ParameterList&   smortar   = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList&   scontact  = DRT::Problem::Instance()->ContactDynamicParams();
+  INPAR::MORTAR::ShapeFcn         shapefcn  = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar,"LM_SHAPEFCN");
+  INPAR::CONTACT::SystemType      systype   = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact,"SYSTEM");
+  INPAR::MORTAR::AlgorithmType    algorithm = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar,"ALGORITHM");
+  bool smoothing = DRT::INPUT::IntegralValue<int>(scontact,"DISCR_SMOOTHING");
+  bool nonSmoothGeometries = DRT::INPUT::IntegralValue<int>(scontact,"NONSMOOTH_GEOMETRIES");
+
+  if(nonSmoothGeometries)
+  {
+    if(soltype == INPAR::CONTACT::solution_lagmult)
+    {
+      IO::cout << "================================================================\n";
+      IO::cout << "===== Lagrange Multiplier Strategy =============================\n";
+      IO::cout << "===== NONSMOOTH - GEOMETRIES ===================================\n";
+      IO::cout << "================================================================\n\n";
+    }
+    else
+      dserror("ERROR: Invalid system type for contact/meshtying interface smoothing");
+  }
+  else if(smoothing)
+  {
+    if(soltype == INPAR::CONTACT::solution_lagmult)
+    {
+      IO::cout << "================================================================\n";
+      IO::cout << "========= !!! EXPERIMENTAL VERSION  !!!     ====================\n";
+      IO::cout << "================================================================\n\n";
+      IO::cout << "================================================================\n";
+      IO::cout << "===== Interface smoothing approach with     ====================\n";
+      IO::cout << "===== Standard Lagrange multiplier strategy ====================\n";
+      IO::cout << "===== (Saddle point formulation) ===============================\n";
+      IO::cout << "================================================================\n\n";
+    }
+    else if (INPAR::CONTACT::solution_penalty)
+    {
+      IO::cout << "================================================================\n";
+      IO::cout << "========= !!! EXPERIMENTAL VERSION  !!!     ====================\n";
+      IO::cout << "================================================================\n\n";
+      IO::cout << "================================================================\n";
+      IO::cout << "===== Interface smoothing approach with     ====================\n";
+      IO::cout << "===== Standard Penalty strategy             ====================\n";
+      IO::cout << "===== (Pure displacement formulation)===========================\n";
+      IO::cout << "================================================================\n\n";
+    }
+    else
+      dserror("ERROR: Invalid system type for contact/meshtying interface smoothing");
+  }
+  else
+  {
+    if(algorithm == INPAR::MORTAR::algorithm_mortar)
+    {
+      // saddle point formulation
+      if (systype == INPAR::CONTACT::system_saddlepoint)
+      {
+        if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Standard Lagrange multiplier strategy ====================\n";
+          IO::cout << "===== (Saddle point formulation) ===============================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Dual Lagrange multiplier strategy ========================\n";
+          IO::cout << "===== (Saddle point formulation) ===============================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n";
+          IO::cout << "===== (Saddle point formulation) ===============================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Standard Penalty strategy ================================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Dual Penalty strategy ====================================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Uzawa Augmented Lagrange strategy ========================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_combo)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Combination of different Solving Strategies ==============\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_augmented)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Augmented Lagrange strategy ==============================\n";
+          IO::cout << "===== (Saddle point formulation) ===============================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_steepest_ascent)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Steepest Ascent strategy =================================\n";
+          IO::cout << "===== (Condensed formulation) ==================================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_xcontact && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Extended contact strategy ================================\n";
+          IO::cout << "===== (Saddle point formulation) ===============================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+      }
+
+      // condensed formulation
+      else if (systype == INPAR::CONTACT::system_condensed || systype == INPAR::CONTACT::system_condensed_lagmult)
+      {
+        if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Dual Lagrange multiplier strategy ========================\n";
+          IO::cout << "===== (Condensed formulation) ==================================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_lagmult && shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Petrov-Galerkin Lagrange multiplier strategy =============\n";
+          IO::cout << "===== (Condensed formulation) ==================================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Standard Penalty strategy ================================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_penalty && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Dual Penalty strategy ====================================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_standard)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Uzawa Augmented Lagrange strategy ========================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_uzawa && shapefcn == INPAR::MORTAR::shape_dual)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================\n";
+          IO::cout << "===== (Pure displacement formulation) ==========================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+      }
+    }
+    else if(algorithm == INPAR::MORTAR::algorithm_nts)
+    {
+      IO::cout << "================================================================\n";
+      IO::cout << "===== Node-To-Segment approach =================================\n";
+      IO::cout << "================================================================\n\n";
+    }
+    else if(algorithm == INPAR::MORTAR::algorithm_lts)
+    {
+      IO::cout << "================================================================\n";
+      IO::cout << "===== Line-To-Segment approach =================================\n";
+      IO::cout << "================================================================\n\n";
+    }
+    else if(algorithm == INPAR::MORTAR::algorithm_stl)
+    {
+      IO::cout << "================================================================\n";
+      IO::cout << "===== Segment-To-Line approach =================================\n";
+      IO::cout << "================================================================\n\n";
+    }
+    else if(algorithm == INPAR::MORTAR::algorithm_gpts)
+    {
+      IO::cout << "================================================================\n";
+      IO::cout << "===== Gauss-Point-To-Segment approach ==========================\n";
+      IO::cout << "================================================================\n\n";
+    }
+    // invalid system type
+    else
+      dserror("ERROR: Invalid system type for contact/meshtying");
+  }
+  return;
 }

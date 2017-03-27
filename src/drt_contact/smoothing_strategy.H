@@ -285,6 +285,19 @@ class SmoothingStrategy : public CoAbstractStrategy
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
 
+  protected:
+    //! derived
+    virtual std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces()
+    {
+      return interface_;
+    }
+
+    //! derived
+    virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() const
+    {
+      return interface_;
+    }
+
   private:
     /*!
     \brief create vector with node positions
@@ -314,6 +327,8 @@ class SmoothingStrategy : public CoAbstractStrategy
     bool activesetssconv_;    // convergence flag for semi-smooth active set search
     bool activesetconv_;      // convergence flag for fixed-point active set search
     int  activesetsteps_;     // number of fixed-point active set steps in this time step
+
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface_; //!< contact interfaces
 
     Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix_; // product of global Mortar matrices inv(D)*M
 

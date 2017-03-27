@@ -37,34 +37,121 @@
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "contact_nitsche_utils.H"
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+CONTACT::IDataContainer::IDataContainer()
+    : selfcontact_( false ),
+      friction_( false ),
+      nonSmoothContact_( false ),
+      constr_direction_( INPAR::CONTACT::constr_vague ),
+      activenodes_( Teuchos::null ),
+      activedofs_( Teuchos::null ),
+      activen_( Teuchos::null ),
+      activet_( Teuchos::null ),
+      slipnodes_( Teuchos::null ),
+      slipdofs_( Teuchos::null ),
+      slipt_( Teuchos::null ),
+      nonsmoothnodes_( Teuchos::null ),
+      smoothnodes_( Teuchos::null ),
+      nextendedghosting_( Teuchos::null ),
+      eextendedghosting_( Teuchos::null ),
+      binarytreeself_( Teuchos::null ),
+      cnValues_( Teuchos::null ),
+      ctValues_( Teuchos::null ),
+      smpairs_( 0 ),
+      smintpairs_( 0 ),
+      intcells_( 0 )
+{
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<CONTACT::CoInterface> CONTACT::CoInterface::Create(
+      const int id, const Epetra_Comm& comm, const int dim,
+      const Teuchos::ParameterList& icontact,
+      const bool selfcontact, INPAR::MORTAR::RedundantStorage redundant)
+{
+  Teuchos::RCP<MORTAR::IDataContainer> idata_ptr =
+      Teuchos::rcp( new CONTACT::IDataContainer() );
+  return Teuchos::rcp( new CoInterface( idata_ptr, id, comm, dim,
+      icontact, selfcontact, redundant ) );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+CONTACT::CoInterface::CoInterface(
+    const Teuchos::RCP<CONTACT::IDataContainer>& idata_ptr )
+    : MORTAR::MortarInterface( idata_ptr ),
+      idata_ptr_( idata_ptr ),
+      idata_( *idata_ptr_ ),
+      selfcontact_( idata_.IsSelfContact() ),
+      friction_( idata_.IsFriction() ),
+      nonSmoothContact_( idata_.IsNonSmoothContact() ),
+      constr_direction_( idata_.ConstraintDirection() ),
+      activenodes_( idata_.ActiveNodes() ),
+      activedofs_( idata_.ActiveDofs() ),
+      activen_( idata_.ActiveN() ),
+      activet_( idata_.ActiveT() ),
+      slipnodes_( idata_.SlipNodes() ),
+      slipdofs_( idata_.SlipDofs() ),
+      slipt_( idata_.SlipT() ),
+      nonsmoothnodes_( idata_.NonSmoothNodes() ),
+      smoothnodes_( idata_.SmoothNodes() ),
+      nextendedghosting_( idata_.NExtendedGhosting() ),
+      eextendedghosting_( idata_.EExtendedGhosting() ),
+      binarytreeself_( idata_.BinaryTreeSelf() ),
+      cnValues_( idata_.CnValues() ),
+      ctValues_( idata_.CtValues() ),
+      smpairs_( idata_.SMIntPairs() ),
+      smintpairs_( idata_.SMIntPairs() ),
+      intcells_( idata_.IntCells() )
+{
+  /* do nothing */
+}
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoInterface::CoInterface(const int id, const Epetra_Comm& comm,
-                                  const int dim,
-                                  const Teuchos::ParameterList& icontact,
-                                  bool selfcontact,
-                                  INPAR::MORTAR::RedundantStorage redundant)
-    : MORTAR::MortarInterface(id,comm,dim,icontact,redundant),
-      selfcontact_(selfcontact),
-      friction_(false),
-      nonSmoothContact_(DRT::INPUT::IntegralValue<int>(icontact,"NONSMOOTH_GEOMETRIES")),
-      constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(icontact,"CONSTRAINT_DIRECTIONS")),
-      activenodes_(Teuchos::null),
-      activedofs_(Teuchos::null),
-      activen_(Teuchos::null),
-      activet_(Teuchos::null),
-      nonsmoothnodes_(Teuchos::null),
-      smoothnodes_(Teuchos::null),
-      nextendedghosting_(Teuchos::null),
-      eextendedghosting_(Teuchos::null),
-      binarytreeself_(Teuchos::null),
-      cnValues_(Teuchos::null),
-      ctValues_(Teuchos::null),
-      smpairs_(0),
-      smintpairs_(0),
-      intcells_(0)
+CONTACT::CoInterface::CoInterface(
+    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
+    const int id, const Epetra_Comm& comm,
+    const int dim,
+    const Teuchos::ParameterList& icontact,
+    bool selfcontact,
+    INPAR::MORTAR::RedundantStorage redundant)
+    : MORTAR::MortarInterface(idata_ptr,id,comm,dim,icontact,redundant),
+      idata_ptr_( Teuchos::rcp_dynamic_cast<CONTACT::IDataContainer>( idata_ptr, true ) ),
+      idata_( *idata_ptr_ ),
+      selfcontact_( idata_.IsSelfContact() ),
+      friction_( idata_.IsFriction() ),
+      nonSmoothContact_( idata_.IsNonSmoothContact() ),
+      constr_direction_( idata_.ConstraintDirection() ),
+      activenodes_( idata_.ActiveNodes() ),
+      activedofs_( idata_.ActiveDofs() ),
+      activen_( idata_.ActiveN() ),
+      activet_( idata_.ActiveT() ),
+      slipnodes_( idata_.SlipNodes() ),
+      slipdofs_( idata_.SlipDofs() ),
+      slipt_( idata_.SlipT() ),
+      nonsmoothnodes_( idata_.NonSmoothNodes() ),
+      smoothnodes_( idata_.SmoothNodes() ),
+      nextendedghosting_( idata_.NExtendedGhosting() ),
+      eextendedghosting_( idata_.EExtendedGhosting() ),
+      binarytreeself_( idata_.BinaryTreeSelf() ),
+      cnValues_( idata_.CnValues() ),
+      ctValues_( idata_.CtValues() ),
+      smpairs_( idata_.SMIntPairs() ),
+      smintpairs_( idata_.SMIntPairs() ),
+      intcells_( idata_.IntCells() )
 {
+  selfcontact_ = selfcontact;
+  nonSmoothContact_ = DRT::INPUT::IntegralValue<int>(icontact,"NONSMOOTH_GEOMETRIES");
+  constr_direction_ = DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(icontact,"CONSTRAINT_DIRECTIONS");
+  smpairs_ = 0;
+  smintpairs_ = 0;
+  intcells_ = 0;
+
   // set frictional contact status
   INPAR::CONTACT::FrictionType ftype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(icontact,"FRICTION");
@@ -11223,8 +11310,9 @@ bool CONTACT::CoInterface::SplitActiveDofs()
 /*----------------------------------------------------------------------*
  |  Calculate angular interface moments                  hiermeier 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs,
-                                               const Epetra_Vector& fm)
+void CONTACT::CoInterface::EvalResultantMoment(
+    const Epetra_Vector& fs,
+    const Epetra_Vector& fm) const
 {
   // get out of here if not participating in interface
   if (!lComm()) return;

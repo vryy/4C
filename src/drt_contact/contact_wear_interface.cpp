@@ -33,12 +33,14 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/13|
  *----------------------------------------------------------------------*/
-WEAR::WearInterface::WearInterface(const int id, const Epetra_Comm& comm,
-                                  const int dim,
-                                  const Teuchos::ParameterList& icontact,
-                                  bool selfcontact,
-                                  INPAR::MORTAR::RedundantStorage redundant) :
-CONTACT::CoInterface(id,comm,dim,icontact,selfcontact,redundant),
+WEAR::WearInterface::WearInterface(
+    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
+    const int id, const Epetra_Comm& comm,
+    const int dim,
+    const Teuchos::ParameterList& icontact,
+    bool selfcontact,
+    INPAR::MORTAR::RedundantStorage redundant) :
+CONTACT::CoInterface(idata_ptr,id,comm,dim,icontact,selfcontact,redundant),
 wear_(false),
 wearimpl_(false),
 wearpv_(false),

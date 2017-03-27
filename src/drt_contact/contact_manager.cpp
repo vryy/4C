@@ -26,6 +26,7 @@
 #include "contact_nitsche_strategy.H"
 #include "contact_defines.H"
 #include "friction_node.H"
+#include "contact_strategy_factory.H"
 
 #include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "../drt_contact_aug/contact_augmented_interface.H"
@@ -376,15 +377,10 @@ CONTACT::CoManager::CoManager(
       dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
-    Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
-    if (stype==INPAR::CONTACT::solution_augmented)
-      newinterface=Teuchos::rcp(new CONTACT::AUG::Interface(groupid1,Comm(),dim,icparams,isself[0],redundant));
-    else if(wlaw!=INPAR::WEAR::wear_none)
-      newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
-    else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
-      newinterface=Teuchos::rcp(new CONTACT::CoTSIInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
-    else
-      newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],redundant));
+    Teuchos::RCP<CONTACT::CoInterface> newinterface=
+        STRATEGY::Factory::CreateInterface( groupid1, Comm(), dim, icparams, isself[0],
+            redundant, Teuchos::null );
+
     interfaces.push_back(newinterface);
 
     // get it again

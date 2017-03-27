@@ -16,6 +16,7 @@
 #include "contact_augmented_strategy.H"
 #include "contact_augmented_interface.H"
 #include "contact_aug_potential.H"
+#include "contact_aug_steepest_ascent_strategy.H"
 
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_lagrange_strategy.H"
@@ -54,8 +55,11 @@ CONTACT::AUG::DataContainer::DataContainer()
       kappaPtr_( Teuchos::null ),
       lmNPtr_( Teuchos::null ),
       dLmTLmTRhsPtr_( Teuchos::null ),
+      slForceLmPtr_( Teuchos::null ),
+      slForceGPtr_( Teuchos::null ),
+      maForceLmPtr_( Teuchos::null ),
+      maForceGPtr_( Teuchos::null ),
       cnPtr_( Teuchos::null ),
-      uCnPtr_( Teuchos::null ),
       gsndofrowmapPtr_( Teuchos::null ),
       gstdofrowmapPtr_( Teuchos::null ),
       gOldActiveSlaveNodesPtr_( Teuchos::null )
@@ -67,27 +71,48 @@ CONTACT::AUG::DataContainer::DataContainer()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void CONTACT::AUG::DataContainer::InitSubDataContainer(
+    const INPAR::CONTACT::SolvingStrategy strat_type )
+{
+  switch ( strat_type )
+  {
+    case INPAR::CONTACT::solution_steepest_ascent:
+      sa_data_ptr_ = Teuchos::RCP<CONTACT::AUG::STEEPESTASCENT::DataContainer>(
+          new CONTACT::AUG::STEEPESTASCENT::DataContainer() );
+      break;
+    default:
+      dserror( "There is no known sub-data container for the given "
+          "strategy type! ( strat_type = %s )",
+          INPAR::CONTACT::SolvingStrategy2String( strat_type ).c_str() );
+      exit( EXIT_FAILURE );
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 CONTACT::AUG::Strategy::Strategy(
     const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
     const Teuchos::ParameterList& params,
-    const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+    const plain_interface_set& interfaces,
     int dim,
     const Teuchos::RCP<const Epetra_Comm>& comm,
     int maxdof)
-    : ::CONTACT::CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,
-                                    interfaces,dim,comm,0.0,maxdof)
+    : ::CONTACT::CoAbstractStrategy( data_ptr, DofRowMap, NodeRowMap, params,
+        dim, comm, 0.0, maxdof )
 {
   augDataPtr_ = Teuchos::rcp_dynamic_cast<CONTACT::AUG::DataContainer>(data_ptr, true);
 
   // store values of the parameter list
+  const Teuchos::ParameterList& p_augmented = params.sublist( "AUGMENTED" );
+
   Data().PrintLinearMomConservation() =
-      DRT::INPUT::IntegralValue<bool>(params.sublist( "AUGMENTED" ),
+      DRT::INPUT::IntegralValue<bool>( p_augmented,
           "PRINT_LINEAR_CONSERVATION");
 
   Data().PrintAngularMomConservation() =
-      DRT::INPUT::IntegralValue<bool>(params.sublist( "AUGMENTED" ),
+      DRT::INPUT::IntegralValue<bool>( p_augmented,
           "PRINT_ANGULAR_CONSERVATION");
 
   Data().SetIsSemiSmoothNewton( DRT::INPUT::IntegralValue<bool>( params,
@@ -96,15 +121,15 @@ CONTACT::AUG::Strategy::Strategy(
   Data().SetConstantCn( Params().get<double>( "SEMI_SMOOTH_CN" ) );
 
   Data().SetParallelStrategy( DRT::INPUT::IntegralValue<
-      INPAR::MORTAR::ParallelStrategy>(Params(), "PARALLEL_STRATEGY") );
+      INPAR::MORTAR::ParallelStrategy>( Params(), "PARALLEL_STRATEGY") );
 
   Data().SetPotential( Teuchos::rcp( new Potential( *this, *augDataPtr_ ) ) );
 
-  // cast to augmented interfaces
-  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
-        interfaces.begin(); cit != interfaces.end(); ++cit )
+  for ( plain_interface_set::const_iterator cit = interfaces.begin();
+        cit != interfaces.end(); ++cit )
   {
     const Teuchos::RCP<CONTACT::CoInterface> & interface = *cit;
+    // cast to augmented interfaces just as sanity check
     interface_.push_back( Teuchos::rcp_dynamic_cast<CONTACT::AUG::Interface>(
         interface, true ) );
   }
@@ -114,9 +139,31 @@ CONTACT::AUG::Strategy::Strategy(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+bool CONTACT::AUG::Strategy::IsSaddlePointSystem() const
+{
+  return (IsInContact() or WasInContact() or WasInContactLastTimeStep());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+CONTACT::AUG::plain_interface_set& CONTACT::AUG::Strategy::Interfaces()
+{
+  return interface_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const CONTACT::AUG::plain_interface_set&
+CONTACT::AUG::Strategy::Interfaces() const
+{
+  return interface_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::PostSetup(
-    const bool& redistributed,
-    const bool& init)
+    bool redistributed,
+    bool init)
 {
   if ( init )
   {
@@ -130,9 +177,6 @@ void CONTACT::AUG::Strategy::PostSetup(
   // just used for the redistributed case
   if ( redistributed )
   {
-    // redistribute the slave/master dirichlet boundary condition row map
-    AssembleSlMaNoDbcDofRowMap( Teuchos::null );
-
     // reassemble the global slave normal/tangential dof row maps
     AssembleGlobalSlNTDofRowMaps();
 
@@ -162,12 +206,16 @@ void CONTACT::AUG::Strategy::AssembleGlobalSlNTDofRowMaps()
   Data().GSlNormalDofRowMapPtr()     = Teuchos::null;
   Data().GSlTangentialDofRowMapPtr() = Teuchos::null;
 
-  for (int i=0; i<(int) interface_.size(); ++i)
+  for ( plain_interface_set::const_iterator cit = interface_.begin();
+        cit != interface_.end(); ++cit )
   {
+    const CONTACT::AUG::Interface& interface =
+        dynamic_cast<CONTACT::AUG::Interface&>( **cit );
+
     Data().GSlNormalDofRowMapPtr()     =
-        LINALG::MergeMap(Data().GSlNormalDofRowMapPtr(),interface_[i]->SlaveRowNDofs());
+        LINALG::MergeMap(Data().GSlNormalDofRowMapPtr(),interface.SlaveRowNDofs());
     Data().GSlTangentialDofRowMapPtr() =
-        LINALG::MergeMap(Data().GSlTangentialDofRowMapPtr(),interface_[i]->SlaveRowTDofs());
+        LINALG::MergeMap(Data().GSlTangentialDofRowMapPtr(),interface.SlaveRowTDofs());
   }
 
   return;
@@ -188,11 +236,6 @@ void CONTACT::AUG::Strategy::InitializeCn(
       Data().CnPtr() = LINALG::CreateVector(SlRowNodes(),true);
     // set all nodal cn-values to the input value
     Data().Cn().PutScalar(cn);
-
-    if (Data().UCnPtr().is_null() or Data().UCn().GlobalLength()==0)
-      Data().UCnPtr() = LINALG::CreateVector(SlRowNodes(),true);
-    // set all nodal entries of the uCn-vector
-    Data().UCn().PutScalar(1.0e12);
   }
 
   if (redistributed)
@@ -201,13 +244,20 @@ void CONTACT::AUG::Strategy::InitializeCn(
     Teuchos::RCP<Epetra_Vector> newcn = Teuchos::rcp(new Epetra_Vector(SlRowNodes()));
     LINALG::Export(Data().Cn(),*newcn);
     Data().CnPtr() = newcn;
-    // redistribute the cn-update-vector
-    Teuchos::RCP<Epetra_Vector> newuCn = Teuchos::rcp(new Epetra_Vector(SlRowNodes()));
-    LINALG::Export(Data().UCn(),*newuCn);
-    Data().UCnPtr() = newuCn;
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::DoReadRestart(
+    IO::DiscretizationReader& reader,
+    Teuchos::RCP<const Epetra_Vector> dis,
+    Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr )
+{
+  CONTACT::CoAbstractStrategy::DoReadRestart( reader, dis, cparams_ptr );
+  PostSetup( false, false );
 }
 
 /*----------------------------------------------------------------------*
@@ -230,8 +280,14 @@ void CONTACT::AUG::Strategy::InitMortar()
 void CONTACT::AUG::Strategy::AssembleMortar()
 {
   // for all interfaces
-  for (std::size_t i = 0; i < interface_.size(); ++i)
-    interface_[i]->AssembleAugDnMnMatrix(Data().DMatrix(),Data().MMatrix());
+  for ( plain_interface_set::const_iterator cit = interface_.begin();
+        cit != interface_.end(); ++cit )
+  {
+    const CONTACT::AUG::Interface& interface =
+        dynamic_cast<CONTACT::AUG::Interface&>( **cit );
+
+    interface.AssembleAugDnMnMatrix(Data().DMatrix(),Data().MMatrix());
+  }
 
   Data().DMatrix().Complete(SlDoFRowMap(true),SlRowNodes());
   Data().MMatrix().Complete(MaDoFRowMap(true),SlRowNodes());
@@ -353,6 +409,11 @@ void CONTACT::AUG::Strategy::ZeroizeVectors()
   Data().AVec().PutScalar( 0.0 );
   Data().KappaVec().PutScalar( 0.0 );
   Data().WGap().PutScalar( 0.0 );
+
+  Data().SlForceLm().PutScalar( 0.0 );
+  Data().SlForceG().PutScalar( 0.0 );
+  Data().MaForceLm().PutScalar( 0.0 );
+  Data().MaForceG().PutScalar( 0.0 );
 }
 
 /*----------------------------------------------------------------------------*
@@ -370,11 +431,21 @@ void CONTACT::AUG::Strategy::CreateVectors( const Epetra_Map &
   Data().InactiveRhsPtr() = Teuchos::rcp( new Epetra_Vector(
       gAugInactiveSlaveDofs, true ) );
 
-  Data().AVecPtr()     = Teuchos::rcp( new Epetra_Vector( SlRowNodes(), true ) );
+  Data().AVecPtr()     = Teuchos::rcp( new Epetra_Vector(
+      SlRowNodes(), true ) );
   Data().KappaVecPtr() = Teuchos::rcp( new Epetra_Vector(
       Data().GActiveNodeRowMap(), true ) );
-  Data().WGapPtr()  = Teuchos::rcp( new Epetra_Vector(
+  Data().WGapPtr()     = Teuchos::rcp( new Epetra_Vector(
       Data().GActiveNDofRowMap(), true ) );
+
+  Data().SlForceLmPtr() = Teuchos::rcp( new Epetra_Vector(
+      SlDoFRowMap(true), true ) );
+  Data().SlForceGPtr() = Teuchos::rcp( new Epetra_Vector(
+      SlDoFRowMap(true) ), true );
+  Data().MaForceLmPtr() = Teuchos::rcp( new Epetra_Vector(
+      MaDoFRowMap(true), true ) );
+  Data().MaForceGPtr() = Teuchos::rcp( new Epetra_Vector(
+      MaDoFRowMap(true) ),true );
 }
 
 /*----------------------------------------------------------------------------*
@@ -442,14 +513,20 @@ void CONTACT::AUG::Strategy::EvalForceStiff(
   // --- Assemble stiffness matrix ---------------------------------------
   AssembleContactStiff();
 
+  PostEvalForceStiff( cparams );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::PostEvalForceStiff(
+    CONTACT::ParamsInterface& cparams )
+{
   // --- DEBUGGING -------------------------------------------------------
   // Finite Difference check at Gauss-point level
   AugFDCheckGP(cparams);
 
   // Finite Difference check at global level
   AugFDCheckGlobal(cparams);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -464,13 +541,17 @@ void CONTACT::AUG::Strategy::InitEvalInterface(
   INPAR::MORTAR::ParallelStrategy strat = Data().ParallelStrategy();
 
   // Evaluation for all interfaces
-  for (int i = 0; i < (int) interface_.size(); ++i)
+  for ( plain_interface_set::const_iterator cit = interface_.begin();
+        cit != interface_.end(); ++cit )
   {
+    CONTACT::AUG::Interface& interface =
+        dynamic_cast<CONTACT::AUG::Interface&>( **cit );
+
     // initialize / reset interfaces
-    interface_[i]->Initialize();
+    interface.Initialize();
 
     //store required integration time
-    Data().IntTime() += interface_[i]->Inttime();
+    Data().IntTime() += interface.Inttime();
     switch (strat)
     {
       /*----------------------------------------------------------*
@@ -479,11 +560,11 @@ void CONTACT::AUG::Strategy::InitEvalInterface(
       case INPAR::MORTAR::ghosting_redundant:
       {
         // evaluate averaged weighted gap
-        interface_[i]->Evaluate(0,cparams_ptr);
+        interface.Evaluate(0,cparams_ptr);
         // Calculate weighted gap
-        interface_[i]->WGap();
+        interface.WGap();
         // evaluate remaining entities and linearization
-        interface_[i]->RedEvaluate(cparams_ptr);
+        interface.RedEvaluate(cparams_ptr);
         break;
       }
       default:
@@ -554,8 +635,8 @@ void CONTACT::AUG::Strategy::ResetLagrangeMultipliers(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::EvalForce(
-    CONTACT::ParamsInterface& cparams)
+void CONTACT::AUG::Strategy::PreEvalForce(
+    CONTACT::ParamsInterface& cparams )
 {
   /*--------------------------------------------------------------*
    | For self-contact the master/slave sets are updated within the|
@@ -601,8 +682,23 @@ void CONTACT::AUG::Strategy::EvalForce(
 
   // initialize all rhs vectors and linearization matrices
   Initialize( cparams.GetActionType() );
+}
 
-  // --- Assemble the ride hand side terms -------------------------------
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::EvalForce(
+    CONTACT::ParamsInterface& cparams)
+{
+  // --- Prepare the evaluation and integrate all quantities ------------------
+  PreEvalForce( cparams );
+
+  // --- Assemble the gap vectors ---------------------------------------------
+  AssembleGap();
+
+  // --- compute the augmented forces -----------------------------------------
+  EvalAugmentedForces();
+
+  // --- Assemble the ride hand side terms ------------------------------------
   AssembleContactRHS();
 
   /* Evaluate structural and constraint rhs. This is also necessary, if the
@@ -612,6 +708,31 @@ void CONTACT::AUG::Strategy::EvalForce(
   EvalConstrRHS();       // update the constrRHS
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::AssembleGap()
+{
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+    return;
+  /*--------------------------------------------------------------------*
+   | Assembly                                                          |
+   *--------------------------------------------------------------------*
+   | --> weighted gap                                                   |
+   | --> averaged weighted gap                                          |
+   *--------------------------------------------------------------------*/
+  for ( plain_interface_set::const_iterator cit = interface_.begin();
+        cit != interface_.end(); ++cit )
+  {
+    CONTACT::AUG::Interface& interface =
+        dynamic_cast<CONTACT::AUG::Interface&>( **cit );
+
+    interface.AssembleGapVectors( Data().AWGap(), Data().WGap() );
+  }
+
 }
 
 /*----------------------------------------------------------------------*
@@ -626,26 +747,32 @@ bool CONTACT::AUG::Strategy::AssembleContactRHS()
    |             ASSEMBLE THE CONTACT RIGHT HAND SIDE                   |
    *--------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*
-   | calculate                                                          |
+   | Assembly                                                           |
    *--------------------------------------------------------------------*
    | --> normal Lagrange multiplier                                     |
    | --> (averaged) weighted gap                                        |
    | --> tangential constraint right hand side for the frictionless case|
    | --> normal and tangential inactive rhs                             |
    *--------------------------------------------------------------------*/
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for ( plain_interface_set::const_iterator cit = interface_.begin();
+        cit != interface_.end(); ++cit )
   {
+    CONTACT::AUG::Interface& interface =
+        dynamic_cast<CONTACT::AUG::Interface&>( **cit );
+
     // --- augmented Lagrange formulation --------------------------------
-    // --- Force Balance -------------------------------------------------
-    interface_[i]->AssembleResidualVectors(Data().LmN(),
-        Data().AWGap(), Data().WGap());
+    // --- FORCE BALANCE -------------------------------------------------
+    interface.AssembleLmNVector(Data().LmN());
+
     // --- CONSTRAINTS ---------------------------------------------------
     // active - normal direction
     // --> wGapRhs_
+
     // active - tangential direction
-    interface_[i]->AssembleDLmTLmTRhs(Data().DLmTLmTRhs());
+    interface.AssembleDLmTLmTRhs(Data().DLmTLmTRhs());
+
     // inactive - all directions
-    interface_[i]->AssembleAugInactiveRhs(Data().InactiveRhs(),Data().Cn());
+    interface.AssembleAugInactiveRhs(Data().InactiveRhs(),Data().Cn());
   }
 
   return true;
@@ -663,26 +790,30 @@ void CONTACT::AUG::Strategy::AssembleContactStiff()
    |             ASSEMBLE THE TANGENTIAL STIFFNESS MATRIX               |
    *--------------------------------------------------------------------*/
   // --- augmented Lagrange formulation ----------------------------------
-  for (std::size_t i=0; i < interface_.size();++i)
+  for ( plain_interface_set::const_iterator cit = interface_.begin();
+        cit != interface_.end(); ++cit )
   {
+    const CONTACT::AUG::Interface& interface =
+        dynamic_cast<CONTACT::AUG::Interface&>( **cit );
+
     // Calculate averaged weighted gap linearization for all active nodes
-    interface_[i]->AWGapLin();
+    interface.AWGapLin();
     // --- Force Balance ------------------------------------------------
     // linearization w.r.t. displ.
-    interface_[i]->AssembleDGLmLinMatrix(Data().DGLmSlLinMatrix(),
+    interface.AssembleDGLmLinMatrix(Data().DGLmSlLinMatrix(),
                                          Data().DGLmMaLinMatrix());
-    interface_[i]->AssembleDGGLinMatrix(Data().DGGSlLinMatrix(),
+    interface.AssembleDGGLinMatrix(Data().DGGSlLinMatrix(),
                                         Data().DGGMaLinMatrix(),
                                         Data().Cn());
     // --- Constraints --------------------------------------------------
     // linearization w.r.t. LM
-    interface_[i]->AssembleDLmTLmTMatrix(Data().DLmTLmTMatrix());
-    interface_[i]->AssembleAugInactiveDiagMatrix(Data().InactiveDiagMatrix(),Data().Cn());
+    interface.AssembleDLmTLmTMatrix(Data().DLmTLmTMatrix());
+    interface.AssembleAugInactiveDiagMatrix(Data().InactiveDiagMatrix(),Data().Cn());
     // linearization w.r.t. displ.
     // active - normal direction
-    interface_[i]->AssembleDLmNWGapLinMatrix(Data().DLmNWGapLinMatrix());
+    interface.AssembleDLmNWGapLinMatrix(Data().DLmNWGapLinMatrix());
     // active - tangential direction
-    interface_[i]->AssembleDLmTLmTLinMatrix(Data().DLmTLmTLinMatrix());
+    interface.AssembleDLmTLmTLinMatrix(Data().DLmTLmTLinMatrix());
     /*--------------------------------------------------------------------*
      | The linearization of the nodal area w.r.t. the displ. for inactive |
      | nodes can help to prevent oscillations of the active set, because  |
@@ -692,7 +823,7 @@ void CONTACT::AUG::Strategy::AssembleContactStiff()
      |                    Delta(z_{n,i}^{k+1}) = - z_{n,i}^{k}            |
      |                          z_{n,i}^{k+1}  =   0                      |
      *--------------------------------------------------------------------*/
-    interface_[i]->AssembleAugInactiveLinMatrix(Data().InactiveLinMatrix(),Data().Cn());
+    interface.AssembleAugInactiveLinMatrix(Data().InactiveLinMatrix(),Data().Cn());
   }
 
   // --- START - FillComplete matrices ----------------------------------
@@ -729,13 +860,16 @@ void CONTACT::AUG::Strategy::UpdateActiveSetSemiSmooth(
   if ( not Data().IsSemiSmoothNewton() )
   {
     // loop over all interfaces
-    for (std::size_t i=0; i<interface_.size();++i)
+    for ( plain_interface_set::const_iterator cit = interface_.begin();
+          cit != interface_.end(); ++cit )
     {
+      const CoInterface& interface = **cit;
+
       // loop over all slave nodes on the current interface
-      for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+      for (int j=0;j<interface.SlaveRowNodes()->NumMyElements();++j)
       {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        int gid = interface.SlaveRowNodes()->GID(j);
+        DRT::Node* node = interface.Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
         CoNode* cnode = static_cast<CoNode*>(node);
 
@@ -758,13 +892,18 @@ void CONTACT::AUG::Strategy::UpdateActiveSetSemiSmooth(
   Data().IsActiveSetConverged() = true;
 
   // loop over all interfaces
-  for (unsigned i=0; i<interface_.size(); ++i)
+  for ( plain_interface_set::const_iterator cit = interface_.begin();
+        cit != interface_.end(); ++cit )
   {
+    const CoInterface& interface = **cit;
+
     // loop over all slave nodes of the current interface
-    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    const int num_my_slave_row_nodes = interface.SlaveRowNodes()->NumMyElements();
+    int* my_slave_row_node_gids       = interface.SlaveRowNodes()->MyGlobalElements();
+    for ( int j=0; j < num_my_slave_row_nodes; ++j )
     {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      CoNode* cnode = dynamic_cast<CoNode*>(interface_[i]->Discret().gNode(gid));
+      const int gid = my_slave_row_node_gids[j];
+      CoNode* cnode = dynamic_cast<CoNode*>(interface.Discret().gNode(gid));
       if (!cnode) dserror("ERROR: AugmentedInterface::UpdateAugActiveSetSemiSmooth: "
           "Cannot find node with gid %",gid);
 
@@ -780,8 +919,8 @@ void CONTACT::AUG::Strategy::UpdateActiveSetSemiSmooth(
       double kappa = cnode->AugData().GetKappa();
       double awgap = cnode->AugData().GetWGap();
       // TODO
-      //std::cout << cnode->Id() << " | " << cnode->X()[0] << ", " << cnode->X()[1] <<
-      //    " | " << cnode->CoData().GetWGap() << std::endl;
+//      std::cout << cnode->Id() << " | " << cnode->X()[0] << ", " << cnode->X()[1] <<
+//          " | " << cnode->AugData().GetWGap() << std::endl;
       if (kappa != 1.0e12)
         awgap/= kappa;
 
@@ -825,20 +964,23 @@ void CONTACT::AUG::Strategy::UpdateActiveSetSemiSmooth(
   Data().GActiveTDofRowMapPtr() = Teuchos::null;
 
   // loop over all interfaces
-  for (int it=0;it<(int) interface_.size();++it)
+  for ( plain_interface_set::const_iterator cit = interface_.begin();
+        cit != interface_.end(); ++cit )
   {
+    CoInterface& interface = **cit;
+
     // update active set Epetra_Maps
-    interface_[it]->BuildActiveSet();
+    interface.BuildActiveSet();
 
     // Update Active set
     Data().GActiveNodeRowMapPtr() = LINALG::MergeMap(
-        Data().GActiveNodeRowMapPtr(),interface_[it]->ActiveNodes(),false);
+        Data().GActiveNodeRowMapPtr(),interface.ActiveNodes(),false);
     Data().GActiveDofRowMapPtr()  = LINALG::MergeMap(
-        Data().GActiveDofRowMapPtr(),interface_[it]->ActiveDofs(),false);
+        Data().GActiveDofRowMapPtr(),interface.ActiveDofs(),false);
     Data().GActiveNDofRowMapPtr() = LINALG::MergeMap(
-        Data().GActiveNDofRowMapPtr(),interface_[it]->ActiveNDofs(),false);
+        Data().GActiveNDofRowMapPtr(),interface.ActiveNDofs(),false);
     Data().GActiveTDofRowMapPtr() = LINALG::MergeMap(
-        Data().GActiveTDofRowMapPtr(),interface_[it]->ActiveTDofs(),false);
+        Data().GActiveTDofRowMapPtr(),interface.ActiveTDofs(),false);
   }
 
   // check the convergence of the active set
@@ -880,8 +1022,8 @@ void CONTACT::AUG::Strategy::UpdateActiveSetSemiSmooth(
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::EvalStrContactRHS()
 {
   if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
@@ -899,30 +1041,25 @@ void CONTACT::AUG::Strategy::EvalStrContactRHS()
   if (IsSelfContact())
     dserror("ERROR: Augmented Lagrange Formulation: Self contact is not yet considered!");
 
-  Teuchos::RCP<Epetra_Vector> augLmN = LINALG::CreateVector(Data().GActiveNDofRowMap(),true);
-  // build the augmented Lagrangian multiplier vector
-  augLmN->Update(1.0,Data().AWGap(),0.0);
-  // scale by cn
-  MultiplyElementwise(Data().Cn(),Data().GActiveNodeRowMap(),*augLmN,false);
-  augLmN->Update(1.0,Data().LmN(),-1.0);
-
-  // --- add contact force terms
+  // --- add contact force terms ----------------------------------------------
   // *** Slave side ***
-  Teuchos::RCP<Epetra_Vector> augfs = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  Data().DMatrix().Multiply(true,*augLmN,*augfs);
-  Teuchos::RCP<Epetra_Vector> augfs_exp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*augfs,*augfs_exp);
-  Data().StrContactRhs().Scale(-1.0,*augfs_exp);
+  Epetra_Vector augfs( Data().SlForceLm() );
+  augfs.Update( -1.0, Data().SlForceG(), 1.0 );
+
+  Epetra_Vector augfs_exp( *ProblemDofs() );
+  LINALG::Export( augfs, augfs_exp );
+  Data().StrContactRhs().Scale( -1.0, augfs_exp );
 
   // Master side
-  Teuchos::RCP<Epetra_Vector> augfm = Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true)));
-  Data().MMatrix().Multiply(true,*augLmN,*augfm);
-  Teuchos::RCP<Epetra_Vector> augfm_exp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*augfm,*augfm_exp);
-  Data().StrContactRhs().Update(-1.0,*augfm_exp,1.0);
+  Epetra_Vector augfm( Data().MaForceLm() );
+  augfm.Update( -1.0, Data().MaForceG(), 1.0 );
+
+  Epetra_Vector augfm_exp( *ProblemDofs() );
+  LINALG::Export( augfm, augfm_exp );
+  Data().StrContactRhs().Update( -1.0, augfm_exp, 1.0 );
 
   // Check linear and angular momentum conservation
-  CheckConservationLaws(*augfs,*augfm);
+  CheckConservationLaws( augfs, augfm );
 
   return;
 }
@@ -1113,32 +1250,81 @@ void CONTACT::AUG::Strategy::CheckConservationLaws(
       std::cout << ">>      Angular Momentum Conservation     <<" << std::endl;
       std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
     }
-    for (std::size_t i=0; i<interface_.size(); ++i)
+
+    unsigned count = 0;
+    for ( plain_interface_set::const_iterator cit = interface_.begin();
+          cit != interface_.end(); ++cit )
     {
+      const CoInterface& interface = **cit;
+
       if (Comm().MyPID()==0)
       {
-        std::cout << ">>----- Interface " << std::setw(2) << i;
+        std::cout << ">>----- Interface " << std::setw(2) << count++;
         std::cout << " ---------------------<<" << std::endl;
         std::cout << ">>      Standard terms (lm)               <<" << std::endl;
       }
-      interface_[i]->EvalResultantMoment(*augfs_lm,*augfm_lm);
+      interface.EvalResultantMoment(*augfs_lm,*augfm_lm);
       if (Comm().MyPID()==0)
       {
         std::cout << "--------------------------------------------" << std::endl;
         std::cout << ">>      Regularization terms (awgap)      <<" << std::endl;
       }
-      interface_[i]->EvalResultantMoment(*augfs_g,*augfm_g);
+      interface.EvalResultantMoment(*augfs_g,*augfm_g);
       if (Comm().MyPID()==0)
       {
         std::cout << "--------------------------------------------" << std::endl;
         std::cout << ">>      Complete                          <<" << std::endl;
       }
-      interface_[i]->EvalResultantMoment(augfs,augfm);
+      interface.EvalResultantMoment(augfs,augfm);
     }
     if (Comm().MyPID()==0)
       std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
   }
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AUG::Strategy::EvalAugmentedForces()
+{
+  if (!IsInContact() and !WasInContact() and !WasInContactLastTimeStep())
+    return;
+
+  // augmented force terms
+  enum ForceTerm { lm_term = 0, g_term = 1 };
+
+  const Epetra_Vector& zn = Data().Potential().GetZnActive();
+  Epetra_Vector awgapn( Data().GActiveNDofRowMap(), true );
+  LINALG::ExtractMyVector( Data().AWGap(), awgapn );
+
+  MultiplyElementwise( Data().Cn(), Data().GActiveNodeRowMap(),
+      awgapn, false );
+
+  double* values[2] = { NULL, NULL };
+
+  values[ lm_term ] = zn.Values();
+  values[ g_term ]  = awgapn.Values();
+
+  const Epetra_MultiVector zn_awgapn( View, Data().GActiveNDofRowMap(), values, 2 );
+
+  /****************** SLAVE SIDE ****************************************/
+  double* f_values[2] = { NULL, NULL };
+  f_values[ lm_term ] = Data().SlForceLm().Values();
+  f_values[ g_term ]  = Data().SlForceG().Values();
+
+  // interface forces on the slave side
+  Epetra_MultiVector slForces( View, SlDoFRowMap( true ), f_values, 2 );
+
+  Data().DMatrix().Multiply( true, zn_awgapn , slForces );
+
+  /****************** MASTER SIDE ****************************************/
+  f_values[ lm_term ] = Data().MaForceLm().Values();
+  f_values[ g_term ]  = Data().MaForceG().Values();
+
+  // interface forces on the slave side
+  Epetra_MultiVector maForces( View, MaDoFRowMap( true ), f_values, 2 );
+
+  Data().MMatrix().Multiply( true, zn_awgapn , maForces );
 }
 
 /*----------------------------------------------------------------------*
@@ -1149,50 +1335,28 @@ void CONTACT::AUG::Strategy::AugForces(
     Epetra_Vector& gAugFm_lm,
     Epetra_Vector& gAugFm_g) const
 {
-  if (!IsInContact()) return;
+  if (!IsInContact())
+    return;
 
   /****************** SLAVE SIDE ****************************************/
   // *** standard Lagrange multiplier fraction ***
-  Teuchos::RCP<Epetra_Vector> augfs_lm =
-      Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  Teuchos::RCP<Epetra_Vector> z_exp =
-      Teuchos::rcp(new Epetra_Vector(*Data().GActiveNDofRowMapPtr()));
-  LINALG::Export(*z_,*z_exp);
-  /* Caution: We have to use the old D/M matrices, since the current ones
-   *          are not redistributed! */
-  Data().OldDMatrixPtr()->Multiply(true,*z_exp,*augfs_lm);
-
   // Export
-  LINALG::Export(*augfs_lm,gAugFs_lm);
+  LINALG::Export( *Data().SlForceLmPtr(), gAugFs_lm );
 
   // *** regularization fraction ***
-  Teuchos::RCP<Epetra_Vector> augfs_g =
-      Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  Teuchos::RCP<Epetra_Vector> aWGap = Teuchos::rcp(
-      new Epetra_Vector(*Data().GActiveNDofRowMapPtr(),true));
-  LINALG::Export(*Data().AWGapPtr(),*aWGap);
-  MultiplyElementwise(*Data().CnPtr(),*Data().GActiveNodeRowMapPtr(),
-      *aWGap,false);
-  aWGap->Scale(-1.0);
-
-  Data().OldDMatrixPtr()->Multiply(true,*aWGap,*augfs_g);
   // Export
-  LINALG::Export(*augfs_g,gAugFs_g);
+  LINALG::Export( *Data().SlForceGPtr(), gAugFs_g );
+  gAugFs_g.Scale( -1.0 );
 
   /****************** MASTER SIDE ***************************************/
   // *** standard lagrange multiplier fraction ***
-  Teuchos::RCP<Epetra_Vector> augfm_lm =
-      Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true)));
-  Data().OldMMatrixPtr()->Multiply(true,*z_exp,*augfm_lm);
   // Export
-  LINALG::Export(*augfm_lm,gAugFm_lm);
+  LINALG::Export( *Data().MaForceLmPtr(), gAugFm_lm );
 
   // *** regularization fraction ***
-  Teuchos::RCP<Epetra_Vector> augfm_g =
-      Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true)));
-  Data().OldMMatrixPtr()->Multiply(true,*aWGap,*augfm_g);
   // Export
-  LINALG::Export(*augfm_g,gAugFm_g);
+  LINALG::Export( *Data().MaForceGPtr(), gAugFm_g );
+  gAugFm_g.Scale( -1.0 );
 
   return;
 }
@@ -1206,13 +1370,16 @@ void CONTACT::AUG::Strategy::OutputStresses()
   Data().StressTangentialPtr() = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 
   // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
+  for ( plain_interface_set::const_iterator cit = interface_.begin();
+        cit != interface_.end(); ++cit )
   {
+    const CoInterface& interface = **cit;
+
     // loop over all slave row nodes on the current interface
-    for (int j=0; j<interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j=0; j<interface.SlaveRowNodes()->NumMyElements(); ++j)
     {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      int gid = interface.SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface.Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 

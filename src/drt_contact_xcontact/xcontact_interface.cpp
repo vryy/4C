@@ -22,13 +22,15 @@
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 XCONTACT::Interface::Interface(
+    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
     const int id,
     const Epetra_Comm& comm,
     const int dim,
     const Teuchos::ParameterList& icontact,
     bool selfcontact,
     INPAR::MORTAR::RedundantStorage redundant)
-    : CONTACT::CoInterface(id, comm, dim, icontact, selfcontact, redundant),
+    : CONTACT::CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact,
+        redundant),
       sndofrowmap_(Teuchos::null),
       stdofrowmap_(Teuchos::null),
       parent_discret_(*icontact.get<

@@ -39,10 +39,11 @@ CONTACT::SmoothingStrategy::SmoothingStrategy(
     double alphaf,
     int maxdof)
     : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
-        DofRowMap, NodeRowMap, params,cinterface, dim, comm, alphaf, maxdof),
+        DofRowMap, NodeRowMap, params, dim, comm, alphaf, maxdof),
       activesetssconv_(false),
       activesetconv_(false),
       activesetsteps_(1),
+      interface_(cinterface),
       minterface_(mtinterface)
 {
   // get number of contact lm dofs as offset
@@ -72,10 +73,11 @@ CONTACT::SmoothingStrategy::SmoothingStrategy(
     double alphaf,
     int maxdof)
     : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params,
-        cinterface, dim, comm, alphaf, maxdof),
+        dim, comm, alphaf, maxdof),
       activesetssconv_(false),
       activesetconv_(false),
       activesetsteps_(1),
+      interface_(cinterface),
       minterface_(mtinterface)
 {
   // get number of contact lm dofs as offset

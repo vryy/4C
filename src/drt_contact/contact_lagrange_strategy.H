@@ -349,6 +349,18 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     void UpdateConstraintNorm(int uzawaiter = 0) {}
 
   protected:
+    //! derived
+    virtual std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces()
+    {
+      return interface_;
+    }
+
+    //! derived
+    virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() const
+    {
+      return interface_;
+    }
+
     /*!
     \brief Initialize general contact variables for next Newton step
 
@@ -387,6 +399,8 @@ class CoLagrangeStrategy : public CoAbstractStrategy
                               Teuchos::RCP<LINALG::SparseMatrix> mhataam,
                               Teuchos::RCP<LINALG::SparseMatrix> invda)
     {return;}
+
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface_;
 
     bool evalForceCalled_;    // flag for evaluate force call
     bool activesetssconv_;    // convergence flag for semi-smooth active set search

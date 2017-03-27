@@ -49,29 +49,188 @@
 
 #include "../drt_contact/contact_interpolator.H"
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+MORTAR::IDataContainer::IDataContainer()
+    : id_( -1 ),
+      comm_( NULL ),
+      lcomm_( Teuchos::null ),
+      redistributed_( false ),
+      idiscret_( Teuchos::null ),
+      dim_( -1 ),
+      imortar_( Teuchos::ParameterList() ),
+      shapefcn_( INPAR::MORTAR::shape_undefined ),
+      quadslave_( false ),
+      lmnodalscale_( false ),
+      redundant_( INPAR::MORTAR::redundant_none ),
+      oldnodecolmap_( Teuchos::null ),
+      oldelecolmap_( Teuchos::null ),
+      snoderowmap_( Teuchos::null ),
+      snodecolmap_( Teuchos::null ),
+      mnoderowmap_( Teuchos::null ),
+      snoderowmapbound_( Teuchos::null ),
+      snodecolmapbound_( Teuchos::null ),
+      mnoderowmapnobound_( Teuchos::null ),
+      mnodecolmapnobound_( Teuchos::null ),
+      selerowmap_( Teuchos::null ),
+      selecolmap_( Teuchos::null ),
+      melerowmap_( Teuchos::null ),
+      melecolmap_( Teuchos::null ),
+      sdofrowmap_( Teuchos::null ),
+      sdofcolmap_( Teuchos::null ),
+      mdofrowmap_( Teuchos::null ),
+      mdofcolmap_( Teuchos::null ),
+      psdofrowmap_( Teuchos::null ),
+      plmdofmap_( Teuchos::null ),
+      lmdofmap_( Teuchos::null ),
+      maxdofglobal_( -1 ),
+      searchalgo_( INPAR::MORTAR::search_binarytree ),
+      binarytree_( Teuchos::null ),
+      searchparam_( -1.0 ),
+      searchuseauxpos_( false ),
+      inttime_interface_( 0.0 ),
+      nurbs_( false ),
+      poro_( false ),
+      isinit_( false )
+{
+  /* empty */
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+MORTAR::MortarInterface::MortarInterface(
+    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr )
+    : idata_ptr_( idata_ptr ),
+      idata_( *idata_ptr_ ),
+      id_( idata_.Id() ),
+      comm_( idata_.CommPtr() ),
+      lcomm_( idata_.lComm() ),
+      procmap_( idata_.ProcMap() ),
+      redistributed_( idata_.IsRedistributed() ),
+      idiscret_( idata_.IDiscret() ),
+      dim_( idata_.Dim() ),
+      imortar_( idata_.IMortar() ),
+      shapefcn_( idata_.ShapeFcn() ),
+      quadslave_( idata_.IsQuadSlave() ),
+      lmnodalscale_( idata_.IsLmNodalScale() ),
+      redundant_( idata_.RedundantStorage() ),
+      oldnodecolmap_( idata_.OldNodeColMap() ),
+      oldelecolmap_( idata_.OldEleColMap() ),
+      snoderowmap_( idata_.SNodeRowMap() ),
+      snodecolmap_( idata_.SNodeColMap() ),
+      mnoderowmap_( idata_.MNodeRowMap() ),
+      mnodecolmap_( idata_.MNodeColMap() ),
+      snoderowmapbound_( idata_.SNodeRowMapBound() ),
+      snodecolmapbound_( idata_.SNodeColMapBound() ),
+      mnoderowmapnobound_( idata_.MNodeRowMapNoBound() ),
+      mnodecolmapnobound_( idata_.MNodeColMapNoBound() ),
+      selerowmap_( idata_.SEleRowMap() ),
+      selecolmap_( idata_.SEleColMap() ),
+      melerowmap_( idata_.MEleRowMap() ),
+      melecolmap_( idata_.MEleColMap() ),
+      sdofrowmap_( idata_.SDofRowMap() ),
+      sdofcolmap_( idata_.SDofColMap() ),
+      mdofrowmap_( idata_.MDofRowMap() ),
+      mdofcolmap_( idata_.MDofColMap() ),
+      psdofrowmap_( idata_.PSDofRowMap() ),
+      plmdofmap_( idata_.PLmDofRowMap() ),
+      lmdofmap_( idata_.LmDofRowMap() ),
+      maxdofglobal_( idata_.MaxDofGlobal() ),
+      searchalgo_( idata_.SearchAlgorithm() ),
+      binarytree_( idata_.BinaryTree() ),
+      searchparam_( idata_.SearchParam() ),
+      searchuseauxpos_( idata_.SearchUseAuxPos() ),
+      inttime_interface_( idata_.IntTimeInterface() ),
+      nurbs_( idata_.IsNurbs() ),
+      poro_( idata_.IsPoro() )
+{
+  if ( not idata_.IsInit() )
+    dserror( "This constructor is only allowed for already initialized "
+        "interface data containers!" );
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<MORTAR::MortarInterface> MORTAR::MortarInterface::Create(
+      const int id, const Epetra_Comm& comm, const int dim,
+      const Teuchos::ParameterList& imortar,
+      INPAR::MORTAR::RedundantStorage redundant)
+{
+  Teuchos::RCP<MORTAR::IDataContainer> idata_ptr =
+      Teuchos::rcp( new MORTAR::IDataContainer() );
+
+  return Teuchos::rcp( new MORTAR::MortarInterface( idata_ptr, id, comm, dim,
+      imortar, redundant ) );
+}
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 MORTAR::MortarInterface::MortarInterface(
+  const Teuchos::RCP<IDataContainer>& idata_ptr,
   const int id,
   const Epetra_Comm& comm,
   const int dim,
   const Teuchos::ParameterList& imortar,
   INPAR::MORTAR::RedundantStorage redundant)
-  : id_(id),
-    comm_(comm),
-    lcomm_(Teuchos::null),
-    dim_(dim),
-    imortar_(imortar),
-    shapefcn_(INPAR::MORTAR::shape_undefined), quadslave_(false),
-    lmnodalscale_(DRT::INPUT::IntegralValue<int>(imortar, "LM_NODAL_SCALE")),
-    redundant_(redundant),
-    maxdofglobal_(-1),
-    searchalgo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar, "SEARCH_ALGORITHM")),
-    searchparam_(imortar.get<double>("SEARCH_PARAM")),
-    searchuseauxpos_(DRT::INPUT::IntegralValue<int>(imortar, "SEARCH_USE_AUX_POS")),
-    nurbs_(imortar.get<bool>("NURBS"))
+  : idata_ptr_( idata_ptr ),
+    idata_( *idata_ptr_ ),
+    id_( idata_.Id() ),
+    comm_( idata_.CommPtr() ),
+    lcomm_( idata_.lComm() ),
+    procmap_( idata_.ProcMap() ),
+    redistributed_( idata_.IsRedistributed() ),
+    idiscret_( idata_.IDiscret() ),
+    dim_( idata_.Dim() ),
+    imortar_( idata_.IMortar() ),
+    shapefcn_( idata_.ShapeFcn() ),
+    quadslave_( idata_.IsQuadSlave() ),
+    lmnodalscale_( idata_.IsLmNodalScale() ),
+    redundant_( idata_.RedundantStorage() ),
+    oldnodecolmap_( idata_.OldNodeColMap() ),
+    oldelecolmap_( idata_.OldEleColMap() ),
+    snoderowmap_( idata_.SNodeRowMap() ),
+    snodecolmap_( idata_.SNodeColMap() ),
+    mnoderowmap_( idata_.MNodeRowMap() ),
+    mnodecolmap_( idata_.MNodeColMap() ),
+    snoderowmapbound_( idata_.SNodeRowMapBound() ),
+    snodecolmapbound_( idata_.SNodeColMapBound() ),
+    mnoderowmapnobound_( idata_.MNodeRowMapNoBound() ),
+    mnodecolmapnobound_( idata_.MNodeColMapNoBound() ),
+    selerowmap_( idata_.SEleRowMap() ),
+    selecolmap_( idata_.SEleColMap() ),
+    melerowmap_( idata_.MEleRowMap() ),
+    melecolmap_( idata_.MEleColMap() ),
+    sdofrowmap_( idata_.SDofRowMap() ),
+    sdofcolmap_( idata_.SDofColMap() ),
+    mdofrowmap_( idata_.MDofRowMap() ),
+    mdofcolmap_( idata_.MDofColMap() ),
+    psdofrowmap_( idata_.PSDofRowMap() ),
+    plmdofmap_( idata_.PLmDofRowMap() ),
+    lmdofmap_( idata_.LmDofRowMap() ),
+    maxdofglobal_( idata_.MaxDofGlobal() ),
+    searchalgo_( idata_.SearchAlgorithm() ),
+    binarytree_( idata_.BinaryTree() ),
+    searchparam_( idata_.SearchParam() ),
+    searchuseauxpos_( idata_.SearchUseAuxPos() ),
+    inttime_interface_( idata_.IntTimeInterface() ),
+    nurbs_( idata_.IsNurbs() ),
+    poro_( idata_.IsPoro() )
 {
+  idata_.SetIsInit( true );
+  id_ = id;
+  comm_ = Teuchos::rcpFromRef( comm );
+  dim_ = dim;
+  imortar_.setParameters( imortar );
+  quadslave_ = false;
+  lmnodalscale_ = DRT::INPUT::IntegralValue<int>(imortar, "LM_NODAL_SCALE");
+  redundant_ = redundant;
+  searchalgo_ = DRT::INPUT::IntegralValue<INPAR::MORTAR::SearchAlgorithm>(imortar, "SEARCH_ALGORITHM");
+  searchparam_ = imortar.get<double>("SEARCH_PARAM");
+  searchuseauxpos_ = DRT::INPUT::IntegralValue<int>(imortar, "SEARCH_USE_AUX_POS");
+  nurbs_ = imortar.get<bool>("NURBS");
+
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(Comm().Clone());
   if (Dim() != 2 && Dim() != 3)
     dserror("ERROR: Mortar problem must be 2D or 3D");

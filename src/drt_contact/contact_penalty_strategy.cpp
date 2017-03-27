@@ -42,7 +42,8 @@ CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
     double alphaf,
     int maxdof)
     : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
-        DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+        DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
+      interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),
       initialpenalty_(Params().get<double>("PENALTYPARAM")),
@@ -63,7 +64,8 @@ CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
     int maxdof)
-    : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+    : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
+      interface_(interface),
       constrnorm_(0.0),
       constrnormtan_(0.0),
       initialpenalty_(Params().get<double>("PENALTYPARAM")),

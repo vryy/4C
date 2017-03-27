@@ -26,7 +26,7 @@ namespace STEEPESTASCENT {
   class Interface;
 
   /*--------------------------------------------------------------------------*/
-  class DataContainer : public ::CONTACT::AUG::DataContainer
+  class DataContainer
   {
   public:
     /// constructor
@@ -72,6 +72,9 @@ namespace STEEPESTASCENT {
   /*--------------------------------------------------------------------------*/
   class Strategy : public ::CONTACT::AUG::Strategy
   {
+    /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
+     *  strategies and needs access to all methods. */
+
   public:
     /// constructor
     Strategy(
@@ -79,13 +82,18 @@ namespace STEEPESTASCENT {
         const Epetra_Map* DofRowMap,
         const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+        const plain_interface_set& interfaces,
         int dim,
         const Teuchos::RCP<const Epetra_Comm>& comm,
         int maxdof );
 
     /// destructor
     virtual ~Strategy() {};
+
+    virtual INPAR::CONTACT::SolvingStrategy Type() const
+    {
+      return INPAR::CONTACT::solution_steepest_ascent;
+    }
 
   protected:
     /// derived
@@ -118,31 +126,6 @@ namespace STEEPESTASCENT {
     virtual bool AssembleContactRHS();
 
   private:
-    /** \brief Get access to the internal data container of the strategy (mutable)
-     *
-     * \remark This has to stay PRIVATE, otherwise this function becomes ambiguous.
-     *
-     * \author hiermeier
-     * \date 05/16 */
-    CONTACT::AUG::STEEPESTASCENT::DataContainer& Data()
-    {
-      if (saDataPtr_.is_null())
-        dserror("The steepest-ascent strategy data container is not initialized!");
-      return *saDataPtr_;
-    }
-
-    /** \brief Get access to the internal data container of the strategy (read-only)
-     *
-     * \remark This has to stay PRIVATE, otherwise this function becomes ambiguous.
-     *
-     * \author hiermeier
-     * \date 05/16 */
-    const CONTACT::AUG::STEEPESTASCENT::DataContainer& Data() const
-    {
-      if (saDataPtr_.is_null())
-        dserror("The steepest-ascent strategy data container is not initialized!");
-      return *saDataPtr_;
-    }
 
     void UpdateCn( const CONTACT::ParamsInterface& cparams );
 
@@ -160,10 +143,7 @@ namespace STEEPESTASCENT {
     void PostAugmentDirection();
 
   private:
-    Teuchos::RCP<CONTACT::AUG::STEEPESTASCENT::DataContainer> saDataPtr_;
-    std::vector<Teuchos::RCP<CONTACT::AUG::STEEPESTASCENT::Interface> > interface_;
-
-    typedef std::vector<Teuchos::RCP<CONTACT::AUG::STEEPESTASCENT::Interface> > InterfaceVector;
+    Teuchos::RCP<CONTACT::AUG::DataContainer> dataPtr_;
   };  //  class Strategy
 
 } // namespace STEEPESTASCENT

@@ -57,7 +57,8 @@ CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
     Teuchos::RCP<const Epetra_Comm> comm,
     double alphaf,
     int maxdof)
-    : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+    : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
+      interface_( interface ),
       evalForceCalled_(false),
       activesetssconv_(false),
       activesetconv_(false),

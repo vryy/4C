@@ -319,12 +319,12 @@ void ADAPTER::CouplingMortar::SetupInterface(
   INPAR::MORTAR::RedundantStorage redundant =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input,"REDUNDANT_STORAGE");
 
-  interface_ = Teuchos::rcp(new MORTAR::MortarInterface(
+  interface_ = MORTAR::MortarInterface::Create(
       0,
       comm,
       DRT::Problem::Instance()->NDim(),
       input,
-      redundant));
+      redundant);
 
   // number of dofs per node based on the coupling vector coupleddof
   const int dof = coupleddof.size();
@@ -562,7 +562,8 @@ void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation(
   INPAR::MORTAR::RedundantStorage redundant =DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input,"REDUNDANT_STORAGE");
   //if (redundant != INPAR::MORTAR::redundant_all)
     //if(myrank== 0) dserror("Mortar coupling adapter only works for redundant slave and master storage");
-  Teuchos::RCP<MORTAR::MortarInterface> interface = Teuchos::rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
+  Teuchos::RCP<MORTAR::MortarInterface> interface =
+      MORTAR::MortarInterface::Create(0, comm, dim, input, redundant);
 
   // number of dofs per node based on the coupling vector coupleddof
   int dof = coupleddof.size();

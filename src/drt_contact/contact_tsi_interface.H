@@ -2,11 +2,13 @@
 \file contact_tsi_interface.H
 
 <pre>
-Maintainer: Alexander Seitz
+ \maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
 </pre>
+
+ \level 3
 
 *----------------------------------------------------------------------*/
 #ifndef CONTACT_TSI_INTERFACE_H_
@@ -28,9 +30,11 @@ public:
   \brief Constructor
 
   */
-  CoTSIInterface(const int id, const Epetra_Comm& comm, const int dim,
-              const Teuchos::ParameterList& icontact,
-              bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
+  CoTSIInterface(
+      const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
+      const int id, const Epetra_Comm& comm, const int dim,
+      const Teuchos::ParameterList& icontact,
+      bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
   /*!
   \brief Destructor

@@ -22,11 +22,27 @@
 namespace CONTACT {
 namespace AUG {
 namespace STEEPESTASCENT {
+
+  /** \brief Augmented steepest ascent contact interface class
+   *
+   *  \author hiermeier \date 03/17 */
   class Interface : public ::CONTACT::AUG::Interface
   {
   public:
+    /** \brief Alternative constructor
+     *
+     *  A prerequisite for this constructor is, that the passed
+     *  shared interface data object has been filled/initialized already.
+     *
+     *  \param idata_ptr (in) : filled shared augmented contact interface
+     *                          data container object
+     *
+     *  \author hiermeier \date 03/17 */
+    Interface( const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr );
+
     /// constructor
     Interface(
+        const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
         int id,
         const Epetra_Comm& comm,
         int dim,
@@ -38,6 +54,7 @@ namespace STEEPESTASCENT {
     virtual ~Interface() {};
 
   protected:
+    /// derived
     virtual void AssembleDGGLinMatrixOnSlaveSide(
         const CoNode& cnode,
         const GEN::pairedvector<int,std::pair<int,double> >& varWGapSlMap,
@@ -46,6 +63,7 @@ namespace STEEPESTASCENT {
         double aWGap,
         LINALG::SparseMatrix& dGGSlLinMatrix ) const;
 
+    /// derived
     virtual void AssembleDGGLinMatrixOnMasterSide(
         const CoNode& cnode,
         const std::map<int,std::pair<int,double> >& varWGapMaMap,
@@ -54,6 +72,7 @@ namespace STEEPESTASCENT {
         double aWGap,
         LINALG::SparseMatrix& dGGMaLinMatrix ) const;
 
+    /// derived
     virtual void AddKappaLinToGapLinearization(
         const std::map<int,double>& kappaLinMap,
         double x,

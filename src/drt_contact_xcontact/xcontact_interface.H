@@ -31,6 +31,7 @@ namespace XCONTACT
 
     //! Constructor
     Interface(
+        const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
         const int id,
         const Epetra_Comm& comm,
         const int dim,

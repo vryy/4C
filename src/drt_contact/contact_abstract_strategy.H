@@ -580,7 +580,6 @@ public:
       const Epetra_Map* DofRowMap,
       const Epetra_Map* NodeRowMap,
       const Teuchos::ParameterList& params,
-      const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interface,
       int dim,
       const Teuchos::RCP<const Epetra_Comm>& comm,
       double alphaf,
@@ -602,7 +601,7 @@ public:
   virtual ~CoAbstractStrategy() {};
 
   //! return the current solution type
-  INPAR::CONTACT::SolvingStrategy Type() const
+  virtual INPAR::CONTACT::SolvingStrategy Type() const
   {
     return stype_;
   }
@@ -902,7 +901,8 @@ public:
   bool Friction() const { return Data().IsFriction(); }
 
   //! Return contact interfaces
-  const std::vector<Teuchos::RCP<CONTACT::CoInterface> > ContactInterfaces() { return interface_; }
+  const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& ContactInterfaces() const
+ { return Interfaces(); }
 
   /*! \brief Get dual quadratic 3d slave element flag
 
@@ -1214,7 +1214,7 @@ protected:
    *
    *  \date 03/2016
    *  \author hiermeier */
-  virtual void PostSetup(const bool& redistributed, const bool& init) {};
+  virtual void PostSetup( bool redistributed, bool init) {};
   //! @}
 
   //! @Internal evaluate routines
@@ -1315,6 +1315,13 @@ protected:
 
   //! @}
 protected:
+
+  //! access the contact interfaces of the concrete strategies (read and write)
+  virtual std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() = 0;
+
+  //! access the contact interfaces of the concrete strategies (read-only)
+  virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() const = 0;
+
   /*! \brief Evaluate contact
 
    This is just a tiny control routine, deciding which Evaluate-routine
@@ -1439,8 +1446,6 @@ protected:
 
     // don't want cctor (= operator impossible anyway for abstract class)
     CoAbstractStrategy(const CoAbstractStrategy& old);
-
-    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface_;  // contact interfaces
 
     /*! @name References to the data container content
      *

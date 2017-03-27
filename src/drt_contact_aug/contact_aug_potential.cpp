@@ -72,6 +72,7 @@ void CONTACT::AUG::Potential::Setup( bool active_inactive_only )
   zn_inactive_ = Teuchos::rcp( new Epetra_Vector( *ginactivendofs ) );
   znincr_inactive_ = Teuchos::rcp( new Epetra_Vector( *zn_inactive_ ) );
 
+  isvalidState_ = false;
   issetup_ = true;
 }
 
@@ -117,10 +118,15 @@ void CONTACT::AUG::Potential::Compute()
 
   double lterms[4] = { 0.0, 0.0, 0.0, 0.0 };
 
-  for ( std::vector<Teuchos::RCP<CONTACT::AUG::Interface> >::const_iterator cit =
-      strategy_.Interfaces().begin(); cit != strategy_.Interfaces().end(); ++cit )
+  const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& co_interfaces =
+      strategy_.ContactInterfaces();
+
+  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+      co_interfaces.begin(); cit != co_interfaces.end(); ++cit )
   {
-    const CONTACT::AUG::Interface& interface = **cit;
+    const CONTACT::AUG::Interface& interface =
+        static_cast<const CONTACT::AUG::Interface&>( **cit );
+
     interface.AssembleContactPotentialTerms( cn, lterms[0], lterms[1], lterms[2], lterms[3] );
   }
 

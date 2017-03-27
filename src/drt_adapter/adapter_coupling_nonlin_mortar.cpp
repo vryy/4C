@@ -292,7 +292,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(
   INPAR::MORTAR::RedundantStorage redundant =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input,"REDUNDANT_STORAGE");
 
-  interface = Teuchos::rcp(new CONTACT::CoInterface(0, *comm_, dim, input,false, redundant));
+  interface = CONTACT::CoInterface::Create(0, *comm_, dim, input,false, redundant);
 
 //  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and slavewithale==true and slidingale==false) or
 //      (slavedis->NumDof(slavedis->lRowNode(0))!=dof and slavewithale==false and slidingale==false))
@@ -710,7 +710,8 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
   INPAR::MORTAR::RedundantStorage redundant =DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input,"REDUNDANT_STORAGE");
 
   // generate contact interface
-  Teuchos::RCP<CONTACT::CoInterface> interface = Teuchos::rcp(new CONTACT::CoInterface(0, comm, dim, input, false, redundant));
+  Teuchos::RCP<CONTACT::CoInterface> interface =
+      CONTACT::CoInterface::Create(0, comm, dim, input, false, redundant);
 
   // number of dofs per node based on the coupling vector coupleddof
   int dof = 3;

@@ -38,8 +38,9 @@ public:
       Teuchos::RCP<Epetra_Comm> comm,
       double alphaf,
       int maxdof)
-: CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
-    DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof){}
+  : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
+    DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
+  interface_(interface) { /* empty */ }
 
   //! Shared data constructor
   CoNitscheStrategy(
@@ -52,7 +53,8 @@ public:
       Teuchos::RCP<const Epetra_Comm> comm,
       double alphaf,
       int maxdof)
-  : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof){}
+  : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
+    interface_(interface) { /* empty */ }
 
   virtual void ApplyForceStiffCmt(
       Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt,
@@ -161,10 +163,23 @@ public:
   double ConstraintNorm() const {return 0.0;}
 
 protected:
+  //! derived
+  virtual std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces()
+  {
+    return interface_;
+  }
+
+  //! derived
+  virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() const
+  {
+    return interface_;
+  }
 
   // don't want = operator and cctor
   CoNitscheStrategy operator = (const CoNitscheStrategy& old);
   CoNitscheStrategy(const CoNitscheStrategy& old);
+
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface_;
 
   Teuchos::RCP<Epetra_Vector> curr_state_;
   bool                        curr_state_eval_;

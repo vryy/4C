@@ -23,12 +23,130 @@ namespace CONTACT {
 
 namespace AUG {
 
+  /*----------------------------------------------------------------------------*/
+  /** \brief Augmented contact interface data container
+   *
+   *  This class is supposed to contain all relevant members for the augmented
+   *  contact interfaces. The external storage in this object, instead of the
+   *  actual interface class itself, makes it possible to share the interface
+   *  data between different interface objects w/o the need of copying them.
+   *
+   *  \author hiermeier \date 03/17 */
+  class IDataContainer : public ::CONTACT::IDataContainer
+  {
+  public:
+    /// constructor
+    IDataContainer();
+
+    /// destructor
+    virtual ~IDataContainer() {};
+
+    /// @name Accessors
+    /// @{
+
+    inline double& PenBound()
+    {
+      return penBound_;
+    }
+
+    inline double PenBound() const
+    {
+      return penBound_;
+    }
+
+    inline double& Ct()
+    {
+      return ct_;
+    }
+
+    inline double Ct() const
+    {
+      return ct_;
+    }
+
+    inline int& MaxNumMasterElements()
+    {
+      return maxNumMasterElements_;
+    }
+
+    inline int MaxNumMasterElements() const
+    {
+      return maxNumMasterElements_;
+    }
+
+    inline bool& IsSetup()
+    {
+      return issetup_;
+    }
+
+    inline bool IsSetup() const
+    {
+      return issetup_;
+    }
+
+    inline Teuchos::RCP<Epetra_Map>& SNDofRowMap()
+    {
+      return sndofrowmap_;
+    }
+
+    inline Teuchos::RCP<const Epetra_Map> SNDofRowMap() const
+    {
+      return sndofrowmap_;
+    }
+
+    inline Teuchos::RCP<Epetra_Map>& STDofRowMap()
+    {
+      return stdofrowmap_;
+    }
+
+    inline Teuchos::RCP<const Epetra_Map> STDofRowMap() const
+    {
+      return stdofrowmap_;
+    }
+
+    /// @}
+
+  private:
+    //! interface penetration bound
+    double penBound_;
+
+    double ct_;
+
+    /** Approximated maximal number of master elements, in which one slave element
+     *  will project. */
+    int maxNumMasterElements_;
+
+    bool issetup_;
+
+    //! slave dofs in normal direction
+    Teuchos::RCP<Epetra_Map>    sndofrowmap_;
+
+    //! slave dofs in tangential direction
+    Teuchos::RCP<Epetra_Map>    stdofrowmap_;
+
+  }; // class CONTACT::AUG::IDataContainer
+
+  /*--------------------------------------------------------------------------*/
+  /** \brief Augmented contact interface class
+   *
+   *  \author hiermeier \date 03/17 */
   class Interface : public ::CONTACT::CoInterface
   {
   public:
+    /** \brief Alternative constructor
+     *
+     *  A prerequisite for this constructor is, that the passed
+     *  shared interface data object has been filled/initialized already.
+     *
+     *  \param idata_ptr (in) : filled shared augmented contact interface
+     *                          data container object
+     *
+     *  \author hiermeier \date 03/17 */
+    Interface( const Teuchos::RCP<CONTACT::AUG::IDataContainer>& idata_ptr );
 
     //! Constructor
     Interface(
+        const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
         int id,
         const Epetra_Comm& comm,
         int dim,
@@ -41,10 +159,17 @@ namespace AUG {
 
     //! @name Accessors
     //! @{
+
+    /// share the data with other derived interfaces via copy constructor
+    Teuchos::RCP<AUG::IDataContainer> SharedInterfaceDataPtr() const
+    {
+      return idata_ptr_;
+    }
+
     //! Get row map of slave normal dofs
     const Teuchos::RCP<Epetra_Map> SlaveRowNDofs() const
     {
-      if (Filled()) return sndofrowmap_;
+      if (Filled()) return idata_.SNDofRowMap();
       else dserror("CONTACT::AugmentedInterface::FillComplete was not called");
       exit(EXIT_FAILURE);
     }
@@ -52,13 +177,17 @@ namespace AUG {
     //! Get row map of slave tangential dofs
     const Teuchos::RCP<Epetra_Map> SlaveRowTDofs() const
     {
-      if (Filled()) return stdofrowmap_;
+      if (Filled()) return idata_.STDofRowMap();
       else dserror("CONTACT::AugmentedInterface::FillComplete was not called");
       exit(EXIT_FAILURE);
     }
 
     //! Returns the penetration bound of the current interface.
-    const double& PenetrationBound() const { return penBound_; }
+    inline double PenetrationBound() const
+    {
+      return idata_.PenBound();
+    };
+
     //! @}
 
     //! @name Initialize and evaluate interface element contributions
@@ -112,13 +241,15 @@ namespace AUG {
         LINALG::SparseMatrix& augDnMatrix,
         LINALG::SparseMatrix& augMnMatrix) const;
 
-    /*! Assemble the normal Lagrange multiplier vector,
-     *  the averaged weighted gap vector and the weighted gap
+    /*! Assemble  the averaged weighted gap vector and the weighted gap
      *  vector  */
-    void AssembleResidualVectors(
-        Epetra_Vector& lmNVec,
+    void AssembleGapVectors(
         Epetra_Vector& aWGapVec,
         Epetra_Vector& wGapVec) const;
+
+    /*! Assemble the normal Lagrange multiplier vector */
+    void AssembleLmNVector(
+        Epetra_Vector& lmNVec) const;
 
     //! Assemble tangential constraint equation for active nodes (dLmTLmTrhs, ACTIVE)
     void AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) const;
@@ -131,7 +262,7 @@ namespace AUG {
         Epetra_Vector& cnVec) const;
     //! @}
 
-    //! @name Assemble linearization matrices                               |
+    //! @name Assemble linearization matrices
     //! @{
     /*! \brief Assemble DGLmLinMatrix
      *
@@ -187,11 +318,11 @@ namespace AUG {
     void WGap() const;
 
     //! Calculate the linearization of the averaged weighted gap
-    void AWGapLin();
+    void AWGapLin() const;
 
     //! @}
 
-    //! @name Augmented active set decisions and large penetration functions
+    //! @name Augmented active set functions
     //! @{
 
     //! Update augmented active set for each interface
@@ -199,6 +330,9 @@ namespace AUG {
 
     //! Split augmented active dof set for each interface
     void SplitAugActiveDofs();
+
+    Teuchos::RCP<Epetra_Map> BuildActiveForceMap( const Epetra_Vector& force,
+        const double threshold = 0.0 ) const;
     //! @}
 
     //! @name Basic setup (only necessary in the augmented lagrange case)
@@ -230,11 +364,25 @@ namespace AUG {
         int gid,int dof,
         double delta,bool forward,
         CONTACT::ParamsInterface& cparams);
+
     //! @}
   protected:
     //! derived
     virtual void UpdateMasterSlaveSets();
 
+    /** \brief Assemble a map object of type T into a SparseMatrix
+     *
+     *  Standard as well as FE sparse matrices are supported. The global column
+     *  ID is supposed to be the key of the given map.
+     *
+     *  \param row       (in) : global row ID
+     *  \param scal      (in) : scalar for scaling the map data values
+     *  \param values    (in) : map object holding the data
+     *  \param mat      (out) : Sparse Matrix object (standard or FE)
+     *  \param threshold (in) : values with an absolute value below this threshold
+     *                          will not be assembled.
+     *
+     *  \author hiermeier \date 03/17 */
     template< class T >
     void AssembleMapIntoMatrix(
         int row,
@@ -267,29 +415,25 @@ namespace AUG {
         double scale,
         std::map<int,double>& aWGapLinMap ) const;
 
-
     void Setup();
 
   protected:
     // don't want = operator and cctor
+    Interface( const CONTACT::AUG::Interface& source );
     Interface operator = (const Interface& old);
-    Interface(const Interface& old);
 
-    //! interface penetration bound
-    double penBound_;
+  private:
+    /** \remark Please add no new member variables to this class and use the
+     *  corresponding data container, instead! If you have any questions
+     *  concerning this, you can ask me.
+     *                                                        hiermeier 03/17 */
 
-    double ct_;
+    /// pointer to the interface data object
+    Teuchos::RCP<AUG::IDataContainer> idata_ptr_;
 
-    /// one slave element projects approximately maximal in this number of master elements
-    int maxNumMasterElements_;
+    /// reference to the interface data object
+    AUG::IDataContainer&              idata_;
 
-    bool issetup_;
-
-    //! slave dofs in normal direction
-    Teuchos::RCP<Epetra_Map>    sndofrowmap_;
-
-    //! slave dofs in tangential direction
-    Teuchos::RCP<Epetra_Map>    stdofrowmap_;
   };  // class Interface
 
 } // namespace AUG

@@ -211,7 +211,7 @@ discret_(discret)
         DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(mtparams,"REDUNDANT_STORAGE");
 //    if (redundant != INPAR::MORTAR::redundant_master)
 //      dserror("ERROR: MtManager: Meshtying requires redundant master storage");
-    interfaces.push_back(Teuchos::rcp(new MORTAR::MortarInterface(groupid1,Comm(),dim,mtparams,redundant)));
+    interfaces.push_back(MORTAR::MortarInterface::Create(groupid1,Comm(),dim,mtparams,redundant));
 
     // get it again
     Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size()-1];

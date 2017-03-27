@@ -180,9 +180,13 @@ void CONTACT::AUG::Strategy::EvalFDCheckGlobalDispl(
     bool iCheck = false;
 
     // do the finite difference step
-    for (int i=0;i<(int) interface_.size();++i)
+    for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+          interface_.begin(); cit != interface_.end(); ++cit )
     {
-      iCheck = interface_[i]->UpdateInterfaces(gid,dof,delta,true,cparams);
+      CONTACT::AUG::Interface& interface =
+          dynamic_cast<CONTACT::AUG::Interface&>( **cit );
+
+      iCheck = interface.UpdateInterfaces(gid,dof,delta,true,cparams);
       if (iCheck) break;
     }
     if (!iCheck) dserror("ERROR: Node % not found!",gid);
@@ -203,9 +207,13 @@ void CONTACT::AUG::Strategy::EvalFDCheckGlobalDispl(
 
     // Undo finite difference step
     iCheck = false;
-    for (int i=0;i<(int) interface_.size();++i)
+    for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+          interface_.begin(); cit != interface_.end(); ++cit )
     {
-      iCheck = interface_[i]->UpdateInterfaces(gid,dof,delta,false,cparams);
+      CONTACT::AUG::Interface& interface =
+          dynamic_cast<CONTACT::AUG::Interface&>( **cit );
+
+      iCheck = interface.UpdateInterfaces(gid,dof,delta,false,cparams);
       if (iCheck) break;
     }
     if (!iCheck) dserror("ERROR: Node % not found!",gid);
@@ -352,24 +360,26 @@ void CONTACT::AUG::MultiplyElementwise(
   return;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CONTACT::AUG::Strategy::RedistributeRowMap(
-    const Epetra_Map& refMap,
-    Epetra_Map& modMap)
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::AUG::RedistributeRowMap( const Epetra_Map& ref_map,
+    Epetra_Map& red_map )
 {
-  // only for the parallel redistribution case
-  if (!ParRedist()) return;
+  const Epetra_Comm& comm = ref_map.Comm();
+
+  const int nummyelements = ref_map.NumMyElements();
+  int* mygids = ref_map.MyGlobalElements();
 
   int count = 0;
-  std::vector<int> myGids(refMap.NumMyElements());
+  std::vector<int> myGids( nummyelements, -1 );
 
-  const Teuchos::RCP<Epetra_Map> allreducedMap = LINALG::AllreduceEMap(modMap);
+  const Teuchos::RCP<Epetra_Map> allreducedMap = LINALG::AllreduceEMap( red_map );
 
-  for (int i=0; i<refMap.NumMyElements(); ++i)
+  for (int i=0; i<nummyelements; ++i)
   {
-    int gid = refMap.GID(i);
-    if (allreducedMap->LID(gid)>=0)
+    const int gid = mygids[ i ];
+    if ( allreducedMap->LID( gid ) >=0 )
     {
       myGids[count] = gid;
       ++count;
@@ -378,8 +388,6 @@ void CONTACT::AUG::Strategy::RedistributeRowMap(
 
   myGids.resize(count);
   int gCount=0;
-  Comm().SumAll(&count,&gCount,1);
-  modMap = Epetra_Map(gCount,count,&myGids[0],0,Comm());
-
-  return;
+  comm.SumAll(&count,&gCount,1);
+  red_map = Epetra_Map(gCount,count,&myGids[0],0,comm);
 }

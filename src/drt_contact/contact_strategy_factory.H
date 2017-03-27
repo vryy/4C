@@ -20,6 +20,7 @@
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_strategy_factory.H"
 #include "../drt_xfem/xfem_enum_lists.H"
+#include "../drt_inpar/inpar_contact.H"
 
 // forward declarations...
 namespace Teuchos {
@@ -29,6 +30,8 @@ namespace CONTACT {
   class CoInterface;
   class CoElement;
   class CoAbstractStrategy;
+  class AbstractStratDataContainer;
+  class IDataContainer;
 namespace STRATEGY {
   class Factory : public MORTAR::STRATEGY::Factory
   {
@@ -54,13 +57,42 @@ namespace STRATEGY {
      *  \author Popp */
     void ReadAndCheckInput(Teuchos::ParameterList& cparams) const;
 
-    /* \brief Create the contact interfaces
+    /** \brief Create the contact interfaces
      *
-     * \author Popp */
+     *  \author Popp */
     void BuildInterfaces(const Teuchos::ParameterList& cparams,
         std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
         bool& poroslave,
         bool& poromaster) const;
+
+    /** \brief Create a contact interface object based on the given information
+     *
+     *  \author hiermeier \date 03/17 */
+    static Teuchos::RCP< ::CONTACT::CoInterface> CreateInterface(
+        const int id,
+        const Epetra_Comm& comm,
+        const int dim,
+        Teuchos::ParameterList& icparams,
+        const bool selfcontact,
+        const enum INPAR::MORTAR::RedundantStorage redundant,
+        const Teuchos::RCP<std::pair<enum XFEM::FieldName,
+            Teuchos::RCP<const DRT::DiscretizationInterface> > >& parent_dis_pair,
+        Teuchos::RCP<CONTACT::IDataContainer> idata_ptr = Teuchos::null );
+
+    /** \brief Create a contact interface object based on the given information
+     *
+     *  \author hiermeier \date 03/17 */
+    static Teuchos::RCP< ::CONTACT::CoInterface> CreateInterface(
+        const enum INPAR::CONTACT::SolvingStrategy stype,
+        const int id,
+        const Epetra_Comm& comm,
+        const int dim,
+        Teuchos::ParameterList& icparams,
+        const bool selfcontact,
+        const enum INPAR::MORTAR::RedundantStorage redundant,
+        const Teuchos::RCP<std::pair<enum XFEM::FieldName,
+            Teuchos::RCP<const DRT::DiscretizationInterface> > >& parent_dis_pair,
+        Teuchos::RCP<CONTACT::IDataContainer> idata_ptr );
 
     /*! \brief Create the solver strategy object and pass all necessary data to it
      *
@@ -72,9 +104,28 @@ namespace STRATEGY {
         const int& dof_offset,
         std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces) const;
 
+    /*! \brief Create the solver strategy object and pass all necessary data to it
+     *
+     *  \note This routine can be used like a non-member function. If you need
+     *  access to the class members, use the alternative call.
+     *
+     * \author hiermeier \date 03/17 */
+    static Teuchos::RCP<CONTACT::CoAbstractStrategy> BuildStrategy(
+        const INPAR::CONTACT::SolvingStrategy stype,
+        const Teuchos::ParameterList& cparams,
+        const bool& poroslave,
+        const bool& poromaster,
+        const int& dof_offset,
+        std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces,
+        const Epetra_Map* dof_row_map,
+        const Epetra_Map* node_row_map,
+        const int dim,
+        const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
+        Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr );
+
     //! Create the desired search tree object
     void BuildSearchTree(
-        std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces) const;
+        const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& interfaces) const;
 
     //! print some final screen output
     void Print(
@@ -82,7 +133,14 @@ namespace STRATEGY {
         const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr,
         const Teuchos::ParameterList& cparams) const;
 
+    /*! \brief print strategy banner
+     *
+     *  \param soltype (in) : contact solving strategy type */
+    static void PrintStrategyBanner(
+        const enum INPAR::CONTACT::SolvingStrategy soltype );
+
   protected:
+
     /*! \brief Set Parent Elements for Poro Face Elements
      *
      *  \author Ager */

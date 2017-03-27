@@ -29,6 +29,7 @@
 #include "../drt_contact/friction_node.H"
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact_aug/contact_augmented_interface.H"
+#include "../drt_contact/contact_strategy_factory.H"
 
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -409,13 +410,9 @@ void WEAR::Algorithm::CreateMaterialInterface()
       dserror("ERROR: CoManager: Self contact requires redundant slave and master storage");
 
     // decide between contactinterface, augmented interface and wearinterface
-    Teuchos::RCP<CONTACT::CoInterface> newinterface=Teuchos::null;
-    if (stype==INPAR::CONTACT::solution_augmented)
-      newinterface=Teuchos::rcp(new CONTACT::AUG::Interface(groupid1,Comm(),dim,icparams,isself[0],redundant));
-    else if(wlaw!=INPAR::WEAR::wear_none)
-      newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
-    else
-      newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],redundant));
+    Teuchos::RCP<CONTACT::CoInterface> newinterface =
+        CONTACT::STRATEGY::Factory::CreateInterface( groupid1, Comm(), dim,
+            icparams, isself[0], redundant, Teuchos::null );
     interfacesMat_.push_back(newinterface);
 
     // get it again

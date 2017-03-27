@@ -46,7 +46,7 @@ XCONTACT::Strategy::Strategy(
     const Teuchos::RCP<const Epetra_Comm>& comm,
     const int& maxdof)
     : CONTACT::CoAbstractStrategy(
-        data_ptr, DofRowMap, NodeRowMap, params, interfaces, dim, comm, 0.0, maxdof),
+        data_ptr, DofRowMap, NodeRowMap, params, dim, comm, 0.0, maxdof),
     xDataPtr_(Teuchos::null),
     idiscrets_(interfaces.size())
 {
@@ -56,6 +56,7 @@ XCONTACT::Strategy::Strategy(
   // Cast interfaces to XContact interfaces
   for (std::size_t i = 0; i < interfaces.size(); ++i)
   {
+    // the cast is just to check the correct type ( one time cost )
     interface_.push_back(Teuchos::rcp_dynamic_cast<XCONTACT::Interface>(
         interfaces[i],true));
   }
@@ -69,17 +70,37 @@ XCONTACT::Strategy::Strategy(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
+std::vector<Teuchos::RCP<CONTACT::CoInterface> >&
+XCONTACT::Strategy::Interfaces()
+{
+  return interface_;
+}
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
+const std::vector<Teuchos::RCP<CONTACT::CoInterface> >&
+XCONTACT::Strategy::Interfaces() const
+{
+  return interface_;
+}
+
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
 void XCONTACT::Strategy::AssembleGlobalSlNTDofRowMaps()
 {
   Data().GSlNormalDofRowMapPtr() = Teuchos::null;
   Data().GSlTangentialDofRowMapPtr() = Teuchos::null;
 
-  for (std::size_t i = 0; i < interface_.size(); ++i)
+  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+        interface_.begin(); cit != interface_.end(); ++cit )
   {
+    const XCONTACT::Interface& xinterface =
+        dynamic_cast<XCONTACT::Interface&>( **cit );
+
     Data().GSlNormalDofRowMapPtr()     =
-        LINALG::MergeMap(Data().GSlNormalDofRowMapPtr(), interface_[i]->SlaveRowNDofs());
+        LINALG::MergeMap(Data().GSlNormalDofRowMapPtr(), xinterface.SlaveRowNDofs());
     Data().GSlTangentialDofRowMapPtr() =
-        LINALG::MergeMap(Data().GSlTangentialDofRowMapPtr(), interface_[i]->SlaveRowTDofs());
+        LINALG::MergeMap(Data().GSlTangentialDofRowMapPtr(), xinterface.SlaveRowTDofs());
   }
 
   return;
@@ -89,11 +110,13 @@ void XCONTACT::Strategy::AssembleGlobalSlNTDofRowMaps()
  *---------------------------------------------------------------------------*/
 void XCONTACT::Strategy::StoreIDiscrets()
 {
-  const unsigned inum = interface_.size();
-
-  for (unsigned i=0; i < inum; ++i)
+  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+        interface_.begin(); cit != interface_.end(); ++cit )
   {
-    idiscrets_[interface_[i]->ParentDiscretType()] = &(interface_[i]->Discret());
+    const XCONTACT::Interface& xinterface =
+        dynamic_cast<XCONTACT::Interface&>( **cit );
+
+    idiscrets_[ xinterface.ParentDiscretType() ] = &( xinterface.Discret() );
   }
 }
 
@@ -208,13 +231,16 @@ void XCONTACT::Strategy::InitEvalInterface(
           "PARALLEL_STRATEGY");
 
   // Initialize and evaluate all interfaces
-  for (std::size_t i = 0; i < interface_.size(); ++i)
+  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+        interface_.begin(); cit != interface_.end(); ++cit )
   {
+    XCONTACT::Interface& xinterface = dynamic_cast<XCONTACT::Interface&>( **cit );
+
     // Initialize/reset interfaces
-    interface_[i]->Initialize();
+    xinterface.Initialize();
 
     // Store required integration time
-    Data().IntTime() += interface_[i]->Inttime();
+    Data().IntTime() += xinterface.Inttime();
 
     // Switch between type of parallel strategy
     switch ( strat )
@@ -225,7 +251,7 @@ void XCONTACT::Strategy::InitEvalInterface(
       case INPAR::MORTAR::ghosting_redundant:
       {
         // Evaluate interface
-        interface_[i]->Evaluate( 0, cparams_ptr );
+        xinterface.Evaluate( 0, cparams_ptr );
         break;
       }
       default:
@@ -246,9 +272,13 @@ void XCONTACT::Strategy::InitEvalInterface(
 void XCONTACT::Strategy::AssembleMortar()
 {
   // Assemble mortar matrices of all interfaces
-  for (std::size_t i = 0; i < interface_.size(); ++i)
+  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+        interface_.begin(); cit != interface_.end(); ++cit )
   {
-    interface_[i]->AssembleMortar(Data().DMatrix(), Data().MMatrix());
+    const XCONTACT::Interface& xinterface =
+        dynamic_cast<XCONTACT::Interface&>( **cit );
+
+    xinterface.AssembleMortar( Data().DMatrix(), Data().MMatrix() );
   }
 
   // Complete mortar matrices
@@ -317,8 +347,14 @@ void XCONTACT::Strategy::Initialize( MORTAR::ActionType actiontype )
 void XCONTACT::Strategy::AssembleWeightedGap()
 {
   // assemble the weighted gap vector (slave node row map layout)
-  for (unsigned i = 0; i < interface_.size(); ++i)
-    interface_[i]->AssembleWeightedGap(Data().WGap());
+  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+        interface_.begin(); cit != interface_.end(); ++cit )
+  {
+    const XCONTACT::Interface& xinterface =
+        dynamic_cast<XCONTACT::Interface&>( **cit );
+
+    xinterface.AssembleWeightedGap( Data().WGap() );
+  }
 
 }
 
@@ -328,9 +364,14 @@ void XCONTACT::Strategy::AssembleContactRHS()
 {
   /* Assemble constraint residual vector and Langrange multiplier vector in
    * normal direction */
-  for (unsigned i = 0; i < interface_.size(); ++i)
-    interface_[i]->AssembleContactRHS(Data().WcLm(), Data().LmN());
+  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+        interface_.begin(); cit != interface_.end(); ++cit )
+  {
+    const XCONTACT::Interface& xinterface =
+        dynamic_cast<XCONTACT::Interface&>( **cit );
 
+    xinterface.AssembleContactRHS( Data().WcLm(), Data().LmN() );
+  }
 }
 
 /*---------------------------------------------------------------------------*
@@ -423,9 +464,13 @@ void XCONTACT::Strategy::EvalConstrRHS()
  *---------------------------------------------------------------------------*/
 void XCONTACT::Strategy::AssembleContactStiff()
 {
-  for (std::size_t i = 0; i < interface_.size(); ++i)
+  for ( std::vector<Teuchos::RCP<CONTACT::CoInterface> >::const_iterator cit =
+        interface_.begin(); cit != interface_.end(); ++cit )
   {
-    interface_[i]->AssembleWcUU(Data().WcSuU(), Data().WcMuU());
+    const XCONTACT::Interface& xinterface =
+        dynamic_cast<XCONTACT::Interface&>( **cit );
+
+    xinterface.AssembleWcUU( Data().WcSuU(), Data().WcMuU() );
   }
 
   // Complete matrices

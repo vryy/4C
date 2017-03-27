@@ -225,11 +225,23 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   void UpdateActiveSetSemiSmooth() {}
 
 protected:
+  //! derived
+  virtual std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces()
+  {
+    return interface_;
+  }
+
+  //! derived
+  virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface> >& Interfaces() const
+  {
+    return interface_;
+  }
 
   // don't want = operator and cctor
   CoPenaltyStrategy operator = (const CoPenaltyStrategy& old);
   CoPenaltyStrategy(const CoPenaltyStrategy& old);
 
+  std::vector<Teuchos::RCP<CoInterface> > interface_;    // contact interfaces
   Teuchos::RCP<LINALG::SparseMatrix> linzmatrix_;        // global matrix LinZ with derivatives of LM
   double                             constrnorm_;        // L2-norm of normal contact constraints
   double                             constrnormtan_;     // L2-norm of tangential contact constraints

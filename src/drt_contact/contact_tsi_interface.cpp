@@ -1,13 +1,14 @@
 /*!----------------------------------------------------------------------
  \file contact_tsi_interface.cpp
-\maintainer Alexander Seitz
 
  <pre>
- Maintainer: Alexander Seitz
+ \maintainer Alexander Seitz
  seitz@lnm.mw.tum.de
  http://www.lnm.mw.tum.de
  089 - 289-15271
  </pre>
+
+ \level 3
 
  *----------------------------------------------------------------------*/
 
@@ -33,10 +34,13 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            seitz 08/15|
  *----------------------------------------------------------------------*/
-CONTACT::CoTSIInterface::CoTSIInterface(const int id, const Epetra_Comm& comm,
+CONTACT::CoTSIInterface::CoTSIInterface(
+    const Teuchos::RCP<MORTAR::IDataContainer>& idata_ptr,
+    const int id, const Epetra_Comm& comm,
     const int dim, const Teuchos::ParameterList& icontact, bool selfcontact,
     INPAR::MORTAR::RedundantStorage redundant) :
-    CONTACT::CoInterface(id, comm, dim, icontact, selfcontact, redundant)
+    CONTACT::CoInterface(idata_ptr, id, comm, dim, icontact, selfcontact,
+        redundant)
 {
 
   return;
