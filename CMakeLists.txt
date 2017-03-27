@@ -2237,6 +2237,8 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_integrator_evaluate.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_strategy.cpp
   src/drt_contact_aug/contact_aug_steepest_ascent_interface.cpp
+  src/drt_contact_aug/contact_aug_combo_strategy.cpp
+  src/drt_contact_aug/contact_aug_combo_strategy_switching.cpp
   src/drt_contact_aug/contact_aug_potential.cpp
   src/drt_contact_aug/contact_integrator_utils.cpp
   src/drt_contact_xcontact/xcontact_strategy.cpp

@@ -536,6 +536,7 @@ namespace STEEPESTASCENT {
   {
     /** The combo_strategy is a wrapper class for a set of augmented Lagrangian
      *  strategies and needs access to all methods. */
+    friend class CONTACT::AUG::ComboStrategy;
 
   public:
     //! Standard constructor

@@ -273,7 +273,8 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 -7.0
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-
+STRUCTURE DIS structure NODE 932 QUANTITY dispx VALUE 6.11248889091607461e-01 TOLERANCE 1.0e-08
+STRUCTURE DIS structure NODE 932 QUANTITY dispy VALUE 3.44648943704649380e+00 TOLERANCE 1.0e-08
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  6

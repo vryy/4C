@@ -51,6 +51,7 @@
 #include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
+#include "../drt_contact_aug/contact_aug_combo_strategy.H"
 // --xcontact strategies and interfaces
 #include "../drt_contact_xcontact/xcontact_interface.H"
 #include "../drt_contact_xcontact/xcontact_strategy.H"
@@ -1514,7 +1515,16 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   else if (stype == INPAR::CONTACT::solution_combo)
   {
     data_ptr = Teuchos::rcp( new AUG::DataContainer() );
-    dserror("Not yet implemented!");
+
+    strategy_ptr = AUG::ComboStrategy::Create(
+        data_ptr,
+        dof_row_map,
+        node_row_map,
+        cparams,
+        interfaces,
+        dim,
+        comm_ptr,
+        dof_offset );
   }
   else if (stype == INPAR::CONTACT::solution_augmented)
   {
