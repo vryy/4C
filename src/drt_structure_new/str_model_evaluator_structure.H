@@ -60,6 +60,10 @@ namespace MODELEVALUATOR{
     //! derived
     virtual bool EvaluateForceStiff();
 
+    //! derived
+    virtual void PostEvaluate()
+    { /* currently unused */ };
+
     /*! \brief Initialize viscous and inertial matrices
      *
      *  This is the place where we calculate the default mass matrix and the

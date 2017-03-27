@@ -252,8 +252,10 @@ bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x,
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForce(x,f,1.0-GetIntParam());
-  if (not ok) return ok;
+  const bool ok = ModelEval().ApplyForce(x,f,1.0-GetIntParam());
+
+  if (not ok)
+    return ok;
 
   // ---------------------------------------------------------------------------
   // add the visco and mass contributions
@@ -276,8 +278,10 @@ bool STR::IMPLICIT::GenAlpha::ApplyStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyStiff(x,jac,1.0-GetIntParam());
-  if (not ok) return ok;
+  const bool ok = ModelEval().ApplyStiff(x,jac,1.0-GetIntParam());
+
+  if (not ok)
+    return ok;
 
   // ---------------------------------------------------------------------------
   // add the visco and mass contributions
@@ -302,8 +306,10 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForceStiff(x,f,jac,1.0-GetIntParam());
-  if (not ok) return ok;
+  const bool ok = ModelEval().ApplyForceStiff(x,f,jac,1.0-GetIntParam());
+
+  if (not ok)
+    return ok;
 
   // ---------------------------------------------------------------------------
   // add the visco and mass contributions
@@ -312,6 +318,26 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
   AddViscoMassContributions(jac);
 
   jac.Complete();
+
+  return ok;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::IMPLICIT::GenAlpha::AssembleForce( Epetra_Vector& f ) const
+{
+  CheckInitSetup();
+
+  // set the time step dependent parameters for the assembly
+  const bool ok = ModelEval().AssembleForce( 1.0-GetIntParam(), f );
+
+  if (not ok)
+    return ok;
+
+  // ---------------------------------------------------------------------------
+  // add the visco and mass contributions
+  // ---------------------------------------------------------------------------
+  AddViscoMassContributions(f);
 
   return ok;
 }

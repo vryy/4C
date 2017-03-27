@@ -2943,6 +2943,14 @@ void CONTACT::CoAbstractStrategy::Evaluate(
       break;
     }
     // -------------------------------------------------------------------
+    // run after an evaluate call in the STR::ModelEvaluator class
+    // -------------------------------------------------------------------
+    case MORTAR::eval_run_post_evaluate:
+    {
+      RunPostEvaluate( cparams );
+      break;
+    }
+    // -------------------------------------------------------------------
     // reset internal stored solution quantities (e.g.
     // displacement state, Lagrange multi.)
     // -------------------------------------------------------------------
@@ -3066,6 +3074,15 @@ void CONTACT::CoAbstractStrategy::EvalForceStiff(
 {
   dserror("Not yet implemented! See the CONTACT::AUG::Strategy for an "
       "example.");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoAbstractStrategy::RunPostEvaluate(
+    CONTACT::ParamsInterface& cparams )
+{
+  /* Not yet implemented! See the CONTACT::AUG::ComboStrategy for an
+   * example. */
 }
 
 /*----------------------------------------------------------------------*

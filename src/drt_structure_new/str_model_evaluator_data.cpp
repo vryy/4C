@@ -34,6 +34,7 @@ STR::MODELEVALUATOR::Data::Data()
       issetup_(false),
       isntmaps_filled_(false),
       ele_action_(DRT::ELEMENTS::none),
+      predict_type_(INPAR::STR::pred_vague),
       ele_eval_error_flag_(STR::ELEMENTS::ele_error_none),
       is_tolerate_errors_(false),
       total_time_(-1.0),
@@ -51,7 +52,8 @@ STR::MODELEVALUATOR::Data::Data()
       timint_ptr_(Teuchos::null),
       comm_ptr_(Teuchos::null),
       beam_data_ptr_(Teuchos::null),
-      contact_data_ptr_(Teuchos::null)
+      contact_data_ptr_(Teuchos::null),
+      model_ptr_( NULL )
 {
   // empty
 }

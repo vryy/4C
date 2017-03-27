@@ -20,6 +20,12 @@
 
 #include "../drt_mortar/mortar_paramsinterface.H"
 
+namespace STR {
+namespace MODELEVALUATOR {
+  class Generic;
+} // namespace MODELEVALUATOR
+} // namespace STR
+
 namespace CONTACT {
   class ParamsInterface : public MORTAR::ParamsInterface
   {
@@ -38,6 +44,9 @@ namespace CONTACT {
 
     //! get the current time step [derived]
     virtual double GetDeltaTime() const = 0;
+
+    //! get a pointer to the contact model evaluator
+    virtual const STR::MODELEVALUATOR::Generic& GetModelEvaluator() const = 0;
   };
 }
 

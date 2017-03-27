@@ -170,6 +170,14 @@ STR::Integrator& STR::MODELEVALUATOR::Generic::Int()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+const STR::Integrator& STR::MODELEVALUATOR::Generic::Int() const
+{
+  CheckInit();
+  return *int_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::Integrator>& STR::MODELEVALUATOR::Generic::IntPtr()
 {
   return int_ptr_;

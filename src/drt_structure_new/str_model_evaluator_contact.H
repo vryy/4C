@@ -62,6 +62,9 @@ namespace MODELEVALUATOR {
     virtual bool EvaluateForceStiff();
 
     //! [derived]
+    virtual void PostEvaluate();
+
+    //! [derived]
     virtual bool AssembleForce(Epetra_Vector& f,
         const double & timefac_np) const;
 
@@ -126,6 +129,8 @@ namespace MODELEVALUATOR {
 
     //! [derived]
     virtual void PostOutput();
+
+    Teuchos::RCP<Epetra_Vector> AssembleForceOfAllModels() const;
     //! @}
 
     //! @name Accessors
@@ -147,8 +152,6 @@ namespace MODELEVALUATOR {
 
   private:
     void PostUpdateStepState();
-
-    void PrintBanner() const;
 
   private:
     //! contact evaluation data container

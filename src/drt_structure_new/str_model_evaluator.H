@@ -109,6 +109,36 @@ namespace MODELEVALUATOR {
     //! predict all internal variables in model evaluators
     void Predict(const INPAR::STR::PredEnum& pred_type) const;
 
+    /** \brief Assembly of all force contributions
+     *
+     *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
+     *  \param f         (out) : force vector which is going to be assembled.
+     *
+     *  \author hiermeier \date 03/17 */
+    inline bool AssembleForce(
+        const double timefac_np,
+        Epetra_Vector& f ) const
+    {
+      return AssembleForce( *me_vec_ptr_, timefac_np, f );
+    }
+
+    /** \brief Assembly of a sub-set of force contributions
+     *
+     *  \param me_vec     (in) : user provided vector of all models which are going to be assembled
+     *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
+     *  \param f         (out) : force vector which is going to be assembled.
+     *
+     *  \author hiermeier \date 03/17 */
+    inline bool AssembleForce(
+        const Vector& me_vec,
+        const double timefac_np,
+        Epetra_Vector& f ) const
+    {
+      bool ok = true;
+      AssembleForce( ok, me_vec, timefac_np, f );
+      return ok;
+    }
+
     //! @}
 
     /*! \brief reset all model states (incl. the structural dynamic state)
@@ -212,10 +242,47 @@ namespace MODELEVALUATOR {
     void CheckInit() const;
 
   private:
-    Teuchos::RCP<STR::ModelEvaluator::Vector> Sort(
-        STR::ModelEvaluator::Map model_map,
-        std::vector<INPAR::STR::ModelType>& sorted_modeltypes
-        ) const;
+    Teuchos::RCP<STR::ModelEvaluator::Vector> TransformToVector(
+        const STR::ModelEvaluator::Map& model_map ) const;
+
+    /** \brief Assembly of all force contributions
+     *
+     *  \note There is also a PUBLIC alternative.
+     *
+     *  \param ok     (in/out) : flag indicating whether anything went wrong or not
+     *  \param me_vec     (in) : vector of all models which are going to be assembled
+     *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
+     *  \param f         (out) : force vector which is going to be assembled.
+     *
+     *  \author hiermeier \date 03/17 */
+    void AssembleForce(
+        bool& ok,
+        const Vector& me_vec,
+        const double timefac_np,
+        Epetra_Vector& f ) const;
+
+    /** \brief Assembly of all jacobian contributions
+     *
+     *  \param ok     (in/out) : flag indicating whether anything went wrong or not
+     *  \param me_vec     (in) : vector of all models which are going to be assembled
+     *  \param timefac_np (in) : time integration factor for the current contribution \f$t_{n+1}\f$
+     *  \param f         (out) : jacobian matrix object which is going to be assembled.
+     *
+     *  \author hiermeier \date 03/17 */
+    void AssembleJacobian(
+        bool& ok,
+        const Vector& me_vec,
+        const double timefac_np,
+        LINALG::SparseOperator& jac ) const;
+
+    void EvaluateForce( bool& ok, const Vector& me_vec ) const;
+
+    void EvaluateStiff( bool& ok, const Vector& me_vec ) const;
+
+    void EvaluateForceStiff( bool& ok, const Vector& me_vec ) const;
+
+    void PostEvaluate( bool ok, const Vector& me_vec ) const;
+
   private:
     bool isinit_;
 

@@ -56,6 +56,9 @@ namespace MODELEVALUATOR{
     //! derived
     virtual bool EvaluateForceStiff();
 
+    //! derived
+    virtual void PostEvaluate()
+    { /* currently unused */ };
 
     //! derived
     virtual bool AssembleForce(Epetra_Vector& f,

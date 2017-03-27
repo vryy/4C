@@ -54,6 +54,9 @@ namespace IMPLICIT {
         LINALG::SparseOperator& jac);
 
     //! (derived)
+    virtual bool AssembleForce( Epetra_Vector& f ) const;
+
+    //! (derived)
     virtual void WriteRestart(
         IO::DiscretizationWriter& iowriter,
         const bool& forced_writerestart) const;

@@ -1243,6 +1243,14 @@ protected:
    *  \author hiermeier */
   virtual void EvalForce(CONTACT::ParamsInterface& cparams);
 
+  /** \brief Run in the end of a call to STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff
+   *
+   *  \param cparams (in): parameter interface between the contact objects and the structural time integration
+   *
+   *  \date 03/2016
+   *  \author hiermeier */
+  virtual void RunPostEvaluate( CONTACT::ParamsInterface& cparams );
+
   /*! \brief Recover the current state
    *
    *  The main task of this method is to recover the Lagrange multiplier solution.

@@ -97,6 +97,14 @@ bool STR::IMPLICIT::Statics::ApplyForceStiff(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool STR::IMPLICIT::Statics::AssembleForce( Epetra_Vector& f ) const
+{
+  CheckInitSetup();
+  return ModelEval().AssembleForce( 1.0, f );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::WriteRestart(
     IO::DiscretizationWriter& iowriter,
     const bool& forced_writerestart) const

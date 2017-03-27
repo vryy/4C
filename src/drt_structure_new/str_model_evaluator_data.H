@@ -177,6 +177,18 @@ namespace MODELEVALUATOR {
         dserror("pointer to beam data container not set!");
       return beam_data_ptr_;
     }
+
+    /** \brief get reference to the set model evaluator
+     *
+     *  \note Currently only used in the contact data container and therefore
+     *  not part of the ParamsInterface. Feel free to add. */
+    const Generic& GetModelEvaluator() const
+    {
+      if ( not model_ptr_ )
+        dserror( "No reference to the model evaluator available!" );
+
+      return *model_ptr_;
+    }
     //! @}
 
     //!@name set routines which can be called inside of the element [derived]
@@ -354,6 +366,12 @@ namespace MODELEVALUATOR {
     inline void SetPlasticStrainData(const Teuchos::RCP<std::vector<char> >& plastic_straindata)
     {
       plastic_straindata_ptr_ = plastic_straindata;
+    }
+
+    //! set model evaluator ptr
+    inline void SetModelEvaluator( Generic* model_ptr )
+    {
+      model_ptr_ = model_ptr;
     }
 
     //! reset the partial update norm value of the current processor
@@ -643,6 +661,9 @@ namespace MODELEVALUATOR {
 
     //! statmech data container
     Teuchos::RCP<BrownianDynData> browniandyn_data_ptr_;
+
+    //! pointer to a model evaluator object
+    const Generic* model_ptr_;
   };  // class Data
 
 
@@ -826,6 +847,13 @@ namespace MODELEVALUATOR {
       return str_data_ptr_->GetDeltaTime();
     }
 
+    //! get reference to the set model evaluator
+    virtual const Generic& GetModelEvaluator() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetModelEvaluator();
+    }
+
     /*! @name set routines which are used to set the parameters of the data container
      *
      *  These functions are not allowed to be called by the elements! */
@@ -898,7 +926,6 @@ namespace MODELEVALUATOR {
     enum MORTAR::ActionType mortar_action_;
 
     Teuchos::RCP<const STR::MODELEVALUATOR::Data> str_data_ptr_;
-
 
   }; // class ContactData
 

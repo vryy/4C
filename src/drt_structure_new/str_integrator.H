@@ -77,6 +77,9 @@ namespace TIMINT {
     virtual bool ApplyForce(const Epetra_Vector& x,
         Epetra_Vector& f) = 0;
 
+    //! Assemble the right hand side
+    virtual bool AssembleForce( Epetra_Vector& f ) const = 0;
+
     //! return integration factor
     virtual double GetIntParam() const = 0;
 

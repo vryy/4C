@@ -192,6 +192,7 @@ void CONTACT::CoNitscheStrategy::Evaluate(
   case MORTAR::eval_force_stiff:
     Integrate(cparams);
     break;
+  case MORTAR::eval_run_post_evaluate: break;
   case MORTAR::eval_reset:
     SetState(MORTAR::state_new_displacement, *((*eval_vec)[0])); break;
   case MORTAR::eval_recover: break;

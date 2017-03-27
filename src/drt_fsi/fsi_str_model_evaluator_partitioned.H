@@ -69,6 +69,10 @@ namespace MODELEVALUATOR {
     {return true;};
 
     //! derived
+    virtual void PostEvaluate()
+    { /* currently unused */ };
+
+    //! derived
     virtual bool AssembleForce(Epetra_Vector& f,
         const double & timefac_np) const;
 

@@ -135,7 +135,13 @@ namespace MODELEVALUATOR {
      *  \author hiermeier */
     virtual bool EvaluateForceStiff() = 0;
 
-    /*! \brief Assemble the force right-hand-side without
+    /*! \brief Called at the end of each call to one of the STR::ModelEvaluator::Evaluate routines,
+     *         i.e. EvaluateForce, EvaluateStiff, EvaluateForceStiff.
+     *
+     *  \author hiermeier \date 03/17 */
+    virtual void PostEvaluate() = 0;
+
+    /*! \brief Assemble the force right-hand-side
      *
      *  After the evaluation of all models at the new state \f$t_{n+1}\f$ is finished we
      *  start to put everything together. At this point we build the right-hand-side at
@@ -147,9 +153,9 @@ namespace MODELEVALUATOR {
      *  have to add them to complete the mid-point right-hand-side.
      *
      *  \param f         (out) : Time factor scaled right hand side w/o viscous and/or mass effects
-     *  \param timefac_np (in) : Time factor of the underlying structural time integrator for the new state
-     *                           at \f$t_{n+1}\f$. (To scale the old state of the previous time step see
-     *                           UpdateStepState.)
+     *  \param timefac_np (in) : Time factor of the underlying structural time integrator for the
+     *                           new state at \f$t_{n+1}\f$. (To scale the old state of the previous
+     *                           time step see UpdateStepState.)
      *
      *  \date 07/2016
      *  \author hiermeier */
@@ -287,6 +293,7 @@ namespace MODELEVALUATOR {
 
     //! Returns the underlying STR::Integrator object
     STR::Integrator& Int();
+    const STR::Integrator& Int() const;
     Teuchos::RCP<STR::Integrator>& IntPtr();
 
     //! Returns the underlying STR::TIMINT object

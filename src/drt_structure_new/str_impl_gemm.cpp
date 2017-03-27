@@ -57,6 +57,14 @@ bool STR::IMPLICIT::Gemm::ApplyForce(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool STR::IMPLICIT::Gemm::AssembleForce( Epetra_Vector& f ) const
+{
+  CheckInitSetup();
+  return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Gemm::ApplyStiff(
     const Epetra_Vector& x,
     LINALG::SparseOperator& jac)

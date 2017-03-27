@@ -222,8 +222,10 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForce(const Epetra_Vector& x,
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForce(x,f,theta_);
-  if (not ok) return ok;
+  const bool ok = ModelEval().ApplyForce(x,f,theta_);
+
+  if (not ok)
+    return ok;
 
   // ---------------------------------------------------------------------------
   // evaluate the mid state at t_{n+theta}^{i}
@@ -246,8 +248,10 @@ bool STR::IMPLICIT::OneStepTheta::ApplyStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyStiff(x,jac,theta_);
-  if (not ok) return ok;
+  const bool ok = ModelEval().ApplyStiff(x,jac,theta_);
+
+  if (not ok)
+    return ok;
 
   // ---------------------------------------------------------------------------
   // evaluate the mid state at t_{n+theta}^{i}
@@ -272,8 +276,10 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
   // ---------------------------------------------------------------------------
   // set the time step dependent parameters for the element evaluation
   ResetEvalParams();
-  bool ok = ModelEval().ApplyForceStiff(x,f,jac,theta_);
-  if (not ok) return ok;
+  const bool ok = ModelEval().ApplyForceStiff(x,f,jac,theta_);
+
+  if (not ok)
+    return ok;
 
   // ---------------------------------------------------------------------------
   // add the visco and mass contributions
@@ -282,6 +288,23 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
   AddViscoMassContributions(jac);
 
   jac.Complete();
+
+  return ok;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::IMPLICIT::OneStepTheta::AssembleForce( Epetra_Vector& f ) const
+{
+  const bool ok = ModelEval().AssembleForce( theta_, f );
+
+  if (not ok)
+    return ok;
+
+  // ---------------------------------------------------------------------------
+  // evaluate the mid state at t_{n+theta}^{i}
+  // ---------------------------------------------------------------------------
+  AddViscoMassContributions( f );
 
   return ok;
 }
