@@ -65,7 +65,7 @@ INTTYPE                         Elements
 NUMGP_PER_DIM                   3
 ---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
-STRATEGY                        SteepestAscent // Augmented
+STRATEGY                        Combo // SteepestAscent // Augmented
 SYSTEM                          SaddlePoint
 FRICTION                        None
 SEMI_SMOOTH_NEWTON              Yes
@@ -77,6 +77,10 @@ PRINT_LINEAR_CONSERVATION       No// Yes
 PRINT_ANGULAR_CONSERVATION      No// Yes
 --------------------------CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT
 CN_UPPER_BOUND                  1.0e6
+-----------------------------------CONTACT DYNAMIC/AUGMENTED/COMBO
+SWITCHING_STRATEGY              PreAsymptotic
+STRATEGY_0                      SteepestAscent
+STRATEGY_1                      Augmented
 --------------------------------------------STRUCT NOX/Status Test
 XML File                        = contact_large_pen.xml
 ------------------------------------------------STRUCT NOX/Printing
