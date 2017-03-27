@@ -70,6 +70,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
                            "UzawaAugementedLagrange","uzawa","Uzawa",
                            "Augmented",
                            "SteepestAscent",
+                           "Combo",
                            "XContact",
                            "Nitsche"),
         tuple<int>(
@@ -78,6 +79,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
                 solution_uzawa, solution_uzawa, solution_uzawa,
                 solution_augmented,
                 solution_steepest_ascent,
+                solution_combo,
                 solution_xcontact,
                 solution_nitsche),
         &scontact);
@@ -238,6 +240,34 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
 
   DoubleParameter("CN_UPPER_BOUND",std::numeric_limits<double>::max(),
       "Upper bound for the cn value. Used during the dynamic cn update.",&sacontact);
+
+  // --------------------------------------------------------------------------
+  // sub-sub-list "Augmented/Combo"
+  Teuchos::ParameterList& combo_contact=augcontact.sublist("COMBO");
+
+  setStringToIntegralParameter<int>("STRATEGY_0","Augmented","Type of"
+      " first solving strategy",
+        tuple<std::string>("Augmented",
+                           "SteepestAscent"),
+        tuple<int>(
+                solution_augmented,
+                solution_steepest_ascent),
+        &combo_contact);
+
+  setStringToIntegralParameter<int>("STRATEGY_1","Augmented","Type of"
+      " second solving strategy",
+        tuple<std::string>("Augmented",
+                           "SteepestAscent"),
+        tuple<int>(
+                solution_augmented,
+                solution_steepest_ascent),
+        &combo_contact);
+
+  setStringToIntegralParameter<int>("SWITCHING_STRATEGY","PreAsymptotic","Type of"
+        " switching strategy to switch between the different solving strategies",
+          tuple<std::string>("PreAsymptotic"),
+          tuple<int>( switch_preasymptotic ),
+          &combo_contact);
 
   // --------------------------------------------------------------------------
   // sub-list "eXtended contact formulation"

@@ -48,10 +48,47 @@ namespace INPAR
       solution_lagmult,         ///< method of Lagrange multipliers
       solution_penalty,         ///< penalty approach
       solution_uzawa,           ///< Uzawa augmented Lagrange approach
+      solution_combo,           ///< combination of multiple augmented solving strategies
       solution_augmented,       ///< augmented Lagrange approach
       solution_steepest_ascent, ///< steepest ascent approach (based on the augmented formulation)
       solution_xcontact,        ///< eXtended contact approach
       solution_nitsche          ///< Nitsche contact solution method
+    };
+
+    inline std::string SolvingStrategy2String( enum SolvingStrategy stype )
+    {
+
+      switch ( stype )
+      {
+        case solution_vague:
+          return "solution_vague";
+        case solution_lagmult:
+          return "solution_lagmult";
+        case solution_penalty:
+          return "solution_penalty";
+        case solution_uzawa:
+          return "solution_uzawa";
+        case solution_combo:
+          return "solution_combo";
+        case solution_augmented:
+          return "solution_augmented";
+        case solution_steepest_ascent:
+          return "solution_steepest_ascent";
+        case solution_xcontact:
+          return "solution_xcontact";
+        case solution_nitsche:
+          return "solution_nitsche";
+        default:
+          return "UNSUPPORTED SolvingStrategy";
+      }
+
+    }
+
+    enum SwitchingStrategy
+    {
+      switch_preasymptotic    /**< switch between two stratgies.
+                               *   One for the pre- and one for the asymptotic
+                               *   solution phase */
     };
 
     /// Type of linear system setup and solution
