@@ -127,7 +127,7 @@ CONTACT::AUG::ComboStrategy::ComboStrategy(
   for ( plain_strategy_set::const_iterator cit = strategies_.begin();
         cit != strategies_.end(); ++cit )
   {
-    CONTACT::CoAbstractStrategy& s = **cit;
+    const CONTACT::CoAbstractStrategy& s = **cit;
     const plain_interface_set& sinterfaces = s.ContactInterfaces();
     const unsigned num_interfaces = sinterfaces.size();
 

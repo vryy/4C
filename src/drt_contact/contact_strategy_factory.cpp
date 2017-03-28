@@ -51,6 +51,8 @@
 #include "../drt_contact_aug/contact_augmented_strategy.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
+#include "../drt_contact_aug/contact_aug_lagrange_interface.H"
+#include "../drt_contact_aug/contact_aug_lagrange_strategy.H"
 #include "../drt_contact_aug/contact_aug_combo_strategy.H"
 // --xcontact strategies and interfaces
 #include "../drt_contact_xcontact/xcontact_interface.H"
@@ -1165,6 +1167,28 @@ Teuchos::RCP< ::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterfac
       break;
     }
     // ------------------------------------------------------------------------
+    // Create a lagrange contact interface (based on the augmented formulation)
+    // ------------------------------------------------------------------------
+    case INPAR::CONTACT::solution_std_lagrange:
+    {
+      if ( idata_ptr.is_null() )
+      {
+        idata_ptr = Teuchos::rcp( new CONTACT::AUG::IDataContainer() );
+
+        newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(
+            idata_ptr, id, comm, dim, icparams, selfcontact, redundant ) );
+      }
+      else
+      {
+        Teuchos::RCP<CONTACT::AUG::IDataContainer> iaugdata_ptr =
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::IDataContainer>( idata_ptr, true );
+        newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(
+            iaugdata_ptr ) );
+      }
+
+      break;
+    }
+    // ------------------------------------------------------------------------
     // Create an extended finite element contact interface (XCONTACT)
     // ------------------------------------------------------------------------
     case INPAR::CONTACT::solution_xcontact:
@@ -1556,6 +1580,21 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
         comm_ptr,
         dof_offset ) );
   }
+  else if (stype == INPAR::CONTACT::solution_std_lagrange )
+  {
+    if ( data_ptr.is_null() )
+      data_ptr = Teuchos::rcp( new AUG::DataContainer() );
+
+    strategy_ptr = Teuchos::rcp( new AUG::LAGRANGE::Strategy(
+        data_ptr,
+        dof_row_map,
+        node_row_map,
+        cparams,
+        interfaces,
+        dim,
+        comm_ptr,
+        dof_offset ) );
+  }
   else if (stype == INPAR::CONTACT::solution_xcontact)
   {
     data_ptr = Teuchos::rcp( new XCONTACT::DataContainer() );
@@ -1854,6 +1893,14 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
         {
           IO::cout << "================================================================\n";
           IO::cout << "===== Augmented Lagrange strategy ==============================\n";
+          IO::cout << "===== (Saddle point formulation) ===============================\n";
+          IO::cout << "================================================================\n\n";
+        }
+        else if (soltype == INPAR::CONTACT::solution_std_lagrange)
+        {
+          IO::cout << "================================================================\n";
+          IO::cout << "===== Standard Lagrange strategy ===============================\n";
+          IO::cout << "===== Derived from the Augmented formulation ===================\n";
           IO::cout << "===== (Saddle point formulation) ===============================\n";
           IO::cout << "================================================================\n\n";
         }

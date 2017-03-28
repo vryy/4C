@@ -51,6 +51,7 @@ namespace INPAR
       solution_combo,           ///< combination of multiple augmented solving strategies
       solution_augmented,       ///< augmented Lagrange approach
       solution_steepest_ascent, ///< steepest ascent approach (based on the augmented formulation)
+      solution_std_lagrange,    ///< lagrange strategy (based on the augmented formulation)
       solution_xcontact,        ///< eXtended contact approach
       solution_nitsche          ///< Nitsche contact solution method
     };
@@ -74,6 +75,8 @@ namespace INPAR
           return "solution_augmented";
         case solution_steepest_ascent:
           return "solution_steepest_ascent";
+        case solution_std_lagrange:
+          return "solution_std_lagrange";
         case solution_xcontact:
           return "solution_xcontact";
         case solution_nitsche:

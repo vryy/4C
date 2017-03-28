@@ -38,6 +38,7 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
   switch (sol_type)
   {
     case INPAR::CONTACT::solution_augmented:
+    case INPAR::CONTACT::solution_std_lagrange:
     case INPAR::CONTACT::solution_steepest_ascent:
     case INPAR::CONTACT::solution_combo:
     {
@@ -68,11 +69,18 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
                   p_mortar,slave_type,comm ) );
       break;
     }
-    default:
+    case INPAR::CONTACT::solution_lagmult:
+    case INPAR::CONTACT::solution_uzawa:
     {
       integrator = Teuchos::rcp(new CONTACT::CoIntegrator(
           p_mortar,slave_type,comm));
       break;
+    }
+    default:
+    {
+      dserror( "Unsupported solving strategy! (stype = %s | %d)",
+          INPAR::CONTACT::SolvingStrategy2String( sol_type ).c_str(), sol_type );
+      exit( EXIT_FAILURE );
     }
   } // end switch
 

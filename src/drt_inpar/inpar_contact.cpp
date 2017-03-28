@@ -70,6 +70,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
                            "UzawaAugementedLagrange","uzawa","Uzawa",
                            "Augmented",
                            "SteepestAscent",
+                           "StdLagrange",
                            "Combo",
                            "XContact",
                            "Nitsche"),
@@ -79,6 +80,7 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
                 solution_uzawa, solution_uzawa, solution_uzawa,
                 solution_augmented,
                 solution_steepest_ascent,
+                solution_std_lagrange,
                 solution_combo,
                 solution_xcontact,
                 solution_nitsche),
@@ -248,18 +250,22 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   setStringToIntegralParameter<int>("STRATEGY_0","Augmented","Type of"
       " first solving strategy",
         tuple<std::string>("Augmented",
+                           "StdLagrange",
                            "SteepestAscent"),
         tuple<int>(
                 solution_augmented,
+                solution_std_lagrange,
                 solution_steepest_ascent),
         &combo_contact);
 
   setStringToIntegralParameter<int>("STRATEGY_1","Augmented","Type of"
       " second solving strategy",
         tuple<std::string>("Augmented",
+                           "StdLagrange",
                            "SteepestAscent"),
         tuple<int>(
                 solution_augmented,
+                solution_std_lagrange,
                 solution_steepest_ascent),
         &combo_contact);
 

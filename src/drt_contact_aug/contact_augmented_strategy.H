@@ -921,22 +921,18 @@ namespace STEEPESTASCENT {
      *
      * \author hiermeier
      * \date 05/16 */
-    CONTACT::AUG::DataContainer& Data()
+    inline CONTACT::AUG::DataContainer& Data()
     {
-      if (augDataPtr_.is_null())
-        dserror("The augmented strategy data container is not initialized!");
-      return *augDataPtr_;
+      return augData_;
     }
 
     /*! \brief Get access to the internal data container of the strategy (read-only)
      *
      * \author hiermeier
      * \date 05/16 */
-    const CONTACT::AUG::DataContainer& Data() const
+    inline const CONTACT::AUG::DataContainer& Data() const
     {
-      if (augDataPtr_.is_null())
-        dserror("The augmented strategy data container is not initialized!");
-      return *augDataPtr_;
+      return augData_;
     }
 
   public:
@@ -1015,8 +1011,15 @@ namespace STEEPESTASCENT {
     Strategy(const Strategy& old);
 
   private:
+    /// augmented contact strategy data container pointer
     Teuchos::RCP<CONTACT::AUG::DataContainer> augDataPtr_;
+
+    /// reference to the augmented contact strategy data container
+    CONTACT::AUG::DataContainer& augData_;
+
+    /// contact interface set
     plain_interface_set interface_;
+
   };  // class Strategy
 
   /*--------------------------------------------------------------------------*/

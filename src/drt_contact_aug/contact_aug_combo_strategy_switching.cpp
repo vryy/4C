@@ -16,6 +16,8 @@
 
 
 #include "contact_aug_combo_strategy.H"
+#include "contact_augmented_strategy.H"
+#include "contact_augmented_interface.H"
 
 #include "../drt_contact/contact_paramsinterface.H"
 #include "../drt_contact/contact_strategy_factory.H"
@@ -26,11 +28,6 @@
 
 #include "../drt_structure_new/str_model_evaluator_contact.H"
 
-// (possibly) wrapped strategies
-#include "contact_augmented_strategy.H"
-#include "contact_augmented_interface.H"
-#include "contact_aug_steepest_ascent_strategy.H"
-#include "contact_aug_steepest_ascent_interface.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -96,21 +93,21 @@ void CONTACT::AUG::ComboStrategy::Switching::GetStrategyTypes(
   for ( plain_strategy_set::const_iterator cit = strategies.begin();
         cit != strategies.end(); ++cit )
   {
-    const CONTACT::CoAbstractStrategy* s = (*cit).get();
+    const CONTACT::CoAbstractStrategy& s = (**cit);
 
-    if ( dynamic_cast<const CONTACT::AUG::STEEPESTASCENT::Strategy*>( s ) )
+    switch ( s.Type() )
     {
-      strat_types.push_back( INPAR::CONTACT::solution_steepest_ascent );
-      continue;
+      case INPAR::CONTACT::solution_augmented:
+      case INPAR::CONTACT::solution_steepest_ascent:
+      case INPAR::CONTACT::solution_std_lagrange:
+        strat_types.push_back( s.Type() );
+        break;
+      default:
+        dserror( "The strategy is of a non-supported type! ( type = "
+            "%s | %d )", INPAR::CONTACT::SolvingStrategy2String( s.Type() ).c_str(),
+            s.Type() );
+        exit( EXIT_FAILURE );
     }
-
-    if ( dynamic_cast<const CONTACT::AUG::Strategy*>( s ) )
-    {
-      strat_types.push_back( INPAR::CONTACT::solution_augmented );
-      continue;
-    }
-
-    dserror( "The strategy is of a non-supported type!" );
   }
 
   if ( strategies.size() != strat_types.size() )

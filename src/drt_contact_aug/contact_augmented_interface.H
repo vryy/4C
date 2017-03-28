@@ -274,7 +274,7 @@ namespace AUG {
     /*! \brief Assemble DGGLinMatrix
      *
      *  Linearization w.r.t. the displacements */
-    void AssembleDGGLinMatrix(
+    virtual void AssembleDGGLinMatrix(
         LINALG::SparseMatrix& dGGSlLinMatrix,
         LINALG::SparseMatrix& dGGMaLinMatrix,
         const Epetra_Vector& cnVec) const;
@@ -389,7 +389,7 @@ namespace AUG {
         double scal,
         const T& values,
         LINALG::SparseMatrix& mat,
-        double threshold = 1.0e-12 ) const;
+        double threshold = 0.0 ) const;
 
     virtual void AssembleDGGLinMatrixOnSlaveSide(
         const CoNode& cnode,
