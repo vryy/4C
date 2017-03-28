@@ -418,7 +418,7 @@ Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::
     MatrixList.set<int>("DOF offset",offsetFineLevel);
     MatrixList.set<int>("number of equations",numdf);
 
-    if(A_eop->Comm().MyPID()==0)
+    if(verbosity_ == "on" and A_eop->Comm().MyPID()==0)
     {
       std::cout << "offsetFineLevel " << offsetFineLevel << std::endl;
     }
@@ -467,7 +467,7 @@ Teuchos::RCP<MueLu::Hierarchy<Scalar,LocalOrdinal,GlobalOrdinal,Node> > LINALG::
   }
 
   double elaptime =  timer.ElapsedTime();
-  if(A_eop->Comm().MyPID()==0)
+  if(verbosity_ == "on" and A_eop->Comm().MyPID()==0)
     std::cout <<  "       Calling LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy takes " << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl ;
   return H;
 }

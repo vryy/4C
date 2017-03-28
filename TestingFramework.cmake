@@ -1781,6 +1781,7 @@ baci_test(poro_3D_hex8_p1 2 5)
 baci_test(fpsi_bending_struct_BGSAMG 2 "")
 
 # electrochemistry using the AMGnxn framework
+baci_test(elch_3D_tet4_s2i_butlervolmer_AMG-BGS_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 3 "")
 muelu_agg2vtk(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 2 3 3 100.)
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3_geometry 3 "")
