@@ -314,12 +314,8 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
             +
             (cauchy_nt2_weighted_average-pet*vt2)*(cauchy_nt2_weighted_average-pet*vt2));
 
-        if (tan_tr<=0. && false)
-        {
-
-        }
-          // stick
-        else if (tan_tr<fr)
+        // stick
+        if (tan_tr<fr)
         {
           IntegrateTest<dim>(+pet,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,vt1,dvt1,t1,dt1);
           IntegrateTest<dim>(-pet,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,vt1,dvt1,t1,dt1);
