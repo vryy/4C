@@ -4,6 +4,8 @@
 
 \brief VTP filter specialized for particle output
 
+\level 2
+
 \maintainer Georg Hammerl
 *-----------------------------------------------------------------------*/
 #ifndef POST_DRT_VTP_H
@@ -27,15 +29,15 @@ class PostField;
  \author hammerl
  \date 03/16
 */
-class VtpWriter : public VtkWriter
+class PostVtpWriter : public PostVtkWriter
 {
 public:
   //! constructor. Initializes the writer to a certain field.
-  VtpWriter (PostField* field,
+  PostVtpWriter (PostField* field,
              const std::string &name);
 
   //! destructor
-  virtual ~VtpWriter()
+  virtual ~PostVtpWriter()
   {}
 
 protected:

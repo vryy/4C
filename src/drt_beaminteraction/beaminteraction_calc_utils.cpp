@@ -139,7 +139,7 @@ std::vector<int> Permutation( int const number )
 void GetCurrentElementDis(
     DRT::Discretization const& discret,
     DRT::Element const* ele,
-    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+    Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
     std::vector<double>& eledisp)
 {
   // clear

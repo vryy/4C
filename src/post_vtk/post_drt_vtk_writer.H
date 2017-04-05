@@ -94,14 +94,14 @@ void writeCompressedBlock (const std::vector<T> &data,
  \author kronbichler
  \date 03/14
 */
-class VtkWriter : public PostWriterBase
+class PostVtkWriter : public PostWriterBase
 {
 public:
   //! constructor. Initializes the writer to a certain field.
-  VtkWriter(PostField* field, const std::string &name);
+  PostVtkWriter(PostField* field, const std::string &name);
 
   //! destructor
-  virtual ~VtkWriter() {}
+  virtual ~PostVtkWriter() {}
 
   //! write the whole thing
   virtual void WriteFiles(PostFilterBase &filter);

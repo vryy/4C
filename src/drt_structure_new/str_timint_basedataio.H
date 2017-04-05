@@ -29,6 +29,8 @@ namespace IO {
 } // namespace IO
 namespace STR {
 namespace TIMINT {
+  class ParamsRuntimeVtkOutput;
+
   /** \brief Input/output data container for the structural (time) integration
    *
    * This data container holds everything, which refers directly to the
@@ -73,6 +75,13 @@ namespace TIMINT {
     {
       CheckInitSetup();
       return output_;
+    };
+
+    /// get the data container for parameters regarding VTK output at runtime
+    Teuchos::RCP<const ParamsRuntimeVtkOutput> GetRuntimeVtkOutputParams() const
+    {
+      CheckInitSetup();
+      return params_runtime_vtk_output_;
     };
 
     /// @name Get printing and output parameters/files (read only access)
@@ -275,6 +284,9 @@ namespace TIMINT {
 
     /// binary output
     Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+    /// data container for input parameters related to VTK output at runtime
+    Teuchos::RCP<ParamsRuntimeVtkOutput> params_runtime_vtk_output_;
 
     /// outputfile for energy
     Teuchos::RCP<std::ofstream> energyfile_;

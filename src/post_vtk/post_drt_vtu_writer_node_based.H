@@ -43,15 +43,15 @@ namespace ELEMENTS
  \author biehler
  \date 12/16
 */
-class VtuWriterNode : public VtuWriter
+class PostVtuWriterNode : public PostVtuWriter
 {
 public:
   //! constructor. Initializes the writer to a certain field.
-  VtuWriterNode (PostField* field,
+  PostVtuWriterNode (PostField* field,
              const std::string &name);
 
   //! destructor
-  virtual ~VtuWriterNode()
+  virtual ~PostVtuWriterNode()
   {}
 
 protected:

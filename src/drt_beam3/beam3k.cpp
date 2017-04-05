@@ -1234,7 +1234,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   const unsigned int numdof = ndim*vpernode*nnodecl + BEAM3K_COLLOCATION_POINTS;
 
   // safety check
-  if ( Ivar.M() != 2*ndim or Ivar.N() != numdof )
+  if ( (unsigned int) Ivar.M() != 2*ndim or (unsigned int) Ivar.N() != numdof )
     dserror("size mismatch! expected %dx%d matrix and got %dx%d",6 ,numdof ,Ivar.M() ,Ivar.N() );
 
   Ivar.Zero();
@@ -1397,7 +1397,7 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
   const unsigned int numdof = ndim*vpernode*nnodecl + BEAM3K_COLLOCATION_POINTS;
 
   // safety check
-  if ( stiffmat.M() != numdof or stiffmat.N() != numdof )
+  if ( (unsigned int) stiffmat.M() != numdof or (unsigned int) stiffmat.N() != numdof )
     dserror("size mismatch! expected %dx%d matrix and got %dx%d",
         numdof, numdof, stiffmat.M(), stiffmat.N() );
 
@@ -1551,7 +1551,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   const unsigned int numdof = ndim*vpernode*nnodecl + BEAM3K_COLLOCATION_POINTS;
 
   // safety check
-  if ( Iinc.M() != 2*ndim or Iinc.N() != numdof )
+  if ( (unsigned int) Iinc.M() != 2*ndim or (unsigned int) Iinc.N() != numdof )
     dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6, numdof, Iinc.M(), Iinc.N() );
 
   Iinc.Zero();

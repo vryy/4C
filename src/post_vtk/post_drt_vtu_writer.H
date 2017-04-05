@@ -43,15 +43,15 @@ namespace ELEMENTS
  \author kronbichler
  \date 03/14
 */
-class VtuWriter : public VtkWriter
+class PostVtuWriter : public PostVtkWriter
 {
 public:
   //! constructor. Initializes the writer to a certain field.
-  VtuWriter (PostField* field,
+  PostVtuWriter (PostField* field,
              const std::string &name);
 
   //! destructor
-  virtual ~VtuWriter()
+  virtual ~PostVtuWriter()
   {}
 
 protected:
@@ -144,8 +144,6 @@ protected:
   //! Write a single result step for one Nurbs Element
   virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
       std::vector<double>& solution,Teuchos::RCP<Epetra_MultiVector> ghostedData);
-
-  virtual std::pair<uint8_t,std::vector<int> > GetVtkElementType(int bacieletype);
 
 };
 

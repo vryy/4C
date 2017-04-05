@@ -4,12 +4,9 @@
 
 \brief Mesh tying for ale problems
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 2
+
+\maintainer Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
@@ -44,7 +41,7 @@ ALE::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
   gsdofrowmap_(Teuchos::null),
   gmdofrowmap_(Teuchos::null),
   mergedmap_(Teuchos::null),
-  msht_(msht),
+//  msht_(msht),
   surfacesplitter_(surfacesplitter),
   problemrowmap_(Teuchos::null),
   gndofrowmap_(Teuchos::null),
@@ -52,7 +49,7 @@ ALE::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
   valuesdc_(Teuchos::null),
   dconmaster_(false),
   firstnonliniter_(false),
-  nsd_(nsd),
+//  nsd_(nsd),
   is_multifield_(false)
 {
   // get the processor ID from the communicator

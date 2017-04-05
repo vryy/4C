@@ -4,12 +4,9 @@
 
 \brief Mesh tying for ale problems
 
-<pre>
-Maintainer: Andy Wirtz
-            wirtz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15270
-</pre>
+\level 2
+
+\maintainer Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 #ifndef SRC_DRT_ALE_ALE_MESHTYING_H_
@@ -174,7 +171,7 @@ class Meshtying
     //! meshting options
     /// 0: no_meshtying     -> no mesh-tying
     /// 1: yes_meshtying   -> condensation in a block matrix
-    int msht_;
+//    int msht_;    // Todo commented to avoid compiler warning, grill 04/17
 
     //! the processor ID from the communicator
     int                           myrank_;
@@ -210,7 +207,7 @@ class Meshtying
     bool firstnonliniter_;
 
     //! number of space dimensions
-    int nsd_;
+//    int nsd_;    // Todo commented to avoid compiler warning, grill 04/17
 
     //! interface maps for split of ale matrix in multifield simulation
     LINALG::MultiMapExtractor multifield_interface_;

@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_vti.cpp
+\file post_drt_vti_writer.cpp
 
 \brief VTI filter
 
-<pre>
-Maintainer: Karl-Robert Wichmann
-            wichmann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Karl-Robert Wichmann
 
+\level 2
 */
 /*----------------------------------------------------------------------*/
 
@@ -36,8 +32,8 @@ struct less_tol
   bool operator() (const T& x, const T& y) const {return x<y-TOL_N;}
 };
 
-VtiWriter::VtiWriter(PostField* field, const std::string &filename) :
-    VtkWriter(field, filename)
+PostVtiWriter::PostVtiWriter(PostField* field, const std::string &filename) :
+    PostVtkWriter(field, filename)
 {
   for (size_t i = 0; i < sizeof(origin_) / sizeof(origin_[0]); ++i)
     origin_[i] = 0.0;
@@ -50,13 +46,13 @@ VtiWriter::VtiWriter(PostField* field, const std::string &filename) :
 }
 
 
-const std::string& VtiWriter::WriterString() const
+const std::string& PostVtiWriter::WriterString() const
 {
   static std::string name("ImageData");
   return name;
 }
 
-const std::string& VtiWriter::WriterOpeningTag() const
+const std::string& PostVtiWriter::WriterOpeningTag() const
 {
   static std::string tag;
   std::stringstream stream;
@@ -73,7 +69,7 @@ const std::string& VtiWriter::WriterOpeningTag() const
   return tag;
 }
 
-const std::string& VtiWriter::WriterPOpeningTag() const
+const std::string& PostVtiWriter::WriterPOpeningTag() const
 {
   static std::string tag;
   std::stringstream stream;
@@ -90,7 +86,7 @@ const std::string& VtiWriter::WriterPOpeningTag() const
   return tag;
 }
 
-const std::vector<std::string>& VtiWriter::WriterPPieceTags() const
+const std::vector<std::string>& PostVtiWriter::WriterPPieceTags() const
 {
   static std::vector<std::string> tags;
   tags.clear();
@@ -112,13 +108,13 @@ const std::vector<std::string>& VtiWriter::WriterPPieceTags() const
   return tags;
 }
 
-const std::string& VtiWriter::WriterSuffix() const
+const std::string& PostVtiWriter::WriterSuffix() const
 {
   static std::string name(".vti");
   return name;
 }
 
-const std::string& VtiWriter::WriterPSuffix() const
+const std::string& PostVtiWriter::WriterPSuffix() const
 {
   static std::string name(".pvti");
   return name;
@@ -127,7 +123,7 @@ const std::string& VtiWriter::WriterPSuffix() const
 
 
 void
-VtiWriter::WriteGeo()
+PostVtiWriter::WriteGeo()
 {
   // There is no such thing as geometry for ImageData, however we need to prepare some things
 
@@ -142,7 +138,7 @@ VtiWriter::WriteGeo()
 
 
 void
-VtiWriter::WriteDofResultStep(
+PostVtiWriter::WriteDofResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_Vector> &data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
@@ -229,7 +225,7 @@ VtiWriter::WriteDofResultStep(
 
 
 void
-VtiWriter::WriteNodalResultStep(
+PostVtiWriter::WriteNodalResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
@@ -307,7 +303,7 @@ VtiWriter::WriteNodalResultStep(
 
 
 void
-VtiWriter::WriteElementResultStep(
+PostVtiWriter::WriteElementResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
@@ -376,7 +372,7 @@ VtiWriter::WriteElementResultStep(
 
 
 
-void VtiWriter::WriterPrepTimestep()
+void PostVtiWriter::WriterPrepTimestep()
 {
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   // collect all possible values of the x-, y- and z-coordinate

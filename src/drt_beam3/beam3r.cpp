@@ -339,7 +339,19 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  Ekintrans_(old.Ekintrans_),
  L_(old.L_),
  P_(old.P_),
- Kmax_(old.Kmax_)
+ Kmax_(old.Kmax_),
+ axial_strain_GP_elastf_(old.axial_strain_GP_elastf_),
+ shear_strain_2_GP_elastf_(old.shear_strain_2_GP_elastf_),
+ shear_strain_3_GP_elastf_(old.shear_strain_3_GP_elastf_),
+ twist_GP_elastm_(old.twist_GP_elastm_),
+ curvature_2_GP_elastm_(old.curvature_2_GP_elastm_),
+ curvature_3_GP_elastm_(old.curvature_3_GP_elastm_),
+ axial_stress_GP_elastf_(old.axial_stress_GP_elastf_),
+ shear_stress_2_GP_elastf_(old.shear_stress_2_GP_elastf_),
+ shear_stress_3_GP_elastf_(old.shear_stress_3_GP_elastf_),
+ torque_GP_elastm_(old.torque_GP_elastm_),
+ bending_moment_2_GP_elastm_(old.bending_moment_2_GP_elastm_),
+ bending_moment_3_GP_elastm_(old.bending_moment_3_GP_elastm_)
 {
   return;
 }
@@ -458,6 +470,18 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,L_);
   AddtoPack<3,1>(data,P_);
   AddtoPack(data,Kmax_);
+  AddtoPack(data,axial_strain_GP_elastf_);
+  AddtoPack(data,shear_strain_2_GP_elastf_);
+  AddtoPack(data,shear_strain_3_GP_elastf_);
+  AddtoPack(data,twist_GP_elastm_);
+  AddtoPack(data,curvature_2_GP_elastm_);
+  AddtoPack(data,curvature_3_GP_elastm_);
+  AddtoPack(data,axial_stress_GP_elastf_);
+  AddtoPack(data,shear_stress_2_GP_elastf_);
+  AddtoPack(data,shear_stress_3_GP_elastf_);
+  AddtoPack(data,torque_GP_elastm_);
+  AddtoPack(data,bending_moment_2_GP_elastm_);
+  AddtoPack(data,bending_moment_3_GP_elastm_);
 
   return;
 }
@@ -521,6 +545,18 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,L_);
   ExtractfromPack<3,1>(position,data,P_);
   ExtractfromPack(position,data,Kmax_);
+  ExtractfromPack(position,data,axial_strain_GP_elastf_);
+  ExtractfromPack(position,data,shear_strain_2_GP_elastf_);
+  ExtractfromPack(position,data,shear_strain_3_GP_elastf_);
+  ExtractfromPack(position,data,twist_GP_elastm_);
+  ExtractfromPack(position,data,curvature_2_GP_elastm_);
+  ExtractfromPack(position,data,curvature_3_GP_elastm_);
+  ExtractfromPack(position,data,axial_stress_GP_elastf_);
+  ExtractfromPack(position,data,shear_stress_2_GP_elastf_);
+  ExtractfromPack(position,data,shear_stress_3_GP_elastf_);
+  ExtractfromPack(position,data,torque_GP_elastm_);
+  ExtractfromPack(position,data,bending_moment_2_GP_elastm_);
+  ExtractfromPack(position,data,bending_moment_3_GP_elastm_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

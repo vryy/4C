@@ -27,7 +27,7 @@
 
 /* number of linear subsegments used for visualization of beam centerline
  * in vtu format (see post_drt_vtu_writer.cpp) */
-#define BEAMSVTUVISUALSUBSEGMENTS 10
+#define BEAMSVTUVISUALSUBSEGMENTS 5
 
 // forward declaration ...
 namespace LINALG
@@ -215,6 +215,36 @@ public:
    *  \author grill
    *  \date 06/16 */
   virtual double GetJacobiFacAtXi(const double& xi) const = 0;
+
+  /** \brief Get material cross-section strain measures
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual void GetMaterialCrossSectionStrainsAtAllGPs(
+      std::vector<double>& axial_strain_GPs,
+      std::vector<double>& shear_strain_2_GPs,
+      std::vector<double>& shear_strain_3_GPs,
+      std::vector<double>& twist_GPs,
+      std::vector<double>& curvature_2_GPs,
+      std::vector<double>& curvature_3_GPs) const
+  {
+    dserror("not implemented");
+  }
+
+  /** \brief Get material cross-section stress measures
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual void GetMaterialCrossSectionStressesAtAllGPs(
+      std::vector<double>& axial_stress_GPs,
+      std::vector<double>& shear_stress_2_GPs,
+      std::vector<double>& shear_stress_3_GPs,
+      std::vector<double>& torque_GPs,
+      std::vector<double>& bending_moment_2_GPs,
+      std::vector<double>& bending_moment_3_GPs) const
+  {
+    dserror("not implemented");
+  }
 
   /** \brief Get number of degrees of freedom of a single node
    *

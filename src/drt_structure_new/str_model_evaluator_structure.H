@@ -304,6 +304,18 @@ namespace MODELEVALUATOR{
      *  \author hiermeier */
     Teuchos::RCP<Epetra_Vector> GetInertialForce();
 
+    /*! \brief writes output in VTK format
+     *
+     *  \date 04/17
+     *  \author grill */
+    void WriteOutputRuntimeVtk() const;
+
+    /*! \brief writes special output for beam elements in VTK format
+     *
+     *  \date 04/17
+     *  \author grill */
+    void WriteOutputRuntimeVtkBeams() const;
+
     /*! \brief Write the parameters from the STR::MODELEVALUATOR::Data
      *         to the Teuchos::ParameterList
      *

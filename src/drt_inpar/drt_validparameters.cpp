@@ -80,6 +80,8 @@ Maintainer: Martin Kronbichler
 #include "inpar_cardiovascular0d.H"
 #include "inpar_contact_xcontact.H"
 #include "inpar_plasticity.H"
+#include "inpar_IO_runtime_vtk_output_structure.H"
+#include "inpar_IO_runtime_vtk_output_structure_beams.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -627,6 +629,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
 
   INPAR::STR::SetValidParameters(list);
+  INPAR::IO_RUNTIME_VTK_STRUCTURE::SetValidParameters(list);
   INPAR::INVANA::SetValidParameters(list);
   INPAR::MLMC::SetValidParameters(list);
   INPAR::MORTAR::SetValidParameters(list);
@@ -634,6 +637,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::XCONTACT::SetValidParameters(list);
   INPAR::VOLMORTAR::SetValidParameters(list);
   INPAR::WEAR::SetValidParameters(list);
+  INPAR::IO_RUNTIME_VTK_STRUCTURE::BEAMS::SetValidParameters(list);
   INPAR::BEAMCONTACT::SetValidParameters(list);
   INPAR::BEAMPOTENTIAL::SetValidParameters(list);
   INPAR::BEAMINTERACTION::SetValidParameters(list);

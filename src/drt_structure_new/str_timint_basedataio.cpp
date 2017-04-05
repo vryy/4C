@@ -17,6 +17,7 @@
 
 #include "str_timint_basedataio.H"
 
+#include "str_timint_basedataio_runtime_vtk_output.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -24,6 +25,7 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
     : isinit_(false),
       issetup_(false),
       output_(Teuchos::null),
+      params_runtime_vtk_output_(Teuchos::null),
       energyfile_(Teuchos::null),
       errfile_(NULL),
       gmsh_out_(false),
@@ -90,6 +92,15 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     writeplstrain_ = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_PLASTIC_STRAIN");
     writeenergyevery_ = sdynparams.get<int>("RESEVRYERGY");
     writesurfactant_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_SURFACTANT");
+
+    // check whether VTK output at runtime is desired
+    if ( ioparams.sublist("RUNTIME VTK OUTPUT STRUCTURE").get<int>("INTERVAL_STEPS") != -1 )
+    {
+      params_runtime_vtk_output_ = Teuchos::rcp( new ParamsRuntimeVtkOutput() );
+
+      params_runtime_vtk_output_->Init( ioparams.sublist("RUNTIME VTK OUTPUT STRUCTURE") );
+      params_runtime_vtk_output_->Setup();
+    }
   }
 
   isinit_ = true;

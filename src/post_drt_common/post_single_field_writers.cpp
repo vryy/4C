@@ -517,7 +517,7 @@ ParticleFilter::ParticleFilter(
       PostFilterBase (field, name)
 {
   // vtp output is enforced for particles independent of the choice for other fields
-  writer_ = Teuchos::rcp(new VtpWriter(field, name));
+  writer_ = Teuchos::rcp(new PostVtpWriter(field, name));
 }
 
 

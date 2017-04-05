@@ -17,6 +17,7 @@
 #include <sstream>
 #include <boost/static_assert.hpp>
 
+#include "../drt_lib/drt_element_vtk_cell_type_register.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
@@ -30,8 +31,8 @@
 #include "../drt_beam3/beam3_base.H"
 
 
-VtuWriterNode::VtuWriterNode(PostField* field, const std::string &filename) :
-    VtuWriter(field, filename)
+PostVtuWriterNode::PostVtuWriterNode(PostField* field, const std::string &filename) :
+    PostVtuWriter(field, filename)
 {
    BOOST_STATIC_ASSERT_MSG( 29 == DRT::Element::max_distype, "The number of element types defined by DRT::Element::DiscretizationType does not match the number of element types supported by the post vtu filter.") BACI_ATTRIBUTE_UNUSED;
    if (myrank_!=0)
@@ -39,25 +40,25 @@ VtuWriterNode::VtuWriterNode(PostField* field, const std::string &filename) :
 }
 
 
-const std::string& VtuWriterNode::WriterString() const
+const std::string& PostVtuWriterNode::WriterString() const
 {
   static std::string name("UnstructuredGrid");
   return name;
 }
 
-const std::string& VtuWriterNode::WriterOpeningTag() const
+const std::string& PostVtuWriterNode::WriterOpeningTag() const
 {
   static std::string tag("<UnstructuredGrid>");
   return tag;
 }
 
-const std::string& VtuWriterNode::WriterPOpeningTag() const
+const std::string& PostVtuWriterNode::WriterPOpeningTag() const
 {
   static std::string tag("<PUnstructuredGrid GhostLevel=\"0\">");
   return tag;
 }
 
-const std::vector<std::string>& VtuWriterNode::WriterPPieceTags() const
+const std::vector<std::string>& PostVtuWriterNode::WriterPPieceTags() const
 {
   static std::vector<std::string> tags;
   tags.clear();
@@ -70,13 +71,13 @@ const std::vector<std::string>& VtuWriterNode::WriterPPieceTags() const
   return tags;
 }
 
-const std::string& VtuWriterNode::WriterSuffix() const
+const std::string& PostVtuWriterNode::WriterSuffix() const
 {
   static std::string name(".vtu");
   return name;
 }
 
-const std::string& VtuWriterNode::WriterPSuffix() const
+const std::string& PostVtuWriterNode::WriterPSuffix() const
 {
   static std::string name(".pvtu");
   return name;
@@ -84,7 +85,7 @@ const std::string& VtuWriterNode::WriterPSuffix() const
 
 
 void
-VtuWriterNode::WriteGeo()
+PostVtuWriterNode::WriteGeo()
 {
   Teuchos::RCP<DRT::Discretization> dis = this->GetField()->discretization();
 
@@ -119,8 +120,8 @@ VtuWriterNode::WriteGeo()
     }
     else
     {
-      celltypes.push_back(GetVtkElementType(ele->Shape()).first);
-      const std::vector<int> &numbering = GetVtkElementType(ele->Shape()).second;
+      celltypes.push_back(DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).first);
+      const std::vector<int> &numbering = DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
       const DRT::Node* const* nodes = ele->Nodes();
       for (int n=0; n<ele->NumNode(); ++n)
       {
@@ -245,7 +246,7 @@ VtuWriterNode::WriteGeo()
 
 
 void
-VtuWriterNode::WriteDofResultStep(
+PostVtuWriterNode::WriteDofResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_Vector> &data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
@@ -353,7 +354,7 @@ VtuWriterNode::WriteDofResultStep(
 
 
 void
-VtuWriterNode::WriteNodalResultStep(
+PostVtuWriterNode::WriteNodalResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
@@ -431,7 +432,7 @@ VtuWriterNode::WriteNodalResultStep(
 
 
 void
-VtuWriterNode::WriteElementResultStep(
+PostVtuWriterNode::WriteElementResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
@@ -448,14 +449,14 @@ VtuWriterNode::WriteElementResultStep(
 }
 
 void
-VtuWriterNode::WriteGeoNurbsEle(const DRT::Element* ele,std::vector<uint8_t>& celltypes,
+PostVtuWriterNode::WriteGeoNurbsEle(const DRT::Element* ele,std::vector<uint8_t>& celltypes,
       int& outNodeId,std::vector<int32_t>& celloffset,std::vector<double>& coordinates)
 {
   dserror("VTU node based filter cannot handle NURBS elements");
 }
 
 void
-VtuWriterNode::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+PostVtuWriterNode::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
                            std::vector<uint8_t>& celltypes,
                            int& outNodeId,
                            std::vector<int32_t>& celloffset,
@@ -465,7 +466,7 @@ VtuWriterNode::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
 }
 
 void
-VtuWriterNode::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
+PostVtuWriterNode::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
       std::vector<double>& solution,Teuchos::RCP<Epetra_Vector> ghostedData,
       const int from, const bool fillzeros)
 {
@@ -473,7 +474,7 @@ VtuWriterNode::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponen
 }
 
 void
-VtuWriterNode::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
+PostVtuWriterNode::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
                                     const int& ncomponents,
                                     const int& numdf,
                                     std::vector<double>& solution,
@@ -485,7 +486,7 @@ VtuWriterNode::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele
 }
 
 void
-VtuWriterNode::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
+PostVtuWriterNode::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,const int numdf,
     std::vector<double>& solution,Teuchos::RCP<Epetra_MultiVector> ghostedData)
 {
    dserror("VTU node based filter cannot handle NURBS elements");

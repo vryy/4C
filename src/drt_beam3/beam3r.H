@@ -379,6 +379,48 @@ public:
     return Kmax_;
   }
 
+  /** \brief Get material cross-section strain measures
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual inline void GetMaterialCrossSectionStrainsAtAllGPs(
+      std::vector<double>& axial_strain_GPs,
+      std::vector<double>& shear_strain_2_GPs,
+      std::vector<double>& shear_strain_3_GPs,
+      std::vector<double>& twist_GPs,
+      std::vector<double>& curvature_2_GPs,
+      std::vector<double>& curvature_3_GPs) const
+  {
+    axial_strain_GPs = axial_strain_GP_elastf_;
+    shear_strain_2_GPs = shear_strain_2_GP_elastf_;
+    shear_strain_3_GPs = shear_strain_3_GP_elastf_;
+
+    twist_GPs = twist_GP_elastm_;
+    curvature_2_GPs = curvature_2_GP_elastm_;
+    curvature_3_GPs = curvature_3_GP_elastm_;
+  }
+
+  /** \brief Get material cross-section stress measures
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual inline void GetMaterialCrossSectionStressesAtAllGPs(
+      std::vector<double>& axial_stress_GPs,
+      std::vector<double>& shear_stress_2_GPs,
+      std::vector<double>& shear_stress_3_GPs,
+      std::vector<double>& torque_GPs,
+      std::vector<double>& bending_moment_2_GPs,
+      std::vector<double>& bending_moment_3_GPs) const
+  {
+    axial_stress_GPs = axial_stress_GP_elastf_;
+    shear_stress_2_GPs = shear_stress_2_GP_elastf_;
+    shear_stress_3_GPs = shear_stress_3_GP_elastf_;
+
+    torque_GPs = torque_GP_elastm_;
+    bending_moment_2_GPs = bending_moment_2_GP_elastm_;
+    bending_moment_3_GPs = bending_moment_3_GP_elastm_;
+  }
+
   /** \brief get access to the reference length
    *
    *  \author grill
@@ -1118,6 +1160,25 @@ private:
 
   //! norm of maximal bending curvature occurring in this element Todo obsolete?
   double Kmax_;
+
+
+  //! strain values at GPs
+  std::vector<double> axial_strain_GP_elastf_;
+  std::vector<double> shear_strain_2_GP_elastf_;
+  std::vector<double> shear_strain_3_GP_elastf_;
+
+  std::vector<double> twist_GP_elastm_;
+  std::vector<double> curvature_2_GP_elastm_;
+  std::vector<double> curvature_3_GP_elastm_;
+
+  //! stress values at GPs
+  std::vector<double> axial_stress_GP_elastf_;
+  std::vector<double> shear_stress_2_GP_elastf_;
+  std::vector<double> shear_stress_3_GP_elastf_;
+
+  std::vector<double> torque_GP_elastm_;
+  std::vector<double> bending_moment_2_GP_elastm_;
+  std::vector<double> bending_moment_3_GP_elastm_;
 };
 
 // << operator

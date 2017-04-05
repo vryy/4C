@@ -19,6 +19,7 @@
 #include "str_utils.H"
 #include "str_integrator.H"
 #include "str_dbc.H"
+#include "str_timint_basedataio_runtime_vtk_output.H"
 
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
@@ -32,6 +33,9 @@
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_io/io.H"
+
+#include "../drt_beam3/beam_discretization_runtime_vtu_writer.H"
+#include "../drt_beam3/beam_discretization_runtime_vtu_output_params.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -543,6 +547,75 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::GetInertialForce()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtk() const
+{
+
+  // write special output for beams if desired
+  if ( GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams() != Teuchos::null )
+    WriteOutputRuntimeVtkBeams();
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
+{
+  // get the parameter container object
+  const DRT::ELEMENTS::BeamRuntimeVtuOutputParams & beam_vtu_output_params =
+      * GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
+
+  // create an object of the VTU writer
+  Teuchos::RCP<BeamDiscretizationRuntimeVtuWriter> beam_vtu_writer =
+      Teuchos::rcp( new BeamDiscretizationRuntimeVtuWriter() );
+
+  // export displacement state to column format
+  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
+  Teuchos::RCP<Epetra_Vector> disn_col = Teuchos::rcp( new Epetra_Vector(
+      *discret.DofColMap(), true ) );
+  LINALG::Export( *GState().GetDisN(), *disn_col );
+
+  // initialize the writer object with current displacement state
+  beam_vtu_writer->Initialize(
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>(
+          const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
+          disn_col,
+          10000,      // Fixme: we need an upper bound for total number time steps here
+          GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput() );
+
+  // reset time and time step of the writer object
+  beam_vtu_writer->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
+
+
+  // append all desired output data to the writer object's storage
+  beam_vtu_writer->AppendElementOwningProcessor();
+
+  beam_vtu_writer->AppendElementCircularCrossSectionRadius();
+
+  beam_vtu_writer->AppendPointCircularCrossSectionInformationVector( disn_col );
+
+  if ( beam_vtu_output_params.IsWriteTriadVisualizationPoints() )
+    beam_vtu_writer->AppendTriadField( disn_col );
+
+  if ( beam_vtu_output_params.IsWriteMaterialStrainsGaussPoints() )
+    beam_vtu_writer->AppendGaussPointMaterialCrossSectionStrains();
+
+  if ( beam_vtu_output_params.IsWriteMaterialStressesGaussPoints() )
+    beam_vtu_writer->AppendGaussPointMaterialCrossSectionStresses();
+
+
+  // finalize everything and write all required VTU files to filesystem
+  beam_vtu_writer->WriteFiles();
+
+
+  // Todo: this will not work as expected yet because we create a new object of
+  // BeamDiscretizationRuntimeVtuWriter in every timestep;
+  // keep the object and this method should deliver a summary file for all written master files
+  beam_vtu_writer->WriteCollectionFileOfAllWrittenFiles();
+
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateInternal(
     Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
     Teuchos::RCP<Epetra_Vector>* eval_vec)
@@ -810,7 +883,16 @@ void STR::MODELEVALUATOR::Structure::OutputStepState(
       iowriter.WriteVector("acceleration", GState().GetAccN());
     }
   }
-  return;
+
+
+  // write output of VTK visualization data at runtime if desired
+  if ( GInOutput().GetRuntimeVtkOutputParams() != Teuchos::null and
+      GState().GetStepN() %
+          GInOutput().GetRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0 )
+  {
+    WriteOutputRuntimeVtk();
+  }
+
 }
 
 /*----------------------------------------------------------------------------*

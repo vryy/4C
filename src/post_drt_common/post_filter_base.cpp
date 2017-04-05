@@ -33,11 +33,11 @@ PostFilterBase::PostFilterBase(PostField *field,
   if (field->problem()->filter() == "ensight")
     writer_ = Teuchos::rcp(new EnsightWriter(field, name));
   else if (field->problem()->filter() == "vtu")
-    writer_ = Teuchos::rcp(new VtuWriter(field, name));
+    writer_ = Teuchos::rcp(new PostVtuWriter(field, name));
   else if (field->problem()->filter() == "vti")
-    writer_ = Teuchos::rcp(new VtiWriter(field, name));
+    writer_ = Teuchos::rcp(new PostVtiWriter(field, name));
   else if (field->problem()->filter() == "vtu_node_based")
-    writer_ = Teuchos::rcp(new VtuWriterNode(field, name));
+    writer_ = Teuchos::rcp(new PostVtuWriterNode(field, name));
   else
     dserror("Unsupported filter");
 }

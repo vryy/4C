@@ -203,7 +203,7 @@ namespace LIBB64
 
 
 
-VtkWriter::VtkWriter(PostField* field,
+PostVtkWriter::PostVtkWriter(PostField* field,
                      const std::string &filename)
 :
     PostWriterBase(field, filename),
@@ -222,7 +222,7 @@ VtkWriter::VtkWriter(PostField* field,
 
 
 void
-VtkWriter::WriteVtkHeader ()
+PostVtkWriter::WriteVtkHeader ()
 {
   if (!currentout_)
     dserror("Invalid output stream");
@@ -278,7 +278,7 @@ VtkWriter::WriteVtkHeader ()
 
 
 void
-VtkWriter::WriteVtkFooter()
+PostVtkWriter::WriteVtkFooter()
 {
   if (!currentout_)
     dserror("Invalid output stream");
@@ -329,7 +329,7 @@ VtkWriter::WriteVtkFooter()
 
 
 void
-VtkWriter::WriteSpecialField (
+PostVtkWriter::WriteSpecialField (
       SpecialFieldInterface &special,
       PostResult& result,   ///< result group in the control file
       const ResultType  restype,
@@ -380,7 +380,7 @@ VtkWriter::WriteSpecialField (
 
 
 void
-VtkWriter::WriteSolutionVector (const std::vector<double> &solution,
+PostVtkWriter::WriteSolutionVector (const std::vector<double> &solution,
                                 const int ncomponents,
                                 const std::string &name,
                                 std::ofstream &file) const
@@ -421,7 +421,7 @@ VtkWriter::WriteSolutionVector (const std::vector<double> &solution,
 
 
 void
-VtkWriter::WriteResult(const std::string groupname,
+PostVtkWriter::WriteResult(const std::string groupname,
                        const std::string name,
                        const ResultType restype,
                        const int numdf,
@@ -498,7 +498,7 @@ VtkWriter::WriteResult(const std::string groupname,
 
 
 void
-VtkWriter::WriteFiles(PostFilterBase &filter)
+PostVtkWriter::WriteFiles(PostFilterBase &filter)
 {
   PostResult result = PostResult(field_);
 
@@ -551,7 +551,7 @@ VtkWriter::WriteFiles(PostFilterBase &filter)
 
 
 void
-VtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
+PostVtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
 {
   std::vector<int> solstep;
   std::vector<double> soltime;
@@ -600,7 +600,7 @@ VtkWriter::WriteFilesChangingGeom(PostFilterBase &filter)
 
 
 void
-VtkWriter::WriteVtkMasterFile(const std::vector<std::pair<double, std::string> > &filenames,
+PostVtkWriter::WriteVtkMasterFile(const std::vector<std::pair<double, std::string> > &filenames,
                               const std::string &dirname) const
 {
   // finally, write a single masterfile

@@ -784,6 +784,8 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_fsi.cpp
   src/drt_inpar/inpar_immersed.cpp
   src/drt_inpar/inpar_invanalysis.cpp
+  src/drt_inpar/inpar_IO_runtime_vtk_output_structure.cpp
+  src/drt_inpar/inpar_IO_runtime_vtk_output_structure_beams.cpp
   src/drt_inpar/inpar_levelset.cpp
   src/drt_inpar/inpar_loca_continuation.cpp
   src/drt_inpar/inpar_lubrication.cpp
@@ -1804,6 +1806,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_timint_factory.cpp
   src/drt_structure_new/str_timint_base.cpp
   src/drt_structure_new/str_timint_basedataio.cpp
+  src/drt_structure_new/str_timint_basedataio_runtime_vtk_output.cpp
   src/drt_structure_new/str_timint_basedataglobalstate.cpp
   src/drt_structure_new/str_timint_basedatasdyn.cpp
   src/drt_structure_new/str_timint_explicit.cpp
@@ -2044,6 +2047,11 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/io_control.cpp
   src/drt_io/io_hdf.cpp
   src/drt_io/io_gmsh.cpp
+  src/drt_io/vtk_writer_base.cpp
+  src/drt_io/vtu_writer.cpp
+  src/drt_io/runtime_vtu_writer.cpp
+  src/drt_io/discretization_runtime_vtu_writer.cpp
+  src/drt_beam3/beam_discretization_runtime_vtu_writer.cpp
   src/drt_io/io_pstream.cpp
   src/drt_lib/drt_domainreader.cpp
   src/drt_lib/drt_elementreader.cpp
@@ -2059,6 +2067,7 @@ set(OBJS_DRT_NURBS_DISCRET
   src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp
 )
 set(OBJS_DRT_B3_LIB
+  src/drt_beam3/beam_discretization_runtime_vtu_output_params.cpp
   src/drt_beam3/triad_interpolation.cpp
   src/drt_beam3/triad_interpolation_local_rotation_vectors.cpp
   src/drt_beam3/beam3_base.cpp

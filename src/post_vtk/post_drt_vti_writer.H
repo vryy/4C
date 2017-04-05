@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file post_drt_vti.H
+\file post_drt_vti_writer.H
 
 \brief VTI filter
 
-<pre>
-Maintainer: Karl-Robert Wichmann
-            wichmann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Karl-Robert Wichmann
 
+\level 2
 */
 /*----------------------------------------------------------------------*/
 #ifndef POST_DRT_VTI_H
@@ -43,15 +39,15 @@ namespace DRT
  \author kronbichler
  \date 03/14
 */
-class VtiWriter : public VtkWriter
+class PostVtiWriter : public PostVtkWriter
 {
 public:
   //! constructor. Initializes the writer to a certain field.
-  VtiWriter (PostField* field,
+  PostVtiWriter (PostField* field,
              const std::string &name);
 
   //! destructor
-  virtual ~VtiWriter()
+  virtual ~PostVtiWriter()
   {}
 
 protected:

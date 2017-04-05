@@ -40,30 +40,30 @@ namespace
 
 
 
-VtpWriter::VtpWriter(PostField* field, const std::string &filename) :
-    VtkWriter(field, filename)
+PostVtpWriter::PostVtpWriter(PostField* field, const std::string &filename) :
+    PostVtkWriter(field, filename)
 {}
 
 
-const std::string& VtpWriter::WriterString() const
+const std::string& PostVtpWriter::WriterString() const
 {
   static std::string name("PolyData");
   return name;
 }
 
-const std::string& VtpWriter::WriterOpeningTag() const
+const std::string& PostVtpWriter::WriterOpeningTag() const
 {
   static std::string tag("<PolyData>");
   return tag;
 }
 
-const std::string& VtpWriter::WriterPOpeningTag() const
+const std::string& PostVtpWriter::WriterPOpeningTag() const
 {
   static std::string tag("<PPolyData GhostLevel=\"0\">");
   return tag;
 }
 
-const std::vector<std::string>& VtpWriter::WriterPPieceTags() const
+const std::vector<std::string>& PostVtpWriter::WriterPPieceTags() const
 {
   static std::vector<std::string> tags;
   tags.clear();
@@ -76,20 +76,20 @@ const std::vector<std::string>& VtpWriter::WriterPPieceTags() const
   return tags;
 }
 
-const std::string& VtpWriter::WriterSuffix() const
+const std::string& PostVtpWriter::WriterSuffix() const
 {
   static std::string name(".vtp");
   return name;
 }
 
-const std::string& VtpWriter::WriterPSuffix() const
+const std::string& PostVtpWriter::WriterPSuffix() const
 {
   static std::string name(".pvtp");
   return name;
 }
 
 void
-VtpWriter::WriteGeo()
+PostVtpWriter::WriteGeo()
 {
   if (timestep_ == 0 && myrank_ == 0)
   {
@@ -168,7 +168,7 @@ VtpWriter::WriteGeo()
 }
 
 void
-VtpWriter::WriteDofResultStep(
+PostVtpWriter::WriteDofResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_Vector> &data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
@@ -205,7 +205,7 @@ VtpWriter::WriteDofResultStep(
 }
 
 void
-VtpWriter::WriteNodalResultStep(
+PostVtpWriter::WriteNodalResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
@@ -251,7 +251,7 @@ VtpWriter::WriteNodalResultStep(
 }
 
 void
-VtpWriter::WriteElementResultStep(
+PostVtpWriter::WriteElementResultStep(
     std::ofstream& file,
     const Teuchos::RCP<Epetra_MultiVector>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
