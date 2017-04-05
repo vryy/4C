@@ -209,7 +209,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
     else // standard case
     {
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
-      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'\n"
+          "Did you forget to set the 'LOADLIN yes' in '--STRUCTURAL DYNAMIC' input section???");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       SpatialConfiguration(xc,mydisp);
