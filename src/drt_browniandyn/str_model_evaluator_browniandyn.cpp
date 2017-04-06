@@ -41,6 +41,7 @@
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BrownianDyn::BrownianDyn():
     eval_browniandyn_ptr_(Teuchos::null),
+    pbc_disnp_ptr_(Teuchos::null),
     f_brown_np_ptr_(Teuchos::null),
     f_ext_np_ptr_(Teuchos::null),
     stiff_brownian_ptr_(Teuchos::null),
@@ -60,7 +61,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // safety check, brownian dynamics simulation only for one step theta and
   // theta = 1.0 (see Cyron 2012)
   if( TimInt().GetDataSDynPtr()->GetDynamicType() != INPAR::STR::dyna_onesteptheta)
-    dserror("Brownian dynamics simulation only consistent for one step theta scheme.");
+    dserror("Brownian dynamics simulation only consistent for one step theta schema.");
 
   discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>( DiscretPtr(), true );
 
@@ -87,32 +88,23 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // Shifting to periodic boundary configuration is done here. From now on the
   // global displacement vector always contains the shifted configuration.
   // -------------------------------------------------------------------------
-
   // check whether the underlying assumption of shifting procedure is fulfilled
   // (at least initially, i.e. here in the setup)
   if (IsAnyBeamElementLengthLargerThanMinHalfPBBEdgeLength())
     dserror("The reference length of one of your beam elements is larger than half"
         "of the periodic box length. Shifting algorithm will fail!");
 
+  pbc_disnp_ptr_ = Teuchos::rcp( new Epetra_Vector( *GStatePtr()->GetMutableDisNp() ) );
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
-      GStatePtr()->GetMutableDisN(),                            // disn
-      eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
-      discret_ptr_ );
-
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
-      GStatePtr()->GetMutableDisNp(),                           // disnp
+      pbc_disnp_ptr_,                           // disnp
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
       discret_ptr_);
 
-  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
-      GStatePtr()->GetMutableDisN(),                           // disp
-      discret_ptr_,
-      GState().GetStepN() );
+//  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
+//      GStatePtr()->GetMutableDisNp(),                           // disnp
+//      discret_ptr_,
+//      GState().GetStepN() );
 
-  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
-      GStatePtr()->GetMutableDisNp(),                           // disnp
-      discret_ptr_,
-      GState().GetStepN() );
   // -------------------------------------------------------------------------
   // get maximal number of random numbers required by any element in the
   // discretization and store them in randomnumbersperelement_
@@ -148,14 +140,18 @@ void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
   // adapt displacement vector so that node positions are consistent with
   // periodic boundary condition.
   // -------------------------------------------------------------------------
+  pbc_disnp_ptr_->Update( 1.0, (*GStatePtr()->GetDisNp()), 0.0 );
   BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
-      GStatePtr()->GetMutableDisNp(),                           // disnp
+      pbc_disnp_ptr_,                           // disnp
       eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
-      discret_ptr_ );
-  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
-      GStatePtr()->GetMutableDisNp(),                           // disnp
-      discret_ptr_,
-      GState().GetStepN() );
+      discret_ptr_);
+
+//  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
+//      GStatePtr()->GetMutableDisNp(),                           // disnp
+//      discret_ptr_,
+//      GState().GetStepN() );
+//
+
   // -------------------------------------------------------------------------
   // reset brownian (stochastic and damping) forces
   // -------------------------------------------------------------------------
@@ -336,7 +332,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceBrownian()
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   Discret().ClearState();
-  Discret().SetState(0,"displacement", GState().GetMutableDisNp());
+  Discret().SetState(0,"displacement", pbc_disnp_ptr_ );
   Discret().SetState(0,"velocity", GState().GetVelNp());
   // -------------------------------------------------------------------------
   // Evaluate Browian (stochastic and damping forces)
@@ -401,7 +397,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffBrownian()
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   Discret().ClearState();
-  Discret().SetState(0,"displacement", GState().GetMutableDisNp());
+  Discret().SetState(0,"displacement", pbc_disnp_ptr_ );
   Discret().SetState(0,"velocity", GState().GetVelNp());
   // -------------------------------------------------------------------------
   // Evaluate brownian (stochastic and damping) forces
@@ -798,16 +794,16 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
 
   //MAXRANDFORCE is a multiple of the standard deviation
   double maxrandforcefac = eval_browniandyn_ptr_->MaxRandForce();
-  if(maxrandforcefac==-1.0)
+  if( maxrandforcefac == -1.0 )
   {
-    for (int i=0; i<numele; ++i)
-      for (int j=0; j<numperele; ++j)
+    for ( int i = 0; i < numele; ++i )
+      for ( int j = 0; j < numperele; ++j )
         (*randomnumbersrow)[j][i] = randvec[i*numperele+j];
   }
   else
   {
-    for (int i=0; i<numele; i++)
-      for (int j=0; j<numperele; j++)
+    for ( int i = 0; i < numele; ++i )
+      for ( int j = 0; j < numperele; ++j )
       {
         (*randomnumbersrow)[j][i] = randvec[i*numperele+j];
 
@@ -835,17 +831,17 @@ bool STR::MODELEVALUATOR::BrownianDyn::IsAnyBeamElementLengthLargerThanMinHalfPB
 {
   const int numroweles = Discret().NumMyRowElements();
   const double halfofminimalperiodlength = 0.5 * eval_browniandyn_ptr_->GetPeriodicBoundingBox()->EdgeLength(0);
-  for( int i=1; i<3; i++)
+  for( int i = 1; i < 3; ++i )
     std::min( halfofminimalperiodlength, 0.5 * eval_browniandyn_ptr_->GetPeriodicBoundingBox()->EdgeLength(i) );
 
-  if (halfofminimalperiodlength != 0.0)
+  if ( halfofminimalperiodlength != 0.0 )
   {
-    for (int elelid=0; elelid<numroweles; ++elelid)
+    for ( int elelid = 0; elelid < numroweles; ++elelid )
     {
       const DRT::ELEMENTS::Beam3Base* beamele =
-          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Discret().lRowElement(elelid));
+          dynamic_cast<const DRT::ELEMENTS::Beam3Base*>( Discret().lRowElement(elelid) );
 
-      if (beamele != NULL and beamele->RefLength() >= halfofminimalperiodlength)
+      if ( beamele != NULL and beamele->RefLength() >= halfofminimalperiodlength )
         return true;
     }
   }

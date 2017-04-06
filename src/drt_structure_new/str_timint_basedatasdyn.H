@@ -296,11 +296,11 @@ namespace TIMINT {
 
     /// @name Get model specific data container
     ///@{
-    /// Returns statmech data container (read access)
+    /// Returns periodic bounding box object (read access)
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const
     {
-      if (periodic_boundingbox.is_null())
-        dserror("The statmech model is not active!");
+      if ( periodic_boundingbox.is_null() )
+        dserror("Periodic bounding box not initialized!");
       return periodic_boundingbox;
     }
     ///@}

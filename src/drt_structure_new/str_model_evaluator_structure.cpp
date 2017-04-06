@@ -577,10 +577,11 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   // initialize the writer object with current displacement state
   beam_vtu_writer->Initialize(
       Teuchos::rcp_dynamic_cast<DRT::Discretization>(
-          const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
-          disn_col,
-          10000,      // Fixme: we need an upper bound for total number time steps here
-          GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput() );
+        const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
+        disn_col,
+        TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
+        10000,      // Fixme: we need an upper bound for total number time steps here
+        GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput() );
 
   // reset time and time step of the writer object
   beam_vtu_writer->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
@@ -592,6 +593,9 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   beam_vtu_writer->AppendElementCircularCrossSectionRadius();
 
   beam_vtu_writer->AppendPointCircularCrossSectionInformationVector( disn_col );
+
+  if ( GInOutput().GetRuntimeVtkOutputParams()->OutputDisplacementState() )
+    beam_vtu_writer->AppendDisplacementField( disn_col );
 
   if ( beam_vtu_output_params.IsWriteTriadVisualizationPoints() )
     beam_vtu_writer->AppendTriadField( disn_col );

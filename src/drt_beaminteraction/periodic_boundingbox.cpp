@@ -126,7 +126,7 @@ void GEO::MESHFREE::BoundingBox::Shift1D( const int dim, double& d, double const
 {
   CheckInitSetup();
 
-  if(!pbconoff_[dim])
+  if( !pbconoff_[dim] )
     return;
 
   double x = d + X;
@@ -148,40 +148,54 @@ void GEO::MESHFREE::BoundingBox::Shift3D( LINALG::Matrix<3,1>& d,
   if(!havepbc_)
     return;
 
-  for( int dim = 0; dim < 3 ; ++dim)
-    Shift1D( dim, d(dim), X(dim));
+  for( int dim = 0; dim < 3 ; ++dim )
+    Shift1D( dim, d(dim), X(dim) );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::UnShift1D( const int dim, double& d,
+bool GEO::MESHFREE::BoundingBox::UnShift1D( const int dim, double& d,
     double const& ref, double const& X ) const
 {
   CheckInitSetup();
 
+  bool shifted = false;
+
   if(!pbconoff_[dim])
-    return;
+    return shifted;
 
   double x = d + X;
 
   if (x - ref < -0.5 * edgelength_[dim] )
+  {
+    shifted = true;
     d += edgelength_[dim];
+  }
   else if ( x - ref > 0.5 * edgelength_[dim] )
+  {
+    shifted = true;
     d -= edgelength_[dim];
+  }
+
+  return shifted;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::UnShift3D( LINALG::Matrix<3,1>& d,
+bool GEO::MESHFREE::BoundingBox::UnShift3D( LINALG::Matrix<3,1>& d,
     LINALG::Matrix<3,1> const& ref, LINALG::Matrix<3,1> const X ) const
 {
   CheckInitSetup();
 
-  if(!havepbc_)
-    return;
+  bool shifted = false;
 
-  for( int dim = 0; dim < 3 ; ++dim)
-    UnShift1D( dim, d(dim), ref(dim), X(dim) );
+  if(!havepbc_)
+    return shifted;
+
+  for( int dim = 0; dim < 3 ; ++dim )
+    if( UnShift1D( dim, d(dim), ref(dim), X(dim) ) ) shifted = true;
+
+  return shifted;
 }
 
 /*----------------------------------------------------------------------------*

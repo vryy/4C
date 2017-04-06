@@ -457,18 +457,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringElements()
 {
-  CheckInit();
-
   // measure time for evaluating this function
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringElements");
+
+  CheckInit();
 
   // loop over all row beam elements
   // note: like this we ensure that first element of pair is always a beam element, also only
   // only beam to something contact considered
-  const int numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
+  int const numroweles = EleTypeMapExtractorPtr()->BeamMap()->NumMyElements();
   for( int rowele_i = 0; rowele_i < numroweles; ++rowele_i )
   {
-    const int elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
+    int const elegid = EleTypeMapExtractorPtr()->BeamMap()->GID(rowele_i);
     DRT::Element* currele = DiscretPtr()->gElement(elegid);
 
     // (unique) set of neighboring bins for all col bins assigned to current element
@@ -483,21 +483,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
       loc_neighboring_binIds.reserve(27);
 
       // do not check on existence here -> shifted to GetBinContent
-      BinStrategyPtr()->GetNeighborAndOwnBinIds(
-          *biniter, loc_neighboring_binIds );
+      BinStrategyPtr()->GetNeighborAndOwnBinIds( *biniter, loc_neighboring_binIds );
 
       // build up comprehensive unique set of neighboring bins
-      neighboring_binIds.insert( loc_neighboring_binIds.begin(),
-          loc_neighboring_binIds.end() );
+      neighboring_binIds.insert( loc_neighboring_binIds.begin(), loc_neighboring_binIds.end() );
     }
-    // get unique vector of comprehensive neighboring bins
-    std::vector<int> glob_neighboring_binIds( neighboring_binIds.begin(),
-        neighboring_binIds.end() );
-
-    // set of elements that lie in neighboring bins
+    // get set of elements that reside in neighboring bins
+    std::vector<int> glob_neighboring_binIds( neighboring_binIds.begin(), neighboring_binIds.end() );
     std::set<DRT::Element*> neighboring_elements;
-    BinStrategyPtr()->GetBinContent( neighboring_elements,
-        contactelementtypes_, glob_neighboring_binIds );
+    BinStrategyPtr()->GetBinContent( neighboring_elements, contactelementtypes_, glob_neighboring_binIds );
 
     // sort out elements that should not be considered in contact evaluation
     SelectElesToBeConsideredForContactEvaluation( currele, neighboring_elements );

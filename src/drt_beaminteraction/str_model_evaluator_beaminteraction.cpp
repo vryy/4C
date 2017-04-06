@@ -112,6 +112,10 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
 
   ia_state_ptr_->GetMutableDisNp() = Teuchos::rcp( new Epetra_Vector(
       *GStatePtr()->GetMutableDisNp() ) );
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
+      ia_state_ptr_->GetMutableDisNp(),
+      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
+      ia_discret_);
 
   // -------------------------------------------------------------------------
   // initialize coupling adapter to transform matrices between the two discrets
@@ -123,8 +127,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // -------------------------------------------------------------------------
   // initialize and setup binning strategy and particle handler
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(DiscretPtr()->Comm().Clone());
-  bindis_ = Teuchos::rcp(new DRT::Discretization("particle" ,com));
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp( DiscretPtr()->Comm().Clone() );
+  bindis_ = Teuchos::rcp( new DRT::Discretization( "particle", com) );
   // create discretization writer
   bindis_->SetWriter( Teuchos::rcp(new IO::DiscretizationWriter(bindis_) ) );
   bindis_->FillComplete( false, false, false );
@@ -252,7 +256,7 @@ Teuchos::RCP< STR::MODELEVALUATOR::BeamInteraction::Vector >
     submodel_map.erase( miter );
   }
 
-  // insert the remaining model evaluators into the model vector
+  // insert the remaining submodel evaluators into the model vector
   for ( miter = submodel_map.begin(); miter != submodel_map.end(); ++miter )
   {
     me_vec_ptr->push_back(miter->second);
@@ -412,6 +416,11 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
 
   // get current displacement state and export to interaction discretization dofmap
   UpdateDofMapOfVector( ia_discret_, ia_state_ptr_->GetMutableDisNp(), GState().GetMutableDisNp() );
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
+      ia_state_ptr_->GetMutableDisNp(),
+      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
+      ia_discret_);
+
   // update colume vector
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp( new Epetra_Vector( *ia_discret_->DofColMap() ) );
   LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
@@ -820,6 +829,11 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
 
   // get current displacement state and export to interaction discretization dofmap
   UpdateDofMapOfVector( ia_discret_, ia_state_ptr_->GetMutableDisNp(), GState().GetMutableDisNp() );
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
+      ia_state_ptr_->GetMutableDisNp(),
+      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
+      ia_discret_);
+
   // update colume vector
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp( new Epetra_Vector( *ia_discret_->DofColMap() ) );
   LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());

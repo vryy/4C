@@ -50,7 +50,9 @@ public:
 
   double const& EdgeLength(const int dim) const { return edgelength_[dim]; };
 
-  LINALG::Matrix<3,2> const& Box(){return box_;}
+  LINALG::Matrix<3,2> const& Box() const { return box_; }
+
+  bool HavePBC() const {return havepbc_; }
 
   double operator()(int i, int j) const
   {
@@ -80,12 +82,12 @@ public:
    * Note: this should be equivalent to the previously applied criterion
    *       that the distance between given point and reference point
    *       decreases by either adding or subtracting the period length. */
-  void UnShift1D( const int dim, double& d, double const& ref, double const& X = 0.0) const;
+  bool UnShift1D( const int dim, double& d, double const& ref, double const& X = 0.0) const;
 
   /*!
   \brief shift node out of box if it was shifted in previously
   */
-  void UnShift3D( LINALG::Matrix<3,1>& d, LINALG::Matrix<3,1> const& ref,
+  bool UnShift3D( LINALG::Matrix<3,1>& d, LINALG::Matrix<3,1> const& ref,
       LINALG::Matrix<3,1> const X = LINALG::Matrix<3,1>( true ) ) const;
 
   /*!

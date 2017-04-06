@@ -10,6 +10,7 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "../drt_io/io_pstream.H"
 
 #include "vtu_writer.H"
 
@@ -106,7 +107,7 @@ VtuWriter::WriteGeometryUnstructuredGridContiguous(
   std::vector<int32_t> point_cell_connectivity;
   point_cell_connectivity.reserve( num_points );
 
-  for ( unsigned int i=0; i<num_points; ++i )
+  for ( unsigned int i = 0; i < num_points; ++i )
     point_cell_connectivity.push_back(i);
 
   WriteGeometryUnstructuredGrid(
@@ -302,7 +303,7 @@ VtuWriter::WritePointDataVector(
   this->WriteDataArray(data, num_components_per_point, name);
 
   if ( myrank_ == 0 )
-    std::cout << "\nVtuWriter: point data " << name << " written." << std::endl;
+    IO::cout(IO::verbose) << "\nVtuWriter: point data " << name << " written." << IO::endl;
 }
 
 /*----------------------------------------------------------------------*
@@ -350,5 +351,5 @@ VtuWriter::WriteCellDataVector(
   this->WriteDataArray(data, num_components_per_cell, name);
 
   if ( myrank_ == 0 )
-    std::cout << "\nVtuWriter: cell data " << name << " written." << std::endl;
+    IO::cout(IO::verbose) << "\nVtuWriter: cell data " << name << " written." << IO::endl;
 }

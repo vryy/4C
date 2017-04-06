@@ -25,6 +25,7 @@
 
 #include "../drt_beam3/beam3_base.H"
 
+#include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 
 
@@ -43,10 +44,13 @@ void
 BeamDiscretizationRuntimeVtuWriter::Initialize(
     Teuchos::RCP<DRT::Discretization> discretization,
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector,
+    Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
     unsigned int max_number_timesteps_to_be_written,
     bool write_binary_output )
 {
   discretization_ = discretization;
+  periodic_boundingbox_ = periodic_boundingbox;
+  num_cells_per_element_.resize( discretization_->NumMyRowElements() );
 
   // determine path of output directory
   const std::string outputfilename( DRT::Problem::Instance()->OutputControlFile()->FileName() );
@@ -111,7 +115,6 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
   unsigned int num_row_elements = discretization_->NumMyRowElements();
   unsigned int num_vtk_points = num_row_elements * ( BEAMSVTUVISUALSUBSEGMENTS + 1 );
 
-
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
   // need to adjust order of filling in the coordinates).
@@ -127,11 +130,10 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
   cell_offsets.clear();
   cell_offsets.reserve(num_row_elements);
 
-
   // loop over my elements and collect the geometry/grid data
   unsigned int pointcounter = 0;
 
-  for (unsigned int iele=0; iele<num_row_elements; ++iele)
+  for ( unsigned int iele = 0; iele < num_row_elements; ++iele )
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
@@ -142,14 +144,6 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
     if ( beamele == NULL )
       continue;
 
-
-    cell_types.push_back(4);
-
-    /* loop over the chosen visualization points (equidistant distribution in the element
-     * parameter space xi \in [-1,1] ) and determine their interpolated (initial) positions r */
-    LINALG::Matrix<3,1> interpolated_position;
-    double xi = 0.0;
-
     std::vector<double> beamelement_displacement_vector;
 
     if ( use_absolute_positions_ )
@@ -158,41 +152,65 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
           *discretization_, ele, displacement_state_vector, beamelement_displacement_vector );
     }
 
+    /* loop over the chosen visualization points (equidistant distribution in the element
+     * parameter space xi \in [-1,1] ) and determine their interpolated (initial) positions r */
+    LINALG::Matrix<3,1> interpolated_position(true);
+    LINALG::Matrix<3,1> interpolated_position_priorpoint(true);
+    double xi = 0.0;
 
-    for (unsigned int ipoint=0; ipoint<BEAMSVTUVISUALSUBSEGMENTS+1; ++ipoint)
+    for ( unsigned int ipoint = 0; ipoint < BEAMSVTUVISUALSUBSEGMENTS + 1; ++ipoint )
     {
       interpolated_position.Clear();
-      xi = -1.0 + ipoint*2.0/BEAMSVTUVISUALSUBSEGMENTS;
+      xi = -1.0 + ipoint * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
 
       if ( use_absolute_positions_ )
         beamele->GetPosAtXi( interpolated_position, xi, beamelement_displacement_vector );
       else
         beamele->GetRefPosAtXi( interpolated_position, xi );
 
-      for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+      periodic_boundingbox_->Shift3D( interpolated_position );
+      LINALG::Matrix<3,1> unshift_interpolated_position = interpolated_position;
+
+      // if there is a shift between tow consecutive points, double that point and create new cell
+      if( ipoint != 0 and periodic_boundingbox_->UnShift3D( unshift_interpolated_position, interpolated_position_priorpoint ) )
+      {
+        for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
+          point_coordinates.push_back( unshift_interpolated_position(idim) );
+
+        ++pointcounter;
+        cell_offsets.push_back( pointcounter );
+        cell_types.push_back(4);
+        ++num_cells_per_element_[iele];
+      }
+
+      for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
         point_coordinates.push_back( interpolated_position(idim) );
+
+      ++pointcounter;
+
+      interpolated_position_priorpoint = interpolated_position;
     }
+    // VTK_POLY_LINE (vtk cell type number 4)
+    cell_types.push_back(4);
+    ++num_cells_per_element_[iele];
+    cell_offsets.push_back( pointcounter );
 
-    pointcounter += BEAMSVTUVISUALSUBSEGMENTS + 1;
-
-    cell_offsets.push_back(pointcounter);
   }
-
 
   // safety checks
-  if ( point_coordinates.size() != num_spatial_dimensions * num_vtk_points )
-  {
-    dserror("RuntimeVtuWriter expected %d coordinate values, but got %d",
-        num_spatial_dimensions * num_vtk_points, point_coordinates.size() );
-  }
-
-  if ( cell_types.size() != num_row_elements )
+  if ( cell_types.size() != cell_offsets.size() )
   {
     dserror("RuntimeVtuWriter expected %d cell type values, but got %d",
         num_row_elements, cell_types.size() );
   }
 
-  if ( cell_offsets.size() != num_row_elements )
+  if ( !periodic_boundingbox_->HavePBC() and ( point_coordinates.size() != num_spatial_dimensions * num_vtk_points ) )
+  {
+    dserror("RuntimeVtuWriter expected %d coordinate values, but got %d",
+        num_spatial_dimensions * num_vtk_points, point_coordinates.size() );
+  }
+
+  if ( !periodic_boundingbox_->HavePBC() and ( cell_offsets.size() != num_row_elements ) )
   {
     dserror("RuntimeVtuWriter expected %d cell offset values, but got %d",
         num_row_elements, cell_offsets.size() );
@@ -215,6 +233,79 @@ BeamDiscretizationRuntimeVtuWriter::ResetTimeAndTimeStep(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void
+BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
+    Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
+{
+  // triads only make sense in 3D
+  const unsigned int num_spatial_dimensions = 3;
+
+  // count number of elements for each processor; output is completely independent of
+  // the number of processors involved
+  unsigned int num_row_elements = discretization_->NumMyRowElements();
+  unsigned int num_vtk_points = num_row_elements * ( BEAMSVTUVISUALSUBSEGMENTS + 1 );
+  std::vector<int32_t> const& cell_offsets = runtime_vtuwriter_->GetMutableCellOffsetVector();
+
+  // disp vector
+  std::vector<double> displacement_vector;
+  displacement_vector.reserve( num_spatial_dimensions * num_vtk_points );
+
+  // number of points so far
+  int points_sofar = 0;
+
+  // loop over myranks elements and compute disp for each visualization point
+  for ( unsigned int iele = 0; iele < num_row_elements; ++iele )
+  {
+    const DRT::Element* ele = discretization_->lRowElement(iele);
+
+    // check for beam element
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+    // Todo for now, simply skip all other elements
+    if ( beamele == NULL )
+      continue;
+
+    // get the displacement state vector for this element
+    std::vector<double> beamelement_displacement_vector;
+
+    BEAMINTERACTION::UTILS::GetCurrentElementDis(
+        *discretization_, ele, displacement_state_vector, beamelement_displacement_vector );
+
+    /* loop over the chosen visualization points (equidistant distribution in the element
+     * parameter space xi \in [-1,1] ) and determine its disp state */
+    LINALG::Matrix<3,1> pos_visualization_point;
+    LINALG::Matrix<3,1> refpos_visualization_point;
+    double xi = 0.0;
+
+    for ( unsigned int ipoint = 0; ipoint < BEAMSVTUVISUALSUBSEGMENTS + 1; ++ipoint )
+    {
+      xi = -1.0 + ipoint * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
+
+      pos_visualization_point.Clear();
+      refpos_visualization_point.Clear();
+
+      // interpolate
+      beamele->GetRefPosAtXi( refpos_visualization_point, xi );
+      beamele->GetPosAtXi( pos_visualization_point, xi, beamelement_displacement_vector );
+
+      // store the information in vectors that can be interpreted by vtu writer (disp = pos - refpos)
+      unsigned int num_point_exists = std::find(cell_offsets.begin(), cell_offsets.end(),
+          points_sofar + ipoint + 1 ) != cell_offsets.end() ? 2 : 1;
+      for( unsigned int i = 0; i < num_point_exists; ++i )
+        for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
+          displacement_vector.push_back( pos_visualization_point( idim, 0 ) - refpos_visualization_point( idim, 0 ) );
+    }
+    points_sofar += num_cells_per_element_[iele] + BEAMSVTUVISUALSUBSEGMENTS + 1;
+  }
+
+  // finally append the solution vectors to the visualization data of the vtu writer object
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(
+      displacement_vector, num_spatial_dimensions, "displacement" );
+
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void
 BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
@@ -225,7 +316,7 @@ BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
   // the number of processors involved
   unsigned int num_row_elements = discretization_->NumMyRowElements();
   unsigned int num_vtk_points = num_row_elements * ( BEAMSVTUVISUALSUBSEGMENTS + 1 );
-
+  std::vector<int32_t> const& cell_offsets = runtime_vtuwriter_->GetMutableCellOffsetVector();
 
   // we write the triad field as three base vectors at every visualization point
   std::vector<double> base_vector_1;
@@ -237,9 +328,11 @@ BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
   std::vector<double> base_vector_3;
   base_vector_3.reserve( num_spatial_dimensions * num_vtk_points );
 
+  // number of points so far
+  int points_sofar = 0;
 
   // loop over my elements and collect the data about triads/base vectors
-  for (unsigned int iele=0; iele<num_row_elements; ++iele)
+  for ( unsigned int iele = 0; iele < num_row_elements; ++iele )
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
@@ -272,19 +365,24 @@ BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
       beamele->GetTriadAtXi( triad_visualization_point, xi, beamelement_displacement_vector );
 
       // store the information in vectors that can be interpreted by vtu writer
-      for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+      unsigned int num_point_exists = std::find(cell_offsets.begin(), cell_offsets.end(),
+          points_sofar + ipoint + 1 ) != cell_offsets.end() ? 2 : 1;
+      for( unsigned int i = 0; i < num_point_exists; ++i )
       {
-        // first column: first base vector
-        base_vector_1.push_back( triad_visualization_point(idim,0) );
+        for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
+        {
+          // first column: first base vector
+          base_vector_1.push_back( triad_visualization_point(idim,0) );
 
-        // second column: second base vector
-        base_vector_2.push_back( triad_visualization_point(idim,1) );
+          // second column: second base vector
+          base_vector_2.push_back( triad_visualization_point(idim,1) );
 
-        // third column: third base vector
-        base_vector_3.push_back( triad_visualization_point(idim,2) );
+          // third column: third base vector
+          base_vector_3.push_back( triad_visualization_point(idim,2) );
+        }
       }
     }
-
+    points_sofar += num_cells_per_element_[iele] + BEAMSVTUVISUALSUBSEGMENTS + 1;
   }
 
   // finally append the solution vectors to the visualization data of the vtu writer object
@@ -312,9 +410,8 @@ BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
   std::vector<double> owner;
   owner.reserve( num_row_elements );
 
-
   // loop over my elements and collect the data about triads/base vectors
-  for (unsigned int iele=0; iele<num_row_elements; ++iele)
+  for ( unsigned int iele = 0; iele < num_row_elements; ++iele )
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
@@ -325,8 +422,8 @@ BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
     if ( beamele == NULL )
       continue;
 
-
-    owner.push_back( ele->Owner() );
+    for( int i = 0; i < num_cells_per_element_[iele]; ++i )
+      owner.push_back( ele->Owner() );
   }
 
   // append the solution vector to the visualization data of the vtu writer object
@@ -350,9 +447,8 @@ BeamDiscretizationRuntimeVtuWriter::AppendElementCircularCrossSectionRadius()
   std::vector<double> cross_section_radius;
   cross_section_radius.reserve( num_row_elements );
 
-
   // loop over my elements and collect the data about triads/base vectors
-  for (unsigned int iele=0; iele<num_row_elements; ++iele)
+  for ( unsigned int iele = 0 ; iele < num_row_elements; ++iele )
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
@@ -363,8 +459,9 @@ BeamDiscretizationRuntimeVtuWriter::AppendElementCircularCrossSectionRadius()
     if ( beamele == NULL )
       continue;
 
-
-    cross_section_radius.push_back( beamele->GetCircularCrossSectionRadiusForInteractions() );
+    // this needs to be done for all cells that make up a cut element
+    for( int i = 0; i < num_cells_per_element_[iele]; ++i )
+      cross_section_radius.push_back( beamele->GetCircularCrossSectionRadiusForInteractions() );
   }
 
   // append the solution vector to the visualization data of the vtu writer object
@@ -394,11 +491,13 @@ BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformationVe
   // and scale it with the cross-section radius of the beam
   std::vector<double> circular_cross_section_information_vector;
   circular_cross_section_information_vector.reserve( num_spatial_dimensions * num_vtk_points );
+  std::vector<int32_t> const& cell_offsets = runtime_vtuwriter_->GetMutableCellOffsetVector();
 
-
+  // number of points so far
+  int points_sofar = 0;
 
   // loop over my elements and collect the data about triads/base vectors
-  for (unsigned int iele=0; iele<num_row_elements; ++iele)
+  for ( unsigned int iele = 0; iele < num_row_elements; ++iele )
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
@@ -424,23 +523,28 @@ BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformationVe
      * parameter space xi \in [-1,1] ) and determine the triad */
     LINALG::Matrix<3,3> triad_visualization_point;
     double xi = 0.0;
-    for (unsigned int ipoint=0; ipoint<BEAMSVTUVISUALSUBSEGMENTS+1; ++ipoint)
+    for ( unsigned int ipoint = 0; ipoint < BEAMSVTUVISUALSUBSEGMENTS + 1; ++ipoint )
     {
-      xi = -1.0 + ipoint*2.0/BEAMSVTUVISUALSUBSEGMENTS;
+      xi = -1.0 + ipoint * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
 
       triad_visualization_point.Clear();
 
       beamele->GetTriadAtXi( triad_visualization_point, xi, beamelement_displacement_vector );
 
       // store the information in vectors that can be interpreted by vtu writer
-      for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+      unsigned int num_point_exists = std::find(cell_offsets.begin(), cell_offsets.end(),
+          points_sofar + ipoint + 1 ) != cell_offsets.end() ? 2 : 1;
+      for( unsigned int i = 0; i < num_point_exists; ++i )
       {
-        // first column: first base vector
-        circular_cross_section_information_vector.push_back(
-            triad_visualization_point(idim,0) * circular_cross_section_radius );
+        for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
+        {
+          // first column: first base vector
+          circular_cross_section_information_vector.push_back(
+              triad_visualization_point(idim,0) * circular_cross_section_radius );
+        }
       }
     }
-
+    points_sofar += num_cells_per_element_[iele] + BEAMSVTUVISUALSUBSEGMENTS + 1;
   }
 
   // finally append the solution vectors to the visualization data of the vtu writer object
@@ -486,7 +590,7 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStrains(
 
 
   // loop over my elements and collect the data
-  for ( unsigned int iele=0; iele<num_row_elements; ++iele )
+  for ( unsigned int iele = 0; iele < num_row_elements; ++iele )
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
@@ -534,26 +638,28 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStrains(
       dserror("number of Gauss points must be the same for all elements in discretization!");
     }
 
-
     // store the values of current element in the large vectors collecting data from all elements
-    InsertVectorValuesAtBackOfOtherVector(
-        axial_strain_GPs_current_element, axial_strain_GPs_all_row_elements);
+    for( int i = 0; i < num_cells_per_element_[iele]; ++i )
+    {
+      InsertVectorValuesAtBackOfOtherVector(
+          axial_strain_GPs_current_element, axial_strain_GPs_all_row_elements);
 
-    InsertVectorValuesAtBackOfOtherVector(
-        shear_strain_2_GPs_current_element, shear_strain_2_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          shear_strain_2_GPs_current_element, shear_strain_2_GPs_all_row_elements);
 
-    InsertVectorValuesAtBackOfOtherVector(
-        shear_strain_3_GPs_current_element, shear_strain_3_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          shear_strain_3_GPs_current_element, shear_strain_3_GPs_all_row_elements);
 
 
-    InsertVectorValuesAtBackOfOtherVector(
-        twist_GPs_current_element, twist_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          twist_GPs_current_element, twist_GPs_all_row_elements);
 
-    InsertVectorValuesAtBackOfOtherVector(
-        curvature_2_GPs_current_element, curvature_2_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          curvature_2_GPs_current_element, curvature_2_GPs_all_row_elements);
 
-    InsertVectorValuesAtBackOfOtherVector(
-        curvature_3_GPs_current_element, curvature_3_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          curvature_3_GPs_current_element, curvature_3_GPs_all_row_elements);
+    }
   }
 
   // append the solution vectors to the visualization data of the vtu writer object
@@ -674,26 +780,28 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStresses
       dserror("number of Gauss points must be the same for all elements in discretization!");
     }
 
-
     // store the values of current element in the large vectors collecting data from all elements
-    InsertVectorValuesAtBackOfOtherVector(
-        axial_stress_GPs_current_element, axial_stress_GPs_all_row_elements);
+    for( int i = 0; i < num_cells_per_element_[iele]; ++i )
+    {
+      InsertVectorValuesAtBackOfOtherVector(
+          axial_stress_GPs_current_element, axial_stress_GPs_all_row_elements);
 
-    InsertVectorValuesAtBackOfOtherVector(
-        shear_stress_2_GPs_current_element, shear_stress_2_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          shear_stress_2_GPs_current_element, shear_stress_2_GPs_all_row_elements);
 
-    InsertVectorValuesAtBackOfOtherVector(
-        shear_stress_3_GPs_current_element, shear_stress_3_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          shear_stress_3_GPs_current_element, shear_stress_3_GPs_all_row_elements);
 
 
-    InsertVectorValuesAtBackOfOtherVector(
-        torque_GPs_current_element, torque_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          torque_GPs_current_element, torque_GPs_all_row_elements);
 
-    InsertVectorValuesAtBackOfOtherVector(
-        bending_moment_2_GPs_current_element, bending_moment_2_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          bending_moment_2_GPs_current_element, bending_moment_2_GPs_all_row_elements);
 
-    InsertVectorValuesAtBackOfOtherVector(
-        bending_moment_3_GPs_current_element, bending_moment_3_GPs_all_row_elements);
+      InsertVectorValuesAtBackOfOtherVector(
+          bending_moment_3_GPs_current_element, bending_moment_3_GPs_all_row_elements);
+    }
   }
 
   // append the solution vectors to the visualization data of the vtu writer object
@@ -759,6 +867,7 @@ BeamDiscretizationRuntimeVtuWriter::AppendElementElasticEnergy()
 //
 //
 //    // Todo get Eint_ from previous element evaluation call
+//  for( int i = 0; i < num_cells_per_element_[iele]; ++i )
 //    energy_elastic.push_back( beamele->GetElasticEnergy() );
 //  }
 //

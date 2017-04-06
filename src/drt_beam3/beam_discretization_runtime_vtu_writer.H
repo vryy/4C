@@ -19,6 +19,11 @@
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
+namespace GEO{
+namespace MESHFREE{
+  class BoundingBox;
+}
+}
 class Epetra_Vector;
 class Epetra_MultiVector;
 
@@ -71,6 +76,7 @@ public:
   void Initialize(
       Teuchos::RCP<DRT::Discretization> discretization,
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector,
+      Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
       unsigned int max_number_timesteps_to_be_written,
       bool write_binary_output );
 
@@ -89,6 +95,13 @@ public:
    *  \author grill
    *  \date 03/17 */
   void AppendTriadField(
+      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
+
+    /** \brief append discplacement state
+   *
+   *  \author grill
+   *  \date 03/17 */
+  void AppendDisplacementField(
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append tangent vector field determined from given displacement state to output data
@@ -173,6 +186,13 @@ private:
 
   //! discretization containing beam elements of which geometry and result data shall be visualized
   Teuchos::RCP<const DRT::Discretization> discretization_;
+
+  //! periodic bounding box object
+  Teuchos::RCP<const GEO::MESHFREE::BoundingBox> periodic_boundingbox_;
+
+  //! number of points for each element ( in case of periodic boundary conditions
+  //! not equal to BEAMSVTUVISUALSUBSEGMENTS + 1)
+  std::vector<int> num_cells_per_element_;
 
   //! the actual vtu writer object that additionally stores the geometry and result data
   Teuchos::RCP<RuntimeVtuWriter> runtime_vtuwriter_;

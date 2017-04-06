@@ -65,6 +65,23 @@ public:
   MAP_EXTRACTOR_VECTOR_METHODS( Solid, solid )
 };
 
+/// class for comparing DRT::Element* (and DRT::Node*) in a std::set
+/*! -------------------------------------------------------------------------
+ * overwrites standard < for pointers, this is necessary to ensure same order
+ * of neighboring elements for crosslink check and therefore for random numbers
+ * independent of pointer addresses. Without this,
+ * simulation with crosslinker is not wrong, but depends randomly on memory
+ * allocation, i.e. pointer addresses. Without random numbers, everything is fine
+ * with default compare operator
+*  \author J. Eichinger March 2017
+ -------------------------------------------------------------------------*/
+class Less
+{
+public:
+  template <typename ELEMENT>
+  bool operator()( ELEMENT const* first, ELEMENT const* second) const { return first->Id() < second->Id(); }
+};
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void PeriodicBoundaryConsistentDisVector(

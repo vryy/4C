@@ -139,29 +139,29 @@ namespace MODELEVALUATOR{
     virtual void Reset(const Epetra_Vector& x);
 
   private:
-    //! apply Browian (stochastic and damping forces)
+    //! apply brownian (stochastic and damping forces)
     bool ApplyForceBrownian();
 
-    //! apply statmech specific neumann conditions
+    //! apply brownian specific neumann conditions
     bool ApplyForceExternal();
 
-    //! apply Browian (stochastic and damping forces)
+    //! apply brownian (stochastic and damping forces)
     bool ApplyForceStiffBrownian();
 
-    //! apply statmech specific neumann conditions
+    //! apply brownian specific neumann conditions
     bool ApplyForceStiffExternal();
 
-    //! evaluate statmech specific neumann conditions
+    //! evaluate brownian specific neumann conditions
     void EvaluateNeumannBrownianDyn(
         Teuchos::RCP<Epetra_Vector> eval_vec,
         Teuchos::RCP<LINALG::SparseOperator> eval_mat);
 
-    //! evaluate Browian (stochastic and damping forces)
+    //! evaluate brownian (stochastic and damping forces)
     void EvaluateBrownian(
         Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
         Teuchos::RCP<Epetra_Vector>* eval_vec);
 
-    //! evaluate Browian (stochastic and damping forces)
+    //! evaluate brownian (stochastic and damping forces)
     void EvaluateBrownian(
         Teuchos::ParameterList& p,
         Teuchos::RCP<LINALG::SparseOperator>* eval_mat,
@@ -181,8 +181,11 @@ namespace MODELEVALUATOR{
 
   private:
 
-    //! statmech evaluation data container
+    //! brownian dyn evaluation data container
     Teuchos::RCP<STR::MODELEVALUATOR::BrownianDynData> eval_browniandyn_ptr_;
+
+    //! structural displacement at \d$t_{n+1}\f$ consistent with periodic boundary conditions
+    Teuchos::RCP<Epetra_Vector> pbc_disnp_ptr_;
 
     //! global internal force at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> f_brown_np_ptr_;
@@ -190,7 +193,7 @@ namespace MODELEVALUATOR{
     //! global external force at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> f_ext_np_ptr_;
 
-    //! stiffness contributions from statmech
+    //! stiffness contributions from brownian dynamics simulations
     Teuchos::RCP<LINALG::SparseMatrix> stiff_brownian_ptr_;
 
     //! \brief maximal number of random numbers to be generated in each time step per element

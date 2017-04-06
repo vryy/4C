@@ -90,41 +90,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitSubmodelDependencies(
   // no active influence on other submodels
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddCrosslinkerToBinDiscretization()
-{
-  CheckInit();
-
-  // loop over all linker types that should be added to simulation volume
-  // (only proc 0 is doing this (as the number of crosslinker is manageable)
-  std::vector<int> const& numcrosslinkerpertype = crosslinking_params_ptr_->NumCrosslinkerPerType();
-  std::vector<int> const& matcrosslinkerpertype = crosslinking_params_ptr_->MatCrosslinkerPerType();
-  int gid = 0;
-  if( GState().GetMyRank() == 0 )
-  {
-    for ( int cltype_i = 0; cltype_i < static_cast<int>( numcrosslinkerpertype.size() ); ++cltype_i )
-    {
-      for ( int cltype_i_cl_j = 0; cltype_i_cl_j < numcrosslinkerpertype[cltype_i]; ++cltype_i_cl_j )
-      {
-        // random reference position of crosslinker in bounding box
-        std::vector<double> X(3);
-        PeriodicBoundingBoxPtr()->RandomPosWithin(X);
-
-        // construct node, init data container, set material and add to bin discret
-        Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
-            Teuchos::rcp(new CROSSLINKING::CrosslinkerNode( gid++, &X[0], GState().GetMyRank() ) );
-        newcrosslinker->InitializeDataContainer();
-        newcrosslinker->SetMaterial( matcrosslinkerpertype[cltype_i] );
-        BinDiscretPtr()->AddNode(newcrosslinker);
-      }
-    }
-  }
-
-  // set row map of newly created particle discretization
-  BinDiscretPtr()->FillComplete( false, false, false );
-}
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentBindingSpotPositions()
@@ -142,7 +107,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentBindingSpotPos
       std::make_pair( ( crosslinking_params_ptr_->FilamentBspotRange()[0] < 0.0 ) ? 0.0 : crosslinking_params_ptr_->FilamentBspotRange()[0],
           crosslinking_params_ptr_->FilamentBspotRange()[1] );
   // todo: set somewhere else
-  double tol = GEO::TOL7;
+  double const tol = GEO::TOL7;
 
   // temporarily extend ghosting, should be reverted somewhere later on as it is needed
   // in this fashion only here
@@ -157,7 +122,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentBindingSpotPos
     std::vector<int> const* nodeids = filamentnumberconditions[*filiter]->Nodes();
     std::vector< DRT::Element* > sortedfilamenteles(0);
     double filreflength = 0.0;
-    ComputeFilamentLengthAndSortItsElements( sortedfilamenteles, nodeids, filreflength);
+    ComputeFilamentLengthAndSortItsElements( sortedfilamenteles, nodeids, filreflength );
 
     // get arc parameter range for binding spot positions for current filament
     double const start = ( filreflength < filamentbspotrange.first ) ?
@@ -355,7 +320,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetBindingSpotsPositionsO
       bspotposxi.push_back(xi);
 
       // print to screen
-      IO::cout(IO::verbose) << bspotcounter +1 << ". binding spot: "<< "xi = " << xi << " on element "
+      IO::cout(IO::verbose) << bspotcounter + 1 << ". binding spot: "<< "xi = " << xi << " on element "
           << se_iter << " (gid " << beamele->Id() << ")"<< IO::endl;
 
       ++bspotcounter;
@@ -365,6 +330,41 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetBindingSpotsPositionsO
     // set element variables for binding spot position and status
     beamele->SetBindingSpotPositionsAndStatus( bspotposxi, bspotstatus );
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddCrosslinkerToBinDiscretization()
+{
+  CheckInit();
+
+  // loop over all linker types that should be added to simulation volume
+  // (only proc 0 is doing this (as the number of crosslinker is manageable)
+  std::vector<int> const& numcrosslinkerpertype = crosslinking_params_ptr_->NumCrosslinkerPerType();
+  std::vector<int> const& matcrosslinkerpertype = crosslinking_params_ptr_->MatCrosslinkerPerType();
+  int gid = 0;
+  if( GState().GetMyRank() == 0 )
+  {
+    for ( int cltype_i = 0; cltype_i < static_cast<int>( numcrosslinkerpertype.size() ); ++cltype_i )
+    {
+      for ( int cltype_i_cl_j = 0; cltype_i_cl_j < numcrosslinkerpertype[cltype_i]; ++cltype_i_cl_j )
+      {
+        // random reference position of crosslinker in bounding box
+        std::vector<double> X(3);
+        PeriodicBoundingBoxPtr()->RandomPosWithin(X);
+
+        // construct node, init data container, set material and add to bin discret
+        Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
+            Teuchos::rcp(new CROSSLINKING::CrosslinkerNode( gid++, &X[0], GState().GetMyRank() ) );
+        newcrosslinker->InitializeDataContainer();
+        newcrosslinker->SetMaterial( matcrosslinkerpertype[cltype_i] );
+        BinDiscretPtr()->AddNode(newcrosslinker);
+      }
+    }
+  }
+
+  // set row map of newly created particle discretization
+  BinDiscretPtr()->FillComplete( false, false, false );
 }
 
 /*-------------------------------------------------------------------------------*
@@ -379,10 +379,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
   {
     Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> elepairptr = iter->second;
 
-    CROSSLINKING::CrosslinkerNode *crosslinker_i =dynamic_cast< CROSSLINKING::CrosslinkerNode* >( BinDiscretPtr()->gNode( elepairptr->Id() ) );
+    CROSSLINKING::CrosslinkerNode *cl_i = dynamic_cast< CROSSLINKING::CrosslinkerNode* >( BinDiscretPtr()->gNode( elepairptr->Id() ) );
 
-    if (crosslinker_i->ClData()->GetNumberOfBonds() != 2)
-      dserror("Cl with gid %i Owner %i on myrank %i and numbonds %i",elepairptr->Id(),crosslinker_i->Owner(), GStatePtr()->GetMyRank(), crosslinker_i->ClData()->GetNumberOfBonds() );
+    if (cl_i->ClData()->GetNumberOfBonds() != 2)
+      dserror("Cl with gid %i Owner %i on myrank %i and numbonds %i",elepairptr->Id(),cl_i->Owner(),
+          GStatePtr()->GetMyRank(), cl_i->ClData()->GetNumberOfBonds() );
 
     // init positions and triads
     std::vector<LINALG::Matrix<3,1> > pos(2);
@@ -1065,7 +1066,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetSingleOccupiedClBspot(
-    const std::vector<std::pair<int, int> >& clbspots) const
+    std::vector<std::pair<int, int> > const& clbspots) const
 {
   CheckInit();
 
@@ -1085,8 +1086,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
     SetPositionOfDoubleBondedCrosslinkerPBCconsistent(
         DRT::Node* crosslinker,
         LINALG::Matrix<3,1>& clpos,
-        const LINALG::Matrix<3,1>& bspot1pos,
-        const LINALG::Matrix<3,1>& bspot2pos ) const
+        LINALG::Matrix<3,1> const& bspot1pos,
+        LINALG::Matrix<3,1> const& bspot2pos ) const
 {
   /* the position of (the center) of a double-bonded crosslinker is defined as
    * midpoint between the two given binding spot positions. (imagine a linker
@@ -1111,7 +1112,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetCrosslinkerPosition(
     DRT::Node* crosslinker,
-    const LINALG::Matrix<3,1>& newclpos) const
+    LINALG::Matrix<3,1> const& newclpos) const
 {
   CheckInit();
 
@@ -1149,7 +1150,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetPositionOfNewlyFreeCro
   std::vector<double> randunivec(3);
   int count = 3;
   DRT::Problem::Instance()->Random()->Uni( randunivec, count );
-  for ( int dim = 0 ; dim < 3; ++dim )
+  for ( unsigned int dim = 0 ; dim < 3; ++dim )
     cldeltapos_i(dim) = randunivec[dim];
 
   cldeltapos_i.Scale( crosslinker->GetMaterial()->LinkingLength() / cldeltapos_i.Norm2() );
@@ -1399,11 +1400,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
         intendedbeambonds, checklinkingprop );
   }
 }
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
     DRT::Node*                                  crosslinker_i,
-    const std::set<DRT::Element*>&              neighboring_beams,
+    std::set<DRT::Element*> const&              neighboring_beams,
     std::map<int, BindEventData >&              mybonds,
     std::map<int, std::vector<BindEventData> >& undecidedbonds,
     std::vector< std::set <int> >&              intendedbeambonds,
@@ -1427,13 +1429,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareBinding(
   std::vector< DRT::Element* > beamvec( neighboring_beams.begin(), neighboring_beams.end() );
 
   // -------------------------------------------------------------------------
-  // NOTE: This is crucial to ensure that computation does not depend on pointer
-  // addresses (see also comment of class Less)
+  // NOTE: This is crucial for reproducibility to ensure that computation does
+  // not depend on pointer addresses (see also comment of class Less)
   // -------------------------------------------------------------------------
-  std::sort( beamvec.begin(), beamvec.end(), Less() );
+  std::sort( beamvec.begin(), beamvec.end(), BEAMINTERACTION::UTILS::Less() );
 
   std::vector<int> randorder = BEAMINTERACTION::UTILS::Permutation( static_cast<int>( beamvec.size() ) );
-  for( std::vector<int> ::const_iterator randiter = randorder.begin(); randiter != randorder.end();  ++randiter )
+  std::vector<int> ::const_iterator randiter;
+  for( randiter = randorder.begin(); randiter != randorder.end();  ++randiter )
   {
     // get neighboring (nb) beam element
     DRT::Element* nbbeam = beamvec[*randiter];
@@ -1564,7 +1567,6 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
   // 6. criterion: orientation of centerline tangent vectors at binding spots
   // a crosslink (double-bonded crosslinker) will only be established if the
   // enclosed angle is in the specified range
-
   double const linkanglemin = crosslinker_i->GetMaterial()->LinkingAngle()
                               - crosslinker_i->GetMaterial()->LinkingAngleTolerance();
   double const linkanglemax = crosslinker_i->GetMaterial()->LinkingAngle()
@@ -1606,6 +1608,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
   }
 
   // bind event can happen
+  // (rejection afterwards only possible in case of parallel simulation)
   return true;
 }
 /*----------------------------------------------------------------------------*
@@ -1653,7 +1656,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckCrosslinkOfAdjacentE
   DRT::Element* beampartner = Discret().gElement( cldata_i.clbspots[occbspotid].first );
 
   // check if two considered eles share nodes
-  for ( int i = 0; i < 2; ++i )
+  for ( unsigned int i = 0; i < 2; ++i )
   {
     if( nbbeam->NodeIds()[i] == beampartner->NodeIds()[0] ||
         nbbeam->NodeIds()[i] == beampartner->NodeIds()[1] )
@@ -1666,14 +1669,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckCrosslinkOfAdjacentE
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::IsDistanceOutOfBindingRange(
-    const LINALG::Matrix<3,1>& pos1,
-    const LINALG::Matrix<3,1>& pos2,
-    const double& lowerbound,
-    const double& upperbound
+    LINALG::Matrix<3,1> const& pos1,
+    LINALG::Matrix<3,1> const& pos2,
+    double const lowerbound,
+    double const upperbound
     ) const
 {
   LINALG::Matrix<3,1> dist_vec(true);
-  dist_vec.Update(1.0, pos1, -1.0, pos2);
+  dist_vec.Update( 1.0, pos1, -1.0, pos2 );
 
   const double distance = dist_vec.Norm2();
 
@@ -1686,10 +1689,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::IsDistanceOutOfBindingRan
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::IsEnclosedAngleOfBSpotTangentsOutOfRange(
-    const LINALG::Matrix<3,1>& direction1,
-    const LINALG::Matrix<3,1>& direction2,
-    const double& lowerbound,
-    const double& upperbound
+    LINALG::Matrix<3,1> const& direction1,
+    LINALG::Matrix<3,1> const& direction2,
+    double const lowerbound,
+    double const upperbound
     ) const
 {
   // cosine of angle is scalar product of vectors divided by their norms
@@ -2295,7 +2298,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CalcBellsForceDependentUn
   // calculate new off rate
   std::vector< double > clbspotforcenorm ( 2, 0.0 );
   std::vector< double > forcedependentkoff ( 2, 0.0 );
-  for ( int i = 0; i < 2; ++i )
+  for ( unsigned int i = 0; i < 2; ++i )
   {
     // currently, only forces (not moments) considered
     bspotforce[i].Reshape(3,1);
@@ -2422,7 +2425,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyDoubleBondsAfterR
   if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d",err);
 
   std::map< int, std::vector< Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage > > > dbcltosend;
-  for ( int i = 0; i < static_cast<int>( unique_clgidlist.size() ); ++i )
+  for ( unsigned int i = 0; i < static_cast<unsigned int>( unique_clgidlist.size() ); ++i )
     dbcltosend[ unique_pidlist[i] ].push_back( doublebondcl_[ unique_clgidlist[i] ] );
 
   // update myrank's map
@@ -2732,7 +2735,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateUndecidedBonds
     int length = 0;
     int tag = -1;
     int from = -1;
-    exporter.ReceiveAny( from, tag, rdata, length);
+    exporter.ReceiveAny( from, tag, rdata, length );
     if (tag != 1234)
      dserror("Received on proc %i data with wrong tag from proc %i", GState().GetMyRank(), from );
 
@@ -2763,8 +2766,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CommunicateDecidedBonds(
     DRT::Exporter& exporter,
     std::map<int, std::vector<BindEventData> >& decidedbonds,
     std::map<int, BindEventData >&              myelebonds,
-    const int& numrecrequest,
-    const int& answersize) const
+    int const numrecrequest,
+    int const answersize) const
 {
   CheckInit();
 
@@ -3051,7 +3054,7 @@ template<typename T>
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(
     DRT::Exporter& exporter,
     std::vector<MPI_Request>& request,
-    const std::map<int, std::vector<T> >& send) const
+    std::map<int, std::vector<T> > const& send) const
 {
   CheckInit();
 
@@ -3090,7 +3093,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(
  *-----------------------------------------------------------------------------*/
 template<typename T>
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareReceivingProcs(
-    const std::map<int, std::vector<T> >& datasenttorank,
+    std::map<int, std::vector<T> > const& datasenttorank,
     std::vector<int>& summedtargets) const
 {
   CheckInit();
@@ -3113,36 +3116,36 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareReceivingProcs(
 template<typename T>
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(
     DRT::Exporter&  exporter,
-    const int& receivesize,
+    int const receivesize,
     std::vector<T>& recv) const
 {
   CheckInit();
 
   // myrank receive all packs that are sent to him
-  for(int rec=0; rec<receivesize; ++rec)
+  for( int rec = 0; rec < receivesize; ++rec )
   {
     std::vector<char> rdata;
     int length = 0;
     int tag = -1;
     int from = -1;
-    exporter.ReceiveAny(from,tag,rdata,length);
+    exporter.ReceiveAny( from, tag, rdata, length );
     if (tag != 1234)
       dserror("Received on proc %i data with wrong tag from proc %i", GState().GetMyRank(), from);
 
     // store received data
     std::vector<char>::size_type position = 0;
-    while (position < rdata.size())
+    while ( position < rdata.size() )
     {
       // ---- extract received data -----
       T recdata;
-      UnPack(position,rdata,recdata);
+      UnPack( position, rdata, recdata );
 
       // add received data to list of unbindevents on myrank
       recv.push_back(recdata);
     }
 
-    if (position != rdata.size())
-      dserror("Mismatch in size of data %d <-> %d",static_cast<int>(rdata.size()),position);
+    if ( position != rdata.size() )
+      dserror( "Mismatch in size of data %d <-> %d", static_cast<int>( rdata.size() ), position );
   }
 }
 
@@ -3202,7 +3205,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Wait(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Pack(
   DRT::PackBuffer&     data,
-  const BindEventData& bindeventdata) const
+  BindEventData const& bindeventdata) const
 {
   CheckInit();
 
@@ -3218,7 +3221,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Pack(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Pack(
   DRT::PackBuffer&       data,
-  const UnBindEventData& unbindeventdata) const
+  UnBindEventData const& unbindeventdata) const
 {
   CheckInit();
 
@@ -3344,21 +3347,21 @@ void STR::MODELEVALUATOR::BeamInteraction::AddCrosslinkerToBinDiscret()
 // explicit template instantiation (to please every compiler)
 //-----------------------------------------------------------------------------
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(
-    DRT::Exporter&,std::vector<MPI_Request>&,const std::map<int, std::vector<BindEventData> >&) const;
+    DRT::Exporter&,std::vector<MPI_Request>&, std::map<int, std::vector<BindEventData> > const& ) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISend(
-    DRT::Exporter&,std::vector<MPI_Request>&,const std::map<int, std::vector<UnBindEventData> >&) const;
+    DRT::Exporter&,std::vector<MPI_Request>&, std::map<int, std::vector<UnBindEventData> > const& ) const;
 
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareReceivingProcs(
-    const std::map<int, std::vector<BindEventData> >&,std::vector<int>&) const;
+    std::map<int, std::vector<BindEventData> > const&, std::vector<int>& ) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PrepareReceivingProcs(
-    const std::map<int, std::vector<UnBindEventData> >&,std::vector<int>&) const;
+    std::map<int, std::vector<UnBindEventData> > const&, std::vector<int>& ) const;
 
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(
-    DRT::Exporter&,const int&,std::vector<BindEventData>&) const;
+    DRT::Exporter&, int const, std::vector<BindEventData>& ) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RecvAny(
-    DRT::Exporter&,const int&,std::vector<UnBindEventData>&) const;
+    DRT::Exporter&, int const, std::vector<UnBindEventData>& ) const;
 
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISendRecvAny(
-    const std::map<int, std::vector<BindEventData> >&,std::vector<BindEventData>&) const;
+    std::map<int, std::vector<BindEventData> > const&, std::vector<BindEventData>& ) const;
 template void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ISendRecvAny(
-    const std::map<int, std::vector<UnBindEventData> >&,std::vector<UnBindEventData>&) const;
+    std::map<int, std::vector<UnBindEventData> > const&,std::vector<UnBindEventData>&) const;

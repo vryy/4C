@@ -659,7 +659,7 @@ namespace MODELEVALUATOR {
 //! contact data container
     Teuchos::RCP<ContactData> contact_data_ptr_;
 
-    //! statmech data container
+    //! brownian dynamic data container
     Teuchos::RCP<BrownianDynData> browniandyn_data_ptr_;
 
     //! pointer to a model evaluator object

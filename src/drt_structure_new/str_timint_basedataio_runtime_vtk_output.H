@@ -71,6 +71,13 @@ namespace TIMINT {
       return output_every_iteration_;
     };
 
+    /// whether to write output in every iteration of the nonlinear solver
+    bool OutputDisplacementState() const
+    {
+      CheckInitSetup();
+      return output_displacement_state;
+    };
+
     /// get the data container for parameters regarding beams
     Teuchos::RCP<const DRT::ELEMENTS::BeamRuntimeVtuOutputParams> GetBeamParams() const
     {
@@ -110,6 +117,9 @@ namespace TIMINT {
 
     /// whether to write output in every iteration of the nonlinear solver
     bool output_every_iteration_;
+
+    /// whether to write displacement output
+    bool output_displacement_state;
 
     /// data container for input parameters related to VTU output of beams at runtime
     Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeVtuOutputParams> params_runtime_vtu_output_beams_;

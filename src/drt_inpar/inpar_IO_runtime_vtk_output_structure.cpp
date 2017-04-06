@@ -66,6 +66,11 @@ namespace IO_RUNTIME_VTK_STRUCTURE
                                  "write output in every iteration of the nonlinear solver",
                                  yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
 
+    // whether to write displacement state
+    setStringToIntegralParameter<int>("DISPLACEMENT","No",
+                                 "write displacement output",
+                                 yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+
   }
 
 

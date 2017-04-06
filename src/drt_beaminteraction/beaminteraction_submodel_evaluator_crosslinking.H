@@ -233,20 +233,20 @@ private:
 
     /// get binding spot of crosslinker that is currently occupied
     virtual int GetSingleOccupiedClBspot(
-        const std::vector<std::pair<int, int> >& clbspots
+        std::vector<std::pair<int, int> > const& clbspots
     ) const;
 
     void SetPositionOfDoubleBondedCrosslinkerPBCconsistent(
         DRT::Node* crosslinker,
         LINALG::Matrix<3,1>& clpos,
-        const LINALG::Matrix<3,1>& bspot1pos,
-        const LINALG::Matrix<3,1>& bspot2pos
+        LINALG::Matrix<3,1> const& bspot1pos,
+        LINALG::Matrix<3,1> const& bspot2pos
     ) const;
 
     /// set crosslinker position (change X)
     virtual void SetCrosslinkerPosition(
         DRT::Node* crosslinker,
-        const LINALG::Matrix<3,1>& newclpos
+        LINALG::Matrix<3,1> const& newclpos
     ) const;
 
     /// new position after transition from single to not bonded
@@ -269,18 +269,18 @@ private:
 
     /// check whether distance of two points is out of given range
     bool IsDistanceOutOfBindingRange(
-        const LINALG::Matrix<3,1>& pos1,
-        const LINALG::Matrix<3,1>& pos2,
-        const double& lowerbound,
-        const double& upperbound
+        LINALG::Matrix<3,1> const& pos1,
+        LINALG::Matrix<3,1> const& pos2,
+        double const lowerbound,
+        double const upperbound
     ) const;
 
     /// check whether enclosed angle of two beam centerline tangents is out of given range
     bool IsEnclosedAngleOfBSpotTangentsOutOfRange(
-        const LINALG::Matrix<3,1>& direction1,
-        const LINALG::Matrix<3,1>& direction2,
-        const double& lowerbound,
-        const double& upperbound
+        LINALG::Matrix<3,1> const& direction1,
+        LINALG::Matrix<3,1> const& direction2,
+        double const lowerbound,
+        double const upperbound
     ) const;
 
     // -------------------------------------------------------------------------
@@ -339,7 +339,7 @@ private:
     /// communication to ensure correct binding over all procs is done afterwards
     virtual void PrepareBinding(
         DRT::Node*                                  crosslinker_i,
-        const std::set<DRT::Element*>&              neighboring_beams,
+        std::set<DRT::Element*> const&              neighboring_beams,
         std::map<int, BindEventData >&              mybonds,
         std::map<int, std::vector<BindEventData> >& undecidedbonds,
         std::vector< std::set <int> >&              intendedbeambonds,
@@ -403,8 +403,8 @@ private:
         DRT::Exporter& exporter,
         std::map<int, std::vector<BindEventData> >& decidedbonds,
         std::map<int, BindEventData >&              myelebonds,
-        const int& numrecrequest,
-        const int& answersize
+        int const numrecrequest,
+        int const answersize
     ) const;
 
     /* now have two distinct maps of binding events on each proc, depending
@@ -485,13 +485,13 @@ private:
     void ISend(
         DRT::Exporter& exporter,
         std::vector<MPI_Request>& request,
-        const std::map<int, std::vector<T> >& send
+        std::map<int, std::vector<T> > const& send
     ) const;
 
     /// get number of request for each proc
     template<typename T>
     void PrepareReceivingProcs(
-        const std::map<int, std::vector<T> >& datasenttorank,
+        std::map<int, std::vector<T> > const& datasenttorank,
         std::vector<int>& summedtargets
     ) const;
 
@@ -499,14 +499,14 @@ private:
     template<typename T>
     void RecvAny(
         DRT::Exporter&  exporter,
-        const int& receivesize,
+        int const receivesize,
         std::vector<T>& recv
     ) const;
 
     /// unblocking send and blocking recvany
     template<typename T>
     void ISendRecvAny(
-        const std::map<int, std::vector<T> >& send,
+        std::map<int, std::vector<T> > const& send,
         std::vector<T>&               recv
     ) const;
 
@@ -520,13 +520,13 @@ private:
     /// pack binding event data
     virtual void Pack(
         DRT::PackBuffer&     data,
-        const BindEventData& bindeventdata
+        BindEventData const& bindeventdata
     ) const;
 
     /// pack unbinding event data
     virtual void Pack(
         DRT::PackBuffer&       data,
-        const UnBindEventData& unbindeventdata
+        UnBindEventData const& unbindeventdata
     ) const;
 
     /// unpack binding event data
@@ -572,23 +572,6 @@ private:
 
     //! @}
 
-  };
-
-  /// class for comparing DRT::Elements* in a std::set
-  /*! -------------------------------------------------------------------------
-   * overwrites standard < for pointers, this is necessary to ensure same order
-   * of neighboring elements for crosslink check and therefore for random numbers
-   * independent of memory address search and set crosslinker. Without this,
-   * computation with crosslinker is not wrong, but depends randomly on memory
-   * allocation, i.e. pointer addresses. Without random numbers, everything is fine
-   * wiht default compare operator
-  *  \author J. Eichinger March 2017
-   -------------------------------------------------------------------------*/
-  class Less
-  {
-  public:
-    template <typename ELEMENT>
-    bool operator()( ELEMENT const* first, ELEMENT const* second) const { return first->Id() < second->Id(); }
   };
 
 }

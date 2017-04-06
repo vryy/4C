@@ -25,7 +25,8 @@ STR::TIMINT::ParamsRuntimeVtkOutput::ParamsRuntimeVtkOutput()
       issetup_(false),
       output_data_format_( INPAR::IO_RUNTIME_VTK_STRUCTURE::vague ),
       output_interval_steps_(-1),
-      output_every_iteration_(false)
+      output_every_iteration_(false),
+      output_displacement_state(false)
 {
   // empty constructor
 }
@@ -47,6 +48,9 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
 
   output_every_iteration_ =
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
+
+  output_displacement_state =
+      (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "DISPLACEMENT");
 
   if ( output_every_iteration_ )
     dserror("not implemented yet!");
