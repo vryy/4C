@@ -47,16 +47,10 @@ class TimIntCardiacMonodomainHDG : public virtual TimIntCardiacMonodomain, publi
   //! Current solution becomes old solution of next timestep.
   void Update(const int num=0);
 
-  //! read restart data
-  void ReadRestart(const int step);
-
   //! write current state to BINIO
   void OutputState();
 
 protected:
-
-  //! write additional data required for restart
-  void OutputRestart() const;
 
   //! update gating variables
   virtual void ElementMaterialTimeUpdate();

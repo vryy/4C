@@ -359,20 +359,75 @@ void SCATRA::TimIntHDG::OutputRestart() const
 {
   SCATRA::TimIntGenAlpha::OutputRestart();
   output_->WriteVector("intphinp",intphinp_);
+  output_->WriteVector("phinp_trace",phinp_);
+  output_->WriteVector("intphin",intphin_);
+
+  output_->WriteMesh(step_,time_); // add info to control file for reading all variables in restart
 
 }
 
 /*----------------------------------------------------------------------*
  | read restart                                          hoermann 09/15 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntHDG::ReadRestart(const int step)
+void SCATRA::TimIntHDG::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
-  dserror("Restart functionality not implemented yet");
-
-  SCATRA::TimIntGenAlpha::ReadRestart(step);
 
   IO::DiscretizationReader reader(discret_,step);
+
+  time_ = reader.ReadDouble("time");
+  step_ = reader.ReadInt("step");
+
+  reader.ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+
+  // vector to store the dofs per element
+  std::vector<int> eledofs;
+
+  // build new maps for face dofs with adapted element order
+  hdgdis_->BuildFaces();
+  hdgdis_->BuildFaceRowMap();
+  hdgdis_->BuildFaceColMap();
+
+  // assign the degrees of freedom to the adapted dofsets
+  hdgdis_->AssignDegreesOfFreedom(0);
+
+  // replace all ghosted element with the original thus the correct polynomial degree is used
+  discret_->ExportColumnElements(*discret_->ElementColMap(),false, false);
+
+  hdgdis_->FillComplete();
+
+  // store the number of dofs per element on vector
+  for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
+  {
+    DRT::ELEMENTS::ScaTraHDG *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
+    // store the number of dofs for the element
+    eledofs.push_back(hdgele->NumDofPerElementAuxiliary());
+  }
+
+  // create new local dofset for the new interior element dofs with adapted element order
+  Teuchos::RCP<DRT::DofSetPredefinedDoFNumber> eledofs_new = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(0,eledofs,0,false));
+  // replace old interior element dofs with the new created dofset
+  discret_->ReplaceDofSet(nds_intvar_,eledofs_new,false);
+
+  hdgdis_->AssignDegreesOfFreedom(0);
+
+  // clear map cache since after every FillComplete() / AssignDegreesOfFreedom() old maps are stored in the mapstack
+  output_->ClearMapCache();
+
+  // reset the residual, increment and sysmat to the size
+  residual_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  increment_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  neumann_loads_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  sysmat_ = Teuchos::null;
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),27));
+
+  // reset the state vectors
+  intphinp_.reset(new Epetra_Vector(*(discret_->DofRowMap(nds_intvar_)),true));
+  intphin_.reset(new Epetra_Vector(*(discret_->DofRowMap(nds_intvar_)),true));
+  phinp_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+  phin_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
+
   // read state vectors that are needed for hdg
+  reader.ReadVector(phinp_, "phinp_trace");
   reader.ReadVector(intphinp_, "intphinp");
 
   intphin_->Update(1.0,*intphinp_,0.0);
@@ -997,16 +1052,6 @@ void SCATRA::TimIntHDG::AdaptDegree()
   // unpack material data
   UnpackMaterial();
 
-  // call element routine to project the old values to the new state vectors
-  AdaptVariableVector(
-      phin_,
-      phin_old,
-      intphin_,
-      intphin_old,
-      nds_var_old,
-      nds_intvar_old,
-      la_old);
-
   AdaptVariableVector(
       phinp_,
       phinp_old,
@@ -1015,6 +1060,9 @@ void SCATRA::TimIntHDG::AdaptDegree()
       nds_var_old,
       nds_intvar_old,
       la_old);
+
+  intphin_->Update(1.0,*intphinp_,0.0);
+  phin_->Update(1.0,*phinp_,0.0);
 
   ProjectMaterial();
 

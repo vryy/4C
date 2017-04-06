@@ -64,7 +64,7 @@ public:
   virtual void OutputRestart() const;
 
   //! read restart
-  virtual void ReadRestart(const int step);
+  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
   //! set the initial scalar field phi
   void SetInitialField(

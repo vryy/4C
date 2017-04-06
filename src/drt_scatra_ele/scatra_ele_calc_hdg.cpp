@@ -269,7 +269,6 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::EvaluateService(
       ElementInit(ele);
       ReadGlobalVectors(ele, discretization, la);
       PrepareMaterialParams(ele);
-      GetMaterialParams(ele);
       localSolver_->ComputeMatrices(ele);
       localSolver_->CondenseLocalPart(hdgele);
     }

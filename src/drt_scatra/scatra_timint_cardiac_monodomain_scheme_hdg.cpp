@@ -84,45 +84,6 @@ void SCATRA::TimIntCardiacMonodomainHDG::Update(const int num)
 }
 
 /*----------------------------------------------------------------------*
- | write additional data required for restart            hoermann 09/15 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::OutputRestart() const
-{
-
-  // Call function from baseclass
-  TimIntHDG::OutputRestart();
-
-  // Cardiac Monodomain specific
-  output_->WriteMesh(step_,time_); // add info to control file for reading all variables in restart
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |                                                       hoermann 09/15 |
- -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainHDG::ReadRestart(const int step)
-{
-
-  dserror("Restart not implemented yet");
-
-  // Call function from baseclass
-  TimIntHDG::ReadRestart(step);
-
-  IO::DiscretizationReader reader(discret_,step);
-
-  reader.ReadMultiVector(material_internal_state_np_, "mat_int_state");
-  // Recover internal state of the material (for electrophysiology) for restart
-  Teuchos::ParameterList params;
-  params.set<int>("action", SCATRA::set_material_internal_state);
-  params.set< Teuchos::RCP<Epetra_MultiVector> >("material_internal_state", material_internal_state_np_);     // Probably do it once at the beginning
-  discret_->Evaluate(params);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | time update of time-dependent materials               hoermann 09/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntCardiacMonodomainHDG::ElementMaterialTimeUpdate()
