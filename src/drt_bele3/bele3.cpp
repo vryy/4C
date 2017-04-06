@@ -3,6 +3,8 @@
 
 \maintainer Martin Pfaller
 
+\level 2
+
 \brief dummy 3D boundary element without any physics
  *----------------------------------------------------------------------*/
 
@@ -88,44 +90,54 @@ void DRT::ELEMENTS::Bele3Type::SetupElementDefinition( std::map<std::string,std:
 
   defs3["TRI3"]
     .AddIntVector("TRI3",3)
+    .AddOptionalNamedInt("MAT")
     ;
 
   defs3["TRI6"]
     .AddIntVector("TRI6",6)
+    .AddOptionalNamedInt("MAT")
     ;
 
   defs3["QUAD4"]
     .AddIntVector("QUAD4",4)
+    .AddOptionalNamedInt("MAT")
     ;
 
   defs3["QUAD8"]
   .AddIntVector("QUAD8",8)
+  .AddOptionalNamedInt("MAT")
   ;
 
   defs3["QUAD9"]
   .AddIntVector("QUAD9",9)
+  .AddOptionalNamedInt("MAT")
   ;
 
   std::map<std::string,DRT::INPUT::LineDefinition>& defs4 = definitions["BELE3_4"];
 
   defs4["TRI3"]
     .AddIntVector("TRI3",3)
+    .AddOptionalNamedInt("MAT")
     ;
 
   defs4["TRI6"]
     .AddIntVector("TRI6",6)
+    .AddOptionalNamedInt("MAT")
     ;
 
   defs4["QUAD4"]
     .AddIntVector("QUAD4",4)
+    .AddOptionalNamedInt("MAT")
     ;
 
   defs4["QUAD8"]
   .AddIntVector("QUAD8",8)
+  .AddOptionalNamedInt("MAT")
   ;
 
   defs4["QUAD9"]
   .AddIntVector("QUAD9",9)
+  .AddOptionalNamedInt("MAT")
   ;
 }
 
@@ -295,5 +307,13 @@ bool DRT::ELEMENTS::Bele3::ReadElement(const std::string& eletype,
                                        const std::string& distype,
                                        DRT::INPUT::LineDefinition* linedef)
 {
+  // check if material is defined
+  if(linedef->HaveNamed("MAT"))
+  {
+    int material = 0;
+    // read number of material model
+    linedef->ExtractInt("MAT",material);
+    SetMaterial(material);
+  }
   return true;
 }

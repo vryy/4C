@@ -188,9 +188,104 @@ Myocard_Minimal::Myocard_Minimal(const double eps_deriv_myocard,const std::strin
       Tau_winf_ = 4.97;
       w_infs_ = 1.0;
     }
+    else if (tissue == "pAtria") // Lenk et al. 2015, "Initation of atrial fibrillation..." (JTB)
+    {
+      u_o_ = 0.0;
+      u_u_ = 0.9205;
+      Theta_v_ = 0.35;
+      Theta_w_ = 0.328;
+      Theta_vm_ = 0.126;
+      Theta_o_ =  0.00005;
+      Tau_v1m_ = 41.857;
+      Tau_v2m_ = 1150;
+      Tau_vp_ =  1.7;
+      Tau_w1m_ = 138.69;
+      Tau_w2m_ = 62.341;
+      k_wm_ = 202.66;
+      u_wm_ = 0.055;
+      Tau_wp_ = 177.41;
+      Tau_fi_ = 0.045;
+      Tau_o1_ = 410;
+      Tau_o2_ = 64.914;
+      Tau_so1_ = 115;
+      Tau_so2_ = 6.5;
+      k_so_ = 1.386;
+      u_so_ = 0.332;
+      Tau_s1_ = 11.457;
+      Tau_s2_ = 53.902;
+      k_s_ = 1.226;
+      u_s_ = 0.792;
+      Tau_si_ = 7.802;
+      Tau_winf_ = 0.05;
+      w_infs_ = 1.0;
+    }
+    else if (tissue == "pAtriaRe") // Lenk et al. 2015, "Initation of atrial fibrillation..." (JTB)
+    {
+      u_o_ = 0.0;
+      u_u_ = 0.9205;
+      Theta_v_ = 0.35;
+      Theta_w_ = 0.328;
+      Theta_vm_ = 0.126;
+      Theta_o_ =  0.00005;
+      Tau_v1m_ = 41.857;
+      Tau_v2m_ = 1150;
+      Tau_vp_ =  1.7;
+      Tau_w1m_ = 138.69;
+      Tau_w2m_ = 62.341;
+      k_wm_ = 202.66;
+      u_wm_ = 0.055;
+      Tau_wp_ = 177.41;
+      Tau_fi_ = 0.11;
+      Tau_o1_ = 410;
+      Tau_o2_ = 64.914;
+      Tau_so1_ = 115;
+      Tau_so2_ = 6.5;
+      k_so_ = 1.386;
+      u_so_ = 0.332;
+      Tau_s1_ = 11.457;
+      Tau_s2_ = 53.902;
+      k_s_ = 1.226;
+      u_s_ = 0.792;
+      Tau_si_ = 7.802;
+      Tau_winf_ = 0.05;
+      w_infs_ = 1.0;
+    }
+    else if (tissue == "rAtria")
+      // Lenk et al. 2015, "Initation of atrial fibrillation..." (JTB);
+      //Richter et al. 2016, "Anatomical and spiral wave..." (JTB)
+    {
+      u_o_ = 0.00;
+      u_u_ = 1.0089;
+      Theta_v_ = 0.3;
+      Theta_w_ = 0.18171;
+      Theta_vm_ = 0.1007;
+      Theta_o_ = 0.015473;
+      Tau_v1m_ = 16.3;
+      Tau_v2m_ = 1150;
+      Tau_vp_ = 1.7026;
+      Tau_w1m_ = 79.963;
+      Tau_w2m_ = 28.136;
+      k_wm_ = 60.219;
+      u_wm_ = 0.00991;
+      Tau_wp_ = 213.55;
+      Tau_fi_ = 0.083536;
+      Tau_o1_ = 250.03;
+      Tau_o2_ = 16.632;
+      Tau_so1_ = 73.675;
+      Tau_so2_ = 6.5537;
+      k_so_ = 2.9748;
+      u_so_ = 0.592093;
+      Tau_s1_ = 9.876;
+      Tau_s2_ = 4.2036;
+      k_s_ = 2.2268;
+      u_s_ = 0.81568;
+      Tau_si_ = 10.699;
+      Tau_winf_ = 0.2233;
+      w_infs_ = 0.902;
+    }
     else
     {
-      dserror("Parameters for tissue type not supported for minimal model (only M, Atria, EPI, ENDO)");
+      dserror("Parameters for tissue type not supported for minimal model (only M, EPI, ENDO, Atria, pAtria, pAtriaRe, rAtria)");
     }
 
   // Variables for electromechanical coupling

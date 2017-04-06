@@ -1320,7 +1320,7 @@ ComputeNeumannBC(DRT::Element*               ele,
       const double val_fac_funct_curve_fac = (*val)[0]*shapesface_->jfac(iquad)*functfac*curvefac;
 
       for(unsigned int node=0; node<shapesface_->nfdofs_; node++)
-        elevec[face*shapesface_->nfdofs_+node] += shapesface_->shfunct(node,iquad) * val_fac_funct_curve_fac;
+        elevec[indexstart+node] += shapesface_->shfunct(node,iquad) * val_fac_funct_curve_fac;
     } // if ((*onoff)[dof])
   } // loop over integration points
 
@@ -2062,11 +2062,17 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::CalcPAdaptivity(
     tempVec3.Multiply('N','N',1.0,UMatW,tempinteriorphinp,0.0);
     tempVec4.Multiply('N','N',1.0,UMat,tempinteriorphinp,0.0);
 
+    double errorface = 0;
+    double facearea = 0;
+
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
     {
-      error += tempVec1(q)*tempVec2(q)+tempVec3(q)*tempVec4(q)-2*tempVec1(q)*tempVec4(q);
+      errorface += tempVec1(q)*tempVec2(q)+tempVec3(q)*tempVec4(q)-2*tempVec1(q)*tempVec4(q);
+      facearea += shapesface_->jfac(q);
     }
 
+    // normalize error with surface area of face
+    error += errorface/facearea;
   }
 
   params.set<double>("error",error);
