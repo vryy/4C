@@ -108,8 +108,8 @@ protected:
   //! reset particle states in outerloop iteration
   virtual void ResetParticleStates();
 
-  //! determine particle forces
-  virtual void DetermineParticleForces();
+  //! get particle forces
+  virtual void GetParticleForces();
 
   //! set particle forces
   virtual void SetParticleForces(

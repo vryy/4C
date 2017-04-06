@@ -210,7 +210,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
       collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
     }
 
-    intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_);
+    intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_, f_structure_);
   }
   //--------------------------------------------------------------
 

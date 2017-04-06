@@ -119,9 +119,8 @@ PARTICLE::Algorithm::Algorithm(
 
   if (moving_walls_ == true and DRT::Problem::Instance()->ProblemType() != prb_pasi)
     dserror("MOVING_WALLS flag is activated!\n"
-        "Set parameter PROBLEMTYP to 'Particle_Structure_Interaction' in ---PROBLEM TYP section.\n"
-        "Set parameter COUPALGO to 'partitioned_onewaycoup' in ---PASI DYNAMIC section\n"
-        "and set the particle structure interaction time parameters.");
+        "Set parameter PROBLEMTYP to 'Particle_Structure_Interaction' in ---PROBLEM TYP section\n"
+        "and set the particle structure interaction parameters in ---PASI DYNAMIC section\n");
 
   const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
   gravity_acc_.PutScalar(0.0);
@@ -702,8 +701,6 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
 
   //initialize struct objects in wall condition
   DRT::UTILS::FindConditionObjects(*basediscret, dummy2, structgnodes, structgelements,"ParticleWall");
-
-  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::iterator meit;
 
   // initialize new particle wall discretizations
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(basediscret->Comm().Clone());

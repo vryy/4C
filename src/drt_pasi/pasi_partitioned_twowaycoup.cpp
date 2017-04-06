@@ -67,9 +67,13 @@ void PASI::PASI_PartTwoWayCoup::Init(
   // call Init() in base class
   PASI::PartitionedAlgo::Init(comm);
 
+  // get the global problem
+  DRT::Problem* problem = DRT::Problem::Instance();
+
   // get parameter lists
-  const Teuchos::ParameterList& pasi_params = DRT::Problem::Instance()->PASIDynamicParams();
-  const Teuchos::ParameterList& pasi_params_part = DRT::Problem::Instance()->PASIDynamicParams().sublist("PARTITIONED");
+  const Teuchos::ParameterList& pasi_params = problem->PASIDynamicParams();
+  const Teuchos::ParameterList& pasi_params_part = problem->PASIDynamicParams().sublist("PARTITIONED");
+  const Teuchos::ParameterList& particle_params = problem->ParticleParams();
 
   // get the parameters for the ConvergenceCheck
   itmax_ = pasi_params.get<int>("ITEMAX");
@@ -84,6 +88,12 @@ void PASI::PASI_PartTwoWayCoup::Init(
       and particles_->ParticleInteractionType() != INPAR::PARTICLE::Normal_DEM_thermo)
   {
     dserror("Two way coupled partitioned PASI not implemented yet for ParticleInteractionType: 'None', 'Normal_MD' and 'MeshFree'!");
+  }
+
+  // safety check: two way coupled pasi currently just implemented for CentrDiff time integration scheme in particle field
+  if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(particle_params,"DYNAMICTYP") != INPAR::PARTICLE::dyna_centrdiff)
+  {
+    dserror("Two way coupled partitioned PASI just implemented for DYNAMICTYP: 'CentrDiff'");
   }
 
   return;
@@ -101,6 +111,10 @@ void PASI::PASI_PartTwoWayCoup::Setup()
   forcenp_ = LINALG::CreateVector(*structure_->DofRowMap(),true);
   dispincnp_ = LINALG::CreateVector(*structure_->DofRowMap(),true);
   forceincnp_ = LINALG::CreateVector(*structure_->DofRowMap(),true);
+
+  // construct vector of particle forces on structural discretization and set it in particle time integration
+  Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::rcp(new Epetra_FEVector(*structure_->DofRowMap(),true));
+  particles_->AdapterParticle()->SetFstructure(f_structure);
 
   return;
 } // PASI::PASI_PartTwoWayCoup::Setup()
@@ -190,8 +204,8 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
     // solve particle time step
     ParticleStep();
 
-    // determined particle forces acting on structural wall
-    DetermineParticleForces();
+    // get particle forces acting on structural boundary
+    GetParticleForces();
 
     // check convergence criterion
     stopnonliniter = ConvergenceCheck(itnum);
@@ -250,23 +264,26 @@ void PASI::PASI_PartTwoWayCoup::ResetParticleStates()
     }
   }
 
+  // clear vector of particle forces on structural discretization
+  particles_->AdapterParticle()->WriteAccessFstructure()->PutScalar(0.0);
+
   return;
 } // PASI::PASI_PartTwoWayCoup::ResetParticleStates()
 
 /*----------------------------------------------------------------------*
- | determine particle forces                             sfuchs 03/2017 |
+ | get particle forces                                   sfuchs 04/2017 |
  *----------------------------------------------------------------------*/
-void PASI::PASI_PartTwoWayCoup::DetermineParticleForces()
+void PASI::PASI_PartTwoWayCoup::GetParticleForces()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::DetermineParticleForces");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PASI_PartTwoWayCoup::GetParticleForces");
 
-  // initialize vector of particle forces on structural boundary
-  Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::rcp(new Epetra_FEVector(*structure_->DofRowMap(),true));
+  // get vector of particle forces on structural boundary
+  Teuchos::RCP<Epetra_FEVector> f_structure = particles_->AdapterParticle()->WriteAccessFstructure();
 
-  // determine particle forces on structural boundary
-  particles_->AdapterParticle()->ParticleWallForce(f_structure);
+  if (f_structure == Teuchos::null)
+    dserror("GetParticleForces() returned no vector of particle forces on structural boundaries!");
 
-  // call global assemble for particle forces on structural boundary
+  // call global assemble for vector of particle forces on structural boundary
   const int err = f_structure->GlobalAssemble(Add, false);
   if (err<0)
     dserror("global assemble into structforces failed");
@@ -275,7 +292,7 @@ void PASI::PASI_PartTwoWayCoup::DetermineParticleForces()
   forcenp_ = Teuchos::rcp(new Epetra_Vector(Copy,*f_structure,0));
 
   return;
-} // PASI::PASI_PartTwoWayCoup::DetermineParticleForces()
+} // PASI::PASI_PartTwoWayCoup::GetParticleForces()
 
 /*----------------------------------------------------------------------*
  | set particle forces                                   sfuchs 03/2017 |
@@ -522,8 +539,8 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
     // solve particle time step
     ParticleStep();
 
-    // determined particle forces acting on structural wall
-    DetermineParticleForces();
+    // get particle forces acting on structural boundary
+    GetParticleForces();
 
     // check convergence criterion
     stopnonliniter = ConvergenceCheck(itnum);

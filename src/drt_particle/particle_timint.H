@@ -138,9 +138,6 @@ namespace PARTICLE
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
 
-    //! calculate particle force on wall discretization
-    virtual void ParticleWallForce(Teuchos::RCP<Epetra_FEVector> f_structure);
-
     /// initialize time integration
     virtual void Init();
 
@@ -164,6 +161,9 @@ namespace PARTICLE
 
     //! particle algorithm is set from outside
     virtual void SetParticleAlgorithm(Teuchos::RCP<PARTICLE::Algorithm> algorithm) { particle_algorithm_ = algorithm; }
+
+    //! set vector of particle forces on struct dis from outside
+    virtual void SetFstructure(Teuchos::RCP<Epetra_FEVector> f_structure) { f_structure_ = f_structure ; }
 
     //! Calculate all output quantities depending on the constitutive model
     //  (and, hence, on a potential material history)
@@ -334,6 +334,9 @@ namespace PARTICLE
     //! Read-only pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Pressure() { return pressure_; }
 
+    //! Read-only force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_FEVector> Fstructure(){ return f_structure_; }
+
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
 
@@ -406,6 +409,9 @@ namespace PARTICLE
 
     //! Extract pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressure() { return pressure_; }
+
+    //! Extract force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_FEVector> WriteAccessFstructure(){ return f_structure_; }
 
     //! Forces \f$F_{n}\f$ or \f$F_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessFifc() { return fifc_; }
@@ -611,6 +617,8 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> temperature_;
     //! Pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> pressure_;
+    //! Particle force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
+    Teuchos::RCP<Epetra_FEVector> f_structure_;
     //! m * grad(weightFunction) for meshfree methods
 
     //! initial density for meshFree-pressure dynamics

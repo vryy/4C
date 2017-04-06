@@ -86,9 +86,6 @@ namespace ADAPTER
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
 
-    //! calculate particle force on wall discretization
-    virtual void ParticleWallForce(Teuchos::RCP<Epetra_FEVector> f_structure) = 0;
-
     //! initialize particle problem
     virtual void Init() = 0;
 
@@ -103,6 +100,9 @@ namespace ADAPTER
 
     //! particle algorithm is set from outside
     virtual void SetParticleAlgorithm(Teuchos::RCP<PARTICLE::Algorithm> algorithm) = 0;
+
+    //! set vector of particle forces on struct dis from outside
+    virtual void SetFstructure(Teuchos::RCP<Epetra_FEVector> f_structure) = 0;
 
     //! Calculate all output quantities depending on the constitutive model
     virtual void PrepareOutput() = 0;
@@ -222,6 +222,9 @@ namespace ADAPTER
     //! Read-only pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Pressure() = 0;
 
+    //! Read-only force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_FEVector> Fstructure() = 0;
+
     //! does collision handler exist?
     virtual bool HaveCollHandler() = 0;
 
@@ -286,6 +289,9 @@ namespace ADAPTER
 
     //! Extract pressures \f$P_{n}\f$ or \f$P_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessPressure() = 0;
+
+    //! Extract force on wall discretization \f$f_{n}\f$ or \f$f_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_FEVector> WriteAccessFstructure() = 0;
 
     //! Forces \f$F_{n}\f$ or \f$F_{n+1}\f$
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessFifc() = 0;
