@@ -220,6 +220,18 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
         +dmxi[0].size(),
         -1,
         LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
+    double sigma_nt1_pen_vt1=0;
+    double sigma_nt2_pen_vt2=0;
+    GEN::pairedvector<int,double> d_sigma_nt1_pen_vt1(
+        dgapgp.capacity()
+        +cauchy_nn_weighted_average_deriv.capacity()
+        +cauchy_nt1_weighted_average_deriv.capacity()
+        +dvt1.capacity(),0,0);
+    GEN::pairedvector<int,double> d_sigma_nt2_pen_vt2(
+        dgapgp.capacity()
+        +cauchy_nn_weighted_average_deriv.capacity()
+        +cauchy_nt2_weighted_average_deriv.capacity()
+        +dvt2.capacity(),0,0);
     // variables for friction (end)
 
     SoEleCauchy<dim>(sele,sxi,dsxi,wgt,normal,dnmap_unit,normal,dnmap_unit,ws,
@@ -228,6 +240,14 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
     SoEleCauchy<dim>(mele,mxi,dmxi,wgt,normal,dnmap_unit,normal,dnmap_unit,wm,
         cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
         normal_adjoint_test_master,deriv_normal_adjoint_test_master);
+
+    const double snn_av_pen_gap = cauchy_nn_weighted_average+pen*gap;
+    GEN::pairedvector<int,double> d_snn_av_pen_gap(
+        cauchy_nn_weighted_average_deriv.size()+dgapgp.size());
+    for (_CI p=cauchy_nn_weighted_average_deriv.begin();p!=cauchy_nn_weighted_average_deriv.end();++p)
+      d_snn_av_pen_gap[p->first]+=p->second;
+    for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
+      d_snn_av_pen_gap[p->first]+=pen*p->second;
 
     // evaluation of tangential stuff
     if (frtype_)
@@ -255,49 +275,40 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
           t2_adjoint_test_master,deriv_t2_adjoint_test_master);
     }// evaluation of tangential stuff
 
+    if (frtype_)
+    {
+      IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+          cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
+          sele,t1_adjoint_test_slave,deriv_t1_adjoint_test_slave);
+      IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+          cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
+          sele,t2_adjoint_test_slave,deriv_t2_adjoint_test_slave);
+
+      IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+          cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
+          mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
+      IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
+          cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
+          mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
+    }
 
     if (gap+cauchy_nn_weighted_average/pen>=0.)
     {
-       if (abs(theta_)>1.e-12)
-       {
-         IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
-             cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
-             sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
-         IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
-             cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
-             mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
-
-         if (frtype_)
-         {
-           IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
-               cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
-               sele,t1_adjoint_test_slave,deriv_t1_adjoint_test_slave);
-           IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
-               cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
-               sele,t2_adjoint_test_slave,deriv_t2_adjoint_test_slave);
-
-           IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
-               cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
-               mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
-           IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
-               cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
-               mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
-         }
-       }
+      IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
+          cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
+          sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
+      IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
+          cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
+          mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
     }
     else
     {
       // test in normal contact direction
-      IntegrateTest<dim>(-pen,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
-      IntegrateTest<dim>(+pen,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,gap,dgapgp,normal,dnmap_unit);
+      IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,snn_av_pen_gap,d_snn_av_pen_gap,normal,dnmap_unit);
+      IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,snn_av_pen_gap,d_snn_av_pen_gap,normal,dnmap_unit);
 
-      IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal,dnmap_unit);
-      IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,normal,dnmap_unit);
-
-      if (abs(theta_)>1.e-12)
-        IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
-      if (abs(theta_)>1.e-12)
-        IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
+      IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,sele,normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave );
+      IntegrateAdjointTest<dim>(theta_,jac,jacintcellmap,wgt,gap,dgapgp,mele,normal_adjoint_test_master,deriv_normal_adjoint_test_master);
 
       if (frtype_)
       {
@@ -317,25 +328,13 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
         // stick
         if (tan_tr<fr)
         {
-          IntegrateTest<dim>(+pet,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,vt1,dvt1,t1,dt1);
-          IntegrateTest<dim>(-pet,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,vt1,dvt1,t1,dt1);
+          sigma_nt1_pen_vt1=cauchy_nt1_weighted_average-pet*vt1;
+          for (_CI p=dvt1.begin(); p!=dvt1.end();++p)                                                          d_sigma_nt1_pen_vt1[p->first]-=pet*p->second;
+          for (_CI p=cauchy_nt1_weighted_average_deriv.begin();p!=cauchy_nt1_weighted_average_deriv.end();++p) d_sigma_nt1_pen_vt1[p->first]+=p->second;
 
-          IntegrateTest<dim>(+pet,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,vt2,dvt2,t2,dt2);
-          IntegrateTest<dim>(-pet,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,vt2,dvt2,t2,dt2);
-
-          IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,t1,dt1);
-          IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,t1,dt1);
-
-          IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,t2,dt2);
-          IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,t2,dt2);
-
-          if (abs(theta_)>1.e-12)
-          {
-            IntegrateAdjointTest<dim>(-theta_,jac,jacintcellmap,wgt,vt1,dvt1,sele,t1_adjoint_test_slave ,deriv_t1_adjoint_test_slave);
-            IntegrateAdjointTest<dim>(-theta_,jac,jacintcellmap,wgt,vt1,dvt1,mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
-            IntegrateAdjointTest<dim>(-theta_,jac,jacintcellmap,wgt,vt2,dvt2,sele,t2_adjoint_test_slave ,deriv_t2_adjoint_test_slave );
-            IntegrateAdjointTest<dim>(-theta_,jac,jacintcellmap,wgt,vt2,dvt2,mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
-          }
+          sigma_nt2_pen_vt2=cauchy_nt2_weighted_average-pet*vt2;
+          for (_CI p=dvt2.begin(); p!=dvt2.end();++p)                                                          d_sigma_nt2_pen_vt2[p->first]-=pet*p->second;
+          for (_CI p=cauchy_nt2_weighted_average_deriv.begin();p!=cauchy_nt2_weighted_average_deriv.end();++p) d_sigma_nt2_pen_vt2[p->first]+=p->second;
         }
         // slip
         else
@@ -346,12 +345,8 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
               +cauchy_nt1_weighted_average_deriv.size()
               +dvt1.size(),0,0);
           if (frtype_==INPAR::CONTACT::friction_coulomb)
-          {
-            for(_CI  p=dgapgp.begin();p!=dgapgp.end();++p)
-              tmp_d[p->first]+=-frcoeff_*pen*p->second/tan_tr;
-            for(_CI  p=cauchy_nn_weighted_average_deriv.begin();p!=cauchy_nn_weighted_average_deriv.end();++p)
-              tmp_d[p->first]+=-frcoeff_*p->second/tan_tr;
-          }
+            for (_CI p=d_snn_av_pen_gap.begin();p!=d_snn_av_pen_gap.end();++p)
+              tmp_d[p->first]+=-frcoeff_/tan_tr*p->second;
           for(_CI  p=cauchy_nt1_weighted_average_deriv.begin();p!=cauchy_nt1_weighted_average_deriv.end();++p)
             tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt1_weighted_average-pet*vt1)*p->second;
           for(_CI p=dvt1.begin();p!=dvt1.end();++p)
@@ -362,58 +357,32 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
           for(_CI p=dvt2.begin();p!=dvt2.end();++p)
             tmp_d[p->first]+=-fr/(tan_tr*tan_tr*tan_tr)*(cauchy_nt2_weighted_average-pet*vt2)*(-pet)*p->second;
 
-          double test1=fr/tan_tr*(cauchy_nt1_weighted_average-pet*vt1);
-          GEN::pairedvector<int,double> dtest1(
-              dgapgp.size()
-              +cauchy_nn_weighted_average_deriv.size()
-              +cauchy_nt1_weighted_average_deriv.size()
-              +dvt1.size(),0,0);
+          sigma_nt1_pen_vt1=fr/tan_tr*(cauchy_nt1_weighted_average-pet*vt1);
           for(_CI p=tmp_d.begin();p!=tmp_d.end();++p)
-            dtest1[p->first]+=p->second*(cauchy_nt1_weighted_average-pet*vt1);
+            d_sigma_nt1_pen_vt1[p->first]+=p->second*(cauchy_nt1_weighted_average-pet*vt1);
           for(_CI p=cauchy_nt1_weighted_average_deriv.begin();p!=cauchy_nt1_weighted_average_deriv.end();++p)
-            dtest1[p->first]+=fr/tan_tr*p->second;
+            d_sigma_nt1_pen_vt1[p->first]+=fr/tan_tr*p->second;
           for(_CI p=dvt1.begin();p!=dvt1.end();++p)
-            dtest1[p->first]+=-fr/tan_tr*pet*p->second;
-          IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,test1,dtest1,t1,dt1);
-          IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,test1,dtest1,t1,dt1);
+            d_sigma_nt1_pen_vt1[p->first]+=-fr/tan_tr*pet*p->second;
 
-          double test2=fr/tan_tr*(cauchy_nt2_weighted_average-pet*vt2);
-          GEN::pairedvector<int,double> dtest2(
-              dgapgp.size()
-              +cauchy_nn_weighted_average_deriv.size()
-              +cauchy_nt2_weighted_average_deriv.size()
-              +dvt2.size(),0,0);
+          sigma_nt2_pen_vt2=fr/tan_tr*(cauchy_nt2_weighted_average-pet*vt2);
           for(_CI p=tmp_d.begin();p!=tmp_d.end();++p)
-            dtest2[p->first]+=p->second*(cauchy_nt2_weighted_average-pet*vt2);
+            d_sigma_nt2_pen_vt2[p->first]+=p->second*(cauchy_nt2_weighted_average-pet*vt2);
           for(_CI p=cauchy_nt2_weighted_average_deriv.begin();p!=cauchy_nt2_weighted_average_deriv.end();++p)
-            dtest2[p->first]+=fr/tan_tr*p->second;
+            d_sigma_nt2_pen_vt2[p->first]+=fr/tan_tr*p->second;
           for(_CI p=dvt2.begin();p!=dvt2.end();++p)
-            dtest2[p->first]+=-fr/tan_tr*pet*p->second;
-          IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,test2,dtest2,t2,dt2);
-          IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,test2,dtest2,t2,dt2);
-
-          if (abs(theta_)>1.e-12)
-          {
-            IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
-                cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
-                sele,t1_adjoint_test_slave,deriv_t1_adjoint_test_slave);
-            IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
-                cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
-                sele,t2_adjoint_test_slave,deriv_t2_adjoint_test_slave);
-
-            IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
-                cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
-                mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
-            IntegrateAdjointTest<dim>(-theta_/pet,jac,jacintcellmap,wgt,
-                cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
-                mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
-
-            IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,test1,dtest1,sele,t1_adjoint_test_slave ,deriv_t1_adjoint_test_slave);
-            IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,test1,dtest1,mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
-            IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,test2,dtest2,sele,t2_adjoint_test_slave ,deriv_t2_adjoint_test_slave);
-            IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,test2,dtest2,mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
-          }
+            d_sigma_nt2_pen_vt2[p->first]+=-fr/tan_tr*pet*p->second;
         }
+
+        IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,t1,dt1);
+        IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,t1,dt1);
+        IntegrateTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2,t2,dt2);
+        IntegrateTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2,t2,dt2);
+
+        IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,sele,t1_adjoint_test_slave ,deriv_t1_adjoint_test_slave);
+        IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,sigma_nt1_pen_vt1,d_sigma_nt1_pen_vt1,mele,t1_adjoint_test_master,deriv_t1_adjoint_test_master);
+        IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2,sele,t2_adjoint_test_slave ,deriv_t2_adjoint_test_slave);
+        IntegrateAdjointTest<dim>(theta_/pet,jac,jacintcellmap,wgt,sigma_nt2_pen_vt2,d_sigma_nt2_pen_vt2,mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master);
       }
     }
   }
@@ -651,6 +620,8 @@ void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest(
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test
         )
 {
+  if (abs(theta_)<1.e-12) return;
+
   LINALG::SerialDenseVector(View,moEle.GetNitscheContainer().rhs(),moEle.MoData().ParentDof().size()).Update(fac*jac*wgt*test,adjoint_test,1.);
 
   for(GEN::pairedvector<int,LINALG::SerialDenseVector>::const_iterator p=deriv_adjoint_test.begin();p!=deriv_adjoint_test.end();++p)
