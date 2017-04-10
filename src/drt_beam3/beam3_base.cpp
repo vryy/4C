@@ -14,13 +14,17 @@
 
 #include "../drt_mat/beam_elasthyper.H"
 
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_structure_new/str_elements_paramsinterface.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include <Sacado.hpp>
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+
+#include "../drt_inpar/inpar_browniandyn.H"         // enums
+
+#include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_globalproblem.H"
+
+#include <Sacado.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -251,21 +255,48 @@ void DRT::ELEMENTS::Beam3Base::GetTranslationalMassInertiaFactor(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3,1>& gamma) const
+void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients( LINALG::Matrix<3,1>& gamma ) const
 {
-  /* These are coefficients for a straight cylindrical rod taken from
-   * Howard, p. 107, table 6.2. The order is as follows:
-   * (0) damping of translation parallel to axis,
-   * (1) damping of translation orthogonal to axis,
-   * (2) damping of rotation around its own axis */
+  switch ( BrownianDynParamsInterface().HowBeamDampingCoefficientsAreSpecified() )
+  {
+    case INPAR::BROWNIANDYN::cylinder_geometry_approx:
+    {
+      /* These are coefficients for a straight cylindrical rod taken from
+       * Howard, p. 107, table 6.2. The order is as follows:
+       * (0) damping of translation parallel to axis,
+       * (1) damping of translation orthogonal to axis,
+       * (2) damping of rotation around its own axis */
 
-  gamma(0) = 2.0 * PI * BrownianDynParamsInterface().GetViscosity();
-  gamma(1) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity();
-  gamma(2) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity()
-             * std::pow( GetCircularCrossSectionRadiusForInteractions(), 2.0);
+      gamma(0) = 2.0 * PI * BrownianDynParamsInterface().GetViscosity();
+      gamma(1) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity();
+      gamma(2) = 4.0 * PI * BrownianDynParamsInterface().GetViscosity()
+                 * std::pow( GetCircularCrossSectionRadiusForInteractions(), 2.0);
 
-  // huge improvement in convergence of non-linear solver in case of artificial factor 4000
-//  gamma(2) *= 4000.0;
+      // huge improvement in convergence of non-linear solver in case of artificial factor 4000
+//      gamma(2) *= 4000.0;
+
+      break;
+    }
+
+    case INPAR::BROWNIANDYN::input_file:
+    {
+      gamma(0) = BrownianDynParamsInterface().GetBeamDampingCoefficientPrefactorsFromInputFile()[0]
+                * BrownianDynParamsInterface().GetViscosity();
+      gamma(1) = BrownianDynParamsInterface().GetBeamDampingCoefficientPrefactorsFromInputFile()[1]
+                 * BrownianDynParamsInterface().GetViscosity();
+      gamma(2) = BrownianDynParamsInterface().GetBeamDampingCoefficientPrefactorsFromInputFile()[2]
+                 * BrownianDynParamsInterface().GetViscosity();
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid choice of how damping coefficient values for beams are specified!");
+
+      break;
+    }
+  }
 
 }
 

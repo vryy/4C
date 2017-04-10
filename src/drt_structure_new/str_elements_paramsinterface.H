@@ -19,6 +19,7 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_
 
 #include "../drt_inpar/inpar_structure.H"         // enums
+#include "../drt_inpar/inpar_browniandyn.H"         // enums
 #include "../drt_lib/drt_elements_paramsinterface.H"    // base class
 #include "../solver_nonlin_nox/nox_nln_enum_lists.H" // enums
 
@@ -196,6 +197,13 @@ namespace BROWNIANDYN {
 
     /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
     virtual double const& GetViscosity() const = 0;
+
+    /// the way how damping coefficient values for beams are specified
+    virtual INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType
+    HowBeamDampingCoefficientsAreSpecified() const = 0;
+
+    /// get prefactors for damping coefficients of beams if they are specified via input file
+    virtual std::vector<double> const& GetBeamDampingCoefficientPrefactorsFromInputFile() const =0;
 
     //! get vector holding periodic bounding box object
     virtual Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const = 0;

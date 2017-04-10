@@ -582,7 +582,7 @@ protected:
   //! @name Methods and variables for Brownian dynamics simulations
   //! @{
   //! computes damping coefficients
-  void GetDampingCoefficients(LINALG::Matrix<3,1>& gamma) const;
+  void GetDampingCoefficients( LINALG::Matrix<3,1>& gamma ) const;
 
   //! computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
   template<unsigned int ndim, typename T> //number of dimensions of embedding space

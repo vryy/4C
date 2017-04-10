@@ -22,6 +22,7 @@
 #include "str_timint_basedatasdyn.H"   // base class of the Data class
 #include "../drt_contact/contact_paramsinterface.H" // base class of the ContactData class
 #include "../drt_lib/drt_discret.H"
+#include "../drt_inpar/inpar_browniandyn.H"         // enums
 
 
 // forward declaration ...
@@ -967,7 +968,7 @@ namespace MODELEVALUATOR {
                                   int                               maxrandnumelement);
 
     //! get mutable random force vector
-    Teuchos::RCP< Epetra_MultiVector>& GetMutableRadomForces()
+    Teuchos::RCP< Epetra_MultiVector>& GetMutableRandomForces()
     {
       CheckInitSetup();
       return randomforces_;
@@ -1002,6 +1003,21 @@ namespace MODELEVALUATOR {
     {
       CheckInitSetup();
       return viscosity_;
+    };
+
+    /// the way how damping coefficient values for beams are specified
+    virtual INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType
+    HowBeamDampingCoefficientsAreSpecified() const
+    {
+      CheckInitSetup();
+      return beam_damping_coeff_specified_via_;
+    }
+
+    /// get prefactors for damping coefficients of beams if they are specified via input file
+    virtual std::vector<double> const& GetBeamDampingCoefficientPrefactorsFromInputFile() const
+    {
+      CheckInitSetup();
+      return beams_damping_coefficient_prefactors_perunitlength_;
     };
 
     //! get vector holding periodic bounding box object
@@ -1050,6 +1066,13 @@ namespace MODELEVALUATOR {
     double maxrandforce_;
     /// within this time interval the random numbers remain constant. -1.0 means no prescribed time interval
     double timeintconstrandnumb_;
+
+    /// the way how damping coefficient values for beams are specified
+    INPAR::BROWNIANDYN::BeamDampingCoefficientSpecificationType beam_damping_coeff_specified_via_;
+
+    /// prefactors for damping coefficients of beams if they are specified via input file
+    /// (per unit length, NOT yet multiplied by viscosity)
+    std::vector<double> beams_damping_coefficient_prefactors_perunitlength_;
 
     /// multiVector holding random forces
     Teuchos::RCP<Epetra_MultiVector> randomforces_;

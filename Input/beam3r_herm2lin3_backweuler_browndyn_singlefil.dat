@@ -54,9 +54,11 @@ BOUNDINGBOX            0 0 0 10 10 10
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1
 ----------------------------------------------BROWNIAN DYNAMICS
-BROWNDYNPROB           yes
-VISCOSITY              0.001
-KT                     0.00404531
+BROWNDYNPROB                           yes
+VISCOSITY                              0.001
+KT                                     0.00404531
+BEAMS_DAMPING_COEFF_SPECIFIED_VIA      input_file
+BEAMS_DAMPING_COEFF_PER_UNITLENGTH     6.283185307179586e+00 1.256637061435917e+01 7.569851385692974e-05
 -----------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

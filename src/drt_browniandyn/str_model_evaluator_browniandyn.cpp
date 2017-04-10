@@ -784,7 +784,7 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
 
   //multivector for stochastic forces evaluated by each element based on row map
   Teuchos::RCP<Epetra_MultiVector> randomnumbersrow =
-      eval_browniandyn_ptr_->GetMutableRadomForces();
+      eval_browniandyn_ptr_->GetMutableRandomForces();
 
   int numele = randomnumbersrow->MyLength();
   int numperele = randomnumbersrow->NumVectors();
