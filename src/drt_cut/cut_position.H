@@ -747,7 +747,7 @@ namespace CUT {
 
     /// @}
 
-    /// create an embedded position object ( dim != probdim )
+    /// create an embedded position object ( dim < probdim )
     template< unsigned probdim,
               unsigned dim,
               DRT::Element::DiscretizationType eletype,
@@ -763,7 +763,7 @@ namespace CUT {
       }
     };
 
-    /// create a standard position object ( probdim > dim )
+    /// create a standard position object ( probdim == dim )
     template< unsigned dim,
               DRT::Element::DiscretizationType eletype,
               unsigned numNodesElement>
