@@ -649,6 +649,7 @@ namespace CUT {
     /// template class for the actual position creation
     template< bool isembedded,
               unsigned probdim,
+              unsigned dim,
               DRT::Element::DiscretizationType eletype,
               unsigned numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement >
     class PositionCreator
@@ -662,11 +663,96 @@ namespace CUT {
       }
     };
 
-    /// create a embedded position object
-    template< unsigned probdim,
+    /// @name Catch a wrong template combination (seems to be necessary for some compilers)
+    ///       If more wrong combinations come up, add them here.            hiermeier 04/17
+    /// @{
+
+    template< unsigned dim,
               DRT::Element::DiscretizationType eletype,
               unsigned numNodesElement>
-    class PositionCreator< true, probdim, eletype, numNodesElement >
+    class PositionCreator< true, dim, dim, eletype, numNodesElement >
+    {
+    public:
+      static Position * Create(
+          const LINALG::Matrix<dim,numNodesElement> & xyze,
+          const LINALG::Matrix<dim,1> & xyz )
+      {
+        dserror( "Wrong template combination: ProbDim must be unequal"
+            " element Dim for the embedded case." );
+        exit( EXIT_FAILURE );
+      }
+    };
+
+    template< DRT::Element::DiscretizationType eletype,
+              unsigned numNodesElement>
+    class PositionCreator< true, 1, 2, eletype, numNodesElement >
+    {
+    public:
+      static Position * Create(
+          const LINALG::Matrix<1,numNodesElement> & xyze,
+          const LINALG::Matrix<1,1> & xyz )
+      {
+        dserror( "Wrong template combination: ProbDim must be larger"
+            " than the element Dim for the embedded case." );
+        exit( EXIT_FAILURE );
+      }
+    };
+
+    template< DRT::Element::DiscretizationType eletype,
+              unsigned numNodesElement>
+    class PositionCreator< true, 1, 3, eletype, numNodesElement >
+    {
+    public:
+      static Position * Create(
+          const LINALG::Matrix<1,numNodesElement> & xyze,
+          const LINALG::Matrix<1,1> & xyz )
+      {
+        dserror( "Wrong template combination: ProbDim must be larger"
+            " than the element Dim for the embedded case." );
+        exit( EXIT_FAILURE );
+      }
+    };
+
+    template< DRT::Element::DiscretizationType eletype,
+              unsigned numNodesElement>
+    class PositionCreator< true, 2, 3, eletype, numNodesElement >
+    {
+    public:
+      static Position * Create(
+          const LINALG::Matrix<2,numNodesElement> & xyze,
+          const LINALG::Matrix<2,1> & xyz )
+      {
+        dserror( "Wrong template combination: ProbDim must be larger"
+            " than the element Dim for the embedded case." );
+        exit( EXIT_FAILURE );
+      }
+    };
+
+    template< unsigned probdim,
+              unsigned dim,
+              DRT::Element::DiscretizationType eletype,
+              unsigned numNodesElement>
+    class PositionCreator< false, probdim, dim, eletype, numNodesElement >
+    {
+    public:
+      static Position * Create(
+          const LINALG::Matrix<probdim,numNodesElement> & xyze,
+          const LINALG::Matrix<probdim,1> & xyz )
+      {
+        dserror( "Wrong template combination: ProbDim must be equal"
+            " element Dim for the standard case." );
+        exit( EXIT_FAILURE );
+      }
+    };
+
+    /// @}
+
+    /// create an embedded position object ( dim != probdim )
+    template< unsigned probdim,
+              unsigned dim,
+              DRT::Element::DiscretizationType eletype,
+              unsigned numNodesElement>
+    class PositionCreator< true, probdim, dim, eletype, numNodesElement >
     {
     public:
       static Position * Create(
@@ -677,18 +763,18 @@ namespace CUT {
       }
     };
 
-    /// create a standard position object
-    template< unsigned probdim,
+    /// create a standard position object ( probdim > dim )
+    template< unsigned dim,
               DRT::Element::DiscretizationType eletype,
               unsigned numNodesElement>
-    class PositionCreator< false, probdim, eletype, numNodesElement >
+    class PositionCreator< false, dim, dim, eletype, numNodesElement >
     {
     public:
       static Position * Create(
-          const LINALG::Matrix<probdim,numNodesElement> & xyze,
-          const LINALG::Matrix<probdim,1> & xyz )
+          const LINALG::Matrix<dim,numNodesElement> & xyze,
+          const LINALG::Matrix<dim,1> & xyz )
       {
-        return new ComputePosition<probdim,eletype>(xyze,xyz);
+        return new ComputePosition<dim,eletype>(xyze,xyz);
       }
     };
 
@@ -733,11 +819,11 @@ namespace CUT {
 
       if ( probdim > dim )
       {
-        return Teuchos::rcp( PositionCreator<true,probdim,eletype>::Create( xyze, px ) );
+        return Teuchos::rcp( PositionCreator<true,probdim,dim,eletype>::Create( xyze, px ) );
       }
       else if ( probdim == dim )
       {
-        return Teuchos::rcp( PositionCreator<false,probdim,eletype>::Create( xyze, px ) );
+        return Teuchos::rcp( PositionCreator<false,probdim,dim,eletype>::Create( xyze, px ) );
       }
       else
         dserror( "The element dimension is larger than the problem dimension! \n"
@@ -810,11 +896,11 @@ namespace CUT {
 
       if ( probdim > dim )
       {
-        return Teuchos::rcp( PositionCreator<true,probdim,eletype>::Create( xyze, xyz ) );
+        return Teuchos::rcp( PositionCreator<true,probdim,dim,eletype>::Create( xyze, xyz ) );
       }
       else if ( probdim == dim )
       {
-        return Teuchos::rcp( PositionCreator<false,probdim,eletype>::Create( xyze, xyz ) );
+        return Teuchos::rcp( PositionCreator<false,probdim,dim,eletype>::Create( xyze, xyz ) );
       }
       else
         dserror( "The element dimension is larger than the problem dimension! \n"
@@ -890,11 +976,11 @@ namespace CUT {
 
       if ( probdim > dim )
       {
-        return Teuchos::rcp( PositionCreator<true,probdim,eletype>::Create( xyze, xyz ) );
+        return Teuchos::rcp( PositionCreator<true,probdim,dim,eletype>::Create( xyze, xyz ) );
       }
       else if ( probdim == dim )
       {
-        return Teuchos::rcp( PositionCreator<false,probdim,eletype>::Create( xyze, xyz ) );
+        return Teuchos::rcp( PositionCreator<false,probdim,dim,eletype>::Create( xyze, xyz ) );
       }
       else
         dserror( "The element dimension is larger than the problem dimension! \n"
@@ -979,11 +1065,11 @@ namespace CUT {
 
       if ( probdim > dim )
       {
-        return Teuchos::rcp( PositionCreator<true,probdim,eletype>::Create( xyze, xyz ) );
+        return Teuchos::rcp( PositionCreator<true,probdim,dim,eletype>::Create( xyze, xyz ) );
       }
       else if ( probdim == dim )
       {
-        return Teuchos::rcp( PositionCreator<false,probdim,eletype>::Create( xyze, xyz ) );
+        return Teuchos::rcp( PositionCreator<false,probdim,dim,eletype>::Create( xyze, xyz ) );
       }
       else
         dserror( "The element dimension is larger than the problem dimension! \n"
