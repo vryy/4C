@@ -301,8 +301,8 @@ VtkWriterBase::InitializeVtkFileStreamThisProcessor()
 {
   std::ostringstream tmpstream;
 
-  tmpstream << working_directory_full_path_ << "/" << filename_base_ << "-"
-      << std::setfill('0') << std::setw(num_processor_digits_) << myrank_
+  tmpstream << working_directory_full_path_ << "/" << filename_base_
+      << GetPartOfFileNameIndicatingProcessorId( myrank_ )
       << this->WriterSuffix();
 
   currentout_.close();
@@ -427,6 +427,25 @@ VtkWriterBase::WriteDataArray(
     WriteDataArrayMasterFile( num_components, name );
 
   WriteDataArrayThisProcessor( data, num_components, name );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const std::string&
+VtkWriterBase::GetPartOfFileNameIndicatingProcessorId(
+    unsigned int processor_id
+    ) const
+{
+  static std::string filename_part("");
+
+  std::stringstream filename_part_stream;
+
+  filename_part_stream << "-" << std::setfill('0') << std::setw( num_processor_digits_ )
+      << processor_id;
+
+  filename_part = filename_part_stream.str();
+
+  return filename_part;
 }
 
 /*----------------------------------------------------------------------*

@@ -173,6 +173,9 @@ protected:
       const std::string& name
       );
 
+  //! generate the part of the filename that expresses the processor ID
+  const std::string& GetPartOfFileNameIndicatingProcessorId( unsigned int processor_id ) const;
+
 
   //! Return the opening xml tag for this writer type
   virtual const std::string& WriterOpeningTag() const = 0;

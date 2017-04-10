@@ -65,7 +65,9 @@ const std::vector<std::string>& VtuWriter::WriterPPieceTags() const
   for (size_t iproc=0; iproc<numproc_; ++iproc)
   {
     std::stringstream stream;
-    stream << "<Piece Source=\"" << filename_base_ << "-" << iproc << ".vtu\"/>";
+    stream << "<Piece Source=\"" << filename_base_
+        << GetPartOfFileNameIndicatingProcessorId( iproc )
+        << ".vtu\"/>";
     tags.push_back(std::string(stream.str()));
   }
   return tags;
