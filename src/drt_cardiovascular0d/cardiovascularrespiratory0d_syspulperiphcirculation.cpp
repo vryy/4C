@@ -3,7 +3,7 @@
 
 \brief Monolithic coupling of 3D structural dynamics and 0D cardiovascular flow models
 
-\level 2
+\level 3
 
 <pre>
 \maintainer Marc Hirschvogel
