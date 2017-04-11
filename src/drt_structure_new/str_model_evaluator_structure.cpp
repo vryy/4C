@@ -43,7 +43,8 @@ STR::MODELEVALUATOR::Structure::Structure()
     : dt_ele_ptr_(NULL),
       masslin_type_(INPAR::STR::ml_none),
       stiff_ptr_(NULL),
-      dis_incr_ptr_(Teuchos::null)
+      dis_incr_ptr_(Teuchos::null),
+      beam_vtu_writer_ptr_(Teuchos::null)
 {
   // empty
 }
@@ -78,6 +79,11 @@ void STR::MODELEVALUATOR::Structure::Setup()
   {
     dis_incr_ptr_ = Teuchos::rcp(new Epetra_Vector(DisNp().Map(),true));
   }
+
+  if ( GInOutput().GetRuntimeVtkOutputParams() != Teuchos::null and
+       GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams() != Teuchos::null )
+    beam_vtu_writer_ptr_ = Teuchos::rcp( new BeamDiscretizationRuntimeVtuWriter() );
+
   // set flag
   issetup_ = true;
 }
@@ -551,7 +557,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtk() const
 {
 
   // write special output for beams if desired
-  if ( GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams() != Teuchos::null )
+  if ( beam_vtu_writer_ptr_ != Teuchos::null )
     WriteOutputRuntimeVtkBeams();
 
 }
@@ -564,10 +570,6 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   const DRT::ELEMENTS::BeamRuntimeVtuOutputParams & beam_vtu_output_params =
       * GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
 
-  // create an object of the VTU writer
-  Teuchos::RCP<BeamDiscretizationRuntimeVtuWriter> beam_vtu_writer =
-      Teuchos::rcp( new BeamDiscretizationRuntimeVtuWriter() );
-
   // export displacement state to column format
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
   Teuchos::RCP<Epetra_Vector> disn_col = Teuchos::rcp( new Epetra_Vector(
@@ -575,7 +577,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   LINALG::Export( *GState().GetDisN(), *disn_col );
 
   // initialize the writer object with current displacement state
-  beam_vtu_writer->Initialize(
+  beam_vtu_writer_ptr_->Initialize(
       Teuchos::rcp_dynamic_cast<DRT::Discretization>(
         const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
         disn_col,
@@ -584,37 +586,36 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
         GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput() );
 
   // reset time and time step of the writer object
-  beam_vtu_writer->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
+  beam_vtu_writer_ptr_->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
 
 
   // append all desired output data to the writer object's storage
-  beam_vtu_writer->AppendElementOwningProcessor();
+  beam_vtu_writer_ptr_->AppendElementOwningProcessor();
 
-  beam_vtu_writer->AppendElementCircularCrossSectionRadius();
+  beam_vtu_writer_ptr_->AppendElementCircularCrossSectionRadius();
 
-  beam_vtu_writer->AppendPointCircularCrossSectionInformationVector( disn_col );
+  beam_vtu_writer_ptr_->AppendPointCircularCrossSectionInformationVector( disn_col );
 
   if ( GInOutput().GetRuntimeVtkOutputParams()->OutputDisplacementState() )
-    beam_vtu_writer->AppendDisplacementField( disn_col );
+    beam_vtu_writer_ptr_->AppendDisplacementField( disn_col );
 
   if ( beam_vtu_output_params.IsWriteTriadVisualizationPoints() )
-    beam_vtu_writer->AppendTriadField( disn_col );
+    beam_vtu_writer_ptr_->AppendTriadField( disn_col );
 
   if ( beam_vtu_output_params.IsWriteMaterialStrainsGaussPoints() )
-    beam_vtu_writer->AppendGaussPointMaterialCrossSectionStrains();
+    beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStrains();
 
   if ( beam_vtu_output_params.IsWriteMaterialStressesGaussPoints() )
-    beam_vtu_writer->AppendGaussPointMaterialCrossSectionStresses();
+    beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStresses();
 
 
   // finalize everything and write all required VTU files to filesystem
-  beam_vtu_writer->WriteFiles();
+  beam_vtu_writer_ptr_->WriteFiles();
 
 
-  // Todo: this will not work as expected yet because we create a new object of
-  // BeamDiscretizationRuntimeVtuWriter in every timestep;
-  // keep the object and this method should deliver a summary file for all written master files
-  beam_vtu_writer->WriteCollectionFileOfAllWrittenFiles();
+  // Todo: this will not work as expected yet in case you terminate your
+  // simulation by strg + c or in case of a restart
+  beam_vtu_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
 
 }
 

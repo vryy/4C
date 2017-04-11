@@ -137,6 +137,49 @@ void runEnsightVtuFilter(PostProblem    &problem)
         writer.WriteFiles();
         break;
     }
+    case prb_polymernetwork:
+    {
+      int numdiscr = problem.num_discr();
+      for( int i = 0; i < numdiscr; ++i )
+      {
+        std::string disname = problem.get_discretization(i)->name();
+        if( disname == "structure" )
+        {
+          PostField* structure = problem.get_discretization(i);
+          StructureFilter writer(structure, problem.outname());
+          writer.WriteFiles();
+        }
+        else if ( disname == "ia_structure" )
+        {
+          PostField* ia_structure = problem.get_discretization(i);
+          StructureFilter iawriter( ia_structure, problem.outname() );
+          iawriter.WriteFiles();
+        }
+        else if ( disname == "boundingbox" )
+        {
+          PostField* boxdiscret = problem.get_discretization(i);
+          StructureFilter boxwriter( boxdiscret, problem.outname() );
+          boxwriter.WriteFiles();
+        }
+        else if ( disname == "particle" )
+        {
+          PostField* particlefield = problem.get_discretization(i);
+          ParticleFilter particlewriter( particlefield, problem.outname() );
+          particlewriter.WriteFiles();
+        }
+        else if ( disname == "bins" )
+        {
+          PostField* visualizebins = problem.get_discretization(i);
+          StructureFilter binwriter(visualizebins, problem.outname());
+          binwriter.WriteFiles();
+        }
+        else
+        {
+          dserror("Particle problem has illegal discretization name!");
+        }
+      }
+      break;
+    }
     case prb_xcontact:
     {
 

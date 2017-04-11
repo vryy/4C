@@ -46,7 +46,6 @@ STR::MODELEVALUATOR::BrownianDyn::BrownianDyn():
     f_ext_np_ptr_(Teuchos::null),
     stiff_brownian_ptr_(Teuchos::null),
     maxrandnumelement_(0),
-    rs_(DRT::Problem::Instance()->getParameterList()->sublist("PROBLEM TYP").get<int>("RANDSEED")),
     discret_ptr_(Teuchos::null)
 {
   // empty
@@ -66,9 +65,11 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>( DiscretPtr(), true );
 
   // -------------------------------------------------------------------------
-  // get pointer to biopolymer network data
+  // get pointer to biopolymer network data and init random number data
   // -------------------------------------------------------------------------
   eval_browniandyn_ptr_ = EvalData().BrownianDynPtr();
+  brown_dyn_state_data_.browndyn_dt = eval_browniandyn_ptr_->TimeIntConstRandNumb();
+  brown_dyn_state_data_.browndyn_step = -1;
   // -------------------------------------------------------------------------
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
@@ -111,11 +112,6 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // -------------------------------------------------------------------------
   RandomNumbersPerElement();
   // -------------------------------------------------------------------------
-  // seed random generator to generate the same random
-  // numbers even if the simulation was interrupted by a restart
-  // -------------------------------------------------------------------------
-  SeedRandomGenerator();
-  // -------------------------------------------------------------------------
   // Generate random forces for first time step
   // -------------------------------------------------------------------------
   /* multivector for stochastic forces evaluated by each element; the numbers of
@@ -123,7 +119,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
    * required by any element in the discretization per time step; therefore this
    * multivector is suitable for synchronization of these random numbers in
    *  parallel computing*/
-  eval_browniandyn_ptr_->ResizeRandomForceMVector( discret_ptr_, maxrandnumelement_ );
+  eval_browniandyn_ptr_->ResizeRandomForceMVector(discret_ptr_, maxrandnumelement_);
   GenerateGaussianRandomNumbers();
 
   issetup_ = true;
@@ -587,14 +583,8 @@ void STR::MODELEVALUATOR::BrownianDyn::PostOutput()
 {
   CheckInitSetup();
   // -------------------------------------------------------------------------
-  // seed random generator to generate the same random
-  // numbers even if the simulation was interrupted by a restart
-  // -------------------------------------------------------------------------
-  SeedRandomGenerator();
-  // -------------------------------------------------------------------------
   // Generate new random forces
   // -------------------------------------------------------------------------
-  eval_browniandyn_ptr_->ResizeRandomForceMVector(discret_ptr_, maxrandnumelement_);
   GenerateGaussianRandomNumbers();
 
 }
@@ -607,7 +597,6 @@ void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
   // -------------------------------------------------------------------------
   // Generate new random forces
   // -------------------------------------------------------------------------
-  eval_browniandyn_ptr_->ResizeRandomForceMVector(discret_ptr_, maxrandnumelement_);
   GenerateGaussianRandomNumbers();
   // -------------------------------------------------------------------------
   // Update number of unconverged steps
@@ -686,101 +675,36 @@ void STR::MODELEVALUATOR::BrownianDyn::RandomNumbersPerElement()
 }
 
 /*----------------------------------------------------------------------------*
- | seed all random generators of this object with fixed seed if given and     |
- | with system time otherwise; seedparameter is used only in the first        |
- | case to calculate the actual seed variable based on some given fixed       |
- | seed value; note that seedparameter may be any integer, but has to be      |
- | been set in a deterministic way so that it for a certain call of this      |
- | method at a certain point in the program always the same number            |
- | whenever the program is used                                               |
- *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
-{
-  CheckInit();
-
-  const int    stepn  = GStatePtr()->GetStepN() + 1;
-  const double timenp = GStatePtr()->GetTimeNp();
-  const double dt     = (*GStatePtr()->GetDeltaTime())[0];
-  // -------------------------------------------------------------------------
-  // if input flag RADNSEED >= -1: Use same random numbers in each program start;
-  // to this end compute int seedvariable from given parameter RANDSEED and some
-  // other deterministic parameter at runtime
-  // -------------------------------------------------------------------------
-  int seedvariable = 0;
-  // -------------------------------------------------------------------------
-  // seed random generator wit fixed seed (overwrite seed written in ReadParameter
-  // drt_globalproblem.cpp). We have same random numbers in each program start
-  // (not for different numbers of procs though)
-  // -------------------------------------------------------------------------
-  if (rs_ >= 0)
-  {
-    // -----------------------------------------------------------------------
-    // Decide if random numbers should change in every time step...
-    // read time interval within the random numbers remain constant (-1.0 means no
-    // prescribed time interval). This means new random numbers every
-    // randnumtimeinc seconds.
-    // -----------------------------------------------------------------------
-    double time_interv_with_const_rn =
-        eval_browniandyn_ptr_->TimeIntConstRandNumb();
-    if(time_interv_with_const_rn == -1.0)
-    {
-      // new random numbers every time step (same in each program start though)
-      seedvariable = (rs_ + stepn)*(DiscretPtr()->Comm().MyPID() + 1);
-    }
-    //...or only every time_interv_with_const_rn seconds
-    else
-    {
-      // this variable changes every time_interv_with_const_rn seconds
-      int seed_differs_every_time_int =
-          static_cast<int>( (timenp-dt) / time_interv_with_const_rn + 1.0e-8);
-      // calculate seed variable
-      seedvariable =
-          (rs_ + seed_differs_every_time_int)*(DiscretPtr()->Comm().MyPID() + 1);
-    }
-    // -----------------------------------------------------------------------
-    // seed random number generator
-    // -----------------------------------------------------------------------
-    DRT::Problem::Instance()->Random()->SetRandSeed((unsigned int)seedvariable);
-  }
-  // -------------------------------------------------------------------------
-  // else set seed according to system time and different for each processor
-  // once in the beginning (done in ReadParameter drt_globalproblem.cpp)
-  // in this case we have different random numbers in each program start
-  // -------------------------------------------------------------------------
-
-  // -------------------------------------------------------------------------
-  // set range for uniform random number generator
-  // -------------------------------------------------------------------------
-  DRT::Problem::Instance()->Random()->SetRandRange(0.0,1.0);
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- | (public) generate gaussian randomnumbers with mean "meanvalue" and         |
- | standarddeviation "standarddeviation" for parallel use           cyron10/09|
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
 {
   CheckInit();
 
+  // check if we want to have same forces over a certain time interval
+  if ( brown_dyn_state_data_.browndyn_dt != -1.0 )
+  {
+    // this variable changes every browndyn_dt seconds
+    int browndyn_step = static_cast<int>( (GState().GetTimeNp()
+        - ( *GStatePtr()->GetDeltaTime() )[0] ) / brown_dyn_state_data_.browndyn_dt + 1.0e-8 );
+
+    if( browndyn_step == brown_dyn_state_data_.browndyn_step )
+      return;
+    else
+      brown_dyn_state_data_.browndyn_step = browndyn_step;
+   }
+
   // initialize mean value and standard deviation
   double meanvalue = 0.0;
   double standarddeviation = 0.0;
-  double randnumtimeinc =
-      eval_browniandyn_ptr_->TimeIntConstRandNumb();
 
   // generate gaussian random numbers for parallel use with mean value 0 and
   // standard deviation (2KT / dt)^0.5
-  if(randnumtimeinc==-1.0)
-    standarddeviation = pow(2.0 * eval_browniandyn_ptr_->KT() /
-        (*GStatePtr()->GetDeltaTime())[0],0.5);
-  else
-    standarddeviation = pow(2.0 * eval_browniandyn_ptr_->KT() /
-        randnumtimeinc,0.5);
+  standarddeviation = pow( 2.0 * eval_browniandyn_ptr_->KT() /
+      ( *GStatePtr()->GetDeltaTime() )[0], 0.5 );
 
   // Set mean value and standard deviation of normal distribution
-  DRT::Problem::Instance()->Random()->SetMeanVariance(meanvalue,standarddeviation);
+  DRT::Problem::Instance()->Random()->SetMeanVariance( meanvalue, standarddeviation );
+  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0);
 
   //multivector for stochastic forces evaluated by each element based on row map
   Teuchos::RCP<Epetra_MultiVector> randomnumbersrow =
@@ -788,9 +712,9 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
 
   int numele = randomnumbersrow->MyLength();
   int numperele = randomnumbersrow->NumVectors();
-  int count = numele*numperele;
+  int count = numele * numperele;
   std::vector<double> randvec(count);
-  DRT::Problem::Instance()->Random()->Normal(randvec,count);
+  DRT::Problem::Instance()->Random()->Normal( randvec, count );
 
   //MAXRANDFORCE is a multiple of the standard deviation
   double maxrandforcefac = eval_browniandyn_ptr_->MaxRandForce();
@@ -805,24 +729,22 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
     for ( int i = 0; i < numele; ++i )
       for ( int j = 0; j < numperele; ++j )
       {
-        (*randomnumbersrow)[j][i] = randvec[i*numperele+j];
+        (*randomnumbersrow)[j][i] = randvec[ i * numperele + j ];
 
-        if((*randomnumbersrow)[j][i]>maxrandforcefac*standarddeviation + meanvalue)
+        if ( (*randomnumbersrow)[j][i] > maxrandforcefac * standarddeviation + meanvalue)
         {
           std::cout << "warning: stochastic force restricted according to MAXRANDFORCE"
               " this should not happen to often" << std::endl;
-          (*randomnumbersrow)[j][i]=maxrandforcefac*standarddeviation + meanvalue;
+          (*randomnumbersrow)[j][i]=maxrandforcefac * standarddeviation + meanvalue;
         }
-        else if((*randomnumbersrow)[j][i]<-maxrandforcefac*standarddeviation + meanvalue)
+        else if ( (*randomnumbersrow)[j][i] < -maxrandforcefac * standarddeviation + meanvalue )
         {
           std::cout << "warning: stochastic force restricted according to MAXRANDFORCE"
               " this should not happen to often" << std::endl;
-          (*randomnumbersrow)[j][i]=-maxrandforcefac*standarddeviation + meanvalue;
+          (*randomnumbersrow)[j][i]=-maxrandforcefac * standarddeviation + meanvalue;
         }
       }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -848,3 +770,67 @@ bool STR::MODELEVALUATOR::BrownianDyn::IsAnyBeamElementLengthLargerThanMinHalfPB
 
   return false;
 }
+
+/*
+----------------------------------------------------------------------------*
+ | seed all random generators of this object with fixed seed if given and     |
+ | with system time otherwise; seedparameter is used only in the first        |
+ | case to calculate the actual seed variable based on some given fixed       |
+ | seed value; note that seedparameter may be any integer, but has to be      |
+ | been set in a deterministic way so that it for a certain call of this      |
+ | method at a certain point in the program always the same number            |
+ | whenever the program is used                                               |
+ *----------------------------------------------------------------------------
+void STR::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
+{
+  CheckInit();
+
+  const int    stepn  = GStatePtr()->GetStepN() + 1;
+  const double timenp = GStatePtr()->GetTimeNp();
+  const double dt     = (*GStatePtr()->GetDeltaTime())[0];
+  const int myrank = GState().GetMyRank();
+
+  // -----------------------------------------------------------------------
+  // Decide if random numbers should change in every time step...
+  // read time interval within the random numbers remain constant (-1.0 means no
+  // prescribed time interval). This means new random numbers every
+  // randnumtimeinc seconds.
+  // -----------------------------------------------------------------------
+  if( rand_data_.time_interv_with_const_rn == -1.0 )
+  {
+    // new random numbers every time step (same in each program start though)
+    if ( rand_data_.randseed >= 0 )
+      rand_data_.seedvariable = ( rand_data_.randseed + stepn ) * ( myrank + 1 );
+    // else
+    // set seed according to system time and different for each processor
+    // once in the beginning (done in ReadParameter drt_globalproblem.cpp)
+    // in this case we have different random numbers in each program start
+    // and time step
+  }
+  //...or only every time_interv_with_const_rn seconds
+  else
+  {
+    // this variable changes every time_interv_with_const_rn seconds
+    int seed_differs_every_time_int =
+        static_cast<int>( (timenp - dt ) / rand_data_.time_interv_with_const_rn + 1.0e-8 );
+
+    // same each program start
+    if ( rand_data_.randseed >= 0 )
+    {
+      rand_data_.seedvariable =
+          ( rand_data_.randseed + seed_differs_every_time_int ) * ( myrank + 1 );
+    }
+    // .. different each program start
+    else if( seed_differs_every_time_int != rand_data_.seed_differs_every_time_int )
+    {
+      rand_data_.seedvariable = static_cast<int>( time(NULL) ) + 27 * ( myrank + 1 );
+      rand_data_.seed_differs_every_time_int = seed_differs_every_time_int;
+    }
+  }
+  // -----------------------------------------------------------------------
+  // seed random number generator and set uni range
+  // -----------------------------------------------------------------------
+  DRT::Problem::Instance()->Random()->SetRandSeed( static_cast<unsigned int>( rand_data_.seedvariable ) );
+  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0);
+
+}*/

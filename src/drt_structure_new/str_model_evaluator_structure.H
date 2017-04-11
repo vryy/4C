@@ -24,6 +24,7 @@
 #include "str_elements_paramsinterface.H"     // interface to the element evaluation
 
 //forward declaration ...
+class BeamDiscretizationRuntimeVtuWriter;
 namespace LINALG {
   class SparseMatrix;
 } // namespace LINALG
@@ -395,6 +396,9 @@ namespace MODELEVALUATOR{
      *  Necessary for the EAS reconstruction, incremental strain evaluation,
      *  etc.. */
     Teuchos::RCP<Epetra_Vector> dis_incr_ptr_;
+
+    //! beam discretization vtu writer
+    Teuchos::RCP<BeamDiscretizationRuntimeVtuWriter> beam_vtu_writer_ptr_;
     //! @}
   };
 

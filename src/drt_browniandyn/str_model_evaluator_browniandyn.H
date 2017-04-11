@@ -170,9 +170,6 @@ namespace MODELEVALUATOR{
     //! \brief retrieve random numbers per element
     void RandomNumbersPerElement();
 
-    //! \brief seed all random generators of this object properly
-    void SeedRandomGenerator();
-
     //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
     void GenerateGaussianRandomNumbers();
 
@@ -180,6 +177,12 @@ namespace MODELEVALUATOR{
     bool IsAnyBeamElementLengthLargerThanMinHalfPBBEdgeLength() const;
 
   private:
+
+    //! struct containing all information for random number generator
+    struct BrownDynStateData {
+        double browndyn_dt;       // inputfile
+        int browndyn_step;
+      };
 
     //! brownian dyn evaluation data container
     Teuchos::RCP<STR::MODELEVALUATOR::BrownianDynData> eval_browniandyn_ptr_;
@@ -200,7 +203,7 @@ namespace MODELEVALUATOR{
     int maxrandnumelement_;
 
     //! seed for random number generator
-    int rs_;
+    BrownDynStateData brown_dyn_state_data_;
 
     //! casted pointer ( necessary due to need of column information )
     Teuchos::RCP<DRT::Discretization> discret_ptr_;

@@ -165,7 +165,7 @@ MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 C
 ---------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0001 0.01 FACTOR 0.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.48983967356951785e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  9.79840403082432032e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.47122896005980230e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  8.16658360172410891e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  0.000000000000000000000 TOLERANCE 1e-10
 ---------------------------------------------------------------END

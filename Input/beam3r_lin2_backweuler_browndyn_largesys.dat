@@ -33,7 +33,7 @@ RESEVRYERGY            0                     // output energy evry n-th step
 NLNSOL                 fullnewton                   // fullnewton modnewton nlncg ptc
 DIVERCONT              stop                  // Continue even if results are divergent
 TIMESTEP               0.00005                // step size
-NUMSTEP                10                    // total number of steps  //rumpf2.txt end
+NUMSTEP                5                    // total number of steps  //rumpf2.txt end
 MAXTIME                10000
 DAMPING                No
 M_DAMP                 0
@@ -9781,7 +9781,7 @@ NODE 3224 COORD  -1.137862569665546e+00  5.576451946069922e+00  -1.4112700547144
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper  YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 1.9e-07 SHEARCORR 1.1  MOMINPOL 5.7e-11 MOMIN2 2.85e-11 MOMIN3 2.85e-11
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 927 QUANTITY dispx VALUE 2.09976975205433819e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 927 QUANTITY dispy VALUE  -2.20484447693091064e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 927 QUANTITY dispz VALUE -2.44919585368061146e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 927 QUANTITY dispx VALUE -2.06228730255352558e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 927 QUANTITY dispy VALUE  2.80725960876762257e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 927 QUANTITY dispz VALUE -1.16755238587594283e-02 TOLERANCE 1e-8
 ---------------------------------------------------------------END

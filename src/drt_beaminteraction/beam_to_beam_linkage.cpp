@@ -109,24 +109,6 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
         " enclose an angle of 180 degree such that the SR-operation becomes singular!");
   }
 
-  if (std::abs(scalarproduct - 1.0) < 1e-10)
-  {
-    std::cout << "\nBeamToBeamLinkage initialized with ...";
-    std::cout << "\ninitbspotpos1 =";
-    initpos[0].Print(std::cout);
-    std::cout << "\ninitbspotpos2 =";
-    initpos[1].Print(std::cout);
-    std::cout << "\ninitbspottriad1 =";
-    inittriad[0].Print(std::cout);
-    std::cout << "\ninitbspottriad2 =";
-    inittriad[1].Print(std::cout);
-
-
-    dserror("You are trying to set a crosslinker whose axis is perfectly aligned with"
-        " the beam centerline. Are you serious? Or is this unwanted self-binding in"
-        " immediate neighbourhood?");
-  }
-
   LARGEROTATIONS::CalculateSRTriads<double>(distvec,inittriad[0],linkeletriad);
 
   /* store the initial triads as quaternions in class variables for the subsequent

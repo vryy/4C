@@ -109,6 +109,7 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 
   // always use 3D for beams
   const unsigned int num_spatial_dimensions = 3;
+  num_cells_per_element_.clear();
 
   // count number of elements for each processor; output is completely independent of
   // the number of processors involved
@@ -172,7 +173,9 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
       LINALG::Matrix<3,1> unshift_interpolated_position = interpolated_position;
 
       // if there is a shift between tow consecutive points, double that point and create new cell
-      if( ipoint != 0 and periodic_boundingbox_->UnShift3D( unshift_interpolated_position, interpolated_position_priorpoint ) )
+      // not for first and last point
+      if( ipoint != 0 and periodic_boundingbox_->UnShift3D( unshift_interpolated_position, interpolated_position_priorpoint )
+          and ipoint != BEAMSVTUVISUALSUBSEGMENTS)
       {
         for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
           point_coordinates.push_back( unshift_interpolated_position(idim) );
@@ -183,8 +186,17 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
         ++num_cells_per_element_[iele];
       }
 
-      for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
-        point_coordinates.push_back( interpolated_position(idim) );
+      // in case of last visualization point, we only add the unshifted (compared to former point) configuration
+      if ( ipoint == BEAMSVTUVISUALSUBSEGMENTS )
+      {
+        for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
+          point_coordinates.push_back( unshift_interpolated_position(idim) );
+      }
+      else
+      {
+        for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
+          point_coordinates.push_back( interpolated_position(idim) );
+      }
 
       ++pointcounter;
 
@@ -287,14 +299,25 @@ BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
       beamele->GetRefPosAtXi( refpos_visualization_point, xi );
       beamele->GetPosAtXi( pos_visualization_point, xi, beamelement_displacement_vector );
 
+      // in case of periodic boundary conditions, a point (except first and last point of an element) can exists twice,
+      // we check this here by looking if current point is in cell offset list and therefore starts of a new cell
+      unsigned int num_point_exists = 1;
+      if ( ipoint != 0 and ipoint != BEAMSVTUVISUALSUBSEGMENTS )
+      {
+        unsigned int curr_point_number = points_sofar + 1;
+        if ( std::find( cell_offsets.begin(), cell_offsets.end(), curr_point_number ) != cell_offsets.end() )
+          num_point_exists = 2;
+      }
+
       // store the information in vectors that can be interpreted by vtu writer (disp = pos - refpos)
-      unsigned int num_point_exists = std::find(cell_offsets.begin(), cell_offsets.end(),
-          points_sofar + ipoint + 1 ) != cell_offsets.end() ? 2 : 1;
+      // and update number of point data written
       for( unsigned int i = 0; i < num_point_exists; ++i )
+      {
+        ++points_sofar;
         for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
           displacement_vector.push_back( pos_visualization_point( idim, 0 ) - refpos_visualization_point( idim, 0 ) );
+      }
     }
-    points_sofar += num_cells_per_element_[iele] + BEAMSVTUVISUALSUBSEGMENTS + 1;
   }
 
   // finally append the solution vectors to the visualization data of the vtu writer object
@@ -364,11 +387,21 @@ BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
 
       beamele->GetTriadAtXi( triad_visualization_point, xi, beamelement_displacement_vector );
 
+      // in case of periodic boundary conditions, a point (except first and last point of an element) can exists twice,
+      // we check this here by looking if current point is in cell offset list and therefore starts of a new cell
+      unsigned int num_point_exists = 1;
+      if ( ipoint != 0 and ipoint != BEAMSVTUVISUALSUBSEGMENTS )
+      {
+        unsigned int curr_point_number = points_sofar + 1;
+        if ( std::find( cell_offsets.begin(), cell_offsets.end(), curr_point_number ) != cell_offsets.end() )
+          num_point_exists = 2;
+      }
+
       // store the information in vectors that can be interpreted by vtu writer
-      unsigned int num_point_exists = std::find(cell_offsets.begin(), cell_offsets.end(),
-          points_sofar + ipoint + 1 ) != cell_offsets.end() ? 2 : 1;
+      // and update number of point data written
       for( unsigned int i = 0; i < num_point_exists; ++i )
       {
+        ++points_sofar;
         for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
         {
           // first column: first base vector
@@ -382,7 +415,6 @@ BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
         }
       }
     }
-    points_sofar += num_cells_per_element_[iele] + BEAMSVTUVISUALSUBSEGMENTS + 1;
   }
 
   // finally append the solution vectors to the visualization data of the vtu writer object
@@ -531,11 +563,21 @@ BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformationVe
 
       beamele->GetTriadAtXi( triad_visualization_point, xi, beamelement_displacement_vector );
 
-      // store the information in vectors that can be interpreted by vtu writer
-      unsigned int num_point_exists = std::find(cell_offsets.begin(), cell_offsets.end(),
-          points_sofar + ipoint + 1 ) != cell_offsets.end() ? 2 : 1;
+      // in case of periodic boundary conditions, a point (except first and last point of an element) can exists twice,
+      // we check this here by looking if current point is in cell offset list and therefore starts of a new cell
+      unsigned int num_point_exists = 1;
+      if ( ipoint != 0 and ipoint != BEAMSVTUVISUALSUBSEGMENTS )
+      {
+        unsigned int curr_point_number = points_sofar + 1;
+        if ( std::find( cell_offsets.begin(), cell_offsets.end(), curr_point_number ) != cell_offsets.end() )
+          num_point_exists = 2;
+      }
+
+      // store the information in vectors that can be interpreted by vtu writer (disp = pos - refpos)
+      // and update number of point data written
       for( unsigned int i = 0; i < num_point_exists; ++i )
       {
+        ++points_sofar;
         for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
         {
           // first column: first base vector
@@ -544,7 +586,6 @@ BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformationVe
         }
       }
     }
-    points_sofar += num_cells_per_element_[iele] + BEAMSVTUVISUALSUBSEGMENTS + 1;
   }
 
   // finally append the solution vectors to the visualization data of the vtu writer object
