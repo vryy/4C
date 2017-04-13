@@ -31,6 +31,7 @@
 #include <Epetra_SerialDenseSolver.h>
 #include <Teuchos_TimeMonitor.hpp>
 
+
 namespace
 {
   void zeroMatrix(Epetra_SerialDenseMatrix &mat)
@@ -487,11 +488,15 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ReadGlobalVectors(DRT::Element * ele,
   {
     interiorVelnp_ = acouele->eleinteriorVelnp_;
     interiorPressnp_ = acouele->eleinteriorPressnp_;
+    if(trac_with_pml)
+      interiorauxiliaryPML_ = acouele->eleinteriorAuxiliaryPML_;
   }
   else
   {
     interiorVelnp_ = acouele->eleintVelForward_[acouopt];
     interiorPressnp_ = acouele->eleintPressForward_[acouopt];
+    if(trac_with_pml)
+      interiorauxiliaryPML_ = acouele->eleintAuxiliaryPMLForward_[acouopt];
   }
 
   // read vectors from time integrator
@@ -513,15 +518,37 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::FillRestartVectors(DRT::Element * ele,
     DRT::Discretization & discretization)
 {
   // sort this back to the interior values vector
-  std::vector<double> interiorValnp(shapes_->ndofs_ * (nsd_ + 1));
+  int size = shapes_->ndofs_ * (nsd_ + 1);
+  if(trac_with_pml)
+    size = shapes_->ndofs_ * (nsd_ + nsd_ + 1);
+
+  std::vector<double> interiorValnp(size);
   for (unsigned int i = 0; i < interiorValnp.size(); ++i)
   {
-    if ((i + 1) % (nsd_ + 1) == 0)
-      interiorValnp[i] = interiorPressnp_((i + 1) / (nsd_ + 1) - 1);
-    else
+    if(!trac_with_pml)
     {
-      int xyz = i % (nsd_ + 1); // 0 for x, 1 for y and 2 for z (for 3D)
-      interiorValnp[i] = interiorVelnp_(xyz * shapes_->ndofs_ + i / (nsd_ + 1));
+      if ((i + 1) % (nsd_ + 1) == 0)
+        interiorValnp[i] = interiorPressnp_((i + 1) / (nsd_ + 1) - 1);
+      else
+      {
+        int xyz = i % (nsd_ + 1); // 0 for x, 1 for y and 2 for z (for 3D)
+        interiorValnp[i] = interiorVelnp_(xyz * shapes_->ndofs_ + i / (nsd_ + 1));
+      }
+    }
+    else //if(trac_with_pml)
+    {
+      if ((i + 1) % (nsd_ + nsd_ + 1) == 0)
+        interiorValnp[i] = interiorPressnp_((i + 1) / (nsd_ +nsd_ + 1) - 1);
+      else if ((i + 1) % (nsd_ + nsd_ + 1) <= nsd_)
+      {
+        int xyz = i % (nsd_ +nsd_ + 1); // 0 for x, 1 for y and 2 for z (for 3D)
+        interiorValnp[i] = interiorVelnp_(xyz * shapes_->ndofs_ + i / (nsd_+nsd_ + 1));
+      }
+      else
+      {
+        int xyz = i % (nsd_ +nsd_ + 1) - nsd_; // 0 for x, 1 for y and 2 for z (for 3D)
+        interiorValnp[i] = interiorauxiliaryPML_(xyz * shapes_->ndofs_ + i / (nsd_ +nsd_ + 1));
+      }
     }
   }
 
@@ -549,7 +576,10 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ElementInitFromRestart(
     DRT::Element * ele, DRT::Discretization & discretization)
 {
   DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(ele);
-  std::vector<double> interiorValnp(shapes_->ndofs_ * (nsd_ + 1));
+  int size = shapes_->ndofs_ * (nsd_ + 1);
+  if(trac_with_pml)
+    size = shapes_->ndofs_ * (nsd_ + nsd_ + 1);
+  std::vector<double> interiorValnp(size);
 
   Teuchos::RCP<const Epetra_Vector> intvel = discretization.GetState(1,"intvelnp");
   std::vector<int> localDofs1 = discretization.Dof(1, ele);
@@ -558,12 +588,30 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ElementInitFromRestart(
   // now write this in corresponding interiorVelnp_ and interiorPressnp_
   for (unsigned int i = 0; i < interiorValnp.size(); ++i)
   {
-    if ((i + 1) % (nsd_ + 1) == 0)
-      acouele->eleinteriorPressnp_((i + 1) / (nsd_ + 1) - 1) = interiorValnp[i];
+    if(!trac_with_pml)
+    {
+      if ((i + 1) % (nsd_ + 1) == 0)
+        acouele->eleinteriorPressnp_((i + 1) / (nsd_ + 1) - 1) = interiorValnp[i];
+      else
+      {
+        int xyz = i % (nsd_ + 1);
+        acouele->eleinteriorVelnp_(xyz * shapes_->ndofs_ + i / (nsd_ + 1)) = interiorValnp[i];
+      }
+    }
     else
     {
-      int xyz = i % (nsd_ + 1);
-      acouele->eleinteriorVelnp_(xyz * shapes_->ndofs_ + i / (nsd_ + 1)) = interiorValnp[i];
+      if ((i + 1) % (nsd_ + nsd_ + 1) == 0)
+        acouele->eleinteriorPressnp_((i + 1) / (nsd_ +nsd_ + 1) - 1) = interiorValnp[i];
+      else if((i + 1) % (nsd_ + nsd_ + 1) <= nsd_)
+      {
+        int xyz = i % (nsd_+nsd_ + 1);
+        acouele->eleinteriorVelnp_(xyz * shapes_->ndofs_ + i / (nsd_+nsd_ + 1)) = interiorValnp[i];
+      }
+      else
+      {
+        int xyz = i % (nsd_ +nsd_ + 1) - nsd_; // 0 for x, 1 for y and 2 for z (for 3D)
+        acouele->eleinteriorAuxiliaryPML_(xyz * shapes_->ndofs_ + i / (nsd_ +nsd_ + 1)) =  interiorValnp[i];
+      }
     }
   }
 
@@ -578,7 +626,10 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ElementInitFromAcouOptRestart(
     DRT::Element * ele, DRT::Discretization & discretization, const std::vector<int> & lm)
 {
   DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(ele);
-  std::vector<double> interiorValnp(shapes_->ndofs_ * (nsd_ + 1));
+  int size = shapes_->ndofs_ * (nsd_ + 1);
+  if(trac_with_pml)
+    size = shapes_->ndofs_ * (nsd_ + nsd_ + 1);
+  std::vector<double> interiorValnp(size);
   std::vector<int> localDofs1 = discretization.Dof(1, ele);
   Teuchos::RCP<const Epetra_Vector> intvel;
 
@@ -586,12 +637,30 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ElementInitFromAcouOptRestart(
   DRT::UTILS::ExtractMyValues(*intvel, interiorValnp, localDofs1);
   for (unsigned int i = 0; i < interiorValnp.size(); ++i)
   {
-    if ((i + 1) % (nsd_ + 1) == 0)
-      acouele->eleintPressForward_[0]((i + 1) / (nsd_ + 1) - 1) = interiorValnp[i];
+    if(!trac_with_pml)
+    {
+      if ((i + 1) % (nsd_ + 1) == 0)
+        acouele->eleintPressForward_[0]((i + 1) / (nsd_ + 1) - 1) = interiorValnp[i];
+      else
+      {
+        int xyz = i % (nsd_ + 1);
+        acouele->eleintVelForward_[0](xyz * shapes_->ndofs_ + i / (nsd_ + 1)) = interiorValnp[i];
+      }
+    }
     else
     {
-      int xyz = i % (nsd_ + 1);
-      acouele->eleintVelForward_[0](xyz * shapes_->ndofs_ + i / (nsd_ + 1)) = interiorValnp[i];
+      if ((i + 1) % (nsd_ + 1) == 0)
+        acouele->eleintPressForward_[0]((i + 1) / (nsd_+nsd_ + 1) - 1) = interiorValnp[i];
+      else if((i + 1) % (nsd_ + nsd_ + 1) <= nsd_)
+      {
+        int xyz = i % (nsd_ + 1);
+        acouele->eleintVelForward_[0](xyz * shapes_->ndofs_ + i / (nsd_+nsd_ + 1)) = interiorValnp[i];
+      }
+      else
+      {
+        int xyz = i % (nsd_ +nsd_ + 1) - nsd_; // 0 for x, 1 for y and 2 for z (for 3D)
+        acouele->eleintAuxiliaryPMLForward_[0](xyz * shapes_->ndofs_ + i / (nsd_ +nsd_ + 1)) =  interiorValnp[i];
+      }
     }
   }
 
@@ -819,10 +888,18 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ElementInit(DRT::ELEMENTS::Acou* ele,
   // each element has to store the interior vectors by itseld, p-adaptivity or not
   // so, shape it, as you need it
   dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
+  bool withpmls = params.get<bool>("withPML");
+  if(withpmls)
+    ele->eleinteriorAuxiliaryPML_.Shape(shapes_->ndofs_ * nsd_,1);
+
   ele->eleinteriorVelnp_.Shape(shapes_->ndofs_ * nsd_, 1);
   ele->eleinteriorPressnp_.Shape(shapes_->ndofs_, 1);
-  ele->eleADERimprovedGrad_.Shape(shapes_->ndofs_ * nsd_, 1);
-  ele->eleADERimprovedDiv_.Shape(shapes_->ndofs_, 1);
+
+  if(dyna_==INPAR::ACOU::acou_ader || dyna_==INPAR::ACOU::acou_ader_lts || dyna_==INPAR::ACOU::acou_ader_tritet)
+  {
+    ele->eleADERimprovedGrad_.Shape(shapes_->ndofs_ * nsd_, 1);
+    ele->eleADERimprovedDiv_.Shape(shapes_->ndofs_, 1);
+  }
 
   if (params.get<bool>("padaptivity"))
     ele->elenodeTrace_.Shape(nen_, 1);
@@ -839,13 +916,19 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ElementAcouOptInit(DRT::ELEMENTS::Acou
     Teuchos::ParameterList& params)
 {
   int length = params.get<int>("length"); // length = offset (history vectors) + uprestart
+  bool withpmls = params.get<bool>("withPML");
 
   ele->eleintPressForward_.resize(length);
   ele->eleintVelForward_.resize(length);
+  if(withpmls)
+    ele->eleintAuxiliaryPMLForward_.resize(length);
+
   for(int i=0; i<length; ++i)
   {
     reshapeMatrixIfNecessary(ele->eleintPressForward_[i],shapes_->ndofs_, 1);
     reshapeMatrixIfNecessary(ele->eleintVelForward_[i],shapes_->ndofs_*nsd_, 1);
+    if(withpmls)
+      reshapeMatrixIfNecessary(ele->eleintAuxiliaryPMLForward_[i],shapes_->ndofs_*nsd_, 1);
   }
   return;
 }

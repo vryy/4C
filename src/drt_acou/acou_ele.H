@@ -28,6 +28,8 @@ Pack, Unpack, NumDofPerNode etc.
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_fem_general/drt_utils_polynomial.H"
 
+const bool trac_with_pml = false;
+
 namespace DRT
 {
 // forward declarations
@@ -239,8 +241,12 @@ public:
 
   virtual int NumDofPerElementAuxiliary() const
   {
-    return (DRT::UTILS::getDimension(distype_) + 1) *
-            DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+    if(!trac_with_pml)
+      return (DRT::UTILS::getDimension(distype_) + 1) *
+              DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
+    else
+      return (DRT::UTILS::getDimension(distype_) + DRT::UTILS::getDimension(distype_) + 1) *
+              DRT::UTILS::getBasisSize(distype_, degree_, completepol_);
   }
 
   virtual int NumDofPerElement() const { return 0; }
@@ -357,6 +363,7 @@ public:
   /// local values from interior solution vector (gradient, velocity) at n+1
   Epetra_SerialDenseVector eleinteriorVelnp_;
   Epetra_SerialDenseVector eleinteriorPressnp_;
+  Epetra_SerialDenseVector eleinteriorAuxiliaryPML_;
 
   Epetra_SerialDenseVector eleADERimprovedGrad_;
   Epetra_SerialDenseVector eleADERimprovedDiv_;
@@ -364,6 +371,7 @@ public:
   /// local values for acoustical parameter optimization
   std::vector<Epetra_SerialDenseVector> eleintPressForward_;
   std::vector<Epetra_SerialDenseVector> eleintVelForward_;
+  std::vector<Epetra_SerialDenseVector> eleintAuxiliaryPMLForward_;
   //@}
 
   double GetDensityGradient() const { return grad_rho_; }

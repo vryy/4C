@@ -757,6 +757,410 @@ WaveEquationOperation<dim,fe_degree,Number>::write_deal_cell_values(Teuchos::RCP
 
 template<int dim, int fe_degree, typename Number>
 void
+WaveEquationOperationAcousticWavePML<dim,fe_degree,Number>::write_deal_cell_values(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
+    const std::vector<parallel::distributed::Vector<value_type> >   &src) const
+{
+
+  const unsigned dofs_per_cell = this->data.get_dof_handler().get_fe().dofs_per_cell;
+  std::vector<types::global_dof_index> indices, local_dof_indices (dofs_per_cell);
+  for (typename DoFHandler<dim>::active_cell_iterator cell = this->data.get_dof_handler().begin_active();
+       cell != this->data.get_dof_handler().end(); ++cell)
+  {
+    cell->get_dof_indices(local_dof_indices);
+    indices.insert(indices.end(), local_dof_indices.begin(), local_dof_indices.end());
+  }
+
+  IndexSet relevant_dofs(src[0].size());
+  relevant_dofs.add_indices(indices.begin(), indices.end());
+  relevant_dofs.compress();
+  std::vector<parallel::distributed::Vector<value_type> > ghosted_vector(src.size());
+  for (unsigned int i=0; i<src.size(); ++i)
+  {
+    ghosted_vector[i].reinit(this->data.get_dof_handler().locally_owned_dofs(),relevant_dofs, src[0].get_mpi_communicator());
+    ghosted_vector[i] = src[i];
+    ghosted_vector[i].update_ghost_values();
+  }
+
+  unsigned int ndofs1d;
+  if(dim==2)
+    ndofs1d = std::sqrt(dofs_per_cell);
+  else if(dim==3)
+    ndofs1d = int(std::pow(dofs_per_cell,1.0/3.0));
+  unsigned int ndofs2d = ndofs1d * ndofs1d;
+
+  unsigned int nodes_per_cell = GeometryInfo< dim >::vertices_per_cell;
+  std::vector<Point<dim> > baci_vals_loc(nodes_per_cell);
+  std::vector<Point<dim> > deal_vals_loc(nodes_per_cell);
+
+  Vector<value_type> local_values(dofs_per_cell);
+  for (int i=0; i<discret->NumMyColElements(); ++i)
+  {
+    typename DoFHandler<dim>::active_cell_iterator cell(&this->data.get_dof_handler().get_triangulation(), 0, i, &this->data.get_dof_handler());
+    DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(discret->lColElement(i));
+
+    for (unsigned int n=0; n<nodes_per_cell; ++n)
+    {
+      for(int d=0; d<dim; ++d)
+      {
+        deal_vals_loc[n](d) = cell->vertex(n)(d);
+        baci_vals_loc[n](d) = acouele->Nodes()[n]->X()[d];
+      }
+    }
+
+    // perform permutation: step 2: swap it
+    switch(acouele->Shape())
+    {
+    case DRT::Element::quad4:
+    {
+      if((deal_vals_loc[0].distance(baci_vals_loc[0])<1e-10 &&
+         deal_vals_loc[1].distance(baci_vals_loc[1])<1e-10 &&
+         deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+         deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10))
+      {
+        // everything is alright
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+j) = local_values[j];
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+          acouele->eleinteriorPressnp_(j) = local_values[j];
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+            acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+j) = local_values[j];
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[1])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ndofs1d-1-ax)*ndofs1d + ay;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = j/ndofs1d;
+          int permute = (ndofs1d-1-ax)*ndofs1d + ay;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ndofs1d-1-ax)*ndofs1d + ay;
+            acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[0])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay) * ndofs1d;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = j/ndofs1d;
+          int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay) * ndofs1d;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay) * ndofs1d;
+            acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[3])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ax) * ndofs1d + (ndofs1d-1-ay);
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = j/ndofs1d;
+          int permute = (ax) * ndofs1d + (ndofs1d-1-ay);
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = j/ndofs1d;
+            int permute = (ax) * ndofs1d + (ndofs1d-1-ay);
+            acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+      }
+      else
+        dserror("unknown permutation");
+      break;
+    }
+    case DRT::Element::hex8:
+    {
+      if(deal_vals_loc[0].distance(baci_vals_loc[0])<1e-10 &&
+         deal_vals_loc[1].distance(baci_vals_loc[1])<1e-10 &&
+         deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+         deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10 &&
+         deal_vals_loc[4].distance(baci_vals_loc[4])<1e-10 &&
+         deal_vals_loc[5].distance(baci_vals_loc[5])<1e-10 &&
+         deal_vals_loc[6].distance(baci_vals_loc[7])<1e-10 &&
+         deal_vals_loc[7].distance(baci_vals_loc[6])<1e-10)
+      {
+        // everything is alright
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+j) = local_values[j];
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+          acouele->eleinteriorPressnp_(j) = local_values[j];
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+            acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+j) = local_values[j];
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[4])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[5])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[4].distance(baci_vals_loc[7])<1e-10 &&
+              deal_vals_loc[5].distance(baci_vals_loc[6])<1e-10 &&
+              deal_vals_loc[6].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[7].distance(baci_vals_loc[2])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = ax + (ndofs1d-1-ay)*ndofs2d + az*ndofs1d;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = int(j/ndofs1d)%ndofs1d;
+          const int az = j/ndofs2d;
+          int permute = ax + (ndofs1d-1-ay)*ndofs2d + az*ndofs1d;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = ax + (ndofs1d-1-ay)*ndofs2d + az*ndofs1d;
+            acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[5])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[6])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[4].distance(baci_vals_loc[4])<1e-10 &&
+              deal_vals_loc[5].distance(baci_vals_loc[7])<1e-10 &&
+              deal_vals_loc[6].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[7].distance(baci_vals_loc[3])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = ax*ndofs1d + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az);
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = int(j/ndofs1d)%ndofs1d;
+          const int az = j/ndofs2d;
+          int permute = ax*ndofs1d + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az);
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = ax*ndofs1d + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az);
+            acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[7])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[4])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[0])<1e-10 &&
+              deal_vals_loc[4].distance(baci_vals_loc[6])<1e-10 &&
+              deal_vals_loc[5].distance(baci_vals_loc[5])<1e-10 &&
+              deal_vals_loc[6].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[7].distance(baci_vals_loc[1])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = (ndofs1d-1-ax)*ndofs1d + (ndofs1d-1-ay)*ndofs2d + az;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = int(j/ndofs1d)%ndofs1d;
+          const int az = j/ndofs2d;
+          int permute = (ndofs1d-1-ax)*ndofs1d + (ndofs1d-1-ay)*ndofs2d + az;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = (ndofs1d-1-ax)*ndofs1d + (ndofs1d-1-ay)*ndofs2d + az;
+            acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+      }
+      else if(deal_vals_loc[0].distance(baci_vals_loc[6])<1e-10 &&
+              deal_vals_loc[1].distance(baci_vals_loc[7])<1e-10 &&
+              deal_vals_loc[2].distance(baci_vals_loc[2])<1e-10 &&
+              deal_vals_loc[3].distance(baci_vals_loc[3])<1e-10 &&
+              deal_vals_loc[4].distance(baci_vals_loc[5])<1e-10 &&
+              deal_vals_loc[5].distance(baci_vals_loc[4])<1e-10 &&
+              deal_vals_loc[6].distance(baci_vals_loc[1])<1e-10 &&
+              deal_vals_loc[7].distance(baci_vals_loc[0])<1e-10)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az)*ndofs1d;
+            acouele->eleinteriorVelnp_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+        cell->get_interpolated_dof_values(ghosted_vector[dim], local_values);
+        for (unsigned int j=0; j<dofs_per_cell; ++j)
+        {
+          const int ax = j%ndofs1d;
+          const int ay = int(j/ndofs1d)%ndofs1d;
+          const int az = j/ndofs2d;
+          int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az)*ndofs1d;
+          acouele->eleinteriorPressnp_(permute) = local_values[j];
+        }
+        for (unsigned int d=0; d<dim; ++d)
+        {
+          cell->get_interpolated_dof_values(ghosted_vector[dim+1+d], local_values);
+          for (unsigned int j=0; j<dofs_per_cell; ++j)
+          {
+            const int ax = j%ndofs1d;
+            const int ay = int(j/ndofs1d)%ndofs1d;
+            const int az = j/ndofs2d;
+            int permute = (ndofs1d-1-ax) + (ndofs1d-1-ay)*ndofs2d + (ndofs1d-1-az)*ndofs1d;
+            acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute) = local_values[j];
+          }
+        }
+      }
+      else
+        dserror("unknown permutation");
+      break;
+    }
+    default:
+      dserror("other distypes not yet implemented!");
+      break;
+    }
+  }
+  return;
+}
+
+template<int dim, int fe_degree, typename Number>
+void
 WaveEquationOperation<dim,fe_degree,Number>::
 compute_gradient_contributions(std::vector<parallel::distributed::Vector<value_type> > &fwnp,
                                std::vector<parallel::distributed::Vector<value_type> > &fwn,
@@ -1052,7 +1456,8 @@ local_apply_domain(const MatrixFree<dim,value_type>                             
     std::vector<VectorizedArray<value_type> > sigma_values(dim, VectorizedArray<value_type> ());
     std::vector<VectorizedArray<value_type> > eigen_values(dim, VectorizedArray<value_type> ());
     Tensor<2,dim,VectorizedArray<value_type> > Matrix_A;
-    std::vector<Tensor<2,dim,VectorizedArray<value_type> > > eigen_tensors(dim);
+    //std::vector<Tensor<2,dim,VectorizedArray<value_type> > > eigen_tensors(dim);
+    Tensor<3,dim,VectorizedArray<value_type> > eigen_tensors;
 
     for (unsigned int q=0; q<velocity.n_q_points; ++q)
     {
@@ -1073,7 +1478,6 @@ local_apply_domain(const MatrixFree<dim,value_type>                             
         for (unsigned int d=0; d<dim; ++d)
           q_point[d] = q_points[d][n];
         rhs[n] = this->source_term->value(q_point);
-
         if (layer_reference[cell][n].size())
           sigma_pml->get_matrix (layer_reference[cell][n], n, q_point, sigma_values,eigen_values, Matrix_A, eigen_tensors);
       }
@@ -1669,14 +2073,13 @@ WaveEquationOperationAcousticWavePML(const DoFHandler<dim> &dof_handler,
     layer_reference.push_back(std::vector<std::vector<int> >(1,std::vector<int>()));
     for (unsigned int v=0; v<this->data.n_components_filled(i); ++v)
     {
-      unsigned int layer_flag = 0;
       layer_reference[i].push_back(std::vector<int>());
       for (unsigned int layer = 0; layer < sigma_fct->get_n_layer(); ++layer)
       {
-        layer_flag = 0;
+        bool layer_flag = false;
         for (unsigned int k = 0; k < GeometryInfo<dim>::vertices_per_cell; ++k)
           if (sigma_fct->is_layer_active(layer, this->data.get_cell_iterator(i,v)->vertex(k)))
-            layer_flag |= 1;
+            layer_flag = true;
 
         if (layer_flag)
           layer_reference[i][v].push_back(layer);
@@ -1762,6 +2165,256 @@ WaveEquationOperationAcousticWavePML(const DoFHandler<dim> &dof_handler,
 
 
 }
+
+template<int dim, int fe_degree, typename Number>
+void
+WaveEquationOperationAcousticWavePML<dim,fe_degree,Number>::
+read_initial_conditions(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
+                        std::vector<parallel::distributed::Vector<value_type> > &dst)
+                        {
+
+  FEEvaluation<dim,fe_degree,fe_degree+1,dim+dim+1,value_type> phi(this->data);
+  for (unsigned int j=0; j<phi.dofs_per_cell; ++j)
+    phi.submit_dof_value(Tensor<1,dim+dim+1,VectorizedArray<value_type> >(), j);
+
+  unsigned int dofs_per_cell = phi.dofs_per_cell; // i assume, that it is the same for all cells
+
+  unsigned int nodes_per_cell = GeometryInfo< dim >::vertices_per_cell;
+  std::vector<Point<dim> > baci_vals_loc(nodes_per_cell);
+  std::vector<Point<dim> > deal_vals_loc(nodes_per_cell);
+
+  for (unsigned int i=0; i<this->data.n_macro_cells()+this->data.n_macro_ghost_cells(); ++i)
+  {
+    phi.reinit(i);
+    for (unsigned int v=0; v<this->data.n_components_filled(i); ++v)
+    {
+      const int element_index = this->data.get_cell_iterator(i,v)->index();
+      DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(discret->lColElement(element_index));
+      if (acouele == NULL)
+        dserror("No acoustic element given!");
+
+      // perform permutation: step 1: get the node coordinates
+      for (unsigned int n=0; n<nodes_per_cell; ++n)
+      {
+        for(int d=0; d<dim; ++d)
+        {
+          deal_vals_loc[n](d) = this->data.get_cell_iterator(i,v)->vertex(n)(d);
+          baci_vals_loc[n](d) = acouele->Nodes()[n]->X()[d];
+        }
+      }
+
+      // perform permutation: step 2: swap it
+      switch(acouele->Shape())
+      {
+      case DRT::Element::quad4:
+      {
+        if(deal_vals_loc[0].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10)
+        {
+          this->dofpermutations[element_index] = 0;
+          // everything is alright
+          for (unsigned j=0; j<dofs_per_cell; ++j)
+          {
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+j][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+j);
+            phi.begin_dof_values()[dim*dofs_per_cell+j][v] = acouele->eleinteriorPressnp_(j);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[(dim+1+d)*dofs_per_cell+j][v] = acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+j);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[1])<1e-10)
+        {
+          this->dofpermutations[element_index] = 1;
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            int permute = this->permutevalues(1,i);
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[(dim+1+d)*dofs_per_cell+i][v] = acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[0])<1e-10)
+        {
+          this->dofpermutations[element_index] = 2;
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            int permute = this->permutevalues(2,i);
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[(dim+1+d)*dofs_per_cell+i][v] = acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[3])<1e-10)
+        {
+          this->dofpermutations[element_index] = 3;
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            int permute = this->permutevalues(3,i);
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[(dim+1+d)*dofs_per_cell+i][v] = acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute);
+          }
+        }
+        else
+        {
+          std::cout<<"d "<<deal_vals_loc[0](0)<<" "<<deal_vals_loc[0](1)<<" b "<<baci_vals_loc[0](0)<<" "<<baci_vals_loc[0](1)<<" "<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[1](0)<<" "<<deal_vals_loc[1](1)<<" b "<<baci_vals_loc[1](0)<<" "<<baci_vals_loc[1](1)<<" "<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[2](0)<<" "<<deal_vals_loc[2](1)<<" b "<<baci_vals_loc[2](0)<<" "<<baci_vals_loc[2](1)<<" "<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[3](0)<<" "<<deal_vals_loc[3](1)<<" b "<<baci_vals_loc[3](0)<<" "<<baci_vals_loc[3](1)<<" "<<std::endl;
+          dserror("unknown permutation");
+        }
+        break;
+      }
+      case DRT::Element::hex8:
+      {
+        if(deal_vals_loc[0].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[4].distance(baci_vals_loc[4])<1e-10 &&
+            deal_vals_loc[5].distance(baci_vals_loc[5])<1e-10 &&
+            deal_vals_loc[6].distance(baci_vals_loc[7])<1e-10 &&
+            deal_vals_loc[7].distance(baci_vals_loc[6])<1e-10)
+        {
+          this->dofpermutations[element_index] = 0;
+          // everything is alright
+          for (unsigned j=0; j<dofs_per_cell; ++j)
+          {
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+j][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+j);
+            phi.begin_dof_values()[dim*dofs_per_cell+j][v] = acouele->eleinteriorPressnp_(j);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[(dim+1+d)*dofs_per_cell+j][v] = acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+j);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[4])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[5])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[4].distance(baci_vals_loc[7])<1e-10 &&
+            deal_vals_loc[5].distance(baci_vals_loc[6])<1e-10 &&
+            deal_vals_loc[6].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[7].distance(baci_vals_loc[2])<1e-10)
+        {
+          this->dofpermutations[element_index] = 1;
+          // negative rotation around x
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            int permute = this->permutevalues(1,i);
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[(dim+1+d)*dofs_per_cell+i][v] = acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[5])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[6])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[4].distance(baci_vals_loc[4])<1e-10 &&
+            deal_vals_loc[5].distance(baci_vals_loc[7])<1e-10 &&
+            deal_vals_loc[6].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[7].distance(baci_vals_loc[3])<1e-10)
+        {
+          this->dofpermutations[element_index] = 2;
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            int permute = this->permutevalues(2,i);
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[(dim+1+d)*dofs_per_cell+i][v] = acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[7])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[4])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[0])<1e-10 &&
+            deal_vals_loc[4].distance(baci_vals_loc[6])<1e-10 &&
+            deal_vals_loc[5].distance(baci_vals_loc[5])<1e-10 &&
+            deal_vals_loc[6].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[7].distance(baci_vals_loc[1])<1e-10)
+        {
+          this->dofpermutations[element_index] = 3;
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            int permute = this->permutevalues(3,i);
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[(dim+1+d)*dofs_per_cell+i][v] = acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute);
+          }
+        }
+        else if(deal_vals_loc[0].distance(baci_vals_loc[6])<1e-10 &&
+            deal_vals_loc[1].distance(baci_vals_loc[7])<1e-10 &&
+            deal_vals_loc[2].distance(baci_vals_loc[2])<1e-10 &&
+            deal_vals_loc[3].distance(baci_vals_loc[3])<1e-10 &&
+            deal_vals_loc[4].distance(baci_vals_loc[5])<1e-10 &&
+            deal_vals_loc[5].distance(baci_vals_loc[4])<1e-10 &&
+            deal_vals_loc[6].distance(baci_vals_loc[1])<1e-10 &&
+            deal_vals_loc[7].distance(baci_vals_loc[0])<1e-10)
+        {
+          this->dofpermutations[element_index] = 4;
+          for (unsigned int i=0; i<dofs_per_cell; ++i)
+          {
+            int permute = this->permutevalues(4,i);
+            phi.begin_dof_values()[dim*dofs_per_cell+i][v] = acouele->eleinteriorPressnp_(permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[d*dofs_per_cell+i][v] = acouele->eleinteriorVelnp_(d*dofs_per_cell+permute);
+            for (unsigned int d=0; d<dim; ++d)
+              phi.begin_dof_values()[(dim+1+d)*dofs_per_cell+i][v] = acouele->eleinteriorAuxiliaryPML_(d*dofs_per_cell+permute);
+          }
+        }
+        else
+        {
+          std::cout<<"d "<<deal_vals_loc[0](0)<<" "<<deal_vals_loc[0](1)<<" "<<deal_vals_loc[0](2)<<" b "<<baci_vals_loc[0](0)<<" "<<baci_vals_loc[0](1)<<" "<<baci_vals_loc[0](2)<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[1](0)<<" "<<deal_vals_loc[1](1)<<" "<<deal_vals_loc[1](2)<<" b "<<baci_vals_loc[1](0)<<" "<<baci_vals_loc[1](1)<<" "<<baci_vals_loc[1](2)<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[2](0)<<" "<<deal_vals_loc[2](1)<<" "<<deal_vals_loc[2](2)<<" b "<<baci_vals_loc[2](0)<<" "<<baci_vals_loc[2](1)<<" "<<baci_vals_loc[2](2)<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[3](0)<<" "<<deal_vals_loc[3](1)<<" "<<deal_vals_loc[3](2)<<" b "<<baci_vals_loc[3](0)<<" "<<baci_vals_loc[3](1)<<" "<<baci_vals_loc[3](2)<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[4](0)<<" "<<deal_vals_loc[4](1)<<" "<<deal_vals_loc[4](2)<<" b "<<baci_vals_loc[4](0)<<" "<<baci_vals_loc[4](1)<<" "<<baci_vals_loc[4](2)<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[5](0)<<" "<<deal_vals_loc[5](1)<<" "<<deal_vals_loc[5](2)<<" b "<<baci_vals_loc[5](0)<<" "<<baci_vals_loc[5](1)<<" "<<baci_vals_loc[5](2)<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[6](0)<<" "<<deal_vals_loc[6](1)<<" "<<deal_vals_loc[6](2)<<" b "<<baci_vals_loc[6](0)<<" "<<baci_vals_loc[6](1)<<" "<<baci_vals_loc[6](2)<<std::endl;
+          std::cout<<"d "<<deal_vals_loc[7](0)<<" "<<deal_vals_loc[7](1)<<" "<<deal_vals_loc[7](2)<<" b "<<baci_vals_loc[7](0)<<" "<<baci_vals_loc[7](1)<<" "<<baci_vals_loc[7](2)<<std::endl;
+          dserror("unknown permutation");
+        }
+        break;
+      }
+      default:
+        dserror("other distypes not yet implemented!");
+        break;
+      }
+    }
+    phi.set_dof_values(dst);
+  }
+
+  for (unsigned int i=0; i<dim+dim+1; ++i)
+  {
+    dst[i].update_ghost_values();
+  }
+
+}
+
+
 
 
 // explicit instantiations

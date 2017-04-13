@@ -175,6 +175,7 @@ void AcouExplicitTimeInt::SetInitialField(int startfuncno)
   initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
   initParams.set<bool>("padaptivity",false);
   initParams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
+  initParams.set<bool>("withPML",withpmls_);
 
   DRT::Element::LocationArray la(2);
   for (int el=0; el<discret_->NumMyColElements();++el)
@@ -572,7 +573,7 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   {
     stored_forward_solutions.resize(up_res+1);
     for(unsigned int i=0; i<stored_forward_solutions.size(); ++i)
-      stored_forward_solutions[i].resize(dim+1);
+      stored_forward_solutions[i].resize(evaluator->number_of_solutionvectors());
   }
   // calculation of the time step size by use of the smallest cell
   typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),endc = triangulation.end();
@@ -1596,13 +1597,6 @@ void WaveEquationProblem<dim,Number>::intermediate_integrate(Teuchos::RCP<Explic
   double restarttime = 0.0;
   int restartstep = -1;
   {
-    // output to screen
-    //if(!bacitimeint->ProcId())
-    //{
-    //  pcout<< " <";
-    //  pcout<<std::flush;
-    //}
-
     restartstep = (step_max<(final_time/time_step)) ? step_max : (final_time/time_step);
     restartstep -= step + up_res;
     if(restartstep < 0) return; // happens in the last adjoint step
@@ -1617,19 +1611,21 @@ void WaveEquationProblem<dim,Number>::intermediate_integrate(Teuchos::RCP<Explic
     // read the internal field
     Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret->DofRowMap(1))));
     reader.ReadVector(intvelnp,"intvelnp");
-
     // bring the internal field to the baci elements
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",ACOU::ele_init_from_restart);
     eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna);
     eleparams.set<bool>("padaptivity",false);
+    if(solutions.size()==dim+dim+1)
+      eleparams.set<bool>("withPML",true);
+    else
+      eleparams.set<bool>("withPML",false);
     discret->SetState(1,"intvelnp",intvelnp);
     discret->Evaluate(eleparams);
     discret->ClearState(true);
 
     // bring the internal field from baci to deal values
     evaluator->read_initial_conditions(discret, solutions);
-
     // store this
     int count = up_res;
     for(unsigned i=0; i<solutions.size(); ++i)

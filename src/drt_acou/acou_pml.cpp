@@ -996,15 +996,16 @@ void AttenuationPML<dim,Number>::get_matrix (const std::vector<int> &layer_refer
     std::vector<VectorizedArray<value_type> > &sigma_values,
     std::vector<VectorizedArray<value_type> > &eigenvalues,
     Tensor<2,dim,VectorizedArray<value_type> > &Matrix_A,
-    std::vector<Tensor<2,dim,VectorizedArray<value_type> > > &eigen_tensors) const
+    Tensor<3,dim,VectorizedArray<value_type> > &eigen_tensors) const
     {
 
   unsigned int n_layer = layer_reference.size();
   Tensor<2,dim,double> tensor_tmp;
+  for (unsigned int n = 0; n < n_layer; ++n)
 
   // initialize the variables
   eigenvalues.resize(dim);
-  eigen_tensors.resize(dim);
+
   for (unsigned int n = 0; n < dim; ++n)
   {
     sigma_values[n][vec_array_no] = 0.0;

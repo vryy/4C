@@ -135,7 +135,7 @@ public:
       std::vector<VectorizedArray<value_type> > &sigma_values,
       std::vector<VectorizedArray<value_type> > &eigenvalues,
       Tensor<2,dim,VectorizedArray<value_type> > &Matrix_A,
-      std::vector<Tensor<2,dim,VectorizedArray<value_type> > > &eigen_tensors) const;
+      Tensor<3,dim,VectorizedArray<value_type> > &eigen_tensors) const;
 
 private:
   enum AttenuationFunction attenuation_function;

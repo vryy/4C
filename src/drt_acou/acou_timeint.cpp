@@ -68,6 +68,11 @@ ACOU::AcouTimeInt::AcouTimeInt(
   if(!invana_)
     params_->set<bool>("timereversal",false);
 
+  if(params_->get<std::string>("PML_DEFINITION_FILE")=="none.txt")
+    withpmls_ = false;
+  else
+    withpmls_ = true;
+
 } // AcouTimeInt
 
 /*----------------------------------------------------------------------*
@@ -111,6 +116,7 @@ void ACOU::AcouTimeInt::SetInitialZeroField()
   // we have to call an init for the elements (for inverse analysis, otherwise adjoint run starts from values of previous forward run)
   Teuchos::ParameterList initParams;
   initParams.set<int>("action",ACOU::ele_init);
+  initParams.set<bool>("withPML",withpmls_);
   initParams.set<bool>("padaptivity",false);
   initParams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
@@ -138,6 +144,7 @@ void ACOU::AcouTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector>
   // we have to call an init for the elements first!
   Teuchos::ParameterList initParams;
   initParams.set<int>("action",ACOU::ele_init);
+  initParams.set<bool>("withPML",withpmls_);
   initParams.set<bool>("padaptivity",false);
   initParams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   initParams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
@@ -606,7 +613,12 @@ void ACOU::AcouTimeInt::WriteRestart()
   discret_->Evaluate(eleparams);
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = discret_->GetState(1,"intvelnp");
-  output_->WriteVector("intvelnp",matrix_state);
+
+  intvelnp->PutScalar(0.0);
+  LINALG::Export(*matrix_state,*intvelnp);
+  //output_->WriteVector("intvelnp",matrix_state);
+  output_->WriteVector("intvelnp",intvelnp);
+
   discret_->ClearState(true);
   return;
 } // WriteRestart

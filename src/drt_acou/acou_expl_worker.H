@@ -301,6 +301,12 @@ namespace ACOU
 
     virtual ~WaveEquationOperationAcousticWavePML() {}
 
+    virtual void read_initial_conditions(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
+                                         std::vector<parallel::distributed::Vector<value_type> > &dst);
+
+    virtual void write_deal_cell_values(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
+                                        const std::vector<parallel::distributed::Vector<value_type> >   &src) const;
+
     virtual int number_of_solutionvectors() { return 1+dim+dim; }
 
   private:

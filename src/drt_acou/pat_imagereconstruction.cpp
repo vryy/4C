@@ -254,11 +254,11 @@ overwrite_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::ReplaceParams(Teuchos::RCP<Epetra_Vector> params)
 {
-  for(int i=0; i<params->MyLength(); ++i)
+  /*for(int i=0; i<params->MyLength(); ++i)
   {
     if(params->operator [](i)<0.0)
       params->ReplaceMyValue(i,0,0.0);
-  }
+  }*/
 
   Teuchos::RCP<Epetra_Vector> paramscol = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementColMap()),false));
   LINALG::Export(*params,*paramscol);
@@ -510,15 +510,15 @@ void ACOU::PatImageReconstruction::EvaluateReacGrad()
 
   ConvertGradient(scatra_discret_,reac_objgrad_);
 
-  reac_objgrad_->Print(std::cout);
-
-    std::string soutname = name_;
-    soutname.append("_reac_grad");
-    scatraoutput_->NewResultFile(soutname,0);
-    scatraoutput_->WriteMesh(0,0.0);
-    scatraoutput_->NewStep(1,1.0);
-    scatraoutput_->WriteElementData(true);
-    scatraoutput_->WriteVector("rea_coeff",reac_objgrad_);
+//  reac_objgrad_->Print(std::cout);
+//
+//    std::string soutname = name_;
+//    soutname.append("_reac_grad");
+//    scatraoutput_->NewResultFile(soutname,0);
+//    scatraoutput_->WriteMesh(0,0.0);
+//    scatraoutput_->NewStep(1,1.0);
+//    scatraoutput_->WriteElementData(true);
+//    scatraoutput_->WriteVector("rea_coeff",reac_objgrad_);
 
   return;
 }
@@ -859,14 +859,15 @@ void ACOU::PatImageReconstructionOptiSplit::ReplaceParams(Teuchos::RCP<Epetra_Ve
   if(reacordifforcorrho_==0)
     for(int i=0; i<params->MyLength(); ++i)
     {
-      if(params->operator [](i)<0.0)
-        params->ReplaceMyValue(i,0,0.0);
+      ;
+      //if(params->operator [](i)<0.0)
+        //params->ReplaceMyValue(i,0,0.0);
     }
   else
     for(int i=0; i<params->MyLength(); ++i)
     {
-      if(params->operator [](i)<0.4)
-        params->ReplaceMyValue(i,0,0.4);
+      if(params->operator [](i)<0.1)
+        params->ReplaceMyValue(i,0,0.1);
       else if(params->operator [](i)>1.0)
         params->ReplaceMyValue(i,0,1.0);
     }
@@ -1595,16 +1596,17 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReplaceParams(Teuchos::RCP<
   if(reacordifforcorrho_==0)
     for(int i=0; i<params->MyLength(); ++i)
     {
-      if(params->operator [](i)<0.0)
-        params->ReplaceMyValue(i,0,0.0);
+      ;
+      //if(params->operator [](i)<0.0)
+        //params->ReplaceMyValue(i,0,0.0);
     }
   else
     for(int i=0; i<params->MyLength(); ++i)
     {
-      if(params->operator [](i)<0.4)
-        params->ReplaceMyValue(i,0,0.4);
-      else if(params->operator [](i)>1.0)
-        params->ReplaceMyValue(i,0,1.0);
+      if(params->operator [](i)<0.1)
+        params->ReplaceMyValue(i,0,0.1);
+      else if(params->operator [](i)>3.0)
+        params->ReplaceMyValue(i,0,3.0);
     }
 
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
@@ -1747,16 +1749,16 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateGradient()
 //  rho_objgrad_->Norm1(&norm1); rho_objgrad_->Norm2(&norm2); rho_objgrad_->NormInf(&norminf);
 //  std::cout<<"rho  "<<norm1<<" "<<norm2<<" "<<norminf<<std::endl;
 //
-//  // output the solution
-//  std::string outname = name_;
-//  outname.append("_c_and_rho_grad");
-//  acououtput_->NewResultFile(outname,0);
-//  output_count_++;
-//  acououtput_->WriteMesh(0,0.0);
-//  acououtput_->NewStep(1,1.0);
-//  acououtput_->WriteElementData(true);
-//  acououtput_->WriteVector("density",rho_objgrad_);
-//  acououtput_->WriteVector("speedofsound",c_objgrad_);
+  // output the solution
+  std::string outname = name_;
+  outname.append("_c_and_rho_grad");
+  acououtput_->NewResultFile(outname,0);
+  output_count_++;
+  acououtput_->WriteMesh(0,0.0);
+  acououtput_->NewStep(1,1.0);
+  acououtput_->WriteElementData(true);
+  acououtput_->WriteVector("density",rho_objgrad_);
+  acououtput_->WriteVector("speedofsound",c_objgrad_);
 //
 //  std::string soutname = name_;
 //  soutname.append("_reac_and_diff_grad");
@@ -1830,7 +1832,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReduceBasis()
         auxvals->ReplaceMyValue(minid,0,std::numeric_limits<double>::max());
         actele = scatra_discret_->lRowElement(minid);
       }
-      CheckNeighborsReacGrad(actele,owner,setids,set,minval,2./3.*rangeval,auxvals);
+      CheckNeighborsReacGrad(actele,owner,setids,set,minval,0.1*rangeval,auxvals);
 
       // find next minimum value
       auxvals->MinValue(&minval);
@@ -2082,7 +2084,9 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReducePatchSelf(Teuchos::RC
   patchvec->MinValue(&minval);
 
   double rangeval = std::abs(maxval - minval);
-  if(rangeval == 0.0) dserror("rangeval is zero");
+  if(rangeval == 0.0)
+    if(!myrank_)
+    dserror("rangeval is zero");
 
   // create a helper vector
   Teuchos::RCP<Epetra_Vector> auxvals = Teuchos::rcp(new Epetra_Vector(*(discret->ElementRowMap()),false));
@@ -2120,7 +2124,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReducePatchSelf(Teuchos::RC
       auxvals->ReplaceMyValue(minid,0,std::numeric_limits<double>::max());
       actele = discret->lRowElement(minid);
     }
-    CheckNeighborsPatchSelf(discret,patchvec,actele,owner,setids,set,minval,2./3.*rangeval,auxvals);
+    CheckNeighborsPatchSelf(discret,patchvec,actele,owner,setids,set,minval,0.1*rangeval,auxvals);
 
     // find next minimum value
     auxvals->MinValue(&minval);
@@ -2325,7 +2329,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReducePatchReacVals()
       auxvals->ReplaceMyValue(maxid,0,-std::numeric_limits<double>::max());
       actele = scatra_discret_->lRowElement(maxid);
     }
-    CheckNeighborsPatchReacVals(actele,owner,setids,set,maxval,2./3.*rangeval,auxvals);
+    CheckNeighborsPatchReacVals(actele,owner,setids,set,maxval,0.1*rangeval,auxvals);
 
     // find next maximum value
     auxvals->MaxValue(&maxval);
@@ -2527,7 +2531,7 @@ bool ACOU::PatImageReconstructionOptiSplitAcouSplit::PerformIteration()
 
 
   if(patchtype_==INPAR::ACOU::pat_patch_reacvals&&iter_==0)
-    reacseq = 10;
+    reacseq = 1;
   else if(patchtype_==INPAR::ACOU::pat_patch_mixed&&iter_<10)
   {
     reacseq = 1;

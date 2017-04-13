@@ -355,6 +355,7 @@ namespace ELEMENTS
     /// local values from interior solution vector (gradient, velocity) at n+1
     Epetra_SerialDenseVector interiorVelnp_;
     Epetra_SerialDenseVector interiorPressnp_;
+    Epetra_SerialDenseVector interiorauxiliaryPML_;
 
     /// time integration scheme
     INPAR::ACOU::DynamicType dyna_;

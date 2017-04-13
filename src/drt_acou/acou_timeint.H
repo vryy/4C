@@ -149,6 +149,7 @@ protected:
   bool    invana_;                      /// flag indicating whether inverse analysis is performed
   bool    padaptivity_;                 /// p-adaptivity flag
   bool    adjoint_;                     /// flag indicating whether this is standard or an adjoint solve
+  bool    withpmls_;
   int     myrank_;                      /// processor id
   bool    writemonitor_;                /// flag indicating if a monitor file is written
   bool    writestress_;                 /// flag indicating if a stresses or -if no- the displacment gradient is written to the output
