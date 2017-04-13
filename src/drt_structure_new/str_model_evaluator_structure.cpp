@@ -33,6 +33,7 @@
 #include "../drt_lib/drt_discret.H"
 
 #include "../drt_io/io.H"
+#include "../drt_io/discretization_runtime_vtu_writer.H"
 
 #include "../drt_beam3/beam_discretization_runtime_vtu_writer.H"
 #include "../drt_beam3/beam_discretization_runtime_vtu_output_params.H"
@@ -44,6 +45,7 @@ STR::MODELEVALUATOR::Structure::Structure()
       masslin_type_(INPAR::STR::ml_none),
       stiff_ptr_(NULL),
       dis_incr_ptr_(Teuchos::null),
+      vtu_writer_ptr_(Teuchos::null),
       beam_vtu_writer_ptr_(Teuchos::null)
 {
   // empty
@@ -80,9 +82,13 @@ void STR::MODELEVALUATOR::Structure::Setup()
     dis_incr_ptr_ = Teuchos::rcp(new Epetra_Vector(DisNp().Map(),true));
   }
 
-  if ( GInOutput().GetRuntimeVtkOutputParams() != Teuchos::null and
-       GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams() != Teuchos::null )
-    beam_vtu_writer_ptr_ = Teuchos::rcp( new BeamDiscretizationRuntimeVtuWriter() );
+  if ( GInOutput().GetRuntimeVtkOutputParams() != Teuchos::null )
+  {
+    vtu_writer_ptr_ = Teuchos::rcp( new DiscretizationRuntimeVtuWriter() );
+
+    if ( GInOutput().GetRuntimeVtkOutputParams()->SpecialOutputBeams() )
+      beam_vtu_writer_ptr_ = Teuchos::rcp( new BeamDiscretizationRuntimeVtuWriter() );
+  }
 
   // set flag
   issetup_ = true;
@@ -555,10 +561,59 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::GetInertialForce()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtk() const
 {
+  if ( vtu_writer_ptr_ != Teuchos::null )
+    WriteOutputRuntimeVtkStructure();
+
 
   // write special output for beams if desired
   if ( beam_vtu_writer_ptr_ != Teuchos::null )
     WriteOutputRuntimeVtkBeams();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure() const
+{
+  // get the parameter container object
+  const STR::TIMINT::ParamsRuntimeVtkOutput & vtu_output_params =
+      * GInOutput().GetRuntimeVtkOutputParams();
+
+
+  // export displacement state to column format
+  const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
+  Teuchos::RCP<Epetra_Vector> disn_col = Teuchos::rcp( new Epetra_Vector(
+      *discret.DofColMap(), true ) );
+  LINALG::Export( *GState().GetDisN(), *disn_col );
+
+  // Todo: we need a better upper bound for total number of time steps here
+  // however, this 'only' affects the number of leading zeros in the vtk file names
+  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+
+  // initialize the writer object with current displacement state
+  vtu_writer_ptr_->Initialize(
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>(
+        const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
+        num_timesteps_in_simulation_upper_bound,
+        vtu_output_params.WriteBinaryOutput() );
+
+  // reset time and time step of the writer object
+  vtu_writer_ptr_->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
+
+
+  // append all desired output data to the writer object's storage
+
+  // append displacement if desired
+  if ( vtu_output_params.OutputDisplacementState() )
+    vtu_writer_ptr_->AppendDofBasedResultDataVector( disn_col, 3, 0, "displacement" );
+
+
+  // finalize everything and write all required VTU files to filesystem
+  vtu_writer_ptr_->WriteFiles();
+
+
+  // Todo: this will not work as expected yet in case you terminate your
+  // simulation by strg + c or in case of a restart
+  vtu_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
 
 }
 
@@ -570,19 +625,32 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   const DRT::ELEMENTS::BeamRuntimeVtuOutputParams & beam_vtu_output_params =
       * GInOutput().GetRuntimeVtkOutputParams()->GetBeamParams();
 
+
   // export displacement state to column format
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
   Teuchos::RCP<Epetra_Vector> disn_col = Teuchos::rcp( new Epetra_Vector(
       *discret.DofColMap(), true ) );
   LINALG::Export( *GState().GetDisN(), *disn_col );
 
+  // Todo: we need a better upper bound for total number of time steps here
+  // however, this 'only' affects the number of leading zeros in the vtk file names
+  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+
+
+  // get bounding box object only if periodic boundaries are active
+  Teuchos::RCP<GEO::MESHFREE::BoundingBox> bounding_box_ptr = Teuchos::null;
+
+  bounding_box_ptr = TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox();
+
+
   // initialize the writer object with current displacement state
   beam_vtu_writer_ptr_->Initialize(
       Teuchos::rcp_dynamic_cast<DRT::Discretization>(
         const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
         disn_col,
-        TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
-        10000,      // Fixme: we need an upper bound for total number time steps here
+        beam_vtu_output_params.UseAbsolutePositions(),
+        bounding_box_ptr,
+        num_timesteps_in_simulation_upper_bound,
         GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput() );
 
   // reset time and time step of the writer object
@@ -592,19 +660,22 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   // append all desired output data to the writer object's storage
   beam_vtu_writer_ptr_->AppendElementOwningProcessor();
 
+  // append beam radius
   beam_vtu_writer_ptr_->AppendElementCircularCrossSectionRadius();
 
-  beam_vtu_writer_ptr_->AppendPointCircularCrossSectionInformationVector( disn_col );
-
+  // append displacement if desired
   if ( GInOutput().GetRuntimeVtkOutputParams()->OutputDisplacementState() )
     beam_vtu_writer_ptr_->AppendDisplacementField( disn_col );
 
+  // append triads if desired
   if ( beam_vtu_output_params.IsWriteTriadVisualizationPoints() )
     beam_vtu_writer_ptr_->AppendTriadField( disn_col );
 
+  // append material cross-section strains if desired
   if ( beam_vtu_output_params.IsWriteMaterialStrainsGaussPoints() )
     beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStrains();
 
+  // append material cross-section stresses if desired
   if ( beam_vtu_output_params.IsWriteMaterialStressesGaussPoints() )
     beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStresses();
 

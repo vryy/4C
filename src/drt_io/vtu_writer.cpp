@@ -279,9 +279,6 @@ VtuWriter::WritePointDataVector(
     const std::string& name
     )
 {
-
-
-
   // start the point data section that will be written subsequently
   if (currentPhase_ == INIT)
   {

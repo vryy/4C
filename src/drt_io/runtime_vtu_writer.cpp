@@ -177,5 +177,5 @@ RuntimeVtuWriter::WriteAllPointAndCellDataVectorsToFiles()
 void
 RuntimeVtuWriter::WriteCollectionFileOfAllWrittenFiles( const std::string & collectionfilename )
 {
-  vtu_writer_->WriteVtkCollectionFile( collectionfilename );
+  vtu_writer_->WriteVtkCollectionFileForAllWrittenMasterFiles( collectionfilename );
 }

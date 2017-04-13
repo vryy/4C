@@ -308,6 +308,7 @@ void STR::TIMINT::BaseDataSDyn::Setup()
     switch (*it)
     {
       case INPAR::STR::model_beaminteraction:
+      case INPAR::STR::model_beam_interaction_old:
       case INPAR::STR::model_browniandyn:
       {
         periodic_boundingbox = Teuchos::rcp(new GEO::MESHFREE::BoundingBox());

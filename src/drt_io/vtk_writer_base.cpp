@@ -283,15 +283,18 @@ VtkWriterBase::InitializeVtkFileStreamsForNewGeometry(
 
 
   if (myrank_ == 0)
+  {
     InitializeVtkMasterFileStream();
 
 
-  // append this new master file to list of written files
-  if (myrank_ == 0)
-  {
-    written_masterfiles_time_and_name_.push_back(
-        std::pair<double, std::string>( time_, filename_base_ + this->WriterPSuffix() ) );
+    // append this new master file to the stream of all written files and times
+    // for later use as vtk collection file ('.pvd')
+    AppendMasterFileAndTimeToCollectionFileMidSectionContent(
+        filename_base_ + this->WriterPSuffix(),
+        DetermineVtkSubdirectoryNameFromFullVtkWorkingPath(),
+        time_);
   }
+
 }
 
 /*----------------------------------------------------------------------*
@@ -317,6 +320,22 @@ VtkWriterBase::InitializeVtkMasterFileStream()
   currentmasterout_.close();
   currentmasterout_.open(
       (working_directory_full_path_ + "/" + filename_base_ + this->WriterPSuffix()).c_str() );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void
+VtkWriterBase::AppendMasterFileAndTimeToCollectionFileMidSectionContent(
+    const std::string & master_file_name,
+    const std::string & master_file_directory_name,
+    double time)
+{
+  collection_file_midsection_cumulated_content_
+      << "    <DataSet timestep=\"" << time
+      << "\" group=\"\" part=\"0\" file=\""
+      << master_file_directory_name << "/"
+      << master_file_name
+      << "\"/>\n";
 }
 
 /*----------------------------------------------------------------------*
@@ -352,7 +371,6 @@ VtkWriterBase::WriteVtkHeaderMasterFile(
 {
   ThrowErrorIfInvalidFileStream( currentmasterout_ );
 
-
   currentmasterout_ << "<?xml version=\"1.0\" ?> \n";
   currentmasterout_ << "<!-- \n";
   currentmasterout_ << "# vtk DataFile Version 3.0\n";
@@ -371,7 +389,6 @@ VtkWriterBase::WriteVtkHeaderThisProcessor(
     )
 {
   ThrowErrorIfInvalidFileStream( currentout_ );
-
 
   currentout_ << "<?xml version=\"1.0\" ?> \n";
   currentout_ << "<!-- \n";
@@ -456,7 +473,7 @@ VtkWriterBase::WriteDataArrayMasterFile(
     const std::string& name
     )
 {
-  std::ofstream & masterfilestream = const_cast<std::ofstream&>( currentmasterout_ );
+  std::ofstream & masterfilestream = currentmasterout_ ;
   ThrowErrorIfInvalidFileStream( masterfilestream );
 
 
@@ -477,7 +494,7 @@ VtkWriterBase::WriteDataArrayThisProcessor(
     const std::string& name
     )
 {
-  std::ofstream & filestream = const_cast<std::ofstream&>( currentout_ );
+  std::ofstream & filestream = currentout_;
   ThrowErrorIfInvalidFileStream( filestream );
 
 
@@ -609,58 +626,178 @@ VtkWriterBase::WriteVtkFooterThisProcessor()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void
-VtkWriterBase::WriteVtkCollectionFile(
+VtkWriterBase::WriteVtkCollectionFileForAllWrittenMasterFiles(
     const std::string & collectionfilename
     ) const
 {
-  /* the file mentioned here is the collection file ('.pvd') which is not
-   * necessarily required because Paraview allows us to conveniently open/load
-   * a series of masterfiles (e.g. one file per timestep) at once if they are named
-   * consistently (e.g. 'fancysimulation-structure-[num_timestep].pvtu') */
+  if ( myrank_ == 0 )
+  {
+    // initialize the output filestream for the new collection file
+    std::ofstream collectionfilestream;
+
+
+    InitializeVtkCollectionFileAndGetFileStream(
+        collectionfilename, collectionfilestream);
+
+    WriteHeaderIntoGivenVtkCollectionFileStream( collectionfilestream );
+
+    collectionfilestream << collection_file_midsection_cumulated_content_.str();
+
+    WriteFooterIntoGivenVtkCollectionFileStream( collectionfilestream );
+
+
+    collectionfilestream.flush();
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void
+VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
+    const std::string & collectionfilename,
+    const std::vector<std::pair<double, std::string> > & masterfiles_time_and_name
+    ) const
+{
+  /* The file mentioned here is the collection file ('.pvd') which contains
+   * references (full path) to a set of written master files. */
+
+  /* Note:
+   * This collection file is not necessarily required because Paraview allows
+   * us to open/load a series of masterfiles (e.g. one file per timestep) at
+   * once if they are named consistently
+   * (e.g. 'fancysimulation-structure-[num_timestep].pvtu') */
+
+  /* However, it turns out to be more convenient to open/load this collection
+   * file. Some advantages based on first experiences:
+   * 1) Paraview handles the time information correctly (as displayed in the
+   *    toolbar 'Current time controls')
+   * 2) Having restarted (once or multiple times), we can create a collection
+   *    file for each restart which only contains the output files of relevant
+   *    time steps and discards the outpur files of redundantly computed time
+   *    steps. */
 
   if ( myrank_ == 0 )
   {
-    // determine the name of the subdirectory where all files have been written into
-    size_t pos = working_directory_full_path_.find_last_of("/");
-
-    if (pos == working_directory_full_path_.npos)
-      pos = 0ul;
-    else
-      pos++;
-
-    std::string vtk_subdirectory_name( working_directory_full_path_.substr(pos) );
-
-
     // initialize the output filestream for the new collection file
-    std::ofstream collectionfilestream(
-        (working_directory_full_path_ + "/../" + collectionfilename + ".pvd").c_str() );
+    std::ofstream collectionfilestream;
+    InitializeVtkCollectionFileAndGetFileStream(
+        collectionfilename, collectionfilestream);
 
-    ThrowErrorIfInvalidFileStream( collectionfilestream );
 
-    // Todo specify byte order, xml version, vtk DataFile Version, ... in a central place
+    WriteHeaderIntoGivenVtkCollectionFileStream( collectionfilestream );
 
-    collectionfilestream << "<?xml version=\"1.0\"?>\n";
+    // determine the name of the subdirectory where all files have been written into
 
-    collectionfilestream << "<!--\n";
-    collectionfilestream << "# vtk DataFile Version 3.0\n";
-    collectionfilestream << "-->\n";
+    /* This is necessary because we only want to collect RELATIVE paths of the
+     * individual master files. Otherwise, the collection file would not work
+     * as expected after copying/moving the simulation output data */
+    const std::string vtk_subdirectory_name =
+        DetermineVtkSubdirectoryNameFromFullVtkWorkingPath();
 
-    collectionfilestream
-        << "<VTKFile type=\"Collection\" version=\"0.1\" ByteOrder=\"LittleEndian\">\n";
-    collectionfilestream << "  <Collection>\n";
 
-    for (unsigned int ifile = 0; ifile < written_masterfiles_time_and_name_.size(); ++ifile)
-      collectionfilestream << "    <DataSet timestep=\"" << written_masterfiles_time_and_name_[ifile].first
-                 << "\" group=\"\" part=\"0\" file=\"" << vtk_subdirectory_name << "/"
-                 << written_masterfiles_time_and_name_[ifile].second
-                 << "\"/>\n";
+    for (unsigned int ifile = 0; ifile < masterfiles_time_and_name.size(); ++ifile)
+    {
+      WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+          collectionfilestream,
+          masterfiles_time_and_name[ifile].second,
+          vtk_subdirectory_name,
+          masterfiles_time_and_name[ifile].first);
+    }
 
-    collectionfilestream << "  </Collection>\n";
-    collectionfilestream << "</VTKFile>\n";
+
+    WriteFooterIntoGivenVtkCollectionFileStream( collectionfilestream );
 
     collectionfilestream.flush();
   }
 
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void
+VtkWriterBase::InitializeVtkCollectionFileAndGetFileStream(
+    const std::string & collectionfilename,
+    std::ofstream & collectionfilestream
+    ) const
+{
+  // initialize the output filestream for the new collection file
+  collectionfilestream = std::ofstream(
+      (working_directory_full_path_ + "/../" + collectionfilename + ".pvd").c_str() );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void
+VtkWriterBase::WriteHeaderIntoGivenVtkCollectionFileStream(
+    std::ofstream & collectionfilestream
+    ) const
+{
+  ThrowErrorIfInvalidFileStream( collectionfilestream );
+
+  // Todo specify byte order, xml version, vtk DataFile Version, ... in a central place
+
+  collectionfilestream << "<?xml version=\"1.0\"?>\n";
+
+  collectionfilestream << "<!--\n";
+  collectionfilestream << "# vtk DataFile Version 3.0\n";
+  collectionfilestream << "-->\n";
+
+  collectionfilestream
+      << "<VTKFile type=\"Collection\" version=\"0.1\" ByteOrder=\"LittleEndian\">\n";
+  collectionfilestream << "  <Collection>\n";
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void
+VtkWriterBase::WriteFooterIntoGivenVtkCollectionFileStream(
+    std::ofstream & collectionfilestream
+    ) const
+{
+  ThrowErrorIfInvalidFileStream( collectionfilestream );
+
+  collectionfilestream << "  </Collection>\n";
+  collectionfilestream << "</VTKFile>\n";
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::string
+VtkWriterBase::DetermineVtkSubdirectoryNameFromFullVtkWorkingPath() const
+{
+  // this extracts the substring starting from the last '/' in the full
+  // path of the vtk working directory
+
+  size_t extractor_start_position = working_directory_full_path_.find_last_of("/");
+
+  // if we can't find a '/', the given path was already a relative one and
+  // we set the start position for substring extraction to the beginning (0ul)
+  if (extractor_start_position == working_directory_full_path_.npos)
+    extractor_start_position = 0ul;
+  // otherwise, we start from the subsequent character
+  else
+    extractor_start_position++;
+
+  return working_directory_full_path_.substr( extractor_start_position );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void
+VtkWriterBase::WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+    std::ofstream & collectionfilestream,
+    const std::string & master_file_name,
+    const std::string & master_file_directory_name,
+    double time
+    ) const
+{
+  ThrowErrorIfInvalidFileStream( collectionfilestream );
+
+  collectionfilestream << "    <DataSet timestep=\"" << time
+             << "\" group=\"\" part=\"0\" file=\""
+             << master_file_directory_name << "/"
+             << master_file_name
+             << "\"/>\n";
 }
 
 /*----------------------------------------------------------------------*

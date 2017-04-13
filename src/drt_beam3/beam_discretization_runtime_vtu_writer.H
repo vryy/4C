@@ -76,6 +76,7 @@ public:
   void Initialize(
       Teuchos::RCP<DRT::Discretization> discretization,
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector,
+      bool use_absolute_positions_for_point_coordinates,
       Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
       unsigned int max_number_timesteps_to_be_written,
       bool write_binary_output );
@@ -186,6 +187,9 @@ private:
 
   //! discretization containing beam elements of which geometry and result data shall be visualized
   Teuchos::RCP<const DRT::Discretization> discretization_;
+
+  //! all local row indices of beam elements in the given discretization
+  std::vector<unsigned int> local_row_indices_beam_elements_;
 
   //! periodic bounding box object
   Teuchos::RCP<const GEO::MESHFREE::BoundingBox> periodic_boundingbox_;

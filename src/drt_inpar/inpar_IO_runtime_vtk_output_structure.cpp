@@ -71,6 +71,10 @@ namespace IO_RUNTIME_VTK_STRUCTURE
                                  "write displacement output",
                                  yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
 
+    // whether to write special output for beam elements
+    setStringToIntegralParameter<int>("SPECIAL_OUTPUT_BEAMS","No",
+                                 "write special output for beam elements",
+                                 yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
   }
 
 

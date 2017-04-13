@@ -17,6 +17,7 @@
 #include <map>
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 #include <stdint.h>
 #include <zlib.h>
@@ -158,7 +159,8 @@ public:
   void WriteVtkFooters();
 
   //! write a VTK collection file that summarizes paths to all written files (e.g. for all time steps)
-  virtual void WriteVtkCollectionFile (
+  //! note: this only includes files written during the 'lifetime' of this the writer object
+  void WriteVtkCollectionFileForAllWrittenMasterFiles(
       const std::string & collectionfilename
       ) const;
 
@@ -245,6 +247,45 @@ private:
   //! initialize the vtk 'master file' stream (handled by proc 0)
   void InitializeVtkMasterFileStream();
 
+  //! append current master file name and time to collection file content
+  void AppendMasterFileAndTimeToCollectionFileMidSectionContent(
+      const std::string & master_file_name,
+      const std::string & master_file_directory_name,
+      double time);
+
+  //! write a VTK collection file that summarizes paths to all the given files
+  void WriteVtkCollectionFileForGivenListOfMasterFiles(
+      const std::string & collectionfilename,
+      const std::vector<std::pair<double, std::string> > & masterfiles_time_and_name
+      ) const;
+
+  //! initialize a VTK collection file stream from given file name and return the file stream
+  void InitializeVtkCollectionFileAndGetFileStream(
+      const std::string & collectionfilename,
+      std::ofstream & collectionfilestream
+      ) const;
+
+  //! write the header into a given VTK collection file stream
+  void WriteHeaderIntoGivenVtkCollectionFileStream(
+      std::ofstream & collectionfilestream
+      ) const;
+
+  //! write the footer into a given VTK collection file stream
+  void WriteFooterIntoGivenVtkCollectionFileStream(
+      std::ofstream & collectionfilestream
+      ) const;
+
+  //! determine the name of the subdirectory by extracting the part after the last '/'
+  //! in the full path of the vtk working directory
+  std::string DetermineVtkSubdirectoryNameFromFullVtkWorkingPath() const;
+
+  //! write given master file and time value into given collection file stream
+  void WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+      std::ofstream & collectionfilestream,
+      const std::string & master_file_name,
+      const std::string & master_file_directory_name,
+      double time
+      ) const;
 
 protected:
 
@@ -262,6 +303,10 @@ protected:
   //! Output stream for current master file (only proc 0)
   std::ofstream currentmasterout_;
 
+  //! stream for midsection of the vtk collection file ('.pvd')
+  //! containing [time value and filename] of all yet written master files
+  std::stringstream collection_file_midsection_cumulated_content_;
+
 
   //! full path of the working directory for all vtk files to be written into
   std::string working_directory_full_path_;
@@ -269,10 +314,6 @@ protected:
   //! Part of the current filename w/ timestep w/out processor id
   //  processor-specific files and master file share this part of the filename
   std::string filename_base_;
-
-
-  //! [time value and filename] of all written master files to be used for final vtk collection file ('.pvd')
-  std::vector<std::pair<double, std::string> > written_masterfiles_time_and_name_;
 
 
   //! number of digits (i.e. field width) which is reserved for time step number in file names

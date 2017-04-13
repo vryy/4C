@@ -24,6 +24,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 
+#include "../drt_beam3/beam3_base.H"
+
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -114,10 +116,22 @@ DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
 
   // loop over my elements and collect the geometry/grid data
   unsigned int pointcounter = 0;
+  unsigned int num_skipped_eles = 0;
 
-  for (unsigned int iele=0; iele<num_row_elements; ++iele)
+  for (unsigned int iele=0; iele < num_row_elements; ++iele)
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
+
+    // check for beam element that potentially needs special treatment due to Hermite interpolation
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+    // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+    if ( beamele != NULL )
+    {
+      num_skipped_eles++;
+      continue;
+    }
+
 
     cell_types.push_back(
         DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType( ele->Shape() ).first );
@@ -144,13 +158,13 @@ DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
         num_spatial_dimensions * pointcounter, point_coordinates.size() );
   }
 
-  if ( cell_types.size() != num_row_elements )
+  if ( cell_types.size() != num_row_elements - num_skipped_eles )
   {
     dserror("RuntimeVtuWriter expected %d cell type values, but got %d",
         num_row_elements, cell_types.size() );
   }
 
-  if ( cell_offsets.size() != num_row_elements )
+  if ( cell_offsets.size() != num_row_elements - num_skipped_eles )
   {
     dserror("RuntimeVtuWriter expected %d cell offset values, but got %d",
         num_row_elements, cell_offsets.size() );
@@ -176,16 +190,82 @@ DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
     const Teuchos::RCP<Epetra_Vector> & result_data_dofbased,
     unsigned int result_num_dofs_per_node,
     unsigned int read_result_data_from_dofindex,
-    const std::string & resultname)
+    const std::string & resultname
+    )
 {
-  // Todo
-  /*  see PostVtuWriter::WriteDofResultStep() for implementation based on PostField
-   *
-   *  the idea is to transform the given data to a 'point data vector' and append it to the
-   *  collected solution data vectors by calling AppendVisualizationPointDataVector()
-   */
+  /* the idea is to transform the given data to a 'point data vector' and append it to the
+   * collected solution data vectors by calling AppendVisualizationPointDataVector() */
 
-  dserror("not implemented yet");
+  // count number of nodes and number of elements for each processor
+  unsigned int num_row_elements = (unsigned int) discretization_->NumMyRowElements();
+
+  unsigned int num_nodes = 0;
+  for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+    num_nodes += discretization_->lRowElement(iele)->NumNode();
+
+  std::vector<double> vtu_point_result_data;
+  vtu_point_result_data.reserve( result_num_dofs_per_node * num_nodes );
+
+  std::vector<int> nodedofs;
+  unsigned int pointcounter = 0;
+
+  for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+  {
+    const DRT::Element* ele = discretization_->lRowElement(iele);
+
+    // check for beam element that potentially needs special treatment due to Hermite interpolation
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+    // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+    if ( beamele != NULL )
+      continue;
+
+
+    const std::vector<int> & numbering =
+        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType( ele->Shape() ).second;
+
+    for (unsigned int inode = 0; inode < (unsigned int) ele->NumNode(); ++inode)
+    {
+      nodedofs.clear();
+
+      // local storage position of desired dof gid
+      discretization_->Dof( ele->Nodes()[ numbering[inode] ], nodedofs );
+
+      for (unsigned int idof = 0; idof < result_num_dofs_per_node; ++idof)
+      {
+        const int lid =
+            result_data_dofbased->Map().LID( nodedofs[ idof + read_result_data_from_dofindex ] );
+
+        if ( lid > -1 )
+          vtu_point_result_data.push_back( (*result_data_dofbased)[lid] );
+        else
+        {
+          // Fixme what about the 'fillzeros' flag? for now -> dserror
+//          if( fillzeros )
+//            vtu_point_result_data.push_back(0.);
+//          else
+            dserror("received illegal dof local id: %d", lid);
+        }
+      }
+
+      // Fixme what about the following lines?
+//      for (int d=numdf; d<ncomponents; ++d)
+//        vtu_point_result_data.push_back(0.);
+    }
+
+    pointcounter += ele->NumNode();
+  }
+
+  // sanity check
+  if ( vtu_point_result_data.size() != result_num_dofs_per_node * pointcounter )
+  {
+    dserror("RuntimeVtuWriter expected %d result values, but got %d",
+        result_num_dofs_per_node * pointcounter, vtu_point_result_data.size() );
+  }
+
+
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(
+      vtu_point_result_data, result_num_dofs_per_node, resultname);
 }
 
 /*-----------------------------------------------------------------------------------------------*

@@ -21,6 +21,7 @@
 DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
     : isinit_(false),
       issetup_(false),
+      use_absolute_positions_visualizationpoint_coordinates_(true),
       write_triads_visualizationpoints_(false),
       write_material_crosssection_strains_gausspoints_(false),
       write_material_crosssection_stresses_gausspoints_(false)
@@ -37,6 +38,10 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
   issetup_ = false;
 
   // initialize the parameter values
+
+  use_absolute_positions_visualizationpoint_coordinates_ =
+      (bool) DRT::INPUT::IntegralValue<int>(
+          IO_vtk_structure_beams_paramslist, "USE_ABSOLUTE_POSITIONS");
 
   write_triads_visualizationpoints_ =
       (bool) DRT::INPUT::IntegralValue<int>(

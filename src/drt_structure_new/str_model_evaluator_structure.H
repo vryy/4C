@@ -23,8 +23,10 @@
 
 #include "str_elements_paramsinterface.H"     // interface to the element evaluation
 
-//forward declaration ...
+//forward declarations ...
+class DiscretizationRuntimeVtuWriter;
 class BeamDiscretizationRuntimeVtuWriter;
+
 namespace LINALG {
   class SparseMatrix;
 } // namespace LINALG
@@ -311,6 +313,12 @@ namespace MODELEVALUATOR{
      *  \author grill */
     void WriteOutputRuntimeVtk() const;
 
+    /*! \brief writes output for discretization structure in VTK format
+     *
+     *  \date 04/17
+     *  \author grill */
+    void WriteOutputRuntimeVtkStructure() const;
+
     /*! \brief writes special output for beam elements in VTK format
      *
      *  \date 04/17
@@ -397,7 +405,10 @@ namespace MODELEVALUATOR{
      *  etc.. */
     Teuchos::RCP<Epetra_Vector> dis_incr_ptr_;
 
-    //! beam discretization vtu writer
+    //! structure discretization runtime vtu writer
+    Teuchos::RCP<DiscretizationRuntimeVtuWriter> vtu_writer_ptr_;
+
+    //! beam discretization runtime vtu writer
     Teuchos::RCP<BeamDiscretizationRuntimeVtuWriter> beam_vtu_writer_ptr_;
     //! @}
   };

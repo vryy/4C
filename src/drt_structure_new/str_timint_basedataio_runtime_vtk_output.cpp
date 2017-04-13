@@ -26,7 +26,9 @@ STR::TIMINT::ParamsRuntimeVtkOutput::ParamsRuntimeVtkOutput()
       output_data_format_( INPAR::IO_RUNTIME_VTK_STRUCTURE::vague ),
       output_interval_steps_(-1),
       output_every_iteration_(false),
-      output_displacement_state(false)
+      output_displacement_state_(false),
+      special_output_beams_(false),
+      params_runtime_vtu_output_beams_(Teuchos::null)
 {
   // empty constructor
 }
@@ -49,15 +51,19 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
   output_every_iteration_ =
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
 
-  output_displacement_state =
+  output_displacement_state_ =
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "DISPLACEMENT");
 
   if ( output_every_iteration_ )
     dserror("not implemented yet!");
 
 
-  // Fixme this seems to return true although section does not exist in input file
-  if ( IO_vtk_structure_paramslist.isSublist("BEAMS") )
+  // check for special beam output which is to be handled by an own writer object
+  special_output_beams_ =
+      (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "SPECIAL_OUTPUT_BEAMS");
+
+  // create and initialize parameter container object for beam sepcific runtime vtk output
+  if ( special_output_beams_ )
   {
     params_runtime_vtu_output_beams_ = Teuchos::rcp( new DRT::ELEMENTS::BeamRuntimeVtuOutputParams() );
 

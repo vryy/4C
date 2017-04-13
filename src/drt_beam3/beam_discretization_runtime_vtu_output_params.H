@@ -51,6 +51,14 @@ namespace ELEMENTS {
       return write_triads_visualizationpoints_;
     };
 
+    /// whether to use abolute positions or initial positions for the vtu geometry definition
+    /// (i.e. for the visualization point coordinates)
+    bool UseAbsolutePositions() const
+    {
+      CheckInitSetup();
+      return use_absolute_positions_visualizationpoint_coordinates_;
+    };
+
     /// whether to write material cross-section strains at the Gauss points
     bool IsWriteMaterialStrainsGaussPoints() const
     {
@@ -87,6 +95,10 @@ namespace ELEMENTS {
 
     /// @name variables controlling output
     /// @{
+
+    /// whether to use abolute positions or initial positions for the vtu geometry definition
+    /// (i.e. for the visualization point coordinates)
+    bool use_absolute_positions_visualizationpoint_coordinates_;
 
     /// whether to write triads at the visualization points
     bool write_triads_visualizationpoints_;

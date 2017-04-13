@@ -45,6 +45,12 @@ namespace BEAMS
         sublist_IO_VTK_structure.sublist("BEAMS",false,"");
 
 
+    // use absolute positions or initial positions for vtu geometry (i.e. point coordinates)
+    // 'absolute positions' requires writing geometry in every output step (default for now)
+    setStringToIntegralParameter<int>("USE_ABSOLUTE_POSITIONS","Yes",
+        "use absolute positions or initial positions for vtu geometry (i.e. point coordinates)",
+        yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
     // write triads as three orthonormal base vectors at every visualization point
     setStringToIntegralParameter<int>("TRIAD_VISUALIZATIONPOINT","No",
         "write triads at every visualization point",
