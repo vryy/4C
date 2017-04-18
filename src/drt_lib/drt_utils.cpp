@@ -704,6 +704,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
+  DRT::Element::LocationArray la(dis->NumDofSets());
 
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;
@@ -721,7 +722,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
     DRT::Element* actele = dis->lRowElement(i);
 
     // get element location vector
-    DRT::Element::LocationArray la(1);
+    //DRT::Element::LocationArray la(1);
     actele->LocationVector(*dis,la,false);
 
     // Reshape element matrices and vectors and initialize to zero
@@ -729,7 +730,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
     elevector2.Size(3);
 
     // call the element specific evaluate method (elevec1 = velocity gradient, elevec2 = element centroid)
-    actele->Evaluate(params,*dis,la[0].lm_,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+    actele->Evaluate(params,*dis,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
     // store computed values (e.g. velocity gradient) for each element
     for (int j=0; j<numvec; ++j)
@@ -825,7 +826,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           // solve for coefficients of interpolation
           const double det = LINALG::scaledGaussElimination<dimp>( A, b, x );
           if(det < 1.0e-14)
-            dserror("system singular");
+            dserror("system singular, at inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
           const double recoveredgradient = p(0)*x(0);
@@ -895,7 +896,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           // solve for coefficients of interpolation
           const double det = LINALG::scaledGaussElimination<dimp>( A, b, x );
           if(det < 1.0e-14)
-            dserror("system singular");
+            dserror("system singular, at pbc inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
           const double recoveredgradient = p(0)*x(0);
@@ -986,7 +987,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           // solve for coefficients of interpolation
           const double det = LINALG::scaledGaussElimination<dimp>( A, b, x );
           if(det < 1.0e-14)
-            dserror("system singular");
+            dserror("system singular, at boundary node");
 
           // patch-recovery interpolation for boundary point
           double recoveredgradient = p(0)*x(0);
@@ -1126,7 +1127,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           // solve for coefficients of interpolation
           const double det = LINALG::scaledGaussElimination<dimp>( A, b, x );
           if(det < 1.0e-14)
-            dserror("system singular");
+            dserror("system singular, at pbc boundary node");
 
           // patch-recovery interpolation for boundary point
           double recoveredgradient = p(0)*x(0);
