@@ -721,7 +721,8 @@ VtkWriterBase::InitializeVtkCollectionFileAndGetFileStream(
     ) const
 {
   // initialize the output filestream for the new collection file
-  collectionfilestream = std::ofstream(
+  collectionfilestream.clear();
+  collectionfilestream << std::ofstream(
       (working_directory_full_path_ + "/../" + collectionfilename + ".pvd").c_str() );
 }
 
