@@ -259,10 +259,10 @@ private:
       const std::vector<std::pair<double, std::string> > & masterfiles_time_and_name
       ) const;
 
-  //! initialize a VTK collection file stream from given file name and return the file stream
-  void InitializeVtkCollectionFileAndGetFileStream(
-      const std::string & collectionfilename,
-      std::ofstream & collectionfilestream
+  //! construct full path and name for VTK collection file stream from given file name
+  const char*
+  GetVtkCollectionFileFullPathAndName(
+      const std::string & collectionfilename
       ) const;
 
   //! write the header into a given VTK collection file stream

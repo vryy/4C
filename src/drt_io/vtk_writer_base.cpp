@@ -633,11 +633,8 @@ VtkWriterBase::WriteVtkCollectionFileForAllWrittenMasterFiles(
   if ( myrank_ == 0 )
   {
     // initialize the output filestream for the new collection file
-    std::ofstream collectionfilestream;
-
-
-    InitializeVtkCollectionFileAndGetFileStream(
-        collectionfilename, collectionfilestream);
+    std::ofstream collectionfilestream(
+        GetVtkCollectionFileFullPathAndName(collectionfilename) );
 
     WriteHeaderIntoGivenVtkCollectionFileStream( collectionfilestream );
 
@@ -679,9 +676,8 @@ VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
   if ( myrank_ == 0 )
   {
     // initialize the output filestream for the new collection file
-    std::ofstream collectionfilestream;
-    InitializeVtkCollectionFileAndGetFileStream(
-        collectionfilename, collectionfilestream);
+    std::ofstream collectionfilestream(
+        GetVtkCollectionFileFullPathAndName(collectionfilename) );
 
 
     WriteHeaderIntoGivenVtkCollectionFileStream( collectionfilestream );
@@ -714,16 +710,13 @@ VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void
-VtkWriterBase::InitializeVtkCollectionFileAndGetFileStream(
-    const std::string & collectionfilename,
-    std::ofstream & collectionfilestream
+const char*
+VtkWriterBase::GetVtkCollectionFileFullPathAndName(
+    const std::string & collectionfilename
     ) const
 {
   // initialize the output filestream for the new collection file
-  collectionfilestream.clear();
-  collectionfilestream << std::ofstream(
-      (working_directory_full_path_ + "/../" + collectionfilename + ".pvd").c_str() );
+  return (working_directory_full_path_ + "/../" + collectionfilename + ".pvd").c_str();
 }
 
 /*----------------------------------------------------------------------*
