@@ -1,16 +1,14 @@
 //
-// Maintainer: Moritz Frenzel
-// frenzel@lnm.mw.tum.de
+// Maintainer: Michael Hiermeier
+// hiermeier@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15240
 //
-// necessary defines: D_SOLID3 BINIO
-//
+
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-Nonlinear Cook's membrane problem for 64 solidh8 eas full (21 eas modes)
+Test the NOX line search framework incl EAS
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        64
 NODES                           162

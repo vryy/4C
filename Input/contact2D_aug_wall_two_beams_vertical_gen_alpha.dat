@@ -1,17 +1,16 @@
 //
-// Maintainer: Markus Gitterle
-// gitterle@lnm.mw.tum.de
+// Maintainer: Michael Hiermeier
+// hiermeier@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15251
 //
-// necessary defines: BINIO
-//
+// Test of the dynamic augmented contact framework (GenAlpha)
+// Segment based integration
 
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-frictional contact (two curved beams, no sliding)
+dynamic frictionless contact (two curved beams, no sliding)
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        200
 NODES                           306
