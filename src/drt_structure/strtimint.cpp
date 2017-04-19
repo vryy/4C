@@ -367,7 +367,10 @@ void STR::TimInt::Setup()
     discret_->GetCondition("PatientSpecificData", pscond);
     if (!pscond.size())
     {
-      std::cout << "do we set up patspec stuff " << std::endl;
+      if(discret_->Comm().MyPID()==0)
+      {
+        std::cout << "do we set up patspec stuff " << std::endl;
+      }
       pslist_ = Teuchos::rcp(new Teuchos::ParameterList());
       //initialize patient specific parameters and conditions
       PATSPEC::PatientSpecificGeometry(discret_, pslist_);
