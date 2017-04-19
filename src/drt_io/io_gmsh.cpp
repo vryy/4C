@@ -286,7 +286,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
 /*------------------------------------------------------------------------------------------------*
  | write multivector field to Gmsh postprocessing file                               winter 04/17 |
  *------------------------------------------------------------------------------------------------*/
-void IO::GMSH::VectorFieldDofBasedToGmsh(
+void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
     const Teuchos::RCP<const DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_MultiVector>  vectorfield_row,
     std::ostream&                           s,

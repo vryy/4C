@@ -346,7 +346,7 @@ void XFEM::LevelSetCoupling::GmshOutput(
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "SOLcutter-smoothedgradphi \" {" << std::endl;
-    IO::GMSH::VectorFieldMultivectoDofBasedToGmsh(cutter_dis_,gradphinp_smoothed_node_,gmshfilecontent,cutter_nds_phi_);
+    IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(cutter_dis_,gradphinp_smoothed_node_,gmshfilecontent,cutter_nds_phi_);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -2205,7 +2205,7 @@ void XFEM::LevelSetCouplingTwoPhase::GmshOutput(
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "SOLcutter-smoothedgradphi \" {" << std::endl;
-    IO::GMSH::VectorFieldMultivectoDofBasedToGmsh(cutter_dis_,gradphinp_smoothed_node_,gmshfilecontent,cutter_nds_phi_);
+    IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(cutter_dis_,gradphinp_smoothed_node_,gmshfilecontent,cutter_nds_phi_);
     gmshfilecontent << "};" << std::endl;
   }
 
