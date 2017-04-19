@@ -20,7 +20,7 @@ PROBLEMTYP                      Two_Phase_Flow
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_GMSH                     No
-OUTPUT_BIN                      Yes
+OUTPUT_BIN                      No
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
@@ -41,8 +41,14 @@ RESULTSEVRY                           1
 ---------------------------------------------------TWO PHASE FLOW/SMEARED
 INTERFACE_THICKNESS             0.06
 ENHANCED_GAUSSRULE              yes
+-------------------------------------------TWO PHASE FLOW/SURFACE TENSION
+SURFTENSAPPROX                      surface_tension_approx_nodal_curvature
+SMOOTHGRADPHI                       smooth_grad_phi_l2_projection
+L2_PROJECTION_SECOND_DERIVATIVES    No
+NODAL_CURVATURE                     l2_projected
+SMOOTHING_PARAMETER                 0
 ---------------------------------------------------------------FLUID DYNAMIC
-PHYSICAL_TYPE  Stokes
+PHYSICAL_TYPE                   Stokes
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field
 STARTFUNCNO                     -1
@@ -51,7 +57,7 @@ NONLINITER                      fixed_point_like  //Newton
 ITEMAX                          20                              // 20
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-10
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
 THETA                           1.0
@@ -69,7 +75,7 @@ PREDICTOR                       steady_state
 MAXTIME                         3333
 NUMSTEP                         33
 TIMESTEP                        50.0
-GMSH_OUTPUT                     no
+GMSH_OUTPUT                     No
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Hughes_Franca_Balestra_wo_dt   //Taylor_Hughes_Zarins_Whiting_Jansen

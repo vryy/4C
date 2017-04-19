@@ -535,6 +535,19 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     break;
   }
 
+  case SCATRA::calc_grad_ele_center:
+  {
+    // need current scalar vector
+    // -> extract local values from the global vectors
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
+
+    CalcGradientEleCenter(ele, elevec1_epetra, elevec2_epetra);
+
+    break;
+  }
+
   case SCATRA::recon_curvature_at_nodes:
     {
       // need current scalar vector
@@ -1109,6 +1122,64 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateService(
   return 0;
 }
 
+
+/*-------------------------------------------------------------------------*
+ | Element reconstruct grad phi, one deg of freedom (for now) winter 04/14 |
+ *-------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcGradientEleCenter(
+  const DRT::Element*             ele,
+  Epetra_SerialDenseVector&       elevec1,
+  Epetra_SerialDenseVector&       elevec2
+  )
+{
+
+  if(distype!=DRT::Element::hex8 && distype!=DRT::Element::tet4 && distype!=DRT::Element::quad4 && distype!=DRT::Element::tri3)
+    dserror("this is currently only implemented for linear elements");
+  // get node coordinates
+
+  //  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+//  // Do ALE specific updates if necessary
+//  if (ele->IsAle())
+//  {
+//    LINALG::Matrix<nsd_,nen_> edisp(true);
+//    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edisp, NULL, "disp");
+//
+//    // get new node positions of ALE mesh
+//     xyze_ += edisp;
+//  }
+
+  // evaluate shape functions and derivatives element center
+  EvalShapeFuncAndDerivsAtEleCenter();
+
+  if(numdofpernode_ != 1)
+    dserror("Not tested for more than 1 dofset for ScaTra");
+
+  for (int k=0; k<numdofpernode_; k++)
+  {
+  LINALG::Matrix<nsd_,1> grad_phi(true);
+
+  grad_phi.Multiply(derxy_,ephinp_[k]);
+
+  // Compute element vectors. For L2-Projection
+  for (unsigned i=0; i<nsd_; ++i)
+  {
+    elevec1[i*numdofpernode_+k] = grad_phi(i,0);
+    //elevec2[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(1,0);
+    //elevec3[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(2,0);
+  }
+
+  } //loop over degrees of freedom
+
+  // get position of element centroid
+  LINALG::Matrix<nsd_,1> x_centroid(true);
+  x_centroid.Multiply(xyze_,funct_);
+  for (unsigned i=0; i<nsd_; ++i)
+  {
+    elevec2[i] = x_centroid(i);
+  }
+
+} //ScaTraEleCalc::CalcGradientEleCenter
 
 /*-------------------------------------------------------------------------*
  | Element reconstruct grad phi, one deg of freedom (for now) winter 04/14 |

@@ -93,7 +93,6 @@ namespace SCATRA
       bool init=false);
 
     /// access routine for nodal curvature
-    Teuchos::RCP<Epetra_Vector> GetNodalCurvature(const Teuchos::RCP<const Epetra_Vector> phi);
     Teuchos::RCP<Epetra_Vector> GetNodalCurvature(const Teuchos::RCP<const Epetra_Vector> phi,
                                                   const Teuchos::RCP<const Epetra_MultiVector> gradphi);
 

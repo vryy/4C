@@ -426,8 +426,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
    /* Transfers two phase specific problems                 05/14 winter */
   if (probtype == prb_two_phase_flow)
   {
-    fluidtimeparams->set<double>("INTERFACE_THICKNESS",prbdyn.sublist("SMEARED").get<double>("INTERFACE_THICKNESS"));
-    fluidtimeparams->set<bool>("ENHANCED_GAUSSRULE", DRT::INPUT::IntegralValue<int>(prbdyn.sublist("SMEARED"),"ENHANCED_GAUSSRULE"));
+    fluidtimeparams->sublist("SMEARED")=prbdyn.sublist("SMEARED");
+    fluidtimeparams->sublist("SURFACE TENSION")=prbdyn.sublist("SURFACE TENSION");
   }
 
   // sublist for combustion-specific fluid parameters

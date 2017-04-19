@@ -262,8 +262,8 @@ void FLD::TimIntTwoPhase::SetElementCustomParameter()
   Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_two_phase_parameter);
-  eleparams.set<double>("INTERFACE_THICKNESS", params_->get<double>("INTERFACE_THICKNESS"));
-  eleparams.set<bool>("ENHANCED_GAUSSRULE", params_->get<bool>("ENHANCED_GAUSSRULE"));
+  eleparams.sublist("SMEARED") = params_->sublist("SMEARED");
+  eleparams.sublist("SURFACE TENSION") = params_->sublist("SURFACE TENSION");
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);

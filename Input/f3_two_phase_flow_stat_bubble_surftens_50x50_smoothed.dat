@@ -20,7 +20,7 @@ PROBLEMTYP                      Two_Phase_Flow
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_GMSH                     No
-OUTPUT_BIN                      Yes
+OUTPUT_BIN                      No
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
@@ -41,6 +41,12 @@ RESULTSEVRY                           1
 ---------------------------------------------------TWO PHASE FLOW/SMEARED
 ENHANCED_GAUSSRULE              No
 INTERFACE_THICKNESS             0.04
+-------------------------------------------TWO PHASE FLOW/SURFACE TENSION
+SURFTENSAPPROX                      surface_tension_approx_nodal_curvature
+SMOOTHGRADPHI                       smooth_grad_phi_l2_projection
+L2_PROJECTION_SECOND_DERIVATIVES    No
+NODAL_CURVATURE                     l2_projected
+SMOOTHING_PARAMETER                 0
 ---------------------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE  Stokes
 LINEAR_SOLVER                   2

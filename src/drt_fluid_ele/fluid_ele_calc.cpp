@@ -1810,16 +1810,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::AddSurfaceTensionForce(
     //==================================================
 
     static LINALG::Matrix<nsd_,1> gradphi;
-    double                 gausscurvature;
-
-    gausscurvature=funct_.Dot(ecurvature);
     double Dheavyside_epsilon = 1.0/(2.0 * epsilon)*(1.0+cos(PI*gaussescaaf/epsilon));
 
     // NON-smoothed gradient!!! Should be correct
     gradphi.Multiply(derxy_,escaaf);
     // Normalizing the gradient shouldn't be done according to the paper
     // of Rodriguez 2013.
-
 //    const double normgradphi=gradphi.Norm2();
 //    if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
 //      gradphi.Scale(1.0/normgradphi);
@@ -1827,18 +1823,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::AddSurfaceTensionForce(
 //      gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
 
     //Smoothed gradient (egradphi, should not be used!!!)
-    double scalar_fac = Dheavyside_epsilon*gamma_*gausscurvature;
-    generalbodyforce_.Update(scalar_fac,gradphi,1.0);
+    if(fldpara_->GetSurfaceTensionApprox() == INPAR::TWOPHASE::surface_tension_approx_nodal_curvature)
+    {
+      double                 gausscurvature;
+      gausscurvature=funct_.Dot(ecurvature);
+      double scalar_fac = Dheavyside_epsilon*gamma_*gausscurvature;
+      generalbodyforce_.Update(scalar_fac,gradphi,1.0);
+    }
+    else
+      dserror("Other means of approximation than nodal curvature is not available at the moment! Implement it!");
 
     if(fldparatimint_->IsNewOSTImplementation())
     {
       double                 gaussescan;
-      gaussescan =    funct_.Dot(escaam);
-
       static LINALG::Matrix<nsd_,1> gradphin;
-      double                 gausscurvaturen;
-
-      gausscurvaturen=funct_.Dot(ecurvaturen);
+      gaussescan =    funct_.Dot(escaam);
       gradphin.Multiply(derxy_,escaam);
       //    const double normgradphin=gradphin.Norm2();
       //    if(normgradphin>1e-9) //1e-9 is set to create a reasonable scaling.
@@ -1847,9 +1846,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::AddSurfaceTensionForce(
       //      gradphin.Scale(0.0); //This to catch the cases when gradphi \approx 0
 
       Dheavyside_epsilon = 1.0/(2.0 * epsilon)*(1.0+cos(PI*gaussescan/epsilon));
-      scalar_fac = Dheavyside_epsilon*gamma_*gausscurvaturen;
-      generalbodyforcen_.Update(scalar_fac,gradphin,1.0);
 
+      //Smoothed gradient (egradphi, should not be used!!!)
+      if(fldpara_->GetSurfaceTensionApprox() == INPAR::TWOPHASE::surface_tension_approx_nodal_curvature)
+      {
+        double                 gausscurvaturen;
+        gausscurvaturen=funct_.Dot(ecurvaturen);
+        double scalar_fac = Dheavyside_epsilon*gamma_*gausscurvaturen;
+        generalbodyforcen_.Update(scalar_fac,gradphin,1.0);
+      }
     }
 
   }

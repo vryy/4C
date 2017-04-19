@@ -21,6 +21,8 @@
 #include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 #include "../linalg/linalg_mapextractor.H"
 
+//Needed for input parameter
+#include "../drt_inpar/inpar_twophase.H"
 
 /*!
 \brief SCATRA namespace for two phase flow problems in BACI utilizing the levelset module
@@ -152,6 +154,8 @@ namespace TWOPHASEFLOW
     /// set scatra values required in fluid
     void SetScaTraValuesInFluid();
 
+    /// Get smoothed LevelSet gradient
+    Teuchos::RCP<Epetra_MultiVector> GetSmoothedLevelSetGradient(const Teuchos::RCP<const Epetra_Vector> & phinp);
 
   private:
 
@@ -185,6 +189,10 @@ namespace TWOPHASEFLOW
     std::vector<double> fsphiincnorm_;
 
     Teuchos::ParameterList prbdyn_;
+
+    /// Two Phase Specific parameter
+    INPAR::TWOPHASE::SmoothGradPhi        smoothedgradphitype_;
+    bool                                  scalesmoothedgradients_;
 
   };
 

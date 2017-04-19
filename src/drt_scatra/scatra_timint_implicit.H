@@ -298,9 +298,31 @@ public:
   //! calculation of relative error with reference to analytical solution
   virtual void EvaluateErrorComparedToAnalyticalSol();
 
+  //! Calculate the reconstructed nodal gradient of phi from L2-projection
+  Teuchos::RCP<Epetra_MultiVector>  ReconstructGradientAtNodesL2Projection(
+      const Teuchos::RCP<const Epetra_Vector> phi,
+      bool scalenormal = false,     ///< Scale the smoothed normal field to 1
+      bool returnnodal = false      ///< Return nodal based vector
+      );
+
+  //! Calculate the reconstructed nodal gradient of phi from super convergent patch recovery
+  Teuchos::RCP<Epetra_MultiVector>  ReconstructGradientAtNodesPatchRecon(
+      const Teuchos::RCP<const Epetra_Vector> phi,
+      const int dimension  = 3,
+      bool scalenormal = false,     ///< Scale the smoothed normal field to 1
+      bool returnnodal = false      ///< Return nodal based vector
+      );
+
+  //! Calculate the reconstructed nodal gradient of phi from node mean averaging
+  Teuchos::RCP<Epetra_MultiVector> ReconstructGradientAtNodesMeanAverage(
+      Teuchos::RCP<const Epetra_Vector> state,
+      bool scalenormal = false,     ///< Scale the smoothed normal field to 1
+      bool returnnodal = false      ///< Return nodal based vector
+      );
+
   //! Calculate the reconstructed nodal gradient of phi
-  Teuchos::RCP<Epetra_MultiVector> ReconstructGradientAtNodes(
-      const Teuchos::RCP<const Epetra_Vector> & phi);
+  void ScaleGradientsToOne(
+    Teuchos::RCP<Epetra_MultiVector> state);
 
   //! finite difference check for scalar transport system matrix
   virtual void FDCheck();
@@ -743,13 +765,22 @@ protected:
   //! contains the nonlinear iteration loop
   virtual void NonlinearSolve();
 
-  //! Calculate the reconstructed nodal gradient of phi
+  //! Calculate the reconstructed nodal gradient of phi by means of L2-projection
   Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
     const Teuchos::RCP<const Epetra_Vector> & state,
     const std::string statename,
     const int numvec,
     Teuchos::ParameterList& params,
     const int solvernumber
+    );
+
+  //! Calculate the reconstructed nodal gradient of phi by means of SPR
+  Teuchos::RCP<Epetra_MultiVector> ComputeSuperconvergentPatchRecovery(
+    Teuchos::RCP<const Epetra_Vector> state,
+    const std::string statename,
+    const int numvec,
+    Teuchos::ParameterList& params,
+    const int dim
     );
 
   //! compute contributions of solution-depending boundary and interface conditions to global system of equations

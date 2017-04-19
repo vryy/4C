@@ -14,6 +14,7 @@
 
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_base.H"
+#include "scatra_utils.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 
@@ -1797,10 +1798,94 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> s
 }
 
 /*----------------------------------------------------------------------*
+ | Calculate the reconstructed nodal gradient of phi        winter 04/17|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector>  SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodesPatchRecon(
+    const Teuchos::RCP<const Epetra_Vector> phi,
+    const int dimension,
+    bool scalenormal,
+    bool returnnodal)
+{
+
+  // create the parameters for the discretization
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",SCATRA::calc_grad_ele_center);
+
+  const int dim = problem_->NDim();
+
+  Teuchos::RCP<Epetra_MultiVector> gradphi = SCATRA::ScaTraTimIntImpl::ComputeSuperconvergentPatchRecovery(
+                                                                                 phi,
+                                                                                "phinp",
+                                                                                 dim,
+                                                                                 eleparams,
+                                                                                 dimension);
+
+  if(scalenormal)
+    SCATRA::ScaTraTimIntImpl::ScaleGradientsToOne(gradphi);
+
+  if(!returnnodal)
+  {
+    //As the object is a MultiVector, this has to be done to keep the structure from before...
+    //  not the nicest way but better than nothing.
+    gradphi->ReplaceMap(*(discret_->DofRowMap()));
+    Teuchos::rcp((*gradphi)(0),false)->ReplaceMap(*(discret_->DofRowMap()));
+    Teuchos::rcp((*gradphi)(1),false)->ReplaceMap(*(discret_->DofRowMap()));
+    Teuchos::rcp((*gradphi)(2),false)->ReplaceMap(*(discret_->DofRowMap()));
+  }
+
+  return gradphi;
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate the reconstructed nodal gradient of phi        winter 04/17|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergentPatchRecovery(
+    Teuchos::RCP<const Epetra_Vector> state,
+    const std::string statename,
+    const int numvec,
+    Teuchos::ParameterList& eleparams,
+    const int dim)
+{
+  //Warning, this is only tested so far for 1 scalar field!!!
+
+  // dependent on the desired projection, just remove this line
+  if(not state->Map().SameAs(*discret_->DofRowMap()))
+    dserror("input map is not a dof row map of the fluid");
+
+  // set given state for element evaluation
+  discret_->ClearState();
+  discret_->SetState(statename,state);
+
+  switch (dim)
+  {
+  case 3:
+    return DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(discret_,state,statename,numvec,eleparams);
+    break;
+  case 2:
+    return DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(discret_,state,statename,numvec,eleparams);
+    break;
+  case 1:
+    return DRT::UTILS::ComputeSuperconvergentPatchRecovery<1>(discret_,state,statename,numvec,eleparams);
+    break;
+  default:
+    dserror("only 1/2/3D implementation available for superconvergent patch recovery");
+    break;
+  }
+
+  return Teuchos::null;
+
+}
+
+
+/*----------------------------------------------------------------------*
  | Calculate the reconstructed nodal gradient of phi        winter 04/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector>  SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
-    const Teuchos::RCP<const Epetra_Vector> & phi)
+Teuchos::RCP<Epetra_MultiVector>  SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodesL2Projection(
+    const Teuchos::RCP<const Epetra_Vector> phi,
+    bool scalenormal,
+    bool returnnodal)
 {
 
   // create the parameters for the discretization
@@ -1846,16 +1931,21 @@ Teuchos::RCP<Epetra_MultiVector>  SCATRA::ScaTraTimIntImpl::ReconstructGradientA
 
   const int dim = problem_->NDim();
 
-  Teuchos::RCP<Epetra_MultiVector> gradPhi = SCATRA::ScaTraTimIntImpl::ComputeNodalL2Projection(phi,"phinp",dim,eleparams,lstsolver);
+  Teuchos::RCP<Epetra_MultiVector> gradphi = SCATRA::ScaTraTimIntImpl::ComputeNodalL2Projection(phi,"phinp",dim,eleparams,lstsolver);
 
-  //As the object is a MultiVector, this has to be done to keep the structure from before...
-  //  not the nicest way but better than nothing.
-  gradPhi->ReplaceMap(*(discret_->DofRowMap()));
-  Teuchos::rcp((*gradPhi)(0),false)->ReplaceMap(*(discret_->DofRowMap()));
-  Teuchos::rcp((*gradPhi)(1),false)->ReplaceMap(*(discret_->DofRowMap()));
-  Teuchos::rcp((*gradPhi)(2),false)->ReplaceMap(*(discret_->DofRowMap()));
+  if(scalenormal)
+    SCATRA::ScaTraTimIntImpl::ScaleGradientsToOne(gradphi);
 
-  return gradPhi;
+  if(!returnnodal)
+  {
+    //As the object is a MultiVector, this has to be done to keep the structure from before...
+    //  not the nicest way but better than nothing.
+    gradphi->ReplaceMap(*(discret_->DofRowMap()));
+    Teuchos::rcp((*gradphi)(0),false)->ReplaceMap(*(discret_->DofRowMap()));
+    Teuchos::rcp((*gradphi)(1),false)->ReplaceMap(*(discret_->DofRowMap()));
+    Teuchos::rcp((*gradphi)(2),false)->ReplaceMap(*(discret_->DofRowMap()));
+  }
+  return gradphi;
 }
 
 /*----------------------------------------------------------------------*
@@ -1885,6 +1975,77 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNodalL2Project
   return DRT::UTILS::ComputeNodalL2Projection(discret_,statename,numvec,eleparams,solvernumber);
 }
 
+
+/*----------------------------------------------------------------------*
+ | Calculate the reconstructed nodal gradient of phi        winter 04/17|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector>  SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodesMeanAverage(
+    const Teuchos::RCP<const Epetra_Vector> phi,
+    bool scalenormal,
+    bool returnnodal)
+{
+
+  Teuchos::RCP<Epetra_MultiVector> gradphi = SCATRA::SCATRAUTILS::ComputeGradientAtNodesMeanAverage<3>(
+                                                                                 discret_,
+                                                                                 phi,
+                                                                                 0);
+
+  if(scalenormal)
+    SCATRA::ScaTraTimIntImpl::ScaleGradientsToOne(gradphi);
+
+  if(returnnodal)
+  {
+    gradphi->ReplaceMap(*(discret_->NodeRowMap()));
+    Teuchos::rcp((*gradphi)(0),false)->ReplaceMap(*(discret_->NodeRowMap()));
+    Teuchos::rcp((*gradphi)(1),false)->ReplaceMap(*(discret_->NodeRowMap()));
+    Teuchos::rcp((*gradphi)(2),false)->ReplaceMap(*(discret_->NodeRowMap()));
+  }
+
+  return gradphi;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Scale gradient field to unit vector                      winter 04/17|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ScaleGradientsToOne(
+    Teuchos::RCP<Epetra_MultiVector> state)
+{
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes(); ++lnodeid)
+  {
+    // get the processor's local scatra node
+    DRT::Node* lscatranode = discret_->lRowNode(lnodeid);
+
+    // find out the global dof id of the last(!) dof at the scatra node
+    const int numscatradof = discret_->NumDof(0,lscatranode);
+    const int globalscatradofid = discret_->Dof(0,lscatranode,numscatradof-1);
+    const int localscatradofid = phinp_->Map().LID(globalscatradofid);
+    //const int localscatradofid = (state)->Map().LID(globalscatradofid);
+    if (localscatradofid < 0)
+      dserror("localdofid not found in map for given globaldofid");
+
+    const int numcol = (*state).NumVectors();
+//    if( numcol != (int)nsd) dserror("number of columns in Epetra_MultiVector is not identically to nsd");
+
+    double lengthofvector_squared = 0.0;
+
+    // loop over dimensions (= number of columns in multivector)
+    for(int col=0; col< numcol; col++)
+    {
+      // get columns vector of multivector
+      double value = ((*state)[col])[localscatradofid];
+      lengthofvector_squared += value*value;
+    }
+
+    // loop over dimensions (= number of columns in multivector)
+    for(int col=0; col< numcol; col++)
+    {
+      // set smoothed gradient entry of phi into column of global multivector
+      if(lengthofvector_squared > 1e-30 )
+        ((*state)[col])[localscatradofid] /= sqrt(lengthofvector_squared);
+    }
+  }
+}
 
 /*--------------------------------------------------------------------------------------------------------------------*
  | convergence check (only for two-way coupled problems, e.g., low-Mach-number flow, two phase flow, ...)    vg 09/11 |

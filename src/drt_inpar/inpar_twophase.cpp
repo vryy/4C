@@ -69,21 +69,20 @@ void INPAR::TWOPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       tuple<std::string>(
           //"smooth_grad_phi_none",
           "smooth_grad_phi_meanvalue",
-          "smooth_grad_phi_leastsquares_3D",
-          "smooth_grad_phi_leastsquares_2Dx",
-          "smooth_grad_phi_leastsquares_2Dy",
-          "smooth_grad_phi_leastsquares_2Dz",
-          "smooth_grad_phi_l2_projection"),
+          "smooth_grad_phi_l2_projection",
+          "smooth_grad_phi_superconvergent_patch_recovery_3D",
+          "smooth_grad_phi_superconvergent_patch_recovery_2Dz"),
           tuple<int>(
               //smooth_grad_phi_none,
               smooth_grad_phi_meanvalue,
-              smooth_grad_phi_leastsquares_3D,
-              smooth_grad_phi_leastsquares_2Dx,
-              smooth_grad_phi_leastsquares_2Dy,
-              smooth_grad_phi_leastsquares_2Dz,
-              smooth_grad_phi_l2_projection),
+              smooth_grad_phi_l2_projection,
+              smooth_grad_phi_superconvergent_patch_recovery_3D,
+              smooth_grad_phi_superconvergent_patch_recovery_2Dz),
               &twophase_surftens);
+
   BoolParameter("L2_PROJECTION_SECOND_DERIVATIVES","No","L2 Projection Second Derivatives of Level Set",&twophase_surftens);
+
+  BoolParameter("SCALE_SMOOTHED_GRADIENTS","No","Scale the smoothed normal to unit length",&twophase_surftens);
 
   setStringToIntegralParameter<int>("NODAL_CURVATURE","l2_projected","Type of calculation of nodal curvature value",
       tuple<std::string>(

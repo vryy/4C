@@ -324,11 +324,6 @@ void XFEM::LevelSetCoupling::GmshOutput(
   std::ostringstream filename_base_fsi;
   filename_base_fsi << filename_base << "_levelset";
 
-//  // compute the current boundary position
-//  std::map<int,LINALG::Matrix<3,1> > currinterfacepositions;
-//  XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions,idispnp_);
-
-
   const std::string filename =
       IO::GMSH::GetNewFileNameAndDeleteOldFiles(
           filename_base_fsi.str(),
@@ -342,44 +337,20 @@ void XFEM::LevelSetCoupling::GmshOutput(
 
   {
     // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "cutter_phinp_ \" {" << std::endl;
+    gmshfilecontent << "View \" " << "SOLcutter-phi \" {" << std::endl;
     // draw vector field 'force' for every node
-    IO::GMSH::ScalarFieldNodeBasedToGmsh(cutter_dis_,cutter_phinp_,gmshfilecontent);
+    IO::GMSH::ScalarFieldDofBasedToGmsh(cutter_dis_,cutter_phinp_,cutter_nds_phi_,gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
-  //TODO: add further output for other state vectors!
-
-//  {
-//    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "smoothed gradphi \" {" << std::endl;
-//    // draw vector field 'idispnp' for every node
-////    IO::GMSH::VectorFieldNodeBasedToGmsh(cutter_dis_,gradphinp_smoothed_node_,gmshfilecontent);
-//    IO::GMSH::VectorFieldDofBasedToGmsh(cutter_dis_,gradphinp_smoothed_node_,gmshfilecontent,3);
-//    gmshfilecontent << "};" << std::endl;
-//  }
-//
-//  {
-//    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "smoothed curvature \" {" << std::endl;
-//    // draw vector field 'idispnp' for every node
-//    IO::GMSH::ScalarFieldNodeBasedToGmsh(cutter_dis_,curvaturenp_node_,gmshfilecontent);
-//    gmshfilecontent << "};" << std::endl;
-//  }
-
-//  {
-//    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "transport velocity \" {" << std::endl;
-//    // draw vector field 'force' for every node
-//    IO::GMSH::ScalarFieldNodeBasedToGmsh(cutter_dis_,cutter_phinp_,gmshfilecontent);
-//    gmshfilecontent << "};" << std::endl;
-//  }
-//
-//  gmshfilecontent.close();
-//  ;
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "SOLcutter-smoothedgradphi \" {" << std::endl;
+    IO::GMSH::VectorFieldMultivectoDofBasedToGmsh(cutter_dis_,gradphinp_smoothed_node_,gmshfilecontent,cutter_nds_phi_);
+    gmshfilecontent << "};" << std::endl;
+  }
 
   // gmsh output for geometric quantities
-  // gmsh output for transport velocity...
 }
 
 // -------------------------------------------------------------------
@@ -543,12 +514,25 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->SetInitialState(0,"pres",modphinp);
 
 //      Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode= DRT::UTILS::ComputeNodalL2Projection(cutter_dis_,modphinp,"pres",3,eleparams,l2_proj_num);
-      Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode= DRT::UTILS::ComputeNodalL2Projection(cutter_dis_,"pres",3,eleparams,l2_proj_num);
+      // Lives on NodeRow-map!!!
+      Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode = DRT::UTILS::ComputeNodalL2Projection(cutter_dis_,"pres",3,eleparams,l2_proj_num);
       if(gradphinp_smoothed_rownode==Teuchos::null)
         dserror("A smoothed grad phi is required, but an empty one is provided!");
 
-      gradphinp_smoothed_node_ = Teuchos::rcp(new Epetra_MultiVector(*cutter_dis_->NodeColMap(),3));
+      //gradphinp_smoothed_node_ = Teuchos::rcp(new Epetra_MultiVector(*cutter_dis_->NodeColMap(),3));
+      //LINALG::Export(*gradphinp_smoothed_rownode,*gradphinp_smoothed_node_);
+
+      {
+      //As the object is a MultiVector, this has to be done to keep the structure from before...
+      //  not the nicest way but better than nothing.
+      gradphinp_smoothed_rownode->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
+      Teuchos::rcp((*gradphinp_smoothed_rownode)(0),false)->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
+      Teuchos::rcp((*gradphinp_smoothed_rownode)(1),false)->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
+      Teuchos::rcp((*gradphinp_smoothed_rownode)(2),false)->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
+
       LINALG::Export(*gradphinp_smoothed_rownode,*gradphinp_smoothed_node_);
+      LINALG::Export(*gradphinp_smoothed_node_,*gradphinp_smoothed_node_col_);
+      }
 
       //---------------------------------------------- // SMOOTHED GRAD PHI END
     }
@@ -1548,13 +1532,11 @@ void XFEM::LevelSetCouplingTwoPhase::SetParameters_SurfaceTension()
 
   surftensapprox_  = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SurfaceTensionApprox>(params,"SURFTENSAPPROX");
   laplacebeltrami_ = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::LaplaceBeltramiCalc>(params,"LAPLACE_BELTRAMI");
+  smoothedgradphi_ = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SmoothGradPhi>(params,"SMOOTHGRADPHI");
 
   //SAFETY-CHECKS
   if(DRT::INPUT::IntegralValue<bool>(params,"L2_PROJECTION_SECOND_DERIVATIVES"))
     dserror("Second L2-projected derivatives can not be calculated as of now for the Level Set.");
-
-  if(DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SmoothGradPhi>(params,"SMOOTHGRADPHI")!=INPAR::TWOPHASE::smooth_grad_phi_l2_projection)
-    dserror("No other smoothing for the gradient of the level set other than L2 is allowed for now.");
 
   if(DRT::INPUT::IntegralValue<INPAR::TWOPHASE::NodalCurvatureCalc>(params,"NODAL_CURVATURE")!=INPAR::TWOPHASE::l2_projected)
     dserror("No other way to calculate the nodal curvature than L2.");
@@ -2101,6 +2083,20 @@ void XFEM::LevelSetCouplingTwoPhase::Output(
   std::ostringstream temp;
   temp << lsc_idx;
 
+//  if(require_smoothedgradphi_)
+//  {
+//    std::cout << "gradphinp_smoothed_node_" + temp.str() << ", WRITTEN!!" << std::endl;
+//    std::string name = "gradphinp_smoothed_node_"+temp.str();
+//    bg_output_->WriteVector(name, gradphinp_smoothed_node_);
+//  }
+//
+//  if(require_nodalcurvature_)
+//  {
+//    std::cout << "curvaturenp_node_" + temp.str() << ", WRITTEN!!" << std::endl;
+//    std::string name = "curvaturenp_node_"+temp.str();
+//    bg_output_->WriteVector(name, curvaturenp_node_);
+//  }
+
   // write restart
   if (write_restart_data)
   {
@@ -2176,6 +2172,59 @@ void XFEM::LevelSetCouplingTwoPhase::ReadRestart(
   ExportGeometricQuantities();
 }
 
+void XFEM::LevelSetCouplingTwoPhase::GmshOutput(
+    const std::string & filename_base,
+    const int step,
+    const int gmsh_step_diff,
+    const bool gmsh_debug_out_screen
+)
+{
+
+  std::ostringstream filename_base_fsi;
+  filename_base_fsi << filename_base << "_levelset";
+
+  const std::string filename =
+      IO::GMSH::GetNewFileNameAndDeleteOldFiles(
+          filename_base_fsi.str(),
+          step,
+          gmsh_step_diff,
+          gmsh_debug_out_screen,
+          myrank_
+      );
+
+  std::ofstream gmshfilecontent(filename.c_str());
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "SOLcutter-phi \" {" << std::endl;
+    // draw vector field 'force' for every node
+    IO::GMSH::ScalarFieldDofBasedToGmsh(cutter_dis_,cutter_phinp_,cutter_nds_phi_,gmshfilecontent);
+    gmshfilecontent << "};" << std::endl;
+  }
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "SOLcutter-smoothedgradphi \" {" << std::endl;
+    IO::GMSH::VectorFieldMultivectoDofBasedToGmsh(cutter_dis_,gradphinp_smoothed_node_,gmshfilecontent,cutter_nds_phi_);
+    gmshfilecontent << "};" << std::endl;
+  }
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "SOLcutter-smoothedcurvature \" {" << std::endl;
+    IO::GMSH::ScalarFieldDofBasedToGmsh(cutter_dis_,curvaturenp_node_,cutter_nds_phi_,gmshfilecontent);
+    gmshfilecontent << "};" << std::endl;
+  }
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "SOLcutter-transportvelocity \" {" << std::endl;
+    // draw vector field, dof based (as cutter_transport_vel_, contains pressure info as well)
+    IO::GMSH::VelocityPressureFieldDofBasedToGmsh(cutter_dis_,cutter_transport_vel_,"velocity",gmshfilecontent,cutter_nds_vel_);
+    gmshfilecontent << "};" << std::endl;
+  }
+
+}
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/

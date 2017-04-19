@@ -69,6 +69,9 @@ std::map<std::string,std::string> SCATRA::ScatraFluidCloneStrategy::ConditionsTo
   // for cell migration ( rauch 08/16 )
   conditions_to_copy.insert(std::pair<std::string,std::string>("CellFocalAdhesion","CellFocalAdhesion"));
 
+  // for super convergent patch recovery
+  conditions_to_copy.insert(std::pair<std::string,std::string>("SPRboundary","SPRboundary"));
+
   // XFEM levelset based conditions
   conditions_to_copy.insert(std::pair<std::string,std::string>("XFEMLevelsetTwophase","XFEMLevelsetTwophase"));
   conditions_to_copy.insert(std::pair<std::string,std::string>("XFEMLevelsetCombustion","XFEMLevelsetCombustion"));

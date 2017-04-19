@@ -48,11 +48,9 @@ namespace INPAR
     {
       //smooth_grad_phi_none,
       smooth_grad_phi_meanvalue,
-      smooth_grad_phi_leastsquares_3D,
-      smooth_grad_phi_leastsquares_2Dx,
-      smooth_grad_phi_leastsquares_2Dy,
-      smooth_grad_phi_leastsquares_2Dz,
-      smooth_grad_phi_l2_projection
+      smooth_grad_phi_l2_projection,
+      smooth_grad_phi_superconvergent_patch_recovery_3D,
+      smooth_grad_phi_superconvergent_patch_recovery_2Dz
     };
 
     enum NodalCurvatureCalc

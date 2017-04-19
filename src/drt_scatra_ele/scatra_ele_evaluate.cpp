@@ -287,6 +287,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_integr_grad_diff:
     case SCATRA::recon_gradients_at_nodes:
     case SCATRA::recon_curvature_at_nodes:
+    case SCATRA::calc_grad_ele_center:
     case SCATRA::calc_mass_center_smoothingfunct:
     case SCATRA::get_material_internal_state:
     case SCATRA::set_material_internal_state:

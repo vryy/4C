@@ -35,7 +35,7 @@ MAXTIME                         0.5
 NUMSTEP                         8
 RESTARTEVRY                     10
 TIMESTEP                        0.05
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 ---------------------------------------------------TWO PHASE FLOW/SMEARED
 ENHANCED_GAUSSRULE              No
 INTERFACE_THICKNESS             0.0

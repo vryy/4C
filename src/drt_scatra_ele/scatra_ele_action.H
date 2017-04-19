@@ -82,6 +82,7 @@ namespace SCATRA
     project_neumann_field,                       // project neumann field for hdg
     recon_curvature_at_nodes,                    // reconstruct curvature at node points through L2-projection
     recon_gradients_at_nodes,                    // reconstruct gradients at node points through L2-projection
+    calc_grad_ele_center,                        // reconstruct gradient at ele center
     reinitialize_levelset,                       // reinitialize_levelset,
     set_diffcond_scatra_parameter,               // set diffusion-conduction parameters for element evaluation
     set_elch_scatra_parameter,                   // set elch parameters for element evaluation

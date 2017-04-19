@@ -357,6 +357,13 @@ namespace ELEMENTS
       const INPAR::SCATRA::L2ProjectionSystemType &  systemtype  //!< system type
       );
 
+    //! calculate/reconstruct gradient at element center
+    virtual void CalcGradientEleCenter(
+      const DRT::Element*             ele,       //!< the element we are dealing with
+      Epetra_SerialDenseVector&       elevec1,   //!< gradient at element center
+      Epetra_SerialDenseVector&       elevec2    //!< gauss point at element center
+      );
+
     //! calculate/reconstruct gradient(s) at nodes using L2-projection.
     virtual void CalcCurvatureAtNodes(
       const DRT::Element*                             ele,          //!< the element we are dealing with

@@ -7,11 +7,15 @@
 This file has to contain all parameters called in fluid_ele_calc.cpp.
 Additional parameters required in derived classes of FluidEleCalc have to
 be set in problem specific parameter lists derived from this class.
+
+\level 2
+
 <pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
+
+\maintainer Volker Gravemeier
+             vgravem@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
+             089 - 289-15245
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -55,6 +59,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     interface_thickness_(0.0), //two phase parameters
     enhanced_gaussrule_(false),
     include_surface_tension_(false),  // include the surface tension in the calculations.
+    eval_surfacetension_(INPAR::TWOPHASE::surface_tension_approx_none),
     turb_mod_action_(INPAR::FLUID::no_model), // turbulence parameters
     Cs_(0.0),
     Cs_averaged_(false),
@@ -423,10 +428,19 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter( Teuchos::Paramet
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidEleParameter::SetElementTwoPhaseParameter( Teuchos::ParameterList& params )
 {
-  //Two Phase Flow specific parameters.
-  interface_thickness_ = params.get<double>("INTERFACE_THICKNESS");
-  enhanced_gaussrule_  = params.get<bool>("ENHANCED_GAUSSRULE");
-  include_surface_tension_ = true;
+  //Two Phase Flow specific parameters,
+  //Smeared specific parameters
+  Teuchos::ParameterList& smearedlist = params.sublist("SMEARED");
+  interface_thickness_ = smearedlist.get<double>("INTERFACE_THICKNESS");
+  enhanced_gaussrule_  = DRT::INPUT::IntegralValue<int>(smearedlist, "ENHANCED_GAUSSRULE");
+
+  //Surface tension specific parameters
+  Teuchos::ParameterList& surftenslist = params.sublist("SURFACE TENSION");
+  eval_surfacetension_ =  DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SurfaceTensionApprox>(surftenslist,"SURFTENSAPPROX");
+
+  if(eval_surfacetension_!=INPAR::TWOPHASE::surface_tension_approx_none)
+    include_surface_tension_ = true;
+
   return;
 }
 

@@ -50,6 +50,8 @@ XFLUIDLEVELSET::Algorithm::Algorithm(
    ittol_(1.0),
    upres_(-1),
    write_center_of_mass_(false),
+   smoothedgradphitype_(INPAR::TWOPHASE::smooth_grad_phi_l2_projection),
+   scalesmoothedgradients_(false),
    velnpi_(Teuchos::null),
    phinpi_(Teuchos::null),
    prbdyn_(prbdyn),
@@ -108,6 +110,10 @@ void XFLUIDLEVELSET::Algorithm::Init(
   itmax_ = prbdyn_.get<int>("ITEMAX");
 
   upres_ = prbdyn_.get<int>("RESULTSEVRY");
+
+  //TODO: Put this into condition manager
+  smoothedgradphitype_    = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SmoothGradPhi>(prbdyn.sublist("SURFACE TENSION"),"SMOOTHGRADPHI");
+  scalesmoothedgradients_ = DRT::INPUT::IntegralValue<bool>(prbdyn.sublist("SURFACE TENSION"),"SCALE_SMOOTHED_GRADIENTS");
 
   //Instantiate vectors contatining outer loop increment data
   fsvelincnorm_.reserve(itmax_);
@@ -439,6 +445,7 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
 
   Teuchos::RCP<FLD::XFluid> xfluid = Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField(), true);
 
+  //TODO: Get smoothedgradphitype from condition manager
   // get access to the fluid node based vectors
   xfluid->WriteAccess_GeometricQuantities(
       fluid_phinp,
@@ -446,7 +453,7 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
       fluid_nodalcurvature
   );
 
-  // are smoothed geometric quantities required? -- here we just allow for L2-projection based methods!!!
+  // are smoothed geometric quantities required?
   bool require_smoothedgradphi = (fluid_smoothedgradphi == Teuchos::null) ? false : true;
   bool require_nodalcurvature  = (fluid_nodalcurvature  == Teuchos::null) ? false : true;
 
@@ -455,6 +462,7 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
       require_smoothedgradphi,
       require_nodalcurvature,
       scatra_phinp,
+      smoothedgradphitype_,
       scatra_smoothedgradphi,
       scatra_nodalcurvature
   );
@@ -490,11 +498,53 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
 }
 
 /*----------------------------------------------------------------------*
+ | Set relevant values from ScaTra field in the Fluid field.            |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> XFLUIDLEVELSET::Algorithm::GetSmoothedLevelSetGradient(
+    const Teuchos::RCP<const Epetra_Vector> & phinp,
+    INPAR::TWOPHASE::SmoothGradPhi        smoothedgradphi)
+{
+
+  bool normalize_gradients = scalesmoothedgradients_;
+
+  switch(smoothedgradphi)
+  {
+  case INPAR::TWOPHASE::smooth_grad_phi_l2_projection:
+  {
+    return ScaTraField()->ReconstructGradientAtNodesL2Projection(phinp,normalize_gradients);
+    break;
+  }
+  case INPAR::TWOPHASE::smooth_grad_phi_superconvergent_patch_recovery_3D:
+  {
+    return ScaTraField()->ReconstructGradientAtNodesPatchRecon(phinp,3,normalize_gradients);
+    break;
+  }
+  case INPAR::TWOPHASE::smooth_grad_phi_superconvergent_patch_recovery_2Dz:
+  {
+    return ScaTraField()->ReconstructGradientAtNodesPatchRecon(phinp,2,normalize_gradients);
+    break;
+  }
+  case INPAR::TWOPHASE::smooth_grad_phi_meanvalue:
+  {
+    return ScaTraField()->ReconstructGradientAtNodesMeanAverage(phinp,normalize_gradients);
+    break;
+  }
+  default:
+    dserror("The chosen smoothing is not as of yet supported!");
+    break;
+  }
+
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ | Set relevant values from Fluid field in the ScaTra field.            |
  *----------------------------------------------------------------------*/
 void XFLUIDLEVELSET::Algorithm::ComputeGeometricQuantities(
     const bool require_smoothedgradphi,
     const bool require_nodalcurvature,
     const Teuchos::RCP<const Epetra_Vector> & phinp,
+    const INPAR::TWOPHASE::SmoothGradPhi smoothedgradphitype,
     Teuchos::RCP<Epetra_MultiVector> & smoothedgradphi,
     Teuchos::RCP<Epetra_Vector> & nodalcurvature
 )
@@ -504,10 +554,10 @@ void XFLUIDLEVELSET::Algorithm::ComputeGeometricQuantities(
 
   // compute the smoothed geometric quantities
   if(require_smoothedgradphi)
-    smoothedgradphi = ScaTraField()->ReconstructGradientAtNodes(phinp);
+    smoothedgradphi = GetSmoothedLevelSetGradient(phinp,smoothedgradphitype);
 
   if(require_nodalcurvature)
-    nodalcurvature = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField(), true)->GetNodalCurvature(phinp);
+    nodalcurvature = Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField(), true)->GetNodalCurvature(phinp,GetSmoothedLevelSetGradient(phinp,smoothedgradphitype));
 
   return;
 }
@@ -530,12 +580,12 @@ void XFLUIDLEVELSET::Algorithm::CopyGeometricQuantities(
   ///-------------------------------------------
   // copy the level set values
 
-  if(fluid_phinp ==Teuchos::null) dserror("fluid null pointer");
-  if(scatra_phinp==Teuchos::null) dserror("scatra null pointer");
+  if(fluid_phinp ==Teuchos::null) dserror("fluid_phinp null pointer");
+  if(scatra_phinp==Teuchos::null) dserror("scatra_phinp null pointer");
 
   // safety checks for matching dof-based maps
   if(!fluid_phinp->Map().PointSameAs(scatra_phinp->Map()))
-    dserror("unequal maps!");
+    dserror("Unequal maps: fluid_phinp  -- not PointSameAs --  scatra_phinp");
 
   fluid_phinp->Update(1.0, *scatra_phinp, 0.0);
 
@@ -544,11 +594,13 @@ void XFLUIDLEVELSET::Algorithm::CopyGeometricQuantities(
   // copy the nodal gradients
   if(require_smoothedgradphi)
   {
-    if(fluid_smoothedgradphi ==Teuchos::null) dserror("fluid null pointer");
-    if(scatra_smoothedgradphi==Teuchos::null) dserror("scatra null pointer");
+    if(fluid_smoothedgradphi ==Teuchos::null) dserror("fluid_smoothedgradphi null pointer");
+    if(scatra_smoothedgradphi==Teuchos::null) dserror("scatra_smoothedgradphi null pointer");
 
     if(!fluid_smoothedgradphi->Map().PointSameAs(scatra_smoothedgradphi->Map()))
-      dserror("unequal maps!");
+    {
+      dserror("Unequal maps: fluid_smoothedgradphi  -- not PointSameAs --  scatra_smoothedgradphi");
+    }
 
     fluid_smoothedgradphi->Update(1.0, *scatra_smoothedgradphi, 0.0);
   }
@@ -558,11 +610,11 @@ void XFLUIDLEVELSET::Algorithm::CopyGeometricQuantities(
 
   if( require_nodalcurvature)
   {
-    if(fluid_nodalcurvature ==Teuchos::null) dserror("fluid null pointer");
-    if(scatra_nodalcurvature==Teuchos::null) dserror("scatra null pointer");
+    if(fluid_nodalcurvature ==Teuchos::null) dserror("fluid_nodalcurvature null pointer");
+    if(scatra_nodalcurvature==Teuchos::null) dserror("scatra_nodalcurvature null pointer");
 
     if(!fluid_nodalcurvature->Map().PointSameAs(scatra_nodalcurvature->Map()))
-      dserror("unequal maps!");
+      dserror("Unequal maps: fluid_nodalcurvature  -- not PointSameAs --  scatra_nodalcurvature");
 
     fluid_nodalcurvature->Update(1.0, *scatra_nodalcurvature, 0.0);
   }

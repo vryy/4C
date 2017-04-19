@@ -25,6 +25,7 @@ be set in problem specific parameter lists derived from this class.
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_twophase.H"
 #include "../drt_inpar/inpar_turbulence.H"
 #include "fluid_ele_parameter_timint.H"
 
@@ -138,6 +139,8 @@ public:
   double GetInterfaceThickness() const {return interface_thickness_;};
   bool   GetEnhancedGaussRuleInInterface() const {return enhanced_gaussrule_;}
   bool   GetIncludeSurfaceTension() const {return include_surface_tension_;};
+  INPAR::TWOPHASE::SurfaceTensionApprox GetSurfaceTensionApprox() const {return eval_surfacetension_;};
+
 
   /*----------------------------------------------------*/
   //! @name turbulence model
@@ -276,6 +279,7 @@ protected:
   double interface_thickness_;
   bool   enhanced_gaussrule_;
   bool   include_surface_tension_;
+  INPAR::TWOPHASE::SurfaceTensionApprox eval_surfacetension_;
 
   /*----------------------------------------------------*/
   //! @name turbulence model

@@ -1146,6 +1146,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_elch_scheme.cpp
   src/drt_scatra/scatra_timint_poromulti.cpp
   src/drt_scatra/scatra_utils_clonestrategy.cpp
+  src/drt_scatra/scatra_utils.cpp
   src/drt_scatra/turbulence_hit_initial_scalar_field.cpp
   src/drt_scatra/turbulence_hit_scalar_forcing.cpp
   src/drt_levelset/levelset_intersection_utils.cpp

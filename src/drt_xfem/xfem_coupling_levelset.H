@@ -473,6 +473,13 @@ public:
     //Should this be provided as well by the input?
     DRT::Element* actele = cutter_dis_->gElement(eid);
 
+
+    //Added this
+    DRT::Element::LocationArray la(cutter_dis_->NumDofSets());
+    actele->LocationVector(*cutter_dis_,la,false);
+    //-----------
+
+
     //Create the identity matrix (Probably not the fastest way...) Might make it global?
     LINALG::Matrix<nsd,nsd> eye(true);
     for(unsigned int i =0; i<nsd; ++i)
@@ -503,7 +510,8 @@ public:
 
       //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
       std::vector<double> mygradphi;
-      DRT::UTILS::ExtractMyNodeBasedValues(actele,mygradphi,*gradphinp_smoothed_node_);
+      //DRT::UTILS::ExtractMyNodeBasedValues(actele,mygradphi,*gradphinp_smoothed_node_);
+      DRT::UTILS::ExtractMyValues(*gradphinp_smoothed_node_col_, mygradphi, la[cutter_nds_phi_].lm_);
 
       for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
       {
@@ -541,7 +549,7 @@ public:
 
       //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
       std::vector<double> mygradphi;
-      DRT::UTILS::ExtractMyNodeBasedValues(actele,mygradphi,*gradphinp_smoothed_node_);
+      DRT::UTILS::ExtractMyValues(*gradphinp_smoothed_node_col_, mygradphi, la[cutter_nds_phi_].lm_);
 
       for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
       {
@@ -589,7 +597,8 @@ public:
 
       //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
       std::vector<double> myphi;
-      DRT::UTILS::ExtractMyNodeBasedValues(actele,myphi,*cutter_phinp_);
+      //DRT::UTILS::ExtractMyNodeBasedValues(actele,myphi,*cutter_phinp_);
+      DRT::UTILS::ExtractMyValues(*cutter_phinp_, myphi, la[cutter_nds_phi_].lm_);
 
       for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
       {
@@ -1121,6 +1130,13 @@ public:
       double & kappa_m
       );
 
+  virtual void GmshOutput(
+      const std::string & filename_base,
+      const int step,
+      const int gmsh_step_diff,
+      const bool gmsh_debug_out_screen
+  );
+
 protected:
 
   /// Check ifSetParameters_SurfaceTension() has been called
@@ -1236,6 +1252,7 @@ protected:
 
   INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox_;  ///< type of surface tension approximation
   INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami_; ///< type of laplace beltrami surface tension operator
+  INPAR::TWOPHASE::SmoothGradPhi        smoothedgradphi_; ///< type of gradient smoothing
 
   bool surfacetension_init_;     ///< have surface tension specific quantities been initialized?
 

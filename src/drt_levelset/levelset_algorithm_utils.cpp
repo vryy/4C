@@ -910,22 +910,6 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   return;
 }
 
-/*----------------------------------------------------------------------------*
- | access routine for nodal curvature                         rasthofer 01/15 |
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetAlgorithm::GetNodalCurvature(
-  const Teuchos::RCP<const Epetra_Vector> phi)
-{
-  // Currently, only a nodal curvature reconstruction based on an L_2-projection is supported.
-  // Other reconstruction types, for instance, a mean value computation using the values
-  // of the adjacent elements (applied, e.g., by Florian Henke and implemented in the old combustion module),
-  // should be added here as well.
-
-  Teuchos::RCP<Epetra_MultiVector> gradphi = ReconstructGradientAtNodes(phi);
-  Teuchos::RCP<Epetra_Vector> nodalCurvature = GetNodalCurvature(phi, gradphi);
-
-  return nodalCurvature;
-};
 
 /*----------------------------------------------------------------------------*
  | access routine for nodal curvature                         rasthofer 01/15 |
