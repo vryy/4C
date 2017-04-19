@@ -10,13 +10,16 @@
  * the same std::string directly to an output stream. The latter avoid numerous std::string copies
  * and should be much faster when large discretizations are piped into a file.
  *
- * <pre>
- * Maintainer: Martin Kronbichler
- *             kronbichler@lnm.mw.tum.de
- *             http://www.lnm.mw.tum.de
- *             089 - 289-15235
- * </pre>
- *
+
+<pre>
+
+\level 2
+\maintainer Martin Kronbichler
+             kronbichler@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15235
+</pre>
+
  */
 #ifndef GMSH_H
 #define GMSH_H
@@ -95,6 +98,15 @@ namespace IO
         );
 
     //! write scalar field to Gmsh postprocessing file
+    //  Can we replace the ScalarFieldToGmsh function with this (nds=0)?
+    void ScalarFieldDofBasedToGmsh(
+        const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<const Epetra_Vector> scalarfield, ///< scalar field to output
+        const int                               nds,         ///< dofset
+        std::ostream&                           s ///< output stream
+        );
+
+    //! write scalar field to Gmsh postprocessing file
     void ScalarElementFieldToGmsh(
         const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
         const Teuchos::RCP<const Epetra_Vector> scalarfield, ///< scalar field to output
@@ -113,6 +125,21 @@ namespace IO
         );
 
     //! write dof-based vector field to Gmsh postprocessing file
+    void VectorFieldDofBasedToGmsh(
+        const Teuchos::RCP<const DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<const Epetra_MultiVector>  vectorfield, ///< vector field to output
+        std::ostream&                                 s, ///< output stream
+        const int                                     nds=0    //< which dof-set to use from vector
+        );
+
+    //! write node-based vector field to Gmsh postprocessing file
+    void VectorFieldNodeBasedToGmsh(
+        const Teuchos::RCP<const DRT::Discretization> discret, ///< discretization
+        const Teuchos::RCP<const Epetra_MultiVector>  vectorfield, ///< vector field to output
+        std::ostream&                                 s ///< output stream
+        );
+
+    //! write dof-based vector field to Gmsh postprocessing file
     void SurfaceVectorFieldDofBasedToGmsh(
         const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
         const Teuchos::RCP<const Epetra_Vector> vectorfield, ///< vector field to output
@@ -125,17 +152,11 @@ namespace IO
     //! write dof-based velocity / pressure field to Gmsh postprocessing file
     //!
     void VelocityPressureFieldDofBasedToGmsh(
-        const Teuchos::RCP<DRT::Discretization> discret, ///< discretization
-        const Teuchos::RCP<Epetra_Vector>       vectorfield, ///< vector field to output
-        const std::string                       field,  //< "velocity" or "pressure"
-        std::ostream&                           s ///< output stream
-        );
-
-    //! write node-based vector field to Gmsh postprocessing file
-    void VectorFieldNodeBasedToGmsh(
-        const Teuchos::RCP<const DRT::Discretization> discret, ///< discretization
-        const Teuchos::RCP<const Epetra_MultiVector>  vectorfield, ///< vector field to output
-        std::ostream&                                 s ///< output stream
+        const Teuchos::RCP<DRT::Discretization> discret,     ///< discretization
+        const Teuchos::RCP<const Epetra_Vector> vectorfield, ///< vector field to output
+        const std::string                       field,       ///< "velocity" or "pressure"
+        std::ostream&                           s,           ///< output stream
+        const int                               nds=0        ///< which dof-set to use from vector
         );
 
     //! write node-based scalar field to Gmsh postprocessing file
