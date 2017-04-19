@@ -456,9 +456,11 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_fsi_xfem:
     case prb_fpsi_xfem:
+    case prb_fluid_xfem_ls:
+    case prb_two_phase_flow:
     {
       std::cout << "|=============================================================================|" << std::endl;
-      std::cout << "|==  Output FSI/FPSI-XFEM Problem" << std::endl;
+      std::cout << "|==  Output for General Problem" << std::endl;
 
       int numfield = problem.num_discr();
 
@@ -484,6 +486,18 @@ void runEnsightVtuFilter(PostProblem    &problem)
           std::cout << "|==    Fluid Field ( "<< disname << " )" << std::endl;
           FluidFilter fluidwriter(field, basename);
           fluidwriter.WriteFiles();
+        }
+        else if (disname == "scatra")
+        {
+          std::cout << "|==    Scatra Field ( "<< disname << " )" << std::endl;
+          ScaTraFilter scatrawriter(field, basename);
+          scatrawriter.WriteFiles();
+        }
+        else if (disname == "particle")
+        {
+          std::cout << "|==    Particle Field ( "<< disname << " )" << std::endl;
+          ParticleFilter particlewriter(field, basename);
+          particlewriter.WriteFiles();
         }
         else if (disname == "ale")
         {
@@ -559,29 +573,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
         ScaTraFilter scatrawriter(scatrafield, basename);
         scatrawriter.WriteFiles();
         break;
-    }
-    case prb_two_phase_flow:
-    case prb_fluid_xfem_ls:
-    {
-      std::string basename = problem.outname();
-
-      PostField* fluidfield = problem.get_discretization(0);
-      FluidFilter fluidwriter(fluidfield, basename);
-      fluidwriter.WriteFiles();
-
-      PostField* scatrafield = problem.get_discretization(1);
-      ScaTraFilter scatrawriter(scatrafield, basename);
-      scatrawriter.WriteFiles();
-
-      // check if we have a particle field
-      int numfield = problem.num_discr();
-      if(numfield==3)
-      {
-        PostField* particlefield = problem.get_discretization(2);
-        ParticleFilter particlewriter(particlefield, basename);
-        particlewriter.WriteFiles();
-      }
-      break;
     }
     case prb_elch:
     {

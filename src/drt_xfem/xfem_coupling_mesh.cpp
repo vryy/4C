@@ -53,11 +53,12 @@ XFEM::MeshCoupling::MeshCoupling(
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
     const int                           step,       ///< time step
-    const std::string &                 suffix     ///< suffix for cutterdisname
+    const std::string &                 suffix,     ///< suffix for cutterdisname
+    bool                                marked_geometry
 ) : CouplingBase(bg_dis, cond_name, cond_dis, coupling_id, time, step),
-mark_geometry_(false),
-firstoutputofrun_(true),
-suffix_(suffix)
+    mark_geometry_(marked_geometry),
+    firstoutputofrun_(true),
+    suffix_(suffix)
 {
 }
 
@@ -163,9 +164,12 @@ void XFEM::MeshCoupling::PrepareCutterOutput()
   // prepare output
   // -------------------------------------------------------------------
 
-  cutter_dis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cutter_dis_)));
-  cutter_output_ = cutter_dis_->Writer();
-  cutter_output_->WriteMesh(0,0.0);
+  if(!mark_geometry_)  //Do not write for marked geometry!
+  {
+    cutter_dis_->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cutter_dis_)));
+    cutter_output_ = cutter_dis_->Writer();
+    cutter_output_->WriteMesh(0,0.0);
+  }
 }
 
 
@@ -177,15 +181,17 @@ void XFEM::MeshCoupling::Output(
     const bool write_restart_data
 )
 {
-  // output for interface
-  cutter_output_->NewStep(step,time);
+  if(!mark_geometry_)  //Do not write for marked geometry!
+  {
+    // output for interface
+    cutter_output_->NewStep(step,time);
 
-  cutter_output_->WriteVector("ivelnp", ivelnp_);
-  cutter_output_->WriteVector("idispnp", idispnp_);
+    cutter_output_->WriteVector("ivelnp", ivelnp_);
+    cutter_output_->WriteVector("idispnp", idispnp_);
 
-  cutter_output_->WriteElementData(firstoutputofrun_);
-  firstoutputofrun_ = false;
-
+    cutter_output_->WriteElementData(firstoutputofrun_);
+    firstoutputofrun_ = false;
+  }
   // do not write restart for general case
 }
 
@@ -595,8 +601,9 @@ XFEM::MeshCouplingBC::MeshCouplingBC(
     Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
-    const int                           step       ///< time step
-) : MeshCoupling(bg_dis,cond_name,cond_dis, coupling_id, time, step)
+    const int                           step,       ///< time step
+    bool                                marked_geometry
+) : MeshCoupling(bg_dis,cond_name,cond_dis, coupling_id, time, step, "", marked_geometry)
 {
 }
 
@@ -933,8 +940,9 @@ XFEM::MeshCouplingWeakDirichlet::MeshCouplingWeakDirichlet(
     Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
-    const int                           step       ///< time step
-) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step)
+    const int                           step,      ///< time step
+    bool                                marked_geometry ///< is this a marked geometry mesh boundary
+) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step, marked_geometry)
 {
 }
 
@@ -1081,8 +1089,9 @@ XFEM::MeshCouplingNavierSlip::MeshCouplingNavierSlip(
     Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
     const int                           coupling_id,///< id of composite of coupling conditions
     const double                        time,      ///< time
-    const int                           step       ///< time step
-) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step)
+    const int                           step,       ///< time step
+    bool                                marked_geometry ///< is this a marked geometry mesh boundary
+) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step, marked_geometry)
 {
 }
 

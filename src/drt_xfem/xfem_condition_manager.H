@@ -160,15 +160,15 @@ public:
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingWeakDirichlet(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingWeakDirichlet(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_==cond_dis))));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NEUMANN)
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_==cond_dis))));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlip(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlip(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_==cond_dis))));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
     {
@@ -176,21 +176,7 @@ public:
     }
     else
     {
-      mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
-    }
-
-    // If the background discretization is the same as the condition discretization
-    //   ONLY mark the surface in the cut, and do NOT cut anything.
-    //   IMPORTANT: Utilized for XTwo-Phase Flow
-    if(bg_dis_==cond_dis)
-    {
-      if(!(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
-           CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NEUMANN or
-           CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
-          )
-        dserror("So far only tested for WDBC, Neumann and NavSlip.");
-
-      mesh_coupl_.back()->SetMarkedGeometry(true);
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", (bg_dis_==cond_dis))));
     }
 
   }

@@ -40,7 +40,8 @@ public:
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
       const int                           step,      ///< time step
-      const std::string &                 suffix = ""///< suffix for cutterdisname
+      const std::string &                 suffix = "", ///< suffix for cutterdisname
+      bool                                marked_geometry = false
   );
 
   //! destructor
@@ -336,7 +337,8 @@ public:
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
-      const int                           step       ///< time step
+      const int                           step,      ///< time step
+      bool                                marked_geometry = false ///< is this a marked geometry mesh boundary
   );
 
   //! destructor
@@ -412,7 +414,8 @@ public:
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
-      const int                           step       ///< time step
+      const int                           step,      ///< time step
+      bool                                marked_geometry = false ///< is this a marked geometry mesh boundary
   );
 
   //! destructor
@@ -466,8 +469,9 @@ public:
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
-      const int                           step       ///< time step
-  ) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step)
+      const int                           step,       ///< time step
+      bool                                marked_geometry = false ///< is this a marked geometry mesh boundary
+  ) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step, marked_geometry)
   {}
 
   //! destructor
@@ -511,7 +515,8 @@ public:
       Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
       const int                           coupling_id,///< id of composite of coupling conditions
       const double                        time,      ///< time
-      const int                           step       ///< time step
+      const int                           step,      ///< time step
+      bool                                marked_geometry = false ///< is this a marked geometry mesh boundary
   );
 
   //! destructor
