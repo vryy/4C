@@ -4,7 +4,7 @@
 
 \brief element type class of meshfree multibin, creating the same
 
-\maintainer Georg Hammerl
+\maintainer Jonas Eichinger
 
 \level 2
 

@@ -2,12 +2,9 @@
 \file drt_meshfree_bin.cpp
 \brief
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Jonas Eichinger
+
+\level 2
 
 *--------------------------------------------------------------------------*/
 

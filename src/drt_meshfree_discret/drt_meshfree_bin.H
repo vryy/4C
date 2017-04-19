@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_meshfree_bin.H
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\brief
+
+\maintainer Jonas Eichinger
+
+\level 2
 
 *---------------------------------------------------------------------------*/
 #ifndef DRT_MESHFREE_MESHFREEBIN_H
