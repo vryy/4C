@@ -114,7 +114,7 @@ namespace PARTICLE
       );
 
     /// get wall discretization
-    virtual Teuchos::RCP<DRT::Discretization> WallDiscret() { return particlewalldis_; }
+    virtual Teuchos::RCP<DRT::Discretization> WallDiscret() const { return particlewalldis_; }
 
     /// set structural states
     virtual void SetStructStates(
@@ -139,14 +139,14 @@ namespace PARTICLE
                     DRT::Node* particle,
                     std::list<DRT::Node*>& neighboursLinf_p,
                     boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
-                    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null);
+                    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null) const;
 
     /// get bins in range and call FindNeighbors (bin version)
     virtual void GetNeighbouringItems(
                     const int binId,
                     std::list<DRT::Node*>& neighboursLinf_p,
                     boost::unordered_map<int, DRT::Element*>* neighboursLinf_w = NULL,
-                    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null);
+                    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs = Teuchos::null) const;
 
     /// link to timInt
     virtual const Teuchos::RCP<ADAPTER::Particle> AdapterParticle() { return particles_; }
@@ -158,13 +158,13 @@ namespace PARTICLE
     virtual const std::list< Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
 
     /// contact type: meshfree, particle-thermo, etc.
-    INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() {return particleInteractionType_; }
+    INPAR::PARTICLE::ParticleInteractions ParticleInteractionType() const {return particleInteractionType_; }
 
     /// Return the pointer to the particle material
-    const MAT::PAR::ParticleMat* ParticleMat() { return particleMat_; }
+    const MAT::PAR::ParticleMat* ParticleMat() const { return particleMat_; }
 
     /// Return the pointer to the extended particle material
-    const MAT::PAR::ExtParticleMat* ExtParticleMat() { return extParticleMat_; }
+    const MAT::PAR::ExtParticleMat* ExtParticleMat() const { return extParticleMat_; }
 
     virtual Teuchos::RCP<Rendering> GetRendering() { return rendering_; }
 
@@ -230,7 +230,7 @@ namespace PARTICLE
       std::list<DRT::Node*>& bin_p,
       boost::unordered_map<int, DRT::Element*>* bin_w,
       const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > bin_hs,
-      std::vector<int>& binIds);
+      std::vector<int>& binIds) const;
 
     /// dismember particle using the dismembering radius (it shall be smaller than the oldParticleRadius)
     virtual void ParticleDismemberer();

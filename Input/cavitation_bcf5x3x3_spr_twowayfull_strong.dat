@@ -43,6 +43,7 @@ NORMAL_CONTACT_LAW              LinearSpringDamp
 MIN_RADIUS                      0.7
 MAX_RADIUS                      0.8
 REL_PENETRATION                 0.05
+REL_PENETRATION_WALL            0.05
 MAX_VELOCITY                    5.0
 COEFF_RESTITUTION               0.33
 COEFF_RESTITUTION_WALL          0.25

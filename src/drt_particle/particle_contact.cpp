@@ -53,8 +53,32 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   ) :
   normal_contact_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalContact>(particledynparams,"NORMAL_CONTACT_LAW")),
   normal_adhesion_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::NormalAdhesion>(particledynparams,"NORMAL_ADHESION_LAW")),
-  contact_energy_(0.0),
-  g_max_(0.0),
+  nue_(0.),
+  young_(0.),
+  r_min_(particledynparams.get<double>("MIN_RADIUS")),
+  r_max_(particledynparams.get<double>("MAX_RADIUS")),
+  r_dismember_(0.),
+  v_max_(particledynparams.get<double>("MAX_VELOCITY")),
+  c_(particledynparams.get<double>("REL_PENETRATION")),
+  c_wall_(particledynparams.get<double>("REL_PENETRATION_WALL")),
+  dt_krit_(0.),
+  e_(particledynparams.get<double>("COEFF_RESTITUTION")),
+  e_wall_(particledynparams.get<double>("COEFF_RESTITUTION_WALL")),
+  k_normal_(particledynparams.get<double>("NORMAL_STIFF")),
+  k_normal_wall_(particledynparams.get<double>("NORMAL_STIFF_WALL")),
+  k_tang_(0.),
+  k_tang_wall_(0.),
+  kappa_(0.),
+  kappa_wall_(0.),
+  d_normal_(0.),
+  d_tang_(0.),
+  d_normal_wall_(0.),
+  d_tang_wall_(0.),
+  mu_(particledynparams.get<double>("FRICT_COEFF")),
+  mu_wall_(particledynparams.get<double>("FRICT_COEFF_WALL")),
+  tension_cutoff_(DRT::INPUT::IntegralValue<int>(particledynparams,"TENSION_CUTOFF") == 1),
+  contact_energy_(0.),
+  g_max_(0.),
   adhesion_eq_gap_(particledynparams.get<double>("ADHESION_EQ_GAP")),
   adhesion_normal_stiff_(particledynparams.get<double>("ADHESION_NORMAL_STIFF")),
   adhesion_normal_damp_(particledynparams.get<double>("ADHESION_NORMAL_DAMP")),
@@ -64,7 +88,8 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
   myrank_(discret->Comm().MyPID()),
   discret_(discret),
-  particle_algorithm_(particlealgorithm)
+  particle_algorithm_(particlealgorithm),
+  particleData_(0)
 {
   // extract the material
   const MAT::PAR::ParticleMat* particleMat = particle_algorithm_->ParticleMat();
@@ -78,28 +103,17 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
 
   if(particle_algorithm_->ParticleInteractionType() != INPAR::PARTICLE::None)
   {
-    r_min_ = particleparams.get<double>("MIN_RADIUS");
-    r_max_ = particleparams.get<double>("MAX_RADIUS");
-    v_max_ = particleparams.get<double>("MAX_VELOCITY");
-    c_ = particleparams.get<double>("REL_PENETRATION");
-    e_ = particleparams.get<double>("COEFF_RESTITUTION");
-    e_wall_ = particleparams.get<double>("COEFF_RESTITUTION_WALL");
-    mu_wall_ = particleparams.get<double>("FRICT_COEFF_WALL");
-    mu_ = particleparams.get<double>("FRICT_COEFF");
-    tension_cutoff_ = (DRT::INPUT::IntegralValue<int>(particleparams,"TENSION_CUTOFF") == 1);
-
-    if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or c_<0.0 or young_<0.0)
-      dserror("Invalid input parameter (MIN_RADIUS,MAX_RADIUS,MAX_VELOCITY,REL_PENETRATION, YOUNG's modulus have to be larger than zero)");
-
+    // safety checks for particle-particle contact
+    if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or young_<0.0)
+      dserror("Invalid input parameter (MIN_RADIUS, MAX_RADIUS, MAX_VELOCITY, YOUNG's modulus have to be larger than zero)");
+    if(not((c_ <= 0. and k_normal_ > 0.) or (c_ > 0. and v_max_ > 0. and k_normal_ <= 0.)))
+      dserror("For particle-particle contact, you must correctly specify either the relative penetration (along with the maximum velocity), or the normal stiffness, but neither both nor none of them!");
     if(r_min_>r_max_)
       dserror("inversed radii (MIN_RADIUS > MAX_RADIUS)");
-
     if (particleMat->initRadius_ < r_min_)
       dserror("INITRADIUS too small (it should be >= MIN_RADIUS)");
-
     if (particleMat->initRadius_ > r_max_)
       dserror("INITRADIUS too big (it should be <= MAX_RADIUS)");
-
     if(e_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_MD))
       dserror("Invalid input parameter COEFF_RESTITUTION for this kind of contact law!");
 
@@ -119,6 +133,9 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
 
     if(particle_algorithm_->WallDiscret() != Teuchos::null)
     {
+      // safety checks for particle-wall contact
+      if(not((c_wall_ <= 0. and k_normal_wall_ > 0.) or (c_wall_ > 0. and v_max_ > 0. and k_normal_wall_ <= 0.)))
+        dserror("For particle-wall contact, you must correctly specify either the relative penetration (along with the maximum velocity), or the normal stiffness, but neither both nor none of them!");
       if(e_wall_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_MD))
         dserror("Invalid input parameter COEFF_RESTITUTION_WALL for this kind of contact law!");
 
@@ -143,28 +160,22 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     case INPAR::PARTICLE::LinSpring:
     case INPAR::PARTICLE::LinSpringDamp:
     {
-      // stiffness calculated from relative penetration and some other input parameters (linear spring)
-      k_normal_ = 2.0/3.0 * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
+      // calculate normal stiffness from relative penetration and other input parameters if necessary
+      if(c_ > 0.)
+        k_normal_ = 2./3. * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
+      if(c_wall_ > 0.)
+        k_normal_wall_ = 2./3. * r_max_ * M_PI * density * v_max_ * v_max_ / (c_wall_ * c_wall_);
+
       // for tangential contact same stiffness is used
       k_tang_ = kappa_ * k_normal_;
-      k_tang_wall_ = kappa_wall_ * k_normal_;
+      k_tang_wall_ = kappa_wall_ * k_normal_wall_;
+
+      // critical time step size is calculated based on particle-particle (not particle-wall) contact
       k_tkrit = k_normal_;
 
-      double user_normal_stiffness = particleparams.get<double>("NORMAL_STIFF");
-      if(user_normal_stiffness > 0.0)
-      {
-        // if user specifies normal stiffness, this stiffness will be used as normal and tangential stiffness for simulation
-        k_normal_ = user_normal_stiffness;
-        // for tangential contact same stiffness is used
-        k_tang_ =kappa_ * k_normal_;
-        k_tang_wall_ =kappa_wall_ * k_normal_;
-        // stiffness used for calculation of critical time step
-        k_tkrit = k_normal_;
-
-        std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
-      }
+      break;
     }
-    break;
+
     case INPAR::PARTICLE::Hertz:
     case INPAR::PARTICLE::LeeHerrmann:
     case INPAR::PARTICLE::KuwabaraKono:
@@ -173,29 +184,33 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
       if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::NormalAndTang_DEM)
         dserror("tangential contact only with linear normal model implemented");
 
-      // stiffness calculated from relative penetration and some other input parameters (Hertz)
-      k_normal_ = 10.0/3.0 * M_PI * density * v_max_ * v_max_ * pow(r_max_,0.5) / pow(2.0*c_,2.5);
-      // stiffness used for calculation of critical time step (linear spring stiffness needed!)
-      k_tkrit = 2.0/3.0 * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
-
-      double user_normal_stiffness = particleparams.get<double>("NORMAL_STIFF");
-      if(user_normal_stiffness > 0.0)
+      if(c_ > 0.)
       {
-        // if user specifies normal stiffness, this stiffness will be used as normal stiffness for simulation
-        k_normal_ = user_normal_stiffness;
-        // for tangential contact the user specified (nonlinear) normal stiffness which has to be transformed into a linear normal
-        // stiffness with the same relative penetration which is used as (linear) tangential stiffness afterwards
-        const double value = 2048.0/1875.0 * density * v_max_ * v_max_ * M_PI * pow(r_max_,3.0) * pow(k_normal_,4.0);
-        // stiffness used for calculation of critical time step (linear spring stiffness needed!)
-        k_tkrit = pow(value,0.2);
+        // calculate normal stiffness from relative penetration and other input parameters if necessary
+        k_normal_ = 10./3. * M_PI * density * v_max_ * v_max_ * pow(r_max_,0.5) / pow(2.*c_,2.5);
 
-        std::cout<<"WARNING: stiffness calculated from relative penetration will be overwritten by input NORMAL_STIFF!!!"<<std::endl;
+        // critical time step size is calculated based on particle-particle (not particle-wall) contact
+        k_tkrit = 2./3. * r_max_ * M_PI * density * v_max_ * v_max_ / (c_ * c_);
       }
+      else
+        // critical time step size is calculated based on particle-particle (not particle-wall) contact
+        k_tkrit = pow(2048./1875. * density * v_max_ * v_max_ * M_PI * pow(r_max_,3) * pow(k_normal_,4),0.2);
+
+      if(c_wall_ > 0.)
+        // calculate normal stiffness from relative penetration and other input parameters if necessary
+        k_normal_wall_ = 10./3. * M_PI * density * v_max_ * v_max_ * pow(r_max_,0.5) / pow(2.*c_wall_,2.5);
+
+      // for tangential contact the user specified (nonlinear) normal stiffness which has to be transformed into a linear normal
+      // stiffness with the same relative penetration which is used as (linear) tangential stiffness afterwards
+
+      break;
     }
-    break;
+
     default:
-      dserror("normal contact law does not exist");
-    break;
+    {
+      dserror("Normal contact law does not exist!");
+      break;
+    }
     }
     //---------------------------------------------------------
 
@@ -291,7 +306,7 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
     //---------------------------------------------------------------
 
     double factor = 0.0;
-    double safety = 0.75;
+    const double safety = 0.75;
 
     // initialize factor
     if(particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM || particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM_thermo)
@@ -556,7 +571,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     wallveln = walldiscret->GetState("wallvelnp");
   }
 
-  const bool havepbc = particle_algorithm_->BinStrategy()->HavePBC();
+  const bool havepbc = particle_algorithm_->BinStrategy().HavePBC();
 
   // store bins, which have already been examined
   std::set<int> examinedbins;
@@ -594,7 +609,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     boost::unordered_map<int, DRT::Element*> neighboring_walls;
 
     // list of heat sources that border on the CurrentBin
-    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboring_heatSources = Teuchos::rcp(new boost::unordered_map<int , Teuchos::RCP<HeatSource> >);
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboring_heatSources = particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::Normal_DEM_thermo ? Teuchos::rcp(new boost::unordered_map<int , Teuchos::RCP<HeatSource> >) : Teuchos::null;
 
     particle_algorithm_->GetNeighbouringItems(binId, neighboring_particles, &neighboring_walls, neighboring_heatSources);
 
@@ -711,16 +726,16 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
       if(havepbc)
       {
         static int ijk_i[3], ijk_j[3];
-        particle_algorithm_->BinStrategy()->ConvertPosToijk(data_i.dis,ijk_i);
-        particle_algorithm_->BinStrategy()->ConvertPosToijk(position_j,ijk_j);
+        particle_algorithm_->BinStrategy().ConvertPosToijk(data_i.dis,ijk_i);
+        particle_algorithm_->BinStrategy().ConvertPosToijk(position_j,ijk_j);
         for(unsigned idim=0; idim<3; ++idim)
         {
-          if(particle_algorithm_->BinStrategy()->HavePBC(idim))
+          if(particle_algorithm_->BinStrategy().HavePBC(idim))
           {
             if(ijk_i[idim] - ijk_j[idim] < -1)
-              position_j(idim) -= particle_algorithm_->BinStrategy()->PBCDelta(idim);
+              position_j(idim) -= particle_algorithm_->BinStrategy().PBCDelta(idim);
             else if(ijk_i[idim] - ijk_j[idim] > 1)
-              position_j(idim) += particle_algorithm_->BinStrategy()->PBCDelta(idim);
+              position_j(idim) += particle_algorithm_->BinStrategy().PBCDelta(idim);
           }
         }
       }
@@ -1252,11 +1267,11 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
         if(e_wall_ != 0.0)
         {
           const double lnewall = log(e_wall_);
-          d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+          d = 2.0 * std::abs(lnewall) * sqrt(k_normal_wall_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
         }
         else
         {
-          d = 2.0 * sqrt(k_normal_ * m_eff);
+          d = 2.0 * sqrt(k_normal_wall_ * m_eff);
         }
       }
       else
@@ -1285,33 +1300,34 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     }
 
     // contact force
+    const double k = owner_j < 0 ? k_normal_wall_ : k_normal_;
     switch(normal_contact_)
     {
     case INPAR::PARTICLE::LinSpring:
     {
-      normalcontactforce = k_normal_ * g;
+      normalcontactforce = k * g;
 
       if(writeenergyevery_)
       {
         //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k_normal_ * g * g;
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k * g * g;
       }
     }
     break;
     case INPAR::PARTICLE::Hertz:
     {
-      normalcontactforce = - k_normal_ * pow(-g,1.5);
+      normalcontactforce = - k * pow(-g,1.5);
 
       if(writeenergyevery_)
       {
         //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k * pow(-g,2.5);
       }
     }
     break;
     case INPAR::PARTICLE::LinSpringDamp:
     {
-      normalcontactforce = k_normal_ * g - d * v_rel_normal;
+      normalcontactforce = k * g - d * v_rel_normal;
 
       // tension-cutoff
       if(tension_cutoff_ && normalcontactforce > 0.0)
@@ -1322,7 +1338,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
       if(writeenergyevery_)
       {
         //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k_normal_ * g * g;
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k * g * g;
       }
     }
     break;
@@ -1330,7 +1346,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     {
       // m_eff = m_i * m_j / ( m_i + m_j)
 
-      normalcontactforce = - k_normal_ * pow(-g,1.5) - m_eff * d * v_rel_normal;
+      normalcontactforce = - k * pow(-g,1.5) - m_eff * d * v_rel_normal;
 
       // tension-cutoff
       if(tension_cutoff_ && normalcontactforce > 0.0)
@@ -1341,13 +1357,13 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
       if(writeenergyevery_)
       {
         //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k * pow(-g,2.5);
       }
     }
     break;
     case INPAR::PARTICLE::KuwabaraKono:
     {
-      normalcontactforce = - k_normal_ * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.5);
+      normalcontactforce = - k * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.5);
 
       // tension-cutoff
       if(tension_cutoff_ && normalcontactforce > 0.0)
@@ -1358,13 +1374,13 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
       if(writeenergyevery_)
       {
         //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k * pow(-g,2.5);
       }
     }
     break;
     case INPAR::PARTICLE::Tsuji:
     {
-      normalcontactforce = - k_normal_ * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.25);
+      normalcontactforce = - k * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.25);
 
       // tension-cutoff
       if(tension_cutoff_ && normalcontactforce > 0.0)
@@ -1375,7 +1391,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
       if(writeenergyevery_)
       {
         //monitor E N E R G Y: here: calculate energy of elastic contact
-        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k_normal_ * pow(-g,2.5);
+        contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.4 * k * pow(-g,2.5);
       }
     }
     break;
@@ -1474,11 +1490,11 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
       if(e_wall_ != 0.0)
       {
         const double lnewall = log(e_wall_);
-        d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
+        d = 2.0 * std::abs(lnewall) * sqrt(k_normal_wall_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
       }
       else
       {
-        d = 2.0 * sqrt(k_normal_ * m_eff);
+        d = 2.0 * sqrt(k_normal_wall_ * m_eff);
       }
     }
     else

@@ -123,10 +123,10 @@ namespace BINSTRATEGY
     virtual inline double const* BinSize() const { return &bin_size_[0]; }
 
     /// return flag whether pbcs are applied to the problem
-    virtual bool HavePBC( const int dim = -1 ) { if(dim == -1) return havepbc_; else return pbconoff_[dim]; };
+    virtual bool HavePBC( const int dim = -1 ) const { if(dim == -1) return havepbc_; else return pbconoff_[dim]; };
 
     /// return delta for pbc in x, y, or z direction
-    virtual double PBCDelta(const int dim) { return pbcdeltas_[dim]; };
+    virtual double PBCDelta(const int dim) const { return pbcdeltas_[dim]; };
 
     /// get bounding box dimensions
     virtual inline LINALG::Matrix<3,2>& XAABB(){return XAABB_;}

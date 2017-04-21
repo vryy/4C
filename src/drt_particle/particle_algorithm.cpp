@@ -1245,7 +1245,7 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
     DRT::Node* particle,
     std::list<DRT::Node*>& neighboursLinf_p,
     boost::unordered_map<int, DRT::Element*>& neighboursLinf_w,
-    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs)
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs) const
 {
   if (particle->NumElement() != 1)
     dserror("More than one element for this particle");
@@ -1263,12 +1263,12 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
     const int binId,
     std::list<DRT::Node*>& neighboursLinf_p,
     boost::unordered_map<int, DRT::Element*>* neighboursLinf_w,
-    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs)
+    const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > neighboursLinf_hs) const
 {
   std::vector<int> binIds;
   binIds.reserve(27);
 
-  BinStrategy()->GetNeighborAndOwnBinIds(binId,binIds);
+  BinStrategy().GetNeighborAndOwnBinIds(binId,binIds);
 
   //std::cout << "Neighbor bins of bin " << binId << ": " << std::endl;
 //  for(int i=0;i<binIds.size();i++)
@@ -1285,13 +1285,13 @@ void PARTICLE::Algorithm::GetBinContent(
     std::list<DRT::Node*>& bin_p,
     boost::unordered_map<int, DRT::Element*>* bin_w,
     const Teuchos::RCP<boost::unordered_map<int , Teuchos::RCP<HeatSource> > > bin_hs,
-  std::vector<int> &binIds)
+    std::vector<int> &binIds) const
 {
   // loop over all bins
   for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
   {
     // extract bins from discretization after checking on existence
-    const int lid = BinStrategy()->BinDiscret()->ElementColMap()->LID(*bin);
+    const int lid = BinStrategy().BinDiscret()->ElementColMap()->LID(*bin);
     if(lid<0)
       continue;
 
@@ -1300,7 +1300,7 @@ void PARTICLE::Algorithm::GetBinContent(
     if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
-        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lColElement(lid));
+        static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy().BinDiscret()->lColElement(lid));
 
     // gather particles
     DRT::Node** nodes = neighboringbin->Nodes();
@@ -1320,9 +1320,12 @@ void PARTICLE::Algorithm::GetBinContent(
     // it is a set so that there are no repetitions of the heat source
     if (bin_hs != Teuchos::null)
     {
-      std::list<Teuchos::RCP<HeatSource> >::const_iterator iHS;
-      for (iHS = bins2heatSources_[*bin].begin(); iHS != bins2heatSources_[*bin].end(); ++iHS)
-        (*bin_hs)[(*iHS)->Id()] = (*iHS);
+      std::map<int,std::list<Teuchos::RCP<HeatSource> > >::const_iterator hs = bins2heatSources_.find(*bin);
+      if(hs != bins2heatSources_.end())
+      {
+        for(std::list<Teuchos::RCP<HeatSource> >::const_iterator iHS = hs->second.begin(); iHS != hs->second.end(); ++iHS)
+          (*bin_hs)[(*iHS)->Id()] = (*iHS);
+      }
     }
   }
 }

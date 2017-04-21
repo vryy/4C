@@ -130,25 +130,29 @@ namespace PARTICLE
     double young_;
 
     /// minimum expected radius
-    double r_min_;
+    const double r_min_;
     /// maximum expected radius
-    double r_max_;
+    const double r_max_;
     /// dismember radius in case of thermodynamics
     double r_dismember_;
     /// max expected particle velocity
-    double v_max_;
-    /// max allowed relative penetration
-    double c_;
+    const double v_max_;
+    /// max allowed relative particle-particle penetration
+    const double c_;
+    /// max allowed relative particle-wall penetration
+    const double c_wall_;
     /// critical time step for contact
     double dt_krit_;
 
     /// coefficient of restitution (inter-particle)
-    double e_;
+    const double e_;
     /// coefficient of restitution (particle-wall)
-    double e_wall_;
+    const double e_wall_;
 
     /// normal contact stiffness (inter-particle)
     double k_normal_;
+    /// normal contact stiffness (particle-wall)
+    double k_normal_wall_;
     /// tangential contact stiffness (inter-particle)
     double k_tang_;
     /// tangential contact stiffness (particle-wall)
@@ -169,12 +173,12 @@ namespace PARTICLE
     double d_tang_wall_;
 
     /// frictional coefficient (inter-particle)
-    double mu_;
+    const double mu_;
     /// frictional coefficient (particle-wall)
-    double mu_wall_;
+    const double mu_wall_;
 
     // tension cutoff
-    bool tension_cutoff_;
+    const bool tension_cutoff_;
 
     /// energy stored in elastic springs due to contact
     double contact_energy_;
@@ -206,10 +210,10 @@ namespace PARTICLE
     //@{
 
     /// particle discretization
-    Teuchos::RCP<DRT::Discretization> discret_;
+    const Teuchos::RCP<const DRT::Discretization> discret_;
 
     /// particle algorithm that is connected to the time integration
-    Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
+    const Teuchos::RCP<const PARTICLE::Algorithm> particle_algorithm_;
 
     //@}
 

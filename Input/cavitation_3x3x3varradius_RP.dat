@@ -40,6 +40,7 @@ NORMAL_CONTACT_LAW              LinearSpring
 MIN_RADIUS                      0.9e-5
 MAX_RADIUS                      2.5e-5
 REL_PENETRATION                 0.05
+REL_PENETRATION_WALL            0.05
 MAX_VELOCITY                    1.6
 TENSION_CUTOFF                  Yes
 COEFF_RESTITUTION               1.0

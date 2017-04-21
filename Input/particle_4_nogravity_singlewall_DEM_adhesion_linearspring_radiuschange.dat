@@ -44,6 +44,7 @@ MIN_RADIUS                      0.12
 MAX_RADIUS                      0.12
 RADIUS_CHANGE_CURVE             1
 REL_PENETRATION                 0.01
+REL_PENETRATION_WALL            0.01
 MAX_VELOCITY                    0.1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
