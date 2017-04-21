@@ -16,6 +16,7 @@
 
 #include "drt_dofset.H"
 
+#include "../linalg/linalg_utils.H"
 
 namespace DRT
 {
@@ -51,11 +52,11 @@ public:
       bool uniqueGIDs)
   : DofSet(),
     numdofpernode_(numdofpernode),
-    numdofpernodenodewise_(0,0),
+    numdofpernodenodewise_(Teuchos::null),
     numdofperelement_(numdofperelement),
-    numdofperelementelewise_(0,0),
+    numdofperelementelewise_(Teuchos::null),
     numdofperface_(numdofperface),
-    numdofperfacefacewise_(0,0),
+    numdofperfacefacewise_(Teuchos::null),
     uniqueGIDs_(uniqueGIDs)
   {
     return;
@@ -64,16 +65,16 @@ public:
   /// Constructor
   DofSetPredefinedDoFNumber(
       int numdofpernode,
-      std::vector<int> numdofperelement,
+      const Teuchos::RCP<Epetra_IntVector> numdofperelement,
       int numdofperface,
       bool uniqueGIDs)
   : DofSet(),
     numdofpernode_(numdofpernode),
-    numdofpernodenodewise_(0,0),
+    numdofpernodenodewise_(Teuchos::null),
     numdofperelement_(0),
     numdofperelementelewise_(numdofperelement),
     numdofperface_(numdofperface),
-    numdofperfacefacewise_(0,0),
+    numdofperfacefacewise_(Teuchos::null),
     uniqueGIDs_(uniqueGIDs)
   {
     return;
@@ -81,9 +82,9 @@ public:
 
   /// Constructor
   explicit DofSetPredefinedDoFNumber(
-      std::vector<int> numdofpernode,
-      std::vector<int> numdofperelement,
-      std::vector<int> numdofperface,
+      const Teuchos::RCP<Epetra_IntVector> numdofpernode,
+      const Teuchos::RCP<Epetra_IntVector> numdofperelement,
+      const Teuchos::RCP<Epetra_IntVector> numdofperface,
       bool uniqueGIDs)
   : DofSet(),
     numdofpernode_(0),
@@ -114,26 +115,51 @@ public:
       return;
   }
 
+  /// Assign dof numbers using all elements and nodes of the discretization.
+  int AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
+  {
+    // redistribute internal vectors if necessary
+    if(numdofpernodenodewise_ != Teuchos::null and not numdofpernodenodewise_->Map().SameAs(*dis.NodeColMap()))
+    {
+      Epetra_IntVector numdofpernodenodewise_rowmap(*dis.NodeRowMap());
+      LINALG::Export(*numdofpernodenodewise_,numdofpernodenodewise_rowmap);
+      numdofpernodenodewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+      LINALG::Export(numdofpernodenodewise_rowmap,*numdofpernodenodewise_);
+    }
+    if(numdofperelementelewise_ != Teuchos::null and not numdofperelementelewise_->Map().SameAs(*dis.ElementColMap()))
+    {
+      Epetra_IntVector numdofperelementelewise_rowmap(*dis.ElementRowMap());
+      LINALG::Export(*numdofperelementelewise_,numdofperelementelewise_rowmap);
+      numdofperelementelewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
+      LINALG::Export(numdofperelementelewise_rowmap,*numdofperelementelewise_);
+    }
+    if(numdofperfacefacewise_ != Teuchos::null)
+      dserror("Redistribution not yet implemented!");
+
+    // call base class routine
+    return DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
+  }
+
 protected:
 
   /// get number of nodal dofs
   virtual int NumDofPerNode( const Node & node ) const
   {
-    if (numdofpernodenodewise_.size()==0) return numdofpernode_;
-    else return numdofpernodenodewise_[node.LID()];
+    if (numdofpernodenodewise_ == Teuchos::null) return numdofpernode_;
+    else return (*numdofpernodenodewise_)[node.LID()];
   }
 
   /// get number of element dofs for this element
   virtual int NumDofPerElement( const Element & element ) const
   {
-    if (numdofperelementelewise_.size()==0) return numdofperelement_;
-    else return numdofperelementelewise_[element.LID()];
+    if (numdofperelementelewise_ == Teuchos::null) return numdofperelement_;
+    else return (*numdofperelementelewise_)[element.LID()];
   }
 
   /// get number of element dofs for this element
   virtual int NumDofPerFace( const Element & element, int face) const
   {
-    if (numdofperfacefacewise_.size()==0) return numdofperface_;
+    if (numdofperfacefacewise_ == Teuchos::null) return numdofperface_;
     else { dserror("Not yet implemented!"); return -1; }
   }
 
@@ -143,19 +169,19 @@ private:
   const int numdofpernode_;
 
   /// another member
-  std::vector<int> numdofpernodenodewise_;
+  Teuchos::RCP<Epetra_IntVector> numdofpernodenodewise_;
 
   /// number of dofs per element of dofset
   const int numdofperelement_;
 
   /// another member
-  std::vector<int> numdofperelementelewise_;
+  Teuchos::RCP<Epetra_IntVector> numdofperelementelewise_;
 
   /// number of dofs per element of dofset
   const int numdofperface_;
 
   /// another member
-  std::vector<int> numdofperfacefacewise_;
+  Teuchos::RCP<Epetra_IntVector> numdofperfacefacewise_;
 
   /// bool indicating if the dofs should get unique global IDs
   /// can be set to false, if the dofs never appear in a global map)

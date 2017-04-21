@@ -70,13 +70,13 @@ void SCATRA::TimIntHDG::Setup()
     dserror("Did not receive an HDG discretization");
 
   // vector to store the dofs per element
-  std::vector<int> eledofs;
+  const Teuchos::RCP<Epetra_IntVector> eledofs = Teuchos::rcp(new Epetra_IntVector(*discret_->ElementColMap()));
 
   // loop over elements
   for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
   {
     DRT::ELEMENTS::ScaTraHDG *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
-    eledofs.push_back(hdgele->NumDofPerElementAuxiliary());
+    (*eledofs)[iele] = hdgele->NumDofPerElementAuxiliary();
   }
 
   // add proxy for interior degrees of freedom to scatra discretization
@@ -380,7 +380,7 @@ void SCATRA::TimIntHDG::ReadRestart(const int step,Teuchos::RCP<IO::InputControl
   reader.ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
 
   // vector to store the dofs per element
-  std::vector<int> eledofs;
+  const Teuchos::RCP<Epetra_IntVector> eledofs = Teuchos::rcp(new Epetra_IntVector(*discret_->ElementColMap()));
 
   // build new maps for face dofs with adapted element order
   hdgdis_->BuildFaces();
@@ -400,7 +400,7 @@ void SCATRA::TimIntHDG::ReadRestart(const int step,Teuchos::RCP<IO::InputControl
   {
     DRT::ELEMENTS::ScaTraHDG *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
     // store the number of dofs for the element
-    eledofs.push_back(hdgele->NumDofPerElementAuxiliary());
+    (*eledofs)[iele] = hdgele->NumDofPerElementAuxiliary();
   }
 
   // create new local dofset for the new interior element dofs with adapted element order
@@ -891,7 +891,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
     dserror("Did not receive an HDG discretization");
 
   // vector to store the dofs per single element
-  std::vector<int> eledofs;
+  const Teuchos::RCP<Epetra_IntVector> eledofs = Teuchos::rcp(new Epetra_IntVector(*discret_->ElementColMap()));
 
   // vector to store the location array of the dofsets before the adaption with the new order
   std::vector<DRT::Element::LocationArray> la_old;
@@ -1003,7 +1003,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
   {
     DRT::ELEMENTS::ScaTraHDG *hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG *>(discret_->lColElement(iele));
     // store the number of dofs for the element
-    eledofs.push_back(hdgele->NumDofPerElementAuxiliary());
+    (*eledofs)[iele] = hdgele->NumDofPerElementAuxiliary();
   }
 
   // create new local dofset for the new interior element dofs with adapted element order

@@ -157,10 +157,10 @@ void acoustics_drt()
   // set degrees of freedom in the discretization
   //acoudishdg->BuildDofSetAuxProxy(0,elementndof,0,false);
   // build map
-  std::vector<int> eledofs;
+  const Teuchos::RCP<Epetra_IntVector> eledofs = Teuchos::rcp(new Epetra_IntVector(*acoudishdg->ElementColMap()));
   for(int i=0; i<acoudishdg->NumMyColElements(); ++i)
   {
-    eledofs.push_back(dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lColElement(i))->NumDofPerElementAuxiliary());
+    (*eledofs)[i] = dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lColElement(i))->NumDofPerElementAuxiliary();
   }
 
   Teuchos::RCP<DRT::DofSetInterface> dofsetaux =

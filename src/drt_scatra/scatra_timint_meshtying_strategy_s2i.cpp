@@ -2668,12 +2668,12 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
       dserror("Evaluation of scatra-scatra interface layer growth only implemented for conforming interface discretizations!");
 
     // provide scalar transport discretization with additional dofset for scatra-scatra interface layer thickness
-    std::vector<int> numdofpernode(scatratimint_->Discretization()->NumMyColNodes(),0);
+    const Teuchos::RCP<Epetra_IntVector> numdofpernode = Teuchos::rcp(new Epetra_IntVector(*scatratimint_->Discretization()->NodeColMap()));
     for(int inode=0; inode<scatratimint_->Discretization()->NumMyColNodes(); ++inode)
       // add one degree of freedom for scatra-scatra interface layer growth to current node if applicable
       if(scatratimint_->Discretization()->lColNode(inode)->GetCondition("S2ICouplingGrowth"))
-        numdofpernode[inode] = 1;
-    Teuchos::RCP<DRT::DofSetInterface> dofset = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numdofpernode,std::vector<int>(0,0),std::vector<int>(0,0),true));
+        (*numdofpernode)[inode] = 1;
+    Teuchos::RCP<DRT::DofSetInterface> dofset = Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numdofpernode,Teuchos::null,Teuchos::null,true));
     if(scatratimint_->Discretization()->AddDofSet(dofset) != 2)
       dserror("Scalar transport discretization exhibits invalid number of dofsets!");
   } // initialize scatra-scatra interface layer growth
