@@ -160,6 +160,7 @@ namespace SUBMODELEVALUATOR {
 
     DRT::Discretization& BinDiscret();
     Teuchos::RCP<DRT::Discretization>& BinDiscretPtr();
+    Teuchos::RCP<const DRT::Discretization> BinDiscretPtr() const;
     DRT::Discretization const& BinDiscret() const;
 
     //! Returns the global state data container

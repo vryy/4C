@@ -1,16 +1,16 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*!
-\file runtime_vtu_writer.H
+\file runtime_vtp_writer.H
 
-\brief Write visualization output in vtk/vtu format at runtime
+\brief Write visualization output in vtk/vtp format at runtime
 
 \level 3
 
 \maintainer Maximilian Grill
 */
 /*-----------------------------------------------------------------------------------------------*/
-#ifndef IO_RUNTIME_VTU_WRITER_H
-#define IO_RUNTIME_VTU_WRITER_H
+#ifndef IO_RUNTIME_VTP_WRITER_H
+#define IO_RUNTIME_VTP_WRITER_H
 
 /*-----------------------------------------------------------------------------------------------*/
 /* headers */
@@ -24,7 +24,7 @@
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
-class VtuWriter;
+class VtpWriter;
 
 namespace DRT
 {
@@ -36,29 +36,29 @@ namespace DRT
 
 /*!
  * \brief This object allows to write visualization output
- *        - in vtk/vtu format
+ *        - in vtk/vtp format
  *        - at runtime
  *        - in parallel
  *        - binary-encoded
  *
  * \author grill
- * \date 03/17
+ * \date 04/17
  */
-class RuntimeVtuWriter
+class RuntimeVtpWriter
 {
 
 public:
   /// Constructor
-  RuntimeVtuWriter();
+  RuntimeVtpWriter();
 
   /// Destructor
-  virtual ~RuntimeVtuWriter()
+  virtual ~RuntimeVtpWriter()
   {}
 
   /** \brief reset current simulation time and time step number
    *
    *  \author grill
-   *  \date 03/17 */
+   *  \date 04/17 */
   void Initialize(
       unsigned int myrank,
       unsigned int num_processors,
@@ -70,77 +70,48 @@ public:
   /** \brief reset current simulation time and time step number and geometry name
    *
    *  \author grill
-   *  \date 03/17 */
+   *  \date 04/17 */
   void SetupForNewTimeStepAndGeometry(
       double time,
       unsigned int timestep,
       const std::string & geometryname);
 
-  /** \brief reset geometry data for unstructured grid all at once
+  /** \brief reset geometry data for poly data set all at once
    *
    *  \author grill
-   *  \date 03/17 */
-  void ResetGeometry(
-      const std::vector<double>& point_coordinates,
-      const std::vector<uint8_t>& cell_types,
-      const std::vector<int32_t>& cell_offset);
+   *  \date 04/17 */
+  void ResetGeometry( const std::vector<double>& point_coordinates );
 
-  /** \brief get mutable point coordinate vector for unstructured grid
+  /** \brief get mutable point coordinate vector for poly data set
    *
    *         this allows you to append geometry data in multiple steps
    *
    *  \author grill
-   *  \date 03/17 */
+   *  \date 04/17 */
   std::vector<double>& GetMutablePointCoordinateVector();
-
-  /** \brief get mutable cell type vector for unstructured grid
-   *
-   *         this allows you to append geometry data in multiple steps
-   *
-   *  \author grill
-   *  \date 03/17 */
-  std::vector<uint8_t>& GetMutableCellTypeVector();
-
-  /** \brief get mutable cell offset vector for unstructured grid
-   *
-   *         this allows you to append geometry data in multiple steps
-   *
-   *  \author grill
-   *  \date 03/17 */
-  std::vector<int32_t>& GetMutableCellOffsetVector();
 
 
   /** \brief append visualization data vector with n components per point
    *
    *  \author grill
-   *  \date 03/17 */
+   *  \date 04/17 */
   // Todo template <typename T>, double, int,
   void AppendVisualizationPointDataVector(
       const std::vector<double>& datavalues,
       const unsigned int num_components_per_point,
       const std::string& dataname);
 
-  /** \brief append visualization data vector with n components per cell
-   *
-   *  \author grill
-   *  \date 03/17 */
-  // Todo template <typename T>, double, int,
-  void AppendVisualizationCellDataVector(
-      const std::vector<double>& datavalues,
-      const unsigned int num_components_per_cell,
-      const std::string& dataname);
-
 
   /** \brief write all required VTK files to filesystem
    *
    *  \author grill
-   *  \date 03/17 */
+   *  \date 04/17 */
   void WriteFiles();
 
   /** \brief write a VTK collection file summarizing all written files of this object to filesystem
    *
    *  \author grill
-   *  \date 03/17 */
+   *  \date 04/17 */
   void WriteCollectionFileOfAllWrittenFiles( const std::string & collectionfilename );
 
 
@@ -149,27 +120,21 @@ private:
   /** \brief write all stored data vectors to VTK files
    *
    *  \author grill
-   *  \date 03/17 */
-  void WriteAllPointAndCellDataVectorsToFiles();
+   *  \date 04/17 */
+  void WriteAllPointDataVectorsToFiles();
 
 
 private:
 
-  //! the actual vtu writer object
-  Teuchos::RCP<VtuWriter> vtu_writer_;
+  //! the actual vtp writer object
+  Teuchos::RCP<VtpWriter> vtp_writer_;
 
 
-  //! @name member variables required for the definition of an unstructured grid
+  //! @name member variables required for the definition of a poly data set
   //! @{
 
   //! point coordinates with three components each
   std::vector<double> point_coordinates_;
-
-  //! type of vtk cell (see list in ...)
-  std::vector<uint8_t> cell_types_;
-
-  //! index of first point of each cell (assumed to be continuous => no connectivity information required)
-  std::vector<int32_t> cell_offset_;
 
   //! @}
 
@@ -177,8 +142,6 @@ private:
   //! key: result name, entry: (solution data vector, num_components)
   std::map<std::string, std::pair<std::vector<double>, unsigned int> > point_data_vectors_;
 
-  //! key: result name, entry: (solution data vector, num_components)
-  std::map<std::string, std::pair<std::vector<double>, unsigned int> > cell_data_vectors_;
 };
 
 #endif

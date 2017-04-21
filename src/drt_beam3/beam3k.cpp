@@ -209,7 +209,15 @@ rttmodnewmass_(0),
 rtconvmass_(0),
 rtnewmass_(0),
 rconvmass_(0),
-rnewmass_(0)
+rnewmass_(0),
+axial_strain_GP_(0),
+twist_GP_(0),
+curvature_2_GP_(0),
+curvature_3_GP_(0),
+axial_force_GP_(0),
+torque_GP_(0),
+bending_moment_2_GP_(0),
+bending_moment_3_GP_(0)
 {
   return;
 }
@@ -250,7 +258,15 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
  rtconvmass_(old.rtconvmass_),
  rtnewmass_(old.rtnewmass_),
  rconvmass_(old.rconvmass_),
- rnewmass_(old.rnewmass_)
+ rnewmass_(old.rnewmass_),
+ axial_strain_GP_(old.axial_strain_GP_),
+ twist_GP_(old.twist_GP_),
+ curvature_2_GP_(old.curvature_2_GP_),
+ curvature_3_GP_(old.curvature_3_GP_),
+ axial_force_GP_(old.axial_force_GP_),
+ torque_GP_(old.torque_GP_),
+ bending_moment_2_GP_(old.bending_moment_2_GP_),
+ bending_moment_3_GP_(old.bending_moment_3_GP_)
 {
   return;
 }
@@ -356,6 +372,14 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,rtnewmass_);
   AddtoPack<3,1>(data,rconvmass_);
   AddtoPack<3,1>(data,rnewmass_);
+  AddtoPack(data,axial_strain_GP_);
+  AddtoPack(data,twist_GP_);
+  AddtoPack(data,curvature_2_GP_);
+  AddtoPack(data,curvature_3_GP_);
+  AddtoPack(data,axial_force_GP_);
+  AddtoPack(data,torque_GP_);
+  AddtoPack(data,bending_moment_2_GP_);
+  AddtoPack(data,bending_moment_3_GP_);
 
   return;
 }
@@ -409,6 +433,14 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,rtnewmass_);
   ExtractfromPack<3,1>(position,data,rconvmass_);
   ExtractfromPack<3,1>(position,data,rnewmass_);
+  ExtractfromPack(position,data,axial_strain_GP_);
+  ExtractfromPack(position,data,twist_GP_);
+  ExtractfromPack(position,data,curvature_2_GP_);
+  ExtractfromPack(position,data,curvature_3_GP_);
+  ExtractfromPack(position,data,axial_force_GP_);
+  ExtractfromPack(position,data,torque_GP_);
+  ExtractfromPack(position,data,bending_moment_2_GP_);
+  ExtractfromPack(position,data,bending_moment_3_GP_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -502,8 +534,29 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
     LINALG::Matrix<3,1> theta_s(true);
     LINALG::Matrix<3,3> triad_mat(true); //material triad at gp
 
-    //Resize vectors
+    //Resize vectors for storage of time integration quantities
     ResizeClassVariables(gausspoints.nquad);
+
+    // assure correct size of strain and stress resultant class variables and fill them
+    // with zeros (by definition, the reference configuration is undeformed and stress-free)
+    axial_strain_GP_.resize(gausspoints.nquad);
+    std::fill( axial_strain_GP_.begin(), axial_strain_GP_.end(), 0.0 );
+    twist_GP_.resize(gausspoints.nquad);
+    std::fill( twist_GP_.begin(), twist_GP_.end(), 0.0 );
+    curvature_2_GP_.resize(gausspoints.nquad);
+    std::fill( curvature_2_GP_.begin(), curvature_2_GP_.end(), 0.0 );
+    curvature_3_GP_.resize(gausspoints.nquad);
+    std::fill( curvature_3_GP_.begin(), curvature_3_GP_.end(), 0.0 );
+
+    axial_force_GP_.resize(gausspoints.nquad);
+    std::fill( axial_force_GP_.begin(), axial_force_GP_.end(), 0.0 );
+    torque_GP_.resize(gausspoints.nquad);
+    std::fill( torque_GP_.begin(), torque_GP_.end(), 0.0 );
+    bending_moment_2_GP_.resize(gausspoints.nquad);
+    std::fill( bending_moment_2_GP_.begin(), bending_moment_2_GP_.end(), 0.0 );
+    bending_moment_3_GP_.resize(gausspoints.nquad);
+    std::fill( bending_moment_3_GP_.begin(), bending_moment_3_GP_.end(), 0.0 );
+
 
     //calculate the length of the element via Newton iteration
     Calculate_length(xrefe,T0_,LENGTHCALCNEWTONTOL);
@@ -685,7 +738,29 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
     double phi_s(true);
     LINALG::Matrix<3,3> triad_mat(true); //material triad at gp
 
+    //Resize vectors for storage of time integration quantities
     ResizeClassVariables(gausspoints.nquad);
+
+    // assure correct size of strain and stress resultant class variables and fill them
+    // with zeros (by definition, the reference configuration is undeformed and stress-free)
+    axial_strain_GP_.resize(gausspoints.nquad);
+    std::fill( axial_strain_GP_.begin(), axial_strain_GP_.end(), 0.0 );
+    twist_GP_.resize(gausspoints.nquad);
+    std::fill( twist_GP_.begin(), twist_GP_.end(), 0.0 );
+    curvature_2_GP_.resize(gausspoints.nquad);
+    std::fill( curvature_2_GP_.begin(), curvature_2_GP_.end(), 0.0 );
+    curvature_3_GP_.resize(gausspoints.nquad);
+    std::fill( curvature_3_GP_.begin(), curvature_3_GP_.end(), 0.0 );
+
+    axial_force_GP_.resize(gausspoints.nquad);
+    std::fill( axial_force_GP_.begin(), axial_force_GP_.end(), 0.0 );
+    torque_GP_.resize(gausspoints.nquad);
+    std::fill( torque_GP_.begin(), torque_GP_.end(), 0.0 );
+    bending_moment_2_GP_.resize(gausspoints.nquad);
+    std::fill( bending_moment_2_GP_.begin(), bending_moment_2_GP_.end(), 0.0 );
+    bending_moment_3_GP_.resize(gausspoints.nquad);
+    std::fill( bending_moment_3_GP_.begin(), bending_moment_3_GP_.end(), 0.0 );
+
 
     //calculate the length of the element via Newton iteration
     Calculate_length(xrefe,T0_,LENGTHCALCNEWTONTOL);
@@ -844,7 +919,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
       SetInitialDynamicClassVariables(numgp, triad_mat, r);
 
-    }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    }
 
     isinit_ = true;
   }//if(!isinit_)

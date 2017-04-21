@@ -154,19 +154,19 @@ DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
   // safety checks
   if ( point_coordinates.size() != num_spatial_dimensions * pointcounter )
   {
-    dserror("RuntimeVtuWriter expected %d coordinate values, but got %d",
+    dserror("DiscretizationRuntimeVtuWriter expected %d coordinate values, but got %d",
         num_spatial_dimensions * pointcounter, point_coordinates.size() );
   }
 
   if ( cell_types.size() != num_row_elements - num_skipped_eles )
   {
-    dserror("RuntimeVtuWriter expected %d cell type values, but got %d",
+    dserror("DiscretizationRuntimeVtuWriter expected %d cell type values, but got %d",
         num_row_elements, cell_types.size() );
   }
 
   if ( cell_offsets.size() != num_row_elements - num_skipped_eles )
   {
-    dserror("RuntimeVtuWriter expected %d cell offset values, but got %d",
+    dserror("DiscretizationRuntimeVtuWriter expected %d cell offset values, but got %d",
         num_row_elements, cell_offsets.size() );
   }
 
@@ -179,7 +179,7 @@ DiscretizationRuntimeVtuWriter::ResetTimeAndTimeStep(
     double time,
     unsigned int timestep)
 {
-  // Todo enable independent setting of time/timestep and geometry name in RuntimeVtuWriter
+  // Todo allow for independent setting of time/timestep and geometry name
   runtime_vtuwriter_->SetupForNewTimeStepAndGeometry( time, timestep, discretization_->Name() );
 }
 
@@ -259,7 +259,7 @@ DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
   // sanity check
   if ( vtu_point_result_data.size() != result_num_dofs_per_node * pointcounter )
   {
-    dserror("RuntimeVtuWriter expected %d result values, but got %d",
+    dserror("DiscretizationRuntimeVtuWriter expected %d result values, but got %d",
         result_num_dofs_per_node * pointcounter, vtu_point_result_data.size() );
   }
 

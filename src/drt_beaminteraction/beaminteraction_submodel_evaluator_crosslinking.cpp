@@ -16,6 +16,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/runtime_vtp_writer.H"
+#include "../drt_io/discretization_runtime_vtp_writer.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
@@ -45,7 +47,8 @@
  *-------------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Crosslinking() :
     crosslinking_params_ptr_( Teuchos::null ),
-    bin_beamcontent_( BINSTRATEGY::UTILS::Beam )
+    bin_beamcontent_( BINSTRATEGY::UTILS::Beam ),
+    vtp_writer_ptr_( Teuchos::null )
 {
   crosslinker_data_.clear();
   beam_data_.clear();
@@ -68,6 +71,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Setup()
 
   // add crosslinker to bin discretization
   AddCrosslinkerToBinDiscretization();
+
+  // Fixme check for input parameter value whether to write runtime vtp output for crosslinkers
+  if ( true )
+    vtp_writer_ptr_ = Teuchos::rcp( new DiscretizationRuntimeVtpWriter() );
 
   // set flag
   issetup_ = true;
@@ -704,6 +711,115 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::OutputStepState(
   // the map cache as we can't get any advantage saving the maps anyway
   bindis.Writer()->ClearMapCache();
 
+
+
+  // ************** BEGIN RUNTIME VTP OUTPUT *** OPTION 1: DISCRETIZATION *********
+  // this section compiles and seems to do the job correctly :-)
+  // Todo: add input parameters to control the output; for now: commented out
+
+//  // Todo: we need a better upper bound for total number of time steps here
+//  // however, this 'only' affects the number of leading zeros in the vtk file names
+//  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+//
+//  // initialize the writer object
+//  vtp_writer_ptr_->Initialize(
+//      BinDiscretPtr(),
+//      num_timesteps_in_simulation_upper_bound,
+//      true );
+//
+//  // reset time and time step of the writer object
+//  vtp_writer_ptr_->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
+//
+//
+//  // append all desired output data to the writer object's storage
+//
+//  // append displacement vector if desired
+//  vtp_writer_ptr_->AppendDofBasedResultDataVector( dis, 3, "displacement" );
+//
+//  // append orientation vector if desired
+//  vtp_writer_ptr_->AppendDofBasedResultDataVector( orientation, 3, "orientation" );
+//
+//  // append number of bonds if desired
+//  vtp_writer_ptr_->AppendNodeBasedResultDataVector( numbond, 1, "num_bonds" );
+//
+//  // append owner if desired Fixme: why is Id() the owner?
+//  vtp_writer_ptr_->AppendNodeBasedResultDataVector( owner, 1, "owner" );
+//
+//
+//  // finalize everything and write all required VTU files to filesystem
+//  vtp_writer_ptr_->WriteFiles();
+//
+//
+//  // Todo: this will not work as expected yet in case of a restart
+//  vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
+
+
+
+  // ************** BEGIN RUNTIME VTP OUTPUT *** OPTION 2: DIRECTLY *********
+  // this section is just to get the idea and needs some minor modifications (indicated by Fixme)
+  // this may serve as a template for visualization of stochastic&viscous forces, contact forces, ...
+
+//  Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr =
+//      Teuchos::rcp( new RuntimeVtpWriter() );
+//
+//  // Todo: we need a better upper bound for total number of time steps here
+//  // however, this 'only' affects the number of leading zeros in the vtk file names
+//  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+//
+//
+//  // initialize the writer object
+//  vtp_writer_ptr->Initialize();   // Fixme
+//
+//  // set geometry manually
+//  const unsigned int num_spatial_dimensions = 3;
+//  unsigned int num_row_points = 2000;
+//
+//  // get and prepare storage for point coordinate values
+//  std::vector<double>& point_coordinates = vtp_writer_ptr->GetMutablePointCoordinateVector();
+//  point_coordinates.clear();
+//  point_coordinates.reserve( num_spatial_dimensions * num_row_points );
+//
+//
+//  // loop over my points and collect the geometry/grid data, i.e. reference positions of nodes
+//  for (unsigned int inode=0; inode < num_row_points; ++inode)
+//  {
+//    const DRT::Node* node = BinDiscretPtr()->lRowNode(inode);
+//
+//    for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+//      point_coordinates.push_back( node->X()[idim] );
+//  }
+//
+//
+//  // reset time and time step and geometry name in the writer object
+//  vtp_writer_ptr->SetupForNewTimeStepAndGeometry(
+//      GState().GetTimeN(), GState().GetStepN(), BinDiscretPtr()->Name() );
+//
+//
+//
+//  // append all desired output data to the writer object's storage
+//
+//  // number of bonds: collect data and append to visualization results if desired
+//  std::vector<double> num_bonds( num_row_points );
+//
+//  for ( unsigned int i = 0; i < num_row_points; ++i )
+//  {
+//    CROSSLINKING::CrosslinkerNode *crosslinker_i =
+//        dynamic_cast< CROSSLINKING::CrosslinkerNode* >( bindis.lRowNode(i) );
+//
+//    num_bonds[i] = crosslinker_i->ClData()->GetNumberOfBonds();
+//  }
+//
+//  vtp_writer_ptr->AppendVisualizationPointDataVector( num_bonds, 1, "num_bonds" );
+//
+//
+//
+//  // finalize everything and write all required VTU files to filesystem
+//  vtp_writer_ptr->WriteFiles();
+//
+//
+//  // write a collection file summarizing all previously written files
+//  vtp_writer_ptr->WriteCollectionFileOfAllWrittenFiles();   // Fixme
+  // ************** END RUNTIME VTP OUTPUT ***************************************
 }
 
 /*----------------------------------------------------------------------*

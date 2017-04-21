@@ -21,6 +21,17 @@ STRUCT_DISP            Yes
 FILESTEPS              1000000
 STDOUTEVRY             100
 VERBOSITY              Standard
+//-----------------------------------IO/RUNTIME VTK OUTPUT STRUCTURE
+//OUTPUT_DATA_FORMAT              binary
+//INTERVAL_STEPS                  1
+//EVERY_ITERATION                 No
+//DISPLACEMENT                    Yes
+//SPECIAL_OUTPUT_BEAMS            Yes
+//-----------------------------IO/RUNTIME VTK OUTPUT STRUCTURE/BEAMS
+//USE_ABSOLUTE_POSITIONS          Yes
+//TRIAD_VISUALIZATIONPOINT        Yes
+//STRAINS_GAUSSPOINT              Yes
+//STRESSES_GAUSSPOINT             Yes
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER          1
 INT_STRATEGY           Standard

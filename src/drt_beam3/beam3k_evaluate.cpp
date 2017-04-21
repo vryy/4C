@@ -732,6 +732,17 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(
   // Clear energy in the beginning
   Eint_ = 0.0;
 
+  // re-assure correct size of strain and stress resultant class variables
+  axial_strain_GP_.resize(gausspoints.nquad);
+  twist_GP_.resize(gausspoints.nquad);
+  curvature_2_GP_.resize(gausspoints.nquad);
+  curvature_3_GP_.resize(gausspoints.nquad);
+
+  axial_force_GP_.resize(gausspoints.nquad);
+  torque_GP_.resize(gausspoints.nquad);
+  bending_moment_2_GP_.resize(gausspoints.nquad);
+  bending_moment_3_GP_.resize(gausspoints.nquad);
+
 
   //******begin: gauss integration for internal force vector and stiffness matrix*********
   for (int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -869,6 +880,16 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(
       Eint_ += 0.5 * FADUTILS::CastToDouble( Omega(idim) ) * FADUTILS::CastToDouble( M(idim) ) * wgt * jacobi_[numgp];
     }
 
+    // store material strain and stress resultant values in class variables
+    axial_strain_GP_[numgp] = FADUTILS::CastToDouble( epsilon_bar );
+    twist_GP_[numgp] = FADUTILS::CastToDouble( Omega(0) );
+    curvature_2_GP_[numgp] = FADUTILS::CastToDouble( Omega(1));
+    curvature_3_GP_[numgp] = FADUTILS::CastToDouble( Omega(2));
+
+    axial_force_GP_[numgp] = FADUTILS::CastToDouble( f_par );
+    torque_GP_[numgp] = FADUTILS::CastToDouble( M(0) );
+    bending_moment_2_GP_[numgp] = FADUTILS::CastToDouble( M(1) );
+    bending_moment_3_GP_[numgp] = FADUTILS::CastToDouble( M(2) );
   }
   //******end: gauss integration for internal force vector and stiffness matrix*********
 
@@ -1317,6 +1338,18 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(
   //Clear energy in the beginning
   Eint_=0.0;
 
+  // re-assure correct size of strain and stress resultant class variables
+  axial_strain_GP_.resize(gausspoints.nquad);
+  twist_GP_.resize(gausspoints.nquad);
+  curvature_2_GP_.resize(gausspoints.nquad);
+  curvature_3_GP_.resize(gausspoints.nquad);
+
+  axial_force_GP_.resize(gausspoints.nquad);
+  torque_GP_.resize(gausspoints.nquad);
+  bending_moment_2_GP_.resize(gausspoints.nquad);
+  bending_moment_3_GP_.resize(gausspoints.nquad);
+
+
   //******begin: gauss integration for internal force vector and stiffness matrix*********
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
@@ -1558,7 +1591,19 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(
     f_int_aux.Update(1.0,v_epsilon,0.0);
     f_int_aux.Scale(wgt*jacobi_[numgp]*f_par);
     internal_force.Update(1.0,f_int_aux,1.0);
-  }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+
+
+    // store material strain and stress resultant values in class variables
+    axial_strain_GP_[numgp] = FADUTILS::CastToDouble( epsilon );
+    twist_GP_[numgp] = FADUTILS::CastToDouble( Omega(0) );
+    curvature_2_GP_[numgp] = FADUTILS::CastToDouble( Omega(1));
+    curvature_3_GP_[numgp] = FADUTILS::CastToDouble( Omega(2));
+
+    axial_force_GP_[numgp] = FADUTILS::CastToDouble( f_par );
+    torque_GP_[numgp] = FADUTILS::CastToDouble( M(0) );
+    bending_moment_2_GP_[numgp] = FADUTILS::CastToDouble( M(1) );
+    bending_moment_3_GP_[numgp] = FADUTILS::CastToDouble( M(2) );
+  }
   //******end: gauss integration for internal force vector and stiffness matrix*********
 
 }

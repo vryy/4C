@@ -132,17 +132,17 @@ public:
   void AppendPointCircularCrossSectionInformationVector(
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
-  /** \brief append current material cross-section strain values at Gauss points to output data
+  /** \brief append material cross-section strain resultant values at Gauss points to output data
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendGaussPointMaterialCrossSectionStrains();
+  void AppendGaussPointMaterialCrossSectionStrainResultants();
 
-  /** \brief append current material cross-section stress values at Gauss points to output data
+  /** \brief append material cross-section stress resultant values at Gauss points to output data
    *
    *  \author grill
    *  \date 03/17 */
-  void AppendGaussPointMaterialCrossSectionStresses();
+  void AppendGaussPointMaterialCrossSectionStressResultants();
 
   /** \brief append current internal energy of the elements to output data
    *

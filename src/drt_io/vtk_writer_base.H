@@ -144,13 +144,19 @@ public:
       unsigned int timestepnumber
       );
 
+  /** \brief reset geometry name
+   *
+   *  \author grill
+   *  \date 04/17 */
+  void ResetGeometryName(
+      const std::string& geometryname
+      );
+
   /** \brief initialize the required file streams for processor individual file and master file
    *
    *  \author grill
    *  \date 03/17 */
-  void InitializeVtkFileStreamsForNewGeometry(
-      const std::string& geometryname
-      );
+  void InitializeVtkFileStreamsForNewGeometryAndOrTimeStep();
 
   //! write prologue of all required vtk files
   void WriteVtkHeadersAndFieldData();
@@ -159,7 +165,7 @@ public:
   void WriteVtkFooters();
 
   //! write a VTK collection file that summarizes paths to all written files (e.g. for all time steps)
-  //! note: this only includes files written during the 'lifetime' of this the writer object
+  //! note: this only includes files written during the 'lifetime' of this writer object
   void WriteVtkCollectionFileForAllWrittenMasterFiles(
       const std::string & collectionfilename
       ) const;
@@ -260,7 +266,7 @@ private:
       ) const;
 
   //! construct full path and name for VTK collection file stream from given file name
-  const char*
+  std::string
   GetVtkCollectionFileFullPathAndName(
       const std::string & collectionfilename
       ) const;
@@ -322,6 +328,9 @@ protected:
   //! number of digits (i.e. field width) which is reserved for number of processors in file names
   unsigned int num_processor_digits_;
 
+
+  //! name of the geometry
+  std::string geometry_name_;
 
   //! Time value for the current time step
   double time_;

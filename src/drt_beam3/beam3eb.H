@@ -296,6 +296,54 @@ public:
     return epsilon_max_;
   }
 
+  /** \brief Get material cross-section deformation measures, i.e. strain resultants
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual inline void GetMaterialStrainResultantsAtAllGPs(
+      std::vector<double>& axial_strain_GPs,
+      std::vector<double>& shear_strain_2_GPs,
+      std::vector<double>& shear_strain_3_GPs,
+      std::vector<double>& twist_GPs,
+      std::vector<double>& curvature_2_GPs,
+      std::vector<double>& curvature_3_GPs) const
+  {
+    axial_strain_GPs = axial_strain_GP_;
+    // shear deformations are zero by definition for Kirchhoff beam formulation
+    shear_strain_2_GPs.clear();
+    shear_strain_3_GPs.clear();
+
+    // twist deformation cannot be represented by this reduced Kirchhoff beam formulation
+    twist_GPs.clear();
+    // only one curvature component due to isotropic formulation of this reduced Kirchhoff beam
+    curvature_2_GPs = curvature_GP_;
+    curvature_3_GPs.clear();
+  }
+
+  /** \brief Get material cross-section stress resultants
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual inline void GetMaterialStressResultantsAtAllGPs(
+      std::vector<double>& axial_force_GPs,
+      std::vector<double>& shear_force_2_GPs,
+      std::vector<double>& shear_force_3_GPs,
+      std::vector<double>& torque_GPs,
+      std::vector<double>& bending_moment_2_GPs,
+      std::vector<double>& bending_moment_3_GPs) const
+  {
+    axial_force_GPs = axial_force_GP_;
+    // note: shear deformations are zero by definition for Kirchhoff beam formulation
+    shear_force_2_GPs.clear();
+    shear_force_3_GPs.clear();
+
+    // torsion moment cannot be represented by this reduced Kirchhoff beam formulation
+    torque_GPs.clear();
+    // only one bending moment component due to isotropic formulation of this reduced Kirchhoff beam
+    bending_moment_2_GPs = bending_moment_GP_;
+    bending_moment_3_GPs.clear();
+  }
+
   /*!
    \brief Get centerline position at given parameter coordinate xi
   */
@@ -630,6 +678,14 @@ private:
   double kappa_max_;
   //! norm of maximal axial tension occuring in this element
   double epsilon_max_;
+
+  //! strain resultant values at GPs
+  std::vector<double> axial_strain_GP_;
+  std::vector<double> curvature_GP_;
+
+  //! stress resultant values at GPs
+  std::vector<double> axial_force_GP_;
+  std::vector<double> bending_moment_GP_;
 
 
 #if NODALDOFS == 3

@@ -26,7 +26,7 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 
 /* number of linear subsegments used for visualization of beam centerline
- * in vtu format (see post_drt_vtu_writer.cpp) */
+ * in vtu format (see post_drt_vtu_writer.cpp and beam_discretization_runtime_vtu_writer.cpp) */
 #define BEAMSVTUVISUALSUBSEGMENTS 5
 
 // forward declaration ...
@@ -216,11 +216,11 @@ public:
    *  \date 06/16 */
   virtual double GetJacobiFacAtXi(const double& xi) const = 0;
 
-  /** \brief Get material cross-section strain measures
+  /** \brief Get material cross-section deformation measures, i.e. strain resultants
    *
    *  \author grill
    *  \date 04/17 */
-  virtual void GetMaterialCrossSectionStrainsAtAllGPs(
+  virtual inline void GetMaterialStrainResultantsAtAllGPs(
       std::vector<double>& axial_strain_GPs,
       std::vector<double>& shear_strain_2_GPs,
       std::vector<double>& shear_strain_3_GPs,
@@ -231,14 +231,14 @@ public:
     dserror("not implemented");
   }
 
-  /** \brief Get material cross-section stress measures
+  /** \brief Get material cross-section stress resultants
    *
    *  \author grill
    *  \date 04/17 */
-  virtual void GetMaterialCrossSectionStressesAtAllGPs(
-      std::vector<double>& axial_stress_GPs,
-      std::vector<double>& shear_stress_2_GPs,
-      std::vector<double>& shear_stress_3_GPs,
+  virtual inline void GetMaterialStressResultantsAtAllGPs(
+      std::vector<double>& axial_force_GPs,
+      std::vector<double>& shear_force_2_GPs,
+      std::vector<double>& shear_force_3_GPs,
       std::vector<double>& torque_GPs,
       std::vector<double>& bending_moment_2_GPs,
       std::vector<double>& bending_moment_3_GPs) const

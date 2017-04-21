@@ -121,6 +121,15 @@ Teuchos::RCP<DRT::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<const DRT::Discretization>
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscretPtr() const
+{
+  CheckInit();
+  return bindis_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 DRT::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinDiscret() const
 {
   CheckInit();

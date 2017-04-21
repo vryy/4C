@@ -33,7 +33,7 @@
  *-----------------------------------------------------------------------------------------------*/
 BeamDiscretizationRuntimeVtuWriter::BeamDiscretizationRuntimeVtuWriter() :
     runtime_vtuwriter_( Teuchos::rcp( new RuntimeVtuWriter() ) ),
-    use_absolute_positions_( true )  // Todo set/reset from outside
+    use_absolute_positions_( true )
 {
   // empty constructor
 }
@@ -190,10 +190,11 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
       periodic_boundingbox_->Shift3D( interpolated_position );
       LINALG::Matrix<3,1> unshift_interpolated_position = interpolated_position;
 
-      // if there is a shift between tow consecutive points, double that point and create new cell
+      // if there is a shift between two consecutive points, double that point and create new cell
       // not for first and last point
-      if( ipoint != 0 and periodic_boundingbox_->UnShift3D( unshift_interpolated_position, interpolated_position_priorpoint )
-          and ipoint != BEAMSVTUVISUALSUBSEGMENTS)
+      if( ipoint != 0
+          and periodic_boundingbox_->UnShift3D( unshift_interpolated_position, interpolated_position_priorpoint )
+          and ipoint != BEAMSVTUVISUALSUBSEGMENTS )
       {
         for ( unsigned int idim = 0; idim < num_spatial_dimensions; ++idim )
           point_coordinates.push_back( unshift_interpolated_position(idim) );
@@ -256,7 +257,7 @@ BeamDiscretizationRuntimeVtuWriter::ResetTimeAndTimeStep(
     double time,
     unsigned int timestep)
 {
-  // Todo enable independent setting of time/timestep and geometry name in RuntimeVtuWriter
+  // Todo allow for independent setting of time/timestep and geometry name
   runtime_vtuwriter_->SetupForNewTimeStepAndGeometry(
       time, timestep, (discretization_->Name() + "-beams") );
 }
@@ -623,7 +624,7 @@ BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformationVe
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void
-BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStrains()
+BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStrainResultants()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
@@ -678,7 +679,7 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStrains(
 
 
     // get GP strain values from previous element evaluation call
-    beamele->GetMaterialCrossSectionStrainsAtAllGPs(
+    beamele->GetMaterialStrainResultantsAtAllGPs(
         axial_strain_GPs_current_element,
         shear_strain_2_GPs_current_element,
         shear_strain_3_GPs_current_element,
@@ -686,13 +687,44 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStrains(
         curvature_2_GPs_current_element,
         curvature_3_GPs_current_element);
 
+    // special treatment for Kirchhoff beam elements where shear mode does not exist
+    // Todo add option where only the relevant modes are written to file and let the user decide
+    //      whether to write zeros or nothing for non-applicable modes
+    if ( shear_strain_2_GPs_current_element.size() == 0 and
+        shear_strain_3_GPs_current_element.size() == 0 )
+    {
+      shear_strain_2_GPs_current_element.resize( axial_strain_GPs_current_element.size() );
+      std::fill( shear_strain_2_GPs_current_element.begin(),
+          shear_strain_2_GPs_current_element.end(), 0.0 );
+
+      shear_strain_3_GPs_current_element.resize( axial_strain_GPs_current_element.size() );
+      std::fill( shear_strain_3_GPs_current_element.begin(),
+          shear_strain_3_GPs_current_element.end(), 0.0 );
+    }
+
+    // special treatment for reduced Kirchhoff beam element where torsion mode does not exist
+    // and due to isotropic formulation only one component of curvature and bending moment exists
+    // Todo add option where only the relevant modes are written to file and let the user decide
+    //      whether to write zeros or nothing for non-applicable modes
+    if ( twist_GPs_current_element.size() == 0 and
+        curvature_3_GPs_current_element.size() == 0 )
+    {
+      twist_GPs_current_element.resize( curvature_2_GPs_current_element.size() );
+      std::fill( twist_GPs_current_element.begin(),
+          twist_GPs_current_element.end(), 0.0 );
+
+      curvature_3_GPs_current_element.resize( curvature_2_GPs_current_element.size() );
+      std::fill( curvature_3_GPs_current_element.begin(),
+          curvature_3_GPs_current_element.end(), 0.0 );
+    }
+
 
     // safety check for number of Gauss points per element
     // initialize numbers from first element
     if ( ibeamele == 0 )
     {
       num_GPs_per_element_strains_translational = axial_strain_GPs_current_element.size();
-      num_GPs_per_element_strains_rotational = twist_GPs_current_element.size();
+      num_GPs_per_element_strains_rotational = curvature_2_GPs_current_element.size();
     }
 
     if ( axial_strain_GPs_current_element.size() != num_GPs_per_element_strains_translational or
@@ -766,27 +798,27 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStrains(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void
-BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStresses()
+BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStressResultants()
 {
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
 
 
-  // storage for material strain measures at all GPs of all my row elements
-  std::vector<double> axial_stress_GPs_all_row_elements;
-  std::vector<double> shear_stress_2_GPs_all_row_elements;
-  std::vector<double> shear_stress_3_GPs_all_row_elements;
+  // storage for material stress resultants at all GPs of all my row elements
+  std::vector<double> axial_force_GPs_all_row_elements;
+  std::vector<double> shear_force_2_GPs_all_row_elements;
+  std::vector<double> shear_force_3_GPs_all_row_elements;
 
   std::vector<double> torque_GPs_all_row_elements;
   std::vector<double> bending_moment_2_GPs_all_row_elements;
   std::vector<double> bending_moment_3_GPs_all_row_elements;
 
 
-  // storage for material stress measures at all GPs of current element
-  std::vector<double> axial_stress_GPs_current_element;
-  std::vector<double> shear_stress_2_GPs_current_element;
-  std::vector<double> shear_stress_3_GPs_current_element;
+  // storage for material stress resultants at all GPs of current element
+  std::vector<double> axial_force_GPs_current_element;
+  std::vector<double> shear_force_2_GPs_current_element;
+  std::vector<double> shear_force_3_GPs_current_element;
 
   std::vector<double> torque_GPs_current_element;
   std::vector<double> bending_moment_2_GPs_current_element;
@@ -811,9 +843,9 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStresses
       dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
 
-    axial_stress_GPs_current_element.clear();
-    shear_stress_2_GPs_current_element.clear();
-    shear_stress_3_GPs_current_element.clear();
+    axial_force_GPs_current_element.clear();
+    shear_force_2_GPs_current_element.clear();
+    shear_force_3_GPs_current_element.clear();
 
     torque_GPs_current_element.clear();
     bending_moment_2_GPs_current_element.clear();
@@ -821,26 +853,58 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStresses
 
 
     // get GP stress values from previous element evaluation call
-    beamele->GetMaterialCrossSectionStressesAtAllGPs(
-        axial_stress_GPs_current_element,
-        shear_stress_2_GPs_current_element,
-        shear_stress_3_GPs_current_element,
+    beamele->GetMaterialStressResultantsAtAllGPs(
+        axial_force_GPs_current_element,
+        shear_force_2_GPs_current_element,
+        shear_force_3_GPs_current_element,
         torque_GPs_current_element,
         bending_moment_2_GPs_current_element,
         bending_moment_3_GPs_current_element);
+
+
+    // special treatment for Kirchhoff beam elements where shear mode does not exist
+    // Todo add option where only the relevant modes are written to file and let the user decide
+    //      whether to write zeros or nothing for non-applicable modes
+    if ( shear_force_2_GPs_current_element.size() == 0 and
+        shear_force_3_GPs_current_element.size() == 0 )
+    {
+      shear_force_2_GPs_current_element.resize( axial_force_GPs_current_element.size() );
+      std::fill( shear_force_2_GPs_current_element.begin(),
+          shear_force_2_GPs_current_element.end(), 0.0 );
+
+      shear_force_3_GPs_current_element.resize( axial_force_GPs_current_element.size() );
+      std::fill( shear_force_3_GPs_current_element.begin(),
+          shear_force_3_GPs_current_element.end(), 0.0 );
+    }
+
+    // special treatment for reduced Kirchhoff beam element where torsion mode does not exist
+    // and due to isotropic formulation only one component of curvature and bending moment exists
+    // Todo add option where only the relevant modes are written to file and let the user decide
+    //      whether to write zeros or nothing for non-applicable modes
+    if ( torque_GPs_current_element.size() == 0 and
+        bending_moment_3_GPs_current_element.size() == 0 )
+    {
+      torque_GPs_current_element.resize( bending_moment_2_GPs_current_element.size() );
+      std::fill( torque_GPs_current_element.begin(),
+          torque_GPs_current_element.end(), 0.0 );
+
+      bending_moment_3_GPs_current_element.resize( bending_moment_2_GPs_current_element.size() );
+      std::fill( bending_moment_3_GPs_current_element.begin(),
+          bending_moment_3_GPs_current_element.end(), 0.0 );
+    }
 
 
     // safety check for number of Gauss points per element
     // initialize numbers from first element
     if ( ibeamele == 0 )
     {
-      num_GPs_per_element_stresses_translational = axial_stress_GPs_current_element.size();
-      num_GPs_per_element_stresses_rotational = torque_GPs_current_element.size();
+      num_GPs_per_element_stresses_translational = axial_force_GPs_current_element.size();
+      num_GPs_per_element_stresses_rotational = bending_moment_2_GPs_current_element.size();
     }
 
-    if ( axial_stress_GPs_current_element.size() != num_GPs_per_element_stresses_translational or
-         shear_stress_2_GPs_current_element.size() != num_GPs_per_element_stresses_translational or
-         shear_stress_3_GPs_current_element.size() != num_GPs_per_element_stresses_translational or
+    if ( axial_force_GPs_current_element.size() != num_GPs_per_element_stresses_translational or
+         shear_force_2_GPs_current_element.size() != num_GPs_per_element_stresses_translational or
+         shear_force_3_GPs_current_element.size() != num_GPs_per_element_stresses_translational or
          torque_GPs_current_element.size() != num_GPs_per_element_stresses_rotational or
          bending_moment_2_GPs_current_element.size() != num_GPs_per_element_stresses_rotational or
          bending_moment_3_GPs_current_element.size() != num_GPs_per_element_stresses_rotational )
@@ -852,13 +916,13 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStresses
     for( int i = 0; i < num_cells_per_element_[ibeamele]; ++i )
     {
       InsertVectorValuesAtBackOfOtherVector(
-          axial_stress_GPs_current_element, axial_stress_GPs_all_row_elements);
+          axial_force_GPs_current_element, axial_force_GPs_all_row_elements);
 
       InsertVectorValuesAtBackOfOtherVector(
-          shear_stress_2_GPs_current_element, shear_stress_2_GPs_all_row_elements);
+          shear_force_2_GPs_current_element, shear_force_2_GPs_all_row_elements);
 
       InsertVectorValuesAtBackOfOtherVector(
-          shear_stress_3_GPs_current_element, shear_stress_3_GPs_all_row_elements);
+          shear_force_3_GPs_current_element, shear_force_3_GPs_all_row_elements);
 
 
       InsertVectorValuesAtBackOfOtherVector(
@@ -874,19 +938,19 @@ BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStresses
 
   // append the solution vectors to the visualization data of the vtu writer object
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      axial_stress_GPs_all_row_elements,
+      axial_force_GPs_all_row_elements,
       num_GPs_per_element_stresses_translational,
-      "axial_stress_GPs" );
+      "axial_force_GPs" );
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      shear_stress_2_GPs_all_row_elements,
+      shear_force_2_GPs_all_row_elements,
       num_GPs_per_element_stresses_translational,
-      "shear_stress_2_GPs" );
+      "shear_force_2_GPs" );
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      shear_stress_3_GPs_all_row_elements,
+      shear_force_3_GPs_all_row_elements,
       num_GPs_per_element_stresses_translational,
-      "shear_stress_3_GPs" );
+      "shear_force_3_GPs" );
 
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(

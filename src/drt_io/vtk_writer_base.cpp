@@ -265,14 +265,22 @@ VtkWriterBase::ResetTimeAndTimeStep(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void
-VtkWriterBase::InitializeVtkFileStreamsForNewGeometry(
+VtkWriterBase::ResetGeometryName(
     const std::string& geometryname
     )
+{
+  geometry_name_ = geometryname;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void
+VtkWriterBase::InitializeVtkFileStreamsForNewGeometryAndOrTimeStep()
 {
 
   {
     std::ostringstream tmpstream;
-    tmpstream << geometryname << "-"
+    tmpstream << geometry_name_ << "-"
         << std::setfill('0') << std::setw(num_timestep_digits_) << timestep_;
 
     filename_base_ = tmpstream.str();
@@ -630,31 +638,6 @@ VtkWriterBase::WriteVtkCollectionFileForAllWrittenMasterFiles(
     const std::string & collectionfilename
     ) const
 {
-  if ( myrank_ == 0 )
-  {
-    // initialize the output filestream for the new collection file
-    std::ofstream collectionfilestream(
-        GetVtkCollectionFileFullPathAndName(collectionfilename) );
-
-    WriteHeaderIntoGivenVtkCollectionFileStream( collectionfilestream );
-
-    collectionfilestream << collection_file_midsection_cumulated_content_.str();
-
-    WriteFooterIntoGivenVtkCollectionFileStream( collectionfilestream );
-
-
-    collectionfilestream.flush();
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void
-VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
-    const std::string & collectionfilename,
-    const std::vector<std::pair<double, std::string> > & masterfiles_time_and_name
-    ) const
-{
   /* The file mentioned here is the collection file ('.pvd') which contains
    * references (full path) to a set of written master files. */
 
@@ -677,7 +660,38 @@ VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
   {
     // initialize the output filestream for the new collection file
     std::ofstream collectionfilestream(
-        GetVtkCollectionFileFullPathAndName(collectionfilename) );
+        GetVtkCollectionFileFullPathAndName(collectionfilename).c_str() );
+
+    WriteHeaderIntoGivenVtkCollectionFileStream( collectionfilestream );
+
+    collectionfilestream << collection_file_midsection_cumulated_content_.str();
+
+    WriteFooterIntoGivenVtkCollectionFileStream( collectionfilestream );
+
+
+    collectionfilestream.flush();
+//    collectionfilestream.close();  // Todo required?
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void
+VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
+    const std::string & collectionfilename,
+    const std::vector<std::pair<double, std::string> > & masterfiles_time_and_name
+    ) const
+{
+  /* The file mentioned here is the collection file ('.pvd') which contains
+   * references (full path) to a set of written master files. */
+
+  //! Todo currently unused, re-activate and use only after thorough testing
+
+  if ( myrank_ == 0 )
+  {
+    // initialize the output filestream for the new collection file
+    std::ofstream collectionfilestream(
+        GetVtkCollectionFileFullPathAndName(collectionfilename).c_str() );
 
 
     WriteHeaderIntoGivenVtkCollectionFileStream( collectionfilestream );
@@ -704,19 +718,20 @@ VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
     WriteFooterIntoGivenVtkCollectionFileStream( collectionfilestream );
 
     collectionfilestream.flush();
+//    collectionfilestream.close();  // Todo required?
   }
 
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const char*
+std::string
 VtkWriterBase::GetVtkCollectionFileFullPathAndName(
     const std::string & collectionfilename
     ) const
 {
   // initialize the output filestream for the new collection file
-  return (working_directory_full_path_ + "/../" + collectionfilename + ".pvd").c_str();
+  return (working_directory_full_path_ + "/../" + collectionfilename + ".pvd");
 }
 
 /*----------------------------------------------------------------------*

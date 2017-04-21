@@ -19,7 +19,6 @@ NUMTHERMDIS            0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 FILESTEPS                       1000000
-STDOUTEVRY                      100
 VERBOSITY                       standard
 //-----------------------------------IO/RUNTIME VTK OUTPUT STRUCTURE
 //OUTPUT_DATA_FORMAT              binary

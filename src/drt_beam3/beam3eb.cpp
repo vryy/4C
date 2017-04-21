@@ -138,7 +138,7 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner) :
  DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
-jacobi_(0),
+jacobi_(0.0),
 firstcall_(true),
 Ekin_(0.0),
 Eint_(0.0),
@@ -147,7 +147,11 @@ P_(LINALG::Matrix<3,1>(true)),
 t0_(LINALG::Matrix<3,2>(true)),
 t_(LINALG::Matrix<3,2>(true)),
 kappa_max_(0.0),
-epsilon_max_(0.0)
+epsilon_max_(0.0),
+axial_strain_GP_(0),
+curvature_GP_(0),
+axial_force_GP_(0),
+bending_moment_GP_(0)
 {
   #if defined(INEXTENSIBLE)
     if(ANSVALUES!=3 or NODALDOFS!=2)
@@ -171,7 +175,11 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
  t0_(old.t0_),
  t_(old.t_),
  kappa_max_(old.kappa_max_),
- epsilon_max_(old.epsilon_max_)
+ epsilon_max_(old.epsilon_max_),
+ axial_strain_GP_(old.axial_strain_GP_),
+ curvature_GP_(old.curvature_GP_),
+ axial_force_GP_(old.axial_force_GP_),
+ bending_moment_GP_(old.bending_moment_GP_)
 {
   return;
 }
@@ -241,9 +249,11 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,2>(data,t0_);
   AddtoPack<3,2>(data,t_);
   AddtoPack(data,kappa_max_);
-  //AddtoPack(data,epsilon_max_);
-
-
+  AddtoPack(data,epsilon_max_);
+  AddtoPack(data,axial_strain_GP_);
+  AddtoPack(data,curvature_GP_);
+  AddtoPack(data,axial_force_GP_);
+  AddtoPack(data,bending_moment_GP_);
 
   return;
 }
@@ -275,7 +285,11 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,2>(position,data,t0_);
   ExtractfromPack<3,2>(position,data,t_);
   ExtractfromPack(position,data,kappa_max_);
-  //ExtractfromPack(position,data,epsilon_max_);
+  ExtractfromPack(position,data,epsilon_max_);
+  ExtractfromPack(position,data,axial_strain_GP_);
+  ExtractfromPack(position,data,curvature_GP_);
+  ExtractfromPack(position,data,axial_force_GP_);
+  ExtractfromPack(position,data,bending_moment_GP_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -326,6 +340,21 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
 
       Tref_.resize(gausspoints.nquad);
 
+      // assure correct size of strain and stress resultant class variables and fill them
+      // with zeros (by definition, the reference configuration is undeformed and stress-free)
+      axial_strain_GP_.resize( gausspoints.nquad );
+      std::fill( axial_strain_GP_.begin(), axial_strain_GP_.end(), 0.0 );
+
+      curvature_GP_.resize( gausspoints.nquad );
+      std::fill( curvature_GP_.begin(), curvature_GP_.end(), 0.0 );
+
+      axial_force_GP_.resize( gausspoints.nquad );
+      std::fill( axial_force_GP_.begin(), axial_force_GP_.end(), 0.0 );
+
+      bending_moment_GP_.resize( gausspoints.nquad );
+      std::fill( bending_moment_GP_.begin(), bending_moment_GP_.end(), 0.0 );
+
+
       //create Matrix for the derivates of the shapefunctions at the GP
       LINALG::Matrix<1,nnode> shapefuncderiv;
 
@@ -356,7 +385,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& x
         jacobi_= Tref_[numgp].Norm2();
 
         Tref_[numgp].Scale(1/jacobi_);
-      }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+      }
 
       //compute tangent at each node
       double norm2 = 0.0;

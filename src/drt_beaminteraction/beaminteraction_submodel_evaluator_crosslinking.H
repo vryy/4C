@@ -23,6 +23,8 @@
 
 
 // forward declaration
+class DiscretizationRuntimeVtpWriter;
+
 namespace MAT {
   class CrosslinkerMat;
 }
@@ -570,6 +572,8 @@ private:
     //! double bonded crosslinker that exert forces on network (map key is crosslinker gid)
     std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> > doublebondcl_;
 
+    //! particle, i.e. crosslinker molecule discretization runtime vtp writer
+    Teuchos::RCP<DiscretizationRuntimeVtpWriter> vtp_writer_ptr_;
     //! @}
 
   };

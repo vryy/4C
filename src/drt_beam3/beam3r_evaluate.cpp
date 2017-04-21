@@ -1044,20 +1044,14 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
 
   EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_elast_force,H_i_xi,this->Shape());
 
-  // clear strain and stress class variables
-  axial_strain_GP_elastf_.clear();
-  axial_strain_GP_elastf_.reserve(gausspoints_elast_force.nquad);
-  shear_strain_2_GP_elastf_.clear();
-  shear_strain_2_GP_elastf_.reserve(gausspoints_elast_force.nquad);
-  shear_strain_3_GP_elastf_.clear();
-  shear_strain_3_GP_elastf_.reserve(gausspoints_elast_force.nquad);
+  // re-assure correct size of strain and stress resultant class variables
+  axial_strain_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  shear_strain_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  shear_strain_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
 
-  axial_stress_GP_elastf_.clear();
-  axial_stress_GP_elastf_.reserve(gausspoints_elast_force.nquad);
-  shear_stress_2_GP_elastf_.clear();
-  shear_stress_2_GP_elastf_.reserve(gausspoints_elast_force.nquad);
-  shear_stress_3_GP_elastf_.clear();
-  shear_stress_3_GP_elastf_.reserve(gausspoints_elast_force.nquad);
+  axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
 
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
@@ -1134,13 +1128,13 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     }
 
     // store material strain and stress values in class variables
-    axial_strain_GP_elastf_.push_back( FADUTILS::CastToDouble( Gamma(0) ) );
-    shear_strain_2_GP_elastf_.push_back( FADUTILS::CastToDouble( Gamma(1) ) );
-    shear_strain_3_GP_elastf_.push_back( FADUTILS::CastToDouble( Gamma(2) ) );
+    axial_strain_GP_elastf_[numgp] = FADUTILS::CastToDouble( Gamma(0) );
+    shear_strain_2_GP_elastf_[numgp] = FADUTILS::CastToDouble( Gamma(1) );
+    shear_strain_3_GP_elastf_[numgp] = FADUTILS::CastToDouble( Gamma(2) );
 
-    axial_stress_GP_elastf_.push_back( FADUTILS::CastToDouble( stressN(0) ) );
-    shear_stress_2_GP_elastf_.push_back( FADUTILS::CastToDouble( stressN(1) ) );
-    shear_stress_3_GP_elastf_.push_back( FADUTILS::CastToDouble( stressN(2) ) );
+    axial_force_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(0) );
+    shear_force_2_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(1) );
+    shear_force_3_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(2) );
 
   }
 
@@ -1160,20 +1154,14 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   // reset norm of maximal bending curvature
   Kmax_ = 0.0;
 
-  // clear strain and stress class variables
-  twist_GP_elastm_.clear();
-  twist_GP_elastm_.reserve(gausspoints_elast_moment.nquad);
-  curvature_2_GP_elastm_.clear();
-  curvature_2_GP_elastm_.reserve(gausspoints_elast_moment.nquad);
-  curvature_3_GP_elastm_.clear();
-  curvature_3_GP_elastm_.reserve(gausspoints_elast_moment.nquad);
+  // assure correct size of strain and stress resultant class variables
+  twist_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  curvature_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  curvature_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
 
-  torque_GP_elastm_.clear();
-  torque_GP_elastm_.reserve(gausspoints_elast_moment.nquad);
-  bending_moment_2_GP_elastm_.clear();
-  bending_moment_2_GP_elastm_.reserve(gausspoints_elast_moment.nquad);
-  bending_moment_3_GP_elastm_.clear();
-  bending_moment_3_GP_elastm_.reserve(gausspoints_elast_moment.nquad);
+  torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
 
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
@@ -1248,14 +1236,13 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     }
 
     // store material strain and stress values in class variables
-    twist_GP_elastm_.push_back( FADUTILS::CastToDouble( K(0) ) );
-    curvature_2_GP_elastm_.push_back( FADUTILS::CastToDouble( K(1) ) );
-    curvature_3_GP_elastm_.push_back( FADUTILS::CastToDouble( K(2) ) );
+    twist_GP_elastm_[numgp] = FADUTILS::CastToDouble( K(0) );
+    curvature_2_GP_elastm_[numgp] = FADUTILS::CastToDouble( K(1) );
+    curvature_3_GP_elastm_[numgp] = FADUTILS::CastToDouble( K(2) );
 
-    torque_GP_elastm_.push_back( FADUTILS::CastToDouble( stressM(0) ) );
-    bending_moment_2_GP_elastm_.push_back( FADUTILS::CastToDouble( stressM(1) ) );
-    bending_moment_3_GP_elastm_.push_back( FADUTILS::CastToDouble( stressM(2) ) );
-
+    torque_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(0) );
+    bending_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(1) );
+    bending_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(2) );
   }
 
   return;

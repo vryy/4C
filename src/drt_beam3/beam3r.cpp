@@ -346,9 +346,9 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  twist_GP_elastm_(old.twist_GP_elastm_),
  curvature_2_GP_elastm_(old.curvature_2_GP_elastm_),
  curvature_3_GP_elastm_(old.curvature_3_GP_elastm_),
- axial_stress_GP_elastf_(old.axial_stress_GP_elastf_),
- shear_stress_2_GP_elastf_(old.shear_stress_2_GP_elastf_),
- shear_stress_3_GP_elastf_(old.shear_stress_3_GP_elastf_),
+ axial_force_GP_elastf_(old.axial_force_GP_elastf_),
+ shear_force_2_GP_elastf_(old.shear_force_2_GP_elastf_),
+ shear_force_3_GP_elastf_(old.shear_force_3_GP_elastf_),
  torque_GP_elastm_(old.torque_GP_elastm_),
  bending_moment_2_GP_elastm_(old.bending_moment_2_GP_elastm_),
  bending_moment_3_GP_elastm_(old.bending_moment_3_GP_elastm_)
@@ -476,9 +476,9 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,twist_GP_elastm_);
   AddtoPack(data,curvature_2_GP_elastm_);
   AddtoPack(data,curvature_3_GP_elastm_);
-  AddtoPack(data,axial_stress_GP_elastf_);
-  AddtoPack(data,shear_stress_2_GP_elastf_);
-  AddtoPack(data,shear_stress_3_GP_elastf_);
+  AddtoPack(data,axial_force_GP_elastf_);
+  AddtoPack(data,shear_force_2_GP_elastf_);
+  AddtoPack(data,shear_force_3_GP_elastf_);
   AddtoPack(data,torque_GP_elastm_);
   AddtoPack(data,bending_moment_2_GP_elastm_);
   AddtoPack(data,bending_moment_3_GP_elastm_);
@@ -551,9 +551,9 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,twist_GP_elastm_);
   ExtractfromPack(position,data,curvature_2_GP_elastm_);
   ExtractfromPack(position,data,curvature_3_GP_elastm_);
-  ExtractfromPack(position,data,axial_stress_GP_elastf_);
-  ExtractfromPack(position,data,shear_stress_2_GP_elastf_);
-  ExtractfromPack(position,data,shear_stress_3_GP_elastf_);
+  ExtractfromPack(position,data,axial_force_GP_elastf_);
+  ExtractfromPack(position,data,shear_force_2_GP_elastf_);
+  ExtractfromPack(position,data,shear_force_3_GP_elastf_);
   ExtractfromPack(position,data,torque_GP_elastm_);
   ExtractfromPack(position,data,bending_moment_2_GP_elastm_);
   ExtractfromPack(position,data,bending_moment_3_GP_elastm_);
@@ -902,6 +902,23 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
     EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_elast_force,H_i_xi,distype);
 
+
+    // assure correct size of strain and stress resultant class variables and fill them
+    // with zeros (by definition, the reference configuration is undeformed and stress-free)
+    axial_strain_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( axial_strain_GP_elastf_.begin(), axial_strain_GP_elastf_.end(), 0.0 );
+    shear_strain_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( shear_strain_2_GP_elastf_.begin(), shear_strain_2_GP_elastf_.end(), 0.0 );
+    shear_strain_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( shear_strain_3_GP_elastf_.begin(), shear_strain_3_GP_elastf_.end(), 0.0 );
+
+    axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( axial_force_GP_elastf_.begin(), axial_force_GP_elastf_.end(), 0.0 );
+    shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( shear_force_2_GP_elastf_.begin(), shear_force_2_GP_elastf_.end(), 0.0 );
+    shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( shear_force_3_GP_elastf_.begin(), shear_force_3_GP_elastf_.end(), 0.0 );
+
     dummy.Clear();
 
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
@@ -939,6 +956,23 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     // evaluate all shape functions and derivatives with respect to element parameter xi at all specified Gauss points
     EvaluateShapeFunctionsAndDerivsAllGPs<nnodetriad,1>(gausspoints_elast_moment, I_i, I_i_xi, distype);
     EvaluateShapeFunctionDerivsAllGPs<nnodecl,vpernode>(gausspoints_elast_moment, H_i_xi, distype);
+
+    // assure correct size of strain and stress resultant class variables and fill them
+    // with zeros (by definition, the reference configuration is undeformed and stress-free)
+    twist_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( twist_GP_elastm_.begin(), twist_GP_elastm_.end(), 0.0 );
+    curvature_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( curvature_2_GP_elastm_.begin(), curvature_2_GP_elastm_.end(), 0.0 );
+    curvature_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( curvature_3_GP_elastm_.begin(), curvature_3_GP_elastm_.end(), 0.0 );
+
+    torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( torque_GP_elastm_.begin(), torque_GP_elastm_.end(), 0.0 );
+    bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( bending_moment_2_GP_elastm_.begin(), bending_moment_2_GP_elastm_.end(), 0.0 );
+    bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( bending_moment_3_GP_elastm_.begin(), bending_moment_3_GP_elastm_.end(), 0.0 );
+
 
     dummy.Clear();
 

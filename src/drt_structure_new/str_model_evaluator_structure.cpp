@@ -589,7 +589,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure() const
   // however, this 'only' affects the number of leading zeros in the vtk file names
   const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
 
-  // initialize the writer object with current displacement state
+  // initialize the writer object
   vtu_writer_ptr_->Initialize(
       Teuchos::rcp_dynamic_cast<DRT::Discretization>(
         const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true ),
@@ -671,13 +671,13 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   if ( beam_vtu_output_params.IsWriteTriadVisualizationPoints() )
     beam_vtu_writer_ptr_->AppendTriadField( disn_col );
 
-  // append material cross-section strains if desired
+  // append material cross-section strain resultants if desired
   if ( beam_vtu_output_params.IsWriteMaterialStrainsGaussPoints() )
-    beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStrains();
+    beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStrainResultants();
 
-  // append material cross-section stresses if desired
+  // append material cross-section stress resultants if desired
   if ( beam_vtu_output_params.IsWriteMaterialStressesGaussPoints() )
-    beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStresses();
+    beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStressResultants();
 
 
   // finalize everything and write all required VTU files to filesystem

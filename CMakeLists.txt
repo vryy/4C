@@ -2050,8 +2050,11 @@ set(OBJS_DRT_IO_LIB
   src/drt_io/io_gmsh.cpp
   src/drt_io/vtk_writer_base.cpp
   src/drt_io/vtu_writer.cpp
+  src/drt_io/vtp_writer.cpp
   src/drt_io/runtime_vtu_writer.cpp
+  src/drt_io/runtime_vtp_writer.cpp
   src/drt_io/discretization_runtime_vtu_writer.cpp
+  src/drt_io/discretization_runtime_vtp_writer.cpp
   src/drt_beam3/beam_discretization_runtime_vtu_writer.cpp
   src/drt_io/io_pstream.cpp
   src/drt_lib/drt_domainreader.cpp

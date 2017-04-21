@@ -336,6 +336,50 @@ public:
    *  \date 06/16 */
   virtual double GetJacobiFacAtXi(const double& xi) const;
 
+  /** \brief Get material cross-section deformation measures, i.e. strain resultants
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual inline void GetMaterialStrainResultantsAtAllGPs(
+      std::vector<double>& axial_strain_GPs,
+      std::vector<double>& shear_strain_2_GPs,
+      std::vector<double>& shear_strain_3_GPs,
+      std::vector<double>& twist_GPs,
+      std::vector<double>& curvature_2_GPs,
+      std::vector<double>& curvature_3_GPs) const
+  {
+    axial_strain_GPs = axial_strain_GP_;
+    // note: shear deformations are zero by definition for Kirchhoff beam formulation
+    shear_strain_2_GPs.clear();
+    shear_strain_3_GPs.clear();
+
+    twist_GPs = twist_GP_;
+    curvature_2_GPs = curvature_2_GP_;
+    curvature_3_GPs = curvature_3_GP_;
+  }
+
+  /** \brief Get material cross-section stress resultants
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual inline void GetMaterialStressResultantsAtAllGPs(
+      std::vector<double>& axial_force_GPs,
+      std::vector<double>& shear_force_2_GPs,
+      std::vector<double>& shear_force_3_GPs,
+      std::vector<double>& torque_GPs,
+      std::vector<double>& bending_moment_2_GPs,
+      std::vector<double>& bending_moment_3_GPs) const
+  {
+    axial_force_GPs = axial_force_GP_;
+    // note: shear deformations are zero by definition for Kirchhoff beam formulation
+    shear_force_2_GPs.clear();
+    shear_force_3_GPs.clear();
+
+    torque_GPs = torque_GP_;
+    bending_moment_2_GPs = bending_moment_2_GP_;
+    bending_moment_3_GPs = bending_moment_3_GP_;
+  }
+
   /** \brief get number of nodes used for centerline interpolation
    *
    *  \author grill
@@ -1292,6 +1336,8 @@ private:
     rconvmass_.resize(n);
     rnewmass_.resize(n);
 
+
+
     return;
   }
 
@@ -1655,6 +1701,20 @@ private:
   std::vector<LINALG::Matrix<3,1> > rnewmass_;
   //******************************End: Class variables required for time integration**************************************************//
 
+
+  //! strain resultant values at GPs
+  std::vector<double> axial_strain_GP_;
+
+  std::vector<double> twist_GP_;
+  std::vector<double> curvature_2_GP_;
+  std::vector<double> curvature_3_GP_;
+
+  //! stress resultant values at GPs
+  std::vector<double> axial_force_GP_;
+
+  std::vector<double> torque_GP_;
+  std::vector<double> bending_moment_2_GP_;
+  std::vector<double> bending_moment_3_GP_;
 };
 
 // << operator

@@ -1389,6 +1389,14 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     #endif
   #endif
 
+
+  // re-assure correct size of strain and stress resultant class variables
+  axial_strain_GP_.resize( gausspoints.nquad );
+  curvature_GP_.resize( gausspoints.nquad );
+
+  axial_force_GP_.resize( gausspoints.nquad );
+  bending_moment_GP_.resize( gausspoints.nquad );
+
   //Loop through all GP and calculate their contribution to the internal forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   {
@@ -1774,7 +1782,8 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
     #ifdef ANS_BEAM3EB
 
-      double kappa_quad = (rxxrxx/rxrx-std::pow(rxrxx,2)/std::pow(rxrx,2))/std::pow(jacobi_,2);
+    double kappa_quad =
+        ( rxxrxx/rxrx - std::pow(rxrxx,2) / std::pow(rxrx,2) ) / std::pow(jacobi_,2);
   //    if(kappa_quad>0)
   //      std::cout << std::setprecision(16) << "kappa: " << std::sqrt(kappa_quad) << std::endl;
 
@@ -1795,7 +1804,15 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       if(epsilon_norm>epsilon_max_)
         epsilon_max_=epsilon_norm;
     #endif
-  } //for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+
+    // store strain and stress resultant values in class variables
+    axial_strain_GP_[numgp] = epsilon_ANS;
+    curvature_GP_[numgp] = std::sqrt( kappa_quad );
+
+    axial_force_GP_[numgp] = EA * axial_strain_GP_[numgp];
+    bending_moment_GP_[numgp] = EI * curvature_GP_[numgp];
+
+  }
 
 
 
