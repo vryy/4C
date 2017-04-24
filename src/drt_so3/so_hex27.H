@@ -1,12 +1,8 @@
 /*!----------------------------------------------------------------------
 \file so_hex27.H
-
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\brief tri-quadratic displacement based solid element
+\level 1
+\maintainer Alexander Seitz
 
 *----------------------------------------------------------------------*/
 #ifndef SOH27_H

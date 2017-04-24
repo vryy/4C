@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_hex20.cpp
 
-\brief ToDo Add meaningful comment.
+\brief 3D quadratic serendipity element
 
 \level 1
 
-\maintainer Thomas Kloeppel
+\maintainer Alexander Seitz
 
 *----------------------------------------------------------------------*/
 

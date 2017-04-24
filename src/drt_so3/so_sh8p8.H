@@ -1,14 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so_sh8p8.H
-
-<pre>
-Currently unmaintained
-
-last Maintainer:  Burkhard Bornemann
-                  bornemann@lnm.mw.tum.de
-                  http://www.lnm.mw.tum.de
-</pre>
+\level 2
+\brief
+\maintainer Alexander Seitz
 */
 
 /*----------------------------------------------------------------------*/

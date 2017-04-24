@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_hex27.cpp
 
-\brief ToDo Add meaningful comment.
+\brief tri-quadratic displacement based solid element
 
 \level 1
 
-\maintainer Thomas Kloeppel
+\maintainer Alexander Seitz
 
 *----------------------------------------------------------------------*/
 

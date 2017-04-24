@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Moritz Frenzel
+\maintainer Alexander Seitz
 
 *----------------------------------------------------------------------*/
 

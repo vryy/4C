@@ -1,13 +1,8 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_eas.cpp
 \brief Everything concerning EAS technology for so_hex8
-
-<pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+\level 1
+\maintainer Alexander Seitz
 
 *----------------------------------------------------------------------*/
 

@@ -1,15 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file so_sh8p8_evaluate.cpp
+\file so_sh8p8_auxiliar.cpp
 \brief
-
-<pre>
-Currently unmaintained
-
-last Maintainer:  Burkhard Bornemann
-                  bornemann@lnm.mw.tum.de
-                  http://www.lnm.mw.tum.de
-</pre>
+\level 2
+\maintainer Alexander Seitz
 */
 
 /*----------------------------------------------------------------------*/
