@@ -18,6 +18,7 @@
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/runtime_vtp_writer.H"
 #include "../drt_io/discretization_runtime_vtp_writer.H"
+#include "../drt_structure_new/str_timint_basedataio_runtime_vtp_output.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
@@ -712,7 +713,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitOutputRuntimeVtpStruc
       BinDiscretPtr(),
       num_timesteps_in_simulation_upper_bound,
       GState().GetTimeN(),
-      true );
+      GInOutput().GetRuntimeVtpOutputParams()->WriteBinaryOutput() );
 }
 
 /*----------------------------------------------------------------------------*
@@ -740,23 +741,26 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStru
    FillStateDataVectorsForOutput( dis, orientation, numbond, owner);
 
    // append displacement vector if desired
-   vtp_writer_ptr_->AppendDofBasedResultDataVector( dis, 3, "displacement" );
-
-   // append orientation vector if desired
-   vtp_writer_ptr_->AppendDofBasedResultDataVector( orientation, 3, "orientation" );
-
-   // append number of bonds if desired
-   vtp_writer_ptr_->AppendNodeBasedResultDataVector( numbond, 1, "num_bonds" );
+   // append displacement if desired
+//   if ( GInOutput().GetRuntimeVtpOutputParams()->OutputDisplacementState() )
+//     vtp_writer_ptr_->AppendDofBasedResultDataVector( dis, 3, "displacement" );
 
    // append owner if desired
-   vtp_writer_ptr_->AppendNodeBasedResultDataVector( owner, 1, "owner" );
+   if ( GInOutput().GetRuntimeVtpOutputParams()->OutputOwner() )
+     vtp_writer_ptr_->AppendNodeBasedResultDataVector( owner, 1, "owner" );
 
+   // append orientation vector if desired
+   if ( GInOutput().GetRuntimeVtpOutputParams()->OutputOrientation() )
+     vtp_writer_ptr_->AppendDofBasedResultDataVector( orientation, 3, "orientation" );
 
-   // finalize everything and write all required VTU files to filesystem
+   // append number of bonds if desired
+   if ( GInOutput().GetRuntimeVtpOutputParams()->OutputNumberOfBonds() )
+     vtp_writer_ptr_->AppendNodeBasedResultDataVector( numbond, 1, "numberofbonds" );
+
+   // finalize everything and write all required VTU files to file system
    vtp_writer_ptr_->WriteFiles();
 
-
-   // Todo: this will not work as expected yet in case of a restart
+   // write collection files
    vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
 
 

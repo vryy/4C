@@ -268,7 +268,7 @@ private:
       const std::vector<std::pair<double, std::string> > & masterfiles_time_and_name
       ) const;
 
-    //! write a VTK collection file that summarizes paths to all the given files
+  //! write a VTK collection file that summarizes paths to all the given files
   void CreateRestartedInitialCollectionFileMidSection(
       const std::string & geometryname,
       const std::string & restartfilename,
@@ -276,8 +276,7 @@ private:
       );
 
   //! construct full path and name for VTK collection file stream from given file name
-  std::string
-  GetVtkCollectionFileFullPathAndName(
+  std::string GetVtkCollectionFileFullPathAndName(
       const std::string & collectionfilename
       ) const;
 

@@ -777,7 +777,7 @@ VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
     }
   }
 
-  // close the file and reopen it to add the sbuffer
+  // close file
   restart_collection_file.close();
 }
 

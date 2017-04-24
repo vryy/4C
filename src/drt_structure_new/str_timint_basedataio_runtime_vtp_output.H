@@ -71,6 +71,27 @@ namespace TIMINT {
       return output_every_iteration_;
     };
 
+    /// whether to write owner at visualization point
+    bool OutputOwner() const
+    {
+      CheckInitSetup();
+      return output_owner_;
+    };
+
+    /// whether to write orientation at visualization point
+    bool OutputOrientation() const
+    {
+      CheckInitSetup();
+      return output_orientation_;
+    };
+
+    /// whether to write number of bonds at visualization point
+    bool OutputNumberOfBonds() const
+    {
+      CheckInitSetup();
+      return output_numberofbonds_;
+    };
+
 /*    /// whether to write displacements
     bool OutputDisplacementState() const
     {
@@ -117,6 +138,15 @@ namespace TIMINT {
 
     /// whether to write output in every iteration of the nonlinear solver
     bool output_every_iteration_;
+
+    /// whether to write owner at visualization point
+    bool output_owner_;
+
+    /// whether to write orientation at visualization point
+    bool output_orientation_;
+
+    /// whether to write number of bonds at visualization point
+    bool output_numberofbonds_;
 
 /*    /// whether to write displacement output
     bool output_displacement_state_;*/

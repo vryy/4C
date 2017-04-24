@@ -66,6 +66,21 @@ namespace IO_RUNTIME_VTP_STRUCTURE
                                  "write output in every iteration of the nonlinear solver",
                                  yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
 
+    // write owner at every visualization point
+    setStringToIntegralParameter<int>("OWNER","No",
+        "write owner of every point",
+        yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
+
+    // write orientation at every visualization point
+    setStringToIntegralParameter<int>("ORIENTATION","No",
+        "write orientation at every point",
+        yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
+
+    // write number of bonds at every visualization point
+    setStringToIntegralParameter<int>("NUMBEROFBONDS","No",
+        "write number of bonds of every point",
+        yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
+
   }
 
 

@@ -25,7 +25,10 @@ STR::TIMINT::ParamsRuntimeVtpOutput::ParamsRuntimeVtpOutput()
       issetup_(false),
       output_data_format_( INPAR::IO_RUNTIME_VTP_STRUCTURE::vague ),
       output_interval_steps_(-1),
-      output_every_iteration_(false)
+      output_every_iteration_(false),
+      output_owner_(false),
+      output_orientation_(false),
+      output_numberofbonds_(false)
 {
   // empty constructor
 }
@@ -53,6 +56,15 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
 
   if ( output_every_iteration_ )
     dserror("not implemented yet!");
+
+  output_owner_ =
+      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
+
+  output_orientation_ =
+      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "ORIENTATION");
+
+  output_numberofbonds_ =
+      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
 
 
 /*  // check for special beam output which is to be handled by an own writer object
