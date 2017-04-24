@@ -4,11 +4,11 @@
 
 \brief Wrapper for the structural time integration
 
+\level 1
+
 <pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Michael Hiermeier
+            hiermeier@lnm.mw.tum.de
 </pre>
 */
 /*----------------------------------------------------------------------*/

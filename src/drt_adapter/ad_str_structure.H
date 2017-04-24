@@ -2,15 +2,14 @@
 /*!
 \file ad_str_structure.H
 
-\brief Structure field adapter
+\brief Deprecated structure field adapter
+       (see ad_str_structure_new.H/.cpp for the new version)
 
 \level 1
 
 <pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Michael Hiermeier
+            hiermeier@lnm.mw.tum.de
 </pre>
 */
 /*----------------------------------------------------------------------*/

@@ -5,7 +5,8 @@
 \brief Wrapper for the structural time integration which gives fine grained
        access in the time loop
 
-\maintainer Georg Hammerl
+\maintainer Michael Hiermeier
+            hiermeier@lnm.mw.tum.de
 
 \level 1
 
