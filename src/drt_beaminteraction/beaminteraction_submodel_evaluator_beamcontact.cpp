@@ -395,6 +395,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::OutputStepState(
     IO::DiscretizationWriter& iowriter) const
 {
 
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::RuntimeOutputStepState() const
+{
 
 }
 

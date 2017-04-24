@@ -31,6 +31,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
       discret_ptr_(Teuchos::null),
       bindis_ptr_(Teuchos::null),
       gstate_ptr_(Teuchos::null),
+      gio_ptr_(Teuchos::null),
       beaminteractiondatastate_(Teuchos::null),
       particlehandler_(Teuchos::null),
       periodic_boundingbox_(Teuchos::null),
@@ -45,6 +46,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
     Teuchos::RCP<DRT::Discretization> const& ia_discret,
     Teuchos::RCP<DRT::Discretization> const& bindis,
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> const& gstate,
+    Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
     Teuchos::RCP<PARTICLE::ParticleHandler> const& particlehandler,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
@@ -55,6 +57,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
   discret_ptr_ = ia_discret;
   bindis_ptr_ = bindis;
   gstate_ptr_ = gstate;
+  gio_ptr_ = gio_ptr;
   beaminteractiondatastate_ = ia_gstate_ptr;
   particlehandler_ = particlehandler;
   periodic_boundingbox_ = periodic_boundingbox;
@@ -158,6 +161,22 @@ STR::TIMINT::BaseDataGlobalState const& BEAMINTERACTION::SUBMODELEVALUATOR::Gene
 {
   CheckInit();
   return *gstate_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::TIMINT::BaseDataIO& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput()
+{
+  CheckInit();
+  return *gio_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::TIMINT::BaseDataIO const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput() const
+{
+  CheckInit();
+  return *gio_ptr_;
 }
 
 /*----------------------------------------------------------------------------*

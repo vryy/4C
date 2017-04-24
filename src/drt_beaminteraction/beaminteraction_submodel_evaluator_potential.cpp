@@ -472,6 +472,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::OutputStepState(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::RuntimeOutputStepState() const
+{
+  CheckInitSetup();
+  // nothing to do (so far)
+
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::ResetStepState()
 {
   CheckInitSetup();

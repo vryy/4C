@@ -132,6 +132,15 @@ namespace TIMINT {
      *  \author mwgee (originally)                         \date 03/07 */
     void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
+    /*! \brief Output to file during runtime (no filter necessary)
+     *
+     *  This routine prints always the last converged state, i.e.
+     *  \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
+     *  upon object prior to writing stuff here.
+     *
+     *                                                     \date 04/17 */
+    void RuntimeOutputStepState() const;
+
     /** \brief reset step configuration after time step
      *
      *  This function is supposed to reset all variables which are directly related

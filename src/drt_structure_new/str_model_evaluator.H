@@ -192,6 +192,9 @@ namespace MODELEVALUATOR {
     //! Write the current step state
     void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
+    //! Write the current step state during runtime
+    void RuntimeOutputStepState() const;
+
     //! Do things after writing output
     void PostOutput();
 

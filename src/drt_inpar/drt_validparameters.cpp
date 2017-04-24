@@ -82,6 +82,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_plasticity.H"
 #include "inpar_IO_runtime_vtk_output_structure.H"
 #include "inpar_IO_runtime_vtk_output_structure_beams.H"
+#include "inpar_IO_runtime_vtp_output_structure.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -630,6 +631,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   INPAR::STR::SetValidParameters(list);
   INPAR::IO_RUNTIME_VTK_STRUCTURE::SetValidParameters(list);
+  INPAR::IO_RUNTIME_VTP_STRUCTURE::SetValidParameters(list);
   INPAR::INVANA::SetValidParameters(list);
   INPAR::MLMC::SetValidParameters(list);
   INPAR::MORTAR::SetValidParameters(list);

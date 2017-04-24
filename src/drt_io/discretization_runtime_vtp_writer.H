@@ -60,6 +60,7 @@ public:
   void Initialize(
       Teuchos::RCP<const DRT::Discretization> discretization,
       unsigned int max_number_timesteps_to_be_written,
+      double time,
       bool write_binary_output );
 
   /** \brief reset current simulation time and time step number
@@ -101,14 +102,11 @@ public:
   void WriteCollectionFileOfAllWrittenFiles();
 
 
-private:
-
   /** \brief determine and set geometry data from nodes based on reference configuration
    *
    *  \author grill
    *  \date 04/17 */
   void SetGeometryFromParticleDiscretization();
-
 
 private:
 

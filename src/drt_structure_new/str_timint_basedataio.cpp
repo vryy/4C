@@ -18,6 +18,7 @@
 #include "str_timint_basedataio.H"
 
 #include "str_timint_basedataio_runtime_vtk_output.H"
+#include "str_timint_basedataio_runtime_vtp_output.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -26,6 +27,7 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       issetup_(false),
       output_(Teuchos::null),
       params_runtime_vtk_output_(Teuchos::null),
+      params_runtime_vtp_output_(Teuchos::null),
       energyfile_(Teuchos::null),
       errfile_(NULL),
       gmsh_out_(false),
@@ -100,6 +102,15 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
 
       params_runtime_vtk_output_->Init( ioparams.sublist("RUNTIME VTK OUTPUT STRUCTURE") );
       params_runtime_vtk_output_->Setup();
+    }
+
+    // check whether VTP output at runtime is desired
+    if ( ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE").get<int>("INTERVAL_STEPS") != -1 )
+    {
+      params_runtime_vtp_output_ = Teuchos::rcp( new ParamsRuntimeVtpOutput() );
+
+      params_runtime_vtp_output_->Init( ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE") );
+      params_runtime_vtp_output_->Setup();
     }
   }
 

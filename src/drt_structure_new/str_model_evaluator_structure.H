@@ -131,6 +131,9 @@ namespace MODELEVALUATOR{
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
     //! derived
+    virtual void RuntimeOutputStepState() const;
+
+    //! derived
     virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
 
     //! derived
@@ -307,17 +310,23 @@ namespace MODELEVALUATOR{
      *  \author hiermeier */
     Teuchos::RCP<Epetra_Vector> GetInertialForce();
 
-    /*! \brief writes output in VTK format
+    /*! \brief writes output for discretization structure in VTK format
      *
      *  \date 04/17
-     *  \author grill */
-    void WriteOutputRuntimeVtk() const;
+     *  \author eichinger */
+    void InitOutputRuntimeVtkStructure();
 
     /*! \brief writes output for discretization structure in VTK format
      *
      *  \date 04/17
      *  \author grill */
     void WriteOutputRuntimeVtkStructure() const;
+
+    /*! \brief writes special output for beam elements in VTK format
+     *
+     *  \date 04/17
+     *  \author eichinger */
+    void InitOutputRuntimeVtkBeams();
 
     /*! \brief writes special output for beam elements in VTK format
      *

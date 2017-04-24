@@ -47,6 +47,7 @@ BeamDiscretizationRuntimeVtuWriter::Initialize(
     bool use_absolute_positions_for_point_coordinates,
     Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
     unsigned int max_number_timesteps_to_be_written,
+    double time,
     bool write_binary_output )
 {
   discretization_ = discretization;
@@ -63,9 +64,7 @@ BeamDiscretizationRuntimeVtuWriter::Initialize(
       local_row_indices_beam_elements_.push_back(iele);
   }
 
-
   use_absolute_positions_ = use_absolute_positions_for_point_coordinates;
-
   periodic_boundingbox_ = periodic_boundingbox;
   num_cells_per_element_.resize( local_row_indices_beam_elements_.size() );
 
@@ -81,17 +80,17 @@ BeamDiscretizationRuntimeVtuWriter::Initialize(
 
   const std::string output_directory_path( outputfilename.substr(0ul, pos) );
 
-
   runtime_vtuwriter_->Initialize(
       discretization_->Comm().MyPID(),
       discretization_->Comm().NumProc(),
       max_number_timesteps_to_be_written,
       output_directory_path,
       DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
+      (discretization_->Name() + "-beams"),
+      DRT::Problem::Instance()->OutputControlFile()->RestartName(),
+      time,
       write_binary_output
       );
-
-  SetGeometryFromBeamDiscretization( displacement_state_vector );
 }
 
 /*-----------------------------------------------------------------------------------------------*

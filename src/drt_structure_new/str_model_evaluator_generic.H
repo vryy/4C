@@ -239,8 +239,11 @@ namespace MODELEVALUATOR {
      *  \author hiermeier*/
     virtual void DetermineEnergy() = 0;
 
-    //! output routine for model evlaluator
+    //! output routine for model evaluator
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
+
+    //! runtime output routine for model evaluator
+    virtual void RuntimeOutputStepState() const {return;};
 
     //! reset routine for model evlaluator
     virtual void ResetStepState() = 0;
@@ -284,6 +287,7 @@ namespace MODELEVALUATOR {
 
     //! Returns the global input/output data container
     STR::TIMINT::BaseDataIO& GInOutput();
+    Teuchos::RCP<STR::TIMINT::BaseDataIO> GInOutputPtr();
     const STR::TIMINT::BaseDataIO& GInOutput() const;
 
     //! Returns the (structural) discretization

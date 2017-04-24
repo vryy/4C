@@ -982,7 +982,7 @@ namespace MODELEVALUATOR {
     };
 
     /// thermal energy
-    double const& TimeIntConstRandNumb() const
+    double const& TimeStepConstRandNumb() const
     {
       CheckInitSetup();
       return timeintconstrandnumb_;

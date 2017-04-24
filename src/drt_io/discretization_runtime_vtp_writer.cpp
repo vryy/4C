@@ -38,6 +38,7 @@ void
 DiscretizationRuntimeVtpWriter::Initialize(
     Teuchos::RCP<const DRT::Discretization> discretization,
     unsigned int max_number_timesteps_to_be_written,
+    double time,
     bool write_binary_output )
 {
   discretization_ = discretization;
@@ -54,17 +55,18 @@ DiscretizationRuntimeVtpWriter::Initialize(
 
   const std::string output_directory_path( outputfilename.substr(0ul, pos) );
 
-
   runtime_vtpwriter_->Initialize(
       discretization_->Comm().MyPID(),
       discretization_->Comm().NumProc(),
       max_number_timesteps_to_be_written,
       output_directory_path,
       DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
+      discretization_->Name(),
+      DRT::Problem::Instance()->OutputControlFile()->RestartName(),
+      time,
       write_binary_output
       );
 
-  SetGeometryFromParticleDiscretization();
 }
 
 /*-----------------------------------------------------------------------------------------------*

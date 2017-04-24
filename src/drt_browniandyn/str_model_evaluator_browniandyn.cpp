@@ -68,7 +68,17 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // get pointer to biopolymer network data and init random number data
   // -------------------------------------------------------------------------
   eval_browniandyn_ptr_ = EvalData().BrownianDynPtr();
-  brown_dyn_state_data_.browndyn_dt = eval_browniandyn_ptr_->TimeIntConstRandNumb();
+  brown_dyn_state_data_.browndyn_dt = eval_browniandyn_ptr_->TimeStepConstRandNumb();
+
+  // todo: maybe make input of time step obligatory
+  if( brown_dyn_state_data_.browndyn_dt < 0.0 )
+  {
+    brown_dyn_state_data_.browndyn_dt = (*GState().GetDeltaTime())[0];
+    if ( GState().GetMyRank() == 0 )
+      std::cout << " Time step " << (*GState().GetDeltaTime())[0] <<
+        " form Structural Dynamic section used for stochastic forces.\n" << std::endl;
+  }
+
   brown_dyn_state_data_.browndyn_step = -1;
   // -------------------------------------------------------------------------
   // setup the brownian forces and the external force pointers
@@ -594,6 +604,10 @@ void STR::MODELEVALUATOR::BrownianDyn::PostOutput()
 void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
 {
   CheckInitSetup();
+
+  if ( GState().GetMyRank() == 0 )
+    std::cout << " NOTE: stochastic forces stay unchanged in case of DIVERCONT" << std::endl;
+/*
   // -------------------------------------------------------------------------
   // Generate new random forces
   // -------------------------------------------------------------------------
@@ -601,6 +615,7 @@ void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
   // -------------------------------------------------------------------------
   // Update number of unconverged steps
   // -------------------------------------------------------------------------
+*/
 //  sm_manager_ptr_->UpdateNumberOfUnconvergedSteps();
 
   /* special part in brownian for predictor: initialize disn_ and veln_ with zero;
@@ -680,27 +695,21 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
 {
   CheckInit();
 
-  // check if we want to have same forces over a certain time interval
-  if ( brown_dyn_state_data_.browndyn_dt != -1.0 )
-  {
-    // this variable changes every browndyn_dt seconds
-    int browndyn_step = static_cast<int>( (GState().GetTimeNp()
-        - ( *GStatePtr()->GetDeltaTime() )[0] ) / brown_dyn_state_data_.browndyn_dt + 1.0e-8 );
+  // only update random numbers and therefore stochastic forces each stochastic time step
+  // note: in case of a restart, first stochastic time step can be smaller than
+  // brown_dyn_state_data_.browndyn_dt, this is intended
+  int browndyn_step = static_cast<int>( (GState().GetTimeNp() - ( *GStatePtr()->GetDeltaTime() )[0] )
+      / brown_dyn_state_data_.browndyn_dt + 1.0e-8 );
 
-    if( browndyn_step == brown_dyn_state_data_.browndyn_step )
-      return;
-    else
-      brown_dyn_state_data_.browndyn_step = browndyn_step;
-   }
+  if( browndyn_step == brown_dyn_state_data_.browndyn_step )
+    return;
+  else
+    brown_dyn_state_data_.browndyn_step = browndyn_step;
 
-  // initialize mean value and standard deviation
+  // initialize mean value 0 and and standard deviation (2KT / dt)^0.5
   double meanvalue = 0.0;
-  double standarddeviation = 0.0;
-
-  // generate gaussian random numbers for parallel use with mean value 0 and
-  // standard deviation (2KT / dt)^0.5
-  standarddeviation = pow( 2.0 * eval_browniandyn_ptr_->KT() /
-      ( *GStatePtr()->GetDeltaTime() )[0], 0.5 );
+  double standarddeviation = pow( 2.0 * eval_browniandyn_ptr_->KT() /
+      brown_dyn_state_data_.browndyn_dt, 0.5 );
 
   // Set mean value and standard deviation of normal distribution
   DRT::Problem::Instance()->Random()->SetMeanVariance( meanvalue, standarddeviation );

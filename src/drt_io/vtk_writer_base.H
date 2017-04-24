@@ -124,6 +124,9 @@ public:
       unsigned int max_number_timesteps_to_be_written,
       const std::string& path_existing_working_directory,
       const std::string& name_new_vtk_subdirectory,
+      const std::string& geometry_name,
+      const std::string& restart_name,
+      double restart_time,
       bool write_binary_output);
 
   /** \brief set class variable storing working directory and create it if not existing
@@ -265,6 +268,13 @@ private:
       const std::vector<std::pair<double, std::string> > & masterfiles_time_and_name
       ) const;
 
+    //! write a VTK collection file that summarizes paths to all the given files
+  void CreateRestartedInitialCollectionFileMidSection(
+      const std::string & geometryname,
+      const std::string & restartfilename,
+      double restart_time
+      );
+
   //! construct full path and name for VTK collection file stream from given file name
   std::string
   GetVtkCollectionFileFullPathAndName(
@@ -337,6 +347,9 @@ protected:
 
   //! output step
   int timestep_;
+
+  //! restart step
+  int restart;
 
   //! Current cycle step (e.g. in nonlinear iteration, not used yet)
   int cycle_;

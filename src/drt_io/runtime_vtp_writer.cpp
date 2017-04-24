@@ -40,11 +40,15 @@ RuntimeVtpWriter::Initialize(
     unsigned int max_number_timesteps_to_be_written,
     const std::string& path_existing_output_directory,
     const std::string& simulation_name,
+    const std::string& geometry_name,
+    const std::string& restart_name,
+    double restart_time,
     bool write_binary_output
     )
 {
   vtp_writer_->Initialize( myrank, num_processors, max_number_timesteps_to_be_written,
-      path_existing_output_directory, (simulation_name + "-vtk-files"), write_binary_output );
+      path_existing_output_directory, (simulation_name + "-vtp-files"), geometry_name,
+      restart_name, restart_time, write_binary_output );
 }
 
 /*-----------------------------------------------------------------------------------------------*

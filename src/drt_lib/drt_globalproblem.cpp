@@ -235,6 +235,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--IO", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT STRUCTURE", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT STRUCTURE/BEAMS", *list);
+  reader.ReadGidSection("--IO/RUNTIME VTP OUTPUT STRUCTURE", *list);
   reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
   reader.ReadGidSection("--PATIENT SPECIFIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC", *list);

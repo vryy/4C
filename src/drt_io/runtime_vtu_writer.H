@@ -65,6 +65,9 @@ public:
       unsigned int max_number_timesteps_to_be_written,
       const std::string& path_existing_output_directory,
       const std::string& simulation_name,
+      const std::string& geometry_name,
+      const std::string& restart_name,
+      double restart_time,
       bool write_binary_output);
 
   /** \brief reset current simulation time and time step number and geometry name

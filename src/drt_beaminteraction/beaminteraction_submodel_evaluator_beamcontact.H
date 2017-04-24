@@ -79,6 +79,9 @@ namespace SUBMODELEVALUATOR {
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
     //! derived
+    virtual void RuntimeOutputStepState() const;
+
+    //! derived
     virtual void ResetStepState();
 
     //! derived

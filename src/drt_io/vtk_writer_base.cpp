@@ -19,6 +19,7 @@
 #include "../pss_full/pss_cpp.h"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "vtk_writer_base.H"
 
@@ -196,6 +197,7 @@ VtkWriterBase::VtkWriterBase()
     num_processor_digits_(0),
     time_(std::numeric_limits<double>::min()),
     timestep_(-1),
+    restart(DRT::Problem::Instance()->Restart()),
     cycle_ (std::numeric_limits<int>::max()),
     write_binary_output_(true),
     myrank_(0),
@@ -213,6 +215,9 @@ VtkWriterBase::Initialize(
     unsigned int max_number_timesteps_to_be_written,
     const std::string& path_existing_working_directory,
     const std::string& name_new_vtk_subdirectory,
+    const std::string& geometry_name,
+    const std::string& restart_name,
+    double restart_time,
     bool write_binary_output)
 {
   myrank_ = myrank;
@@ -223,8 +228,12 @@ VtkWriterBase::Initialize(
 
   write_binary_output_ = write_binary_output;
 
+  geometry_name_ = geometry_name;
+
   SetAndCreateVtkWorkingDirectory(
       path_existing_working_directory, name_new_vtk_subdirectory);
+
+  CreateRestartedInitialCollectionFileMidSection( geometry_name, restart_name, restart_time );
 }
 
 /*----------------------------------------------------------------------*
@@ -721,6 +730,55 @@ VtkWriterBase::WriteVtkCollectionFileForGivenListOfMasterFiles(
 //    collectionfilestream.close();  // Todo required?
   }
 
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void
+VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
+    const std::string & geometryname,
+    const std::string & restartfilename,
+    double restart_time)
+{
+  if ( myrank_ != 0 or not restart )
+    return;
+
+  // get name and path of restarted collection file
+  std::string restartcollectionfilename( restartfilename + "-" + geometryname + ".pvd" );
+
+  // open collection file
+  std::ifstream restart_collection_file;
+  restart_collection_file.open( restartcollectionfilename.c_str(), std::ios::out );
+
+  // check if file was found
+  if ( not restart_collection_file )
+    dserror(" restart collection file could not be found");
+
+  // loop over lines of restarted collection file
+  std::string line;
+  while ( std::getline( restart_collection_file, line ) )
+  {
+    // found line with timestep
+    if ( line.find( "timestep=", 0 ) != std::string::npos )
+    {
+      unsigned first = line.find("timestep=\"");
+      // shift position by number of characters of timestep="
+      first += 10;
+      unsigned last = line.find("\" group=");
+      std::string readtime_string = line.substr ( first, last - first );
+
+      // convert to double
+      double readtime = std::atof( readtime_string.c_str() );
+
+      if ( readtime < restart_time )
+        collection_file_midsection_cumulated_content_ << line << "\n";
+      else
+        break;
+    }
+  }
+
+  // close the file and reopen it to add the sbuffer
+  restart_collection_file.close();
 }
 
 /*----------------------------------------------------------------------*

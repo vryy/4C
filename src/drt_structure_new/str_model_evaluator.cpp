@@ -620,6 +620,17 @@ void STR::ModelEvaluator::OutputStepState(IO::DiscretizationWriter& iowriter)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::RuntimeOutputStepState()
+    const
+{
+  CheckInitSetup();
+  Vector::const_iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->RuntimeOutputStepState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::PostOutput()
 {
   CheckInitSetup();

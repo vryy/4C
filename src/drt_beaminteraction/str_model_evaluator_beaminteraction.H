@@ -146,6 +146,9 @@ namespace MODELEVALUATOR{
     virtual void OutputStepState() const;
 
     //! derived
+    virtual void RuntimeOutputStepState() const;
+
+    //! derived
     virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
 
     //! derived

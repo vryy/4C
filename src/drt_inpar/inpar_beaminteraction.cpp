@@ -41,6 +41,8 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   setNumericStringParameter("NUMCROSSLINKERPERTYPE","0","number of crosslinker of certain type ",&crosslinking);
   // material number characterizing crosslinker type
   setNumericStringParameter("MATCROSSLINKERPERTYPE","-1","material number characterizing crosslinker type ",&crosslinking);
+  // time step for stochastic events concerning crosslinking
+  DoubleParameter("TIMESTEP",-1.0, "time step for stochastic events concerning crosslinking (e.g. diffusion, p_link, p_unlink) ", &crosslinking);
   //Reading double parameter for viscosity of background fluid
   DoubleParameter("VISCOSITY",0.0,"viscosity",&crosslinking);
   //Reading double parameter for thermal energy in background fluid (temperature * Boltzmann constant)

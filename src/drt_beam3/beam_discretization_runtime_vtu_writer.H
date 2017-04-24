@@ -79,6 +79,7 @@ public:
       bool use_absolute_positions_for_point_coordinates,
       Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
       unsigned int max_number_timesteps_to_be_written,
+      double time,
       bool write_binary_output );
 
 
@@ -163,15 +164,14 @@ public:
    *  \date 03/17 */
   void WriteCollectionFileOfAllWrittenFiles();
 
-
-private:
-
   /** \brief determine and set geometry data from beam elements based on given displacement state
    *
    *  \author grill
    *  \date 03/17 */
   void SetGeometryFromBeamDiscretization(
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
+
+private:
 
   /** \brief insert all values of a given std::vector at the end of another given std::vector
    *

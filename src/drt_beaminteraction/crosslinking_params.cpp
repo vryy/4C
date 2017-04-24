@@ -11,6 +11,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "crosslinking_params.H"
+#include "../drt_structure_new/str_timint_basedataglobalstate.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -23,6 +24,7 @@ BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
     issetup_(false),
     viscosity_(0.0),
     kt_(0.0),
+    deltatime_(0.0),
     filamentbspotinterval_(0.0)
 {
   // empty constructor
@@ -30,7 +32,7 @@ BEAMINTERACTION::CrosslinkingParams::CrosslinkingParams()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::CrosslinkingParams::Init()
+void BEAMINTERACTION::CrosslinkingParams::Init( STR::TIMINT::BaseDataGlobalState const& gstate)
 {
   issetup_ = false;
 
@@ -73,12 +75,24 @@ void BEAMINTERACTION::CrosslinkingParams::Init()
   if ( numcrosslinkerpertype_.size() != matcrosslinkerpertype_.size() )
     dserror("number of crosslinker types does not fit number of assigned materials");
 
-
   // viscosity
   viscosity_ =  crosslinking_params_list.get<double> ("VISCOSITY");
 
   // thermal energy
   kt_ = crosslinking_params_list.get<double> ("KT");
+
+  // time step for stochastic events concering crosslinking
+  deltatime_ = crosslinking_params_list.get<double> ("TIMESTEP");
+
+  // safety check
+  // todo: maybe make input of time step obligatory
+  if( deltatime_ < 0.0 )
+  {
+    deltatime_ = (*gstate.GetDeltaTime())[0];
+    if ( gstate.GetMyRank() == 0 )
+      std::cout << " Time step " << (*gstate.GetDeltaTime())[0] << " form Structural Dynamic section "
+          "used for crosslinking.\n" << std::endl;
+  }
 
   // distance between the two binding spots on a filament
   filamentbspotinterval_ = crosslinking_params_list.get<double>("FILAMENTBSPOTINTERVAL");

@@ -21,6 +21,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
+#include "../drt_structure_new/str_timint_basedataio.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -63,7 +64,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Setup()
 
   // construct, init and setup data container for crosslinking
   crosslinking_params_ptr_ = Teuchos::rcp( new BEAMINTERACTION::CrosslinkingParams() );
-  crosslinking_params_ptr_->Init();
+  crosslinking_params_ptr_->Init( GState() );
   crosslinking_params_ptr_->Setup();
 
   // set binding spot positions on filament elements according input file specifications
@@ -72,9 +73,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Setup()
   // add crosslinker to bin discretization
   AddCrosslinkerToBinDiscretization();
 
-  // Fixme check for input parameter value whether to write runtime vtp output for crosslinkers
-  if ( true )
-    vtp_writer_ptr_ = Teuchos::rcp( new DiscretizationRuntimeVtpWriter() );
+  // build runtime vtp writer
+  if ( GInOutput().GetRuntimeVtpOutputParams() != Teuchos::null )
+    InitOutputRuntimeVtpStructure();
 
   // set flag
   issetup_ = true;
@@ -615,9 +616,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreUpdateStepElement()
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateStepElement()
 {
-  CheckInitSetup();
-
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::BindAndUnbindCrosslinker");
+
+  CheckInitSetup();
 
   // -------------------------------------------------------------------------
   // update double bonded linker
@@ -625,18 +626,18 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateStepElement()
   UpdateMyDoubleBondsAfterRedistribution();
 
   // -------------------------------------------------------------------------
-  // manage binding events
-  // -------------------------------------------------------------------------
   // gather data for all column crosslinker and column beams initially
+  // -------------------------------------------------------------------------
   PreComputeCrosslinkerAndBeamData();
 
-  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
+  // -------------------------------------------------------------------------
+  // manage binding events
+  // -------------------------------------------------------------------------
   BindCrosslinker();
 
   // -------------------------------------------------------------------------
   // manage unbinding events
   // -------------------------------------------------------------------------
-  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
   UnBindCrosslinker();
 }
 
@@ -664,12 +665,180 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::OutputStepState(
   DRT::Discretization const& bindis = BinDiscret();
 
   // mesh is not written to disc, only maximum node id is important for output
-  bindis.Writer()->ParticleOutput(GState().GetStepN(), GState().GetTimeN(), restart);
-  bindis.Writer()->NewStep(GState().GetStepN(), GState().GetTimeN());
-  Teuchos::RCP<Epetra_Vector> dis = LINALG::CreateVector(*bindis.DofRowMap(),true);
-  Teuchos::RCP<Epetra_Vector> orientation = LINALG::CreateVector(*bindis.DofRowMap(),true);
-  Teuchos::RCP<Epetra_Vector> numbond = LINALG::CreateVector(*bindis.NodeRowMap(),true);
-  Teuchos::RCP<Epetra_Vector> owner = LINALG::CreateVector(*bindis.NodeRowMap(),true);
+  bindis.Writer()->ParticleOutput( GState().GetStepN(), GState().GetTimeN(), restart );
+  bindis.Writer()->NewStep( GState().GetStepN(), GState().GetTimeN() );
+  Teuchos::RCP<Epetra_Vector> dis         = LINALG::CreateVector( *bindis.DofRowMap(), true );
+  Teuchos::RCP<Epetra_Vector> orientation = LINALG::CreateVector( *bindis.DofRowMap(), true );
+  Teuchos::RCP<Epetra_Vector> numbond     = LINALG::CreateVector( *bindis.NodeRowMap(), true );
+  Teuchos::RCP<Epetra_Vector> owner       = LINALG::CreateVector( *bindis.NodeRowMap(), true );
+
+  FillStateDataVectorsForOutput( dis, orientation, numbond, owner);
+
+  bindis.Writer()->WriteVector( "displacement", dis );
+  bindis.Writer()->WriteVector( "orientation", orientation );
+  bindis.Writer()->WriteVector( "numbond", numbond, IO::nodevector );
+  bindis.Writer()->WriteVector( "owner", owner, IO::nodevector);
+
+  // as we know that our maps have changed every time we write output, we can empty
+  // the map cache as we can't get any advantage saving the maps anyway
+  bindis.Writer()->ClearMapCache();
+
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::RuntimeOutputStepState() const
+{
+  CheckInitSetup();
+
+  if ( vtp_writer_ptr_ != Teuchos::null )
+    WriteOutputRuntimeVtpStructure();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitOutputRuntimeVtpStructure()
+{
+  CheckInit();
+
+  vtp_writer_ptr_ = Teuchos::rcp( new DiscretizationRuntimeVtpWriter() );
+
+  // Todo: we need a better upper bound for total number of time steps here
+  // however, this 'only' affects the number of leading zeros in the vtk file names
+  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+
+  // initialize the writer object
+  vtp_writer_ptr_->Initialize(
+      BinDiscretPtr(),
+      num_timesteps_in_simulation_upper_bound,
+      GState().GetTimeN(),
+      true );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStructure() const
+{
+  CheckInitSetup();
+
+  // ************** BEGIN RUNTIME VTP OUTPUT *** OPTION 1: DISCRETIZATION *********
+  // this section compiles and seems to do the job correctly :-)
+
+   // initialize the writer object
+   vtp_writer_ptr_->SetGeometryFromParticleDiscretization();
+
+   // reset time and time step of the writer object
+   vtp_writer_ptr_->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
+
+   // append all desired output data to the writer object's storage
+   DRT::Discretization const& bindis = BinDiscret();
+   Teuchos::RCP<Epetra_Vector> dis         = LINALG::CreateVector( *bindis.DofRowMap(), true );
+   Teuchos::RCP<Epetra_Vector> orientation = LINALG::CreateVector( *bindis.DofRowMap(), true );
+   Teuchos::RCP<Epetra_Vector> numbond     = LINALG::CreateVector( *bindis.NodeRowMap(), true );
+   Teuchos::RCP<Epetra_Vector> owner       = LINALG::CreateVector( *bindis.NodeRowMap(), true );
+
+   FillStateDataVectorsForOutput( dis, orientation, numbond, owner);
+
+   // append displacement vector if desired
+   vtp_writer_ptr_->AppendDofBasedResultDataVector( dis, 3, "displacement" );
+
+   // append orientation vector if desired
+   vtp_writer_ptr_->AppendDofBasedResultDataVector( orientation, 3, "orientation" );
+
+   // append number of bonds if desired
+   vtp_writer_ptr_->AppendNodeBasedResultDataVector( numbond, 1, "num_bonds" );
+
+   // append owner if desired
+   vtp_writer_ptr_->AppendNodeBasedResultDataVector( owner, 1, "owner" );
+
+
+   // finalize everything and write all required VTU files to filesystem
+   vtp_writer_ptr_->WriteFiles();
+
+
+   // Todo: this will not work as expected yet in case of a restart
+   vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
+
+
+
+   // ************** BEGIN RUNTIME VTP OUTPUT *** OPTION 2: DIRECTLY *********
+   // this section is just to get the idea and needs some minor modifications (indicated by Fixme)
+   // this may serve as a template for visualization of stochastic&viscous forces, contact forces, ...
+
+ //  Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr =
+ //      Teuchos::rcp( new RuntimeVtpWriter() );
+ //
+ //  // Todo: we need a better upper bound for total number of time steps here
+ //  // however, this 'only' affects the number of leading zeros in the vtk file names
+ //  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+ //
+ //
+ //  // initialize the writer object
+ //  vtp_writer_ptr->Initialize();   // Fixme
+ //
+ //  // set geometry manually
+ //  const unsigned int num_spatial_dimensions = 3;
+ //  unsigned int num_row_points = 2000;
+ //
+ //  // get and prepare storage for point coordinate values
+ //  std::vector<double>& point_coordinates = vtp_writer_ptr->GetMutablePointCoordinateVector();
+ //  point_coordinates.clear();
+ //  point_coordinates.reserve( num_spatial_dimensions * num_row_points );
+ //
+ //
+ //  // loop over my points and collect the geometry/grid data, i.e. reference positions of nodes
+ //  for (unsigned int inode=0; inode < num_row_points; ++inode)
+ //  {
+ //    const DRT::Node* node = BinDiscretPtr()->lRowNode(inode);
+ //
+ //    for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
+ //      point_coordinates.push_back( node->X()[idim] );
+ //  }
+ //
+ //
+ //  // reset time and time step and geometry name in the writer object
+ //  vtp_writer_ptr->SetupForNewTimeStepAndGeometry(
+ //      GState().GetTimeN(), GState().GetStepN(), BinDiscretPtr()->Name() );
+ //
+ //
+ //
+ //  // append all desired output data to the writer object's storage
+ //
+ //  // number of bonds: collect data and append to visualization results if desired
+ //  std::vector<double> num_bonds( num_row_points );
+ //
+ //  for ( unsigned int i = 0; i < num_row_points; ++i )
+ //  {
+ //    CROSSLINKING::CrosslinkerNode *crosslinker_i =
+ //        dynamic_cast< CROSSLINKING::CrosslinkerNode* >( bindis.lRowNode(i) );
+ //
+ //    num_bonds[i] = crosslinker_i->ClData()->GetNumberOfBonds();
+ //  }
+ //
+ //  vtp_writer_ptr->AppendVisualizationPointDataVector( num_bonds, 1, "num_bonds" );
+ //
+ //
+ //
+ //  // finalize everything and write all required VTU files to filesystem
+ //  vtp_writer_ptr->WriteFiles();
+ //
+ //
+ //  // write a collection file summarizing all previously written files
+ //  vtp_writer_ptr->WriteCollectionFileOfAllWrittenFiles();   // Fixme
+   // ************** END RUNTIME VTP OUTPUT ***************************************
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FillStateDataVectorsForOutput(
+    Teuchos::RCP<Epetra_Vector> displacement,
+    Teuchos::RCP<Epetra_Vector> orientation,
+    Teuchos::RCP<Epetra_Vector> numberofbonds,
+    Teuchos::RCP<Epetra_Vector> owner
+) const
+{
+  CheckInitSetup();
+  DRT::Discretization const& bindis = BinDiscret();
 
   std::map< int, Teuchos::RCP< BEAMINTERACTION::BeamToBeamLinkage > >::const_iterator it;
   //todo: this is of course not nice, this needs to be done somewhere else
@@ -683,8 +852,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::OutputStepState(
     // loop over all dofs
     for( int dim = 0; dim < 3; ++dim )
     {
-      int doflid = dis->Map().LID(dofnode[dim]);
-      (*dis)[doflid] = crosslinker_i->X()[dim];
+      int doflid = displacement->Map().LID(dofnode[dim]);
+      (*displacement)[doflid] = crosslinker_i->X()[dim];
 
       if(crosslinker_i->ClData()->GetNumberOfBonds() == 2)
       {
@@ -697,129 +866,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::OutputStepState(
       }
     }
 
-    (*numbond)[i] = crosslinker_i->ClData()->GetNumberOfBonds();
-    (*owner)[i] = crosslinker_i->Id();
-
+    (*numberofbonds)[i] = crosslinker_i->ClData()->GetNumberOfBonds();
+    (*owner)[i] = crosslinker_i->Owner();
   }
-
-  bindis.Writer()->WriteVector( "displacement", dis );
-  bindis.Writer()->WriteVector( "orientation", orientation );
-  bindis.Writer()->WriteVector( "numbond", numbond, IO::nodevector );
-  bindis.Writer()->WriteVector( "owner", owner, IO::nodevector);
-
-  // as we know that our maps have changed every time we write output, we can empty
-  // the map cache as we can't get any advantage saving the maps anyway
-  bindis.Writer()->ClearMapCache();
-
-
-
-  // ************** BEGIN RUNTIME VTP OUTPUT *** OPTION 1: DISCRETIZATION *********
-  // this section compiles and seems to do the job correctly :-)
-  // Todo: add input parameters to control the output; for now: commented out
-
-//  // Todo: we need a better upper bound for total number of time steps here
-//  // however, this 'only' affects the number of leading zeros in the vtk file names
-//  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
-//
-//  // initialize the writer object
-//  vtp_writer_ptr_->Initialize(
-//      BinDiscretPtr(),
-//      num_timesteps_in_simulation_upper_bound,
-//      true );
-//
-//  // reset time and time step of the writer object
-//  vtp_writer_ptr_->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
-//
-//
-//  // append all desired output data to the writer object's storage
-//
-//  // append displacement vector if desired
-//  vtp_writer_ptr_->AppendDofBasedResultDataVector( dis, 3, "displacement" );
-//
-//  // append orientation vector if desired
-//  vtp_writer_ptr_->AppendDofBasedResultDataVector( orientation, 3, "orientation" );
-//
-//  // append number of bonds if desired
-//  vtp_writer_ptr_->AppendNodeBasedResultDataVector( numbond, 1, "num_bonds" );
-//
-//  // append owner if desired Fixme: why is Id() the owner?
-//  vtp_writer_ptr_->AppendNodeBasedResultDataVector( owner, 1, "owner" );
-//
-//
-//  // finalize everything and write all required VTU files to filesystem
-//  vtp_writer_ptr_->WriteFiles();
-//
-//
-//  // Todo: this will not work as expected yet in case of a restart
-//  vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
-
-
-
-  // ************** BEGIN RUNTIME VTP OUTPUT *** OPTION 2: DIRECTLY *********
-  // this section is just to get the idea and needs some minor modifications (indicated by Fixme)
-  // this may serve as a template for visualization of stochastic&viscous forces, contact forces, ...
-
-//  Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr =
-//      Teuchos::rcp( new RuntimeVtpWriter() );
-//
-//  // Todo: we need a better upper bound for total number of time steps here
-//  // however, this 'only' affects the number of leading zeros in the vtk file names
-//  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
-//
-//
-//  // initialize the writer object
-//  vtp_writer_ptr->Initialize();   // Fixme
-//
-//  // set geometry manually
-//  const unsigned int num_spatial_dimensions = 3;
-//  unsigned int num_row_points = 2000;
-//
-//  // get and prepare storage for point coordinate values
-//  std::vector<double>& point_coordinates = vtp_writer_ptr->GetMutablePointCoordinateVector();
-//  point_coordinates.clear();
-//  point_coordinates.reserve( num_spatial_dimensions * num_row_points );
-//
-//
-//  // loop over my points and collect the geometry/grid data, i.e. reference positions of nodes
-//  for (unsigned int inode=0; inode < num_row_points; ++inode)
-//  {
-//    const DRT::Node* node = BinDiscretPtr()->lRowNode(inode);
-//
-//    for (unsigned int idim=0; idim<num_spatial_dimensions; ++idim)
-//      point_coordinates.push_back( node->X()[idim] );
-//  }
-//
-//
-//  // reset time and time step and geometry name in the writer object
-//  vtp_writer_ptr->SetupForNewTimeStepAndGeometry(
-//      GState().GetTimeN(), GState().GetStepN(), BinDiscretPtr()->Name() );
-//
-//
-//
-//  // append all desired output data to the writer object's storage
-//
-//  // number of bonds: collect data and append to visualization results if desired
-//  std::vector<double> num_bonds( num_row_points );
-//
-//  for ( unsigned int i = 0; i < num_row_points; ++i )
-//  {
-//    CROSSLINKING::CrosslinkerNode *crosslinker_i =
-//        dynamic_cast< CROSSLINKING::CrosslinkerNode* >( bindis.lRowNode(i) );
-//
-//    num_bonds[i] = crosslinker_i->ClData()->GetNumberOfBonds();
-//  }
-//
-//  vtp_writer_ptr->AppendVisualizationPointDataVector( num_bonds, 1, "num_bonds" );
-//
-//
-//
-//  // finalize everything and write all required VTU files to filesystem
-//  vtp_writer_ptr->WriteFiles();
-//
-//
-//  // write a collection file summarizing all previously written files
-//  vtp_writer_ptr->WriteCollectionFileOfAllWrittenFiles();   // Fixme
-  // ************** END RUNTIME VTP OUTPUT ***************************************
 }
 
 /*----------------------------------------------------------------------*
@@ -1148,7 +1197,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker
   double standarddev = std::sqrt( 2.0 * crosslinking_params_ptr_->KT() /
                        ( 3.0*M_PI * crosslinking_params_ptr_->Viscosity()
                        * crosslinker->GetMaterial()->LinkingLength() )
-                       * (*GState().GetDeltaTime())[0]);
+                       * crosslinking_params_ptr_->DeltaTime() );
   double meanvalue = 0.0;
   // Set mean value and standard deviation of normal distribution
   // FixMe standard deviation = sqrt(variance) check this for potential error !!!
@@ -1394,6 +1443,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::BindCrosslinker()
 {
   CheckInit();
 
+  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
+
   // intended bonds of row crosslinker on myrank (key is clgid)
   std::map< int, BindEventData > mybonds;
   // intended bond col crosslinker to row element (key is owner of crosslinker != myrank)
@@ -1636,7 +1687,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
   // 3. criterion:
   // a crosslink is set if and only if it passes the probability check
   // for a binding event to happen
-  double plink = 1.0 - exp( -(*GState().GetDeltaTime())[0] * crosslinker_i->GetMaterial()->KOn() );
+  double plink = 1.0 - exp( (-1.0) * crosslinking_params_ptr_->DeltaTime() * crosslinker_i->GetMaterial()->KOn() );
 
   if( checklinkingprop and ( DRT::Problem::Instance()->Random()->Uni() > plink ) )
     return false;
@@ -2280,6 +2331,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
 {
   CheckInit();
 
+  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
+
   // data containing information about elements that need to be updated on
   // procs != myrank
   std::map< int, std::vector< UnBindEventData > > sendunbindevents;
@@ -2303,7 +2356,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnBindCrosslinker()
     CrosslinkerData& cldata_i = crosslinker_data_[clcollid];
 
     // probability with which a crosslink breaks up in the current time step
-    double p_unlink = 1.0 - exp( -(*GState().GetDeltaTime())[0] * linker->GetMaterial()->KOff() );
+    double p_unlink = 1.0 - exp( (-1.0) * crosslinking_params_ptr_->DeltaTime() * linker->GetMaterial()->KOff() );
 
     // different treatment according to number of bonds of a crosslinker
     switch( cldata_i.clnumbond )
@@ -2425,7 +2478,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CalcBellsForceDependentUn
       forcedependentkoff[i] = koff * exp( sgn * clbspotforcenorm[i] * delta / kt);
 
     // get respective force dependent unbind probability for each cl binding spot
-    punlinkforcedependent[i] = 1.0 - exp( -( *GState().GetDeltaTime() )[0] * forcedependentkoff[i] );
+    punlinkforcedependent[i] = 1.0 - exp( (-1.0) * crosslinking_params_ptr_->DeltaTime() * forcedependentkoff[i] );
   }
 }
 

@@ -55,7 +55,7 @@ void STR::MODELEVALUATOR::BrownianDynData::Init(
   // maximum random force (specified as multiple of standard deviation around mean value)
   maxrandforce_ = browndyn_params_list.get<double> ("MAXRANDFORCE");
   // time interval with constant random forces
-  timeintconstrandnumb_ = browndyn_params_list.get<double> ("TIMEINTCONSTRANDFORCES");
+  timeintconstrandnumb_ = browndyn_params_list.get<double> ("TIMESTEP");
 
   // the way how damping coefficient values for beams are specified
   beam_damping_coeff_specified_via_ =

@@ -17,10 +17,15 @@
 #include "../drt_inpar/inpar_beaminteraction.H"
 
 // forward declaration
+namespace STR {
+namespace TIMINT {
+  class BaseDataGlobalState;
+}
+}
 namespace BEAMINTERACTION {
-
   /*!
-   * data container for input file parameters for submodel crosslinking in beam interaction */
+   * data container for input file parameters for submodel crosslinking in beam interaction
+   * author eichinger*/
   class CrosslinkingParams
   {
   public:
@@ -31,7 +36,7 @@ namespace BEAMINTERACTION {
     virtual ~CrosslinkingParams() {};
 
     //! initialize with the stuff coming from input file
-    void Init();
+    void Init( STR::TIMINT::BaseDataGlobalState const& gstate );
 
     //! setup member variables
     void Setup();
@@ -86,6 +91,13 @@ namespace BEAMINTERACTION {
       return kt_;
     };
 
+    /// time step for stochastic events concerning crosslinking
+    double const& DeltaTime() const
+    {
+      CheckInitSetup();
+      return deltatime_;
+    };
+
     // distance between two binding spots on a filament
     double const& FilamentBspotInterval() const
     {
@@ -114,6 +126,8 @@ namespace BEAMINTERACTION {
     double viscosity_;
     /// thermal energy
     double kt_;
+    /// time step for stochastic events concering crosslinking
+    double deltatime_;
     /// distance between two binding spots on a filament
     double filamentbspotinterval_;
     /// start and end arc parameter for binding spots on a filament

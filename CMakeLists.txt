@@ -786,6 +786,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_invanalysis.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output_structure.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output_structure_beams.cpp
+  src/drt_inpar/inpar_IO_runtime_vtp_output_structure.cpp
   src/drt_inpar/inpar_levelset.cpp
   src/drt_inpar/inpar_loca_continuation.cpp
   src/drt_inpar/inpar_lubrication.cpp
@@ -1808,6 +1809,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_timint_base.cpp
   src/drt_structure_new/str_timint_basedataio.cpp
   src/drt_structure_new/str_timint_basedataio_runtime_vtk_output.cpp
+  src/drt_structure_new/str_timint_basedataio_runtime_vtp_output.cpp
   src/drt_structure_new/str_timint_basedataglobalstate.cpp
   src/drt_structure_new/str_timint_basedatasdyn.cpp
   src/drt_structure_new/str_timint_explicit.cpp

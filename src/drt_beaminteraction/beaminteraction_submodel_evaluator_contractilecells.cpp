@@ -175,6 +175,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::OutputStepState(
 {
   CheckInitSetup();
 
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::RuntimeOutputStepState() const
+{
+  CheckInitSetup();
 
 }
 

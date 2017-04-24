@@ -810,6 +810,9 @@ namespace TIMINT {
     /// output of the current state
     void OutputState();
 
+    /// output during runtime
+    void RuntimeOutputState();
+
     /// output stress and/or strain state
     void OutputStressStrain();
 

@@ -46,10 +46,7 @@ void INPAR::BROWNIANDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "-1.0 means no bounds.'",&browniandyn_list);
 
   //time interval in which random numbers are constant
-  DoubleParameter("TIMEINTCONSTRANDFORCES",-1.0,
-      "Within this time interval the random numbers remain constant. -1.0 means no prescribed "
-      "time interval.'",&browniandyn_list);
-
+  DoubleParameter("TIMESTEP",-1.0,"Within this time interval the random numbers remain constant. -1.0 ",&browniandyn_list);
 
   // the way how damping coefficient values for beams are specified
   setStringToIntegralParameter<int>(

@@ -221,7 +221,7 @@ void STR::MODELEVALUATOR::BeamInteraction::InitAndSetupSubModeEvaluators()
   Vector::iterator sme_iter;
   for ( sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter )
   {
-    (*sme_iter)->Init( ia_discret_, bindis_, GStatePtr(), ia_state_ptr_, particlehandler_,
+    (*sme_iter)->Init( ia_discret_, bindis_, GStatePtr(), GInOutputPtr(), ia_state_ptr_, particlehandler_,
         TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>( eletypeextractor_, true ) );
     (*sme_iter)->Setup();
@@ -648,7 +648,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->UpdateStepElement();
 
-  // sumodel post update
+  // submodel post update
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->PostUpdateStepElement();
 }
@@ -707,6 +707,17 @@ void STR::MODELEVALUATOR::BeamInteraction::OutputStepState() const
 
   // write periodic bounding box output
   TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->Output( stepn, timen );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::BeamInteraction::RuntimeOutputStepState() const
+{
+  CheckInitSetup();
+
+  Vector::iterator sme_iter;
+  for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
+    (*sme_iter)->RuntimeOutputStepState();
 }
 
 /*----------------------------------------------------------------------------*

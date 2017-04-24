@@ -130,6 +130,14 @@ STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::TIMINT::BaseDataIO> STR::MODELEVALUATOR::Generic::GInOutputPtr()
+{
+  CheckInit();
+  return gio_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const STR::TIMINT::BaseDataIO& STR::MODELEVALUATOR::Generic::GInOutput() const
 {
   CheckInit();

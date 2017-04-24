@@ -92,6 +92,9 @@ namespace SUBMODELEVALUATOR {
     virtual void OutputStepState( bool const restart ) const;
 
     //! derived
+    virtual void RuntimeOutputStepState() const;
+
+    //! derived
     virtual void ResetStepState();
 
     //! derived
@@ -145,6 +148,12 @@ namespace SUBMODELEVALUATOR {
     //! @}
 
 private:
+
+    //! writes output for discretization structure in VTP format
+    void WriteOutputRuntimeVtpStructure() const;
+
+    //! init output for discretization structure in VTP format
+    void InitOutputRuntimeVtpStructure();
 
     //! @name Small data structs for faster access and better structure
     //! @{
@@ -283,6 +292,14 @@ private:
         LINALG::Matrix<3,1> const& direction2,
         double const lowerbound,
         double const upperbound
+    ) const;
+
+    /// fill epetar vectors to write vtp output
+    void FillStateDataVectorsForOutput(
+        Teuchos::RCP<Epetra_Vector> displacement,
+        Teuchos::RCP<Epetra_Vector> orientation,
+        Teuchos::RCP<Epetra_Vector> numberofbonds,
+        Teuchos::RCP<Epetra_Vector> owner
     ) const;
 
     // -------------------------------------------------------------------------
