@@ -13,7 +13,6 @@ created by pre_exodus
 //ELEMENTS    461
 //NODES       1052
 DIM           3
-// Maintainer: Raffaela Kruse
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_XFEM
 RESTART                         0
