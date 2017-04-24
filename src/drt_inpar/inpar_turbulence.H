@@ -1,12 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_turbulence.H
-
+\maintainer Benjamin Krank
 \brief Input parameters for turbulence
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+Maintainer: Benjamin Krank
+            krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
 */

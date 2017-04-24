@@ -3,12 +3,12 @@
 \file fluid_MHD_evaluate.H
 
 \brief Class FLD::FluidMHDEvaluate
-
+\level 2
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benjamin Krank
+            krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15252
 </pre>
 
 */
@@ -81,7 +81,7 @@ private:
   Teuchos::RCP<DRT::Discretization>    pdiscret_;
   //! the boundary discretisation
   Teuchos::RCP<DRT::Discretization>    bnd_discret_;
-  //! dofrowmap for 
+  //! dofrowmap for
   Teuchos::RCP<Epetra_Map>             subdofrowmap_;
   //! (small) system FEmatrix for boundary discretisation
   Teuchos::RCP<LINALG::SparseMatrix>   bndmat_;

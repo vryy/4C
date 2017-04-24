@@ -191,7 +191,7 @@ namespace ADAPTER
     virtual void Reset()
     { structure_->Reset(); }
 
-    /// reset last time step, needed for time step size adaptivity in TimIntAda and FSI
+    /// reset last time step, needed for time step size adaptivity in FSI
     virtual void ResetStep()
     { structure_->ResetStep(); }
 
