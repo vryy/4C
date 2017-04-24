@@ -1,17 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_timint_genalpha.cpp
-\brief Implicit particle time integration scheme (backward Euler?)
+
+\brief Implicit particle time integration scheme
 
 \level 2
 
-<pre>
-\maintainer Alessandro Cattabiani
-</pre>
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_genalpha.H"
 

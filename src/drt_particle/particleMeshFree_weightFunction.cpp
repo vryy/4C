@@ -1,15 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file particleMeshFree_weightFunction.cpp
+\file particleMeshFree_weightFunction.cpp
 
- \brief weight functions for MeshFree methods
+\brief weight functions for MeshFree methods
 
- \level 3
+\level 3
 
- \maintainer Alessandro Cattabiani
- */
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 /* headers */
 #include "particleMeshFree_weightFunction.H"
 

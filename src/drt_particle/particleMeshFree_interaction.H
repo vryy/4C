@@ -6,8 +6,11 @@
 
 \level 3
 
-\maintainer Alessandro Cattabiani
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+
+*-----------------------------------------------------------------------*/
 
 /*
  References:
@@ -15,9 +18,8 @@
  Monaghan2005: Smoothed particle hydrodynamics, doi:10.1088/0034-4885/68/8/R01.
  Espanol2003: Smoothed dissipative particle dynamics, DOI: 10.1103/PhysRevE.67.026705.
  Akinci2013: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
- */
+*/
 
-/*----------------------------------------------------------------------*/
 #ifndef SRC_DRT_PARTICLE_PARTICLEMESHFREE_INTERACTION_H_
 #define SRC_DRT_PARTICLE_PARTICLEMESHFREE_INTERACTION_H_
 /*----------------------------------------------------------------------*/

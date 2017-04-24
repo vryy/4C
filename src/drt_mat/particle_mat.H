@@ -1,12 +1,16 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file particle_mat.H
 
-\brief TODO Georg. I think that this file defines the material properties of the particles
+\brief material properties of particles
 
 \level 2
 
-\maintainer Georg Hammerl
-*----------------------------------------------------------------------*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+
+*-----------------------------------------------------------------------*/
 #ifndef PARTICLE_MAT_H
 #define PARTICLE_MAT_H
 

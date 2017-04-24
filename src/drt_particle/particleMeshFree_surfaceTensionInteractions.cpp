@@ -1,25 +1,19 @@
-/*
- * particleMeshFree_surfaceTensionInteractions.cpp
- *
- *  Created on: Dec 13, 2016
- *      Author: cattabiani
- */
-
-
 /*----------------------------------------------------------------------*/
 /*!
- \file particleMeshFree_surfaceTensionInteractions.cpp
+\file particleMeshFree_surfaceTensionInteractions.cpp
 
- \brief surface tension - related functions
+\brief surface tension - related functions
 
-theory: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf R1
+\level 3
 
- \level 3
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
- \maintainer Alessandro Cattabiani
- */
+// theory: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf R1
 
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
+
 /* headers */
 #include "particleMeshFree_surfaceTensionInteractions.H"
 

@@ -6,10 +6,11 @@
 
 \level 3
 
-\maintainer Alessandro Cattabiani
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 #ifndef SRC_DRT_PARTICLE_PARTICLEMESHFREE_WEIGHTFUNCTION_H_
 #define SRC_DRT_PARTICLE_PARTICLEMESHFREE_WEIGHTFUNCTION_H_
 

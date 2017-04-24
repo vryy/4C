@@ -1,20 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_timint_expleuler.H
-\brief Particle time integration with Forward Euler time integration
-       scheme of 1st order (explicit),
+
+\brief Particle time integration with Forward Euler time integration scheme of 1st order (explicit)
 
 \level 3
 
-<pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 #ifndef PARTICLE_TIMINT_EXPLEULER_H
 #define PARTICLE_TIMINT_EXPLEULER_H
 

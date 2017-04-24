@@ -4,13 +4,14 @@
 
 \brief A particle is a DRT::Node with additional knowledge of its collision status
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-152537
-</pre>
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15262
+
+*-----------------------------------------------------------------------*/
 #include "particle_node.H"
 #include "../drt_lib/drt_dserror.H"
 

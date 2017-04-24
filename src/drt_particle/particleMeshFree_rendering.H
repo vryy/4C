@@ -6,8 +6,11 @@
 
 \level 1
 
-\maintainer Cattabiani Alessandro
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+
+*-----------------------------------------------------------------------*/
 
 #ifndef SRC_DRT_PARTICLE_PARTICLEMESHFREE_RENDERING_H_
 #define SRC_DRT_PARTICLE_PARTICLEMESHFREE_RENDERING_H_

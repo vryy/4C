@@ -6,13 +6,11 @@
 
 \level 2
 
-<pre>
-\maintainer Alessandro Cattabiani
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-</pre>
-*/
-
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 #ifndef SRC_DRT_PARTICLE_PARTICLE_TIMINT_GENALPHA_H_
 #define SRC_DRT_PARTICLE_PARTICLE_TIMINT_GENALPHA_H_
 

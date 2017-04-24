@@ -6,14 +6,12 @@
 
 \level 1
 
-<pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
-*/
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15262
 
+*-----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 12/13 |

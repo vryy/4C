@@ -1,17 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_timint_divfree.cpp
+
 \brief Hybrid particle time integration with implicit density and divergence corrections (hybrid)
 
 \level 2
 
-<pre>
-\maintainer Alessandro Cattabiani
-</pre>
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
+*-----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_divfree.H"
 #include "particle_algorithm.H"

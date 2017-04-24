@@ -2,14 +2,15 @@
 /*!
 \file particle_utils.H
 
-\brief General functions for the particle and meshFree dynamics
+\brief General functions for the Particle-MeshFree dynamics
 
 \level 3
 
-\maintainer Alessandro Cattabiani
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 #ifndef SRC_DRT_PARTICLE_PARTICLE_UTILS_H_
 #define SRC_DRT_PARTICLE_PARTICLE_UTILS_H_
 /*----------------------------------------------------------------------*/

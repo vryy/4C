@@ -1,4 +1,4 @@
-/*-----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \file particle_utils.cpp
 
@@ -6,17 +6,15 @@
 
 \level 3
 
-\maintainer Alessandro Cattabiani
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
+*-----------------------------------------------------------------------*/
 
 #include "particle_utils.H"
 #include "../drt_mat/particle_mat.H"
 #include "../drt_mat/extparticle_mat.H"
-
-
-
-/*-----------------------------------------------------------------------------*/
 
 /*-----------------------------------------------------------------------------*/
 /* Compute the inertia vector */

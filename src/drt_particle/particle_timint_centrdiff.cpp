@@ -1,21 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_timint_centrdiff.cpp
+
 \brief Particle time integration with central difference scheme 2nd order (explicit),
        also known as Velocity-Verlet algorithm
 
 \level 2
 
-<pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
+*-----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_centrdiff.H"
 #include "particle_algorithm.H"

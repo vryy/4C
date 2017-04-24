@@ -1,20 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_timint_expl.cpp
+
 \brief Particle time integration with explicit time integration
 
 \level 2
 
-<pre>
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_expl.H"
 

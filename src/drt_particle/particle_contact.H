@@ -6,10 +6,12 @@
 
 \level 3
 
-\maintainer Georg Hammerl
-*/
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15262
 
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 #ifndef PARTICLE_CONTACT_H
 #define PARTICLE_CONTACT_H
 

@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \file extparticle_mat.cpp
 
@@ -6,9 +6,11 @@
 
 \level 3
 
-\maintainer Alessandro Cattabiani
-*/
-/*----------------------------------------------------------------------*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+
+*-----------------------------------------------------------------------*/
 
 #include "extparticle_mat.H"
 #include "../drt_lib/drt_globalproblem.H"

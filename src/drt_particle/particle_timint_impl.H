@@ -1,17 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_timint_impl.H
-\brief implicit particle time integration schemes
+
+\brief Implicit particle time integration
 
 \level 3
 
-<pre>
-\maintainer Alessandro Cattabiani
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-</pre>
-*/
-
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 #ifndef PARTICLE_TIMINT_IMPL_H
 #define PARTICLE_TIMINT_IMPL_H
 

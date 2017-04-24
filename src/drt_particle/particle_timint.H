@@ -4,12 +4,13 @@
 
 \brief Time integration for particle dynamics
 
-\level 2
+\level 1
 
-\maintainer Georg Hammerl
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 /* definitions */
 #ifndef PARTICLE_TIMINT_H
 #define PARTICLE_TIMINT_H

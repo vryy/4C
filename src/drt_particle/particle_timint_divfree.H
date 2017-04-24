@@ -2,18 +2,15 @@
 /*!
 \file particle_timint_divfree.H
 
-\brief Explicit particle time integration with implicit density and divergence
-       correction schemes. Hybrid
+\brief Hybrid particle time integration with implicit density and divergence corrections (hybrid)
 
 \level 2
 
-<pre>
-\maintainer Alessandro Cattabiani
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-</pre>
-*/
-
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 #ifndef SRC_DRT_PARTICLE_PARTICLE_TIMINT_DIVFREE_H_
 #define SRC_DRT_PARTICLE_PARTICLE_TIMINT_DIVFREE_H_
 

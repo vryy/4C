@@ -1,14 +1,16 @@
-/*!----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \file extparticle_mat.H
 
-\brief Multi-purpose Particle-MeshFree material with support for thermodynamics
+\brief Particle material with support for thermodynamics
 
 \level 3
 
-\maintainer Alessandro Cattabiani
-*/
-/*----------------------------------------------------------------------*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+
+*-----------------------------------------------------------------------*/
 #ifndef ExtParticleMat_H
 #define ExtParticleMat_H
 

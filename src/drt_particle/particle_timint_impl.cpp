@@ -1,18 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_timint_impl.cpp
+
 \brief Implicit particle time integration
 
-\level 2
+\level 3
 
-<pre>
-\maintainer Alessandro Cattabiani
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-</pre>
-*/
-
-
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_impl.H"
 

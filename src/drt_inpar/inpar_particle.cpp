@@ -6,7 +6,11 @@
 
 \level 1
 
-\maintainer Georg Hammerl
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15262
+
 *-----------------------------------------------------------------------*/
 
 #include "drt_validparameters.H"

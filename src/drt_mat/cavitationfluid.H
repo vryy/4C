@@ -2,14 +2,16 @@
 /*!
 \file cavitationfluid.H
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
-*/
-/*----------------------------------------------------------------------*/
+\brief cavitation fluid material
+
+\level 3
+
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15262
+
+*-----------------------------------------------------------------------*/
 #ifndef CavitationFluid_H
 #define CavitationFluid_H
 

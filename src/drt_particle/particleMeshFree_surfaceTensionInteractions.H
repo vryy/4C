@@ -4,14 +4,15 @@
 
 \brief surface tension - related functions
 
-theory: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
-
 \level 3
 
-\maintainer Alessandro Cattabiani
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-/*----------------------------------------------------------------------*/
+// theory: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf R1
+
+*-----------------------------------------------------------------------*/
 #ifndef SRC_DRT_PARTICLE_PARTICLEMESHFREE_SURFACETENSIONINTERACTIONS_H_
 #define SRC_DRT_PARTICLE_PARTICLEMESHFREE_SURFACETENSIONINTERACTIONS_H_
 

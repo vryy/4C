@@ -2,17 +2,23 @@
 /*!
 \file particleMeshFree_interaction.cpp
 
-\brief Particle-MeshFree interaction handling.
-papers: - Smoothed dissipative particle dynamics, DOI: 10.1103/PhysRevE.67.026705
-        - Numerical simulation of fluid-structure interaction by SPH, DOI: 10.1016/j.compstruc.2007.01.002
-
+\brief Particle-MeshFree interaction handling
 
 \level 3
 
-\maintainer Alessandro Cattabiani
-*/
+\maintainer  Christoph Meier
+             meier@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
 
-/*----------------------------------------------------------------------*/
+*-----------------------------------------------------------------------*/
+
+/*
+ References:
+ Antoci2007: Numerical simulation of fluid–structure interaction by SPH, doi: 10.1016/j.compstruc.2007.01.002.
+ Monaghan2005: Smoothed particle hydrodynamics, doi:10.1088/0034-4885/68/8/R01.
+ Espanol2003: Smoothed dissipative particle dynamics, DOI: 10.1103/PhysRevE.67.026705.
+ Akinci2013: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
+*/
 /* macros */
 
 /*----------------------------------------------------------------------*/
