@@ -1,10 +1,8 @@
 //
-// Maintainer: Georg Bauer
-// bauer@lnm.mw.tum.de
+// Maintainer: Martin Kronbichler, Benjamin Krank
+// {kronbichler,krank}@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15252
 //
-// necessary defines: D_FLUID3 DEBUG BINIO TRAP_FE
 //
 // helpful reference for validation of driven cavity flows:
 // U. Ghia, K.N. Ghia, C.T.Shin, Journal of Computational Physics 48, 387-411 (1982)

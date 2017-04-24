@@ -1,10 +1,7 @@
 //
-// Maintainer: Ulrich Kuettler
-// kuettler@lnm.mw.tum.de
+// Maintainer: Martin Kronbichler, Benjamin Krank
+// {kronbichler,krank}@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15238
-//
-// necessary defines: D_FLUID2 BINIO D_ALE D_WALL1
 //
 -----------------------------------------------------------------------TITLE
 freeosz_iNPUT_tESTING

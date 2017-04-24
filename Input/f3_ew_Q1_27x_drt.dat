@@ -1,11 +1,8 @@
-
 //
-// Maintainer: Ursula Rasthofer
-// rasthofer@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de/Members/gammi
-// 089 - 289 - 15235
+// Maintainer: Martin Kronbichler, Benjamin Krank
+// {kronbichler,krank}@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
 //
-// necessary defines: D_FLUID3 DEBUG BINIO
 //
 ==================================================================
 General Data File C_CARAT

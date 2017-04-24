@@ -1,8 +1,8 @@
 //
-// Maintainer: Tobias Wiesner
-// wiesner@lnm.mw.tum.de
+// Maintainer: Martin Kronbichler, Benjamin Krank
+// {kronbichler,krank}@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 - 289-15240
+//
 // needs Trilinos Q2/2013 or newer
 // depends on f2_drivencavity20x20_muelu_xml_PGAMG.xml
 ==================================================================
