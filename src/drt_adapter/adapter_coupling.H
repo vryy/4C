@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Matthias Mayr
+\maintainer Christoph Ager
 
 */
 /*----------------------------------------------------------------------------*/
@@ -32,6 +32,7 @@ namespace DRT
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
+#include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */
@@ -334,6 +335,18 @@ namespace ADAPTER
     { return SlaveToMaster(sv.getConst()); }
 
     /// transfer a dof vector from master to slave
+    Teuchos::RCP<Epetra_FEVector> MasterToSlave(
+        Teuchos::RCP<Epetra_FEVector> mv ///< master vector (to be transferred)
+        ) const
+    { return MasterToSlave(mv.getConst()); }
+
+    /// transfer a dof vector from slave to master
+    Teuchos::RCP<Epetra_FEVector> SlaveToMaster(
+        Teuchos::RCP<Epetra_FEVector> sv ///< slave vector (to be transferred)
+        ) const
+    { return SlaveToMaster(sv.getConst()); }
+
+    /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
         Teuchos::RCP<Epetra_MultiVector> mv ///< master vector (to be transferred)
         ) const
@@ -353,6 +366,16 @@ namespace ADAPTER
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
         Teuchos::RCP<const Epetra_Vector> sv ///< slave vector (to be transferred)
+        ) const;
+
+    /// transfer a dof vector from master to slave
+    Teuchos::RCP<Epetra_FEVector> MasterToSlave(
+        Teuchos::RCP<const Epetra_FEVector> mv ///< master vector (to be transferred)
+        ) const;
+
+    /// transfer a dof vector from slave to master
+    Teuchos::RCP<Epetra_FEVector> SlaveToMaster(
+        Teuchos::RCP<const Epetra_FEVector> sv ///< slave vector (to be transferred)
         ) const;
 
     /// transfer a dof vector from master to slave

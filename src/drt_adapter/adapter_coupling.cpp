@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Matthias Mayr
+\maintainer Christoph Ager
 */
 /*----------------------------------------------------------------------*/
 
@@ -540,6 +540,34 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::Coupling::SlaveToMaster(
 {
   Teuchos::RCP<Epetra_Vector> mv =
     Teuchos::rcp(new Epetra_Vector(*masterdofmap_));
+
+  SlaveToMaster(sv,mv);
+
+  return mv;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_FEVector> ADAPTER::Coupling::MasterToSlave(
+    Teuchos::RCP<const Epetra_FEVector> mv) const
+{
+  Teuchos::RCP<Epetra_FEVector> sv =
+    Teuchos::rcp(new Epetra_FEVector(*slavedofmap_,mv->NumVectors()));
+
+  MasterToSlave(mv,sv);
+
+  return sv;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_FEVector> ADAPTER::Coupling::SlaveToMaster(
+    Teuchos::RCP<const Epetra_FEVector> sv) const
+{
+  Teuchos::RCP<Epetra_FEVector> mv =
+    Teuchos::rcp(new Epetra_FEVector(*masterdofmap_,sv->NumVectors()));
 
   SlaveToMaster(sv,mv);
 
