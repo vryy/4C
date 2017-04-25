@@ -140,6 +140,9 @@ void MAT::ELASTIC::CoupNeoHooke::AddCoupDerivVol(
   const double beta  = params_->beta_;
   const double c     = params_->c_;
 
+  if (J<0.)
+    dserror("negative jacobian determinant");
+
   if (dPj1)
     *dPj1+=2.*c*pow(J,-1./3.)-2.*c*pow(J*J,-beta)/J;
   if (dPj2)
