@@ -55,7 +55,6 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
     ),
   theta_(tdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
   tempt_(Teuchos::null),
-  ratet_(Teuchos::null),
   fint_(Teuchos::null),
   fintn_(Teuchos::null),
   fcap_(Teuchos::null),
@@ -81,8 +80,6 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   // create state vectors
   // mid-temperatures
   tempt_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
-  // mid-temperature rates
-  ratet_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // create force vectors
   // internal force vector F_{int;n} at last time
@@ -207,10 +204,6 @@ void THR::TimIntOneStepTheta::EvaluateMidState()
   // mid-temperatures T_{n+1-alpha_f} (tempm)
   //    T_{n+theta} := theta * T_{n+1} + (1-theta) * T_{n}
   tempt_->Update(theta_, *tempn_, 1.0-theta_, *(*temp_)(0), 0.0);
-
-  // mid-temperature rates R_{n+1-alpha_f} (ratem)
-  //    R_{n+theta} := theta * R_{n+1} + (1-theta) * R_{n}
-  ratet_->Update(theta_, *raten_, 1.0-theta_, *(*rate_)(0), 0.0);
 
   // jump
   return;

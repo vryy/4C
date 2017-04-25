@@ -301,8 +301,6 @@ namespace THR
     //@{
     //! mid-temperatures \f$T_m = T_{n+\theta}\f$
     Teuchos::RCP<Epetra_Vector> tempt_;
-    //! mid-temperature rates \f$R_m = R_{n+1-\theta}\f$
-    Teuchos::RCP<Epetra_Vector> ratet_;
 
     //@}
 
