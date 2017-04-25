@@ -309,13 +309,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
   switch(eastype_)
   {
   case soh8p_easfull:
-    LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas>(SetM_eas().A(), DetJac_0()/detJ_[gp], T0invT().A(), (M_GP->at(gp)).A());
+    LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas>(SetM_eas().A(), DetJac_0()/DetJ(), T0invT().A(), (M_GP->at(gp)).A());
     break;
   case soh8p_easmild:
-    LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(SetM_eas().A(), DetJac_0()/detJ_[gp], T0invT().A(), (M_GP->at(gp)).A());
+    LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(SetM_eas().A(), DetJac_0()/DetJ(), T0invT().A(), (M_GP->at(gp)).A());
     break;
   case soh8p_eassosh8:
-    LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(SetM_eas().A(), DetJac_0()/detJ_[gp], T0invT().A(), (M_GP->at(gp)).A());
+    LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(SetM_eas().A(), DetJac_0()/DetJ(), T0invT().A(), (M_GP->at(gp)).A());
     break;
   case soh8p_easnone: break;
   default: dserror("Don't know what to do with EAS type %d", eastype_); break;

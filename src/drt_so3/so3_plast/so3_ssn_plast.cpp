@@ -102,6 +102,12 @@ template<DRT::Element::DiscretizationType distype>
 std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nen_> >
 DRT::ELEMENTS::So3_Plast<distype>::deriv_;
 template<DRT::Element::DiscretizationType distype>
+std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nsd_> >
+DRT::ELEMENTS::So3_Plast<distype>::invJ_;
+template<DRT::Element::DiscretizationType distype>
+std::pair<bool,double>
+DRT::ELEMENTS::So3_Plast<distype>::detJ_;
+template<DRT::Element::DiscretizationType distype>
 std::pair<bool,LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,DRT::ELEMENTS::So3_Plast<distype>::nen_> >
 DRT::ELEMENTS::So3_Plast<distype>::N_XYZ_;
 template<DRT::Element::DiscretizationType distype>
@@ -298,15 +304,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(
   // add base class Element
   So_base::Pack(data);
 
-  // detJ_
-  AddtoPack(data,detJ_);
-
-  // invJ_
-  const int size = (int)invJ_.size();
-  AddtoPack(data,size);
-  for (int i=0; i<size; ++i)
-    AddtoPack(data,invJ_[i]);
-
   // Gauss points and weights
   const int size2 = (int)xsi_.size();
   AddtoPack(data,size2);
@@ -381,15 +378,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   So_base::Unpack(basedata);
-
-  // detJ_
-  ExtractfromPack(position,data,detJ_);
-  // invJ_
-  int size = 0;
-  ExtractfromPack(position,data,size);
-  invJ_.resize(size, LINALG::Matrix<nsd_,nsd_>(true));
-  for (int i=0; i<size; ++i)
-    ExtractfromPack(position,data,invJ_[i]);
 
   // Gauss points and weights
   int size2 = ExtractInt(position,data);
@@ -470,7 +458,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
      ExtractfromPack(position,data,(*alpha_eas_delta_over_last_timestep_));
    }
 
-   size=ExtractInt(position,data);
+   int size=ExtractInt(position,data);
    for (int i=0; i<size; i++)
      ExtractfromPack(position,data,dDp_last_iter_[i]);
 

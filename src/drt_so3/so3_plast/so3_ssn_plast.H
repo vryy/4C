@@ -331,10 +331,6 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
       plspin=8,   //!< 8 parameters for zero plastic spin (non-symmetric traceless tensor)
     };
 
-    //! vector of inverses of the jacobian in material frame
-    std::vector<LINALG::Matrix<nsd_,nsd_> > invJ_;
-    //! determinant of Jacobian in material frame
-    std::vector<double> detJ_;
     //! vector of coordinates of current integration point in reference coordinates
     std::vector<LINALG::Matrix<nsd_,1> > xsi_;
     //! Gauss point weights
@@ -517,7 +513,7 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
         LINALG::Matrix<numgpt_post,numstr_>* elestress   // strains at GP
         );
 
-    virtual void Kinematics(const int gp);
+    virtual void Kinematics(const int gp=-1);
 
     virtual void IntegrateMassMatrix(
         const int gp,
@@ -604,6 +600,8 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
     // Static members for faster evaluation **************************
     static std::pair<bool,LINALG::Matrix<nen_,1> > shapefunct_;
     static std::pair<bool,LINALG::Matrix<nsd_,nen_> > deriv_;
+    static std::pair<bool,LINALG::Matrix<nsd_,nsd_> > invJ_;
+    static std::pair<bool,double> detJ_;
     static std::pair<bool,LINALG::Matrix<nsd_,nen_> > N_XYZ_; // N_XYZ = J^-1 * N_rst
     static std::pair<bool,LINALG::Matrix<nsd_,nsd_> > defgrd_; //     deformation gradient consistent with displacements
     static std::pair<bool,LINALG::Matrix<nsd_,nsd_> > defgrd_mod_; // deformation gradient consistent with displacements + element technology
@@ -641,6 +639,8 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
     {
       shapefunct_.first=false;
       deriv_.first=false;
+      invJ_.first=false;
+      detJ_.first=false;
       N_XYZ_.first=false;
       defgrd_.first=false;
       defgrd_mod_.first=false;
@@ -672,9 +672,9 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
     }
 
     void FillPositionArrays(
-        std::vector<double>&           disp,           // current displacements
-        std::vector<double>&           vel,            // current velocities
-        std::vector<double>&           temp            // current temperatures
+        const std::vector<double>&           disp,           // current displacements
+        const std::vector<double>&           vel,            // current velocities
+        const std::vector<double>&           temp            // current temperatures
         )
     {
       for (int i=0; i<nen_; ++i)
@@ -752,6 +752,28 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
     {
       N_XYZ_.first=true;
       return N_XYZ_.second;
+    }
+
+    inline const LINALG::Matrix<nsd_,nsd_>& InvJ() const
+    {
+      dsassert(invJ_.first,"invJ_ not valid");
+      return invJ_.second;
+    }
+    inline LINALG::Matrix<nsd_,nsd_>& SetInvJ()
+    {
+      invJ_.first=true;
+      return invJ_.second;
+    }
+
+    inline const double& DetJ() const
+    {
+      dsassert(detJ_.first,"detJ_ not valid");
+      return detJ_.second;
+    }
+    inline double& SetDetJ()
+    {
+      detJ_.first=true;
+      return detJ_.second;
     }
 
     inline const LINALG::Matrix<nsd_,nsd_>& Defgrd() const

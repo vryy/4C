@@ -697,53 +697,6 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList&  
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::InitJacobianMapping()
 {
-  // get the material coordinates
-  LINALG::Matrix<nen_,nsd_> xrefe;
-  for (int i=0; i<nen_; ++i)
-  {
-    Node** nodes = Nodes();
-    if (!nodes) dserror("Nodes() returned null pointer");
-    xrefe(i,0) = Nodes()[i]->X()[0];
-    xrefe(i,1) = Nodes()[i]->X()[1];
-    xrefe(i,2) = Nodes()[i]->X()[2];
-  }
-  invJ_.resize(numgpt_);
-  detJ_.resize(numgpt_);
-  xsi_.resize(numgpt_);
-
-  // initialise the derivatives of the shape functions
-  LINALG::Matrix<nsd_,nen_> deriv;
-
-  // coordinates of the current integration point (xsi_)
-  for (int gp=0; gp<numgpt_; ++gp)
-  {
-    // first derivatives of shape functions (deriv)
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
-
-    // compute Jacobian matrix and determinant
-    // actually compute its transpose....
-    /*
-      +-            -+ T      +-            -+
-      | dx   dx   dx |        | dx   dy   dz |
-      | --   --   -- |        | --   --   -- |
-      | dr   ds   dt |        | dr   dr   dr |
-      |              |        |              |
-      | dy   dy   dy |        | dx   dy   dz |
-      | --   --   -- |   =    | --   --   -- |
-      | dr   ds   dt |        | ds   ds   ds |
-      |              |        |              |
-      | dz   dz   dz |        | dx   dy   dz |
-      | --   --   -- |        | --   --   -- |
-      | dr   ds   dt |        | dt   dt   dt |
-      +-            -+        +-            -+
-     */
-    // derivatives of coordinates w.r.t material coordinates xjm_ = dx/ds
-    invJ_[gp].Multiply(deriv,xrefe);
-    // xij_ = ds/dx
-    detJ_[gp] = invJ_[gp].Invert();
-    if (detJ_[gp] < 1.0E-16)
-      dserror("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",detJ_[gp]);
-  }  // end gp loop
 
   return;
 }  // InitJacobianMapping()}
@@ -815,8 +768,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
 
     Kinematics(gp);
 
-    double detJ = detJ_[gp]; // (6.22)
-
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8p_easnone)
     {
@@ -858,7 +809,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     OutputStress(gp,iostress,elestress);
 
     // integrate usual internal force and stiffness matrix
-    double detJ_w = detJ*wgt_[gp];
+    double detJ_w = DetJ()*wgt_[gp];
     // integrate elastic internal force vector **************************
     // update internal force vector
     if (force != NULL)
@@ -905,6 +856,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       }
     }// plastic modifications
   } // gp loop
+  InvalidGpData();
 
   // Static condensation EAS --> stiff ********************************
   if (stiffmatrix != NULL && !is_tangDis && eastype_!=soh8p_easnone)
@@ -984,6 +936,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     }
   }
 
+  InvalidEleData();
   return;
 }
 
@@ -1897,7 +1850,7 @@ double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
 
     const double psi = plmat->StrainEnergy(DefgrdMod(),gp,Id());
 
-    const double detJ_w = detJ_[gp]*wgt_[gp];
+    const double detJ_w = DetJ()*wgt_[gp];
     energy += detJ_w*psi;
 
   } // gp loop
@@ -2592,6 +2545,30 @@ void DRT::ELEMENTS::So3_Plast<distype>::OutputStress(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::Kinematics(const int gp)
 {
+  // compute Jacobian matrix and determinant
+  // actually compute its transpose....
+  /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+   */
+  // derivatives of coordinates w.r.t material coordinates xjm_ = dx/ds
+  SetInvJ().Multiply(DerivShapeFunction(),Xrefe());
+  // xij_ = ds/dx
+  SetDetJ()= SetInvJ().Invert();
+  if (DetJ() < 1.0E-16)
+    dserror("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f",DetJ());
+
   /* get the inverse of the Jacobian matrix which looks like:
    **            [ x_,r  y_,r  z_,r ]^-1
    **     J^-1 = [ x_,s  y_,s  z_,s ]
@@ -2599,7 +2576,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Kinematics(const int gp)
    */
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
-  SetDerivShapeFunctionXYZ().Multiply(invJ_[gp],DerivShapeFunction()); // (6.21)
+  SetDerivShapeFunctionXYZ().Multiply(InvJ(),DerivShapeFunction()); // (6.21)
 
   // (material) deformation gradient
   // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
@@ -2621,7 +2598,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Kinematics(const int gp)
   CalculateBop(&SetBop(),&Defgrd(),&DerivShapeFunctionXYZ(),gp);
 
   // build plastic velocity gradient from condensed variables
-  if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+  if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper && gp>=0 && gp<numgpt_)
     BuildDeltaLp(gp);
 }
 
@@ -2632,7 +2609,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateMassMatrix(
 {
   const double density = Material()->Density();
   // integrate consistent mass matrix
-  const double factor = detJ_[gp]*wgt_[gp] * density;
+  const double factor = DetJ()*wgt_[gp] * density;
   double ifactor, massfactor;
   for (int inod=0; inod<nen_; ++inod)
   {
@@ -2653,7 +2630,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateStiffMatrix(
     LINALG::Matrix<numdofperelement_,numdofperelement_>& stiff,
     Epetra_SerialDenseMatrix& Kda)
 {
-  const double detJ_w = detJ_[gp]*wgt_[gp];
+  const double detJ_w = DetJ()*wgt_[gp];
 
   // integrate `elastic' and `initial-displacement' stiffness matrix
   // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -2743,9 +2720,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateForce(
     LINALG::Matrix<numdofperelement_,1>& force)
 {
   if (fbar_)
-    force.MultiplyTN(detJ_[gp]*wgt_[gp]/FbarFac(), Bop(), PK2(), 1.0);
+    force.MultiplyTN(DetJ()*wgt_[gp]/FbarFac(), Bop(), PK2(), 1.0);
   else
-    force.MultiplyTN(detJ_[gp]*wgt_[gp], Bop(), PK2(), 1.0);
+    force.MultiplyTN(DetJ()*wgt_[gp], Bop(), PK2(), 1.0);
 }
 
 template<DRT::Element::DiscretizationType distype>
@@ -2753,7 +2730,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateThermoGp(const int gp,
     Epetra_SerialDenseVector& dHda)
 {
   const double timefac_d=StrParamsInterface().GetTimIntFactorVel()/StrParamsInterface().GetTimIntFactorDisp();
-  const double detJ_w = detJ_[gp]*wgt_[gp];
+  const double detJ_w = DetJ()*wgt_[gp];
 
   // get plastic hyperelastic material
   MAT::PlasticElastHyper* plmat = NULL;

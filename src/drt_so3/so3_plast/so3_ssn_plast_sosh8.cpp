@@ -977,8 +977,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
      */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    SetDerivShapeFunctionXYZ().Multiply(invJ_[gp],DerivShapeFunction()); // (6.21)
-    double detJ = detJ_[gp]; // (6.22)
+    SetDerivShapeFunctionXYZ().Multiply(InvJ(),DerivShapeFunction()); // (6.21)
 
     AnsStrains(gp,jac_sps,jac_cur_sps);
     if (eastype_ != soh8p_easnone)
@@ -998,7 +997,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
     OutputStress(gp,iostress,elestress);
 
     // integrate usual internal force and stiffness matrix
-    double detJ_w = detJ*wgt_[gp];
+    double detJ_w = DetJ()*wgt_[gp];
     // integrate elastic internal force vector **************************
     // update internal force vector
     if (force != NULL)
@@ -1182,6 +1181,8 @@ void DRT::ELEMENTS::So_sh8Plast::CalculateBop(
   SetJac_refe().Multiply(DerivShapeFunction(),Xrefe());
   SetJac_curr().Multiply(DerivShapeFunction(),Xcurr());
 
+  if (gp<0 || gp>7)
+    dserror("invalid gp number");
 
   // set up B-Operator in local(parameter) element space including ANS
   LINALG::Matrix<numstr_,numdofperelement_> bop_loc;
