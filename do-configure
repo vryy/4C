@@ -18,7 +18,7 @@ ADDITIONAL_TESTS_PATH=""
 FOUND_NO_SUPERLU=ON
 SHARED_LIBS=OFF
 
-# activate debug version: ./do-configure --debug 
+# activate debug version: ./do-configure --debug
 # or choose do-configure-debug which does the same
 
 # Info about profiling mode: ./do-configure --profiling
@@ -35,25 +35,25 @@ eval set -- $OPTIONS
 
 while true; do
   case "$1" in
-    -h|--help) 
+    -h|--help)
       echo "usage: do-configure [--debug] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useDEAL] [--useACML] [--build-contact-module] [--config=configurationfile] [--additionaltests=testfile]"
       exit 1
       ;;
-    -c|--config) 
-      CONFIGURATION_FILE="$2" ; 
+    -c|--config)
+      CONFIGURATION_FILE="$2" ;
       shift
       ;;
     --additionaltests)
       ADDITIONAL_TESTS_PATH="$2" ;
       shift
       ;;
-    -d|--debug) 
+    -d|--debug)
       BUILD_TYPE="DEBUG"
       ;;
-    --profiling) 
+    --profiling)
       BUILD_TYPE="RELWITHDEBINFO"
       ;;
-    --coverage) 
+    --coverage)
       COVERAGE=1
       ;;
     --trilinos-debug)
@@ -92,16 +92,16 @@ fi
 # check for out-of-source build
 
 BUILD_FOLDER=`pwd -P`
-BUILD_FOLDER_SAFE=$BUILD_FOLDER  
+BUILD_FOLDER_SAFE=$BUILD_FOLDER
 BACI_HOME=`cd $BACI_HOME; pwd -P`
 
 if [[ $USE_FORCEBUILD == 0 ]]; then
 	# check whether BUILD_FOLDER is "out-of-source"
 	while true; do
 		if [[ "x$BUILD_FOLDER" == "x$BACI_HOME" ]]; then
-		    
+
 		    PROPOSED_BUILDDIR="`dirname $(echo $BACI_HOME | sed -e 's/\/$//')`/build-${BUILD_TYPE,,}"
-		    
+
 		    echo "********************************************************************************************"
 			echo "No in-source build of BACI allowed..."
 			echo "Please choose a path for building BACI outside of $BACI_HOME"
@@ -113,12 +113,12 @@ if [[ $USE_FORCEBUILD == 0 ]]; then
 			echo "  $BACI_HOME/do-configure [--debug] [--experimental] [--useACML] [...]"
 			echo "  make -j 6 baci"
 		    echo "********************************************************************************************"
-		    			
+
 	    	exit 2
 	    fi
-	    
+
 	    BUILD_FOLDER="`dirname $(echo $BUILD_FOLDER | sed -e 's/\/$//')`"
-	    
+
 	    if [[ "x$BUILD_FOLDER" == "x/" ]]; then
 	    	break;   # no in-source build -> all is fine
 	    fi
@@ -135,28 +135,8 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
   if [[ -f /etc/system-release ]]; then
     if [ "`grep 'Fedora release 22' /etc/system-release`" ]; then
       echo "Detected Fedora 22"
-      if [ $TRILINOS_EXPERIMENTAL == 1 ]; then
-	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc22_Q12015.config
-	    TRILINOSDEV=ON
-      else
-	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc22_Q12014.config
-	    TRILINOSDEV=ON
-      fi
-      echo $CONFIGURATION_FILE
-    elif [ "`grep 'Fedora release 19' /etc/system-release`" ]; then
-      echo "Detected Fedora 19"
-      echo "Fedora 19 is not an officially supported system at LNM."
-      CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc19.config
-      echo $CONFIGURATION_FILE
-    elif [ "`grep 'Fedora release 16' /etc/system-release`" ]; then
-      echo "Detected Fedora 16"
-      if [ $TRILINOS_EXPERIMENTAL == 1 ]; then
-	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q32014.config
-	    TRILINOSDEV=ON
-      else
-	    CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q12014.config
-	    TRILINOSDEV=ON
-      fi
+      CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc22_Q12015.config
+      TRILINOSDEV=ON
       echo $CONFIGURATION_FILE
     elif [ "`grep 'CentOS Linux release 7.2' /etc/system-release`" ]; then
       echo "Detected CentOS 7.2 (bruteforce Haswell cluster)"
@@ -168,11 +148,7 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
       echo $CONFIGURATION_FILE
     elif [ "`grep 'CentOS release 6.2' /etc/system-release`" ]; then
       echo "Detected CentOS 6.2 (kaiser)"
-      if [ $TRILINOS_EXPERIMENTAL == 0 ]; then
-        CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12014_ACML_ompi162.config
-      else 
-        CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12015_gcc48_ACML_ompi162.config
-      fi
+      CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12015_gcc48_ACML_ompi162.config
     fi
   elif [[ -f /etc/SuSE-release ]]; then
     if [ "`grep 'SUSE Linux Enterprise Server' /etc/SuSE-release`" ]; then
@@ -180,8 +156,8 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
       CONFIGURATION_FILE=$BACI_HOME/buildconfig/supermuc_thin.config
     fi
   else
-    echo "unknown OS version! This is fatal!"
-    exit  
+    echo "unknown or unsupported OS version! This is fatal!"
+    exit
   fi
 else
   echo "Configuration file:" $CONFIGURATION_FILE
@@ -201,7 +177,7 @@ fi
 if [ $COVERAGE == 1 ]; then
   CXXFLAGSRELEASE="$CXXFLAGSRELEASE -O0 -g -fprofile-arcs -ftest-coverage"
   LINKERFLAGSRELEASE="$LINKERFLAGSRELEASE -g -fprofile-arcs -ftest-coverage"
-fi  
+fi
 
 if [[ "$CXX" ]]; then
   echo "Overriding C++ compiler with $CXX"
