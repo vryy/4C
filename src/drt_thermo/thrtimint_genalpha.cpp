@@ -244,7 +244,7 @@ void THR::TimIntGenAlpha::EvaluateRhsTangResidual()
   // F_{cap;n+1} := 1/alpha_m . F_{cap;n+alpha_m} + (1. - alpha_m)/alpha_m . F_{cap;n}
   // using the interpolation to the midpoint
   // F_{cap;n+alpha_m} := alpha_m . F_{cap;n+1} + (1. - alpha_m) . F_{cap;n}
-  fcapn_->Update((1./alpham_), *fcapm_, (1.-alpham_)/alpham_, *fcap_, 1.0);
+  fcapn_->Update((1./alpham_), *fcapm_, (1.-alpham_)/alpham_, *fcap_, 0.0);
 
   // build residual
   //    Res = F_{cap;n+alpha_m}
