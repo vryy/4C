@@ -10,7 +10,6 @@ General Data File BACI
 -----------------------------------------------------------------------TITLE
 Two way electromechanics
 Test for SolidScatra Material with Tet4 Elements
-Maintainer: C. Bertoglio
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4153
 //NODES                         928

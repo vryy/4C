@@ -246,3 +246,16 @@ void SCATRA::TimIntCardiacMonodomainHDG::ProjectMaterial()
   }
 
 }
+
+/*----------------------------------------------------------------------*
+ | read restart                                          hoermann 04/17 |
+ -----------------------------------------------------------------------*/
+void SCATRA::TimIntCardiacMonodomainHDG::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
+{
+
+  // Call function from base class
+  SCATRA::TimIntHDG::ReadRestart(step, input);
+
+  activation_time_interpol_.reset(new Epetra_Vector(*discret_->NodeRowMap()));
+
+}

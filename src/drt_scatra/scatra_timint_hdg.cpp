@@ -29,6 +29,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
+#include "../drt_particle/binning_strategy.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
@@ -377,7 +378,27 @@ void SCATRA::TimIntHDG::ReadRestart(const int step,Teuchos::RCP<IO::InputControl
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
-  reader.ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+  reader.ReadHistoryData(step); // Read all saved data in nodes and elements and call nodal and element Unpacking each global variable has to be read
+
+  if(padaptivity_)
+  {
+    // redistribute discr. with help of binning strategy
+    if(discret_->Comm().NumProc()>1)
+    {
+      // create vector of discr.
+      std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+      dis.push_back(discret_);
+
+      //binning strategy for parallel redistribution
+      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy;
+
+      std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+      std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+
+      /// binning strategy is created and parallel redistribution is performed
+      binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+    }
+  }
 
   // vector to store the dofs per element
   const Teuchos::RCP<Epetra_IntVector> eledofs = Teuchos::rcp(new Epetra_IntVector(*discret_->ElementColMap()));
@@ -432,6 +453,10 @@ void SCATRA::TimIntHDG::ReadRestart(const int step,Teuchos::RCP<IO::InputControl
 
   intphin_->Update(1.0,*intphinp_,0.0);
   phin_->Update(1.0,*phinp_,0.0);
+
+  // reset vector
+  interpolatedPhinp_.reset(new Epetra_Vector(*(discret_->NodeRowMap())));
+  elementdegree_.reset(new Epetra_Vector(*(discret_->ElementRowMap())));
 
   return;
 }
@@ -833,10 +858,12 @@ void SCATRA::TimIntHDG::PrepareTimeLoop()
 
 
 /*----------------------------------------------------------------------*
-  | calculate matrices on element                        hoermann 07/16 |
-  *----------------------------------------------------------------------*/
- void SCATRA::TimIntHDG::CalcMatInitial()
- {
+ | calculate matrices on element                        hoermann 07/16 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntHDG::CalcMatInitial()
+{
+
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA::TimIntHDG::CalcMat");
 
   discret_->ClearState(true);
 
@@ -849,12 +876,43 @@ void SCATRA::TimIntHDG::PrepareTimeLoop()
   discret_->SetState(nds_intvar_, "intphin",intphin_);
   discret_->SetState(nds_intvar_, "intphinp",intphinp_);
 
-  Teuchos::RCP<Epetra_Vector> dummyVec;
+  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, systemmatrix2;
+  Teuchos::RCP<Epetra_Vector>          systemvector1, systemvector2, systemvector3;
+
+  // create matrix and vector for calculation of sysmat and assemble
+  systemmatrix1 = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()),27));
+  DRT::AssembleStrategy strategy( 0, 0, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null );
+
+  strategy.Zero();
+  DRT::Element::LocationArray la(discret_->NumDofSets());
 
 //    // get cpu time
 //    const double tcmatinit = Teuchos::Time::wallTime();
 
-    discret_->Evaluate(eleparams,sysmat_,dummyVec);
+  // loop over elements
+  for (int iele=0; iele<discret_->NumMyColElements(); ++iele)
+  {
+    DRT::Element *ele = discret_->lColElement(iele);
+
+    //if the element has only ghosted nodes it will not assemble -> skip evaluation
+    if(ele->HasOnlyGhostNodes(discret_->Comm().MyPID())) continue;
+    ele->LocationVector(*discret_,la,false);
+
+    strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
+
+    // evaluate
+    int err = ele->Evaluate(eleparams,*discret_,la,
+                     strategy.Elematrix1(),
+                     strategy.Elematrix2(),
+                     strategy.Elevector1(),
+                     strategy.Elevector2(),
+                     strategy.Elevector3());
+    if (err) dserror("Proc %d: Element %d returned err=%d",discret_->Comm().MyPID(),ele->Id(),err);
+
+    int eid = ele->Id();
+    strategy.AssembleMatrix1( eid, la[0].lm_, la[0].lm_, la[0].lmowner_, la[0].stride_ );
+  }
+  sysmat_->Complete();
 
 //    // end time measurement for element
 //    double dtmatinit=Teuchos::Time::wallTime()-tcmatinit;
@@ -967,7 +1025,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
   }
 
   int degchangeall;
-  discret_->Comm().SumAll(&degchange,&degchangeall,discret_->Comm().NumProc());
+  discret_->Comm().SumAll(&degchange,&degchangeall,1);
 
   if (!degchangeall)
     return;
@@ -1017,12 +1075,6 @@ void SCATRA::TimIntHDG::AdaptDegree()
   output_->ClearMapCache();
 
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the projection
-  Teuchos::RCP<Epetra_Vector> phin_old = LINALG::CreateVector(*facedofs_old,true);
-  LINALG::Export(*phin_,*phin_old);
-
-  Teuchos::RCP<Epetra_Vector> intphin_old = LINALG::CreateVector(*eledofs_old,true);
-  LINALG::Export(*intphin_,*intphin_old);
-
   Teuchos::RCP<Epetra_Vector> phinp_old = LINALG::CreateVector(*facedofs_old,true);
   LINALG::Export(*phinp_,*phinp_old);
 

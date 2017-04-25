@@ -69,6 +69,9 @@ protected:
   //! project material field
   virtual void ProjectMaterial();
 
+  //! read restart
+  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+
 private:
 
   //! activation time
