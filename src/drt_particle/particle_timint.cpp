@@ -67,7 +67,9 @@ PARTICLE::TimInt::TimInt
   writevelacc_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_VEL_ACC")),
   writeresultsevery_(particledynparams.get<int>("RESULTSEVRY")),
   writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
+  writeparticlestatsevery_(particledynparams.get<int>("PARTICLESTATSEVRY")),
   energyfile_(Teuchos::null),
+  particlestatsfile_(Teuchos::null),
   writeorientation_(false),
   kinergy_(0),
   intergy_(0),
@@ -256,6 +258,10 @@ void PARTICLE::TimInt::Init()
   // output file for energy
   if(writeenergyevery_ != 0 and myrank_ == 0)
     AttachEnergyFile();
+
+  // output file for particle statistics
+  if(writeparticlestatsevery_ > 0 and myrank_ == 0)
+    AttachParticleStatisticsFile();
 
   return;
 }
@@ -800,6 +806,10 @@ void PARTICLE::TimInt::OutputStep(bool forced_writerestart)
     OutputEnergy();
   }
 
+  // output particle statistics
+  if(writeparticlestatsevery_ and (step_-restart_) % writeparticlestatsevery_ == 0)
+    OutputParticleStatistics();
+
   return;
 }
 
@@ -1078,6 +1088,34 @@ void PARTICLE::TimInt::OutputEnergy()
 }
 
 
+/*----------------------------------------------------------------------*
+ | output particle statistics                                fang 04/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimInt::OutputParticleStatistics()
+{
+  // compute total particle volume
+  double myvolume(0.), globalvolume(0.);
+  for(int i=0; i<(*radius_)(0)->MyLength(); ++i)
+    myvolume += 4./3.*M_PI*pow((*(*radius_)(0))[i],3);
+  discret_->Comm().SumAll(&myvolume,&globalvolume,1);
+
+  // determine minimum and maximum particle radius
+  double r_min(0.), r_max(0.);
+  (*radius_)(0)->MinValue(&r_min);
+  (*radius_)(0)->MaxValue(&r_max);
+
+  // output only performed by first processor
+  if(myrank_ == 0)
+    *particlestatsfile_ << std::setw(10) << step_
+                        << std::scientific  << std::setprecision(10) << " " << (*time_)[0]
+                        << " " << discret_->NodeRowMap()->NumGlobalElements()
+                        << " " << r_min
+                        << " " << r_max
+                        << " " << globalvolume
+                        << std::endl;
+
+  return;
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -1113,6 +1151,29 @@ void PARTICLE::TimInt::AttachEnergyFile()
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | attach file handle for particle statistics                fang 04/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimInt::AttachParticleStatisticsFile()
+{
+  // create file if not yet existent
+  if(particlestatsfile_ == Teuchos::null and myrank_ == 0)
+  {
+    // set file name
+    const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+"_particle.statistics.csv");
+
+    // initialize file
+    particlestatsfile_ = Teuchos::rcp(new std::ofstream(filename.c_str()));
+
+    // write header
+    *particlestatsfile_ << "# timestep time number r_min r_max volume" << std::endl;
+  }
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /* Creates the field test                                               */

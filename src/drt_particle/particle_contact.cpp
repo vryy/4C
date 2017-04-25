@@ -561,7 +561,9 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleCollisionHandlerDEM::ContactSearchAndCalculation");
 
+  // initialize internal variables
   contact_energy_ = 0.0;
+  g_max_ = 0.0;
 
   // get wall discretization and states for particles
   Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();

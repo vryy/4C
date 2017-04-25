@@ -65,6 +65,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    IntParameter("RESEVRYERGY",0,"write system energies every requested step",&particledyn);
    IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&particledyn);
    IntParameter("CONTACTFORCESEVRY",0,"output particle-particle and particle-wall contact forces to *.csv file every CONTACTFORCESEVRY steps",&particledyn);
+   IntParameter("PARTICLESTATSEVRY",0,"output particle statistics to *.csv file every PARTICLESTATSEVRY steps",&particledyn);
+
    // Time loop control
    DoubleParameter("TIMESTEP",0.05,"time step size",&particledyn);
    IntParameter("NUMSTEP",200,"maximum number of steps",&particledyn);

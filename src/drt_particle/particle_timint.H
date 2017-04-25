@@ -206,6 +206,9 @@ namespace PARTICLE
     //! Energy output
     virtual void OutputEnergy();
 
+    //! output particle statistics
+    void OutputParticleStatistics();
+
     //! Check whether energy output file is attached
     bool AttachedEnergyFile()
     {
@@ -216,6 +219,8 @@ namespace PARTICLE
     //! Attach file handle for energy file #energyfile_
     virtual void AttachEnergyFile();
 
+    //! attach file handle for particle statistics
+    void AttachParticleStatisticsFile();
     //@}
 
     //! @name Access methods
@@ -523,18 +528,20 @@ namespace PARTICLE
 
     //! @name Printing and output
     //@{
-    Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
-    bool printlogo_;  //!< true: enjoy your cuppa
-    int printscreen_;  //!< print infos to standard out every n steps
+    const Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
+    const bool printlogo_;  //!< true: enjoy your cuppa
+    const int printscreen_;  //!< print infos to standard out every n steps
     FILE* errfile_;  //!< error file handle
-    bool printerrfile_;  //!< print infos to error file #errfile_
-    int writerestartevery_;  //!< write restart every given step;
+    const bool printerrfile_;  //!< print infos to error file #errfile_
+    const int writerestartevery_;  //!< write restart every given step;
                              //!< if 0, restart is not written
-    bool writestate_;  //!< write state on/off
-    bool writevelacc_;  //!< write velocity and acceleration on/off
-    int writeresultsevery_;  //!< write state/stress/strain every given step
-    int writeenergyevery_;  //!< write system energy every given step
-    Teuchos::RCP<std::ofstream> energyfile_;  //!< outputfile for energy
+    const bool writestate_;  //!< write state on/off
+    const bool writevelacc_;  //!< write velocity and acceleration on/off
+    const int writeresultsevery_;  //!< write state/stress/strain every given step
+    const int writeenergyevery_;  //!< write system energy every given step
+    const int writeparticlestatsevery_;  //!< write particle statistics every given step
+    Teuchos::RCP<std::ofstream> energyfile_;  //!< output file for energy
+    Teuchos::RCP<std::ofstream> particlestatsfile_;  //!< output file for particle statistics
     bool writeorientation_;  //!< write orientation of particle on/off
 
     double kinergy_; //!< kinetic energy

@@ -1300,7 +1300,7 @@ void PARTICLE::Algorithm::GetBinContent(
       continue;
 
 #ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy()->BinDiscret()->lColElement(lid));
+    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(BinStrategy().BinDiscret()->lColElement(lid));
     if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
