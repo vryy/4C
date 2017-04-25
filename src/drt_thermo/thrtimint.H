@@ -528,9 +528,6 @@ namespace THR
     Teuchos::RCP<DRT::Discretization> discretstruct_;  //!< structural discretisation
 
     int myrank_;  //!< ID of actual processor in parallel
-    const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization
-                                   //!< to construct matching
-                                   //!< vectors and matrices
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
     bool solveradapttol_;  //!< adapt solver tolerance
     double solveradaptolbetter_;  //!< tolerance to which is adpated ????

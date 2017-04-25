@@ -57,7 +57,6 @@ THR::TimInt::TimInt(
   )
 : discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
-  dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
   solveradapttol_(DRT::INPUT::IntegralValue<int>(tdynparams,"ADAPTCONV") == 1),
   solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
@@ -120,7 +119,7 @@ THR::TimInt::TimInt(
     AttachEnergyFile();
 
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*dofrowmap_, true);
+  zeros_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // Map containing Dirichlet DOFs
   {
@@ -131,20 +130,20 @@ THR::TimInt::TimInt(
   }
 
   // temperatures T_{n}
-  temp_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  temp_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, discret_->DofRowMap(), true));
   // temperature rates R_{n}
-  rate_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, dofrowmap_, true));
+  rate_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, discret_->DofRowMap(), true));
 
   // temperatures T_{n+1} at t_{n+1}
-  tempn_ = LINALG::CreateVector(*dofrowmap_, true);
+  tempn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // temperature rates R_{n+1} at t_{n+1}
-  raten_ = LINALG::CreateVector(*dofrowmap_, true);
+  raten_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*dofrowmap_, true);
+  fifc_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // create empty matrix
-  tang_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+  tang_ = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(), 81, true, true));
   // we condensed the capacity matrix out of the system
 
   // -------------------------------------------------------------------
@@ -170,9 +169,9 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 {
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext
-    = LINALG::CreateVector(*dofrowmap_, true); //!< external force
+    = LINALG::CreateVector(*discret_->DofRowMap(), true); //!< external force
   Teuchos::RCP<Epetra_Vector> fint
-    = LINALG::CreateVector(*dofrowmap_, true); //!< internal force
+    = LINALG::CreateVector(*discret_->DofRowMap(), true); //!< internal force
 
   // overwrite initial state vectors with DirichletBCs
   ApplyDirichletBC((*time_)[0], (*temp_)(0), (*rate_)(0), false);
@@ -219,7 +218,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
   {
     // rhs corresponds to residual on the rhs
     // K . DT = - R_n+1 = - R_n - (fint_n+1 - fext_n+1)
-    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*discret_->DofRowMap(), true);
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
@@ -336,10 +335,6 @@ void THR::TimInt::ReadRestart(const int step)
 
   ReadRestartState();
   ReadRestartForce();
-
-  // fix pointer to #dofrowmap_, which has not really changed, but is
-  // located at different place
-  dofrowmap_ = discret_->DofRowMap();
 
 }  // ReadRestart()
 

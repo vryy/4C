@@ -80,27 +80,27 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
 
   // create state vectors
   // mid-temperatures
-  tempt_ = LINALG::CreateVector(*dofrowmap_, true);
+  tempt_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // mid-temperature rates
-  ratet_ = LINALG::CreateVector(*dofrowmap_, true);
+  ratet_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // create force vectors
   // internal force vector F_{int;n} at last time
-  fint_ = LINALG::CreateVector(*dofrowmap_, true);
+  fint_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fintn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // stored force vector F_{transient;n} at last time
-  fcap_ = LINALG::CreateVector(*dofrowmap_, true);
+  fcap_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // stored force vector F_{transient;n+1} at new time
-  fcapn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fcapn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // set initial internal force vector
   ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fcap_,
                          fint_, tang_);
 
   // external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*dofrowmap_, true);
+  fext_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
   // set initial external force vector of convective heat transfer boundary
@@ -283,7 +283,7 @@ void THR::TimIntOneStepTheta::UpdateIterIncrementally()
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
-  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*dofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*discret_->DofRowMap(), false);
 
   // new end-point temperatures
   // T_{n+1}^{i+1} := T_{n+1}^{<k>} + IncT_{n+1}^{i}

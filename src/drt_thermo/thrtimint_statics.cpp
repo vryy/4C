@@ -53,16 +53,16 @@ THR::TimIntStatics::TimIntStatics(
   //! create force vectors
 
   //! internal force vector F_{int;n} at last time
-  fint_ = LINALG::CreateVector(*dofrowmap_, true);
+  fint_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   //! internal force vector F_{int;n+1} at new time
-  fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fintn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   //! set initial internal force vector
   ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,
                          fint_, tang_);
   //! external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*dofrowmap_, true);
+  fext_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   //! external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // set initial external force vector of convective heat transfer boundary
   // conditions

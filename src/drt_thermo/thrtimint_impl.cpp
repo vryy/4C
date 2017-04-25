@@ -65,17 +65,17 @@ THR::TimIntImpl::TimIntImpl(
 {
 
   // create empty residual force vector
-  fres_ = LINALG::CreateVector(*dofrowmap_, false);
+  fres_ = LINALG::CreateVector(*discret_->DofRowMap(), false);
 
   // create empty reaction force vector of full length
-  freact_ = LINALG::CreateVector(*dofrowmap_, false);
+  freact_ = LINALG::CreateVector(*discret_->DofRowMap(), false);
 
   // iterative temperature increments IncT_{n+1}
   // also known as residual temperatures
-  tempi_ = LINALG::CreateVector(*dofrowmap_, true);
+  tempi_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // incremental temperature increments IncT_{n+1}
-  tempinc_ = LINALG::CreateVector(*dofrowmap_, true);
+  tempinc_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // done so far
   return;
@@ -270,7 +270,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
 
   // for temperature increments on Dirichlet boundary
   Teuchos::RCP<Epetra_Vector> dbcinc
-    = LINALG::CreateVector(*dofrowmap_, true);
+    = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // copy last converged temperatures
   dbcinc->Update(1.0, *(*temp_)(0), 0.0);
@@ -291,7 +291,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   {
     // linear reactions
     Teuchos::RCP<Epetra_Vector> freact
-      = LINALG::CreateVector(*dofrowmap_, true);
+      = LINALG::CreateVector(*discret_->DofRowMap(), true);
     tang_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -966,10 +966,10 @@ void THR::TimIntImpl::FDCheck()
 
   // initialise rhs
   Teuchos::RCP<Epetra_Vector> rhs_old
-    = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
+    = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
   rhs_old->Update(1.0, *fres_, 0.0);
   Teuchos::RCP<Epetra_Vector> rhs_copy
-    = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
+    = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
 
   // initialise approximation of tangent
   Teuchos::RCP<Epetra_CrsMatrix> tang_approx

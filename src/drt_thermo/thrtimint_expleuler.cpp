@@ -56,8 +56,8 @@ THR::TimIntExplEuler::TimIntExplEuler(
   DetermineCapaConsistTempRate();
 
   // allocate force vectors
-  fextn_  = LINALG::CreateVector(*dofrowmap_, true);
-  fintn_  = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_  = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fintn_  = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // let it rain
   return;
@@ -105,7 +105,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   }
 
   // determine time derivative of capacity vector, ie \f$\dot{P} = C . \dot{T}_{n=1}\f$
-  Teuchos::RCP<Epetra_Vector> frimpn = LINALG::CreateVector(*dofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> frimpn = LINALG::CreateVector(*discret_->DofRowMap(), true);
   frimpn->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
   // obtain new temperature rates \f$R_{n+1}\f$
