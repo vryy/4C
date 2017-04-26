@@ -3,13 +3,9 @@
 
 \brief A collection of helper methods for namespace DRT
 
-<pre>
 \level 0
 
-\maintainer Georg Hammerl
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 #ifndef UTILS_PARMETIS_H

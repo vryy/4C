@@ -1,14 +1,8 @@
 /*!---------------------------------------------------------------------
-\file
-\brief
-
-<pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
-</pre>
-
+\file definitions.h
+\brief C-style definitions of some frequently used code idioms
+\level 3
+\maintainer Martin Kronbichler
 ---------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | NOTE:                                                                |

@@ -1,14 +1,8 @@
 /*!---------------------------------------------------------------------
 \file compiler_definitions.h
-\brief
-
-<pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
-</pre>
-
+\brief build options and definition of fortran functions
+\level 1
+\maintainer Martin Kronbichler
 ---------------------------------------------------------------------*/
 
 #ifndef COMPILER_DEFINITIONS_H

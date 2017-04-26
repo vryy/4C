@@ -1,14 +1,8 @@
 /*!---------------------------------------------------------------------
-\file
-\brief
-
-<pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
-</pre>
-
+\file ccarat_datatypes.h
+\brief C-style definitions of data types
+\level 3
+\maintainer Martin Kronbichler
 ---------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*
  | NOTE:                                                                |

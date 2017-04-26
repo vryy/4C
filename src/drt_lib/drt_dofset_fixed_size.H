@@ -5,14 +5,9 @@
        of a certain size in order to reserve space for fields that vary
        in size, i.e. XFEM field.
 
-<pre>
 \level 1
 
-\maintainer Ursula Rasthofer
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
-
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 #ifndef DOFSET_FIXED_SIZE_H
 #define DOFSET_FIXED_SIZE_H

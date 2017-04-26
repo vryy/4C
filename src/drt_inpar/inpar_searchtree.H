@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_searchtree.H
-
-<pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief search tree input parameters
+\level 2
+\maintainer Martin Kronbichler
 */
 
 /*----------------------------------------------------------------------*/

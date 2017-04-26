@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Georg Hammerl
+\maintainer Martin Kronbichler
 *-----------------------------------------------------------------------*/
 
 

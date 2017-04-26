@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_problemtype.H
-
-<pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief convert problem type string to enum
+\level 1
+\maintainer Martin Kronbichler
 */
 
 /*----------------------------------------------------------------------*/

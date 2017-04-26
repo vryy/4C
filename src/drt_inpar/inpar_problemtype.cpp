@@ -1,16 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
  *
-\brief convert problem type string to enum
-
-\level 1
-
 \file inpar_problemtype.cpp
-
-\maintainer Georg Bauer
-            bauer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-
+\brief convert problem type string to enum
+\level 1
+\maintainer Martin Kronbichler
 */
 
 /*----------------------------------------------------------------------*/

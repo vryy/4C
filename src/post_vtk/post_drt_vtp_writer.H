@@ -6,7 +6,7 @@
 
 \level 2
 
-\maintainer Georg Hammerl
+\maintainer Martin Kronbichler
 *-----------------------------------------------------------------------*/
 #ifndef POST_DRT_VTP_H
 #define POST_DRT_VTP_H

@@ -1,14 +1,8 @@
 /*!---------------------------------------------------------------------
-\file
-\brief
-
-<pre>
-Maintainer: Malte Neumann
-            neumann@statik.uni-stuttgart.de
-            http://www.uni-stuttgart.de/ibs/members/neumann/
-            0711 - 685-6121
-</pre>
-
+\file materials.h
+\brief C-style material definitions
+\level 3
+\maintainer Martin Kronbichler
 ---------------------------------------------------------------------*/
 #if defined(D_SHELL8)
 typedef enum _MATERIAL_TYP

@@ -6,12 +6,7 @@
 
 \level 1
 
-<pre>
-\maintainer Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Martin Kronbichler
 */
 #ifndef ADAPTER_FLUID_H
 #define ADAPTER_FLUID_H
