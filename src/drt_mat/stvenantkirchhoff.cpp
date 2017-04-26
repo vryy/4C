@@ -2,8 +2,12 @@
 /*!
 \file stvenantkirchhoff.cpp
 
+\level 2
+
 <pre>
-Maintainer: ???
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            089/289 15255
 </pre>
 */
 /*----------------------------------------------------------------------*/

@@ -6,11 +6,12 @@
        see Holzapfel, Nonlinear Solid Mechanics, pp. 243
        example input line:
        MAT 1 MAT_Struct_NeoHooke  YOUNG 100.0 NUE 0.3 DENS 1.0
+\level 3
+
 <pre>
-Maintainer: Robert Metzke
-            metzke@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15244
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            089/289 15255
 </pre>
 \param  Epetra_SerialDenseVector* glstrain      (i) Green-Lagrange strains
 \param  Epetra_SerialDenseVector* stress        (o) ele stress vector
@@ -340,25 +341,25 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
  |  Calculate the inverse of a 2nd order tensor                 rm 08/07|
  *----------------------------------------------------------------------*/
 void MAT::NeoHooke::InverseTensor(
-	  			  const Epetra_SerialDenseMatrix& M,
-                                  Epetra_SerialDenseMatrix& Minv,
-				  const double I3)
+    const Epetra_SerialDenseMatrix& M,
+    Epetra_SerialDenseMatrix& Minv,
+    const double I3)
 {
   if (I3==0.0)
   {
-  	dserror("Right Cauchy Green not invertable in Neo Hooke material law");
+    dserror("Right Cauchy Green not invertable in Neo Hooke material law");
   }
   else
   {
-  	Minv(0,0)= 1/I3 * (M(1,1)*M(2,2) - M(2,1)*M(1,2));
-	Minv(1,0)=-1/I3 * (M(0,1)*M(2,2) - M(2,1)*M(0,2));
-	Minv(2,0)= 1/I3 * (M(0,1)*M(1,2) - M(1,1)*M(0,2));
-	Minv(0,1)=-1/I3 * (M(1,0)*M(2,2) - M(2,0)*M(1,2));
-	Minv(1,1)= 1/I3 * (M(0,0)*M(2,2) - M(2,0)*M(0,2));
-	Minv(2,1)=-1/I3 * (M(0,0)*M(1,2) - M(1,0)*M(0,2));
-	Minv(0,2)= 1/I3 * (M(1,0)*M(2,1) - M(2,0)*M(1,1));
-	Minv(1,2)=-1/I3 * (M(0,0)*M(2,1) - M(2,0)*M(0,1));
-	Minv(2,2)= 1/I3 * (M(0,0)*M(1,1) - M(1,0)*M(0,1));
-   }
-return;
+    Minv(0,0)= 1/I3 * (M(1,1)*M(2,2) - M(2,1)*M(1,2));
+    Minv(1,0)=-1/I3 * (M(0,1)*M(2,2) - M(2,1)*M(0,2));
+    Minv(2,0)= 1/I3 * (M(0,1)*M(1,2) - M(1,1)*M(0,2));
+    Minv(0,1)=-1/I3 * (M(1,0)*M(2,2) - M(2,0)*M(1,2));
+    Minv(1,1)= 1/I3 * (M(0,0)*M(2,2) - M(2,0)*M(0,2));
+    Minv(2,1)=-1/I3 * (M(0,0)*M(1,2) - M(1,0)*M(0,2));
+    Minv(0,2)= 1/I3 * (M(1,0)*M(2,1) - M(2,0)*M(1,1));
+    Minv(1,2)=-1/I3 * (M(0,0)*M(2,1) - M(2,0)*M(0,1));
+    Minv(2,2)= 1/I3 * (M(0,0)*M(1,1) - M(1,0)*M(0,1));
+  }
+  return;
 }

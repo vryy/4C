@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file compogden.cpp
 
+\level 3
+
 <pre>
-Maintainer: Robert Metzke
-            metzke@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15244
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            089/289 15255
 </pre>
 \param  Epetra_SerialDenseVector* glstrain      (i) Green-Lagrange strains
 \param  Epetra_SerialDenseVector* stress        (o) ele stress vector

@@ -7,11 +7,14 @@
        see Holzapfel, Nonlinear Solid Mechanics, pp. 243
        example input line:
        MAT 1 MAT_Struct_NeoHooke  YOUNG 100.0 NUE 0.3 DENS 1.0
+
+       USE ELASTHYPER-Toolbox!!
+\level 3
+
 <pre>
-Maintainer: Robert Metzke
-            metzke@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15244
+\maintainer Anna Birzle
+            birzle@lnm.mw.tum.de
+            089/289 15255
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -177,7 +180,7 @@ private:
     void InverseTensor(
                   const Epetra_SerialDenseMatrix& M,
                   Epetra_SerialDenseMatrix& Minv,
-		  const double I3);
+                  const double I3);
 
 
   };
