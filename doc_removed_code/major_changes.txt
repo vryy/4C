@@ -1,5 +1,11 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+contact module (by Philipp Farah, Alexander Popp, Tobias Wiesner)
+- removed in revision 23062 on 2017-04-26
+- The code infrastructure that selects parts of the code and applies patches to remove inter-module dependencies turned out to be too brittle and fail regularly
+- If you want to include separate modules: Check the functionality to support modules that was applied in CMakeLists.txt and do-configure of -r23061, but try to find a version that does not rely on patches because the BACI source code changes to often.
+- Removed by: M. Kronbichler
+
 lung inverse analysis (by Sophie Rausch)
 - removed in revision 22737 on 2016-12-27
 - This type of analysis was not used for many years. The features of this inverse analysis are also in gen_inv_analysis.

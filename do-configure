@@ -11,7 +11,6 @@ TRILINOS_BUILD_TYPE="release"
 COVERAGE=0
 USE_ACML=0
 USE_DEAL=0
-BUILD_CONTACT_MODULE=0
 USE_FORCEBUILD=0
 TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version
 ADDITIONAL_TESTS_PATH=""
@@ -70,9 +69,6 @@ while true; do
       ;;
     -f|--forceBuild)
       USE_FORCEBUILD=1
-      ;;
-    --build-contact-module)
-      BUILD_CONTACT_MODULE=1
       ;;
     --) shift ;
       break
@@ -195,11 +191,6 @@ Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
 echo $Trilinos_DIR
 ############################################################
 # prepare source for modules
-if [ $BUILD_CONTACT_MODULE == 1 ]; then
-  pushd $BACI_HOME/modules/contact_module
-  ./generate_contact_module.py
-  popd
-fi
 
 ############################################################
 # run cmake
@@ -259,7 +250,6 @@ $CMAKE_COMMAND \
     -D ACMLDIR:STRING=$ACMLDIR_PATH \
     -D AMDLIBMDIR:FILEPATH=$AMDLIBMDIR_PATH \
     -D ADDITIONAL_TESTS:FILEPATH="$ADDITIONAL_TESTS_PATH" \
-    -D BUILD_CONTACT_MODULE="$BUILD_CONTACT_MODULE" \
     $EXTRA_ARGS \
     ${BACI_HOME}
 

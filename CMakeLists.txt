@@ -2863,13 +2863,6 @@ ADD_CUSTOM_COMMAND(TARGET post_processor
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -D CMAKE_PROJECT_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/scripts/baci_create_post_scripts.cmake)
 
-if (${BUILD_CONTACT_MODULE})
-  message("-- Contact module is enabled!")
-  add_subdirectory(modules/contact_module EXCLUDE_FROM_ALL)
-else()
-  message("-- Contact module is disabled!")
-endif()
-
 add_subdirectory(doc EXCLUDE_FROM_ALL)
 
 ###------------------------------------------------------------------ Tests
