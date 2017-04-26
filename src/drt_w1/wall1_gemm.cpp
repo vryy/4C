@@ -2,12 +2,15 @@
 /*!
 \file wall1_gemm.cpp
 \brief Routines for generalised energy-momentum method
+       FixMe This file is currently unsupported in the new structural
+       time integration, since the corresponding time integration is
+       not yet (re-)implemented.                   04/17 hiermeier
+
+\level 1
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Michael Hiermeier
+            hiermeier@lnm.mw.tum.de
 </pre>
 */
 

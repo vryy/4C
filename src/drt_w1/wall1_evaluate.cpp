@@ -2,11 +2,11 @@
 /*!
 \file wall1_evaluate.cpp
 
-\brief ToDo Add meaningful comment.
+\brief This file contains the main evaluate methods of a wall1 element.
 
 \level 1
 
-\maintainer Markus Gitterle
+\maintainer Michael Hiermeier
 
 */
 /*----------------------------------------------------------------------*/

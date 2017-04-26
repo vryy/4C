@@ -3,11 +3,10 @@
 \file wall1_eas.cpp
 \brief
 
+\level 1
 <pre>
-Maintainer: Markus Gitterle
-            gitterle@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15251
+\maintainer Michael Hiermeier
+            hiermeier@lnm.mw.tum.de
 </pre>
 */
 

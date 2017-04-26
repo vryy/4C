@@ -6,7 +6,7 @@
 
 \level 1
 
-\maintainer Markus Gitterle
+\maintainer Michael Hiermeier
 
 */
 /*----------------------------------------------------------------------*/

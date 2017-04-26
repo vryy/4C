@@ -2,11 +2,11 @@
 /*!
 \file wall1.H
 
-\brief ToDo Add meaningful comment.
+\brief wall1 2-D displacement element
 
 \level 1
 
-\maintainer Markus Gitterle
+\maintainer Michael Hiermeier
 
 */
 /*----------------------------------------------------------------------*/

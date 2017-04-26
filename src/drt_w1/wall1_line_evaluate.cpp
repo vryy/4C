@@ -2,11 +2,11 @@
 /*!
 \file wall1_line_evaluate.cpp
 
-\brief ToDo Add meaningful comment.
+\brief Evaluation on the boundary lines of a wall1 element.
 
 \level 1
 
-\maintainer Markus Gitterle
+\maintainer Michael Hiermeier
 
 */
 /*----------------------------------------------------------------------*/
