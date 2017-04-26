@@ -892,14 +892,14 @@ void CONTACT::CoTSILagrangeStrategy::StoreNodalQuantities(
   }
 }
 
-void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis,Teuchos::RCP<ADAPTER::Coupling> coupST)
+void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
 {
   if (fscn_==Teuchos::null)
     fscn_ = Teuchos::rcp (new Epetra_Vector(*gsmdofrowmap_));
   fscn_->Scale(0.);
 
   if (ftcnp_==Teuchos::null)
-    ftcnp_ = Teuchos::rcp (new Epetra_Vector(*coupST->MasterToSlaveMap(gsmdofrowmap_)));
+    ftcnp_ = Teuchos::rcp (new Epetra_Vector(*coupST_->MasterToSlaveMap(gsmdofrowmap_)));
   ftcnp_->Scale(0.);
 
   Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -913,20 +913,20 @@ void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis,Teuc
 
   CONTACT::CoAbstractStrategy::Update(dis);
 
-  LINALG::SparseMatrix dThr(*coupST->MasterToSlaveMap(gsdofrowmap_),100,true,false,LINALG::SparseMatrix::FE_MATRIX);
-  FSI::UTILS::MatrixRowColTransform()(*dmatrix_,1.,ADAPTER::CouplingMasterConverter(*coupST),
-      ADAPTER::CouplingMasterConverter(*coupST),dThr,false,false);
+  LINALG::SparseMatrix dThr(*coupST_->MasterToSlaveMap(gsdofrowmap_),100,true,false,LINALG::SparseMatrix::FE_MATRIX);
+  FSI::UTILS::MatrixRowColTransform()(*dmatrix_,1.,ADAPTER::CouplingMasterConverter(*coupST_),
+      ADAPTER::CouplingMasterConverter(*coupST_),dThr,false,false);
   dThr.Complete();
-  tmp = Teuchos::rcp(new Epetra_Vector(*coupST->MasterToSlaveMap(gsdofrowmap_)));
+  tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gsdofrowmap_)));
   if(dThr.Apply(*z_thr_,*tmp)!=0) dserror("apply went wrong");
   AddVector(*tmp,*ftcnp_);
 
-  LINALG::SparseMatrix mThr(*coupST->MasterToSlaveMap(gsdofrowmap_),100,true,false,LINALG::SparseMatrix::FE_MATRIX);
-  FSI::UTILS::MatrixRowColTransform()(*mmatrix_,1.,ADAPTER::CouplingMasterConverter(*coupST),
-      ADAPTER::CouplingMasterConverter(*coupST),mThr,false,false);
-  mThr.Complete(*coupST->MasterToSlaveMap(gmdofrowmap_),*coupST->MasterToSlaveMap(gsdofrowmap_));
+  LINALG::SparseMatrix mThr(*coupST_->MasterToSlaveMap(gsdofrowmap_),100,true,false,LINALG::SparseMatrix::FE_MATRIX);
+  FSI::UTILS::MatrixRowColTransform()(*mmatrix_,1.,ADAPTER::CouplingMasterConverter(*coupST_),
+      ADAPTER::CouplingMasterConverter(*coupST_),mThr,false,false);
+  mThr.Complete(*coupST_->MasterToSlaveMap(gmdofrowmap_),*coupST_->MasterToSlaveMap(gsdofrowmap_));
   mThr.UseTranspose();
-  tmp = Teuchos::rcp(new Epetra_Vector(*coupST->MasterToSlaveMap(gmdofrowmap_)));
+  tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gmdofrowmap_)));
   if (mThr.Multiply(true,*z_thr_,*tmp)!=0) dserror("multiply went wrong");
   tmp->Scale(-1.);
   AddVector(*tmp,*ftcnp_);
@@ -941,10 +941,10 @@ void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis,Teuc
   tmp = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   if (m_LinDissContactLM.Multiply(false,*z_act,*tmp)!=0)
     dserror("multiply went wrong");
-  Teuchos::RCP<Epetra_Vector>tmp2 = Teuchos::rcp(new Epetra_Vector(*coupST->MasterDofMap()));
+  Teuchos::RCP<Epetra_Vector>tmp2 = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterDofMap()));
   LINALG::Export(*tmp,*tmp2);
-  Teuchos::RCP<Epetra_Vector>tmp3 = coupST->MasterToSlave(tmp2);
-  Teuchos::RCP<Epetra_Vector>tmp4 = Teuchos::rcp(new Epetra_Vector(*coupST->MasterToSlaveMap(gmdofrowmap_)));
+  Teuchos::RCP<Epetra_Vector>tmp3 = coupST_->MasterToSlave(tmp2);
+  Teuchos::RCP<Epetra_Vector>tmp4 = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gmdofrowmap_)));
   LINALG::Export(*tmp3,*tmp4);
   AddVector(*tmp4,*ftcnp_);
 

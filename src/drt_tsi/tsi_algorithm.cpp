@@ -147,10 +147,6 @@ void TSI::Algorithm::Update()
   StructureField()->Update();
   ThermoField()->Update();
 
-  // update contact
-  if (contact_strategy_!=Teuchos::null)
-    contact_strategy_->Update(StructureField()->WriteAccessDispnp(),coupST_);
-
   return;
 }
 

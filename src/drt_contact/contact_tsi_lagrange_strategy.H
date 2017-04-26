@@ -151,14 +151,7 @@ public:
    \param dis (in):  current displacements (-> old displacements)
 
    */
-  void Update(Teuchos::RCP<Epetra_Vector> dis,Teuchos::RCP<ADAPTER::Coupling> coupST);
-
-  /*!
-   \brief Update contact at end of time step
-          don't do it in the standard call from structural time integration
-
-   */
-  void Update(Teuchos::RCP<const Epetra_Vector> dis){}
+  void Update(Teuchos::RCP<Epetra_Vector> dis);
 
   /*!
    \brief Set time integration parameter from Thermo time integration
