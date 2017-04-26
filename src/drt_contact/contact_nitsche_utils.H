@@ -21,6 +21,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_lib/drt_utils_matrix_vector_enums.H"
 
 
 namespace MORTAR
@@ -32,9 +33,14 @@ public:
 
   virtual void Clear() =0;
 
-  virtual void Assemble(
+  virtual void AssembleRHS(
       MORTAR::MortarElement* mele,
-      Teuchos::RCP<Epetra_FEVector> fc,
+      DRT::UTILS::VecBlockType row,
+      Teuchos::RCP<Epetra_FEVector> fc) = 0;
+
+  virtual void AssembleMatrix(
+      MORTAR::MortarElement* mele,
+      DRT::UTILS::MatBlockType block,
       Teuchos::RCP<LINALG::SparseMatrix> kc) = 0;
 
   virtual double* rhs(int dof)=0;
@@ -52,9 +58,27 @@ public:
   virtual double* rhs() {return rhs_.A();}
   virtual double* k(int col) {return k_[col].A();}
   virtual double* k(int col,int dof){return &k_[col](dof);}
-  virtual void Assemble(
+
+  virtual void AssembleRHS(
       MORTAR::MortarElement* mele,
-      Teuchos::RCP<Epetra_FEVector> fc,
+      DRT::UTILS::VecBlockType row,
+      Teuchos::RCP<Epetra_FEVector> fc);
+
+  virtual void AssembleMatrix(
+      MORTAR::MortarElement* mele,
+      DRT::UTILS::MatBlockType block,
+      Teuchos::RCP<LINALG::SparseMatrix> kc);
+
+  template<int num_dof_per_node>
+  void AssembleRHS(
+      MORTAR::MortarElement* mele,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1>& rhs,
+      Teuchos::RCP<Epetra_FEVector> fc);
+
+  template<int num_dof_per_node>
+  void AssembleMatrix(
+      MORTAR::MortarElement* mele,
+      const std::map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1> >& k,
       Teuchos::RCP<LINALG::SparseMatrix> kc);
 
   virtual void Clear(){rhs_.Clear();k_.clear();}

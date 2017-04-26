@@ -14,6 +14,7 @@
 #define CONTACT_NITSCHE_STRATEGY_H
 
 #include "contact_abstract_strategy.H"
+#include <Epetra_FEVector.h>
 namespace CONTACT
 {
 
@@ -40,7 +41,8 @@ public:
       int maxdof)
   : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
     DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
-  interface_(interface) { /* empty */ }
+  interface_(interface),
+  curr_state_eval_(false) { /* empty */ }
 
   //! Shared data constructor
   CoNitscheStrategy(
@@ -54,7 +56,8 @@ public:
       double alphaf,
       int maxdof)
   : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
-    interface_(interface) { /* empty */ }
+    interface_(interface),
+    curr_state_eval_(false) { /* empty */ }
 
   virtual void ApplyForceStiffCmt(
       Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt,
@@ -73,7 +76,7 @@ public:
       CONTACT::ParamsInterface& cparams,
       const std::vector<Teuchos::RCP<const Epetra_Vector> >* eval_vec);
 
-  void Integrate(CONTACT::ParamsInterface& cparams);
+  virtual void Integrate(CONTACT::ParamsInterface& cparams);
 
   virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
      const enum DRT::UTILS::VecBlockType& bt) const;
@@ -175,6 +178,13 @@ protected:
     return interface_;
   }
 
+
+  virtual Teuchos::RCP<Epetra_FEVector> CreateRhsBlockPtr(
+     const enum DRT::UTILS::VecBlockType& bt)const;
+
+  virtual Teuchos::RCP<LINALG::SparseMatrix> CreateMatrixBlockPtr(
+      const enum DRT::UTILS::MatBlockType& bt);
+
   // don't want = operator and cctor
   CoNitscheStrategy operator = (const CoNitscheStrategy& old);
   CoNitscheStrategy(const CoNitscheStrategy& old);
@@ -183,6 +193,9 @@ protected:
 
   Teuchos::RCP<Epetra_Vector> curr_state_;
   bool                        curr_state_eval_;
+
+  Teuchos::RCP<Epetra_FEVector> fc_;
+  Teuchos::RCP<LINALG::SparseMatrix> kc_;
 };
 }
 #endif //  CONTACT_NITSCHE_STRATEGY_H

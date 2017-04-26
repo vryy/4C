@@ -54,7 +54,8 @@ void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(
     {
       MORTAR::MortarElement* mele =dynamic_cast<MORTAR::MortarElement*>(interface_[i]->Discret().gElement(
           interface_[i]->Discret().ElementColMap()->GID(e)));
-      mele->GetNitscheContainer().Assemble(mele,fc,kc);
+      mele->GetNitscheContainer().AssembleRHS(mele,DRT::UTILS::block_displ,fc);
+      mele->GetNitscheContainer().AssembleMatrix(mele,DRT::UTILS::block_displ_displ,kc);
       mele->GetNitscheContainer().Clear();
     }
   }
@@ -220,14 +221,15 @@ void CONTACT::CoNitscheStrategy::Integrate(CONTACT::ParamsInterface& cparams)
   // now we also did this state
   curr_state_eval_=true;
 
+  // ... and we can assemble the matric and rhs
+  fc_=CreateRhsBlockPtr(DRT::UTILS::block_displ);
+  kc_=CreateMatrixBlockPtr(DRT::UTILS::block_displ_displ);
+
   return;
 }
-Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
+Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::CreateRhsBlockPtr(
      const enum DRT::UTILS::VecBlockType& bt) const
 {
-  if (bt!=DRT::UTILS::block_displ)
-    return Teuchos::null;
-
   if (curr_state_eval_==false)
     dserror("you didn't evaluate this contact state first");
 
@@ -237,24 +239,29 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
     {
       MORTAR::MortarElement* mele =dynamic_cast<MORTAR::MortarElement*>(interface_[i]->Discret().gElement(
           interface_[i]->Discret().ElementColMap()->GID(e)));
-      mele->GetNitscheContainer().Assemble(mele,fc,Teuchos::null);
+      mele->GetNitscheContainer().AssembleRHS(mele,bt,fc);
     }
   if(fc->GlobalAssemble(Add,false)!=0) dserror("GlobalAssemble failed");
 
-  return Teuchos::rcp(new Epetra_Vector(Copy,*fc,0));
+  return fc;
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt) const
+Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
+     const enum DRT::UTILS::VecBlockType& bt) const
 {
-  if (bt!=DRT::UTILS::block_displ_displ)
-    return Teuchos::null;
-
   if (curr_state_eval_==false)
     dserror("you didn't evaluate this contact state first");
+  if (bt==DRT::UTILS::block_displ )
+    return Teuchos::rcp(new Epetra_Vector(Copy,*(fc_),0));
 
-  Teuchos::RCP<const Epetra_Map> a=Teuchos::rcpFromRef<const Epetra_Map>(
-                *DRT::Problem::Instance()->GetDis("structure")->DofRowMap());
+  return Teuchos::null;
+}
+
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlockPtr(
+    const enum DRT::UTILS::MatBlockType& bt)
+{
+  if (curr_state_eval_==false)
+    dserror("you didn't evaluate this contact state first");
 
   Teuchos::RCP<LINALG::SparseMatrix> kc = Teuchos::rcp(new LINALG::SparseMatrix(
       *Teuchos::rcpFromRef<const Epetra_Map>(*DRT::Problem::Instance()->
@@ -265,11 +272,24 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr
     {
       MORTAR::MortarElement* mele =dynamic_cast<MORTAR::MortarElement*>(interface_[i]->Discret().gElement(
           interface_[i]->Discret().ElementColMap()->GID(e)));
-      mele->GetNitscheContainer().Assemble(mele,Teuchos::null,kc);
+      mele->GetNitscheContainer().AssembleMatrix(mele,bt,kc);
     }
-  dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add);
+  if(dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add))
+    dserror("GlobalAssemble(...) failed");
 
   return kc;
+}
+
+Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(
+    const enum DRT::UTILS::MatBlockType& bt) const
+{
+  if (curr_state_eval_==false)
+    dserror("you didn't evaluate this contact state first");
+
+  if (bt==DRT::UTILS::block_displ_displ)
+    return kc_;
+
+  return Teuchos::null;
 }
 
 void CONTACT::CoNitscheStrategy::Setup(bool redistributed, bool init)

@@ -257,8 +257,8 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
 
       RelVel<dim>(sele,sval,sderiv,dsxi,+1.,relVel,relVel_deriv);
       RelVel<dim>(mele,mval,mderiv,dmxi,-1.,relVel,relVel_deriv);
-      VectorScalarProduct<dim>(t1,dt1,relVel,relVel_deriv,vt1,dvt1);
-      VectorScalarProduct<dim>(t2,dt2,relVel,relVel_deriv,vt2,dvt2);
+      CONTACT::UTILS::VectorScalarProduct<dim>(t1,dt1,relVel,relVel_deriv,vt1,dvt1);
+      CONTACT::UTILS::VectorScalarProduct<dim>(t2,dt2,relVel,relVel_deriv,vt2,dvt2);
 
       SoEleCauchy<dim>(sele,sxi,dsxi,wgt,normal,dnmap_unit,t1,dt1,ws,
           cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
@@ -315,7 +315,7 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
         double fr =0.;
         switch (frtype_)
         {
-        case INPAR::CONTACT::friction_coulomb: fr=frcoeff_*(-1.)*(gap*pen+cauchy_nn_weighted_average); break;
+        case INPAR::CONTACT::friction_coulomb: fr=frcoeff_*(-1.)*(snn_av_pen_gap); break;
         case INPAR::CONTACT::friction_tresca:  fr=frbound_; break;
         default: fr=0.; dserror("why are you here???"); break;
         }
@@ -662,7 +662,7 @@ void CONTACT::CoIntegratorNitsche::RelVel(
 
 
 template <int dim>
-void CONTACT::CoIntegratorNitsche::VectorScalarProduct(
+void CONTACT::UTILS::VectorScalarProduct(
     const LINALG::Matrix<dim,1>& v1,
     const std::vector<GEN::pairedvector<int,double> >& v1d,
     const LINALG::Matrix<dim,1>& v2,
@@ -788,3 +788,66 @@ void CONTACT::UTILS::BuildTangentVectors(
   if(dim==3) BuildTangentVectors_3D(np,dn,t1p,dt1,t2p,dt2);
   else dserror("not implemented");
 }
+
+template void CONTACT::UTILS::BuildTangentVectors<2>(
+    const double* ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    double* ,
+    std::vector<GEN::pairedvector<int,double> >& ,
+    double* ,
+    std::vector<GEN::pairedvector<int,double> >&
+    );
+
+template void CONTACT::UTILS::BuildTangentVectors<3>(
+    const double* ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    double* ,
+    std::vector<GEN::pairedvector<int,double> >& ,
+    double* ,
+    std::vector<GEN::pairedvector<int,double> >&
+    );
+
+
+
+template
+void CONTACT::CoIntegratorNitsche::IntegrateTest<2>(
+    const double,
+    MORTAR::MortarElement& ,
+    const LINALG::SerialDenseVector& ,
+    const LINALG::SerialDenseMatrix& ,
+    const std::vector<GEN::pairedvector<int,double> >& i,
+    const double ,const GEN::pairedvector<int,double>& , const double ,
+    const double , const GEN::pairedvector<int,double>& ,
+    const LINALG::Matrix<2,1>& test_dir, const std::vector<GEN::pairedvector<int,double> >& test_dir_deriv
+    );
+template
+void CONTACT::CoIntegratorNitsche::IntegrateTest<3>(
+    const double,
+    MORTAR::MortarElement& ,
+    const LINALG::SerialDenseVector& ,
+    const LINALG::SerialDenseMatrix& ,
+    const std::vector<GEN::pairedvector<int,double> >& i,
+    const double ,const GEN::pairedvector<int,double>& , const double ,
+    const double , const GEN::pairedvector<int,double>& ,
+    const LINALG::Matrix<3,1>& test_dir, const std::vector<GEN::pairedvector<int,double> >& test_dir_deriv
+    );
+
+template
+void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest<2>(
+    const double ,
+    const double , const GEN::pairedvector<int,double>& , const double ,
+    const double , const GEN::pairedvector<int,double>& ,
+    MORTAR::MortarElement& ,
+    LINALG::SerialDenseVector& ,
+    GEN::pairedvector<int,LINALG::SerialDenseVector>&
+    );
+
+template
+void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest<3>(
+    const double ,
+    const double , const GEN::pairedvector<int,double>& , const double ,
+    const double , const GEN::pairedvector<int,double>& ,
+    MORTAR::MortarElement& ,
+    LINALG::SerialDenseVector& ,
+    GEN::pairedvector<int,LINALG::SerialDenseVector>&
+    );

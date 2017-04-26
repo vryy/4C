@@ -215,16 +215,6 @@ private:
         );
 
 
-    template <int dim>
-    void VectorScalarProduct(
-        const LINALG::Matrix<dim,1>& v1,
-        const std::vector<GEN::pairedvector<int,double> >& v1d,
-        const LINALG::Matrix<dim,1>& v2,
-        const std::vector<GEN::pairedvector<int,double> >& v2d,
-        double& val,
-        GEN::pairedvector<int,double>& val_deriv
-);
-
     double theta_;
     INPAR::CONTACT::NitscheWeighting nit_wgt_;
     double ppn_;
@@ -238,6 +228,16 @@ private:
 
 namespace UTILS
 {
+template <int dim>
+void VectorScalarProduct(
+    const LINALG::Matrix<dim,1>& v1,
+    const std::vector<GEN::pairedvector<int,double> >& v1d,
+    const LINALG::Matrix<dim,1>& v2,
+    const std::vector<GEN::pairedvector<int,double> >& v2d,
+    double& val,
+    GEN::pairedvector<int,double>& val_deriv
+);
+
 void BuildTangentVectors_3D(
     const double* np,
     const std::vector<GEN::pairedvector<int,double> >& dn,
