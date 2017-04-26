@@ -1838,8 +1838,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WSSinfluence(const LINALG:
 
   if (wss_onoff)
   {
-    LINALG::Matrix<nsd_,1> wss(true);
-    for ( int ii=0; ii<nsd_;ii++)
+    LINALG::Matrix<nsd_+1,1> wss(true);
+    for ( int ii=0; ii<nsd_+1;ii++)
       for ( int jj=0;jj<nen_;jj++)
         wss(ii) += ewss(ii,jj)*funct_(jj);
 
