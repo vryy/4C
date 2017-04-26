@@ -2308,7 +2308,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
   case INPAR::THR::dyna_statics :
   {
     timefac = 1.0;
-    timefac_d = 1.0 / stepsize;
     break;
   }
   case INPAR::THR::dyna_onesteptheta :
@@ -2319,19 +2318,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     const double theta = params.get<double>("theta");
     // K_Td = theta . K_Td
     timefac = theta;
-
-    // initialise time_fac of velocity discretisation w.r.t. displacements
-    const double str_theta = params.get<double>("str_theta");
-    timefac_d = 1.0 / (stepsize * str_theta);
     break;
   }
   case INPAR::THR::dyna_genalpha :
   {
     timefac = params.get<double>("alphaf");
-    // Lin (v_n+1) . \Delta d_n+1 = (gamma ) / (beta . dt)
-    const double str_beta = params.get<double>("str_beta");
-    const double str_gamma = params.get<double>("str_gamma");
-    timefac_d =  str_gamma / (str_beta * stepsize);
     break;
   }
   case INPAR::THR::dyna_undefined :
@@ -2341,6 +2332,31 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
     break;
   }
   }  // end of switch(timint)
+
+  const INPAR::STR::DynamicType s_timint=
+      DRT::INPUT::get<INPAR::STR::DynamicType>(params, "structural time integrator");
+  switch (s_timint)
+  {
+  case INPAR::STR::dyna_statics:
+  {
+    timefac_d = 1.0 / stepsize;
+    break;
+  }
+  case INPAR::STR::dyna_genalpha:
+  {
+    const double str_beta = params.get<double>("str_beta");
+    const double str_gamma = params.get<double>("str_gamma");
+    timefac_d =  str_gamma / (str_beta * stepsize);
+    break;
+  }
+  case INPAR::STR::dyna_onesteptheta:
+  {
+    const double str_theta = params.get<double>("str_theta");
+    timefac_d = 1.0 / (stepsize * str_theta);
+    break;
+  }
+  default: dserror("unknown structural time integrator type");
+  }
 
   // ------------------------------------------------ initialise material
 
