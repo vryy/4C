@@ -78,15 +78,15 @@ namespace INPAR
       m_fluidporo_phaselaw_tangent,            ///< tangent pressure-saturation relationship
       m_fluidporo_phaselaw_constraint,         ///< the saturation constraint
       m_fluidporo_phaselaw_byfunction,         ///< pressure-saturation relationship defined by functions in input file
+      m_growth_iso_stress_exp,                 ///< isotropic exponential stress-dependent growth law
+      m_growth_iso_stress_lin,                 ///< isotropic linear stress-dependent growth law
+      m_growth_aniso_strain,                    ///< anisotropic strain-dependent growth law
+      m_growth_aniso_stress,                   ///< anisotropic stress-dependent growth law
       m_growth_ac,                             ///< simple scalar depended growth law
       m_growth_ac_radial,                      ///< scalar depended growth in radial direction
       m_growth_ac_radial_refconc,              ///< scalar depended growth in radial direction using reference concentrations
-      m_growth_biofilm,                        ///< scalar dependent growth law with application to biofilm
       m_growth_const,                          ///< grwoth factor given as material parameter via input
-      m_growth_exponential,                    ///< exponential growth law
-      m_growth_linear,                         ///< linear growth law
       m_growth_volumetric,                     ///< volumetric growth base material
-      m_growth_volumetric_scd,                 ///< integration point based growth (scalar dependent)
       m_sc_dep_interp,                         ///< integration point based and scalar dependent interpolation between to materials
       m_growthremodel_elasthyper,              ///< growth and remodeling
       m_herschelbulkley,                       ///< fluid with nonlinear viscosity according to Herschel-Bulkley
@@ -123,7 +123,6 @@ namespace INPAR
       m_scatra,                                ///< scalar transport material
       m_scatra_multiporo,                      ///< scalar transport material for multiphase porous flow
       m_scatra_aniso,                          ///< anisotropic scalar transport material
-      m_scatra_growth_scd,                     ///< scalar transport material for coupling with growth model
       m_scatra_multiscale,                     ///< scalar transport material for multi-scale approach
       m_scatra_reaction_poroECM,               ///< reaction definition and parameters for reaction model in porous ECM
       m_scatra_reaction,                       ///< reaction definition and parameters

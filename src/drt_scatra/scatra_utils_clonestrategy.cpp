@@ -101,7 +101,6 @@ if (
     (mtype != INPAR::MAT::m_matlist_reactions) &&
     (mtype != INPAR::MAT::m_matlist_bondreacs) &&
     (mtype != INPAR::MAT::m_myocard) &&
-    (mtype != INPAR::MAT::m_scatra_growth_scd) &&
     (mtype != INPAR::MAT::m_scatra_multiporo)
    )
   dserror("Material with ID %d is not admissible for scalar transport elements",matid);

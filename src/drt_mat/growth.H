@@ -1,20 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file growth_ip.H
+\file growth.H
 
- \brief This file contains routines for an integration point based isotropic volumetric growth law.
+\brief This file contains routines for integration point based isotropic and anisotropic volumetric growth laws.
 
-\level 3
+\level 2
 
- <pre>
-   \maintainer Moritz Thon
-               thon@lnm.mw.tum.de
+<pre>
+   \maintainer Marc Hirschvogel, Moritz Thon
+               hirschvogel@mhpc.mw.tum.de
                http://www.mhpc.mw.tum.de
-               089 - 289-10364
- </pre>
+               089 - 289-10363
+</pre>
  *----------------------------------------------------------------------*/
-#ifndef GROWTH_IP_H
-#define GROWTH_IP_H
+#ifndef GROWTH_H
+#define GROWTH_H
 
 
 #include "so3_material.H"
@@ -73,6 +73,12 @@ class GrowthLaw;
 
   }  // namespace PAR
 
+  ///type of vector/tensor in voigt notation
+  enum VoigtType
+  {
+    voigt_strain, ///< strain vector/tensor in voigt notation
+    voigt_stress ///< stress vector/tensor in voigt notation
+  };
 
   /*----------------------------------------------------------------------*/
   /*! \class Growth
@@ -147,7 +153,7 @@ class GrowthLaw;
     virtual void ResetAll(int numgp);
 
     /// Update
-    void Update();
+    virtual void Update();
 
     /// Reset time step
     void ResetStep();
@@ -245,12 +251,15 @@ class GrowthLaw;
     /// Return density
     double Density() const {dserror("growth material needs gauss point data for density!"); return -1.0;}
 
-    virtual double Density(int gp) const
-    {
-      const double density = matelastic_->Density();
-      const double theta_gp = (*theta_)[gp];
-      return density * theta_gp * theta_gp * theta_gp;
-    };
+//    double Density() const { return matelastic_->Density();}
+
+    // growth law-specific!
+    virtual double Density(int gp) const;
+//    {
+//      const double density = matelastic_->Density();
+//      const double theta_gp = (*theta_)[gp];
+//      return density * theta_gp * theta_gp * theta_gp;
+//    };
 
     /// Return whether material has a varying material density
     bool VaryingDensity() const { return true;}
@@ -263,6 +272,18 @@ class GrowthLaw;
 
     // read access to thetaold_
     Teuchos::RCP<const std::vector<double> > ThetaOld() const {return thetaold_;}
+
+    // read access to theta_
+    Teuchos::RCP<const std::vector<double> > Theta() const {return theta_;}
+
+    /// Return theta at Gauss point
+    double Theta_atgp(int gp) const { return (*theta_)[gp];}
+
+    // Return thetaold at Gauss-point
+    double ThetaOld_atgp(int gp) const {return ThetaOld()->at(gp);}
+
+    // read access to isinit_
+    bool IsInit() const {return isinit_;}
 
     //@}
 
@@ -291,7 +312,7 @@ class GrowthLaw;
   }; //class Growth
 
 
-  /*! \class GrowthMandelType
+  /*! \class GrowthVolumetricType
        \brief ParObjectType instance
 
        \sa DRT::ParObjectType
@@ -299,24 +320,24 @@ class GrowthLaw;
     \author kehl
     \date 6/2015
   */
-  class GrowthMandelType : public DRT::ParObjectType
+  class GrowthVolumetricType : public DRT::ParObjectType
   {
   public:
 
-    std::string Name() const { return "GrowthMandelType"; }
+    std::string Name() const { return "GrowthVolumetricType"; }
 
-    static GrowthMandelType & Instance() { return instance_; };
+    static GrowthVolumetricType & Instance() { return instance_; };
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   private:
 
-    static GrowthMandelType instance_;
+    static GrowthVolumetricType instance_;
   };
 
 
   /*----------------------------------------------------------------------*/
-  /*! \class GrowthMandel
+  /*! \class GrowthVolumetric
       \brief Split of growth and elastic part of the deformation
 
       Implementation of the multiplicative split into isovolumetric growth
@@ -328,15 +349,15 @@ class GrowthLaw;
       \author kehl
       \date 6/2015
   */
-  class GrowthMandel : public Growth
+  class GrowthVolumetric : public Growth
   {
   public:
 
     /// construct empty material object
-    GrowthMandel();
+    GrowthVolumetric();
 
     /// construct the material object given material parameters
-    explicit GrowthMandel(MAT::PAR::Growth* params);
+    explicit GrowthVolumetric(MAT::PAR::Growth* params);
 
     //! @name Packing and Unpacking
     //@{
@@ -346,7 +367,7 @@ class GrowthLaw;
 
       \sa DRT::ParObject
     */
-    virtual int UniqueParObjectId() const { return GrowthMandelType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const { return GrowthVolumetricType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -368,10 +389,13 @@ class GrowthLaw;
     //@}
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthMandel( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthVolumetric( *this ) ); }
 
     /// Setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+
+    /// Update
+    virtual void Update();
 
     /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
     virtual void ResetAll(int numgp);
@@ -409,6 +433,78 @@ class GrowthLaw;
                           LINALG::Matrix<6,1>* stress,
                           LINALG::Matrix<6,6>* cmat,
                           const int eleGID );
+
+    ///calculate stresses and elastic material tangent (both in Voigt notation)
+    virtual void GetSAndCmatdach
+    (
+        const double theta,
+        const LINALG::Matrix<3,3>* defgrd,
+        LINALG::Matrix<6,1>* stress,
+        LINALG::Matrix<6,6>* cmatdach,
+        Teuchos::ParameterList& params,
+        const int eleGID
+    );
+
+    ///Function which reads in the given fiber value due to the FIBER1 nomenclature
+    virtual void ReadFiber(
+        DRT::INPUT::LineDefinition* linedef,
+        std::string specifier,
+        LINALG::Matrix<3,1> &fiber_vector
+    );
+
+//    LINALG::Matrix<3,3> CalcDerivMatrixInverse(const LINALG::Matrix<3,3>& Matrix,
+//                        const LINALG::Matrix<3,3>& );
+//
+//    double CalcDerivMatrixInverseij(const LINALG::Matrix<3,3>& Minv,
+//                        const LINALG::Matrix<3,3>& Mderiv,
+//                        const double i,
+//                        const double j);
+
+    ///transform vector in voigt notation into symmetric 2Tensor (in matrix notation)
+    virtual void VectorToMatrix(
+        LINALG::Matrix<3,3>& Matrix,
+        const LINALG::Matrix<6,1>& Vector,
+        const MAT::VoigtType Type);
+
+    ///transform symmetric 2Tensor(in matrix notation) into voigt notation ( e.g. vector notation)
+    virtual void MatrixToVector(
+        const LINALG::Matrix<3,3>& Matrix,
+        LINALG::Matrix<6,1>& Vector,
+        const MAT::VoigtType Type);
+
+    /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
+    /// via the 2th order deformation gradient (also in matrix notation)
+    virtual LINALG::Matrix<6,6> PullBack4Tensor(const LINALG::Matrix<3,3>& defgr,
+                            const LINALG::Matrix<6,6>& Cmat);
+
+    /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt notation)
+    /// via the 2th order deformation gradient (also in matrix notation)
+    double PullBack4Tensorijkl(const LINALG::Matrix<3,3>& defgr,
+                          const double (&FourTensor)[3][3][3][3],
+                          const double& i,
+                          const double& j,
+                          const double& k,
+                          const double& l);
+
+    //Setup 4-Tensor from 6x6 Voigt notation
+    virtual void Setup4Tensor(
+        double (&FourTensor)[3][3][3][3],
+        const LINALG::Matrix<6,6>& VoigtMatrix
+    );
+
+//    //Setup 6x6 matrix in Voigt notation from 4-Tensor
+//    void Setup6x6VoigtMatrix(
+//        LINALG::Matrix<6,6>& VoigtMatrix,
+//        const double(&FourTensor)[3][3][3][3]
+//    );
+
+    //Print Four Tensor
+    virtual void PrintFourTensor( double (&FourTensor)[3][3][3][3] );
+
+
+
+
+
 
     /*! \brief Evaluate mass change
      *
@@ -471,22 +567,34 @@ class GrowthLaw;
     //@{
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Growth* Parameter() const { return paramsMandel_; }
+    virtual MAT::PAR::Growth* Parameter() const { return paramsVolumetric_; }
 
     //@}
 
-  protected:
-
-    /// mandel stress
-    Teuchos::RCP<std::vector<double> > mandel_;
+//  protected:
+//
+//    /// trace of mandel stress
+//    Teuchos::RCP<std::vector<double> > tr_mandel_;
 
   private:
 
     /// my material parameters
-    MAT::PAR::Growth* paramsMandel_;
+    MAT::PAR::Growth* paramsVolumetric_;
 
-  }; //class GrowthMandel
+    ///a reference direction (i.e., a fiber direction or a surface normal etc...), for anisotropic growth laws
+    LINALG::Matrix<3,1> refdir_; //would be fine if it was constant...
+
+    ///some current direction, needed for anisotropic scalar-dependent growth in current radial direction...
+    std::vector<LINALG::Matrix<3,1> > curdir_;
+
+    ///Normal direction, needed for anisotropic scalar-dependent growth in current radial direction...
+    std::vector<LINALG::Matrix<3,1> > curdir_for_update_;
+
+    /// history of growth matrix, needed for anisotropic scalar-dependent growth in current radial direction...
+    std::vector<LINALG::Matrix<3,3> > F_g_hist_;
+
+  }; //class GrowthVolumetric
 
 }  // namespace MAT
 
-#endif /*GROWTH_IP_H_*/
+#endif /*GROWTH_H_*/

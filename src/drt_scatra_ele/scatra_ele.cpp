@@ -336,7 +336,6 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_th_fourier_iso or
      mat->MaterialType() == INPAR::MAT::m_thermostvenant or
      mat->MaterialType() == INPAR::MAT::m_yoghurt or
-     mat->MaterialType() == INPAR::MAT::m_scatra_growth_scd or
      mat->MaterialType() == INPAR::MAT::m_soret or
      mat->MaterialType() == INPAR::MAT::m_scatra_multiporo
      )

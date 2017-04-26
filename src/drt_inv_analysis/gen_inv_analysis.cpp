@@ -1305,11 +1305,11 @@ void STR::GenInvAnalysis::ReadInParameters()
         }
       }
       break;
-      case INPAR::MAT::m_growth_linear:
+      case INPAR::MAT::m_growth_iso_stress_lin:
       {
         if (mymatset.size()==0 or mymatset.find(actmat->Id())!=mymatset.end())
         {
-          MAT::PAR::GrowthLawLinear* params = dynamic_cast<MAT::PAR::GrowthLawLinear*>(actmat->Parameter());
+          MAT::PAR::GrowthLawIsoStressLin* params = dynamic_cast<MAT::PAR::GrowthLawIsoStressLin*>(actmat->Parameter());
           if (!params) dserror("Cannot cast material parameters");
           const int j = p_.Length();
           p_.Resize(j+1);
@@ -2257,11 +2257,11 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
       }
     }
     break;
-    case INPAR::MAT::m_growth_linear:
+    case INPAR::MAT::m_growth_iso_stress_lin:
     {
       if (mymatset.size()==0 or mymatset.find(actmat->Id())!=mymatset.end())
       {
-        MAT::PAR::GrowthLawLinear* params = dynamic_cast<MAT::PAR::GrowthLawLinear*>(actmat->Parameter());
+        MAT::PAR::GrowthLawIsoStressLin* params = dynamic_cast<MAT::PAR::GrowthLawIsoStressLin*>(actmat->Parameter());
         if (!params) dserror("Cannot cast material parameters");
         // This is a tiny little bit brutal!!!
         const_cast<double&>(params->kthetaplus_) = p_cur[j];

@@ -176,7 +176,7 @@ ML_DAMPFINE                     0.59                            // damping fine 
 ML_DAMPMED                      0.69                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_GrowthVolumetricScd GROWTHLAW 5 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 1.0e10
+MAT 1 MAT_GrowthVolumetric GROWTHLAW 5 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 1.0e10
 
 MAT 2 MAT_ScDepInterp IDMATZEROSC 3 IDMATUNITSC 4
 MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0

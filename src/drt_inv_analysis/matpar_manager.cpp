@@ -23,11 +23,11 @@
 #include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_inpar/inpar_material.H"
+#include "../drt_mat/growth.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../linalg/linalg_utils.H"
 
-#include "../drt_mat/growth_ip.H"
 #include "../drt_mat/growth_law.H"
 
 /*----------------------------------------------------------------------*/

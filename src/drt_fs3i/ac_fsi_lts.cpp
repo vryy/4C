@@ -37,7 +37,6 @@
 
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/growth_scd.H"
 #include "../drt_mat/growth_law.H"
 
 #include "../linalg/linalg_utils.H"
@@ -466,9 +465,9 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
 
   Teuchos::RCP<MAT::Material> structurematerial = structuredis->gElement(GID)->Material();;
 
-  if ( structurematerial->MaterialType() != INPAR::MAT::m_growth_volumetric_scd )
+  if ( structurematerial->MaterialType() != INPAR::MAT::m_growth_volumetric )
   {
-    dserror("In AC-FS3I we want growth, so use a growth material like MAT_GrowthVolumetricScd!");
+    dserror("In AC-FS3I we want growth, so use a growth material like MAT_GrowthVolumetric!");
   }
   else
   {
@@ -478,19 +477,19 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
     double alpha = 0.0;
     int sc1 = 1;
 
-    Teuchos::RCP<MAT::GrowthMandel> growthscdmaterial = Teuchos::rcp_dynamic_cast<MAT::GrowthMandel>(structurematerial);
+    Teuchos::RCP<MAT::GrowthVolumetric> growthmaterial = Teuchos::rcp_dynamic_cast<MAT::GrowthVolumetric>(structurematerial);
 
-    if (growthscdmaterial==Teuchos::null)
-      dserror("Dynamic cast to MAT::GrowthMandel failed!");
+    if (growthmaterial==Teuchos::null)
+      dserror("Dynamic cast to MAT::GrowthVolumetric failed!");
 
-    Teuchos::RCP<MAT::GrowthLaw> growthlaw = growthscdmaterial->Parameter()->growthlaw_;
+    Teuchos::RCP<MAT::GrowthLaw> growthlaw = growthmaterial->Parameter()->growthlaw_;
 
     switch (growthlaw->MaterialType())
     {
       case INPAR::MAT::m_growth_ac:
       {
         Teuchos::RCP<MAT::GrowthLawAC> growthlawac = Teuchos::rcp_dynamic_cast<MAT::GrowthLawAC>(growthlaw);
-        if (growthscdmaterial==Teuchos::null)
+        if (growthmaterial==Teuchos::null)
           dserror("Dynamic cast to MAT::GrowthLawAC failed!");
         alpha = growthlawac->Parameter()->alpha_;
         sc1 = growthlawac->Parameter()->Sc1_;

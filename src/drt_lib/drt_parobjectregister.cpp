@@ -122,10 +122,7 @@
 #include "../drt_mat/viscoelasthyper.H"
 #include "../drt_mat/cnst_1d_art.H"
 #include "../drt_mat/fourieriso.H"
-#include "../drt_mat/growth_ip.H"
-#include "../drt_mat/growth_scd.H"
 #include "../drt_mat/growthremodel_elasthyper.H"
-#include "../drt_mat/scatra_growth_scd.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/constraintmixture_history.H"
 #include "../drt_mat/plasticlinelast.H"
@@ -167,6 +164,7 @@
 #include "../drt_mat/maxwell_0d_acinus_Ogden.H"
 #include "../drt_inv_analysis/particle_data.H"
 #include "../drt_beaminteraction/crosslinker_node.H"
+#include "../drt_mat/growth.H"
 
 std::string DRT::ParObjectList()
 {
@@ -313,12 +311,8 @@ std::string DRT::ParObjectList()
     << MAT::FluidPoroMultiPhaseType::Instance().Name() << " "
     << MAT::FluidPoroMultiPhaseReactionsType::Instance().Name() << " "
     << MAT::FourierIsoType::Instance().Name() << " "
-    << MAT::GrowthMandelType::Instance().Name() << " "
+    << MAT::GrowthVolumetricType::Instance().Name() << " "
     << MAT::GrowthRemodel_ElastHyperType::Instance().Name() << " "
-    << MAT::GrowthScdType::Instance().Name() << " "
-    << MAT::GrowthScdACType::Instance().Name() << " "
-    << MAT::GrowthScdACRadialType::Instance().Name() << " "
-    << MAT::ScatraGrowthScdType::Instance().Name() << " "
     << MAT::HerschelBulkleyType::Instance().Name() << " "
     << MAT::IonType::Instance().Name() << " "
     << MAT::MatListType::Instance().Name() << " "

@@ -1,7 +1,7 @@
 //
-// Maintainer: Moritz Thon
-// thon@mhpc.mw.tum.de
-// http://www.lnm.mw.tum.de
+// Maintainer: Marc Hirschvogel
+// hirschvogel@mhpc.mw.tum.de
+// http://www.mhpc.mw.tum.de
 //
 //
 ==================================================================
@@ -71,7 +71,7 @@ NUMSTEP                         50
 PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
-RESTARTEVRY                     10
+RESTARTEVRY                     0
 TIMESTEP                        0.01
 TOLCONSTR                       1e-08
 TOLDISP                         1e-08

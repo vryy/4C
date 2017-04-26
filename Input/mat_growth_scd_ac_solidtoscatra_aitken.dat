@@ -177,7 +177,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_GrowthVolumetricScd GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 0.2
+MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 0.2
 
 MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3
 MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...

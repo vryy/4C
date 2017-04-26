@@ -1909,23 +1909,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
      AppendMaterialDefinition(matlist,m);
    }
 
-  /*----------------------------------------------------------------------*/
-   // integration point based and scalar dependent growth
-   {
-     Teuchos::RCP<MaterialDefinition> mm
-       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthVolumetricScd",
-                                             "integration point based and scalar dependent growth",
-                                             INPAR::MAT::m_growth_volumetric_scd));
-
-     AddNamedInt(mm,"GROWTHLAW","growth function: linear(Default) or exponential");
-     AddNamedInt(mm,"IDMATELASTIC","number of elastic material in input file: MAT IDMATELASTIC ...");
-     AddNamedReal(mm,"STARTTIME","start growth after this time");
-     AddNamedReal(mm,"ENDTIME","end growth after this time");
-     AddNamedReal(mm,"REARATE","substrate uptake rate coefficient",-1.0,true);
-     AddNamedReal(mm,"SATCOEFF","saturation coefficient for concentration dependent growth law",-1.0,true);
-
-     AppendMaterialDefinition(matlist,mm);
-   }
 
    /*----------------------------------------------------------------------*/
     // integration point based and scalar dependent interpolation between to materials
@@ -1948,8 +1931,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthLinear",
-                                            "linear growth law",
-                                            INPAR::MAT::m_growth_linear));
+                                            "linear stress-dependent growth law",
+                                            INPAR::MAT::m_growth_iso_stress_lin));
 
     AddNamedReal(m,"THETAPLUS","maximal growth stretch");
     AddNamedReal(m,"KPLUS","growth law parameter kthetaplus");
@@ -1969,23 +1952,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthExponential",
-                                            "exponential growth law",
-                                            INPAR::MAT::m_growth_exponential));
-
-    AddNamedReal(m,"MANDEL","reference value for mandelstress");
-    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  // biofilm growth law
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthBiofilm",
-                                            "biofilm growth law",
-                                            INPAR::MAT::m_growth_biofilm));
+                                            "exponential stress-dependent growth law",
+                                            INPAR::MAT::m_growth_iso_stress_exp));
 
     AddNamedReal(m,"MANDEL","reference value for mandelstress");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
@@ -2003,6 +1971,34 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_growth_const));
 
     AddNamedReal(m,"THETARATE","reference value for mandelstress");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // anisotropic strain-dependent growth law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrain",
+                                            "growth law depending on stretch in fiber direction, growth in fiber direction",
+                                            INPAR::MAT::m_growth_aniso_strain));
+
+    AddNamedReal(m,"LAMBDA_CRIT","critical fiber stretch");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // anisotropic strain-dependent growth law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStress",
+                                            "growth law depending on Mandel stress, growth perpendicular to fiber direction",
+                                            INPAR::MAT::m_growth_aniso_stress));
+
+    AddNamedReal(m,"P_CRIT","critical cavity pressure");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -2921,26 +2917,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
-   /*----------------------------------------------------------------------*/
-   // nutrient diffusion modeling (diffusion-reaction equation). Contains a growth-dependent
-   //reaction-term of the form 3*theta^2*time_derivative_theta*structure_density that is coupled with
-   // scalar dependent growth law via 'theta'
-   // and a non-linear reaction term following the Monod Kinetic of the form rearate*phi/(satcoeff+phi)
-   {
-     Teuchos::RCP<MaterialDefinition> m
-       = Teuchos::rcp(new MaterialDefinition("MAT_Scatra_GrowthScd",
-                                             "nutrientdiff material",
-                                             INPAR::MAT::m_scatra_growth_scd));
-
-     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
-     AddNamedReal(m,"STRDENSITY","density of structure material");
-     AddNamedReal(m,"REARATE","substrate uptake rate coefficient",0.0);
-     AddNamedReal(m,"SATCOEFF","substrate saturation coefficient",0.0);
-     AddNamedString(m,"SOURCEMASS","source mass term","Standard", true);
-
-     // AddNamedString(m,"KINETICS","Substrate consumption kinetics (SimpleMonod)","SimpleMonod");
-     AppendMaterialDefinition(matlist,m);
-   }
 
   /*----------------------------------------------------------------------*/
   // acoustic material

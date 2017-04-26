@@ -534,9 +534,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo_multiphase_singlereaction.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
-  src/drt_mat/growth_ip.cpp
+  src/drt_mat/growth.cpp
   src/drt_mat/growth_law.cpp
-  src/drt_mat/growth_scd.cpp
   src/drt_mat/herschelbulkley.cpp
   src/drt_mat/ion.cpp
   src/drt_mat/lubrication_mat.cpp
@@ -572,7 +571,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/poro_density_law.cpp
   src/drt_mat/robinson.cpp
   src/drt_mat/scalardepinterp.cpp
-  src/drt_mat/scatra_growth_scd.cpp
   src/drt_mat/scatra_mat.cpp
   src/drt_mat/scatra_mat_aniso.cpp
   src/drt_mat/scatra_mat_multiscale.cpp

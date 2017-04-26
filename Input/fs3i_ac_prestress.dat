@@ -516,7 +516,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 ----------------------------------------------------------MATERIALS
 //Units [mm, s, g -> Pa]
 MAT 1 MAT_fluid DYNVISCOSITY 3.5e-03 DENSITY 1.05e-03
-MAT 2 MAT_GrowthVolumetricScd GROWTHLAW 4 IDMATELASTIC 3 STARTTIME 0.01 ENDTIME 100.0
+MAT 2 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 3 STARTTIME 0.01 ENDTIME 100.0
 MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3
 MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0
 MAT 32 ELAST_VolOgden KAPPA 2.2116e6 BETA -2.0

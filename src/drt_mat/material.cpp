@@ -72,11 +72,8 @@
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
 #include "soret.H"
-#include "growth_ip.H"
-#include "growth_scd.H"
 #include "growthremodel_elasthyper.H"
 #include "scalardepinterp.H"
-#include "scatra_growth_scd.H"
 #include "scatra_reaction_mat.H"
 #include "scatra_bondreac_mat.H"
 #include "scatra_chemotaxis_mat.H"
@@ -116,6 +113,7 @@
 #include "activefiber.H"
 #include "biochemo_mechano_cell_activefiber.H"
 #include "biochemo_mechano_cell_passivefiber.H"
+#include "growth.H"
 #include "superelastic_sma.H"
 
 
@@ -734,12 +732,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_isoratedep:
   case INPAR::MAT::mes_genmax:
   case INPAR::MAT::mes_remodelfiber:
-  case INPAR::MAT::m_growth_linear:
-  case INPAR::MAT::m_growth_exponential:
+  case INPAR::MAT::m_growth_iso_stress_lin:
+  case INPAR::MAT::m_growth_iso_stress_exp:
+  case INPAR::MAT::m_growth_aniso_strain:
+  case INPAR::MAT::m_growth_aniso_stress:
   case INPAR::MAT::m_growth_ac:
   case INPAR::MAT::m_growth_ac_radial:
   case INPAR::MAT::m_growth_ac_radial_refconc:
-  case INPAR::MAT::m_growth_biofilm:
   case INPAR::MAT::m_growth_const:
   case INPAR::MAT::mes_coupSVK:
   {
@@ -929,20 +928,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ExtParticleMat(curmat));
     MAT::PAR::ExtParticleMat* params = static_cast<MAT::PAR::ExtParticleMat*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_growth_volumetric_scd:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::GrowthScd(curmat));
-    MAT::PAR::GrowthScd* params = static_cast<MAT::PAR::GrowthScd*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_scatra_growth_scd:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::ScatraGrowthScd(curmat));
-    MAT::PAR::ScatraGrowthScd* params = static_cast<MAT::PAR::ScatraGrowthScd*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_acousticmat:

@@ -1,68 +1,142 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file growth_scd.cpp
+\file growth.cpp
 
- \brief This file contains routines for an integration point based isotropic and unisotropic, scalar dependend volumetric growth law.
-It is derived from the growth laws implemented in growth_ip.cpp and additional adds the scalar dependency, e.g. nutrients.
+\brief This file contains routines for integration point based isotropic and anisotropic volumetric growth laws.
 
-\level 3
+\level 2
 
- <pre>
-   \maintainer Moritz Thon
-               thon@lnm.mw.tum.de
+<pre>
+   \maintainer Marc Hirschvogel, Moritz Thon
+               hirschvogel@mhpc.mw.tum.de
                http://www.mhpc.mw.tum.de
-               089 - 289-10364
- </pre>
+               089 - 289-10363
+</pre>
  *----------------------------------------------------------------------*/
 
 
-#include "growth_scd.H"
+#include "growth.H"
+
 #include "growth_law.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_lib/drt_globalproblem.H"   // for function Factory in Unpack
-#include "../drt_lib/drt_utils_factory.H"   // for function Factory in Unpack
+#include "../drt_lib/drt_utils_factory.H"
 
 
-/*----------------------------------------------------------------------*
- |                                                           vuong 06/11  |
- *----------------------------------------------------------------------*/
-MAT::PAR::GrowthScd::GrowthScd(
+/*----------------------------------------------------------------------------*/
+MAT::PAR::Growth::Growth(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: Growth(matdata),
-  rearate_(matdata->GetDouble("REARATE")),
-  satcoeff_(matdata->GetDouble("SATCOEFF"))
+: Parameter(matdata),
+  idmatelastic_(matdata->GetInt("IDMATELASTIC")),
+  idgrowthlaw_(matdata->GetInt("GROWTHLAW")),
+  starttime_(matdata->GetDouble("STARTTIME")),
+  endtime_(matdata->GetDouble("ENDTIME"))
 {
-  if (growthlaw_->MaterialType() == INPAR::MAT::m_growth_linear or growthlaw_->MaterialType() == INPAR::MAT::m_growth_exponential)
+  // retrieve problem instance to read from
+  const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+
+  // for the sake of safety
+  if (DRT::Problem::Instance(probinst)->Materials() == Teuchos::null)
+    dserror("Sorry dude, cannot work out problem instance.");
+  // yet another safety check
+  if (DRT::Problem::Instance(probinst)->Materials()->Num() == 0)
+    dserror("Sorry dude, no materials defined.");
+
+  // retrieve validated input line of material ID in question
+  Teuchos::RCP<MAT::PAR::Material> curmat = DRT::Problem::Instance(probinst)->Materials()->ById(idgrowthlaw_);
+
+  switch (curmat->Type())
   {
-    if (rearate_ <= 0)
-        dserror("You need to choose a positive reaction rate!");
-    if (satcoeff_ < 0)
-        dserror("You need to choose a non-negative saturation coefficient!");
+  case INPAR::MAT::m_growth_iso_stress_lin:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawIsoStressLin(curmat));
+    MAT::PAR::GrowthLawIsoStressLin* params = static_cast<MAT::PAR::GrowthLawIsoStressLin*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_iso_stress_exp:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawIsoStressExp(curmat));
+    MAT::PAR::GrowthLawIsoStressExp* params = static_cast<MAT::PAR::GrowthLawIsoStressExp*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_aniso_strain:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStrain(curmat));
+    MAT::PAR::GrowthLawAnisoStrain* params = static_cast<MAT::PAR::GrowthLawAnisoStrain*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_aniso_stress:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStress(curmat));
+    MAT::PAR::GrowthLawAnisoStress* params = static_cast<MAT::PAR::GrowthLawAnisoStress*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_ac:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawAC(curmat));
+    MAT::PAR::GrowthLawAC* params = static_cast<MAT::PAR::GrowthLawAC*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_ac_radial:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawACRadial(curmat));
+    MAT::PAR::GrowthLawACRadial* params = static_cast<MAT::PAR::GrowthLawACRadial*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_ac_radial_refconc:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawACRadialRefConc(curmat));
+    MAT::PAR::GrowthLawACRadialRefConc* params = static_cast<MAT::PAR::GrowthLawACRadialRefConc*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_const:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawConst(curmat));
+    MAT::PAR::GrowthLawConst* params = static_cast<MAT::PAR::GrowthLawConst*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  default:
+    dserror("unknown material type %d", curmat->Type());
+    break;
   }
 }
 
-
-Teuchos::RCP<MAT::Material> MAT::PAR::GrowthScd::CreateMaterial()
+/*----------------------------------------------------------------------------*/
+Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
 {
   Teuchos::RCP<MAT::Material> mat;
 
   switch (growthlaw_->MaterialType())
   {
-  case INPAR::MAT::m_growth_linear:
-  case INPAR::MAT::m_growth_exponential:
-  case INPAR::MAT::m_growth_biofilm:
-    mat = Teuchos::rcp(new MAT::GrowthScd(this));
-    break;
+  case INPAR::MAT::m_growth_iso_stress_lin:
+  case INPAR::MAT::m_growth_iso_stress_exp:
+  case INPAR::MAT::m_growth_aniso_strain:
+  case INPAR::MAT::m_growth_aniso_stress:
   case INPAR::MAT::m_growth_ac:
-    mat = Teuchos::rcp(new MAT::GrowthScdAC(this));
-    break;
   case INPAR::MAT::m_growth_ac_radial:
   case INPAR::MAT::m_growth_ac_radial_refconc:
-    mat = Teuchos::rcp(new MAT::GrowthScdACRadial(this));
+  case INPAR::MAT::m_growth_const:
+    mat = Teuchos::rcp(new MAT::GrowthVolumetric(this));
     break;
   default:
-    dserror("The growth law you have chosen is not valid one!");
+    dserror("The growth law you have chosen is not valid for the standard volumetric growth material");
     mat = Teuchos::null;
     break;
   }
@@ -70,57 +144,31 @@ Teuchos::RCP<MAT::Material> MAT::PAR::GrowthScd::CreateMaterial()
   return mat;
 }
 
-
-MAT::GrowthScdType MAT::GrowthScdType::instance_;
-
-DRT::ParObject* MAT::GrowthScdType::Create( const std::vector<char> & data )
-{
-  MAT::GrowthScd* grow = new MAT::GrowthScd();
-  grow->Unpack(data);
-  return grow;
-}
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  vuong 02/10|
- *----------------------------------------------------------------------*/
-MAT::GrowthScd::GrowthScd()
-  : GrowthMandel(),
-    detFe_(Teuchos::null), //initialized in GrowthScd::Unpack
-    dtheta_(Teuchos::null), //initialized in GrowthScd::Unpack
-    paramsScd_(NULL)
+/*----------------------------------------------------------------------------*/
+MAT::Growth::Growth()
+  : theta_(Teuchos::null),
+    isinit_(false),
+    params_(NULL),
+    matelastic_(Teuchos::null),
+    thetaold_(Teuchos::null),
+    histdata_()
 {
 }
 
 
-/*----------------------------------------------------------------------*
- |  Copy-Constructor                             (public)    vuong  02/10|
- *----------------------------------------------------------------------*/
-MAT::GrowthScd::GrowthScd(MAT::PAR::GrowthScd* params)
-  : GrowthMandel(params),
-    detFe_(Teuchos::null), //initialized in GrowthScd::Setup
-    dtheta_(Teuchos::null), //initialized in GrowthScd::Setup
-    paramsScd_(params)
+/*----------------------------------------------------------------------------*/
+MAT::Growth::Growth(MAT::PAR::Growth* params)
+  : theta_(Teuchos::null),
+    isinit_(false),
+    params_(params),
+    matelastic_(Teuchos::null),
+    thetaold_(Teuchos::null),
+    histdata_()
 {
 }
 
-/*----------------------------------------------------------------------*
- |  ResetAll                                      (public)         11/12|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScd::ResetAll(const int numgp)
-{
-  for (int j=0; j<numgp; ++j)
-  {
-    detFe_->at(j) = 1.0;
-    dtheta_->at(j) = 0.0;
-  }
-
-  MAT::GrowthMandel::ResetAll(numgp);
-}
-
-/*----------------------------------------------------------------------*
- |  Pack                                          (public)    vuong  02/10|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScd::Pack(DRT::PackBuffer& data) const
+/*----------------------------------------------------------------------------*/
+void MAT::Growth::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -130,37 +178,39 @@ void MAT::GrowthScd::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,type);
   // matid
   int matid = -1;
-
-  MAT::PAR::GrowthScd* params=Parameter();
-  if (params != NULL) matid = params->Id();  // in case we are in post-process mode
+  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
 
-  int numgp=0;
-  if (isinit_)
+  int numgp;
+  if (!isinit_)
   {
-    numgp = dtheta_->size();   // size is number of gausspoints
+    numgp = 0; // not initialized -> nothing to pack
+  }
+  else
+  {
+    numgp = theta_->size();   // size is number of Gauss points
   }
   AddtoPack(data,numgp);
   // Pack internal variables
   for (int gp = 0; gp < numgp; ++gp)
   {
-    AddtoPack(data,detFe_->at(gp));
-    AddtoPack(data,dtheta_->at(gp));
+    AddtoPack(data,thetaold_->at(gp));
+    AddtoPack(data,theta_->at(gp));
   }
 
-  // Pack base class material
-  GrowthMandel::Pack(data);
+  AddtoPack(data,histdata_);
+
+  // Pack data of elastic material
+  if (matelastic_!=Teuchos::null) {
+    matelastic_->Pack(data);
+  }
 
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Unpack                                        (public)   vuong 02/10|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScd::Unpack(const std::vector<char>& data)
+/*----------------------------------------------------------------------------*/
+void MAT::Growth::Unpack(const std::vector<char>& data)
 {
-
   isinit_=true;
   std::vector<char>::size_type position = 0;
   // extract type
@@ -172,14 +222,14 @@ void MAT::GrowthScd::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position,data,matid);
 
-  paramsScd_ = NULL;
+  params_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
-        paramsScd_ = static_cast<MAT::PAR::GrowthScd*>(mat);
+        params_ = dynamic_cast<MAT::PAR::Growth*>(mat);
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
@@ -194,252 +244,153 @@ void MAT::GrowthScd::Unpack(const std::vector<char>& data)
   }
 
   // unpack growth internal variables
-  detFe_ = Teuchos::rcp(new std::vector<double> (numgp));
-  dtheta_ = Teuchos::rcp(new std::vector<double> (numgp));
-  for (int gp = 0; gp < numgp; ++gp) {
+  theta_ = Teuchos::rcp(new std::vector<double> (numgp));
+  thetaold_ = Teuchos::rcp(new std::vector<double> (numgp));
+  for (int gp = 0; gp < numgp; ++gp)
+  {
     double a;
     ExtractfromPack(position,data,a);
-    detFe_->at(gp) = a;
+    thetaold_->at(gp) = a;
     ExtractfromPack(position,data,a);
-    dtheta_->at(gp) = a;
+    theta_->at(gp) = a;
   }
 
-  // extract base class material
-  std::vector<char> basedata(0);
-  GrowthMandel::ExtractfromPack(position,data,basedata);
-  GrowthMandel::Unpack(basedata);
+  std::vector<char> tmp(0);
+  ExtractfromPack(position,data,tmp);
+  histdata_.Unpack(tmp);
+
+  // Unpack data of elastic material (these lines are copied from drt_element.cpp)
+  std::vector<char> dataelastic;
+  ExtractfromPack(position,data,dataelastic);
+  if (dataelastic.size()>0)
+  {
+    DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
+    MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
+    if (matel==NULL)
+      dserror("failed to unpack elastic material");
+    matelastic_ = Teuchos::rcp(matel);
+  }
+  else
+    matelastic_ = Teuchos::null;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- |  Setup                                         (public) vuong  02/10|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScd::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
-{
-  detFe_ = Teuchos::rcp(new std::vector<double> (numgp,1.0));
-  dtheta_ = Teuchos::rcp(new std::vector<double> (numgp,0.0));
-
-  //setup base class
-  GrowthMandel::Setup(numgp, linedef);
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Evaluate Material                             (public)  vuong   02/10|
- *----------------------------------------------------------------------*
- The deformation gradient is decomposed into an elastic and growth part:
-     F = Felastic * F_g
- Only the elastic part contributes to the stresses, thus we have to
- compute the elastic Cauchy Green Tensor Cdach and elastic 2PK stress Sdach.
- */
-void MAT::GrowthScd::Evaluate
-(
-    const LINALG::Matrix<3,3>* defgrd,
-    const LINALG::Matrix<6,1>* glstrain,
-    Teuchos::ParameterList& params,
-    LINALG::Matrix<6,1>* stress,
-    LINALG::Matrix<6,6>* cmat,
-    const int eleGID
-)
-{
-  // get gauss point number
-  const int gp = params.get<int>("gp",-1);
-  if (gp == -1) dserror("no Gauss point number provided in material");
-
-  GrowthMandel::Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
-
-  // build identity tensor I
-  LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
-  for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
-  C.Scale(2.0);
-  C += Id;
-
-  const double theta = theta_->at(gp);
-  // elastic right Cauchy-Green Tensor Cdach = F_g^-T C F_g^-1
-  LINALG::Matrix<NUM_STRESS_3D,1> Cdach(C);
-  Cdach.Scale(1.0/theta/theta);
-
-  // determinate of F_e (necessary for scatra/nutrientconsumption)
-  detFe_->at(gp) =   pow( + Cdach(0)*(Cdach(1)*Cdach(2)-Cdach(4)*Cdach(4))
-                          - Cdach(3)*(Cdach(3)*Cdach(2)-Cdach(5)*Cdach(4))
-                          + Cdach(5)*(Cdach(3)*Cdach(4)-Cdach(5)*Cdach(1)),
-                          1/2);
-
-  //store dtheta
-  const double dt = params.get<double>("delta time",-1.0);
-  for (unsigned i=0; i<theta_->size(); i++)
-    (*dtheta_)[i] = ((*theta_)[i]-(*ThetaOld())[i])/dt;
-}
-
-// evaluate the volumetric growth factor theta
-void MAT::GrowthScd::EvaluateGrowth(double* theta,
-                      LINALG::Matrix<6,1>* dthetadC,
-                      const LINALG::Matrix<3,3>* defgrd,
-                      const LINALG::Matrix<6,1>* glstrain,
-                      Teuchos::ParameterList& params,
-                      const int eleGID )
-{
-
-  // parameters
-  MAT::PAR::GrowthScd* matparams=Parameter();
-  const double rearate = matparams->rearate_;
-  const double satcoeff = matparams->satcoeff_;
-
-  // get gauss point number
-  const int gp = params.get<int>("gp",-1);
-  if (gp == -1)
-    dserror("no Gauss point number provided in material");
-
-  //get pointer to vector containing the scalar values at the gauß points
-  Teuchos::RCP<std::vector<std::vector<double> > > concentrations=
-      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc");
-
-  //NOTE: in this growth law we always assume the first scalar to induce growth!
-  double concentration_first=(concentrations->at(gp)).at(0);
-
-  // concentration dependent factor
-  double fac = rearate * concentration_first/(satcoeff+concentration_first);
-
-  Parameter()->growthlaw_->SetFactor(fac);
-  GrowthMandel::EvaluateGrowth(theta,dthetadC,defgrd,glstrain,params,eleGID);
-
-  return;
-}
-
-MAT::GrowthScdACType MAT::GrowthScdACType::instance_;
-
-DRT::ParObject* MAT::GrowthScdACType::Create( const std::vector<char> & data )
-{
-  MAT::GrowthScdAC* grow = new MAT::GrowthScdAC();
-  grow->Unpack(data);
-  return grow;
-}
-
-/*----------------------------------------------------------------------*
- |  Constructor                                               Thon 11/14|
- *----------------------------------------------------------------------*/
-MAT::GrowthScdAC::GrowthScdAC()
-  : GrowthMandel(),
-//    concentrations_(Teuchos::null),
-    paramsScdAC_(NULL)
-{
-}
-
-
-/*----------------------------------------------------------------------*
- |  Copy-Constructor                                          Thon 11/14|
- *----------------------------------------------------------------------*/
-MAT::GrowthScdAC::GrowthScdAC(MAT::PAR::GrowthScd* params)
-  : GrowthMandel(params),
-    paramsScdAC_(params)
-{
-}
-
-/*----------------------------------------------------------------------*
- |  Pack                                                      Thon 11/14|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdAC::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-  // matid
-  int matid = -1;
-
-  MAT::PAR::GrowthScd* params=Parameter();
-  if (params != NULL) matid = params->Id();  // in case we are in post-process mode
-  AddtoPack(data,matid);
-
-  // Pack base class material
-  GrowthMandel::Pack(data);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Unpack                                                    Thon 11/14|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdAC::Unpack(const std::vector<char>& data)
-{
-
-  isinit_=true;
-  std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-
-  // matid and recover params_
-  int matid;
-  ExtractfromPack(position,data,matid);
-
-  paramsScdAC_=NULL;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
-    {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
-        paramsScdAC_ = dynamic_cast<MAT::PAR::GrowthScd*>(mat);
-      else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
-    }
-
-  // extract base class material
-  std::vector<char> basedata(0);
-  GrowthMandel::ExtractfromPack(position,data,basedata);
-  GrowthMandel::Unpack(basedata);
-
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Evaluate the volumetric growth factor theta               Thon 11/14|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdAC::EvaluateGrowth(double* theta,
-                      LINALG::Matrix<6,1>* dthetadC,
-                      const LINALG::Matrix<3,3>* defgrd,
-                      const LINALG::Matrix<6,1>* glstrain,
-                      Teuchos::ParameterList& params,
-                      const int eleGID )
-{
-  // get gauss point number
-  const int gp = params.get<int>("gp",-1);
-  if (gp == -1)
-    dserror("no Gauss point number provided in material");
-
-  //get pointer to vector containing the scalar values at the gauß points
-  Teuchos::RCP<std::vector<std::vector<double> > > concentrations=
-      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc");
-
-  Parameter()->growthlaw_->SetFactor( concentrations->at(gp) );
-
-  /////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////
-
-  GrowthMandel::EvaluateGrowth(theta,dthetadC,defgrd,glstrain,params,eleGID);
-
-  /////////////////////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthScdAC::VisNames(std::map<std::string,int>& names)
+void MAT::Growth::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
+  if (isinit_)
+    dserror("This function should just be called if the material is not yet initialized.");
+
+  theta_ = Teuchos::rcp(new std::vector<double> (numgp));
+  thetaold_ = Teuchos::rcp(new std::vector<double> (numgp));
+  for (int j=0; j<numgp; ++j)
+  {
+    theta_->at(j) = 1.0;
+    thetaold_->at(j) = 1.0;
+  }
+
+  // Setup of elastic material
+  matelastic_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->idmatelastic_));
+  matelastic_->Setup(numgp, linedef);
+
+  // Setup of history container with empty data
+  std::map<int,std::vector<double> > data;
+  histdata_.Add("thetaold",data);
+
+  isinit_ = true;
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::Growth::ResetAll(const int numgp)
+{
+  for (int j=0; j<numgp; ++j)
+  {
+    thetaold_->at(j) = 1.0;
+    theta_->at(j) = 1.0;
+  }
+
+  // overwrite history with empty data
+  std::map<int,std::vector<double> > data;
+  histdata_.Add("thetaold",data);
+
+  matelastic_->ResetAll(numgp);
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::Growth::Update()
+{
+
+  const int numgp = theta_->size();
+
+  for (int i=0; i<numgp; i++)
+  {
+    thetaold_->at(i) = theta_->at(i);
+  }
+
+
+  matelastic_->Update();
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::Growth::ResetStep()
+{
+  dserror("You need a backup of thetaold_ to be able to reset!");
+  matelastic_->ResetStep();
+}
+
+void MAT::Growth::StoreHistory(int timestep)
+{
+  std::map<int,std::vector<double> >* access;
+  access = histdata_.GetMutable<std::map<int,std::vector<double> > >("thetaold");
+  (*access)[timestep] = *thetaold_;
+}
+
+void MAT::Growth::SetHistory(int timestep)
+{
+  const std::map<int,std::vector<double> >* read;
+  read = histdata_.Get<std::map<int,std::vector<double> > >("thetaold");
+
+  if (read->find(timestep) != read->end())
+    *thetaold_ = read->at(timestep);
+  else
+    dserror("there is no data to reset for step %d",timestep);
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::Growth::EvaluateElastic(const LINALG::Matrix<3, 3>* defgrd,
+    const LINALG::Matrix<6, 1>* glstrain,
+    LINALG::Matrix<6, 1>* stress,
+    LINALG::Matrix<6, 6>* cmat,
+    Teuchos::ParameterList& params,
+    const int eleGID)
+{
+  Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, eleGID);
+}
+
+
+double MAT::Growth::Density(int gp) const
+{
+  const double density_elast = matelastic_->Density();
+  const double theta_gp = (*theta_)[gp];
+
+  const double density_scale = Parameter()->growthlaw_->DensityScale(theta_gp);
+
+  return density_elast * density_scale;
+
+}
+
+
+
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthVolumetric::VisNames(std::map<std::string,int>& names)
+{
+
   std::string fiber = "theta";
   names[fiber] = 1;
 
@@ -447,8 +398,9 @@ void MAT::GrowthScdAC::VisNames(std::map<std::string,int>& names)
 }
 
 /*----------------------------------------------------------------------------*/
-bool MAT::GrowthScdAC::VisData(const std::string& name, std::vector<double>& data, int numgp , int eleID)
+bool MAT::GrowthVolumetric::VisData(const std::string& name, std::vector<double>& data, int numgp , int eleID)
 {
+
   if (name == "theta")
   {
     if ((int)data.size()!=1)
@@ -465,230 +417,43 @@ bool MAT::GrowthScdAC::VisData(const std::string& name, std::vector<double>& dat
   return true;
 }
 
-MAT::GrowthScdACRadialType MAT::GrowthScdACRadialType::instance_;
 
-DRT::ParObject* MAT::GrowthScdACRadialType::Create( const std::vector<char> & data )
+MAT::GrowthVolumetricType MAT::GrowthVolumetricType::instance_;
+
+/*----------------------------------------------------------------------------*/
+DRT::ParObject* MAT::GrowthVolumetricType::Create( const std::vector<char> & data )
 {
-  MAT::GrowthScdACRadial* grow = new MAT::GrowthScdACRadial();
+  MAT::GrowthVolumetric* grow = new MAT::GrowthVolumetric();
   grow->Unpack(data);
   return grow;
 }
 
-/*----------------------------------------------------------------------*
- |  Constructor                                               Thon 11/14|
- *----------------------------------------------------------------------*/
-MAT::GrowthScdACRadial::GrowthScdACRadial()
-  : GrowthScdAC(),
-    N_(true),
-    n_(Teuchos::null),
-    n_for_update_(Teuchos::null),
+/*----------------------------------------------------------------------------*/
+MAT::GrowthVolumetric::GrowthVolumetric()
+  : Growth(),
+//    tr_mandel_(Teuchos::null),
+    paramsVolumetric_(NULL),
+    refdir_(true),
+    curdir_(Teuchos::null),
+    curdir_for_update_(Teuchos::null),
     F_g_hist_(Teuchos::null)
 {
-
 }
 
-
-/*----------------------------------------------------------------------*
- |  Copy-Constructor                                          Thon 11/14|
- *----------------------------------------------------------------------*/
-MAT::GrowthScdACRadial::GrowthScdACRadial(MAT::PAR::GrowthScd* params)
-  : GrowthScdAC(params),
-    N_(true),
-    n_(Teuchos::null),
-    n_for_update_(Teuchos::null),
+/*----------------------------------------------------------------------------*/
+MAT::GrowthVolumetric::GrowthVolumetric(MAT::PAR::Growth* params)
+  : Growth(params),
+//    tr_mandel_(Teuchos::null),
+    paramsVolumetric_(params),
+    refdir_(true),
+    curdir_(Teuchos::null),
+    curdir_for_update_(Teuchos::null),
     F_g_hist_(Teuchos::null)
 {
-
 }
 
-/*----------------------------------------------------------------------*
- |  Setup                                                     Thon 11/14|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
-{
-  // CIR-AXI-RAD nomenclature
-  if (not (linedef->HaveNamed("RAD")))
-    dserror("If you want growth into the radial direction you need to specify RAD in your input file!");
-
-  ReadFiber(linedef,"RAD",N_);
-  n_=std::vector<LINALG::Matrix<3,1> >(numgp,N_);
-  n_for_update_=std::vector<LINALG::Matrix<3,1> >(numgp,N_);
-
-  LINALG::Matrix<3,3> Id(true);
-  for (int i = 0; i < 3; i++)
-    Id(i,i) = 1.0;
-  F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,Id);
-
-  GrowthScdAC::Setup(numgp, linedef);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Function which reads in the given fiber value due to the             |
- | FIBER1 nomenclature                                       Thon 01/15 |
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::ReadFiber(
-    DRT::INPUT::LineDefinition* linedef,
-    std::string specifier,
-    LINALG::Matrix<3,1> &fiber_vector
-)
-{
-  std::vector<double> fiber1;
-  linedef->ExtractDoubleVector(specifier,fiber1);
-  double f1norm=0.;
-  //normalization
-  for (int i = 0; i < 3; ++i)
-  {
-    f1norm += fiber1[i]*fiber1[i];
-  }
-  f1norm = sqrt(f1norm);
-
-  // fill final fiber vector
-  for (int i = 0; i < 3; ++i)
-    fiber_vector(i) = fiber1[i]/f1norm;
-}
-
-/*----------------------------------------------------------------------*
- |  Pack                                                      Thon 11/14|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm( data );
-  sm.Insert();
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data,type);
-
-  // Pack internal variables
-  for (int i = 0; i < 3; ++i)
-  {
-    AddtoPack(data,N_(i,0));
-  }
-
-  int numgp=0;
-  if (isinit_)
-  {
-    numgp = theta_->size();;   // size is number of gausspoints
-  }
-  AddtoPack(data,numgp);
-
-  for (int gp=0; gp<numgp; gp++)
-  {
-    LINALG::Matrix<3,3> F_g_hist = F_g_hist_.at(gp);
-    LINALG::Matrix<3,1> n = n_.at(gp);
-    LINALG::Matrix<3,1> n_for_update = n_for_update_.at(gp);
-
-    for (int i = 0; i < 3; ++i)
-    {
-      for (int j = 0; j < 3; ++j)
-      {
-        AddtoPack(data,F_g_hist(i,j));
-      }
-      AddtoPack(data,n(i,0));
-      AddtoPack(data,n_for_update(i,0));
-    }
-  }
-
-  // Pack base class material
-  GrowthScdAC::Pack(data);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Unpack                                                    Thon 11/14|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position,data,type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-
-  // unpack growth internal variables
-  // Pack internal variables
-  for (int i = 0; i < 3; ++i)
-  {
-    double Ni;
-    ExtractfromPack(position,data,Ni);
-    N_(i,0) =Ni;
-  }
-
-  int numgp;
-  ExtractfromPack(position,data,numgp);
-  if (not (numgp == 0))
-  {
-    F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,LINALG::Matrix<3,3>(true));
-    n_ = std::vector<LINALG::Matrix<3,1> >(numgp,LINALG::Matrix<3,1>(true));
-    n_for_update_ = std::vector<LINALG::Matrix<3,1> >(numgp,LINALG::Matrix<3,1>(true));
-
-    for (int gp=0; gp<numgp; gp++)
-    {
-      LINALG::Matrix<3,3> F_g_hist(true);
-      LINALG::Matrix<3,1> n(true);
-      LINALG::Matrix<3,1> n_for_update(true);
-
-      for (int i = 0; i < 3; ++i)
-      {
-        for (int j = 0; j < 3; ++j)
-        {
-          double F_g_hist_ij;
-          ExtractfromPack(position,data,F_g_hist_ij);
-          F_g_hist(i,j) =F_g_hist_ij;
-        }
-        double n_i;
-        ExtractfromPack(position,data,n_i);
-        n(i,0) =n_i;
-
-        double n_for_update_i;
-        ExtractfromPack(position,data,n_for_update_i);
-        n_for_update(i,0) =n_for_update_i;
-      }
-      F_g_hist_.at(gp)=F_g_hist;
-      n_.at(gp)=n;
-      n_for_update_.at(gp)=n_for_update;
-    }
-  }
-
-  // extract base class material
-  std::vector<char> basedata(0);
-  GrowthScdAC::ExtractfromPack(position,data,basedata);
-  GrowthScdAC::Unpack(basedata);
-
-
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
-|  Time update of material                                   Thon 01/15|
-*----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::Update()
-{
-  const int numgp = theta_->size();
-
-  for (int gp=0; gp<numgp; gp++)
-  {
-    LINALG::Matrix<3,3> F_g_hist_new(true);
-
-    CalcFg(theta_->at(gp),gp,F_g_hist_new);
-
-    F_g_hist_.at(gp) = F_g_hist_new;
-
-    n_.at(gp)=n_for_update_.at(gp);
-  }
-
-  GrowthScdAC::Update();
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate Material                                         Thon 01/15|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::Evaluate
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthVolumetric::Evaluate
 (
     const LINALG::Matrix<3,3>* defgrd,
     const LINALG::Matrix<6,1>* glstrain,
@@ -719,41 +484,54 @@ void MAT::GrowthScdACRadial::Evaluate
   if (output)
     time = endtime + 1.0;
 
-  if (time > starttime + eps && time <= endtime + eps) //iff growth is active
+  if (time > starttime + eps && time <= endtime + eps)
   {
-    //push-forward of N
-    LINALG::Matrix<3,3> defgrdinv(true);
-    defgrdinv.Invert(*defgrd);
-    LINALG::Matrix<3,1> n_for_update(true);
-    n_for_update.MultiplyTN(defgrd->Determinant(),defgrdinv,N_);
-    //scale n to length of one
-    n_for_update.Scale(1.0/n_for_update.Norm2());
-    //save for time update
-    n_for_update_.at(gp)=n_for_update;
 
-//    n_.at(gp)=n_for_update;
+    // not nice but currently the only way we may do that....
+    switch (Parameter()->growthlaw_->MaterialType())
+    {
+    case INPAR::MAT::m_growth_ac_radial:
+    case INPAR::MAT::m_growth_ac_radial_refconc:
+    {
+      // directional stuff......
+      //push-forward of refdir
+      LINALG::Matrix<3,3> defgrdinv(true);
+      defgrdinv.Invert(*defgrd);
+      LINALG::Matrix<3,1> curdir_for_update(true);
+      curdir_for_update.MultiplyTN(defgrd->Determinant(),defgrdinv,refdir_);
+      //scale n to length of one
+      curdir_for_update.Scale(1.0/curdir_for_update.Norm2());
+      //save for time update
+      curdir_for_update_.at(gp)=curdir_for_update;
+    //  curdir_.at(gp)=curdir_for_update;
+    }
+      break;
+    default:
+      break;
+    }
 
+    double theta = ThetaOld()->at(gp);
     //--------------------------------------------------------------------------------------
-    // calculate \theta and  \frac{\partial \theta}{\partial C}
+    // evaluation of the volumetric growth factor and its derivative wrt cauchy-green
     //--------------------------------------------------------------------------------------
-    double theta;
     LINALG::Matrix<6,1> dthetadCvec(true);
     EvaluateGrowth(&theta,&dthetadCvec,defgrd,glstrain,params,eleGID);
+
+    //modify the parameter list to be passed to the elastic material
+    Teuchos::ParameterList paramselast(params);
+    paramselast.remove("matparderiv",false);
 
     LINALG::Matrix<6,1> S(true);
     LINALG::Matrix<6,6> cmatdach(true);
 
-    GetSAndCmatdach(theta,defgrd,&S,&cmatdach,params,eleGID);
+    GetSAndCmatdach(theta,defgrd,&S,&cmatdach,paramselast,eleGID);
 
     *stress=S;
 
-    //--------------------------------------------------------------------------------------
-    // calculate elastic material stiffness matrix = \frac{\partial S}{\partial E}
-    //--------------------------------------------------------------------------------------
-
     // calculate growth part F_g of the deformation gradient F
     LINALG::Matrix<3,3> F_g(true);
-    CalcFg(theta,gp,F_g);
+
+    Parameter()->growthlaw_->CalcFg(theta,ThetaOld()->at(gp),gp,defgrd,refdir_,curdir_,F_g_hist_,F_g);
 
     // calculate F_g^(-1)
     LINALG::Matrix<3,3> F_ginv(true);
@@ -761,63 +539,72 @@ void MAT::GrowthScdACRadial::Evaluate
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-
     cmatelast = PullBack4Tensor(F_ginv,cmatdach);
 
-    if (params.isParameter("dconc_zero_ratio_dC"))
+    //--------------------------------------------------------------------------------------
+    // call material law with elastic part of defgr and elastic part of glstrain
+    //--------------------------------------------------------------------------------------
+    // build identity tensor I
+    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i) = 1.0;
+
+    // right Cauchy-Green Tensor  C = 2 * E + I
+    LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
+    C.Scale(2.0);
+    C += Id;
+
+    // NOTE: we do this by a FD approximation, which is really cheap here due to the fact
+    // that theta is a scalar value (hence only one more material evaluation is needed!)
+
+    const double espilon = 1.0e-8;
+
+    LINALG::Matrix<6,1> SEps(true);
+    LINALG::Matrix<6,6> cmatdachEps(true);
+
+    GetSAndCmatdach(theta+espilon,defgrd,&SEps,&cmatdachEps,params,eleGID);
+
+    //--------------------------------------------------------------------------------------
+    // calculate \frac{d S}{d C} = \frac{\partial S}{\partial C} +
+    //    + 2* \left( \frac{\partial S}{\partial \theta} \otimes \frac{\partial \theta}{\partial C} \right)
+    //--------------------------------------------------------------------------------------
+    for (int i = 0; i < 6; i++)
     {
-      //if the growth law shall be proportional to the scalar in the
-      //spatial configuration on has to a lot more :-(
-
-      //--------------------------------------------------------------------------------------
-      // calculate \frac{\partial S}{\partial \theta}
-      //--------------------------------------------------------------------------------------
-      // NOTE: we do this by a FD approximation, which is really cheap here due to the fact
-      // that theta is a scalar value (hence only one more material evaluation is needed!)
-
-      const double espilon = 1.0e-8;
-
-      LINALG::Matrix<6,1> SEps(true);
-      LINALG::Matrix<6,6> cmatdachEps(true);
-
-      GetSAndCmatdach(theta+espilon,defgrd,&SEps,&cmatdachEps,params,eleGID);
-
-      //--------------------------------------------------------------------------------------
-      // calculate \frac{d S}{d E} = \frac{\partial S}{\partial E} +
-      //    + 2* \left( \frac{\partial S}{\partial \theta} \times \frac{\partial \theta}{\partial C} \right)
-      //--------------------------------------------------------------------------------------
-      for (int i = 0; i < 6; i++)
+      for (int j = 0; j < 6; j++)
       {
-        for (int j = 0; j < 6; j++)
-        {
 
-          (*cmat)(i, j) =  cmatelast(i, j) + 2.0 *(SEps(i) - S(i))/espilon * dthetadCvec(j);
-        }
+        (*cmat)(i, j) =  cmatelast(i, j) + 2.0 *(SEps(i) - S(i))/espilon * dthetadCvec(j);
       }
-
-      //clean up for safety reasons
-      params.remove("dconc_zero_ratio_dC");
-      params.remove("conc_zero_ratio");
     }
-    else //dthetadCvec is zero
+
+
+    // stuff needed for const growth law in combination with parameter estimation
+    int deriv = params.get<int>("matparderiv",-1);
+    if (deriv != -1)
     {
-      //Note: we want to end up here only if our theta does not depend on structural variables, hence
-      // iff dthetadCvec is zero. We better check:
-      if (dthetadCvec.NormInf() > 1e-14)
-        dserror("dthetadCvec should be zero in this case!");
+      LINALG::Matrix<NUM_STRESS_3D, 1> cmatelasC(true);
+      for (int i = 0; i < NUM_STRESS_3D; i++)
+       {
+         cmatelasC(i,0) = cmatelast(i, 0) * C(0) + cmatelast(i, 1) * C(1)
+                       + cmatelast(i, 2) * C(2) + cmatelast(i, 3) * C(3)
+                       + cmatelast(i, 4) * C(4) + cmatelast(i, 5) * C(5);
+       }
 
-      //we are done!
-      *cmat=cmatelast;
+      stress->Update(1.0,cmatelasC,2.0);
+      double dthetadp;
+      Parameter()->growthlaw_->EvaluatePDeriv(&dthetadp,ThetaOld_atgp(gp),Matelastic(),defgrd, glstrain,params,eleGID);
+      stress->Scale(-dthetadp/theta);
 
-      //clean up for safety reasons
-      params.remove("conc_zero_ratio");
-    }
+    }// END stuff needed for const growth law in combination with parameter estimation
+
 
     // store theta
     theta_->at(gp) = theta;
+
+
   }
   else if (time > endtime + eps)
-  {
+  { // turn off growth or calculate stresses for output
     double theta = theta_->at(gp);
 
     LINALG::Matrix<6,1> S(true);
@@ -828,12 +615,20 @@ void MAT::GrowthScdACRadial::Evaluate
     *stress=S;
 
     //--------------------------------------------------------------------------------------
-    // calculate material stiffness matrix = dS/dE
-    //--------------------------------------------------------------------------------------
+    // build identity tensor I
+    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i) = 1.0;
+
+    // right Cauchy-Green Tensor  C = 2 * E + I
+    LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
+    C.Scale(2.0);
+    C += Id;
 
     // calculate growth part F_g of the deformation gradient F
     LINALG::Matrix<3,3> F_g(true);
-    CalcFg(theta,gp,F_g);
+
+    Parameter()->growthlaw_->CalcFg(theta,ThetaOld_atgp(gp),gp,defgrd,refdir_,curdir_,F_g_hist_,F_g);
 
     // calculate F_g^(-1)
     LINALG::Matrix<3,3> F_ginv(true);
@@ -841,20 +636,59 @@ void MAT::GrowthScdACRadial::Evaluate
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-
     cmatelast = PullBack4Tensor(F_ginv,cmatdach);
 
     *cmat = cmatelast;
-  }
-  else //no growth has happened jet
-  {
-    Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, eleGID); //evaluate the standard material
-  }
 
+  }
+  else
+  {
+    EvaluateElastic(defgrd, glstrain, stress, cmat, params, eleGID);
+    // build identity tensor I
+    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i) = 1.0;
+    // right Cauchy-Green Tensor  C = 2 * E + I
+    LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
+    C.Scale(2.0);
+    C += Id;
+    LINALG::Matrix<NUM_STRESS_3D, 1> S(true);
+    S = *stress;
+//    tr_mandel_->at(gp) =   C(0) * S(0) + C(1) * S(1) + C(2) * S(2) + C(3) * S(3)
+//                      + C(4) * S(4) + C(5) * S(5);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* defgrd,
+void MAT::GrowthVolumetric::EvaluateGrowth(double* theta,
+                      LINALG::Matrix<6,1>* dthetadC,
+                      const LINALG::Matrix<3,3>* defgrd,
+                      const LINALG::Matrix<6,1>* glstrain,
+                      Teuchos::ParameterList& params,
+                      const int eleGID)
+{
+  // get gauss point number
+  const int gp = params.get<int>("gp", -1);
+  if (gp == -1)
+    dserror("No Gauss point number provided in material.");
+
+  double thetaold = ThetaOld_atgp(gp);
+
+  MAT::Growth* matgrowth = this;
+  Parameter()->growthlaw_->Evaluate(theta,thetaold,dthetadC,*matgrowth,defgrd,glstrain,refdir_,curdir_,F_g_hist_,params,eleGID);
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthVolumetric::ResetAll(const int numgp)
+{
+//  for (int j=0; j<numgp; ++j)
+//    tr_mandel_->at(j) = 0.0;
+
+  MAT::Growth::ResetAll(numgp);
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthVolumetric::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* defgrd,
                             const LINALG::Matrix<6, 1>* glstrain,
                             Teuchos::ParameterList& params,
                             LINALG::Matrix<NUM_STRESS_3D,1>* linmass_disp,
@@ -877,40 +711,28 @@ void MAT::GrowthScdACRadial::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* def
     double thetaold = ThetaOld()->at(gp);
 
     MAT::Growth* matgrowth = this;
-    Parameter()->growthlaw_->Evaluate(&theta,thetaold,linmass_disp,*matgrowth,defgrd,glstrain,params,eleGID);
-    linmass_disp->Scale(Matelastic()->Density());
+    Parameter()->growthlaw_->Evaluate(&theta,thetaold,linmass_disp,*matgrowth,defgrd,glstrain,refdir_,curdir_,F_g_hist_,params,eleGID);
+
+    const double density_deriv_scale = Parameter()->growthlaw_->DensityDerivScale(theta);
+    linmass_disp->Scale(density_deriv_scale * Matelastic()->Density());
 
     linmass_vel->Clear();
   }
   else
   {
-    //no growth. set to zero
+    //no growth, set to zero
     linmass_disp->Clear();
     linmass_vel->Clear();
   }
 }
 
-///*----------------------------------------------------------------------*
-// | calculate growth part of deformation gradient              Thon 01/16|
-// *----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::CalcFg( const double& theta, const int& gp, LINALG::Matrix<3,3>& F_g )
-{
-  LINALG::Matrix<3,3> ndn(true);
-  ndn.MultiplyNT(n_.at(gp),n_.at(gp));
 
-  LINALG::Matrix<3,3> F_g_incr(true);
-  for (int i = 0; i < 3; i++)
-    F_g_incr(i,i) = 1.0;
-  F_g_incr.Update((theta-ThetaOld()->at(gp))/ThetaOld()->at(gp),ndn,1.0);
-
-  F_g.MultiplyNN(F_g_incr,F_g_hist_.at(gp));
-}
 
 ///*----------------------------------------------------------------------*
 // | calculate stresses and elastic material tangent                      |
 // | (both in Voigt notation)                                   Thon 01/16|
 // *----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::GetSAndCmatdach
+void MAT::GrowthVolumetric::GetSAndCmatdach
 (
     const double theta,
     const LINALG::Matrix<3,3>* defgrd,
@@ -920,14 +742,14 @@ void MAT::GrowthScdACRadial::GetSAndCmatdach
     const int eleGID
 )
 {
-   // get gauss point number
-    const int gp = params.get<int>("gp", -1);
-    if (gp == -1)
-      dserror("no Gauss point number provided in material");
+  // get gauss point number
+  const int gp = params.get<int>("gp", -1);
+  if (gp == -1)
+    dserror("no Gauss point number provided in material");
 
   // calculate growth part F_g of the deformation gradient F
   LINALG::Matrix<3,3> F_g(true);
-  CalcFg(theta,gp,F_g);
+  Parameter()->growthlaw_->CalcFg(theta,ThetaOld_atgp(gp),gp,defgrd,refdir_,curdir_,F_g_hist_,F_g);
 
   // calculate F_g^(-1)
   LINALG::Matrix<3,3> F_ginv(true);
@@ -977,14 +799,24 @@ void MAT::GrowthScdACRadial::GetSAndCmatdach
   S.MultiplyNN(F_ginv,tmp);
 
   MatrixToVector(S,*stress,MAT::voigt_stress);
+
+//  // trace of elastic Mandel stress Mdach = Cdach Sdach
+//  double mandel =   Cdachvec(0) * Sdachvec(0) + Cdachvec(1) * Sdachvec(1)
+//                  + Cdachvec(2) * Sdachvec(2) + Cdachvec(3) * Sdachvec(3) + Cdachvec(4) * Sdachvec(4)
+//                  + Cdachvec(5) * Sdachvec(5);
+//  tr_mandel_->at(gp) = mandel;
+
 }
 
 
+
+
+
 /*----------------------------------------------------------------------*
- |     ///transform vector in voigt notation into symmetric             |
+ | transform vector in voigt notation into symmetric                    |
  | 2Tensor (in matrix notation)                              Thon 01/15 |
  *----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::VectorToMatrix(LINALG::Matrix<3,3>& Matrix,
+void MAT::GrowthVolumetric::VectorToMatrix(LINALG::Matrix<3,3>& Matrix,
                     const LINALG::Matrix<6,1>& Vector,
                     const MAT::VoigtType Type )
 {
@@ -1020,7 +852,7 @@ void MAT::GrowthScdACRadial::VectorToMatrix(LINALG::Matrix<3,3>& Matrix,
  | ///transform symmetric 2Tensor(in matrix notation) into voigt        |
  | notation ( e.g. vector notation)                          Thon 01/15 |
  *----------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::MatrixToVector(const LINALG::Matrix<3,3>& Matrix,
+void MAT::GrowthVolumetric::MatrixToVector(const LINALG::Matrix<3,3>& Matrix,
                     LINALG::Matrix<6,1>& Vector,
                     const MAT::VoigtType Type)
 {
@@ -1051,7 +883,7 @@ void MAT::GrowthScdACRadial::MatrixToVector(const LINALG::Matrix<3,3>& Matrix,
  | notation) via the 2th order deformation gradient (also in matrix     |
  | notation)                                                  thon 01/15|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<6,6> MAT::GrowthScdACRadial::PullBack4Tensor(const LINALG::Matrix<3,3>& defgr,
+LINALG::Matrix<6,6> MAT::GrowthVolumetric::PullBack4Tensor(const LINALG::Matrix<3,3>& defgr,
                     const LINALG::Matrix<6,6>& Cmat)
 {
   double CMAT[3][3][3][3] = {{{{0.0}}}};
@@ -1119,11 +951,11 @@ LINALG::Matrix<6,6> MAT::GrowthScdACRadial::PullBack4Tensor(const LINALG::Matrix
 }
 
 /*-------------------------------------------------------------------------------------*
- |  pull back the ijkl-th entry of a symmetric elastic 4th order                       |
+ | pull back the ijkl-th entry of a symmetric elastic 4th order                        |
  | tensor (in matrix/voigt notation) /// via the 2th order deformation                 |
  | gradient (also in matrix notation)                                      Thon  01/15 |
  *-------------------------------------------------------------------------------------*/
-double MAT::GrowthScdACRadial::PullBack4Tensorijkl(const LINALG::Matrix<3,3>& defgr,
+double MAT::GrowthVolumetric::PullBack4Tensorijkl(const LINALG::Matrix<3,3>& defgr,
                       const double (&FourTensor)[3][3][3][3],
                       const double& i,
                       const double& j,
@@ -1144,7 +976,7 @@ double MAT::GrowthScdACRadial::PullBack4Tensorijkl(const LINALG::Matrix<3,3>& de
 /*-------------------------------------------------------------------------------------*
  |  Setup 4-Tensor from 6x6 Voigt notation                                 thon  01/15 |
  *-------------------------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::Setup4Tensor(
+void MAT::GrowthVolumetric::Setup4Tensor(
     double (&FourTensor)[3][3][3][3],
     const LINALG::Matrix<6,6>& VoigtMatrix
 )
@@ -1304,7 +1136,7 @@ void MAT::GrowthScdACRadial::Setup4Tensor(
 /*------------------------------------------------------------------------------------------*
  |  Print Four Tensor                                                           thon  01/15 |
  *------------------------------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::PrintFourTensor(
+void MAT::GrowthVolumetric::PrintFourTensor(
     double (&FourTensor)[3][3][3][3]
                                             )
 {
@@ -1320,43 +1152,285 @@ void MAT::GrowthScdACRadial::PrintFourTensor(
   return;
 }
 
-/*----------------------------------------------------------------------------*/
-void MAT::GrowthScdACRadial::VisNames(std::map<std::string,int>& names)
-{
-  std::string fiber = "growth_direction";
-  names[fiber] = 3; // 3-dim vector
 
-  GrowthScdAC::VisNames(names);
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
+{
+
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+  // matid
+  int matid = -1;
+
+  MAT::PAR::Growth* params=Parameter();
+  if (params != NULL) matid = params->Id();  // in case we are in post-process mode
+  AddtoPack(data,matid);
+
+  int numgp=0;
+  if (isinit_)
+  {
+    numgp = theta_->size();   // size is number of Gauss points
+  }
+  AddtoPack(data,numgp);
+
+//  // Pack internal variables
+//  for (int gp = 0; gp < numgp; ++gp)
+//  {
+//    AddtoPack(data,tr_mandel_->at(gp));
+//  }
+
+
+  // Pack internal variables
+  for (int i = 0; i < 3; ++i)
+  {
+    AddtoPack(data,refdir_(i,0));
+  }
+
+  //int numgp=0;
+  if (isinit_)
+  {
+    numgp = theta_->size();;   // size is number of Fauss points
+  }
+  AddtoPack(data,numgp);
+
+  for (int gp=0; gp<numgp; gp++)
+  {
+    LINALG::Matrix<3,3> F_g_hist = F_g_hist_.at(gp);
+    LINALG::Matrix<3,1> curdir = curdir_.at(gp);
+    LINALG::Matrix<3,1> curdir_for_update = curdir_for_update_.at(gp);
+
+    for (int i = 0; i < 3; ++i)
+    {
+      for (int j = 0; j < 3; ++j)
+      {
+        AddtoPack(data,F_g_hist(i,j));
+      }
+      AddtoPack(data,curdir(i,0));
+      AddtoPack(data,curdir_for_update(i,0));
+    }
+  }
+
+  // Pack base class material
+  Growth::Pack(data);
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
-bool MAT::GrowthScdACRadial::VisData(const std::string& name, std::vector<double>& data, int numgp , int eleID)
+void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
 {
-  if (name == "growth_direction")
-  {
-    if ((int)data.size()!=3)
-      dserror("size mismatch");
 
-    LINALG::Matrix<3,1> temp(true);
-    for (int gp=0; gp<numgp; gp++)
+  isinit_=true;
+  std::vector<char>::size_type position = 0;
+
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  // matid and recover params_
+  int matid;
+  ExtractfromPack(position,data,matid);
+
+  paramsVolumetric_ = NULL;
+  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+    if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
-      if ( (abs((n_. at(gp)).Norm2())-1.0)>1e-14 )
-      {
-        dserror("length of n_ is not one. This should not be possible!");
-      }
-
-      temp.Update(1.0/(double)numgp,n_.at(gp),1.0);
+      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      if (mat->Type() == MaterialType())
+        paramsVolumetric_ = dynamic_cast<MAT::PAR::Growth*>(mat);
+      else
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
-    // we fix the length, since the mean of all n's must not have length one, even if
-    // all n's individually have length one! So:
-    temp.Scale(1.0/temp.Norm2());
 
-    data[0] = temp(0,0);
-    data[1] = temp(1,0);
-    data[2] = temp(2,0);
+  int numgp;
+  ExtractfromPack(position,data,numgp);
+  if (numgp == 0){ // no history data to unpack
+    isinit_=false;
+    if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+    return;
   }
 
-  GrowthScdAC::VisData(name,data,numgp,eleID);
+//  // unpack growth internal variables
+//  tr_mandel_ = Teuchos::rcp(new std::vector<double> (numgp));
+//  for (int gp = 0; gp < numgp; ++gp)
+//  {
+//    double a;
+//    ExtractfromPack(position,data,a);
+//    tr_mandel_->at(gp) = a;
+//  }
 
-  return true;
+  // unpack growth internal variables
+  // Pack internal variables
+  for (int i = 0; i < 3; ++i)
+  {
+    double refdir_i;
+    ExtractfromPack(position,data,refdir_i);
+    refdir_(i,0) = refdir_i;
+  }
+
+  //int numgp;
+  ExtractfromPack(position,data,numgp);
+  if (not (numgp == 0))
+  {
+    F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,LINALG::Matrix<3,3>(true));
+    curdir_ = std::vector<LINALG::Matrix<3,1> >(numgp,LINALG::Matrix<3,1>(true));
+    curdir_for_update_ = std::vector<LINALG::Matrix<3,1> >(numgp,LINALG::Matrix<3,1>(true));
+
+    for (int gp=0; gp<numgp; gp++)
+    {
+      LINALG::Matrix<3,3> F_g_hist(true);
+      LINALG::Matrix<3,1> curdir(true);
+      LINALG::Matrix<3,1> curdir_for_update(true);
+
+      for (int i = 0; i < 3; ++i)
+      {
+        for (int j = 0; j < 3; ++j)
+        {
+          double F_g_hist_ij;
+          ExtractfromPack(position,data,F_g_hist_ij);
+          F_g_hist(i,j) = F_g_hist_ij;
+        }
+        double curdir_i;
+        ExtractfromPack(position,data,curdir_i);
+        curdir(i,0) = curdir_i;
+
+        double curdir_for_update_i;
+        ExtractfromPack(position,data,curdir_for_update_i);
+        curdir_for_update(i,0) = curdir_for_update_i;
+      }
+      F_g_hist_.at(gp)=F_g_hist;
+      curdir_.at(gp)=curdir;
+      curdir_for_update_.at(gp)=curdir_for_update;
+    }
+  }
+
+  // extract base class material
+  std::vector<char> basedata(0);
+  Growth::ExtractfromPack(position,data,basedata);
+  Growth::Unpack(basedata);
+
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthVolumetric::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+{
+
+//  tr_mandel_ = Teuchos::rcp(new std::vector<double> (numgp));
+//  for (int j=0; j<numgp; ++j)
+//    tr_mandel_->at(j) = 0.0;
+
+  // setup specific anisotropic growth laws
+  switch (Parameter()->growthlaw_->MaterialType())
+  {
+  case INPAR::MAT::m_growth_ac_radial:
+  case INPAR::MAT::m_growth_ac_radial_refconc:
+  {
+    // CIR-AXI-RAD nomenclature
+    if (not (linedef->HaveNamed("RAD")))
+      dserror("If you want growth into the radial direction you need to specify RAD in your input file!");
+
+    ReadFiber(linedef,"RAD",refdir_);
+    curdir_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
+    curdir_for_update_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
+
+    LINALG::Matrix<3,3> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i,i) = 1.0;
+    F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,Id);
+  }
+    break;
+  default:
+  {
+    refdir_(true);
+    curdir_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
+    curdir_for_update_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
+
+    LINALG::Matrix<3,3> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i,i) = 1.0;
+    F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,Id);
+  }
+    break;
+  }
+
+  //setup base class
+  Growth::Setup(numgp, linedef);
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthVolumetric::Update()
+{
+
+  const int numgp = theta_->size();
+
+  // setup anisotropic growth laws
+  switch (Parameter()->growthlaw_->MaterialType())
+  {
+  case INPAR::MAT::m_growth_ac_radial:
+  case INPAR::MAT::m_growth_ac_radial_refconc:
+  {
+    const LINALG::Matrix<3,3> dummydefgrad(true);
+
+    for (int gp=0; gp<numgp; gp++)
+    {
+      LINALG::Matrix<3,3> F_g_hist_new(true);
+
+      Parameter()->growthlaw_->CalcFg(theta_->at(gp),ThetaOld()->at(gp),gp,&dummydefgrad,refdir_,curdir_,F_g_hist_,F_g_hist_new);
+
+      F_g_hist_.at(gp) = F_g_hist_new;
+
+      curdir_.at(gp)=curdir_for_update_.at(gp);
+    }
+  }
+    break;
+  default:
+    break;
+  }
+
+  //update base class
+  Growth::Update();
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | Function which reads in the given fiber value             Thon 01/15 |
+ *----------------------------------------------------------------------*/
+void MAT::GrowthVolumetric::ReadFiber(
+    DRT::INPUT::LineDefinition* linedef,
+    std::string specifier,
+    LINALG::Matrix<3,1> &fiber_vector
+)
+{
+  std::vector<double> fiber1;
+  linedef->ExtractDoubleVector(specifier,fiber1);
+  double f1norm=0.;
+  //normalization
+  for (int i = 0; i < 3; ++i)
+  {
+    f1norm += fiber1[i]*fiber1[i];
+  }
+  f1norm = sqrt(f1norm);
+
+  // fill final fiber vector
+  for (int i = 0; i < 3; ++i)
+    fiber_vector(i) = fiber1[i]/f1norm;
+
 }
