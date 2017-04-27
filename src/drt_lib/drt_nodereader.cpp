@@ -22,6 +22,7 @@
 #include "../drt_meshfree_discret/drt_meshfree_node.H"
 #include "../drt_immersed_problem/immersed_node.H"
 #include "../drt_particle/particle_node.H"
+#include "../drt_particle/particle_radius_node.H"
 #include "../drt_fiber/drt_fiber_node.H"
 #include "../drt_io/io_pstream.H"
 
@@ -355,19 +356,29 @@ void NodeReader::Read()
                 break;
               }
           }
-          // this node is a particle
-          else if (tmp=="PARTICLE")
+          // this node is a particle (with or without specified radius)
+          else if (tmp=="PARTICLE" or tmp=="RPARTICLE")
           {
             double coords[3];
             int nodeid;
-            file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
+            file >> nodeid >> tmp2 >> coords[0] >> coords[1] >> coords[2];
             nodeid--;
             maxnodeid = std::max(maxnodeid, nodeid)+1;
-            if (tmp!="COORD") dserror("failed to read node %d",nodeid);
+            if (tmp2!="COORD") dserror("failed to read node %d",nodeid);
             Teuchos::RCP<DRT::Discretization> diss = DRT::Problem::Instance()->GetDis("particle");
 
             // create particle and add to discretization
-            Teuchos::RCP<DRT::Node> particle = Teuchos::rcp(new PARTICLE::ParticleNode(nodeid,coords,myrank));
+            Teuchos::RCP<DRT::Node> particle;
+            if(tmp=="PARTICLE")
+              particle = Teuchos::rcp(new PARTICLE::ParticleNode(nodeid,coords,myrank));
+            else
+            {
+              double radius(0.);
+              file >> tmp2 >> radius;
+              if(tmp2!="RADIUS")
+                dserror("Invalid syntax for RPARTICLE!");
+              particle = Teuchos::rcp(new PARTICLE::ParticleRadiusNode(nodeid,coords,radius,myrank));
+            }
             diss->AddNode(particle);
 
             ++bcount;
