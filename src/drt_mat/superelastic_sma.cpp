@@ -701,9 +701,10 @@ void MAT::SuperElasticSMA::Evaluate(
 
   // Convert Kirchhoff stress tensor in the second Piola-Kirchhoff tensor
   LINALG::Matrix<3,3> PK2(true);
+  LINALG::Matrix<3,3> tmp(true);
 
-  PK2.MultiplyNN(deformation_gradient_invert, kirchhoff_stress);
-  PK2.MultiplyNT(PK2, deformation_gradient_invert);
+  tmp.MultiplyNN(deformation_gradient_invert, kirchhoff_stress);
+  PK2.MultiplyNT(tmp, deformation_gradient_invert);
 
   // Convert PK2 into Voigt-Notation
   (*stress)(0) = PK2(0,0);
