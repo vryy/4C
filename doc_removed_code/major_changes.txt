@@ -16,5 +16,7 @@ crack propagation (by Sudhakar Yogaraj)
 - removed in revision 22725 on 2016-12-22
 - due to invasive implementation and difficulty to maintain and migrate to new structural time integration
 
-
-
+potential (by Ursula Mayer)
+- removed in revision 22495 on 2016-10-18
+- reasons: invasive implementation, outdated functionality, knowledge about functionality was lost at the institute, no active member of LNM was to be made responsible for shifting this implementation to the new structural time integration.
+- removed by Andreas Rauch
