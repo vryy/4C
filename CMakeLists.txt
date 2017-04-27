@@ -1522,6 +1522,7 @@ set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_beaminteraction/crosslinker_node.cpp
   src/drt_beaminteraction/periodic_boundingbox.cpp
   src/drt_particle/particle_node.cpp
+  src/drt_particle/particle_radius_node.cpp
   src/drt_meshfree_discret/drt_meshfree_bin.cpp
   src/drt_meshfree_discret/drt_meshfree_multibin.cpp
   src/drt_meshfree_discret/drt_meshfree_utils.cpp
