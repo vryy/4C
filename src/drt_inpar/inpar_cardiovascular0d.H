@@ -32,8 +32,9 @@ namespace CARDIOVASCULAR0D
     cardvasc0dsolve_simple  ///< use simple preconditioner for iterative solve
   };
 
-  enum Cardvasc0DAtrimModel
+  enum Cardvasc0DAtriumModel
   {
+    atr_none,
     atr_prescribed,
     atr_elastance_0d,
     atr_structure_3d
@@ -41,6 +42,7 @@ namespace CARDIOVASCULAR0D
 
   enum Cardvasc0DVentricleModel
   {
+    ventr_none,
     ventr_prescribed,
     ventr_elastance_0d,
     ventr_structure_3d
@@ -48,8 +50,8 @@ namespace CARDIOVASCULAR0D
 
   enum Cardvasc0DRespiratoryModel
   {
-    none,
-    standard
+    resp_none,
+    resp_standard
   };
 
   /// set the 0Dcardiovascular parameters

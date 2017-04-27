@@ -147,10 +147,10 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::CardiovascularRespira
   // set number of degrees of freedom
   switch (respiratory_model_)
   {
-    case INPAR::CARDIOVASCULAR0D::none:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
       num_dof_ = num_dof_cardio_;
     break;
-    case INPAR::CARDIOVASCULAR0D::standard:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
       num_dof_ = num_dof_cardio_+num_dof_respir_;
     break;
   }
@@ -308,44 +308,54 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
 
   switch (atrium_model_)
   {
-    case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_elastance_0d:
     {
       E_at_l_np = (E_at_max_l_-E_at_min_l_)*y_at_l_np + E_at_min_l_;
       E_at_r_np = (E_at_max_r_-E_at_min_r_)*y_at_r_np + E_at_min_r_;
     }
     break;
-    case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_structure_3d:
     {
       E_at_l_np = 0.;
       E_at_r_np = 0.;
     }
     break;
-    case INPAR::CARDIOVASCULAR0D::atr_prescribed:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_prescribed:
     {
       E_at_l_np = E_at_l_prescr_np;
       E_at_r_np = E_at_r_prescr_np;
+    }
+    break;
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_none:
+    {
+      dserror("Undefined atrium_model!");
     }
     break;
   }
 
   switch (ventricle_model_)
   {
-    case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_elastance_0d:
     {
       E_v_l_np = (E_v_max_l_-E_v_min_l_)*y_v_l_np + E_v_min_l_;
       E_v_r_np = (E_v_max_r_-E_v_min_r_)*y_v_r_np + E_v_min_r_;
     }
     break;
-    case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_structure_3d:
     {
       E_v_l_np = 0.;
       E_v_r_np = 0.;
     }
     break;
-    case INPAR::CARDIOVASCULAR0D::ventr_prescribed:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_prescribed:
     {
       E_v_l_np = E_v_l_prescr_np;
       E_v_r_np = E_v_r_prescr_np;
+    }
+    break;
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_none:
+    {
+      dserror("Undefined ventricle_model!");
     }
     break;
   }
@@ -457,34 +467,44 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
 
     switch (atrium_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
-      case INPAR::CARDIOVASCULAR0D::atr_prescribed:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_elastance_0d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_prescribed:
       {
         df_np[0]  = p_at_l_np/E_at_l_np;
         df_np[24] = p_at_r_np/E_at_r_np;
       }
       break;
-      case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_structure_3d:
       {
         df_np[0]  = V_at_l_np;
         df_np[24] = V_at_r_np;
+      }
+      break;
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_none:
+      {
+        dserror("Undefined atrium_model!");
       }
       break;
     }
 
     switch (ventricle_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_structure_3d:
       {
         df_np[2]  = V_v_l_np;
         df_np[26] = V_v_r_np;
       }
       break;
-      case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
-      case INPAR::CARDIOVASCULAR0D::ventr_prescribed:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_elastance_0d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_prescribed:
       {
         df_np[2]  = p_v_l_np/E_v_l_np;
         df_np[26] = p_v_r_np/E_v_r_np;
+      }
+      break;
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_none:
+      {
+        dserror("Undefined ventricle_model!");
       }
       break;
     }
@@ -578,14 +598,14 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     f_np[33] = (p_at_l_np - p_ven_pul_np)/R_ven_pul_ + q_ven_pul_np;
 
     // insert volumes of all the compartments into vol vector v_np
-    if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d or atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_prescribed)
+    if (atrium_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_elastance_0d or atrium_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_prescribed)
     {
       // 0D left atrial volume
       (*sysvec5)[0] = p_at_l_np/E_at_l_np + V_at_l_u_;
       // 0D right atrial volume
       (*sysvec5)[24] = p_at_r_np/E_at_r_np + V_at_r_u_;
     }
-    if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d or ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_prescribed)
+    if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_elastance_0d or ventricle_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_prescribed)
     {
       // 0D left ventricular volume
       (*sysvec5)[2] = p_v_l_np/E_v_l_np + V_v_l_u_;
@@ -622,9 +642,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     // after all vascular compartment volumes have been set - since these enter the 0D respiratory residual!!!
     switch (respiratory_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::none:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
       break;
-      case INPAR::CARDIOVASCULAR0D::standard:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
         EvaluateRespiratory(params,df_np,f_np,wkstiff,sysvec4,sysvec5,false);
       break;
     }
@@ -638,28 +658,34 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     //atrium - left and right
     switch (atrium_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
-      case INPAR::CARDIOVASCULAR0D::atr_prescribed:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_elastance_0d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_prescribed:
         wkstiff(0,0) = 1./(E_at_l_np*ts_size);
         wkstiff(24,24) = 1./(E_at_r_np*ts_size);
       break;
-      case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_structure_3d:
         wkstiff(0,0) = 0.;
         wkstiff(24,24) = 0.;
+      break;
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_none:
+        dserror("Undefined atrium_model!");
       break;
     }
 
     //ventricle - left and right
     switch (ventricle_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_structure_3d:
         wkstiff(2,3) = 0.;
         wkstiff(26,27) = 0.;
       break;
-      case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
-      case INPAR::CARDIOVASCULAR0D::ventr_prescribed:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_elastance_0d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_prescribed:
         wkstiff(2,3) = 1./(E_v_l_np*ts_size);
         wkstiff(26,27) = 1./(E_v_r_np*ts_size);
+      break;
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_none:
+        dserror("Undefined ventricle_model!");
       break;
     }
 
@@ -828,9 +854,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     //call sub evaluate method for respiratory model
     switch (respiratory_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::none:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
       break;
-      case INPAR::CARDIOVASCULAR0D::standard:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
         EvaluateRespiratory(params,df_np,f_np,wkstiff,sysvec4,sysvec5,true);
       break;
     }
@@ -943,7 +969,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
         // transport residual expressions
         switch (respiratory_model_)
         {
-          case INPAR::CARDIOVASCULAR0D::none:
+          case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
           {
             if (*conditiontype == "ventricle_left") colvec[0]=gindex[2];
             if (*conditiontype == "ventricle_right") colvec[0]=gindex[26];
@@ -953,7 +979,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
             sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
           }
           break;
-          case INPAR::CARDIOVASCULAR0D::standard:
+          case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
           {
             if (*conditiontype == "ventricle_left")
             {
@@ -1519,19 +1545,19 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
 
     switch (atrium_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_elastance_0d:
       {
         dV_at_l_dp = df_np[0]/p_at_l_np;
         dV_at_r_dp = df_np[24]/p_at_r_np;
       }
       break;
-      case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_structure_3d:
       {
         dV_at_l_dp = 0.;
         dV_at_r_dp = 0.;
       }
       break;
-      case INPAR::CARDIOVASCULAR0D::atr_prescribed:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_prescribed:
       {
         dV_at_l_dp = df_np[0]/p_at_l_np;
         dV_at_r_dp = df_np[24]/p_at_r_np;
@@ -1541,19 +1567,19 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespirat
 
     switch (ventricle_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::ventr_structure_3d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_structure_3d:
       {
         dV_v_l_dp = 0.;
         dV_v_r_dp = 0.;
       }
       break;
-      case INPAR::CARDIOVASCULAR0D::ventr_elastance_0d:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_elastance_0d:
       {
         dV_v_l_dp = df_np[2]/p_v_l_np;
         dV_v_r_dp = df_np[26]/p_v_r_np;
       }
       break;
-      case INPAR::CARDIOVASCULAR0D::ventr_prescribed:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_prescribed:
       {
         dV_v_l_dp = df_np[2]/p_v_l_np;
         dV_v_r_dp = df_np[26]/p_v_r_np;
@@ -3177,9 +3203,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
 
   switch (respiratory_model_)
   {
-    case INPAR::CARDIOVASCULAR0D::none:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
     break;
-    case INPAR::CARDIOVASCULAR0D::standard:
+    case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
 
       // initial value of time-varying pleural pressure
       double U_t_0 = 0.0;
@@ -3317,7 +3343,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
   {
     switch (respiratory_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::none:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
         {
           std::cout << "============ Welcome to monolithic coupling of 3D structural dynamics to 0D cardiovascular flow models ======================="<< std::endl;
           std::cout << "======= Model: Extended closed-loop vascular model with atria (3D or 0D), systemic and pulmonary circulation coupling, ======="<< std::endl;
@@ -3325,7 +3351,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
 
         }
       break;
-      case INPAR::CARDIOVASCULAR0D::standard:
+      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
         {
           std::cout << "============ Welcome to monolithic coupling of 3D structural dynamics to 0D cardiovascular flow models ======================="<< std::endl;
           std::cout << "======= Model: Extended closed-loop vascular model with atria (3D or 0D), systemic and pulmonary circulation coupling, ======="<< std::endl;

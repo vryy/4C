@@ -35,7 +35,14 @@
 UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> discr,
     const std::string& conditionname,
     std::vector<int>& curID):
-    actdisc_(discr)
+    actdisc_(discr),
+    cardiovascular0dcond_(0),
+    cardiovascular0dstructcoupcond_(0),
+    cardiovascular0dtype_(none),
+    atrium_model_(INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_none),
+    ventricle_model_(INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_none),
+    respiratory_model_(INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none),
+    gaussrule_(DRT::UTILS::intrule2D_undefined)
 {
   actdisc_->GetCondition(conditionname,cardiovascular0dcond_);
   if (cardiovascular0dcond_.size())
@@ -75,7 +82,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     // set model used for atria - just needed for CARDIOVASCULAR 0D SYS-PUL CIRCULATION or CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION model
     Teuchos::ParameterList artvensyspulpar =
         DRT::Problem::Instance()->Cardiovascular0DStructuralParams().sublist("SYS-PUL CIRCULATION PARAMETERS");
-    atrium_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtrimModel>(artvensyspulpar,"ATRIUM_MODEL");
+    atrium_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel>(artvensyspulpar,"ATRIUM_MODEL");
     ventricle_model_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel>(artvensyspulpar,"VENTRICLE_MODEL");
 
     // set respiratory model - just needed for CARDIOVASCULAR RESPIRATORY 0D SYS-PUL PERIPH CIRCULATION model
@@ -97,7 +104,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       {
         condtype[i] = cardiovascular0dcond_[i]->Get<std::string>("type");
 
-        if (atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_elastance_0d or atrium_model_ == INPAR::CARDIOVASCULAR0D::atr_prescribed)
+        if (atrium_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_elastance_0d or atrium_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_prescribed)
         {
           if (*condtype[i] == "atrium_left" or *condtype[i] == "atrium_right")
             dserror("Set ATRIUM_MODEL to '3D' if you want to couple the 0D vascular system to a 3D atrial structure!");
@@ -106,10 +113,10 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
 
       switch (atrium_model_)
       {
-        case INPAR::CARDIOVASCULAR0D::atr_elastance_0d:
-        case INPAR::CARDIOVASCULAR0D::atr_prescribed:
+        case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_elastance_0d:
+        case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_prescribed:
         {
-          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_structure_3d)
+          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_structure_3d)
           {
             if (cardiovascular0dcond_.size() == 2)
             {
@@ -122,7 +129,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
             else
               dserror("You need 2 conditions (left + right ventricle)!");
           }
-          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d or ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_prescribed)
+          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_elastance_0d or ventricle_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_prescribed)
           {
             if (cardiovascular0dcond_.size() == 1)
             {
@@ -134,9 +141,9 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
           }
         }
         break;
-        case INPAR::CARDIOVASCULAR0D::atr_structure_3d:
+        case INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_structure_3d:
         {
-          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::ventr_elastance_0d)
+          if (ventricle_model_ == INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_elastance_0d)
             dserror("You cannot use 3D atria with 0D ventricles!");
 
           if (cardiovascular0dcond_.size() == 4)

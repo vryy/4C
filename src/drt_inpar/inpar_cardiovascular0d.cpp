@@ -60,7 +60,12 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
   DoubleParameter("T_PERIOD",-1.0,"periodic time",&cardvasc0dstruct);
   DoubleParameter("EPS_PERIODIC",1.0e-16,"tolerance for periodic state",&cardvasc0dstruct);
 
+  setStringToIntegralParameter<int>("PTC_FOR_STRUCT","No","Set to yes for doing PTC on structural block.",
+                                 yesnotuple,yesnovalue,&cardvasc0dstruct);
 
+  DoubleParameter("K_PTC",0.0,
+                  "PTC for structure: 0 means normal Newton, ->infty means steepest desc",
+                  &cardvasc0dstruct);
 
   Teuchos::ParameterList& cardvasc0dsyspulcirc = cardvasc0dstruct.sublist("SYS-PUL CIRCULATION PARAMETERS",false,"");
 
@@ -77,11 +82,13 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                  tuple<std::string>(
                                    "0D",
                                    "3D",
-                                   "prescribed"),
+                                   "prescribed",
+                                   "none"),
                                  tuple<int>(
-                                   INPAR::CARDIOVASCULAR0D::atr_elastance_0d,
-                                   INPAR::CARDIOVASCULAR0D::atr_structure_3d,
-                                   INPAR::CARDIOVASCULAR0D::atr_prescribed),
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_elastance_0d,
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_structure_3d,
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_prescribed,
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_none),
                                  &cardvasc0dsyspulcirc);
   IntParameter("Atrium_act_curve_l",-1,"left atrial activation curve (ONLY for ATRIUM_MODEL '0D'!)",&cardvasc0dsyspulcirc);
   IntParameter("Atrium_act_curve_r",-1,"right atrial activation curve (ONLY for ATRIUM_MODEL '0D'!)",&cardvasc0dsyspulcirc);
@@ -96,11 +103,13 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                  tuple<std::string>(
                                    "3D",
                                    "0D",
-                                   "prescribed"),
+                                   "prescribed",
+                                   "none"),
                                  tuple<int>(
-                                   INPAR::CARDIOVASCULAR0D::ventr_structure_3d,
-                                   INPAR::CARDIOVASCULAR0D::ventr_elastance_0d,
-                                   INPAR::CARDIOVASCULAR0D::ventr_prescribed),
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_structure_3d,
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_elastance_0d,
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_prescribed,
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_none),
                                  &cardvasc0dsyspulcirc);
   IntParameter("Ventricle_act_curve_l",-1,"left ventricular activation curve (ONLY for VENTRICLE_MODEL '0D'!)",&cardvasc0dsyspulcirc);
   IntParameter("Ventricle_act_curve_r",-1,"right ventricular activation curve (ONLY for VENTRICLE_MODEL '0D'!)",&cardvasc0dsyspulcirc);
@@ -231,8 +240,8 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                    "None",
                                    "Standard"),
                                  tuple<int>(
-                                   INPAR::CARDIOVASCULAR0D::none,
-                                   INPAR::CARDIOVASCULAR0D::standard),
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none,
+                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard),
                                  &cardvascrespir0d);
 
 

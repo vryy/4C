@@ -371,50 +371,47 @@ namespace UTILS
 
 
     Teuchos::RCP<DRT::Discretization> actdisc_; ///< discretization where elements of cardiovascular0d boundary live in
+    int myrank_;
+    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Cardiovascular0DDofSet> cardiovascular0ddofset_; ///< degrees of freedom of pressures
     Teuchos::RCP<Epetra_Map> cardiovascular0dmap_;  ///< unique map of Cardiovascular0D values
     Teuchos::RCP<Epetra_Map> redcardiovascular0dmap_;   ///< fully redundant map of Cardiovascular0D values
     Teuchos::RCP<Epetra_Export> cardvasc0dimpo_;  ///< importer for fully redundant Cardiovascular0D vector into distributed one
-    Teuchos::RCP<Epetra_Vector> actpres_;
+    Teuchos::RCP<Epetra_Vector> cv0ddofincrement_; ///< increment of cvdof
     Teuchos::RCP<Epetra_Vector> cv0ddof_n_; ///< cvdof vector at t_{n}
     Teuchos::RCP<Epetra_Vector> cv0ddof_np_; ///< cvdof vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> cv0ddof_m_; ///< cvdof vector at mid-point
     Teuchos::RCP<Epetra_Vector> dcv0ddof_m_; ///< cvdof rate vector at mid-point
-    Teuchos::RCP<Epetra_Vector> cv0ddofincrement_; ///< increment of cvdof
     Teuchos::RCP<Epetra_Vector> v_n_; ///< vol vector at t_{n}
     Teuchos::RCP<Epetra_Vector> v_np_; ///< vol vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> v_m_; ///< vol vector at mid-point
-    Teuchos::RCP<Epetra_Vector> cardvasc0d_res_m_; ///< Cardiovascular0D full rhs vector, at t_{n+theta}
-
     Teuchos::RCP<Epetra_Vector> cv0ddof_T_N_; ///< cvdof vector at periodic time T_{N}
     Teuchos::RCP<Epetra_Vector> cv0ddof_T_NP_; ///< cvdof vector at periodic time T_{N+1}
-    double T_period_; ///< periodic time
-    double eps_periodic_; ///< tolerance for periodic state
-    bool is_periodic_; ///< true, if periodic state is reached, false otherwise
-    double cycle_error_; ///< perdiodicity error
-
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_res_m_; ///< Cardiovascular0D full rhs vector, at t_{n+theta}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_n_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_np_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n+1}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_df_m_; ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n+theta}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_n_; ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_np_; ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n+1}
     Teuchos::RCP<Epetra_Vector> cardvasc0d_f_m_; ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n+theta}
-
+    const double T_period_; ///< periodic time
+    const double eps_periodic_; ///< tolerance for periodic state
+    bool is_periodic_; ///< true, if periodic state is reached, false otherwise
+    double cycle_error_; ///< perdiodicity error
+    int numCardiovascular0DID_;  ///< number of Cardiovascular0D bcs
     int Cardiovascular0DID_;  ///< smallest Cardiovascular0D bc id
     int offsetID_;  ///< smallest Cardiovascular0D bc id
-    int numCardiovascular0DID_;  ///< number of Cardiovascular0D bcs
-    std::vector<int> currentID;
-    Teuchos::RCP<LINALG::SparseMatrix> mat_dcardvasc0d_dd_;  ///< additional rectangular matrix
-    Teuchos::RCP<LINALG::SparseMatrix> mat_dstruct_dcv0ddof_;  ///< additional rectangular matrix
-    Teuchos::RCP<LINALG::SparseMatrix> cardiovascular0dstiffness_;  ///< additional rectangular matrix
+    std::vector<int> currentID_;
     bool havecardiovascular0d_;  ///< are there Cardiovascular0D bcs at all?
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_model_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_4elementwindkessel_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialproxdist_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_syspulcirculation_;
     Teuchos::RCP<Cardiovascular0D> cardvascrespir0d_syspulperiphcirculation_;
-    int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
+    Teuchos::RCP<LINALG::SparseMatrix> cardiovascular0dstiffness_;  ///< additional rectangular matrix
+    Teuchos::RCP<LINALG::SparseMatrix> mat_dcardvasc0d_dd_;  ///< additional rectangular matrix
+    Teuchos::RCP<LINALG::SparseMatrix> mat_dstruct_dcv0ddof_;  ///< additional rectangular matrix
     int counter_;  ///< counts how often #Solve is called
     bool isadapttol_;  ///< adaptive tolerance for solver?
     double adaptolbetter_; ///< adaptive tolerance for solver useful?
@@ -422,7 +419,6 @@ namespace UTILS
     double tolres_cardvasc0d_; ///< tolerace for cardiovascular0d residual
     INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice_;
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
     double theta_;
     bool enhanced_output_;
