@@ -23,6 +23,7 @@
 #include "str_integrator.H"
 #include "str_resulttest.H"
 #include "str_timint_basedataio_runtime_vtk_output.H"
+#include "str_timint_basedataio_runtime_vtp_output.H"
 
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io.H"
@@ -416,10 +417,15 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output results during runtime ( not used for restart so far )
-  if ( ( dataio_->GetRuntimeVtkOutputParams() != Teuchos::null or
-      dataio_->GetRuntimeVtpOutputParams() != Teuchos::null) and
-      dataglobalstate_->GetStepN() %
-      dataio_->GetRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0  )
+  if (
+     ( dataio_->GetRuntimeVtkOutputParams() != Teuchos::null and
+     dataglobalstate_->GetStepN() %
+     dataio_->GetRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0 )
+     or
+     ( dataio_->GetRuntimeVtpOutputParams() != Teuchos::null and
+     dataglobalstate_->GetStepN() %
+     dataio_->GetRuntimeVtpOutputParams()->OutputIntervalInSteps() == 0 )
+     )
   {
     RuntimeOutputState();
   }
