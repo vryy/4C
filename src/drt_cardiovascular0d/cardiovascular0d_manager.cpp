@@ -105,7 +105,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   strparams_(strparams),
   cv0dparams_(cv0dparams),
   intstrat_(DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(strparams,"INT_STRATEGY"))
-
 {
 
   switch (intstrat_)
@@ -132,8 +131,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
 
   //----------------------------------------------------------------------------
   //-----------------------------------0D cardiovascular-structure coupling conditions!
-
-//  totaltime_ = 0.0;
 
   //Check what kind of Cardiovascular0D boundary conditions there are
   havecardiovascular0d_ = (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D()
@@ -165,11 +162,14 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     // set number of degrees of freedom
     switch (cardvasc0d_model_->GetRespiratoryModel())
     {
-      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
+      case INPAR::CARDIOVASCULAR0D::resp_none:
         numCardiovascular0DID_ = 34;
       break;
-      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
+      case INPAR::CARDIOVASCULAR0D::resp_standard:
         numCardiovascular0DID_ = 82;
+      break;
+      default:
+        dserror("Undefined respiratory_model!");
       break;
     }
   }
@@ -206,8 +206,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     mat_dcardvasc0d_dd_=Teuchos::rcp(new LINALG::SparseMatrix(*(actdisc_->DofRowMap()),numCardiovascular0DID_,false,true));
     mat_dstruct_dcv0ddof_=Teuchos::rcp(new LINALG::SparseMatrix(*(actdisc_->DofRowMap()),numCardiovascular0DID_,false,true));
 
-
-
     Teuchos::ParameterList p;
     double time = strparams.get<double>("total time",0.0);
     double sc_timint = strparams.get("scale_timint",1.0);
@@ -216,25 +214,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     if ( (theta_ <= 0.0) or (theta_ > 1.0) )
       dserror("theta for 0D cardiovascular model time integration out of range (0.0,1.0] !");
 
-
-
-//    const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-    //build Epetra_Map used as domainmap and rowmap for result vectors
-
-    //build an all reduced version of the 0D cardiovascularmap, since sometimes all processors
-    //have to know all values of the 0D cardiovascular models and pressures
-
-
-    // importer
-
-
-    //initialize Cardiovascular0D stiffness and offdiagonal matrices
-
-
     // Initialize vectors
     actdisc_->ClearState();
-
-
 
     cv0ddofincrement_->PutScalar(0.0);
 
@@ -256,9 +237,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
 
     cv0ddof_T_N_->PutScalar(0.0);
     cv0ddof_T_NP_->PutScalar(0.0);
-
-
-
 
     cardiovascular0dstiffness_->Zero();
 
@@ -301,7 +279,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
 
     cv0ddof_T_N_->Update(1.0,*cv0ddof_np_,0.0);
     cv0ddof_T_NP_->Update(1.0,*cv0ddof_np_,0.0);
-
 
 
     //Create resulttest
@@ -435,7 +412,7 @@ void UTILS::Cardiovascular0DManager::UpdateTimeStep()
 
 }
 
-void UTILS::Cardiovascular0DManager::CheckPeriodic()
+void UTILS::Cardiovascular0DManager::CheckPeriodic() // not yet thoroughly tested!
 {
   Teuchos::RCP<Epetra_Vector> cv0ddof_T_N_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> cv0ddof_T_NP_red = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
@@ -962,8 +939,7 @@ int UTILS::Cardiovascular0DManager::Solve
       case INPAR::SOLVER::azprec_CheapSIMPLE:
       case INPAR::SOLVER::azprec_TekoSIMPLE:
       {
-
-        // add Inverse1 block for velocity dofs
+        // add Inverse1 block for "velocity" dofs
         // tell Inverse1 block about NodalBlockInformation
         Teuchos::ParameterList& inv1 = solver_->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
         inv1.sublist("NodalBlockInformation") = solver_->Params().sublist("NodalBlockInformation");
@@ -982,7 +958,7 @@ int UTILS::Cardiovascular0DManager::Solve
       }
     }
     break;
-    default :
+    default:
       dserror("Unknown 0D cardiovascular-structural solution technique!");
   }
 

@@ -34,7 +34,6 @@ namespace CARDIOVASCULAR0D
 
   enum Cardvasc0DAtriumModel
   {
-    atr_none,
     atr_prescribed,
     atr_elastance_0d,
     atr_structure_3d
@@ -42,7 +41,6 @@ namespace CARDIOVASCULAR0D
 
   enum Cardvasc0DVentricleModel
   {
-    ventr_none,
     ventr_prescribed,
     ventr_elastance_0d,
     ventr_structure_3d

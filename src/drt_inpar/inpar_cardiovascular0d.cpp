@@ -82,13 +82,11 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                  tuple<std::string>(
                                    "0D",
                                    "3D",
-                                   "prescribed",
-                                   "none"),
+                                   "prescribed"),
                                  tuple<int>(
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_elastance_0d,
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_structure_3d,
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_prescribed,
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DAtriumModel::atr_none),
+                                   INPAR::CARDIOVASCULAR0D::atr_elastance_0d,
+                                   INPAR::CARDIOVASCULAR0D::atr_structure_3d,
+                                   INPAR::CARDIOVASCULAR0D::atr_prescribed),
                                  &cardvasc0dsyspulcirc);
   IntParameter("Atrium_act_curve_l",-1,"left atrial activation curve (ONLY for ATRIUM_MODEL '0D'!)",&cardvasc0dsyspulcirc);
   IntParameter("Atrium_act_curve_r",-1,"right atrial activation curve (ONLY for ATRIUM_MODEL '0D'!)",&cardvasc0dsyspulcirc);
@@ -103,13 +101,11 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                  tuple<std::string>(
                                    "3D",
                                    "0D",
-                                   "prescribed",
-                                   "none"),
+                                   "prescribed"),
                                  tuple<int>(
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_structure_3d,
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_elastance_0d,
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_prescribed,
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DVentricleModel::ventr_none),
+                                   INPAR::CARDIOVASCULAR0D::ventr_structure_3d,
+                                   INPAR::CARDIOVASCULAR0D::ventr_elastance_0d,
+                                   INPAR::CARDIOVASCULAR0D::ventr_prescribed),
                                  &cardvasc0dsyspulcirc);
   IntParameter("Ventricle_act_curve_l",-1,"left ventricular activation curve (ONLY for VENTRICLE_MODEL '0D'!)",&cardvasc0dsyspulcirc);
   IntParameter("Ventricle_act_curve_r",-1,"right ventricular activation curve (ONLY for VENTRICLE_MODEL '0D'!)",&cardvasc0dsyspulcirc);
@@ -240,8 +236,8 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
                                    "None",
                                    "Standard"),
                                  tuple<int>(
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none,
-                                   INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard),
+                                   INPAR::CARDIOVASCULAR0D::resp_none,
+                                   INPAR::CARDIOVASCULAR0D::resp_standard),
                                  &cardvascrespir0d);
 
 
