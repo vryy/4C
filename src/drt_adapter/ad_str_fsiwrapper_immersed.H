@@ -7,10 +7,7 @@
 
 \level 2
 
-\maintainer Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
+\maintainer Andreas Rauch
 
 */
 
@@ -42,10 +39,10 @@ namespace ADAPTER
     /// constructor
     explicit FSIStructureWrapperImmersed(Teuchos::RCP<Structure> structure);
 
-    /// Destructor
+    /// destructor
     virtual ~FSIStructureWrapperImmersed() { ; }
 
-    /// return the combined interface
+    /// return the combined interface (matching fsi + immersed)
     const Teuchos::RCP<LINALG::MapExtractor> CombinedInterface(){return combinedinterface_;};
 
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface
@@ -107,7 +104,7 @@ namespace ADAPTER
     /// the interface map setup for immersed interface <-> fsi interface distinction
     Teuchos::RCP<LINALG::MapExtractor> combinedinterface_;
 
-    /// combined FSI - IMMERSED interface map
+    /// combined matching FSI - IMMERSED interface map
     Teuchos::RCP<Epetra_Map> combinedmap_;
 
   };
