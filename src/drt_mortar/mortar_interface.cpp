@@ -2331,7 +2331,6 @@ void MORTAR::MortarInterface::Evaluate(
   // Start basic evaluation part of interface
   //******************************************
   // start time measurement
-  Comm().Barrier();
   const double t_start = Teuchos::Time::wallTime();
 
   // evaluate nodal normals and decide in contact case if
@@ -2344,8 +2343,7 @@ void MORTAR::MortarInterface::Evaluate(
   // do some post operations. nothing happens for standard cases...
   PostEvaluate(step,iter);
 
-  // end time barrier
-  Comm().Barrier();
+  // end time on this proc
   const double inttime = Teuchos::Time::wallTime() - t_start;
   //******************************************
   // End basic evaluation part of interface
