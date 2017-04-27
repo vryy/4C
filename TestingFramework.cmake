@@ -1717,7 +1717,6 @@ baci_test(immersed_cell_biochemo_mechano_pureProtrusion_h8 2 "" )
 baci_test(activefiber_square_cell_dashpot_h8 2 "")
 baci_test(activefiber_rectangle_cell_dirich_h8 2 "")
 baci_test(viscogenmax_fdtangent 2 "")
-baci_test(activefiber_fsi_cell_rheotaxis_mono_h8 2 "")
 
 
 # testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
