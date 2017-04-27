@@ -791,6 +791,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetTimeIntegrationStrategy(
   switch ( probtype )
   {
     case prb_invana:
+    case prb_tsi:
     {
       ti_strategy->Setup();
 
