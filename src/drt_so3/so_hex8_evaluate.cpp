@@ -3861,8 +3861,15 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(
     Epetra_SerialDenseMatrix* d2sntDdDpxi,
     LINALG::Matrix<3,1>* dsntdn,
     LINALG::Matrix<3,1>* dsntdt,
-    LINALG::Matrix<3,1>* dsntdpxi)
+    LINALG::Matrix<3,1>* dsntdpxi,
+    const double* temp,
+    double* dsntdT,
+    Epetra_SerialDenseMatrix* d2sntDdDT
+    )
 {
+  if (temp || dsntdT || d2sntDdDT)
+    dserror("Thermo-elastic Nitsche contact not yet implemented in so hex8");
+
   sigma_nt=0.;
 
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // reference coord. of element

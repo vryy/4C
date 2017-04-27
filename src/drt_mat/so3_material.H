@@ -85,7 +85,10 @@ namespace MAT
         LINALG::Matrix<6,3>* d2sntDbDt,
         LINALG::Matrix<3,1>* dsntdn,
         LINALG::Matrix<3,1>* dsntdt,
-        const int eleGID)
+        const int eleGID,
+        const double* temp =NULL,
+        double* dsntdT=NULL,
+        LINALG::Matrix<6,1>* d2sntDbDT=NULL)
     {dserror("EvaluateCauchy not implementend for this material");return;}
 
     //@}

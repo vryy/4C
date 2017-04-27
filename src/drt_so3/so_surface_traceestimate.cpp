@@ -16,6 +16,7 @@
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_mat/material_service.H"
+#include "../drt_mat/fourieriso.H"
 
 
 /*----------------------------------------------------------------------*
@@ -100,13 +101,14 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
   LINALG::Matrix<6,1> glstrain;
   LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3> bop;
   LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3,6> bc;
+  LINALG::Matrix<dim,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement> N_XYZ;
 
   DRT::UTILS::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
   for (int gp=0;gp<ip.IP().nquad;++gp)
   {
     const LINALG::Matrix<3,1> xi(ip.IP().qxg[gp],false);
-    Strains<dt_vol>(xrefe,xcurr,xi,jac,defgrd,glstrain,rcg,bop);
+    Strains<dt_vol>(xrefe,xcurr,xi,jac,defgrd,glstrain,rcg,bop,N_XYZ);
 
     LINALG::Matrix<6,6> cmat(true);
     LINALG::Matrix<6,1> stress(true);
@@ -151,6 +153,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
   LINALG::Matrix<6,1> glstrain;
   LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3> bop;
   LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3,6> bc;
+  LINALG::Matrix<dim,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement> N_XYZ;
 
   DRT::UTILS::IntPointsAndWeights<dim-1> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
   LINALG::SerialDenseMatrix  deriv_surf(2,DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement);
@@ -172,7 +175,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
         FaceParentNumber());
 
     LINALG::Matrix<3,1> xi; for (int i=0;i<3;++i) xi(i)=pqxg(0,i);
-    Strains<dt_vol>(xrefe,xcurr,xi,jac,defgrd,glstrain,rcg,bop);
+    Strains<dt_vol>(xrefe,xcurr,xi,jac,defgrd,glstrain,rcg,bop,N_XYZ);
 
     LINALG::Matrix<6,6> cmat(true);
     LINALG::Matrix<6,1> stress(true);
@@ -212,14 +215,14 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
     LINALG::Matrix<3,3>& defgrd,
     LINALG::Matrix<6,1>& glstrain,
     LINALG::Matrix<3,3>& rcg,
-    LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3>& bop)
+    LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3>& bop,
+    LINALG::Matrix<3,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& N_XYZ)
 {
   const int dim = DRT::UTILS::DisTypeToDim<dt_vol>::dim;
   const int num_node = DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
   LINALG::Matrix<dim,num_node> deriv;
   DRT::UTILS::shape_function_deriv1<dt_vol>(xi,deriv);
 
-  LINALG::Matrix<dim,num_node> N_XYZ;
   LINALG::Matrix<dim,dim> invJ;
   invJ.Multiply(deriv,xrefe);
   jac=invJ.Invert();
@@ -354,4 +357,228 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
   for (int i=0;i<dim*num_node;++i)
     for (int j=6;j<dim*num_node;++j)
       proj(i,j-6)=basis[j](i);
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |                                                           seitz 11/16|
+ *----------------------------------------------------------------------*/
+double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
+    std::vector<double>& parent_disp)
+{
+  switch(ParentElement()->Shape())
+  {
+  case DRT::Element::hex8:
+    if (Shape()==DRT::Element::quad4)
+      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::hex8,DRT::Element::quad4>(parent_disp);
+    else
+      dserror("how can an hex8 element have a surface that is not quad4 ???");
+    break;
+  case DRT::Element::hex27:
+    return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::hex27,DRT::Element::quad9>(parent_disp);
+  default:
+    dserror("parent shape not implemented");
+  }
+
+  return 0;
+}
+
+template<
+DRT::Element::DiscretizationType dt_vol,
+DRT::Element::DiscretizationType dt_surf>
+double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
+    std::vector<double>& parent_disp)
+{
+  const int dim = DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int num_dof =
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
+  const int dim_image =
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement-1;
+
+  LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3> xrefe;
+  LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3> xcurr;
+
+  for (int i=0;i<ParentElement()->NumNode();++i)
+    for (int d=0;d<dim;++d)
+    {
+      xrefe(i,d) = ParentElement()->Nodes()[i]->X()[d];
+      xcurr(i,d) = xrefe(i,d) + parent_disp[i*dim+d];
+    }
+
+  LINALG::Matrix<num_dof,num_dof> vol, surf;
+
+  TraceEstimateVolMatrixTSI<dt_vol>(xrefe,xcurr,vol);
+  TraceEstimateSurfMatrixTSI<dt_vol,dt_surf>(xrefe,xcurr,surf);
+
+
+  LINALG::Matrix<num_dof,dim_image> proj, tmp;
+  SubspaceProjectorScalar<dt_vol>(proj);
+
+  LINALG::Matrix<dim_image,dim_image> vol_red,surf_red;
+
+  tmp.Multiply(vol,proj);
+  vol_red.MultiplyTN(proj,tmp);
+  tmp.Multiply(surf,proj);
+  surf_red.MultiplyTN(proj,tmp);
+
+  Epetra_SerialDenseMatrix vol_red_sd(::View,vol_red.A(),dim_image,dim_image,dim_image);
+  Epetra_SerialDenseMatrix surf_red_sd(::View,surf_red.A(),dim_image,dim_image,dim_image);
+
+  return LINALG::GeneralizedEigen(surf_red_sd,vol_red_sd);
+}
+
+template<DRT::Element::DiscretizationType dt_vol>
+void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xrefe,
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xcurr,
+    LINALG::Matrix<
+    DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+    DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& vol)
+{
+  const int dim = DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int num_node = DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
+
+  double jac;
+  LINALG::Matrix<3,3> defgrd;
+  LINALG::Matrix<3,3> rcg;
+  LINALG::Matrix<6,1> glstrain;
+  LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3> bop;
+  LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3,6> bc;
+  LINALG::Matrix<dim,num_node> N_XYZ, iC_N_XYZ;
+
+  DRT::UTILS::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
+
+  if (ParentElement()->NumMaterial()<2)
+    dserror("where's my second material");
+  Teuchos::RCP<MAT::FourierIso> mat_thr = Teuchos::rcp_dynamic_cast<MAT::FourierIso>(ParentElement()->Material(1),true);
+  const double k0=mat_thr->Conductivity();
+
+  for (int gp=0;gp<ip.IP().nquad;++gp)
+  {
+    const LINALG::Matrix<3,1> xi(ip.IP().qxg[gp],false);
+    Strains<dt_vol>(xrefe,xcurr,xi,jac,defgrd,glstrain,rcg,bop,N_XYZ);
+
+    LINALG::Matrix<3,3> iC;
+    iC.MultiplyTN(defgrd,defgrd);
+    iC.Invert();
+
+    iC_N_XYZ.Multiply(iC,N_XYZ);
+    iC_N_XYZ.Scale(k0);
+
+    vol.MultiplyTN(ip.IP().qwgt[gp]*jac,N_XYZ,iC_N_XYZ,1.);
+  }
+}
+
+
+template<
+DRT::Element::DiscretizationType dt_vol,
+DRT::Element::DiscretizationType dt_surf>
+void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xrefe,
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xcurr,
+    LINALG::Matrix<
+    DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+    DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& surf)
+{
+  const int dim = DRT::UTILS::DisTypeToDim<dt_vol>::dim;
+  const int num_node = DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
+
+  double jac;
+  LINALG::Matrix<3,3> defgrd;
+  LINALG::Matrix<3,3> rcg;
+  LINALG::Matrix<6,1> glstrain;
+  LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3> bop;
+  LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3,6> bc;
+  LINALG::Matrix<dim,num_node> N_XYZ;
+  LINALG::Matrix<1,num_node> iCn_N_XYZ;
+
+  LINALG::SerialDenseMatrix xrefe_surf(DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement,dim);
+  MaterialConfiguration(xrefe_surf);
+
+  std::vector<double> n(3);
+  LINALG::Matrix<3,1> n_v(&n[0],true), iCn;
+  double detA;
+
+  DRT::UTILS::IntPointsAndWeights<dim-1> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
+  LINALG::SerialDenseMatrix  deriv_surf(2,DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement);
+
+  if (ParentElement()->NumMaterial()<2)
+    dserror("where's my second material");
+  Teuchos::RCP<MAT::FourierIso> mat_thr = Teuchos::rcp_dynamic_cast<MAT::FourierIso>(ParentElement()->Material(1),true);
+  const double k0=mat_thr->Conductivity();
+
+  for (int gp=0;gp<ip.IP().nquad;++gp)
+  {
+    DRT::UTILS::shape_function_2D_deriv1(deriv_surf,ip.IP().qxg[gp][0], ip.IP().qxg[gp][1],Shape());
+    SurfaceIntegration(detA,n,xrefe_surf,deriv_surf);
+    n_v.Scale(1./n_v.Norm2());
+
+    DRT::UTILS::CollectedGaussPoints intpoints = DRT::UTILS::CollectedGaussPoints(1); //reserve just for 1 entry ...
+      intpoints.Append(ip.IP().qxg[gp][0], ip.IP().qxg[gp][1],0.0, ip.IP().qwgt[gp]);
+
+    // get coordinates of gauss point w.r.t. local parent coordinate system
+    LINALG::SerialDenseMatrix pqxg(1,3);
+    LINALG::Matrix<3,3> derivtrafo;
+
+    DRT::UTILS::BoundaryGPToParentGP<3>( pqxg,
+        derivtrafo,
+        intpoints ,
+        ParentElement()->Shape(),
+        Shape(),
+        FaceParentNumber());
+
+    LINALG::Matrix<3,1> xi; for (int i=0;i<3;++i) xi(i)=pqxg(0,i);
+
+    Strains<dt_vol>(xrefe,xcurr,xi,jac,defgrd,glstrain,rcg,bop,N_XYZ);
+
+    LINALG::Matrix<3,3> iC;
+    iC.MultiplyTN(defgrd,defgrd);
+    iC.Invert();
+    iCn.Multiply(iC,n_v);
+
+    iCn_N_XYZ.MultiplyTN(iCn,N_XYZ);
+    iCn_N_XYZ.Scale(k0);
+
+    surf.MultiplyTN(detA*ip.IP().qwgt[gp],iCn_N_XYZ,iCn_N_XYZ,1.);
+  }
+}
+
+
+
+template<DRT::Element::DiscretizationType dt_vol>
+void DRT::ELEMENTS::StructuralSurface::SubspaceProjectorScalar(
+      LINALG::Matrix<
+        DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement-1>& proj)
+{
+  const int num_node = DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
+  LINALG::Matrix<num_node,1> basis[num_node];
+
+  for (int i=0;i<num_node;++i)
+    basis[0](i)=1.;
+
+  for (int i=1;i<num_node;++i)
+  {
+    double sign=+1.;
+    for (int j=0;j<i+1;++j)
+    {
+      LINALG::SerialDenseMatrix det(i,i,true);
+      for (int c=0;c<i;++c)
+      {
+        for (int k=0;k<j;++k)
+          det(k,c)=basis[c](k);
+        for (int k=j;k<i;++k)
+          det(k,c)=basis[c](k+1);
+      }
+      basis[i](j)=LINALG::DeterminantLU(det)*sign;
+      sign*=-1.;
+    }
+    basis[i].Scale(1./basis[i].Norm2());
+  }
+
+  // hand out the projection matrix, i.e. the ONB not containing rigid body modes
+  for (int i=0;i<num_node;++i)
+    for (int j=1;j<num_node;++j)
+      proj(i,j-1)=basis[j](i);
 }

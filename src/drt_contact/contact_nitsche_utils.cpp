@@ -70,6 +70,9 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
   case DRT::UTILS::block_displ:
     AssembleRHS<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,rhs_,fc);
     break;
+  case DRT::UTILS::block_temp:
+    AssembleRHS<1>(mele,tsi_data_.rhs_t_,fc);
+    break;
   default: dserror("unknown row");
   }
 }
@@ -85,6 +88,15 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(
   case DRT::UTILS::block_displ_displ:
     AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,k_,kc);
     break;
+  case DRT::UTILS::block_displ_temp:
+    AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(mele,tsi_data_.k_dt_,kc);
+    break;
+  case DRT::UTILS::block_temp_displ:
+    AssembleMatrix<1>(mele,tsi_data_.k_td_,kc);
+    break;
+  case DRT::UTILS::block_temp_temp:
+    AssembleMatrix<1>(mele,tsi_data_.k_tt_,kc);
+  break;
   default: dserror("unknown matrix block"); break;
   }
 }

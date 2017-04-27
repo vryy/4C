@@ -295,19 +295,52 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
 
     /// evaluate Cauchy stress at given point in parameter space
     virtual void GetCauchyAtXi(
-        const LINALG::Matrix<3,1>& xi,
+            const LINALG::Matrix<3,1>& xi,
+            const std::vector<double>& disp,
+            const LINALG::Matrix<3,1>& n,
+            const LINALG::Matrix<3,1>& t,
+            double& sigma_nt,
+            Epetra_SerialDenseMatrix* dsntdd,
+            Epetra_SerialDenseMatrix* d2sntdd2,
+            Epetra_SerialDenseMatrix* d2sntDdDn,
+            Epetra_SerialDenseMatrix* d2sntDdDt,
+            Epetra_SerialDenseMatrix* d2sntDdDpxi,
+            LINALG::Matrix<3,1>* dsntdn,
+            LINALG::Matrix<3,1>* dsntdt,
+            LINALG::Matrix<3,1>* dsntdpxi,
+            const double* temp=NULL,
+            double* dsntdT=NULL,
+            Epetra_SerialDenseMatrix* d2sntDdDT=NULL
+            );
+
+    void HeatFlux(
+        const std::vector<double>& temp,
         const std::vector<double>& disp,
-        const LINALG::Matrix<3,1>& n,
-        const LINALG::Matrix<3,1>& t,
-        double& sigma_nt,
-        Epetra_SerialDenseMatrix* dsntdd,
-        Epetra_SerialDenseMatrix* d2sntdd2,
-        Epetra_SerialDenseMatrix* d2sntDdDn,
-        Epetra_SerialDenseMatrix* d2sntDdDt,
-        Epetra_SerialDenseMatrix* d2sntDdDpxi,
-        LINALG::Matrix<3,1>* dsntdn,
-        LINALG::Matrix<3,1>* dsntdt,
-        LINALG::Matrix<3,1>* dsntdpxi);
+        const LINALG::Matrix<nsd_,1>& xi,
+        const LINALG::Matrix<nsd_,1>& n,
+        double& q,
+        Epetra_SerialDenseMatrix* dq_dT,
+        Epetra_SerialDenseMatrix* dq_dd,
+        LINALG::Matrix<nsd_,1>* dq_dn,
+        LINALG::Matrix<nsd_,1>* dq_dpxi,
+        Epetra_SerialDenseMatrix* d2q_dT_dd,
+        Epetra_SerialDenseMatrix* d2q_dT_dn,
+        Epetra_SerialDenseMatrix* d2q_dT_dpxi);
+
+    void HeatFlux(
+        const std::vector<double>& temp,
+        const std::vector<double>& disp,
+        const LINALG::Matrix<2,1>& xi,
+        const LINALG::Matrix<2,1>& n,
+        double& q,
+        Epetra_SerialDenseMatrix* dq_dT,
+        Epetra_SerialDenseMatrix* dq_dd,
+        LINALG::Matrix<2,1>* dq_dn,
+        LINALG::Matrix<2,1>* dq_dpxi,
+        Epetra_SerialDenseMatrix* d2q_dT_dd,
+        Epetra_SerialDenseMatrix* d2q_dT_dn,
+        Epetra_SerialDenseMatrix* d2q_dT_dpxi){dserror("wrong spatial dimension");}
+
 
     virtual void SetIsNitscheContactEle(bool val){
       is_nitsche_contact_=val;
@@ -484,7 +517,11 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
         Epetra_SerialDenseMatrix* d2sntDdDpxi,
         LINALG::Matrix<3,1>* dsntdn,
         LINALG::Matrix<3,1>* dsntdt,
-        LINALG::Matrix<3,1>* dsntdpxi);
+        LINALG::Matrix<3,1>* dsntdpxi,
+        const double* temp=NULL,
+        double* dsntdT=NULL,
+        Epetra_SerialDenseMatrix* d2sntDdDT=NULL
+        );
 
     virtual void GetCauchyAtXiElast(
         const LINALG::Matrix<3,1>& xi,
@@ -499,7 +536,11 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
         Epetra_SerialDenseMatrix* d2sntDdDpxi,
         LINALG::Matrix<3,1>* dsntdn,
         LINALG::Matrix<3,1>* dsntdt,
-        LINALG::Matrix<3,1>* dsntdpxi);
+        LINALG::Matrix<3,1>* dsntdpxi,
+        const double* temp = NULL,
+        double* dsntdT = NULL,
+        Epetra_SerialDenseMatrix* d2sntDdDT = NULL
+        );
 
     virtual void OutputStrains(
         const int gp,

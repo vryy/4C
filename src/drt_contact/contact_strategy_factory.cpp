@@ -57,6 +57,7 @@
 // --xcontact strategies and interfaces
 #include "../drt_contact_xcontact/xcontact_interface.H"
 #include "../drt_contact_xcontact/xcontact_strategy.H"
+#include "contact_nitsche_strategy_tsi.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -134,7 +135,8 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
     dserror("ERROR: Maximum allowed value of load balance for dynamic parallel redistribution must be >= 1.0");
 
   if (problemtype == prb_tsi
-      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST")  != INPAR::MORTAR::parredist_none
+      && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_nitsche)
     dserror("ERROR: Parallel redistribution not yet implemented for TSI problems");
 
   // ---------------------------------------------------------------------
@@ -1212,7 +1214,9 @@ Teuchos::RCP< ::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterfac
       if (wlaw!=INPAR::WEAR::wear_none)
         newinterface=Teuchos::rcp( new WEAR::WearInterface( idata_ptr, id ,
             comm , dim, icparams, selfcontact, redundant ) );
-      else if ( icparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
+      else if ( icparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi
+          &&
+          stype == INPAR::CONTACT::solution_lagmult)
         newinterface=Teuchos::rcp( new CONTACT::CoTSIInterface(
             idata_ptr, id, comm, dim, icparams, selfcontact, redundant) );
       else
@@ -1611,17 +1615,34 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   else if (algo == INPAR::MORTAR::algorithm_gpts &&
       (stype==INPAR::CONTACT::solution_nitsche || stype==INPAR::CONTACT::solution_penalty ))
   {
-    data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
-    strategy_ptr = Teuchos::rcp(new CoNitscheStrategy(
-        data_ptr,
-        dof_row_map,
-        node_row_map,
-        cparams,
-        interfaces,
-        dim,
-        comm_ptr,
-        0,
-        dof_offset));
+    if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
+    {
+      data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+      strategy_ptr = Teuchos::rcp(new CoNitscheStrategyTsi(
+          data_ptr,
+          dof_row_map,
+          node_row_map,
+          cparams,
+          interfaces,
+          dim,
+          comm_ptr,
+          0,
+          dof_offset));
+    }
+    else
+    {
+      data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+      strategy_ptr = Teuchos::rcp(new CoNitscheStrategy(
+          data_ptr,
+          dof_row_map,
+          node_row_map,
+          cparams,
+          interfaces,
+          dim,
+          comm_ptr,
+          0,
+          dof_offset));
+    }
   }
   else
   {

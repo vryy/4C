@@ -63,7 +63,11 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
 
   // check plastic parameter validity
   if (inityield_<=0.)
-    dserror("initial yield stress must be positive");
+    std::cout << "***************************************************\n"
+    "Warning: negative initial yield stress detected!!!\n"
+    "this will be converted to a purely elastic response"
+    << "\n***************************************************\n"<< std::endl;
+
   // no infyield provided 0. is default
   if (infyield_==0.)
     if (expisohard_!=0.)
@@ -1892,6 +1896,127 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(
   AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,be_ ,FCpi_  ,-dPI(1)/sqrt(prinv_(2)));
   d_cauchy_dF.Scale(2.);
   d_cauchy_dFpi.Scale(2.);
+}
+
+void MAT::PlasticElastHyper::EvaluateCauchyDerivs(
+    const LINALG::Matrix<3,1>& prinv,
+    const int eleGID,
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII_ordered,
+    LINALG::Matrix<10,1>& dddPIII,
+    const double* temp
+    )
+{
+  for (unsigned i=0;i<potsum_.size();++i)
+  {
+    if (isoprinc_)
+    {
+      potsum_[i]->AddDerivativesPrincipal(dPI,ddPII_ordered,prinv,eleGID);
+      potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII,prinv,eleGID);
+    }
+    if (isomod_ || anisomod_ || anisoprinc_)
+      dserror("not implemented for this form of strain energy function");
+  }
+  if (temp && true) // fixme
+  {
+    if (isomod_||anisomod_||anisoprinc_)
+      dserror("thermo-elastic Nitsche contact only with strain energies"
+          "\ndepending on unmodified invariants");
+
+    const double dT = *temp-InitTemp();
+
+    const double j = sqrt(prinv(2));
+    double dPmodI =0.;
+    double ddPmodII =0.;
+    double dddPmodIII =0.;
+    double ddddPmodIIII =0.;
+    for (unsigned int p=0; p<potsum_.size(); ++p)
+      potsum_[p]->AddCoupDerivVol(j,&dPmodI,&ddPmodII,&dddPmodIII,&ddddPmodIIII);
+
+    const double  fac = -3.*Cte()*dT;
+    dPI(2)+=fac*.5/j*ddPmodII;
+    ddPII_ordered(2)+=fac*(.25/(j*j)*dddPmodIII-.25/(j*j*j)*ddPmodII);
+    dddPIII(2)+=fac*(
+        +1./(8.*j*j*j)*ddddPmodIIII
+        -3./(8.*j*j*j*j)*dddPmodIII
+        +3./(8.*j*j*j*j*j)*ddPmodII);
+  }
+}
+
+void MAT::PlasticElastHyper::EvaluateCauchyTempDeriv(
+    const LINALG::Matrix<3,1>& prinv,
+    const double ndt,
+    const double tbn,
+    const double tibn,
+    const LINALG::Matrix<6,1>& dI1db,
+    const LINALG::Matrix<6,1>& dI2db,
+    const LINALG::Matrix<6,1>& dI3db,
+    const LINALG::Matrix<6,1>& nt_tn_v,
+    const LINALG::Matrix<6,1>& dtibndb,
+    const double* temp,
+    double* dsntdT,
+    LINALG::Matrix<6,1>* d2sntDbDT)
+{
+  d2sntDbDT->Clear();
+
+//  return ; // fixme
+
+  const double sqI3 = sqrt(prinv(2));
+  double dPmodI =0.;
+  double ddPmodII =0.;
+  double dddPmodIII =0.;
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+    potsum_[p]->AddCoupDerivVol(sqI3,&dPmodI,&ddPmodII,&dddPmodIII,NULL);
+
+
+  // those are actually the temperature derivatives of the coefficients
+  // then we plug them into the cauchy stress derivative and voilà
+  // we keep many zero entries here for possible future extension to more
+  // than just thermal expansion
+  LINALG::Matrix<3,1> dPI;
+  LINALG::Matrix<6,1> ddPII;
+  LINALG::Matrix<10,1> dddPIII;
+
+  const double  fac = -3.*Cte();
+  dPI(2)+=fac*.5/sqI3*ddPmodII;
+  ddPII(2)+=fac*(.25/(sqI3*sqI3)*dddPmodIII-.25/(sqI3*sqI3*sqI3)*ddPmodII);
+
+  *dsntdT=
+      2./sqI3*prinv(1)*dPI(1)*ndt
+      +2.*sqI3*dPI(2)*ndt
+      +2./sqI3*dPI(0)*tbn
+      -2.*sqI3*dPI(1)*tibn
+      ;
+
+  d2sntDbDT->Update(
+      2./sqI3*(
+       prinv(1)*ddPII(3)*ndt
+      +prinv(2)*ddPII(5)*ndt
+      +ddPII(0)*tbn
+      -prinv(2)*ddPII(3)* tibn
+      ),
+      dI1db,1.);
+  d2sntDbDT->Update(2./sqI3*(
+      dPI(1)*ndt
+      +prinv(1)*ddPII(1)*ndt
+      +prinv(2)*ddPII(4)*ndt
+      +ddPII(3)*tbn
+      -prinv(2)*ddPII(1)*tibn
+      ),
+      dI2db,1.);
+  d2sntDbDT->Update((
+      -2.*prinv(2)*prinv(2)*ddPII(4)*tibn
+      +2.*prinv(1)*prinv(2)*ddPII(4)*ndt
+      +2.*prinv(2)*prinv(2)*ddPII(2)*ndt
+      -prinv(2)*dPI(1)*tibn
+      +2.*prinv(2)*ddPII(5)*tbn
+      +prinv(2)*dPI(2)*ndt
+      -prinv(1)*dPI(1)*ndt
+      -dPI(0)*tbn
+      )/(sqI3*sqI3*sqI3),
+          dI3db,1.);
+  d2sntDbDT->Update(2./sqI3*dPI(0),nt_tn_v,1.);
+  d2sntDbDT->Update(-2.*sqI3*dPI(1),dtibndb,1.);
 }
 
 void MAT::PlasticElastHyper::UpdateGP(const int gp, const LINALG::Matrix<3,3>* deltaDp)

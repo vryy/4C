@@ -30,6 +30,7 @@
 
 #include "../drt_timestepping/timintmstep.H"
 
+#include "../drt_contact/contact_nitsche_strategy_tsi.H"
 
 /*----------------------------------------------------------------------*
  | print thermal time logo                                   dano 08/09 |
@@ -783,6 +784,17 @@ void THR::TimInt::ApplyForceTangInternal(
   discret_->SetState(0, "temperature", temp);
 
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, Teuchos::null);
+
+  // apply contact terms
+  if (contact_strategy_nitsche_!=Teuchos::null)
+  {
+    if (fint->Update(1.,*contact_strategy_nitsche_->GetRhsBlockPtr(DRT::UTILS::block_temp),1.))
+      dserror("update failed");
+    tang->UnComplete();
+    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::block_temp_temp),false,p.get<double>("timefac"),1.);
+    tang->Complete();
+  }
+
   discret_->ClearState();
 
   // that's it
@@ -833,6 +845,16 @@ void THR::TimInt::ApplyForceTangInternal(
 
   // call the element Evaluate()
   discret_->Evaluate(p, tang, Teuchos::null, fint, Teuchos::null, fcap);
+
+  // apply contact terms
+  if (contact_strategy_nitsche_!=Teuchos::null)
+  {
+    fint->Update(1.,*contact_strategy_nitsche_->GetRhsBlockPtr(DRT::UTILS::block_temp),1.);
+    tang->UnComplete();
+    tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::block_temp_temp),false,p.get<double>("timefac"),1.);
+    tang->Complete();
+  }
+
   discret_->ClearState();
 
   // that's it
@@ -872,6 +894,10 @@ void THR::TimInt::ApplyForceInternal(
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
+
+  // apply contact terms
+  if (contact_strategy_nitsche_!=Teuchos::null)
+    fint->Update(1.,*contact_strategy_nitsche_->GetRhsBlockPtr(DRT::UTILS::block_temp),1.);
 
   // where the fun starts
   return;

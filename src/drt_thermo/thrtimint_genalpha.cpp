@@ -502,6 +502,7 @@ void THR::TimIntGenAlpha::ApplyForceTangInternal(
   p.set<double>("gamma", gamma_);
   // set the mid-temperature rate R_{n+alpha_m} required for fcapm_
   p.set<Teuchos::RCP<const Epetra_Vector> >("mid-temprate",ratem_);
+  p.set<double>("timefac",alphaf_);
 
   //! call the base function
   TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fcap,fint,tang);

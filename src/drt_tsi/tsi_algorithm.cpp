@@ -40,7 +40,11 @@
 // contact
 #include "../drt_contact/contact_lagrange_strategy.H"
 #include "../drt_contact/contact_tsi_lagrange_strategy.H"
+#include "../drt_contact/contact_nitsche_strategy_tsi.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
+
+#include "../drt_structure_new/str_model_evaluator_contact.H"
+#include "../drt_structure_new/str_model_evaluator_structure.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -91,13 +95,15 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr= ADAPTER::STR::BuildStructureAlgorithm(sdyn);
     adapterbase_ptr->Init(DRT::Problem::Instance()->TSIDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), structdis);
 
-    if (ThermoField()->Tempnp()==Teuchos::null)
-      dserror("this is NULL");
-
-    if (matchinggrid_)
-      structdis->SetState(1,"temperature",ThermoField()->Tempnp());
-    else
-      structdis->SetState(1,"temperature",volcoupl_->ApplyVectorMapping12(ThermoField()->Tempnp()));
+    // set the temperature; Monolithic does this in it's own constructor with potentially redistributed discretizations
+    if (DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(
+        DRT::Problem::Instance()->TSIDynamicParams(),"COUPALGO")!=INPAR::TSI::Monolithic)
+    {
+      if (matchinggrid_)
+        structdis->SetState(1,"temperature",ThermoField()->Tempnp());
+      else
+        structdis->SetState(1,"temperature",volcoupl_->ApplyVectorMapping12(ThermoField()->Tempnp()));
+    }
 
     adapterbase_ptr->Setup();
 
@@ -406,3 +412,39 @@ void TSI::Algorithm::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> 
 
 
 /*----------------------------------------------------------------------*/
+void TSI::Algorithm::GetContactStrategy()
+{
+
+  if (StructureField()->HaveModel(INPAR::STR::model_contact))
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY")!=INPAR::STR::int_standard)
+      dserror("thermo-mechanical contact only with new structural time integration");
+
+    if (coupST_==Teuchos::null)
+      dserror("coupST_ not yet here");
+
+    STR::MODELEVALUATOR::Contact& a = static_cast<STR::MODELEVALUATOR::Contact&>(
+        StructureField()->ModelEvaluator(INPAR::STR::model_contact));
+    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::CoTSILagrangeStrategy>(
+        a.StrategyPtr(),false);
+    contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::CoNitscheStrategyTsi>(
+        a.StrategyPtr(),false);
+    if (contact_strategy_lagrange_!=Teuchos::null)
+    {
+      contact_strategy_lagrange_->SetAlphafThermo(DRT::Problem::Instance()->ThermalDynamicParams());
+      contact_strategy_lagrange_->SetCoupling(coupST_);
+    }
+    if (contact_strategy_nitsche_!=Teuchos::null)
+    {
+      contact_strategy_nitsche_->SetAlphafThermo(DRT::Problem::Instance()->ThermalDynamicParams());
+      contact_strategy_nitsche_->SetCoupling(coupST_);
+      contact_strategy_nitsche_->EnableRedistribution();
+    }
+    if (contact_strategy_lagrange_!=Teuchos::null && contact_strategy_nitsche_!=Teuchos::null)
+      dserror("how can the contact strategy be Nitsche and Lagrange at the same time???");
+    if (contact_strategy_lagrange_==Teuchos::null && contact_strategy_nitsche_==Teuchos::null)
+      dserror("contact strategy is neither Lagrange multipliers nor Nitsche. TSI can't handle that.");
+
+    thermo_->SetNitscheContactStrategy(contact_strategy_nitsche_);
+  }
+}

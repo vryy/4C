@@ -18,6 +18,7 @@
 // supported contact integrators
 #include "../drt_contact_aug/contact_augmented_integrator.H"
 #include "contact_nitsche_integrator.H"
+#include "contact_nitsche_integrator_tsi.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -54,8 +55,12 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
     }
     case INPAR::CONTACT::solution_nitsche:
     {
-      integrator = Teuchos::rcp( new CONTACT::CoIntegratorNitsche(
-          p_mortar,slave_type,comm) );
+      if (p_mortar.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
+        integrator = Teuchos::rcp( new CONTACT::CoIntegratorNitscheTsi(
+            p_mortar,slave_type,comm) );
+      else
+        integrator = Teuchos::rcp( new CONTACT::CoIntegratorNitsche(
+            p_mortar,slave_type,comm) );
       break;
     }
     case INPAR::CONTACT::solution_penalty:

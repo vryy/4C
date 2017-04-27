@@ -158,6 +158,14 @@ namespace INPAR
       NitWgt_slave,
       NitWgt_master,
       NitWgt_harmonic,
+      NitWgt_phyiscal
+    };
+
+    /// Constraint enfrocement method method for thermal conduction and frictional dissipation
+    enum NitscheThermoMethod
+    {
+      NitThr_substitution,
+      NitThr_nitsche
     };
 
     /// set the contact parameters

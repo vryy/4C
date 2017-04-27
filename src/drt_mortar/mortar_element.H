@@ -171,6 +171,12 @@ public:
   */
   virtual std::vector<int>& ParentDof() {return parentdofs_; }
 
+  /*!
+  \brief Return Parent temperature vector
+
+  */
+  virtual std::vector<double>& ParentTemp() {return parenttemp_; }
+
   //@}
 
 protected:
@@ -196,6 +202,9 @@ protected:
 
   // Displacement Parent element degrees of freedom
   std::vector<int> parentdofs_;
+
+  // Temperature of Parent Element
+  std::vector<double> parenttemp_;
 
 }; // class MortarEleDataContainer
 
@@ -971,6 +980,12 @@ public:
   virtual double& TraceHE() {return traceHE_;}
 
   /*!
+  \brief Estimated mesh size and thermal conductivity h/K via Eigenvalues of the trace inequality.
+         For Nitsche contact formulations
+    */
+  virtual double& TraceHCond() {return traceHCond_;}
+
+  /*!
   \brief Get Nitsche data container
     */
   virtual MORTAR::MortarElementNitscheContainer& GetNitscheContainer();
@@ -998,6 +1013,8 @@ protected:
 
   // approximation of mesh size and stiffness from inverse trace inequality (h/E)
   double traceHE_;
+  // approximation of mesh size and stiffness from inverse trace inequality (h/conductivity)
+  double traceHCond_;
 
   // data container for element matrices in Nitsche contact
   Teuchos::RCP<MORTAR::MortarElementNitscheContainer> nitsche_container_;

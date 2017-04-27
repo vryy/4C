@@ -32,9 +32,12 @@ namespace UTILS {
   enum MatBlockType
   {
     block_displ_displ,   ///< Kdd block (structural block)
-    block_displ_lm,      ///< Kdz block of the corresponding model
-    block_lm_displ,      ///< Kzd block of the corresponding model
-    block_lm_lm          ///< Kzz block of the corresponding model
+    block_displ_lm,      ///< Kdz block (of the corresponding model evaluator)
+    block_lm_displ,      ///< Kzd block (of the corresponding model evaluator)
+    block_lm_lm,         ///< Kzz block (of the corresponding model evaluator)
+    block_temp_temp,     ///< Ktt block (thermal block)
+    block_temp_displ,    ///< Ktd block (structure-thermo-coupling)
+    block_displ_temp,    ///< Kdt block (thermo-structure-coupling)
   };
 
   //! map matrix block type enum to std::string
@@ -54,6 +57,15 @@ namespace UTILS {
       case block_lm_lm:
         return "block_lm_lm";
         break;
+      case block_temp_temp:
+        return "block_temp_temp";
+        break;
+      case block_temp_displ:
+        return "block_temp_displ";
+        break;
+      case block_displ_temp:
+        return "block_displ_temp";
+        break;
       default:
         return "unknown matrix block type";
         break;
@@ -65,7 +77,8 @@ namespace UTILS {
   enum VecBlockType
   {
     block_displ,      ///< displacement block (structural block)
-    block_constraint  ///< lagrange multiplier/constraint block of the corresponding model
+    block_constraint, ///< lagrange multiplier/constraint block of the corresponding model
+    block_temp,       ///< temperature block (thermal block)
   };
 } // namespace UTILS
 } // namespace DRT

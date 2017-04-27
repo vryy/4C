@@ -62,6 +62,11 @@ namespace LINALG
   class MultiMapExtractor;
 }
 
+namespace CONTACT
+{
+  class CoNitscheStrategyTsi;
+}
+
 /*----------------------------------------------------------------------*
  | adapting adapter                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -215,6 +220,11 @@ namespace ADAPTER
 
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
+
+    //! store an RCP to the contact strategy constructed in the structural time integration
+    virtual void SetNitscheContactStrategy(
+      Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> strategy
+      ) = 0;
 
     /// apply interface loads on the thermal field
     virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;

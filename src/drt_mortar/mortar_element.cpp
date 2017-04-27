@@ -237,6 +237,7 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
 
   // mesh size
   AddtoPack(data,traceHE_);
+  AddtoPack(data,traceHCond_);
 
   return;
 }
@@ -300,6 +301,7 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
 
   // mesh size
   traceHE_ = ExtractDouble(position,data);
+  traceHCond_ = ExtractDouble(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -1847,17 +1849,16 @@ void MORTAR::MortarElement::NodeLinearization(std::vector<std::vector<GEN::paire
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::EstimateNitscheTraceMaxEigenvalueCombined()
 {
-  double maxeigenvalue = 0.;
-  if (Dim()==3)
-  {
-    Teuchos::RCP<DRT::Element> surf_ele = ParentElement()->Surfaces()[FaceParentNumber()];
-    DRT::ELEMENTS::StructuralSurface* surf = dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(surf_ele.get());
-    maxeigenvalue =surf->EstimateNitscheTraceMaxEigenvalueCombined(MoData().ParentDisp());
-  }
-  else
+  if (Dim()!=3)
     dserror("not implemented for this spatial dimension");
 
-  traceHE_=1./maxeigenvalue;
+  Teuchos::RCP<DRT::Element> surf_ele = ParentElement()->Surfaces()[FaceParentNumber()];
+  DRT::ELEMENTS::StructuralSurface* surf = dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(surf_ele.get());
+
+  traceHE_=1./surf->EstimateNitscheTraceMaxEigenvalueCombined(MoData().ParentDisp());
+
+  if (ParentElement()->NumMaterial()>1)
+    traceHCond_=1./surf->EstimateNitscheTraceMaxEigenvalueTSI(MoData().ParentDisp());
 }
 
 

@@ -4525,6 +4525,18 @@ void MORTAR::MortarInterface::CreateVolumeGhosting()
 
   switch (prb)
   {
+  case INPAR::CONTACT::tsi:
+  {
+    std::vector<std::string> tar_dis;
+    tar_dis.push_back("structure");
+    tar_dis.push_back("thermo");
+    std::vector<std::pair<int,int> > material_map;
+    material_map.push_back(std::pair<int,int>(0,1));
+    material_map.push_back(std::pair<int,int>(1,0));
+
+    MORTAR::UTILS::CreateVolumeGhosting(Discret(),tar_dis,material_map);
+    break;
+  }
   default:
   {
     std::vector<std::string> tar_dis;

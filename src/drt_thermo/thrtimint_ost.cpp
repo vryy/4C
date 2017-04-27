@@ -413,6 +413,7 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   Teuchos::ParameterList p;
   // set parameters
   p.set<double>("theta", theta_);
+  p.set<double>("timefac", theta_);
   // call the base function
   TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fcap,fint,tang);
   // finish

@@ -210,13 +210,22 @@ void CONTACT::CoNitscheStrategy::Integrate(CONTACT::ParamsInterface& cparams)
   if (curr_state_eval_==true)
     return;
 
+  // time measurement (on each processor)
+  const double t_start = Teuchos::Time::wallTime();
+
   // Evaluation for all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)
   {
     interface_[i]->IParams().set<double>("TIMESTEP",cparams.GetDeltaTime());
     interface_[i]->Initialize();
     interface_[i]->Evaluate(0,step_,iter_);
+
+    //store required integration time
+    inttime_ += Interfaces()[i]->Inttime();
   }
+
+  // check the parallel distribution
+  CheckParallelDistribution(t_start);
 
   // now we also did this state
   curr_state_eval_=true;

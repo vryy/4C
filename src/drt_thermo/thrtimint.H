@@ -37,6 +37,9 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 
+// forward declaration
+namespace CONTACT{class CoNitscheStrategyTsi;}
+
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
  *----------------------------------------------------------------------*/
@@ -131,6 +134,11 @@ namespace THR
                         //!< This needs to be true if the bounded DOFs
                         //!< have been changed.
       );
+
+    //! prepare thermal contact
+    void SetNitscheContactStrategy(
+      Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> strategy
+      ) {contact_strategy_nitsche_=strategy;}
 
     //! prepare time step
     virtual void PrepareTimeStep() = 0;
@@ -514,6 +522,10 @@ namespace THR
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return dbcmaps_; }
 
+    //! Return thermal contact manager
+    Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> NitscheContactStrategy()
+    { return contact_strategy_nitsche_; }
+
     //@}
 
   protected:
@@ -612,6 +624,14 @@ namespace THR
     Teuchos::RCP<LINALG::SparseMatrix> tang_;
     //! capacity matrix (constant)
     //Teuchos::RCP<LINALG::SparseMatrix> capa_;
+
+    //@}
+
+    //! @name Nitsche contact stuff
+    //@{
+
+    // thermo contact manager
+    Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> contact_strategy_nitsche_;
 
     //@}
 

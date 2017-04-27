@@ -4,11 +4,9 @@
 
 \brief Input parameters for tsi
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\level 1
+
+\maintainer Alexander Seitz
 */
 
 /*----------------------------------------------------------------------*/
@@ -17,6 +15,7 @@ Maintainer: Georg Hammerl
 
 #include "drt_validparameters.H"
 #include "inpar_tsi.H"
+#include "inpar_contact.H"
 
 
 
@@ -274,5 +273,40 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("HEATTRANSMASTER",0.0,"Heat transfer parameter for master side in thermal contact",&tsic);
   DoubleParameter("TEMP_DAMAGE",1.0e12,"damage temperatue at contact interface: friction coefficient zero there",&tsic);
   DoubleParameter("TEMP_REF",0.0,"reference temperatue at contact interface: friction coefficient equals the given value",&tsic);
+
+  DoubleParameter("NITSCHE_THETA_TSI",0.0,"+1: symmetric, 0: non-symmetric, -1: skew-symmetric",&tsic);
+
+  setStringToIntegralParameter<int>("NITSCHE_WEIGHTING_TSI","harmonic",
+      "how to weight consistency terms in Nitsche contact formulation",
+      tuple<std::string>(
+        "slave",
+        "master",
+        "harmonic",
+        "physical"),
+      tuple<int>(
+        INPAR::CONTACT::NitWgt_slave,
+        INPAR::CONTACT::NitWgt_master,
+        INPAR::CONTACT::NitWgt_harmonic,
+        INPAR::CONTACT::NitWgt_phyiscal),
+      &tsic
+      );
+
+  setStringToIntegralParameter<int>("NITSCHE_PENALTY_ADAPTIVE_TSI","yes",
+      "adapt penalty parameter after each converged time step",
+      yesnotuple,yesnovalue,&tsic);
+
+  DoubleParameter("PENALTYPARAM_THERMO",0.0,"Penalty parameter for Nitsche solution strategy",&tsic);
+
+  setStringToIntegralParameter<int>("NITSCHE_METHOD_TSI","nitsche",
+      "how to treat thermal interface problem: strong substitution or Nitsche for general interface conditions",
+      tuple<std::string>(
+        "nitsche",
+        "substitution"),
+      tuple<int>(
+        INPAR::CONTACT::NitThr_nitsche,
+        INPAR::CONTACT::NitThr_substitution),
+      &tsic
+      );
+
 
 }

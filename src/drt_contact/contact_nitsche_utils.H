@@ -48,7 +48,35 @@ public:
   virtual double* k(int col) =0;
   virtual double* k(int col, int dof)=0;
 
+  virtual double* rhs_t(int dof)=0;
+  virtual double* rhs_t()=0;
+  virtual double* k_tt(int col)=0;
+  virtual double* k_tt(int col, int dof)=0;
+  virtual double* k_td(int col)=0;
+  virtual double* k_td(int col, int dof)=0;
+  virtual double* k_dt(int col)=0;
+  virtual double* k_dt(int col, int dof)=0;
 };
+
+template<DRT::Element::DiscretizationType parent_distype>
+class MortarElementNitscheDataTsi
+{
+public:
+  void Clear(){rhs_t_.Clear();k_tt_.clear();k_td_.clear();k_dt_.clear();}
+
+  static const int num_parent_disp_dof =
+      DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement
+        *
+        DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+  static const int num_parent_thermo_dof =
+      DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
+
+  LINALG::Matrix<num_parent_thermo_dof,1> rhs_t_;
+  std::map<int,LINALG::Matrix<num_parent_thermo_dof,1> > k_tt_;
+  std::map<int,LINALG::Matrix<num_parent_thermo_dof,1> > k_td_;
+  std::map<int,LINALG::Matrix<num_parent_disp_dof,1> > k_dt_;
+};
+
 
 template<DRT::Element::DiscretizationType parent_distype>
 class MortarElementNitscheData : public MortarElementNitscheContainer
@@ -58,6 +86,15 @@ public:
   virtual double* rhs() {return rhs_.A();}
   virtual double* k(int col) {return k_[col].A();}
   virtual double* k(int col,int dof){return &k_[col](dof);}
+
+  virtual double* rhs_t(int dof) {return &tsi_data_.rhs_t_(dof);}
+  virtual double* rhs_t() {return tsi_data_.rhs_t_.A();}
+  virtual double* k_tt(int col) {return tsi_data_.k_tt_[col].A();}
+  virtual double* k_tt(int col, int dof) {return &tsi_data_.k_tt_[col](dof);}
+  virtual double* k_td(int col) {return tsi_data_.k_td_[col].A();}
+  virtual double* k_td(int col, int dof) {return &tsi_data_.k_td_[col](dof);}
+  virtual double* k_dt(int col) {return tsi_data_.k_dt_[col].A();}
+  virtual double* k_dt(int col, int dof) {return &tsi_data_.k_dt_[col](dof);}
 
   virtual void AssembleRHS(
       MORTAR::MortarElement* mele,
@@ -81,8 +118,8 @@ public:
       const std::map<int,LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement*num_dof_per_node,1> >& k,
       Teuchos::RCP<LINALG::SparseMatrix> kc);
 
-  virtual void Clear(){rhs_.Clear();k_.clear();}
 
+  virtual void Clear(){rhs_.Clear();k_.clear();tsi_data_.Clear();}
 
 private:
   LINALG::Matrix<
@@ -93,6 +130,7 @@ private:
   DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement
     *
     DRT::UTILS::DisTypeToDim<parent_distype>::dim,1> > k_;
+  MORTAR::MortarElementNitscheDataTsi<parent_distype> tsi_data_;
 };
 
 }

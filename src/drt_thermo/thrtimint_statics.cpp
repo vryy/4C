@@ -297,7 +297,8 @@ void THR::TimIntStatics::ApplyForceTangInternal(
   //! create the parameters for the discretization
   Teuchos::ParameterList p;
   //! set parameters
-  // ...
+  p.set<double>("timefac",1.);
+
   //! call the base function
   TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fint,tang);
   //! finish

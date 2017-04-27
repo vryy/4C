@@ -212,6 +212,10 @@ public:
   virtual double EstimateNitscheTraceMaxEigenvalueCombined(
       std::vector<double>& parent_disp);
 
+  //! Evaluate trace inequality and return the maximal eigenvalue
+  virtual double EstimateNitscheTraceMaxEigenvalueTSI(
+      std::vector<double>& parent_disp);
+
   //! Return a pointer to the parent element of this boundary element
   virtual DRT::Element* ParentElement() const
   {return ParentMasterElement();}
@@ -472,7 +476,8 @@ private:
       LINALG::Matrix<3,3>& defgrd,
       LINALG::Matrix<6,1>& glstrain,
       LINALG::Matrix<3,3>& rcg,
-      LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3>& bop);
+      LINALG::Matrix<6,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement*3>& bop,
+      LINALG::Matrix<3,DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& N_XYZ);
 
 
   //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
@@ -485,6 +490,42 @@ private:
       DRT::UTILS::DisTypeToDim<dt_vol>::dim*(DRT::UTILS::DisTypeToDim<dt_vol>::dim+1)/2
       >& proj);
 
+
+  //! Templated version: parent and surface discretization type
+  template<
+  DRT::Element::DiscretizationType dt_vol,
+  DRT::Element::DiscretizationType dt_surf>
+  double EstimateNitscheTraceMaxEigenvalueTSI(
+        std::vector<double>& parent_disp);
+
+  //! the volume stiffness matrix
+  //! unlike the "full" stiffness matrix we don't use the geometric term here
+  template<DRT::Element::DiscretizationType dt_vol>
+  void TraceEstimateVolMatrixTSI(
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xrefe,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xcurr,
+      LINALG::Matrix<
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& vol);
+
+  //! the surface stiffness matrix
+  template<
+  DRT::Element::DiscretizationType dt_vol,
+  DRT::Element::DiscretizationType dt_surf>
+  void TraceEstimateSurfMatrixTSI(
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xrefe,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,3>& xcurr,
+      LINALG::Matrix<
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+      DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& surf);
+
+
+  //! setup projector for removing the rigid body modes from the generalized eigenvalue problem
+  template<DRT::Element::DiscretizationType dt_vol>
+  void SubspaceProjectorScalar(
+      LINALG::Matrix<
+        DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement-1>& proj);
   //@}
 
 }; // class StructuralSurface : public DRT::Element

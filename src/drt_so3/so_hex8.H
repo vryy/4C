@@ -386,7 +386,11 @@ public:
       Epetra_SerialDenseMatrix* d2sntDdDpxi,
       LINALG::Matrix<3,1>* dsntdn,
       LINALG::Matrix<3,1>* dsntdt,
-      LINALG::Matrix<3,1>* dsntdpxi);
+      LINALG::Matrix<3,1>* dsntdpxi,
+      const double* temp=NULL,
+      double* dsntdT=NULL,
+      Epetra_SerialDenseMatrix* d2sntDdDT=NULL
+      );
 
   //@}
 

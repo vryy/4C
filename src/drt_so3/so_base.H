@@ -123,7 +123,10 @@ public:
       Epetra_SerialDenseMatrix* d2sntDdDpxi,
       LINALG::Matrix<3,1>* dsntdn,
       LINALG::Matrix<3,1>* dsntdt,
-      LINALG::Matrix<3,1>* dsntdpxi)
+      LINALG::Matrix<3,1>* dsntdpxi,
+      const double* temp=NULL,
+      double* dsntdT=NULL,
+      Epetra_SerialDenseMatrix* d2sntDdDT=NULL)
   { dserror("not implemented for chosen solid element"); }
 
   /// evaluate Cauchy stress at given point in parameter space
@@ -140,7 +143,11 @@ public:
       Epetra_SerialDenseMatrix* d2sntDdDpxi,
       LINALG::Matrix<2,1>* dsntdn,
       LINALG::Matrix<2,1>* dsntdt,
-      LINALG::Matrix<2,1>* dsntdpxi)
+      LINALG::Matrix<2,1>* dsntdpxi,
+      const double* temp=NULL,
+      double* dsntdT=NULL,
+      Epetra_SerialDenseMatrix* d2sntDdDT=NULL
+      )
   { dserror("not implemented for chosen solid element"); }
 
   /** \brief set the parameter interface ptr for the solid elements

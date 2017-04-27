@@ -40,6 +40,7 @@
 // contact
 #include "../drt_contact/contact_abstract_strategy.H"
 #include "../drt_contact/contact_tsi_lagrange_strategy.H"
+#include "../drt_contact/contact_nitsche_strategy_tsi.H"
 #include "../drt_contact/contact_interface.H"
 #include "../drt_contact/contact_tsi_interface.H"
 #include "../drt_contact/contact_node.H"
@@ -103,24 +104,20 @@ TSI::Monolithic::Monolithic(
   dti_(1.0/ptcdt_),
   vel_(Teuchos::null)
 {
-  // access the thermal parameter lists
-  const Teuchos::ParameterList& tdyn
-    = DRT::Problem::Instance()->ThermalDynamicParams();
+  FixTimeIntegrationParams();
 
-//  // check time integration algo -> currently only one-step-theta scheme supported
-//  INPAR::STR::DynamicType structtimealgo
-//    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_,"DYNAMICTYP");
-//  INPAR::THR::DynamicType thermotimealgo
-//    = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
-//
-//  // use the same time integrator for both fields
-//  if ( ( (structtimealgo != INPAR::STR::dyna_statics) or (thermotimealgo != INPAR::THR::dyna_statics) )
-//       and
-//       ( (structtimealgo != INPAR::STR::dyna_onesteptheta) or (thermotimealgo != INPAR::THR::dyna_onesteptheta) )
-//       and
-//       ( (structtimealgo!=INPAR::STR::dyna_genalpha) or (thermotimealgo!=INPAR::THR::dyna_genalpha) )
-//     )
-//    dserror("same time integration scheme for STR and THR required for monolithic.");
+  // another setup of structural time integration with the correct initial temperature is required, so get the temperature
+  if (ThermoField()->Tempnp()==Teuchos::null)
+    dserror("this is NULL");
+
+  if (matchinggrid_)
+    StructureField()->Discretization()->SetState(1,"temperature",ThermoField()->Tempnp());
+  else
+    StructureField()->Discretization()->SetState(1,"temperature",volcoupl_->ApplyVectorMapping12(ThermoField()->Tempnp()));
+
+  // setup structural time integrator with initial temperature
+  structure_->Setup();
+  StructureField()->Discretization()->ClearState(true);
 
   errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
   if (errfile_)
@@ -155,18 +152,6 @@ TSI::Monolithic::Monolithic(
                 );
   }  // end BlockMatrixMerge
 
-  // structural and thermal contact
-  if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY")==INPAR::STR::int_standard)
-  if (StructureField()->HaveModel(INPAR::STR::model_contact))
-  {
-    STR::MODELEVALUATOR::Contact& a = static_cast<STR::MODELEVALUATOR::Contact&>(
-            StructureField()->ModelEvaluator(INPAR::STR::model_contact));
-    contact_strategy_ = Teuchos::rcp_dynamic_cast<CONTACT::CoTSILagrangeStrategy>(
-        a.StrategyPtr(),true);
-    contact_strategy_->SetAlphafThermo(tdyn);
-    contact_strategy_->SetCoupling(coupST_);
-  }
-
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
   //  Dirichlet BC
   {
@@ -192,6 +177,9 @@ TSI::Monolithic::Monolithic(
     << std::endl;
 #endif  // TFSI
 
+  // structural and thermal contact
+  GetContactStrategy();
+
 }  // Monolithic()
 
 
@@ -203,6 +191,10 @@ void TSI::Monolithic::ReadRestart(int step)
   ThermoField()->ReadRestart(step);
   StructureField()->ReadRestart(step);
 
+  // StructureField()->ReadRestart destroyed the old object and created
+  // a new one, so we update the pointers
+  GetContactStrategy();
+
   // pass the current coupling variables to the respective field
   // second ReadRestart needed due to the coupling variables
   ApplyStructCouplingState(StructureField()->Dispnp(),StructureField()->Velnp());
@@ -212,6 +204,10 @@ void TSI::Monolithic::ReadRestart(int step)
   ApplyThermoCouplingState(ThermoField()->Tempnp());
   StructureField()->ReadRestart(step);
   StructureField()->Discretization()->ClearState(true);
+
+  // StructureField()->ReadRestart destroyed the old object and created
+  // a new one, so we update the pointers
+  GetContactStrategy();
 
   SetTimeStep(ThermoField()->TimeOld(),step);
 
@@ -248,6 +244,11 @@ void TSI::Monolithic::ReadRestart(int step)
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::PrepareTimeStep()
 {
+  // we may have changed the ghosting when redistributing contact
+  // so we make sure all maps in the system are up to date
+  if (contact_strategy_nitsche_!=Teuchos::null)
+    SetupSystem();
+
   // counter and print header
   // increment time and step counter
   IncrementTimeAndStep();
@@ -579,8 +580,8 @@ void TSI::Monolithic::NewtonFull()
   SetupRHS();
 
   // do the thermo contact modifications all at once
-  if (contact_strategy_!=Teuchos::null)
-    contact_strategy_->Evaluate(
+  if (contact_strategy_lagrange_!=Teuchos::null)
+    contact_strategy_lagrange_->Evaluate(
         SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
         StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
 
@@ -606,7 +607,8 @@ void TSI::Monolithic::NewtonFull()
     // *********** time measurement ***********
 
     // recover LM in the case of contact
-    RecoverStructThermLM();
+    if (contact_strategy_lagrange_ == Teuchos::null)
+      RecoverStructThermLM();
 
     // reset solver tolerance
     solver_->ResetTolerance();
@@ -656,13 +658,13 @@ void TSI::Monolithic::NewtonFull()
     SetupRHS();
 
     // do the thermo contact modifications all at once
-    if (contact_strategy_!=Teuchos::null)
+    if (contact_strategy_lagrange_!=Teuchos::null)
     {
       // *********** time measurement ***********
       double dtcpu = timernewton_.WallTime();
       // *********** time measurement ***********
 
-      contact_strategy_->Evaluate(
+      contact_strategy_lagrange_->Evaluate(
           SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
           StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
 
@@ -1098,9 +1100,6 @@ void TSI::Monolithic::SetupSystem()
   // set parameters that remain the same in the whole calculation
   SetDefaultParameters();
 
-  // create combined map
-  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-
 #ifdef TSIPARALLEL
   std::cout << Comm().MyPID() << " :PID" <<  std::endl;
   std::cout << "structure dofmap" <<  std::endl;
@@ -1109,16 +1108,7 @@ void TSI::Monolithic::SetupSystem()
   std::cout << *StructureField()->DofRowMap(1) <<  std::endl;
 #endif // TSIPARALLEL
 
-  // use its own DofRowMap, that is the 0th map of the discretization
-  vecSpaces.push_back(StructureField()->DofRowMap(0));
-  vecSpaces.push_back(ThermoField()->DofRowMap(0));
-
-  if (vecSpaces[0]->NumGlobalElements() == 0)
-    dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements() == 0)
-    dserror("No temperature equation. Panic.");
-
-  SetDofRowMaps(vecSpaces);
+  SetDofRowMaps();
 
   /*----------------------------------------------------------------------*/
   // initialise TSI-systemmatrix_
@@ -1159,15 +1149,25 @@ void TSI::Monolithic::SetupSystem()
 /*----------------------------------------------------------------------*
  | put the single maps to one full TSI map together          dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::SetDofRowMaps(
-  const std::vector<Teuchos::RCP<const Epetra_Map> >& maps
-  )
+void TSI::Monolithic::SetDofRowMaps()
 {
+  // create combined map
+  std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
+
+  // use its own DofRowMap, that is the 0th map of the discretization
+  vecSpaces.push_back(StructureField()->DofRowMap(0));
+  vecSpaces.push_back(ThermoField()->DofRowMap(0));
+
+  if (vecSpaces[0]->NumGlobalElements() == 0)
+    dserror("No structure equation. Panic.");
+  if (vecSpaces[1]->NumGlobalElements() == 0)
+    dserror("No temperature equation. Panic.");
+
   Teuchos::RCP<Epetra_Map> fullmap
-    = LINALG::MultiMapExtractor::MergeMaps(maps);
+    = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full TSI-blockmap
-  Extractor()->Setup(*fullmap,maps);
+  Extractor()->Setup(*fullmap,vecSpaces);
 }  // SetDofRowMaps()
 
 
@@ -1630,11 +1630,11 @@ bool TSI::Monolithic::Converged()
     dserror("Something went terribly wrong with binary operator!");
 
   // convergence of active contact set
-  if (contact_strategy_!=Teuchos::null)
+  if (contact_strategy_lagrange_!=Teuchos::null)
   {
-    conv = conv && (contact_strategy_->mech_contact_res_ < contact_strategy_->Params().get<double>("TOLCONTCONSTR"));
-    conv = conv && (contact_strategy_->mech_contact_incr_ < contact_strategy_->Params().get<double>("TOLLAGR"));
-    conv = conv && contact_strategy_->ActiveSetSemiSmoothConverged();
+    conv = conv && (contact_strategy_lagrange_->mech_contact_res_ < contact_strategy_lagrange_->Params().get<double>("TOLCONTCONSTR"));
+    conv = conv && (contact_strategy_lagrange_->mech_contact_incr_ < contact_strategy_lagrange_->Params().get<double>("TOLLAGR"));
+    conv = conv && contact_strategy_lagrange_->ActiveSetSemiSmoothConverged();
   }
 
   // return things
@@ -1784,7 +1784,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     break;
   }  // switch (normtypetempi_)
 
-  if (contact_strategy_!=Teuchos::null)
+  if (contact_strategy_lagrange_!=Teuchos::null)
   {
     oss <<std::setw(16)<< "sLMres-norm";
     oss <<std::setw(16)<< "sLMinc-norm";
@@ -1802,11 +1802,11 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::setw(12)<< "wct";
 
   // add contact set information
-  if (contact_strategy_!=Teuchos::null)
+  if (contact_strategy_lagrange_!=Teuchos::null)
   {
     oss << std::setw(12)<< "tc";
       oss << std::setw(11)<< "#active";
-      if (contact_strategy_->Friction())
+      if (contact_strategy_lagrange_->Friction())
         oss << std::setw(10)<< "#slip";
   }
 
@@ -1943,11 +1943,11 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     break;
   }  // switch (normtypetempi_)
 
-  if (contact_strategy_!=Teuchos::null)
+  if (contact_strategy_lagrange_!=Teuchos::null)
   {
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << contact_strategy_->mech_contact_res_;
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << contact_strategy_->mech_contact_incr_;
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << contact_strategy_->thr_contact_incr_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << contact_strategy_lagrange_->mech_contact_res_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << contact_strategy_lagrange_->mech_contact_incr_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << contact_strategy_lagrange_->thr_contact_incr_;
   }
 
   if (soltech_ == INPAR::TSI::soltech_ptc)
@@ -1960,12 +1960,12 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::setw(12) << std::setprecision(2) << std::scientific << timernewton_.ElapsedTime();
 
   // add contact information
-  if (contact_strategy_!=Teuchos::null)
+  if (contact_strategy_lagrange_!=Teuchos::null)
   {
     oss << std::setw(12) << std::setprecision(2) << std::scientific << dtcmt_;
-    oss << std::setw(11) << contact_strategy_->NumberOfActiveNodes();
-    if (contact_strategy_->Friction())
-      oss << std::setw(10) << contact_strategy_->NumberOfSlipNodes();
+    oss << std::setw(11) << contact_strategy_lagrange_->NumberOfActiveNodes();
+    if (contact_strategy_lagrange_->Friction())
+      oss << std::setw(10) << contact_strategy_lagrange_->NumberOfSlipNodes();
   }
 
   // finish oss
@@ -2054,6 +2054,10 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   StructureField()->Discretization()->Evaluate(sparams,structuralstrategy);
   StructureField()->Discretization()->ClearState(true);
 
+  // add nitsche contact integral
+  if (contact_strategy_nitsche_!=Teuchos::null)
+    k_st->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::block_displ_temp),false,1.,1.);
+
   // TODO 2013-11-11 move scaling to the so3_thermo element
   // --> consistent with thermo element and clearer, more consistent
 
@@ -2121,11 +2125,13 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
     DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP")
     );
   tparams.set<int>("structural time integrator", strmethodname_);
+  double timefac=-1.;
   switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
   {
   // static analysis
   case INPAR::THR::dyna_statics :
   {
+    timefac=1.;
     // continue
     break;
   }
@@ -2135,9 +2141,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
     // K_Td = theta . k_Td^e
     double theta = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
     tparams.set("theta",theta);
-    // put the structural theta value to the thermal parameter list
-    double str_theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
-    tparams.set("str_theta", str_theta);
+    timefac=theta;
     break;
   }
   case INPAR::THR::dyna_genalpha :
@@ -2145,11 +2149,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
     double alphaf = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
     tparams.set("alphaf", alphaf);
 
-    // put the structural theta value to the thermal parameter list
-    double str_beta = sdyn_.sublist("GENALPHA").get<double>("BETA");
-    double str_gamma = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
-    tparams.set("str_beta", str_beta);
-    tparams.set("str_gamma", str_gamma);
+    timefac=alphaf;
     break;
   }
   case INPAR::THR::dyna_undefined :
@@ -2159,6 +2159,36 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
     break;
   }
   }  // switch (THR::DynamicType)
+
+  switch(strmethodname_)
+  {
+  case INPAR::STR::dyna_statics :
+  {
+    // continue
+    break;
+  }
+  case INPAR::STR::dyna_onesteptheta :
+  {
+    // put the structural theta value to the thermal parameter list
+    double str_theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
+    tparams.set("str_theta", str_theta);
+    break;
+  }
+  case INPAR::STR::dyna_genalpha :
+  {
+    // put the structural theta value to the thermal parameter list
+    double str_beta = sdyn_.sublist("GENALPHA").get<double>("BETA");
+    double str_gamma = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
+
+    tparams.set("str_beta", str_beta);
+    tparams.set("str_gamma", str_gamma);
+    break;
+  }
+  default :
+    dserror("Don't know what to do...");
+    break;
+  }
+
 
   ThermoField()->Discretization()->ClearState(true);
   // set the variables that are needed by the elements
@@ -2183,6 +2213,9 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   ThermoField()->Discretization()->Evaluate(tparams,thermostrategy);
   ThermoField()->Discretization()->ClearState(true);
 
+  // add nitsche contact integral
+  if (contact_strategy_nitsche_!=Teuchos::null)
+    k_ts->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::block_temp_displ),false,timefac,1.);
 }  // ApplyThrCouplMatrix()
 
 
@@ -2310,7 +2343,7 @@ Teuchos::RCP<Epetra_Map> TSI::Monolithic::CombinedDBCMap()
 void TSI::Monolithic::RecoverStructThermLM()
 {
   // only in the case of contact
-  if (contact_strategy_ == Teuchos::null)
+  if (contact_strategy_lagrange_ == Teuchos::null)
     return;
 
   // split the increment
@@ -2320,7 +2353,7 @@ void TSI::Monolithic::RecoverStructThermLM()
   // extract field vectors
   ExtractFieldVectors(iterinc_,sx,tx);
 
-  contact_strategy_->RecoverCoupled(sx,tx,coupST_);
+  contact_strategy_lagrange_->RecoverCoupled(sx,tx,coupST_);
 
   return;
 }
@@ -2989,10 +3022,15 @@ void TSI::Monolithic::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector>
   TSI::Algorithm::ApplyThermoCouplingState(temp,temp_res);
 
   // set new temperatures to contact
-  if (contact_strategy_!=Teuchos::null)
+  if (contact_strategy_lagrange_!=Teuchos::null
+      ||
+      contact_strategy_nitsche_!=Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> temp2 = coupST_()->SlaveToMaster(ThermoField()->Tempnp());
-    contact_strategy_->SetState(MORTAR::state_temperature,*temp2);
+    if (contact_strategy_lagrange_!=Teuchos::null)
+      contact_strategy_lagrange_->SetState(MORTAR::state_temperature,*temp2);
+    if (contact_strategy_nitsche_!=Teuchos::null)
+      contact_strategy_nitsche_->SetState(MORTAR::state_temperature,*temp2);
   }
 }  // ApplyThermoCouplingState()
 
@@ -3018,3 +3056,48 @@ void TSI::Monolithic::ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector>
       ThermoField()->Discretization()->SetState(1,"velocity",volcoupl_->ApplyVectorMapping21(vel));
   }
 }  // ApplyStructCouplingState()
+
+
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::FixTimeIntegrationParams()
+{
+  if (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(DRT::Problem::Instance()->ThermalDynamicParams(),"DYNAMICTYP")==INPAR::THR::dyna_genalpha)
+  {
+    Teuchos::ParameterList& ga = DRT::Problem::Instance()->getNonconstParameterList()->sublist("THERMAL DYNAMIC").sublist("GENALPHA");
+    double rhoinf = ga.get<double>("RHO_INF");
+
+    if (rhoinf!=-1.)
+    {
+      if ( (rhoinf < 0.0) or (rhoinf > 1.0) )
+        dserror("rho_inf out of range [0.0,1.0]");
+      double alpham = 0.5*(3.0-rhoinf)/(rhoinf+1.0);
+      double alphaf = 1.0/(rhoinf+1.0);
+      double gamma = 0.5+alpham-alphaf;
+      ga.set<double>("GAMMA",gamma);
+      ga.set<double>("ALPHA_F",alphaf);
+      ga.set<double>("ALPHA_M",alpham);
+    }
+  }
+
+  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(DRT::Problem::Instance()->StructuralDynamicParams(),"DYNAMICTYP")==INPAR::STR::dyna_genalpha)
+  {
+    Teuchos::ParameterList& ga = DRT::Problem::Instance()->getNonconstParameterList()->sublist("STRUCTURAL DYNAMIC").sublist("GENALPHA");
+    double rhoinf = ga.get<double>("RHO_INF");
+
+    if (rhoinf!=-1.)
+    {
+      double alpham = (2.0*rhoinf-1.0)/(rhoinf+1.0);
+      double alphaf = rhoinf/(rhoinf+1.0);
+      double beta   = 0.25*(1.0-alpham+alphaf)*(1.0-alpham+alphaf);
+      double gamma  = 0.5-alpham+alphaf;
+
+      ga.set<double>("BETA",beta);
+      ga.set<double>("GAMMA",gamma);
+      ga.set<double>("ALPHA_F",alphaf);
+      ga.set<double>("ALPHA_M",alpham);
+    }
+  }
+}

@@ -242,6 +242,8 @@ private:
                               const int eleGID);                           ///< Element GID
 
     /// evaluate Cauchy stress with given left Cauchy--Green tensor
+    /// if requested, additional linearizations are computed
+    /// potential thermal dependency handled if temperature is given
     virtual void EvaluateCauchy(
         const LINALG::Matrix<3,3>& b,
         const LINALG::Matrix<3,1>& n,
@@ -253,7 +255,36 @@ private:
         LINALG::Matrix<6,3>* d2sntDbDt,
         LINALG::Matrix<3,1>* dsntdn,
         LINALG::Matrix<3,1>* dsntdt,
-        const int eleGID);
+        const int eleGID,
+        const double* temp =NULL,
+        double* dsntdT=NULL,
+        LINALG::Matrix<6,1>* d2sntDbDT=NULL);
+
+    /// calculate derivatives of SEF for calculation of Cauchy stress
+    /// can be overloaded if temperature is given
+    virtual void EvaluateCauchyDerivs(
+        const LINALG::Matrix<3,1>& prinv,
+        const int eleGID,
+        LINALG::Matrix<3,1>& dPI,
+        LINALG::Matrix<6,1>& ddPII_ordered,
+        LINALG::Matrix<10,1>& dddPIII,
+        const double* temp=NULL
+        );
+
+    /// calculate derivatives of Cauchy stress w.r.t. temperature
+    /// to be overloaded
+    virtual void EvaluateCauchyTempDeriv(
+        const LINALG::Matrix<3,1>& prinv,
+        const double ndt,
+        const double tbn,
+        const double tibn,
+        const LINALG::Matrix<6,1>& dI1db,
+        const LINALG::Matrix<6,1>& dI2db,
+        const LINALG::Matrix<6,1>& dI3db,
+        const LINALG::Matrix<6,1>& nt_tn_v,
+        const LINALG::Matrix<6,1>& dtibndb,
+        const double* temp, double* dsntdT,LINALG::Matrix<6,1>* d2sntDbDT) {}
+
 
     /// setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);

@@ -204,6 +204,12 @@ void STR::TIMINT::Implicit::Evaluate()
   if (grp_ptr == NULL)
     dserror("Dynamic cast failed!");
 
+  // you definately have to evaluate here. You might be called from a coupled
+  // problem and the group might not be aware, that a different state than
+  // the internally stored displacements may have changed.
+  // This is a hack to get NOX to set IsValid to false.
+  grp_ptr->setX(grp_ptr->getX());
+
   // compute the rhs vector and the stiffness matrix
   grp_ptr->computeFandJacobian();
 

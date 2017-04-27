@@ -2211,6 +2211,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_line_coupling.cpp
   src/drt_contact/contact_integrator.cpp
   src/drt_contact/contact_nitsche_integrator.cpp
+  src/drt_contact/contact_nitsche_integrator_tsi.cpp
   src/drt_contact/contact_integrator_factory.cpp
   src/drt_contact/contact_integrator_assemble.cpp
   src/drt_contact/contact_interface.cpp
@@ -2226,6 +2227,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/manager_nurbs.cpp
   src/drt_contact/contact_penalty_strategy.cpp
   src/drt_contact/contact_nitsche_strategy.cpp
+  src/drt_contact/contact_nitsche_strategy_tsi.cpp
   src/drt_contact/contact_wear_interface.cpp
   src/drt_contact/contact_wear_interface_tools.cpp
   src/drt_contact/contact_wear_lagrange_strategy.cpp

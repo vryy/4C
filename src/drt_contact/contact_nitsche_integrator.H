@@ -103,7 +103,7 @@ protected:
           This is where the distinction between methods should be,
           i.e. mortar, augmented, gpts,...
    */
-  void IntegrateGP_3D(
+  virtual void IntegrateGP_3D(
       MORTAR::MortarElement& sele,
       MORTAR::MortarElement& mele,
       LINALG::SerialDenseVector& sval,
@@ -139,6 +139,33 @@ private:
         const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
         const double gap, const GEN::pairedvector<int,double>& dgapgp,
         double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,double* sxi, double* mxi);
+
+    template <DRT::Element::DiscretizationType parentdistype, int dim>
+    void inline SoEleGP(
+        MORTAR::MortarElement& sele,
+        const double wgt,
+        const double* gpcoord,
+        LINALG::Matrix<dim,1>& pxsi,
+        LINALG::Matrix<dim,dim>& derivtrafo
+  );
+
+    template <int dim>
+    void SoEleCauchy(
+        MORTAR::MortarElement& moEle,
+        double* boundary_gpcoord,
+        std::vector<GEN::pairedvector<int,double> > boundary_gpcoord_lin,
+        const double gp_wgt,
+        const LINALG::Matrix<dim,1>& normal,
+        std::vector<GEN::pairedvector<int,double> >& normal_deriv,
+        const LINALG::Matrix<dim,1>& direction,
+        std::vector<GEN::pairedvector<int,double> >& direction_deriv,
+        const double w,
+        double& cauchy_nt,
+        GEN::pairedvector<int,double>& deriv_sigma_nt,
+        LINALG::SerialDenseVector& adjoint_test,
+        GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test);
+
+protected:
 
     template<int dim>
         void BuildAdjointTest(
@@ -177,31 +204,6 @@ private:
         LINALG::SerialDenseVector& adjoint_test,
         GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test
         );
-
-    template <DRT::Element::DiscretizationType parentdistype, int dim>
-    void inline SoEleGP(
-        MORTAR::MortarElement& sele,
-        const double wgt,
-        const double* gpcoord,
-        LINALG::Matrix<dim,1>& pxsi,
-        LINALG::Matrix<dim,dim>& derivtrafo
-  );
-
-    template <int dim>
-    void SoEleCauchy(
-        MORTAR::MortarElement& moEle,
-        double* boundary_gpcoord,
-        std::vector<GEN::pairedvector<int,double> > boundary_gpcoord_lin,
-        const double gp_wgt,
-        const LINALG::Matrix<dim,1>& normal,
-        std::vector<GEN::pairedvector<int,double> >& normal_deriv,
-        const LINALG::Matrix<dim,1>& direction,
-        std::vector<GEN::pairedvector<int,double> >& direction_deriv,
-        const double w,
-        double& cauchy_nt,
-        GEN::pairedvector<int,double>& deriv_sigma_nt,
-        LINALG::SerialDenseVector& adjoint_test,
-        GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test);
 
     template <int dim>
     void RelVel(

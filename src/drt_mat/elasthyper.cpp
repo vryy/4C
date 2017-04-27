@@ -694,6 +694,28 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   return ;
 }
+
+void MAT::ElastHyper::EvaluateCauchyDerivs(
+    const LINALG::Matrix<3,1>& prinv,
+    const int eleGID,
+    LINALG::Matrix<3,1>& dPI,
+    LINALG::Matrix<6,1>& ddPII_ordered,
+    LINALG::Matrix<10,1>& dddPIII,
+    const double* temp
+    )
+{
+  for (unsigned i=0;i<potsum_.size();++i)
+  {
+    if (isoprinc_)
+    {
+      potsum_[i]->AddDerivativesPrincipal(dPI,ddPII_ordered,prinv,eleGID);
+      potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII,prinv,eleGID);
+    }
+    if (isomod_ || anisomod_ || anisoprinc_)
+      dserror("not implemented for this form of strain energy function");
+  }
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::EvaluateCauchy(
@@ -707,7 +729,10 @@ void MAT::ElastHyper::EvaluateCauchy(
     LINALG::Matrix<6,3>* d2sntDbDt,
     LINALG::Matrix<3,1>* dsntdn,
     LINALG::Matrix<3,1>* dsntdt,
-    const int eleGID)
+    const int eleGID,
+    const double* temp,
+    double* dsntdT,
+    LINALG::Matrix<6,1>* d2sntDbDT)
 {
   snt=0.;
 
@@ -770,16 +795,8 @@ void MAT::ElastHyper::EvaluateCauchy(
   LINALG::Matrix<3,1> dPI;
   LINALG::Matrix<6,1> ddPII_ordered;
   LINALG::Matrix<10,1> dddPIII;
-  for (unsigned i=0;i<potsum_.size();++i)
-  {
-    if (isoprinc_)
-    {
-      potsum_[i]->AddDerivativesPrincipal(dPI,ddPII_ordered,prinv,eleGID);
-      potsum_[i]->AddThirdDerivativesPrincipalIso(dddPIII,prinv,eleGID);
-    }
-    if (isomod_ || anisomod_ || anisoprinc_)
-      dserror("not implemented for this form of strain energy function");
-  }
+
+  EvaluateCauchyDerivs(prinv,eleGID,dPI,ddPII_ordered,dddPIII,temp);
 
   LINALG::Matrix<6,1> ddPII;
   ddPII(0)=ddPII_ordered(0);
@@ -1096,6 +1113,10 @@ void MAT::ElastHyper::EvaluateCauchy(
     for (int i=0;i<3;++i) for (int j=0;j<3;++j) for (int a=0;a<3;++a)
       (*d2sntDbDt)(VOIGT3X3SYM_[i][j],a)+=fac*(ib(a,i)*ibn(j)+ib(a,j)*ibn(i))/(1.+(i!=j));
   }
+
+  if (temp)
+    EvaluateCauchyTempDeriv(prinv,ndt,tbn,tibn,dI1db,dI2db,dI3db,nt_tn_v,dtibndb,temp,dsntdT,d2sntDbDT);
+
   return;
 }
 /*----------------------------------------------------------------------*/

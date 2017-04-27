@@ -39,6 +39,7 @@ namespace DRT
 namespace CONTACT
 {
 class CoTSILagrangeStrategy;
+class CoNitscheStrategyTsi;
 }
 
 namespace FS3I
@@ -146,6 +147,11 @@ namespace TSI
     virtual void ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
                                   Teuchos::RCP<const Epetra_Vector> vel);
 
+    //! Get a ptr to the contact strategy from the structural field,
+    //! store it in tsi and hand it to the thermal field
+    void GetContactStrategy();
+
+    //! Access to the dof coupling for matching grid TSI
     ADAPTER::Coupling& StructureThermoCoupling() { return *coupST_; }
     //@}
 
@@ -174,8 +180,9 @@ namespace TSI
     //! underlying fluid of the FSI problem
     Teuchos::RCP< ::ADAPTER::Thermo> thermo_;
 
-    //! contact strategy
-    Teuchos::RCP<CONTACT::CoTSILagrangeStrategy> contact_strategy_;
+    //! contact strategies
+    Teuchos::RCP<CONTACT::CoTSILagrangeStrategy> contact_strategy_lagrange_;
+    Teuchos::RCP<CONTACT::CoNitscheStrategyTsi>  contact_strategy_nitsche_;
 
     //@}
 

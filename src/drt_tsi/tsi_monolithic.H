@@ -272,7 +272,7 @@ namespace TSI
      defines the number of blocks, their maps and the block order. The block
      maps must be row maps by themselves and must not contain identical GIDs.
     */
-    void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
+    void SetDofRowMaps();
 
     //! combined DBC map
     //! unique map of all dofs that should be constrained with DBC
@@ -330,6 +330,10 @@ namespace TSI
                                   Teuchos::RCP<const Epetra_Vector> vel);
 
   private:
+
+    //! if just rho_inf is specified for genAlpha, the other parameters in the global parameter
+    //! list need to be adapted accordingly
+    void FixTimeIntegrationParams();
 
     const Teuchos::ParameterList& tsidyn_;  //!< TSI dynamic parameter list
     const Teuchos::ParameterList& tsidynmono_;  //!< monolithic TSI dynamic parameter list

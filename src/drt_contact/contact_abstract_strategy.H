@@ -952,7 +952,7 @@ public:
 
    We hand in the current global displacement state so that
    a contact search can be performed and set state called. */
-  void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
+  virtual void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
 
   //! Global evaluation method called from time integrator
   void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
