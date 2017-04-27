@@ -25,9 +25,12 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     bool recompute)
 {
   // see whether we have an aztec list
-  if (!solveparams.isSublist("Aztec Parameters") &&
-      !solveparams.isSublist("Belos Parameters") &&
-      !solveparams.isSublist("Stratimikos Parameters")) return;
+  if ( (!solveparams.isSublist("Aztec Parameters") &&
+        !solveparams.isSublist("Belos Parameters") &&
+        !solveparams.isSublist("Stratimikos Parameters"))
+       ||
+       solveparams.isSublist("IFPACK Parameters") )
+    return;
 
   int numdf = 1; // default value for no. of degrees of freedom per node
   int dimns = 1; // default value for no. of nullspace vectors
