@@ -637,9 +637,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     // after all vascular compartment volumes have been set - since these enter the 0D respiratory residual!!!
     switch (respiratory_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
+      case INPAR::CARDIOVASCULAR0D::resp_none:
       break;
-      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
+      case INPAR::CARDIOVASCULAR0D::resp_standard:
         EvaluateRespiratory(params,df_np,f_np,wkstiff,sysvec4,sysvec5,false);
       break;
     }
@@ -849,9 +849,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     //call sub evaluate method for respiratory model
     switch (respiratory_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
+      case INPAR::CARDIOVASCULAR0D::resp_none:
       break;
-      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
+      case INPAR::CARDIOVASCULAR0D::resp_standard:
         EvaluateRespiratory(params,df_np,f_np,wkstiff,sysvec4,sysvec5,true);
       break;
     }
@@ -964,7 +964,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
         // transport residual expressions
         switch (respiratory_model_)
         {
-          case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
+          case INPAR::CARDIOVASCULAR0D::resp_none:
           {
             if (*conditiontype == "ventricle_left") colvec[0]=gindex[2];
             if (*conditiontype == "ventricle_right") colvec[0]=gindex[26];
@@ -974,7 +974,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
             sysmat2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
           }
           break;
-          case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
+          case INPAR::CARDIOVASCULAR0D::resp_standard:
           {
             if (*conditiontype == "ventricle_left")
             {
@@ -3204,9 +3204,9 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
 
   switch (respiratory_model_)
   {
-    case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
+    case INPAR::CARDIOVASCULAR0D::resp_none:
     break;
-    case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
+    case INPAR::CARDIOVASCULAR0D::resp_standard:
 
       // initial value of time-varying pleural pressure
       double U_t_0 = 0.0;
@@ -3344,7 +3344,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
   {
     switch (respiratory_model_)
     {
-      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_none:
+      case INPAR::CARDIOVASCULAR0D::resp_none:
         {
           std::cout << "============ Welcome to monolithic coupling of 3D structural dynamics to 0D cardiovascular flow models ======================="<< std::endl;
           std::cout << "======= Model: Extended closed-loop vascular model with atria (3D or 0D), systemic and pulmonary circulation coupling, ======="<< std::endl;
@@ -3352,7 +3352,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
 
         }
       break;
-      case INPAR::CARDIOVASCULAR0D::Cardvasc0DRespiratoryModel::resp_standard:
+      case INPAR::CARDIOVASCULAR0D::resp_standard:
         {
           std::cout << "============ Welcome to monolithic coupling of 3D structural dynamics to 0D cardiovascular flow models ======================="<< std::endl;
           std::cout << "======= Model: Extended closed-loop vascular model with atria (3D or 0D), systemic and pulmonary circulation coupling, ======="<< std::endl;

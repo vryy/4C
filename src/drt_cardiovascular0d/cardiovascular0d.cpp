@@ -275,6 +275,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     return;
   default:
     dserror("Unknown Cardiovascular0D type to be evaluated in Cardiovascular0D class!");
+    break;
   }
 
   const int offsetID = params.get<int>("OffsetID");
@@ -375,6 +376,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       break;
       default:
           dserror("shape type unknown!\n");
+          break;
       }
 
       const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
@@ -469,6 +471,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
         return;
       default:
         dserror("Unknown Cardiovascular0D type to be evaluated in Cardiovascular0D class!");
+        break;
       }
 
       elevector.Scale(sc_strtimint);
