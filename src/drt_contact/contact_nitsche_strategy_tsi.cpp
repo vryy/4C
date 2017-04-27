@@ -207,9 +207,11 @@ void CONTACT::CoNitscheStrategyTsi::Integrate(CONTACT::ParamsInterface& cparams)
 
   if (coupST_==Teuchos::null)
   {
+#ifdef DEBUG
     std::cout<<"\nWARNING: we are skipping the assembly of TSI coupling matrices in CONTACT::CoNitscheStrategyTsi::Integrate\n"
         "We do this, since the coupling object is not set. This may happen during constructor phases.\n"
         "If this warning appears long after the construction, you're in big trouble.\n" << std::endl;
+#endif
     return;
   }
 
