@@ -851,3 +851,77 @@ void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest<3>(
     LINALG::SerialDenseVector& ,
     GEN::pairedvector<int,LINALG::SerialDenseVector>&
     );
+
+template
+void CONTACT::CoIntegratorNitsche::BuildAdjointTest<2>(
+    MORTAR::MortarElement& ,
+    const double ,
+    const Epetra_SerialDenseMatrix& ,
+    const Epetra_SerialDenseMatrix& ,
+    const Epetra_SerialDenseMatrix& ,
+    const Epetra_SerialDenseMatrix& ,
+    const Epetra_SerialDenseMatrix& ,
+    const std::vector<GEN::pairedvector<int,double> > ,
+    LINALG::Matrix<2,2> ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    LINALG::SerialDenseVector& ,
+    GEN::pairedvector<int,LINALG::SerialDenseVector>& );
+
+template
+void CONTACT::CoIntegratorNitsche::BuildAdjointTest<3>(
+    MORTAR::MortarElement& ,
+    const double ,
+    const Epetra_SerialDenseMatrix& ,
+    const Epetra_SerialDenseMatrix& ,
+    const Epetra_SerialDenseMatrix& ,
+    const Epetra_SerialDenseMatrix& ,
+    const Epetra_SerialDenseMatrix& ,
+    const std::vector<GEN::pairedvector<int,double> > ,
+    LINALG::Matrix<3,3> ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    LINALG::SerialDenseVector& ,
+    GEN::pairedvector<int,LINALG::SerialDenseVector>& );
+
+
+template
+void CONTACT::CoIntegratorNitsche::RelVel<2>(
+    MORTAR::MortarElement& ,
+    const LINALG::SerialDenseVector& ,
+    const LINALG::SerialDenseMatrix& ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    const double ,
+    LINALG::Matrix<2,1>& ,
+    std::vector<GEN::pairedvector<int,double> >&
+    );
+
+template
+void CONTACT::CoIntegratorNitsche::RelVel<3>(
+    MORTAR::MortarElement& ,
+    const LINALG::SerialDenseVector& ,
+    const LINALG::SerialDenseMatrix& ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    const double ,
+    LINALG::Matrix<3,1>& ,
+    std::vector<GEN::pairedvector<int,double> >&
+    );
+
+template
+void CONTACT::UTILS::VectorScalarProduct<2>(
+    const LINALG::Matrix<2,1>& ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    const LINALG::Matrix<2,1>& ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    double& ,
+    GEN::pairedvector<int,double>&
+);
+template
+void CONTACT::UTILS::VectorScalarProduct<3>(
+    const LINALG::Matrix<3,1>& ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    const LINALG::Matrix<3,1>& ,
+    const std::vector<GEN::pairedvector<int,double> >& ,
+    double& ,
+    GEN::pairedvector<int,double>&
+);

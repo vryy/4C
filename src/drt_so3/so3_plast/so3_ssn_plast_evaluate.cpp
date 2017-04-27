@@ -3267,3 +3267,18 @@ CondensePlasticity<8>(
     const double*,
     const LINALG::Matrix<numdofperelement_,1>*
     );
+
+template
+void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::HeatFlux(
+    const std::vector<double>& ,
+    const std::vector<double>& ,
+    const LINALG::Matrix<nsd_,1>& ,
+    const LINALG::Matrix<nsd_,1>& ,
+    double& ,
+    Epetra_SerialDenseMatrix* ,
+    Epetra_SerialDenseMatrix* ,
+    LINALG::Matrix<nsd_,1>* ,
+    LINALG::Matrix<nsd_,1>* ,
+    Epetra_SerialDenseMatrix* ,
+    Epetra_SerialDenseMatrix* ,
+    Epetra_SerialDenseMatrix* );
