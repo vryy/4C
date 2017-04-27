@@ -537,6 +537,11 @@ Teuchos::RCP<const Epetra_Vector> XCONTACT::Strategy::GetRhsBlockPtr(
         std::cout << "block_constraint" << std::endl;
         break;
       }
+      default:
+      {
+        dserror("Unknown STR::VecBlockType!");
+        exit(EXIT_FAILURE);
+      }
     }
     std::cout << "---------------------------" << std::endl;
     std::cout << "*vec_ptr" << std::endl;

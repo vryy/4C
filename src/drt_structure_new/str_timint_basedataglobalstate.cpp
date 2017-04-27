@@ -745,6 +745,12 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(
         blockmat_ptr->Matrix(b_id,b_id).Assign(access,matrix);
         break;
       }
+      default:
+      {
+        dserror("model block %s not supported to end up here",
+            DRT::UTILS::MatBlockType2String(bt).c_str());
+        break;
+      }
     }
     return;
   }
@@ -797,6 +803,12 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
       case DRT::UTILS::block_lm_lm:
       {
         block = Teuchos::rcp(&(blockmat_ptr->Matrix(b_id,b_id)),false);
+        break;
+      }
+      default:
+      {
+        dserror("model block %s not supported to end up here",
+            DRT::UTILS::MatBlockType2String(bt).c_str());
         break;
       }
     }
