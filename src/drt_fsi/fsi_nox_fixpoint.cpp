@@ -1,3 +1,13 @@
+/*!----------------------------------------------------------------------
+\file fsi_nox_fixpoint.cpp
+
+\brief Calculates the fix point direction.
+
+\maintainer Andreas Rauch
+
+\level 1
+
+*----------------------------------------------------------------------*/
 
 #include "fsi_nox_fixpoint.H"
 #include <NOX_GlobalData.H>

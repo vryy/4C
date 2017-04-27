@@ -6,9 +6,7 @@
        with sliding ALE-structure interfaces
 
 
-\maintainer Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+\maintainer Andreas Rauch
 
 \level 1
 

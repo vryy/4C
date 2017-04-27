@@ -1,3 +1,16 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_nox_mpe.H
+
+\brief Solve FSI problems using minimal polynomial vector extrapolation
+
+\maintainer Andreas Rauch
+
+\level 1
+
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef FSI_NOX_MPE_H
 #define FSI_NOX_MPE_H
 

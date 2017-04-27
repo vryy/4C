@@ -1,3 +1,14 @@
+/*!----------------------------------------------------------------------
+\file fsi_nox_fixpoint.H
+
+\brief Calculates the fix point direction.
+
+\maintainer Andreas Rauch
+
+\level 1
+
+*----------------------------------------------------------------------*/
+
 #ifndef FSI_NOX_FIXPOINT_H
 #define FSI_NOX_FIXPOINT_H
 

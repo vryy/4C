@@ -1,3 +1,13 @@
+/*!----------------------------------------------------------------------
+\file fsi_nox_epsilon.cpp
+
+\brief Calculates vector extrapolation via epsilon algorithm.
+
+\maintainer Andreas Rauch
+
+\level 1
+
+*----------------------------------------------------------------------*/
 
 #include "fsi_nox_epsilon.H"
 

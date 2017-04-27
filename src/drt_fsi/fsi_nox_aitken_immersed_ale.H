@@ -1,3 +1,14 @@
+/*!----------------------------------------------------------------------
+\file fsi_nox_aitken_immersed_ale.H
+
+\brief class computing step length for AITKEN relaxation
+
+\maintainer Andreas Rauch
+
+\level 2
+
+*----------------------------------------------------------------------*/
+
 #ifndef FSI_NOX_AITKEN_IMMERSED_ALE_H
 #define FSI_NOX_AITKEN_IMMERSED_ALE_H
 

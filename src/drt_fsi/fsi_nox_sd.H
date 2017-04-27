@@ -1,3 +1,16 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_nox_sd.H
+
+\brief Solve FSI problems using NonlinearCG
+
+\maintainer Andreas Rauch
+
+\level 1
+
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef FSI_NOX_SD_H
 #define FSI_NOX_SD_H
 

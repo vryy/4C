@@ -4,9 +4,7 @@
 
 \brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
 
-\maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
+\maintainer Andreas Rauch
 
 \level 1
 */
