@@ -65,6 +65,11 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // access the thermo discretization
   Teuchos::RCP<DRT::Discretization> thermodis = DRT::Problem::Instance()->GetDis("thermo");
 
+  // get the problem instance
+  DRT::Problem* problem = DRT::Problem::Instance();
+  // get the restart step
+  const int restart = problem->Restart();
+
   if(!matchinggrid_)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
@@ -85,7 +90,6 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     dserror("old structural time integration no longer supported in tsi");
   else
   {
-
     Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo
     = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(),thermodis));
     thermo_ = thermo->ThermoFieldrcp();
@@ -106,8 +110,12 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     }
 
     adapterbase_ptr->Setup();
-
     structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::StructureWrapper>(adapterbase_ptr->StructureField());
+
+    if ( restart && DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(
+        DRT::Problem::Instance()->TSIDynamicParams(),"COUPALGO")==INPAR::TSI::Monolithic)
+      structure_->Setup();
+
     StructureField()->Discretization()->ClearState(true);
   }
 
