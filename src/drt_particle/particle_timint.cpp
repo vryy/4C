@@ -18,6 +18,7 @@
 #include "particle_algorithm.H"
 #include "particle_contact.H"
 #include "particle_resulttest.H"
+#include "particle_radius_node.H"
 #include "particleMeshFree_interaction.H"
 #include "particleMeshFree_weightFunction.H"
 #include "particleMeshFree_rendering.H"
@@ -274,17 +275,23 @@ void PARTICLE::TimInt::SetInitialFields()
   // set material properties
   // -----------------------------------------//
 
-  // all particles have identical density and radius (for now)
+  // extract initial particle radius
   const double initRadius = particle_algorithm_->ParticleMat()->initRadius_;
+
+  // set initial particle radii to initial or specified values
+  for(int i=0; i<discret_->NumMyRowNodes(); ++i)
+  {
+    const ParticleRadiusNode* const particle = dynamic_cast<const ParticleRadiusNode* const>(discret_->lRowNode(i));
+    (*(*radius_)(0))[i] = particle == NULL ? initRadius : particle->Radius();
+  }
+
+  // extract particle density (for now, all particles have identical density)
   const double initDensity = particle_algorithm_->ParticleMat()->initDensity_;
-
-  double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
-
-  (*radius_)(0)->PutScalar(initRadius);
 
   double consistent_problem_volume=DRT::Problem::Instance()->ParticleParams().get<double>("CONSISTENT_PROBLEM_VOLUME");
   if(consistent_problem_volume<0.0) // particle mass via m = rho * 4/3 * PI *r^3
-    mass_->PutScalar(initDensity * PARTICLE::Utils::Radius2Volume(initRadius));
+    for(int i=0; i<discret_->NumMyRowNodes(); ++i)
+      (*mass_)[i] = initDensity * PARTICLE::Utils::Radius2Volume((*(*radius_)(0))[i]);
   else // particle mass via problem volume and density
   {
     //boundary particles are excluded for determination of particle mass since they are also not part of the consistent_problem_volume
@@ -401,6 +408,8 @@ void PARTICLE::TimInt::SetInitialFields()
   // -----------------------------------------//
   // initialize displacement field
   // -----------------------------------------//
+
+  double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
 
   for(int n=0; n<discret_->NumMyRowNodes(); ++n)
   {
