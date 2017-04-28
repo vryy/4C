@@ -187,8 +187,9 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
       contact.get<double>("SEMI_SMOOTH_CN") <= 0.0)
     dserror("Regularization parameter cn, must be greater than 0 for contact problems");
 
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca && dim == 3)
-    dserror("ERROR: 3D frictional contact with Tresca's law not yet implemented");
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca && dim == 3
+      && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_nitsche)
+    dserror("ERROR: 3D frictional contact with Tresca's law only implemented for nitsche formulation");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none
       && DRT::INPUT::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON") != 1
