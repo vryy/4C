@@ -771,8 +771,10 @@ namespace KERNEL {
      *                    but we do a direct solve here.
      *
      * \f[
-     * \underline{\underline{J}} \Delta \underline{\xi} = - (\underline{x}_{p} - \underline{x(\underline{\xi})},\\
-     * \intertext{where}
+     * \underline{\underline{J}} \Delta \underline{\xi} = - (\underline{x}_{p} - \underline{x(\underline{\xi})},
+     * \f]
+     * where
+     * \f[
      * \underline{\underline{J}} =
      * \begin{pmatrix}
      * \frac{\partial x(\underline{\xi})}{\partial \xi} & \frac{\partial x(\underline{\xi})}{\partial \eta} & \frac{\partial x(\underline{\xi})}{\partial \zeta} \\
