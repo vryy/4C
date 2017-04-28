@@ -4,12 +4,10 @@
 
 \brief Structure field adapter for time step size adaptivity
 
-<pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\level 2
+
+\maintainer Alexander Popp
+
 */
 
 /*----------------------------------------------------------------------*/
