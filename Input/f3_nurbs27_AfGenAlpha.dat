@@ -26,7 +26,7 @@ NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          MLFLUID2                        // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZPREC                          ILU                             // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
 AZREUSE                         5                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0
@@ -35,7 +35,7 @@ IFPACKOVERLAP                   0
 AZTOL                           1.0E-7                          // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
-AZSUB                           200                             // size of krylov space for gmres
+AZSUB                           100                             // size of krylov space for gmres
 AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH                         1                               // unused
 AZPOLY                          5                               // polynomial order for Neumann
