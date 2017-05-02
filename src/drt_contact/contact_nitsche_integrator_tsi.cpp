@@ -695,8 +695,8 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
             sele.ParentElement()->NumNode()+mele.ParentElement()->NumNode());
 
         test_val+=-(beta*(-snn_av_pen_gap)/pen_thermo)/(1.+(beta*(-snn_av_pen_gap)/pen_thermo))*(s_gp_temp-m_gp_temp);
-        test_val+=-(1./pen_thermo)/(1.-beta*snn_av_pen_gap/pen_thermo)*qn_weighted_average;
-        test_val+=-(1./pen_thermo)/(1.-beta*snn_av_pen_gap/pen_thermo)*(1.-delta_c-ws_thermo)*diss;
+        test_val+=-(1./pen_thermo)/(1.+beta*(-snn_av_pen_gap)/pen_thermo)*qn_weighted_average;
+        test_val+=-(1./pen_thermo)/(1.+beta*(-snn_av_pen_gap)/pen_thermo)*(1.-delta_c-ws_thermo)*diss;
 
         for (_CI p=d_s_gp_temp_dd.begin();p!=d_s_gp_temp_dd.end();++p)
           deriv_test_val_d[p->first]+=-(beta*(-snn_av_pen_gap)/pen_thermo)/(1.+(beta*(-snn_av_pen_gap)/pen_thermo))*p->second;
@@ -707,18 +707,27 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
         for (_CI p=d_m_gp_temp_dT.begin();p!=d_m_gp_temp_dT.end();++p)
           deriv_test_val_T[p->first]+=-(beta*(-snn_av_pen_gap)/pen_thermo)/(1.+(beta*(-snn_av_pen_gap)/pen_thermo))*(-p->second);
         for (_CI p=deriv_qn_weighted_average_d.begin();p!=deriv_qn_weighted_average_d.end();++p)
-          deriv_test_val_d[p->first]+=-(1./pen_thermo)/(1.-beta*snn_av_pen_gap/pen_thermo)*p->second;
+          deriv_test_val_d[p->first]+=-(1./pen_thermo)/(1.+beta*(-snn_av_pen_gap)/pen_thermo)*p->second;
         for (_CI p=deriv_qn_weighted_average_T.begin();p!=deriv_qn_weighted_average_T.end();++p)
-          deriv_test_val_T[p->first]+=-(1./pen_thermo)/(1.-beta*snn_av_pen_gap/pen_thermo)*p->second;
+          deriv_test_val_T[p->first]+=-(1./pen_thermo)/(1.+beta*(-snn_av_pen_gap)/pen_thermo)*p->second;
         for (_CI p=d_diss_d.begin();p!=d_diss_d.end();++p)
-          deriv_test_val_d[p->first]+=-(1./pen_thermo)/(1.-beta*snn_av_pen_gap/pen_thermo)*(1.-delta_c-ws_thermo)*p->second;
+          deriv_test_val_d[p->first]+=-(1./pen_thermo)/(1.+beta*(-snn_av_pen_gap)/pen_thermo)*(1.-delta_c-ws_thermo)*p->second;
         for (_CI p=d_diss_T.begin();p!=d_diss_T.end();++p)
-          deriv_test_val_T[p->first]+=-(1./pen_thermo)/(1.-beta*snn_av_pen_gap/pen_thermo)*(1.-delta_c-ws_thermo)*p->second;
+          deriv_test_val_T[p->first]+=-(1./pen_thermo)/(1.+beta*(-snn_av_pen_gap)/pen_thermo)*(1.-delta_c-ws_thermo)*p->second;
+
         for (_CI p=d_snn_av_pen_gap.begin();p!=d_snn_av_pen_gap.end();++p)
           deriv_test_val_d[p->first]+=(
-              +(beta/pen_thermo)/(std::pow(-1.+beta/pen_thermo*snn_av_pen_gap,2.))*(s_gp_temp-m_gp_temp)
+              +(beta*pen_thermo)/(std::pow(-pen_thermo+beta*snn_av_pen_gap,2.))*(s_gp_temp-m_gp_temp)
               -(
-                  beta/(pen_thermo*pen_thermo*std::pow(1.-beta/pen_thermo*snn_av_pen_gap,2.))
+                  beta/(std::pow(-pen_thermo+beta*snn_av_pen_gap,2.))
+              )*(qn_weighted_average+(1.-delta_c-ws_thermo)*diss)
+              )*p->second;
+
+        for (_CI p=cauchy_nn_weighted_average_deriv_T.begin();p!=cauchy_nn_weighted_average_deriv_T.end();++p)
+          deriv_test_val_T[p->first]+=(
+              +(beta*pen_thermo)/(std::pow(-pen_thermo+beta*snn_av_pen_gap,2.))*(s_gp_temp-m_gp_temp)
+              -(
+                  beta/(std::pow(-pen_thermo+beta*snn_av_pen_gap,2.))
               )*(qn_weighted_average+(1.-delta_c-ws_thermo)*diss)
               )*p->second;
 
