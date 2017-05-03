@@ -188,8 +188,13 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 
       // use xml file for generating hierarchy
       std::string xmlFileName = mllist_.get<std::string>("xml file");
-      Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-      *fos << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy" << std::endl;
+
+      // screen output
+      if(matrix->Comm().MyPID() == 0)
+      {
+        Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+        *fos << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy" << std::endl;
+      }
 
       // prepare nullspace vector for MueLu
       int numdf = mllist_.get<int>("PDE equations",-1);
