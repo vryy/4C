@@ -1984,21 +1984,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "growth law depending on stretch in fiber direction, growth in fiber direction",
                                             INPAR::MAT::m_growth_aniso_strain));
 
+    AddNamedReal(m,"TAU","growth time scale");
+    AddNamedReal(m,"THETA_MAX","upper limit for growth stretch");
+    AddNamedReal(m,"GAMMA","growth non-linearity");
     AddNamedReal(m,"LAMBDA_CRIT","critical fiber stretch");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);
   }
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  // anisotropic strain-dependent growth law
+  // anisotropic stress-dependent growth law
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStress",
                                             "growth law depending on Mandel stress, growth perpendicular to fiber direction",
                                             INPAR::MAT::m_growth_aniso_stress));
 
-    AddNamedReal(m,"P_CRIT","critical cavity pressure");
+    AddNamedReal(m,"TAU","growth time scale");
+    AddNamedReal(m,"THETA_MAX","upper limit for growth stretch");
+    AddNamedReal(m,"GAMMA","growth non-linearity");
+    AddNamedReal(m,"P_CRIT","critical pressure");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);
   }

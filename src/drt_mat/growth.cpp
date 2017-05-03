@@ -1350,12 +1350,30 @@ void MAT::GrowthVolumetric::Setup(int numgp, DRT::INPUT::LineDefinition* linedef
     F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,Id);
   }
     break;
+  case INPAR::MAT::m_growth_aniso_strain:
+  case INPAR::MAT::m_growth_aniso_stress:
+  {
+    // FIBER1 nomenclature
+    if (not (linedef->HaveNamed("FIBER1")))
+      dserror("If you want growth in fiber direction you need to specify FIBER1 in your input file!");
+
+    ReadFiber(linedef,"FIBER1",refdir_);
+
+    // only refdir is used - rest remains unused...
+    curdir_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
+    curdir_for_update_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
+    LINALG::Matrix<3,3> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i,i) = 1.0;
+    F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,Id);
+  }
+    break;
   default:
   {
+    // directions are unused
     refdir_(true);
     curdir_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
     curdir_for_update_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
-
     LINALG::Matrix<3,3> Id(true);
     for (int i = 0; i < 3; i++)
       Id(i,i) = 1.0;

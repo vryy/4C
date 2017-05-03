@@ -1,0 +1,190 @@
+// Maintainer: Marc Hirschvogel
+// hirschvogel@mhpc.mw.tum.de
+// http://www.mhpc.mw.tum.de
+// 089 - 289-10363
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        1
+NODES                           8
+DIM                             3
+-----------------------------------------------------DISCRETISATION
+NUMAIRWAYSDIS                   0
+NUMALEDIS                       0
+NUMARTNETDIS                    0
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMTHERMDIS                     0
+-----------------------------------------------------------------IO
+FILESTEPS                       1000
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+FLUID_WALL_SHEAR_STRESS         No
+LIMIT_OUTP_TO_PROC              -1
+OUTPUT_BIN                      Yes
+PREFIX_GROUP_ID                 No
+STDOUTEVRY                      1
+STRUCT_DISP                     Yes
+STRUCT_VEL_ACC                  Yes
+STRUCT_PLASTIC_STRAIN           No
+STRUCT_SE                       No
+STRUCT_STRAIN                   gl
+STRUCT_STRESS                   Cauchy
+STRUCT_SURFACTANT               No
+THERM_HEATFLUX                  None
+THERM_TEMPERATURE               No
+THERM_TEMPGRAD                  None
+WRITE_TO_FILE                   No
+WRITE_TO_SCREEN                 Yes
+--------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+RANDSEED                        -1
+RESTART                         0
+SHAPEFCT                        Polynomial
+-----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+-------------------------------------------------STRUCTURAL DYNAMIC
+ADAPTCONV                       Yes
+ADAPTCONV_BETTER                0.1
+CONTROLNODE                     -1 -1 -1
+CONTROLTYPE                     load
+DAMPING                         No//Rayleigh
+DIVERCONT                       stop//halve_step
+DYNAMICTYP                      Statics//GenAlpha
+ITERNORM                        L2
+K_DAMP                          0.0001
+LINEAR_SOLVER                   1
+LOADLIN                         yes
+MASSLIN                         standard
+LUMPMASS                        no
+MAXITER                         250
+MAXTIME                         2.0
+MINITER                         0
+MODIFIEDEXPLEULER               Yes
+M_DAMP                          0.0
+NLNSOL                          fullnewton
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFDISP              And
+NORMCOMBI_RESFINCO              And
+NORM_DISP                       Abs
+NORM_INCO                       Abs
+NORM_PRES                       Abs
+NORM_RESF                       Abs
+NUMSTEP                         9999999
+PREDICT                         ConstDis
+PRESTRESS                       None
+PRESTRESSTIME                   0
+PTCDT                           0.3
+RESEVRYERGY                     0
+RESTARTEVRY                     0
+RESULTSEVRY                     1
+STC_LAYER                       1
+TIMESTEP                        0.02
+TOLCONSTR                       1e-08
+TOLDISP                         1e-08
+TOLINCO                         1e-08
+TOLPRE                          1e-08
+TOLRES                          1e-05
+UZAWAALGO                       direct
+UZAWAMAXITER                    50
+UZAWAPARAM                      1
+UZAWATOL                        1e-08
+MATERIALTANGENT                 analytical
+----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
+RHO_INF                         0.8
+------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           0.5
+----------------------------------------------------------MATERIALS
+MAT 1 MAT_GrowthVolumetric GROWTHLAW 3 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.0
+
+MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 21 22 DENS 1.0e-6
+MAT 21 ELAST_IsoNeoHooke MUE 50.0
+MAT 22 ELAST_VolSussmanBathe KAPPA 50.0
+
+MAT 3 MAT_GrowthAnisoStrain TAU 1.0 THETA_MAX 1.5 GAMMA 1.72 LAMBDA_CRIT 1.0 TOL 1.0E-10
+-----------------------------------------------CLONING MATERIAL MAP
+-------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 0.0 150.0
+-------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC -sin((pi/2.0)*(t/1.0)) t1 0.0 t2 1.0
+CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR -1.0 -1.0
+-------------------------------------------------------------CURVE3
+CURVE3 on EXPR FUNC 1.0-cos((pi/2.0)*(t/1.0)) t1 0.0 t2 1.0
+CURVE3 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 1.0 1.0
+-------------------------------------------------------------CURVE4
+-------------------------------------------------------------CURVE5
+-------------------------------------------------------------CURVE6
+-------------------------------------------------------------CURVE7
+-------------------------------------------------------------CURVE8
+-------------------------------------------------------------CURVE9
+-------------------------------------------------------------FUNCT1
+-------------------------------------------------------------FUNCT2
+-------------------------------------------------------------FUNCT3
+-------------------------------------------------------------FUNCT4
+-------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -3.98158821782485095e+00 TOLERANCE 1e-6
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 1
+NDLINE  1
+NDSURF  2
+NDVOL   0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF  1
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 CURVE 1 1 1 FUNCT 0 0 0 orthopressure Mid
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE 2 3 none FUNCT 0 0 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  1
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    3 DNODE 1
+NODE    4 DNODE 1
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    1 DLINE 1
+NODE    2 DLINE 1
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE 1
+NODE    2 DSURFACE 1
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+NODE    5 DSURFACE 1
+NODE    6 DSURFACE 1
+NODE    7 DSURFACE 1
+NODE    8 DSURFACE 1
+NODE    5 DSURFACE 2
+NODE    6 DSURFACE 2
+NODE    7 DSURFACE 2
+NODE    8 DSURFACE 2
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE         1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01  5.0000000000000000e-01
+NODE         2 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE         3 COORD -5.0000000000000000e-01  5.0000000000000000e-01 -5.0000000000000000e-01
+NODE         4 COORD -5.0000000000000000e-01  5.0000000000000000e-01  5.0000000000000000e-01
+NODE         5 COORD  5.0000000000000000e-01 -5.0000000000000000e-01  5.0000000000000000e-01
+NODE         6 COORD  5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE         7 COORD  5.0000000000000000e-01  5.0000000000000000e-01 -5.0000000000000000e-01
+NODE         8 COORD  5.0000000000000000e-01  5.0000000000000000e-01  5.0000000000000000e-01
+------------------------------------------------STRUCTURE ELEMENTS
+   1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS none FIBER1 1.0 0.0 0.0 FIBER2 0.0 1.0 0.0
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------LUBRICATION ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------TRANSPORT2 ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------ACOUSTIC ELEMENTS
+---------------------------------------------------CELL ELEMENTS
+---------------------------------------------------CELLSCATRA ELEMENTS
+---------------------------------------------------------------END
+// END
