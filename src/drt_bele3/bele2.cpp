@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file bele2.cpp
 
-\brief  2D boundary elment
+\brief 2D boundary elment
 
-<pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Martin Pfaller
 
-*----------------------------------------------------------------------*/
+\level 2
+*/
+/*----------------------------------------------------------------------*/
 
 #include "bele2.H"
 #include "../drt_lib/drt_discret.H"

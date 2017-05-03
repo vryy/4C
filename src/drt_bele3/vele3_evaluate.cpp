@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file vele3_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\brief volume element
 
-*----------------------------------------------------------------------*/
+\maintainer Jonas Eichinger
+
+\level 2
+*/
+/*----------------------------------------------------------------------*/
 
 #include "vele3.H"
 #include "../drt_lib/drt_discret.H"

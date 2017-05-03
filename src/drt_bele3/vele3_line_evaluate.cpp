@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file vele3_line_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\brief volume element
 
-*----------------------------------------------------------------------*/
+\maintainer Jonas Eichinger
+
+\level 2
+*/
+/*----------------------------------------------------------------------*/
 
 #include "vele3.H"
 #include "../linalg/linalg_utils.H"

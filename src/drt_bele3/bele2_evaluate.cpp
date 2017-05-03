@@ -1,15 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file bele2_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\brief 2D boundary elment
 
-*----------------------------------------------------------------------*/
+\maintainer Martin Pfaller
+
+\level 2
+*/
+/*----------------------------------------------------------------------*/
 
 #include "bele2.H"
 #include "../drt_lib/drt_discret.H"

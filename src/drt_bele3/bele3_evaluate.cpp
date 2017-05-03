@@ -1,10 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file bele3_evaluate.cpp
+
+\brief dummy 3D boundary element without any physics
 
 \maintainer Martin Pfaller
 
-\brief dummy 3D boundary element without any physics
- *----------------------------------------------------------------------*/
+\level 2
+*/
+/*----------------------------------------------------------------------*/
 
 #include "bele3.H"
 #include "../drt_so3/so_surface.H"
