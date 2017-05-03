@@ -353,6 +353,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(
   {
     AddtoPack(data,cauchy_);
     AddtoPack(data,cauchy_deriv_);
+    if (tsi_)
+      AddtoPack(data,cauchy_deriv_T_);
   }
 
   return;
@@ -468,11 +470,16 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
    {
      ExtractfromPack(position,data,cauchy_);
      ExtractfromPack(position,data,cauchy_deriv_);
+     if (tsi_)
+       ExtractfromPack(position,data,cauchy_deriv_T_);
+     else
+       cauchy_deriv_.resize(0);
    }
    else
    {
      cauchy_      .resize(0);
      cauchy_deriv_.resize(0);
+     cauchy_deriv_T_.resize(0);
    }
 
    if (position != data.size())

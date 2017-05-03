@@ -817,7 +817,7 @@ void MAT::PlasticElastHyper::EvaluateGoughJoule(const double j,
 void MAT::PlasticElastHyper::EvaluatePlast(
     const LINALG::Matrix<3,3>* defgrd,
     const LINALG::Matrix<3,3>* deltaDp,
-    const double temp,
+    const double* temp,
     Teuchos::ParameterList& params,
     LINALG::Matrix<6,6>* dPK2dDp,
     LINALG::Matrix<6,1>* NCP,
@@ -835,7 +835,8 @@ void MAT::PlasticElastHyper::EvaluatePlast(
     LINALG::Matrix<6,1>* cauchy,
     LINALG::Matrix<6,6>* d_cauchy_ddp,
     LINALG::Matrix<6,6>* d_cauchy_dC,
-    LINALG::Matrix<6,9>* d_cauchy_dF
+    LINALG::Matrix<6,9>* d_cauchy_dF,
+    LINALG::Matrix<6,1>* d_cauchy_dT
     )
 {
   int check =
@@ -854,6 +855,8 @@ void MAT::PlasticElastHyper::EvaluatePlast(
   if (EvaluateKinQuantPlast(defgrd,deltaDp,gp,params))
     return;
   EvaluateInvariantDerivatives(prinv_,dPI,ddPII,eleGID);
+  if (temp && cauchy)
+    AddThermalExpansionDerivs(prinv_,dPI,ddPII,eleGID,*temp);
   CalculateGammaDelta(gamma,delta,prinv_,dPI,ddPII);
 
   // blank resulting quantities
@@ -880,7 +883,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(
     dserror("only isotropic hypereleastic materials");
 
   if (cauchy)
-    EvaluateCauchyPlast(dPI,ddPII,defgrd,*cauchy,d_cauchy_dFpi,*d_cauchy_dC,*d_cauchy_dF);
+    EvaluateCauchyPlast(dPI,ddPII,defgrd,*cauchy,d_cauchy_dFpi,*d_cauchy_dC,*d_cauchy_dF,d_cauchy_dT);
 
   EvaluateNCP(&mStr,&dMdC,&dMdFpinv,&dPK2dFpinv,deltaDp,gp,temp,
       NCP,dNCPdC,dNCPdDp,dNCPdT,dPK2dDp,active,elast,as_converged,
@@ -900,7 +903,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     const LINALG::Matrix<6,9>* dPK2dFpinv,
     const LINALG::Matrix<3,3>* deltaDp,
     const int gp,
-    const double temp,
+    const double* temp,
     LINALG::Matrix<6,1>* NCP,
     LINALG::Matrix<6,6>* dNCPdC,
     LINALG::Matrix<6,6>* dNCPdDp,
@@ -920,7 +923,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
   const double sq=sqrt(2./3.);
   LINALG::Matrix<6,1> tmp61;
   double dT=0.;
-  if (dNCPdT) dT=temp-InitTemp();
+  if (dNCPdT) dT=*temp-InitTemp();
   else        dT=0.;
 
   // deviatoric projection tensor
@@ -1136,7 +1139,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
             -Isohard()*HardSoft()*aI
             -(Infyield()*HardSoft()-Inityield()*YieldSoft())
             *(1.-exp(-Expisohard()*aI))
-        )*temp*delta_alpha_i_[gp];
+        )*(*temp)*delta_alpha_i_[gp];
         switch (DisMode())
         {
         case INPAR::TSI::pl_multiplier:
@@ -1180,12 +1183,12 @@ void MAT::PlasticElastHyper::EvaluateNCP(
         }
 
         // derivative w.r.t. Delta alpha i
-        double dPlHeatingDdai = temp*(0.
+        double dPlHeatingDdai = (*temp)*(0.
             -Isohard()*HardSoft()*aI
             +(Infyield()*(-HardSoft())-Inityield()*(-YieldSoft()))
             *(1.-exp(-Expisohard()*aI))
         )
-          +temp*delta_alpha_i_[gp]*(0.
+          +(*temp)*delta_alpha_i_[gp]*(0.
               -Isohard()*HardSoft()
               +(-Infyield()*HardSoft()+Inityield()*YieldSoft())
               *Expisohard()*exp(-Expisohard()*aI)
@@ -1352,7 +1355,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(
 void MAT::PlasticElastHyper::EvaluatePlast(
     const LINALG::Matrix<3,3>* defgrd,
     const LINALG::Matrix<3,3>* deltaLp,
-    const double temp,
+    const double* temp,
     Teuchos::ParameterList& params,
     LINALG::Matrix<6,9>* dPK2dLp,
     LINALG::Matrix<9,1>* NCP,
@@ -1370,15 +1373,17 @@ void MAT::PlasticElastHyper::EvaluatePlast(
     LINALG::Matrix<6,1>* cauchy,
     LINALG::Matrix<6,9>* d_cauchy_ddp,
     LINALG::Matrix<6,6>* d_cauchy_dC,
-    LINALG::Matrix<6,9>* d_cauchy_dF
+    LINALG::Matrix<6,9>* d_cauchy_dF,
+    LINALG::Matrix<6,1>* d_cauchy_dT
     )
 {
   int check =
       +(cauchy!=NULL)
       +(d_cauchy_dC!=NULL)
       +(d_cauchy_dF!=NULL)
-      +(d_cauchy_ddp!=NULL);
-  if (!(check==0 || check==4))
+      +(d_cauchy_ddp!=NULL)
+      +(d_cauchy_dT!=NULL);
+  if (!(check==0 || check==5))
     dserror("some inconsistency with provided variables");
 
   LINALG::Matrix<3,1> dPI(true);
@@ -1831,7 +1836,8 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(
     LINALG::Matrix<6,1>& cauchy,
     LINALG::Matrix<6,9>& d_cauchy_dFpi,
     LINALG::Matrix<6,6>& d_cauchy_dC,
-    LINALG::Matrix<6,9>& d_cauchy_dF)
+    LINALG::Matrix<6,9>& d_cauchy_dF,
+    LINALG::Matrix<6,1>* d_cauchy_dT)
 {
   cauchy.Clear();
   d_cauchy_dC.Clear();
@@ -1896,6 +1902,24 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(
   AddRightNonSymmetricHolzapfelProduct(d_cauchy_dF,be_ ,FCpi_  ,-dPI(1)/sqrt(prinv_(2)));
   d_cauchy_dF.Scale(2.);
   d_cauchy_dFpi.Scale(2.);
+
+  if (d_cauchy_dT)
+  {
+    d_cauchy_dT->Clear();
+
+    const double j = sqrt(prinv_(2));
+    double d_dPI2_dT=0.;
+    if (isomod_)
+      dserror("only coupled SEF are supposed to end up here");
+    for (unsigned int p=0; p<potsum_.size(); ++p)
+      potsum_[p]->AddCoupDerivVol(j,NULL,&d_dPI2_dT,NULL,NULL);
+
+    const double  fac = -3.*Cte();
+    d_dPI2_dT *= fac*.5/j;
+
+    d_cauchy_dT->Update(sqrt(prinv_(2))*d_dPI2_dT,id2V_,1.);
+    d_cauchy_dT->Scale(2.);
+  }
 }
 
 void MAT::PlasticElastHyper::EvaluateCauchyDerivs(
@@ -2017,6 +2041,34 @@ void MAT::PlasticElastHyper::EvaluateCauchyTempDeriv(
           dI3db,1.);
   d2sntDbDT->Update(2./sqI3*dPI(0),nt_tn_v,1.);
   d2sntDbDT->Update(-2.*sqI3*dPI(1),dtibndb,1.);
+}
+
+
+void MAT::PlasticElastHyper::AddThermalExpansionDerivs(
+        const LINALG::Matrix<3,1>& prinv,
+        LINALG::Matrix<3,1>& dPI,
+        LINALG::Matrix<6,1>& ddPII,
+        int eleGID,
+        const double& temp
+        )
+{
+  const double j = sqrt(prinv(2));
+  LINALG::Matrix<3,1> modinv(true);
+  modinv(2)=j;
+  LINALG::Matrix<3,1> dPmodI;
+  LINALG::Matrix<6,1> ddPmodII;
+  double dddPmodIII =0.;
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    potsum_[p]->AddDerivativesModified(dPmodI,ddPmodII,modinv,eleGID);
+    potsum_[p]->Add3rdVolDeriv(modinv,dddPmodIII);
+    potsum_[p]->AddCoupDerivVol(j,NULL,&(ddPmodII(2)),&dddPmodIII,NULL);
+  }
+
+  const double dT = temp-InitTemp();
+  const double  fac = -3.*Cte()*dT;
+  dPI(2)+=fac*.5/j*ddPmodII(2);
+  ddPII(2)+=fac*(.25/(j*j)*dddPmodIII-.25/(j*j*j)*ddPmodII(2));
 }
 
 void MAT::PlasticElastHyper::UpdateGP(const int gp, const LINALG::Matrix<3,3>* deltaDp)

@@ -3862,8 +3862,8 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(
     LINALG::Matrix<3,1>* dsntdn,
     LINALG::Matrix<3,1>* dsntdt,
     LINALG::Matrix<3,1>* dsntdpxi,
-    const double* temp,
-    double* dsntdT,
+    const std::vector<double>* temp,
+    Epetra_SerialDenseMatrix* dsntdT,
     Epetra_SerialDenseMatrix* d2sntDdDT
     )
 {

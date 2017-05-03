@@ -139,9 +139,6 @@ private:
             MORTAR::MortarElement& moEle,
             const double fac,
             const Epetra_SerialDenseMatrix& d2sntDdDT,
-            const GEN::pairedvector<int,double>& d_temp_dd,
-            const GEN::pairedvector<int,double>& d_temp_dT,
-            GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test,
             GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
@@ -218,9 +215,6 @@ private:
         const LINALG::Matrix<dim,1>& direction,
         std::vector<GEN::pairedvector<int,double> >& direction_deriv,
         const double w,
-        const double gp_temp,
-        const GEN::pairedvector<int,double>& d_temp_dd,
-        const GEN::pairedvector<int,double>& d_temp_dT,
         double& cauchy_nt,
         GEN::pairedvector<int,double>& deriv_sigma_nt_d,
         GEN::pairedvector<int,double>& deriv_sigma_nt_T,

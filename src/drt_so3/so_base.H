@@ -124,8 +124,8 @@ public:
       LINALG::Matrix<3,1>* dsntdn,
       LINALG::Matrix<3,1>* dsntdt,
       LINALG::Matrix<3,1>* dsntdpxi,
-      const double* temp=NULL,
-      double* dsntdT=NULL,
+      const std::vector<double>* temp=NULL,
+      Epetra_SerialDenseMatrix* dsntdT=NULL,
       Epetra_SerialDenseMatrix* d2sntDdDT=NULL)
   { dserror("not implemented for chosen solid element"); }
 
@@ -144,8 +144,8 @@ public:
       LINALG::Matrix<2,1>* dsntdn,
       LINALG::Matrix<2,1>* dsntdt,
       LINALG::Matrix<2,1>* dsntdpxi,
-      const double* temp=NULL,
-      double* dsntdT=NULL,
+      const std::vector<double>* temp=NULL,
+      Epetra_SerialDenseMatrix* dsntdT=NULL,
       Epetra_SerialDenseMatrix* d2sntDdDT=NULL
       )
   { dserror("not implemented for chosen solid element"); }

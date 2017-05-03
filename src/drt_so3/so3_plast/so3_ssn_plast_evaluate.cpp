@@ -1017,12 +1017,16 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
   LINALG::Matrix<numstr_,numstr_>* d_cauchy_dC_ptr=NULL;
   LINALG::Matrix<numstr_,9> d_cauchy_dF;
   LINALG::Matrix<numstr_,9>* d_cauchy_dF_ptr=NULL;
+  LINALG::Matrix<numstr_,1> d_cauchy_dT; // todo: continue with this one; plmat->EvaluatePlast(...) should give you this; however not tested yet
+  LINALG::Matrix<numstr_,1>* d_cauchy_dT_ptr=NULL;
   if (is_nitsche_contact_)
   {
     cauchy_ptr=&(cauchy_.at(gp));
     d_cauchy_ddp_ptr=&d_cauchy_ddp;
     d_cauchy_dC_ptr=&d_cauchy_dC;
     d_cauchy_dF_ptr=&d_cauchy_dF;
+    if (eval_tsi)
+      d_cauchy_dT_ptr=&d_cauchy_dT;
   }
 
   // second material call ****************************************************
@@ -1037,14 +1041,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
   bool elast=false;
   bool as_converged=true;
   if (!eval_tsi)
-    plmat->EvaluatePlast(&defgrd,&deltaLp,0,params,&dpk2ddp,
+    plmat->EvaluatePlast(&defgrd,&deltaLp,NULL,params,&dpk2ddp,
         &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,NULL,NULL,NULL,StrParamsInterface().GetDeltaTime(),Id(),
-        cauchy_ptr,d_cauchy_ddp_ptr,d_cauchy_dC_ptr,d_cauchy_dF_ptr);
+        cauchy_ptr,d_cauchy_ddp_ptr,d_cauchy_dC_ptr,d_cauchy_dF_ptr,d_cauchy_dT_ptr);
   else
-    plmat->EvaluatePlast(&defgrd,&deltaLp,temp,params,&dpk2ddp,
+    plmat->EvaluatePlast(&defgrd,&deltaLp,&temp,params,&dpk2ddp,
         &ncp,&dncpdc,&dncpddp,&active,&elast,&as_converged,gp,&dncpdT,&dHdC,&dHdLp,StrParamsInterface().GetDeltaTime(),Id(),
-        cauchy_ptr,d_cauchy_ddp_ptr,d_cauchy_dC_ptr,d_cauchy_dF_ptr);
-
+        cauchy_ptr,d_cauchy_ddp_ptr,d_cauchy_dC_ptr,d_cauchy_dF_ptr,d_cauchy_dT_ptr);
   // *************************************************************************
 
   // Simple matrix do delete the linear dependent row in Voigt-notation.
@@ -1146,6 +1149,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
       cauchy_deriv_.at(gp).Multiply(1.,d_cauchy_dF,dFdd,1.);
     }
     d_cauchy_db.Multiply(d_cauchy_ddp,dDpdbeta);
+  }
+
+  if (d_cauchy_dT_ptr)
+  {
+    cauchy_deriv_T_.at(gp).Clear();
+    cauchy_deriv_T_.at(gp).MultiplyNT(1.,d_cauchy_dT,ShapeFunction(),1.);
   }
 
   // EAS matrix block
@@ -1457,6 +1466,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
       tmp.Multiply(d_cauchy_db,LINALG::Matrix<spintype,spintype>(KbbInv_.at(gp).A(),true));
       cauchy_.at(gp).Multiply(-1.,tmp,LINALG::Matrix<spintype,1>(fbeta_.at(gp).A(),true),1.);
       cauchy_deriv_.at(gp).Multiply(-1.,tmp,LINALG::Matrix<spintype,numdofperelement_>(Kbd_.at(gp).A(),true),1.);
+
+      if (d_cauchy_dT_ptr)
+      {
+        LINALG::Matrix<6,1> bla;
+        bla.Multiply(-1.,tmp,LINALG::Matrix<spintype,1>(KbT_->at(gp).A(),true),1.);
+        cauchy_deriv_T_.at(gp).MultiplyNT(1.,bla,ShapeFunction(),1.);
+      }
     }
     // **************************************************************
     // static condensation of inner variables
@@ -1873,8 +1889,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
     LINALG::Matrix<3,1>* dsntdn,
     LINALG::Matrix<3,1>* dsntdt,
     LINALG::Matrix<3,1>* dsntdpxi,
-    const double* temp,
-    double* dsntdT,
+    const std::vector<double>* temp,
+    Epetra_SerialDenseMatrix* dsntdT,
     Epetra_SerialDenseMatrix* d2sntDdDT
     )
 {
@@ -1894,6 +1910,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
 
   LINALG::Matrix<nen_,nsd_> xrefe;  // reference coord. of element
   LINALG::Matrix<nen_,nsd_> xcurr;  // current  coord. of element
+  LINALG::Matrix<nen_,1> ele_temp;
   DRT::Node** nodes = Nodes();
 
   for (int i=0; i<nen_; ++i)
@@ -1904,17 +1921,25 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
       xrefe(i,d) = x[d];
       xcurr(i,d) = xrefe(i,d) + disp[i*nsd_+d];
     }
+    if (temp)
+      if (temp->size())
+        ele_temp(i)=temp->at(i);
   }
 
-  LINALG::Matrix<nsd_,nen_> deriv;
-  DRT::UTILS::shape_function_deriv1<distype>(xi,deriv);
+  DRT::UTILS::shape_function<distype>(xi,SetShapeFunction());
+  DRT::UTILS::shape_function_deriv1<distype>(xi,SetDerivShapeFunction());
+
+  const double gp_temp = ele_temp.Dot(ShapeFunction());
+  double dsntdT_gp =0.;
+  LINALG::Matrix<nsd_,1> dT_dxi;
+  dT_dxi.Multiply(DerivShapeFunction(),ele_temp);
 
   LINALG::Matrix<nsd_,nen_> N_XYZ;
 
   LINALG::Matrix<nsd_,nsd_> invJ;
-  invJ.Multiply(deriv,xrefe);
+  invJ.Multiply(DerivShapeFunction(),xrefe);
   invJ.Invert();
-  N_XYZ.Multiply(invJ,deriv);
+  N_XYZ.Multiply(invJ,DerivShapeFunction());
   LINALG::Matrix<nsd_,nsd_> defgrd;
   defgrd.MultiplyTT(xcurr,N_XYZ);
 
@@ -1951,7 +1976,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
   LINALG::Matrix<6,1> d2sntDbDT;
 
   if (plmat && temp)
-    plmat->EvaluateCauchy(b,n,t,sigma_nt,&dsntdb,&d2sntdb2,&d2sntDbDn,&d2sntDbDt,dsntdn,dsntdt,0,temp,dsntdT,&d2sntDbDT);
+    plmat->EvaluateCauchy(b,n,t,sigma_nt,&dsntdb,&d2sntdb2,&d2sntDbDn,&d2sntDbDt,dsntdn,dsntdt,0,&gp_temp,&dsntdT_gp,&d2sntDbDT);
   else
     SolidMaterial()->EvaluateCauchy(b,n,t,sigma_nt,&dsntdb,&d2sntdb2,&d2sntDbDn,&d2sntDbDt,dsntdn,dsntdt,0);
 
@@ -1965,9 +1990,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
 
   if (d2sntDdDT)
   {
-    d2sntDdDT     ->Shape(numdofperelement_,1);
-    LINALG::Matrix<numdofperelement_,1> d2sntDdDT_m(d2sntDdDT->A(),true);
-    d2sntDdDT_m.MultiplyTN(bop,d2sntDbDT);
+    d2sntDdDT     ->Shape(numdofperelement_,nen_);
+    LINALG::Matrix<numdofperelement_,1> tmp(true);
+    tmp.MultiplyTN(bop,d2sntDbDT);
+    LINALG::Matrix<numdofperelement_,nen_>(d2sntDdDT->A(),true).MultiplyNT(tmp,ShapeFunction());
   }
 
   if (d2sntDdDn)
@@ -1982,6 +2008,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
     d2sntDdDt  ->Shape(numdofperelement_,nsd_);
     LINALG::Matrix<numdofperelement_,nsd_> d2sntDdDt_m(d2sntDdDt->A(),true);
     d2sntDdDt_m.MultiplyTN(bop,d2sntDbDt);
+  }
+
+  if (dsntdT)
+  {
+    dsntdT->Shape(nen_,1);
+    LINALG::Matrix<nen_,1>(dsntdT->A(),true).Update(dsntdT_gp,ShapeFunction(),1.);
   }
 
   if (d2sntdd2)
@@ -2066,6 +2098,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
       }
 
     dsntdpxi->MultiplyTN(dbdxi,dsntdb);
+    if (temp)
+      dsntdpxi->Update(dsntdT_gp,dT_dxi,1.);
 
     LINALG::Matrix<numdofperelement_,nsd_> d2sntDdDpxi_m(d2sntDdDpxi->A(),true);
     d2sntDdDpxi_m.Clear();
@@ -2073,6 +2107,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
     LINALG::Matrix<6,numdofperelement_> d2sntdb2Bop;
     d2sntdb2Bop.Multiply(d2sntdb2,bop);
     d2sntDdDpxi_m.MultiplyTN(d2sntdb2Bop,dbdxi);
+
+    if (temp)
+    {
+      LINALG::Matrix<6,3> tmp;
+      tmp.MultiplyNT(d2sntDbDT,dT_dxi);
+      LINALG::Matrix<numdofperelement_,nsd_>(d2sntDdDpxi->A(),true).MultiplyTN(1.,bop,tmp,1.);
+    }
 
     LINALG::Matrix<nsd_,nen_> invJ_N_XYZ;
     invJ_N_XYZ.MultiplyTN(invJ,N_XYZ);
@@ -2310,6 +2351,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(
           -jift      (2,x)*N_XYZ_Xsec(i,2));
     }
   }
+  InvalidEleData();
+  InvalidGpData();
   return;
 }
 
@@ -2328,8 +2371,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiPlast(
         LINALG::Matrix<3,1>* dsntdn,
         LINALG::Matrix<3,1>* dsntdt,
         LINALG::Matrix<3,1>* dsntdpxi,
-        const double* temp,
-        double* dsntdT,
+        const std::vector<double>* temp,
+        Epetra_SerialDenseMatrix* dsntdT,
         Epetra_SerialDenseMatrix* d2sntDdDT)
 {
   if (distype!=DRT::Element::hex8 || numgpt_!=8)
@@ -2339,15 +2382,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiPlast(
   if ((int)cauchy_.size()!=numgpt_ || (int)cauchy_deriv_.size()!=numgpt_)
     dserror("have you evaluated the cauchy stress???");
 
-  if (temp || dsntdT || d2sntDdDT)
-    dserror("Thermo-plastic Nitsche contact not yet implemented");
-
-  if (temp || dsntdT || d2sntDdDT)
-    if (!temp || !dsntdT || d2sntDdDT)
-      dserror("temperature input inconsistent");
-
   sigma_nt=0.;
   if (dsntdpxi) dsntdpxi->Clear();
+  if (dsntdT) dsntdT->Shape(nen_,1);
+  if (d2sntDdDT) d2sntDdDT->Shape(numdofperelement_,nen_);
 
   LINALG::Matrix<3,3>nttn;
   nttn.MultiplyNT(.5,n,t,1.);
@@ -2377,6 +2415,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiPlast(
     if (dsntdpxi)
       for (int d=0;d<nsd_;++d)
         (*dsntdpxi)(d)+=cauchy_.at(gp).Dot(nttn_v)*deriv(d,gp)*sqrt(3.);
+
+    if (dsntdT)
+      LINALG::Matrix<nen_,1> (dsntdT->A(),true).MultiplyTN(shapefunct(gp),cauchy_deriv_T_.at(gp),nttn_v,1.);
   }
 
   sigma_nt=cauchy_expol.Dot(nttn_v);
@@ -2441,8 +2482,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXi(
     LINALG::Matrix<3,1>* dsntdn,
     LINALG::Matrix<3,1>* dsntdt,
     LINALG::Matrix<3,1>* dsntdpxi,
-    const double* temp,
-    double* dsntdT,
+    const std::vector<double>* temp,
+    Epetra_SerialDenseMatrix* dsntdT,
     Epetra_SerialDenseMatrix* d2sntDdDT
     )
 {

@@ -308,8 +308,8 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
             LINALG::Matrix<3,1>* dsntdn,
             LINALG::Matrix<3,1>* dsntdt,
             LINALG::Matrix<3,1>* dsntdpxi,
-            const double* temp=NULL,
-            double* dsntdT=NULL,
+            const std::vector<double>* temp=NULL,
+            Epetra_SerialDenseMatrix* dsntdT=NULL,
             Epetra_SerialDenseMatrix* d2sntDdDT=NULL
             );
 
@@ -348,6 +348,8 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
       {
         cauchy_.resize(numgpt_);
         cauchy_deriv_.resize(numgpt_);
+        if (tsi_)
+          cauchy_deriv_T_.resize(numgpt_);
       }
     }
     //@}
@@ -518,8 +520,8 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
         LINALG::Matrix<3,1>* dsntdn,
         LINALG::Matrix<3,1>* dsntdt,
         LINALG::Matrix<3,1>* dsntdpxi,
-        const double* temp=NULL,
-        double* dsntdT=NULL,
+        const std::vector<double>* temp=NULL,
+        Epetra_SerialDenseMatrix* dsntdT=NULL,
         Epetra_SerialDenseMatrix* d2sntDdDT=NULL
         );
 
@@ -537,8 +539,8 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
         LINALG::Matrix<3,1>* dsntdn,
         LINALG::Matrix<3,1>* dsntdt,
         LINALG::Matrix<3,1>* dsntdpxi,
-        const double* temp = NULL,
-        double* dsntdT = NULL,
+        const std::vector<double>* temp=NULL,
+        Epetra_SerialDenseMatrix* dsntdT=NULL,
         Epetra_SerialDenseMatrix* d2sntDdDT = NULL
         );
 
@@ -637,6 +639,7 @@ enum So3Plast_EASType  // with meaningful value for matrix size info
     bool is_nitsche_contact_;
     std::vector<LINALG::Matrix<numstr_,1> > cauchy_;
     std::vector<LINALG::Matrix<numstr_,numdofperelement_> > cauchy_deriv_;
+    std::vector<LINALG::Matrix<numstr_,nen_> > cauchy_deriv_T_;
 
     // Static members for faster evaluation **************************
     static std::pair<bool,LINALG::Matrix<nen_,1> > shapefunct_;

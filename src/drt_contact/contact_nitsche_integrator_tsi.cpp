@@ -150,7 +150,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
   const LINALG::Matrix<dim,1> normal(gpn,true);
   double cauchy_nn_weighted_average=0.;
   GEN::pairedvector<int,double> cauchy_nn_weighted_average_deriv(sele.NumNode()*3*12+sele.MoData().ParentDisp().size()+mele.MoData().ParentDisp().size());
-  GEN::pairedvector<int,double> cauchy_nn_weighted_average_deriv_T(sele.NumNode()+mele.NumNode());
+  GEN::pairedvector<int,double> cauchy_nn_weighted_average_deriv_T(sele.ParentElement()->NumNode()+mele.ParentElement()->NumNode());
 
   LINALG::SerialDenseVector normal_adjoint_test_slave(sele.MoData().ParentDof().size());
   GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_normal_adjoint_test_slave(
@@ -160,7 +160,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
         -1,
         LINALG::SerialDenseVector(sele.MoData().ParentDof().size(),true));
   GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_normal_adjoint_test_slave_T(
-        sele.NumNode(),
+        sele.ParentElement()->NumNode(),
         -1,
         LINALG::SerialDenseVector(sele.MoData().ParentDof().size(),true));
 
@@ -172,7 +172,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
       -1,
       LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
   GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_normal_adjoint_test_master_T(
-        mele.NumNode(),
+        mele.ParentElement()->NumNode(),
         -1,
         LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
 
@@ -213,7 +213,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
   GEN::pairedvector<int,double> dvt2(0);
   double cauchy_nt1_weighted_average=0.;
   GEN::pairedvector<int,double> cauchy_nt1_weighted_average_deriv(sele.NumNode()*3*12+sele.MoData().ParentDisp().size()+mele.MoData().ParentDisp().size());
-  GEN::pairedvector<int,double> cauchy_nt1_weighted_average_deriv_T(sele.NumNode()+mele.NumNode());
+  GEN::pairedvector<int,double> cauchy_nt1_weighted_average_deriv_T(sele.ParentElement()->NumNode()+mele.ParentElement()->NumNode());
   LINALG::SerialDenseVector t1_adjoint_test_slave(sele.MoData().ParentDof().size());
   GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t1_adjoint_test_slave(
       sele.MoData().ParentDof().size()
@@ -222,7 +222,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
       -1,
       LINALG::SerialDenseVector(sele.MoData().ParentDof().size(),true));
   GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t1_adjoint_test_slave_T(
-        sele.NumNode(),
+        sele.ParentElement()->NumNode(),
         -1,
         LINALG::SerialDenseVector(sele.MoData().ParentDof().size(),true));
   LINALG::SerialDenseVector t1_adjoint_test_master(mele.MoData().ParentDof().size());
@@ -233,13 +233,13 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
       -1,
       LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
   GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t1_adjoint_test_master_T(
-        mele.NumNode(),
+        mele.ParentElement()->NumNode(),
         -1,
         LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
 
   double cauchy_nt2_weighted_average=0.;
   GEN::pairedvector<int,double> cauchy_nt2_weighted_average_deriv(sele.NumNode()*3*12+sele.MoData().ParentDisp().size()+mele.MoData().ParentDisp().size());
-  GEN::pairedvector<int,double> cauchy_nt2_weighted_average_deriv_T(sele.NumNode()+mele.NumNode());
+  GEN::pairedvector<int,double> cauchy_nt2_weighted_average_deriv_T(sele.ParentElement()->NumNode()+mele.ParentElement()->NumNode());
   LINALG::SerialDenseVector t2_adjoint_test_slave(sele.MoData().ParentDof().size());
   GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t2_adjoint_test_slave(
       sele.MoData().ParentDof().size()
@@ -248,7 +248,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
       -1,
       LINALG::SerialDenseVector(sele.MoData().ParentDof().size(),true));
   GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t2_adjoint_test_slave_T(
-        sele.NumNode(),
+        sele.ParentElement()->NumNode(),
         -1,
         LINALG::SerialDenseVector(sele.MoData().ParentDof().size(),true));
   LINALG::SerialDenseVector t2_adjoint_test_master(mele.MoData().ParentDof().size());
@@ -259,7 +259,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
       -1,
       LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
   GEN::pairedvector<int,LINALG::SerialDenseVector> deriv_t2_adjoint_test_master_T(
-        mele.NumNode(),
+        mele.ParentElement()->NumNode(),
         -1,
         LINALG::SerialDenseVector(mele.MoData().ParentDof().size(),true));
   double sigma_nt1_pen_vt1=0;
@@ -275,20 +275,18 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
       +cauchy_nt2_weighted_average_deriv.capacity()
       +dvt2.capacity(),0,0);
   GEN::pairedvector<int,double> d_sigma_nt1_pen_vt1_T(
-      sele.NumNode()+mele.NumNode());
+      sele.ParentElement()->NumNode()+mele.ParentElement()->NumNode());
   GEN::pairedvector<int,double> d_sigma_nt2_pen_vt2_T(
-      sele.NumNode()+mele.NumNode());
+      sele.ParentElement()->NumNode()+mele.ParentElement()->NumNode());
   // variables for friction (end)
 
   SoEleCauchy<dim>(sele,sxi,dsxi,wgt,normal,dnmap_unit,normal,dnmap_unit,ws,
-      s_gp_temp,d_s_gp_temp_dd,d_s_gp_temp_dT,
       cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
       cauchy_nn_weighted_average_deriv_T,
       normal_adjoint_test_slave ,deriv_normal_adjoint_test_slave,
       deriv_normal_adjoint_test_slave_T);
 
   SoEleCauchy<dim>(mele,mxi,dmxi,wgt,normal,dnmap_unit,normal,dnmap_unit,wm,
-      m_gp_temp,d_m_gp_temp_dd,d_m_gp_temp_dT,
       cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,
       cauchy_nn_weighted_average_deriv_T,
       normal_adjoint_test_master,deriv_normal_adjoint_test_master,
@@ -313,26 +311,22 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
     CONTACT::UTILS::VectorScalarProduct<dim>(t2,dt2,relVel,relVel_deriv,vt2,dvt2);
 
     SoEleCauchy<dim>(sele,sxi,dsxi,wgt,normal,dnmap_unit,t1,dt1,ws,
-        s_gp_temp,d_s_gp_temp_dd,d_s_gp_temp_dT,
         cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
         cauchy_nt1_weighted_average_deriv_T,
         t1_adjoint_test_slave ,deriv_t1_adjoint_test_slave,
         deriv_t1_adjoint_test_slave_T);
     SoEleCauchy<dim>(mele,mxi,dmxi,wgt,normal,dnmap_unit,t1,dt1,wm,
-        m_gp_temp,d_m_gp_temp_dd,d_m_gp_temp_dT,
         cauchy_nt1_weighted_average,cauchy_nt1_weighted_average_deriv,
         cauchy_nt1_weighted_average_deriv_T,
         t1_adjoint_test_master,deriv_t1_adjoint_test_master,
         deriv_t1_adjoint_test_master_T);
 
     SoEleCauchy<dim>(sele,sxi,dsxi,wgt,normal,dnmap_unit,t2,dt2,ws,
-        s_gp_temp,d_s_gp_temp_dd,d_s_gp_temp_dT,
         cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
         cauchy_nt2_weighted_average_deriv_T,
         t2_adjoint_test_slave ,deriv_t2_adjoint_test_slave,
         deriv_t2_adjoint_test_slave_T);
     SoEleCauchy<dim>(mele,mxi,dmxi,wgt,normal,dnmap_unit,t2,dt2,wm,
-        m_gp_temp,d_m_gp_temp_dd,d_m_gp_temp_dT,
         cauchy_nt2_weighted_average,cauchy_nt2_weighted_average_deriv,
         cauchy_nt2_weighted_average_deriv_T,
         t2_adjoint_test_master,deriv_t2_adjoint_test_master,
@@ -437,7 +431,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
             +cauchy_nt1_weighted_average_deriv.size()
             +dvt1.size(),0,0);
         GEN::pairedvector<int,double> tmp_T(
-            sele.NumNode()+mele.NumNode());
+            sele.ParentElement()->NumNode()+mele.ParentElement()->NumNode());
         if (frtype_==INPAR::CONTACT::friction_coulomb)
         {
           for (_CI p=d_fr_d.begin();p!=d_fr_d.end();++p)
@@ -787,9 +781,6 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(
     const LINALG::Matrix<dim,1>& direction,
     std::vector<GEN::pairedvector<int,double> >& direction_deriv,
     const double w,
-    const double gp_temp,
-    const GEN::pairedvector<int,double>& d_temp_dd,
-    const GEN::pairedvector<int,double>& d_temp_dT,
     double& cauchy_nt,
     GEN::pairedvector<int,double>& deriv_sigma_nt_d,
     GEN::pairedvector<int,double>& deriv_sigma_nt_T,
@@ -827,12 +818,12 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(
     dserror("Nitsche contact not implemented for used (bulk) elements");
   }
 
-  double sigma_nt, dsntdT;
-  Epetra_SerialDenseMatrix dsntdd , d2sntdd2 , d2sntDdDn, d2sntDdDt, d2sntDdDpxi, d2sntDdDT;
+  double sigma_nt;
+  Epetra_SerialDenseMatrix dsntdd , d2sntdd2 , d2sntDdDn, d2sntDdDt, d2sntDdDpxi, d2sntDdDT, dsntdT;
   LINALG::Matrix<dim,1> dsntdn,dsntdt,dsntdpxi;
   dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())->GetCauchyAtXi(
       pxsi,moEle.MoData().ParentDisp(),normal,direction,sigma_nt,&dsntdd,&d2sntdd2,&d2sntDdDn,
-      &d2sntDdDt,&d2sntDdDpxi,&dsntdn,&dsntdt,&dsntdpxi,&gp_temp,&dsntdT,&d2sntDdDT);
+      &d2sntDdDt,&d2sntDdDpxi,&dsntdn,&dsntdt,&dsntdpxi,&moEle.MoData().ParentTemp(),&dsntdT,&d2sntDdDT);
 
   cauchy_nt += w*sigma_nt;
 
@@ -855,16 +846,13 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(
     for (GEN::pairedvector<int,double>::const_iterator p=direction_deriv[d].begin();p!=direction_deriv[d].end();++p)
       deriv_sigma_nt_d[p->first]+=dsntdt(d)*p->second*w;
 
-  for (GEN::pairedvector<int,double>::const_iterator p=d_temp_dd.begin();p!=d_temp_dd.end();++p)
-    deriv_sigma_nt_d[p->first]+=dsntdT*p->second*w;
-
-  for (GEN::pairedvector<int,double>::const_iterator p=d_temp_dT.begin();p!=d_temp_dT.end();++p)
-    deriv_sigma_nt_T[p->first]+=dsntdT*p->second*w;
+  for (int i=0;i<moEle.ParentElement()->NumNode();++i)
+    deriv_sigma_nt_T[moEle.MoData().ParentDof()[i*dim+0]]+=dsntdT(i,0)*w;
 
   if (abs(theta_)>1.e-12)
   {
     BuildAdjointTest<dim>   (moEle,w,dsntdd,d2sntdd2,d2sntDdDn,d2sntDdDt,d2sntDdDpxi,boundary_gpcoord_lin,derivtravo_slave,normal_deriv,direction_deriv,adjoint_test,deriv_adjoint_test_d);
-    BuildAdjointTestTsi<dim>(moEle,w,d2sntDdDT,d_temp_dd,d_temp_dT,deriv_adjoint_test_d,deriv_adjoint_test_T);
+    BuildAdjointTestTsi<dim>(moEle,w,d2sntDdDT,deriv_adjoint_test_T);
   }
 
   return;
@@ -1014,23 +1002,13 @@ void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestTsi(
     MORTAR::MortarElement& moEle,
     const double fac,
     const Epetra_SerialDenseMatrix& d2sntDdDT,
-    const GEN::pairedvector<int,double>& d_temp_dd,
-    const GEN::pairedvector<int,double>& d_temp_dT,
-    GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test,
     GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test_T)
 {
-  for (GEN::pairedvector<int,double>::const_iterator p=d_temp_dd.begin();p!=d_temp_dd.end();++p)
+  for (int p=0;p<moEle.ParentElement()->NumNode();++p)
   {
-    LINALG::SerialDenseVector& at=deriv_adjoint_test[p->first];
+    LINALG::SerialDenseVector& at=deriv_adjoint_test_T[moEle.MoData().ParentDof()[p*dim+0]];
     for (int i=0;i<moEle.ParentElement()->NumNode()*dim;++i)
-      at(i)+=fac*d2sntDdDT(i,0)*p->second;
-  }
-
-  for (GEN::pairedvector<int,double>::const_iterator p=d_temp_dT.begin();p!=d_temp_dT.end();++p)
-  {
-    LINALG::SerialDenseVector& at=deriv_adjoint_test_T[p->first];
-    for (int i=0;i<moEle.ParentElement()->NumNode()*dim;++i)
-          at(i)+=fac*d2sntDdDT(i,0)*p->second;
+      at(i)+=fac*d2sntDdDT(i,p);
   }
 }
 

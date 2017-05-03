@@ -285,7 +285,7 @@ private:
     /// at element level. (with zero plastic spin)
     virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
         const LINALG::Matrix<3,3>* deltaDp,///< symmetric part of plastic flow increment
-        const double temp,                 ///< current temperature
+        const double* temp,                 ///< current temperature
         Teuchos::ParameterList& params,    ///< Container for additional information
         LINALG::Matrix<6,6>* dPK2dDp,      ///< derivative of PK2 w.r.t. F_p^{-1}
         LINALG::Matrix<6,1>* NCP,          ///< NCP function
@@ -303,14 +303,15 @@ private:
         LINALG::Matrix<6,1>* cauchy=NULL,
         LINALG::Matrix<6,6>* d_cauchy_ddp=NULL,
         LINALG::Matrix<6,6>* d_cauchy_dC=NULL,
-        LINALG::Matrix<6,9>* d_cauchy_dF=NULL
+        LINALG::Matrix<6,9>* d_cauchy_dF=NULL,
+        LINALG::Matrix<6,1>* d_cauchy_dT=NULL
         );
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with plastic spin)
     virtual void EvaluatePlast(const LINALG::Matrix<3,3>* defgrd,///< Deformation gradient
         const LINALG::Matrix<3,3>* deltaLp,///< plastic deformation gradient (non-symmetric)
-        const double temp,                 ///< current temperature
+        const double* temp,                 ///< current temperature
         Teuchos::ParameterList& params,    ///< Container for additional information
         LINALG::Matrix<6,9>* dPK2dLp,      ///< derivative of PK2 w.r.t. F_p^{-1}
         LINALG::Matrix<9,1>* NCP,          ///< NCP function
@@ -328,7 +329,8 @@ private:
         LINALG::Matrix<6,1>* cauchy=NULL,
         LINALG::Matrix<6,9>* d_cauchy_ddp=NULL,
         LINALG::Matrix<6,6>* d_cauchy_dC=NULL,
-        LINALG::Matrix<6,9>* d_cauchy_dF=NULL
+        LINALG::Matrix<6,9>* d_cauchy_dF=NULL,
+        LINALG::Matrix<6,1>* d_cauchy_dT=NULL
         );
 
     virtual void EvaluateCauchyPlast(
@@ -338,7 +340,8 @@ private:
         LINALG::Matrix<6,1>& cauchy,
         LINALG::Matrix<6,9>& d_cauchy_dFpi,
         LINALG::Matrix<6,6>& d_cauchy_dC,
-        LINALG::Matrix<6,9>& d_cauchy_dF);
+        LINALG::Matrix<6,9>& d_cauchy_dF,
+        LINALG::Matrix<6,1>* d_cauchy_dT=NULL);
 
     /// hyperelastic stress response plus elasticity tensor
     /// (pure virtual in material base class. Not allowed here)
@@ -460,7 +463,7 @@ private:
                              const LINALG::Matrix<6,9>* dPK2dFpinv,
                              const LINALG::Matrix<3,3>* deltaDp,
                              const int gp,
-                             const double temp,
+                             const double* temp,
                              LINALG::Matrix<6,1>* NCP,
                              LINALG::Matrix<6,6>* dNCPdC,
                              LINALG::Matrix<6,6>* dNCPdDp,
@@ -515,6 +518,14 @@ private:
         const LINALG::Matrix<6,1>& nt_tn_v,
         const LINALG::Matrix<6,1>& dtibndb,
         const double* temp, double* dsntdT,LINALG::Matrix<6,1>* d2sntDbDT) ;
+
+    virtual void AddThermalExpansionDerivs(
+        const LINALG::Matrix<3,1>& prinv,
+        LINALG::Matrix<3,1>& dPI,
+        LINALG::Matrix<6,1>& ddPII,
+        int eleGID,
+        const double& temp
+        );
 
     //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
     virtual void MatrixExponential3x3( LINALG::Matrix<3,3>& MatrixInOut );
