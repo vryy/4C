@@ -2,13 +2,9 @@
 \file friction_node.H
 
 \brief A class for a frictional contact node
+\level 2
+\maintainer Philipp Farah, Alexander Seitz
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
 
 *-----------------------------------------------------------------------*/
 #ifndef FRICTION_NODE_H
@@ -215,6 +211,14 @@ public:
     return tractionold_;
   }
 
+  /*!
+   \brief Return old normal vector (length 3)
+   */
+  virtual inline double* Normal_old()
+  {
+    return n_old_;
+  }
+
   //@}
 
 protected:
@@ -240,7 +244,7 @@ protected:
   // penalty related quantities
   double traction_[3];    // traction vector of current time step
   double tractionold_[3]; // traction vector of previous time step
-
+  double n_old_[3];       // normal of previous time step
 };
 // class FriNodeDataContainer
 
@@ -623,6 +627,11 @@ public:
 
    */
   void StoreTracOld();
+
+  /*!
+   \brief Write nodal normals to old ones
+   */
+  void StoreOldNormal();
 
   /*!
    \brief Initializes the data container of the node

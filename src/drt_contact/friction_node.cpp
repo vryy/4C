@@ -2,13 +2,8 @@
 \file friction_node.cpp
 
 \brief A class for a frictional contact node
-
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 2
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 
@@ -64,6 +59,8 @@ void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
   DRT::ParObject::AddtoPack(data, traction_, 3 * sizeof(double));
   // add tractionold_
   DRT::ParObject::AddtoPack(data, tractionold_, 3 * sizeof(double));
+  // add n_old_
+  DRT::ParObject::AddtoPack(data, n_old_, 3 * sizeof(double));
 
   // add drowsold_,mrowsold_,mnodesold_
   int hasdata = drowsold_.size();
@@ -110,6 +107,9 @@ void CONTACT::FriNodeDataContainer::Unpack(
       3 * sizeof(double));
   // tractionold_
   DRT::ParObject::ExtractfromPack(position, data, tractionold_,
+      3 * sizeof(double));
+  // n_old_
+  DRT::ParObject::ExtractfromPack(position, data, n_old_,
       3 * sizeof(double));
 
   //drowsold_,mrowsold_,mnodesold_
@@ -568,6 +568,18 @@ void CONTACT::FriNode::StoreTracOld()
   // write entries to old ones
   for (int j = 0; j < 3; ++j)
     FriData().tractionold()[j] = FriData().traction()[j];
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store nodal normals to old ones                         seitz 05/17 |
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::StoreOldNormal()
+{
+  // write entries to old ones
+  for (int j = 0; j < 3; ++j)
+    FriData().Normal_old()[j] = MoData().n()[j];
 
   return;
 }

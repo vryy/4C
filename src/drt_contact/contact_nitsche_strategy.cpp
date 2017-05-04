@@ -96,6 +96,16 @@ void CONTACT::CoNitscheStrategy::DoReadRestart(
   for (int i = 0; i < (int) interface_.size(); ++i)
     interface_[i]->Initialize();
 
+  if (friction_)
+  {
+    for (int i=0;i<(int)interface_.size();++i)
+    {
+      interface_[i]->EvaluateNodalNormals();
+      interface_[i]->ExportNodalNormals();
+    }
+    StoreToOld(MORTAR::StrategyBase::n_old);
+  }
+
   if (DRT::INPUT::IntegralValue<int>(Params(),"NITSCHE_PENALTY_ADAPTIVE"))
     UpdateTraceIneqEtimates();
 
@@ -334,7 +344,10 @@ void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   if (DRT::INPUT::IntegralValue<int>(Params(),"NITSCHE_PENALTY_ADAPTIVE"))
     UpdateTraceIneqEtimates();
   if (friction_)
+  {
+    StoreToOld(MORTAR::StrategyBase::n_old);
     SetState(MORTAR::state_old_displacement,*dis);
+  }
 
   return;
 }
@@ -342,6 +355,17 @@ void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 void CONTACT::CoNitscheStrategy::EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
 {
   SetState(MORTAR::state_new_displacement,*dis);
+
+  if (friction_)
+  {
+    for (int i=0;i<(int)interface_.size();++i)
+    {
+      interface_[i]->EvaluateNodalNormals();
+      interface_[i]->ExportNodalNormals();
+    }
+    StoreToOld(MORTAR::StrategyBase::n_old);
+  }
+
   UpdateTraceIneqEtimates();
   return;
 }

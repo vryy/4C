@@ -305,8 +305,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
   {
     CONTACT::UTILS::BuildTangentVectors<dim>(normal.A(),dnmap_unit,t1.A(),dt1,t2.A(),dt2);
 
-    RelVel<dim>(sele,sval,sderiv,dsxi,+1.,relVel,relVel_deriv);
-    RelVel<dim>(mele,mval,mderiv,dmxi,-1.,relVel,relVel_deriv);
+    RelVelInvariant<dim>(sele,sxi,dsxi,sval,sderiv,mele,mxi,dmxi,mval,mderiv,gap,dgapgp,relVel,relVel_deriv);
     CONTACT::UTILS::VectorScalarProduct<dim>(t1,dt1,relVel,relVel_deriv,vt1,dvt1);
     CONTACT::UTILS::VectorScalarProduct<dim>(t2,dt2,relVel,relVel_deriv,vt2,dvt2);
 

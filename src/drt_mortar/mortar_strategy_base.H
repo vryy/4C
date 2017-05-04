@@ -160,7 +160,8 @@ class StrategyBase : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
       wold,        //!< pv wear for last converged state (slave)
       wmold,       //!< pv wear for last converged state (master)
       wupdateT,    //!< accumulated pv wear for different time scales
-      lmThermo     //!< thermal Lagrange multiplier
+      lmThermo,    //!< thermal Lagrange multiplier
+      n_old        //!< old normal
     };
     //! @}
 

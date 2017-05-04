@@ -1,17 +1,14 @@
 /*!----------------------------------------------------------------------
 \file contact_element.cpp
-
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief a contact element
+\level 2
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 
 #include "contact_element.H"
 #include "contact_node.H"
+#include "friction_node.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 
@@ -255,6 +252,50 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i,
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute element normal of last time step at xi          seitz 05/17 |
+ *----------------------------------------------------------------------*/
+void CONTACT::CoElement::OldUnitNormalAtXi(
+    const double* xi,
+    LINALG::Matrix<3,1>& n_old,
+    LINALG::Matrix<3,2>& d_n_old_dxi)
+{
+  const int nnodes = NumNode();
+  LINALG::SerialDenseVector val(nnodes);
+  LINALG::SerialDenseMatrix deriv(nnodes,2,true);
+
+  // get shape function values and derivatives at xi
+  EvaluateShape(xi, val, deriv, nnodes);
+
+  n_old.Clear();
+  d_n_old_dxi.Clear();
+
+  LINALG::Matrix<3,1> tmp_n;
+  LINALG::Matrix<3,2> tmp_n_deriv;
+  for (int i=0;i<nnodes;++i)
+  {
+    FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(Nodes()[i]);
+    if (!fnode)
+      dserror("this is not a FriNode!");
+
+    for (int d=0;d<Dim();++d)
+    {
+      if (LINALG::Matrix<3,1>(fnode->FriData().Normal_old(),true).Norm2()<0.9)
+        dserror("where's my old normal");
+      tmp_n(d)+=val(i)*fnode->FriData().Normal_old()[d];
+      for (int x=0;x<Dim()-1;++x)
+        tmp_n_deriv(d,x)+=deriv(i,x)*fnode->FriData().Normal_old()[d];
+    }
+  }
+  const double l = tmp_n.Norm2();
+  n_old.Update(1./l,tmp_n,0.);
+
+  LINALG::Matrix<2,1> dli_dxi;
+  dli_dxi.MultiplyTN(-1./(l*l*l),tmp_n_deriv,tmp_n,0.);
+  d_n_old_dxi.Update(1./l,tmp_n_deriv,0.);
+  d_n_old_dxi.MultiplyNT(1.,tmp_n,dli_dxi,1.);
 }
 
 /*----------------------------------------------------------------------*

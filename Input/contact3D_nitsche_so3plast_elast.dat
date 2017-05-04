@@ -31,8 +31,8 @@ DYNAMICTYP   Statics
 RESULTSEVRY  1
 RESTARTEVRY  1
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP     0.25
-NUMSTEP      3
+TIMESTEP     0.125
+NUMSTEP      6
 MAXTIME      0.75
 TOLRES       1.0E-6
 TOLDISP      1.0E-8
@@ -53,7 +53,7 @@ XML File                        = contact3D_nitsche_hex8_sym_coulomb_new_struc.x
 LINEAR_SOLVER             2
 STRATEGY                  Nitsche
 PENALTYPARAM              4
-PENALTYPARAMTAN           0.25
+PENALTYPARAMTAN           0.125
 NITSCHE_THETA             0.0
 NITSCHE_PENALTY_ADAPTIVE  yes
 NITSCHE_WEIGHTING         harmonic
@@ -440,8 +440,8 @@ NODE       150 COORD  5.0000000000000000e+00  5.0000000000000000e+00 -1.40000000
 ---------------------------------------------------CELLSCATRA ELEMENTS
 
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE 1.53569309357935502e-01  TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 124 QUANTITY dispy VALUE 6.77578376639097202e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 124 QUANTITY dispz VALUE -7.43308545165574430e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE 1.55225563211980416e-01  TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispy VALUE 6.64090154178208630e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 124 QUANTITY dispz VALUE -7.42552689987327486e-01 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END

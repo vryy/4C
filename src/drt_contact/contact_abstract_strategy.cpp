@@ -1370,6 +1370,9 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epet
     // store nodal entries from D and M to old ones
     StoreToOld(MORTAR::StrategyBase::dm);
 
+    // store nodal normals
+    StoreToOld(MORTAR::StrategyBase::n_old);
+
     // transform dold_ in the case of dual quadratic 3d
     if (Dualquadslave3d())
     {
@@ -1801,9 +1804,9 @@ void CONTACT::CoAbstractStrategy::StoreToOld(
   for (int i = 0; i < (int) Interfaces().size(); ++i)
   {
     // loop over all slave row nodes on the current interface
-    for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
+    for (int j = 0; j < Interfaces()[i]->SlaveColNodes()->NumMyElements(); ++j)
     {
-      int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
+      int gid = Interfaces()[i]->SlaveColNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
       if (!node)
         dserror("ERROR: Cannot find node with gid %", gid);
@@ -1821,6 +1824,11 @@ void CONTACT::CoAbstractStrategy::StoreToOld(
       {
         // store penalty tractions to old ones
         cnode->StoreTracOld();
+        break;
+      }
+      case MORTAR::StrategyBase::n_old:
+      {
+        cnode->StoreOldNormal();
         break;
       }
       default:

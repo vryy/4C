@@ -224,6 +224,11 @@ public:
       Epetra_SerialDenseMatrix& elens,
       std::vector<GEN::pairedvector<int, double> >& derivn);
 
+  virtual void OldUnitNormalAtXi(
+      const double* xi,
+      LINALG::Matrix<3,1>& n_old,
+      LINALG::Matrix<3,2>& d_n_old_dxi);
+
   /*!
    \brief Evaluate derivative J,xi of Jacobian determinant
    */

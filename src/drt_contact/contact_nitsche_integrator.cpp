@@ -253,10 +253,7 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
     if (frtype_)
     {
       CONTACT::UTILS::BuildTangentVectors<dim>(normal.A(),dnmap_unit,t1.A(),dt1,t2.A(),dt2);
-
-
-      RelVel<dim>(sele,sval,sderiv,dsxi,+1.,relVel,relVel_deriv);
-      RelVel<dim>(mele,mval,mderiv,dmxi,-1.,relVel,relVel_deriv);
+      RelVelInvariant<dim>(sele,sxi,dsxi,sval,sderiv,mele,mxi,dmxi,mval,mderiv,gap,dgapgp,relVel,relVel_deriv);
       CONTACT::UTILS::VectorScalarProduct<dim>(t1,dt1,relVel,relVel_deriv,vt1,dvt1);
       CONTACT::UTILS::VectorScalarProduct<dim>(t2,dt2,relVel,relVel_deriv,vt2,dvt2);
 
@@ -660,6 +657,59 @@ void CONTACT::CoIntegratorNitsche::RelVel(
       }
 }
 
+
+template <int dim>
+void CONTACT::CoIntegratorNitsche::RelVelInvariant(
+    MORTAR::MortarElement& sele,
+    double* sxi,
+    const std::vector<GEN::pairedvector<int,double> >& derivsxi,
+    const LINALG::SerialDenseVector& sval,
+    const LINALG::SerialDenseMatrix& sderiv,
+    MORTAR::MortarElement& mele,
+    double* mxi,
+    const std::vector<GEN::pairedvector<int,double> >& derivmxi,
+    const LINALG::SerialDenseVector& mval,
+    const LINALG::SerialDenseMatrix& mderiv,
+    const double& gap,
+    const GEN::pairedvector<int, double>& deriv_gap,
+    LINALG::Matrix<dim,1>& relVel,
+    std::vector<GEN::pairedvector<int,double> >& relVel_deriv
+)
+{
+  LINALG::Matrix<3,1> n_old;
+  LINALG::Matrix<3,2> d_n_old_dxi;
+  dynamic_cast<CONTACT::CoElement&>(sele).OldUnitNormalAtXi(sxi,n_old,d_n_old_dxi);
+  for (int i=0;i<sele.NumNode();++i)
+    for (int d=0;d<dim;++d)
+    {
+      relVel(d)-=sele.GetNodalCoordsOld(d,i)*sval(i);
+
+      for (int e=0;e<dim-1;++e)
+        for (GEN::pairedvector<int,double>::const_iterator p=derivsxi[e].begin();p!=derivsxi[e].end();++p)
+          relVel_deriv[d][p->first]-=sele.GetNodalCoordsOld(d,i)*sderiv(i,e)*p->second;
+    }
+
+  for (int i=0;i<mele.NumNode();++i)
+    for (int d=0;d<dim;++d)
+    {
+      relVel(d)+=mele.GetNodalCoordsOld(d,i)*mval(i);
+
+      for (int e=0;e<dim-1;++e)
+        for (GEN::pairedvector<int,double>::const_iterator p=derivmxi[e].begin();p!=derivmxi[e].end();++p)
+          relVel_deriv[d][p->first]+=mele.GetNodalCoordsOld(d,i)*mderiv(i,e)*p->second;
+    }
+
+  for (int d=0;d<dim;++d)
+  {
+    relVel(d)+=n_old(d)*gap;
+
+    for (int e=0;e<dim-1;++e)
+      for (GEN::pairedvector<int,double>::const_iterator p=derivsxi[e].begin();p!=derivsxi[e].end();++p)
+        relVel_deriv[d][p->first]+=gap*d_n_old_dxi(d,e)*p->second;
+    for (GEN::pairedvector<int,double>::const_iterator p=deriv_gap.begin();p!=deriv_gap.end();++p)
+      relVel_deriv[d][p->first]+=n_old(d)*p->second;
+  }
+}
 
 template <int dim>
 void CONTACT::UTILS::VectorScalarProduct(

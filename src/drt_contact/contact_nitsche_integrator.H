@@ -216,6 +216,24 @@ protected:
         std::vector<GEN::pairedvector<int,double> >& relVel_deriv
         );
 
+    template <int dim>
+    void RelVelInvariant(
+        MORTAR::MortarElement& sele,
+        double* sxi,
+        const std::vector<GEN::pairedvector<int,double> >& derivsxi,
+        const LINALG::SerialDenseVector& sval,
+        const LINALG::SerialDenseMatrix& sderiv,
+        MORTAR::MortarElement& mele,
+        double* mxi,
+        const std::vector<GEN::pairedvector<int,double> >& derivmxi,
+        const LINALG::SerialDenseVector& mval,
+        const LINALG::SerialDenseMatrix& mderiv,
+        const double& gap,
+        const GEN::pairedvector<int, double>& deriv_gap,
+        LINALG::Matrix<dim,1>& relVel,
+        std::vector<GEN::pairedvector<int,double> >& relVel_deriv
+);
+
 
     double theta_;
     INPAR::CONTACT::NitscheWeighting nit_wgt_;
