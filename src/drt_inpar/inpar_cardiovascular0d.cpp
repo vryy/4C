@@ -60,11 +60,11 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
   DoubleParameter("T_PERIOD",-1.0,"periodic time",&cardvasc0dstruct);
   DoubleParameter("EPS_PERIODIC",1.0e-16,"tolerance for periodic state",&cardvasc0dstruct);
 
-  setStringToIntegralParameter<int>("PTC_FOR_STRUCT","No","Set to yes for doing PTC on structural block.",
+  setStringToIntegralParameter<int>("PTC_3D0D","No","Set to yes for doing PTC 2x2 block system.",
                                  yesnotuple,yesnovalue,&cardvasc0dstruct);
 
   DoubleParameter("K_PTC",0.0,
-                  "PTC for structure: 0 means normal Newton, ->infty means steepest desc",
+                  "PTC parameter: 0 means normal Newton, ->infty means steepest desc",
                   &cardvasc0dstruct);
 
   Teuchos::ParameterList& cardvasc0dsyspulcirc = cardvasc0dstruct.sublist("SYS-PUL CIRCULATION PARAMETERS",false,"");

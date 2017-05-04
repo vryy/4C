@@ -2940,17 +2940,16 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // linear solver call (contact / meshtying case or default)
       if (HaveContactMeshtying())
-        linsolve_error = CmtWindkConstrLinearSolve();
+        linsolve_error = CmtWindkConstrLinearSolve(0.0);
       else
       {
         // Call Cardiovascular0D solver to solve system
-        linsolve_error = cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_);
+        linsolve_error = cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_,0.0);
       }
 
       // check for problems in linear solver
-      // however we only care about this if we have a fancy divcont action  (meaning function will return 0)
-      //linsolve_error=LinSolveErrorCheck(linsolve_error);
-      linsolve_error=0;
+      // however we only care about this if we have a fancy divcont action (meaning function will return 0)
+      linsolve_error=LinSolveErrorCheck(linsolve_error);
 
       // recover contact / meshtying Lagrange multipliers
       if(HaveContactMeshtying())
@@ -4748,7 +4747,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
 
 /*----------------------------------------------------------------------*/
 /* linear solver call for contact / meshtying AND Cardiovascular0D bcs*/
-int STR::TimIntImpl::CmtWindkConstrLinearSolve()
+int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
 {
 
   // strategy and system setup types
@@ -4847,7 +4846,7 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve()
   else
   {
     // solve with Cardiovascular0D solver
-    linsolve_error = cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_);
+    linsolve_error = cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_,k_ptc);
   }
 
   return linsolve_error;

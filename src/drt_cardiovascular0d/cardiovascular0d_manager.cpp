@@ -79,7 +79,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   numCardiovascular0DID_(0),
   Cardiovascular0DID_(0),
   offsetID_(10000),
-  currentID_(true),
+  currentID_(false),
   havecardiovascular0d_(false),
   cardvasc0d_model_(Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(actdisc_,"",currentID_))),
   cardvasc0d_4elementwindkessel_(Teuchos::rcp(new Cardiovascular0D4ElementWindkessel(actdisc_,"Cardiovascular0D4ElementWindkesselStructureCond",currentID_))),
@@ -100,6 +100,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   zeros_(LINALG::CreateVector(*(actdisc_->DofRowMap()),true)),
   theta_(cv0dparams.get("TIMINT_THETA",0.5)),
   enhanced_output_(DRT::INPUT::IntegralValue<int>(cv0dparams,"ENHANCED_OUTPUT")),
+  ptc_3d0d_(DRT::INPUT::IntegralValue<int>(cv0dparams,"PTC_3D0D")),
   totaltime_(0.0),
   linsolveerror_(0),
   strparams_(strparams),
@@ -119,6 +120,13 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
       dserror("Unknown integration strategy!");
       break;
   }
+
+  // safety check
+  if(ptc_3d0d_ == true)
+    if(myrank_ == 0)
+      std::cout << "*** WARNING: You have set PTC_3D0D to 'Yes', however it most certainly will not be activated unless "
+          "you've explicitly set (hacked) this option in the structural solver! This is still experimental "
+          "functionality... ***" << std::endl;
 
   // Map containing Dirichlet DOFs
   {
@@ -870,7 +878,8 @@ int UTILS::Cardiovascular0DManager::Solve
 (
   Teuchos::RCP<LINALG::SparseMatrix> mat_structstiff,
   Teuchos::RCP<Epetra_Vector> dispinc,
-  const Teuchos::RCP<Epetra_Vector> rhsstruct
+  const Teuchos::RCP<Epetra_Vector> rhsstruct,
+  const double k_ptc
 )
 {
   // create old style dirichtoggle vector (supposed to go away)
@@ -899,10 +908,31 @@ int UTILS::Cardiovascular0DManager::Solve
   mat_dcardvasc0d_dd->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
   mat_dstruct_dcv0ddof->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
 
-
   // define maps of standard dofs and additional pressures
   Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::rcp(new Epetra_Map(mat_structstiff->RowMap()));
   Teuchos::RCP<Epetra_Map> cardvasc0drowmap = Teuchos::rcp(new Epetra_Map(mat_cardvasc0dstiff->RowMap()));
+
+
+  if(ptc_3d0d_)
+  {
+    // PTC on structural matrix
+    Teuchos::RCP<Epetra_Vector> tmp3D = LINALG::CreateVector(mat_structstiff->RowMap(),false);
+    tmp3D->PutScalar(k_ptc);
+    Teuchos::RCP<Epetra_Vector> diag3D = LINALG::CreateVector(mat_structstiff->RowMap(),false);
+    mat_structstiff->ExtractDiagonalCopy(*diag3D);
+    diag3D->Update(1.0,*tmp3D,1.0);
+    mat_structstiff->ReplaceDiagonalValues(*diag3D);
+
+//    // PTC on 0D matrix
+//    Teuchos::RCP<Epetra_Vector> tmp0D = LINALG::CreateVector(mat_cardvasc0dstiff->RowMap(),false);
+//    tmp0D->PutScalar(k_ptc);
+//    Teuchos::RCP<Epetra_Vector> diag0D = LINALG::CreateVector(mat_cardvasc0dstiff->RowMap(),false);
+//    mat_cardvasc0dstiff->ExtractDiagonalCopy(*diag0D);
+//    diag0D->Update(1.0,*tmp0D,1.0);
+//    mat_cardvasc0dstiff->ReplaceDiagonalValues(*diag0D);
+  }
+
+
 
   // merge maps to one large map
   Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,cardvasc0drowmap,false);

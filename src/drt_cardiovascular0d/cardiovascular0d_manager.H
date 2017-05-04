@@ -105,6 +105,16 @@ namespace UTILS
     };
 
     /*!
+     \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
+    */
+    double GetCardiovascular0DRHSInfNorm() const
+    {
+      double foo;
+      cardvasc0d_res_m_->NormInf(&foo);
+      return foo;
+    };
+
+    /*!
      \brief Return cardiovascular0d dof inbcr norm
     */
     double GetCardiovascular0DDofIncrNorm() const
@@ -335,7 +345,8 @@ namespace UTILS
     (
       Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
       Teuchos::RCP<Epetra_Vector> dispinc,      ///< displacement increment to compute
-      const Teuchos::RCP<Epetra_Vector> rhsstandard  ///< standard right hand side
+      const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
+      const double k_ptc ///< for 3D-0D PTC
     );
 
     Teuchos::RCP<Cardiovascular0D> GetCardvasc0D4ElementWindkessel()
@@ -421,7 +432,8 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
     double theta_;
-    bool enhanced_output_;
+    const bool enhanced_output_;
+    const bool ptc_3d0d_;
     double totaltime_;
     int linsolveerror_;
     Teuchos::ParameterList strparams_; ///< structure input parameters
