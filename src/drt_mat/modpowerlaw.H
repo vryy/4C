@@ -2,12 +2,9 @@
 /*!
 \file modpowerlaw.H
 
-<pre>
-Maintainer: Ursula Mayer
-			mayer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Benjamin Krank
+
+\level 3
 */
 /*----------------------------------------------------------------------*/
 #ifndef MODPOWERLAW_H
@@ -41,10 +38,10 @@ namespace MAT
 
       /// @name material parameters
       //@{
-     const double m_cons_; 		    /* consistency */
-     const double delta_;       	/* safety factor */
-     const double a_exp_;			/* exponent */
-     const double density_;     	/* density */
+     const double m_cons_;         /* consistency */
+     const double delta_;         /* safety factor */
+     const double a_exp_;      /* exponent */
+     const double density_;       /* density */
       //@}
 
       /// create material instance of matching type with my parameters

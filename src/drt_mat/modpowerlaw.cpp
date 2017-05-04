@@ -2,12 +2,9 @@
 /*!
 \file modpowerlaw.cpp
 
-<pre>
-Maintainer: Ursula Mayer
-			mayer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Benjamin Krank
+
+\level 3
 */
 /*----------------------------------------------------------------------*/
 
