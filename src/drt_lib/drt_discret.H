@@ -1556,7 +1556,7 @@ public:
                                  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
   /// Evaluate a specific condition using assemble strategy
-   void EvaluateCondition
+  virtual void EvaluateCondition
    (
      Teuchos::ParameterList& params,
      DRT::AssembleStrategy & strategy,

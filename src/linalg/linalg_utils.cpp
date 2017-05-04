@@ -274,7 +274,9 @@ void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   const int ldim = (int) lm.size();
-  if (ldim != (int) lmowner.size() || ldim != Vele.Length())
+  // allow Vele to provide entries past the end of lm that are not used here,
+  // therefore check only for ">" rather than "!="
+  if (ldim != (int) lmowner.size() || ldim > Vele.Length())
     dserror("Mismatch in dimensions");
 
   const int myrank = V.Comm().MyPID();
