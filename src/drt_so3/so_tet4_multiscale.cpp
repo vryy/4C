@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_tet4_multiscale.cpp
 \brief
+\level 2
 
 <pre>
-Maintainer: Lena Yoshihara
+\maintainer Lena Yoshihara
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -31,10 +32,10 @@ void DRT::ELEMENTS::So_tet4::sotet4_homog(Teuchos::ParameterList&  params)
   {
     double homogdens = 0.;
     const static std::vector<double> weights = so_tet4_1gp_weights();
-    const double density = Material()->Density();
 
     for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
     {
+      const double density = Material()->Density(gp);
       homogdens += V_ * weights[gp] * density;
     }
 

@@ -1,8 +1,9 @@
 /*!----------------------------------------------------------------------
 \file inversedesign_evaluate.cpp
+\level 2
 
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
@@ -899,7 +900,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     // volume here!
     if (massmatrix)
     {
-      double density = ele->Material()->Density();
+      double density = ele->Material()->Density(gp);
       const double fac = density * detj * gpweights[gp];
       for (int inod=0; inod<NUMNOD_SOH8; ++inod)
         for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod)
@@ -1267,7 +1268,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     if (massmatrix)
     { // evaluate mass matrix +++++++++++++++++++++++++
       // integrate concistent mass matrix
-      double density = ele->Material()->Density();
+      double density = ele->Material()->Density(gp);
 
       for (int inod=0; inod<NUMNOD_WEG6; ++inod)
       {
@@ -1636,7 +1637,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
   // evaluate mass matrix
   if (massmatrix != NULL)
   {
-    double density = ele->Material()->Density();
+    double density = ele->Material()->Density(0); // density at the only Gauss point the material has!
 
     //consistent mass matrix evaluated using a 4-point rule
     for (int gp=0; gp<4; gp++)
@@ -1693,7 +1694,7 @@ void DRT::ELEMENTS::InvDesign::sot4_StoreMaterialConfiguration(
   **             [  1    1    1    1  ]
   **         J = [ X_1  X_2  X_3  X_4 ]
   **             [ Y_1  Y_2  Y_3  Y_4 ]
-  **		 [ Z_1  Z_2  Z_3  Z_4 ]
+  ** [ Z_1  Z_2  Z_3  Z_4 ]
   */
   LINALG::Matrix<NUMCOORD_SOTET4,NUMCOORD_SOTET4> J;
   for (int i=0; i<4; i++)  J(0,i)=1;
@@ -1732,7 +1733,7 @@ void DRT::ELEMENTS::InvDesign::sot4_StoreMaterialConfiguration(
     int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // partials = jac^-1.I_aug
     if ((err != 0) && (err2!=0))
-    	dserror("Inversion of Jacobian failed");
+      dserror("Inversion of Jacobian failed");
 
     N_XYZ.Multiply(derivs[gp],partials);
     F.MultiplyTN(xcurr,N_XYZ);

@@ -1132,7 +1132,7 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
-      double density = Material()->Density();
+      double density = Material()->Density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;

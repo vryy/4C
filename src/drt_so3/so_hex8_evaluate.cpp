@@ -230,7 +230,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       double mass_ref = 0.0;
       double mass_mat = 0.0;
       double mass_cur = 0.0;
-      double density  = Material()->Density();
 
       // get displacements and extract values of this element
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -298,6 +297,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       //----------------------------------------------------------------
       for (int ip=0; ip<NUMGPT_SOH8; ++ip)
       {
+        const double density = Material()->Density(ip);
         const double wgt = gpweights[ip];
 
         /*------------------------------------ integration factor  -------*/
