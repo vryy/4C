@@ -473,7 +473,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(
      if (tsi_)
        ExtractfromPack(position,data,cauchy_deriv_T_);
      else
-       cauchy_deriv_.resize(0);
+       cauchy_deriv_T_.resize(0);
    }
    else
    {
