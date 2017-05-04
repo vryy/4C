@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_multiscale.cpp
 \brief
+\level 2
 
 <pre>
-Maintainer: Lena Yoshihara
+\maintainer Lena Yoshihara
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -32,10 +33,10 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(Teuchos::ParameterList&  params)
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh8_weights();
-    const double density = Material()->Density();
 
     for (int gp=0; gp<NUMGPT_SOH8; ++gp)
     {
+      const double density = Material()->Density(gp);
       homogdens += detJ_[gp] * weights[gp] * density;
     }
 

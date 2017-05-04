@@ -1613,7 +1613,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
   // evaluate mass matrix
   if (massmatrix != NULL)
   {
-    double density = Material()->Density();
+    double density = Material()->Density(0); // density at the only Gauss point the material has!
     //consistent mass matrix evaluated using a 4-point rule
     for (int gp=0; gp<4; gp++)
     {

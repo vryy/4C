@@ -618,7 +618,7 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(
 
   if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
   {
-    double density = Material()->Density();
+    double density = Material()->Density(0); // density at the only Gauss point the material has!
     // integrate consistent mass matrix
     // jacobian is constatnt
     double ifactor, massfactor;

@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_hex20_multiscale.cpp
 \brief
+\level 2
 
 <pre>
-Maintainer: Lena Yoshihara
+\maintainer Lena Yoshihara
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -32,10 +33,10 @@ void DRT::ELEMENTS::So_hex20::soh20_homog(Teuchos::ParameterList&  params)
   {
     double homogdens = 0.;
     const static std::vector<double> weights = soh20_weights();
-    const double density = Material()->Density();
 
     for (int gp=0; gp<NUMGPT_SOH20; ++gp)
     {
+      const double density = Material()->Density(gp);
       homogdens += detJ_[gp] * weights[gp] * density;
     }
 

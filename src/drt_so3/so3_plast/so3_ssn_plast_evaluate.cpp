@@ -2692,7 +2692,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateMassMatrix(
     const int gp,
     LINALG::Matrix<numdofperelement_,numdofperelement_>& mass)
 {
-  const double density = Material()->Density();
+  const double density = Material()->Density(gp);
   // integrate consistent mass matrix
   const double factor = DetJ()*wgt_[gp] * density;
   double ifactor, massfactor;

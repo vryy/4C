@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_nstet_multiscale.cpp
 \brief
+\level 3
 
 <pre>
-Maintainer: Lena Yoshihara
+\maintainer Lena Yoshihara
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -29,7 +30,7 @@ void DRT::ELEMENTS::NStet::nstet_homog(Teuchos::ParameterList&  params)
 {
   if(DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
   {
-    const double density = Material()->Density();
+    const double density = Material()->Density(0);
 
     double homogdens = V_ * density;
 

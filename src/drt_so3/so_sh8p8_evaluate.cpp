@@ -1693,7 +1693,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
 
     // mass matrix
     if (massmatrix != NULL) {
-      double density = Material()->Density();
+      double density = Material()->Density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       for (int inod=0; inod<NUMNOD_; ++inod) {

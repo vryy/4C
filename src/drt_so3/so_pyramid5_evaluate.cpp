@@ -1116,7 +1116,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
-      double density = Material()->Density();
+      double density = Material()->Density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;
@@ -1499,7 +1499,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
-      double density = Material()->Density();
+      double density = Material()->Density(gp);
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;

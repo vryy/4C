@@ -1017,7 +1017,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     if (massmatrix != NULL)
     { // evaluate mass matrix +++++++++++++++++++++++++
       // integrate consistent mass matrix
-      double density = Material()->Density();
+      double density = Material()->Density(gp);
       const double factor = detJ_w * density;
       double ifactor, massfactor;
       for (int inod=0; inod<NUMNOD_WEG6; ++inod)
