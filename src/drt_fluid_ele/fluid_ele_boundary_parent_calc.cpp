@@ -674,7 +674,7 @@ template <DRT::Element::DiscretizationType bdistype,
   if (curve) curvenum = curve;
   double curvefac = 1.0;
   if (curvenum >= 0 and usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
   // (temporarily) switch off any flow-dependent pressure condition in case of zero
   // time-curve factor
@@ -1977,20 +1977,9 @@ template <DRT::Element::DiscretizationType bdistype,
   // (time curve at n+1 applied for all time-integration schemes, but
   //  variable time_ in fluid3_parameter is n+alpha_F in case of
   //  generalized-alpha time-integration scheme -> reset to time n+1)
-  bool usetime = true;
-  const double time = fldparatimint_->Time()+(1-fldparatimint_->AlphaF())*fldparatimint_->Dt();
-  if (time < 0.0) usetime = false;
-  const std::vector<int>* curve  = (*wdbc_cond).Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-  curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
-  // (temporarily) switch off any weak Dirichlet condition in case of zero
-  // time-curve factor
-  if (curvefac > 0.0)
-  {
+  const double time = fldparatimint_->Time()+(1-fldparatimint_->AlphaF())*fldparatimint_->Dt();
+
   // get values and switches from condition
   // (assumed to be constant on element boundary)
   const std::vector<int>* functions = (*wdbc_cond).Get<std::vector<int> >   ("funct");
@@ -2342,7 +2331,7 @@ template <DRT::Element::DiscretizationType bdistype,
         {
           // evaluate function at current gauss point
           // (important: requires 3D position vector)
-          functionfac(idim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgp.A(),time,NULL);
+          functionfac(idim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgp.A(),time);
         }
         else functionfac(idim) = 1.0;
       }
@@ -2544,7 +2533,7 @@ template <DRT::Element::DiscretizationType bdistype,
     for (int idim=0;idim<nsd;idim++)
     {
       normvel    += pvelintaf(idim)*unitnormal(idim);
-      bvres(idim) = pvelintaf(idim)-(*val)[idim]*functionfac(idim)*curvefac;
+      bvres(idim) = pvelintaf(idim)-(*val)[idim]*functionfac(idim);
     }
 
     //---------------------------------------------------------------------
@@ -2622,11 +2611,11 @@ template <DRT::Element::DiscretizationType bdistype,
     for (int vi=0; vi<piel; ++vi)
     {
       elevec(vi*4+3) += timefacfacrhs*pfunct(vi)*
-        ((pvelintnp(0)-(*val)[0]*functionfac(0)*curvefac)*unitnormal(0)
+        ((pvelintnp(0)-(*val)[0]*functionfac(0))*unitnormal(0)
          +
-         (pvelintnp(1)-(*val)[1]*functionfac(1)*curvefac)*unitnormal(1)
+         (pvelintnp(1)-(*val)[1]*functionfac(1))*unitnormal(1)
          +
-         (pvelintnp(2)-(*val)[2]*functionfac(2)*curvefac)*unitnormal(2));
+         (pvelintnp(2)-(*val)[2]*functionfac(2))*unitnormal(2));
     }
 
     //---------------------------------------------------------------------
@@ -3297,9 +3286,9 @@ template <DRT::Element::DiscretizationType bdistype,
     for (int vi=0; vi<piel; ++vi)
     {
       elevec(vi*3+2) += timefacfacrhs*pfunct(vi)*
-        ((pvelintnp(0)-(*val)[0]*functionfac(0)*curvefac)*unitnormal(0)
+        ((pvelintnp(0)-(*val)[0]*functionfac(0))*unitnormal(0)
          +
-         (pvelintnp(1)-(*val)[1]*functionfac(1)*curvefac)*unitnormal(1));
+         (pvelintnp(1)-(*val)[1]*functionfac(1))*unitnormal(1));
     }
 
     //---------------------------------------------------------------------
@@ -3795,8 +3784,6 @@ template <DRT::Element::DiscretizationType bdistype,
     }
     else dserror("incorrect number of spatial dimensions for parent element!");
   } // end integration loop
-  } // end of (temporarily) switching off of weak Dirichlet boundary conditions
-    // for zero time-curve factor
 
   return;
 }
@@ -4420,15 +4407,6 @@ template <DRT::Element::DiscretizationType bdistype,
     =
     (*hixhybdbc_cond).Get<std::string>("utau_computation");
 
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = (*hixhybdbc_cond).Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
   const std::vector<int>* functions = (*hixhybdbc_cond).Get<std::vector<int> >   ("funct");
@@ -4437,7 +4415,7 @@ template <DRT::Element::DiscretizationType bdistype,
 
   for(int rr=0;rr<nsd;++rr)
   {
-    u_dirich(rr)=(*val)[rr]*curvefac;
+    u_dirich(rr)=(*val)[rr];
   }
 
   // --------------------------------------------------
@@ -4938,7 +4916,7 @@ template <DRT::Element::DiscretizationType bdistype,
             if (functnum>0)
             {
               // evaluate function at current gauss point (important: requires 3D position vector)
-              functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),time,NULL);
+              functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),time);
             }
             else
             {
@@ -5296,7 +5274,7 @@ template <DRT::Element::DiscretizationType bdistype,
           if (functnum>0)
           {
             // evaluate function at current gauss point (important: requires 3D position vector)
-            functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),time,NULL);
+            functionfac(dim) = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgp.A(),time);
           }
           else
           {

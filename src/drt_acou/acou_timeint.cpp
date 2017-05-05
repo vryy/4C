@@ -912,12 +912,12 @@ void ACOU::AcouTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history)
         OutputDensityAndSpeedOfSound();
     }
 
-    output_->WriteVector("velnp",interpolatedVelocity);
+    //output_->WriteVector("velnp",interpolatedVelocity);
     output_->WriteVector("pressure",interpolatedPressure);
-    output_->WriteVector("pressure_avg",cellPres);
+    //output_->WriteVector("pressure_avg",cellPres);
     if(phys_ == INPAR::ACOU::acou_lossless)
     {
-      output_->WriteVector("par_vel",traceVel);
+      //output_->WriteVector("par_vel",traceVel);
     }
     else // (phys_ == INPAR::ACOU::acou_solid)
     {

@@ -1807,7 +1807,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       const int condid_anode = elchparams_->get<int>("GSTATCONDID_ANODE");
       int gstatitemax = (elchparams_->get<int>("GSTATITEMAX"));
       double gstatcurrenttol = (elchparams_->get<double>("GSTATCURTOL"));
-      const int curvenum = elchparams_->get<int>("GSTATCURVENO");
+      const int curvenum = elchparams_->get<int>("GSTATFUNCTNO");
       const double tol = elchparams_->get<double>("GSTATCONVTOL");
       const double effective_length = elchparams_->get<double>("GSTAT_LENGTH_CURRENTPATH");
       if(effective_length<0.0)
@@ -1833,7 +1833,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       // Otherwise you modify your output to file called during Output()
       ComputeTimeDerivative();
 
-      double targetcurrent = problem_->Curve(curvenum-1).f(time_);
+      double targetcurrent = problem_->Funct(curvenum-1).EvaluateTime(time_);
       double timefacrhs = 1.0/ResidualScaling();
 
       double currtangent_anode(0.0);
@@ -2548,7 +2548,6 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(
         val[1] = condition.GetDouble("Current");   // set value of Neumann boundary condition
         condition.Add("numdof",2);
         condition.Add("funct",std::vector<int>(2,0));
-        condition.Add("curve",std::vector<int>(2,-1));
         condition.Add("onoff",onoff);
         condition.Add("val",val);
 

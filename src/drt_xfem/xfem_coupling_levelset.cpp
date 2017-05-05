@@ -403,22 +403,6 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
   DRT::Condition* cond = cutterele_conds_[lid].second;
   const int func_no = cond->GetInt("levelsetfieldno");
 
-  // check for potential time curve
-  const int curvenum  = cond->GetInt("levelsetcurve");
-
-  // initialization of time-curve factor
-  double curvefac = 0.0;
-
-  // compute potential time curve or set time-curve factor to one
-  if (curvenum >= 0)
-  {
-    // time factor (negative time indicating error)
-    if (time >= 0.0)
-      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-    else dserror("Negative time in function evaluation: time = %f", time);
-  }
-  else curvefac = 1.0;
-
   // loop all nodes on the processor
   for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();lnodeid++)
   {
@@ -429,11 +413,9 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
     if(func_no < 0)
       value = FunctImplementation(func_no, lnode->X(),time);
     else if(func_no >= 1)
-      value=DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,lnode->X(),time,NULL);
+      value=DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,lnode->X(),time);
     else
       dserror("invalid function no. to set level-set field!");
-
-    double final_val = curvefac*value;
 
     const std::vector<int> lm = cutter_dis_->Dof(cutter_nds_phi_, lnode);
 
@@ -442,7 +424,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
     const int gid = lm[0];
     const int lid = cutter_phinp_->Map().LID(gid);
-    err = cutter_phinp_->ReplaceMyValues(1,&final_val,&lid);
+    err = cutter_phinp_->ReplaceMyValues(1,&value,&lid);
     if (err) dserror("could not replace values for phi vector");
   }
 
@@ -1338,7 +1320,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetConditionSpecificParameters()
   bool tmp_bool;
 
   // Is the slip length constant? Don't call functions at GP-level unnecessary.
-  tmp_bool = (cond->GetInt("curve") < 0 and cond->GetInt("funct") < 1);
+  tmp_bool = (cond->GetInt("funct") < 1);
   is_constant_sliplength_ = (tmp_bool) ? true : false;
 
   // Project the prescribed velocity in tangential direction, to remove "spurious velocities"

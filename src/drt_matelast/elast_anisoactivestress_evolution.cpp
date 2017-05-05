@@ -211,7 +211,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     if(totaltime<0.0) dserror("Parameter 'total time' could not be read!");
     Teuchos::RCP<std::vector<double> >  pos_ = params.get<Teuchos::RCP<std::vector<double> > >("position");
     const double* coordgpref_ = &(*pos_)[0];
-    activationFunction = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,totaltime,NULL);
+    activationFunction = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,totaltime);
   }
 
   double lambda = 0.0;

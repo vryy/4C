@@ -20,7 +20,6 @@
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/newtonianfluid.H"
 

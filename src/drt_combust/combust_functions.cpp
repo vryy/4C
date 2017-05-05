@@ -36,7 +36,7 @@ Function()
  | initial level-set field for two merging bubbles      rasthofer 01/14 |
  *----------------------------------------------------------------------*/
 double COMBUST::BubbleFunction::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
   //here calculation of distance (sign is already taken in consideration)
   double distance = 0.0;
@@ -85,7 +85,7 @@ Function()
  | evaluation of level set test function "Zalesak's disk"  schott 06/11 |
  *----------------------------------------------------------------------*/
 double COMBUST::ZalesaksDiskFunction::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
   // the disk consists of 3 lines and a part of a circle and four points
   // decide if the orthogonal projection of the current point lies on the lines and the circle (four different distances possible)
@@ -164,7 +164,7 @@ Function()
  | evaluation of circular flame test function henke               01/12 |
  *----------------------------------------------------------------------*/
 double COMBUST::CircularFlame2Function::Evaluate(int index,
-    const double* xp, double t, const DRT::DiscretizationInterface* dis)
+    const double* xp, double t)
 {
   const double visc_minus = 0.001;
   const double dens_minus = 1.0;
@@ -193,7 +193,7 @@ Function()
  | evaluation of circular flame test function henke               01/12 |
  *----------------------------------------------------------------------*/
 double COMBUST::CircularFlame3Function::Evaluate(int index,
-    const double* xp, double t, const DRT::DiscretizationInterface* dis)
+    const double* xp, double t)
 {
   const double visc_minus = 0.001;
   const double dens_minus = 1.0;
@@ -222,7 +222,7 @@ Function()
  | evaluation of circular flame test function henke               01/12 |
  *----------------------------------------------------------------------*/
 double COMBUST::CircularFlame4Function::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
   const double visc_minus = 0.001;
   const double radius_0 = 0.025;
@@ -249,7 +249,7 @@ Function()
  | 3D dam break with obstacle                           rasthofer 01/14 |
  *----------------------------------------------------------------------*/
 double COMBUST::DamBreakObstacle::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
   // here calculation of distance (sign is already taken in consideration)
   double distance = 0.0;
@@ -303,7 +303,7 @@ Function()
  | evaluation of two-phase flow test case               rasthofer 04/10 |
  *----------------------------------------------------------------------*/
 double COMBUST::CollapsingWaterColumnFunction::Evaluate(int index,
-    const double* xp, double t, const DRT::DiscretizationInterface* dis)
+    const double* xp, double t)
 {
   //here calculation of distance (sign is already taken in consideration)
   double distance = 0.0;
@@ -358,7 +358,7 @@ Function()
  | evaluation of two-phase flow test case               rasthofer 04/10 |
  *----------------------------------------------------------------------*/
 double COMBUST::CollapsingWaterColumnFunctionCoarse::Evaluate(int index,
-    const double* xp, double t, const DRT::DiscretizationInterface* dis)
+    const double* xp, double t)
 {
   double xp_corner[2];
   double xp_center[2];
@@ -425,7 +425,7 @@ Function()
  | evaluation of level set test function "Zalesak's disk"   henke 05/09 |
  *----------------------------------------------------------------------*/
 double COMBUST::ORACLESGFunction::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
 
   if (xp[0] > 0.0)
@@ -479,7 +479,7 @@ Function()
  | evaluation of level set test function "Rotating Cone "  schott 05/11 |
  *----------------------------------------------------------------------*/
 double COMBUST::RotatingConeFunction::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
   //here calculation of distance (sign is already taken in consideration)
   double distance = 0;
@@ -515,7 +515,7 @@ Function()
  | evaluation of level set test function "Zalesak's disk"   henke 05/11 |
  *----------------------------------------------------------------------*/
 double COMBUST::LevelSetCutTestFunction::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
   //here calculation of phi (sign is already taken in consideration)
   double phi = 0;
@@ -597,7 +597,7 @@ Function()
  | initial level-set field for impact of drop on surface rasthofer 08/14 |
  *-----------------------------------------------------------------------*/
 double COMBUST::ImpactFunction::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
   //here calculation of distance (sign is already taken in consideration)
   double distance = 0.0;
@@ -640,73 +640,61 @@ void COMBUST::CombustValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
   DRT::INPUT::LineDefinition zalesaksdisk;
   zalesaksdisk
-    .AddNamedInt("FUNCT")
     .AddTag("ZALESAKSDISK")
     ;
 
   DRT::INPUT::LineDefinition circularflame2;
   circularflame2
-    .AddNamedInt("FUNCT")
     .AddTag("CIRCULARFLAME2")
     ;
 
   DRT::INPUT::LineDefinition circularflame3;
   circularflame3
-    .AddNamedInt("FUNCT")
     .AddTag("CIRCULARFLAME3")
     ;
 
   DRT::INPUT::LineDefinition circularflame4;
   circularflame4
-    .AddNamedInt("FUNCT")
     .AddTag("CIRCULARFLAME4")
     ;
 
   DRT::INPUT::LineDefinition dambreakobstacle;
   dambreakobstacle
-    .AddNamedInt("FUNCT")
     .AddTag("DAMBREAKOBSTACLE")
     ;
 
   DRT::INPUT::LineDefinition collapsingwatercolumn;
   collapsingwatercolumn
-    .AddNamedInt("FUNCT")
     .AddTag("COLLAPSINGWATERCOLUMN")
     ;
 
   DRT::INPUT::LineDefinition collapsingwatercolumncoarse;
   collapsingwatercolumncoarse
-    .AddNamedInt("FUNCT")
     .AddTag("COLLAPSINGWATERCOLUMNCOARSE")
     ;
 
   DRT::INPUT::LineDefinition impactfunction;
   impactfunction
-    .AddNamedInt("FUNCT")
     .AddTag("IMPACTDROP")
     ;
 
   DRT::INPUT::LineDefinition bubbles;
   bubbles
-    .AddNamedInt("FUNCT")
     .AddTag("BUBBLES")
     ;
 
   DRT::INPUT::LineDefinition oraclesgfunc;
   oraclesgfunc
-    .AddNamedInt("FUNCT")
     .AddTag("ORACLESGFUNC")
     ;
 
   DRT::INPUT::LineDefinition rotatingcone;
   rotatingcone
-    .AddNamedInt("FUNCT")
     .AddTag("ROTATINGCONE")
     ;
 
   DRT::INPUT::LineDefinition levelsetcuttest;
   levelsetcuttest
-    .AddNamedInt("FUNCT")
     .AddTag("LEVELSETCUTTEST")
     ;
 

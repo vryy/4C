@@ -17,7 +17,6 @@
 //#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -384,14 +383,6 @@ int DRT::ELEMENTS::DiscSh3::EvaluateNeumann(Teuchos::ParameterList&   params,
    const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
 //   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
 
-   /*
-   **    TIME CURVE BUSINESS
-   */
-   // find out whether we will use a time curve
-   bool usetime = true;
-   const double time = params.get("total time",-1.0);
-   if (time<0.0) usetime = false;
-
    // ensure that at least as many curves/functs as dofs are available
    if (int(onoff->size()) < NUMDIM_DISCSH3)
      dserror("Fewer functions or curves defined than the element has dofs.");
@@ -400,16 +391,6 @@ int DRT::ELEMENTS::DiscSh3::EvaluateNeumann(Teuchos::ParameterList&   params,
    {
      if ((*onoff)[checkdof] != 0)
        dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
-   }
-
-   // find out whether we will use time curves and get the factors
-   const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-   std::vector<double> curvefacs(NUMDIM_DISCSH3, 1.0);
-   for (int i=0; i < NUMDIM_DISCSH3; ++i)
-   {
-     const int curvenum = (curve) ? (*curve)[i] : -1;
-     if (curvenum>=0 && usetime)
-       curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
    }
 
    // (SPATIAL) FUNCTION BUSINESS

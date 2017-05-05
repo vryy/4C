@@ -150,7 +150,7 @@ local_apply_firstader_domain(const MatrixFree<dim,value_type>                   
           double xyz[dim];
           for (unsigned int d=0; d<dim; ++d)
             xyz[d] = q_points[d][n];
-          rhs[n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(1,xyz,this->time,NULL); // FIRST component -> actual function of the source term f
+          rhs[n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(1,xyz,this->time); // FIRST component -> actual function of the source term f
         }
       }
       pcontrib[q] += this->time_step*this->time_step/2.0*rhs*c_sq;
@@ -218,7 +218,7 @@ local_apply_firstader_domain(const MatrixFree<dim,value_type>                   
             double xyz[dim];
             for (unsigned int d=0; d<dim; ++d)
               xyz[d] = q_points[d][n];
-            rhsp[n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(compindex,xyz,this->time,NULL); // (k-1)th time derivative of f
+            rhsp[n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(compindex,xyz,this->time); // (k-1)th time derivative of f
           }
           pcontrib[q] += facsource*rhsp*c_sq;
           compindex++;
@@ -240,8 +240,8 @@ local_apply_firstader_domain(const MatrixFree<dim,value_type>                   
               for (unsigned int d=0; d<dim; ++d)
                 xyz[d] = q_points[d][n];
               for (unsigned int d=0; d<dim; ++d)
-                rhsv[d][n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(compindex+d,xyz,this->time,NULL);
-              rhsp[n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(compindex+dim,xyz,this->time,NULL);
+                rhsv[d][n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(compindex+d,xyz,this->time);
+              rhsp[n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(compindex+dim,xyz,this->time);
             }
             pcontrib[q] += facsource*matscal*rhsp*c_sq;
             vcontrib[q] += facsource*matscal*rhsv*c_sq;
@@ -539,8 +539,8 @@ local_apply_secondader_domain(const MatrixFree<dim,value_type>                  
           double xyz[dim];
           for (unsigned int d=0; d<dim; ++d)
             xyz[d] = q_points[d][n];
-          rhs[n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(0,xyz,this->time+this->time_step,NULL)
-                   -DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(0,xyz,this->time,NULL); // this is a time integral, so we have to evaluate the function which is the indefinite integral
+          rhs[n] = DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(0,xyz,this->time+this->time_step)
+                   -DRT::Problem::Instance()->Funct(this->source_term_no).Evaluate(0,xyz,this->time); // this is a time integral, so we have to evaluate the function which is the indefinite integral
         }
       }
       pressure.submit_value(-rhs*c_sq,q); // minus because minus in time_integrators.h

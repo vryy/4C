@@ -192,7 +192,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
     R1_(impedancecond->GetDouble("R1")),
     R2_(impedancecond->GetDouble("R2")),
     C_(impedancecond->GetDouble("C")),
-    curvenum_(impedancecond->GetInt("CURVE"))
+    functnum_(impedancecond->GetInt("FUNCT"))
 {
   if(myrank_ == 0)
   {
@@ -234,7 +234,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<DRT::Discretiz
   // this is our check if it has already been initialized
 
   // some safety check
-  if ( not(treetype_ == "windkessel" or treetype_ == "resistive" or treetype_ == "pressure_by_curve") )
+  if ( not(treetype_ == "windkessel" or treetype_ == "resistive" or treetype_ == "pressure_by_funct") )
     dserror("TYPE %s not supported!",treetype_.c_str());
 
   if(myrank_ == 0)
@@ -353,9 +353,9 @@ void FLD::UTILS::FluidImpedanceBc::CalculateImpedanceTractionsAndUpdateResidualA
 
     pressure = p_n_fac * P_n_ + Q_np_fac * Q_np_ + Q_n_fac * Q_n_;
   }
-  else if(treetype_ == "pressure_by_curve")
+  else if(treetype_ == "pressure_by_funct")
   {
-    pressure= DRT::Problem::Instance()->Curve(curvenum_-1).f(time);
+    pressure= DRT::Problem::Instance()->Funct(functnum_-1).EvaluateTime(time);
     Q_np_fac=0.0;
   }
   else

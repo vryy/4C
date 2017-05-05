@@ -25,7 +25,6 @@
 
 #include "drt_globalproblem_enums.H"
 #include "drt_function.H"
-#include "drt_timecurve.H"
 #include "drt_resulttest.H"
 #include "drt_utils.H"
 
@@ -397,13 +396,6 @@ public:
 
   //@}
 
-  /// @name Spatial Functions
-
-  /// return a specified time curve
-  DRT::UTILS::TimeCurve& Curve(int num);
-
-  //@}
-
   /// @name Result Tests
 
   /// Do the testing
@@ -463,9 +455,6 @@ private:
 
   /// basket of spatial function
   DRT::UTILS::FunctionManager functionmanager_;
-
-  /// basket of time curves
-  DRT::UTILS::TimeCurveManager timecurvemanager_;
 
   /// all test values we might have
   DRT::ResultTestManager resulttest_;

@@ -259,7 +259,6 @@ namespace UTILS {
      *  \author rauch \date 06/16 */
     virtual void Evaluate(
         const DRT::DiscretizationInterface &  discret,
-        const bool &                        usetime,
         const double &                      time,
         const Teuchos::RCP<Epetra_Vector> * systemvectors,
         Epetra_Vector &                     toggle,
@@ -329,7 +328,7 @@ namespace UTILS {
      *  ---------DESIGN LINE DIRICH CONDITIONS
      *  DSURF  1
      *  // example_line
-     *  E 1 - NUMDOF 6 ONOFF 0 1 1 VAL 0.0 1.0 1.0 CURVE none none none FUNCT 1 0 0
+     *  E 1 - NUMDOF 6 ONOFF 0 1 1 VAL 0.0 1.0 1.0 FUNCT 1 0 0
      *
      *  tells you which dofs are actually conditioned. In the example given
      *  above, the highest entity which contains a certain node is a LINE.
@@ -356,7 +355,6 @@ namespace UTILS {
     void DoDirichletCondition(
         const DRT::DiscretizationInterface &                 discret,
         const std::vector<Teuchos::RCP<DRT::Condition> > & conds,
-        const bool &                                       usetime,
         const double &                                     time,
         const Teuchos::RCP<Epetra_Vector> *                systemvectors,
         const Epetra_Vector &                              toggle,
@@ -366,7 +364,6 @@ namespace UTILS {
     void DoDirichletCondition(
         const DRT::DiscretizationInterface &                 discret,
         const std::vector<Teuchos::RCP<DRT::Condition> > & conds,
-        const bool &                                       usetime,
         const double &                                     time,
         const Teuchos::RCP<Epetra_Vector> *                systemvectors,
         const Epetra_Vector &                              toggle,
@@ -378,7 +375,6 @@ namespace UTILS {
      *  \param discret         (in): discretization corresponding to the input
      *                               system vectors
      *  \param cond            (in): The condition object
-     *  \param usetime         (in):
      *  \param time            (in): Evaluation time
      *  \param systemvector   (out): Vector to apply DBCs to (eg displ. in
      *                               structure, vel. in fluids)
@@ -395,7 +391,7 @@ namespace UTILS {
      *  ---------DESIGN LINE DIRICH CONDITIONS
      *  DSURF  1
      *  // example_line
-     *  E 1 - NUMDOF 6 ONOFF 0 1 1 VAL 0.0 1.0 1.0 CURVE none none none FUNCT 1 0 0
+     *  E 1 - NUMDOF 6 ONOFF 0 1 1 VAL 0.0 1.0 1.0 FUNCT 1 0 0
      *
      *  tells you which dofs are actually conditioned. In the example given
      *  above, the highest entity which contains a certain node is a LINE.
@@ -417,7 +413,6 @@ namespace UTILS {
     virtual void DoDirichletCondition(
         const DRT::DiscretizationInterface &   discret,
         const DRT::Condition &               cond,
-        const bool &                         usetime,
         const double &                       time,
         const Teuchos::RCP<Epetra_Vector> *  systemvectors,
         const Epetra_Vector &                toggle,

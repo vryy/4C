@@ -204,10 +204,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   neumannrealveccomponents.push_back(
     Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
   neumannintsepveccomponents.push_back(
-      Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
-  neumannintveccomponents.push_back(
-    Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
-  neumannintsepveccomponents.push_back(
       Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
   neumannintveccomponents.push_back(
     Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
@@ -426,10 +422,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
       Teuchos::rcp(new SeparatorConditionComponent("VAL")));
   dirichletrealveccomponents.push_back(
     Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
-  dirichletintsepveccomponents.push_back(
-      Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
-  dirichletintveccomponents.push_back(
-    Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
   dirichletintsepveccomponents.push_back(
       Teuchos::rcp(new SeparatorConditionComponent("FUNCT",true)));
   dirichletintveccomponents.push_back(
@@ -955,8 +947,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ROTANGLE")));
   locsyscomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("rotangle",3)));
-  locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("CURVE")));
-  locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve", 3, true, true)));
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
   locsyscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false)));
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("USEUPDATEDNODEPOS")));
@@ -1161,9 +1151,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   // we provide a vector of 3 values for velocities
   weakDirichletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",3)));
-
-  // values for curves
-  weakDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",3,true,true)));
 
   // and optional spatial functions
   weakDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false,true)));

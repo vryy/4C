@@ -160,7 +160,7 @@ void DRT::UTILS::DoInitialField(
         {
           funct_num = (*funct)[0];
           if (funct_num > 0)
-            functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(localdof,actnode->X(),time,&discret);
+            functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(localdof,actnode->X(),time);
         }
 
         // assign value

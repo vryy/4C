@@ -717,7 +717,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeError(DRT::ELEMENTS::Acou* ele,
     for (unsigned int d=0; d<nsd_; ++d)
       xyz[d]=xyzmat(d,0);
 
-    exact = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,time,NULL);
+    exact = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,time);
 
     err_p += ( exact - numerical ) * ( exact - numerical ) * highjfac;
     norm_p += exact * exact * highjfac;
@@ -868,7 +868,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeADERPostProcessing(DRT::ELEMENT
     for (unsigned int d=0; d<nsd_; ++d)
       xyz[d]=xyzmat(d,0);
 
-    exact = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,time,NULL);
+    exact = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,time);
 
     err_p_post += (numerical_post - exact) * (numerical_post - exact) * highjfac;
   } // for (int q=0; q<postquad->NumPoints(); ++q)
@@ -1337,11 +1337,11 @@ template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateAll(
     const int start_func, const double(&xyz)[nsd_], double &p, double (&v)[nsd_]) const
 {
-  p = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(0, xyz, 0.0, NULL);
+  p = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(0, xyz, 0.0);
   if(DRT::Problem::Instance()->Funct(start_func-1).NumberComponents()==nsd_+1)
   {
     for(unsigned int d=0; d<nsd_; ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d+1, xyz, 0.0, NULL);
+      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d+1, xyz, 0.0);
   }
   else if(DRT::Problem::Instance()->Funct(start_func-1).NumberComponents()!=1)
     dserror("Supply ONE component for your start function or NUMDIM+1, not anything else! The first component is for the pressure, the others for the velocity.");
@@ -2194,8 +2194,8 @@ ComputeSource(Teuchos::ParameterList&       params,
       xyz[d] = shapes_.xyzreal(d,q);
 
     // calculate right hand side contribution for dp/dt
-    f_value = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,tn,NULL);
-    f_value_p = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,tp,NULL);
+    f_value = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,tn);
+    f_value_p = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,tp);
 
     // add it all up
     for(unsigned int i=0; i<shapes_.ndofs_; ++i)

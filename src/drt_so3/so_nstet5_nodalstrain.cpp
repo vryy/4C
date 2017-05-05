@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------*
 \file so_nstet5_nodalstrain.cpp
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief Nstet element nodal strain implementation
+
+\maintainer Michael Gee
+
+\level 3
 
 *----------------------------------------------------------------------*/
 
@@ -15,7 +14,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_FECrsMatrix.h"
@@ -710,17 +708,17 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
       for (int n=0; n<ndofinpatch; ++n)
       {
         for (int i=0; i<3; ++i)
-	{
-	  double sum     = Vnode * (stress(0) * nxyzbar(i,n)      * nxyzbar(i,m)    \
+  {
+    double sum     = Vnode * (stress(0) * nxyzbar(i,n)      * nxyzbar(i,m)    \
                                   + stress(1) * nxyzbar(i+1*3,n)  * nxyzbar(i+1*3,m)\
                                   + stress(2) * nxyzbar(i+2*3,n)  * nxyzbar(i+2*3,m)\
-	                          + stress(3) *(nxyzbar(i,n)      * nxyzbar(i+1*3,m) + nxyzbar(i+1*3,n) * nxyzbar(i,m))     \
-		        	  + stress(4) *(nxyzbar(i+1*3,n)  * nxyzbar(i+2*3,m) + nxyzbar(i+2*3,n) * nxyzbar(i+1*3,m)) \
-		  		  + stress(5) *(nxyzbar(i,n)      * nxyzbar(i+2*3,m) + nxyzbar(i+2*3,n) * nxyzbar(i,m))     );
+                            + stress(3) *(nxyzbar(i,n)      * nxyzbar(i+1*3,m) + nxyzbar(i+1*3,n) * nxyzbar(i,m))     \
+                + stress(4) *(nxyzbar(i+1*3,n)  * nxyzbar(i+2*3,m) + nxyzbar(i+2*3,n) * nxyzbar(i+1*3,m)) \
+            + stress(5) *(nxyzbar(i,n)      * nxyzbar(i+2*3,m) + nxyzbar(i+2*3,n) * nxyzbar(i,m))     );
           (*stiff)(m,n) += sum;
           kg(m,n)       += sum;
 
-	}//for (int i=0; i<3; ++i)
+  }//for (int i=0; i<3; ++i)
       }//for (int n=0; n<ndofinpatch; ++n)
     }//for (int m=0; m<ndofinpatch; ++m)
 
@@ -1086,7 +1084,3 @@ void DRT::ELEMENTS::NStet5Type::StressOutput(
   }
   return;
 }
-
-
-
-

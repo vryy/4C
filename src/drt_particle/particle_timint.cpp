@@ -127,7 +127,7 @@ PARTICLE::TimInt::TimInt
 
   radiusdistribution_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::RadiusDistribution>(particledynparams,"RADIUS_DISTRIBUTION")),
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
-  radiuschangecurve_(particledynparams.get<int>("RADIUS_CHANGE_CURVE")),
+  radiuschangefunct_(particledynparams.get<int>("RADIUS_CHANGE_FUNCT")),
   particle_algorithm_(Teuchos::null),
   collhandler_(Teuchos::null),
   interHandler_(Teuchos::null)
@@ -186,7 +186,7 @@ void PARTICLE::TimInt::Init()
     break;
   }
 
-  if(variableradius_ or radiuschangecurve_ > 0)
+  if(variableradius_ or radiuschangefunct_ > 0)
   {
     // initial radius of each particle for time dependent radius
     radius0_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
@@ -336,7 +336,7 @@ void PARTICLE::TimInt::SetInitialFields()
       if(lid != -1)
       {
         DRT::Node *currparticle = discret_->gNode((*nodeids)[counter]);
-        double function_value =  DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0, currparticle->X(),0.0,discret_.get());
+        double function_value =  DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0, currparticle->X(),0.0);
         double r_p = (*(*radius_)(0))[lid];
         r_p *= function_value * scalar;
         (*(*radius_)(0))[lid] = r_p;
@@ -513,7 +513,7 @@ void PARTICLE::TimInt::SetInitialFields()
   }
 
   // set vector of initial particle radii if necessary
-  if(radiuschangecurve_ > 0)
+  if(radiuschangefunct_ > 0)
     radius0_->Update(1.,*(*radius_)(0),0.);
 
   return;
@@ -534,8 +534,8 @@ void PARTICLE::TimInt::PrepareTimeStep()
   }
 
   // update particle radii if necessary
-  if(radiuschangecurve_ > 0)
-    (*radius_)(0)->Update(DRT::Problem::Instance()->Curve(radiuschangecurve_-1).f(timen_),*radius0_,0.);
+  if(radiuschangefunct_ > 0)
+    (*radius_)(0)->Update(DRT::Problem::Instance()->Funct(radiuschangefunct_-1).EvaluateTime(timen_),*radius0_,0.);
 
   return;
 }

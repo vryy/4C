@@ -1026,9 +1026,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
   my::ExtractValuesFromGlobalVector(discretization,0,lm, &disp, &myporosity,"displacement");
 
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   /*----------------------------------------------------- geometry update */
   // update element geometry
@@ -1050,7 +1048,6 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
-  const std::vector<int>*    curve = condition.Get<std::vector<int> >   ("curve");
   const std::vector<int>*    funct = condition.Get<std::vector<int> >   ("funct");
 
 
@@ -1101,16 +1098,10 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
             const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time);
           }
 
-          // factor given by time curve
-          const int curvenum = (curve) ? (*curve)[i] : -1;
-          double curvefac = 1.0;
-          if (curvenum >= 0 && usetime)
-            curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
-          ar[i] = fac * (*val)[i] * curvefac * functfac;
+          ar[i] = fac * (*val)[i] * functfac;
         }
       }
 

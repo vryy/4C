@@ -2880,12 +2880,12 @@ void CAVITATION::Algorithm::ParticleInflow()
       else
       {
         std::vector<double> inflow_vel = (*particleiter)->inflow_vel_;
-        const int inflow_vel_curve = (*particleiter)->inflow_vel_curve_;
+        const int inflow_vel_funct = (*particleiter)->inflow_vel_funct_;
 
         double curvefac = 1.0;
         // curves are numbered starting with 1 in the input file
-        if(inflow_vel_curve > 0)
-          curvefac = DRT::Problem::Instance()->Curve(inflow_vel_curve-1).f(Time());
+        if(inflow_vel_funct > 0)
+          curvefac = DRT::Problem::Instance()->Funct(inflow_vel_funct-1).EvaluateTime(Time());
 
         for(int d=0; d<dim_; ++d)
           (*veln)[lid+d] = inflow_vel[d] * curvefac;
@@ -3343,7 +3343,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
     const std::vector<double>* vertex2 = conds[i]->Get<std::vector<double> >("vertex2");
     const std::vector<int>* num_per_dir = conds[i]->Get<std::vector<int> >("num_per_dir");
     const std::vector<double>* inflow_vel = conds[i]->Get<std::vector<double> >("inflow_vel");
-    const int inflow_vel_curve = conds[i]->GetInt("inflow_vel_curve");
+    const int inflow_vel_funct = conds[i]->GetInt("inflow_vel_funct");
     const double inflow_freq = conds[i]->GetDouble("inflow_freq");
     const double timedelay = conds[i]->GetDouble("timedelay");
     const double stopinflowtime = conds[i]->GetDouble("stopinflowtime");
@@ -3389,7 +3389,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
                                                                           bubbleinflowid,
                                                                           source_pos,
                                                                           *inflow_vel,
-                                                                          inflow_vel_curve,
+                                                                          inflow_vel_funct,
                                                                           initial_radius,
                                                                           inflow_freq,
                                                                           timedelay,
@@ -3484,7 +3484,7 @@ CAVITATION::BubbleSource::BubbleSource(
   const int bubbleinflowid,
   std::vector<double> inflow_position,
   std::vector<double> inflow_vel,
-  const int inflow_vel_curve,
+  const int inflow_vel_funct,
   const double inflow_radius,
   const double inflow_freq,
   const double timedelay,
@@ -3493,7 +3493,7 @@ CAVITATION::BubbleSource::BubbleSource(
   inflowid_(bubbleinflowid),
   inflow_position_(inflow_position),
   inflow_vel_(inflow_vel),
-  inflow_vel_curve_(inflow_vel_curve),
+  inflow_vel_funct_(inflow_vel_funct),
   inflow_radius_(inflow_radius),
   inflow_freq_(inflow_freq),
   timedelay_(timedelay),

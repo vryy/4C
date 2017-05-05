@@ -13,7 +13,6 @@
 
 #include "fluid_volumetric_surfaceFlow_condition.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_ana.H"
@@ -1109,20 +1108,20 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate (
   DRT::Condition* condition = conditions[condnum_s_];
 
   // get curve and curve_factor
-  const int curvenum = condition->GetInt("Curve");
+  const int functnum = condition->GetInt("Funct");
   const double val   = condition->GetDouble("Val");
 
 //  if ( val < 1e-14 )
 //    dserror("Val must be positive!");
 
   // evaluate the current flowrate value
-  double curvefac = 0.0;
+  double functfac = 0.0;
   double flowrate = 0.0;
 
-  if( curvenum > 0)
+  if( functnum > 0)
   {
-    curvefac = DRT::Problem::Instance()->Curve(curvenum-1).f(time);
-    flowrate = val*curvefac;
+    functfac = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
+    flowrate = val*functfac;
   }
 
   return flowrate;

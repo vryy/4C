@@ -17,7 +17,6 @@ boundary of the actual domain
 *----------------------------------------------------------------------*/
 #include "drt_transfer_turb_inflow.H"
 #include "../drt_lib/drt_matchingoctree.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -237,7 +236,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
         // time factor for the intermediate step
         if(time >= 0.0)
         {
-          curvefac = DRT::Problem::Instance()->Curve(curve_).f(time);
+          curvefac = DRT::Problem::Instance()->Funct(curve_).EvaluateTime(time);
         }
         else
         {
@@ -813,7 +812,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
         // time factor for the intermediate step
         if(time >= 0.0)
         {
-          curvefac = DRT::Problem::Instance()->Curve(curve_).f(time);
+          curvefac = DRT::Problem::Instance()->Funct(curve_).EvaluateTime(time);
         }
         else
         {

@@ -216,12 +216,12 @@ void STR::DbcBioPolyNet::DBCOscillatoryMotion(Teuchos::ParameterList&     params
   double amp = smdyn_ptr_->ShearAmplitude();
 
   // time curve increment
-  double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                       DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+  double tcincrement = DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time) -
+                       DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time-dt);
 
   std::vector<double> curvefac(2,0.0);
   if(vel!=Teuchos::null)
-    curvefac = DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1);
+    curvefac = DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time,1);
 
 //------------------------------------------------------gather dbc node set(s)
   // after the the very first entry into the following part, reenter only if the Dirichlet Node Set is dynamically updated
@@ -346,8 +346,8 @@ void STR::DbcBioPolyNet::DBCOscillatoryMotion(Teuchos::ParameterList&     params
       // oscillating node
       double tcincrement = 0.0;
       if(curvenumber>-1)
-        tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                      DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+        tcincrement = DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time) -
+                      DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time-dt);
       (*deltadbc)[DiscretPtr()->DofRowMap()->LID(dofnode[oscdir])] = amp*tcincrement;
     }
   }
@@ -439,12 +439,12 @@ void STR::DbcBioPolyNet::DBCAffineShear(Teuchos::ParameterList&     params,
   int curvenumber = smdyn_ptr_->CurveNumber();
   int displacementdir = smdyn_ptr_->DbcDispDir();
   double amp = smdyn_ptr_->ShearAmplitude();
-  double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                       DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+  double tcincrement = DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time) -
+                       DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time-dt);
 
   std::vector<double> curvefac(2,0.0);
   if(vel!=Teuchos::null)
-    curvefac = DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1);
+    curvefac = DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time,1);
 
   // We need column map displacements as we might need access to ghost nodes
   Teuchos::RCP<Epetra_Vector> discol = Teuchos::rcp(new Epetra_Vector(*DiscretPtr()->DofColMap(), true));
@@ -603,8 +603,8 @@ void STR::DbcBioPolyNet::DBCAffineShear(Teuchos::ParameterList&     params,
       std::vector<int> dofnode = DiscretPtr()->Dof(displacednode);
 
       double znode = displacednode->X()[2] + (*discol)[DiscretPtr()->DofColMap()->LID(dofnode[2])];
-      double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                           DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+      double tcincrement = DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time) -
+                           DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time-dt);
       (*deltadbc)[DiscretPtr()->DofRowMap()->LID(dofnode[displacementdir])] = znode/(*smdyn_ptr_->PeriodLength())[2]*amp*tcincrement;
     }
     // all other network nodes that undergo affine deformation (hard coded for now)
@@ -617,8 +617,8 @@ void STR::DbcBioPolyNet::DBCAffineShear(Teuchos::ParameterList&     params,
         std::vector<int> dofnode = DiscretPtr()->Dof(affinenode);
 
         double znode = affinenode->X()[2] + (*dis)[DiscretPtr()->DofRowMap()->LID(dofnode[2])];
-        double tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-                             DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+        double tcincrement = DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time) -
+                             DRT::Problem::Instance()->Funct(curvenumber).EvaluateTime(time-dt);
         (*deltadbc)[DiscretPtr()->DofRowMap()->LID(dofnode[displacementdir])] = znode/(*smdyn_ptr_->PeriodLength())[2]*amp*tcincrement;
       }
     }
@@ -708,141 +708,6 @@ void STR::DbcBioPolyNet::DBCMovableSupport1D(Teuchos::ParameterList&     params,
 //    UpdateForceSensors(dbcnodesets_[0], freedir);
     useinitdbcset_ = true;
   }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  evaluate Dirichlet conditions (private), mwgee 01/07, mueller 05/12 |
- *----------------------------------------------------------------------*/
-void STR::DbcBioPolyNet::DoDirichletConditionPredefined(DRT::Condition&              cond,
-                                                      DRT::Discretization&         dis,
-                                                      const bool                   usetime,
-                                                      const double                 time,
-                                                      Teuchos::RCP<Epetra_Vector>  systemvector,
-                                                      Teuchos::RCP<Epetra_Vector>  systemvectord,
-                                                      Teuchos::RCP<Epetra_Vector>  systemvectordd,
-                                                      Teuchos::RCP<Epetra_Vector>  toggle,
-                                                      Teuchos::RCP<std::set<int> > dbcgids)
-{
-  const std::vector<int>* nodeids = cond.Nodes();
-  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
-  const int nnode = (*nodeids).size();
-  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
-  const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
-  const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
-  const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
-
-  // determine highest degree of time derivative
-  // and first existent system vector to apply DBC to
-  unsigned deg = 0;  // highest degree of requested time derivative
-  Teuchos::RCP<Epetra_Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
-  if (systemvector != Teuchos::null)
-  {
-    deg = 0;
-    systemvectoraux = systemvector;
-  }
-  if (systemvectord != Teuchos::null)
-  {
-    deg = 1;
-    if (systemvectoraux == Teuchos::null)
-      systemvectoraux = systemvectord;
-  }
-  if (systemvectordd != Teuchos::null)
-  {
-    deg = 2;
-    if (systemvectoraux == Teuchos::null)
-      systemvectoraux = systemvectordd;
-  }
-  dsassert(systemvectoraux!=Teuchos::null, "At least one vector must be unequal to null");
-
-  // loop nodes to identify and evaluate load curves and spatial distributions
-  // of Dirichlet boundary conditions
-  for (int i=0; i<nnode; ++i)
-  {
-    // do only nodes in my row map
-    int nlid = dis.NodeRowMap()->LID((*nodeids)[i]);
-    if (nlid < 0) continue;
-    DRT::Node* actnode = dis.lRowNode( nlid );
-
-    // call explicitly the main dofset, i.e. the first column
-    std::vector<int> dofs = dis.Dof(0,actnode);
-    const unsigned total_numdf = dofs.size();
-
-    // Get native number of dofs at this node. There might be multiple dofsets
-    // (in xfem cases), thus the size of the dofs vector might be a multiple
-    // of this.
-    const int numele = actnode->NumElement();
-    const DRT::Element * const * myele = actnode->Elements();
-    int numdf = 0;
-    for (int j=0; j<numele; ++j)
-      numdf = std::max(numdf,myele[j]->NumDofPerNode(*actnode));
-
-    if ( ( total_numdf % numdf ) != 0 )
-      dserror( "illegal dof set number" );
-
-    for (unsigned j=0; j<total_numdf; ++j)
-    {
-      int onesetj = j % numdf;
-      if ((*onoff)[onesetj]==0)
-      {
-        const int lid = (*systemvectoraux).Map().LID(dofs[j]);
-        if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
-        if (toggle!=Teuchos::null)
-          (*toggle)[lid] = 0.0;
-        // get rid of entry in DBC map - if it exists
-        if (dbcgids != Teuchos::null)
-          (*dbcgids).erase(dofs[j]);
-        continue;
-      }
-      const int gid = dofs[j];
-      std::vector<double> value(deg+1,(*val)[onesetj]);
-
-      // factor given by time curve
-      std::vector<double> curvefac(deg+1, 1.0);
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[onesetj];
-      if (curvenum>=0 && usetime)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
-      else
-        for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
-
-      // factor given by spatial function
-      double functfac = 1.0;
-      int funct_num = -1;
-      if (funct)
-      {
-        funct_num = (*funct)[onesetj];
-        if (funct_num>0)
-          functfac =
-            DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(onesetj,
-                                                                  actnode->X(),
-                                                                  time,
-                                                                  &dis);
-      }
-
-      // apply factors to Dirichlet value
-      for (unsigned i=0; i<deg+1; ++i)
-      {
-        value[i] *= functfac * curvefac[i];
-      }
-
-      // assign value
-      const int lid = (*systemvectoraux).Map().LID(gid);
-      if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
-      if (systemvector != Teuchos::null)
-        (*systemvector)[lid] = value[0];
-      if (systemvectord != Teuchos::null)
-        (*systemvectord)[lid] = value[1];
-      if (systemvectordd != Teuchos::null)
-        (*systemvectordd)[lid] = value[2];
-      // set toggle vector
-      if (toggle != Teuchos::null)
-        (*toggle)[lid] = 1.0;
-      // amend vector of DOF-IDs which are Dirichlet BCs
-      if (dbcgids != Teuchos::null)
-        (*dbcgids).insert(gid);
-    }  // loop over nodal DOFs
-  }  // loop over nodes
   return;
 }
 

@@ -212,7 +212,7 @@ private:
   const double R1_, R2_, C_;
 
   //! curve number
-  const int curvenum_;
+  const int functnum_;
 
   //! traction vector for impedance bc
   Teuchos::RCP<Epetra_Vector> impedancetbc_;

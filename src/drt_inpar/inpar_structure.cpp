@@ -616,7 +616,7 @@ namespace INPAR
                                            true,
                                            DRT::Condition::Surface));
 
-    surfactant->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+    surfactant->AddComponent(Teuchos::rcp(new IntConditionComponent("funct",true,true)));
     AddNamedReal(surfactant,"k1xCbulk");
     AddNamedReal(surfactant,"k2");
     AddNamedReal(surfactant,"m1");

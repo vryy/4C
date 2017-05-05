@@ -15,7 +15,6 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
@@ -95,17 +94,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
   const double thsl = params.get("thsl",0.0);
 
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
@@ -154,7 +143,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
     // belonging to the time integration algorithm (theta*dt for
     // one step theta, 2/3 for bdf with dt const.)
 
-    const double fac = intpoints.qwgt[gpid] *dr* curvefac * thsl;
+    const double fac = intpoints.qwgt[gpid] *dr* thsl;
 
     // factor given by spatial function
     double functionfac = 1.0;
@@ -181,7 +170,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
          {
             if (functnum>0)
               // evaluate function at current gauss point (3D position vector required!)
-              functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
+              functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,time);
             else
               functionfac = 1.0;
          }

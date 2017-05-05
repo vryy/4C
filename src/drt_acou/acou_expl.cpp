@@ -427,7 +427,7 @@ double ExactSolution<dim>::value (const Point<dim>   &p,
   double return_value = 0.0;
 
   if(functno>=0)
-    return_value = DRT::Problem::Instance()->Funct(functno).Evaluate(component,xyz,t,NULL);
+    return_value = DRT::Problem::Instance()->Funct(functno).Evaluate(component,xyz,t);
 
   return return_value;
 }
@@ -461,7 +461,7 @@ double RightHandSide<dim>::value (const Point<dim>   &p,
   double return_value = 0.0;
 
   if(functno>=0)
-    return_value = DRT::Problem::Instance()->Funct(functno).Evaluate(component,xyz,t,NULL);
+    return_value = DRT::Problem::Instance()->Funct(functno).Evaluate(component,xyz,t);
 
   return return_value;
 }
@@ -499,12 +499,11 @@ double DirichletBoundaryFunction<dim>::value (const Point<dim>   &p,
   int dimcomp = component % dim;
   int dbcindex = component / dim;
 
-  // warning: only possibilities are "value" and "function" not "curve". if you want to use "curve" in your dbc, implement the evaluation here
   double return_value = 0.0;
   int funct_num = (*(dirichletBC[dbcindex]->template Get<std::vector<int> >("funct")))[0];
   if(funct_num>0) // return value specified by functione evaluation
   {
-    return_value = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(dimcomp,xyz,t,NULL);
+    return_value = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(dimcomp,xyz,t);
   }
   else // return value given by input value "VAL"
   {

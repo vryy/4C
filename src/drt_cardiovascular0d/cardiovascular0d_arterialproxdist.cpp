@@ -132,7 +132,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(
 
     if (curvenum>=0 && usetime)
     {
-      curvefac_np = DRT::Problem::Instance()->Curve(curvenum).f(tim);
+      curvefac_np = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(tim);
     }
 
     // Cardiovascular0D stiffness

@@ -68,17 +68,14 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   // get values and switches from the condition
   const std::vector<int>* onoff = condition.Get<std::vector<int> >("onoff");
   const std::vector<double>* val = condition.Get<std::vector<double> >("val");
-  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
   const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
 
   // check total time
-  bool usetime = true;
   double time = -1.0;
   if (ParentElement()->IsParamsInterface())
     time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
   else
     time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   // set number of dofs per node
   const int noddof = NumDofPerNode(*Nodes()[0]);
@@ -86,15 +83,6 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < noddof)
     dserror("Fewer functions or curves defined than the element has dofs.");
-
-  // factor given by time curves
-  std::vector<double> curvefacs(noddof, 1.0);
-  for (int i=0; i < noddof; ++i)
-  {
-    const int curvenum = (curve) ? (*curve)[i] : -1;
-    if (curvenum >= 0 && usetime)
-      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  }
 
   // set number of nodes
   const int numnod = NumNode();
@@ -220,8 +208,6 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       const double dr = w1_substitution(xye, deriv, NULL, numnod);
 
       double functfac = 1.0;
-      double val_curvefac_functfac;
-
 
       // loop the dofs of a node
       for (int i = 0; i < noddof; ++i)
@@ -247,13 +233,12 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
             const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time);
           }
           else
             functfac = 1.0;
 
-          val_curvefac_functfac = functfac * curvefacs[i];
-          const double fac = intpoints.qwgt[gpid] * dr * (*val)[i] * val_curvefac_functfac;
+          const double fac = intpoints.qwgt[gpid] * dr * (*val)[i] * functfac;
           for (int node=0; node < numnod; ++node)
           {
             elevec1[node*noddof+i]+= shapefcts[node] * fac;
@@ -307,11 +292,11 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
         //evaluate function at current gauss point
-        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref, time, NULL);
+        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref, time);
       }
 
       // constant factor for integration
-      const double fac = intpoints.qwgt[gpid] * ortho_value * curvefacs[0] * functfac;
+      const double fac = intpoints.qwgt[gpid] * ortho_value * functfac;
 
       // add load components
       for (int node = 0; node < numnod; ++node)

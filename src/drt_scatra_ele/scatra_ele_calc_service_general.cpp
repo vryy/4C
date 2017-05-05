@@ -2322,9 +2322,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
         // spatial gradient of current scalar value
         gradphi.Multiply(derxy_,ephinp_[k]);
 
-        phi_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(k,position,t,NULL);
+        phi_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(k,position,t);
 
-        std::vector<double> gradphi_exact_vec = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(k,position,t,NULL);
+        std::vector<double> gradphi_exact_vec = DRT::Problem::Instance()->Funct(errorfunctno-1).EvaluateSpatialDerivative(k,position,t);
 
         if(gradphi_exact_vec.size())
         {

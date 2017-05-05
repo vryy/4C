@@ -2527,7 +2527,7 @@ void FLD::FluidImplicitTimeInt::AleUpdate(std::string condName)
           // Calculate node normal components
           for (int i=0; i<numdim_; i++)
           {
-            (*nodeNormals)[dofsLocalInd[i]] = (DRT::Problem::Instance()->Funct(nodeNormalFunct-1)).Evaluate(i, &currPos[0], 0.0, &(*discret_));
+            (*nodeNormals)[dofsLocalInd[i]] = (DRT::Problem::Instance()->Funct(nodeNormalFunct-1)).Evaluate(i, &currPos[0], 0.0);
           }
         }
       }
@@ -4111,7 +4111,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       {
         int gid = nodedofset[index];
 
-        double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
+        double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),time_);
 
         velnp_->ReplaceGlobalValues(1,&initialval,&gid);
       }

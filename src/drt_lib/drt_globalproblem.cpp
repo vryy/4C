@@ -29,7 +29,6 @@
 #include "drt_inputreader.H"
 #include "drt_elementreader.H"
 #include "drt_nodereader.H"
-#include "drt_timecurve.H"
 #include "drt_utils_parallel.H"
 #include "drt_utils_createdis.H"
 #include "drt_discret.H"
@@ -719,8 +718,6 @@ void DRT::Problem::ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadTimeFunctionResult(DRT::INPUT::DatFileReader& reader)
 {
-  //---------------------------------------------- input of time curves
-  timecurvemanager_.ReadInput(reader);
   //---------------------------------------- input of spatial functions
   functionmanager_.ReadInput(reader);
   //-------------------------------------- input of result descriptions
@@ -2796,14 +2793,6 @@ bool DRT::Problem::DoesExistDis(const std::string name) const {
 DRT::UTILS::Function& DRT::Problem::Funct(int num)
 {
   return functionmanager_.Funct(num);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-DRT::UTILS::TimeCurve& DRT::Problem::Curve(int num)
-{
-  return timecurvemanager_.Curve(num);
 }
 
 

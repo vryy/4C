@@ -1,3 +1,11 @@
+/*!----------------------------------------------------------------------
+\file pre_locsys.cpp
+
+\brief Run time for locsys
+\level 2
+\maintainer Martin Kronbichler
+
+*----------------------------------------------------------------------*/
 
 #include <string>
 #include <fstream>
@@ -14,7 +22,6 @@
 #endif
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_inputreader.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_parobjectregister.H"

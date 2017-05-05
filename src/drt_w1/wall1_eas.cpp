@@ -23,7 +23,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"

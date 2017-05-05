@@ -1247,18 +1247,13 @@ ComputeNeumannBC(DRT::Element*               ele,
   if(condition == NULL)
     dserror("Cannot access Neumann boundary condition!");
 
-  // find out whether we will use a time curve
-  bool usetime = true;
-
   // get actual time
   const double time = scatraparatimint_->Time();
-  if (time<0.0) usetime = false;
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
   const std::vector<int>*    onoff  = condition->Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val    = condition->Get<std::vector<double> >("val"  );
-  const std::vector<int>*    curve  = condition->Get<std::vector<int> >   ("curve");
   const std::vector<int>*    func   = condition->Get<std::vector<int> >   ("funct");
 
 
@@ -1277,8 +1272,6 @@ ComputeNeumannBC(DRT::Element*               ele,
   {
     // factor given by spatial function
     double functfac = 1.0;
-    // factor given by temporal curve
-    double curvefac = 1.0;
 
     // global coordinates of current Gauss point
     double coordgp[3];   // we always need three coordinates for function evaluation!
@@ -1286,24 +1279,10 @@ ComputeNeumannBC(DRT::Element*               ele,
       coordgp[i] = shapesface_->xyzreal(i,iquad);
 
     int functnum = -1;
-    int curvenum = -1;
     const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
     if ((*onoff)[0]) // is this dof activated?
     {
-
-      // find out whether we will use a time curve and get the factor
-      if (curve)
-        curvenum = (*curve)[0];
-
-      if (curvenum>=0 && usetime)
-      {
-        // evaluate curve at current time
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      }
-      else
-        curvefac = 1.0;
-
       // factor given by spatial function
       if(func)
         functnum = (*func)[0];
@@ -1311,15 +1290,15 @@ ComputeNeumannBC(DRT::Element*               ele,
       if(functnum>0)
       {
         // evaluate function at current Gauss point (provide always 3D coordinates!)
-        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time,NULL);
+        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time);
       }
       else
         functfac = 1.;
 
-      const double val_fac_funct_curve_fac = (*val)[0]*shapesface_->jfac(iquad)*functfac*curvefac;
+      const double val_fac_funct_fac = (*val)[0]*shapesface_->jfac(iquad)*functfac;
 
       for(unsigned int node=0; node<shapesface_->nfdofs_; node++)
-        elevec[indexstart+node] += shapesface_->shfunct(node,iquad) * val_fac_funct_curve_fac;
+        elevec[indexstart+node] += shapesface_->shfunct(node,iquad) * val_fac_funct_fac;
     } // if ((*onoff)[dof])
   } // loop over integration points
 
@@ -1594,9 +1573,9 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::SetInitialField(
       double gradphi[nsd_];
 
       dsassert(start_func != NULL,"funct not set for initial value");
-      phi = DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(0,xyz,0,NULL);
+      phi = DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(0,xyz,0);
       for (unsigned int i = 0; i < nsd_; ++i)
-        gradphi[i] = DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(1+i,xyz,0,NULL);
+        gradphi[i] = DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(1+i,xyz,0);
 
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
@@ -1650,7 +1629,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype,probdim>::SetInitialField(
         xyz[d] = shapesface_->xyzreal(d,q);
 
       double trphi;
-      trphi = DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(nsd_+1,xyz,0,NULL);
+      trphi = DRT::Problem::Instance()->Funct(*start_func-1).Evaluate(nsd_+1,xyz,0);
 
       // now fill the components in the mass matrix and the right hand side
       for (unsigned int i=0; i<shapesface_->nfdofs_; ++i)

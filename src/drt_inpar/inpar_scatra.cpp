@@ -89,8 +89,6 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   IntParameter("VELFUNCNO",-1,"function number for scalar transport velocity field",&scatradyn);
 
-  IntParameter("VELCURVENO",-1,"curve number for time-dependent scalar transport velocity field",&scatradyn);
-
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
     Teuchos::Tuple<std::string,12> name;

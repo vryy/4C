@@ -15,7 +15,6 @@
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
@@ -600,7 +599,6 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
-  const std::vector<int>*    spa_funct = condition.Get<std::vector<int> >   ("funct");
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(3);
@@ -654,9 +652,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   /*                 TIME CURVE BUSINESS                              */
   /*------------------------------------------------------------------*/
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
 
   // ensure that at least as many curves/functs as dofs are available
@@ -670,24 +666,14 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   }
 
   // find out whether we will use time curves and get the factors
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  std::vector<double> curvefacs(3, 1.0);
+  const std::vector<int>* tmp_funct  = condition.Get<std::vector<int> >("funct");
+  std::vector<double> functfacs(3, 1.0);
   for (int i=0; i < 3; ++i)
   {
-    const int curvenum = (curve) ? (*curve)[i] : -1;
-    if (curvenum>=0 && usetime)
-      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    const int curvenum = (tmp_funct) ? (*tmp_funct)[i] : -1;
+    if (curvenum>=0)
+      functfacs[i] = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
   }
-
-  /*------------------------------------------------------------------*/
-  /*                 SPATIAL FUNCTION BUSINESS                        */
-  /*------------------------------------------------------------------*/
-
-  for (int dim=0; dim<3; dim++)
-    {
-      if ((*spa_funct)[dim] > 0)
-        dserror("Evaluation of spatial functions not implemented!");
-    }
 
   /*------------------------------------------------------------------*/
   /*                    Loop over Gauss Points                        */
@@ -736,7 +722,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
     // distribute/add over element load vector
     for(int dim=0; dim<3; dim++)
     {
-      double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * curvefacs[dim];
+      double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfacs[dim];
       for (int nodid=0; nodid<27; ++nodid)
       {
         elevec1[nodid*3+dim] += funct(nodid) * dim_fac;

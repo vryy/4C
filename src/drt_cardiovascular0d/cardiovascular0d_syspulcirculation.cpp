@@ -160,9 +160,9 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
   double y_at_l_np = 0.0;
   double y_at_r_np = 0.0;
   if (Atrium_act_curve_l_>=0 && usetime)
-    y_at_l_np = DRT::Problem::Instance()->Curve(Atrium_act_curve_l_-1).f(tim);
+    y_at_l_np = DRT::Problem::Instance()->Funct(Atrium_act_curve_l_-1).EvaluateTime(tim);
   if (Atrium_act_curve_r_>=0 && usetime)
-    y_at_r_np = DRT::Problem::Instance()->Curve(Atrium_act_curve_r_-1).f(tim);
+    y_at_r_np = DRT::Problem::Instance()->Funct(Atrium_act_curve_r_-1).EvaluateTime(tim);
   // 0D time-varying atrial elastance
   double E_at_l_np = 0.;
   double E_at_r_np = 0.;
@@ -171,9 +171,9 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
   double y_v_l_np = 0.0;
   double y_v_r_np = 0.0;
   if (Ventricle_act_curve_l_>=0 && usetime)
-    y_v_l_np = DRT::Problem::Instance()->Curve(Ventricle_act_curve_l_-1).f(tim);
+    y_v_l_np = DRT::Problem::Instance()->Funct(Ventricle_act_curve_l_-1).EvaluateTime(tim);
   if (Ventricle_act_curve_r_>=0 && usetime)
-    y_v_r_np = DRT::Problem::Instance()->Curve(Ventricle_act_curve_r_-1).f(tim);
+    y_v_r_np = DRT::Problem::Instance()->Funct(Ventricle_act_curve_r_-1).EvaluateTime(tim);
   // 0D time-varying ventricular elastance
   double E_v_l_np = 0.;
   double E_v_r_np = 0.;
@@ -182,16 +182,16 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(
   double E_at_l_prescr_np = 0.0;
   double E_at_r_prescr_np = 0.0;
   if (Atrium_prescr_E_curve_l_>=0 && usetime)
-    E_at_l_prescr_np = DRT::Problem::Instance()->Curve(Atrium_prescr_E_curve_l_-1).f(tim);
+    E_at_l_prescr_np = DRT::Problem::Instance()->Funct(Atrium_prescr_E_curve_l_-1).EvaluateTime(tim);
   if (Atrium_prescr_E_curve_r_>=0 && usetime)
-    E_at_r_prescr_np = DRT::Problem::Instance()->Curve(Atrium_prescr_E_curve_r_-1).f(tim);
+    E_at_r_prescr_np = DRT::Problem::Instance()->Funct(Atrium_prescr_E_curve_r_-1).EvaluateTime(tim);
   // prescribed ventricular elastances
   double E_v_l_prescr_np = 0.0;
   double E_v_r_prescr_np = 0.0;
   if (Ventricle_prescr_E_curve_l_>=0 && usetime)
-    E_v_l_prescr_np = DRT::Problem::Instance()->Curve(Ventricle_prescr_E_curve_l_-1).f(tim);
+    E_v_l_prescr_np = DRT::Problem::Instance()->Funct(Ventricle_prescr_E_curve_l_-1).EvaluateTime(tim);
   if (Ventricle_prescr_E_curve_r_>=0 && usetime)
-    E_v_r_prescr_np = DRT::Problem::Instance()->Curve(Ventricle_prescr_E_curve_r_-1).f(tim);
+    E_v_r_prescr_np = DRT::Problem::Instance()->Funct(Ventricle_prescr_E_curve_r_-1).EvaluateTime(tim);
 
 
   switch (atrium_model_)

@@ -12,7 +12,6 @@
 
 #include "art_terminal_bc.H"
 
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_condition_utils.H"
 
@@ -87,7 +86,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
       // If forced curve exists => Rf = curve
       if ((*curve)[1]>=0)
       {
-      curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
+      curvefac = DRT::Problem::Instance()->Funct((*curve)[1]).EvaluateTime(time);
       Rf = (*vals)[1]*curvefac;
       }
       // else the BC is totally forced
@@ -112,7 +111,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     if((*curve)[0]>=0)
     {
-      curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+      curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
       BCin = (*vals)[0]*curvefac;
     }
     else
@@ -553,7 +552,7 @@ void ART::UTILS::SolveReflectiveTerminal(Teuchos::RCP<DRT::Discretization> actdi
   if ((*curve)[0]>=0)
   {
     double time = params.get<double>("total time");
-    curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+    curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
     Rf = (*vals)[0]*curvefac;
   }
   // else Rf = val
@@ -663,7 +662,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the reflection value
       if ((*curve)[1]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
         R = (*vals)[1]*curvefac;
       }
       else
@@ -679,7 +678,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
 
       if ((*curve)[0]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
         Pout = (*vals)[0]*curvefac;
       }
       else
@@ -741,7 +740,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the periferal pressure of the wind kessel model
       if ((*curve)[0]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
         //        Pout = (*vals)[0]*curvefac;
       }
       else
@@ -751,7 +750,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the resistance value
       if ((*curve)[1]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[1]).EvaluateTime(time);
         R = (*vals)[1]*curvefac;
       }
       else
@@ -761,7 +760,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the capacitance value
       if ((*curve)[2]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[2]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[2]).EvaluateTime(time);
         C = (*vals)[2]*curvefac;
       }
       else
@@ -795,9 +794,9 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the periferal pressure of the windkessel model
       if ((*curve)[0]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
         //        Pout = (*vals)[0]*curvefac;
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time-dt);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time-dt);
       }
       else
       {
@@ -811,7 +810,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
           t = time;
         else
           t = time -dt;
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(t);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(t);
         Poutnm = (*vals)[0]*curvefac;
       }
       else
@@ -821,7 +820,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the source resistance value
       if ((*curve)[1]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[1]).EvaluateTime(time);
         R1 = (*vals)[1]*curvefac;
       }
       else
@@ -831,7 +830,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the capacitance value
       if ((*curve)[2]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[2]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[2]).EvaluateTime(time);
         C = (*vals)[2]*curvefac;
       }
       else
@@ -841,7 +840,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the periferal resistance value
       if ((*curve)[3]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[3]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[3]).EvaluateTime(time);
         R2 = (*vals)[3]*curvefac;
       }
       else
@@ -918,7 +917,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the periferal pressure of the wind kessel model
       if ((*curve)[0]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
         //        Pout = (*vals)[0]*curvefac;
       }
       else
@@ -928,7 +927,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the source resistance value
       if ((*curve)[1]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[1]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[1]).EvaluateTime(time);
         R1 = (*vals)[1]*curvefac;
       }
       else
@@ -938,7 +937,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // Read in the capacitance value
       if ((*curve)[2]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[2]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[2]).EvaluateTime(time);
         C = (*vals)[2]*curvefac;
       }
       else
@@ -948,7 +947,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the periferal resistance value
       if ((*curve)[3]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[3]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[3]).EvaluateTime(time);
         R2 = (*vals)[3]*curvefac;
       }
       else
@@ -958,7 +957,7 @@ void ART::UTILS::SolveExplWindkesselBC(Teuchos::RCP<DRT::Discretization> actdis,
       // read in the inductance value
       if ((*curve)[4]>=0)
       {
-        curvefac = DRT::Problem::Instance()->Curve((*curve)[4]).f(time);
+        curvefac = DRT::Problem::Instance()->Funct((*curve)[4]).EvaluateTime(time);
         L = (*vals)[4]*curvefac;
       }
       else

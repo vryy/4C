@@ -23,7 +23,6 @@
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_timecurve.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 

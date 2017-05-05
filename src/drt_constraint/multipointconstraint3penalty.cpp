@@ -440,7 +440,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         bool usetime = true;
         if (time<0.0) usetime = false;
         if (curvenum>=0 && usetime)
-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+          curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
 
         double diff = (curvefac*(*initerror_)[eid]-(*acterror_)[eid]);

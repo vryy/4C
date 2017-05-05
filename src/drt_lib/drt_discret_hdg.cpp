@@ -498,7 +498,6 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(
 void DRT::UTILS::DbcHDG::DoDirichletCondition(
         const DRT::DiscretizationInterface &  discret,
         const DRT::Condition &              cond,
-        const bool &                        usetime,
         const double &                      time,
         const Teuchos::RCP<Epetra_Vector> * systemvectors,
         const Epetra_Vector&                toggle,
@@ -510,7 +509,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(
       static_cast<const DRT::DiscretizationFaces&>(discret);
 
   DoDirichletCondition(face_discret,cond,
-      usetime,time,systemvectors,toggle);
+      time,systemvectors,toggle);
 }
 
 /*----------------------------------------------------------------------*
@@ -518,13 +517,12 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(
 void DRT::UTILS::DbcHDG::DoDirichletCondition(
     const DRT::DiscretizationFaces &    discret,
     const DRT::Condition &              cond,
-    const bool &                        usetime,
     const double &                      time,
     const Teuchos::RCP<Epetra_Vector> * systemvectors,
     const Epetra_Vector&                toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  DRT::UTILS::Dbc::DoDirichletCondition(discret,cond,usetime,time,
+  DRT::UTILS::Dbc::DoDirichletCondition(discret,cond,time,
       systemvectors,toggle,NULL);
 
   // say good bye if there are no face elements
@@ -536,7 +534,6 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
 
   // get curves, functs, vals, and onoff toggles from the condition
-  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
   const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
   const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
   const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
@@ -561,21 +558,6 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(
     deg = 2;
     if (systemvectoraux == Teuchos::null)
       systemvectoraux = systemvectors[2];
-  }
-
-  // factor given by time curve
-  std::vector<std::vector<double> > curvefacs(onoff->size());
-  for (unsigned int j=0; j<onoff->size(); ++j)
-  {
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[j];
-    if (curvenum>=0 && usetime)
-      curvefacs[j] = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
-    else
-    {
-      curvefacs[j].resize(deg+1, 1.0);
-      for (unsigned i=1; i<(deg+1); ++i) curvefacs[j][i] = 0.0;
-    }
   }
 
   // do we have faces?
@@ -683,12 +665,6 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(
         if (std::abs(toggle[lid]-1.0)>1e-13) continue;
 
         std::vector<double> value(deg+1,(*val)[onesetj]);
-
-        // apply factors to Dirichlet value
-        for (unsigned k=0; k<deg+1; ++k)
-        {
-          value[k] *= curvefacs[onesetj][k];
-        }
 
         // assign value
         if (systemvectors[0] != Teuchos::null)

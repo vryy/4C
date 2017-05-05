@@ -4,12 +4,9 @@
 
 \brief abstract interface for electrode and electrolyte materials carrying concentration and electric potential as degrees of freedom
 
-<pre>
-Maintainer: Rui Fang
-            fang@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/
-            089-289-15251
-</pre>
+\maintainer Rui Fang
+
+\level 2
 */
 /*----------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"
@@ -186,7 +183,7 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficient(const double cint) const
   else if(DiffCurve() == 0)
     diff = EvalFunctValue(-1,cint,DiffParams());
   else
-    diff = DRT::Problem::Instance()->Curve(DiffCurve()-1).f(cint);
+    diff = DRT::Problem::Instance()->Funct(DiffCurve()-1).EvaluateTime(cint);
 
   return diff;
 }
@@ -204,7 +201,7 @@ double MAT::ElchSingleMat::ComputeFirstDerivDiffCoeff(const double cint) const
   else if(DiffCurve() == 0)
     firstderiv = EvalFirstDerivFunctValue(-1,cint,DiffParams());
   else
-    firstderiv = (DRT::Problem::Instance()->Curve(DiffCurve()-1).FctDer(cint,1))[1];
+    firstderiv = (DRT::Problem::Instance()->Funct(DiffCurve()-1).EvaluateTimeDerivative(cint,1))[1];
 
   return firstderiv;
 }
@@ -221,7 +218,7 @@ double MAT::ElchSingleMat::ComputeConductivity(const double cint) const
     cond = EvalFunctValue(CondCurve(),cint,CondParams());
   else if(CondCurve() == 0)
     cond = EvalFunctValue(-1,cint,CondParams());
-  else cond = DRT::Problem::Instance()->Curve(CondCurve()-1).f(cint);
+  else cond = DRT::Problem::Instance()->Funct(CondCurve()-1).EvaluateTime(cint);
 
   return cond;
 }
@@ -238,7 +235,7 @@ double MAT::ElchSingleMat::ComputeFirstDerivCond(const double cint) const
     firstderiv = EvalFirstDerivFunctValue(CondCurve(),cint,CondParams());
   else if(CondCurve() == 0)
     firstderiv = EvalFirstDerivFunctValue(-1,cint,CondParams());
-  else firstderiv = (DRT::Problem::Instance()->Curve(CondCurve()-1).FctDer(cint,1))[1];
+  else firstderiv = (DRT::Problem::Instance()->Funct(CondCurve()-1).EvaluateTimeDerivative(cint,1))[1];
 
   return firstderiv;
 }

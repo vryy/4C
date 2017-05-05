@@ -1378,7 +1378,7 @@ void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters()
     double sliplength = (*i)->GetDouble("slipcoeff");
 
     // Is the slip length constant? Don't call functions at GP-level unnecessary.
-    bool slip_bool = ((*i)->GetInt("curve") < 0 and (*i)->GetInt("funct") < 1);
+    bool slip_bool = ((*i)->GetInt("funct") < 1);
 
     bool force_tangential =( ((*i)->GetInt("force_tang_vel")) == 1 );
 
@@ -1728,7 +1728,7 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters(  const std::string &
     double sliplength = (*i)->GetDouble("slipcoeff");
 
     // Is the slip length constant? Don't call functions at GP-level unnecessary.
-    bool slip_bool = ((*i)->GetInt("curve") < 0 and (*i)->GetInt("funct") < 1);
+    bool slip_bool = ((*i)->GetInt("funct") < 1);
 
     if(!sliplength_map_.insert( std::make_pair( cond_int, std::make_pair(sliplength,slip_bool) ) ).second)
       dserror("ID already existing! For sliplength_map_.");

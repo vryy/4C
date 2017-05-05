@@ -629,23 +629,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::BodyForce(
     const std::vector<int>* funct = myneumcond[0]->Get<std::vector<int> >("funct");
 
     // check for potential time curve
-    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
 
     // initialization of time-curve factor
-    double curvefac(0.0);
     const double time = lubricationpara_->Time();
-
-    // compute potential time curve or set time-curve factor to one
-    if (curvenum >= 0)
-    {
-      // time factor (negative time indicating error)
-      if (time >= 0.0)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      else dserror("Negative time in bodyforce calculation: time = %f",time);
-    }
-    else curvefac = 1.0;
 
     // get values and switches from the condition
     const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
@@ -658,10 +644,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::BodyForce(
       const double functfac =
           (functnum > 0) ?
               DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(0,
-                  (ele->Nodes()[jnode])->X(), time,
-                  NULL) :
+                  (ele->Nodes()[jnode])->X(), time) :
               1.0;
-      bodyforce_(jnode) = (*onoff)[0]*(*val)[0]*curvefac*functfac;
+      bodyforce_(jnode) = (*onoff)[0]*(*val)[0]*functfac;
     }
   }
   else
@@ -840,11 +825,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
       gradpre.Multiply(derxy_, eprenp_);
 
       pre_exact = DRT::Problem::Instance()->Funct(errorfunctno - 1).Evaluate(0,
-          position, t, NULL);
+          position, t);
 
       std::vector<double> gradpre_exact_vec =
-          DRT::Problem::Instance()->Funct(errorfunctno - 1).FctDer(0, position,
-              t, NULL);
+          DRT::Problem::Instance()->Funct(errorfunctno - 1).EvaluateSpatialDerivative(0, position,t);
 
       if (gradpre_exact_vec.size())
       {

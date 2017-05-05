@@ -274,7 +274,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
-          double initialval = problem_->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
+          double initialval = problem_->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_);
           int err = phiref->ReplaceMyValues(1,&initialval,&doflid);
           if (err != 0) dserror("dof not on proc");
         }

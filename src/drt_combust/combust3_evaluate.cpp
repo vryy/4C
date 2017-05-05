@@ -22,7 +22,6 @@
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation_combust.H"

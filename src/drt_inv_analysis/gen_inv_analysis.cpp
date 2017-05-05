@@ -21,7 +21,6 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_mat/growth_law.H"

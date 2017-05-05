@@ -63,9 +63,7 @@ void XFEM::EvaluateNeumann(  Teuchos::ParameterList&              params,
   bool assemblemat = (systemmatrix != NULL);
 
   // get the current time
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   std::multimap<std::string,DRT::Condition* >::iterator fool;
   std::multimap<std::string,DRT::Condition* > condition;
@@ -112,7 +110,6 @@ void XFEM::EvaluateNeumann(  Teuchos::ParameterList&              params,
 
   // evaluate standard Neumann conditions
   EvaluateNeumannStandard(condition,
-      usetime,
       time,
       assemblemat,
       params,
@@ -130,7 +127,6 @@ void XFEM::EvaluateNeumann(  Teuchos::ParameterList&              params,
  |  evaluate Neumann for standard conditions (public)       schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > &   condition,
-                                    bool                                  usetime,
                                     const double                          time,
                                     bool                                  assemblemat,
                                     Teuchos::ParameterList&               params,
@@ -154,15 +150,15 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
     const std::vector<int>* nodeids = cond.Nodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
-    const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+    const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
     const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
     const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
     // Neumann BCs for some historic reason only have one curve
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-    double curvefac = 1.0;
-    if (curvenum>=0 && usetime)
-      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    int functnum = -1;
+    if (funct) functnum = (*funct)[0];
+    double functfac = 1.0;
+    if (functnum>=0)
+      functfac = DRT::Problem::Instance()->Funct(functnum).EvaluateTime(time);
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
@@ -177,7 +173,7 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
         if ((*onoff)[j]==0) continue;
         const int gid = dofs[j];
         double value  = (*val)[j];
-        value *= curvefac;
+        value *= functfac;
         const int lid = systemvector.Map().LID(gid);
         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
         systemvector[lid] += value;
@@ -226,4 +222,3 @@ void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > 
 
   return;
 }
-

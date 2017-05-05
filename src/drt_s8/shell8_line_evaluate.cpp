@@ -1,7 +1,11 @@
 /*!----------------------------------------------------------------------
 \file shell8_line_evaluate.cpp
 
+\brief Evaluate routines for shell8 element
+
 \maintainer Michael Gee
+
+\level 2
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
@@ -38,21 +42,19 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
   // find out whether we will use a time curve
-  bool usetime = true;
   double time = -1.0;
   if (ParentElement()->IsParamsInterface())
     time = ParentElement()->ParamsInterface().GetTotalTime();
   else
     time = params.get<double>("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  const std::vector<int>* tmp_funct  = condition.Get<std::vector<int> >("funct");
+  int functnum = -1;
+  if (tmp_funct) functnum = (*tmp_funct)[0];
+  double functfac = 1.0;
+  if (functnum>=0)
+    functfac = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
 
   // init gaussian points of parent element
   S8_DATA s8data;
@@ -190,9 +192,9 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
     // load vector ar
     double ar[3];
     // loop the dofs of a node
-    // ar[i] = ar[i] * facr * ds * onoff[i] * val[i] * curvefac
+    // ar[i] = ar[i] * facr * ds * onoff[i] * val[i] * functfac
     for (int i=0; i<3; ++i)
-      ar[i] = facr * ds * (*onoff)[i] * (*val)[i] * curvefac;
+      ar[i] = facr * ds * (*onoff)[i] * (*val)[i] * functfac;
     // add load components
     for (int node=0; node<NumNode(); ++node)
       for (int j=0; j<3; ++j)

@@ -3,12 +3,9 @@
 
 \brief Functionality of the element level of the fluid adjoint equations
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
+\maintainer Martin Winklmaier
+
+\level 3
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -1691,15 +1688,10 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
     const std::vector<int>*    onoff     = myneumcond[0]->Get<std::vector<int> >   ("onoff");
     const std::vector<double>* val       = myneumcond[0]->Get<std::vector<double> >("val"  );
     const std::vector<int>*    functions = myneumcond[0]->Get<std::vector<int> >   ("funct");
-    const std::vector<int>*    curve     = myneumcond[0]->Get<std::vector<int> >   ("curve");
 
     // factor given by spatial function
     double functionfac = 1.0;
     int functnum = -1;
-
-    // factor given by temporal curve
-    double curvefac = 0.0;
-    int curvenum = -1;
 
     // set this condition to the ebofoaf array
     for (int isd=0;isd<nsd_;isd++)
@@ -1708,20 +1700,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
       if (functions) functnum = (*functions)[isd];
       else functnum = -1;
 
-      if (curve) curvenum = (*curve)[isd];
-      else curvenum = -1;
-      // compute potential time curve or set time-curve factor to one
-      if (curvenum >= 0)
-      {
-        // time factor (negative time indicating error)
-        if (abs(time) >= 1.0e-14)
-             curvefac = DRT::Problem::Instance()->Curve(curvenum).f(abs(time));
-        else
-          dserror("Negative time in bodyforce calculation: time = %f", time);
-      }
-      else curvefac = 1.0;
-
-      double num = (*onoff)[isd]*(*val)[isd]*curvefac;
+      double num = (*onoff)[isd]*(*val)[isd];
 
       for ( int jnode=0; jnode<nen_; ++jnode )
       {
@@ -1735,8 +1714,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::FluidBodyForce(
           // in some fancy turbulance stuff.
           functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
                                                                              (ele_->Nodes()[jnode])->X(),
-                                                                             time,
-                                                                             NULL);
+                                                                             time);
         }
         else functionfac = 1.0;
 

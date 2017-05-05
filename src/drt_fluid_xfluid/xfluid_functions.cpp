@@ -37,8 +37,7 @@ Function()
  | evaluation of xfluid level set test case             winter    09/14 |
  *----------------------------------------------------------------------*/
 double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(int index,
-    const double* xp, double t,
-    const DRT::DiscretizationInterface* dis)
+    const double* xp, double t)
 {
   //  //cube_Gerstenberger:
   //  //1.6x1.6
@@ -114,7 +113,7 @@ Function()
  | evaluation of xfluid level set test case             winter    09/14 |
  *----------------------------------------------------------------------*/
 double DRT::UTILS::SlipLengthLevelSetManipulator::Evaluate(int index,
-    const double* xp, double t, const DRT::DiscretizationInterface* dis)
+    const double* xp, double t)
 {
 
   double x_cut = 0.4;
@@ -178,7 +177,7 @@ Function()
  | evaluation of xfluid level set test case             winter    10/15 |
  *----------------------------------------------------------------------*/
 double DRT::UTILS::MovingLevelSetCylinder::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
 
   // d = L/2 * sin(f*t-PI/2)
@@ -338,8 +337,7 @@ MovingLSTorus(origin,orientationvec_torus,radius,radius_tube,direction,distance,
  | Moving and rotating 3D Torus, returns level set value                |
  |                                                        winter 04/16  |
  *----------------------------------------------------------------------*/
-double DRT::UTILS::MovingLevelSetTorus::Evaluate(int index, const double* xp, double t,
-    const DRT::DiscretizationInterface* dis)
+double DRT::UTILS::MovingLevelSetTorus::Evaluate(int index, const double* xp, double t)
 {
 
   // d = L/2 * sin(f*t-PI/2)
@@ -463,7 +461,7 @@ MovingLSTorus(origin,orientationvec_torus,radius,radius_tube,direction,distance,
  |   3D Torus                                             winter 04/16  |
  *----------------------------------------------------------------------*/
 double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(int index,
-    const double* xp, double t, const DRT::DiscretizationInterface* dis)
+    const double* xp, double t)
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -591,7 +589,7 @@ slipfunct_(slipfunct)
  |   3D Torus                                             winter 04/16  |
  *----------------------------------------------------------------------*/
 double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(int index,
-    const double* xp, double t, const DRT::DiscretizationInterface* dis)
+    const double* xp, double t)
 {
 
   //coefficient for sinus.
@@ -780,7 +778,7 @@ Function()
  | evaluation of Taylor-Couette analytical solution     winter    10/15 |
  *----------------------------------------------------------------------*/
 double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
 
   double radius = sqrt(xp[0]*xp[0] + xp[1]*xp[1]);
@@ -806,8 +804,8 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(int index, const double* xp,
   return 1.0;
 }
 
-std::vector<double> DRT::UTILS::TaylorCouetteFlow::FctDer(int index,
-    const double* xp, const double t, const DRT::DiscretizationInterface* dis)
+std::vector<double> DRT::UTILS::TaylorCouetteFlow::EvaluateSpatialDerivative(int index,
+    const double* xp, const double t)
 {
   //u_x = -(c1_*r + c2_/r)*y/r = -(c1_*y + c2_*y/(x^2+y^2))
   //d u_x /dx = c2_ * 2*x*y/((x^2+y^2)^2)
@@ -920,7 +918,7 @@ c2_(lincomb[1])
 }
 
 double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
 //CASE 1:
   //  u =
@@ -1071,8 +1069,8 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(int index, const double* xp,
 }
 
 
-std::vector<double> DRT::UTILS::UrquizaBoxFlow::FctDer(int index,
-    const double* xp, const double t, const DRT::DiscretizationInterface* dis)
+std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(int index,
+    const double* xp, const double t)
 {
   //  CASE 1:
   //  du_i/dx_j =
@@ -1184,7 +1182,7 @@ DRT::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(
 
 
 double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp,
-    double t, const DRT::DiscretizationInterface* dis)
+    double t)
 {
  double x=xp[0];
  double y=xp[1];
@@ -1335,7 +1333,7 @@ DRT::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(
 
 
 double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(int index,
-    const double* xp, double t, const DRT::DiscretizationInterface* dis)
+    const double* xp, double t)
 {
   double tol=1e-13;
 
@@ -1517,19 +1515,16 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
   DRT::INPUT::LineDefinition gerstenbergerforwardfacingstep;
   gerstenbergerforwardfacingstep
-    .AddNamedInt("FUNCT")
     .AddTag("FORWARDFACINGSTEP")
     ;
 
   DRT::INPUT::LineDefinition sliplengthlevelsetmanipulator;
   sliplengthlevelsetmanipulator
-    .AddNamedInt("FUNCT")
     .AddTag("SLIPLENGTHFUNCTION")
     ;
 
   DRT::INPUT::LineDefinition movinglevelsetcylinder;
   movinglevelsetcylinder
-    .AddNamedInt("FUNCT")
     .AddTag("MOVINGLEVELSETCYLINDER")
     .AddNamedDoubleVector("ORIGIN",3)
     .AddNamedDouble("RADIUS")
@@ -1540,7 +1535,6 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
   DRT::INPUT::LineDefinition movinglevelsettorus;
   movinglevelsettorus
-    .AddNamedInt("FUNCT")
     .AddTag("MOVINGLEVELSETTORUS")
     .AddNamedDoubleVector("ORIGIN",3)
     .AddNamedDoubleVector("ORIENTVEC_TORUS",3)
@@ -1556,7 +1550,6 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
   DRT::INPUT::LineDefinition movinglevelsettorusvelocity;
   movinglevelsettorusvelocity
-    .AddNamedInt("FUNCT")
     .AddTag("MOVINGLEVELSETTORUSVELOCITY")
     .AddNamedDoubleVector("ORIGIN",3)
     .AddNamedDoubleVector("ORIENTVEC_TORUS",3)
@@ -1572,7 +1565,6 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
   DRT::INPUT::LineDefinition movinglevelsettorussliplength;
   movinglevelsettorussliplength
-    .AddNamedInt("FUNCT")
     .AddTag("MOVINGLEVELSETTORUSSLIPLENGTH")
     .AddNamedDoubleVector("ORIGIN",3)
     .AddNamedDoubleVector("ORIENTVEC_TORUS",3)
@@ -1589,7 +1581,6 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
   DRT::INPUT::LineDefinition taylorcouetteflow;
   taylorcouetteflow
-    .AddNamedInt("FUNCT")
     .AddTag("TAYLORCOUETTEFLOW")
     .AddNamedDouble("RADIUS_I")
     .AddNamedDouble("RADIUS_O")
@@ -1604,7 +1595,6 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
   DRT::INPUT::LineDefinition urquizaboxflow;
   urquizaboxflow
-    .AddNamedInt("FUNCT")
     .AddTag("URQUIZABOXFLOW")
     .AddNamedDouble("LENGTHX")
     .AddNamedDouble("LENGTHY")
@@ -1617,7 +1607,6 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
   DRT::INPUT::LineDefinition urquizaboxflowtraction;
   urquizaboxflowtraction
-    .AddNamedInt("FUNCT")
     .AddTag("URQUIZABOXFLOW_TRACTION")
     .AddNamedDouble("LENGTHX")
     .AddNamedDouble("LENGTHY")
@@ -1630,7 +1619,6 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 
   DRT::INPUT::LineDefinition urquizaboxflowforce;
   urquizaboxflowforce
-    .AddNamedInt("FUNCT")
     .AddTag("URQUIZABOXFLOW_FORCE")
     .AddNamedDouble("LENGTHX")
     .AddNamedDouble("LENGTHY")

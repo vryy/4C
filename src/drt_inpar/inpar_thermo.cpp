@@ -287,11 +287,11 @@ void INPAR::THR::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
   thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtemp")));
   thermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("surtemp")));
   // time curve to increase the surrounding (fluid) temperature T_oo in time
-  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtempcurve")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("surtempcurve",true,true)));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtempfunct")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("surtempfunct",true,true)));
   // time curve to increase the complete boundary condition, i.e., the heat flux
-  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("funct")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("funct",true,true)));
 
   Teuchos::RCP<ConditionDefinition> linethermoconvect =
     Teuchos::rcp(new ConditionDefinition("DESIGN THERMO CONVECTION LINE CONDITIONS",

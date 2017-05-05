@@ -230,7 +230,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                &particledyn);
 
    DoubleParameter("RADIUS_DISTRIBUTION_SIGMA",-1.0,"standard deviation of particle radii distribution",&particledyn);
-   IntParameter("RADIUS_CHANGE_CURVE",-1,"number of curve governing radius change",&particledyn);
+   IntParameter("RADIUS_CHANGE_FUNCT",-1,"number of curve governing radius change",&particledyn);
    BoolParameter("RENDERING","no","switch on/off the rendering domain. If it is yes... you better have a RENDERING DOMAIN available",&particledyn);
    BoolParameter("DENSITY_SUMMATION","no","determine density via summation formula instead of time integration",&particledyn);
    DoubleParameter("CONSISTENT_PROBLEM_VOLUME",-1.0,"prescribe problem volume and determine particle masses consistently based on this volume and the initial density",&particledyn);
@@ -317,8 +317,8 @@ void INPAR::PARTICLE::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Co
   particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_vel")));
   particleinflowcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("inflow_vel",3)));
   // particle inflow velocity can be superposed with a time curve
-  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_vel_curve")));
-  particleinflowcomponents.push_back(Teuchos::rcp(new IntConditionComponent("inflow_vel_curve")));
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_vel_funct")));
+  particleinflowcomponents.push_back(Teuchos::rcp(new IntConditionComponent("inflow_vel_funct")));
   // inflow frequency of particles
   particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_freq")));
   particleinflowcomponents.push_back(Teuchos::rcp(new RealConditionComponent("inflow_freq")));

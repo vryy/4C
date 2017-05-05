@@ -492,16 +492,13 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = scatraparamstimint_->Time();
-  if (time<0.0) usetime = false;
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
   const int numdof = condition.GetInt("numdof");
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
-  const std::vector<int>* curve    = condition.Get<std::vector<int> >   ("curve");
   const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
 
   if (numdofpernode_!=numdof)
@@ -514,8 +511,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
 
     // factor given by spatial function
     double functfac = 1.0;
-    // factor given by temporal curve
-    double curvefac = 1.0;
 
     // determine global coordinates of current Gauss point
     double coordgp[3];   // we always need three coordinates for function evaluation!
@@ -529,25 +524,12 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
     }
 
     int functnum = -1;
-    int curvenum = -1;
     const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
     for(int dof=0; dof<numdofpernode_; ++dof)
     {
       if ((*onoff)[dof]) // is this dof activated?
       {
-        // find out whether we will use a time curve and get the factor
-        if (curve) curvenum = (*curve)[dof];
-
-        if (curvenum>=0 && usetime)
-        {
-          // evaluate curve at current time
-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-        }
-        else
-          curvefac = 1.0;
-
-
         // factor given by spatial function
         if(func)
           functnum = (*func)[dof];
@@ -555,16 +537,16 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(
         if(functnum>0)
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
-          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time);
         }
         else
           functfac = 1.;
 
-        const double val_fac_funct_curve_fac = (*val)[dof]*fac*functfac*curvefac;
+        const double val_fac_funct_fac = (*val)[dof]*fac*functfac;
 
         for(int node=0; node<nen_; ++node)
           //TODO: with or without eps_
-          elevec1[node*numdofpernode_+dof] += scalar*funct_(node)*val_fac_funct_curve_fac;
+          elevec1[node*numdofpernode_+dof] += scalar*funct_(node)*val_fac_funct_fac;
       } // if ((*onoff)[dof])
     } // loop over dofs
   } // loop over integration points
@@ -2153,17 +2135,7 @@ template <DRT::Element::DiscretizationType bdistype,
   Teuchos::RCP<DRT::Condition> dbc = params.get<Teuchos::RCP<DRT::Condition> >("condition");
 
   // check of total time
-  bool usetime = true;
   const double time = scatraparamstimint_->Time();
-  if (time<0.0) usetime = false;
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = (*dbc).Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // get values and spatial functions from condition
   // (assumed to be constant on element boundary)
@@ -2171,7 +2143,7 @@ template <DRT::Element::DiscretizationType bdistype,
   const std::vector<int>*    func = (*dbc).Get<std::vector<int> >   ("funct");
 
   // assign boundary value multiplied by time-curve factor
-  double dirichval=(*val)[0]*curvefac;
+  double dirichval=(*val)[0];
 
   // spatial function number
   const int funcnum = (*func)[0];
@@ -2602,7 +2574,7 @@ template <DRT::Element::DiscretizationType bdistype,
       for (int i=0; i<pnsd;i++)
         coordgp3D[i]=coordgp(i);
 
-      functfac = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(0,&(coordgp3D[0]),time,NULL);
+      functfac = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(0,&(coordgp3D[0]),time);
     }
     else functfac = 1.0;
     dirichval *= functfac;

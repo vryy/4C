@@ -529,10 +529,6 @@ void DRT::INPUT::DirichletNeumannBundle::DefaultLine(std::ostream& stream)
   stream << " ";
   intvectcomp_[1]->DefaultLine(stream);
   stream << " ";
-  intvectsepcomp_[2]->DefaultLine(stream);
-  stream << " ";
-  intvectcomp_[2]->DefaultLine(stream);
-  stream << " ";
 }
 
 void DRT::INPUT::DirichletNeumannBundle::Print(std::ostream& stream, const DRT::Condition* cond)
@@ -550,10 +546,6 @@ void DRT::INPUT::DirichletNeumannBundle::Print(std::ostream& stream, const DRT::
   intvectsepcomp_[1]->Print(stream,cond);
   stream << " ";
   intvectcomp_[1]->Print(stream,cond);
-  stream << " ";
-  intvectsepcomp_[2]->Print(stream,cond);
-  stream << " ";
-  intvectcomp_[2]->Print(stream,cond);
   stream << " ";
 };
 
@@ -573,9 +565,6 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::DirichletNeumannBundle::Read(Conditi
   intvectsepcomp_[1]->Read(def,condline,condition);
   intvectcomp_[1]->SetLength(length);
   intvectcomp_[1]->Read(def,condline,condition);
-  intvectsepcomp_[2]->Read(def,condline,condition);
-  intvectcomp_[2]->SetLength(length);
-  intvectcomp_[2]->Read(def,condline,condition);
 
   return condline;
 }

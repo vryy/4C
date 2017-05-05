@@ -76,34 +76,6 @@ namespace COMBUST
 
     if (myindex >= 0)
     {
-      // find out whether we will use a time curve
-      const std::vector<int>* curve  = myneumcond[myindex]->Get<std::vector<int> >("curve");
-      int curvenum = -1;
-
-      if (curve) curvenum = (*curve)[0];
-
-      // initialisation
-      double curvefac    = 0.0;
-
-      if (curvenum >= 0) // yes, we have a timecurve
-      {
-        // time factor for the intermediate step
-        if(time >= 0.0)
-        {
-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-        }
-        else
-        {
-          // do not compute an "alternative" curvefac here since a negative time value
-          // indicates an error.
-          dserror("Negative time value in body force calculation: time = %f",time);
-          //curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
-        }
-      }
-      else // we do not have a timecurve --- timefactors are constant equal 1
-      {
-        curvefac = 1.0;
-      }
 
       // get values and switches from the condition
       const std::vector<int>*    onoff = myneumcond[myindex]->Get<std::vector<int> >   ("onoff");
@@ -121,14 +93,14 @@ namespace COMBUST
         if (functions) functnum = (*functions)[isd];
         else functnum = -1;
 
-        double num = (*onoff)[isd]*(*val)[isd]*curvefac;
+        double num = (*onoff)[isd]*(*val)[isd];
 
         for (std::size_t jnode=0; jnode<numnode; jnode++)
         {
           if (functnum>0)
           {
             // evaluate function at the position of the current node
-            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,(ele->Nodes()[jnode])->X(),time,NULL);
+            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,(ele->Nodes()[jnode])->X(),time);
           }
           else functionfac = 1.0;
 

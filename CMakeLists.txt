@@ -486,12 +486,12 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_element.cpp
   src/drt_lib/drt_singletondestruction.cpp
   src/drt_lib/drt_function.cpp
+  src/drt_lib/drt_functionvariables.cpp
   src/drt_lib/drt_globalproblem.cpp
   src/drt_lib/drt_locsys.cpp
   src/drt_lib/drt_node.cpp
   src/drt_lib/drt_parobject.cpp
   src/drt_lib/drt_parobjectfactory.cpp
-  src/drt_lib/drt_timecurve.cpp
   src/drt_lib/drt_utils_createdis.cpp
   src/drt_lib/drt_utils_materials.cpp
   src/drt_lib/drt_utils_factory.cpp
@@ -1064,6 +1064,7 @@ set(OBJS_DRT_UTILS
   src/drt_fem_general/drt_utils_polynomial.cpp
   src/drt_fem_general/drt_utils_shapevalues_hdg.cpp
   src/drt_fem_general/largerotations.cpp
+  src/drt_fluid/fluid_functions.cpp
   src/drt_fluid/fluid_rotsym_periodicbc_utils.cpp
   src/drt_combust/combust_functions.cpp
   src/drt_fluid_xfluid/xfluid_functions.cpp
@@ -1686,9 +1687,6 @@ set(OBJS_DRT_RIGIDSPHERE_LIB
   src/drt_rigidsphere/rigidsphere.cpp
   src/drt_rigidsphere/rigidsphere_evaluate.cpp
   src/drt_rigidsphere/rigidsphere_input.cpp
-)
-set(OBJS_PRE_CURVE
-  src/pre_curve/pre_curve.cpp
 )
 set(OBJS_PRE_LOCSYS
   src/pre_locsys/pre_locsys.cpp
@@ -2804,7 +2802,6 @@ add_executable (post_processor EXCLUDE_FROM_ALL ${OBJS_POST_PROCESSOR_MAIN})
 add_executable (post_drt_monitor EXCLUDE_FROM_ALL ${OBJS_POST_DRT_MONITOR})
 add_executable (post_drt_s8convert EXCLUDE_FROM_ALL ${OBJS_POST_DRT_S8CONVERT})
 add_executable (pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})
-add_executable (pre_curve EXCLUDE_FROM_ALL ${OBJS_PRE_CURVE})
 add_executable (pre_locsys EXCLUDE_FROM_ALL ${OBJS_PRE_LOCSYS})
 
 set(BACI_LIBRARIES
@@ -2849,7 +2846,6 @@ set(FILTER_LIBRARIES
 target_link_libraries (post_processor post_drt_ensight_lib post_drt_vtk_lib ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_s8convert ${FILTER_LIBRARIES})
-target_link_libraries (pre_curve ${FILTER_LIBRARIES})
 target_link_libraries (pre_locsys ${FILTER_LIBRARIES})
 target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 
@@ -2859,7 +2855,7 @@ ADD_CUSTOM_TARGET(post DEPENDS post_processor post_drt_monitor)
 ADD_CUSTOM_TARGET(post_drt_ensight DEPENDS post_processor)
 ADD_CUSTOM_TARGET(post_drt_vtk DEPENDS post_processor)
 ADD_CUSTOM_TARGET(framework DEPENDS pre_exodus post)
-ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_processor post_drt_monitor post_drt_s8convert pre_exodus pre_curve pre_locsys cut_test)
+ADD_CUSTOM_TARGET(full DEPENDS ${baciname} post_processor post_drt_monitor post_drt_s8convert pre_exodus pre_locsys cut_test)
 
 # various post-processing tools
 ADD_CUSTOM_COMMAND(TARGET post_processor

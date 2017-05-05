@@ -659,7 +659,7 @@ namespace PARTICLE
     const bool variableradius_;
 
     //! number of curve governing radius change
-    const int radiuschangecurve_;
+    const int radiuschangefunct_;
 
     //@}
 

@@ -73,18 +73,6 @@ namespace TIMINT {
                                    Teuchos::RCP<Epetra_Vector>        vel,
                                    Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
-
-    /* \brief evaluate Dirichlet conditions*/
-    void DoDirichletConditionPredefined(DRT::Condition&              cond,
-                                        DRT::Discretization&         dis,
-                                        const bool                   usetime,
-                                        const double                 time,
-                                        Teuchos::RCP<Epetra_Vector>  systemvector,
-                                        Teuchos::RCP<Epetra_Vector>  systemvectord,
-                                        Teuchos::RCP<Epetra_Vector>  systemvectordd,
-                                        Teuchos::RCP<Epetra_Vector>  toggle,
-                                        Teuchos::RCP<std::set<int> > dbcgids);
-
     /*! \brief Determine Dirichlet condition at given time and apply its values to a system vector
      *  \param nodeids      (in)      vector containing DBC Node IDs
      *  \param onoff        (in)      vector containing onoff values for DOFs

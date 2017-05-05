@@ -37,7 +37,8 @@
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_function.H"
+//#include "../drt_lib/drt_function.H"
+#include "../drt_fluid/fluid_functions.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 
@@ -431,32 +432,32 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     // evaluate velocity and pressure
     // evaluate the velocity gradient
 
-    function      = Teuchos::rcp(new DRT::UTILS::BeltramiUP( mat));
-    function_grad = Teuchos::rcp(new DRT::UTILS::BeltramiGradU( mat));
+    function      = Teuchos::rcp(new FLD::BeltramiUP( mat));
+    function_grad = Teuchos::rcp(new FLD::BeltramiGradU( mat));
 
     if(my::nsd_==3)
     {
-      u(0) = function->Evaluate(0,position,t,NULL);
-      u(1) = function->Evaluate(1,position,t,NULL);
-      u(2) = function->Evaluate(2,position,t,NULL);
-      p = function->Evaluate(3,position,t,NULL);
+      u(0) = function->Evaluate(0,position,t);
+      u(1) = function->Evaluate(1,position,t);
+      u(2) = function->Evaluate(2,position,t);
+      p = function->Evaluate(3,position,t);
     }
     else dserror("case 'kimmoin_stat' is a 3D specific case");
 
 
     if(my::nsd_==3)
     {
-      grad_u(0,0) = function_grad->Evaluate(0,position,t,NULL); // u,x
-      grad_u(0,1) = function_grad->Evaluate(1,position,t,NULL); // u,y
-      grad_u(0,2) = function_grad->Evaluate(2,position,t,NULL); // u,z
+      grad_u(0,0) = function_grad->Evaluate(0,position,t); // u,x
+      grad_u(0,1) = function_grad->Evaluate(1,position,t); // u,y
+      grad_u(0,2) = function_grad->Evaluate(2,position,t); // u,z
 
-      grad_u(1,0) = function_grad->Evaluate(3,position,t,NULL); // v,x
-      grad_u(1,1) = function_grad->Evaluate(4,position,t,NULL); // v,y
-      grad_u(1,2) = function_grad->Evaluate(5,position,t,NULL); // v,z
+      grad_u(1,0) = function_grad->Evaluate(3,position,t); // v,x
+      grad_u(1,1) = function_grad->Evaluate(4,position,t); // v,y
+      grad_u(1,2) = function_grad->Evaluate(5,position,t); // v,z
 
-      grad_u(2,0) = function_grad->Evaluate(6,position,t,NULL); // w,x
-      grad_u(2,1) = function_grad->Evaluate(7,position,t,NULL); // w,y
-      grad_u(2,2) = function_grad->Evaluate(8,position,t,NULL); // w,z
+      grad_u(2,0) = function_grad->Evaluate(6,position,t); // w,x
+      grad_u(2,1) = function_grad->Evaluate(7,position,t); // w,y
+      grad_u(2,2) = function_grad->Evaluate(8,position,t); // w,z
     }
     else dserror("case 'kimmoin_stat' is a 3D specific case");
   }
@@ -541,32 +542,32 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
       is_stationary = false;
     }
 
-    function      = Teuchos::rcp(new DRT::UTILS::KimMoinUP( mat, is_stationary));
-    function_grad = Teuchos::rcp(new DRT::UTILS::KimMoinGradU( mat, is_stationary));
+    function      = Teuchos::rcp(new FLD::KimMoinUP( mat, is_stationary));
+    function_grad = Teuchos::rcp(new FLD::KimMoinGradU( mat, is_stationary));
 
     if(my::nsd_==3)
     {
-      u(0) = function->Evaluate(0,position,t,NULL);
-      u(1) = function->Evaluate(1,position,t,NULL);
-      u(2) = function->Evaluate(2,position,t,NULL);
-      p = function->Evaluate(3,position,t,NULL);
+      u(0) = function->Evaluate(0,position,t);
+      u(1) = function->Evaluate(1,position,t);
+      u(2) = function->Evaluate(2,position,t);
+      p = function->Evaluate(3,position,t);
     }
     else dserror("case 'kimmoin_stat' is a 3D specific case");
 
 
     if(my::nsd_==3)
     {
-      grad_u(0,0) = function_grad->Evaluate(0,position,t,NULL); // u,x
-      grad_u(0,1) = function_grad->Evaluate(1,position,t,NULL); // u,y
-      grad_u(0,2) = function_grad->Evaluate(2,position,t,NULL); // u,z
+      grad_u(0,0) = function_grad->Evaluate(0,position,t); // u,x
+      grad_u(0,1) = function_grad->Evaluate(1,position,t); // u,y
+      grad_u(0,2) = function_grad->Evaluate(2,position,t); // u,z
 
-      grad_u(1,0) = function_grad->Evaluate(3,position,t,NULL); // v,x
-      grad_u(1,1) = function_grad->Evaluate(4,position,t,NULL); // v,y
-      grad_u(1,2) = function_grad->Evaluate(5,position,t,NULL); // v,z
+      grad_u(1,0) = function_grad->Evaluate(3,position,t); // v,x
+      grad_u(1,1) = function_grad->Evaluate(4,position,t); // v,y
+      grad_u(1,2) = function_grad->Evaluate(5,position,t); // v,z
 
-      grad_u(2,0) = function_grad->Evaluate(6,position,t,NULL); // w,x
-      grad_u(2,1) = function_grad->Evaluate(7,position,t,NULL); // w,y
-      grad_u(2,2) = function_grad->Evaluate(8,position,t,NULL); // w,z
+      grad_u(2,0) = function_grad->Evaluate(6,position,t); // w,x
+      grad_u(2,1) = function_grad->Evaluate(7,position,t); // w,y
+      grad_u(2,2) = function_grad->Evaluate(8,position,t); // w,z
     }
     else dserror("case 'kimmoin_stat' is a 3D specific case");
   }
@@ -653,8 +654,8 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
 
     if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and position[1] < position[0])
     {
-      const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,t,NULL);
-      const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,t,NULL);
+      const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,t);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,t);
       u(0) = u_exact_x;
       u(1) = u_exact_y;
     }
@@ -684,18 +685,18 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
 
     if(my::nsd_ == 2)
     {
-      const double u_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(0,position,t,NULL);
-      const double u_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(1,position,t,NULL);
-      const double p_exact   = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(2,position,t,NULL);
+      const double u_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(0,position,t);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(1,position,t);
+      const double p_exact   = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(2,position,t);
 
       u(0) = u_exact_x;
       u(1) = u_exact_y;
       p    = p_exact;
 
 
-      std::vector<double> uder_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(0,position,t,NULL);
-      std::vector<double> uder_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(1,position,t,NULL);
-      //std::vector<double> pder_exact   = DRT::Problem::Instance()->Funct(func_no-1).FctDer(2,position,t,1,NULL);
+      std::vector<double> uder_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).EvaluateSpatialDerivative(0,position,t);
+      std::vector<double> uder_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).EvaluateSpatialDerivative(1,position,t);
+      //std::vector<double> pder_exact   = DRT::Problem::Instance()->Funct(func_no-1).EvaluateSpatialDerivative(2,position,t,1);
 
       if(uder_exact_x.size())
       {
@@ -712,19 +713,19 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     }
     else if(my::nsd_==3)
     {
-      const double u_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(0,position,t,NULL);
-      const double u_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(1,position,t,NULL);
-      const double u_exact_z = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(2,position,t,NULL);
-      const double p_exact   = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(3,position,t,NULL);
+      const double u_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(0,position,t);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(1,position,t);
+      const double u_exact_z = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(2,position,t);
+      const double p_exact   = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(3,position,t);
 
       u(0) = u_exact_x;
       u(1) = u_exact_y;
       u(2) = u_exact_z;
       p    = p_exact;
 
-      std::vector<double> uder_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(0,position,t,NULL);
-      std::vector<double> uder_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(1,position,t,NULL);
-      std::vector<double> uder_exact_z = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(2,position,t,NULL);
+      std::vector<double> uder_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).EvaluateSpatialDerivative(0,position,t);
+      std::vector<double> uder_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).EvaluateSpatialDerivative(1,position,t);
+      std::vector<double> uder_exact_z = DRT::Problem::Instance()->Funct(calcerrfunctno-1).EvaluateSpatialDerivative(2,position,t);
 
       if(uder_exact_x.size())
       {

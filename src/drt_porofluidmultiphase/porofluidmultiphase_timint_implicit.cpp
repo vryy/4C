@@ -1333,7 +1333,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
         const int dofgid = nodedofset[k];
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
-        double initialval = DRT::Problem::Instance() ->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
+        double initialval = DRT::Problem::Instance() ->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_);
         int err = phin_->ReplaceMyValues(1,&initialval,&doflid);
         if (err != 0) dserror("dof not on proc");
       }

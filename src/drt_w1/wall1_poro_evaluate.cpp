@@ -18,7 +18,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
@@ -103,7 +102,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
 //
 //      }
 //      const double* coordgpref = &xrefe[0];
-//      double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
+//      double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time);
 //      params.set<double>("scalar",functfac);
 
 //      Teuchos::RCP<std::vector<double> > scalar = Teuchos::rcp( new std::vector<double>(4,0.0) );

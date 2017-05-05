@@ -837,24 +837,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::BodyForce(
     // (SPATIAL) FUNCTION BUSINESS
     const std::vector<int>* funct = myneumcond[0]->Get<std::vector<int> >("funct");
 
-    // check for potential time curve
-    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-
-    // initialization of time-curve factor
-    double curvefac(0.0);
-
-    // compute potential time curve or set time-curve factor to one
-    if (curvenum >= 0)
-    {
-      // time factor (negative time indicating error)
-      if (scatraparatimint_->Time() >= 0.0)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(scatraparatimint_->Time());
-      else dserror("Negative time in bodyforce calculation: time = %f",scatraparatimint_->Time());
-    }
-    else curvefac = 1.0;
-
     // get values and switches from the condition
     const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
     const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
@@ -869,10 +851,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::BodyForce(
         const double functfac =
             (functnum > 0) ?
                 DRT::Problem::Instance()->Funct(functnum - 1).Evaluate(idof,
-                    (ele->Nodes()[jnode])->X(), scatraparatimint_->Time(),
-                    NULL) :
+                    (ele->Nodes()[jnode])->X(), scatraparatimint_->Time()) :
                 1.0;
-        (bodyforce_[idof])(jnode) = (*onoff)[idof] * (*val)[idof] * curvefac * functfac;
+        (bodyforce_[idof])(jnode) = (*onoff)[idof] * (*val)[idof] * functfac;
       }
     }
   }

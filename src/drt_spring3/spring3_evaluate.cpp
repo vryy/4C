@@ -1368,7 +1368,7 @@ inline void DRT::ELEMENTS::Spring3::NodeShift(Teuchos::ParameterList& params,  /
 //           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
 //           *z-surface, the shear has to be substracted from nodal coordinates in that case */
 //          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime && fabs(time-starttime)>dt/1e4)
-//            disp[numdof*i+dbcdispdir] += shearamplitude*DRT::Problem::Instance()->Curve(curvenumber).f(time);
+//            disp[numdof*i+dbcdispdir] += shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
 //        }
 //
 //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
@@ -1379,7 +1379,7 @@ inline void DRT::ELEMENTS::Spring3::NodeShift(Teuchos::ParameterList& params,  /
 //           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
 //           *z-surface, the shear has to be added to nodal coordinates in that case */
 //          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime && fabs(time-starttime)>dt/1e4)
-//            disp[numdof*i+dbcdispdir] -= shearamplitude*DRT::Problem::Instance()->Curve(curvenumber).f(time);
+//            disp[numdof*i+dbcdispdir] -= shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
 //        }
 //      }
 //    }

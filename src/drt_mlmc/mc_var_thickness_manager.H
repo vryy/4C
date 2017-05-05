@@ -1,13 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file mc_var_thickness_manager.H
-\ brief class to modify wall thickness of cardiovascular structures on the fly
+\brief class to modify wall thickness of cardiovascular structures on the fly
 
-<pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            089 - 28915276
-</pre>
+\maintainer Jonas Biehler
+\level 3
 */
 /*----------------------------------------------------------------------------*/
 
@@ -102,7 +99,6 @@ private:
   void AddPointDBCToAleDiscretization(
       const std::map<int, std::vector<double> >& ale_bc_nodes_val,  ///< dbc values
       const std::map<int, std::vector<int> >& ale_bc_nodes_onoff,   ///< dbc on off toggle
-      const std::map<int, std::vector<int> >& ale_bc_nodes_curve,   ///< dbc curves
       const std::map<int, std::vector<int> >& ale_bc_nodes_funct    ///< dbc functions
       );
 
@@ -182,9 +178,6 @@ private:
 
   //! brief value vector for point dbc which contains local mean value of RF
   std::map<int, std::vector<double> > my_uncertain_nodes_dbc_val_;
-
-  //! brief curve vector for point dbc
-  std::map<int, std::vector<int> > my_uncertain_nodes_dbc_curve_;
 
   //! brief funct vector for point dbc
   std::map<int, std::vector<int> > my_uncertain_nodes_dbc_funct_;

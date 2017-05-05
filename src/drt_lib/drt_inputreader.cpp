@@ -1139,16 +1139,6 @@ void DatFileReader::ReadDat()
   // the following section names are always regarded as valid
   knownsections_["--END"] = true;
   knownsections_["--TITLE"] = true;
-  knownsections_["--CURVE1"] = true;
-  knownsections_["--CURVE2"] = true;
-  knownsections_["--CURVE3"] = true;
-  knownsections_["--CURVE4"] = true;
-  knownsections_["--CURVE5"] = true;
-  knownsections_["--CURVE6"] = true;
-  knownsections_["--CURVE7"] = true;
-  knownsections_["--CURVE8"] = true;
-  knownsections_["--CURVE9"] = true;
-  knownsections_["--CURVE10"] = true;
   knownsections_["--FUNCT1"] = true;
   knownsections_["--FUNCT2"] = true;
   knownsections_["--FUNCT3"] = true;
@@ -1158,7 +1148,16 @@ void DatFileReader::ReadDat()
   knownsections_["--FUNCT7"] = true;
   knownsections_["--FUNCT8"] = true;
   knownsections_["--FUNCT9"] = true;
-  knownsections_["--FUNCT10"] = true;
+  knownsections_["--FUNCT11"] = true;
+  knownsections_["--FUNCT12"] = true;
+  knownsections_["--FUNCT13"] = true;
+  knownsections_["--FUNCT14"] = true;
+  knownsections_["--FUNCT15"] = true;
+  knownsections_["--FUNCT16"] = true;
+  knownsections_["--FUNCT17"] = true;
+  knownsections_["--FUNCT18"] = true;
+  knownsections_["--FUNCT19"] = true;
+  knownsections_["--FUNCT20"] = true;
 
 }
 

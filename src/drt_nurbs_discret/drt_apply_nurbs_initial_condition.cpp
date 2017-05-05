@@ -359,7 +359,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
             for(int rr=0;rr<dofblock;++rr)
             {
               // important: position has to have always three components!!
-              initialval(rr)=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
+              initialval(rr)=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0);
             }
 
 
@@ -489,7 +489,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
             for(int rr=0;rr<dofblock;++rr)
             {
               // important: position has to have always three components!!
-              initialval(rr)=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0,NULL);
+              initialval(rr)=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(rr,position.Values(),0.0);
             }
 
             // check for degenerated elements

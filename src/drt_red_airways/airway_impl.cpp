@@ -22,7 +22,6 @@
 #include "../drt_mat/air_0d_O2_saturation.H"
 #include "../drt_mat/hemoglobin_0d_O2_saturation.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1005,7 +1004,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           int curvenum = -1;
           if (curve) curvenum = (*curve)[0];
           if (curvenum>=0 )
-            curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+            curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
           BCin = (*vals)[0]*curvefac;
 
@@ -1018,14 +1017,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           double functionfac = 0.0;
           if(functnum>0)
           {
-            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
+            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time);
           }
           // get curve2
           int curve2num = -1;
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num>=0 )
-            curve2fac = DRT::Problem::Instance()->Curve(curve2num).f(time);
+            curve2fac = DRT::Problem::Instance()->Funct(curve2num).EvaluateTime(time);
 
           BCin += functionfac*curve2fac;
 
@@ -1133,7 +1132,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           int curvenum = -1;
           if (curve) curvenum = (*curve)[phase_number];
           if (curvenum>=0 )
-            curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+            curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
           BCin = (*vals)[phase_number]*curvefac;
 
@@ -1145,7 +1144,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             if (fmod(time,period) < period1)
             {
               double Vnp = BCin;
-              double Vn = (*vals)[phase_number]*DRT::Problem::Instance()->Curve(curvenum).f(time-dt);
+              double Vn = (*vals)[phase_number]*DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time-dt);
               BCin = (Vnp-Vn)/dt;
               Bc = "flow";
             }
@@ -1825,7 +1824,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       if (curvenum>=0 )
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
       scnp = (*vals)[0]*curvefac;
 
@@ -1837,7 +1836,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway*                 
       double functionfac = 0.0;
       if(functnum>0)
       {
-        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
+        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time);
       }
       scnp += functionfac;
 
@@ -2542,7 +2541,7 @@ bool DRT::ELEMENTS::AirwayImpl<distype>::GetCurveValAtCond(
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       if (curvenum>=0 )
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
       bcVal = (*vals)[0]*curvefac;
 
@@ -2555,14 +2554,14 @@ bool DRT::ELEMENTS::AirwayImpl<distype>::GetCurveValAtCond(
       double functionfac = 0.0;
       if(functnum>0)
       {
-        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,node->X(),time,NULL);
+        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,node->X(),time);
       }
       // get curve2
       int curve2num = -1;
       double curve2fac = 1.0;
       if (curve) curve2num = (*curve)[1];
       if (curve2num>=0 )
-        curve2fac = DRT::Problem::Instance()->Curve(curve2num).f(time);
+        curve2fac = DRT::Problem::Instance()->Funct(curve2num).EvaluateTime(time);
 
       bcVal += functionfac*curve2fac;
 

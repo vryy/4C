@@ -13,7 +13,6 @@
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
 #include "drt_dserror.H"
-#include "drt_timecurve.H"
 #include "drt_function.H"
 #include "drt_parobjectfactory.H"
 #include "drt_elements_paramsinterface.H"
@@ -179,17 +178,12 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   bool assemblemat = (systemmatrix != NULL);
 
   // get the current time
-  bool usetime = true;
   double time = params.get("total time",-1.0);
-  if (time<0.0)
+
+  if (params.isParameter("interface"))
   {
-    if (params.isParameter("interface"))
-    {
-      time = params.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface")->
-          GetTotalTime();
-    }
-    else
-      usetime = false;
+    time = params.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface")->
+        GetTotalTime();
   }
 
   std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
@@ -207,7 +201,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
     const std::vector<int>* nodeids = cond.Nodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
-    const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+    const std::vector<int>*    tmp_funct  = cond.Get<std::vector<int> >("funct");
     const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
     const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
 
@@ -227,13 +221,13 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
         double value  = (*val)[j];
 
         // factor given by temporal curve
-        int curvenum = -1;
-        double curvefac = 1.0;
-        if (curve) curvenum = (*curve)[j];
-        if (curvenum >= 0 && usetime)
-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        int functnum = -1;
+        double functfac = 1.0;
+        if (tmp_funct) functnum = (*tmp_funct)[j];
+        if (functnum > 0)
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
 
-        value *= curvefac;
+        value *= functfac;
         const int lid = systemvector.Map().LID(gid);
         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
         systemvector[lid] += value;
@@ -399,9 +393,7 @@ void DRT::Discretization::EvaluateCondition
   int col = strategy.SecondDofSet();
 
   // get the current time
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   Element::LocationArray la(dofsets_.size());
 
@@ -429,8 +421,8 @@ void DRT::Discretization::EvaluateCondition
         int curvenum = -1;
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
-        if (curvenum>=0 && usetime)
-          curvefac = Problem::Instance()->Curve(curvenum).f(time);
+        if (curvenum>=0)
+          curvefac = Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
         // Get ConditionID of current condition if defined and write value in parameter list
         const std::vector<int>*    CondIDVec  = cond.Get<std::vector<int> >("ConditionID");

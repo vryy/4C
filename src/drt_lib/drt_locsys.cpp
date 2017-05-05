@@ -29,7 +29,7 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::DiscretizationInterface& discret)
     : discret_(discret),
       dim_(-1),
       numlocsys_(-1),
-      locsyscurvefunct_(false)
+      locsysfunct_(false)
 {
   // get problem dimension (2D or 3D) and store into dim_
   dim_ = DRT::Problem::Instance()->NDim();
@@ -90,9 +90,9 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   //   by means of there nodal DoFs. If further element types are integrated into locsys
   //   more elaborate criteria might be useful.
 
-  //If we have no time curves or functions in the locsys conditions the whole Setup method is only
+  //If we have no functions in the locsys conditions the whole Setup method is only
   //conducted once in the constructor (where time is set to -1.0).
-  if (time>=0.0 and locsyscurvefunct_==false)
+  if (time>=0.0 and locsysfunct_==false)
     return;
 
   // get dof row map of discretization
@@ -124,15 +124,13 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       typelocsys_[i] = DRT::Condition::VolumeLocsys;
 
       const std::vector<double>* rotangle = currlocsys->Get<std::vector<double> >("rotangle");
-      const std::vector<int>*    curve  = currlocsys->Get<std::vector<int> >("curve");
       const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
       const std::vector<int>*    useUpdatedNodePos  = currlocsys->Get<std::vector<int> >("useupdatednodepos");
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      //Check, if we have time dependent locsys conditions (through curves or functions)
-      if (((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0) or
-          ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
-        locsyscurvefunct_=true;
+      //Check, if we have time dependent locsys conditions (through functions)
+      if (((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
+        locsysfunct_=true;
 
       //Here we have the convention that 2D problems "live" in the global xy-plane.
       if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
@@ -148,7 +146,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
       //Each component j of the pseudo rotation vector that rotates the global xyz system onto the local system
       //assigned to each node consists of a constant, a time dependent and spatially variable part:
-      //currotangle_j(x,t) = rotangle_j * curve_j(t) * funct_j(x)
+      //currotangle_j(x,t) = rotangle_j * funct_j(t,x)
       LINALG::Matrix<3,1> currotangle;
       currotangle.Clear();
 
@@ -157,16 +155,9 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
         bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
         if (!havenode) continue;
 
-        //Weights of rotations vector due to time curve and spatial function
+        //Weights of rotations vector due to temporal and spatial function
         for (int j=0;j<3;j++)
         {
-          // factor given by time curve
-          std::vector<double> curvefac(1,1.0);
-          int curvenum = (*curve)[j];
-          if (curvenum>=0)
-          {
-            curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
-          }
           // factor given by spatial function
           double functfac = 1.0;
           if ((*funct)[j]>0)
@@ -193,13 +184,13 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
               }
 
               // Evaluate function with current node position
-              functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, &currPos[0], 0.0, &discret_);
+              functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, &currPos[0], 0.0);
             } else {
               // Evaluate function with reference node position
-              functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, node->X(), 0.0, &discret_);
+              functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, node->X(), 0.0);
             }
           }
-          currotangle(j)=(*rotangle)[j]*curvefac[0]*functfac;
+          currotangle(j)=(*rotangle)[j]*functfac;
         }
 
         nodalrotvectors_[(*nodes)[k]]=currotangle;
@@ -230,17 +221,15 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       typelocsys_[i] = DRT::Condition::SurfaceLocsys;
 
       const std::vector<double>* rotangle = currlocsys->Get<std::vector<double> >("rotangle");
-      const std::vector<int>*    curve  = currlocsys->Get<std::vector<int> >("curve");
       const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
       const std::vector<int>*    useUpdatedNodePos  = currlocsys->Get<std::vector<int> >("useupdatednodepos");
       const std::vector<int>*    useConsistentNodeNormal  = currlocsys->Get<std::vector<int> >("useconsistentnodenormal");
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      //Check, if we have time dependent locsys conditions (through curves or functions)
-      if (((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0) or
-          ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0) or
+      //Check, if we have time dependent locsys conditions (through functions)
+      if (((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0) or
           (((*useConsistentNodeNormal)[0] == 1) and ((*useUpdatedNodePos)[0] == 1)))
-        locsyscurvefunct_=true;
+        locsysfunct_=true;
 
       //Here we have the convention that 2D problems "live" in the global xy-plane.
       if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
@@ -259,7 +248,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
         //Each component j of the pseudo rotation vector that rotates the global xyz system onto the local system
         //assigned to each node consists of a constant, a time dependent and spatially variable part:
-        //currotangle_j(x,t) = rotangle_j * curve_j(t) * funct_j(x)
+        //currotangle_j(x,t) = rotangle_j * funct_j(t,x)
         LINALG::Matrix<3,1> currotangle;
         currotangle.Clear();
 
@@ -268,16 +257,9 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
           bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
           if (!havenode) continue;
 
-          //Weights of rotations vector due to time curve and spatial function
+          //Weights of rotations vector due to temporal and spatial function
           for (int j=0;j<3;j++)
           {
-            // factor given by time curve
-            std::vector<double> curvefac(1,1.0);
-            int curvenum = (*curve)[j];
-            if (curvenum>=0)
-            {
-              curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
-            }
             // factor given by spatial function
             double functfac = 1.0;
             if ((*funct)[j]>0)
@@ -304,13 +286,13 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
                 }
 
                 // Evaluate function with current node position
-                functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, &currPos[0], 0.0, &discret_);
+                functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, &currPos[0], 0.0);
               } else {
                 // Evaluate function with reference node position
-                functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, node->X(), 0.0, &discret_);
+                functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, node->X(), 0.0);
               }
             }
-            currotangle(j)=(*rotangle)[j]*curvefac[0]*functfac;
+            currotangle(j)=(*rotangle)[j]*functfac;
           }
 
           nodalrotvectors_[(*nodes)[k]]=currotangle;
@@ -343,17 +325,15 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       typelocsys_[i] = DRT::Condition::LineLocsys;
 
       const std::vector<double>* rotangle = currlocsys->Get<std::vector<double> >("rotangle");
-      const std::vector<int>*    curve  = currlocsys->Get<std::vector<int> >("curve");
       const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
       const std::vector<int>*    useUpdatedNodePos  = currlocsys->Get<std::vector<int> >("useupdatednodepos");
       const std::vector<int>*    useConsistentNodeNormal  = currlocsys->Get<std::vector<int> >("useconsistentnodenormal");
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      //Check, if we have time dependent locsys conditions (through curves or functions)
-      if (((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0) or
-          ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0) or
+      //Check, if we have time dependent locsys conditions (through functions)
+      if (((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0) or
           (((*useConsistentNodeNormal)[0] == 1) and ((*useUpdatedNodePos)[0] == 1)))
-        locsyscurvefunct_=true;
+        locsysfunct_=true;
 
       //Here we have the convention that 2D problems "live" in the global xy-plane.
       if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
@@ -372,7 +352,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
         //Each component j of the pseudo rotation vector that rotates the global xyz system onto the local system
         //assigned to each node consists of a constant, a time dependent and spatially variable part:
-        //currotangle_j(x,t) = rotangle_j * curve_j(t) * funct_j(x)
+        //currotangle_j(x,t) = rotangle_j * funct_j(t,x)
         LINALG::Matrix<3,1> currotangle;
         currotangle.Clear();
 
@@ -381,16 +361,9 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
           bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
           if (!havenode) continue;
 
-          //Weights of rotations vector due to time curve and spatial function
+          //Weights of rotations vector due to temporal and spatial function
           for (int j=0;j<3;j++)
           {
-            // factor given by time curve
-            std::vector<double> curvefac(1,1.0);
-            int curvenum = (*curve)[j];
-            if (curvenum>=0)
-            {
-              curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
-            }
             // factor given by spatial function
             double functfac = 1.0;
             if ((*funct)[j]>0)
@@ -417,13 +390,13 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
                 }
 
                 // Evaluate function with current node position
-                functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, &currPos[0], 0.0, &discret_);
+                functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, &currPos[0], 0.0);
               } else {
                 // Evaluate function with reference node position
-                functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, node->X(), 0.0, &discret_);
+                functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, node->X(), 0.0);
               }
             }
-            currotangle(j)=(*rotangle)[j]*curvefac[0]*functfac;
+            currotangle(j)=(*rotangle)[j]*functfac;
           }
 
           nodalrotvectors_[(*nodes)[k]]=currotangle;
@@ -456,15 +429,13 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       typelocsys_[i] = DRT::Condition::PointLocsys;
 
       const std::vector<double>* rotangle = currlocsys->Get<std::vector<double> >("rotangle");
-      const std::vector<int>*    curve  = currlocsys->Get<std::vector<int> >("curve");
       const std::vector<int>*    funct  = currlocsys->Get<std::vector<int> >("funct");
       const std::vector<int>*    useUpdatedNodePos  = currlocsys->Get<std::vector<int> >("useupdatednodepos");
       const std::vector<int>*    nodes = currlocsys->Nodes();
 
-      //Check, if we have time dependent locsys conditions (through curves or functions)
-      if (((*curve)[0]>=0 or (*curve)[1]>=0 or (*curve)[2]>=0) or
-          ((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
-        locsyscurvefunct_=true;
+      //Check, if we have time dependent locsys conditions (through functions)
+      if (((*funct)[0]>0 or (*funct)[1]>0 or (*funct)[2]>0))
+        locsysfunct_=true;
 
       //Here we have the convention that 2D problems "live" in the global xy-plane.
       if (Dim()==2 and ((*rotangle)[0]!=0 or (*rotangle)[1]!=0))
@@ -480,7 +451,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
       //Each component j of the pseudo rotation vector that rotates the global xyz system onto the local system
       //assigned to each node consists of a constant, a time dependent and spatially variable part:
-      //currotangle_j(x,t) = rotangle_j * curve_j(t) * funct_j(x)
+      //currotangle_j(x,t) = rotangle_j * funct_j(t,x)
       LINALG::Matrix<3,1> currotangle(true);
 
       for (int k=0;k<(int)nodes->size();++k)
@@ -488,16 +459,9 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
         bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
         if (!havenode) continue;
 
-        //Weights of rotations vector due to time curve and spatial function
+        //Weights of rotations vector due to temporal and spatial function
         for (int j=0;j<3;j++)
         {
-          // factor given by time curve
-          std::vector<double> curvefac(1,1.0);
-          int curvenum = (*curve)[j];
-          if (curvenum>=0)
-          {
-            curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,0);
-          }
           // factor given by spatial function
           double functfac = 1.0;
           if ((*funct)[j]>0)
@@ -524,13 +488,13 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
               }
 
               // Evaluate function with current node position
-              functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, &currPos[0], 0.0, &discret_);
+              functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, &currPos[0], 0.0);
             } else {
               // Evaluate function with reference node position
-              functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, node->X(), 0.0, &discret_);
+              functfac=(DRT::Problem::Instance()->Funct((*funct)[j]-1)).Evaluate(j, node->X(), 0.0);
             }
           }
-          currotangle(j)=(*rotangle)[j]*curvefac[0]*functfac;
+          currotangle(j)=(*rotangle)[j]*functfac;
         }
 
         nodalrotvectors_[(*nodes)[k]]=currotangle;

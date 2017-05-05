@@ -141,7 +141,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
   // access parameters of the condition
   const int                 kinetics = cond->GetInt("kinetic model");
   double                    pot0 = cond->GetDouble("pot");
-  const int                 curvenum = cond->GetInt("curve");
+  const int                 curvenum = cond->GetInt("funct");
   const int                 nume = cond->GetInt("e-");
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman condition)
   // but the electrode status is evaluated
@@ -185,7 +185,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
   // this feature can be also used for stationary "pseudo time loops"
   if (curvenum>=0)
   {
-    const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    const double curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
   }
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
 
     // access parameters of the condition
     double       pot0 = cond->GetDouble("pot");
-    const int    curvenum = cond->GetInt("curve");
+    const int    curvenum = cond->GetInt("funct");
     const int    nume = cond->GetInt("e-");
     const double e0 = cond->GetDouble("e0");
     const double c0 = cond->GetDouble("c0");
@@ -316,7 +316,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
 
     if (curvenum>=0)
     {
-      const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+      const double curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
       // adjust potential at metal side accordingly
       pot0 *= curvefac;
     }

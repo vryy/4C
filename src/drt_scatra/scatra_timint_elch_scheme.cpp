@@ -305,7 +305,7 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
   for(int icond = 0; icond < numcond; icond++)
   {
     double pot0np =  cond[icond]->GetDouble("pot");
-    const int curvenum =   cond[icond]->GetInt("curve");
+    const int functnum =   cond[icond]->GetInt("funct");
     double dlcap = cond[icond]->GetDouble("dl_spec_cap");
 
     if (init)
@@ -323,11 +323,12 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
     else
     {
       // compute time derivative of applied potential
-      if (curvenum>=0)
+      if (functnum>=0)
       {
-        const double curvefac = problem_->Curve(curvenum).f(time_);
+        const double functfac = problem_->Funct(functnum).EvaluateTime(time_);
+
         // adjust potential at metal side accordingly
-        pot0np *= curvefac;
+        pot0np *= functfac;
       }
       // compute time derivative of applied potential pot0
       // pot0dt(n+1) = (pot0(n+1)-pot0(n)) / (theta*dt) + (1-(1/theta))*pot0dt(n)
@@ -933,7 +934,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
   for(int icond = 0; icond < numcond; icond++)
   {
     double pot0np =  cond[icond]->GetDouble("pot");
-    const int curvenum =   cond[icond]->GetInt("curve");
+    const int functnum =   cond[icond]->GetInt("funct");
     double dlcap = cond[icond]->GetDouble("dl_spec_cap");
 
     if (init)
@@ -958,11 +959,12 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
     {
       // these values are not used without double layer charging
       // compute time derivative of applied potential
-      if (curvenum>=0)
+      if (functnum>=0)
       {
-        const double curvefac = problem_->Curve(curvenum).f(time_);
+        const double functfac = problem_->Funct(functnum).EvaluateTime(time_);
         // adjust potential at metal side accordingly
-        pot0np *= curvefac;
+
+        pot0np *= functfac;
       }
       // compute time derivative of applied potential pot0
       // pot0dt(n+1) = (pot0(n+1)-pot0(n)) / (theta*dt) + (1-(1/theta))*pot0dt(n)

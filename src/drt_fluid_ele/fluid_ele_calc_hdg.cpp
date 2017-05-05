@@ -524,8 +524,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(
             continue;
           const int funct_num = (*functno)[d];
           if (funct_num > 0)
-            u(d) = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(d, xyz.A(), *time,
-                                                                         &discretization);
+            u(d) = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(d, xyz.A(), *time);
         }
       }
 
@@ -1099,8 +1098,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
   case INPAR::FLUID::initfield_disturbed_field_from_function:
   {
     for(unsigned int index=0; index<nsd_; ++index)
-      u(index) = DRT::Problem::Instance()->Funct(startfunc-1).Evaluate(index,xyz.A(),0,NULL);
-    p = DRT::Problem::Instance()->Funct(startfunc-1).Evaluate(nsd_,xyz.A(),0,NULL);
+      u(index) = DRT::Problem::Instance()->Funct(startfunc-1).Evaluate(index,xyz.A(),0);
+    p = DRT::Problem::Instance()->Funct(startfunc-1).Evaluate(nsd_,xyz.A(),0);
   }
   break;
 

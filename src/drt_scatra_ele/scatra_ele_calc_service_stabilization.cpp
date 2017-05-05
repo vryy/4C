@@ -953,25 +953,25 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocity(
     const std::string* condtype = myfluidneumcond[0]->Get<std::string>("type");
 
     // find out whether we will use a time curve
-    const std::vector<int>* curve  = myfluidneumcond[0]->Get<std::vector<int> >("curve");
-    int curvenum = -1;
+    const std::vector<int>* funct  = myfluidneumcond[0]->Get<std::vector<int> >("funct");
+    int functnum = -1;
 
-    if (curve) curvenum = (*curve)[0];
+    if (funct) functnum = (*funct)[0];
 
     // initialisation
-    double curvefac(0.0);
+    double functfac(0.0);
 
-    if (curvenum >= 0) // yes, we have a timecurve
+    if (functnum >= 0) // yes, we have a timecurve
     {
       // time factor for the intermediate step
       // (negative time value indicates error)
       if(scatraparatimint_->Time() >= 0.0)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(scatraparatimint_->Time());
+        functfac = DRT::Problem::Instance()->Funct(functnum).EvaluateTime(scatraparatimint_->Time());
       else
         dserror("Negative time value in body force calculation: time = %f",scatraparatimint_->Time());
     }
     else // we do not have a timecurve: timefactors are constant equal 1
-      curvefac = 1.0;
+      functfac = 1.0;
 
     // get values and switches from the condition
     const std::vector<int>*    onoff = myfluidneumcond[0]->Get<std::vector<int> >   ("onoff");
@@ -984,11 +984,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocity(
       {
         // get usual body force
         if (*condtype == "neum_dead" or *condtype == "neum_live")
-          nodebodyforce(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
+          nodebodyforce(isd,jnode) = (*onoff)[isd]*(*val)[isd]*functfac;
         else nodebodyforce.Clear();
         // get prescribed pressure gradient
         if (*condtype == "neum_pgrad")
-          nodepressuregrad(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
+          nodepressuregrad(isd,jnode) = (*onoff)[isd]*(*val)[isd]*functfac;
         else nodepressuregrad.Clear();
       }
     }

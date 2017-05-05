@@ -618,7 +618,7 @@ void MAT::PAR::REACTIONCOUPLING::ByFunction::CalcReaBodyForceDeriv(
   // copy phi vector in different format to be read by the function
   BuildPhiVectorForFunction(phinp,numscal);
   // evaluate the derivatives of the reaction term
-  std::vector<double> myderivs = Function(round(couprole[k])-1).FctDer(0,variables_,constants);
+  std::vector<double> myderivs = Function(round(couprole[k])-1).EvaluateDerivative(0,variables_,constants);
 
   // add it to derivs
   for (int toderive=0; toderive<numscal ;toderive++)

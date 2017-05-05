@@ -4,12 +4,9 @@
 
   \brief Internal implementation of meshfree scalar transport cells
 
-  <pre>
-  Maintainer: Keijo Nissen
-  nissen@lnm.mw.tum.de
-  http://www.lnm.mw.tum.de
-  089 - 289-15253
-  </pre>
+  \maintainer Keijo Nissen
+
+  \level 3
 */
 /*----------------------------------------------------------------------*/
 
@@ -612,7 +609,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::BodyForce(
   case 3: DRT::UTILS::FindElementConditions(ele, "VolumeNeumann" , myneumcond); break;
   case 2: DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond); break;
   case 1: DRT::UTILS::FindElementConditions(ele, "LineNeumann"   , myneumcond); break;
-  default: dserror("Illegal number of spatial dimensions: %d",nsd_);
+  default: dserror("Illegal number of spatial dimensions: %d",nsd_); break;
   }
 
   if (myneumcond.size()>1)
@@ -621,22 +618,22 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::BodyForce(
   if (myneumcond.size()==1)
   {
     // check for potential time curve
-    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
+    const std::vector<int>* tmp_funct  = myneumcond[0]->Get<std::vector<int> >("funct");
+    int functnum = -1;
+    if (tmp_funct) functnum = (*tmp_funct)[0];
 
     // initialization of time-curve factor
-    double curvefac(0.0);
+    double functfac(0.0);
 
     // compute potential time curve or set time-curve factor to one
-    if (curvenum >= 0)
+    if (functnum > 0)
     {
       // time factor (negative time indicating error)
       if (time >= 0.0)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        functfac = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
       else dserror("Negative time in bodyforce calculation: time = %f",time);
     }
-    else curvefac = 1.0;
+    else functfac = 1.0;
 
     // get values and switches from the condition
     const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
@@ -647,7 +644,7 @@ void DRT::ELEMENTS::MeshfreeScaTraCellCalc<distype>::BodyForce(
     {
       for (int jnode=0; jnode<nen_; jnode++)
       {
-        (bodyforce_[idof])(jnode) = (*onoff)[idof]*(*val)[idof]*curvefac;
+        (bodyforce_[idof])(jnode) = (*onoff)[idof]*(*val)[idof]*functfac;
       }
     }
   }

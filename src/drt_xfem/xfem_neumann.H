@@ -62,7 +62,6 @@ void EvaluateNeumann(  Teuchos::ParameterList &             params,
 
 /// evaluate standard Neumann boundary conditions
 void EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* >&  condition,
-                              bool                                          usetime,
                               const double                                  time,
                               bool                                          assemblemat,
                               Teuchos::ParameterList &                      params,

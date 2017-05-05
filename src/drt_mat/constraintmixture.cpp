@@ -979,7 +979,7 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
       double curvefac = 1.0;
       // numbering starts from zero here, thus use curvenum-1
       if (curvenum)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum-1).f(time);
+        curvefac = DRT::Problem::Instance()->Funct(curvenum-1).EvaluateTime(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
         dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);
       if (params_->numhom_ == 1)
@@ -1452,7 +1452,7 @@ void MAT::ConstraintMixture::EvaluateElastin
     double curvefac = 1.0;
     // numbering starts from zero here, thus use curvenum-1
     if (curvenum)
-      curvefac = DRT::Problem::Instance()->Curve(curvenum-1).f(time);
+      curvefac = DRT::Problem::Instance()->Funct(curvenum-1).EvaluateTime(time);
     if (curvefac > 1.0 || curvefac < 0.0)
       dserror("correct your time curve for prestretch, just values in [0,1] are allowed %f", curvefac);
     prestretchelastin = 1.0 + (params_->prestretchelastin_ - 1.0)*curvefac;

@@ -3,12 +3,9 @@
 
 \brief optimizer of the topology optimization
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
+\maintainer Martin Winklmaier
+
+\level 3
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -312,7 +309,7 @@ void TOPOPT::Optimizer::SetInitialDensityField(
       case INPAR::TOPOPT::initdensfield_field_by_function:
       {
         // evaluate component k of spatial function
-        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0,NULL); // scalar
+        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,lnode->X(),0.0); // scalar
         int err = dens_->ReplaceMyValues(1,&initialval,&lnodeid); // lnodeid = ldofid
         if (err != 0) dserror("dof not on proc");
         break;
@@ -408,7 +405,7 @@ void TOPOPT::Optimizer::SetInitialDensityField(
       case INPAR::TOPOPT::initdensfield_field_by_function:
       {
         // evaluate component k of spatial function
-        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,coords.A(),0.0,NULL); // scalar
+        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(0,coords.A(),0.0); // scalar
         int err = dens_->ReplaceMyValues(1,&initialval,&leleid); // lnodeid = ldofid
         if (err != 0) dserror("dof not on proc");
         break;
@@ -916,7 +913,3 @@ void TOPOPT::Optimizer::ReadRestart(const int step)
 
   return;
 }
-
-
-
-

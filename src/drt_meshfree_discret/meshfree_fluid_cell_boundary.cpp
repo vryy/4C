@@ -4,12 +4,9 @@
 
 \brief fluid cell boundary for meshfree discretisations
 
-<pre>
-Maintainer: Keijo Nissen
-            nissen@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
-</pre>
+\maintainer Keijo Nissen
+
+\level 3
 
 *---------------------------------------------------------------------------*/
 
@@ -177,5 +174,3 @@ void DRT::ELEMENTS::MeshfreeFluidBoundary::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
-
-

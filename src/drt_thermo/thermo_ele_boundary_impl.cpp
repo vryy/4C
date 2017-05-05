@@ -227,20 +227,20 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // access parameters of the condition
     const std::string* tempstate = cond->Get<std::string>("temperature state");
     double coeff = cond->GetDouble("coeff");
-    const int curvenum = cond->GetInt("curve");
+    const int curvenum = cond->GetInt("funct");
     const double time = params.get<double>("total time");
 
     // get surrounding temperature T_infty from input file
     double surtemp = cond->GetDouble("surtemp");
     // increase the surrounding temperature T_infty step by step
     // can be scaled with a time curve, get time curve number from input file
-    const int surtempcurvenum = cond->GetInt("surtempcurve");
+    const int surtempcurvenum = cond->GetInt("surtempfunct");
 
     // find out whether we shall use a time curve for q^_c and get the factor
     double curvefac = 1.0;
     if (curvenum>=0)
     {
-      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+      curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
     }
     // multiply heat convection coefficient with the timecurve factor
     coeff *= curvefac;
@@ -251,7 +251,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // find out whether we shall use a time curve for T_oo and get the factor
     if (surtempcurvenum>=0)
     {
-      surtempcurvefac = DRT::Problem::Instance()->Curve(surtempcurvenum).f(time);
+      surtempcurvefac = DRT::Problem::Instance()->Funct(surtempcurvenum).EvaluateTime(time);
     }
     // complete surrounding temperatures T_oo: multiply with the timecurve factor
     surtemp *= surtempcurvefac;
@@ -448,20 +448,20 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         // access parameters of the condition
         const std::string* tempstate = cond->Get<std::string>("temperature state");
         double coeff = cond->GetDouble("coeff");
-        const int curvenum = cond->GetInt("curve");
+        const int curvenum = cond->GetInt("funct");
         const double time = params.get<double>("total time");
 
         // get surrounding temperature T_infty from input file
         double surtemp = cond->GetDouble("surtemp");
         // increase the surrounding temperature T_infty step by step
         // can be scaled with a time curve, get time curve number from input file
-        const int surtempcurvenum = cond->GetInt("surtempcurve");
+        const int surtempcurvenum = cond->GetInt("surtempfunct");
 
         // find out whether we shall use a time curve for q^_c and get the factor
         double curvefac = 1.0;
         if (curvenum >= 0)
         {
-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+          curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
         }
         // multiply heat convection coefficient with the timecurve factor
         coeff *= curvefac;
@@ -472,7 +472,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         // find out whether we shall use a time curve for T_oo and get the factor
         if (surtempcurvenum >= 0)
         {
-          surtempcurvefac = DRT::Problem::Instance()->Curve(surtempcurvenum).f(time);
+          surtempcurvefac = DRT::Problem::Instance()->Funct(surtempcurvenum).EvaluateTime(time);
         }
         // complete surrounding temperatures T_oo: multiply with the timecurve factor
         surtemp *= surtempcurvefac;
@@ -629,10 +629,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
 
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time < 0.0) usetime = false;
-
 
   // find out whether we will use a time curve and get the factor
 
@@ -640,7 +637,6 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
   // (assumed to be constant on element boundary)
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
 
   // integration loop
@@ -656,8 +652,6 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
 
     // factor given by spatial function
     double functfac = 1.0;
-    // factor given by temporal curve
-    double curvefac = 1.0;
     // determine global coordinates of current Gauss point
     double coordgp[3]; // coordinate has always to be given in 3D!
     for (int i=0; i<3; i++)
@@ -672,7 +666,6 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
       }
     }
 
-    int curvenum = -1;
     int functnum = -1;
     const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
@@ -680,20 +673,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
     {
       if ((*onoff)[dof]) // is this dof activated?
       {
-        // factor given by temporal curve
-        if (curve) curvenum = (*curve)[dof];
-          if ( (curvenum >= 0) and usetime)
-            curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-          else
-            curvefac = 1.0;
-
         // factor given by spatial function
         if (func) functnum = (*func)[dof];
         {
           if (functnum > 0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time);
           }
           else
             functfac = 1.0;
@@ -701,7 +687,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
 
         // q * detJ * w(gp) * spatial_fac * timecurve_fac
         // val = q; fac_ = detJ * w(gp) * timecurve; funcfac =  spatial_fac
-        const double val_fac_funct_curve_fac = (*val)[dof]*fac_*functfac*curvefac;
+        const double val_fac_funct_curve_fac = (*val)[dof]*fac_*functfac;
 
         for (int node=0; node<nen_; ++node)
         {

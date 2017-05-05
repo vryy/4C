@@ -17,7 +17,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
@@ -107,7 +106,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
 
       }
       const double* coordgpref = &xrefe[0];
-      double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
+      double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time);
       params.set<double>("scalar",functfac);
     }
   }

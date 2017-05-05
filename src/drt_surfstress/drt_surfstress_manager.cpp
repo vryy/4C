@@ -239,7 +239,8 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 {
   double gamma, dgamma;
   int LID = A_last_->Map().LID(ID);
-  double t_end = DRT::Problem::Instance()->Curve(curvenum).end();
+  dserror("Here some proper solution has to implemented!");
+  double t_end = 23.0; //TODO: fix that, previously asked for Curve().end() to be replaced by problem specific parameter -> already discussed with Lena
 
   if (surface_flag==0)                                   // SURFACTANT
   {
@@ -286,7 +287,7 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 
   /*------------gradual application of surface stresses via time curve*/
   if (time <= t_end)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
   double ndof = Adiff->Length();
 

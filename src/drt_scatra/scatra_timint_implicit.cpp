@@ -1100,7 +1100,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
     {
       int err(0);
       const int velfuncno = params_->get<int>("VELFUNCNO");
-      const int velcurveno = params_->get<int>("VELCURVENO");
+
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
       {
@@ -1112,11 +1112,7 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
 
         for(int index=0;index<nsd_;++index)
         {
-          double value = problem_->Funct(velfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
-          if (velocity_field_type_ == INPAR::SCATRA::velocity_function_and_curve)
-          {
-            value *= problem_->Curve(velcurveno-1).f(time_);
-          }
+          double value = problem_->Funct(velfuncno-1).Evaluate(index,lnode->X(),time_);
 
           // get global and local dof IDs
           const int gid = nodedofs[index];
@@ -1642,7 +1638,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         const int dofgid = nodedofset[k];
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
-        double initialval = problem_->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
+        double initialval = problem_->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_);
         int err = phin_->ReplaceMyValues(1,&initialval,&doflid);
         if (err != 0) dserror("dof not on proc");
       }

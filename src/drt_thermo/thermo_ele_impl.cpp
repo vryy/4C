@@ -3277,33 +3277,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(
 
   if (myneumcond.size() == 1)
   {
-    // find out whether we will use a time curve
-    const std::vector<int>* curve = myneumcond[0]->Get<std::vector<int> >("curve");
-    int curvenum = -1;
-
-    if (curve) curvenum = (*curve)[0];
-
-    // initialisation
-    double curvefac(0.0);
-
-    if (curvenum >= 0) // yes, we have a timecurve
-    {
-      // time factor for the intermediate step
-      if(time >= 0.0)
-      {
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      }
-      else
-      {
-        // A negative time value indicates an error.
-        dserror("Negative time value in body force calculation: time = %f",time);
-      }
-    }
-    else // we do not have a timecurve --- timefactors are constant equal 1
-    {
-      curvefac = 1.0;
-    }
-
     // get node coordinates
     GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
@@ -3357,7 +3330,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(
     const int functnum = (funct) ? (*funct)[0] : -1;
     const double functfac
       = (functnum>0)
-      ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,xrefegp.A(),time,NULL)
+      ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,xrefegp.A(),time)
       : 1.0;
 
     // get values and switches from the condition
@@ -3366,7 +3339,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(
 
     // set this condition to the radiation array
     for (int idof=0; idof<numdofpernode_; idof++) {
-      radiation_(idof) = (*onoff)[idof]*(*val)[idof]*curvefac*functfac;
+      radiation_(idof) = (*onoff)[idof]*(*val)[idof]*functfac;
     }
 
   }
@@ -3950,11 +3923,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
       for (int dim=0; dim<nsd_; ++dim)
         position[dim] = xyzint(dim);
 
-      const double T_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(0,position,t,NULL);
+      const double T_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).Evaluate(0,position,t);
 
       T_analytical(0,0) = T_exact;
 
-      std::vector<double> Tder_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).FctDer(0,position,t,NULL);
+      std::vector<double> Tder_exact = DRT::Problem::Instance()->Funct(errorfunctno-1).EvaluateSpatialDerivative(0,position,t);
 
       if(Tder_exact.size())
       {

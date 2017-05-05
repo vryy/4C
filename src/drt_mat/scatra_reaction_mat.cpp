@@ -326,7 +326,7 @@ double MAT::ScatraReactionMat::ReacCoeff(
     gpcoord[1] = constants[size-2].second;
     gpcoord[2] = constants[size-1].second;
 
-    reaccoeff *= (DRT::Problem::Instance()->Funct(DisFunctReacCoeffID()-1).Evaluate(0,gpcoord,time,NULL));
+    reaccoeff *= (DRT::Problem::Instance()->Funct(DisFunctReacCoeffID()-1).Evaluate(0,gpcoord,time));
 
     //TODO:(thon) the following is nicer but works only for VarExpr Function :(
 //    try

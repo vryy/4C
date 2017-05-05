@@ -210,7 +210,6 @@ namespace UTILS {
      *  \author hiermeier, vuong \date 01/17 */
     virtual void Evaluate(
         const DRT::DiscretizationInterface &   discret,
-        const bool &                         usetime,
         const double &                       time,
         const Teuchos::RCP<Epetra_Vector> *  systemvectors,
         Epetra_Vector &                      toggle,
@@ -219,7 +218,6 @@ namespace UTILS {
     /** \brief Determine Dirichlet condition at given time and apply its
      *         values to a system vector
      *  \param cond            The condition object
-     *  \param usetime
      *  \param time            Evaluation time
      *  \param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
      *  \param systemvectord   First time derivative of DBCs
@@ -232,7 +230,6 @@ namespace UTILS {
     virtual void DoDirichletCondition(
         const DRT::DiscretizationInterface &   discret,
         const DRT::Condition &               cond,
-        const bool &                         usetime,
         const double &                       time,
         const Teuchos::RCP<Epetra_Vector> *  systemvectors,
         const Epetra_Vector &                toggle,
@@ -246,9 +243,7 @@ namespace UTILS {
     \param knots        element knot vector
     \param lm           reduced location vector of element (DBC DOFs only)
     \param funct        function information (read from the condition)
-    \param curve        curve information (read from the condition)
     \param val          value information (read from the condition)
-    \param usetime      bool indicating if curve is to be evaluated at current time
     \param deg          degree of time derivative needed
     \param time         current time
     \param elemass      element matrix to be filled
@@ -261,9 +256,7 @@ namespace UTILS {
         const std::vector<Epetra_SerialDenseVector>* knots,
         const std::vector<int>&                 lm,
         const std::vector<int>*                 funct,
-        const std::vector<int>*                 curve,
         const std::vector<double>*              val,
-        const bool                              usetime,
         const unsigned                          deg,
         const double                            time,
         Epetra_SerialDenseMatrix&               elemass,
@@ -276,9 +269,7 @@ namespace UTILS {
       \param knots        element knot vector
     \param lm           reduced location vector of element (DBC DOFs only)
     \param funct        function information (read from the condition)
-    \param curve        curve information (read from the condition)
     \param val          value information (read from the condition)
-    \param usetime      bool indicating if curve is to be evaluated at current time
     \param deg          degree of time derivative needed
     \param time         current time
     \param elemass      element matrix to be filled
@@ -291,9 +282,7 @@ namespace UTILS {
         const std::vector<Epetra_SerialDenseVector>* knots,
         const std::vector<int>&                 lm,
         const std::vector<int>*                 funct,
-        const std::vector<int>*                 curve,
         const std::vector<double>*              val,
-        const bool                              usetime,
         const unsigned                          deg,
         const double                            time,
         Epetra_SerialDenseMatrix&               elemass,

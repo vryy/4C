@@ -1625,15 +1625,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
     const std::vector<int>*    onoff     = myneumcond[0]->Get<std::vector<int> >   ("onoff");
     const std::vector<double>* val       = myneumcond[0]->Get<std::vector<double> >("val"  );
     const std::vector<int>*    functions = myneumcond[0]->Get<std::vector<int> >   ("funct");
-    const std::vector<int>*    curve     = myneumcond[0]->Get<std::vector<int> >   ("curve");
 
     // factor given by spatial function
     double functionfac = 1.0;
     int functnum = -1;
 
-    // factor given by temporal curve
-    double curvefac = 0.0;
-    int curvenum = -1;
 
     // set this condition to the ebofoaf array
     for (int isd=0;isd<nsd_;isd++)
@@ -1642,19 +1638,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
       if (functions) functnum = (*functions)[isd];
       else functnum = -1;
 
-      if (curve) curvenum = (*curve)[isd];
-      else curvenum = -1;
-      // compute potential time curve or set time-curve factor to one
-      if (curvenum >= 0)
-      {
-        // time factor (negative time indicating error)
-        if (time >= 0.0)
-             curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-        else dserror("Negative time in bodyforce calculation: time = %f", time);
-      }
-      else curvefac = 1.0;
-
-      double num = (*onoff)[isd]*(*val)[isd]*curvefac;
+      double num = (*onoff)[isd]*(*val)[isd];
 
       if(enrtype==DRT::ELEMENTS::Fluid::xwall)
       {
@@ -1672,8 +1656,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
             // in some fancy turbulance stuff.
             functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
                                                                                (ele->Nodes()[jnode])->X(),
-                                                                               time,
-                                                                               NULL);
+                                                                               time);
           }
           else functionfac = 1.0;
 
@@ -1700,8 +1683,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
           // in some fancy turbulance stuff.
           functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
                                                                              (ele->Nodes()[jnode])->X(),
-                                                                             time,
-                                                                             NULL);
+                                                                             time);
         }
         else functionfac = 1.0;
 
@@ -1737,22 +1719,22 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
     if (myscatraneumcond.size()==1)
     {
       // check for potential time curve
-      const std::vector<int>* curve  = myscatraneumcond[0]->Get<std::vector<int> >("curve");
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
+      const std::vector<int>* funct  = myscatraneumcond[0]->Get<std::vector<int> >("funct");
+      int functnum = -1;
+      if (funct) functnum = (*funct)[0];
 
       // initialization of time-curve factor
-      double curvefac = 0.0;
+      double functfac = 0.0;
 
       // compute potential time curve or set time-curve factor to one
-      if (curvenum >= 0)
+      if (functnum >= 0)
       {
         // time factor (negative time indicating error)
         if (time >= 0.0)
-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+          functfac = DRT::Problem::Instance()->Funct(functnum).EvaluateTime(time);
         else dserror("Negative time in bodyforce calculation: time = %f", time);
       }
-      else curvefac = 1.0;
+      else functfac = 1.0;
 
       // get values and switches from the condition
       const std::vector<int>*    onoff = myscatraneumcond[0]->Get<std::vector<int> >   ("onoff");
@@ -1761,7 +1743,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::BodyForce(DRT::ELEMENTS::Flui
       // set this condition to the bodyforce array
       for (int jnode=0; jnode<nen_; jnode++)
       {
-        escabofoaf(jnode) = (*onoff)[0]*(*val)[0]*curvefac;
+        escabofoaf(jnode) = (*onoff)[0]*(*val)[0]*functfac;
       }
     }
   }
@@ -2075,7 +2057,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SetAdvectiveVelOseen(DRT::ELE
     {
       const double * jx = ele->Nodes()[jnode]->X();
       for(int idim=0;idim<nsd_;++idim)
-        eadvvel_(idim,jnode) = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(idim,jx,time,NULL);
+        eadvvel_(idim,jnode) = DRT::Problem::Instance()->Funct(funcnum-1).Evaluate(idim,jx,time);
     }
   }
 }

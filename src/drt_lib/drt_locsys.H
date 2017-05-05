@@ -262,7 +262,7 @@ protected:
   std::vector<DRT::Condition::ConditionType> typelocsys_;
 
   /// vector that indicates the existence of time curves or functions within the locsys condition
-  bool locsyscurvefunct_;
+  bool locsysfunct_;
 
   /// maps the GID of a node onto the pseudo-rotation vector which rotates the global xyz system onto local system of the node
   std::map<int,LINALG::Matrix<3,1> > nodalrotvectors_;

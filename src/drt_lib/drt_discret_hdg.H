@@ -167,7 +167,6 @@ namespace UTILS {
      *         values to a system vector
      *
      *  \param cond            The condition object
-     *  \param usetime
      *  \param time            Evaluation time
      *  \param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
      *  \param systemvectord   First time derivative of DBCs
@@ -179,7 +178,6 @@ namespace UTILS {
     virtual void DoDirichletCondition(
         const DRT::DiscretizationInterface &  discret,
         const DRT::Condition &              cond,
-        const bool &                        usetime,
         const double &                      time,
         const Teuchos::RCP<Epetra_Vector> * systemvectors,
         const Epetra_Vector&                toggle,
@@ -187,7 +185,6 @@ namespace UTILS {
     void DoDirichletCondition(
         const DRT::DiscretizationFaces &    discret,
         const DRT::Condition &              cond,
-        const bool &                        usetime,
         const double &                      time,
         const Teuchos::RCP<Epetra_Vector> * systemvectors,
         const Epetra_Vector&                toggle) const;

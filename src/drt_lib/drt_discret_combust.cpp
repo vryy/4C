@@ -86,7 +86,6 @@
 */
 static void DoDirichletConditionCombust(DRT::Condition&             cond,
                                  DRT::DiscretizationCombust&    dis,
-                                 const bool                  usetime,
                                  const double                time,
                                  Teuchos::RCP<Epetra_Vector> systemvector,
                                  Teuchos::RCP<Epetra_Vector> systemvectord,
@@ -103,7 +102,6 @@ static void DoDirichletConditionCombust(DRT::Condition&             cond,
  *----------------------------------------------------------------------*/
 void DoDirichletConditionCombust(DRT::Condition&             cond,
                           DRT::DiscretizationCombust&    dis,
-                          const bool                  usetime,
                           const double                time,
                           Teuchos::RCP<Epetra_Vector> systemvector,
                           Teuchos::RCP<Epetra_Vector> systemvectord,
@@ -175,7 +173,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
          std::vector<double> curvefac(deg+1, 1.0);
          int curvenum = -1;
          if (curve) curvenum = (*curve)[j];
-           if (curvenum>=0 && usetime)
+           if (curvenum>=0 )
              curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
          else
            for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
@@ -244,7 +242,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
         int curvenum = -1;
 
         if (curve) curvenum = (*curve)[truncj];
-        if (curvenum>=0 && usetime)
+        if (curvenum>=0)
           curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
         else
           for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
@@ -430,7 +428,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
          int curvenum = -1;
 
          if (curve) curvenum = (*curve)[truncj];
-         if (curvenum>=0 && usetime)
+         if (curvenum>=0)
             curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
          else
             for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
@@ -522,7 +520,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
           std::vector<double> curvefac(deg+1, 1.0);
           int curvenum = -1;
           if (curve) curvenum = (*curve)[xfemj];
-          if (curvenum>=0 && usetime)
+          if (curvenum>=0)
             curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
           else
             for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
@@ -730,7 +728,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
         int curvenum = -1;
 
         if (curve) curvenum = (*curve)[truncj];
-        if (curvenum>=0 && usetime)
+        if (curvenum>=0)
           curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
         else
         for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
@@ -801,7 +799,6 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
  *----------------------------------------------------------------------*/
 void DoDirichletConditionCombust(DRT::Condition&             cond,
                           DRT::DiscretizationCombust&    dis,
-                          const bool                  usetime,
                           const double                time,
                           Teuchos::RCP<Epetra_Vector> systemvector,
                           Teuchos::RCP<Epetra_Vector> systemvectord,
@@ -812,7 +809,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
   const std::vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
-  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+
   const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
   const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
   const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
@@ -929,32 +926,21 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
          std::vector<double> value(deg+1,(*val)[inputIndex]);
 
          //-----------------------------------------------------------//
-         // factor given by time curve
+         // factor given by FUNCT
          //-----------------------------------------------------------//
-         std::vector<double> curvefac(deg+1, 1.0);
-         int curvenum = -1;
-         if (curve) curvenum = (*curve)[inputIndex];
-         if (curvenum>=0 && usetime)
-             curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
-         else
-            for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+         std::vector<double> functimederivfac(deg+1, 1.0);
+         for (unsigned i=1; i<(deg+1); ++i) functimederivfac[i] = 0.0;
 
-        //-----------------------------------------------------------//
-        // factor given by spatial function
-        //-----------------------------------------------------------//
-        double functfac = 1.0;
-        int funct_num = -1;
-
-        if (funct) funct_num = (*funct)[inputIndex];
-        {
+         if (funct)
+         {
+           const int funct_num = (*funct)[inputIndex];
            if (funct_num>0)
            {
-             // this is a hack to truncate a double!
-             functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(inputIndex,
-                                                                              actnode->X(),
-                                                                              time,
-                                                                              &dis);
-            }
+             functimederivfac = DRT::Problem::Instance()->Funct(funct_num-1).EvaluateTimeDerivative(inputIndex,
+                 actnode->X(),
+                 time,
+                 deg);
+           }
          }
 
          //-----------------------------------------------------------//
@@ -962,7 +948,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
          //-----------------------------------------------------------//
          for (unsigned i=0; i<deg+1; ++i)
          {
-            value[i] *= functfac * curvefac[i];
+            value[i] *= functimederivfac[i];
          }
 
          //-----------------------------------------------------------//
@@ -1008,9 +994,7 @@ void DRT::DiscretizationCombust::EvaluateDirichletCombust(Teuchos::ParameterList
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   // get the current time
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   // vector of DOF-IDs which are Dirichlet BCs
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
@@ -1036,7 +1020,7 @@ void DRT::DiscretizationCombust::EvaluateDirichletCombust(Teuchos::ParameterList
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
-    DoDirichletConditionCombust(*(fool->second),*this,usetime,time,
+    DoDirichletConditionCombust(*(fool->second),*this,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -1045,7 +1029,7 @@ void DRT::DiscretizationCombust::EvaluateDirichletCombust(Teuchos::ParameterList
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
-    DoDirichletConditionCombust(*(fool->second),*this,usetime,time,
+    DoDirichletConditionCombust(*(fool->second),*this,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -1054,7 +1038,7 @@ void DRT::DiscretizationCombust::EvaluateDirichletCombust(Teuchos::ParameterList
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
-    DoDirichletConditionCombust(*(fool->second),*this,usetime,time,
+    DoDirichletConditionCombust(*(fool->second),*this,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }
@@ -1063,7 +1047,7 @@ void DRT::DiscretizationCombust::EvaluateDirichletCombust(Teuchos::ParameterList
   {
     if (fool->first != "Dirichlet") continue;
     if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
-    DoDirichletConditionCombust(*(fool->second),*this,usetime,time,
+    DoDirichletConditionCombust(*(fool->second),*this,time,
                          systemvector,systemvectord,systemvectordd,
                          toggle,dbcgids);
   }

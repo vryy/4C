@@ -1,7 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_line_evaluate.cpp
 
+\brief Evaluate routines for structural line element
+
 \maintainer Michael Gee
+
+\level 2
 
 *----------------------------------------------------------------------*/
 
@@ -64,13 +68,11 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  bool usetime = true;
   double time = -1.0;
   if (ParentElement()->IsParamsInterface())
     time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
   else
     time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   const int numdim = 3;
 
@@ -82,16 +84,6 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
   {
     if ((*onoff)[checkdof] != 0)
       dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
-  }
-
-  // find out whether we will use time curves and get the factors
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  std::vector<double> curvefacs(numdim, 1.0);
-  for (int i=0; i < numdim; ++i)
-  {
-    const int curvenum = (curve) ? (*curve)[i] : -1;
-    if (curvenum>=0 && usetime)
-      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
   }
 
   // element geometry update - currently only material configuration
@@ -142,10 +134,10 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
             const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time);
           }
 
-          const double fac = (*val)[i] * intpoints.qwgt[gp] * dL * functfac * curvefacs[i];
+          const double fac = (*val)[i] * intpoints.qwgt[gp] * dL * functfac;
           for (int node=0; node < numnode; ++node)
           {
             elevec1[node*numdim+i]+= shapefcts[node] * fac;
@@ -182,6 +174,3 @@ void DRT::ELEMENTS::StructuralLine::LineIntegration(double&                     
   dL = sqrt(dL);
   return;
 }
-
-
-

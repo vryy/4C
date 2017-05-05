@@ -24,7 +24,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
@@ -908,30 +907,18 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
-  const std::vector<int>*    curve = condition.Get<std::vector<int> >   ("curve");
   const std::vector<int>*    funct = condition.Get<std::vector<int> >   ("funct");
 
   // check total time
-  bool usetime = true;
   double time = -1.0;
   if (IsParamsInterface())
     time = ParamsInterface().GetTotalTime();
   else
     time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < noddof_)
     dserror("Fewer functions or curves defined than the element has dofs.");
-
-  // factor given by time curves
-  std::vector<double> curvefacs(noddof_, 1.0);
-  for (int i = 0; i < noddof_; ++i)
-  {
-    const int curvenum = (curve) ? (*curve)[i] : -1;
-    if (curvenum >= 0 && usetime)
-      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  }
 
   // no. of nodes on this surface
   const int iel = NumNode();
@@ -1056,10 +1043,10 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
         const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
         // evaluate function at current gauss point
-        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time,NULL);
+        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,time);
       }
 
-      ar[i] = fac * (*onoff)[i] * (*val)[i] * curvefacs[i] * functfac;
+      ar[i] = fac * (*onoff)[i] * (*val)[i] * functfac;
     }
 
     // add load components

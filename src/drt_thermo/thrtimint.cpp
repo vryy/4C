@@ -943,7 +943,7 @@ void THR::TimInt::SetInitialField(
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
         double initialval
-          = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),0.0,NULL);
+          = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),0.0);
         // extract temperature vector at time t_n (temp_ contains various vectors of
         // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
         int err1 = (*temp_)(0)->ReplaceMyValues(1,&initialval,&doflid);

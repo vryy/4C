@@ -349,9 +349,6 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
   levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("LEVELSETFIELDNO")));
   levelsetfield_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("levelsetfieldno", 1, false, false, false)));
 
-  levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("LEVELSETCURVE")));
-  levelsetfield_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("levelsetcurve", 1, true, true, false)));
-
   // define which boolean operator is used for combining this level-set field with the previous one with smaller coupling id
   levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("BOOLEANTYPE")));
   levelsetfield_components.push_back(
@@ -462,9 +459,6 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
 
   xfem_levelset_navier_slip->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT")));
   xfem_levelset_navier_slip->AddComponent(Teuchos::rcp(new RealConditionComponent("slipcoeff")));
-
-  xfem_levelset_navier_slip->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_CURVE", true)));
-  xfem_levelset_navier_slip->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true, true)));
 
   xfem_levelset_navier_slip->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT",true)));
   xfem_levelset_navier_slip->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
@@ -642,9 +636,6 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT",true)));
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("slipcoeff",1,true)));
 
-  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_CURVE",true)));
-  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true, true)));
-
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT",true)));
   xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
 
@@ -667,9 +658,6 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
 
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT",true)));
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new RealVectorConditionComponent("slipcoeff",1,true)));
-
-  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_CURVE", true)));
-  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true, true)));
 
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT",true)));
   xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
@@ -815,9 +803,6 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
 
   xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT")));
   xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new RealConditionComponent("slipcoeff")));
-
-  xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_CURVE",true)));
-  xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true, true)));
 
   xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT",true)));
   xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));

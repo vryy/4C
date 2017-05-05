@@ -291,7 +291,6 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList&  params,
 
 
   // find out whether we will use a time curve
-  bool usetime = true;
   double time = -1.0;
 
   if (IsParamsInterface())
@@ -299,17 +298,15 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList&  params,
   else
     time = params.get<double>("total time",-1.0);
 
-  if (time<0.0) usetime = false;
-
   // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
+  const std::vector<int>* tmp_funct = condition.Get<std::vector<int> >("funct");
+  int functnum = -1;
   // number of the load curve related with a specific line Neumann condition called
-  if (curve) curvenum = (*curve)[0];
+  if (tmp_funct) functnum = (*tmp_funct)[0];
   // amplitude of load curve at current time called
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)//notation for this function similar to Crisfield, Volume 1;
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  double functfac = 1.0;
+  if (functnum>=0)//notation for this function similar to Crisfield, Volume 1;
+    functfac = DRT::Problem::Instance()->Funct(functnum).EvaluateTime(time);
 
   //jacobian determinant
   double det = lrefe_/2;
@@ -351,7 +348,7 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList&  params,
     // loop the dofs of a node
 
     for (int i = 0; i < 6; ++i)
-      ar[i] = fac * (*onoff)[i]*(*val)[i]*curvefac;
+      ar[i] = fac * (*onoff)[i]*(*val)[i]*functfac;
 
     for (int dof=0; dof < 3; ++dof)
     {
@@ -409,11 +406,6 @@ void DRT::ELEMENTS::Truss3::t3_energy(Teuchos::ParameterList&   params,
     Epetra_SerialDenseVector* intenergy)
 {
   //dserror("This method is yet to be configured for bio-polymer networks!");
-  /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
-   / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
-   / function instead of e.g. Truss3_input.cpp or within the Truss3Register class since it is not/
-   / sure that structure _MATERIAL is declared within those scopes properly whereas it is within/
-   / the evaluation functions */
 
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -705,13 +697,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1,6>&      Dum
   epsilon += (X_(5) + 0.5*ucurr(5)) * (ucurr(5) - ucurr(2));
   epsilon /= lrefe_*lrefe_;
 
-
-  /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
-   / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
-   / function instead of e.g. Truss3_input.cpp or within the Truss3Register class since it is not/
-   / sure that structure _MATERIAL is declared within those scopes properly whereas it is within/
-   / the evaluation functions */
-
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym = 0;
@@ -805,12 +790,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1,6>&   
 
   //calculating strain epsilon from node position by scalar product:
   epsilon = (lcurr-lrefe_)/lrefe_;
-
-  /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
-   / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
-   / function instead of e.g. Truss3_input.cpp or within the Truss3Register class since it is not/
-   / sure that structure _MATERIAL is declared within those scopes properly whereas it is within/
-   / the evaluation functions */
 
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -2511,7 +2490,7 @@ void DRT::ELEMENTS::Truss3::MyBackgroundVelocity(Teuchos::ParameterList&       p
 //  if(periodlength->at(0) > 0.0)
 //    if(shearflow && time>starttime && fabs(time-starttime)>dt/1e4 && curvenumber >=  0 && dbcdispdir >= 0 )
 //    {
-//      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1))[1];
+//      uppervel = shearamplitude * (DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time,1))[1];
 //
 //      //compute background velocity
 //      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;
@@ -2776,7 +2755,7 @@ inline void DRT::ELEMENTS::Truss3::NodeShift(Teuchos::ParameterList& params,  //
 //           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper z-surface and reenter through the lower
 //           *z-surface, the shear has to be substracted from nodal coordinates in that case */
 //          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime && fabs(time-starttime)>dt/1e4)
-//            disp[numdof*i+dbcdispdir] += shearamplitude*DRT::Problem::Instance()->Curve(curvenumber).f(time);
+//            disp[numdof*i+dbcdispdir] += shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
 //        }
 //
 //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
@@ -2787,7 +2766,7 @@ inline void DRT::ELEMENTS::Truss3::NodeShift(Teuchos::ParameterList& params,  //
 //           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower z-surface and reenter through the upper
 //           *z-surface, the shear has to be added to nodal coordinates in that case */
 //          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime && fabs(time-starttime)>dt/1e4)
-//            disp[numdof*i+dbcdispdir] -= shearamplitude*DRT::Problem::Instance()->Curve(curvenumber).f(time);
+//            disp[numdof*i+dbcdispdir] -= shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
 //        }
 //      }
 //    }

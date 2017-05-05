@@ -794,17 +794,7 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
   const DiscretizationType distype = this->Shape();
 
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
@@ -873,7 +863,7 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
     // the gauss weight, the timecurve factor and the constant
     // belonging to the time integration algorithm (theta*dt for
     // one step theta, 2/3 for bdf with dt const.)
-    const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
+    const double fac = intpoints.qwgt[gpid] * drs * thsl;
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -901,7 +891,7 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
           if (functnum>0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,time,NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,coordgpref,time);
           }
           else
             functfac = 1.0;

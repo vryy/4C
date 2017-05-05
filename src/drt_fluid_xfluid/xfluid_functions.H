@@ -45,7 +45,7 @@ namespace DRT
       GerstenbergerForwardfacingStep();
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
     };
 
 
@@ -65,7 +65,7 @@ namespace DRT
           std::vector<double>* direction, double distance, double maxspeed);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
 
     private:
 
@@ -217,7 +217,7 @@ namespace DRT
                           double rotramptime);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
 
     };
 
@@ -238,7 +238,7 @@ namespace DRT
                           double rotramptime);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
 
       /*
       \brief Return the number of components of this spatial function
@@ -272,7 +272,7 @@ namespace DRT
                           int slipfunct);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
 
     private:
 
@@ -300,9 +300,9 @@ namespace DRT
           double viscosity);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
 
-      std::vector<double> FctDer(int index, const double* x, const double t, const DRT::DiscretizationInterface* dis);
+      std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t);
 
     private:
 
@@ -342,10 +342,10 @@ namespace DRT
               std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
 
       //Derivative
-      std::vector<double> FctDer(int index, const double* x, const double t, const DRT::DiscretizationInterface* dis);
+      std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t);
 
     protected:
 
@@ -379,7 +379,13 @@ namespace DRT
               std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
+
+      std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t)
+      {
+        dserror("Derivative not implemented for UrquizaBoxFlowForce");
+        return std::vector<double>();
+      }
 
     };
 
@@ -400,8 +406,13 @@ namespace DRT
               std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
 
+      std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t)
+      {
+        dserror("Derivative not implemented for UrquizaBoxFlowTraction");
+        return std::vector<double>();
+      }
     };
 
     /* SlipLengthManipulator. Useful for testing different slip-length functions.
@@ -414,7 +425,7 @@ namespace DRT
       SlipLengthLevelSetManipulator();
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t, const DRT::DiscretizationInterface* dis);
+      double Evaluate(int index, const double* x, double t);
     };
 
 

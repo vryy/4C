@@ -561,14 +561,14 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::EvaluateAll(const int start_func,
                                                           double t) const
 
 {
-  p = DRT::Problem::Instance()->Funct(start_func-1).Evaluate(0,xyz,0.0,NULL);
+  p = DRT::Problem::Instance()->Funct(start_func-1).Evaluate(0,xyz,0.0);
   int numcomp = DRT::Problem::Instance()->Funct(start_func-1).NumberComponents();
   if(numcomp != 1 && numcomp != nsd_+1 && numcomp != nsd_*nsd_+nsd_+1) dserror("supply 1, DIM+1, or DIM*DIM+DIM+1 components (pressure, velocity, velocity gradient)");
 
   if(numcomp==nsd_+1 || numcomp==nsd_*nsd_+nsd_+1)
   {
     for(unsigned int d=0; d<nsd_; ++d)
-      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d+1, xyz, t, NULL);
+      v[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(d+1, xyz, t);
   }
   else
   {
@@ -578,7 +578,7 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::EvaluateAll(const int start_func,
   if(numcomp==nsd_*nsd_+nsd_+1)
   {
     for(unsigned int d=0; d<nsd_*nsd_; ++d)
-      gv[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(nsd_+1+d, xyz, t, NULL);
+      gv[d] = DRT::Problem::Instance()->Funct(start_func - 1).Evaluate(nsd_+1+d, xyz, t);
   }
   else
     for(unsigned int d=0; d<nsd_*nsd_; ++d)
@@ -939,11 +939,11 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::ComputeError(
     for (unsigned int d=0; d<nsd_; ++d)
       xyz[d]=xyzmat(d,0);
 
-    exact_p = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,time,NULL);
+    exact_p = DRT::Problem::Instance()->Funct(funcno).Evaluate(0,xyz,time);
     for (unsigned int idim = 0; idim < nsd_; ++idim)
-      exact_v[idim] = DRT::Problem::Instance()->Funct(funcno).Evaluate(int(idim)+1,xyz,time,NULL);
+      exact_v[idim] = DRT::Problem::Instance()->Funct(funcno).Evaluate(int(idim)+1,xyz,time);
     for (unsigned int idim = 0; idim < nsd_*nsd_; idim++)
-      exact_h[idim] = DRT::Problem::Instance()->Funct(funcno).Evaluate(int(idim)+1+nsd_,xyz,time,NULL);
+      exact_h[idim] = DRT::Problem::Instance()->Funct(funcno).Evaluate(int(idim)+1+nsd_,xyz,time);
 
     // error calculation
     err_p += ( exact_p - numerical_p ) * ( exact_p - numerical_p ) * highjfac;
@@ -1630,8 +1630,8 @@ ComputeSource(Teuchos::ParameterList&           params,
     for(unsigned int dim=0; dim<nsd_; ++dim)
     {
       // calculate right hand side contribution for dp/dt
-      f_value = DRT::Problem::Instance()->Funct(funcno).Evaluate(int(dim),xyz,tn,NULL);
-      f_value_p = DRT::Problem::Instance()->Funct(funcno).Evaluate(int(dim),xyz,tp,NULL);
+      f_value = DRT::Problem::Instance()->Funct(funcno).Evaluate(int(dim),xyz,tn);
+      f_value_p = DRT::Problem::Instance()->Funct(funcno).Evaluate(int(dim),xyz,tp);
 
       // add it all up
       for(unsigned int i=0; i<shapes_.ndofs_; ++i)

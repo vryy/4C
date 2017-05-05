@@ -456,7 +456,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcElchBoundaryKineticsPoint(
   // access parameters of the condition
   const int                 kinetics = cond->GetInt("kinetic model");
   double                    pot0 = cond->GetDouble("pot");
-  const int                 curvenum = cond->GetInt("curve");
+  const int                 functnum = cond->GetInt("funct");
   const int                 nume = cond->GetInt("e-");
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman condition)
   // but the electrode status is evaluated
@@ -498,11 +498,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcElchBoundaryKineticsPoint(
   double       rhsfac  = 1.0;
   // find out whether we shell use a time curve and get the factor
   // this feature can be also used for stationary "pseudo time loops"
-  if (curvenum>=0)
+  if (functnum>=0)
   {
-    const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    const double functfac = DRT::Problem::Instance()->Funct(functnum).EvaluateTime(time);
+
     // adjust potential at metal side accordingly
-    pot0 *= curvefac;
+    pot0 *= functfac;
   }
 
   //TODO: Ist es besser über parameter?

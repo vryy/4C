@@ -21,7 +21,6 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -517,33 +516,16 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
   SetParamsInterfacePtr(params);
 
   // find out whether we will use a time curve
-  bool usetime = true;
   double time = -1.0;
   if (this->IsParamsInterface())
     time = this->ParamsInterfacePtr()->GetTotalTime();
   else
     time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   // no. of nodes on this element; the following line is only valid for elements with constant number of
   // degrees of freedom per node
   const int numdf = 6;
   const DiscretizationType distype = this->Shape();
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  // amplitude of load curve at current time called
-  std::vector<double> curvefac(numdf,1.0);
-
-  for (int i=0; i<numdf; ++i)
-  {
-    int curvenum = -1;
-    // number of the load curve related with a specific line Neumann condition called
-    if (curve) curvenum = (*curve)[i];
-
-    if (curvenum>=0 && usetime)
-      curvefac[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  }
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints1D intpoints(MyGaussRule(NumNode(),gaussunderintegration));
@@ -592,7 +574,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
 
     // loop the dofs of a node
     for (int dof=0; dof<numdf; ++dof)
-      ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac[dof];
+      ar[dof] = fac * (*onoff)[dof]*(*val)[dof];
     double functionfac = 1.0;
     int functnum = -1;
 
@@ -605,7 +587,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
       if (functnum>0)
       {
         // evaluate function at the position of the current node       --> dof here correct?
-        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);
+        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time);
       }
       else functionfac = 1.0;
 
@@ -1688,7 +1670,7 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(Teuchos::ParameterList&       pa
 //  if(periodlength->at(0) > 0.0)
 //    if(shearflow  && curvenumber >=  0 && dbcdispdir >= 0 )
 //    {
-//      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1))[1];
+//      uppervel = shearamplitude * (DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time,1))[1];
 //
 //      //compute background velocity
 //      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;

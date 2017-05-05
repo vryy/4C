@@ -621,7 +621,7 @@ namespace CAVITATION
       const int bubbleinflowid,   ///< unique id over all inflow conditions
       std::vector<double> inflow_position,  ///< position of particle source
       std::vector<double> inflow_vel,   ///< inflow velocity
-      const int inflow_vel_curve,   ///< inflow velocity can be superposed with a time curve
+      const int inflow_vel_funct,   ///< inflow velocity can be superposed with a time curve
       const double inflow_radius,   ///< initial radius of particle
       const double inflow_freq,   ///< frequency of entering particles
       const double timedelay,   ///< time delay for inflowing particles
@@ -632,7 +632,7 @@ namespace CAVITATION
     const int inflowid_;
     std::vector<double> inflow_position_;
     std::vector<double> inflow_vel_;
-    const int inflow_vel_curve_;
+    const int inflow_vel_funct_;
     const double inflow_radius_;
     const double inflow_freq_;
     const double timedelay_;

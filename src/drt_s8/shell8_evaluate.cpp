@@ -17,7 +17,6 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/elasthyper.H"
@@ -786,7 +785,6 @@ static void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
                          const enum LoadType ltype,
                          const std::vector<int>& onoff,
                          const std::vector<double>& val,
-                         const std::vector<double>& curvefacs,
                          const std::vector<double>& sp_functfacs,
                          const double time);
 /*----------------------------------------------------------------------*
@@ -806,16 +804,11 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
   // find out whether we will use a time curve
-  bool usetime = true;
   double time = -1.0;
   if (IsParamsInterface())
     time = ParamsInterface().GetTotalTime();
   else
     time = params.get<double>("total time",-1.0);
-
-
-
-  if (time<0.0) usetime = false;
 
   // no. of nodes on this surface
   const int iel = NumNode();
@@ -898,16 +891,6 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
     a3cur[0][k] = a3c[0][k] / h2;
     a3cur[1][k] = a3c[1][k] / h2;
     a3cur[2][k] = a3c[2][k] / h2;
-  }
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  std::vector<double> curvefacs(6,1.0);
-  for (int i=0; i<6; ++i)
-  {
-    const int curvenum = (curve) ? (*curve)[i] : -1;
-    if (curvenum>=0 && usetime)
-      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
   }
 
   // (spatial) function business
@@ -997,14 +980,14 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
             const int sp_functnum = (sp_funct) ? (*sp_funct)[dim] : -1;
             sp_functfacs[dim]
                 = (sp_functnum>0)
-                ? DRT::Problem::Instance()->Funct(sp_functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
+                ? DRT::Problem::Instance()->Funct(sp_functnum-1).Evaluate(dim,xrefegp.A(),time)
                 : 1.0;
           }
         }
       }
       // do load calculation at gaussian point
       s8loadgaussianpoint(eload,hhi,wgt,xjm,funct,deriv,iel,xi,yi,zi,ltype,
-                            *onoff,*val,curvefacs,sp_functfacs,time);
+                            *onoff,*val,sp_functfacs,time);
       } // for (int ls=0; ls<nis; ++ls)
     } // for (int lr=0; lr<nir; ++lr)
 
@@ -3976,7 +3959,6 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
                          const enum LoadType ltype,
                          const std::vector<int>& onoff,
                          const std::vector<double>& val,
-                         const std::vector<double>& curvefacs,
                          const std::vector<double>& sp_functfacs,
                          const double time)
 {
@@ -3997,7 +3979,7 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
       double ar[3];
       ar[0]=ar[1]=ar[2]= sqrt( ap[0]*ap[0] + ap[1]*ap[1] + ap[2]*ap[2] );
       for (int i=0; i<3; ++i)
-        ar[i] = ar[i] * wgt * onoff[i] * val[i] * curvefacs[i] * sp_functfacs[i];
+        ar[i] = ar[i] * wgt * onoff[i] * val[i] * sp_functfacs[i];
       for (int i=0; i<iel; ++i)
         for (int j=0; j<3; ++j)
           eload[j][i] += funct[i]*ar[j];
@@ -4007,9 +3989,9 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
     case neum_consthydro_z:
     {
       if (onoff[2] != 1) dserror("hydropressure must be on third dof");
-      ar[0] = ap[0] * val[2] * wgt * curvefacs[2] * sp_functfacs[2];
-      ar[1] = ap[1] * val[2] * wgt * curvefacs[2] * sp_functfacs[2];
-      ar[2] = ap[2] * val[2] * wgt * curvefacs[2] * sp_functfacs[2];
+      ar[0] = ap[0] * val[2] * wgt * sp_functfacs[2];
+      ar[1] = ap[1] * val[2] * wgt * sp_functfacs[2];
+      ar[2] = ap[2] * val[2] * wgt * sp_functfacs[2];
       for (int i=0; i<iel; ++i)
         for (int j=0; j<3; ++j)
           eload[j][i] += funct[i]*ar[j];
@@ -4036,7 +4018,7 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
     case neum_opres_FSI:
     {
       if (onoff[2] != 1) dserror("orthopressure must be on third dof");
-      double pressure = -val[2]*curvefacs[2]*sp_functfacs[2];
+      double pressure = -val[2]*sp_functfacs[2];
       ar[0] = ap[0] * pressure * wgt;
       ar[1] = ap[1] * pressure * wgt;
       ar[2] = ap[2] * pressure * wgt;

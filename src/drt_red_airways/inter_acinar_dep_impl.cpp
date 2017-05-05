@@ -19,7 +19,6 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/maxwell_0d_acinus.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -220,7 +219,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           // Get factor of first CURVE
           if((*curve)[0]>=0)
           {
-            curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+            curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
             BCin = (*vals)[0]*curvefac;
           }
           else
@@ -236,7 +235,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           double functionfac = 0.0;
           if(functnum>0)
           {
-            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time,NULL);
+            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time);
           }
 
           // Get factor of second CURVE
@@ -244,7 +243,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
           double curve2fac = 1.0;
           if (curve) curve2num = (*curve)[1];
           if (curve2num>=0 )
-            curve2fac = DRT::Problem::Instance()->Curve(curve2num).f(time);
+            curve2fac = DRT::Problem::Instance()->Funct(curve2num).EvaluateTime(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
           BCin += functionfac*curve2fac;
@@ -288,7 +287,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
               // Read in the value of the applied BC
               if((*curve)[0]>=0)
               {
-                curvefac = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+                curvefac = DRT::Problem::Instance()->Funct((*curve)[0]).EvaluateTime(time);
               }
 
               // Get parameters for VolumeDependentPleuralPressure condition

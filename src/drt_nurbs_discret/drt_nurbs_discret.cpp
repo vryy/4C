@@ -112,14 +112,13 @@ DRT::NURBS::NurbsDiscretization::GetKnotVector() const
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::DbcNurbs::Evaluate(
     const DRT::DiscretizationInterface &  discret,
-    const bool &                        usetime,
     const double &                      time,
     const Teuchos::RCP<Epetra_Vector> * systemvectors,
     Epetra_Vector &                     toggle,
     Teuchos::RCP<std::set<int> > *      dbcgids ) const
 {
   // --------------------------- Step 1 ---------------------------------------
-  DRT::UTILS::Dbc::Evaluate( discret, usetime, time, systemvectors, toggle,
+  DRT::UTILS::Dbc::Evaluate( discret, time, systemvectors, toggle,
         dbcgids );
 
   // --------------------------- Step 2 ---------------------------------------
@@ -160,7 +159,7 @@ void DRT::UTILS::DbcNurbs::Evaluate(
   ReadDirichletCondition( discret, conds, toggle_col, dbcgids_nurbs );
 
   // --------------------------- Step 4 ---------------------------------------
-  DoDirichletCondition( discret, conds, usetime, time, systemvectors,
+  DoDirichletCondition( discret, conds, time, systemvectors,
       toggle_col, dbcgids_nurbs );
 }
 
@@ -169,7 +168,6 @@ void DRT::UTILS::DbcNurbs::Evaluate(
 void DRT::UTILS::DbcNurbs::DoDirichletCondition(
     const DRT::DiscretizationInterface &   discret,
     const DRT::Condition &               cond,
-    const bool &                         usetime,
     const double &                       time,
     const Teuchos::RCP<Epetra_Vector> *  systemvectors,
     const Epetra_Vector &                toggle,
@@ -178,7 +176,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(
   // default call
   if ( dbcgids[ set_col ].is_null() )
   {
-    DRT::UTILS::Dbc::DoDirichletCondition( discret, cond, usetime, time,
+    DRT::UTILS::Dbc::DoDirichletCondition( discret, cond, time,
         systemvectors, toggle, dbcgids );
     return;
   }
@@ -248,7 +246,6 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(
   if (!nodeids)
     dserror("Dirichlet condition does not have nodal cloud");
 
-  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
   const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
   const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
 
@@ -415,22 +412,22 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(
         switch(distype)
         {
         case DRT::Element::nurbs2:
-          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs2>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs2>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs3:
-          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs3>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs3>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs4:
-          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs4>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs4>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs9:
-          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs9>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs9>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs8:
-          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs8>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs8>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs27:
-          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs27>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs27>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         default:
           dserror("invalid element shape for least squares dirichlet evaluation: %s",DistypeToString(distype).c_str());
@@ -440,22 +437,22 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(
         switch(distype)
         {
         case DRT::Element::nurbs2:
-          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs2>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs2>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs3:
-          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs3>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs3>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs4:
-          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs4>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs4>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs9:
-          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs9>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs9>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs8:
-          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs8>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs8>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         case DRT::Element::nurbs27:
-          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs27>(actele,&eleknots,lm,funct,curve,val,usetime,deg,time,elemass,elerhs);
+          FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs27>(actele,&eleknots,lm,funct,val,deg,time,elemass,elerhs);
           break;
         default:
           dserror("invalid element shape for least squares dirichlet evaluation: %s",DistypeToString(distype).c_str());
@@ -549,9 +546,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(
     const std::vector<Epetra_SerialDenseVector>* knots,
     const  std::vector<int> &               lm,
     const std::vector<int>*                 funct,
-    const std::vector<int>*                 curve,
     const std::vector<double>*              val,
-    const bool                              usetime,
     const unsigned                          deg,
     const double                            time,
     Epetra_SerialDenseMatrix&               elemass,
@@ -654,25 +649,21 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(
 
     for(int rr=0;rr<dofblock;++rr)
     {
-      // factor given by time curve
-      std::vector<double> curvefac(deg+1, 1.0);
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[rr];
-      if (curvenum>=0 && usetime)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
-      else
-        for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+      // factor given by FUNCTS
+      std::vector<double> functimederivfac(deg+1, 1.0);
+      for (unsigned i=1; i<(deg+1); ++i) functimederivfac[i] = 0.0;
 
-      double functfac = 1.0;
       const int funct_num = (*funct)[rr];
       if (funct_num>0)
+      {
         // important: position has to have always three components!!
-        functfac =DRT::Problem::Instance()->Funct((*funct)[rr]-1).Evaluate(rr,position.Values(),0.0,NULL);
+        functimederivfac = DRT::Problem::Instance()->Funct((*funct)[rr]-1).EvaluateTimeDerivative(rr,position.Values(),time,deg);
+      }
 
       // apply factors to Dirichlet value
       for (unsigned i=0; i<deg+1; ++i)
       {
-        value[i](rr) = (*val)[rr]*functfac * curvefac[i];
+        value[i](rr) = (*val)[rr] * functimederivfac[i];
       }
     }
 
@@ -711,9 +702,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(
     const std::vector<Epetra_SerialDenseVector>* knots,
     const  std::vector<int> &               lm,
     const std::vector<int>*                 funct,
-    const std::vector<int>*                 curve,
     const std::vector<double>*              val,
-    const bool                              usetime,
     const unsigned                          deg,
     const double                            time,
     Epetra_SerialDenseMatrix&               elemass,
@@ -821,25 +810,23 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(
 
     for(int rr=0;rr<dofblock;++rr)
     {
-      // factor given by time curve
-      std::vector<double> curvefac(deg+1, 1.0);
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[rr];
-      if (curvenum>=0 && usetime)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
-      else
-        for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
-
+      // factor given by FUNCTS
+      std::vector<double> functimederivfac(deg+1, 1.0);
       double functfac = 1.0;
+
       const int funct_num = (*funct)[rr];
       if (funct_num>0)
+      {
         // important: position has to have always three components!!
-        functfac =DRT::Problem::Instance()->Funct((*funct)[rr]-1).Evaluate(rr,position.Values(),0.0,NULL);
+        functimederivfac = DRT::Problem::Instance()->Funct((*funct)[rr]-1).EvaluateTimeDerivative(rr,position.Values(),time,deg);
+
+        functfac =DRT::Problem::Instance()->Funct((*funct)[rr]-1).Evaluate(rr,position.Values(),time);
+      }
 
       // apply factors to Dirichlet value
       for (unsigned i=0; i<deg+1; ++i)
       {
-        value[i](rr) = (*val)[rr]*functfac * curvefac[i];
+        value[i](rr) = (*val)[rr]*functfac * functimederivfac[i];
       }
     }
 

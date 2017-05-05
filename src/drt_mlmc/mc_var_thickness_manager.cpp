@@ -54,7 +54,6 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
     my_uncertain_nodes_org_pos_(),
     my_uncertain_nodes_dbc_onoff_(),
     my_uncertain_nodes_dbc_val_(),
-    my_uncertain_nodes_dbc_curve_(),
     my_uncertain_nodes_dbc_funct_(),
     my_uncertain_nodes_delta_pos_(),
     org_geom_(Teuchos::null),
@@ -167,16 +166,12 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
             std::vector<int> >("onoff");
         const std::vector<double>* temp_val = uncertain_nodes_condition[i]->Get<
             std::vector<double> >("val");
-        const std::vector<int>* temp_curve = uncertain_nodes_condition[i]->Get<
-            std::vector<int> >("curve");
         const std::vector<int>* temp_funct = uncertain_nodes_condition[i]->Get<
             std::vector<int> >("funct");
         my_uncertain_nodes_dbc_onoff_.insert(
             std::pair<int, std::vector<int> >(temp_node_id, *temp_onoff));
         my_uncertain_nodes_dbc_val_.insert(
             std::pair<int, std::vector<double> >(temp_node_id, *temp_val));
-        my_uncertain_nodes_dbc_curve_.insert(
-            std::pair<int, std::vector<int> >(temp_node_id, *temp_curve));
         my_uncertain_nodes_dbc_funct_.insert(
             std::pair<int, std::vector<int> >(temp_node_id, *temp_funct));
       }
@@ -185,7 +180,6 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
     }
     LINALG::GatherAll(my_uncertain_nodes_dbc_val_, aledis_->Comm());
     LINALG::GatherAll(my_uncertain_nodes_dbc_onoff_, aledis_->Comm());
-    LINALG::GatherAll(my_uncertain_nodes_dbc_curve_, aledis_->Comm());
     LINALG::GatherAll(my_uncertain_nodes_dbc_funct_, aledis_->Comm());
 
 
@@ -249,8 +243,6 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
       std::vector<int> temp_onoff (3,1);
 
       std::vector<double> temp_val(3, 0.0);
-      std::vector<int> temp_curve(3, 0);
-      temp_curve[0] = 0;
       std::vector<int> temp_funct(3, 0);
       temp_funct[0] = 0;
 
@@ -260,9 +252,6 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
       my_uncertain_nodes_dbc_val_.insert(
           std::pair<int, std::vector<double> >((my_uncert_nodeids_)[i],
               temp_val));
-      my_uncertain_nodes_dbc_curve_.insert(
-          std::pair<int, std::vector<int> >((my_uncert_nodeids_)[i],
-              temp_curve));
       my_uncertain_nodes_dbc_funct_.insert(
           std::pair<int, std::vector<int> >((my_uncert_nodeids_)[i],
               temp_funct));
@@ -270,7 +259,6 @@ UQ::MCVarThicknessManager::MCVarThicknessManager(
     LINALG::GatherAll(my_uncertain_nodes_org_pos_, aledis_->Comm());
     LINALG::GatherAll(my_uncertain_nodes_dbc_val_, aledis_->Comm());
     LINALG::GatherAll(my_uncertain_nodes_dbc_onoff_, aledis_->Comm());
-    LINALG::GatherAll(my_uncertain_nodes_dbc_curve_, aledis_->Comm());
     LINALG::GatherAll(my_uncertain_nodes_dbc_funct_, aledis_->Comm());
   }
   else
@@ -386,7 +374,6 @@ Teuchos::RCP<UQ::RandomField> UQ::MCVarThicknessManager::CreateRandomField(
 void UQ::MCVarThicknessManager::AddPointDBCToAleDiscretization(
     const std::map<int, std::vector<double> >& ale_bc_nodes_val,
     const std::map<int, std::vector<int> >& ale_bc_nodes_onoff,
-    const std::map<int, std::vector<int> >&ale_bc_nodes_curve,
     const std::map<int, std::vector<int> >& ale_bc_nodes_funct)
 {
   std::map<int, std::vector<double> >::const_iterator iter;
@@ -398,12 +385,10 @@ void UQ::MCVarThicknessManager::AddPointDBCToAleDiscretization(
             DRT::Condition::Point));
 
     std::vector<int> onoff(3, 1);
-    std::vector<int> t_curve(3, 0);
 
     cond->Add("Node Ids", iter->first);
     cond->Add("onoff", ale_bc_nodes_onoff.at(iter->first));
     cond->Add("val", iter->second);
-    cond->Add("curve",ale_bc_nodes_curve.at(iter->first));
     cond->Add("funct",ale_bc_nodes_funct.at(iter->first));
 
     aledis_->SetCondition("Dirichlet", cond);
@@ -587,8 +572,7 @@ void UQ::MCVarThicknessManager::ModifyGeometryBasedOnRF(const unsigned int mysee
   DeletePointDBCConditionsFromAleDiscretization();
 
   AddPointDBCToAleDiscretization(my_uncertain_nodes_delta_pos_,
-       my_uncertain_nodes_dbc_onoff_, my_uncertain_nodes_dbc_curve_,
-       my_uncertain_nodes_dbc_funct_);
+       my_uncertain_nodes_dbc_onoff_,my_uncertain_nodes_dbc_funct_);
 
   // since we potentially changed the DB conditions we have to rebuild
   my_ale_timint->SetupDBCMapEx(ALE::UTILS::MapExtractor::dbc_set_std,

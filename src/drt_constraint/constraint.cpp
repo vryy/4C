@@ -266,7 +266,7 @@ void UTILS::Constraint::EvaluateConstraint(
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum>=0 )
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
       // global and local ID of this bc in the redundant vectors
       const int offsetID = params.get<int>("OffsetID");

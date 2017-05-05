@@ -19,7 +19,6 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
@@ -273,42 +272,42 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
   }
   // find out whether we will use a time curve
-  bool usetime = true;
   double time = -1.0;
   if (this->IsParamsInterface())
     time = this->ParamsInterfacePtr()->GetTotalTime();
   else
     time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  // amplitude of load curve at current time called
-  std::vector<double> curvefac(6,1.0);
-
-  for (int i=0; i<6; ++i)
-  {
-    int curvenum = -1;
-    // number of the load curve related with a specific line Neumann condition called
-    if (curve) curvenum = (*curve)[i];
-
-    if (curvenum>=0 && usetime)
-      curvefac[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  }
+  const std::vector<int>* tmp_funct  = condition.Get<std::vector<int> >("funct");
 
   // get values and switches from the condition
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
   const std::vector<int>* onoff = condition.Get<std::vector<int> >("onoff");
-  // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
 
+  // amplitude of load curve at current time called
+  std::vector<double> functfac(6,1.0);
+
+  for (int i=0; i<6; ++i)
+  {
+    if ((*onoff)[i]==0) continue;
+    int functnum = -1;
+    // number of the load curve related with a specific line Neumann condition called
+    if (tmp_funct) functnum = (*tmp_funct)[i];
+
+    if (functnum>=0)
+      functfac[i] = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
+  }
+
+
+  // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
   const std::vector<double>* val = condition.Get<std::vector<double> >("val");
 
   #ifndef BEAM3EBDISCRETELINENEUMANN
   // funct is related to the 6 "funct" fields after the val field of the Neumann condition
   // in the input file; funct gives the number of the function defined in the section FUNCT
-  const std::vector<int>* functions = condition.Get<std::vector<int> >("funct");
   #endif
 
   //find out which node is correct
@@ -332,7 +331,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     //add forces to Res_external according to (5.56). There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
     for(int i = 0; i < 3 ; i++)
     {
-      elevec1(insert*dofpn + i) += (*onoff)[i]*(*val)[i]*curvefac[i];
+      elevec1(insert*dofpn + i) += (*onoff)[i]*(*val)[i]*functfac[i];
     }
 
     //matrix for current tangent, moment at node and crossproduct
@@ -352,7 +351,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     {
       //get current tangent at nodes
       tangent(dof-3) = Tref_[insert](dof-3) + mydisp[insert*dofpn + dof];
-      moment(dof-3) = (*onoff)[dof]*(*val)[dof]*curvefac[dof];
+      moment(dof-3) = (*onoff)[dof]*(*val)[dof]*functfac[dof];
     }
 
     double abs_tangent = 0.0;
@@ -493,44 +492,31 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
       // loop the dofs of a node
       for (int dof=0; dof<6; ++dof)
-        ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac[dof];
-      double functionfac = 1.0;
-      int functnum = -1;
-
-      //Check if also moment line Neumann conditions are implemented accidentally and throw error
-      for (int dof=3; dof<6; ++dof)
-      {
-        if (functions) functnum = (*functions)[dof];
-        else functnum = -1;
-
-        if (functnum>0)
-        {
-          dserror("Line Neumann conditions for distributed moments are not implemented for beam3eb so far! Only the function flag 1, 2 and 3 can be set!");
-        }
-      }
+        ar[dof] = fac * (*onoff)[dof]*(*val)[dof];
 
       //sum up load components
+      double functionfac = 1.0;
+      int functnum = -1;
       for (int dof=0; dof<3; ++dof)
       {
-        if (functions) functnum = (*functions)[dof];
+        if (tmp_funct) functnum = (*tmp_funct)[dof];
         else functnum = -1;
 
         if (functnum>0)
         {
           // evaluate function at the position of the current node       --> dof here correct?
-          functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);
+          functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time);
         }
         else functionfac = 1.0;
-
         for (int node=0; node<2*NODALDOFS; ++node)
         {
           #ifndef INEXTENSIBLE
-            elevec1[node*3 + dof] += N_i(node) *ar[dof] *functionfac;
+            elevec1[node*3 + dof] += N_i(node) *ar[dof]*functionfac;
           #else
             if(node<2)
-              elevec1[node*3 + dof] += N_i(node) *ar[dof] *functionfac;
+              elevec1[node*3 + dof] += N_i(node) *ar[dof]*functionfac;
             else
-              elevec1[node*3 + dof + 1] += N_i(node) *ar[dof] *functionfac;
+              elevec1[node*3 + dof + 1] += N_i(node) *ar[dof]*functionfac;
           #endif
         }
       }
@@ -3053,23 +3039,21 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
   }
 
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
+  const std::vector<int>* tmp_funct  = condition.Get<std::vector<int> >("funct");
   // amplitude of load curve at current time called
-  std::vector<double> curvefac(6,1.0);
+  std::vector<double> functfac(6,1.0);
 
   for (int i=0; i<6; ++i)
   {
-    int curvenum = -1;
+    int functnum = -1;
     // number of the load curve related with a specific line Neumann condition called
-    if (curve) curvenum = (*curve)[i];
+    if (tmp_funct) functnum = (*tmp_funct)[i];
 
-    if (curvenum>=0 && usetime)
-      curvefac[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    if (functnum>=0)
+      functfac[i] = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
   }
 
   // get values and switches from the condition
@@ -3103,7 +3087,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
     //add forces to Res_external according to (5.56)
     for(int i = 0; i < 3 ; i++)
     {
-      force_check(insert*(dofpn) + i) += (*onoff)[i]*(*val)[i]*curvefac[i];
+      force_check(insert*(dofpn) + i) += (*onoff)[i]*(*val)[i]*functfac[i];
     }
 
     //matrix for current tangent, moment at node and crossproduct
@@ -3123,7 +3107,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
     {
       //get current tangent at nodes
       tangent(dof-3) = Tref_[insert](dof-3) + disp_totlag[insert*(dofpn) + dof];
-      moment(dof-3) = (*onoff)[dof]*(*val)[dof]*curvefac[dof];
+      moment(dof-3) = (*onoff)[dof]*(*val)[dof]*functfac[dof];
     }
 
     FAD abs_tangent = 0.0;

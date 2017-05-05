@@ -7,6 +7,8 @@
 \maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
+
+\level 1
 */
 
 /*----------------------------------------------------------------------*/
@@ -2005,9 +2007,6 @@ void INPAR::FLUID::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condi
    // we provide a vector of 3 values for velocities
    mixhybDirichletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",3)));
 
-   // values for curves
-   mixhybDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",3,true,true)));
-
    // and optional spatial functions
    mixhybDirichletcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",3,false,false,true)));
 
@@ -2298,7 +2297,7 @@ void INPAR::FLUID::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condi
   AddNamedInt (volumetric_surface_flow_cond,"Order");
   AddNamedInt (volumetric_surface_flow_cond,"Harmonics");
   AddNamedReal(volumetric_surface_flow_cond,"Val");
-  AddNamedInt (volumetric_surface_flow_cond,"Curve");
+  AddNamedInt (volumetric_surface_flow_cond,"Funct");
 
   volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "SelfEvaluateNormal",
                                                                                        Teuchos::tuple<std::string>("SelfEvaluateNormal","UsePrescribedNormal"),
@@ -2376,7 +2375,7 @@ void INPAR::FLUID::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condi
   AddNamedInt (total_traction_correction_cond,"Order");
   AddNamedInt (total_traction_correction_cond,"Harmonics");
   AddNamedReal(total_traction_correction_cond,"Val");
-  AddNamedInt (total_traction_correction_cond,"Curve");
+  AddNamedInt (total_traction_correction_cond,"Funct");
 
   total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "SelfEvaluateNormal",
                                                                                          Teuchos::tuple<std::string>("SelfEvaluateNormal","UsePrescribedNormal"),
@@ -2574,4 +2573,3 @@ void INPAR::FLUID::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condi
   condlist.push_back(fluctHydro_statisticsLine);
 
 }
-

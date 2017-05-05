@@ -67,7 +67,7 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("GSTATCONDID_ANODE",1,"condition id of electrode kinetics for anode",&elchcontrol);
   DoubleParameter("GSTATCONVTOL",1.e-5,"Convergence check tolerance for galvanostatic mode",&elchcontrol);
   DoubleParameter("GSTATCURTOL",1.e-15,"Current Tolerance",&elchcontrol);
-  IntParameter("GSTATCURVENO",-1,"function number defining the imposed current curve",&elchcontrol);
+  IntParameter("GSTATFUNCTNO",-1,"function number defining the imposed current curve",&elchcontrol);
   IntParameter("GSTATITEMAX",10,"maximum number of iterations for galvanostatic mode",&elchcontrol);
   DoubleParameter("GSTAT_LENGTH_CURRENTPATH",0.0,"average length of the current path",&elchcontrol);
 
@@ -353,8 +353,8 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     elechemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
     elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("pot")));
     elechemcomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot")));
-    elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));
-    elechemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+    elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("funct")));
+    elechemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("funct",true,true)));
     elechemcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));
     elechemcomponents.push_back(Teuchos::rcp(new IntRealBundle(
         "intreal bundle",
@@ -459,8 +459,8 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
       electrodedomainkineticscomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
       electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("pot")));
       electrodedomainkineticscomponents.push_back(Teuchos::rcp(new RealConditionComponent("pot")));
-      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));
-      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("funct")));
+      electrodedomainkineticscomponents.push_back(Teuchos::rcp(new IntConditionComponent("funct",true,true)));
       electrodedomainkineticscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));
 
       // input: stoichiometry for reaction mechanism (IntRealBundle)

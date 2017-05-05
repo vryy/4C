@@ -342,7 +342,7 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
 //  if(periodlength->at(0) > 0.0)
 //    if(shearflow &&  curvenumber >=  0 && dbcdispdir >= 0 )
 //    {
-//      uppervel = shearamplitude * (DRT::Problem::Instance()->Curve(curvenumber).FctDer(time,1))[1];
+//      uppervel = shearamplitude * (DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time,1))[1];
 //
 //      //compute background velocity
 //      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) * uppervel;

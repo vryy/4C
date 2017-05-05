@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------*
 \file so_nstet_nodalstrain.cpp
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief Nstet element nodal strain implementation
+
+\maintainer Michael Gee
+
+\level 3
 
 *----------------------------------------------------------------------*/
 
@@ -15,7 +14,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
@@ -1678,7 +1676,3 @@ void DRT::ELEMENTS::NStetType::StressOutput(
   }
   return;
 }
-
-
-
-

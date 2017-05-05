@@ -151,6 +151,26 @@ namespace INPUT
 
     /// add a name followed by a vector of double variables
     /*!
+          The parameter \p lengthdef specifies the name of an integer component
+          that gives the length of the vector. The integer component has to
+          precede the vector definition on the input line.
+     */
+    LineDefinition& AddOptionalNamedDoubleVector(std::string name, std::string lengthdef);
+
+    /// add a name followed by a vector of string variables
+    LineDefinition& AddOptionalNamedStringVector(std::string name, int length);
+
+    /// add a name followed by a vector of string variables
+    /*!
+          The parameter \p lengthdef specifies the name of an integer component
+          that gives the length of the vector. The integer component has to
+          precede the vector definition on the input line.
+          The space defines the separation between a string and the next one.
+     */
+    LineDefinition& AddOptionalNamedStringVector(std::string name, std::string lengthdef);
+
+    /// add a name followed by a vector of double variables
+    /*!
       The parameter \p lengthdef specifies the name of an integer component
       that gives the length of the vector. The integer component has to
       precede the vector definition on the input line.
@@ -187,10 +207,12 @@ namespace INPUT
     /// There has to be a named component of the given type
 
     void ExtractString(std::string name, std::string& value);
+    bool FindString(std::string name);
     void ExtractInt(std::string name, int& value);
     void ExtractIntVector(std::string name, std::vector<int>& v);
     void ExtractDouble(std::string name, double& value);
     void ExtractDoubleVector(std::string name, std::vector<double>& v);
+    void ExtractStringVector(std::string name, std::vector<std::string>& v);
     void ExtractPairOfStringAndDoubleVector(std::string name, std::vector< std::pair<std::string,double> >& v);
 
     //@}

@@ -22,7 +22,6 @@
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_elementdefinition.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_dserror.H"
@@ -183,7 +182,6 @@ int main(int argc, char *argv[])
       DRT::UTILS::PrintCloningMaterialMapDatHeader();
       PrintElementDatHeader();
       PrintFunctionDatHeader();
-      PrintTimeCurveDatHeader();
       PrintResultDescrDatHeader();
       printf("\n\n");
     }

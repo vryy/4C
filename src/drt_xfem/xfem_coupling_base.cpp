@@ -506,7 +506,6 @@ void XFEM::CouplingBase::EvaluateFunction(
 
   //---------------------------------------
   // get values and switches from the condition
-  const std::vector<int>*    curve     = cond->Get<std::vector<int>    >("curve");
   const std::vector<int>*    onoff     = cond->Get<std::vector<int>    >("onoff");
   const std::vector<double>* val       = cond->Get<std::vector<double> >("val"  );
   const std::vector<int>*    functions = cond->Get<std::vector<int>    >("funct");
@@ -527,25 +526,14 @@ void XFEM::CouplingBase::EvaluateFunction(
     int functnum = -1;
     if (functions) functnum = (*functions)[dof];
 
-    // check for potential time curve
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[dof];
-
     // initialization of time-curve factor and function factor
     double functionfac = 1.0;
-    double curvefac = 1.0;
 
-    // compute potential time curve or set time-curve factor to one
-    if (curvenum >= 0)
-    {
-      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-    }
-
-    double num = (*onoff)[dof]*(*val)[dof]*curvefac;
+    double num = (*onoff)[dof]*(*val)[dof];
 
     if (functnum>0)
     {
-      functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time,NULL);
+      functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time);
     }
 
     // uniformly distributed noise
@@ -580,13 +568,12 @@ void XFEM::CouplingBase::EvaluateScalarFunction(
 
   //---------------------------------------
   // get values and switches from the condition
-  const std::vector<int>*    curve     = cond->Get<std::vector<int>    >("curve");
   const std::vector<int>*    functions = cond->Get<std::vector<int>    >("funct");
 
   // uniformly distributed random noise
 
-  if((*functions).size()!=1 or (*curve).size()!=1)
-    dserror("Do not call EvaluateScalarFunction with more than one function/value/curve provided");
+  if((*functions).size()!=1)
+    dserror("Do not call EvaluateScalarFunction with more than one function/value provided");
 
   DRT::Condition& secondary = const_cast<DRT::Condition&>(*cond);
   const std::vector<double>* percentage = secondary.GetMutable<std::vector<double> >("randnoise");
@@ -602,25 +589,14 @@ void XFEM::CouplingBase::EvaluateScalarFunction(
     int functnum = -1;
     if (functions) functnum = (*functions)[dof];
 
-    // check for potential time curve
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[dof];
-
     // initialization of time-curve factor and function factor
     double functionfac = 1.0;
-    double curvefac = 1.0;
 
-    // compute potential time curve or set time-curve factor to one
-    if (curvenum >= 0)
-    {
-      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-    }
-
-    double num = val*curvefac;
+    double num = val;
 
     if (functnum>0)
     {
-      functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time,NULL);
+      functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time);
     }
 
     // uniformly distributed noise

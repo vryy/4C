@@ -692,7 +692,7 @@ void COMBUST::BlendMaterial(
       {
         // time factor for the intermediate step
         if(time >= 0.0)
-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+          curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
         else
           dserror("Negative time value in blending material: time = %f",time);
       }

@@ -224,7 +224,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
       if (curvenum>=0 )
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
       double diff = (curvefac*(*initerror_)[condID-1]-(*acterror_)[condID-1]);
 

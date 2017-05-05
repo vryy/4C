@@ -4,12 +4,9 @@
 
 \brief evaluation of meshfree fluid terms at integration points
 
-<pre>
-Maintainer: Keijo Nissen
-            nissen@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
-</pre>
+\maintainer Keijo Nissen
+
+\level 3
 
 *---------------------------------------------------------------------------*/
 
@@ -136,20 +133,7 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
   //------------------------------------------------------------------------
 
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = fldparatimint_->Time();
-  if (time<0.0) usetime = false;
-
-  // get time-curve factor/ n = - grad phi / |grad phi|
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-
-  // get time factor for Neumann term
-  const double curve_time_fac = curvefac * fldparatimint_->TimeFacRhs();
 
   //------------------------------------------------------------------------
   // get local node coordinates
@@ -253,7 +237,7 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
     //------------------------------------------------------------------------
 
     // aggregate all factors but factor given by spatial function
-    const double fac_curve_time_dens = fac_ * densfac_ * curve_time_fac;
+    const double fac_time_dens = fac_ * densfac_ * fldparatimint_->TimeFacRhs();
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -273,10 +257,10 @@ int DRT::ELEMENTS::MeshfreeFluidBoundaryCalc<distype>::EvaluateNeumann(
 
         // evaluate function at current gauss point
         if (functnum>0)
-          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,cgxyz,time,NULL);
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,cgxyz,time);
 
         // aggregate all factors
-        const double valfac = (*val)[idim]*fac_curve_time_dens*functfac;
+        const double valfac = (*val)[idim]*fac_time_dens*functfac;
 
         // loop over all nodes
         for(int inode=0; inode < bdrynen_; ++inode )

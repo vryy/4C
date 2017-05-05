@@ -490,7 +490,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       bool usetime = true;
       if (time<0.0) usetime = false;
       if (curvenum>=0 && usetime)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
       Teuchos::RCP<Epetra_Vector> timefact = params.get<Teuchos::RCP<Epetra_Vector> >("vector curve factors");
       timefact->ReplaceGlobalValues(1,&curvefac,&gindex);
     }
@@ -563,7 +563,7 @@ void UTILS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discretization
     bool usetime = true;
     if (time<0.0) usetime = false;
     if (curvenum>=0 && usetime)
-      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+      curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     char factorname[30];

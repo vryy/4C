@@ -160,7 +160,7 @@ void MAT::PAR::FluidPoroSingleReaction::EvaluateFunction(
   // evaluate the reaction term
   double curval = Function(functID_-1).Evaluate(0,variables,constants);
   // evaluate derivatives
-  std::vector<double> curderivs(Function(functID_-1).FctDer(0,variables,constants));
+  std::vector<double> curderivs(Function(functID_-1).EvaluateDerivative(0,variables,constants));
 
   // fill the output vector
   for(int k=0;k<numphases_;k++)

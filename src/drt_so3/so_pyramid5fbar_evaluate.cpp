@@ -17,7 +17,6 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_mat/thermoplastichyperelast.H"
 #include "../linalg/linalg_utils.H"
@@ -614,18 +613,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& para
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  // **
 
   // (SPATIAL) FUNCTION BUSINESS
   const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
@@ -675,14 +663,14 @@ int DRT::ELEMENTS::So_pyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& para
     }
 
     // integration factor
-    const double fac = gpweights[gp] * curvefac * detJ;
+    const double fac = gpweights[gp] * detJ;
     // distribute/add over element load vector
     for(int dim=0; dim<NUMDIM_SOP5; dim++) {
       // function evaluation
       const int functnum = (funct) ? (*funct)[dim] : -1;
       const double functfac
         = (functnum>0)
-        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
+        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time)
         : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid=0; nodid<NUMNOD_SOP5; ++nodid) {

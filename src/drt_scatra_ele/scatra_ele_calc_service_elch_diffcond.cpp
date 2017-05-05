@@ -380,7 +380,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(
   // this feature can be also used for stationary "pseudo time loops"
   if (curvenum>=0)
   {
-    const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    const double curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
     // adjust potential at metal side accordingly
     pot0 *= curvefac;
   }

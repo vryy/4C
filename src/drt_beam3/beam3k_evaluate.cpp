@@ -16,7 +16,6 @@
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
@@ -2129,30 +2128,11 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
 
 
   // find out whether we will use a time curve
-  bool usetime = true;
   double time = -1.0;
   if (this->IsParamsInterface())
     time = this->ParamsInterfacePtr()->GetTotalTime();
   else
     time = params.get("total time", -1.0);
-
-  if (time<0.0)
-    usetime = false;
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
-  // amplitude of load curve at current time called
-  std::vector<double> curvefac(6, 1.0);
-
-  for (unsigned int i=0; i<6; ++i)
-  {
-    int curvenum = -1;
-    // number of the load curve related with a specific line Neumann condition called
-    if (curve) curvenum = (*curve)[i];
-
-    if (curvenum>=0 && usetime)
-      curvefac[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  }
 
   // get values and switches from the condition:
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
@@ -2166,14 +2146,30 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   // compute the load vector based on value, scaling factor and whether condition is active
   LINALG::TMatrix<double,6,1> load_vector_neumann(true);
   for (unsigned int i=0; i<6; ++i)
-    load_vector_neumann(i) = (*onoff)[i] * (*val)[i] * curvefac[i];
-
+    load_vector_neumann(i) = (*onoff)[i] * (*val)[i];
 
   /***********************************************************************************************/
 
   // if a point neumann condition needs to be linearized
   if (condition.Type() == DRT::Condition::PointNeumannEB)
   {
+    // find out whether we will use a time curve and get the factor
+    const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
+    // amplitude of load curve at current time called
+    std::vector<double> functtimefac(6, 1.0);
+
+    for (unsigned int i=0; i<6; ++i)
+    {
+      int functnum = -1;
+      // number of the load curve related with a specific line Neumann condition called
+      if (funct) functnum = (*funct)[i];
+
+      if (functnum>0)
+        functtimefac[i] = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
+
+      load_vector_neumann(i) *= functtimefac[i];
+    }
+
     // find out at which node the condition is applied
     const std::vector<int>* nodeids = condition.Nodes();
     if (nodeids == NULL)
@@ -2687,7 +2683,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
       if ( function_numbers != NULL and (*function_numbers)[idof] > 0 )
       {
         functionfac = DRT::Problem::Instance()->Funct( (*function_numbers)[idof]-1 ).Evaluate(
-                idof, &X_ref[0], time, NULL);
+                idof, &X_ref[0], time);
       }
       else
         functionfac = 1.0;

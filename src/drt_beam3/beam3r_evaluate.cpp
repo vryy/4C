@@ -22,7 +22,6 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
@@ -635,15 +634,12 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
   SetParamsInterfacePtr(params);
 
   // find out whether we will use a time curve
-  bool usetime = true;
   double time = -1.0;
 
   if (IsParamsInterface())
     time = ParamsInterface().GetTotalTime();
   else
     time = params.get<double>("total time",-1.0);
-
-  if (time<0.0) usetime = false;
 
   // nnodetriad: number of nodes used for interpolation of triad field
   const unsigned int nnodetriad = NumNode();
@@ -663,21 +659,6 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
   const unsigned int dofpercombinode = dofperclnode+dofpertriadnode;
 
   const DiscretizationType distype = this->Shape();
-
-  // find out whether we will use a time curve and get the factor
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  // amplitude of load curve at current time called, 6 components (3 forces, 3 moments)
-  std::vector<double> curvefac(6,1.0);
-
-  for (unsigned int i=0; i<6; ++i)
-  {
-    int curvenum = -1;
-    // number of the load curve related with a specific line Neumann condition called
-    if (curve) curvenum = (*curve)[i];
-
-    if (curvenum>=0 && usetime)
-      curvefac[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  }
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints1D intpoints(MyGaussRule(neumann_lineload));
@@ -740,7 +721,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
 
     // loop the relevant dofs of a node
     for (int dof=0; dof<6; ++dof)
-      ar[dof] = fac * (*onoff)[dof] * (*val)[dof] * curvefac[dof];
+      ar[dof] = fac * (*onoff)[dof] * (*val)[dof];
     double functionfac = 1.0;
     int functnum = -1;
 
@@ -754,7 +735,7 @@ int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
 
       // evaluate function at the position of the current GP
       if (functnum>0)
-        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);
+        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time);
       else
         functionfac = 1.0;
 

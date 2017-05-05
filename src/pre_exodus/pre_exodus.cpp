@@ -275,27 +275,6 @@ int main(
     Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::ValidCloningMaterialMapLines();
     lines->Print(defaulthead);
 
-    // print time curves
-    defaulthead <<
-    "-------------------------------------------------------------CURVE1"<<std::endl<<
-    "-------------------------------------------------------------CURVE2"<<std::endl<<
-    "-------------------------------------------------------------CURVE3"<<std::endl<<
-    "-------------------------------------------------------------CURVE4"<<std::endl;
-    {
-      std::stringstream tmp;
-      DRT::UTILS::TimeCurveManager timecurvemanager;
-      Teuchos::RCP<DRT::INPUT::Lines> tlines = timecurvemanager.ValidTimeCurveLines();
-      tlines->Print(tmp);
-      std::string tmpstring = tmp.str();
-      std::string removeit = "--------------------------------------------------------------CURVE\n";
-      size_t pos = tmpstring.find(removeit);
-      if (pos !=std::string::npos)
-      {
-        tmpstring.erase(pos,removeit.length());
-      }
-      defaulthead<<tmpstring;
-    }
-
     // print spatial functions
     defaulthead<<
     "-------------------------------------------------------------FUNCT1"<<std::endl<<
@@ -463,7 +442,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   "has 45107 Nodes"<<std::endl<<
   "'*ns0=\"CONDITION\"'"<<std::endl<<
   "sectionname=\"DESIGN SURF DIRICH CONDITIONS\""<<std::endl<<
-  "description=\"NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0\""
+  "description=\"NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0\""
   <<std::endl<<std::endl;
 
   defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<std::endl;

@@ -4,12 +4,9 @@
 
 \brief main file containing routines for calculation of meshfree fluid cell
 
-<pre>
-Maintainer: Keijo Nissen
-            nissen@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15253
-</pre>
+\maintainer Keijo Nissen
+
+\level 3
 
 *---------------------------------------------------------------------------*/
 
@@ -448,7 +445,7 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::Sysmat(
       const int advefuncno = fldpara_->OseenFieldFuncNo();
       const double time = fldparatimint_->Time();
       for(int idim=0;idim<nsd_;++idim)
-        convvelint_(idim) = DRT::Problem::Instance()->Funct(advefuncno-1).Evaluate(idim,cgxyz,time,NULL);
+        convvelint_(idim) = DRT::Problem::Instance()->Funct(advefuncno-1).Evaluate(idim,cgxyz,time);
       break;
     }
     case INPAR::FLUID::stokes:
@@ -748,26 +745,8 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::BodyForce(
 
   if (myneumcond.size()==1)
   {
-    // check for potential time curve
-    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
-    int curvenum = -1;
-    if (curve) curvenum = (*curve)[0];
-
     // initialization of time-curve factor
-    double curvefac = 0.0;
     const double time = fldparatimint_->Time();
-
-    // compute potential time curve or set time-curve factor to one
-    if (curvenum >= 0)
-    {
-      // time factor (negative time indicating error)
-      if (fldparatimint_->Time() >= 0.0)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      else
-        dserror("Negative time in bodyforce calculation: time = %f", time);
-    }
-    else
-      curvefac = 1.0;
 
     // get values and switches from the condition
     const std::vector<int>*    onoff     = myneumcond[0]->Get<std::vector<int   > >("onoff");
@@ -785,11 +764,11 @@ void DRT::ELEMENTS::MeshfreeFluidCellCalc<distype>::BodyForce(
       if (functions) functnum = (*functions)[isd];
       else functnum = -1;
 
-      double num = (*onoff)[isd]*(*val)[isd]*curvefac;
+      double num = (*onoff)[isd]*(*val)[isd];
 
       // evaluate function at the position of the current node
       if (functnum>0)
-        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,cgxyz,time,NULL);
+        functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,cgxyz,time);
       else
         functionfac = 1.0;
 

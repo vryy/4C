@@ -596,9 +596,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList&  
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < nsd_)
@@ -609,17 +607,6 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList&  
     if ((*onoff)[checkdof] != 0)
       dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
   }
-
-  // find out whether we will use time curves and get the factors
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  std::vector<double> curvefacs(nsd_, 1.0);
-  for (int i=0; i < nsd_; ++i)
-  {
-    const int curvenum = (curve) ? (*curve)[i] : -1;
-    if (curvenum>=0 && usetime)
-      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  }
-
 
   // (SPATIAL) FUNCTION BUSINESS
   const std::vector<int>* funct = condition.Get<std::vector<int> >("funct");
@@ -674,9 +661,9 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList&  
       const int functnum = (funct) ? (*funct)[dim] : -1;
       const double functfac
         = (functnum>0)
-        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
+        ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time)
         : 1.0;
-      const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * curvefacs[dim] * functfac;
+      const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid=0; nodid<nen_; ++nodid) {
         elevec1[nodid*nsd_+dim] += shapefunct(nodid) * dim_fac;
       }

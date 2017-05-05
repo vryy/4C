@@ -71,13 +71,13 @@ void DRT::UTILS::Dbc::operator() (
   if (!discret.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   // get the current time
-  bool usetime = false;
   double time = -1.0;
   if (params.isParameter("total time"))
   {
     time = params.get<double>("total time");
-    usetime = true;
   }
+  else
+    dserror("The 'total time' needs to be specified in your parameter list!");
 
   // vector of DOF-IDs which are Dirichlet BCs
   Teuchos::RCP<std::set<int> > dbcgids[2] = {Teuchos::null,Teuchos::null};
@@ -99,7 +99,7 @@ void DRT::UTILS::Dbc::operator() (
   // --------------------------------------------------------------------------
   // start to evaluate the dirichlet boundary conditions...
   // --------------------------------------------------------------------------
-  Evaluate(discret,usetime,time,systemvectors,*toggleaux,dbcgids);
+  Evaluate(discret,time,systemvectors,*toggleaux,dbcgids);
 
   // --------------------------------------------------------------------------
   // create DBC and free map and build their common extractor
@@ -149,7 +149,6 @@ Teuchos::RCP<Epetra_Vector> DRT::UTILS::Dbc::CreateToggleVector(
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::Evaluate(
     const DRT::DiscretizationInterface &  discret,
-    const bool &                        usetime,
     const double &                      time,
     const Teuchos::RCP<Epetra_Vector> * systemvectors,
     Epetra_Vector &                     toggle,
@@ -166,7 +165,7 @@ void DRT::UTILS::Dbc::Evaluate(
   // Now, as we know from the toggle vector which dofs actually have
   // Dirichlet BCs, we can assign the values to the system vectors.
   // --------------------------------------------------------------------------
-  DoDirichletCondition(discret,conds,usetime,time,systemvectors,toggle,dbcgids);
+  DoDirichletCondition(discret,conds,time,systemvectors,toggle,dbcgids);
 }
 
 /*----------------------------------------------------------------------------*
@@ -325,19 +324,18 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(
 void DRT::UTILS::Dbc::DoDirichletCondition(
     const DRT::DiscretizationInterface &                 discret,
     const std::vector<Teuchos::RCP<DRT::Condition> > & conds,
-    const bool &                                       usetime,
     const double &                                     time,
     const Teuchos::RCP<Epetra_Vector> *                systemvectors,
     const Epetra_Vector &                              toggle,
     const Teuchos::RCP<std::set<int> > *               dbcgids) const
 {
-  DoDirichletCondition(discret,conds,usetime,time,systemvectors,toggle,
+  DoDirichletCondition(discret,conds,time,systemvectors,toggle,
       dbcgids,DRT::Condition::VolumeDirichlet);
-  DoDirichletCondition(discret,conds,usetime,time,systemvectors,toggle,
+  DoDirichletCondition(discret,conds,time,systemvectors,toggle,
       dbcgids,DRT::Condition::SurfaceDirichlet);
-  DoDirichletCondition(discret,conds,usetime,time,systemvectors,toggle,
+  DoDirichletCondition(discret,conds,time,systemvectors,toggle,
       dbcgids,DRT::Condition::LineDirichlet);
-  DoDirichletCondition(discret,conds,usetime,time,systemvectors,toggle,
+  DoDirichletCondition(discret,conds,time,systemvectors,toggle,
       dbcgids,DRT::Condition::PointDirichlet);
 }
 
@@ -346,7 +344,6 @@ void DRT::UTILS::Dbc::DoDirichletCondition(
 void DRT::UTILS::Dbc::DoDirichletCondition(
     const DRT::DiscretizationInterface &                 discret,
     const std::vector<Teuchos::RCP<DRT::Condition> > & conds,
-    const bool &                                       usetime,
     const double &                                     time,
     const Teuchos::RCP<Epetra_Vector> *                systemvectors,
     const Epetra_Vector &                              toggle,
@@ -360,7 +357,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(
     if ((*fool)->Type() != type)
       continue;
 
-    DoDirichletCondition(discret,**fool,usetime,time,systemvectors,toggle,
+    DoDirichletCondition(discret,**fool,time,systemvectors,toggle,
         dbcgids);
   }
 }
@@ -368,9 +365,8 @@ void DRT::UTILS::Dbc::DoDirichletCondition(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::DoDirichletCondition(
-    const DRT::DiscretizationInterface &   discret,
+    const DRT::DiscretizationInterface & discret,
     const DRT::Condition &               cond,
-    const bool &                         usetime,
     const double &                       time,
     const Teuchos::RCP<Epetra_Vector> *  systemvectors,
     const Epetra_Vector &                toggle,
@@ -387,8 +383,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   // determine number of conditioned nodes
   const unsigned nnode = (*nodeids).size();
-  // get curve, funct, and val from condition
-  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+  // get funct, and val from condition
   const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
   const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
 
@@ -409,7 +404,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(
   for (unsigned i=0; i<nnode; ++i)
   {
     // do only nodes in my row map
-    int nlid = discret.NodeRowMap()->LID((*nodeids)[i]);
+    const int nlid = discret.NodeRowMap()->LID((*nodeids)[i]);
     if (nlid < 0) continue;
     DRT::Node* actnode = discret.lRowNode( nlid );
 
@@ -424,7 +419,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(
     // nodal dof-sets (in xfem cases), thus the size of the dofs vector might
     // be a multiple of this value. Otherwise you get the same number of dofs
     // as total_numdf
-    int numdf = discret.NumStandardDof(0,actnode);
+    const int numdf = discret.NumStandardDof(0,actnode);
 
     if ( ( total_numdf % numdf ) != 0 )
       dserror( "Illegal number of DoF's at this node! (nGID=%d)\n"
@@ -441,40 +436,33 @@ void DRT::UTILS::Dbc::DoDirichletCondition(
         dserror("Global id %d not on this proc %d in system vector", dofs[j],
             discret.Comm().MyPID());
       // get position of label for this dof in condition line
-      int onesetj = j % numdf;
+      const int onesetj = j % numdf;
 
       // check whether dof gid is a dbc gid
       if (std::abs(toggle[lid]-1.0)>1e-13) continue;
 
       std::vector<double> value(deg+1,(*val)[onesetj]);
 
-      // factor given by time curve
-      std::vector<double> curvefac(deg+1, 1.0);
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[onesetj];
-      if (curvenum>=0 && usetime)
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
-      else
-        for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+      // factor given by temporal and spatial function
+      std::vector<double> functimederivfac(deg+1, 1.0);
+      for (unsigned i=1; i<(deg+1); ++i) functimederivfac[i] = 0.0;
 
-      // factor given by spatial function
-      double functfac = 1.0;
       int funct_num = -1;
       if (funct)
       {
         funct_num = (*funct)[onesetj];
         if (funct_num>0)
-          functfac =
-              DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(onesetj,
+          functimederivfac =
+              DRT::Problem::Instance()->Funct(funct_num-1).EvaluateTimeDerivative(onesetj,
                   actnode->X(),
                   time,
-                  &discret);
+                  deg);
       }
 
       // apply factors to Dirichlet value
       for (unsigned i=0; i<deg+1; ++i)
       {
-        value[i] *= functfac * curvefac[i];
+        value[i] *= functimederivfac[i];
       }
 
       // assign value

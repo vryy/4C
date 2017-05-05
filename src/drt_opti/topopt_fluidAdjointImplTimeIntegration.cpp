@@ -3,13 +3,10 @@
 
 \brief fluid adjoint implicit time integration for topology optimization
 
+\maintainer Martin Winklmaier
 
-<pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15241
-</pre>
+\level 3
+
  *------------------------------------------------------------------------------------------------*/
 
 
@@ -818,7 +815,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
       for(int index=0;index<numdim_+1;++index)
       {
         int gid = nodedofset[index];
-        double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
+        double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),time_);
         veln_->ReplaceGlobalValues(1,&initialval,&gid);
       }
     }
@@ -1211,5 +1208,3 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Reset(
   SetElementGeneralAdjointParameter();
   return;
 }
-
-

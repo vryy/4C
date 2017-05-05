@@ -2,13 +2,8 @@
 /*!
 \file timint_adjoint.cpp
 \brief Time integration for a hyperleastic quasi static adjoint problem
-
-<pre>
-Maintainer: Sebastian Kehl
-            kehl@mhpc.mw.tum.de
-            089 - 289-10361
-</pre>
-
+\maintainer Anna Birzle
+\level 3
 !*/
 #include "timint_adjoint.H"
 
@@ -378,7 +373,7 @@ void STR::TimIntAdjoint::GetDBCMap()
 {
   // Get Dirichlet Map
   Teuchos::ParameterList p;
-  //p.set("total time", timen_);
+  p.set("total time", timen_);
   discret_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,dbctoggle_, dbcmaps_);
   zeros_->PutScalar(0.0); // paranoia
 

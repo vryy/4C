@@ -99,6 +99,40 @@ namespace INPUT
     }
   };
 
+//  class SpecialFunctionComponent : public LineComponent
+//  {
+//    SpecialFunctionComponent(std::string name, int length) : name_(name), values_(length) {}
+//
+//    SpecialFunctionComponent(std::string name, const std::vector<type>& values)
+//      : name_(name), values_(values.begin(),values.end()) {}
+//
+//    virtual ~SpecialFunctionComponent() {}
+//
+//    virtual LineComponent* Clone() { return new NamedVectorComponent<type>(name_,values_); }
+//
+//    virtual void Print(std::ostream& stream)
+//    {
+//      stream << name_ << " ";
+//      std::copy(values_.begin(), values_.end(), std::ostream_iterator<type>(stream, " "));
+//    }
+//
+//    virtual bool Read(LineDefinition& definition, std::istream& stream);
+//
+//    virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream) ;
+//
+//    virtual bool Read(std::istream& stream);
+//
+//    virtual bool IsNamed(std::string name) { return name==name_; }
+//
+//    std::pair<std::vector<double>, std::vector<std::string> > Value() const { return std::make_pair(slices_,expressions_); }
+//
+//  protected:
+//    std::string name_;
+//    std::vector<double> slices_;
+//    std::vector<std::string> expressions_;
+//  };
+
+
   /// line component to describe a string followed by a vector of values
   template <class type>
   class NamedVectorComponent : public LineComponent
@@ -330,6 +364,20 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(DRT::INPUT::LineDefinition& de
   return Read(stream);
 }
 
+namespace{
+template <typename T, typename U>
+struct types_are_equal
+{
+  static const bool value = false;
+};
+
+template <typename T>
+struct types_are_equal<T,T>
+{
+  static const bool value = true;
+};
+}
+//  && types_are_equal<type,double>::value
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -402,6 +450,13 @@ bool DRT::INPUT::NamedVariableVectorComponent<type>::Read(
 
   int length=0;
   definition.ExtractInt(lengthdef_,length);
+
+  // for multifunction variables the string vector has NUMPOINTS-1 component
+  if (name.compare("DESCRIPTION") == 0)
+  {
+    length = length - 1;
+  }
+
   this->values_.resize(length);
 
   return NamedVectorComponent<type>::Read(definition,name,stream);
@@ -662,6 +717,39 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVector(std::string name, std::string lengthdef)
+{
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new NamedVariableVectorComponent<double>(name,lengthdef);
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedStringVector(std::string name, int length)
+{
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new NamedVectorComponent<std::string>(name,length);
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedStringVector(std::string name, std::string lengthdef)
+{
+  if (optionaltail_.find(name)!=optionaltail_.end())
+    dserror("optional component '%s' already defined",name.c_str());
+  optionaltail_[name] = new NamedVariableVectorComponent<std::string>(name,lengthdef);
+  return *this;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedPairOfStringAndDoubleVector(
     std::string name, std::string lengthdef)
 {
@@ -765,14 +853,32 @@ void DRT::INPUT::LineDefinition::ExtractString(std::string name, std::string& va
 }
 
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::INPUT::LineDefinition::FindString(std::string name)
+{
+  NamedComponent<std::string>* c = dynamic_cast<NamedComponent<std::string>*>(FindNamed(name));
+  if (c!=NULL)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::ExtractInt(std::string name, int& value)
 {
   NamedComponent<int>* c = dynamic_cast<NamedComponent<int>*>(FindNamed(name));
   if (c!=NULL)
-  {
     value = c->Value();
+  {
     return ;
   }
   dserror("int '%s' not found", name.c_str());
@@ -818,6 +924,29 @@ void DRT::INPUT::LineDefinition::ExtractDoubleVector(std::string name, std::vect
     return;
   }
   dserror("double vector '%s' not found", name.c_str());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::LineDefinition::ExtractStringVector(std::string name, std::vector<std::string>& v)
+{
+  NamedVectorComponent<std::string>* c = dynamic_cast<NamedVectorComponent<std::string>*>(FindNamed(name));
+  if (c!=NULL)
+  {
+    v = c->Value();
+    return;
+  }
+  else
+  {
+    NamedComponent<std::string>* c1 = dynamic_cast<NamedComponent<std::string>*>(FindNamed(name));
+    if (c1!=NULL)
+    {
+      v.push_back(c1->Value());
+      return;
+    }
+  }
+  dserror("string vector '%s' not found", name.c_str());
 }
 
 

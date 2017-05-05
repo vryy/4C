@@ -77,7 +77,7 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
-    //eleparams.set("total time",time_);
+    eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
                                 Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);

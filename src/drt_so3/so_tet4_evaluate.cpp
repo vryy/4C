@@ -17,7 +17,6 @@ written by : Alexander Volf
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -904,9 +903,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < NUMDIM_SOTET4)
@@ -917,17 +914,6 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
     if ((*onoff)[checkdof] != 0)
       dserror("Number of Dimensions in Neumann_Evalutaion is 3. Further DoFs are not considered.");
   }
-
-  // find out whether we will use time curves and get the factors
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  std::vector<double> curvefacs(NUMDIM_SOTET4, 1.0);
-  for (int i=0; i < NUMDIM_SOTET4; ++i)
-  {
-    const int curvenum = (curve) ? (*curve)[i] : -1;
-    if (curvenum>=0 && usetime)
-      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  }
-
 
   // (SPATIAL) FUNCTION BUSINESS
   BOOST_STATIC_ASSERT((NUMGPT_SOTET4 == 1)) BACI_ATTRIBUTE_UNUSED;
@@ -1010,9 +996,9 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac
           = (functnum>0)
-          ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
+          ? DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dim,xrefegp.A(),time)
           : 1.0;
-        const double dim_fac = (*val)[dim] * fac * curvefacs[dim] * functfac;
+        const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid=0; nodid<NUMNOD_SOTET4; ++nodid)
         {
           elevec1[nodid*NUMDIM_SOTET4+dim] += shapefcts[gp](nodid) * dim_fac;

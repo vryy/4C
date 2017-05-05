@@ -350,14 +350,12 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 {
   // find out whether we will use a time curve
   const double time = fldparatimint_->Time();
-  const bool usetime = (time<0.0) ? false : true;
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
   const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
-  const std::vector<int>*    curve = condition.Get<std::vector<int> >   ("curve");
   const std::string*         type  = condition.Get<std::string>("type");
 
   // get time factor for Neumann term
@@ -476,12 +474,6 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
       std::cout << "        densfac_=               " << densfac_ << std::endl;
     }
 
-    // factor given by temporal curve
-    double curvefac = 1.0;
-    double curvefacn = 1.0;
-    // number of temporal curve to be evaluated (from input file)
-    int curvenum = -1;
-
     const double fac_time_dens = fac_*timefac*densfac_;
     const double fac_time_densn = fac_*timefacn;
 
@@ -517,8 +509,8 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
           if (functnum>0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time,NULL);
-            functfacn = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time-fldparatimint_->Dt(),NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time);
+            functfacn = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time-fldparatimint_->Dt());
           }
           else
           {
@@ -526,22 +518,8 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
             functfacn = 1.0;
           }
 
-          // get time-curve factor/ n = - grad phi / |grad phi|
-          if (curve)
-            curvenum = (*curve)[idim];
-          if (curvenum>=0 and usetime)
-          {
-            curvefac  = DRT::Problem::Instance()->Curve(curvenum).f(time);
-            curvefacn = DRT::Problem::Instance()->Curve(curvenum).f(time-fldparatimint_->Dt());
-          }
-          else
-          {
-            curvefac  = 1.0;
-            curvefacn = 1.0;
-          }
-
-          const double valfac = (*val)[idim]*fac_time_dens*functfac*curvefac;
-          const double valfacn = (*val)[idim]*fac_time_densn*functfacn*curvefacn;
+          const double valfac = (*val)[idim]*fac_time_dens*functfac;
+          const double valfacn = (*val)[idim]*fac_time_densn*functfacn;
           for(int inode=0; inode < bdrynen_; ++inode )
           {
             elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfac;
@@ -566,8 +544,8 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
           if (functnum>0)
           {
             // evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time,NULL);
-            functfacn = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time-fldparatimint_->Dt(),NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time);
+            functfacn = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time-fldparatimint_->Dt());
           }
           else
           {
@@ -575,22 +553,8 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
             functfacn = 1.0;
           }
 
-          // get time-curve factor/ n = - grad phi / |grad phi|
-          if (curve)
-            curvenum = (*curve)[0];
-          if (curvenum>=0 and usetime)
-          {
-            curvefac  = DRT::Problem::Instance()->Curve(curvenum).f(time);
-            curvefacn = DRT::Problem::Instance()->Curve(curvenum).f(time-fldparatimint_->Dt());
-          }
-          else
-          {
-            curvefac  = 1.0;
-            curvefacn = 1.0;
-          }
-
-          const double valfac = (*val)[0]*fac_time_dens*functfac*curvefac;
-          const double valfacn = (*val)[0]*fac_time_densn*functfacn*curvefacn;
+          const double valfac = (*val)[0]*fac_time_dens*functfac;
+          const double valfacn = (*val)[0]*fac_time_densn*functfacn;
           for(int inode=0; inode < bdrynen_; ++inode )
           {
             elevec1_epetra[inode*numdofpernode_+idim] += funct_(inode)*valfac*(-unitnormal_(idim));

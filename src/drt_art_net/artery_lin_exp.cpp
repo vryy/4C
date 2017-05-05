@@ -17,7 +17,6 @@
 #include "artery_lin_exp.H"
 
 #include "../drt_mat/cnst_1d_art.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -1555,7 +1554,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateScatraBC(
       if (curve) curvenum = (*curve)[0];
       if(curvenum>0)
       {
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        curvefac = DRT::Problem::Instance()->Funct(curvenum).EvaluateTime(time);
       }
 
 

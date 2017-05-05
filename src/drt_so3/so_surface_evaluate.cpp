@@ -117,29 +117,17 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
   **    TIME CURVE BUSINESS
   */
   // find out whether we will use a time curve
-  bool usetime = true;
   double time = -1.0;
   if (ParentElement()->IsParamsInterface())
     time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
   else
     time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
 
   const int numdim = 3;
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < numdim)
     dserror("Fewer functions or curves defined than the element has dofs.");
-
-  // find out whether we will use time curves and get the factors
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  std::vector<double> curvefacs(numdim, 1.0);
-  for (int i=0; i < numdim; ++i)
-  {
-    const int curvenum = (curve) ? (*curve)[i] : -1;
-    if (curvenum>=0 && usetime)
-      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
-  }
 
   // element geometry update
   const int numnode = NumNode();
@@ -321,7 +309,6 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
 
       double functfac = 1.0;
       int functnum = -1;
-      double val_curvefac_functfac;
 
       for(int dof=0;dof<numdim;dof++)
       {
@@ -345,13 +332,12 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
             const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
             //evaluate function at current gauss point
-            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time);
           }
           else
             functfac = 1.0;
 
-          val_curvefac_functfac = functfac*curvefacs[dof];
-          const double fac = intpoints.qwgt[gp] * detA * (*val)[dof] * val_curvefac_functfac;
+          const double fac = intpoints.qwgt[gp] * detA * (*val)[dof] * functfac;
           for (int node=0; node < numnode; ++node)
           {
             elevec1[node*numdf+dof]+= funct[node] * fac;
@@ -376,7 +362,6 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
       //Calculate spatial position of GP
       double functfac = 1.0;
       int functnum = -1;
-      double val_curvefac_functfac;
 
       // factor given by spatial function
       if (spa_func)
@@ -394,12 +379,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
         const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
         // evaluate function at current gauss point
-        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time,NULL);
+        functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time);
       }
 
-      val_curvefac_functfac = curvefacs[0]*functfac;
-
-      const double fac = intpoints.qwgt[gp] * val_curvefac_functfac * ortho_value * normalfac;
+      const double fac = intpoints.qwgt[gp] * functfac * ortho_value * normalfac;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
           elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
@@ -454,7 +437,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
       // factor given by spatial function
       double functfac = 1.0;
       int functnum = -1;
-      double val_curvefac_functfac;
+
       if (spa_func) functnum = (*spa_func)[0];
       {
         if (functnum > 0)
@@ -469,13 +452,12 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
           const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
 
           // evaluate function at current gauss point
-          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time,NULL);
+          functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,coordgpref,time);
         }
         else functfac = 1.0;
       }
-      val_curvefac_functfac = curvefacs[0]*functfac;
 
-      const double fac = intpoints.qwgt[gp] * val_curvefac_functfac * torque_value;
+      const double fac = intpoints.qwgt[gp] * functfac * torque_value;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
           elevec1[node*numdf+dim] += funct[node] * crossprod(dim) * fac;
@@ -1147,7 +1129,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
     if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
     {
-      int curvenum = cond->GetInt("curve");
+      int curvenum = cond->GetInt("funct");
       double k1xC = cond->GetDouble("k1xCbulk");
       double k2 = cond->GetDouble("k2");
       double m1 = cond->GetDouble("m1");
@@ -1163,7 +1145,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     }
     else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
     {
-      int curvenum = cond->GetInt("curve");
+      int curvenum = cond->GetInt("funct");
       double const_gamma = cond->GetDouble("gamma");
       surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
           time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, newstep);

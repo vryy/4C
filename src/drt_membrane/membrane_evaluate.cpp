@@ -22,7 +22,6 @@
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/compogden.H"
@@ -591,16 +590,12 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList&   
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
 
   // find out whether we will use a time curve
-  bool usetime = true;
-
   double time = -1.0;
 
   if (IsParamsInterface())
     time = ParamsInterface().GetTotalTime();
   else
     time = params.get("total time",-1.0);
-
-  if (time<0.0) usetime = false;
 
   // ensure that at least as many curves/functs as dofs are available
   if (int(onoff->size()) < noddof_)
@@ -611,18 +606,18 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList&   
     if ((*onoff)[checkdof] != 0) dserror("membrane pressure on 1st dof only!");
 
   // find out whether we will use time curves and get the factors
-  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  std::vector<double> curvefacs(noddof_, 1.0);
+  const std::vector<int>* tmp_funct  = condition.Get<std::vector<int> >("funct");
+  std::vector<double> functfacs(noddof_, 1.0);
   for (int i=0; i < noddof_; ++i)
   {
-    const int curvenum = (curve) ? (*curve)[i] : -1;
-    if (curvenum>=0 && usetime)
-      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    const int functnum = (tmp_funct) ? (*tmp_funct)[i] : -1;
+    if (functnum>0)
+      functfacs[i] = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
   }
 
   // determine current pressure
   double pressure;
-  if ((*onoff)[0]) pressure = (*val)[0]*curvefacs[0];
+  if ((*onoff)[0]) pressure = (*val)[0]*functfacs[0];
   else pressure = 0.0;
 
   // need displacement new
