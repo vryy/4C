@@ -64,7 +64,6 @@ RESTARTEVRY                     1
 MATID                           -1
 VELOCITYFIELD                   zero
 VELFUNCNO                       -1
-VELCURVENO                      -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CALCERROR                       No
@@ -218,18 +217,14 @@ MAT 12 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 1.0 COUPLING by_fun
 MAT 13 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 0.0 COUPLING simple_multiplicative ROLE 0 1 0
 MAT 22 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 1 0
 MAT 32 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 1 REACCOEFF 0.0 COUPLING simple_multiplicative ROLE 0 1 0
--------------------------------------------------------------CURVE1
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0 0 FUNCTION 1.0
-FUNCT 1 COMPONENT 1 EXPR 0 0 0 FUNCTION 1.0
-FUNCT 1 COMPONENT 2 EXPR 0 0 0  FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 1.0
+COMPONENT 2  FUNCTION 1.0
 -------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi2
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi2
 -------------------------------------------------------------FUNCT3
-FUNCT 3 COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi1
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi1
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE  1.35334921116613854e-01 TOLERANCE 1e-9

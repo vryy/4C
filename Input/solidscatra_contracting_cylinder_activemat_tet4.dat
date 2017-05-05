@@ -101,12 +101,8 @@ MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 10 11 20 DENS 0.001
 MAT 10 ELAST_IsoMooneyRivlin C1 2.0E4 C2 40
 MAT 11 ELAST_VolPenalty EPSILON 1.0E7 GAMMA 1.0
 MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 2.0E5 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 100*t
+COMPONENT 0 FUNCTION 100*t
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -118,9 +114,9 @@ NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 //DSURF                         2
 //                              up
-//E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+//E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              down
-//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
+//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

@@ -144,16 +144,16 @@ MAT 6 THERM_FourierIso   CAPA 42e-2 CONDUCT 5.2
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 SRC_FIELD structure SRC_MAT 4 TAR_FIELD thermo TAR_MAT 6
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION x*cos(0.5236*2*(t-0.5))+y*sin(0.5236*2*(-t+0.5))-x
-FUNCT1 COMPONENT 1 EXPR 0 0 0 FUNCTION x*sin(0.5236*2*(t-0.5))+y*cos(0.5236*2*(t-0.5))-y
-FUNCT1 COMPONENT 2 EXPR 0 0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION (x*cos(0.5236*2*(t-0.5))+y*sin(0.5236*2*(-t+0.5))-x)*a
+COMPONENT 1 FUNCTION (x*sin(0.5236*2*(t-0.5))+y*cos(0.5236*2*(t-0.5))-y)*a
+COMPONENT 2 FUNCTION 0.0
+//VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 0.50000001 10.0 VALUES 0.0 0.0 1.0 1.0
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.5 10.0 DESCRIPTION 0.0 1.0
 ------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 293.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 3.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 10.0 FACTOR 1.0 1.0
+FUNCTION 293.0
+------------------------------------------------------------FUNCT3
+FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.5 10.0 VALUES 0.0 3.0 3.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -162,9 +162,9 @@ NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // dxyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // twist
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 CURVE 2 2 1 FUNCT 1 1 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1 1 3
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // c_twist

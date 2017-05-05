@@ -111,18 +111,18 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          2
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.5 0.0 CURVE none none none FUNCT 1 0 0
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.5 0.0 CURVE none none none FUNCT 1 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.5 0.0 FUNCT 1 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.5 0.0 FUNCT 1 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           3
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 3 0
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.5 0.0 CURVE none none none FUNCT 1 0 0
-E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 2 3 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.5 0.0 FUNCT 1 0 0
+E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           1
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 4 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 4 0 0 0 0 0 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 765 DNODE 1
 NODE 583 DNODE 2
@@ -2133,19 +2133,14 @@ NODE 765 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION -5.0*x
+COMPONENT 0 FUNCTION-5.0*x
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0 0 FUNCTION -5.0*(y^4)
+COMPONENT 0 FUNCTION-5.0*(y^4)
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0 0 FUNCTION (y^5)-0.5
+COMPONENT 0 FUNCTION(y^5)-0.5
 ----------------------------------------------------------------------FUNCT4
-FUNCT4 EXPR 0 0 0 FUNCTION (5.0*x*(y^8))+(10.0*x*(y^3))+(60.0*10.0*x*y*y)
+COMPONENT 0 FUNCTION(5.0*x*(y^8))+(10.0*x*(y^3))+(60.0*10.0*x*y*y)
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION

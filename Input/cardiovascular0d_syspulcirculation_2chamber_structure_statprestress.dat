@@ -3,7 +3,7 @@
 // http://www.mhpc.mw.tum.de
 // 089 - 289-10363
 ==================================================================
-                  General Data File BACI
+General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
@@ -126,24 +126,14 @@ MAT 12 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.21
 MAT 13 ELAST_VolSussmanBathe KAPPA 1000.0
 MAT 14 ELAST_AnisoActiveStress_Evolution SIGMA 70.0 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
 --------------------------------------------------------CLONING MATERIAL MAP
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.599950804034 0.599950804034 //preload prestressing LV
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 999.0 FACTOR 0.0 0.0 //hold pressure at zero
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0933256806275 0.0933256806275 //preload prestressing RV
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 999.0 FACTOR 0.0 0.0 //hold pressure at zero
-----------------------------------------------------------------------CURVE3
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0 // left atrium activation
-CURVE3 on EXPR FUNC 0.5*(1.0)*(1.0-cos(pi*(t-1.0)/0.18)) t1 1.0 t2 1.36
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 1.36 1.9 FACTOR 0.0 0.0
-----------------------------------------------------------------------CURVE4
-CURVE4 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0 // right atrium activation
-CURVE4 on EXPR FUNC 0.5*(1.0)*(1.0-cos(pi*(t-1.0)/0.18)) t1 1.0 t2 1.36
-CURVE4 on Polygonal T 0.0 BYABSTIME Yes 1.36 1.9 FACTOR 0.0 0.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION (5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)-5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0))))))-5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0))))))+(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)
+COMPONENT 0 FUNCTION (5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)-5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0))))))-5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0))))))+(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)
 ----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION v
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 999.0 DESCRIPTION 0.599950804034 0.0
 ----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION v
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 999.0 DESCRIPTION 0.0933256806275 0.0
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-6
@@ -154,13 +144,13 @@ NDSURF                          11
 NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           2
-E 8 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 CURVE 1 1 1 FUNCT 0 0 0 orthopressure Mid
-E 9 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 CURVE 2 2 2 FUNCT 0 0 0 orthopressure Mid
+E 8 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 FUNCT 2 2 2 orthopressure Mid
+E 9 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 FUNCT 3 3 3 orthopressure Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 --------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
 DSURF                           2
 E 6 - 0

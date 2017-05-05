@@ -62,13 +62,11 @@ MAT 4 MAT_PoroLawDensityDependent DENSITYLAWID 5
 MAT 5 MAT_PoroDensityLawExp BULKMODULUS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD porofluid SRC_MAT 1 TAR_FIELD structure TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.1
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.0
 -------------------------------------------------RESULT DESCRIPTION
 POROFLUIDMULTIPHASE DIS porofluid NODE 1 QUANTITY phi1 VALUE 0.1 TOLERANCE 1e-10
 POROFLUIDMULTIPHASE DIS porofluid NODE 2 QUANTITY saturation1 VALUE 0.1 TOLERANCE 1e-10

@@ -70,18 +70,18 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR -0.5 -0.5 0 FUNCTION -1.0-y+3.0*x^2*y^2   // u1 body force
-FUNCT1 COMPONENT 1 EXPR -0.5 -0.5 0 FUNCTION -1.0+3.0*x+2.0*x^3*y // u2 body force
+COMPONENT 0 FUNCTION -1.0-(y+0.5)+3.0*(x+0.5)^2*(y+0.5)^2   // u1 bod(y+0.5) force
+COMPONENT 1 FUNCTION -1.0+3.0*(x+0.5)+2.0*(x+0.5)^3*(y+0.5) // u2 bod(y+0.5) force
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR -0.5 -0.5 0 FUNCTION x+x^2+x^3            // u1 DBC bottom boundary
+COMPONENT 0 FUNCTION (x+0.5)+(x+0.5)^2+(x+0.5)^3            // u1 DBC bottom boundar(y+0.5)
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR -0.5 -0.5 0 FUNCTION 3.0-y-3.0*y^2        // u1 DBC right boundary
-FUNCT3 COMPONENT 1 EXPR -0.5 -0.5 0 FUNCTION -6.0*y+y^3           // u2 DBC right boundary
+COMPONENT 0 FUNCTION 3.0-(y+0.5)-3.0*(y+0.5)^2        // u1 DBC right boundar(y+0.5)
+COMPONENT 1 FUNCTION -6.0*(y+0.5)+(y+0.5)^3      // u2 DBC right boundar(y+0.5)
 ----------------------------------------------------------------------FUNCT4
-FUNCT4 COMPONENT 0 EXPR -0.5 -0.5 0 FUNCTION -4.0*x+2.0*x^2+x^3   // u1 DBC top boundary
-FUNCT4 COMPONENT 1 EXPR -0.5 -0.5 0 FUNCTION 1.0-3.0*x-3.0*x^2    // u2 DBC top boundary
+COMPONENT 0 FUNCTION -4.0*(x+0.5)+2.0*(x+0.5)^2+(x+0.5)^3   // u1 DBC top boundar(y+0.5)
+COMPONENT 1 FUNCTION 1.0-3.0*(x+0.5)-3.0*(x+0.5)^2    // u2 DBC top boundar(y+0.5)
 ----------------------------------------------------------------------FUNCT5
-FUNCT5 COMPONENT 1 EXPR -0.5 -0.5 0 FUNCTION -y+y^2+y^3           // u2 DBC left boundary
+COMPONENT 0 FUNCTION -(y+0.5)+(y+0.5)^2+(y+0.5)^3           // u2 DBC left boundar(y+0.5)
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 23 QUANTITY velx     VALUE -1.46306457374060894e+00 TOLERANCE 1e-14 // crucial! - Dirichlet node value
 FLUID DIS fluid NODE 23 QUANTITY vely     VALUE -1.17451607965090621e+00 TOLERANCE 1e-14 // crucial! - Dirichlet node value
@@ -99,19 +99,19 @@ DSURF                           1
 E 1 - fluid NUMMODES 3 ONOFF 0 0 1 integration // ensure that integral of pressure remains 0.0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 1 0 0 0 0 Live Mid  // Body_force
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 0 0 0 0 Live Mid  // Body_force
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL -1.0 -5.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_topright
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL  0.0  1.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_topleft
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL  3.0  0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_bottomright
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL  0.0  0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_bottomleft
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL -1.0 -5.0 0.0 FUNCT 0 0 0 // Node_topright
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL  0.0  1.0 0.0 FUNCT 0 0 0 // Node_topleft
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL  3.0  0.0 0.0 FUNCT 0 0 0 // Node_bottomright
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL  0.0  0.0 0.0 FUNCT 0 0 0 // Node_bottomleft
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 4 4 0 // Line_top
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 1.0 0.0 CURVE none none none FUNCT 0 5 0 // Line_left
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 2 0 0 // Line_bottom
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 3 0 // Line_right
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 4 4 0 // Line_top
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 1.0 0.0 FUNCT 0 5 0 // Line_left
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 2 0 0 // Line_bottom
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 3 3 0 // Line_right
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 25 DNODE 1 // Node_topright
 NODE 21 DNODE 2 // Node_topleft

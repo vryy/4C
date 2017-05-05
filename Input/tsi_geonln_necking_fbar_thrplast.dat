@@ -158,17 +158,12 @@ SOLVER                          UMFPACK            // Amesos_KLU_sym,Amesos_KLU_
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 293.0
+COMPONENT 0 FUNCTION 293.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 7.80e-06 CTE 1e-5 INITTEMP 293 YIELD 0.45e15 ISOHARD 0.12924 SATHARDENING 0.715e15 HARDEXPO 16.93 YIELDSOFT 0.0 HARDSOFT 0.0 TOL 1.0e-06
 MAT 2 THERM_FourierIso CAPA 3.588e-3 CONDUCT 4.5e-5
-----------------------------------------------------------------------CURVE1
-// displacement-driven load 0-8mm equally applied in 8000ms=8s
-CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 8000 FACTOR 0  8
-----------------------------------------------------------------------CURVE2
-CURVE 2 on Polygonal T 0 BYABSTIME Yes 0   0.6 FACTOR 0 5
-CURVE 2 on Polygonal T 0 BYABSTIME Yes 0.6 1.2 FACTOR 5 0
-CURVE 2 on Polygonal T 0 BYABSTIME Yes 1.2 7.0 FACTOR 0 0
+-------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION t*8/8000
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          5
@@ -181,31 +176,31 @@ DSURF 0 // 1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              d7_xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              d11_z_disp_xy
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 2
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           5
 //                              d4_xy
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              d5_xz
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              d6_yz
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              d9_z_disp_y
-E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 2
 //                              d10_z_disp_x
-E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 2
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 //                              d1_x
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              d2_y
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              d3_z
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              d8_z_disp
-E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 2
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 73 DNODE 1
 NODE 1 DNODE 2

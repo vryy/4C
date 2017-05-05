@@ -110,12 +110,8 @@ ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0E4 NUE 0.49 DENS 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 5 FACTOR 0.0 0.1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t*0.1/5
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -136,9 +132,9 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 // Dirichlet Point 1
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 // Dirichlet Point 2
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 ------------------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
 DLINE                           1
 // MPC Line

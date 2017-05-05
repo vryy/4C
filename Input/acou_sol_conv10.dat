@@ -86,34 +86,33 @@ SIMPLE_DAMPING                  1
 -------------------------------------------------------------------MATERIALS
 //MAT 1 MAT_AcousticSol DENSITY 1.0 C 1.414213562373 VISC 1.0
 MAT 1 MAT_AcousticSol DENSITY 1.0 C 1.0 VISC 1.0
-----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0
-FUNCT1 COMPONENT 3 EXPR 0.0 0.0 0.0 FUNCTION -1/pi*2*(1-2*x)*(x-1)*x*(y-1)*y*(2*y-1)*1*0
-FUNCT1 COMPONENT 4 EXPR 0.0 0.0 0.0 FUNCTION 1/pi*(x-1)^2*x^2*(6*y^2-6*y+1)*0
-FUNCT1 COMPONENT 5 EXPR 0.0 0.0 0.0 FUNCTION -1/pi*(6*x^2-6*x+1)*(y-1)^2*y^2*0
-FUNCT1 COMPONENT 6 EXPR 0.0 0.0 0.0 FUNCTION -1/pi*2*(x-1)*x*(2*x-1)*(y-1)*y*(2*y-1)*0
+COMPONENT 0 FUNCTION 0
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION -1/pi*2*(1-2*x)*(x-1)*x*(y-1)*y*(2*y-1)*1*0
+COMPONENT 4 FUNCTION 1/pi*(x-1)^2*x^2*(6*y^2-6*y+1)*0
+COMPONENT 5 FUNCTION -1/pi*(6*x^2-6*x+1)*(y-1)^2*y^2*0
+COMPONENT 6 FUNCTION -1/pi*2*(x-1)*x*(2*x-1)*(y-1)*y*(2*y-1)*0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -x^2*y*(2*y-1)*(x-1)^2*(y-1)*pi*cos(pi*t)-1*(cos(pi*t)-1)/pi*(2*(6*x^2-6*x+1)*y*(2*y^2-3*y+1)+6*(x-1)^2*x^2*(2*y-1))
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION x*y^2*(2*x-1)*(x-1)*(y-1)^2*pi*cos(pi*t)-1*(cos(pi*t)-1)/pi*(-6*(2*x-1)*(y-1)^2*y^2-2*x*(2*x^2-3*x+1)*(6*y^2-6*y+1))
+COMPONENT 0 FUNCTION -x^2*y*(2*y-1)*(x-1)^2*(y-1)*pi*cos(pi*t)-1*(cos(pi*t)-1)/pi*(2*(6*x^2-6*x+1)*y*(2*y^2-3*y+1)+6*(x-1)^2*x^2*(2*y-1))
+COMPONENT 1 FUNCTION x*y^2*(2*x-1)*(x-1)*(y-1)^2*pi*cos(pi*t)-1*(cos(pi*t)-1)/pi*(-6*(2*x-1)*(y-1)^2*y^2-2*x*(2*x^2-3*x+1)*(6*y^2-6*y+1))
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION -x^2*y*(2*y-1)*(x-1)^2*(y-1)*sin(pi*t)
+COMPONENT 0 FUNCTION -x^2*y*(2*y-1)*(x-1)^2*(y-1)*sin(pi*t)
 ----------------------------------------------------------------------FUNCT4
-FUNCT4 EXPR 0 0.0 0 FUNCTION x*y^2*(2*x-1)*(x-1)*(y-1)^2*sin(pi*t)
+COMPONENT 0 FUNCTION x*y^2*(2*x-1)*(x-1)*(y-1)^2*sin(pi*t)
 ----------------------------------------------------------------------FUNCT5
-FUNCT5 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0 FUNCTION 0
 ----------------------------------------------------------------------FUNCT6
-FUNCT6 EXPR 0 0.0 0 FUNCTION -1/pi*2*(1-2*x)*(x-1)*x*(y-1)*y*(2*y-1)*(cos(pi*t)-1)
+COMPONENT 0 FUNCTION -1/pi*2*(1-2*x)*(x-1)*x*(y-1)*y*(2*y-1)*(cos(pi*t)-1)
 ----------------------------------------------------------------------FUNCT7
-FUNCT7 EXPR 0 0.0 0 FUNCTION 1/pi*(x-1)^2*x^2*(6*y^2-6*y+1)*(cos(pi*t)-1)
+COMPONENT 0 FUNCTION 1/pi*(x-1)^2*x^2*(6*y^2-6*y+1)*(cos(pi*t)-1)
 ----------------------------------------------------------------------FUNCT8
-FUNCT8 EXPR 0 0.0 0 FUNCTION -1/pi*(6*x^2-6*x+1)*(y-1)^2*y^2*(cos(pi*t)-1)
+COMPONENT 0 FUNCTION -1/pi*(6*x^2-6*x+1)*(y-1)^2*y^2*(cos(pi*t)-1)
 ----------------------------------------------------------------------FUNCT9
-FUNCT9 EXPR 0 0.0 0 FUNCTION -1/pi*2*(x-1)*x*(2*x-1)*(y-1)*y*(2*y-1)*(cos(pi*t)-1)
+COMPONENT 0 FUNCTION -1/pi*2*(x-1)*x*(2*x-1)*(y-1)*y*(2*y-1)*(cos(pi*t)-1)
 ----------------------------------------------------------------------FUNCT10
-FUNCT10 EXPR 0 0.0 0 FUNCTION 1/pi*((x-1)^2*x^2*(6*y^2-6*y+1)-(6*x^2-6*x+1)*(y-1)^2*y^2)*(cos(pi*t)-1)
+COMPONENT 0 FUNCTION 1/pi*((x-1)^2*x^2*(6*y^2-6*y+1)-(6*x^2-6*x+1)*(y-1)^2*y^2)*(cos(pi*t)-1)
 ------------------------------------------------RESULT DESCRIPTION
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
@@ -128,10 +127,10 @@ DLINE  0
 //E 4 -
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE 4
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 4 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 4 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1

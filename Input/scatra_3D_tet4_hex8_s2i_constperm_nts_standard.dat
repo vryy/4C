@@ -42,9 +42,9 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_scatra   DIFFUSIVITY 0.03
 -------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
 -------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 2.54061079028355785e-01 TOLERANCE 1.e-10
 SCATRA DIS scatra NODE 100 QUANTITY flux_boundary_1_x VALUE 5.39680526484532814e-03 TOLERANCE 1.e-12

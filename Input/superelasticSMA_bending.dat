@@ -55,10 +55,9 @@ SOLVER                          Superlu//UMFPACK
 -------------------------------------------------------------------MATERIALS
 // Exponential model
 MAT 1 MAT_Struct_SuperElastSMA YOUNG 60000 DENS 0.0001 NUE 0.3 EPSILON_L 0.005 T_AS_s 0 T_AS_f 0 T_SA_s 0 T_SA_f 0 C_AS 0 C_SA 0 SIGMA_AS_s 520 SIGMA_AS_f 750 SIGMA_SA_s 550 SIGMA_SA_f 200 ALPHA 0.15 MODEL 1 BETA_AS 250 BETA_SA 20
--------------------------------------------------------------CURVE1
-CURVE 1 on Polygonal T 0 BYABSTIME Yes 0.0 0.005  FACTOR 0.0 1.0
-CURVE 1 on Polygonal T 0 BYABSTIME Yes 0.005 0.01  FACTOR 1.0 0.0
-
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.005 0.01 VALUES 0 1 0
 ------------------------------------------------DESIGN DESCRIPTION
 NDLINE  0
 NDSURF  2
@@ -67,11 +66,11 @@ NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // surface_z+
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL -60 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL -60 0.0 0.0 FUNCT 1 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // surface_z-
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

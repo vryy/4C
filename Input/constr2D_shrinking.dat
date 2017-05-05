@@ -110,17 +110,12 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0E4 NUE 0.49 DENS 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 5 FACTOR 0.0 0.1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 5 7 FACTOR 0.1 0.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 25 FACTOR 1 0.675
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 25.0 1000 FACTOR 0.675 0.675
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 5 7 VALUES 0 0.1 0.0
 ----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 25 1000 VALUES 1 0.675 0.675
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
@@ -129,7 +124,7 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 25.0 1000 FACTOR 0.675 0.675
 DLINE                           1
 E 3 - 1 2 0.0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE                           0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
@@ -137,20 +132,20 @@ NDLINE                          5
 NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE                           2
 //connect2
-E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0  FUNCT 0 0
 //connect3
-E 2 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0  FUNCT 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
@@ -159,9 +154,9 @@ DPOINT                          0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DLINE                           2
 //connect5
-E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1
 //connect6
-E 5 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           0

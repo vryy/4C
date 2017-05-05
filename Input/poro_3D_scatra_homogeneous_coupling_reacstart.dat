@@ -173,20 +173,16 @@ MAT 79 MAT_scatra_reaction NUMSCAL 9 STOICH 0 0 0 0 0 0 0 -1 1 REACCOEFF 1.0 COU
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 4
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
--------------------------------------------------------------CURVE1
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0 0 FUNCTION 3.0
-FUNCT 1 COMPONENT 1 EXPR 0 0 0 FUNCTION 3.0
-FUNCT 1 COMPONENT 2 EXPR 0 0 0  FUNCTION 4.0
-FUNCT 1 COMPONENT 3 EXPR 0 0 0 FUNCTION 1.0
-FUNCT 1 COMPONENT 4 EXPR 0 0 0 FUNCTION 2.0
-FUNCT 1 COMPONENT 5 EXPR 0 0 0  FUNCTION 1.0
-FUNCT 1 COMPONENT 6 EXPR 0 0 0 FUNCTION 3.0
-FUNCT 1 COMPONENT 7 EXPR 0 0 0 FUNCTION 10.0
-FUNCT 1 COMPONENT 8 EXPR 0 0 0  FUNCTION 1.0
+COMPONENT 0 FUNCTION 3.0
+COMPONENT 1 FUNCTION 3.0
+COMPONENT 2  FUNCTION 4.0
+COMPONENT 3 FUNCTION 1.0
+COMPONENT 4 FUNCTION 2.0
+COMPONENT 5  FUNCTION 1.0
+COMPONENT 6 FUNCTION 3.0
+COMPONENT 7 FUNCTION 10.0
+COMPONENT 8  FUNCTION 1.0
 -------------------------------------------------------------FUNCT2
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
@@ -238,10 +234,10 @@ NDVOL   1
 // E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 1 reaccoeff 1.0 coupling simple_multiplicative reacstart 3.0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                          1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF                          1
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -

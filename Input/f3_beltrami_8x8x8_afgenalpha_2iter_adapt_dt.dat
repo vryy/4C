@@ -75,14 +75,10 @@ NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 0.5 GAMMA 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC BELTRAMI c1 1.0 c2 1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
-----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------FUNCT1
-FUNCT1                          BELTRAMI
+BELTRAMI c1 1.0 c2 1.0
 ----------------------------------------------------------------------FUNCT2
+BELTRAMI c1 2.0 c2 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 6.96186328622854043e-03 TOLERANCE 1e-12
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE -5.73843438717372856e-03 TOLERANCE 1e-12
@@ -112,17 +108,17 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface top
-E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface front
-E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface back
-E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface unten
-E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface rechts
-E 5 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 5 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface links
-E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

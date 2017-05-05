@@ -47,12 +47,10 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 6 DENS 1.0
 MAT 6 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.4995
 MAT 3 MAT_ElastHyper NUMMAT 1 MATIDS 7 DENS 1.0
 MAT 7 ELAST_CoupLogNeoHooke MODE YN C1 1.0e6 C2 0.4995
--------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0.0 t2 10.0
 -------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION x*cos(t*pi/180)-y*sin(t*pi/180)-x
+COMPONENT 0 FUNCTION x*cos(t*pi/180)-y*sin(t*pi/180)-x
 -------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0 0 FUNCTION x*sin(t*pi/180)+y*cos(t*pi/180)-y
+COMPONENT 0 FUNCTION x*sin(t*pi/180)+y*cos(t*pi/180)-y
 -------------------------------------------------RESULT DESCRIPTION
 ALE DIS ale NODE 2025  QUANTITY dispx VALUE -4.14122466275521461e-01 TOLERANCE 1e-12
 ALE DIS ale NODE 2025  QUANTITY dispy VALUE 2.45004411822912216e-01  TOLERANCE 1e-12
@@ -66,15 +64,15 @@ NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // main_domain_outer_boundary_verts
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  3
 // main_domain_outer_boundary_xcurs
-E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 // main_domain_outer_boundary_ycurs
-E 2 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 // inner_domain_inner_boundary
-E 5 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 CURVE none none FUNCT 1 2
+E 5 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 FUNCT 1 2
 -------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE  2
 // main_domain_inner_boundary

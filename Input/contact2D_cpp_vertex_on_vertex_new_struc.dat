@@ -102,12 +102,12 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 10000.0 NUE 0.22//0.22205
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.0
 MAT 4 ELAST_CoupNeoHooke YOUNG 10000.0 NUE 0.22//0.22205
-------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.2  FACTOR 0.0 10
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.2 1.0  FACTOR 10 10
-------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0  FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 4.0  FACTOR 0.0 10.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.2 1 VALUES 0 10 10
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 4 VALUES 0 0 10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  3
@@ -116,11 +116,11 @@ NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // grav
-E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -1.0 CURVE none 1 FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -1.0 FUNCT 0 1
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // dbc_xy_fixed_line
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 --------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  2
 // slave

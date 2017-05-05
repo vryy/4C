@@ -113,15 +113,15 @@ NDVOL                           1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          1
-E 1 - NUMDOF 3 ONOFF 1 1 10 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           1
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           1
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
@@ -136,7 +136,7 @@ DLINE                           0
 DSURF                           1
 // 5 ist tip
 //E 5 - 1 0 0 1 0 0 0 0.0 0.0 -5.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
-E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
 DVOL                            0
@@ -921,16 +921,9 @@ NODE 153 COORD 15.384277327635500 -3.538764756847727 1.992206690338861
 //                              MAT_Struct_NeoHooke
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.00000001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.499
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 1000.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 1000.0 1100.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.11 0.2 FACTOR 1100.0 1600.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.2 0.35 FACTOR 1600.0 0.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 5 TIMES 0 0.1 0.11 0.2 0.35 VALUES 0 1000 1100 1600 0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

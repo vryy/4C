@@ -1,5 +1,5 @@
 //
-// \maintainer Anna Birzle
+// Maintainer: Anna Birzle
 //             birzle@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15255
@@ -105,14 +105,6 @@ ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_VISCOANISO KAPPA 1.6667E04 MUE 33.3556 DENS 0.0000000001 K1 100.0 K2 1.0 GAMMA 90.0 BETA_ISO 9999 BETA_ANISO 0. RELAX_ISO 0.0010001 RELAX_ANISO 0.1 MINSTRETCH 1.0 ELETHICKDIR 0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 122 QUANTITY dispx VALUE 6.320003606543482576e-04 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 122 QUANTITY dispy VALUE -3.158513628598202299e-04 TOLERANCE 1e-9
@@ -129,29 +121,29 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // neum surface x
-E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.1 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.1 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // dirich point
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
 // dirich line xy
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dirich line yz
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dirich line zx
-E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // dirich surf x
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dirich surf y
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dirich surf z
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS

@@ -56,20 +56,21 @@ MAT 2 MAT_ion DIFFUSIVITY 0.02 VALENCE -1.0
 MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 3
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1)-(pi/2)))+0.5 t1 0.0 t2 1.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 100
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 100
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 100
+COMPONENT 1 FUNCTION 100
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5*(-y^2+0.25)
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 5*(-y^2+0.25)
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+-------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1 1000 DESCRIPTION 0.5*(sin((t*pi/1)-(pi/2)))+0.5 0.5*(sin((1*pi/1)-(pi/2)))+0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 983 QUANTITY phi1 VALUE 9.98714425745408931e+01 TOLERANCE 1e-08
 SCATRA DIS scatra NODE 983 QUANTITY phi3 VALUE 1.29422547857093893e+01 TOLERANCE 1e-08
@@ -85,9 +86,9 @@ NDVOL                           0
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 1 - ID 0 pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 1 - ID 0 pot 0.0 funct 4 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 //                              anode
-E 2 - ID 1 pot 25.0 curve 1 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 2 - ID 1 pot 25.0 funct 4 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 2.0 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 // left internal boundary

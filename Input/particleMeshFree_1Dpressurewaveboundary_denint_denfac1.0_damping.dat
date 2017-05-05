@@ -294,18 +294,18 @@ E 74 - Velocity 2
 E 75 - Velocity 2
 ----------------------------------------------------------------------FUNCT1
 // initial velocity (x component) applied in the interval x in [-0.015;0.015]
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0.0005*(1+cos(x*pi/0.015))
+COMPONENT 0 FUNCTION 0.0005*(1+cos(x*pi/0.015))
 // initial velocity (y component)
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
 // initial velocity (z component)
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial velocity (x component) for remaining domain
-FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
 // initial velocity (y component)
-FUNCT2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
 // initial velocity (z component)
-FUNCT2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 -------------------------------------------------------------------MATERIALS
 MAT 2 MAT_ExtParticle DENSITY 1.0 RESTDENSITY 1.0 REFDENSFAC 1.0 INITRADIUS 0.015 DISMEMBER_RADIUS 0 NUE 0 YOUNG 0 INITTEMPERATURE 0 CPS 0 CPL 0 LATENT_HEAT 0 TRANSITION_TEMPERATURE 0 THERMAL_EXPANSION_S 0 THERMAL_EXPANSION_L 0 THERMAL_EXPANSION_T 0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0 BULK_VISCOSITY 0 THERMAL_CONDUCTIVITY 0 SURFACE_VOID_TENSION 0 SURFACE_WALL_TENSION 0
 ----------------------------------------------------------RESULT DESCRIPTION

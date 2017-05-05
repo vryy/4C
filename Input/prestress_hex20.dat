@@ -113,14 +113,9 @@ THETA                           0.5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0e3 NUE 0.3 DENS 2.0e-6
 --------------------------------------------------------CLONING MATERIAL MAP
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.7 FACTOR 0.0 50.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.7 1.2 FACTOR 50.0 60.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.2 1.5 FACTOR 60.0 60.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.7 1.2 100000 VALUES 0 50 60 60
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -133,12 +128,12 @@ NDSURF                          4
 NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
+E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

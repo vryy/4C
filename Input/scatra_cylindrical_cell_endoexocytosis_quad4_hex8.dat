@@ -1,5 +1,5 @@
 //
-// \maintainer Andreas Rauch
+// Maintainer: Andreas Rauch
 //             rauch@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15240
@@ -73,18 +73,14 @@ MAT 41 MAT_scatra_reaction NUMSCAL 3 STOICH -1 1 0 REACCOEFF 0.2 COUPLING simple
 // auxialiary dis gets mat 20 assigned
 // mat 20 contains all scalars
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD scatra TAR_MAT 20
--------------------------------------------------------------CURVE1
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION sin(x*0.25+2.7)*cos(y*0.25+1.93)+sin(x*0.25+2.7)*sin(y*0.25+1.93)-0.5
-FUNCT 1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
-FUNCT 1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION sin(x*0.25+2.7)*cos(y*0.25+1.93)+sin(x*0.25+2.7)*sin(y*0.25+1.93)-0.5
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 -------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT 2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT 2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION

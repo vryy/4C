@@ -53,7 +53,7 @@ TEMPERATURE                     298.15 // F/RT = 38.942
 GALVANOSTATIC                   no
 GSTATCONVTOL                    1e-7
 GSTATCURTOL                     1e-7
-GSTATCURVENO                    5
+GSTATFUNCTNO                    6
 GSTATITEMAX                     20
 GSTAT_LENGTH_CURRENTPATH        0.075
 GSTATCONDID_CATHODE             0
@@ -103,21 +103,17 @@ ML_DAMPCOARSE                   0.9                             // damping coars
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 3 END
 MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF -4 TRANSNR -2 THERMFAC -3 COND -5 DIFF_PARA_NUM 2 DIFF_PARA 1.48e-4 -0.125 TRANS_PARA_NUM 2 TRANS_PARA 0.6 -0.55 THERM_PARA_NUM 3 THERM_PARA 1.4 -0.4 0.5 COND_PARA_NUM 4 COND_PARA 545.0 2.76 2.15 0.0015 END
------------------------------------------------------------CURVE1
-// diffusion coefficient in [mm^2/s]
-CURVE1 on EXPR FUNC 1.48e-4*t^(-0.125) t1 0.0 t2 1000000 //diffusion coefficient species 1
-------------------------------------------------------------CURVE2
-// transference number in [-]
-CURVE2 on EXPR FUNC 0.6-0.55*t t1 0.0 t2 1000000 //diffusion coefficient
-------------------------------------------------------------CURVE3
-// conductivity in [mS/mm]
-CURVE3 on EXPR FUNC (545.0*(2.76*t/(1.0+2.15*t^2-0.0015*t^4)))+0.01 t1 0.0 t2 1000000 // conductivity
-------------------------------------------------------------CURVE4
-// thermodynamic factor in [-]
-CURVE4 on EXPR FUNC 1.4+0.5*t^2-0.4*t t1 0.0 t2 1000000 // thermodynamic factor
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field: µmol/mm³
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0    //initial potential field:
+COMPONENT 0 FUNCTION 1.0    //initial concentration field: µmol/mm³
+COMPONENT 1 FUNCTION 0.0    //initial potential field:
+------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 1.48e-4*t^(-0.125)
+------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION 0.6-0.55*t
+------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION (545.0*(2.76*t/(1.0+2.15*t^2-0.0015*t^4)))+0.01
+------------------------------------------------------------FUNCT5
+COMPONENT 0 FUNCTION 1.4+0.5*t^2-0.4*t
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 1.03064669194122227e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE -9.32000944534164127e-02 TOLERANCE 1e-11
@@ -146,9 +142,9 @@ NDVOL   0
 -----------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE  2
 // anode
-E 1 - ID 0 pot -0.2 curve none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 0.66 refcon 1.0 dl_spec_cap 0.0 END
+E 1 - ID 0 pot -0.2 funct none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 0.66 refcon 1.0 dl_spec_cap 0.0 END
 // cathode
-E 2 - ID 1 pot 0.00 curve none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 0.66 refcon 1.0 dl_spec_cap 0.0 END
+E 2 - ID 1 pot 0.00 funct none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 0.66 refcon 1.0 dl_spec_cap 0.0 END
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    2333 DLINE 1
 NODE    2334 DLINE 1

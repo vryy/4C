@@ -161,13 +161,13 @@ MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
 //Velocity and Derivative of Urquiza-box-flow
-FUNCT1 URQUIZABOXFLOW LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
+URQUIZABOXFLOW LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
 ----------------------------------------------------------------------FUNCT2
 //Traction at interface of Urquiza-box-flow
-FUNCT2 URQUIZABOXFLOW_TRACTION LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
+URQUIZABOXFLOW_TRACTION LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
 ----------------------------------------------------------------------FUNCT3
 //Bodyforce for the Urquiza-box-flow
-FUNCT3 URQUIZABOXFLOW_FORCE LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
+URQUIZABOXFLOW_FORCE LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
 ----------------------------------------------------------RESULT DESCRIPTION
 //Node                          3154
 XFLUID DIS fluid NODE 3153 QUANTITY velx VALUE -4.86832838832661902e-02 TOLERANCE 1e-14
@@ -191,27 +191,27 @@ NDSURF                          8
 NDVOL                           2
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 3 3 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 3 3 0 0 0 0 Live Mid
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //                              volume
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 DSURF                           1
-E 8 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 8 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------DESIGN XFEM NAVIER SLIP SURF CONDITIONS
 DSURF                           1
-E 7 - COUPLINGID 1 EVALTYPE funct_gausspoint ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1.0 SLIP_CURVE 0 SLIP_FUNCT 0
+E 7 - COUPLINGID 1 EVALTYPE funct_gausspoint ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1.0 SLIP_FUNCT 0
 ---------------------------------DESIGN XFEM ROBIN DIRICHLET SURF CONDITIONS
 DSURF                           1
-E 7 - COUPLINGID 1 ROBIN_DIRICHLET_ID 1 EVALTYPE funct_gausspoint NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 1 1 0
+E 7 - COUPLINGID 1 ROBIN_DIRICHLET_ID 1 EVALTYPE funct_gausspoint NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 1 1 0
 -----------------------------------DESIGN XFEM ROBIN NEUMANN SURF CONDITIONS
 DSURF                           1
-E 7 - COUPLINGID 1 ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+E 7 - COUPLINGID 1 ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 2 2 0
 ------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
 DSURF                           2
-E 7 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 8 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 7 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 8 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 //                              fluid_volume

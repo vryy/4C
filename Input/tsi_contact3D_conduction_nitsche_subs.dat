@@ -131,10 +131,11 @@ MAT 10 ELAST_CoupSVK YOUNG 4000 NUE 0.0
 MAT 2 THERM_FourierIso   CAPA 1e-20 CONDUCT 52
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
-------------------------------------------------------------CURVE1
-CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 1.5 FACTOR 0.0  0.015
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 25+z*5
+FUNCTION 25+z*5
+------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.5 5.0 VALUES 0 0.015 0.015
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -143,15 +144,15 @@ NDVOL   1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // top_dirichlet
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 CURVE none none 1 FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 FUNCT 0 0 2
 // bottom_dirichlet
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
 DSURF  2
 // top_dirichlet
-E 1 - NUMDOF 1 ONOFF 1 VAL 40 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 40 FUNCT 0
 // bottom_dirichlet
-E 2 - NUMDOF 1 ONOFF 1 VAL 20 CURVE none FUNCT 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 20 FUNCT 0
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // top_contact
@@ -160,7 +161,7 @@ E 3 - 1 Slave Active
 E 4 - 1 Master Inactive
 -------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL 1
-E 1 - NUMDOF 1 ONOFF 0 VAL 20 CURVE 0 FUNCT 0
+E 1 - NUMDOF 1 ONOFF 0 VAL 20 FUNCT 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

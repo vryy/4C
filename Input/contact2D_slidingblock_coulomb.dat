@@ -6,7 +6,6 @@
 //
 // necessary defines: BINIO
 //
-
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -162,10 +161,10 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
-E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           0
@@ -178,11 +177,11 @@ DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           1
-E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 0 0 0 0 0 FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1  0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           1
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -10 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -10 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
 DVOL                            0
@@ -1744,16 +1743,9 @@ NODE 463 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 2.000001 FACTOR 0 1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 2.000001 4.000001 FACTOR 0 0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 4.000001 8.000001 FACTOR 0 -1
-
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 2.000001 4.000001 8.000001 DESCRIPTION t*1/2.000001 0 -(t-4.000001)*1/4
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -1764,6 +1756,5 @@ STRUCTURE DIS structure NODE 347 QUANTITY dispx VALUE -3.7004194679938501e-01 TO
 STRUCTURE DIS structure NODE 347 QUANTITY dispy VALUE -3.206730073439150024e-06 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 347 QUANTITY velx VALUE -1.1000262883237564e+00 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 347 QUANTITY vely VALUE 5.381433888651429950e-05 TOLERANCE 1e-6
-
 -------------------------------------------------------------------------END
 //                              END

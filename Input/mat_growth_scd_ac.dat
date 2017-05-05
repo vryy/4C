@@ -64,7 +64,6 @@ THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 RESULTSEVRY                           1
-VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX_IDS                   -1
@@ -192,15 +191,9 @@ MAT 52 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 53 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
-----------------------------------------------------------------------CURVE1
-CURVE 1 on EXPR FUNC ((1-cos(2*pi*t))*0.5) t1 0.00 t2 1.0
-CURVE 1 on EXPR FUNC (1.0) t1 1.00 t2 1000.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    1.0 //(2*y) //y+0.2
-FUNCT 1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    0.0
+COMPONENT 0 FUNCTION    1.0 //(2*y) //y+0.2
+COMPONENT 1 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -235,47 +228,47 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // // front upper left
-// E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // // back upper left
-// E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // // front lower left
-// E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // // back lower left
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // front upper right
-// E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
 // // back upper right
-// E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
 // // front lower right
-// E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
 // // back lower right
-// E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
 // // // right upper
-// // E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
 // // // right lower
-// // E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
 // // // right back
-// // E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
 // // // right front
-// // E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+// // E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 0 0
 // // // left upper
-// // E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // left lower
-E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // left back
-E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // // // left front
-// // E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// // E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // left right
-E 9 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 9 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 //DSURF                           1
 // // left surface
-// E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+// E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // right surface
-//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DVOL                            0
 // ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
@@ -285,7 +278,7 @@ E 9 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 // DSURF                           2
 // // left surface
-// E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0
+// E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
 // // right surface
 // E 2 - NUMDOF 1 ONOFF 1 VAL 2.0 CURVE 2 FUNCT 0
 // --------------------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS

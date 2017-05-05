@@ -137,9 +137,8 @@ MAT 3 MAT_scatra DIFFUSIVITY 0.9 REACOEFF 1
 MAT 4 MAT_scatra DIFFUSIVITY 0.8 REACOEFF 2
 MAT 5 MAT_scatra DIFFUSIVITY 0.7 REACOEFF 3
 MAT 6 MAT_scatra DIFFUSIVITY 0.6 REACOEFF 4
-----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION exp(1000000*(-(x-0.02)^2.0-(y-0.01)^2.0-z^2.0))
+COMPONENT 0 FUNCTION exp(1000000*(-(x-0.02)^2.0-(y-0.01)^2.0-z^2.0))
 ------------------------------------------------RESULT DESCRIPTION
 ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE -9.15848761706135606e-02 TOLERANCE 1e-5
 ACOUSTIC DIS acou NODE 100 QUANTITY pressure VALUE -7.01492802709240693e-02 TOLERANCE 1e-5
@@ -155,10 +154,10 @@ NDSURF  1
 NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
-E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  0
-//E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0
+//E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
 ----------------------------------DESIGN ABSORBING LINE CONDITIONS
 DLINE  1
 E 1 -

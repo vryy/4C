@@ -62,7 +62,7 @@ SOLVER                          UMFPACK                       // Aztec_MSR SPOOL
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION y+0.5
+COMPONENT 0 FUNCTION y+0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 13 QUANTITY van_velx VALUE 5.00000049846895500e-01 TOLERANCE 1e-12 // VALUE 0.5 TOLERANCE 1e-5 // can't be tighter because of integration error at Neumann boundary
 FLUID DIS fluid NODE 13 QUANTITY van_vely VALUE 3.81762850675738843e-06 TOLERANCE 1e-12 // VALUE 0.0 TOLERANCE 1e-12
@@ -79,21 +79,21 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              Body_force
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
-E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL -1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL -1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_topright
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_topleft
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_bottomright
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Node_bottomleft
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0 // Node_topright
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0 // Node_topleft
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // Node_bottomright
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // Node_bottomleft
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Line_top
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 1 0 0 // Line_left
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 // Line_bottom
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0 // Line_top
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1 0 0 // Line_left
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0 // Line_bottom
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 25 DNODE 1 // Node_topright
 NODE 21 DNODE 2 // Node_topleft

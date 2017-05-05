@@ -109,9 +109,9 @@ MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 MAT 2 MAT_ion DIFFUSIVITY 1.0 VALENCE 1.0
 MAT 3 MAT_ion DIFFUSIVITY 1.0 VALENCE -1.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0   // fictive initial concentration field for positive dummy ion
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1.0   // fictive initial concentration field for negative dummy ion
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0   // initial potential field
+COMPONENT 0 FUNCTION 1.0   // fictive initial concentration field for positive dummy ion
+COMPONENT 1 FUNCTION 1.0   // fictive initial concentration field for negative dummy ion
+COMPONENT 2 FUNCTION 0.0   // initial potential field
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 451 QUANTITY phi3 VALUE 0.0e+00 TOLERANCE 1e-14
 SCATRA DIS scatra NODE 22 QUANTITY phi3 VALUE 0.0e+00 TOLERANCE 1e-14
@@ -134,16 +134,16 @@ NDVOL                           1
 ---------------------------------ELECTRODE BOUNDARY KINETICS SURF CONDITIONS
 DSURF                           2
 //                              anode
-E 1 - ID 0 pot 1.0 curve none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 0.0 refcon 1.0 dl_spec_cap 0.0 END
+E 1 - ID 0 pot 1.0 funct none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 0.0 refcon 1.0 dl_spec_cap 0.0 END
 //                              cathode
-E 2 - ID 1 pot -1.0 curve none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 0.0 refcon 1.0 dl_spec_cap 0.0 END
+E 2 - ID 1 pot -1.0 funct none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 0.1 gamma 0.0 refcon 1.0 dl_spec_cap 0.0 END
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           2
 E 1 -
 E 2 -
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 241 DSURFACE 1
 NODE 242 DSURFACE 1

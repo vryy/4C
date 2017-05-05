@@ -80,12 +80,12 @@ SOLVER               Superlu//UMFPACK
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 500.0 NUE 0.1 DENS 0.02 THEXPANS 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 500.0 NUE 0.3 DENS 0.02 THEXPANS 0.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 5000.0 NUE 0.3 DENS 0.02 THEXPANS 0.0
-------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 30.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.5 1.0 FACTOR 30.0 30.0
-------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 1.0 FACTOR 0.0 40.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 1 VALUES 0 30 30
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 1 VALUES 0 0 40
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  6
@@ -94,13 +94,13 @@ NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // dbc_point_xy
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // dbc_line_y
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 // dbc_line_y_move
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 -1.0 CURVE 2 1 FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 -1.0 FUNCT 2 1
 --------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  2
 // slave_c

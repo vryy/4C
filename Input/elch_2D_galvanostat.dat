@@ -49,7 +49,7 @@ GALVANOSTATIC                   Yes
 GSTAT_APPROX_ELECT_RESIST       relation_pot_cur //relation_pot_cur effective_length_with_initial_cond
 GSTATCONVTOL                    1e-8
 GSTATCURTOL                     1e-8
-GSTATCURVENO                    1
+GSTATFUNCTNO                    3
 GSTATITEMAX                     30
 GSTAT_LENGTH_CURRENTPATH        0.3
 GSTATCONDID_CATHODE             1
@@ -61,19 +61,18 @@ SOLVER                          UMFPACK
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 MAT 2 MAT_ion DIFFUSIVITY 1.71e-5 VALENCE 1.0 // diffusion: mm²/s
 MAT 3 MAT_ion DIFFUSIVITY 2.18e-5 VALENCE -1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -3.2*5e-4*(0.5*(sin((t*pi/2.0)-(pi/2)))+0.5) t1 0.0 t2 2.0
-CURVE1 on EXPR FUNC -3.2*5e-4 t1 2.0 t2 50.0
-CURVE1 on EXPR FUNC 0.0 t1 50.0 t2 1000.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1 //initial concentration field: µmol/mm³
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.1 //initial concentration field: µmol/mm³
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial concentration field:
+COMPONENT 0 FUNCTION 0.1 //initial concentration field: µmol/mm³
+COMPONENT 1 FUNCTION 0.1 //initial concentration field: µmol/mm³
+COMPONENT 2 FUNCTION 0.0 //initial concentration field:
 ----------------------------------------------------------------------FUNCT2
 // no velocity field
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //initial x-vel. field
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //initial y-vel. field
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial pres. field
+COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
+COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
+COMPONENT 2 FUNCTION 0.0 //initial pres. field
+----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 2.0 50 50000.0 DESCRIPTION -3.2*5e-4*(0.5*(sin((t*pi/2.0)-(pi/2)))+0.5) -3.2*5e-4 0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 8.56014329661634737e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 8.56014329661634599e-02 TOLERANCE 1e-11
@@ -98,9 +97,9 @@ NDVOL                           0
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 3 - ID 1 pot -0.1 curve none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 3 - ID 1 pot -0.1 funct none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 //                              anode
-E 4 - ID 0 pot 0.0 curve none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 4 - ID 0 pot 0.0 funct none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE                           2
 E 1 -

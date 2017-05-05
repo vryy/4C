@@ -79,22 +79,17 @@ SCATRA DIS scatra NODE 1000 QUANTITY phi VALUE 7.12571414492783016e-03 TOLERANCE
 SCATRA DIS scatra NODE 1500 QUANTITY phi VALUE 1.17007107589562162e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 2000 QUANTITY phi VALUE 2.93976530202316177e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 2500 QUANTITY phi VALUE 4.99762747097243942e-01 TOLERANCE 1e-9
-------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.5 c1 1.0 c2 1.0  // sin curve with zero derivatives
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
-------------------------------------------------------------FUNCT1 // circular velocity field
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1*(-y) // 0.0100051*(-y)
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.1*x // 0.0100051*x
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+------------------------------------------------------------FUNCT1// circular velocity field
+COMPONENT 0 FUNCTION 0.1*(-y) // 0.0100051*(-y)
+COMPONENT 1 FUNCTION 0.1*x // 0.0100051*x
+COMPONENT 2 FUNCTION 0.0
 ------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION x*x+y*y-0.20
+COMPONENT 0 FUNCTION x*x+y*y-0.20
 ------------------------------------------------------------FUNCT3
-FUNCT3 ZALESAKSDISK
-//FUNCT3 EXPR 0 0.0 0 FUNCTION x+0.005
+ZALESAKSDISK
+//FUNCTION x+0.005
 ------------------------------------------------------------FUNCT4
-FUNCT4 EXPR 0 0.0 0 FUNCTION x
+COMPONENT 0 FUNCTION x
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

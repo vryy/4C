@@ -135,24 +135,13 @@ MAT 3 MAT_fluid DYNVISCOSITY 0.01 DENSITY 10.0 // plus/burnt side (right)
 MAT 4 MAT_fluid DYNVISCOSITY 0.01 DENSITY 10.0// minus/unburnt side (left)
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 6.0
-//ramp function with horizontal slopes
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 0.5*cos(pi*t/6.0)+0.5 t1 0.0 t2 6.0
-//decreasing ramp function from 1 to 0 with horizontal slopes
-----------------------------------------------------------------------CURVE3
-CURVE3 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 10.0
-//time curve with horizontal slopes (from 0 to 1)
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.75*64*(0.125-y)*(0.125+y)
+COMPONENT 0 FUNCTION 0.75*64*(0.125-y)*(0.125+y)*(-0.5*cos(pi*(t-C1)/C2)+0.5)
+VARIABLE 0 NAME C1 TYPE expression DESCRIPTION 0
+VARIABLE 1 NAME C2 TYPE expression DESCRIPTION 10
 //inflow velocity profile with U_max = 0.75
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION x+1000
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+COMPONENT 0 FUNCTION x+1000
 ----------------------------------------------------------RESULT DESCRIPTION
 // these results have to be the same for
 // Af_Gen_alpha or Gen_Alpha or OneStepTheta for the fluid !!!
@@ -187,25 +176,25 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           10
 //                              back
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0
 //                              front
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0
 // inflow top
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0
 // inflow bottom
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0
 //                              outflow
-E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0
 // outflow top
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0
 // outflow bottom
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0
 //                              inflow
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 3 none none none FUNCT 1 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 //                              anode
-E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0
 //                              cathode
-E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0  FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS

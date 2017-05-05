@@ -1,5 +1,5 @@
 //
-// \maintainer Anna Birzle
+// Maintainer: Anna Birzle
 //             birzle@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15255
@@ -64,11 +64,11 @@ NDSURF                          6
 NDVOL                           1
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           2
-E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL -1.0 -1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL -1.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 3 DLINE 1
@@ -118,13 +118,9 @@ NODE 27 COORD 0.5 0.5 0.5
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 0.001 POLYCONVEX 1
 MAT 2 ELAST_VolSussmanBathe KAPPA 10000
 MAT 3 ELAST_IsoTestMaterial C1 1000 C2 1000
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 1000.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 7 VALUES 0 1000 1000
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

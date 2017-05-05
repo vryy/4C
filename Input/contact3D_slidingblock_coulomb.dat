@@ -77,32 +77,17 @@ NAME                            Contact_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 7.0 FACTOR 1 1
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 3.0 FACTOR 0.0 1.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 3.0 4.0 FACTOR 1.0 1.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 4.0 7.0 FACTOR 0.0 0.0
-----------------------------------------------------------------------CURVE3
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 3.0 FACTOR 0.0 0.0
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 3.0 5.0 FACTOR 0.0 1.0
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 5.0 7.0 FACTOR 0.0 0.0
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 7 VALUES 0 1 1
 ----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 5 TIMES 0 1 3 4 7 DESCRIPTION 0 (t-1)/2 1 0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 246 QUANTITY dispx VALUE 4.5234589836608396e-03 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 246 QUANTITY dispy VALUE 4.5227405266592543e-03 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 246 QUANTITY velx VALUE 4.3231966810024856e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 246 QUANTITY vely VALUE 4.3231449937417551e-02 TOLERANCE 1e-6
-
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -111,15 +96,15 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           3
 //                              x-direction
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 Live Mid
 //                              y-direction
-E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 Live Mid
 //                              z-direction
-E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -10.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -10.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              dirichlet
-E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              master

@@ -77,20 +77,21 @@ MAT 4 MAT_ion DIFFUSIVITY 7.33e-4 VALENCE -4.0 // Fe(CN)_6^-4
 MAT 5 MAT_ion DIFFUSIVITY 5e-3 VALENCE 1.0 //H+
 MAT 6 MAT_ion DIFFUSIVITY 1e-3 VALENCE -1.0 //HSO4-
 MAT 7 MAT_matlist LOCAL No NUMMAT 6 MATIDS 1 2 3 4 5 6 END
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1*(1.1-t) t1 0.0 t2 1.6 //start potential=1.0; end potential=-0.5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 9.95 //initial concentration field: A+ in [mmol/cm^3 = mol/l = M]
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.1 //initial concentration field: B+
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 5.0 //initial concentration field: Fe(CN)_6^-3
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 5.0 //initial concentration field: Fe(CN)_6^-4
-FUNCT1 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 1000 //initial concentration field: H+
-FUNCT1 COMPONENT 5 EXPR 0 0.0 0 FUNCTION 985 //initial concentration field: HSO4-
-FUNCT1 COMPONENT 6 EXPR 0 0.0 0 FUNCTION 0.0 //initial pot. field
+COMPONENT 0 FUNCTION 9.95 //initial concentration field: A+ in [mmol/cm^3 = mol/l = M]
+COMPONENT 1 FUNCTION 0.1 //initial concentration field: B+
+COMPONENT 2 FUNCTION 5.0 //initial concentration field: Fe(CN)_6^-3
+COMPONENT 3 FUNCTION 5.0 //initial concentration field: Fe(CN)_6^-4
+COMPONENT 4 FUNCTION 1000 //initial concentration field: H+
+COMPONENT 5 FUNCTION 985 //initial concentration field: HSO4-
+COMPONENT 6 FUNCTION 0.0 //initial pot. field
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (52.35987756*2)^0.5*(-0.51023*(52.35987756*2)*((x+0.05)/1)^2+0.333*(52.35987756*2)^1.5*((x+0.05)/1)^3-0.103*(52.35987756*2)^2*((x+0.05)/1)^4) //initial x-vel. field
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //initial y-vel. field
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial pres. field
+COMPONENT 0 FUNCTION (52.35987756*2)^0.5*(-0.51023*(52.35987756*2)*((x+0.05)/1)^2+0.333*(52.35987756*2)^1.5*((x+0.05)/1)^3-0.103*(52.35987756*2)^2*((x+0.05)/1)^4) //initial x-vel. field
+COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
+COMPONENT 2 FUNCTION 0.0 //initial pres. field
+----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.6 5.0 DESCRIPTION -1*(1.1-t) -0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.55690177482925959e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 1.01062657565299148e+01 TOLERANCE 1e-08
@@ -114,12 +115,12 @@ NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              right_electrode
-E 2 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 9.95 0.1 5.0 5.0 1000 985 0.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
+E 2 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 9.95 0.1 5.0 5.0 1000 985 0.0 FUNCT 0 0 0 0 0 0 0
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              left_electrode
-E 1 - ID 0 pot -1.0 curve 1 numscal 6 stoich -1 1 0 0 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer-Bard e0 -1.1813e-1 k0 1.0338e-2 beta 0.500 c_c0 0.00995 c_a0 0.0001 dl_spec_cap 0.0 END
-E 1 - ID 1 pot -1.0 curve 1 numscal 6 stoich 0 0 -1 1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer-Bard e0 4.6740e-1 k0 2.0390e-1 beta 0.463 c_c0 0.005 c_a0 0.005 dl_spec_cap 0.0 END
+E 1 - ID 0 pot -1.0 funct 3 numscal 6 stoich -1 1 0 0 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer-Bard e0 -1.1813e-1 k0 1.0338e-2 beta 0.500 c_c0 0.00995 c_a0 0.0001 dl_spec_cap 0.0 END
+E 1 - ID 1 pot -1.0 funct 3 numscal 6 stoich 0 0 -1 1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer-Bard e0 4.6740e-1 k0 2.0390e-1 beta 0.463 c_c0 0.005 c_a0 0.005 dl_spec_cap 0.0 END
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1

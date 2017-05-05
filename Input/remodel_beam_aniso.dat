@@ -1,3 +1,8 @@
+//
+// Maintainer: XXX YYY
+// XXX
+// XXX
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -189,21 +194,21 @@ NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // surface_x_pos
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 5.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 5.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
 // point_z_top
-E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // point_z_bot
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // point_y_right
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // point_y_left
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // surface_x_neg
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    24 DNODE 1
 NODE    22 DNODE 2

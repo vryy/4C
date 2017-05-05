@@ -65,7 +65,6 @@ RESTARTEVRY                     10000
 MATID                           -1
 VELOCITYFIELD                   zero //function
 VELFUNCNO                       2
-VELCURVENO                      -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CALCERROR                       No
@@ -215,19 +214,15 @@ MAT 111 MAT_scatra_chemotaxis NUMSCAL 4 PAIR 1 -1 0 0 CHEMOCOEFF 20.0 //scalar 2
 MAT 112 MAT_scatra_chemotaxis NUMSCAL 4 PAIR 1 0 -1 0 CHEMOCOEFF 20.0 //scalar 3 does 'follow' scalar 1
 MAT 121 MAT_scatra_reaction NUMSCAL 4 STOICH 0 0 -1 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 0 1 0
 MAT 122 MAT_scatra_reaction NUMSCAL 4 STOICH 0 0 0 -1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 0 0 0 1
--------------------------------------------------------------CURVE1
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0 0 FUNCTION 1.0*(x+20)
-FUNCT 1 COMPONENT 1 EXPR 0 0 0 FUNCTION 10.0*exp(-0.2*(x+10)*(x+10))
-FUNCT 1 COMPONENT 2 EXPR 0 0 0 FUNCTION 10.0*exp(-0.2*(x+10)*(x+10))
-FUNCT 1 COMPONENT 3 EXPR 0 0 0 FUNCTION 10.0*exp(-0.2*(x+10)*(x+10))
+COMPONENT 0 FUNCTION 1.0*(x+20)
+COMPONENT 1 FUNCTION 10.0*exp(-0.2*(x+10)*(x+10))
+COMPONENT 2 FUNCTION 10.0*exp(-0.2*(x+10)*(x+10))
+COMPONENT 3 FUNCTION 10.0*exp(-0.2*(x+10)*(x+10))
 -------------------------------------------------------------FUNCT2
-//FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION 50.0
-//FUNCT 2 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.0
-//FUNCT 2 COMPONENT 2 EXPR 0 0 0  FUNCTION 0.0
+//COMPONENT 0 FUNCTION 50.0
+//COMPONENT 1 FUNCTION 0.0
+//COMPONENT 2  FUNCTION 0.0
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION

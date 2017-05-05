@@ -44,7 +44,7 @@ MAT 2 MAT_scatra_multiscale MICROFILE scatra_1D_line2_multiscale_constperm_micro
 // --> porosity and specific surface area correspond to a porous medium that consists of spheres (radius = 1 m) packed according to a simple cubic packing
 // --> the tortuosity was determined in a 3D reference test case
 -------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1  QUANTITY phi VALUE 4.77342194359268890e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 2  QUANTITY phi VALUE 4.79960722046071930e-01 TOLERANCE 1e-10

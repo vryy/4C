@@ -68,10 +68,10 @@ NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -------------------------------------------DESIGN POINT MOMENT EB CONDITIONS
 DPOINT                          1
-E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 1 VAL 0.0 0.0 0.0 0.0 0.0 7.8539816339744e-05 CURVE 0 0 0 0 0 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 1 VAL 0.0 0.0 0.0 0.0 0.0 7.8539816339744e-05 FUNCT 0 0 0 0 0 1 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 17 DNODE 2
@@ -130,8 +130,8 @@ NODE 17 COORD 1.00000000e+00 0.00000000e+00 0.00000000e+00
 16 BEAM3EB LIN2 16 17 MAT 1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1 DENS 1.3e9 CROSSAREA 1 MOMIN 1e-4
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
 //Results with ANS and 4 GP
 STRUCTURE DIS structure NODE 17 QUANTITY dispx VALUE -7.26759922527150826e-01 TOLERANCE 1e-12

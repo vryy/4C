@@ -99,7 +99,7 @@ EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_vol_eq_dia
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
-INITFUNCNO                      2
+INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         1.0
 NUMSTEP                         10
@@ -142,16 +142,13 @@ MAT 3 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 // plus side
 MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 // minus side
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC BELTRAMI c1 1.0 c2 1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
-----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------FUNCT1
-FUNCT1                          BELTRAMI
+BELTRAMI c1 1.0 c2 1.0
 ----------------------------------------------------------------------FUNCT2
+BELTRAMI c1 2.0 c2 1.0
+----------------------------------------------------------------------FUNCT3
 // initial G-function outside of domain -> no cut, no interface, no XFEM dofs
-FUNCT2 EXPR 0 0.0 0 FUNCTION x+100
+FUNCTION x+100
 ----------------------------------------------------------RESULT DESCRIPTION
 // EOS Pres/Conv/div
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.35758702818210641e-02 TOLERANCE 1e-10
@@ -182,17 +179,17 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface top
-E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface front
-E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface back
-E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface unten
-E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface rechts
-E 5 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 5 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // surface links
-E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

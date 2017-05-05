@@ -107,16 +107,9 @@ MAT 5 MAT_PoroLawLinear BULKMODULUS 2.0e8
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.5
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 // Tmax=4
-CURVE1 on EXPR FUNC -1.0 t1 2.0 t2 2000.0 // Tmax=4
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTION -1.0*0.5*(1-cos((t*pi/2.0))) -1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE  3.91555544092563462e-02 TOLERANCE 1e-8
@@ -132,16 +125,16 @@ NDSURF                          1
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 none FUNCT 0 0
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 4 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 1 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 4 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 1 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 none FUNCT 0 0
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 3 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 4 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 1 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
+E 4 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 ---------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
 DLINE                           2
 E 1 -

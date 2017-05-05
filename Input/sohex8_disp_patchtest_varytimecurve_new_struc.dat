@@ -53,12 +53,6 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 10.0 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on File PathToFile ../Input/sohex8_disp_patchtest_timecurve.txt
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 3.17490129838995772e-01 TOLERANCE 1e-08
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -5.44652529298803641e-03 TOLERANCE 1e-08
@@ -69,18 +63,18 @@ NDLINE                          32
 NDSURF                          24
 NDVOL                           7
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
 DPOINT                          1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
 DSURF                           1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNCT FUNCT FUNCT FUNCT FUNCT FUNCT
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF
@@ -91,7 +85,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           1
-E 8 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 Live Mid
+E 8 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0

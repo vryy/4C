@@ -117,14 +117,9 @@ MAT 4 ELAST_CoupNeoHooke YOUNG 2500.0 NUE 0.3
 MAT 5 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 10.1 TYPE Darcy
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 5
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(1-cos((t*2*pi/5.0))) t1 0.0 t2 2.5
-CURVE1 on EXPR FUNC 1.0 t1 2.5 t2 100
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION -1.0/0.225*(y-0.7)*(y-1.0)
+COMPONENT 0 FUNCTION -1.0/0.225*(y-0.7)*(y-1.0)*a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2.5 500000.0 DESCRIPTION 0.5*(1-cos((t*2*pi/5.0))) 1
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -149,23 +144,23 @@ NDVOL                           0
 -----------------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
 DLINE                           1
 //                              line_radial_top
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 50.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 50.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 //                              outer_bottom
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 //                              inner_bottom
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 //                              outer_top
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 //                              inner_top
-E 4 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 4 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              line_radial_top
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 //                              line_radial_bottom
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           2
 //                              inner_circ

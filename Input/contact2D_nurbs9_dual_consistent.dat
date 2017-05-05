@@ -62,20 +62,20 @@ SOLVER                         UMFPACK
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 100 NUE 0.0 DENS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.5
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 1.5 1.5
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 0.0 11.5
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 1 2 100 VALUES 0 1.5 1.5 1.5
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 1 5 100 VALUES 0 0 11.5 11.5
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
-E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT none none
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 -1.0 CURVE 2 1 FUNCT none none
+E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT none none
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 -1.0 FUNCT 2 1
 ------------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 -------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  2

@@ -56,9 +56,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 240.5653612 NUE 0.4999
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
-
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -66,11 +65,11 @@ NDSURF  3
 NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
-E 2 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0625 0.0 0.0 CURVE none 1 none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0625 0.0 0.0 FUNCT 0 1 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

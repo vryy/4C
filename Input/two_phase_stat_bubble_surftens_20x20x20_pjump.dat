@@ -154,15 +154,11 @@ MAT 3 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // plus side
 MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // minus side
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 -------------------------------------------FUNCT1 // inflow profile velocity
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
 ------------------------------------------FUNCT2 // initial G-function field
-FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt(x*x+y*y+z*z)-0.3
-//FUNCT2 EXPR 0 0.0 0 FUNCTION (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09
+COMPONENT 0 FUNCTION sqrt(x*x+y*y+z*z)-0.3
+//FUNCTION (x-0.01)*(x-0.01)+(y-0.01)*(y-0.01)+(z-0.01)*(z-0.01)-0.09
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -173,23 +169,23 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 // inflow points
-E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // outflow points
-E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface top
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface bottom
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface inflow
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface outflow
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface front
-E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface back
-E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 2 DNODE 1

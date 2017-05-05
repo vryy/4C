@@ -70,18 +70,9 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 7.8e-6
 MAT 2 ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 10000000 VALUES 0 1 1
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          14
@@ -90,15 +81,15 @@ NDVOL                           0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 //                              fbc_y
-E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              dbx_xy
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              dbc_y
-E 1 - NUMDOF 2 ONOFF 0 1 VAL 0 0 CURVE 0.0 0.0 FUNCT none none
+E 1 - NUMDOF 2 ONOFF 0 1 VAL 0 0 FUNCT none none
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           12
 //                              slave1

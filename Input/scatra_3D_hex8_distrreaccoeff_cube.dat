@@ -88,10 +88,10 @@ MAT 2 MAT_scatra DIFFUSIVITY 0.0
 MAT 4 MAT_scatra_reaction NUMSCAL 2 STOICH  1 0 REACCOEFF 1.0              COUPLING simple_multiplicative ROLE 0 1 //dx/dt=y
 MAT 5 MAT_scatra_reaction NUMSCAL 2 STOICH  0 1 REACCOEFF -1.0 DISTRFUNCT 2 COUPLING simple_multiplicative ROLE 1 0 //dy/dt=-w^2*x
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0 //x0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //y0
+COMPONENT 0 FUNCTION 1.0 //x0
+COMPONENT 1 FUNCTION 0.0 //y0
 -------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION (0.098174770425*(1+x*-1)*(1+y*-1)*(1+z*-1)+0.196349540849*(1+x*1)*(1+y*-1)*(1+z*-1)+0.294524311274*(1+x*1)*(1+y*1)*(1+z*-1)+0.392699081699*(1+x*-1)*(1+y*1)*(1+z*-1)+0.490873852123*(1+x*-1)*(1+y*-1)*(1+z*1)+0.589048622548*(1+x*1)*(1+y*-1)*(1+z*1)+0.687223392973*(1+x*1)*(1+y*1)*(1+z*1)+0.785398163397*(1+x*-1)*(1+y*1)*(1+z*1))^2
+COMPONENT 0 FUNCTION (0.098174770425*(1+x*-1)*(1+y*-1)*(1+z*-1)+0.196349540849*(1+x*1)*(1+y*-1)*(1+z*-1)+0.294524311274*(1+x*1)*(1+y*1)*(1+z*-1)+0.392699081699*(1+x*-1)*(1+y*1)*(1+z*-1)+0.490873852123*(1+x*-1)*(1+y*-1)*(1+z*1)+0.589048622548*(1+x*1)*(1+y*-1)*(1+z*1)+0.687223392973*(1+x*1)*(1+y*1)*(1+z*1)+0.785398163397*(1+x*-1)*(1+y*1)*(1+z*1))^2
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1  QUANTITY phi1 VALUE  -7.5207930803298950e-01   TOLERANCE 1e-6
 SCATRA DIS scatra NODE 1  QUANTITY phi2 VALUE  2.8027355670928955e+00   TOLERANCE 1e-6

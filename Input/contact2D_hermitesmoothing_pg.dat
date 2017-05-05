@@ -87,8 +87,9 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 1000 NUE 0.3 DENS 7.8E-6 THEXPANS 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 100000 NUE 0.3 DENS 7.8E-6 THEXPANS 0.0
--------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.6 FACTOR 0.0 110.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.6 VALUES 0 110
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE 1.73603420631653016e+00 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE -4.65268308178943180e+00 TOLERANCE 1e-10
@@ -102,15 +103,15 @@ NDVOL   0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 // bowlneumann
-E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // spheredirichlet
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0 -1.0 CURVE 0 1 FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0 -1.0 FUNCT 0 1
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // bowldirichlet
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  2
 // bowlinterface

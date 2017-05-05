@@ -1,7 +1,7 @@
 //
-// Maintainer: Matthias Mayr
-// mayr@mhpc.mw.tum.de
-// 089 - 289-10362
+// Maintainer: Andrea La Spina
+// laspina@lnm.mw.tum.de
+// 089 - 289-15265
 //
 -----------------------------------------------------------------------TITLE
 Monolithic Mortar FSI: 3D vessel (rot)
@@ -218,11 +218,9 @@ MAT 5 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.2E-3 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 5
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 5
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (0.25*(1-cos(2*pi*t/200))) t1 0.0 t2 100.0
-CURVE1 on EXPR FUNC 0.5 t1 60.0 t2 360.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION y/15.0
+COMPONENT 0 FUNCTION y/15.0*a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 100.0 500000.0 DESCRIPTION (0.25*(1-cos(2*pi*t/200))) 0.5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          6
@@ -231,49 +229,49 @@ NDVOL                           2
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 1
 // mz
-E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // fluidycurves
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 1 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE 3
 // fluidxzcurves
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 1 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 // fluidxsymcurves
-E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // r_r_extrude_aux_flat
-E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 5
 // fluidxsurfs
-E 2 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluidysurfs
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 1 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 // fluidzsurfs
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 1 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 // fluidsym
-E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // extextrude_aux_flat
-E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE 3
 // fluidycurves
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluidxzcurves
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluidxsymcurves
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF 4
 // fluidxsurfs
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluidysurfs
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluidzsurfs
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluidsym
-E 5 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF 2
 // fsi2

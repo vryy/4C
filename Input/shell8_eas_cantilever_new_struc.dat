@@ -136,14 +136,12 @@ ML_DAMPCOARSE                   1.0
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.45 DENS 0.001
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -1.77394351246161630e+00 TOLERANCE 1e-6
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 2.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 2.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 0.0 0.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 6.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 6.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 0.0 0.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1 VALUES 0 2 0 0
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1 VALUES 0 6 0 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
@@ -152,15 +150,15 @@ NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           1
-E 3 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           1
-E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           1
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 401 DNODE 2

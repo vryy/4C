@@ -162,34 +162,16 @@ MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.4 DENS 2.0 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC sin((t*pi)/2) t1 0.0 t2 20
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 0 t1 0.0 t2 0.4
-CURVE2 on EXPR FUNC 0.1*(cos(2.0*pi*t/3.0)) t1 0.5 t2 30 // x-oscilation
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE3 on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0)) t1 0.02 t2 30// y-oscillation
-----------------------------------------------------------------------CURVE4
-CURVE4 on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE4 on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung ale
-----------------------------------------------------------------------CURVE5
-CURVE5                          on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE5                          on EXPR FUNC t*0.08 t1 0.02 t2 30  //x-bewegung str
-----------------------------------------------------------------------CURVE6
-CURVE6                          on EXPR FUNC 0 t1 0.0 t2 0.01  //y-bewegung str
-CURVE6                          on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0))+0.03*(sin(2.0*pi*t/0.1)) t1 0.02 t2 30  //y-bewegung str
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION (-1/0.25)*(1/0.25)*(-0.25-y)*(0.25-y)
+COMPONENT 0 FUNCTION (-1/0.25)*(1/0.25)*(-0.25-y)*(0.25-y)
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-y)*(y)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
+COMPONENT 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-y)*(y)
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0 0 FUNCTION (1/0.25)*(-1/0.25)*(0.25-y)*(-0.25-y)
+COMPONENT 0 FUNCTION (1/0.25)*(-1/0.25)*(0.25-y)*(-0.25-y)
 ----------------------------------------------------------------------FUNCT4
-
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 6
 NDLINE 0
@@ -197,20 +179,20 @@ NDSURF 4
 NDVOL 5
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 6
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 3 0 0 0 0 0
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 6 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 3 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 3
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL 1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF 2
 // fluid FSI interface

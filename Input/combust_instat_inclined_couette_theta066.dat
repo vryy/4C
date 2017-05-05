@@ -145,17 +145,12 @@ MAT 3 MAT_fluid DYNVISCOSITY 0.3 DENSITY 0.6 // plus/burnt side (right)
 MAT 4 MAT_fluid DYNVISCOSITY 6.0 DENSITY 2.0 // minus/unburnt side (left)
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.5 c1 1.0 c2 1.0 // sin curve with zero derivatives
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
--------------------------------------------FUNCT1 // inflow profile velocity
-FUNCT1 EXPR 0 0.0 0 FUNCTION 10/3*(5-4.5)*y+4.5 // shear flow; top 5.0, bottom 4.0
-------------------------------------------FUNCT2 // initial G-function field
-FUNCT2 EXPR 0 0.0 0 FUNCTION x+y+0.05
+-------------------------------------------// inflow profile velocity
+COMPONENT 0 FUNCTION 10/3*(5-4.5)*y+4.5 // shear flow; top 5.0, bottom 4.0
+------------------------------------------// initial G-function field
+COMPONENT 0  FUNCTION x+y+0.05
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION 10/3*(7-6.5)*y+6.5 // shear flow; top 7.0, bottom 6.0
+COMPONENT 0 FUNCTION 10/3*(7-6.5)*y+6.5 // shear flow; top 7.0, bottom 6.0
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
@@ -169,49 +164,49 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1                               // 1
 // surface outflow
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 9.0 0.5 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 9.0 0.5 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // top inflow points
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 5.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 5.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // bottom inflow points
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 4.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 4.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // top outflow points
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 7.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 7.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // bottom outflow points
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 6.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 6.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           6                               // 8
 // line inflow top
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 5.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 5.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // line inflow front
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 0 0 0
 // line inflow bottom
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 4.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 4.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // line inflow back
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 0 0 0
 // line outflow top
-E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 7.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 7.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // line outflow bottom
-E 7 - NUMDOF 4 ONOFF 0 1 1 0 VAL 6.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 0 1 1 0 VAL 6.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           7                               // 8
 // surface inflow
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 0 0 0
 // surface front
-E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface back
-E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface top left
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 5.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 5.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface top right
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 7.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 7.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface bottom left
-E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 4.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 4.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface bottom right
-E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 6.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 6.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

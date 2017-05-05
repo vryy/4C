@@ -78,10 +78,9 @@ DEFINITION_TAU                  Numerical_Value
 TAU_VALUE                       10.0
 -------------------------------------------------------------------MATERIALS
 MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.0 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (0.3*t) t1 0.0 t2 1.0
-CURVE1 on EXPR FUNC (-0.3*(t-1.0)+0.3) t1 1.0 t2 2.0
-CURVE1 on EXPR FUNC (0.0) t1 2.0 t2 5.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1 2 500000.0 DESCRIPTION (0.3*t) (-0.3*(t-1.0)+0.3) 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          0
@@ -90,7 +89,7 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // Apex
-E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 1 FUNCT 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 184 DNODE 1
 NODE 185 DNODE 1
@@ -180,7 +179,6 @@ NODE 893 DNODE 2
 NODE 897 DNODE 2
 NODE 910 DNODE 2
 NODE 917 DNODE 2
-
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 184 DSURFACE 1

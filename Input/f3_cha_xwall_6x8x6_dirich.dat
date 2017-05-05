@@ -150,18 +150,14 @@ ML_DAMPMED        0.67
 ML_DAMPCOARSE     0.95
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_fluid   DYNVISCOSITY 0.002531646 DENSITY 1.0
--------------------------------------------------------------CURVE1
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1-y*y)*21.3*(1.0+0.2*cos(100*y+30*z))
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION (1-y*y)*0.5*(1.0+1.0*cos(170*y+3+111*x))
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 5 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 6 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0 FUNCTION (1-y*y)*21.3*(1.0+0.2*cos(100*y+30*z))
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION (1-y*y)*0.5*(1.0+1.0*cos(170*y+3+111*x))
+COMPONENT 3 FUNCTION 0
+COMPONENT 4 FUNCTION 0
+COMPONENT 5 FUNCTION 0
+COMPONENT 6 FUNCTION 0
 -------------------------------------------------------------FUNCT2
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
@@ -190,15 +186,15 @@ NDVOL   3
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // volume1
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Dead
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Dead
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  3
 // wall_top
-E 1 - NUMDOF 8 ONOFF 1 1 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 1 - NUMDOF 8 ONOFF 1 1 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // wall_bottom
-E 2 - NUMDOF 8 ONOFF 1 1 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 2 - NUMDOF 8 ONOFF 1 1 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // master_stream
-E 3 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 1 1 1 0 0 0 0 0
+E 3 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 0 0 0 0 0
 -------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
 DSURF  2
 // wall_top

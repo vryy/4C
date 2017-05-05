@@ -84,14 +84,13 @@ TOLDELTALP                      1.e-8
 MAT 1   MAT_PlasticElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1 INITYIELD 0.5 ISOHARD 0.05
 MAT 10 ELAST_CoupBlatzKo MUE 1.0 NUE 0.3 F 0.5
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION x*cos(0.5236*2*(t-0.5))+y*sin(0.5236*2*(-t+0.5))-x
-FUNCT1 COMPONENT 1 EXPR 0 0 0 FUNCTION x*sin(0.5236*2*(t-0.5))+y*cos(0.5236*2*(t-0.5))-y
-FUNCT1 COMPONENT 2 EXPR 0 0 0 FUNCTION 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 3.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 10.0 FACTOR 1.0 1.0
+COMPONENT 0 FUNCTION (x*cos(0.5236*2*(t-0.5))+y*sin(0.5236*2*(-t+0.5))-x)*a
+COMPONENT 1 FUNCTION (x*sin(0.5236*2*(t-0.5))+y*cos(0.5236*2*(t-0.5))-y)*a
+COMPONENT 2 FUNCTION 0.0
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 0.50000001 10.0 VALUES 0.0 0.0 1.0 1.0
+--------------------------------------------------------------------------FUNCT2
+FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.5 10.0 VALUES 0.0 3.0 3.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -100,9 +99,9 @@ NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // dxyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // twist
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 CURVE 2 2 1 FUNCT 1 1 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1 1 2
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // c_twist

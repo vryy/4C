@@ -81,20 +81,16 @@ PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispx VALUE -5.44894136484535274e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispy VALUE -2.68591106584900527e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
-------------------------------------------------------------CURVE1
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1*(-y)
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.1*x
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.1*(-y)
+COMPONENT 1 FUNCTION 0.1*x
+COMPONENT 2 FUNCTION 0.0
 ------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt(x*x+y*y)-sqrt(0.20)
+COMPONENT 0 FUNCTION sqrt(x*x+y*y)-sqrt(0.20)
 ------------------------------------------------------------FUNCT3
-FUNCT3 ZALESAKSDISK
+ZALESAKSDISK
 ------------------------------------------------------------FUNCT4
-FUNCT4 EXPR 0 0.0 0 FUNCTION x
+COMPONENT 0 FUNCTION x
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

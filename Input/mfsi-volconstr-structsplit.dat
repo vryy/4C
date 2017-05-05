@@ -149,13 +149,8 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.03 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 3e3 NUE 0.3 DENS 1.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0.0 t2 5.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION (x*x*y*y-4*x*x-4*y*y+16)/16
+COMPONENT 0 FUNCTION (x*x*y*y-4*x*x-4*y*y+16)/16*t
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -170,18 +165,18 @@ NDSURF                          11
 NDVOL                           1
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE 2
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 2
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 -1.0 0.0 CURVE none none 1 none FUNCT 0 0 1 0
-E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 -1.0 0.0 FUNCT 0 0 1 0
+E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE                           1
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
-E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
 E 2 - 1

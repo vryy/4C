@@ -88,15 +88,15 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           1
 //E 1 - 3 1 1 1 0.0 0.0 0.0 none none none 0 0 0
-E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 CURVE 1 1 2 FUNCT 0 0 0
+E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1  1 2
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
@@ -1254,21 +1254,12 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
 MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.6 FACTOR 0.0 0.2
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 1.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.6 FACTOR 1.0 1.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1000 VALUES 0 0 0.2 0.2
 ----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1000 VALUES 0 1 1 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 1.99730620445507046e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 1.94008993434051508e-01 TOLERANCE 1e-8

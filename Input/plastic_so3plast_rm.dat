@@ -57,9 +57,9 @@ Outer Iteration StatusTest = no
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0 0 FUNCTION (z+13.3335)/(13.3335*2)*1e-3
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION (z+13.3335)/(13.3335*2)*1e-3
 ------------------------------------------------------SEMI-SMOOTH PLASTICITY
 SEMI_SMOOTH_CPL                 175
 STABILIZATION_S                 1.0
@@ -69,8 +69,8 @@ TOLPLASTCONSTR                  1.e-8
 TOLDELTALP                      1.e-8
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93
-----------------------------------------------------------------------CURVE1
-CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 9000 FACTOR 0 9
+-------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION t/1000
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5
@@ -79,31 +79,31 @@ NDVOL   1
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // d7_xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d11_z_disp_xy
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 2
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  5
 // d4_xy
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d5_xz
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d6_yz
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d9_z_disp_y
-E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 2
 // d10_z_disp_x
-E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 2
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  4
 // d1_x
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d2_y
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d3_z
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d8_z_disp
-E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 2
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
 // bar

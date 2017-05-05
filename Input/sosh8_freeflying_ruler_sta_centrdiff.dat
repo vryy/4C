@@ -83,14 +83,9 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2.06E11 NUE 0.0 DENS 7.8E3
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 2.0E-03 FACTOR 0 20
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 2.0E-03 4.0E-03 FACTOR 20 0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 4.0E-03 10000000 FACTOR 0 0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 2e-3 4e-3 100000 VALUES 0 20 0 0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 96 QUANTITY dispx VALUE -5.57824915045423558e-02 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 96 QUANTITY dispy VALUE -5.77274239219116095e-02 TOLERANCE 1e-12
@@ -122,17 +117,17 @@ DPOINT                          0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DLINE                           6
 //node_ns1
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 1.0E3 1.0E3 CURVE none 1 1 FUNCT 0 0 0 Live Mid
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 1.0E3 1.0E3 FUNCT 0 1 1 Live Mid
 //node_ns2
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 1.0E3 1.0E3 CURVE none 1 1 FUNCT 0 0 0 Live Mid
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 1.0E3 1.0E3 FUNCT 0 1 1 Live Mid
 //node_ns3
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 -1.0E3 CURVE none none 1 FUNCT 0 0 0 Live Mid
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 -1.0E3 FUNCT 0 0 1 Live Mid
 //node_ns4
-E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 -1.0E3 CURVE none none 1 FUNCT 0 0 0 Live Mid
+E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 -1.0E3 FUNCT 0 0 1 Live Mid
 //node_ns5
-E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 1.0E3 0.0 1.0E3 CURVE 1 none 1 FUNCT 0 0 0 Live Mid
+E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 1.0E3 0.0 1.0E3 FUNCT 1 0 1 Live Mid
 //node_ns6
-E 6 - NUMDOF 3 ONOFF 1 0 1 VAL 1.0E3 0.0 1.0E3 CURVE 1 none 1 FUNCT 0 0 0 Live Mid
+E 6 - NUMDOF 3 ONOFF 1 0 1 VAL 1.0E3 0.0 1.0E3 FUNCT 1 0 1 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           0

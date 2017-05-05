@@ -9,7 +9,6 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
@@ -40,7 +39,6 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
-
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 ALPHA_F                         0.5
 ALPHA_M                         0.5
@@ -64,7 +62,6 @@ THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 RESULTSEVRY                     10
-VELCURVENO                      -1
 VELFUNCNO                       2
 VELOCITYFIELD                   function
 WRITEFLUX_IDS                   -1
@@ -134,28 +131,24 @@ MAT 28 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 29 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 31 MAT_scatra_reaction NUMSCAL 8 STOICH -1 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0 0 0 0 0 0 0
 --------------------------------------------------------CLONING MATERIAL MAP
-----------------------------------------------------------------------CURVE1
-CURVE 1 on EXPR FUNC ((1-cos(2*pi*t))*0.5) t1 0.00 t2 1.0
-CURVE 1 on EXPR FUNC (1.0) t1 1.00 t2 1000.0
-----------------------------------------------------------------------CURVE2
-CURVE 2 on EXPR FUNC (1) t1 0.00 t2 1000.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    1.0
-FUNCT 1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    1.0
-FUNCT 1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION    2.0
-FUNCT 1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION    2.0
-FUNCT 1 COMPONENT 4 EXPR 0 0.0 0 FUNCTION    3.0
-FUNCT 1 COMPONENT 5 EXPR 0 0.0 0 FUNCTION    0.0
-FUNCT 1 COMPONENT 6 EXPR 0 0.0 0 FUNCTION    4.0
-FUNCT 1 COMPONENT 7 EXPR 0 0.0 0 FUNCTION    4.0
+COMPONENT 0 FUNCTION    1.0
+COMPONENT 1 FUNCTION    1.0
+COMPONENT 2 FUNCTION    2.0
+COMPONENT 3 FUNCTION    2.0
+COMPONENT 4 FUNCTION    3.0
+COMPONENT 5 FUNCTION    0.0
+COMPONENT 6 FUNCTION    4.0
+COMPONENT 7 FUNCTION    4.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    0.0
-FUNCT 2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    0.0
-FUNCT 2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION    0.0
+COMPONENT 0 FUNCTION    0.0
+COMPONENT 1 FUNCTION    0.0
+COMPONENT 2 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1.0 1000 500000.0 DESCRIPTION ((1-cos(2*pi*t))*0.5) ((1-cos(2*pi*1000))*0.5) 1
 ----------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION 1
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 4.28088826163973257e-01 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 1.76328702476718746e+00 TOLERANCE 1e-7
@@ -181,7 +174,7 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
 DSURF                           1
 // // left surface curve  x y z 0 0 0 Val1 Val2 Val3 0 0 0 Live Mid/orthopreassure Mid
-E 1 - NUMDOF 8 ONOFF 1 1 0 1 0 0 1 1 VAL 1.0 1.0 1.0 1.0 0.5 0.5 0.5 0.5 CURVE 2 2 2 2 1 1 1 1 FUNCT 0 0 0 0 0 0 0 0
+E 1 - NUMDOF 8 ONOFF 1 1 0 1 0 0 1 1 VAL 1.0 1.0 1.0 1.0 0.5 0.5 0.5 0.5 FUNCT 4 4 4 4 3 3 3 3
 ----------------------------------------------DESIGN TRANSPORT ROBIN SURF CONDITIONS
 DSURF                           2
 E 1 - NUMSCAL 8 ONOFF 0 0 1 0 0 1 0 0 PREFACTOR -1.0 REFVALUE 2.0

@@ -81,12 +81,8 @@ SOLVER                          UMFPACK
 //MAT 1 MAT_Struct_LogNeoHooke YOUNG 240.5653612 NUE 0.5 DENS 1.0
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 1.0
 MAT 2 ELAST_CoupLogNeoHooke MODE Lame C1 80.1884537 C2 0.
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 50 QUANTITY dispx VALUE -1.9480759634533324e+01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 50 QUANTITY dispy VALUE 2.0321732340972484e+01 TOLERANCE 1e-8
@@ -106,9 +102,9 @@ DLINE                           0
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           2
 //node_ns1
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //node_ns3
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
@@ -122,7 +118,7 @@ DLINE                           0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           1
 //node_ns2
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0625 0.0 CURVE none 1 none FUNCT 0 0 0 Live Mid
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0625 0.0 FUNCT 0 1 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0

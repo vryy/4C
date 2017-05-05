@@ -233,23 +233,18 @@ SOLVER                          Aztec_MSR  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_
 MAT 1 MAT_lubrication VISCOSITY 1.0 DENSITY 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 100000.0 NUE 0.3
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.0
+COMPONENT 0  FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.5*0.025*0.025*1.0E8*(-(heaviside(x)*asin(y/0.025)+heaviside(-x)*(-asin(y/0.025)-pi))*(heaviside(x)*asin(y/0.025)+heaviside(-x)*(-asin(y/0.025)-pi))-pi*(heaviside(x)*asin(y/0.025)+heaviside(-x-1.0E-12)*(-asin(y/0.025)-pi))+0.75*pi*pi)+1.0E5
+COMPONENT 0  FUNCTION 0.5*0.025*0.025*1.0E8*(-(heaviside(x)*asin(y/0.025)+heaviside(-x)*(-asin(y/0.025)-pi))*(heaviside(x)*asin(y/0.025)+heaviside(-x)*(-asin(y/0.025)-pi))-pi*(heaviside(x)*asin(y/0.025)+heaviside(-x-1.0E-12)*(-asin(y/0.025)-pi))+0.75*pi*pi)+1.0E5
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0 0 FUNCTION x*cos(200.0*pi*t/3.0)+y*sin(-200.0*pi*t/3.0)-x+0.001*sin(200.0*pi*t/3.0)
-FUNCT3 COMPONENT 1 EXPR 0 0 0 FUNCTION x*sin(200.0*pi*t/3.0)+y*cos(200.0*pi*t/3.0)-y+0.001*sin(200.0*pi*t/3.0)
-FUNCT3 COMPONENT 2 EXPR 0 0 0 FUNCTION 0.0
+COMPONENT 0  FUNCTION x*cos(200.0*pi*t/3.0)+y*sin(-200.0*pi*t/3.0)-x+0.001*sin(200.0*pi*t/3.0)
+COMPONENT 1  FUNCTION x*sin(200.0*pi*t/3.0)+y*cos(200.0*pi*t/3.0)-y+0.001*sin(200.0*pi*t/3.0)
+COMPONENT 2  FUNCTION 0.0
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1138 QUANTITY dispx VALUE 1.51586291245217868e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 1138 QUANTITY dispy VALUE 5.25349148674072747e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 1138 QUANTITY dispz VALUE 1.40003627243667078e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1138 QUANTITY dispx VALUE 1.52668828729923111e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1138 QUANTITY dispy VALUE 5.34579464859964194e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1138 QUANTITY dispz VALUE 1.40998323134341724e-02 TOLERANCE 1e-10
 LUBRICATION DIS lubrication NODE 85 QUANTITY pre VALUE 4.09623978626256809e+05 TOLERANCE 1e-9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
@@ -259,17 +254,17 @@ NDVOL   0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 // domain
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0E8 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0E8 FUNCT 0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // boundary
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0E5 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0E5 FUNCT 0
 // move
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 CURVE none none FUNCT 3 3
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 FUNCT 3 3
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // fix
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 --------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  2
 // slave

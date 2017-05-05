@@ -101,27 +101,24 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 2.0 DENSITY 3.0
 MAT 2 MAT_opti MINPORO 0 MAXPORO 5 SMEARFAC 1
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
 ------------------------------------------------FUNCT1 // initial flow field
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -5*x-10*y
+COMPONENT 0 FUNCTION 1
+COMPONENT 1 FUNCTION 2
+COMPONENT 2 FUNCTION -5*x-10*y
 ---------------------------------------------FUNCT2 // initial density field
-FUNCT2 EXPR 0 0.0 0 FUNCTION 0.0 // 1=fluid,0=no fluid
+COMPONENT 0 FUNCTION 0.0 // 1=fluid,0=no fluid
 ---------------------------------------------FUNCT3 // initial adjoint field
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION x-t
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2*t-y
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -5*t*x+10*t*y
+COMPONENT 0 FUNCTION x-t
+COMPONENT 1 FUNCTION 2*t-y
+COMPONENT 2 FUNCTION -5*t*x+10*t*y
 -------------------------------FUNCT4 // x-component of fluid inflow profile
-FUNCT4 EXPR 0 0.0 0 FUNCTION 1
+COMPONENT 0 FUNCTION 1
 -------------------------------FUNCT5 // y-component of fluid inflow profile
-FUNCT5 EXPR 0 0.0 0 FUNCTION 2
+COMPONENT 0 FUNCTION 2
 ------------------------------------------------FUNCT6 // NBC in x-direction
-FUNCT6 EXPR 0 0.0 0 FUNCTION 5*x+10*y
+COMPONENT 0  FUNCTION 5*x+10*y
 ------------------------------------------------FUNCT7 // NBC in y-direction
-FUNCT7 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0  FUNCTION 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3
@@ -130,17 +127,17 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // volume force
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 //                              outflow
-E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 6 7 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 6 7 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              inflow
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 4 5 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 4 5 0
 //                              sides
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 4 5 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 4 5 0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 4 QUANTITY pressure VALUE -1.0 TOLERANCE 1.0e-12
 FLUID DIS fluid NODE 7 QUANTITY pressure VALUE -1.5 TOLERANCE 1.0e-12

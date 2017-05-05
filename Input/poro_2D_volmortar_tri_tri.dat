@@ -112,34 +112,23 @@ MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e2 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 0.01 TYPE Darcy
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.02 FACTOR 0. 0.
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.02 1.0 FACTOR 0. 1.
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1.0 50000.0 FACTOR 1. 1.
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.01 FACTOR 0. 1.
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.01 50000.0 FACTOR 1. 1
-----------------------------------------------------------------------CURVE3
-CURVE3 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.02 FACTOR 0. 0.
-CURVE3 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.02 0.03 FACTOR 0. 1.
-CURVE3 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.03 50000.0 FACTOR 1. 1.
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0/(0.5-0.2*sin(0.2*pi*x))
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.5-0.2*sin(0.2*pi*x)-0.5/(1.0+0.1*pi*sin(0.2*pi*x))
+COMPONENT 0 FUNCTION 1.0/(0.5-0.2*sin(0.2*pi*x))
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.5-0.2*sin(0.2*pi*x)-0.5/(1.0+0.1*pi*sin(0.2*pi*x))
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION 1+pi/10*sin(pi/5*x)-0.04*cos(pi/5*x)*pi+1/100*pi^2*cos(pi/5*x)/(1+pi/10*sin(0.2*pi*x))^2
+COMPONENT 0 FUNCTION (1+pi/10*sin(pi/5*x)-0.04*cos(pi/5*x)*pi+1/100*pi^2*cos(pi/5*x)/(1+pi/10*sin(0.2*pi*x))^2)*a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.02 1 5000000 VALUES 0 1 1 1
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION 0.5
+COMPONENT 0 FUNCTION 0.5
 ----------------------------------------------------------------------FUNCT4
-FUNCT4 EXPR 0 0.0 0 FUNCTION 0.5*(1+cos(pi/5*x))
+COMPONENT 0 FUNCTION 0.5*(1+cos(pi/5*x))
 ----------------------------------------------------------------------FUNCT5
-FUNCT5                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.5*(1+cos(pi/5*x))
-FUNCT5                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT5                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.5-0.2*sin(pi/5*x)
+                         COMPONENT 0 FUNCTION 0.5*(1+cos(pi/5*x))
+                         COMPONENT 1 FUNCTION 0.0
+                         COMPONENT 2 FUNCTION 0.5-0.2*sin(pi/5*x)
 ----------------------------------------------------------------------FUNCT6
-FUNCT6                          EXPR 0 0.0 0 FUNCTION 0.02*0.16*pi
+COMPONENT 0 FUNCTION 0.02*0.16*pi
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 400 QUANTITY velx VALUE 1.62194513642199212e+00 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 500 QUANTITY pressure VALUE -1.55677849836899761e-02 TOLERANCE 1e-8
@@ -151,19 +140,19 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              surf_fluid
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 2 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 2 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              outflow_struct
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE none none FUNCT 4 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 4 0
 //                              inflow_struct
-E 4 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE none none FUNCT 4 0
+E 4 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 4 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 //                              surf_struct
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE none none FUNCT 4 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 4 0
 //                              surf_fluid
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------DESIGN SURFACE POROCOUPLING CONDITION
 DSURF                           2
 //                              surf_struct

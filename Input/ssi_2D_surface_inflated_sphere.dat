@@ -93,23 +93,16 @@ MAT 1 MAT_scatra DIFFUSIVITY 1.00
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
-----------------------------------------------------------------------CURVE1
-//CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
-CURVE1 on EXPR FUNC 1-cos(2*pi*t/2.0) t1 0.0 t2 2.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 4*pi
+COMPONENT 0 FUNCTION 4*pi
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION x/(sqrt(x*x+y*y+z*z))
+COMPONENT 0 FUNCTION x/(sqrt(x*x+y*y+z*z))*(1-cos(2*pi*t/2.0))
 ----------------------------------------------------------------------FUNCT4
-FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION y/(sqrt(x*x+y*y+z*z))
+COMPONENT 0 FUNCTION y/(sqrt(x*x+y*y+z*z))*(1-cos(2*pi*t/2.0))
 ----------------------------------------------------------------------FUNCT5
-FUNCT5 COMPONENT 0 EXPR 0 0.0 0 FUNCTION z/(sqrt(x*x+y*y+z*z))
+COMPONENT 0 FUNCTION z/(sqrt(x*x+y*y+z*z))*(1-cos(2*pi*t/2.0))
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 222 QUANTITY phi VALUE 7.05138595689050462e-01 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 230 QUANTITY phi VALUE 7.05138595689050574e-01 TOLERANCE 1e-7
@@ -123,7 +116,7 @@ NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // surface
-E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE 1 1 1 none none none FUNCT 3 4 5 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 3 4 5 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

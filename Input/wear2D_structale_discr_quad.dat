@@ -88,12 +88,12 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.3
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100 NUE 0.3 DENS 1 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 0.0 -2.2
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.2 1.2
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 5 VALUES 0 0 -2.2
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 5 VALUES 0 1.2 1.2
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.21836634879660534e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.50424183320930810e-03 TOLERANCE 1e-8
@@ -107,19 +107,19 @@ NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  3
 // obenoben
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.9 -0.3 CURVE 1 2 FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.9 -0.3 FUNCT 1 2
 // untenunten1
-E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 // untenunten2
-E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 ---------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE  3
 // obenoben
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 // untenunten1
-E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 5 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 // untenunten2
-E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 6 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  3
 // obenunten

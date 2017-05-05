@@ -153,34 +153,30 @@ NAME                            L2_Projection
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 // initial G-function field
-FUNCT1 EXPR 0 0.0 0 FUNCTION -(sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.49)
+COMPONENT 0 FUNCTION -(sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.49)
 ----------------------------------------------------------------------FUNCT2
 // initial G-function field
-FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.19
+COMPONENT 0 FUNCTION sqrt((x+0.0)*(x+0.0)+(y-0.0)*(y-0.0))-0.19
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(y+0.0)/0.49*(0.49)*(-1.0)
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -1.0*(x+0.0)/0.49*(0.49)*(-1.0)
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0*(y+0.0)/0.49*(0.49)*(-1.0)
+COMPONENT 1 FUNCTION -1.0*(x+0.0)/0.49*(0.49)*(-1.0)
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT4
-FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(y+0.0)/0.49*(0.5)*(-1.0)
-FUNCT4 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -1.0*(x+0.0)/0.49*(0.5)*(-1.0)
-FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0*(y+0.0)/0.49*(0.5)*(-1.0)
+COMPONENT 1 FUNCTION -1.0*(x+0.0)/0.49*(0.5)*(-1.0)
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT5
-FUNCT5  TAYLORCOUETTEFLOW RADIUS_I 0.19 RADIUS_O 0.49 VEL_THETA_I -0.19 VEL_THETA_O 0.49 SLIPLENGTH_I 1.0 SLIPLENGTH_O 1e-5 TRACTION_THETA_I -2.5 TRACTION_THETA_O 0.5 VISCOSITY 1.0
+TAYLORCOUETTEFLOW RADIUS_I 0.19 RADIUS_O 0.49 VEL_THETA_I -0.19 VEL_THETA_O 0.49 SLIPLENGTH_I 1.0 SLIPLENGTH_O 1e-5 TRACTION_THETA_I -2.5 TRACTION_THETA_O 0.5 VISCOSITY 1.0
 ----------------------------------------------------------------------FUNCT6
-FUNCT6 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(y+0.0)/0.19*(-0.19)*(-1.0)
-FUNCT6 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -1.0*(x+0.0)/0.19*(-0.19)*(-1.0)
-FUNCT6 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0*(y+0.0)/0.19*(-0.19)*(-1.0)
+COMPONENT 1 FUNCTION -1.0*(x+0.0)/0.19*(-0.19)*(-1.0)
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT7
-FUNCT7 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(y+0.0)/0.19*(-2.5)*(-1.0)
-FUNCT7 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -1.0*(x+0.0)/0.19*(-2.5)*(-1.0)
-FUNCT7 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0*(y+0.0)/0.19*(-2.5)*(-1.0)
+COMPONENT 1 FUNCTION -1.0*(x+0.0)/0.19*(-2.5)*(-1.0)
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 //analytical solution:
 //Node 2153
@@ -200,19 +196,19 @@ NDSURF                          8
 NDVOL                           1
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------DESIGN XFEM LEVELSET NAVIER SLIP VOL CONDITIONS
 DVOL                            2
-E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1.0 SLIP_CURVE 0 SLIP_FUNCT 0
-E 1 - COUPLINGID 2 LEVELSETFIELDNO 1 LEVELSETCURVE none BOOLEANTYPE union COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 2 ROBIN_NEUMANN_ID 2 SLIPCOEFFICIENT 1e-5 SLIP_CURVE 0 SLIP_FUNCT 0
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 BOOLEANTYPE none COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1.0 SLIP_FUNCT 0
+E 1 - COUPLINGID 2 LEVELSETFIELDNO 1 BOOLEANTYPE union COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 2 ROBIN_NEUMANN_ID 2 SLIPCOEFFICIENT 1e-5 SLIP_FUNCT 0
 ------------------------------------DESIGN XFEM ROBIN NEUMANN VOL CONDITIONS
 DVOL                            2
-E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 7 7 0
-E 1 - ROBIN_NEUMANN_ID 2 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 4 4 0
+E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 7 7 0
+E 1 - ROBIN_NEUMANN_ID 2 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 4 4 0
 ----------------------------------DESIGN XFEM ROBIN DIRICHLET VOL CONDITIONS
 DVOL                            2
-E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 6 6 0
-E 1 - ROBIN_DIRICHLET_ID 2 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 3 0
+E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 6 6 0
+E 1 - ROBIN_DIRICHLET_ID 2 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 3 3 0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 //                              fluid_volume

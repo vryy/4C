@@ -170,18 +170,14 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 3e6 NUE 0.3 DENS 1.2 THEXPANS 0.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 3e6 NUE 0.3 DENS 1.2 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 3e-3 FACTOR 1.0 1.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3e-3 3.1e-3 FACTOR 1.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3.1e-3 10000 FACTOR 0.0 0.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.01 FACTOR 0.0 0.4
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.01 6.0 FACTOR 0.4 0.4
-----------------------------------------------------------------------CURVE3
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.01 FACTOR 0.0 0.4
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.01 6.0 FACTOR 0.4 0.4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION 1-(x*x+y*y)/(0.5*0.5)
+COMPONENT 0 FUNCTION 1-(x*x+y*y)/(0.5*0.5)
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 3e-3 3.1e-3 10000 VALUES 1 1 0 0
+----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.01 6 VALUES 0 0.4 0.4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 478 QUANTITY velx VALUE 1.06374894507558526e+00 TOLERANCE 1e-8
 FLUID DIS fluid NODE 478 QUANTITY vely VALUE -1.32777940449465470e+00 TOLERANCE 1e-8
@@ -198,31 +194,31 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              fluid_inflow
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.3332e4 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.3332e4 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              fluid_fsi_ring_slave_noDBC
-E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 //                              fluid_inflow
-//E 1 - NUMDOF 4 ONOFF 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+//E 1 - NUMDOF 4 ONOFF 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //                              fluid_outflow
-//E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+//E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //                              str_moveplatedown
-E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -1.0 0.0 CURVE none 2 none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -1.0 0.0 FUNCT 0 3 0
 //                              str_moveplateup
-E 9 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 1.0 0.0 CURVE none 3 none FUNCT 0 0 0
+E 9 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 1.0 0.0 FUNCT 0 3 0
 //                              str_inring
-E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              str_outring
-E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           2
 //                              fluid_inflow
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              fluid_outflow
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 6 - 1 Master Inactive

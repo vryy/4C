@@ -216,7 +216,6 @@ THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        25.0
 RESULTSEVRY                           1
-VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 LINEAR_SOLVER                   6
@@ -403,16 +402,11 @@ MAT 4 MAT_matlist LOCAL No NUMMAT 1 MATIDS 6 END
 MAT 5 MAT_scatra DIFFUSIVITY 1.6
 MAT 6 MAT_scatra DIFFUSIVITY 1.0
 MAT 10 MAT_Struct_StVenantKirchhoff YOUNG 2000.0 NUE 0.3 DENS 0.001
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(1+sin(pi*(t-250)/500)) t1 0.0 t2 500.0
-CURVE1 on EXPR FUNC 1.0 t1 500.0 t2 10000.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 0.9-0.01*z
+COMPONENT 0 FUNCTION 0.9-0.01*z
 ----------------------------------------------------------------------FUNCT2
-
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 500 10000000 DESCRIPTION 0.5*(1+sin(pi*(t-250)/500)) 1
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          3
@@ -421,51 +415,51 @@ NDVOL                           1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // slave side fsi nodes
-E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 // solid fsi lines
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluid fsi lines
-E 2 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           8
 // solid fsi
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none  FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // solid left/right
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // solid top
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 30.0 CURVE none none 1 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 30.0 FUNCT 0 0 2
 // fluid fsi
-E 4 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid left
-E 5 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid right
-E 6 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid bottom
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid front/back
-E 8 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //                              solid
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE                           1
 // fluid fsi lines
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           5
 // fluid fsi
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluid left
-E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluid right
-E 6 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluid bottom
-E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluid front/back
-E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
 // solid fsi

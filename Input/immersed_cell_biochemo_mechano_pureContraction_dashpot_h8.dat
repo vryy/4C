@@ -300,39 +300,18 @@ MAT 2000 MAT_scatra DIFFUSIVITY 0.0
 SRC_FIELD cell SRC_MAT 1 TAR_FIELD cellscatra TAR_MAT 5
 SRC_FIELD structure SRC_MAT 7 TAR_FIELD porofluid TAR_MAT 1000
 SRC_FIELD structure SRC_MAT 7 TAR_FIELD scatra TAR_MAT 2000
-------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(1+cos((t/(40)*pi))) t1 0.0 t2 30
-CURVE1 on EXPR FUNC 0.5*(1+cos((30/(40)*pi))) t1 30.0 t2 40
-CURVE1 on EXPR FUNC 0.5*(1+cos((30/(40)*pi)))-0.5*(1+cos((30/(40)*pi)))*(t-40)/20 t1 40.0 t2 60
-CURVE1 on EXPR FUNC 0.0 t1 60 t2 100
-------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 1.0 t1 0 t2 1
-CURVE2 on EXPR FUNC 0.0 t1 1 t2 200
-------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC 0.0 t1 0 t2 10
-CURVE3 on EXPR FUNC 0.6*1.0*0.5*(1-cos(((t-10)/(40-10)*pi))) t1 10 t2 40
-CURVE3 on EXPR FUNC 0.6*1.0 t1 40 t2 50
-CURVE3 on EXPR FUNC 0.6*1.0*0.5*(1+cos(((t-50)/(25)*pi))) t1 50.0 t2 75
-CURVE3 on EXPR FUNC 0.0 t1 75 t2 100
-------------------------------------------------------------------CURVE4
-CURVE4 on EXPR FUNC 0.5*(1-cos(((t)/(5)*pi))) t1 0 t2 5
-CURVE4 on EXPR FUNC 1.0 t1 5 t2 20
-CURVE4 on EXPR FUNC 0.5*(1+cos(((t-20)/(10)*pi))) t1 20.0 t2 30
-CURVE4 on EXPR FUNC 0.0 t1 30 t2 200
 ------------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.2
-FUNCT 1 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.8//0.6 //0.5 // 0.5
-FUNCT 1 COMPONENT 2 EXPR 0 0 0 FUNCTION 0.0
-FUNCT 1 COMPONENT 3 EXPR 0 0 0 FUNCTION 0.0
-FUNCT 1 COMPONENT 4 EXPR 0 0 0 FUNCTION 0.6 //2.5//0.75 //1.0
-FUNCT 1 COMPONENT 5 EXPR 0 0 0 FUNCTION 0.0
-FUNCT 1 COMPONENT 6 EXPR 0 0 0 FUNCTION 0.0
-FUNCT 1 COMPONENT 7 EXPR 0 0 0 FUNCTION 0.0
-FUNCT 1 COMPONENT 8 EXPR 0 0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 0.2
+COMPONENT 1 FUNCTION 0.8//0.6 //0.5 // 0.5
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.0
+COMPONENT 4 FUNCTION 0.6 //2.5//0.75 //1.0
+COMPONENT 5 FUNCTION 0.0
+COMPONENT 6 FUNCTION 0.0
+COMPONENT 7 FUNCTION 0.0
+COMPONENT 8 FUNCTION 1.0
 ------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0.0 0.0 0.0 FUNCTION 0.8
-------------------------------------------------------------------FUNCT3
-------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION 0.8
 ------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS cellscatra NODE 675 QUANTITY  phi VALUE 1.07673549159712861e-01 TOLERANCE 1e-5
 SCATRA DIS cellscatra NODE 675 QUANTITY phi2 VALUE 6.82128574668862342e-01 TOLERANCE 1e-5
@@ -381,107 +360,107 @@ E 12 -  1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // cell_backside
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // FA_middle_of_cell
-//E 14 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 14 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 0
 // bottom_corner_point_down_left
-//E 1 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 1 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // bottom_corner_point_up_left
-//E 2 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 2 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // bottom_corner_point_up_right
-//E 3 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 3 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // bottom_corner_point_down_right
-//E 4 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 4 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // FA_middle_of_cell_point_left_d
-//E 5 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 5 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // FA_middle_of_cell_point_left_up
-//E 6 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 6 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // FA_middle_of_cell_point_right_up
-//E 7 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 7 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // FA_middle_of_cell_point_right_d
-//E 8 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 8 - E num - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 ---------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF  0
 // cell_backside
-//E 1 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 1 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // right_side
-//E 2 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 2 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // bottom_side
-//E 3 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 3 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // left_side
-//E 4 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 4 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // upward_side
-//E 5 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 5 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // cell_frontside
-//E 6 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 6 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_1_ele
-//E 7 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 7 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_2
-//E 8 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 8 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_3
-//E 9 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 9 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_9_eles
-//E 10 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 10 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_7_eles
-//E 11 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 11 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_5_eles
-//E 12 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 12 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_3_eles
-//E 13 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 13 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // FA_middle_of_cell
-//E 14 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 14 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // side_3_eles
-//E 15 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 15 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // side_7_eles
-//E 16 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 16 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // side_5_eles
-//E 17 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 17 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // corner_1
-//E 18 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 18 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // corner_2
-//E 19 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 19 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // corner_3
-//E 20 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 20 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // corner_4
-//E 21 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 21 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // corner_5
-//E 22 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 22 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // corner_6
-//E 23 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 23 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // corner_7
-//E 24 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 24 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_1_ele_up
-//E 25 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 25 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_3_eles_up
-//E 26 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 26 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_5_eles_up
-//E 27 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 27 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_1_ele_down
-//E 28 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 28 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_3_eles_down
-//E 29 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 29 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_5_eles_down
-//E 30 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 30 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_7_eles_up
-//E 31 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 31 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // middle_7_eles_down
-//E 32 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 32 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 ----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 DVOL   1
 // cell_volume
-//E 1 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 1 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // leading_region_small
-//E 2 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 2 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // leading_region
-//E 3 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 3 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // leading_region_big
-//E 4 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 4 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // leading_region_big_big
-//E 5 - NUMDOF 0  ONOFF 0  VAL 0.0  CURVE none  FUNCT 0
+//E 5 - NUMDOF 0  ONOFF 0  VAL 0.0  FUNCT 0
 // dummy poro volume
-E 6 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+E 6 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
 // dummy poro volume
@@ -493,7 +472,7 @@ E 6 -
 --------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
 DVOL   1
 // dummy poro vol
-E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    2 DNODE 1
 NODE    101 DNODE 2

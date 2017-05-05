@@ -53,7 +53,7 @@ TEMPERATURE                     298.15 // F/RT = 38.942
 GALVANOSTATIC                   Yes
 GSTATCONVTOL                    1e-12
 GSTATCURTOL                     1e-12
-GSTATCURVENO                    4
+GSTATFUNCTNO                    5
 GSTATITEMAX                     30
 GSTAT_LENGTH_CURRENTPATH        0.1
 GSTATCONDID_CATHODE             0
@@ -71,18 +71,18 @@ SOLVER                          UMFPACK
 ------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 3 END
-MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 1 TRANSNR 2 THERMFAC 0 COND 3 END
- -----------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1.6e-4 t1 0.0 t2 1000 //diffusion coefficient species 1
-------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 0.5 t1 0.0 t2 1000 // transference number species 1
-------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC 96485.3399/(8.314472*298.15)*96485.3399*(1.6e-4-(-1.0)*1.6e-4)*1.0*t t1 0.0 t2 1000 // conductivity
-------------------------------------------------------------CURVE4
-CURVE4 on EXPR FUNC -7.50E-02 t1 0.0 t2 1.0 // potential
+MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 2 TRANSNR 3 THERMFAC 0 COND 4 END
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1    //initial concentration field: µmol/mm³
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0    //initial potential field:
+COMPONENT 0 FUNCTION 0.1    //initial concentration field: µmol/mm³
+COMPONENT 1 FUNCTION 0.0    //initial potential field:
+------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 1.6e-4
+------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION 0.5
+------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION 96485.3399/(8.314472*298.15)*96485.3399*(1.6e-4-(-1.0)*1.6e-4)*1.0*t t1 0.0 t2 1000
+------------------------------------------------------------FUNCT5
+COMPONENT 0 FUNCTION -7.50E-02
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 9.31441674585657270e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE -2.21175615590141622e-01 TOLERANCE 1e-10
@@ -103,9 +103,9 @@ NDVOL   0
 -----------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE  2
 // cathode
-E 3 - ID 0 pot -0.1 curve none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 linear alpha 1 i0 40 gamma 0.0 refcon 0.1 dl_spec_cap 10 END
+E 3 - ID 0 pot -0.1 funct none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 linear alpha 1 i0 40 gamma 0.0 refcon 0.1 dl_spec_cap 10 END
 // anode
-E 4 - ID 1 pot  0.0 curve none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 linear alpha 1 i0 40 gamma 0.0 refcon 0.1 dl_spec_cap 0 END
+E 4 - ID 1 pot  0.0 funct none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 linear alpha 1 i0 40 gamma 0.0 refcon 0.1 dl_spec_cap 0 END
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE  2
 E 3 -

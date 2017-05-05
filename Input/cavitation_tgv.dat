@@ -120,14 +120,11 @@ ML_DAMPCOARSE     1.0       // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_cavitation DYNVISCOSITY 1.0e-3 DENSITY 1.0e3 GAMMA 0.0728 PVAPOR 2981.0
 MAT 2 MAT_Particle DENSITY 1.0 INITRADIUS 5.85e-4 NUE 0.0 YOUNG 1.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -1000.0*2.0/(8*pi*pi)*cos(x/0.1*2.0*pi)*sin(y/0.1*2.0*pi)
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1000.0*2.0/(8*pi*pi)*sin(x/0.1*2.0*pi)*cos(y/0.1*2.0*pi)
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION -pi*5e4*(cos(2.0*x/0.1*2.0*pi)+cos(2.0*y/0.1*2.0*pi))
+COMPONENT 0 FUNCTION -1000.0*2.0/(8*pi*pi)*cos(x/0.1*2.0*pi)*sin(y/0.1*2.0*pi)
+COMPONENT 1 FUNCTION 1000.0*2.0/(8*pi*pi)*sin(x/0.1*2.0*pi)*cos(y/0.1*2.0*pi)
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION -pi*5e4*(cos(2.0*x/0.1*2.0*pi)+cos(2.0*y/0.1*2.0*pi))
 ----------------------------------------------------------------------FUNCT2
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0

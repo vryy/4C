@@ -108,9 +108,9 @@ NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          3
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 CURVE none none 1 FUNCT 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 FUNCT 0 0 1
 ------------------------DESIGN POINT RIGIDSPHERE POTENTIAL CHARGE CONDITIONS
 DPOINT                          1
 E 3 - POTLAW 1 VAL 1.0
@@ -142,8 +142,8 @@ NODE 6 COORD 2.000000000000000e-01 0.000000000000000e+00 5.000000000000000e-01
 5 RIGIDSPHERE POINT1 6 RADIUS 0.2 DENSITY 1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1e4 DENS 0.001 CROSSAREA 0.00125663706144 MOMIN 1.25663706144e-07
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 1.24990253708982084e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1e-10

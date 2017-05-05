@@ -156,12 +156,8 @@ MAT 30 ELAST_CoupNeoHooke YOUNG 2.1e4 NUE 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD thermo TAR_MAT 4
-------------------------------------------------------------CURVE1
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 293.0
+FUNCTION 293.0
 ------------------------------------------------------------FUNCT2
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
@@ -174,13 +170,13 @@ NDVOL   1
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // mittenodeset
-E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0 -9.81 0 CURVE 0 0 0 FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0 -9.81 0 FUNCT 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // untenoben
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 CURVE 0 0 0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0
 // untenunten
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 CURVE 0 0 0 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // mitteunten

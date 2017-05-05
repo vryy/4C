@@ -63,12 +63,6 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0
 MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.5
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 4.426369441e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -2.044949369e-01 TOLERANCE 1e-8
@@ -81,19 +75,19 @@ NDVOL                           7
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          1
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           3
-E 12 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 2 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 12 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           3
-E 1 - NUMDOF 4 ONOFF 1 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 4 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
@@ -106,7 +100,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           1
-E 8 - NUMDOF 3 ONOFF 1 0 0 VAL 0.1 0.0 0.0 CURVE none none none FUNCT 0 0 0 Live Mid
+E 8 - NUMDOF 3 ONOFF 1 0 0 VAL 0.1 0.0 0.0 FUNCT 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0

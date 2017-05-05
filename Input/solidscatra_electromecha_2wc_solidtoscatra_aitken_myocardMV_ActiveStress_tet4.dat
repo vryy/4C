@@ -5,12 +5,10 @@
 // Two way electromechanics
 // Testing: 2wc partioned scalar-structure interaction with fixed relaxated displacements
 //
-
 ==================================================================
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-
 Test for SolidScatra Material with Tet4 Elements
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4153
@@ -97,7 +95,6 @@ UZAWAPARAM                      1
 UZAWATOL                        1e-03
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
-
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
 SOLVERTYPE                      nonlinear
@@ -115,12 +112,10 @@ FSSUGRDIFF                      No
 MATID                           1
 SKIPINITDER                     yes
 CONVFORM                        conservative
-
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          10
 ABSTOLRES                       1e-3
 CONVTOL                         1e-3
-
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 EVALUATION_MAT                  element_center
@@ -139,7 +134,6 @@ CONVTOL                         1e-08
 STARTOMEGA                      0.8
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 101
-
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 20 DENS 0.001
 MAT 10 ELAST_CoupMooneyRivlin C1 1.0E-2 C2 0.0 C3 1.0E1
@@ -147,15 +141,13 @@ MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 1.0E-1 TAUC0 0.0 MAX_ACTIVATION 0
 MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 MAT 102 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL TNNP TISSUE M TIME_SCALE 1.0
 MAT 103 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
-
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (0.15*t) t1 0.0 t2 1.0
-CURVE1 on EXPR FUNC (-0.15*(t-1.0)+0.15) t1 1.0 t2 2.0
-CURVE1 on EXPR FUNC (0.0) t1 2.0 t2 5.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
+COMPONENT 0 FUNCTION (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
+-------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1 2 500000.0 DESCRIPTION (0.15*t) (-0.15*(t-1.0)+0.15) 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          0
@@ -164,15 +156,13 @@ NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 //DSURF                         2
 //                              up
-//E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+//E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              down
-//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-
+//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
 DPOINT 1
 // Apex
-E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 1 FUNCT 0 Live Mid
-
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 3 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 184 DNODE 1
 NODE 185 DNODE 1
@@ -262,7 +252,6 @@ NODE 893 DNODE 2
 NODE 897 DNODE 2
 NODE 910 DNODE 2
 NODE 917 DNODE 2
-
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 184 DSURFACE 1

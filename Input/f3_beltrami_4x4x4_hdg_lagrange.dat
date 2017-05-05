@@ -78,17 +78,10 @@ AZSCAL                          none
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_fluid   DYNVISCOSITY 1 DENSITY 0.5 GAMMA 1
 -----------------------------------------------CLONING MATERIAL MAP
--------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC BELTRAMI c1 1.0 c2 1.0
--------------------------------------------------------------CURVE2
-CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
--------------------------------------------------------------FUNCT1
-FUNCT1                          BELTRAMI
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
+----------------------------------------------------------------------FUNCT1
+BELTRAMI c1 1.0 c2 1.0
+----------------------------------------------------------------------FUNCT2
+BELTRAMI c1 2.0 c2 1.0
 -------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY L2errvel VALUE 1.70463244533022584e-02 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1 QUANTITY H1errvel VALUE 3.98070380684295219e-02 TOLERANCE 1e-12
@@ -101,17 +94,17 @@ NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
 // bottom
-E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // front
-E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // right
-E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // back
-E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 4 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // left
-E 5 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 5 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 // top
-E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

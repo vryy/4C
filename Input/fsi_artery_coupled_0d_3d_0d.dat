@@ -1,3 +1,8 @@
+//
+// Maintainer: XXX YYY
+// XXX
+// XXX
+//
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    6400
 //NODES       7930
@@ -193,13 +198,9 @@ MAT 4 MAT_CNST_ART VISCOSITY 0.004 DENS 1.0e-3 YOUNG 2.0e6 NUE 0.3 DIAM 10.0 TH 
 MAT 5 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
--------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC  0.5*(1.0-cos(2.0*t*pi/2.0))    t1 0.0 t2   1.0
-CURVE1 on EXPR FUNC -1.0*cos(2.0*t*pi/2.0)          t1 1.0 t2 100.0
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 100.0 DESCRIPTION  0.5*(1.0-cos(2.0*t*pi/2.0)) -1.0*cos(2.0*t*pi/2.0)
 -------------------------------------------------------------FUNCT2
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
@@ -211,19 +212,19 @@ NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // fluid_inflow_ring_NoDBC_slave
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid_outflow_ring_NoDBC_slave
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // struct_inflow_inner_NoDBC_slave
-E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // struct_outflow_inner_NoDBC_slave
-E 4 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // structure_inflow_surf
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // structure_outflow_surf
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
 DSURF  2
 // fluid_inflow_surf
@@ -243,9 +244,9 @@ E 4 - pressure 0.0   1 0
 ------------------DESIGN SURF TOTAL TRACTION CORRECTION CONDITIONS
 DSURF  2
 // fluid_inflow_surf
-E 1 - 1 POLYNOMIAL NOTPREBIASED InFlow  WithOutCorrection Period 1.0 Order 2 Harmonics 32 Val 1.5E4 Curve 1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
+E 1 - 1 POLYNOMIAL NOTPREBIASED InFlow  WithOutCorrection Period 1.0 Order 2 Harmonics 32 Val 1.5E4 Funct 1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
 // fluid_outflow_surf
-E 2 - 2 POLYNOMIAL NOTPREBIASED OutFlow WithOutCorrection Period 1.0 Order 2 Harmonics 32 Val 1.5E4 Curve 1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
+E 2 - 2 POLYNOMIAL NOTPREBIASED OutFlow WithOutCorrection Period 1.0 Order 2 Harmonics 32 Val 1.5E4 Funct 1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
 ----------------DESIGN LINE TOTAL TRACTION CORRECTION BORDER NODES
 DLINE  2
 // fluid_inflow_ring_NoDBC_slave
@@ -266,8 +267,8 @@ E 1 - 1  flow  Tolerance 0.001 MaximumIterations 10
 E 2 - 2  flow  Tolerance 0.001 MaximumIterations 10
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           2
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 7931 DNODE 1
 NODE 7956 DNODE 2

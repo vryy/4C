@@ -42,8 +42,8 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
 MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
 MAT 5 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
 MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 3.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 3*t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 6.0e-1 TOLERANCE 1e-11
 STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE 6.0e-1 TOLERANCE 1e-11
@@ -55,12 +55,12 @@ STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE 3.81300723440306799e-01 TO
 NDSURF                          20
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           6
-E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 8 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 10 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 11 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 8 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 10 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 11 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ---------------------------------------DESIGN SURF SPRING DASHPOT CONDITIONS
 DSURF                           12
 E 1 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
@@ -80,8 +80,8 @@ DSURF                           1
 E 19 - 1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
-E 19 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 20 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 19 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 20 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

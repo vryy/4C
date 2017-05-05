@@ -91,18 +91,12 @@ MAT 1 MAT_scatra DIFFUSIVITY 1.00
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.35 DENS 0.1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 4*pi
+COMPONENT 0 FUNCTION 4*pi
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION x+0.5
+COMPONENT 0 FUNCTION (x+0.5)*t
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 0.4 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 2 QUANTITY phi VALUE 0.4 TOLERANCE 1e-7
@@ -116,7 +110,7 @@ NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // surface
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 1 0 FUNCT 3 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 FUNCT 3 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

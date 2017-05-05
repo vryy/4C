@@ -244,30 +244,14 @@ MAT 4 THERM_FourierIso CAPA 3956.04 CONDUCT 7.5e4 // Ni
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD thermo TAR_MAT 4
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0 2 FACTOR 0.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 2 3 FACTOR 0.0 10000.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3 15 FACTOR 10000.0 10000.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 15 16 FACTOR 10000.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 16 50 FACTOR 0.0 0.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0 1 FACTOR 293.15 40.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1 2 FACTOR 40.0 40.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 2 3 FACTOR 40.0 950.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 3 15 FACTOR 950.0 950.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 15 16 FACTOR 950.0 40.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 16 17 FACTOR 40.0 40.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 17 18 FACTOR 40.0 293.15
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 18 50 FACTOR 293.15 293.15
-----------------------------------------------------------------------CURVE3
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0 2 FACTOR 2000.0 2000.0
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 2 3 FACTOR 2000.0 25000.0
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 3 13 FACTOR 25000.0 25000.0
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 13 14 FACTOR 25000.0 2000.0
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 14 16 FACTOR 2000.0 2000.0
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 16 45 FACTOR 2000.0 0.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 293.15
+COMPONENT 0 FUNCTION 293.15
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 6 TIMES 0 2 3 15 16 50 VALUES 0 0 10000 10000 0 0
+----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 9 TIMES 0 1 2 3 15 16 17 18 50 VALUES 293.15 40.0 40 950 950 40 40 293.15 293.15
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -276,25 +260,25 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // structure Cu surface bottom
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 // structure Cu surface left
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // structure Cu surface right
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // structure Ni surface left
-E 4 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // structure Ni surface right
-E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 // support total z
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF 1 //2
 // thr convection hot gas --> cycle is applied via CURVE2
-E 6 - Tempnp coeff -28000 surtemp 1.0 surtempcurve 2 curve none
+E 6 - Tempnp coeff -28000 surtemp 1.0 surtempfunct 3 funct 0
 // thr top surrounding temp
 //E 7 - Tempnp coeff 28000 surtemp 293.15 surtempcurve none curve none
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

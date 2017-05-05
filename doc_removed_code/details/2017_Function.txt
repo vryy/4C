@@ -1,1 +1,208 @@
+test cases that were not adjusted to the new function definition without time
+curves: the test cases were commtented out and for that reason not adapted to
+the new syntax. if one of these will be reactivated, adapt it to the new
+function definition syntax.
 
+#baci_test(beam3contactstatmech_penalty 2 "")
+#baci_test(beam3ebcontactstatmech_exppen 1 "")
+#baci_test(beam3ebcontactstatmech_inactivegap 1 "")
+#baci_test(beam3ebcontactstatmech_puredamp 1 "")
+#baci_test(beam3ebcontactstatmech_doublequadpen 1 "")
+#baci_test(beam3r_contact_statmech_penalty 2 "")
+#baci_test(cardiovascular0d_arterialproxdist_structure_direct_genalpha_new_struc 2 "")
+#baci_test(cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc 1 "")
+#baci_test_restartonly(cardiovascular0d_syspulcirculation_2chamber_structure_direct_genalpha_new_struc 1 10) #this one MUST be placed behind test case 'cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc'
+#baci_test(cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc 2 "")
+#baci_test_restartonly(cardiovascular0d_syspulcirculation_2chamber_structure_simple_genalpha_new_struc 2 10) #this one MUST be placed behind test case 'cardiovascular0d_syspulcirculation_2chamber_structure_statprestress_new_struc'
+#baci_test(cardiovascular0d_syspulcirculation_2chamber_structurecontactdual_direct_genalpha_new_struc 2 "")
+#baci_test(combust_instat_inclined_couette_theta066 1 "")
+#baci_test(combust_instat_inclined_couette_theta1 1 "")
+#baci_test(combust_stat_inclined_couette_convdom_nitsche 1 "")
+#baci_test(combust_stat_inclined_couette 1 "")
+#baci_test(combust_stat_inclined_couette_decoupled 1 "")
+#baci_test(combust_stat_planar_bodyforce_neumann 1 "")
+#baci_test(constr2D_MPC_angle_new_struc 2 "")
+#baci_test(constr2D_MPC_dist_new_struc 2 "" minimal)
+#baci_test(constr2D_fsi_new_struc 2 "")
+#baci_test(constr3D_MPC_STI_trlike_new_struc 2 "")
+#baci_test(constr3D_MPC_direct_new_struc 2 "")
+#baci_test(constr3D_MPC_direct_sti_new_struc 2 "")
+#baci_test(constr3D_NormComp_STI_new_struc 2 "")
+#baci_test(constr3D_shrinking_ost_uzawa_new_struc 2 "")
+#baci_test(two_phase_channel_krylov_2pbc 2 "3")
+#baci_test(two_phase_rayleigh_taylor_instability_32x128_redis 3 "")
+#baci_test(two_phase_rising_bubble_reinit_eq_with_particles 1 4)
+#baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_shrinkingInterface 3 "")
+#baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_shrinkingInterface 4 "")
+#baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_breathingInterface 3 "")
+#baci_test(xtwophase_bubble_16x16_poiseuille_flow_full_EOSGP_breathingInterface 4 "")
+#baci_test(meshtying3D_contactsp_duallagr_simple 2 "") #currently broken (03/2016) due to structural changes in MueLu - must be fixed cooperation with TW.
+#baci_test(meshtying3D_contactsp_stdlagr_braesssarazin 2 "") #currently broken (03/2016) due to structural changes in MueLu - must be fixed cooperation with TW.
+#baci_test(meshtying3D_contactsp_duallagr_braesssarazin 2 "") #currently broken (03/2016) due to structural changes in MueLu - must be fixed cooperation with TW.
+# baci_test(contact2D_slidingblock_lin_gpts 2 "")
+# baci_test(crack_lefm_4ele_split 2 "")
+# baci_test(crack_lefm_3step_prop 1 "")
+# baci_test(crack_edge_mixed_mode 2 "")
+# baci_test(crack_bittencourt_case2 1 10)
+# baci_test(crack_bittencourt_case2 2 "")
+# baci_test(crfsi_two_sides_interface_build 1 "")
+# baci_test(crfsi_inclDomain_suppFluid_interfaceBuild 1 "")
+
+
+Log:
+==> Clean up regarding the functions and the time curves
+    - Motivation was that functions allowed for time dependence but
+      not the full flexibility as curves and that time derivatives
+      were not always correctly evaluated.
+    
+    - The main goal is therefore to simplify the syntax for the input
+      files and to unify the features of functions and time curves in
+      a unique framework.
+
+    - The time curves have been eliminated while the new functions can
+      depend both on space and time.
+      In particular the time dependence can be defined explicitly or
+      by means of specific variables.
+      
+    - The functions can have more the one component in output and these
+      can be defined as in the example:
+      -------------------------------------------------------------FUNCT1
+      COMPONENT 0 FUNCTION (x-y)*x*t
+      COMPONENT 1 FUNCTION x*y*z/t
+      ...
+      
+    - If the function has only one component, the string "COMPONENT 0"
+      can be omitted as in the example:
+      -------------------------------------------------------------FUNCT1
+      FUNCTION (x-y)*x*t
+    
+    - The time dependent variables (if any) can be defined in the
+      following rows.
+      Here there is a short description of the variables:
+      
+      1) expression - the time dependence can be explicitly specified as
+         in the example:
+         VARIABLE 0 NAME ex TYPE expression DESCRIPTION t^2
+
+      2) multifunction - a set of expressions in various temporal slides
+         can be defined as in the example:
+         VARIABLE 0 NAME m TYPE multifunction NUMPOINTS 3 TIMES 0 1 2 DESCRIPTION -t*(t-2) t
+         As shown in the example, the length of the vector "TIMES" must
+         be specified through the string "NUMPOINTS".
+         Moreover the expressions next to "DESCRIPTIONS" must be separated
+         by a blank space.         
+
+      3) linearinterpolation - a time dependent variable is built giving a
+         vector of times and values of the same length.
+         The value of the variable in the i-th slice is obtained by the
+         linear interpolation:
+         f(t) = f_i + (f_i+1-f_i) / (t_i+1-t_i) * (t-t_i)
+         The syntax can be depicted from this example:
+         VARIABLE 0 NAME l TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 2 VALUES 0 1 1
+
+      4) fourierinterpolation - this variable allows to reconstruct the
+         Physiological Waveform.
+         The value of the variable in the i-th slice is obtained by a
+         Fourier interpolation.
+         The syntax can be depicted from this example:
+         VARIABLE 0 NAME f TYPE fourierinterpolation NUMPOINTS 3 TIMES 0 1 2 VALUES 0 1 0
+
+    - For the types “linearinterpolation”, “multifunciton” and
+      "fourierinterpolation" (where the temporal domain is defined) a
+      periodic repetition of the variable can be set specifying the initial
+      and final time of the repetition as in the examples:
+      VARIABLE 0 NAME lp TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 2 VALUES 0 1 0 PERIODIC yes T1 4 T2 8
+      VARIABLE 0 NAME mp TYPE multifunction NUMPOINTS 3 TIMES 0 1 2 DESCRIPTION t -t+2 PERIODIC yes T1 4 T2 8
+ 
+    - An equidistant set of NUMPOINTS times, given an initial and a final
+      time, can be defined in a simplified way as in the example:
+      VARIABLE 0 NAME l TYPE linearinterpolation NUMPOINTS 3 BYNUM yes TIMERANGE 0 2 VALUES 0 1 1
+
+    - In order to overwrite a variable in a particular range of time, it is
+      possible to introduce a hierarchy simply defining a variable more
+      times with different properties (TYPE, TIMES or DESCRIPTIONS/VALUES).
+      The code therefore evaluates that variable according to its first
+      definition which includes the time considered.
+      Here a simple example is given:
+      VARIABLE 0 NAME h TYPE multifunction NUMPOINTS 2 TIMES 0 1 DESCRIPTION 1
+      VARIABLE 0 NAME h TYPE multifunction NUMPOINTS 2 TINES 0 4 DESCRIPTION 2
+
+    - The value of a function at given space and time is now evaluated as:
+      double Evaluate(int index, double* x, double t)
+
+    - The 1st derivative of the function at given space and time
+      w.r.t. the spatial variables is now evaluated as:
+      std::vector<double> EvaluateSpatialDerivative(int index, double* x, double t)
+
+    - The derivatives of the function at given space and time w.r.t. time
+      are now evaluated as:
+      std::vector<double> EvaluateTimeDerivative(int index, double* x, double t, unsigned deg)
+      The output is a vector with the time derivatives of the function
+      up to order defined by the variable deg.
+      Higher time derivatives than second are not supported.
+
+    - As requested by some users, the following functions have been kept in
+      the code:
+      componentvarexpr, varexpr, linelin, radiuslin, radiusquad, beltrami,
+      kimmoin, bochevup, bochevrhs, beltramiup, beltramigradu, beltramirhs,
+      kimmoinup, kimmoingradu, kimmoinrhs, turbboulayer, turbboulayerbfs,
+      turbboulayeroracles, jefferyhamel, womersley, localwomersley, cylinder3d,
+      controlledrotation, accelerationprofile, ramptovalue, nodenormal,
+      rotationvectorfornormalsystem, zalesaksdisk, circularflame2,
+      circularflame3, circularflame4, dambreakobstacle, collapsingwatercolumn,
+      collapsingwatercolumncoarse, impactfunction, bubbles, oraclesgfunc,
+      rotatingcone, levelsetcuttest, gerstenbergerforwardfacingstep,
+      sliplengthlevelsetmanipulator, movinglevelsetcylinder, movinglevelsettorus,
+      movinglevelsettorusvelocity, movinglevelsettorussliplength,
+      taylorcouetteflow, urquizaboxflow, urquizaboxflowforce,
+      urquizaboxflowtraction
+
+    - Also for these functions the string "FUNCT1" before every function
+      definition is deleted for consistency.
+ 
+    - The functions BELTRAMI and KIM-MOIN were combined with specific time
+      curves.
+      With this clean up the time dependence has been included in the functions
+      themselves.
+      The constants previously introduced in the time curves can now be
+      written in the function definition as in the example:
+      -------------------------------------------------------------FUNCT1
+      BELTRAMI c1 1.0 c2 1.0
+
+    - All the input files (except for input files related to out-commented
+      test cases, see 2017_Function.txt) have been changed to the new function
+      syntax.
+
+    - After this commitment some test cases fail and here there is a list of them
+      with the respective maintainers.
+      The authors of this commitment (Andrea La Spina, Svenja Shoeder and
+      Moritz Thon) will actively support the maintainers fixing their test cases.
+
+    78:beam3wk_lin3tan_genalpha_liegroup_3Dtwistmoment_FAD-p2                        Maximilian Grill
+    712:loma_2d_heated_chan_30x100-p2                                                Volker Gravemeier
+    713:loma_2d_heated_chan_30x100-p2-restart                                        Volker Gravemeier
+    714:loma_mono_2d_heated_chan_30x100-p2                                           Volker Gravemeier
+    715:loma_mono_2d_heated_chan_30x100-p2-restart                                   Volker Gravemeier
+    716:loma_2d_heated_chan_sgs_30x100-p2                                            Volker Gravemeier
+    717:loma_2d_heated_chan_sgs_30x100-p2-restart                                    Volker Gravemeier
+    718:loma_mono_2d_heated_chan_sgs_30x100-p2                                       Volker Gravemeier
+    719:loma_mono_2d_heated_chan_sgs_30x100-p2-restart                               Volker Gravemeier
+    1110:sohex8_surfactant-p2                                                        Lena Wiechert
+    1111:sohex8_surfactant-p2-restart                                                Lena Wiechert
+    1120:solidh8_mat_neohooke_drt-p2                                                 Anna Birzle
+    1121:solidh8_mat_neohooke_gemm_drt-p2                                            Robert Metzke
+    1180:sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard-p3       Rui Fang
+    1182:sti_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard-p3  Rui Fang
+    1248:tsi_contact3D_friction_nitsche_sym_slave-p2                                 Alexander Seitz
+    1249:tsi_contact3D_nitsche_plast-p2                                              Alexander Seitz
+    1250:tsi_contact3D_nitsche_plast-p2-restart                                      Alexander Seitz
+    1251:tsi_contact3D_nitsche_cte-p2                                                Alexander Seitz
+    1323:two_phase_turbmodel_test_mfs_combust-p1                                     Magnus Winter   
+    1324:two_phase_turbmodel_test_mfs_combust-p1-restart                             Magnus Winter
+    1327:two_phase_turbmodel_test_mfs_combust_par-p3                                 Magnus Winter
+    1328:two_phase_turbmodel_test_mfs_combust_par-p3-restart                         Magnus Winter
+    1727:beam3r_herm2lin3_backweuler_browndyn_crosslinking_beam3rlin2-p2             Maximilian Grill
+    1728:beam3r_herm2lin3_backweuler_browndyn_crosslinking_beam3rlin2_belloffrate-p2 Jonas Eichinger
+    1730:beam3r_lin2_backweuler_browndyn_crosslinking_beam3rlin2-p2                  Maximilian Grill
+    1734:beam3wk_lin3tan_backweuler_browndyn_crosslinking_beam3rlin2-p2              Maximilian Grill
+      

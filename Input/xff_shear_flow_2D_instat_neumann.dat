@@ -102,12 +102,8 @@ XFF_CONV_STAB_SCALING           none
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.4 DENS 2.0 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION (5-4)*y+4 // shear flow; top 5.0, bottom 4.0 //(y*U_xmax)/h
+COMPONENT 0 FUNCTION (5-4)*y+4 // shear flow; top 5.0, bottom 4.0 //(y*U_xmax)/h
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -123,21 +119,21 @@ DLINE 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // Fluid 1 outflow
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -9.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -9.0 1.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 3
 // Fluid 1 upper surface
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 5.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 5.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Fluid 1 lower surface
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 4.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 4.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Fluid 1 inflow
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 2
 // Fluid 1 volume
-E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Fluid 2 volume
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF 1
 // xfem surfaces

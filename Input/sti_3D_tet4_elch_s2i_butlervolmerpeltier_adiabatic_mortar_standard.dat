@@ -68,16 +68,16 @@ SRC_FIELD scatra SRC_MAT 1 TAR_FIELD thermo TAR_MAT 6 // anode
 SRC_FIELD scatra SRC_MAT 2 TAR_FIELD thermo TAR_MAT 7 // electrolyte
 SRC_FIELD scatra SRC_MAT 3 TAR_FIELD thermo TAR_MAT 8 // cathode
 ------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 10.88              // initial concentration in anode
-FUNCT 1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0                // initial electric potential in anode
+COMPONENT 0 FUNCTION 10.88              // initial concentration in anode
+COMPONENT 1 FUNCTION 0.0                // initial electric potential in anode
 ------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.2                // initial concentration in electrolyte
-FUNCT 2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION -0.080830788307857 // initial electric potential in electrolyte
+COMPONENT 0 FUNCTION 1.2                // initial concentration in electrolyte
+COMPONENT 1 FUNCTION -0.080830788307857 // initial electric potential in electrolyte
 ------------------------------------------------------------FUNCT3
-FUNCT 3 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 10.56              // initial concentration in cathode
-FUNCT 3 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 3.892392107528559  // initial electric potential in cathode
+COMPONENT 0 FUNCTION 10.56              // initial concentration in cathode
+COMPONENT 1 FUNCTION 3.892392107528559  // initial electric potential in cathode
 ------------------------------------------------------------FUNCT4
-FUNCT 4 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 300.0              // initial temperature
+COMPONENT 0 FUNCTION 300.0              // initial temperature
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 41 QUANTITY phi1 VALUE 8.39909374031411993e+00 TOLERANCE 1.e-09                  // local lithium concentration at anode-electrolyte interface (anode side)
 SCATRA DIS scatra NODE 41 QUANTITY phi2 VALUE -7.53183265804716303e-08 TOLERANCE 1.e-16                 // local electric potential at anode-electrolyte interface (anode side)
@@ -124,10 +124,10 @@ NDSURF  14
 NDVOL   5
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
-E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -5.297831088e-4 CURVE 0 0 FUNCT 0 0 Live Mid
+E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -5.297831088e-4 FUNCT 0 0 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
-E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   3
 E 1 - ScaTra 1

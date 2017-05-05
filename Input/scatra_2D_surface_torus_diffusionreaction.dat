@@ -98,13 +98,8 @@ MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 10 NUMREAC 2 REACIDS 20 21 
 MAT 10 MAT_scatra DIFFUSIVITY 0.001
 MAT 20 MAT_scatra_reaction NUMSCAL 1 STOICH -1 REACCOEFF -1.0 COUPLING simple_multiplicative ROLE 1
 MAT 21 MAT_scatra_reaction NUMSCAL 1 STOICH -1 REACCOEFF 1.0 COUPLING power_multiplicative ROLE 3
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION sin(3.0*pi*z)*cos(3.0*atan2(y,x))
+COMPONENT 0 FUNCTION sin(3.0*pi*z)*cos(3.0*atan2(y,x))
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 3.53009326003704327e-01 TOLERANCE 1e-8

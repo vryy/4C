@@ -167,11 +167,6 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.0001 DENSITY 1.0  // Re=1000
 MAT 2 MAT_scatra DIFFUSIVITY 0.0001 REACOEFF 0.0 // Sc=1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 9.38107588792617797e-01 TOLERANCE 1e-08
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE -1.60821606870051453e-01 TOLERANCE 1e-08

@@ -134,7 +134,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 0.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION y
+COMPONENT 0 FUNCTION y
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1000 QUANTITY dispx VALUE -6.12072407984568315e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1000 QUANTITY dispy VALUE -3.42035348413691626e-02 TOLERANCE 1e-8
@@ -147,17 +147,17 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           2
 //                              leftneumann
-E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -100.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -100.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 Live Mid
 //                              rightneumann
-E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 100.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 100.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          3
 //                              centernode
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              topnode
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              endnode
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              upperinterface

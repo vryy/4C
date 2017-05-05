@@ -9,20 +9,17 @@ General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus and jou2dat on Do 13. Jan 12:58:48 CET 2011
-
 2nd problem of Danilovskaya
 benchmark for linear thermo-structure interaction
 c.f.
 M.Tanaka (1995), Application of boundary element method to 3-D problems of
 coupled                         thermoelasticity
-
 Be careful if you want to compare these results with Tanaka: coupling term in
 thermal equation depends only on initial temperature T_0, whereas:
 in BACI the coupling term depends on current temperature T
 Switch on #define COUPLEINITTEMPERATURE in tsi_defines.H
 Switch off time curve in heat convection boundary condition. Tanaka apply the
 full load at the beginning of the simulation, does not increase it gradually
-
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        192
 NODES                           325
@@ -162,10 +159,11 @@ MAT 2 THERM_FourierIso CAPA 6.445e-05 CONDUCT 1.0312e-03
 //MAT 2 THERM_FourierIso CAPA 6.445 CONDUCT 1031.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 t1 0.0 t2 0.1 // Tmax=0.5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 273.15 // 0°C
+COMPONENT 0 FUNCTION 273.15 // 0°C
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION v // 0°C
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 3000.0 DESCRIPTION 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 1.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -174,33 +172,33 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // No STR Neumann left surf t_x=0
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           5
 // No THR heatflux front z=2
-E 8 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 8 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux upper surf y=4
-E 9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux right surf x=6
-E 10 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 10 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux lower surf y=0
-E 11 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 11 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux back z=-2.0
-E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // fix right surface x=6
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 // STR fix vol in y,z
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           1
 // THR left surface heat convection:
-//E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempcurve none curve none
+//E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempfunct none funct none
 // nightly test case
-E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempcurve none curve 1 // 1
+E 7 - Tempnp coeff -6.444497425e-06 surtemp 373.15 surtempfunct none funct 2 // 1
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 2
 NODE 4 DSURFACE 2

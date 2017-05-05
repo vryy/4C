@@ -27,15 +27,15 @@ TOLRES                          1e-08
 TOLDISP                         1e-13
 -------------------------------------------------------------------MATERIALS
 MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 3.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 3*t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE -6.0e-1 TOLERANCE 1e-14
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF 30
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
-E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF 1
 E 6 - NUMDOF 3 ONOFF 1 0 0 STIFF 5.0 0.0 0.0 VISCO 0.0 0.0 0.0 DISPLOFFSET 0.0 0.0 0.0 DIRECTION cursurfnormal COUPLING 1
@@ -44,8 +44,8 @@ DSURF 1
 E 19 - 1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 2
-E 19 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 20 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 19 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 20 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 100 DSURFACE 6
 NODE 101 DSURFACE 6

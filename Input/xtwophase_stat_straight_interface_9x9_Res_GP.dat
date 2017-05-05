@@ -156,22 +156,17 @@ MAT       3 MAT_fluid   DYNVISCOSITY 1.0 DENSITY 10.0  //Master  positive dom. (
 MAT       4 MAT_fluid   DYNVISCOSITY 5.0 DENSITY 10.0  //Slave   negative dom. (lower part of domain)
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-------------------------------------------------------------CURVE1
-//CURVE1 on EXPR FUNC 0.5*(sin((t*pi/0.1)-(pi/2)))+0.5 t1 0.0 t2 0.1
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION y-0.5
+FUNCTION y-0.5
 ------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION 1-x
+FUNCTION 1-x
 ------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION y
+FUNCTION y
 ------------------------------------------------------------FUNCT4
-FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1-x)
-FUNCT4 COMPONENT 1 EXPR 0 0.0 0 FUNCTION y
-FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT4 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0 FUNCTION (1-x)
+COMPONENT 1 FUNCTION y
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION 0
 ----------------------------------------------------------RESULT DESCRIPTION
 
 //This actually provides worse results than if no GP or Nit_param is given.
@@ -240,27 +235,27 @@ DVOL   0//1
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // corners
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 CURVE none none none none FUNCT 4 4 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 4 4 0 0
 // pressure_corners
-E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 0.0 0.0 CURVE none none none none FUNCT 4 4 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 0.0 0.0 FUNCT 4 4 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // left_side
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 CURVE none none none none FUNCT 4 4 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 4 4 0 0
 // right_side
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 CURVE none none none none FUNCT 4 4 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 4 4 0 0
 // top
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 CURVE none none none none FUNCT 4 4 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 4 4 0 0
 // bottom
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 CURVE none none none none FUNCT 4 4 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 4 4 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // front_back
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 1.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 0 0 0 0
 --------------------------------DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS
 DVOL                           1
 //                              fluid_volume
-E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 BOOLEANTYPE none COMPLEMENTARY 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    2 DNODE 1

@@ -131,7 +131,6 @@ RESTARTEVRY                     1
 MATID                           -1
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
-VELCURVENO                      -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CALCERROR                       No
@@ -184,20 +183,16 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 0.0 // Re=6.62
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 // initial G-function
-FUNCT1 EXPR 0 0.0 0 FUNCTION sqrt((x-0.8)*(x-0.8)+(y-0.8)*(y-0.8))-0.4
+FUNCTION sqrt((x-0.8)*(x-0.8)+(y-0.8)*(y-0.8))-0.4
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION y*(1.6-y)/(0.8*0.8)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x // 0.0100051*x
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 4.5-2.0*x/(0.8*0.8)*0.1 // pressure
+COMPONENT 0 FUNCTION y*(1.6-y)/(0.8*0.8)
+COMPONENT 1 FUNCTION 0.0 //0.01*x // 0.0100051*x
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 4.5-2.0*x/(0.8*0.8)*0.1 // pressure
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0 0 FUNCTION (-2.0*y+1.6)/(0.8*0.8)*0.1
+FUNCTION (-2.0*y+1.6)/(0.8*0.8)*0.1
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 255 QUANTITY velx VALUE 1.00034081779716177e+00 TOLERANCE 1e-11
@@ -217,78 +212,78 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // surface outflow
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -4.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 3 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -4.0 1.0 0.0 0.0 0.0 0.0 FUNCT 0 3 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 //E 1 - none 1 1 1 0 0 0 10.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 //                              bottom_south_east_point
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              bottom_east_north_point
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              bottom_north_west_point
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              bottom_west_south_point
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              top_south_east_point
-E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              top_east_north_point
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              1op_north_west_point
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              top_west_south_point
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           12
 //                              bottom_east_line
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              bottom_north_line
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              bottom_west_line
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              bottom_south_line
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 
 //                              south_east_line
-E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              east_north_line
-E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              north_west_line
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              west_south_line
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 
 //                              top_south_line
-E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              top_east_line
-E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              top_north_line
-E 11 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 11 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              top_west_line
-E 12 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 12 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 //                              bottom
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              top
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              south
-E 3 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 3 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              east
-E 4 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 4 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              north
-E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 //                              west
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //                              volume
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 2 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 --------------------------------DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS
 DVOL                           1
 //                              fluid_volume
-E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 BOOLEANTYPE none COMPLEMENTARY 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 545 DNODE 1
 NODE 546 DNODE 2

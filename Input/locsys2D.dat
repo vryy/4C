@@ -1,5 +1,5 @@
 //
-// \maintainer Michael Hiermeier
+// Maintainer: Michael Hiermeier
 //
 ==================================================================
 General Data File CCARAT
@@ -88,14 +88,14 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          2
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           3
-E 2 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 4 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
+E 4 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           0
@@ -108,7 +108,7 @@ DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           1
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           0
@@ -179,9 +179,9 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DLINE                           2
-E 2 - ROTANGLE 0.0 0.0 -2.677945045 CURVE none none none FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
+E 2 - ROTANGLE 0.0 0.0 -2.677945045 FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
 //NORMAL -0.894427191 -0.447213596 0.0
-E 4 - ROTANGLE 0.0 0.0 -0.4636476090 CURVE none none none FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
+E 4 - ROTANGLE 0.0 0.0 -0.4636476090 FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
 //NORMAL 0.894427191 -0.447213596 0.0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
@@ -245,13 +245,8 @@ NODE 9 COORD 2.000000000000000e+00 2.000000000000000e+00 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 0.0 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

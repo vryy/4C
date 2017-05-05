@@ -165,16 +165,12 @@ ML_DAMPMED                      0.2                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 0.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 MOVINGLEVELSETTORUS ORIGIN 0.0 0.0 0.0 ORIENTVEC_TORUS 0.0 0.0 1.0 RADIUS 0.5 RADIUS_TUBE 0.2 DIRECTION 0.0 0.0 1.0 DISTANCE 2.0 MAXSPEED 0.5 ROTATION_VEC 1.0 1.0 0.0 ROTATION_SPEED 0.1 ROTATION_RAMPTIME 0.0
+MOVINGLEVELSETTORUS ORIGIN 0.0 0.0 0.0 ORIENTVEC_TORUS 0.0 0.0 1.0 RADIUS 0.5 RADIUS_TUBE 0.2 DIRECTION 0.0 0.0 1.0 DISTANCE 2.0 MAXSPEED 0.5 ROTATION_VEC 1.0 1.0 0.0 ROTATION_SPEED 0.1 ROTATION_RAMPTIME 0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 MOVINGLEVELSETTORUSVELOCITY ORIGIN 0.0 0.0 0.0 ORIENTVEC_TORUS 0.0 0.0 1.0 RADIUS 0.5 RADIUS_TUBE 0.2 DIRECTION 0.0 0.0 1.0 DISTANCE 2.0 MAXSPEED 0.5 ROTATION_VEC 1.0 1.0 0.0 ROTATION_SPEED 0.1 ROTATION_RAMPTIME 0.0
+MOVINGLEVELSETTORUSVELOCITY ORIGIN 0.0 0.0 0.0 ORIENTVEC_TORUS 0.0 0.0 1.0 RADIUS 0.5 RADIUS_TUBE 0.2 DIRECTION 0.0 0.0 1.0 DISTANCE 2.0 MAXSPEED 0.5 ROTATION_VEC 1.0 1.0 0.0 ROTATION_SPEED 0.1 ROTATION_RAMPTIME 0.0
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 MOVINGLEVELSETTORUSSLIPLENGTH ORIGIN 0.0 0.0 0.0 ORIENTVEC_TORUS 0.0 0.0 1.0 RADIUS 0.5 RADIUS_TUBE 0.2 DIRECTION 0.0 0.0 1.0 DISTANCE 2.0 MAXSPEED 0.5 ROTATION_VEC 1.0 1.0 0.0 ROTATION_SPEED 0.1 ROTATION_RAMPTIME 0.0 SLIP_FUNCT 2
+MOVINGLEVELSETTORUSSLIPLENGTH ORIGIN 0.0 0.0 0.0 ORIENTVEC_TORUS 0.0 0.0 1.0 RADIUS 0.5 RADIUS_TUBE 0.2 DIRECTION 0.0 0.0 1.0 DISTANCE 2.0 MAXSPEED 0.5 ROTATION_VEC 1.0 1.0 0.0 ROTATION_SPEED 0.1 ROTATION_RAMPTIME 0.0 SLIP_FUNCT 2
 ----------------------------------------------------------RESULT DESCRIPTION
 //Node                          1848
 XFLUID DIS fluid NODE 1847 QUANTITY velx VALUE -1.00606005070857263e-01 TOLERANCE 1e-9
@@ -209,29 +205,29 @@ NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 5 //4 //6
 // surface top
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface bottom
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface inflow
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface outflow
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface front
-//E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+//E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // surface back
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------DESIGN XFEM LEVELSET NAVIER SLIP VOL CONDITIONS
 DVOL                            1
-E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 0 SLIPCOEFFICIENT 1.0 SLIP_CURVE 0 SLIP_FUNCT 3
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 BOOLEANTYPE none COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 0 SLIPCOEFFICIENT 1.0 SLIP_FUNCT 3
 ------------------------------------DESIGN XFEM ROBIN NEUMANN VOL CONDITIONS
 DVOL                            1
-E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ----------------------------------DESIGN XFEM ROBIN DIRICHLET VOL CONDITIONS
 DVOL                            1
 //Corresponding velocity function
-E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
+E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 2 2 2
 //Zero velocity (i.e. only testing cut and if XFEM-CFL condition)
-//E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 CORNER fluid x- y- z+ DNODE 1
 CORNER fluid x- y- z- DNODE 2

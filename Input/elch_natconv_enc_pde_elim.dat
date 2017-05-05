@@ -171,18 +171,19 @@ MAT 4 MAT_ion DIFFUSIVITY 1e-6 VALENCE 0.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 5.
 MAT 5 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 4 END
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0 //initial concentration field
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1.0 //initial concentration field
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial pot. field
-//FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.5 //initial concentration field
+COMPONENT 0 FUNCTION 1.0 //initial concentration field
+COMPONENT 1 FUNCTION 1.0 //initial concentration field
+COMPONENT 2 FUNCTION 0.0 //initial pot. field
+//COMPONENT 1 FUNCTION 0.5 //initial concentration field
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //initial x-vel. field
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //initial y-vel. field
-//FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial z-vel. field
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -y*9.81*1.0+0.1*9.81*1.0 //initial pres. field
+COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
+COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
+//COMPONENT 2 FUNCTION 0.0 //initial z-vel. field
+COMPONENT 2 FUNCTION -y*9.81*1.0+0.1*9.81*1.0 //initial pres. field
+-------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 1000 DESCRIPTION 0.5*(sin((t*pi/5)-(pi/2)))+0.5 0.5*(sin((5*pi/5)-(pi/2)))+0.5
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 704 QUANTITY flux_domain_1_x VALUE -2.11480702253199386e-05 TOLERANCE 1e-14
 SCATRA DIS scatra NODE 704 QUANTITY flux_domain_1_y VALUE 3.871927451e-05 TOLERANCE 1e-14
@@ -210,27 +211,27 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              cell
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -9.81 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -9.81 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              fix_pressure
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 //                              left_electrode
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              right_electrode
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              bottom_phi
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              top_phi
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 1 - ID 0 pot 0.0 curve 1 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END
+E 1 - ID 0 pot 0.0 funct 3 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END
 //                              anode
-E 2 - ID 1 pot 0.5 curve 1 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END
+E 2 - ID 1 pot 0.5 funct 3 numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.85 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1418 DNODE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY

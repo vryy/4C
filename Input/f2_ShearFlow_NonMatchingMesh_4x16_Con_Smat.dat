@@ -1,3 +1,8 @@
+//
+// Maintainer: XXX YYY
+// XXX
+// XXX
+//
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -148,18 +153,15 @@ ML_DAMPMED                      1.0                             // damping med g
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1)-(pi/2)))+0.5 t1 0.0 t2 1.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION 0.5+y
+COMPONENT 0 FUNCTION 0.5+y
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //initial x-vel. field
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //initial y-vel. field
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0 //initial pres. field
+COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
+COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
+COMPONENT 2 FUNCTION 1.0 //initial pres. field
 ----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000000 DESCRIPTION 0.5*(sin((t*pi/1)-(pi/2)))+0.5 0.5*(sin((1*pi/1)-(pi/2)))+0.5
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 58 QUANTITY velx VALUE 4.999999796e-01 TOLERANCE 1e-09
@@ -197,13 +199,13 @@ DSURF                           0
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              bottom
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              top
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 3 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS

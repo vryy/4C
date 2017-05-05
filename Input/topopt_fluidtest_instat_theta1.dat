@@ -99,31 +99,28 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 2.0 DENSITY 3.0
 MAT 2 MAT_opti MINPORO 0 MAXPORO 5 SMEARFAC 1
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
 ------------------------------------------------FUNCT1 // initial flow field
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION x*x+2*x*y*t
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -y*y*t-2*x*y
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 2*x*x*t-x*y
+COMPONENT 0 FUNCTION x*x+2*x*y*t
+COMPONENT 1 FUNCTION -y*y*t-2*x*y
+COMPONENT 2 FUNCTION 2*x*x*t-x*y
 ---------------------------------------------FUNCT2 // initial density field
-FUNCT2 EXPR 0 0.0 0 FUNCTION 0.0 // 1=fluid,0=no fluid
+COMPONENT 0 FUNCTION 0.0 // 1=fluid,0=no fluid
 ---------------------------------------------FUNCT3 // initial adjoint field
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0 FUNCTION 0
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
 -------------------------------FUNCT4 // x-component of fluid inflow profile
-FUNCT4 EXPR 0 0.0 0 FUNCTION x*x+2*x*y*t
+COMPONENT 0 FUNCTION x*x+2*x*y*t
 -------------------------------FUNCT5 // y-component of fluid inflow profile
-FUNCT5 EXPR 0 0.0 0 FUNCTION -y*y*t-2*x*y
+COMPONENT 0 FUNCTION -y*y*t-2*x*y
 ------------------------------------------FUNCT6 // bodyforce in x-direction
-FUNCT6 EXPR 0 0.0 0 FUNCTION (5*x*x+10*x*y*t+4*x*t-y-2*2)/3+2*x*y+(2*x+2*y*t)*(x*x+2*x*y*t)+2*x*t*(-y*y*t-2*x*y)
+COMPONENT 0  FUNCTION (5*x*x+10*x*y*t+4*x*t-y-2*2)/3+2*x*y+(2*x+2*y*t)*(x*x+2*x*y*t)+2*x*t*(-y*y*t-2*x*y)
 ------------------------------------------FUNCT7 // bodyforce in y-direction
-FUNCT7 EXPR 0 0.0 0 FUNCTION (-5*y*y*t-10*x*y-x+2*2*t)/3-y*y-2*y*(x*x+2*x*y*t)+(-2*x-2*y*t)*(-y*y*t-2*x*y)
+COMPONENT 0  FUNCTION (-5*y*y*t-10*x*y-x+2*2*t)/3-y*y-2*y*(x*x+2*x*y*t)+(-2*x-2*y*t)*(-y*y*t-2*x*y)
 ------------------------------------------------FUNCT8 // NBC in x-direction
-FUNCT8 EXPR 0 0.0 0 FUNCTION -2*x*x*t+x*y+2*(4*x+4*y*t)
+COMPONENT 0 FUNCTION -2*x*x*t+x*y+2*(4*x+4*y*t)
 ------------------------------------------------FUNCT9 // NBC in y-direction
-FUNCT9 EXPR 0 0.0 0 FUNCTION 2*(2*x*t-2*y)
+COMPONENT 0  FUNCTION 2*(2*x*t-2*y)
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3
@@ -132,17 +129,17 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // volume force
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 6 7 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 6 7 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 //                              outflow
-E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 8 9 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 8 9 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              inflow
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 4 5 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 4 5 0
 //                              sides
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 4 5 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 4 5 0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 0.058 TOLERANCE 1.0e-11
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE -0.02225 TOLERANCE 1.0e-11

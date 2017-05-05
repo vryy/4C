@@ -78,12 +78,10 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0  INITYIELD 0.275 ISOHARD 0.1 PL_SPIN_CHI -50 rY_11 1.0 rY_22 0.99544 rY_33 0.99544 rY_12 0.65161 rY_23 0.57385 rY_13 0.65161
 MAT 2 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
--------------------------------------------------------------CURVE1
-CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 1  FACTOR 0 1
 -------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION (-x/sqrt(x*x+y*y))
+COMPONENT 0 FUNCTION (-x/sqrt(x*x+y*y))*t
 -------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0 0 FUNCTION (-y/sqrt(x*x+y*y))
+COMPONENT 0 FUNCTION (-y/sqrt(x*x+y*y))*t
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5
@@ -92,31 +90,31 @@ NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // dyz_pull
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 50 50 0 CURVE 1 1 0 FUNCT 1 2 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 50 50 0 FUNCT 1 2 0
 // dxz_pull
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 50 50 0 CURVE 1 1 0 FUNCT 1 2 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 50 50 0 FUNCT 1 2 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  5
 // dyz_1
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dxz_1
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dz_pull
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 50 50 0 CURVE 1 1 0 FUNCT 1 2 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 50 50 0 FUNCT 1 2 0
 // dx_pull
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 50 50 0 CURVE 1 1 0 FUNCT 1 2 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 50 50 0 FUNCT 1 2 0
 // dy_pull
-E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 50 50 0 CURVE 1 1 0 FUNCT 1 2 0
+E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 50 50 0 FUNCT 1 2 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  4
 // dz_1
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // pull
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 50 50 0 CURVE 1 1 0 FUNCT 1 2 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 50 50 0 FUNCT 1 2 0
 // dx_1
-E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dy_1
-E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    30 DNODE 1
 NODE    208 DNODE 2

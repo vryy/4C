@@ -9,7 +9,6 @@
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
@@ -64,7 +63,6 @@ THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 RESULTSEVRY                           1
-VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX_IDS                   -1
@@ -177,16 +175,13 @@ ML_DAMPMED                      0.69                            // damping med g
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 5 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 1.0e10
-
 MAT 2 MAT_ScDepInterp IDMATZEROSC 3 IDMATUNITSC 4
 MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0
 MAT 31 ELAST_IsoYeoh C1 10.0e2 C2 0 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
 MAT 32 ELAST_VolOgden KAPPA 10.0e0 BETA -2.0 //KAPPA 2.2116e6 BETA -2.0
-
 MAT 4 MAT_ElastHyper NUMMAT 2 MATIDS 41 42 DENS 1.0
 MAT 41 ELAST_IsoYeoh C1 1.0e2 C2 0 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
 MAT 42 ELAST_VolOgden KAPPA 1.0e0 BETA -2.0 //KAPPA 2.2116e6 BETA -2.0
-
 MAT 5 MAT_GrowthAC SCALAR1 2 ALPHA 5.0
 MAT 10 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 101 102 NUMREAC 2 REACIDS 103 104 END
 MAT 101 MAT_scatra DIFFUSIVITY 0.1
@@ -195,16 +190,12 @@ MAT 103 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_
 MAT 104 MAT_scatra_reaction NUMSCAL 2 STOICH 0 -1 REACCOEFF 0.0 COUPLING simple_multiplicative ROLE 0 1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 10
-----------------------------------------------------------------------CURVE1
-CURVE 1 on EXPR FUNC ((1-cos(pi*t))*0.5) t1 0.00 t2 1.0
-CURVE 1 on EXPR FUNC (1.0) t1 1.00 t2 1000.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //(2*y) //y+0.2
-FUNCT 1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0 //(2*y) //y+0.2
+COMPONENT 1 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION ((1-cos(pi*t))*0.5) 1
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
@@ -234,15 +225,15 @@ DLINE                           0
 DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
-E 2 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 CURVE 1 0 FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 FUNCT 2 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 181 DNODE 1
 NODE 1 DNODE 2

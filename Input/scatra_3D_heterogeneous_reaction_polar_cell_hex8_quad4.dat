@@ -1,5 +1,8 @@
 //
-// \maintainer Andreas Rauch
+// Maintainer: Andreas Rauch
+//             rauch@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15240
 //
 -------------------------------------------------------------TITLE
 Description
@@ -86,70 +89,66 @@ MAT 55 MAT_scatra_reaction NUMSCAL 13 STOICH 0 0 0 0 0 0 0 1 -1 0 0 0 0 REACCOEF
 MAT 56 MAT_scatra_reaction NUMSCAL 13 STOICH 0 0 0 0 0 0 -1 0 0 0 0 0 0 REACCOEFF 1 COUPLING by_function ROLE 0 0 0 0 0 0 20 0 0 0 0 0 0 //PIP1 to unmodelled PI (proportional decay)
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD scatra TAR_MAT 20
--------------------------------------------------------------CURVE1
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0//active, membrane bound Rac
-FUNCT 1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 10//inactive, membrane bound Rac
-FUNCT 1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0//active, membrane bound CDC42
-FUNCT 1 COMPONENT 3 EXPR 0.0 0.0 0.0 FUNCTION 3.4//inactive, membrane bound CDC42
-FUNCT 1 COMPONENT 4 EXPR 0.0 0.0 0.0 FUNCTION 0//active, membrane bound Rho
-FUNCT 1 COMPONENT 5 EXPR 0.0 0.0 0.0 FUNCTION 4//inactive, membrane bound Rho
-FUNCT 1 COMPONENT 6 EXPR 0.0 0.0 0.0 FUNCTION 0//PIP1, membrane bound only
-FUNCT 1 COMPONENT 7 EXPR 0.0 0.0 0.0 FUNCTION 0//PIP2, membrane bound only
-FUNCT 1 COMPONENT 8 EXPR 0.0 0.0 0.0 FUNCTION 0//PIP3, membrane bound only
+COMPONENT 0 FUNCTION 0//active, membrane bound Rac
+COMPONENT 1 FUNCTION 10//inactive, membrane bound Rac
+COMPONENT 2 FUNCTION 0//active, membrane bound CDC42
+COMPONENT 3 FUNCTION 3.4//inactive, membrane bound CDC42
+COMPONENT 4 FUNCTION 0//active, membrane bound Rho
+COMPONENT 5 FUNCTION 4//inactive, membrane bound Rho
+COMPONENT 6 FUNCTION 0//PIP1, membrane bound only
+COMPONENT 7 FUNCTION 0//PIP2, membrane bound only
+COMPONENT 8 FUNCTION 0//PIP3, membrane bound only
 -------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0//cytosolic Rac
-FUNCT 2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0//cytosolic CDC42
-FUNCT 2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0//cytosolic Rho
-FUNCT 2 COMPONENT 3 EXPR 0.0 0.0 0.0 FUNCTION 0//dummy, for reaction of PIP1 to unmodelled PI
+COMPONENT 0 FUNCTION 0//cytosolic Rac
+COMPONENT 1 FUNCTION 0//cytosolic CDC42
+COMPONENT 2 FUNCTION 0//cytosolic Rho
+COMPONENT 3 FUNCTION 0//dummy, for reaction of PIP1 to unmodelled PI
 -------------------------------------------------------------FUNCT3
-FUNCT 3 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 80 //Rac(a)-Puls
-FUNCT 3 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 10
-FUNCT 3 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0
-FUNCT 3 COMPONENT 3 EXPR 0.0 0.0 0.0 FUNCTION 10
-FUNCT 3 COMPONENT 4 EXPR 0.0 0.0 0.0 FUNCTION 10
-FUNCT 3 COMPONENT 5 EXPR 0.0 0.0 0.0 FUNCTION 0
-FUNCT 3 COMPONENT 6 EXPR 0.0 0.0 0.0 FUNCTION 10
-FUNCT 3 COMPONENT 7 EXPR 0.0 0.0 0.0 FUNCTION 10
-FUNCT 3 COMPONENT 8 EXPR 0.0 0.0 0.0 FUNCTION 0
-FUNCT 3 COMPONENT 9 EXPR 0.0 0.0 0.0 FUNCTION 10
+COMPONENT 0 FUNCTION 80 //Rac(a)-Puls
+COMPONENT 1 FUNCTION 10
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION 10
+COMPONENT 4 FUNCTION 10
+COMPONENT 5 FUNCTION 0
+COMPONENT 6 FUNCTION 10
+COMPONENT 7 FUNCTION 10
+COMPONENT 8 FUNCTION 0
+COMPONENT 9 FUNCTION 10
 -------------------------------------------------------------FUNCT4
-FUNCT 4 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 1*phi1
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 1*phi1
 -------------------------------------------------------------FUNCT5
-FUNCT 5 COMPONENT 0 VAREXPR 0 0 0 FUNCTION (0.53+0.53*1*(phi9/0.2)+1.3*phi3)*(phi2/10)
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION (0.53+0.53*1*(phi9/0.2)+1.3*phi3)*(phi2/10)
 -------------------------------------------------------------FUNCT6
-FUNCT 6 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 10*phi2
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 10*phi2
 -------------------------------------------------------------FUNCT7
-FUNCT 7 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 13.3*phi10
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 13.3*phi10
 -------------------------------------------------------------FUNCT8
-FUNCT 8 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 1*phi3
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 1*phi3
 -------------------------------------------------------------FUNCT9
-FUNCT 9 COMPONENT 0 VAREXPR 0 0 0 FUNCTION (7.9/(1+(phi5/1.7)^3))*(phi4/3.4)
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION (7.9/(1+(phi5/1.7)^3))*(phi4/3.4)
 -------------------------------------------------------------FUNCT10
-FUNCT 10 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 10*phi4
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 10*phi4
 -------------------------------------------------------------FUNCT11
-FUNCT 11 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 13.3*phi11
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 13.3*phi11
 -------------------------------------------------------------FUNCT12
-FUNCT 12 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 1*phi5
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 1*phi5
 -------------------------------------------------------------FUNCT13
-FUNCT 13 COMPONENT 0 VAREXPR 0 0 0 FUNCTION (17.6/(1+(phi1/1.3)^3))*(phi6/4)
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION (17.6/(1+(phi1/1.3)^3))*(phi6/4)
 -------------------------------------------------------------FUNCT14
-FUNCT 14 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 10*phi6
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 10*phi6
 -------------------------------------------------------------FUNCT15
-FUNCT 15 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 13.3*phi12
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 13.3*phi12
 -------------------------------------------------------------FUNCT16
-FUNCT 16 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.084*0.5*(1+(phi1/10))*phi7
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.084*0.5*(1+(phi1/10))*phi7
 -------------------------------------------------------------FUNCT17
-FUNCT 17 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.021*phi8
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.021*phi8
 -------------------------------------------------------------FUNCT18
-FUNCT 18 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.00072*0.5*(1+(phi1/10))*phi8
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.00072*0.5*(1+(phi1/10))*phi8
 -------------------------------------------------------------FUNCT19
-FUNCT 19 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.432*0.5*(1+(phi5/4))*phi9
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.432*0.5*(1+(phi5/4))*phi9
 -------------------------------------------------------------FUNCT20
-FUNCT 20 COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.21*phi7
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION 0.21*phi7
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 1.26304754535097652e-01  TOLERANCE 1e-10
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 1.26304754535097652e-01 TOLERANCE 1e-10
@@ -186,37 +185,37 @@ NDVOL   2
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // scatra_membrane
-E 2 - NUMDOF 12 ONOFF 0 0 0 0 0 0 1 0 0 0 0 0 VAL  0 0 0 0 0 0 14.0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 2 - NUMDOF 12 ONOFF 0 0 0 0 0 0 1 0 0 0 0 0 VAL  0 0 0 0 0 0 14.0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  12
 // scatra_surface_of_volume_right
-E 3 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 3 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_surface_of_volume_left
-E 4 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 4 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_surface_of_volume_bottom
-E 5 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 5 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_surface_of_volume_front
-E 6 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL 0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 6 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL 0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_surface_of_volume_top
-E 7 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 7 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_surface_of_volume_rear
-E 8 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 8 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_membrane_right
-E 9 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 9 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_membrane_left
-E 10 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 10 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_membrane_bottom
-E 11 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 11 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_membrane_front
-E 12 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 12 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_membrane_top
-E 13 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 13 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 // scatra_membrane_rear
-E 14 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 14 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 // scatra_cytosol
-E 1 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 CURVE none none none none none none none none none none none none FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
+E 1 - NUMDOF 12 ONOFF 0 0 0 0 0 0 0 0 0 0 0 0 VAL  0 0 0 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0 0 0 0
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  1
 // scatra_membrane

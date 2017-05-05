@@ -43,14 +43,14 @@ REL_PENETRATION                 0.05
 MAX_VELOCITY                    1.0
 ----------------------------------------------------------------------FUNCT1
 // initial velocity of first particle
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0.3
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.1
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.3
+COMPONENT 1 FUNCTION 0.1
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial velocity of second particle
-FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION -0.3
-FUNCT2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION -0.1
-FUNCT2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION -0.3
+COMPONENT 1 FUNCTION -0.1
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPARTICLE                      2
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS

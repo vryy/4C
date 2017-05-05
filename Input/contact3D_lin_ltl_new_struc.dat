@@ -84,12 +84,12 @@ SOLVER               Superlu
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2250000 NUE 0.0 DENS 0.1 THEXPANS 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2250000 NUE 0.0 DENS 0.1 THEXPANS 0.0
-------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.4
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 6.0 FACTOR 1.4 1.4
-------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 6.0 FACTOR 0.0 6.6
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 6 VALUES 0 1.4 1.4
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 6 VALUES 0 0 6.6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1
@@ -98,11 +98,11 @@ NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // grav
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -500.0 CURVE none none 1 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -500.0 FUNCT 0 0 1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // dbc_xy_fixed_line
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // slave

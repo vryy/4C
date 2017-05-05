@@ -132,12 +132,8 @@ MAT 3 MAT_fluid DYNVISCOSITY 0.048 DENSITY 1000 GAMMA 0.59
 MAT 4 MAT_fluid DYNVISCOSITY 0.024 DENSITY 500 GAMMA 0.59
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION sqrt(x*x+y*y)-0.00144 // y-0.26-0.1*sin(pi*x)
+COMPONENT 0 FUNCTION sqrt(x*x+y*y)-0.00144 // y-0.26-0.1*sin(pi*x)
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -149,37 +145,37 @@ NDVOL                           1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 // vertices right
-E 1 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 1 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // vertices left
-E 2 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 2 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           6
 // line top
-E 1 - NUMDOF 8 ONOFF 0 1 1 0 0 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 1 - NUMDOF 8 ONOFF 0 1 1 0 0 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // line bottom
-E 2 - NUMDOF 8 ONOFF 0 1 1 0 0 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 2 - NUMDOF 8 ONOFF 0 1 1 0 0 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // line left vert
-E 3 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 3 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // line right vert
-E 4 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 4 - NUMDOF 8 ONOFF 1 1 1 0 1 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // line left hor
-E 5 - NUMDOF 8 ONOFF 1 1 0 0 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 5 - NUMDOF 8 ONOFF 1 1 0 0 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // line right hor
-E 6 - NUMDOF 8 ONOFF 1 1 0 0 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 6 - NUMDOF 8 ONOFF 1 1 0 0 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface front
-E 1 - NUMDOF 8 ONOFF 0 0 1 0 0 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 1 - NUMDOF 8 ONOFF 0 0 1 0 0 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // surface back
-E 2 - NUMDOF 8 ONOFF 0 0 1 0 0 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 2 - NUMDOF 8 ONOFF 0 0 1 0 0 0 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // surface top
-E 3 - NUMDOF 8 ONOFF 0 1 0 0 0 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 3 - NUMDOF 8 ONOFF 0 1 0 0 0 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // surface bottom
-E 4 - NUMDOF 8 ONOFF 0 1 0 0 0 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 4 - NUMDOF 8 ONOFF 0 1 0 0 0 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // surface right
-E 5 - NUMDOF 8 ONOFF 1 0 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 5 - NUMDOF 8 ONOFF 1 0 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // surface left
-E 6 - NUMDOF 8 ONOFF 1 0 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+E 6 - NUMDOF 8 ONOFF 1 0 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 6845 DNODE 1
 NODE 6846 DNODE 1

@@ -94,21 +94,14 @@ MAT 3 MAT_scatra DIFFUSIVITY 0.005    // Pe_e=10
 MAT 4 MAT_scatra DIFFUSIVITY 0.0005   // Pe_e=100
 MAT 5 MAT_scatra DIFFUSIVITY 0.00005   // Pe_e=1000
 MAT 6 MAT_scatra DIFFUSIVITY 0.000005  // Pe_e=10000
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (1-cos(1*pi*t))*0.5 t1 0.0 t2 1.0
-CURVE1 on EXPR FUNC 1.0 t1 1.0 t2 10000000
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 2.0/(sqrt(5)*sqrt(x^2+y^2))*(-1.0*y)+1.0/(sqrt(5)*1.0)*(-1.0*z*x/(sqrt(x^2+y^2)))
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2.0/(sqrt(5)*sqrt(x^2+y^2))*x+1.0/(sqrt(5)*1.0)*(-1.0*z*y/(sqrt(x^2+y^2)))
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0/(sqrt(5)*1.0)*(sqrt(x^2+y^2)-5.0)
+COMPONENT 0 FUNCTION 2.0/(sqrt(5)*sqrt(x^2+y^2))*(-1.0*y)+1.0/(sqrt(5)*1.0)*(-1.0*z*x/(sqrt(x^2+y^2)))
+COMPONENT 1 FUNCTION 2.0/(sqrt(5)*sqrt(x^2+y^2))*x+1.0/(sqrt(5)*1.0)*(-1.0*z*y/(sqrt(x^2+y^2)))
+COMPONENT 2 FUNCTION 1.0/(sqrt(5)*1.0)*(sqrt(x^2+y^2)-5.0)
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*exp(-1.0*((atan2(y,x)/0.1)^2+((asin(z)-0.5*pi)/0.5)^2))
+COMPONENT 0 FUNCTION 1.0*exp(-1.0*((atan2(y,x)/0.1)^2+((asin(z)-0.5*pi)/0.5)^2))
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 2670 QUANTITY phi VALUE 6.09201450706091108e-01 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 2660 QUANTITY phi VALUE 3.54560370925940602e-02 TOLERANCE 1e-7

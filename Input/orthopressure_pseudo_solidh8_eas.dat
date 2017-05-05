@@ -161,7 +161,7 @@ DPOINT                          0
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
+E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0  FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -10266,13 +10266,9 @@ NODE 3246 COORD 36.5727050949 24.9639572832 25.312987653
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.001
 MAT 3 ELAST_CoupNeoHooke YOUNG 1.044E6 NUE 0.45
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.60 FACTOR 0.0 16132.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.6 100000 VALUES 0 16132.0 16132.0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

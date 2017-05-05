@@ -141,8 +141,8 @@ MAT 10 MAT_PoroLawConstant
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD porofluid TAR_MAT 5
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 7
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.015*t t1 0.0 t2 5.0 // Tmax=5
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t*0.015
 -------------------------------------------------RESULT DESCRIPTION
 //The solution of the stationary problem would be velx=0, vely=-5e-3, pressure = 5.0
 XFLUID DIS fluid NODE 275 QUANTITY velx VALUE 4.44850703618201096e-15 TOLERANCE 1e-10
@@ -165,17 +165,17 @@ NDVOL   2
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   2
 // fluid_volume
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // poro_volume
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 -1.0 0.0 CURVE none 1 none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 -1.0 0.0 FUNCT 0 1 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // fluid_volume
-E 1 - NUMDOF 3 ONOFF  1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF  1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
 DVOL                            1
 // poro_volume
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 // poro_volume
@@ -183,24 +183,24 @@ E 2 -
 ------------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                            1
 // fluid_bottom
-E 4 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 5.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 5.0 0.0 0.0 FUNCT 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // fluid_left
-E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid_right
-E 2 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE  1
-E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF    3
 // poro_top
-E 7 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // poro_left
-E 5 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // poro_right
-E 6 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
 DSURF 4
 // poro_left

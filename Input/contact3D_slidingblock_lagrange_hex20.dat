@@ -137,21 +137,12 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 21000 NUE 0.0 DENS 1 THEXPANS 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 210 NUE 0.0 DENS 1 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 2.0 FACTOR 0.0 1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 2.0 4.0 FACTOR 1.0 1
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 2.0 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 2.0 4.0 FACTOR 0.0 1.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 2 4 VALUES 0 1 1
 ----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 2 4 VALUES 0 0 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 9.37612422664331341e-02 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -1.56690847065709993e-04 TOLERANCE 1e-7
@@ -164,9 +155,9 @@ NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 //                              dirichlet1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.2 0.0 -0.2 CURVE 2 none 1 FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.2 0.0 -0.2 FUNCT 2 0 1
 //                              dirichlet2
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slavesurface

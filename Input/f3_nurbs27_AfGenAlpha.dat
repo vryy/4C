@@ -114,7 +114,7 @@ SAMPLING_STOP                   5000
 DUMPING_PERIOD                  0                               // Statistics a la Peter
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
-E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 CURVE 1 1 1 none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 4 4 4 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
@@ -123,15 +123,15 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           8
 // inner wall surface
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 CURVE 1 1 1 none FUNCT 1 2 0 0
-E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 CURVE 1 1 1 none FUNCT 1 2 0 0
-E 18 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 CURVE 1 1 1 none FUNCT 1 2 0 0
-E 26 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 CURVE 1 1 1 none FUNCT 1 2 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 1 2 4 0
+E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 1 2 4 0
+E 18 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 1 2 4 0
+E 26 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 1.0 0.0 0.0 FUNCT 1 2 4 0
 // outer wall surface
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE 1 1 1 none FUNCT 0 0 0 0
-E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE 1 1 1 none FUNCT 0 0 0 0
-E 17 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE 1 1 1 none FUNCT 0 0 0 0
-E 25 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE 1 1 1 none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 4 4 4 0
+E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 4 4 4 0
+E 17 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 4 4 4 0
+E 25 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 4 4 4 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
@@ -206,22 +206,20 @@ DSURF                           0
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.125 DENSITY 1.0 GAMMA 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t/0.1 t1 0.0 t2 0.1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION -1.0*y
+COMPONENT 0 FUNCTION -1.0*y*a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 500000.0 DESCRIPTION t/0.1 1
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0 0 FUNCTION x
+COMPONENT 0 FUNCTION x*a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 500000.0 DESCRIPTION t/0.1 1
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -1.0*y/sqrt(x*x+y*y)*(1.0/sqrt(x*x+y*y)-1.0/2.0*(sqrt(x*x+y*y)-1.0))*1
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION x/sqrt(x*x+y*y)*(1.0/sqrt(x*x+y*y)-1.0/2.0*(sqrt(x*x+y*y)-1.0))*1
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0 FUNCTION -1.0*y/sqrt(x*x+y*y)*(1.0/sqrt(x*x+y*y)-1.0/2.0*(sqrt(x*x+y*y)-1.0))*1
+COMPONENT 1 FUNCTION x/sqrt(x*x+y*y)*(1.0/sqrt(x*x+y*y)-1.0/2.0*(sqrt(x*x+y*y)-1.0))*1
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION 0
 ----------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 500000.0 DESCRIPTION t/0.1 1
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
@@ -21412,6 +21410,5 @@ TYPE                            Periodic
 +1.06667
 +1.13333
 END NURBSPATCH
-
 -------------------------------------------------------------------------END
 //                              END

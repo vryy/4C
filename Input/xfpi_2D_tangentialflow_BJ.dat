@@ -143,11 +143,10 @@ MAT 10 MAT_PoroLawConstant
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD porofluid TAR_MAT 5
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 7
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.20875*(2*y+0.5)*(1-0.25/(2*0.1*0.20875)*(-1)*(0.5-2*y))
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.5-x // pressure
--------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION 0.20875*(2*y+0.5)*(1-0.25/(2*0.1*0.20875)*(-1)*(0.5-2*y))
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.5-x // pressure
 -------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 275 QUANTITY velx VALUE 3.06875376411575862e-01 TOLERANCE 1e-10
 XFLUID DIS fluid NODE 275 QUANTITY vely VALUE 2.97373230509598621e-17 TOLERANCE 1e-10
@@ -169,17 +168,17 @@ NDVOL   2
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   2
 // fluid_volume
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // poro_volume
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // fluid_volume
-E 1 - NUMDOF 3 ONOFF  1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF  1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
 DVOL                            1
 // poro_volume
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 // poro_volume
@@ -187,27 +186,27 @@ E 2 -
 ------------------------------------------------DESIGN SURF PORO NEUMANN CONDITIONS
 DSURF                            1
 // poro_left
-E 5 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF     2
 //fluid_right
-E 2 - NUMDOF 4 ONOFF 1 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid_left
-E 1 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 4
 // fluid_left
-E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 // fluid_right
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 // fluid_bottom
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid_top
-E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 1 0 0 0
+E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 -------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF 1
 // poro_top
-E 7 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------DESIGN SURFACE PORO PARTIAL INTEGRATION
 DSURF 4
 // poro_left
@@ -221,7 +220,7 @@ E 8 -
 ----------------------------------DESIGN XFEM FPI MONOLITHIC SURF CONDITIONS
 DSURF                        1
 // poro_bottom
-E 8 - COUPLINGID 1 BJ_COEFF 0.00577350269189626 SLIP_CURVE 0 SLIP_FUNCT 0
+E 8 - COUPLINGID 1 BJ_COEFF 0.00577350269189626 SLIP_FUNCT 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    21 DLINE 1

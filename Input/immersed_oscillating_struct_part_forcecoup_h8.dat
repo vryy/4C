@@ -134,15 +134,10 @@ AZOUTPUT                        50
 MAT 1 MAT_fluid DYNVISCOSITY 1.8e-04 DENSITY 1.3e-03 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1500.0 NUE 0.3 DENS 1.001
 -----------------------------------------------CLONING MATERIAL MAP
--------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1.0*0.5*(1.0-cos((t*pi/3.0))) t1 0.0 t2 3.0
--------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC -1.0*sin(2.0*pi*t) t1 0.0 t2 1000.0
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION ((-(y-1.0)*(y-1.0))+1.0)
+COMPONENT 0 FUNCTION ((-(y-1.0)*(y-1.0))+1.0)
 -------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION -1.0*sin(2.0*pi*t)
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
@@ -167,40 +162,40 @@ NDVOL   3
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   2
 // channel_volume
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // obstacle_volume
-E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // searchbox
-//E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 5
 // channel_lower_boundary
-E 3 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // channel_outflow
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // channel_upper_boundary
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // channel_boundary_z+
-//E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // channel_boundary_z-
-//E 6 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 6 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // channel_inflow
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // obstacle_lower_boundary
-E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.5 0.0 0.0 0.0 0.0 0.0 CURVE 2 none none none none none FUNCT 0 0 0 0 0 0
+E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.5 0.0 0.0 0.0 0.0 0.0 FUNCT 2 0 0 0 0 0
 // obstacle_boundary_z+
-//E 9 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 9 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // obstacle_boundary_z-
-//E 10 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 10 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT    5
 // Dummy Point Dirichlet Condition On Obstacle Node
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.5 0.0 0.0 0.0 0.0 0.0 CURVE 2    none none none none none FUNCT 0 0 0 0 0 0
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.5 0.0 0.0 0.0 0.0 0.0 FUNCT 2 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // set also pressure value
-E 5 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -------------------------------DESIGN IMMERSED COUPLING SURF CONDITIONS
 DSURF  1
 // obstacle_interface

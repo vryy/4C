@@ -83,54 +83,53 @@ STRATIMIKOS_XMLFILE             none
 SIMPLE_DAMPING                  1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Acoustic DENSITY 2.0 C 2.0
-----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION sin(pi*x)*sin(pi*y)
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0
+COMPONENT 0 FUNCTION sin(pi*x)*sin(pi*y)
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -(1-1/(2*2))*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION (1-1/(2*2))*sqrt(2)*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION (1-1/(2*2))*(2)*pi*pi*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION (1-1/(2*2))*sqrt(2)*pi*pi*cos(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 4 EXPR 0 0.0 0 FUNCTION (1-1/(2*2))*sqrt(2)*pi*sin(pi*x)*pi*cos(pi*y)*sin(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 5 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 6 EXPR 0 0.0 0 FUNCTION -(1-1/(2*2))*(2)*pi*pi*sin(pi*x)*sin(pi*y)*sqrt(2)*pi*sin(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 7 EXPR 0 0.0 0 FUNCTION (1-1/(2*2))*(2)*pi*pi*pi*cos(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 8 EXPR 0 0.0 0 FUNCTION (1-1/(2*2))*(2)*pi*pi*sin(pi*x)*pi*cos(pi*y)*cos(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 9 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 10 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 11 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 12 EXPR 0 0.0 0 FUNCTION -(1-1/(2*2))*sqrt(2)*pi*pi*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)-(1-1/(2*2))*sqrt(2)*pi*sin(pi*x)*pi*pi*sin(pi*y)*sin(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 13 EXPR 0 0.0 0 FUNCTION -(1-1/(2*2))*(2)*sqrt(2)*pi*pi*pi*sin(pi*x)*sin(pi*y)*sqrt(2)*pi*cos(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 14 EXPR 0 0.0 0 FUNCTION -(1-1/(2*2))*(2)*pi*pi*pi*cos(pi*x)*sin(pi*y)*sqrt(2)*pi*sin(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 15 EXPR 0 0.0 0 FUNCTION -(1-1/(2*2))*(2)*pi*pi*sin(pi*x)*pi*cos(pi*y)*sqrt(2)*pi*sin(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 16 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 17 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 18 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 19 EXPR 0 0.0 0 FUNCTION -(1-1/(2*2))*(2)*pi*pi*pi*pi*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)-(1-1/(2*2))*(2)*pi*pi*sin(pi*x)*pi*pi*sin(pi*y)*cos(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 20 EXPR 0 0.0 0 FUNCTION -(1-1/(2*2))*sqrt(2)*pi*pi*pi*pi*cos(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)-(1-1/(2*2))*sqrt(2)*pi*pi*cos(pi*x)*pi*pi*sin(pi*y)*sin(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 21 EXPR 0 0.0 0 FUNCTION -(1-1/(2*2))*sqrt(2)*pi*pi*pi*sin(pi*x)*pi*cos(pi*y)*sin(sqrt(2)*pi*t)-(1-1/(2*2))*sqrt(2)*pi*sin(pi*x)*pi*pi*pi*cos(pi*y)*sin(sqrt(2)*pi*t)
-FUNCT2 COMPONENT 22 EXPR 0 0.0 0 FUNCTION 0
-// FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0 // 2*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
-// FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0 // -2*sqrt(2)*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
-// FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0 // -2*2*pi*pi*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
-// FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0 // -2*sqrt(2)*pi*pi*cos(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
-// FUNCT2 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0 // -2*sqrt(2)*pi*sin(pi*x)*pi*cos(pi*y)*sin(sqrt(2)*pi*t)
-// FUNCT2 COMPONENT 5 EXPR 0 0.0 0 FUNCTION 0
-// FUNCT2 COMPONENT 6 EXPR 0 0.0 0 FUNCTION 0 // 2*2*sqrt(2)*pi*pi*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
-// FUNCT2 COMPONENT 7 EXPR 0 0.0 0 FUNCTION 0 // -2*2*pi*pi*pi*cos(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
-// FUNCT2 COMPONENT 8 EXPR 0 0.0 0 FUNCTION 0 // -2*2*pi*pi*sin(pi*x)*pi*cos(pi*y)*cos(sqrt(2)*pi*t)
-// FUNCT2 COMPONENT 9 EXPR 0 0.0 0 FUNCTION 0
-// FUNCT2 COMPONENT 10 EXPR 0 0.0 0 FUNCTION 0
-// FUNCT2 COMPONENT 11 EXPR 0 0.0 0 FUNCTION 0
-// FUNCT2 COMPONENT 12 EXPR 0 0.0 0 FUNCTION 0 // 2*sqrt(2)*pi*pi*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)+2*sqrt(2)*pi*sin(pi*x)*pi*pi*sin(pi*y)*sin(sqrt(2)*pi*t)
+COMPONENT 0 FUNCTION -(1-1/(2*2))*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
+COMPONENT 1 FUNCTION (1-1/(2*2))*sqrt(2)*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
+COMPONENT 2 FUNCTION (1-1/(2*2))*(2)*pi*pi*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
+COMPONENT 3 FUNCTION (1-1/(2*2))*sqrt(2)*pi*pi*cos(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
+COMPONENT 4 FUNCTION (1-1/(2*2))*sqrt(2)*pi*sin(pi*x)*pi*cos(pi*y)*sin(sqrt(2)*pi*t)
+COMPONENT 5 FUNCTION 0
+COMPONENT 6 FUNCTION -(1-1/(2*2))*(2)*pi*pi*sin(pi*x)*sin(pi*y)*sqrt(2)*pi*sin(sqrt(2)*pi*t)
+COMPONENT 7 FUNCTION (1-1/(2*2))*(2)*pi*pi*pi*cos(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
+COMPONENT 8 FUNCTION (1-1/(2*2))*(2)*pi*pi*sin(pi*x)*pi*cos(pi*y)*cos(sqrt(2)*pi*t)
+COMPONENT 9 FUNCTION 0
+COMPONENT 10 FUNCTION 0
+COMPONENT 11 FUNCTION 0
+COMPONENT 12 FUNCTION -(1-1/(2*2))*sqrt(2)*pi*pi*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)-(1-1/(2*2))*sqrt(2)*pi*sin(pi*x)*pi*pi*sin(pi*y)*sin(sqrt(2)*pi*t)
+COMPONENT 13 FUNCTION -(1-1/(2*2))*(2)*sqrt(2)*pi*pi*pi*sin(pi*x)*sin(pi*y)*sqrt(2)*pi*cos(sqrt(2)*pi*t)
+COMPONENT 14 FUNCTION -(1-1/(2*2))*(2)*pi*pi*pi*cos(pi*x)*sin(pi*y)*sqrt(2)*pi*sin(sqrt(2)*pi*t)
+COMPONENT 15 FUNCTION -(1-1/(2*2))*(2)*pi*pi*sin(pi*x)*pi*cos(pi*y)*sqrt(2)*pi*sin(sqrt(2)*pi*t)
+COMPONENT 16 FUNCTION 0
+COMPONENT 17 FUNCTION 0
+COMPONENT 18 FUNCTION 0
+COMPONENT 19 FUNCTION -(1-1/(2*2))*(2)*pi*pi*pi*pi*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)-(1-1/(2*2))*(2)*pi*pi*sin(pi*x)*pi*pi*sin(pi*y)*cos(sqrt(2)*pi*t)
+COMPONENT 20 FUNCTION -(1-1/(2*2))*sqrt(2)*pi*pi*pi*pi*cos(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)-(1-1/(2*2))*sqrt(2)*pi*pi*cos(pi*x)*pi*pi*sin(pi*y)*sin(sqrt(2)*pi*t)
+COMPONENT 21 FUNCTION -(1-1/(2*2))*sqrt(2)*pi*pi*pi*sin(pi*x)*pi*cos(pi*y)*sin(sqrt(2)*pi*t)-(1-1/(2*2))*sqrt(2)*pi*sin(pi*x)*pi*pi*pi*cos(pi*y)*sin(sqrt(2)*pi*t)
+COMPONENT 22 FUNCTION 0
+// COMPONENT 0 FUNCTION 0 // 2*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
+// COMPONENT 1 FUNCTION 0 // -2*sqrt(2)*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
+// COMPONENT 2 FUNCTION 0 // -2*2*pi*pi*sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
+// COMPONENT 3 FUNCTION 0 // -2*sqrt(2)*pi*pi*cos(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
+// COMPONENT 4 FUNCTION 0 // -2*sqrt(2)*pi*sin(pi*x)*pi*cos(pi*y)*sin(sqrt(2)*pi*t)
+// COMPONENT 5 FUNCTION 0
+// COMPONENT 6 FUNCTION 0 // 2*2*sqrt(2)*pi*pi*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)
+// COMPONENT 7 FUNCTION 0 // -2*2*pi*pi*pi*cos(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
+// COMPONENT 8 FUNCTION 0 // -2*2*pi*pi*sin(pi*x)*pi*cos(pi*y)*cos(sqrt(2)*pi*t)
+// COMPONENT 9 FUNCTION 0
+// COMPONENT 10 FUNCTION 0
+// COMPONENT 11 FUNCTION 0
+// COMPONENT 12 FUNCTION 0 // 2*sqrt(2)*pi*pi*pi*sin(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)+2*sqrt(2)*pi*sin(pi*x)*pi*pi*sin(pi*y)*sin(sqrt(2)*pi*t)
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION -1/sqrt(2)*cos(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)/2
+COMPONENT 0 FUNCTION -1/sqrt(2)*cos(pi*x)*sin(pi*y)*sin(sqrt(2)*pi*t)/2
 ----------------------------------------------------------------------FUNCT4
-FUNCT4 EXPR 0 0.0 0 FUNCTION -1/sqrt(2)*sin(pi*x)*cos(pi*y)*sin(sqrt(2)*pi*t)/2
+COMPONENT 0 FUNCTION -1/sqrt(2)*sin(pi*x)*cos(pi*y)*sin(sqrt(2)*pi*t)/2
 ----------------------------------------------------------------------FUNCT5
-FUNCT5 EXPR 0 0.0 0 FUNCTION sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
+COMPONENT 0 FUNCTION sin(pi*x)*sin(pi*y)*cos(sqrt(2)*pi*t)
 ------------------------------------------------RESULT DESCRIPTION
 ACOUSTIC DIS acou NODE 61 QUANTITY pressure VALUE 6.30511139083980821e-01 TOLERANCE 1e-5
 ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE 0 TOLERANCE 1e-5
@@ -152,10 +151,10 @@ DLINE  0
 //E 4 -
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE 4
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
-E 2 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
-E 3 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
-E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
+E 3 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
+E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1

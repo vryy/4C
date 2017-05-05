@@ -101,21 +101,16 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 4.0*(0.5+y)*(0.5-y)
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
+COMPONENT 0 FUNCTION 4.0*(0.5+y)*(0.5-y)
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.0 // pressure
 ----------------------------------------------------------------------FUNCT2
 // initial G-function outside of domain -> no cut, no interface, no XFEM dofs
-//FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt((x-0.45)*(x-0.45)+(y+0.45)*(y+0.45))-0.04 // outside bb
-//FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt((x-0.25)*(x-0.25)+(y+0.25)*(y+0.25))-0.04 // inside bb
-FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt((x-0.35)*(x-0.35)+(y+0.35)*(y+0.35))-0.04 // boarder of bb
+//FUNCTION sqrt((x-0.45)*(x-0.45)+(y+0.45)*(y+0.45))-0.04 // outside bb
+//FUNCTION sqrt((x-0.25)*(x-0.25)+(y+0.25)*(y+0.25))-0.04 // inside bb
+COMPONENT 0 FUNCTION sqrt((x-0.35)*(x-0.35)+(y+0.35)*(y+0.35))-0.04 // boarder of bb
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
@@ -136,38 +131,38 @@ NDVOL 2
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE 1
 // fluid_wall_lines
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 4
 // fluid_front_back_surfaces
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // fluid_bottom_top_walls
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // fluid_inflow
-E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
 // fluid_outflow
-E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-//E 5 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 5.0 3.0 2.0 7.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+//E 5 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 5.0 3.0 2.0 7.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 2
 // fluid_volume
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // structure_volume
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
 DSURF 1
 // structure_shell
-E 5 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
 DSURF 1
 // structure_shell
-E 5 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS
 DVOL 1
 // fluid_volume
-E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 BOOLEANTYPE none COMPLEMENTARY 0 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------------DESIGN XFEM LEVELSET TWOPHASE VOL CONDITIONS
 DVOL 0
 // fluid_volume

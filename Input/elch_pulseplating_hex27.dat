@@ -45,7 +45,7 @@ TEMPERATURE                     300.0
 GALVANOSTATIC                   Yes
 GSTAT_APPROX_ELECT_RESIST       effective_length_with_initial_cond
 GSTATCONVTOL                    1e-6
-GSTATCURVENO                    4
+GSTATFUNCTNO                    4
 GSTATITEMAX                     20
 EQUPOT                          ENC
 BLOCKPRECOND                    Yes
@@ -158,37 +158,23 @@ MAT 1 MAT_matlist LOCAL No NUMMAT 3 MATIDS 2 3 4 END
 MAT 2 MAT_ion DIFFUSIVITY 0.000423 VALENCE 2.0
 MAT 3 MAT_ion DIFFUSIVITY 0.001065 VALENCE -2.0
 MAT 4 MAT_ion DIFFUSIVITY 0.009312 VALENCE 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 1.0
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC (0.5*cos(pi*t/1.0))+0.5 t1 0.0 t2 1.0
-----------------------------------------------------------------------CURVE4
-CURVE4 on EXPR FUNC 0.0 t1 0.0 t2 0.001
-CURVE4 on EXPR FUNC (-0.0125)*((-0.5)*cos(pi*(t-0.001)/0.00005)+0.5) t1 0.001 t2 0.00105
-CURVE4 on EXPR FUNC -0.0125 t1 0.00105 t2 0.003
-CURVE4 on EXPR FUNC (-0.0125)*((0.5*cos(pi*(t-0.003)/0.00005))+0.5) t1 0.003 t2 0.00305
-CURVE4 on EXPR FUNC 0.0 t1 0.00305 t2 0.004
-CURVE4 on PeriodicRepetition Period 0.004 t1 0.004 t2 20000.0
-----------------------------------------------------------------------CURVE5
-CURVE5                          on PhysiologicalWaveform InterpolType Fourier Period 0.004 Flowrate -0.0125 Samplingpoints 160 Arrayread 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-//                                                             // for use of Fourier representation of pulse curve computed from set of total current values
-//                                                             // only activated for testing input reading of CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION (-161.84337)*y*y
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION (-161.84337)*y*y
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.348
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2.408
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 4.12
-FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.348
+COMPONENT 1 FUNCTION 2.408
+COMPONENT 2 FUNCTION 4.12
+COMPONENT 3 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 6 TIMES 0 0.001 0.00105 0.003 0.00305 0.004 DESCRIPTION 0 (-0.0125)*((-0.5)*cos(pi*(t-0.001)/0.00005)+0.5) -0.0125 (-0.0125)*((0.5*cos(pi*(t-0.003)/0.00005))+0.5) 0 PERIODIC Yes T1 0.004 T2 20000
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_x VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
 SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_y VALUE 3.58327475417326826e-08 TOLERANCE 1e-16
@@ -212,11 +198,11 @@ NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              cathode
-E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.348 2.408 4.12 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.348 2.408 4.12 0.0 FUNCT 0 0 0 0
 ---------------------------------ELECTRODE BOUNDARY KINETICS SURF CONDITIONS
 DSURF                           1
 //                              cathode
-E 2 - ID 0 pot -0.0 curve none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 1.0 alpha_c 0.4 i0 51.0 gamma 0.75 refcon 0.348 dl_spec_cap 0.25 END
+E 2 - ID 0 pot -0.0 funct none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 1.0 alpha_c 0.4 i0 51.0 gamma 0.75 refcon 0.348 dl_spec_cap 0.25 END
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           1
 E 2 -

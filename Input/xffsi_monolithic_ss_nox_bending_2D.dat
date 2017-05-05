@@ -171,20 +171,15 @@ MAT 4 MAT_ElastHyper NUMMAT 1 MATIDS 5 DENS 250
 MAT 5 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1.0-cos(pi/2*t) t1 0.0 t2 1 // dx=0.3+0.8(1+sin(2/3*pi*(t-0.75)))
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 0.0 t1 0.0 t2 0.00625 // y-oscillation
-CURVE2 on EXPR FUNC 0.23*t t1 0.00625 t2 3 // y-oscillation
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION (1/0.5)*(1/0.5)*(1-y)*(y)
+COMPONENT 0 FUNCTION (1/0.5)*(1/0.5)*(1-y)*(y)
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1/0.3)*(1/0.3)*(0.6-y)*(y)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0 FUNCTION (1/0.3)*(1/0.3)*(0.6-y)*(y)*(1.0-cos(pi/2*t))
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION 0
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
+COMPONENT 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE 0
@@ -193,39 +188,39 @@ NDVOL 5
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // xFluid__outflow
-E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // xFluid__inflow
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.3 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 2 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.3 0.0 0.0 0.0 0.0 0.0 FUNCT 2 0 0 0 0 0
 // no_bc
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 4
 // fluid FSI
-E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // structure_unten_dir
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // xFluid__upper_and_lower_surface
-E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // unten_dirichlet_fluid
-E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 3
 // embFluid_volume
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // bgFluid_volume
-E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // structure_volume
-E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF 1
 // bottom_dirichlet_fluid
-E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL 1
 // embFluid_volume
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF 2
 // fluid fsi

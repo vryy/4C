@@ -144,14 +144,13 @@ MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 1.0E-1 TAUC0 0.0 MAX_ACTIVATION 0
 MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
 MAT 102 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL TNNP TISSUE M TIME_SCALE 1.0
 MAT 103 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (0.15*t) t1 0.0 t2 1.0
-CURVE1 on EXPR FUNC (-0.15*(t-1.0)+0.15) t1 1.0 t2 2.0
-CURVE1 on EXPR FUNC (0.0) t1 2.0 t2 5.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
+COMPONENT 0 FUNCTION (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
+-------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1 2 500000.0 DESCRIPTION (0.15*t) (-0.15*(t-1.0)+0.15) 0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          0
@@ -161,7 +160,7 @@ NDVOL                           0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
 DPOINT 1
 // Apex
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 3 3 3 3 3 3 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 184 DNODE 1
 NODE 185 DNODE 1
@@ -251,7 +250,6 @@ NODE 893 DNODE 2
 NODE 897 DNODE 2
 NODE 910 DNODE 2
 NODE 917 DNODE 2
-
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 184 DSURFACE 1

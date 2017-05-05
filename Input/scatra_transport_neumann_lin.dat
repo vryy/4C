@@ -64,7 +64,6 @@ THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 RESULTSEVRY                     10
-VELCURVENO                      -1
 VELFUNCNO                       2
 VELOCITYFIELD                   function
 WRITEFLUX_IDS                   -1
@@ -126,17 +125,13 @@ MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 21 22 END
 MAT 21 MAT_scatra DIFFUSIVITY 1.0000001
 MAT 22 MAT_scatra DIFFUSIVITY 1.0000001
 --------------------------------------------------------CLONING MATERIAL MAP
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    0.0
-FUNCT 1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    0.0
+COMPONENT 0 FUNCTION    0.0
+COMPONENT 1 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION    0.0
-FUNCT 2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    0.0
-FUNCT 2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION    0.0
+COMPONENT 0 FUNCTION    0.0
+COMPONENT 1 FUNCTION    0.0
+COMPONENT 2 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
@@ -152,7 +147,7 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // // left surface curve  x y z 0 0 0 Val1 Val2 Val3 0 0 0 Live Mid/orthopreassure Mid
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.5 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.5 FUNCT 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 181 DNODE 1
 NODE 1 DNODE 2

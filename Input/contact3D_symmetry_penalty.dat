@@ -71,8 +71,8 @@ SOLVER               UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1
 MAT 2   ELAST_CoupNeoHooke YOUNG 1 NUE 0.3
-------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0 1  FACTOR 0 4
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 4*t
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 3
 NDLINE  5
@@ -81,27 +81,27 @@ NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // d8xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 CURVE none none none FUNCT none none none
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT none none none
 // d9xyz_move_z
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 -1 CURVE none none 1 FUNCT none none none
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 -1 FUNCT 0 0 1
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  3
 // d5xy
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0 0 0 CURVE none none none FUNCT none none none
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0 0 0 FUNCT none none none
 // d6xyz
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 CURVE none none none FUNCT none none none
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT none none none
 // d7xyz_move_z
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 -1 CURVE none none 1 FUNCT none none none
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 -1 FUNCT 0 0 1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  4
 // d1xyz
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 CURVE none none none FUNCT none none none
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT none none none
 // d2xyz_move_z
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 -1 CURVE none none 1 FUNCT none none none
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 -1 FUNCT 0 0 1
 // d3x
-E 5 - NUMDOF 3 ONOFF 1 0 0 VAL 0 0 0 CURVE none none none FUNCT none none none
+E 5 - NUMDOF 3 ONOFF 1 0 0 VAL 0 0 0 FUNCT none none none
 // d4y
-E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0 0 0 CURVE none none none FUNCT none none none
+E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0 0 0 FUNCT none none none
 -------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // slave

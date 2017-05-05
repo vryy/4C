@@ -102,15 +102,15 @@ NDSURF                          7
 NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 2.5 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 2.5 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 2.5 0.0 FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 2.5 0.0 FUNCT 0 0 0 0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE                           2
-E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 0 0 3
-E 14 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 CURVE none none none FUNCT 0 0 3
+E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 0 0 3
+E 14 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 3
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
-E 7 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 CURVE none none none FUNCT 0 0 3 // all potential dof are dirichlet points!!
+E 7 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 3 // all potential dof are dirichlet points!!
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 643 DNODE 1
 NODE 1 DNODE 2
@@ -6226,16 +6226,16 @@ MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 2.5 //5.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 2.5 //5.0
+COMPONENT 3 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -250.0*z+250.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 1.0
+COMPONENT 2 FUNCTION -250.0*z+250.0
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION -250.0*z+250.0
+COMPONENT 0 FUNCTION -250.0*z+250.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 922 QUANTITY phi1 VALUE 1.10560897761088794e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 784 QUANTITY phi1 VALUE 9.88846744058957672e-01 TOLERANCE 1e-10

@@ -57,22 +57,23 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 3 END
-MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 2 TRANSNR 3 THERMFAC 0 COND 4 END
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5 t1 0.0 t2 1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC (1.0*1.0e-5*5.0e-5-(-2.0)*1.0e-5*5.0e-5)/(1.0*1.0e-5-(-2.0)*5.0e-5) t1 0.0 t2 1000
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC 1.0*1.0e-5/(1.0*1.0e-5-(-2.0)*5.0e-5) t1 0.0 t2 1000
-----------------------------------------------------------------------CURVE4
-CURVE4 on EXPR FUNC 96485.3399/(8.314472*298.15)*96485.3399*(1.0e-5-(-2)*5.0e-5)*1.0*t t1 0.0 t2 1000
+MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 4 TRANSNR 5 THERMFAC 0 COND 6 END
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.08 //initial concentration field: µmol/mm³
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //initial potential field:
+COMPONENT 0 FUNCTION 0.08 //initial concentration field: µmol/mm³
+COMPONENT 1 FUNCTION 0.0 //initial potential field:
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //initial x-vel. field
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //initial y-vel. field
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial pres. field
+COMPONENT 0 FUNCTION 0.0 //initial x-vel. field
+COMPONENT 1 FUNCTION 0.0 //initial y-vel. field
+COMPONENT 2 FUNCTION 0.0 //initial pres. field
+----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 50000.0 DESCRIPTION 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5 1
+----------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION (1.0*1.0e-5*5.0e-5-(-2.0)*1.0e-5*5.0e-5)/(1.0*1.0e-5-(-2.0)*5.0e-5)
+----------------------------------------------------------------------FUNCT5
+COMPONENT 0 FUNCTION 1.0*1.0e-5/(1.0*1.0e-5-(-2.0)*5.0e-5)
+----------------------------------------------------------------------FUNCT6
+COMPONENT 0 FUNCTION 96485.3399/(8.314472*298.15)*96485.3399*(1.0e-5-(-2)*5.0e-5)*1.0*t
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 1.46585496597636186e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE -1.15099555731126985e-01 TOLERANCE 1e-10
@@ -92,9 +93,9 @@ NDVOL                           0
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode
-E 3 - ID 0 pot -0.2 curve 1 numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 3 - ID 0 pot -0.2 funct 3 numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 //                              anode
-E 4 - ID 1 pot 0.0 curve 1 numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
+E 4 - ID 1 pot 0.0 funct 3 numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.25 alpha_c 0.75 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 3 DLINE 1
 NODE 4 DLINE 1

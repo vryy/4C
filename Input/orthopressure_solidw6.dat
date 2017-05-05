@@ -162,7 +162,7 @@ DPOINT                          0
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 orthopressure Mid
+E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0  FUNCT 1 1 1 1 1 1 orthopressure Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -9479,18 +9479,9 @@ NODE 2442 COORD 44.8970413887 -10.6460494472 21.7395789684
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.001
 MAT 3 ELAST_CoupNeoHooke YOUNG 1.044E6 NUE 0.45
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.60 FACTOR 0.0 16132.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.6 100000 VALUES 0 16132.0 16132.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2238 QUANTITY dispx VALUE 2.52175432473031010e-04 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 1403 QUANTITY dispz VALUE 1.82534341312888406e-06 TOLERANCE 1e-10

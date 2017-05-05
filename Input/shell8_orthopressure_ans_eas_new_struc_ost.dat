@@ -136,10 +136,10 @@ NDSURF                          4
 NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           4
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 orthopressure Mid
-E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 orthopressure Mid
-E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 orthopressure Mid
-E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 orthopressure Mid
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 orthopressure Mid
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 orthopressure Mid
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 orthopressure Mid
+E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 orthopressure Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1082 DNODE 1
 NODE 1 DNODE 2
@@ -3706,18 +3706,8 @@ NODE 1082 COORD 0.000000000000000e+00 -5.000000000000000e+01 0.000000000000000e+
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.044E6 NUE 0.45 DENS 0.001
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.60 FACTOR 0.0 16132.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+FUNCTION 16132.0*t/1.6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE 1.87175831879395321e-04 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 109 QUANTITY dispz VALUE -3.29440563260560227e-04 TOLERANCE 1e-10

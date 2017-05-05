@@ -102,12 +102,9 @@ MAT 1 MAT_fluid DYNVISCOSITY 4.0 DENSITY 0.001 GAMMA 1.0
 //MAT 2 MAT_Struct_NeoHooke YOUNG 1.044E5 NUE 0.0 DENS 0.0001
 MAT 2 MAT_Struct_AAAGasser DENS 0.0001 VOL OSM NUE 0.49 BETA -2.0 CLUM 2.62e3 CMED 1.98e3 CABLUM 1.73e3
 MAT 3 MAT_Struct_AAANeoHooke YOUNG 1.044E6 BETA 1.881E6 NUE 0.45 DENS 0.0001
-----------------------------------------------------------------------CURVE1
-CURVE1 on PhysiologicalWaveform InterpolType Fourier Period 1.050 Flowrate 0.81 Samplingpoints 60 Arrayread 0.087093800356793 0.076978376389686 0.08203608837324 0.112382360274561 0.178132616060758 0.294459991682492 0.420902791271332 0.542287878876619 0.673788390449013 0.800231190037853 0.860923733840496 0.860923733840496 0.815404325988514 0.73953864623521 0.668730678465459 0.587807286728601 0.51699931895885 0.4461913511891 0.385498807386457 0.360210247468688 0.339979399534474 0.299517703666045 0.248940583830509 0.20847888796208 0.162959480110097 0.117440072258115 0.066862952422579 0.041574392504811 0.02640125655415 0.02640125655415 0.051689816471918 0.08203608837324 0.107324648291008 0.132613208208776 0.157901768126544 0.178132616060758 0.198363463994973 0.214548142342344 0.219605854325898 0.216571227135766 0.214548142342344 0.210501972755501 0.210501972755501 0.20847888796208 0.198363463994973 0.183190328044312 0.168017192093651 0.169028734490362 0.168017192093651 0.157901768126544 0.147786344159437 0.135647835398908 0.127555496225222 0.117440072258115 0.112382360274561 0.113393902671272 0.114405445067983 0.114405445067983 0.109347733084429 0.102266936307454
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.3 FACTOR 0.0 11598.84
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.3 0.5 FACTOR 11598.84 16131.72
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 1.05 FACTOR 16131.72 16131.72
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.3 0.5 1.05 VALUES 0.0 11598.84 16131.72 16131.72
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          24
@@ -115,29 +112,29 @@ NDSURF                          29
 NDVOL                           2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
-E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           17
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 9 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 10 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 14 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 15 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 16 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 17 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 18 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 20 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 21 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 24 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 26 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 27 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 28 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 29 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 9 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 10 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 14 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 15 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 16 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 17 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 18 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 20 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 21 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 24 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 26 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 27 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 28 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 29 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
@@ -146,8 +143,8 @@ DPOINT                          0
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           2
-E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
-E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
+E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
+E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -28908,14 +28905,5 @@ NODE 5500 COORD -16.9669470958 -1.06746977577 9.00000000021
 9998 SOLIDT4 TET4 515 522 420 521 MAT 2 KINEM nonlinear
 9999 SOLIDT4 TET4 415 420 522 422 MAT 2 KINEM nonlinear
 10000 SOLIDT4 TET4 515 415 420 522 MAT 2 KINEM nonlinear
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 -------------------------------------------------------------------------END
 //                              END

@@ -288,24 +288,17 @@ SRC_FIELD structure SRC_MAT 100 TAR_FIELD scatra TAR_MAT 500
 // auxialiary dis gets mat 20 assigned
 // mat 20 contains all scalars
 SRC_FIELD cellscatra SRC_MAT 3 TAR_FIELD cellscatra TAR_MAT 20
--------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(1.0-cos(t))  t1 0.0 t2 30
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 2.0 // initial stimulus for PI3K activation
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0 // initial PIP concentration
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0 // initial Rac-GTP concentration
-FUNCT1 COMPONENT 3 EXPR 0.0 0.0 0.0 FUNCTION 0.0 // initial Br-Cmplx concentration
+COMPONENT 0 FUNCTION 2.0 // initial stimulus for PI3K activation
+COMPONENT 1 FUNCTION 0.0 // initial PIP concentration
+COMPONENT 2 FUNCTION 0.0 // initial Rac-GTP concentration
+COMPONENT 3 FUNCTION 0.0 // initial Br-Cmplx concentration
 -------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 5.0 // initial actin monomer concentration
-FUNCT2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 1.0 // initial Rac-GDP concentration
-FUNCT2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 1.0 // initial Arp2/3 concentration
-FUNCT2 COMPONENT 3 EXPR 0.0 0.0 0.0 FUNCTION 0.1 // initial Barbed End concentration
+COMPONENT 0 FUNCTION 5.0 // initial actin monomer concentration
+COMPONENT 1 FUNCTION 1.0 // initial Rac-GDP concentration
+COMPONENT 2 FUNCTION 1.0 // initial Arp2/3 concentration
+COMPONENT 3 FUNCTION 0.1 // initial Barbed End concentration
                                                  // as initial nuclei for branching
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 // growth surface E7
 STRUCTURE DIS cell NODE 117 QUANTITY dispx VALUE 1.01836653679624649e-03  TOLERANCE 1e-10
@@ -326,82 +319,82 @@ NDVOL   8
 -----------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 0
 // CellChemo_point_x+_z+
-//E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_point_x+_z-
-//E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_point_x-_z+
-//E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_point_x-_z-
-//E 4 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 4 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_point_y+_z+
-//E 5 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 5 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_point_y+_z-
-//E 6 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 6 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_point_y-_z+
-//E 7 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 7 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_point_y-_z-
-//E 8 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 8 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  0
 // CellChemo_line_x+
-//E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_line_x-
-//E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_line_y+
-//E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 3 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_line_y-
-//E 4 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 4 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // CellChemo_surface_x-
-E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //
 // cell_outer_surface_struct
-//E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_outer_surface_scatra_volume
-// E 3 - NUMDOF 7 ONOFF 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
+// E 3 - NUMDOF 7 ONOFF 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0
 // cell_outer_surface_scatra
-// E 4 - NUMDOF 8  ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+// E 4 - NUMDOF 8  ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // cell_surface_z+
-//E 5 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 5 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_surface_z-
-//E 6 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 6 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_surface_x+
-//E 7 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 7 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_surface_y+
-//E 9 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 9 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // CellChemo_surface_y-
-//E 10 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 10 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_inner_surface_scatra_volume
-//E 11 - NUMDOF 8 ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+//E 11 - NUMDOF 8 ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // cond_scatra_volume
-//E 12 - NUMDOF 8 ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+//E 12 - NUMDOF 8 ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // cond_scatra_surface
-//E 13 - NUMDOF 8 ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+//E 13 - NUMDOF 8 ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 -------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   2
 // cell_volume_struct
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_volume_scatra
-//E 2 - NUMDOF 8 ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none none FUNCT 0 0 0 0 0 0 0 0
+//E 2 - NUMDOF 8 ONOFF 0 0 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0 0
 // dummy_poro_volume
-E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.8 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.8 FUNCT 0 0 0 0
 --------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF  1
 // CellChemo_surface_x-
-E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE 0 0 0 FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL   1
 // cell_volume_struct
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 DVOL   1
 // dummy_poro_volume
-E 3 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+E 3 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
 --------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
 DVOL   1
 // dummy_poro_volume
-E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
 // dummy_poro_volume

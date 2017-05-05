@@ -160,18 +160,14 @@ PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE -7.11870204284787311e-01 TOLER
 PARTICLE DIS particle NODE 26 QUANTITY dispx VALUE -1.32338000477089812e+00 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispy VALUE 1.21140571339443115e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispz VALUE -9.86331475991755746e-01 TOLERANCE 1.0e-12
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-//FUNCT1 EXPR 0 0.0 0 FUNCTION  sqrt(x*x+y*y+z*z)-0.6
-FUNCT1 EXPR 0 0.0 0 FUNCTION  y
+//FUNCTION  sqrt(x*x+y*y+z*z)-0.6
+COMPONENT 0 FUNCTION  y
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.5*(1-y*y)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.5*(1-y*y)
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
@@ -182,17 +178,17 @@ NDVOL   1
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // volume
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.1 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 PressureGrad
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.1 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 PressureGrad
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // point left surface top front
-E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // surface top
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // surface bottom
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           4
 //                              inflow

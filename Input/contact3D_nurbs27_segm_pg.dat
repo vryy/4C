@@ -5,7 +5,7 @@
 // 089 - 289-15271
 //
 ==================================================================
-         General Data File BACI
+General Data File BACI
 ==================================================================
 ---------------------------------------------------------------------TITLE
 NURBS TEST
@@ -64,18 +64,20 @@ MAT 10   ELAST_CoupNeoHooke YOUNG 2 NUE 0.3
 MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 20 DENS 0.1
 MAT 20   ELAST_CoupNeoHooke YOUNG 1 NUE 0.3
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION x*cos(1.0*(t-1.0))+y*sin(1.0*(-t+1.0))-x
-FUNCT1 COMPONENT 1 EXPR 0 0 0 FUNCTION x*sin(1.0*(t-1.0))+y*cos(1.0*(t-1.0))-y
-FUNCT1 COMPONENT 2 EXPR 0 0 0 FUNCTION 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 5.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 10.0 FACTOR 1.0 1.0
+COMPONENT 0 FUNCTION (x*cos(1.0*(t-1.0))+y*sin(1.0*(-t+1.0))-x)*v
+COMPONENT 1 FUNCTION (x*sin(1.0*(t-1.0))+y*cos(1.0*(t-1.0))-y)*v
+COMPONENT 2 FUNCTION 0.0
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 10.0 DESCRIPTION 0.0 1.0
+------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION v
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 10.0 DESCRIPTION 5.0*t 5.0
+------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION v
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 10.0 DESCRIPTION 0.0 1.0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
-E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 CURVE none none none FUNCT 0 0 0
-E 6  - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 CURVE 2 2 1 FUNCT 1 1 0
+E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0
+E 6  - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1  1 2
 -------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 E 5 - 1 Slave Inactive
@@ -1263,15 +1265,15 @@ CP      89  COORD  -5.000000000000e+00  +5.000000000000e+00  -1.050000000000e+01
 CP      90  COORD  +0.000000000000e+00  +5.000000000000e+00  -1.050000000000e+01  +1.000000000000e+00
 CP      91  COORD  +5.000000000000e+00  +5.000000000000e+00  -1.050000000000e+01  +1.000000000000e+00
 --------------------------------------------------------STRUCTURE ELEMENTS
-     1 SONURBS27 NURBS27     1     2     3     5     6     7     9    10    11    17    18    19    21    22    23    25    26    27    33    34    35    37    38    39    41    42    43  MAT 1 GP 3 3 3
-     2 SONURBS27 NURBS27     2     3     4     6     7     8    10    11    12    18    19    20    22    23    24    26    27    28    34    35    36    38    39    40    42    43    44  MAT 1 GP 3 3 3
-     3 SONURBS27 NURBS27     5     6     7     9    10    11    13    14    15    21    22    23    25    26    27    29    30    31    37    38    39    41    42    43    45    46    47  MAT 1 GP 3 3 3
-     4 SONURBS27 NURBS27     6     7     8    10    11    12    14    15    16    22    23    24    26    27    28    30    31    32    38    39    40    42    43    44    46    47    48  MAT 1 GP 3 3 3
-     5 SONURBS27 NURBS27    17    18    19    21    22    23    25    26    27    33    34    35    37    38    39    41    42    43    49    50    51    53    54    55    57    58    59  MAT 1 GP 3 3 3
-     6 SONURBS27 NURBS27    18    19    20    22    23    24    26    27    28    34    35    36    38    39    40    42    43    44    50    51    52    54    55    56    58    59    60  MAT 1 GP 3 3 3
-     7 SONURBS27 NURBS27    21    22    23    25    26    27    29    30    31    37    38    39    41    42    43    45    46    47    53    54    55    57    58    59    61    62    63  MAT 1 GP 3 3 3
-     8 SONURBS27 NURBS27    22    23    24    26    27    28    30    31    32    38    39    40    42    43    44    46    47    48    54    55    56    58    59    60    62    63    64  MAT 1 GP 3 3 3
-     9 SONURBS27 NURBS27    65    66    67    68    69    70    71    72    73    74    75    76    77    78    79    80    81    82    83    84    85    86    87    88    89    90    91  MAT 2 GP 3 3 3
+1 SONURBS27 NURBS27     1     2     3     5     6     7     9    10    11    17    18    19    21    22    23    25    26    27    33    34    35    37    38    39    41    42    43  MAT 1 GP 3 3 3
+2 SONURBS27 NURBS27     2     3     4     6     7     8    10    11    12    18    19    20    22    23    24    26    27    28    34    35    36    38    39    40    42    43    44  MAT 1 GP 3 3 3
+3 SONURBS27 NURBS27     5     6     7     9    10    11    13    14    15    21    22    23    25    26    27    29    30    31    37    38    39    41    42    43    45    46    47  MAT 1 GP 3 3 3
+4 SONURBS27 NURBS27     6     7     8    10    11    12    14    15    16    22    23    24    26    27    28    30    31    32    38    39    40    42    43    44    46    47    48  MAT 1 GP 3 3 3
+5 SONURBS27 NURBS27    17    18    19    21    22    23    25    26    27    33    34    35    37    38    39    41    42    43    49    50    51    53    54    55    57    58    59  MAT 1 GP 3 3 3
+6 SONURBS27 NURBS27    18    19    20    22    23    24    26    27    28    34    35    36    38    39    40    42    43    44    50    51    52    54    55    56    58    59    60  MAT 1 GP 3 3 3
+7 SONURBS27 NURBS27    21    22    23    25    26    27    29    30    31    37    38    39    41    42    43    45    46    47    53    54    55    57    58    59    61    62    63  MAT 1 GP 3 3 3
+8 SONURBS27 NURBS27    22    23    24    26    27    28    30    31    32    38    39    40    42    43    44    46    47    48    54    55    56    58    59    60    62    63    64  MAT 1 GP 3 3 3
+9 SONURBS27 NURBS27    65    66    67    68    69    70    71    72    73    74    75    76    77    78    79    80    81    82    83    84    85    86    87    88    89    90    91  MAT 2 GP 3 3 3
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 3.53855790186152808e+00 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -7.73625032360888087e-01 TOLERANCE 1e-8

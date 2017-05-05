@@ -199,20 +199,13 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 MAT 1 MAT_sutherland REFVISC 0.0055556 REFTEMP 1.0 SUTHTEMP 0.368 SHC 1004.5 PRANUM 0.71 THERMPRESS 1.0 GASCON 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 1
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 0.1 c2 1.005
-----------------------------------------------------------------------CURVE2
-CURVE2 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 0.1 c2 0.995
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1-y*y)*20.3
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0 FUNCTION (1-y*y)*20.3
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION 0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION 0.005*y+1.0 //initial temperature field
+COMPONENT 0 FUNCTION 0.005*y+1.0 //initial temperature field
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
@@ -225,13 +218,13 @@ NDVOL                           2
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              volume
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 PressureGrad
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 PressureGrad
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // wall top
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // wall bottom
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           4
 // master stream
@@ -249,9 +242,9 @@ E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           2
 // wall top
-E 2 - NUMDOF 1 ONOFF 1 VAL 0.995 CURVE none FUNCT 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 0.995 FUNCT 0
 // wall bottom
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.005 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.005 FUNCT 0
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 //                              DOBJECT
 DSURF                           2

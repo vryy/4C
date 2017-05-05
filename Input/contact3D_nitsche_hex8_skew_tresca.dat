@@ -68,12 +68,12 @@ MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1
 MAT 10   ELAST_CoupNeoHooke YOUNG 5 NUE 0.2
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 20 DENS 0.1
 MAT 20   ELAST_CoupNeoHooke YOUNG 1 NUE 0.3
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 -0.1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.5 2.0 FACTOR -0.1 7.0e-1
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 2.0 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 2.0 52.0 FACTOR 0.0 12.5
+------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 2.0 52.0 VALUES 0 -0.1 7.0e-1 7.0e-1
+------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 2.0 52.0 VALUES 0 0.0 12.5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -82,9 +82,9 @@ NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // top_dirichlet
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 -1.0 CURVE 2 0 1 FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 -1.0 FUNCT 2 0 1
 // bottom_dirichlet
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // top_contact

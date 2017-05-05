@@ -87,18 +87,9 @@ MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e2 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.1
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 1.0 DENSITY 1.0 PERMEABILITY 1.0e1 TYPE Darcy-Brinkman
-------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5  t1 0.0 t2 1.0
-CURVE1 on EXPR FUNC 1.0                               t1 1.0 t2 10000.1
-------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC  4.0*0.5*(1-cos(t*pi/2.0))+1.0    t1 0.0 t2 3.0
-CURVE2 on EXPR FUNC  5.0                              t1 3.0 t2 8.0
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
-------------------------------------------------------------FUNCT1
-------------------------------------------------------------FUNCT2
-------------------------------------------------------------FUNCT3
-------------------------------------------------------------FUNCT4
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1 500000.0 DESCRIPTION 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5 1
 -------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 4 QUANTITY velx VALUE  4.13456990082913187e-02 TOLERANCE 1e-7
 FLUID DIS porofluid NODE 34 QUANTITY vely VALUE -1.68359823327005387e-01 TOLERANCE 1e-7
@@ -121,19 +112,19 @@ NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              top
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 -1.0 CURVE none 1 FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 -1.0 FUNCT 0 1
 //                              bottom
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 //                              structleft
-//E 4 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+//E 4 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 //                              structright
-//E 5 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+//E 5 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 //                              structsurf
-E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 //                              porosurf
-E 2 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           1
 //                              interface
@@ -147,7 +138,7 @@ E 3 -
 ------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           1
 //                              bottom
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1

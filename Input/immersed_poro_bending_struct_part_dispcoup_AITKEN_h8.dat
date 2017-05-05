@@ -225,15 +225,10 @@ MAT 6 MAT_scatra DIFFUSIVITY 10.0
 -----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 6
--------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1.0*0.5*(1.0-cos((t*pi/3.0))) t1 0.0 t2 3.0
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION ((-(y-1.0)*(y-1.0))+1.0)
+COMPONENT 0 FUNCTION ((-(y-1.0)*(y-1.0))+1.0)*1.0*0.5*(1.0-cos((t*pi/3.0)))
 -------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION 0.8
+COMPONENT 0 FUNCTION 0.8
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
@@ -255,41 +250,41 @@ NDVOL   3
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   2
 // ecm_volume
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.8 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.8 0.0 0.0 FUNCT 0 0 0 0 0 0
 // cell_volume
-E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // searchbox
-//E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 --------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
 DVOL   1
 // ecm_volume
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF  3
 // ecm_outflow
-//E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // ecm_lower_boundary
-E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // ecm_upper_boundary
-E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // ecm_boundary_z+
-//E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // ecm_boundary_z-
-//E 6 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 6 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // ecm_inflow
-E 1 - NUMDOF 6 ONOFF 1 0 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 0 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // cell_lower_boundary
-E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // obstacle_boundary_z+
-//E 9 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 9 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // obstacle_boundary_z-
-//E 10 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 10 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT    1
 // Dummy Point Dirichlet Condition On Cell Node
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 
 -------------------------------DESIGN IMMERSED COUPLING SURF CONDITIONS
 DSURF  1
@@ -308,7 +303,7 @@ DVOL                            1
 E 1 - Porosity                  2 // FUNCT num
 -------------------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
 DVOL                          1
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE   12425    DNODE    1
 -----------------------------------------------DLINE-NODE TOPOLOGY

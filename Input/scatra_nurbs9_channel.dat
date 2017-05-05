@@ -98,19 +98,19 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           4
-E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT //outflow
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 2 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT //outflow
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 2 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           3
-E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 2
-E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 2
+E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 3
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 3
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE                           2
 E 1 -
@@ -461,19 +461,13 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0
 MAT 2 MAT_scatra DIFFUSIVITY 0.05
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 5.0 c2 1.0
-----------------------------------------------------------------------CURVE2
-// from 1.0 down to 0.0
-CURVE2 on EXPR FUNC 1.0-sin(t*pi/(5.0*2.0)) t1 0.0 t2 5.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION 4.0*y*(1.0-y)
+COMPONENT 0 FUNCTION 4.0*y*(1.0-y)*a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 500000.0 DESCRIPTION sin(t/5*pi/2) 1
 ----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION 1.0-sin(t*pi/(5.0*2.0))
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 79 QUANTITY velx VALUE 9.854030450e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 79 QUANTITY vely VALUE 7.232560390e-04 TOLERANCE 1e-9

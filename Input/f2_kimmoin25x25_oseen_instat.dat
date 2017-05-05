@@ -90,9 +90,9 @@ ML_DAMPCOARSE                   1.0          // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.0001 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1 // adapt the rhs function
-FUNCT1 KIMMOIN-RHS MAT 1 ISSTAT 0 ISSTOKES 0
+KIMMOIN-RHS MAT 1 ISSTAT 0 ISSTOKES 0
 ----------------------------------------------------------------------FUNCT2 // exact velocity/pressure solution
-FUNCT2 KIMMOIN-UP  MAT 1 ISSTAT 0
+KIMMOIN-UP  MAT 1 ISSTAT 0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 377 QUANTITY velx     VALUE  3.64263484699005935e-01  TOLERANCE 1e-14
 FLUID DIS fluid NODE 377 QUANTITY vely     VALUE  1.16218137730263266e-01  TOLERANCE 1e-14
@@ -111,27 +111,27 @@ E 1 - fluid NUMMODES 3 ONOFF 0 0 1 integration // ensure that integral of pressu
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // Body_force
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 1 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
 // Topleft
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 2 2 0
 // Bottomleft
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 2 2 0
 // Bottomright
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 2 2 0
 // Topright
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 2 2 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // Line_top
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 2 2 0
 // Line_left
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 2 2 0
 // Line_bottom
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 2 2 0
 // Line_right
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 2 2 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 2 2 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE    51 DNODE 1
 NODE    676 DNODE 2

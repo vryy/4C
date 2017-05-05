@@ -75,9 +75,8 @@ NAME                            Thermal_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 THERM_FourierIso CAPA 1 CONDUCT 1
-----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -93,11 +92,11 @@ DSURF                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // left surf Dirich
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           1
 // right surf Neumann convection
-E 3 - Tempnp coeff -1.0 surtemp 5.0 surtempcurve none curve -1
+E 3 - Tempnp coeff -1.0 surtemp 5.0 surtempfunct 0 funct 0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 4 DSURFACE 1

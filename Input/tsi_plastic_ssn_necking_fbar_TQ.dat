@@ -117,13 +117,15 @@ SOLVER                          UMFPACK            // Amesos_KLU_sym,Amesos_KLU_
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 293.0
+COMPONENT 0 FUNCTION 293.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0 0 0 FUNCTION (z+13.3335)/(13.3335*2)*1e-3
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION (z+13.3335)/(13.3335*2)*1e-3
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0 0 FUNCTION (13.3335-z)/(13.3335*2)
+COMPONENT 0 FUNCTION (13.3335-z)/(13.3335*2)
+----------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION t*9/9000
 ------------------------------------------------------SEMI-SMOOTH PLASTICITY
 SEMI_SMOOTH_CPL                 175
 STABILIZATION_S                 1.0
@@ -136,8 +138,6 @@ DISSIPATION_MODE                Taylor_Quinney
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 7.80e-06 INITYIELD 0.45 ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 CTE 1e-5 INITTEMP 293 YIELDSOFT 0.002 HARDSOFT 0.002 TAYLOR_QUINNEY 0.9
 MAT 2 ELAST_CoupNeoHooke YOUNG 206.9 NUE 0.29
 MAT 4 THERM_FourierIso CAPA 3.588e-3 CONDUCT 4.5e-5
-----------------------------------------------------------------------CURVE1
-CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 9000 FACTOR 0 9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5
@@ -146,31 +146,31 @@ NDVOL   2
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // d7_xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d11_z_disp_xy
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 4
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  5
 // d4_xy
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d5_xz
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d6_yz
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d9_z_disp_y
-E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 4
 // d10_z_disp_x
-E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 4
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  4
 // d1_x
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d2_y
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d3_z
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // d8_z_disp
-E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 CURVE none none 1 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 4
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
 // bar
@@ -178,9 +178,9 @@ E 1 - Velocity 2
 --------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF  2
 // heat_cond1
-E 5 - Tempnp coeff -1.75e-8 surtemp 293.0 surtempcurve none curve none
+E 5 - Tempnp coeff -1.75e-8 surtemp 293.0  surtempfunct 0 funct 0
 // heat_cond2
-E 6 - Tempnp coeff -1.75e-8 surtemp 293.0 surtempcurve none curve none
+E 6 - Tempnp coeff -1.75e-8 surtemp 293.0  surtempfunct 0 funct 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    25 DNODE 1
 NODE    1 DNODE 2

@@ -79,31 +79,31 @@ NDVOL                           10
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          4
-E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 13 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 14 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 16 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 13 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 14 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 16 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           6
-E 41 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 42 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 43 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 44 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 45 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 46 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 41 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 42 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 43 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 44 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 45 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 46 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           9
-E 40 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 41 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 42 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 43 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 44 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 45 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 46 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 47 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 48 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 40 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 41 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 42 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 43 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 44 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 45 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 46 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 47 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 48 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
@@ -116,15 +116,15 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           9
-E 14 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 15 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 16 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 18 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 19 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 21 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 22 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 24 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 25 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 14 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 15 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 16 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 18 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 19 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 21 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 22 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 24 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 25 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -100 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
 DVOL                            0
@@ -5613,13 +5613,8 @@ NODE 1238 COORD 1.000000000000000e-01 1.000000000000000e-01 5.000000000000000e-0
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.4 DENS 7.8e-6 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

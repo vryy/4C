@@ -148,18 +148,10 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.1
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.04 DENSITY 1.0 PERMEABILITY 1.0e-3 TYPE Darcy
 MAT 5 MAT_scatra DIFFUSIVITY 0.02
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1.0)-(pi/2)))+0.5 t1 0.0 t2 1.0
-CURVE1 on EXPR FUNC 1.0 t1 1.0 t2 10000.1
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 4.0*0.5*(1-cos(t*pi/2.0))+1.0 t1 0.0 t2 3.0
-CURVE2 on EXPR FUNC 5.0 t1 3.0 t2 8.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 10.0
+COMPONENT 0 FUNCTION 10.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
@@ -187,8 +179,8 @@ DSURF                            1
 E 3 -
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           2
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0
-E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 //NODE 5 DNODE 1
 //NODE 27 DNODE 1

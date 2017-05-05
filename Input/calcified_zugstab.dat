@@ -1,4 +1,8 @@
 //
+// Maintainer: XXX YYY
+// XXX
+// XXX
+//
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -59,12 +63,9 @@ SOLVER                          UMFPACK //Superlu                       // Aztec
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0.001
 MAT 10 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 1.0E4 CT_MIN 50.0 CT_MAX 600.0 NUE 0.475 BETA -2.0
 MAT 11 ELAST_IsoVolAAAGasser CLUM 2.0E4 CMED 5.0E4 CABLUM 8.0E4 NUE 0.475 BETA -2.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.0 FACTOR 0.0 170.23
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 50000
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1.0 10.0 FACTOR 50000 50000
-----------------------------------------------------------------------CURVE3
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1 10 VALUES 0 50000 50000
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          0
@@ -76,7 +77,7 @@ DPOINT                          0
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
@@ -95,15 +96,15 @@ DSURF                           0
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //back                          wall
-E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none 2 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 44 DNODE 1
 NODE 42 DNODE 2

@@ -61,10 +61,10 @@ NDSURF                          6
 NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -0.5 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 orthopressure Mid
+E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -0.5 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 orthopressure Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 801 DNODE 2
@@ -2851,13 +2851,8 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.001
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000000.0 NUE 0.45
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -2.28391510321914843e+01 TOLERANCE 1e-8
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 1.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 1.0 1.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 1.0 1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 6.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 6.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 0.0 0.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1 VALUES 0 1 1 1
 -------------------------------------------------------------------------END
 //                              END

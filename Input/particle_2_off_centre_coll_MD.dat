@@ -92,7 +92,7 @@ DPARTICLE                       0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           1
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE 1 1 2 FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------------------DESIGN PARTICLE INIT RADIUS CONDITIONS
 DPARTICLE                       0
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
@@ -134,22 +134,20 @@ NODE 8 COORD 1.0000000000000001e+00 1.0000000000000001e+00 1.0000000000000001e+0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10. NUE 0.2 DENS 1.0
 MAT 2 MAT_Particle DENSITY 7.85E3 INITRADIUS 0.01
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0. t2 5.0
 ----------------------------------------------------------------------FUNCT1
 // initial velocity (x component)
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 // initial velocity (y component)
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
 // initial velocity (z component)
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial velocity (x component)
-FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION -1.0
+COMPONENT 0 FUNCTION -1.0
 // initial velocity (y component)
-FUNCT2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
 // initial velocity (z component)
-FUNCT2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 PARTICLE DIS particle NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1.0e-8
 PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 1.0 TOLERANCE 1.0e-8

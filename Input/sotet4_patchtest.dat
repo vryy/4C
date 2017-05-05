@@ -46,8 +46,8 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              Or
 MAXITER                         1
 DIVERCONT                       continue
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -68,7 +68,7 @@ DLINE                           0
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           1
 //connect2
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DVOL                            0
@@ -82,7 +82,7 @@ DLINE                           0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DSURF                           1
 //connect3
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0 Live Mid
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 1 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0

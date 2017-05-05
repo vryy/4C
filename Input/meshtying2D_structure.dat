@@ -75,11 +75,11 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          1
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           1
-E 4 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 4 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           0
@@ -92,7 +92,7 @@ DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           1
-E 6 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 6 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           0
@@ -643,18 +643,9 @@ NODE 143 COORD 2.000000000000000e+01 5.000000000000000e+00 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 7.8e-6 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 10.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 10000000 VALUES 0 10 10
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE -1.4236688826799737e+00 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE 2.6835234017101599e+00 TOLERANCE 1e-8

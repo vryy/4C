@@ -108,24 +108,15 @@ MAT 22 ELAST_VolSussmanBathe KAPPA 50.0
 
 MAT 3 MAT_GrowthAnisoStrain TAU 1.0 THETA_MAX 1.5 GAMMA 1.72 LAMBDA_CRIT 1.0 TOL 1.0E-10
 -----------------------------------------------CLONING MATERIAL MAP
--------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 0.0 150.0
--------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC -sin((pi/2.0)*(t/1.0)) t1 0.0 t2 1.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR -1.0 -1.0
--------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC 1.0-cos((pi/2.0)*(t/1.0)) t1 0.0 t2 1.0
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 1.0 1.0
--------------------------------------------------------------CURVE4
--------------------------------------------------------------CURVE5
--------------------------------------------------------------CURVE6
--------------------------------------------------------------CURVE7
--------------------------------------------------------------CURVE8
--------------------------------------------------------------CURVE9
 -------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 1.0 2.0 20.0 VALUES 0.0 0.0 150.0 150.0
 -------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 20.0 DESCRIPTION -sin((pi/2.0)*(t/1.0)) -1.0
 -------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 20.0 DESCRIPTION 1.0-cos((pi/2.0)*(t/1.0)) 1.0
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -3.98158821782485095e+00 TOLERANCE 1e-6
@@ -136,16 +127,16 @@ NDSURF  2
 NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 CURVE 1 1 1 FUNCT 0 0 0 orthopressure Mid
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 1 1 1 orthopressure Mid
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE 2 3 none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 2 3 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    3 DNODE 1
 NODE    4 DNODE 1

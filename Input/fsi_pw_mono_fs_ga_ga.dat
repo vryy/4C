@@ -1,7 +1,7 @@
 //
-// Maintainer: Matthias Mayr
-// mayr@mhpc.mw.tum.de
-// 089 - 289-10362
+// Maintainer: Andrea La Spina
+// laspina@lnm.mw.tum.de
+// 089 - 289-15265
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pressure wave
@@ -178,17 +178,17 @@ NDSURF                          14
 NDVOL                           3
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
-E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           2
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.3332e4 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.3332e4 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           4
 E 1 - 1
@@ -19260,15 +19260,9 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.03 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 3e6 NUE 0.3 DENS 1.2 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 3e-3 FACTOR 1.0 1.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3e-3 3.1e-3 FACTOR 1.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3.1e-3 10000 FACTOR 0.0 0.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 3e-3 3.1e-3 10000 VALUES 1 1 0 0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

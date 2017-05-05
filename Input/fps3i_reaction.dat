@@ -165,7 +165,6 @@ CONVFORM                        conservative //convective
 ALPHA_M                         0.833333333333330
 ALPHA_F                         0.666666666666660
 GAMMA                           0.666666666666667
-VELCURVENO                      -1
 CALCERROR                       No
 WRITEFLUX_IDS                   -1
 OUTINTEGRREAC                   No
@@ -468,14 +467,10 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD fluid SRC_MAT 5 TAR_FIELD ale TAR_MAT 6
 SRC_FIELD fluid SRC_MAT 5 TAR_FIELD scatra1 TAR_MAT 7
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra2 TAR_MAT 8
--------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.1*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT1 EXPR -5.0 -2.5 0.0 FUNCTION (((-(2.5-y)*(2.5-y))+6.25)/6.25)
+COMPONENT 0 FUNCTION (((-(2.5-(y+2.5))*(2.5-(y+2.5)))+6.25)/6.25)*(0.1*0.5*(1-cos((t*pi/2.0))))
 -------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION (((-(2.5-(y+2.5))*(2.5-(y+2.5)))+6.25)/6.25)
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
@@ -495,26 +490,26 @@ NDVOL   3
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   2
 // channel_volume
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // obstacle_volume
-E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF          4
 // channel_surface_y+
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // channel_surface_y-
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // channel_surface_x-
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 1 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 1 0 0 0
 // obstacle_surface_y-
-E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 
 
 ------------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
 DVOL          1
 // obstacle_volume
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 
 -------------------------------DESIGN FPSI COUPLING SURF CONDITIONS
 DSURF  2
@@ -530,13 +525,13 @@ E 17 -
 ------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF                            1
 // obstacle_surface_y-
-E 9 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 9 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 
 ------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           2
 
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 
 ------------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
@@ -544,33 +539,33 @@ E 2 -
 
 ---------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL        1
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 
 ---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF          4
 // channel_surface_y+
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // channel_surface_y- \ Interface
-E 16 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 16 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // channel_surface_x-
-E 3  - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3  - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // channel_surface_x+
-E 15 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 15 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 
 ------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
-E 3 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 CURVE none none FUNCT 1 0
+E 3 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 FUNCT 2 0
 
 ------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
 DSURF                           4
 // obstacle_surface_y-
-E 9 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0 Live Mid
+E 9 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0 Live Mid
 // obstacle_surface_x+
-E 13 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0 Live Mid
+E 13 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0 Live Mid
 // obstacle_surface_x-
-E 14 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0 Live Mid
+E 14 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0 Live Mid
 // obstacle_surface_y+
-E 12 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0 Live Mid
+E 12 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0 Live Mid
 
 --------------------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF                           2

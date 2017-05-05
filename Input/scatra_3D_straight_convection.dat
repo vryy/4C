@@ -120,8 +120,8 @@ NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           2
-E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0
-E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
+E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           2
 E 2 -
@@ -4665,15 +4665,10 @@ NODE 1331 COORD 1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+0
 1000 TRANSP HEX8 1331 1328 1323 1329 1330 1322 1312 1324 MAT 1 TYPE Std
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.01
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 5.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 5.0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

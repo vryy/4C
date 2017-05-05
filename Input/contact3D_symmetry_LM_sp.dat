@@ -80,8 +80,8 @@ SOLVER               UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1
 MAT 2   ELAST_CoupNeoHooke YOUNG 2250 NUE 0.3
-------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0 1  FACTOR 0 2.5
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 2.5*t
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  4
@@ -90,21 +90,21 @@ NDVOL   2
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // dxz
-E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0 0 0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0 0 0  FUNCT 0 0 0
 // dzy
-E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0 -1 0 CURVE none 1 none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0 -1 0 FUNCT 0 1 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // dz
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0 0 0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0 0 0  FUNCT 0 0 0
 // dx
-E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0 0 0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0 0 0  FUNCT 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   2
 // dxyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0  FUNCT 0 0 0
 // push
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0 -1 0 CURVE none 1 none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0 -1 0 FUNCT 0 1 0
 --------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // master

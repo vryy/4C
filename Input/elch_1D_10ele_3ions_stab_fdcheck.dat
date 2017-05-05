@@ -27,7 +27,6 @@ TIMESTEP                        1.0
 THETA                           0.66
 VELOCITYFIELD                   function_and_curve
 VELFUNCNO                       1
-VELCURVENO                      1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 FSSUGRDIFF                      No
@@ -53,18 +52,16 @@ MAT 2 MAT_ion DIFFUSIVITY 0.02 VALENCE -2.0
 MAT 3 MAT_ion DIFFUSIVITY 0.003 VALENCE 1.0
 MAT 4 MAT_matlist LOCAL No NUMMAT 4 MATIDS 1 2 3 5 END
 MAT 5 MAT_ion DIFFUSIVITY 0.01 VALENCE 0.0 // a non-charged scalar for comparison
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t-1.0 t1 0.0 t2 1000.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.02 // 0.1*20 = 2.0 // 2.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.02*(t-1) // 0.1*20 = 2.0 // 2.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 2.0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 1.0 // one uncharged species for comparison
-FUNCT2 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0.0 // el. potential
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 2.0
+COMPONENT 2 FUNCTION 2.0
+COMPONENT 3 FUNCTION 1.0 // one uncharged species for comparison
+COMPONENT 4 FUNCTION 0.0 // el. potential
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 1.00672772040393887e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 11 QUANTITY phi1 VALUE 1.0e-01 TOLERANCE 1e-16
@@ -84,9 +81,9 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              inflow
-E 1 - NUMDOF 5 ONOFF 1 1 1 1 1 VAL 1.0 2.0 2.0 1.0 0.0 CURVE none none none none none FUNCT 0 0 0 0 0
+E 1 - NUMDOF 5 ONOFF 1 1 1 1 1 VAL 1.0 2.0 2.0 1.0 0.0  FUNCT 0 0 0 0 0
 //                              outflow
-E 2 - NUMDOF 5 ONOFF 1 0 0 1 0 VAL 0.1 0.0 0.0 0.1 0.0 CURVE none none none none none FUNCT 0 0 0 0 0
+E 2 - NUMDOF 5 ONOFF 1 0 0 1 0 VAL 0.1 0.0 0.0 0.1 0.0  FUNCT 0 0 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 11 DNODE 2

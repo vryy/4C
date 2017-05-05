@@ -69,43 +69,38 @@ NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra  DIFFUSIVITY 0.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // too flat function with positive gradient
-FUNCT2 EXPR 0 0.0 0 FUNCTION 0.2*x
+COMPONENT 0 FUNCTION 0.2*x
 // flat function with positive gradient
-//FUNCT2 EXPR 0 0.0 0 FUNCTION 0.8*x
+//FUNCTION 0.8*x
 // steep function with positive gradient
-//FUNCT2 EXPR 0 0.0 0 FUNCTION 1.5*x
+//FUNCTION 1.5*x
 // too flat function with positive gradient
-//FUNCT2 EXPR 0 0.0 0 FUNCTION -0.2*x
+//FUNCTION -0.2*x
 // flat function with positive gradient
-//FUNCT2 EXPR 0 0.0 0 FUNCTION -0.8*x
+//FUNCTION -0.8*x
 // steep function with positive gradient
-//FUNCT2 EXPR 0 0.0 0 FUNCTION -1.5*x
+//FUNCTION -1.5*x
 // parabolic function
-// FUNCT2 EXPR 0 0.0 0 FUNCTION (x+4.0)*(x-4.0)
+// FUNCTION (x+4.0)*(x-4.0)
 // parabolic function on element face
-//FUNCT2 EXPR 0 0.0 0 FUNCTION (x+4.5)*(x+4.5)
+//FUNCTION (x+4.5)*(x+4.5)
 // parabolic function on element face
-//FUNCT2 EXPR 0 0.0 0 FUNCTION (x+4.5)*(x-4.5)
+//FUNCTION (x+4.5)*(x-4.5)
 // interface on element face
-//FUNCT2 EXPR 0 0.0 0 FUNCTION 0.2*x-1.5
+//FUNCTION 0.2*x-1.5
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ------------------------------------------------DESIGN SURF DIRICH CONDITIONS
 //DSURF 1
-//E 1 - NUMDOF 1 ONOFF 1  VAL 1.0 CURVE none FUNCT 2
+//E 1 - NUMDOF 1 ONOFF 1  VAL 1.0 FUNCT 2
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

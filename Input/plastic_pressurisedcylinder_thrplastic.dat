@@ -98,23 +98,9 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 2.1e8 NUE 0.3 DENS 0.0 THEXPANS 0.0 INITTEMP 273.15 YIELD 2.4e5 ISOHARD 0.0 KINHARD 0.0 SAMPLENUM 0 SIGMA_Y EPSBAR_P TOL 1.0e-6
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0 // Tmax=5
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC (1e-4)*t t1 0.0 t2 100000000
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC 0.1*t t1 0.0 t2 1.0
-CURVE3 on EXPR FUNC 0.1+0.04*(t-1.0) t1 1.0 t2 2.0
-CURVE3 on EXPR FUNC 0.14+0.04*(t-2.0) t1 2.0 t2 3.0
-CURVE3 on EXPR FUNC 0.18+0.01*(t-3.0) t1 3.0 t2 4.0
-CURVE3 on EXPR FUNC 0.19+0.002*(t-4.0) t1 4.0 t2 5.0
-----------------------------------------------------------------------CURVE4
-CURVE4 on Polygonal T 0.0 BYABSTIME Yes 0 1 FACTOR 0.0e5 1.0e5
-CURVE4 on Polygonal T 0.0 BYABSTIME Yes 1 2 FACTOR 1.0e5 1.4e5
-CURVE4 on Polygonal T 0.0 BYABSTIME Yes 2 3 FACTOR 1.4e5 1.8e5
-CURVE4 on Polygonal T 0.0 BYABSTIME Yes 3 4 FACTOR 1.8e5 1.9e5
-CURVE4 on Polygonal T 0.0 BYABSTIME Yes 4 5 FACTOR 1.9e5 1.92e5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 6 TIMES 0 1 2 3 4 5 VALUES 0 1 1.4 1.8 1.9 1.92
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2
@@ -123,21 +109,21 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // intern pressure
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 CURVE 4 4 4 4 4 4 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid // CURVE4
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0e5 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0 pseudo_orthopressure Mid // CURVE4
 //E 1 - 3 1 0 0 0 0 0 -1.0e5 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0 // CURVE1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // support bottom
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // support inclined plane up
-E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 // support total z
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 DSURF                           1
-E 3 - ROTANGLE 1.570796052 2.720699205 0 CURVE none none none FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
+E 3 - ROTANGLE 1.570796052 2.720699205 0 FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
 //normal -0.5 0.866025 0.0 tangent 0.866025 0.5 0.0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1

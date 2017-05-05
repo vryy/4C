@@ -246,13 +246,8 @@ MAT 301 ELAST_CoupNeoHooke YOUNG 14200000.0 NUE 0.40
 MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 250.0 NUE 0.3 DENS 500
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 4
-------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(1-cos(2*t*pi/1.0)) t1 0.0 t2 3.0
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION 1.0*(1-0.450430161*(x*x+y*y))
+COMPONENT 0 FUNCTION 0.5*(1-cos(2*t*pi/1.0))*1.0*(1-0.450430161*(x*x+y*y))
 ------------------------------------------------------------FUNCT2
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
@@ -276,37 +271,37 @@ NDVOL   1
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // inflow_ring
-E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // bag_end_ring
-E 2 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
 // inflow
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 1 none FUNCT 0 0 1 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 FUNCT 0 0 1 0
 // fluid_wall
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // bag_hold
-E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // bag_end
-E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // tube_hold
-E 10 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 10 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // tube_end
-E 11 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 11 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 // reinforcement_of_bag_domain
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF  4
 // inflow
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // outflow
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluid-bag_surface
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // fluid_wall
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF  2
 // contacting_outer_bag_surface
@@ -317,7 +312,7 @@ E 9 - 1 Slave
 -----------------DESIGN SURFACE FLOW-DEPENDENT PRESSURE CONDITIONS
 DSURF  1
 // outflow
-E 2 - flow_rate 0.0 343.0 0.0 0.0 0.0 none
+E 2 - flow_rate 0.0 343.0 0.0 0.0 0.0 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF  2
 // fluid-bag_surface

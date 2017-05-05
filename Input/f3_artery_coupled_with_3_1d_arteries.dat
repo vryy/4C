@@ -1,3 +1,8 @@
+//
+// Maintainer: XXX YYY
+// XXX
+// XXX
+//
 // This example is sensitive to the choice of solver
 // and to the time intigration scheme
 -----------------------------------------------------------------------TITLE
@@ -200,13 +205,8 @@ MAT 6 MAT_ElastHyper NUMMAT 1 MATIDS 7 DENS 0.001
 MAT 7 ELAST_CoupNeoHooke YOUNG 2.4E6 NUE 0.4
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 5
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC  1.0e4*sin(2*(t)*pi/2.0) t1 0.00 t2 100.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.3 FACTOR 0.0 11598.84
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.3 0.5 FACTOR 11598.84 16131.72
-CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 1.05 FACTOR 16131.72 16131.72
-----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 1.0e4*sin(2*(t)*pi/2.0)
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         26
 NDLINE                          5
@@ -216,13 +216,13 @@ NDVOL                           0
 DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0   0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0   0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0   0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0   0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 --------------------------------------DESIGN SURF VOLUMETRIC FLOW CONDITIONS
 DSURF                           1
-E 2 - 1 POLYNOMIAL FORCED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 Val 1.0 Curve 1 SelfEvaluateNormal 0.0 0.0  1.0 SelfEvaluateCenterOfMass 0.0 0.0  0.0
+E 2 - 1 POLYNOMIAL FORCED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 Val 1.0 Funct 1 SelfEvaluateNormal 0.0 0.0  1.0 SelfEvaluateCenterOfMass 0.0 0.0  0.0
 ------------------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
 DLINE                           1
 E 1 - 1
@@ -277,7 +277,7 @@ E 3 -
 DPOINT                          0
 ------------------DESIGN SURF TOTAL TRACTION CORRECTION CONDITIONS
 DSURF  1
-E 3 - 2 POLYNOMIAL NOTPREBIASED OutFlow WithOutCorrection Period 1.0 Order 2 Harmonics 16 Val 1.0 Curve 1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
+E 3 - 2 POLYNOMIAL NOTPREBIASED OutFlow WithOutCorrection Period 1.0 Order 2 Harmonics 16 Val 1.0 Funct 1 SelfEvaluateNormal 0.0 0.0 1.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
 ----------------DESIGN LINE TOTAL TRACTION CORRECTION BORDER NODES
 DLINE  1
 E 2 - 2

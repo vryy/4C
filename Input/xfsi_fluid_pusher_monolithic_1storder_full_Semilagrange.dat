@@ -157,23 +157,18 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000000000 NUE 0.3 DENS 1.0 THEXPANS 1
 //MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1
 //MAT 3 ELAST_CoupNeoHooke YOUNG 100000000 NUE 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(1.0-cos(2.0*pi*t/1.0)) t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC -0.1*t t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.75*0.5*4.0*pi*pi*(x+0.5) // pressure
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.75*0.5*4.0*pi*pi*(x+0.5) // pressure
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -0.75*0.5*(1.0-cos(2.0*pi*t/1.0))
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.75*0.5*4.0*pi*pi*(x+0.5) // pressure
+COMPONENT 0 FUNCTION -0.75*0.5*(1.0-cos(2.0*pi*t/1.0))
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.75*0.5*4.0*pi*pi*(x+0.5) // pressure
+----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION 0.5*(1.0-cos(2.0*pi*t/1.0))
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE 10
@@ -182,7 +177,7 @@ NDVOL 2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // surface inflow
-E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
@@ -226,16 +221,16 @@ DLINE 2
 // line outflow back
 //E 8 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // top edges side walls
-E 9 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 9 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // bottom edges side walls
-E 10 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 10 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 5
 // surface top
-E 1 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 //E 1 - 6 0 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface bottom
-E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 //E 2 - 6 1 0 0 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface inflow
 //E 3 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
@@ -243,16 +238,16 @@ E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 //E 4 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //E 4 - 6 1 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface front
-E 5 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 //E 5 - 6 1 0 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface back
-E 6 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 //E 6 - 6 1 0 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // right side of structure
-E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -0.75 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+E 9 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -0.75 0.0 0.0 0.0 0.0 0.0 FUNCT 3 0 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 1
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -0.75 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL -0.75 0.0 0.0 0.0 0.0 0.0 FUNCT 3 0 0 0 0 0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT 0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS

@@ -6,7 +6,6 @@
 //
 // necessary defines: BINIO
 //
-
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -125,9 +124,9 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000 NUE 0.0 DENS 0 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t/10 t1 0.0 t2 10
-CURVE1 on EXPR FUNC 0.999 t1 10.0 t2 11
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION v
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0 10 11 DESCRIPTION t/10 0.999
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE 1.9547069624368049e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE -3.0289183129216480e-03 TOLERANCE 1e-8
@@ -140,11 +139,11 @@ NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // slave oben
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1 -0.01 0.0 CURVE 1 none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1 -0.01 0.0 FUNCT 1 0 0
 //                              master
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // master unten
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slave

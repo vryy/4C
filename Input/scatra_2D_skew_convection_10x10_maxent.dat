@@ -53,13 +53,9 @@ NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.04 // Pe_e = 1.25;  diff = conv*h/2/Pe_e
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION cos(pi/6.0) // skew unit convection
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION sin(pi/6.0) // skew unit convection
+COMPONENT 0 FUNCTION cos(pi/6.0) // skew unit convection
+COMPONENT 1 FUNCTION sin(pi/6.0) // skew unit convection
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -74,13 +70,13 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              Body_force
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0 Live Mid
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0 Live Mid
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0 // Line_top
-E 2 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0 // Line_left
-E 3 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0 // Line_bottom
-E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0 // Line_right
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0 // Line_top
+E 2 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0 // Line_left
+E 3 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0 // Line_bottom
+E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0 // Line_right
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1 // Node_topright
 NODE 21 DNODE 2 // Node_topleft

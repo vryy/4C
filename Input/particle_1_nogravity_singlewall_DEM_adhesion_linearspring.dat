@@ -46,9 +46,9 @@ LINEAR_SOLVER                   1
 SOLVER                          UMFPACK
 ----------------------------------------------------------------------FUNCT1
 // initial particle velocity
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0.3
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION -0.15
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.3
+COMPONENT 1 FUNCTION -0.15
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF                          1
 NDPARTICLE                      1

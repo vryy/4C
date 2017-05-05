@@ -110,21 +110,16 @@ MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e6 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 2.0
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1.0/6.0*t t1 0.0 t2 6.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC -6.0/6.0 t1 0.0 t2 60.0
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 4.0
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION 4.0/10*x+3.0
+COMPONENT 0 FUNCTION 4.0/10*x+3.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -1.0
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION -1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 4 500000.0 DESCRIPTION -1.0*0.5*(1-cos((t*pi/2.0))) -1.0*0.5*(1-cos((4*pi/2.0)))
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 124 QUANTITY velx VALUE -2.28943913064115073e-02 TOLERANCE 1e-8
@@ -152,17 +147,17 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // Surface x-
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 CURVE 3 none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 3 0 0
 // Surface x+
-E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface y+
-//E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface y-
-//E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface z+
-//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface z-
-//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           0
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
@@ -997,4 +992,3 @@ NODE 216 COORD 5.0000000000000000e+00 5.0000000000000000e+00 -5.0000000000000000
 125 SOLIDH8 HEX8 173 174 180 179 209 210 216 215 MAT 2 KINEM nonlinear EAS none
 -------------------------------------------------------------------------END
 //                              END
-

@@ -142,12 +142,8 @@ MAT 1 MAT_fluid DYNVISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0 // Re=6.62
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1                          FORWARDFACINGSTEP
+FORWARDFACINGSTEP
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -168,48 +164,48 @@ NDSURF                          6
 NDVOL                           1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 3 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 4 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.05 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.05 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           12
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 3 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 4 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 9 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 10 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 11 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 12 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.05 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 9 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 10 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 11 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 12 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
-E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 3 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 4 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.05 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 --------------------------DESIGN XFEM LEVELSET NAVIER SLIP VOL CONDITIONS
 DVOL 1
-E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0 SURFACE_PROJECTION proj_normal L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1.6 SLIP_CURVE 0 SLIP_FUNCT 0
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 1 BOOLEANTYPE none COMPLEMENTARY 0 SURFACE_PROJECTION proj_normal L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1.6 SLIP_FUNCT 0
 --------------------------DESIGN XFEM ROBIN NEUMANN VOL CONDITIONS
 DVOL 1
-E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------DESIGN XFEM ROBIN DIRICHLET VOL CONDITIONS
 DVOL 1
-E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 545 DNODE 1
 NODE 546 DNODE 2

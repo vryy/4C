@@ -149,21 +149,17 @@ MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.0 // Re=6.62
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial G-function field
-FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.2
+COMPONENT 0 FUNCTION sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.2
 ----------------------------------------------------------------------FUNCT3
 // initial G-function field
-FUNCT3 EXPR 0 0.0 0 FUNCTION -1.0*(x-0.5)
+COMPONENT 0 FUNCTION -1.0*(x-0.5)
 ----------------------------------------------------------------------FUNCT4
 // initial G-function field
-FUNCT4 EXPR 0 0.0 0 FUNCTION 1.0*(y-0.5)
+COMPONENT 0 FUNCTION 1.0*(y-0.5)
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 133 QUANTITY velx VALUE  1.58574482737136851e-03 TOLERANCE 1e-13
 XFLUID DIS fluid NODE 133 QUANTITY vely VALUE -1.58578513567846991e-03 TOLERANCE 1e-13
@@ -189,32 +185,32 @@ DVOL                            0//1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              corners
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //                              pressure_corners
-E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 //                              left_side
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //                              right_side
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //                              top
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 //                              bottom
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              front_back
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 --------------------------DESIGN XFEM LEVELSET NAVIER SLIP VOL CONDITIONS
 DVOL 1
-E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1e12 SLIP_CURVE 0 SLIP_FUNCT 0
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 BOOLEANTYPE none COMPLEMENTARY 0 SURFACE_PROJECTION proj_smoothed L2_PROJECTION_SOLVER 3 ROBIN_DIRICHLET_ID 1 ROBIN_NEUMANN_ID 1 SLIPCOEFFICIENT 1e12 SLIP_FUNCT 0
 --------------------------DESIGN XFEM ROBIN NEUMANN VOL CONDITIONS
 DVOL 1
-E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - ROBIN_NEUMANN_ID 1 NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------DESIGN XFEM ROBIN DIRICHLET VOL CONDITIONS
 DVOL 1
-E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 4 3 0
+E 1 - ROBIN_DIRICHLET_ID 1 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 4 3 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 2 DNODE 1

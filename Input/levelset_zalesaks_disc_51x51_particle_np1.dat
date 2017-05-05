@@ -81,23 +81,18 @@ PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispx VALUE 1.38460116338429556e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispy VALUE -1.78658785637450773e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 26 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
-------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.5 c1 1.0 c2 1.0  // sin curve with zero derivatives
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1 // circular velocity field
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1*(-y) // 0.0100051*(-y)
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.1*x // 0.0100051*x
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.1*(-y) // 0.0100051*(-y)
+COMPONENT 1 FUNCTION 0.1*x // 0.0100051*x
+COMPONENT 2 FUNCTION 0.0
 ------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt(x*x+y*y)-sqrt(0.20)
+COMPONENT 0 FUNCTION sqrt(x*x+y*y)-sqrt(0.20)
 ------------------------------------------------------------FUNCT3
-//FUNCT3 ZALESAKSDISK
-//FUNCT3 EXPR 0 0.0 0 FUNCTION y
-FUNCT3 EXPR 0 0.0 0 FUNCTION sqrt(x*x+y*y)-0.15
+//ZALESAKSDISK
+//FUNCTION y
+COMPONENT 0 FUNCTION sqrt(x*x+y*y)-0.15
 ------------------------------------------------------------FUNCT4
-FUNCT4 EXPR 0 0.0 0 FUNCTION x
+COMPONENT 0 FUNCTION x
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

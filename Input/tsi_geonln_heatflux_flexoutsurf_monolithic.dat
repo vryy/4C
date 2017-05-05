@@ -179,12 +179,10 @@ MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e5 NUE 0.3 DENS 7850 THEXPANS 
 MAT 2 THERM_FourierIso CAPA 3297000 CONDUCT 52
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 5.0 FACTOR 0 1000
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 EXPR 0 0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
+-------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION t*1000/5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          5
@@ -193,37 +191,37 @@ NDVOL                           0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           1
 //                              right_surf_temperature
-E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 20.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 2 2 2 2 2 FUNCT 0 0 0 0 0 0 Live Mid //FUNCT2
+E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 20.0 0.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 Live Mid //FUNCT2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              left_edge_nodes_fixed_xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              right_edge_nodes_fixed_yz
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           5
 //                              left_line_normal_z_fixed_xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              left_line_normal_y_fixed_xyz
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              right_line_normal_z_fixed_yz
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              right_line_normal_y_fixed_yz
-E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              line_lengths_fixed_yz
-E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 //                              left_surf_fixed_xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              top_bottom_surf_normal_y_fixed_y
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              le/ri_surf_normal_z_fixed
-E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
 DSURF                           1
 //                              left_surf_temperature
-E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 28 DNODE 1
 NODE 32 DNODE 1

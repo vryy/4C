@@ -64,7 +64,7 @@ GSTATCONDID_ANODE               0        // unusual case for nightly testing ;-)
 GSTATCONDID_CATHODE             1        // unusual case for nightly testing ;-)
 GSTATCONVTOL                    1e-09
 GSTATCURTOL                     1e-09
-GSTATCURVENO                    3
+GSTATFUNCTNO                    2
 GSTATITEMAX                     10
 GSTAT_LENGTH_CURRENTPATH        0
 MOLARVOLUME                     0
@@ -83,9 +83,9 @@ E 2 -
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 // anodic reaction: i_0 < 0 and alpha < 0 -> i_n = i_0
-E 1 - ID 0 pot  0.0    curve none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Tafel alpha -0.75 i0 -4.0 gamma 0.5 refcon 0.1 dl_spec_cap 0.0 END
+E 1 - ID 0 pot  0.0  funct none  numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Tafel alpha -0.75 i0 -4.0 gamma 0.5 refcon 0.1 dl_spec_cap 0.0 END
 // cathodic reaction: i_0 > 0 and alpha > 0 -> i_n = i_0
-E 2 - ID 1 pot -0.0125 curve none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Tafel alpha +0.25 i0  4.0 gamma 0.5 refcon 0.1 dl_spec_cap 0.0 END
+E 2 - ID 1 pot -0.0125 funct none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Tafel alpha +0.25 i0  4.0 gamma 0.5 refcon 0.1 dl_spec_cap 0.0 END
 -------------------------------------------------------TRANSPORT KNOTVECTORS
 BEGIN                           NURBSPATCH
 ID                              1
@@ -434,18 +434,14 @@ MAT 4 MAT_ion DIFFUSIVITY 0.01065 VALENCE -2.0
 MAT 5 MAT_ion DIFFUSIVITY 0.09312 VALENCE 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 5.0 c2 1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 1.0-sin(t*pi/(5.0*2.0)) t1 0.0 t2 5.0
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC -80.0*t t1 0.0 t2 0.8
-CURVE3 on EXPR FUNC -80.0*((t-0.6)/0.2) t1 0.8 t2 10000.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.1
-FUNCT1 COMPONENT 1 EXPR 0 0 0 FUNCTION 1.1
-FUNCT1 COMPONENT 2 EXPR 0 0 0 FUNCTION 2.0
-FUNCT1 COMPONENT 3 EXPR 0 0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.1
+COMPONENT 1 FUNCTION 1.1
+COMPONENT 2 FUNCTION 2.0
+COMPONENT 3 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.8 10000.0 DESCRIPTION -80*t -80.0*((t-0.6)/0.2)
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 79 QUANTITY phi1 VALUE 1.00014916111923910e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 123 QUANTITY phi1 VALUE 1.13201224877686968e-01 TOLERANCE 1e-10

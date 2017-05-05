@@ -1,3 +1,8 @@
+//
+// Maintainer: XXX YYY
+// XXX
+// XXX
+//
 ==================================================================
 General Data File BACI
 ==================================================================
@@ -3282,15 +3287,14 @@ NODE 1620 DSURFACE 2
 NODE 1632 DSURFACE 2
 NODE 1644 DSURFACE 2
 NODE 1656 DSURFACE 2
-----------------------------------------------------------------------CURVE1
-CURVE 1 on Polygonal T 1.0 BYABSTIME Yes 0 0.07076923 FACTOR 0 5390
-CURVE 1 on Polygonal T 1.0 BYABSTIME Yes 0.07076923 0.1415385 FACTOR 5390 7870
-CURVE 1 on Polygonal T 1.0 BYABSTIME Yes 0.1415385 0.2123077 FACTOR 7870 16250
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 5 TIMES 0 0.07076923 0.1415385 0.2123077 100000 VALUES 0 5390 7870 16250 16250
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------------------------------------END

@@ -96,13 +96,8 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.35 DENS 0.1
 MAT 3 MAT_scatra DIFFUSIVITY 5.00
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2139 QUANTITY dispz VALUE 2.60828498167937316e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 2154 QUANTITY dispz VALUE 2.37974014831854250e-02 TOLERANCE 1e-8
@@ -120,15 +115,15 @@ NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // force1
-E 3 - NUMDOF 3  ONOFF 0 0 1 VAL 0.0  0.0 100.0 CURVE none none none FUNCT 0  0 0 Live Mid
+E 3 - NUMDOF 3  ONOFF 0 0 1 VAL 0.0  0.0 100.0 FUNCT 0  0 0 Live Mid
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // scatra
-E 1 - NUMDOF 1  ONOFF 1  VAL 10.0  CURVE none  FUNCT 0
+E 1 - NUMDOF 1  ONOFF 1  VAL 10.0  FUNCT 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // fixed_struct
-E 4 - NUMDOF 3  ONOFF 1 1 1 VAL 0.0  0.0 0.0 CURVE none none none FUNCT 0  0 0
+E 4 - NUMDOF 3  ONOFF 1 1 1 VAL 0.0  0.0 0.0 FUNCT 0  0 0
 -------------------------------DESIGN SSI COUPLING SURF CONDITIONS
 DSURF  2
 // surface_scatra

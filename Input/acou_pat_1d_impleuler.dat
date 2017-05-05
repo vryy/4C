@@ -134,12 +134,8 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 //MAT 2 MAT_Acoustic DENSITY 1.0 C 1.0
 MAT 1 MAT_Acoustic DENSITY 1000.0 C 1500.0
 MAT 2 MAT_scatra DIFFUSIVITY 0.00027 REACOEFF 200
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 0.1*exp(4.1*(-x^2.0-y^2.0))
-----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 0.1*exp(4.1*(-x^2.0-y^2.0))
 ------------------------------------------------RESULT DESCRIPTION
 ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE 3.36592970994635254e-01 TOLERANCE 1e-6
 ACOUSTIC DIS acou NODE 7 QUANTITY pressure VALUE 4.12792936804437904e-01 TOLERANCE 1e-6
@@ -157,9 +153,9 @@ DLINE 1
 E 1 -
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  3
-E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0
-E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0
-E 4 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0.0
+E 3 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0.0
+E 4 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0.0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  0
 -----------------------------------------------DNODE-NODE TOPOLOGY

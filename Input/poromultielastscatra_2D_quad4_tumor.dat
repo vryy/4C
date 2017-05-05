@@ -159,29 +159,26 @@ SRC_FIELD structure SRC_MAT 3 TAR_FIELD porofluid TAR_MAT 1
 SRC_FIELD structure SRC_MAT 4 TAR_FIELD porofluid TAR_MAT 2
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD scatra TAR_MAT 5
 SRC_FIELD structure SRC_MAT 4 TAR_FIELD scatra TAR_MAT 5
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1000.0*0.5*(1-cos(t*pi/1.0))   t1 0.0 t2 1.0
-CURVE1 on EXPR FUNC 1000.0                         t1 1.0 t2 1000.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //10.1985e3
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //-20.397e3
+COMPONENT 0 FUNCTION 0.0 //10.1985e3
+COMPONENT 1 FUNCTION 0.0 //-20.397e3
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 4.2e-6
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 4.2e-6
+COMPONENT 0 FUNCTION 4.2e-6
+COMPONENT 1 FUNCTION 4.2e-6
 ----------------------------------------------------------------------FUNCT4
-FUNCT4 COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1
+COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1
 ----------------------------------------------------------------------FUNCT5
-FUNCT5 COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (1e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))+0.5*heaviside(p1-1.3e6))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
+COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (1e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))+0.5*heaviside(p1-1.3e6))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
 ----------------------------------------------------------------------FUNCT6
-FUNCT6 COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (2e-7*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1)+3e-7*sin(0.5*pi*phi1/4.2e-6))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
+COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (2e-7*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1)+3e-7*sin(0.5*pi*phi1/4.2e-6))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
 ----------------------------------------------------------------------FUNCT7
-FUNCT7 COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
+COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
 ----------------------------------------------------------------------FUNCT8
-FUNCT8 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 4.2e-6
-FUNCT8 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 4.2e-6
+COMPONENT 1 FUNCTION 0.0
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 89 QUANTITY dispx VALUE 1.74351428949006041e-07 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 341 QUANTITY dispx VALUE 2.63521293257938154e-07 TOLERANCE 1e-12
@@ -202,21 +199,21 @@ NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // point_center
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE 0 0  FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // line_left
-E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE 0 0  FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 FUNCT 0 0
 // line_bottom
-E 2 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE 0 0  FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 ---------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE  1
 // line_curved
-E 3 - NUMDOF 2 ONOFF 1 0 VAL 4.2e-6 0.0 CURVE 0 0 FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 0 VAL 4.2e-6 0.0 FUNCT 0 0
 --------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE  1
 // line_curved
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE 0 0 FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  4
 // inner_surf

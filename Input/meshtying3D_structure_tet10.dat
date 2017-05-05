@@ -71,8 +71,9 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 7.8e-6
 MAT 2 ELAST_CoupNeoHooke YOUNG 10 NUE 0.3
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 0.2
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 2000 VALUES 0 0.2 0.2
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 64 QUANTITY dispx VALUE 9.37823899610420314e-03 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 64 QUANTITY dispy VALUE 9.21502342741478339e-03 TOLERANCE 1e-10
@@ -87,8 +88,8 @@ NDSURF                          4
 NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE 1 1 1 FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 1 1 1
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              slave

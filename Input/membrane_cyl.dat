@@ -225,8 +225,9 @@ MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0
 MAT 2 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.49
 MAT 3 ELAST_CoupAnisoExpo K1 100.0 K2 2.0 K1COMP 1.0 K2COMP 1.0 GAMMA 0.0 INIT 1
 -----------------------------------------------CLONING MATERIAL MAP
--------------------------------------------------------------CURVE1
-CURVE 1 on EXPR FUNC t t1 0.0 t2 1.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 1000 VALUES 0 1 1
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 2.48539402165821732 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
@@ -237,13 +238,13 @@ NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // surf
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.3 0.0 0.0 CURVE 1 none none FUNCT 0 0 0 orthopressure
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.3 0.0 0.0 FUNCT 1 0 0 orthopressure
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // curve-x
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // curve+x
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    34 DNODE 1
 NODE    37 DNODE 2

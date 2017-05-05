@@ -105,16 +105,11 @@ MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.5
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 //MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2.0e3 NUE 0.3 DENS 0.5
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 // Tmax=4
-CURVE1 on EXPR FUNC -1.0 t1 2.0 t2 2000.0 // Tmax=4
-//CURVE1 on EXPR FUNC 1-exp(-t^2/0.5) t1 0.0 t2 200000.0 // Tmax=4
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.4
+COMPONENT 0 FUNCTION 0.4
 ----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2.0 500000.0 DESCRIPTION -1.0*0.5*(1-cos((t*pi/2.0))) -1
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
@@ -133,23 +128,23 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // Point x+y+
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 2 0 0
 // Point x-y+
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Point x-y-
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Point x+y-
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 2 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 //                              Line_x+
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 2 0 0
 //                              Line_x-
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              Line_y+
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              Line_y-
-E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
 DLINE                           2
 //                              Line_x+

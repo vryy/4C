@@ -99,20 +99,20 @@ E 2 - 1 Master Inactive FrCoeffOrBound 0.2
 E 7 - 1 Slave Inactive FrCoeffOrBound 0.2
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 CURVE 2 1 0 FUNCT 0 0 0
+//E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 2 1 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.2 FACTOR 0.0 -1.4
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.2 10.0 FACTOR -1.4 -1.4
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.2 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.2 10.0 FACTOR 0.0 8.0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1.2 10 VALUES 0 -1.4 -1.4
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1.2 10 VALUES 0 0 8
 --------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                           16
 NDLINE                            24

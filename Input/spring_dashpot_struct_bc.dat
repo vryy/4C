@@ -113,15 +113,8 @@ MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1000.0 NUE 0.3 DENS 1.0e-6
 MAT 5 MAT_Struct_StVenantKirchhoff YOUNG 1000.0 NUE 0.3 DENS 1.0e-6
 MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 1000.0 NUE 0.3 DENS 1.0e-6
 -----------------------------------------------CLONING MATERIAL MAP
--------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 3.0
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION 3*t
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 6.00095446623919004e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE 6.00095386005442988e-01 TOLERANCE 1e-6
@@ -136,12 +129,12 @@ NDSURF  18
 NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  6
-E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 8 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 10 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 11 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 8 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 10 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 11 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 -----------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF  12
 E 1 - NUMDOF 3 ONOFF 1 0 0 STIFF 5.0 0.0 0.0 VISCO 0.0 0.0 0.0 DISPLOFFSET 0.0 0.0 0.0 DIRECTION refsurfnormal COUPLING none

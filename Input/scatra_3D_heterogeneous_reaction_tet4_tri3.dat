@@ -80,16 +80,13 @@ MAT 23 MAT_scatra_reaction NUMSCAL 5 STOICH 1 -1 0 -1 0 REACCOEFF 0.03 COUPLING 
 MAT 24 MAT_scatra_reaction NUMSCAL 5 STOICH 0 0 -1 1 -1 REACCOEFF 0.01 COUPLING simple_multiplicative ROLE 0 0 1 0 1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD scatra TAR_MAT 4
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 2.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 3.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 2.0
+COMPONENT 2 FUNCTION 3.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 40 QUANTITY phi  VALUE 9.51799984821305678e-01  TOLERANCE 1e-8 // membrane
 SCATRA DIS scatra NODE 49 QUANTITY phi2 VALUE 2.09972633091283001e+00  TOLERANCE 1e-8 // membrane

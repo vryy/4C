@@ -259,21 +259,16 @@ SCATRA DIS scatra NODE 3798 QUANTITY phi3 VALUE 7.22765478570622975e+01 TOLERANC
 SCATRA DIS scatra NODE 3845 QUANTITY phi5 VALUE 1.28241685198337119e+00 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 3893 QUANTITY phi5 VALUE 5.59398625840065056e-01 TOLERANCE 1e-8
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 1 TOLERANCE 1.0e-12
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -6.0/6.0 t1 0.0 t2 60.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 100.1
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.1
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT1 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0.5
+COMPONENT 0 FUNCTION 0.1
+COMPONENT 1 FUNCTION 100.1
+COMPONENT 2 FUNCTION 0.1
+COMPONENT 3 FUNCTION 1.0
+COMPONENT 4 FUNCTION 0.5
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION 0.5
+COMPONENT 0 FUNCTION 0.5
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION -1/121*(y-11)*(y+11)
+COMPONENT 0 FUNCTION -1/121*(y-11)*(y+11)
 ----------------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
@@ -283,47 +278,47 @@ NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  8
 // ECM_left
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // ECM_right
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // ECM_top
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // ECM_bottom
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_top
-E 6 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_bottom
-E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_left
-E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_right
-E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // ECM
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE  2
 // ECM_right
-E 2 - NUMDOF 5 ONOFF 1 1 1 0 0 VAL 0.1 100.1 0.1 1.0 0.5 CURVE none none none none none FUNCT 0 0 0 0 0
+E 2 - NUMDOF 5 ONOFF 1 1 1 0 0 VAL 0.1 100.1 0.1 1.0 0.5 FUNCT 0 0 0 0 0
 // cell_right
-E 5 - NUMDOF 5 ONOFF 1 0 0 0 0 VAL 100.0 0.0 0.0 0.0 0.0 CURVE none none none none none FUNCT 0 0 0 0 0
+E 5 - NUMDOF 5 ONOFF 1 0 0 0 0 VAL 100.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0
 --------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE  7
 // ECM_right
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL -1.0 0.0 0.0 CURVE none none none FUNCT 3 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL -1.0 0.0 0.0 FUNCT 3 0 0
 // ECM_top
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // ECM_bottom
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_top
-E 6 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_bottom
-E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_left
-E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // cell_right
-E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  1
 // ECM

@@ -72,14 +72,14 @@ TEMPERATURE                     300.0
 GALVANOSTATIC                   Yes
 GSTAT_APPROX_ELECT_RESIST       effective_length_with_initial_cond
 GSTATCONVTOL                    1e-6
-GSTATCURVENO                    4
+GSTATFUNCTNO                    4
 GSTATITEMAX                     20
 MOVINGBOUNDARY                  fully-transient
 MOVBOUNDARYITEMAX               10
 MOVBOUNDARYCONVTOL              1e-10
 MOVBOUNDARYTHETA                1.0                           // backward-Euler style
 MOLARVOLUME                     10.0                          // 7.11E-3 // molar volume of copper: V_m = M/rho [mm^3/\mu mol]
-                                                              // Wikipedia: 7,11 x 10 a 6 m3/mol
+// Wikipedia: 7,11 x 10 a 6 m3/mol
 EQUPOT                          ENC
 BLOCKPRECOND                    Yes
 -----------------------------------------------------------------ALE DYNAMIC
@@ -209,43 +209,24 @@ MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 6
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 1.0
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC (0.5*cos(pi*t/1.0))+0.5 t1 0.0 t2 1.0
-----------------------------------------------------------------------CURVE4
-CURVE4 on EXPR FUNC 0.0 t1 0.0 t2 0.001
-CURVE4 on EXPR FUNC (-0.0125)*((-0.5)*cos(pi*(t-0.001)/0.00005)+0.5) t1 0.001 t2 0.00105
-CURVE4 on EXPR FUNC -0.0125 t1 0.00105 t2 0.003
-CURVE4 on EXPR FUNC (-0.0125)*((0.5*cos(pi*(t-0.003)/0.00005))+0.5) t1 0.003 t2 0.00305
-CURVE4 on EXPR FUNC 0.0 t1 0.00305 t2 0.004
-CURVE4 on EXPR FUNC 0.0 t1 0.004 t2 0.005 // reverse pulse with half of the current !!!
-CURVE4 on EXPR FUNC 0.5*(0.0125)*((-0.5)*cos(pi*(t-0.005)/0.00005)+0.5) t1 0.005 t2 0.00505
-CURVE4 on EXPR FUNC 0.5*0.0125 t1 0.00505 t2 0.007
-CURVE4 on EXPR FUNC 0.5*(0.0125)*((0.5*cos(pi*(t-0.007)/0.00005))+0.5) t1 0.007 t2 0.00705
-CURVE4 on EXPR FUNC 0.0 t1 0.00705 t2 0.008
-CURVE4 on PeriodicRepetition Period 0.008 t1 0.008 t2 20000.0
-----------------------------------------------------------------------CURVE5
-CURVE5                          on PhysiologicalWaveform InterpolType Fourier Period 0.004 Flowrate -0.0125 Samplingpoints 160 Arrayread 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
-//                                                             // for use of Fourier representation of pulse curve computed from set of total current values
-//                                                             // only activated for testing input reading of CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0*(-161.84337)*y*y
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0*(-161.84337)*y*y
+COMPONENT 2 FUNCTION 0.0
 // RDE velocity field was deactivated for this example!!!
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.348
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2.408
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 4.12
-FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.348
+COMPONENT 1 FUNCTION 2.408
+COMPONENT 2 FUNCTION 4.12
+COMPONENT 3 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 11 TIMES 0 0.001 0.00105 0.003 0.00305 0.004 0.005 0.00505 0.007 0.00705 0.008 DESCRIPTION 0 (-0.0125)*((-0.5)*cos(pi*(t-0.001)/0.00005)+0.5) -0.0125 (-0.0125)*((0.5*cos(pi*(t-0.003)/0.00005))+0.5) 0.0 0 0.5*(0.0125)*((-0.5)*cos(pi*(t-0.005)/0.00005)+0.5) 0.5*0.0125 0.5*(0.0125)*((0.5*cos(pi*(t-0.007)/0.00005))+0.5) 0 PERIODIC Yes T1 0.008 T2 20000
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
 FLUID DIS fluid NODE 1 QUANTITY vely VALUE -4.04852104305662465e-07 TOLERANCE 5e-16
@@ -257,7 +238,7 @@ SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_z VALUE 0.00000000000000000e+0
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.47800045480743891e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 2.40788619118417913e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 1 QUANTITY phi3 VALUE 4.12017229140687213e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE -8.78603918541050412e-07 TOLERANCE 1e-16
+SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE -8.78603918541050412e-07 TOLERANCE 1e-15
 SCATRA DIS scatra NODE 28 QUANTITY phi1 VALUE 3.47426313233420547e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 28 QUANTITY phi4 VALUE -2.03744711154004160e-06 TOLERANCE 1e-15
 ALE DIS ale NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
@@ -271,33 +252,33 @@ NDSURF                          2
 NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
-E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // no velocity in x and z-direction at all nodes!!!
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
 DPOINT                          0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
-E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // no ALE-displacement in x and z-direction at all nodes!!!
 ------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
 DPOINT                          0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
 //                              anode
-E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.348 2.408 4.12 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.348 2.408 4.12 0.0 FUNCT 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           1
 E 2 - 1
 ---------------------------------ELECTRODE BOUNDARY KINETICS SURF CONDITIONS
 DSURF                           1
 //                              cathode
-E 2 - ID 0 pot -0.0 curve none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 1.0 alpha_c 0.4 i0 51.0 gamma 0.75 refcon 0.348 dl_spec_cap 0.0 END // no capacity here 0.25
+E 2 - ID 0 pot -0.0 funct none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 1.0 alpha_c 0.4 i0 51.0 gamma 0.75 refcon 0.348 dl_spec_cap 0.0 END // no capacity here 0.25
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           1
 E 2 -

@@ -81,11 +81,10 @@ SIMPLE_DAMPING                  1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Acoustic DENSITY 1000.0 C 1500.0
 MAT 2 MAT_Acoustic DENSITY 1000.0 C 1500.0
-----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 0
+COMPONENT 0 FUNCTION 0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0.0 0.0 0.0 FUNCTION exp(1000000*(-x^2.0-y^2.0))
+COMPONENT 0 FUNCTION exp(1000000*(-x^2.0-y^2.0))
 ------------------------------------------------RESULT DESCRIPTION
 ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE 1.98228641006591877e-01 TOLERANCE 1e-5
 ACOUSTIC DIS acou NODE 21 QUANTITY pressure VALUE 9.99975722704322334e-01 TOLERANCE 1e-5
@@ -104,7 +103,7 @@ E 4 -
 //E 2 -
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
-E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT none
+E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT none
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1

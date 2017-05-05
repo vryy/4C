@@ -102,23 +102,20 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 3 END
-MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 1 TRANSNR 2 THERMFAC 0 COND 3 END
-----------------------------------------------------------------------CURVE1
-// diffusion coefficient
-CURVE1 on EXPR FUNC (1.0*0.0005*0.001-(-1.0)*0.0005*0.001)/(1.0*0.0005-(-1.0)*0.001) t1 0.0 t2 1000
-----------------------------------------------------------------------CURVE2
-// transference number
-CURVE2 on EXPR FUNC 1.0*0.0005/(1.0*0.0005-(-1.0)*0.001) t1 0.0 t2 1000
-----------------------------------------------------------------------CURVE3
-// conductivity
-CURVE3 on EXPR FUNC 96485.3399/(8.314472*298.15)*96485.3399*(0.0005-(-1)*0.001)*1.0*t t1 0.0 t2 1000
+MAT 3 MAT_newman VALENCE 1.0 DIFFCOEF 3 TRANSNR 4 THERMFAC 0 COND 5 END
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0+((5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2)))
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.5 // potential field -> integral of phi in domain will be always kept to 0.5, since integral over increments will be enforced to have integral value of zero!!!
+COMPONENT 0 FUNCTION 1.0+((5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2)))
+COMPONENT 1 FUNCTION 0.5 // potential field -> integral of phi in domain will be always kept to 0.5, since integral over increments will be enforced to have integral value of zero!!!
+------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION (1.0*0.0005*0.001-(-1.0)*0.0005*0.001)/(1.0*0.0005-(-1.0)*0.001)
+------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION 1.0*0.0005/(1.0*0.0005-(-1.0)*0.001)
+------------------------------------------------------------FUNCT5
+COMPONENT 0 FUNCTION 96485.3399/(8.314472*298.15)*96485.3399*(0.0005-(-1)*0.001)*1.0*t
 ----------------------------------------------------------RESULT DESCRIPTION
 // result test for doing 2steps (one cycle):
 // values below are identical to scatra version of this test case and must be fulfilled!!!

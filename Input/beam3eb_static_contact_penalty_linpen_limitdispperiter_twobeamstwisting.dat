@@ -2,7 +2,7 @@
 // Maintainer: Maximilian Grill
 //
 ==================================================================
-                        General Data File CCARAT
+General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
 Test case for small-angle-contact with analytical solution
@@ -57,7 +57,6 @@ BEAMS_PARSHIFTANGLE2            90
 BEAMS_SEGANGLE                  1.0
 BEAMS_NUMINTEGRATIONINTERVAL    1
 BEAMS_PENALTYLAW                LinPen
-
 // needed for beam_contact_manager only
 BEAMS_DEBUG                     No // Yes
 BEAMS_MAXDISISCALEFAC           -1.0
@@ -85,10 +84,10 @@ NDSURF  0
 NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
-E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0        CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 3 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0        CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 2 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL -9.4999999999999998e-03 9.4999999999999998e-03 4.9647222609833896e-02 0.0 0.0 0.0 CURVE 1 2 3 none none none FUNCT 0 0 0 0 0 0
-E 4 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 9.4999999999999998e-03 -9.4999999999999998e-03 4.9647222609833896e-02 0.0 0.0 0.0 CURVE 1 2 3 none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0         FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0         FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL -9.4999999999999998e-03 9.4999999999999998e-03 4.9647222609833896e-02 0.0 0.0 0.0 FUNCT 1 2 3 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 1 1 0 0 VAL 9.4999999999999998e-03 -9.4999999999999998e-03 4.9647222609833896e-02 0.0 0.0 0.0 FUNCT 1 2 3 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE       1 DNODE 1
 NODE       9 DNODE 2
@@ -132,13 +131,15 @@ NODE            18    COORD -0.0095     0     5
 16 BEAM3EB   LIN2       17      18 MAT 1
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_BeamKirchhoffTorsionFreeElastHyper  YOUNG 1e+09 DENS 0.001 CROSSAREA 3.1415926535897936e-04 MOMIN  7.8539816339744844e-09
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1.0-cos(0.25*2*pi*(t-1.0)/1.0) t1 1.0 t2 5.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC sin(0.25*2*pi*(t-1.0)/1.0) t1 1.0 t2 5.0
-----------------------------------------------------------------------CURVE3
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 1.0 1.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 5.0 DESCRIPTION 0 1.0-cos(0.25*2*pi*(t-1.0)/1.0)
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 5.0 DESCRIPTION 0 sin(0.25*2*pi*(t-1.0)/1.0)
+----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 5.0 VALUES 0.0 1.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 //Results with ANS and 4 GP
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -1.90042359362107387e-02 TOLERANCE 1e-8

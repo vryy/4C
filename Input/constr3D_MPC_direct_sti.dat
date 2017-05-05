@@ -66,23 +66,12 @@ SOLVER                          UMFPACK
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0E4 NUE 0.49 DENS 1.0
 MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0E4 NUE 0.49 DENS 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 0.001
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 1000 FACTOR 0.0 0.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 25 FACTOR 1 0.675
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 25.0 1000 FACTOR 0.675 0.675
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC sin(2*(t)*pi/10) t1 0.0 t2 10.0
-----------------------------------------------------------------------CURVE4
-CURVE4 on Polygonal T 0.0 BYABSTIME Yes 0.0 25 FACTOR 1 1
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION 2*x
+COMPONENT 0 FUNCTION 2*x
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0 0 FUNCTION -y
+COMPONENT 0 FUNCTION -y
 ----------------------------------------------------------------------FUNCT3
-//FUNCT3 EXPR 0 0 0 FUNCTION (x*x/100-1)*(x*x/100-1)
+COMPONENT 0 FUNCTION sin(2*(t)*pi/10) t1 0.0 t2 10.0
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
@@ -92,7 +81,7 @@ FUNCT2 EXPR 0 0 0 FUNCTION -y
 DSURF                           1
 E 1 - 1 0.01 3 0.0 2 3 4 abs
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE                           0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
@@ -100,22 +89,22 @@ NDLINE                          0
 NDSURF                          2
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DPOINT                          3
 //connect2
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 //connect3
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 //connect4
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DSURF                           0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL                            0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL NSURF

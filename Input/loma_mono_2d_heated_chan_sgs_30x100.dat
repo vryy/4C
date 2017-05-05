@@ -206,28 +206,23 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 MAT 1 MAT_sutherland REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 SHC 1004.5 PRANUM 1.0 THERMPRESS 98100.0 GASCON 287.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 1
-----------------------------------------------------------------------CURVE1
-// c1: start-up period, c2: ratio of initial and final value
-CURVE1 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 15.0 c2 0.666666666667
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 //inflow velocity profile with U_max = 0.15
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.6*y*(1.0-y)
+COMPONENT 0 FUNCTION 0.6*y*(1.0-y)
 ----------------------------------------------------------------------FUNCT2
 //initial velocity field, profile with U_max = 0.15
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.6*y*(1.0-y)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.6*y*(1.0-y)
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
 //constant initial temperature field at 293 K
-FUNCT3 EXPR 0 0.0 0 FUNCTION 293.0 //initial temperature field
+COMPONENT 0 FUNCTION 293.0 //initial temperature field
 ----------------------------------------------------------------------FUNCT4
 // hydrostatic pressure distribution at outflow boundary
-FUNCT4 EXPR 0 0.0 0 FUNCTION 1.0-y
+COMPONENT 0 FUNCTION 1.0-y
 ----------------------------------------------------------------------FUNCT5
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 15.01 500000.0 DESCRIPTION ((1-0.666666666667)/15)*t+0.666666666667 1
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         6
@@ -237,27 +232,27 @@ NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           6
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 6 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 1 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1 0 0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 //DLINE                         0
 DLINE                           1
-E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -9.81 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 4 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -9.81 0.0 0.0 0.0 0.0 0.0 FUNCT 4 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 //DSURF                         0
 DSURF                           1
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -9.81 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Dead Mid
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -9.81 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Dead Mid
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           2
-E 2 - NUMDOF 1 ONOFF 1 VAL 439.5 CURVE 1 FUNCT 0
-E 6 - NUMDOF 1 ONOFF 1 VAL 293.0 CURVE none FUNCT 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 439.5 FUNCT 5
+E 6 - NUMDOF 1 ONOFF 1 VAL 293.0 FUNCT 0
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 //                              DOBJECT
 DLINE                           1

@@ -126,7 +126,7 @@ NDSURF  0
 NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
-E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0.0
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
 ----------------------------------DESIGN ABSORBING LINE CONDITIONS
 DLINE  1
 E 3 -

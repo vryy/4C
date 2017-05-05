@@ -69,8 +69,9 @@ THETA                           0.66
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 2.0
 MAT 2 ELAST_CoupNeoHooke YOUNG 2.0e6 NUE 0.3
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2.0 500000.0 DESCRIPTION -1.0*0.5*(1-cos((t*pi/2.0))) -1.0*0.5*(1-cos((2*pi/2.0)))
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 4433 QUANTITY dispz VALUE -1.35222727958044048e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 3876 QUANTITY dispz VALUE -2.44717418524232344e-01 TOLERANCE 1e-8
@@ -82,17 +83,17 @@ NDSURF                          32
 NDVOL                           5
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           7
-//E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 21 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 29 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 CURVE none none 1 FUNCT 0 0 0
-E 14 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 CURVE none none 1 FUNCT 0 0 0
-E 22 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 CURVE none none 1 FUNCT 0 0 0
-E 30 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 CURVE none none 1 FUNCT 0 0 0
+//E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 21 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 29 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 FUNCT 0 0 1
+E 14 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 FUNCT 0 0 1
+E 22 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 FUNCT 0 0 1
+E 30 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 10.0 FUNCT 0 0 1
 -----------------------------------------------DESIGN SURF NURBS LS DIRICH CONDITIONS
 DSURF                           1
-E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------------------------NODE COORDS
 CP 1 COORD +2.000000e+00 +0.000000e+00 -1.046667e-01 +1.000000e+00
 CP 2 COORD +2.000000e+00 +3.004422e-01 -1.046667e-01 +9.414214e-01
@@ -21271,6 +21272,5 @@ TYPE                            Periodic
 +1.06667
 +1.13333
 END NURBSPATCH
-
 -------------------------------------------------------------------------END
 //                              END

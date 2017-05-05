@@ -82,8 +82,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 100
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 1.0 1.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 1
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         9
 NDLINE                          0
@@ -92,29 +92,29 @@ NDVOL                           0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          5
 //                              node_force_z_1
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 //                              node_force_z_2
-E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -2.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -2.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 //                              node_force_z_2.9101562500
-E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -2.9101562500 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -2.9101562500 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 //                              node_force_z_3.6835937500
-E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -3.6835937500 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -3.6835937500 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 //                              node_force_z_0.24609375000
-E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -0.24609375000 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 5 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -0.24609375000 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              surf_force_1
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 //                              D_all
-E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              D_xz
-E 7 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              D_yz
-E 8 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              D_z
-E 9 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 9 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              slave

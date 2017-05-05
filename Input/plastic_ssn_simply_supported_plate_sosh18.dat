@@ -70,8 +70,8 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 248
 MAT 2 ELAST_CoupNeoHooke YOUNG 6.9e4 NUE 0.3
-----------------------------------------------------------------------CURVE1
-CURVE 1 on Polygonal T 0 BYABSTIME Yes 0 1 FACTOR 0 60
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 60*t
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          2
@@ -79,19 +79,19 @@ NDSURF                          3
 NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 +1.0e-2 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 +1.0e-2 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
-E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0 0 0 CURVE none none none FUNCT none none none
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0 0 0 CURVE none none none FUNCT none none none
+E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 0 0 0 FUNCT none none none
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0 0 0 FUNCT none none none
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0 0 0 CURVE none none none FUNCT none none none
-E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0 0 0 CURVE none none none FUNCT none none none
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0 0 0 FUNCT none none none
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0 0 0 FUNCT none none none
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
-E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0 0 0 CURVE none none none FUNCT none none none
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0 0 0 CURVE none none none FUNCT none none none
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0 0 0 FUNCT none none none
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0 0 0 FUNCT none none none
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 17 DNODE 1
 NODE 2 DNODE 2

@@ -189,23 +189,19 @@ GHOST_PENALTY_2nd_STAB          no
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50.0 NUE 0.0 DENS 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(1.0+sin(pi/1.0*t-pi/2.0)) t1 0.0 t2 1.0 // t2=1.0 //dx=0.3+0.8(1+sin(2/3*pi*(t-0.75)))
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1/0.3)*(1/0.3)*(0.6-y)*(y)
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0 FUNCTION (1/0.3)*(1/0.3)*(0.6-y)*(y)
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION 0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1/0.3)*(1/0.3)*(0.6-y)*(y)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
+COMPONENT 0 FUNCTION (1/0.3)*(1/0.3)*(0.6-y)*(y)
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION 0
 ----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 5000.0 DESCRIPTION 0.5*(1.0+sin(pi/1.0*t-pi/2.0)) 0.5*(1.0+sin(pi/1.0*1-pi/2.0))
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0
@@ -214,23 +210,23 @@ NDVOL 2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 2
 // Fluid_left
-E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // Fluid_right
-E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 3
 // Fluid_front_and_back
-E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // Fluid_top
-E 4 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 0 3 0 0 0 0
 // Fluid_bottom
-E 5 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 FUNCT 0 3 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 2
 // Fluid_volume
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // structure_volume
-E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF 1
 // FSI

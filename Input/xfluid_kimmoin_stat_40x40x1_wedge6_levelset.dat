@@ -148,25 +148,13 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1.0+sin(2.0*pi/3.0*(t-0.75)) t1 0.0 t2 100.0 // displacement curve
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC sin(t*pi/2.0) t1 0.0 t2 1.0 //100.0
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC 2.0*pi/3.0*cos(2.0*pi/3.0*(t-0.75)) t1 0.0 t2 100.0 // velocity curve
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 KIMMOIN-RHS MAT 1 ISSTAT 1 ISSTOKES 0
+KIMMOIN-RHS MAT 1 ISSTAT 1 ISSTOKES 0
 ----------------------------------FUNCT2 // exact velocity/pressure solution
-FUNCT2                          KIMMOIN-UP MAT 1 ISSTAT 1
+KIMMOIN-UP MAT 1 ISSTAT 1
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION -1.0*(sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.45)
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+FUNCTION -1.0*(sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.45)
 ----------------------------------------------------------RESULT DESCRIPTION
-
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0
@@ -175,11 +163,11 @@ NDVOL 3
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 1
 // fluid_volume
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL 1
 // fluid_volume
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 2 2 2 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 2 2 2 0 0 0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL 1
 // fluid_volume
@@ -187,7 +175,7 @@ E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 --------------------------DESIGN XFEM LEVELSET WEAK DIRICHLET VOL CONDITIONS
 DVOL 1
 // fluid_volume
-E 1 - COUPLINGID 1 LEVELSETFIELDNO 3 LEVELSETCURVE none BOOLEANTYPE none COMPLEMENTARY 0 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
+E 1 - COUPLINGID 1 LEVELSETFIELDNO 3 BOOLEANTYPE none COMPLEMENTARY 0 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 2 2 2
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

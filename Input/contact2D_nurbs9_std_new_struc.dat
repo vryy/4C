@@ -94,14 +94,14 @@ NDLINE                          8
 NDSURF                          2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
  DPOINT                          0
-// E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-// E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
-// E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
-// E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+// E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
-E 6 - NUMDOF 2 ONOFF 1 1 VAL -0.3 -0.31 CURVE 2 1 FUNCT 0 0
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 6 - NUMDOF 2 ONOFF 1 1 VAL -0.3 -0.31 FUNCT 2 1
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           2
 //E 2 - 1 Slave Inactive FrCoeffOrBound 0.1
@@ -1077,17 +1077,12 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.01
 MAT 3 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.01
 MAT 4 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
-----------------------------------------------------------------------CURVE1
-//CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 10.0 c2 1.0
-//CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 // Tmax=4
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.4 FACTOR 0.0 1.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.4 1.0 FACTOR 1.0 1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.4 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.4 1.0 FACTOR 0.0 2.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.4 1 100 VALUES 0 1 1 1
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.4 1 100 VALUES 0 0 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 93 QUANTITY dispx VALUE 4.44133505960117927e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 94 QUANTITY dispx VALUE 6.37983541959486703e-03 TOLERANCE 1e-8

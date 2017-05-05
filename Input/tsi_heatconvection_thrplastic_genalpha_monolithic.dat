@@ -255,13 +255,8 @@ MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 2.1e08 NUE 0.3 DENS 7.85e-06 THEXPANS 
 MAT 2 THERM_FourierIso CAPA 6.445 CONDUCT 1031.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/4)-(pi/2)))+0.5 t1 0.0 t2 4.0 // Tmax=4
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 273.15 //0°C
+COMPONENT 0 FUNCTION 273.15 //0°C
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -277,7 +272,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // STR left T_xx=0
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 --------------------------------------DESIGN POINT THERMO NEUMANN CONDITIONS
@@ -287,15 +282,15 @@ DLINE                           0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           5
 // No THR heatflux front z=2
-E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux upper surf y=4
-E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux right surf x=6
-E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux lower surf y=0
-E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux back z=-2.0
-E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
@@ -305,11 +300,11 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // No STR Neumann right surf x=6
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 // STR fix vol in y,z
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------DESIGN POINT THERMO DIRICH CONDITIONS
 DPOINT                          0
 ----------------------------------------DESIGN LINE THERMO DIRICH CONDITIONS
@@ -325,7 +320,7 @@ DLINE                           0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           1
 // THR left surf heat convection
-E 8 - Tempnp coeff -6.444497425 surtemp 373.15 surtempcurve none curve none // 1
+E 8 - Tempnp coeff -6.444497425 surtemp 373.15 surtempfunct 0 funct 0 // 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

@@ -1,7 +1,7 @@
 //
-// Maintainer: Matthias Mayr
-// mayr@mhpc.mw.tum.de
-// 089 - 289-10362
+// Maintainer: Andrea La Spina
+// laspina@lnm.mw.tum.de
+// 089 - 289-15265
 //
 -------------------------------------------------------------TITLE
 pure ale mesh motion problem in 2D using the solid formulation
@@ -38,8 +38,8 @@ RESULTSEVRY                     1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
--------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0.0 t2 1.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
 -------------------------------------------------RESULT DESCRIPTION
 ALE DIS ale NODE 3 QUANTITY dispx VALUE 5.0e-01 TOLERANCE 1e-12
 ALE DIS ale NODE 3 QUANTITY dispy VALUE 2.5e-01 TOLERANCE 1e-12
@@ -51,9 +51,9 @@ NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // fixed
-E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 // moved
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 CURVE none 1 FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 FUNCT 0 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    2 DNODE 1

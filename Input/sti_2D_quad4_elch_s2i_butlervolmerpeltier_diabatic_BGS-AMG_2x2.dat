@@ -69,19 +69,19 @@ MAT 8 MAT_soret CAPA 25200 CONDUCT 1.e3 SORET 1.0
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2   // electrolyte
 SRC_FIELD scatra SRC_MAT 5 TAR_FIELD thermo TAR_MAT 7   // anode
 SRC_FIELD scatra SRC_MAT 6 TAR_FIELD thermo TAR_MAT 8   // cathode
--------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/7.0)-(pi/2)))+0.5 t1 0.0 t2 7.0
 -------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0      // initial concentration in electrolyte
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0      // initial electric potential in electrolyte
+COMPONENT 0 FUNCTION 1.0      // initial concentration in electrolyte
+COMPONENT 1 FUNCTION 0.0      // initial electric potential in electrolyte
 -------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 16.0     // initial concentration in anode
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0119   // initial electric potential in anode
+COMPONENT 0 FUNCTION 16.0     // initial concentration in anode
+COMPONENT 1 FUNCTION 0.0119   // initial electric potential in anode
 -------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 8.3      // initial concentration in cathode
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 4.0087   // initial electric potential in cathode
+COMPONENT 0 FUNCTION 8.3      // initial concentration in cathode
+COMPONENT 1 FUNCTION 4.0087   // initial electric potential in cathode
 -------------------------------------------------------------FUNCT4
-FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 300.0    // initial temperature
+COMPONENT 0 FUNCTION 300.0    // initial temperature
+-------------------------------------------------------------FUNCT5
+FUNCTION 0.5*(sin((t*pi/7.0)-(pi/2)))+0.5
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 2066 QUANTITY phi1 VALUE 1.55898553223005099e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
 SCATRA DIS scatra NODE 2066 QUANTITY phi2 VALUE 1.18996813934742502e-02 TOLERANCE 1.e-11                // local electric potential at anode-electrolyte interface (anode side)
@@ -129,10 +129,10 @@ NDLINE  17
 NDSURF  5
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
-E 3 - NUMDOF 2  ONOFF 0 1 VAL 0.0 -0.000103642 CURVE none 1 FUNCT 0 0 Live Mid
+E 3 - NUMDOF 2  ONOFF 0 1 VAL 0.0 -0.000103642 FUNCT 0 5 Live Mid
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
-E 2 - NUMDOF 2  ONOFF 0 1 VAL 0.0 0.0119  CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2  ONOFF 0 1 VAL 0.0 0.0119 FUNCT 0 0
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  3
 E 1 - ScaTra 1

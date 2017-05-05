@@ -57,14 +57,14 @@ MAT 3 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 1.1e-7 COND_PA
 MAT 4 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 5 END
 MAT 5 MAT_newman VALENCE 1.0 DIFFCOEF -1 TRANSNR -1 THERMFAC 0 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 3.9e-5 TRANS_PARA_NUM 1 TRANS_PARA 0.399 COND_PARA_NUM 1 COND_PARA 5.0e2 END
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 9.00172
-FUNCT 1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 9.44e-9
+COMPONENT 0 FUNCTION 9.00172
+COMPONENT 1 FUNCTION 9.44e-9
 ----------------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.2
-FUNCT 2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION -0.0332652803
+COMPONENT 0 FUNCTION 1.2
+COMPONENT 1 FUNCTION -0.0332652803
 ----------------------------------------------------------------------FUNCT3
-FUNCT 3 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 12.89178
-FUNCT 3 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 4.1850999
+COMPONENT 0 FUNCTION 12.89178
+COMPONENT 1 FUNCTION 4.1850999
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 1.01163933224631606e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
 SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE 8.81124394065713341e-09 TOLERANCE 1.e-16                // local electric potential at anode-electrolyte interface (anode side)
@@ -90,10 +90,10 @@ NDSURF                          14
 NDVOL                           5
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 6.544713556e-4 CURVE 0 0 FUNCT 0 0 Live Mid
+E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 6.544713556e-4 FUNCT 0 0 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            3
 E 1 - ScaTra 1

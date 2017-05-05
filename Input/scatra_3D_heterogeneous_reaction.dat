@@ -58,22 +58,16 @@ MAT 3 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 1 2 NUMREAC 1 REACIDS 10 EN
 MAT 10 MAT_scatra_reaction NUMSCAL 2 STOICH -1 1 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD scatra TAR_MAT 3
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 4*pi
+COMPONENT 0 FUNCTION 4*pi
 ----------------------------------------------------------------------FUNCT3
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION x/(sqrt(x*x+y*y+z*z))
+COMPONENT 0 FUNCTION x/(sqrt(x*x+y*y+z*z))
 ----------------------------------------------------------------------FUNCT4
-FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION y/(sqrt(x*x+y*y+z*z))
+COMPONENT 0 FUNCTION y/(sqrt(x*x+y*y+z*z))
 ----------------------------------------------------------------------FUNCT5
-FUNCT5 COMPONENT 0 EXPR 0 0.0 0 FUNCTION z/(sqrt(x*x+y*y+z*z))
+COMPONENT 0 FUNCTION z/(sqrt(x*x+y*y+z*z))
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 8.51855127950017568e-03 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 251 QUANTITY phi VALUE 6.94875210409241539e+00 TOLERANCE 1e-8

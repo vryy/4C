@@ -95,15 +95,15 @@ NDLINE                          16
 NDSURF                          2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0
-// E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-// E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
-// E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
-// E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+// E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+// E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
+// E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
+// E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
-E 3 - NUMDOF 2 ONOFF 1 1 VAL 6.0 0.12 CURVE  2 1 FUNCT 0 0
-E 12 - NUMDOF 2 ONOFF 1 1 VAL 6.0 0.12 CURVE  2 1 FUNCT 0 0
-E 13 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 3 - NUMDOF 2 ONOFF 1 1 VAL 6.0 0.12 FUNCT 2 1
+E 12 - NUMDOF 2 ONOFF 1 1 VAL 6.0 0.12 FUNCT 2 1
+E 13 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           2
 E 5 - 1 Slave Inactive FrCoeffOrBound 0.4
@@ -2366,12 +2366,12 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.01
 MAT 3 ELAST_CoupNeoHooke YOUNG 1000.0 NUE 0.3
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.01
 MAT 4 ELAST_CoupNeoHooke YOUNG 1.0 NUE 0.3
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 -1.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 1.5 FACTOR -1.0 -1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 0.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.1 1.5 FACTOR 0.0 1.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 1.5 VALUES 0 -1 -1
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 1.5 VALUES 0 0 1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 93 QUANTITY dispx VALUE 1.71421952745117800e+00 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 94 QUANTITY dispx VALUE 1.71421985880723171e+00 TOLERANCE 1e-10

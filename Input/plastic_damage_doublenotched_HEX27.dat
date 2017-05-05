@@ -128,31 +128,9 @@ SOLVER                          UMFPACK  // Amesos_KLU_sym,Amesos_KLU_nonsym,Sup
 // [mm,kg,ms,GPa]
 MAT 1   MAT_Struct_Damage   YOUNG 206.9 NUE 0.29 DENS 0 SAMPLENUM 2 SIGMA_Y 0.45 0.65 EPSBAR_P 0.0 1.0 DAMDEN 0.0035 DAMEXP 1.0 DAMTHRESHOLD 1e10 KINHARD 0 KINHARD_REC 0 SATHARDENING 0 HARDEXPO 0 TOL 1.0e-06
 //MAT 1 MAT_Struct_PlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0 YIELD 0.45 ISOHARD 0.2 KINHARD 0.0 TOL 1.0e-6
-------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5  t1 0.0 t2 5.0 // Tmax=5
-------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  0  1  FACTOR  0     0.005
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  1  2  FACTOR  0.005 0.01
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  2  3  FACTOR  0.01  0.015
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  3  4  FACTOR  0.015 0.02
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  4  5  FACTOR  0.02  0.03
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  5  6  FACTOR  0.03  0.04
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  6  7  FACTOR  0.04  0.045
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  7  8  FACTOR  0.045 0.05
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  8  9  FACTOR  0.05  0.055
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes  9 10  FACTOR  0.055 0.06
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 10 11  FACTOR  0.06  0.065
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 11 12  FACTOR  0.065 0.07
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 12 13  FACTOR  0.07  0.08
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 13 14  FACTOR  0.08  0.1
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 14 15  FACTOR  0.1   0.12
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 15 16  FACTOR  0.12  0.13
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 16 17  FACTOR  0.13  0.15
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 17 18  FACTOR  0.15  0.155
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 18 19  FACTOR  0.155 0.16
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 19 20  FACTOR  0.16  0.17
-------------------------------------------------------------CURVE3
 ------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 21 TIMES 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 VALUES 0 0.005 0.01 0.015 0.02 0.03 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.08 0.1 0.12 0.13 0.15 0.155 0.16 0.17
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  3
@@ -161,27 +139,27 @@ NDVOL   1
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // support_vertex_bottom_fix
-E 1 - NUMDOF 3  ONOFF 1 1 1  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3  ONOFF 1 1 1  VAL 0.0 0.0 0.0  FUNCT 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  3
 // support_curve_sym_nx
-E 1 - NUMDOF 3  ONOFF 1 0 1  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3  ONOFF 1 0 1  VAL 0.0 0.0 0.0  FUNCT 0 0 0
 // support_curve_bottom_sym_nx
-E 2 - NUMDOF 3  ONOFF 1 1 1  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3  ONOFF 1 1 1  VAL 0.0 0.0 0.0  FUNCT 0 0 0
 // support_curve_top_sym_nx
-E 3 - NUMDOF 3  ONOFF 1 1 1  VAL 0.0 1.0 0.0  CURVE none 2 none FUNCT 0 0 0
+E 3 - NUMDOF 3  ONOFF 1 1 1  VAL 0.0 1.0 0.0  FUNCT 0 1 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  3
 // support_bottom
-E 1 - NUMDOF 3  ONOFF 1 1 1  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3  ONOFF 1 1 1  VAL 0.0 0.0 0.0  FUNCT 0 0 0
 // support_surf_sym_nx
-E 2 - NUMDOF 3  ONOFF 1 0 1  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3  ONOFF 1 0 1  VAL 0.0 0.0 0.0  FUNCT 0 0 0
 // pull_top_surf_in_y
-E 3 - NUMDOF 3  ONOFF 0 1 1  VAL 0.0 1.0 0.0  CURVE none 2 none FUNCT 0 0 0
+E 3 - NUMDOF 3  ONOFF 0 1 1  VAL 0.0 1.0 0.0  FUNCT 0 1 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 // support_total_z
-E 1 - NUMDOF 3  ONOFF 0 0 1  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3  ONOFF 0 0 1  VAL 0.0 0.0 0.0  FUNCT 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    2500 DNODE 1
 NODE    2501 DNODE 1

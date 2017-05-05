@@ -88,12 +88,12 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.3
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100 NUE 0.3 DENS 1 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR 0.0 2.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 -1.0
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 5.0 FACTOR -1.0 -1.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 5 VALUES 0 0 2
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 5 VALUES 0 -1 -1
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -1.15767613518544671e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -1.15767613516345718e-02 TOLERANCE 1e-8
@@ -106,23 +106,23 @@ NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              dirich_line_fix
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              dirich_move
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE 1 1 2 FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 1 1 2
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE                           1
 //                              dirich_line_fix
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           3
 //                              dirich_move
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              ale_dirich_master
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              master
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slave

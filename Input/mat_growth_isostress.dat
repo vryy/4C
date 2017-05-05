@@ -123,13 +123,9 @@ MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.
 MAT 4 MAT_GrowthLinear THETAPLUS 1.5 KPLUS 1.0 MPLUS 2.0 THETAMINUS 0.5 KMINUS 2.0 MMINUS 3.0 HOMMANDEL 0.0 TOL 1.0E-10
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
 MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0. 1.
-CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 100.0 FACTOR 1. 1.
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------FUNCT1
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.1 100.0 VALUES 0.0 1.0 1.0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -144,45 +140,45 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // front upper left
-E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // back upper left
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // front lower left
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // back lower left
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // front upper right
-E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 // back upper right
-E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 // front lower right
-E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 // back lower right
-E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           8
 // right upper
-E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 // right lower
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 // right back
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 // right front
-E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 // left upper
-E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // left lower
-E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // left back
-E 7 - NUMDOF 3 ONOFF 1 1 00 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 1 1 00 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // left front
-E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // left surface
-E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // right surface
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 CURVE none 1 none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 181 DNODE 1
 NODE 1 DNODE 2

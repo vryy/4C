@@ -5,7 +5,6 @@
 // 089 - 289 -10364
 //
 // test case for fluid pseudo_orthopressure condition
-
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        224
 NODES                           510
@@ -93,14 +92,9 @@ ML_DAMPMED                      0.89                          // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 0.001 GAMMA 1.0
-----------------------------------------------------------------------CURVE1
-CURVE 1 on EXPR FUNC (1-cos(pi/2/0.25*t)) t1 0.0 t2 0.25 //3. Wert!!
-CURVE 1 on EXPR FUNC (1) t1 0.25 t2 1000.0 //3. Wert!!
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION v
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.25 1000.0 DESCRIPTION 1-cos(pi/2/0.25*t) 1.0
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -122,17 +116,17 @@ NDSURF                          3
 NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ----------------------------------------FLUID NEUMANN INFLOW SURF CONDITIONS
 DSURF                           1
 E 3 -
 -----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 100.0 0.0 0.0 CURVE 1 0 0 FUNCT 0 0 0 pseudo_orthopressure
-//E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 100.0 CURVE 1 1 1 FUNCT 0 0 0 Live //does the same as the previous line, since in this case the normal direction is the z-direction
+E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 100.0 0.0 0.0 FUNCT 1 0 0 pseudo_orthopressure
+//E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 100.0 FUNCT 1 0 0 Live //does the same as the previous line, since in this case the normal direction is the z-direction
 --------------------------------------DESIGN SURF VOLUMETRIC FLOW CONDITIONS
 DSURF                           1
-E 1 - 1 WOMERSLEY NOTPREBIASED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 Val -10000.0 Curve 1 SelfEvaluateNormal 0.0 0.0 0.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
+E 1 - 1 WOMERSLEY NOTPREBIASED InFlow WithCorrection Period 1.0 Order 2 Harmonics 16 Val -10000.0 Funct 1 SelfEvaluateNormal 0.0 0.0 0.0 SelfEvaluateCenterOfMass 0.0 0.0 0.0
 ------------------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
 DLINE                           1
 E 1 - 1

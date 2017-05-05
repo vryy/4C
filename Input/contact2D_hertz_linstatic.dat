@@ -85,12 +85,12 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          2
-E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 17 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0  FUNCT 0 0
+E 17 - NUMDOF 2 ONOFF 1 0 VAL 0.0 0.0  FUNCT 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           1
-E 15 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 15 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0  FUNCT 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           0
@@ -103,10 +103,10 @@ DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           4
-E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
+E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           0
@@ -4610,13 +4610,8 @@ NODE 1376 COORD -8.000000000000000e+00 -9.000000000000000e+00 0.000000000000000e
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 200 NUE 0.3 DENS 7.8e-7 THEXPANS 0.0
 //                              MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 200000 NUE 0.3 DENS 7.8e-7 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.625
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 0.625*t
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

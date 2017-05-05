@@ -9,17 +9,13 @@ General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus and jou2dat on Wed Jan 23 15:01:59 CET 2013
-
 Simple test case of an internally loaded cylinder for monolithic TSI
 using inclined structural Dirichlet boundary conditions.
-
 Due to its symmetry only a part with angle=10° of the whole rotationally
 symmetric body is calculated. This body is loaded with a thermal heat
 convection boundary condition at the inner side. Due to a cooling at
 the beginning, the body contracts
-
 material parameters of copper
-
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      2
 //NODES                         12
@@ -177,15 +173,11 @@ MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6 THEX
 MAT 2 THERM_FourierIso CAPA 3405.49 CONDUCT 3.1e5
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0 2 FACTOR 293.15 40.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 2 3 FACTOR 40.0 40.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3 4 FACTOR 40.0 293.15
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 4 5 FACTOR 293.15 293.15
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC (4.0e5*t) t1 0.0 t2 5.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 293.15
+COMPONENT 0 FUNCTION 293.15
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION v
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 5 TIMES 0.0 2.0 3.0 4.0 5.0 DESCRIPTION 293.15-(293.15-40.0)*t/2.0 40.0 40+(293.15-40.0)*(t-3) 293.15
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -194,21 +186,21 @@ NDVOL                           2
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 //  support_bottom
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              support_inclined_plane_up
-E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //  support_total_z
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 DSURF   1
-E 3  - ROTANGLE 2.01937681 2.406599614 0.0 CURVE none none none FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
+E 3  - ROTANGLE 2.01937681 2.406599614 0.0 FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
 //normal -0.176327 1.0 0.0 tangent 1.0 0.176327 0.0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           1
 //  thr_conv_hot_gas
-E 4 - Tempnp coeff -280 surtemp 1.0 surtempcurve 1 curve none
+E 4 - Tempnp coeff -280 surtemp 1.0 surtempfunct 2 funct 0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

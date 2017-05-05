@@ -49,34 +49,34 @@ REL_PENETRATION                 0.05
 MAX_VELOCITY                    1.0
 ----------------------------------------------------------------------FUNCT1
 // initial velocity of particle 1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION -1.0
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION -1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial velocity of particle 2
-FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.0
-FUNCT2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
-FUNCT2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
 // initial velocity of particle 3
-FUNCT3 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0.0
-FUNCT3 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION -1.0
-FUNCT3 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION -1.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT4
 // initial velocity of particle 4
-FUNCT4 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0.0
-FUNCT4 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 1.0
-FUNCT4 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 1.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT5
 // initial velocity of particle 5
-FUNCT5 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0.0
-FUNCT5 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
-FUNCT5 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION -1.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION -1.0
 ----------------------------------------------------------------------FUNCT6
 // initial velocity of particle 6
-FUNCT6 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 0.0
-FUNCT6 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
-FUNCT6 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 1.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPARTICLE                      7
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS

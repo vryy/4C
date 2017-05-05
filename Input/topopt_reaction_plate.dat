@@ -83,21 +83,18 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0
 MAT 2 MAT_opti MINPORO 1 MAXPORO 1 SMEARFAC 1
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
 ------------------------------------------------FUNCT1 // initial flow field
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
 ---------------------------------------------FUNCT2 // initial density field
-FUNCT2 EXPR 0 0.0 0 FUNCTION 1.0 // 1=fluid,0=no fluid
+COMPONENT 0 FUNCTION 1.0 // 1=fluid,0=no fluid
 -----------------------------------------FUNCT3 // velocity field - x values
-FUNCT3 EXPR 0 0.0 0 FUNCTION x
+COMPONENT 0 FUNCTION x
 -----------------------------------------FUNCT4 // velocity field - y values
-FUNCT4 EXPR 0 0.0 0 FUNCTION -y
+COMPONENT 0 FUNCTION -y
 -------------------FUNCT5 // normal tension on right boundary in x-direction
-FUNCT5 EXPR 0 0.0 0 FUNCTION x*x+2 // 1=fluid,0=no fluid
+COMPONENT 0 FUNCTION x*x+2 // 1=fluid,0=no fluid
 -------------------FUNCT6 // normal tension on upper boundary in y-direction
-FUNCT6 EXPR 0 0.0 0 FUNCTION x*x-2 // 1=fluid,0=no fluid
+COMPONENT 0  FUNCTION x*x-2 // 1=fluid,0=no fluid
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          4
@@ -130,13 +127,13 @@ DSURF                           0
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          3
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 3 4 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 3 4 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 3 4 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 CURVE none none none FUNCT 3 4 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 3 4 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 1.0 0.0 FUNCT 3 4 0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 28 QUANTITY velx VALUE -0.05 TOLERANCE 1.0e-13
 FLUID DIS fluid NODE 28 QUANTITY vely VALUE 0.4 TOLERANCE 1.0e-13

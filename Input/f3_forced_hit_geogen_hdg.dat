@@ -99,10 +99,6 @@ ML_DAMPMED        0.67      // damping med grids
 ML_DAMPCOARSE     0.95       // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
 //Remark: this doesn't make any physical sense, but we haven't implemented nodal result checks yet
 //this here should be sufficient to test the test case
@@ -116,7 +112,7 @@ NDSURF                          6
 NDVOL                           1
 -------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
-E 8 - NUMDOF 4 ONOFF 0 0 0 1 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 0 0 0 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 --------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF  6
 // surface_top

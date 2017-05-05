@@ -84,21 +84,16 @@ SOLVER                          UMFPACK                       // vm3 Aztec_MSR S
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 // MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0// -1.0 //101.0 //0.01*(-y) // 0.0100051*(-y)
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x // 0.0100051*x
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 3.0 // pressure
+COMPONENT 0 FUNCTION 5.0// -1.0 //101.0 //0.01*(-y) // 0.0100051*(-y)
+COMPONENT 1 FUNCTION 0.0 //0.01*x // 0.0100051*x
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 3.0 // pressure
 --------------------------------------------FUNCT2 // initial solid velocity
-FUNCT2                          COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0// -1.0  //101.0 //0.01*(-y) // 0.0100051*(-y)
-FUNCT2                          COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0  //0.01*x // 0.0100051*x
-FUNCT2                          COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2                          COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0  // pressure
+                         COMPONENT 0 FUNCTION 5.0// -1.0  //101.0 //0.01*(-y) // 0.0100051*(-y)
+                         COMPONENT 1 FUNCTION 0.0  //0.01*x // 0.0100051*x
+                         COMPONENT 2 FUNCTION 0.0
+                         COMPONENT 3 FUNCTION 0.0  // pressure
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
@@ -113,11 +108,11 @@ DSURF 1
 // surface outflow
 //E 4 - none 1 1 1 0 0 0 -3.0 0.0 0.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
 // surface inflow
-E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL +3.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL +3.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // fluid volume
 DVOL 1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 0
 // inflow points
@@ -139,21 +134,21 @@ DLINE 1
 // outflow lines
 //E 6 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // edges side walls
-E 11 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
+E 11 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 4
 // surface top
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
 // surface bottom
-E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
 // surface inflow
 //E 3 - 6 1 1 1 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 1 0 0 0 0 0
 // surface outflow
 //E 4 - 6 0 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface front
-E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
+E 5 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
 // surface back
-E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 1 0 0 0 0 0
+E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
 // surface top structure
 //E 7 - 6 0 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // surface bottom structure
@@ -175,21 +170,21 @@ DVOL 0
 ----------------------------------DESIGN XFEM WEAK DIRICHLET SURF CONDITIONS
 // DOBJECT COUPLINGID EVALTYPE
 DSURF 6
-E 7 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
-E 8 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
-E 9 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
-E 10 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
-E 11 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
-E 12 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 2 2 2
+E 7 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 2 2 2
+E 8 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 2 2 2
+E 9 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 2 2 2
+E 10 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 2 2 2
+E 11 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 2 2 2
+E 12 - COUPLINGID 1 EVALTYPE funct_interpolated NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 2 2 2
 ------------------------------------DESIGN XFEM DISPLACEMENT SURF CONDITIONS
 DSURF 6
 // DOBJECT COUPLINGID EVALTYPE
-E 7 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 8 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 9 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 10 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 11 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 12 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 7 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 8 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 9 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 10 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 11 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 12 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 21 DNODE 1

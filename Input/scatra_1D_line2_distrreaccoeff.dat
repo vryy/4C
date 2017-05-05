@@ -60,16 +60,11 @@ MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 2  MATIDS 2 2 NUMREAC 2 REACIDS 4 5 
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
 MAT 4 MAT_scatra_reaction NUMSCAL 2 STOICH  1 0 REACCOEFF 1.0              COUPLING simple_multiplicative ROLE 0 1 //dx/dt=y
 MAT 5 MAT_scatra_reaction NUMSCAL 2 STOICH  0 1 REACCOEFF -1.0 DISTRFUNCT 2 COUPLING simple_multiplicative ROLE 1 0 //dy/dt=-w^2*x
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0 //x0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //y0
+COMPONENT 0 FUNCTION 1.0 //x0
+COMPONENT 1 FUNCTION 0.0 //y0
 -------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION (0.5*pi+(x+4)*1.5*pi/8)^2
+COMPONENT 0 FUNCTION (0.5*pi+(x+4)*1.5*pi/8)^2
 -------------------------------------------------------NODE COORDS
 NODE 1 COORD -4.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
 NODE 2 COORD -3.2000000000000002e+00 0.0000000000000000e+00 0.0000000000000000e+00

@@ -83,33 +83,30 @@ NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 2.0 DENSITY 3.0
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
 ------------------------------------------------FUNCT1 // initial flow field
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION x*x+2*x*y*t*t
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION -y*y*t*t-2*x*y
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 2*x*x*t*t-x*y
+COMPONENT 0 FUNCTION x*x+2*x*y*t*t
+COMPONENT 1 FUNCTION -y*y*t*t-2*x*y
+COMPONENT 2 FUNCTION 2*x*x*t*t-x*y
 ---------------------------------------------FUNCT2 // initial density field
-FUNCT2 EXPR 0 0.0 0 FUNCTION 0.0 // 1=fluid,0=no fluid
----------------------------------------------FUNCT3 // initial adjoint field
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0
-FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
--------------------------------FUNCT4 // x-component of fluid inflow profile
-FUNCT4 EXPR 0 0.0 0 FUNCTION x*x+2*x*y*t*t
--------------------------------FUNCT5 // y-component of fluid inflow profile
-FUNCT5 EXPR 0 0.0 0 FUNCTION -y*y*t*t-2*x*y
+COMPONENT 0 FUNCTION 0.0 // 1=fluid,0=no fluid
+---------------------------------------------FUNCT3// initial adjoint field
+COMPONENT 0 FUNCTION 0
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
+-------------------------------FUNCT4// x-component of fluid inflow profile
+COMPONENT 0 FUNCTION x*x+2*x*y*t*t
+-------------------------------FUNCT5// y-component of fluid inflow profile
+COMPONENT 0 FUNCTION -y*y*t*t-2*x*y
 ------------------------------------------FUNCT6 // bodyforce in x-direction
-FUNCT6 EXPR 0 0.0 0 FUNCTION (5*x*x+10*x*y*t*t+4*x*t*t-y-2*2)/3+4*x*y*t+(2*x+2*y*t*t)*(x*x+2*x*y*t*t)+2*x*t*t*(-y*y*t*t-2*x*y)
+COMPONENT 0 FUNCTION (5*x*x+10*x*y*t*t+4*x*t*t-y-2*2)/3+4*x*y*t+(2*x+2*y*t*t)*(x*x+2*x*y*t*t)+2*x*t*t*(-y*y*t*t-2*x*y)
 ------------------------------------------FUNCT7 // bodyforce in y-direction
-FUNCT7 EXPR 0 0.0 0 FUNCTION (-5*y*y*t*t-10*x*y-x+2*2*t*t)/3-2*y*y*t-2*y*(x*x+2*x*y*t*t)+(-2*x-2*y*t*t)*(-y*y*t*t-2*x*y)
+COMPONENT 0 FUNCTION (-5*y*y*t*t-10*x*y-x+2*2*t*t)/3-2*y*y*t-2*y*(x*x+2*x*y*t*t)+(-2*x-2*y*t*t)*(-y*y*t*t-2*x*y)
 ------------------------------------------------FUNCT8 // NBC in x-direction
-FUNCT8 EXPR 0 0.0 0 FUNCTION -2*x*x*t*t+x*y+2*(4*x+4*y*t*t)
+COMPONENT 0 FUNCTION -2*x*x*t*t+x*y+2*(4*x+4*y*t*t)
 ------------------------------------------------FUNCT9 // NBC in y-direction
-FUNCT9 EXPR 0 0.0 0 FUNCTION 2*(2*x*t*t-2*y)
+COMPONENT 0 FUNCTION 2*(2*x*t*t-2*y)
 ------------------------------------------------FUNCT10 // pressure
-FUNCT10 EXPR 0 0.0 0 FUNCTION 2*x*x*t*t-x*y
+COMPONENT 0 FUNCTION 2*x*x*t*t-x*y
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3
@@ -118,20 +115,20 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // volume force
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 6 7 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 6 7 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 //                              outflow
-E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 8 9 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 8 9 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 CURVE none none none FUNCT 0 0 10
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 FUNCT 0 0 10
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              inflow
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 4 5 10
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 4 5 10
 //                              sides
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 4 5 10
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 4 5 10
 ----------------------------------------------------------RESULT DESCRIPTION
 
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 6.06950989167103355e-02 TOLERANCE 1e-16

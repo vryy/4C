@@ -1,3 +1,8 @@
+//
+// Maintainer: XXX YYY
+// XXX
+// XXX
+//
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
 ----------------------------------------------------------------PROBLEM SIZE
@@ -52,7 +57,6 @@ RESTARTEVRY                     10000
 MATID                           -1
 VELOCITYFIELD zero //function
 VELFUNCNO                       2
-VELCURVENO                      -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CALCERROR                       No
@@ -199,23 +203,19 @@ MAT 105 MAT_scatra DIFFUSIVITY 1.0
 MAT 111 MAT_scatra_chemotaxis NUMSCAL 5 PAIR 1 -1 0 0 0 CHEMOCOEFF 25.0 //scalar 2 does 'follow' scalar 1
 MAT 112 MAT_scatra_chemotaxis NUMSCAL 5 PAIR 1 0 -1 0 0 CHEMOCOEFF 25.0 //scalar 3 does 'follow' scalar 1
 MAT 113 MAT_scatra_chemotaxis NUMSCAL 5 PAIR 1 0 0 -1 0 CHEMOCOEFF 25.0 //scalar 4 does 'follow' scalar 1
-----------------------------------------------------------------------CURVE1
-CURVE 1 on EXPR FUNC (sin(t*pi/2)) t1 0 t2 1.0
-CURVE 1 on EXPR FUNC (1.0+0.1*sin((t-1.0)*pi/2)) t1 1.0 t2 100000.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.0
-FUNCT 1 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.5
-FUNCT 1 COMPONENT 2 EXPR 0 0 0 FUNCTION 0.5
-FUNCT 1 COMPONENT 3 EXPR 0 0 0 FUNCTION 0.5
-FUNCT 1 COMPONENT 4 EXPR 0 0 0 FUNCTION 0.5
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.5
+COMPONENT 2 FUNCTION 0.5
+COMPONENT 3 FUNCTION 0.5
+COMPONENT 4 FUNCTION 0.5
 ----------------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION 50.0
-FUNCT 2 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.0
-FUNCT 2 COMPONENT 2 EXPR 0 0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 50.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION (sin(t*pi/2)) (1.0+0.1*sin((t-1.0)*pi/2))
 ----------------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE    2.50160077822538351e-01 TOLERANCE 1e-9
@@ -247,11 +247,11 @@ NDVOL                           0
 -------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 //inflow
-E 1 - NUMDOF 5 ONOFF 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none FUNCT 0 0 0 0 0
+E 1 - NUMDOF 5 ONOFF 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 FUNCT 3 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 //inflow
-E 2 - NUMDOF 5 ONOFF 0 1 1 1 1 VAL 0.0 1.0 1.0 1.0 1.0 CURVE none none none none none FUNCT 0 0 0 0 0
+E 2 - NUMDOF 5 ONOFF 0 1 1 1 1 VAL 0.0 1.0 1.0 1.0 1.0 FUNCT 0 0 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

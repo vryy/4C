@@ -58,30 +58,23 @@ SOLVER                          UMFPACK //Aztec_MSR
 //AZOUTPUT                        50
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0
-----------------------------------------------------------------------CURVE1
-//CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 10.0 c2 1.0
-// CURVE1 on Explicit FUNC f(t)=0.5*t*y
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-// FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.5*y //Stationary
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.5*y*t*t //0.5*(0.5*(1-sin((t+0.5)*3.141592653589793)))*y   //0.5*(0.5*(1-sin((1.0+0.5)*3.141592653589793)))*y
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
+// COMPONENT 0 FUNCTION 0.5*y //Stationary
+COMPONENT 0 FUNCTION 0.5*y*t*t //0.5*(0.5*(1-sin((t+0.5)*3.141592653589793)))*y   //0.5*(0.5*(1-sin((1.0+0.5)*3.141592653589793)))*y
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
+COMPONENT 3 FUNCTION 0.0 // pressure
 -------------------------------------------------------------FUNCT2
-// FUNCT2 EXPR 0 0 0 FUNCTION  0.1*0.5 //mu=0.1
-FUNCT2 EXPR 0 0 0 FUNCTION  0.1*0.5*t*t  //mu=0.1
+// FUNCTION  0.1*0.5 //mu=0.1
+COMPONENT  0 FUNCTION  0.1*0.5*t*t  //mu=0.1
 -------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0 0 FUNCTION  0.5*y*1.0*(2.0*t)  //mu=0.1
+COMPONENT  0 FUNCTION  0.5*y*1.0*(2.0*t)  //mu=0.1
 // -------------------------------------------------------------FUNCT4
-// FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-// FUNCT4 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-// FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -0.5*y*x //pressure
+// COMPONENT 0 FUNCTION 0.0
+// COMPONENT 1 FUNCTION 0.0
+// COMPONENT 2 FUNCTION -0.5*y*x //pressure
 // -------------------------------------------------------------FUNCT5
-// FUNCT5 EXPR 0 0.0 0 FUNCTION -0.5*y*x //pressure
+// FUNCTION -0.5*y*x //pressure
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 173 QUANTITY velx VALUE 2.50002857482162832e-01 TOLERANCE 1e-15
 FLUID DIS fluid NODE 173 QUANTITY vely VALUE 2.72662921148932914e-04 TOLERANCE 1e-16
@@ -94,33 +87,33 @@ NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4//2//4
 //bottom_west
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //bottom_east
-E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //top_east
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 1 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1  0 0
 //top_west
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 1 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1  0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3//4
 //bottom
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //east
-//E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 1 0 0
+//E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1  0 0
 //top
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 1 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1  0 0
 //west
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE none none none FUNCT 1 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1  0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
-E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 2 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 FUNCT 0 2 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 3 0 0 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 3 0 0 0 0 0 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 332 DNODE 1
 NODE 1 DNODE 2

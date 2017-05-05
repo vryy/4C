@@ -95,10 +95,10 @@ NDSURF                          0
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
-E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          1
-E 2 - NUMDOF 6 ONOFF 0 0 0 1 1 0 VAL 0.0 0.0 0.0 -4.44288 4.44288 0.0 CURVE 0 0 0 1 1 0 FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 0 0 0 1 1 0 VAL 0.0 0.0 0.0 -4.44288 4.44288 0.0 FUNCT 0 0 0 1 1 0 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 9 DNODE 2
@@ -131,6 +131,6 @@ MAT 1 MAT_BeamReissnerElastHyper YOUNG 2.4e+13 SHEARMOD 1.2e+13 DENS 1e-9 CROSSA
 STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -7.0710659640670803e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -7.0710659640671969e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -6.3661992421102098e-01 TOLERANCE 1e-8
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t
 -------------------------------------------------------------------------END

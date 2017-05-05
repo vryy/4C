@@ -74,11 +74,11 @@ NDSURF  0
 NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
-E 1 - NUMDOF 7 ONOFF 1 1 1 1 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
-E 2 - NUMDOF 7 ONOFF 0 1 1 0 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
+E 1 - NUMDOF 7 ONOFF 1 1 1 1 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0
+E 2 - NUMDOF 7 ONOFF 0 1 1 0 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE 1
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 3.0e-6 6.0e-5 6.0e-5 0.0 0.0 0.0 CURVE 1 1 1 0 0 0 FUNCT 0 1 2 0 0 0 Live Mid
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 3.0e-6 6.0e-5 6.0e-5 0.0 0.0 0.0 FUNCT 3 1 2 0 0 0 Live Mid
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE       1 DNODE 1
 NODE       129 DNODE 2
@@ -414,11 +414,12 @@ STRUCTURE DIS structure NODE 65 QUANTITY dispx VALUE -3.14512518665311180e+00 TO
 STRUCTURE DIS structure NODE 65 QUANTITY dispy VALUE -1.85492295825048181e+00 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 65 QUANTITY dispz VALUE -1.41386497980773687e+01 TOLERANCE 1e-8
 ------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION sin(x*3.14/500.0)*1.0
+COMPONENT 0 FUNCTION sin(x*3.14/500.0)*1.0*a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 1.0 10.0 VALUES 0.0 0.1 0.0 0.0
 ------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION cos(x*3.14/500.0)*1.0
-------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.5 1.0 FACTOR 0.1 0.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 10.0 FACTOR 0.0 0.0
+COMPONENT 0 FUNCTION cos(x*3.14/500.0)*1.0*a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 1.0 10.0 VALUES 0.0 0.1 0.0 0.0
+------------------------------------------------FUNCT3
+COMPONENT 0 FUNCTION 1*a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 1.0 10.0 VALUES 0.0 0.1 0.0 0.0
 ---------------------------------------------------------------END

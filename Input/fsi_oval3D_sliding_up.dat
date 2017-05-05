@@ -1,7 +1,7 @@
 //
-// Maintainer: Matthias Mayr
-// mayr@mhpc.mw.tum.de
-// 089 - 289-10362
+// Maintainer: Andrea La Spina
+// laspina@lnm.mw.tum.de
+// 089 - 289-15265
 //
 ==================================================================
 General Data File CCARAT
@@ -126,15 +126,9 @@ MAT 1 MAT_fluid DYNVISCOSITY 1.8E-5 DENSITY 1.0E-6
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.E3 NUE 0.3 DENS 1E-1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (0.25*(1-cos(2*pi*t/120))) t1 0.0 t2 60.0
-CURVE1 on EXPR FUNC 0.5 t1 60.0 t2 360.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC (0.5*sin(2*pi*t/50)) t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION y
+COMPONENT 0 FUNCTION y*a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 60.0 500000.0 DESCRIPTION (0.25*(1-cos(2*pi*t/120))) 0.5
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -145,31 +139,31 @@ NDSURF                          8
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
-E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE 1
 // struct center
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 3
 // front back
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // struct front back
-E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Inflow_surface
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.5 0.0 0.0 0.0 CURVE 1 none none none FUNCT 1 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.5 0.0 0.0 0.0 FUNCT 1 0 0 0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE 1
 // outer curves
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF 3
 // left right
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // front back
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // bottom top
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF 2
 // coupling structure

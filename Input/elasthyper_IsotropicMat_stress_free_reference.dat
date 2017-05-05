@@ -1,6 +1,6 @@
 //
 //
-// \maintainer Anna Birzle
+// Maintainer: Anna Birzle
 //             birzle@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15255
@@ -150,10 +150,6 @@ MAT 25 MAT_ElastHyper NUMMAT 1 MATIDS 125 DENS 0.001
 MAT 125 ELAST_CoupNeoHooke YOUNG 1.0 NUE 0.45
 MAT 26 MAT_ElastHyper NUMMAT 1 MATIDS 126 DENS 0.001
 MAT 126 ELAST_CoupNeoHooke YOUNG 1.0 NUE 0.45
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
@@ -165,32 +161,32 @@ NDSURF                          26
 NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           26
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 14 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 15 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 16 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 17 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 18 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 19 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 20 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 21 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 22 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 23 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 24 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 25 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
-E 26 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 7 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 14 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 15 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 16 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 17 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 18 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 19 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 20 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 21 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 22 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 23 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 24 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 25 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
+E 26 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 19 DSURFACE 1

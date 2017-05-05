@@ -71,17 +71,17 @@ DPOINT                          0
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.14 0.0 0.0 CURVE 1 none none FUNCT 0 0 0 Live Mid
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.14 0.0 0.0 FUNCT 1 0 0 Live Mid
 -------------------------------------------------------SURFACTANT CONDITIONS
 DSURF                           2
 E 6 - 2 k1xCbulk 1.0e-02 k2 0.8333e-04 m1 48.0e-03 m2 140.0e-03 gamma_0 70.0e-03 gamma_min 1.0e-03
@@ -468,10 +468,11 @@ NODE 72 COORD 1.000000000000000e+01 1.000000000000000e+01 1.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.00001
 MAT 2 ELAST_CoupNeoHooke YOUNG 0.07 NUE 0.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(1+sin(pi*(t-10)/5-pi/2)) t1 10. t2 3000.
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 0.5*(1+sin(pi*t/10-pi/2)) t1 0. t2 10.
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION v
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 3000.0 DESCRIPTION -1 0.5*(1+sin(pi*(t-10)/5-pi/2))
+----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 0.5*(1+sin(pi*t/10-pi/2))
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 45 QUANTITY dispx VALUE -1.17934478096662604e-01 TOLERANCE 1e-08
 STRUCTURE DIS structure NODE 45 QUANTITY dispy VALUE 0.000000000000000000e+00 TOLERANCE 1e-08

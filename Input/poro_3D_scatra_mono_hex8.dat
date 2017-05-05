@@ -177,21 +177,16 @@ MAT 9 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
 MAT 10 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
 MAT 11 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
 MAT 12 MAT_scatra DIFFUSIVITY 0.00000000001 //10.0 //REACOEFF 2.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -6.0/6.0 t1 0.0 t2 60.0
-//CURVE1 on EXPR FUNC 0.0 t1 0.0 t2 60.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 4.0/10*x+3.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 3.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 3.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 4.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 1.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 5 EXPR 0 0.0 0 FUNCTION 2.0*(4.0/10*x+3.0)
-FUNCT1 COMPONENT 6 EXPR 0 0.0 0 FUNCTION 1.0*(4.0/10*x+3.0)
+COMPONENT 0 FUNCTION 4.0/10*x+3.0
+COMPONENT 1 FUNCTION 3.0*(4.0/10*x+3.0)
+COMPONENT 2 FUNCTION 3.0*(4.0/10*x+3.0)
+COMPONENT 3 FUNCTION 4.0*(4.0/10*x+3.0)
+COMPONENT 4 FUNCTION 1.0*(4.0/10*x+3.0)
+COMPONENT 5 FUNCTION 2.0*(4.0/10*x+3.0)
+COMPONENT 6 FUNCTION 1.0*(4.0/10*x+3.0)
 ----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION -6.0/6.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
@@ -211,7 +206,7 @@ NDSURF                          6
 NDVOL                           1
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
-E 6 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 5.0 15.0 15.0 20.0 5.0 10.0 5.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
+E 6 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 5.0 15.0 15.0 20.0 5.0 10.0 5.0 FUNCT 0 0 0 0 0 0 0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           0
 ------------------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
@@ -225,75 +220,75 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // Surface x-
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface x+
-E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface y+
-E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface y-
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface z+
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface z-
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
 DPOINT                          8
 // Node x+y+z+
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Node x-y+z+
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Node x-y+z-
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Node x+y+z-
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Node x+y-z-
-E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Node x+y-z+
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Node x-y-z+
-E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Node x-y-z-
-E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 ------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           12
 // Line x+z+
-E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Line y+z+
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line x-z+
-E 3 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Line y-z+
-E 4 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line x+z-
-E 5 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Line y-z-
-E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line x-z-
-E 7 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 7 - NUMDOF 4 ONOFF 1 0 1 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Line y+z-
-E 8 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 8 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Line x-y-
-E 9 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 9 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Line x+y-
-E 10 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 10 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Line x-y+
-E 11 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 11 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Line x+y+
-E 12 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 12 - NUMDOF 4 ONOFF 1 1 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 ------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF                           6
 // Surface z+
-E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Surface z-
-E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Surface y-
-E 3 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Surface x-
-E 4 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 // Surface y+
-E 5 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Surface x+
-E 6 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 0 0 0 VAL 1.0 0.0 0.0 0.0 FUNCT 2 0 0 0
 -------------------------------------------DESIGN VOL PORO DIRICH CONDITIONS
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1

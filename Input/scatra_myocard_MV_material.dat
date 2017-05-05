@@ -38,8 +38,7 @@ MAXTIME                         900
 TIMESTEP                        0.1
 THETA                           0.5
 VELOCITYFIELD                   zero
-INITIALFIELD                    field_by_function
-INITFUNCNO                      1
+INITIALFIELD                    zero_field
 FSSUGRDIFF                      No
 MATID                           1
 SKIPINITDER                     yes
@@ -60,13 +59,6 @@ NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_myocard DIFF1 0.0001171 DIFF2 0.0001171 DIFF3 0.0001171 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1.0   t1    0.0 t2    2.0      //2ms activation S1
-CURVE1 on EXPR FUNC 0.0   t1    2.0 t2  350.0
-CURVE1 on EXPR FUNC 1.0   t1  350.0 t2  352.0      //2ms activation S1
-CURVE1 on EXPR FUNC 0.0   t1  352.0 t2  850.0
-CURVE1 on EXPR FUNC 1.0   t1  850.0 t2  852.0      //2ms activation S1
-CURVE1 on EXPR FUNC 0.0   t1  852.0 t2  853.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -75,7 +67,7 @@ NDVOL   1
 -----------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 1
 // left end
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.3 CURVE 1 FUNCT 0 Live Mid
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.3 FUNCT 1 Live Mid
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
@@ -89,7 +81,8 @@ NODE  6  DVOL 1
 NODE  7  DVOL 1
 NODE  8  DVOL 1
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 1 0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 7 TIMES 0 2 350 352 850 852 500000.0 DESCRIPTION 1 0 1 0 1 0
 -----------------------------------------------------------------NODE COORDS
 NODE 1   COORD   0.0000000000000001e-03  -5.0000000000000001e-03   5.0000000000000001e-03
 NODE 2   COORD   0.0000000000000001e-03  -5.0000000000000001e-03  -5.0000000000000001e-03

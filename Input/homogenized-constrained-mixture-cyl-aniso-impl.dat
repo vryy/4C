@@ -171,10 +171,10 @@ MAT 121 ELAST_CoupAnisoExpoActive K1 7.6 K2 11.4 GAMMA 0.0 K1COMP 7.6 K2COMP 11.
 MAT 31 ELAST_IsoNeoHooke MUE 72.0
 MAT 41 ELAST_IsoNeoHooke MUE 72.0
 MAT 51 ELAST_VolSussmanBathe KAPPA 720.0
-----------------------------------------------------------------------CURVE1
-CURVE 1 on EXPR FUNC t t1 0.0 t2 10.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 2 EXPR 0 0 0 FUNCTION atan(x/y)
+COMPONENT 0 FUNCTION 0
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION atan(x/y)
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          1
@@ -182,23 +182,23 @@ NDSURF                          7
 NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 3 - NUMDOF 3 ONOFF 1 0 0 VAL -13332.2668 0.0 0.0 CURVE none none none FUNCT 0 0 0 orthopressure
+E 3 - NUMDOF 3 ONOFF 1 0 0 VAL -13332.2668 0.0 0.0 FUNCT 0 0 0 orthopressure
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-//E 5 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 6 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+//E 5 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
 DSURF                           1
-E 4 - ROTANGLE 0.0 0.0 -1.0 CURVE none none none FUNCT 0 0 1 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
+E 4 - ROTANGLE 0.0 0.0 -1.0 FUNCT 0 0 1 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1261 QUANTITY dispy VALUE 1.51871778598079520e-04 TOLERANCE 1e-8
 ---------------------------------------------------------DNODE-NODE TOPOLOGY

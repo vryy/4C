@@ -157,8 +157,8 @@ MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 21000 NUE 0.3 DENS 1.0 THEXPANS 1
 MAT 2 THERM_FourierIso CAPA 420 CONDUCT 52
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 5.0 FACTOR 0 1000
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION t*1000/5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -166,18 +166,18 @@ NDSURF                          2
 NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           1
 // right surface: heatflux
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 20.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid // first 1 is loadcurve
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 20.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid // first 1 is loadcurve
 ----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
 DSURF                           1
 // left surface temperature
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 13 DSURFACE 1
 NODE 14 DSURFACE 1

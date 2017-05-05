@@ -5,7 +5,7 @@
 // 089/289-15262
 //
 ==================================================================
-                  General Data File BACI
+General Data File BACI
 ==================================================================
 -------------------------------------------------------------TITLE
 test case for Rayleigh-Plesset equation
@@ -165,22 +165,14 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 MAT 1 MAT_cavitation DYNVISCOSITY 0.798e-3 DENSITY 996.0 GAMMA 0.072 PVAPOR 4240.0
 MAT 2 MAT_Particle DENSITY 1.120 INITRADIUS 1.0e-5 NUE 0.0 YOUNG 1.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0e1 NUE 0.2 DENS 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -2.6e9*t+12000.0                                        t1 0.0 t2 0.000005 // linear decrease from 12000 to -1000 in [0,0.000005]s  /////-2.6e9*t+12000
-CURVE1 on EXPR FUNC -1000.0                                                 t1 0.000005 t2 0.000007 // constant value of -1000 in [0.000005,0.000007]s
-CURVE1 on EXPR FUNC 928571428.6*t-7500.0                                    t1 0.000007 t2 0.000021 // linear increase from -1000 to 12000 in [0.000007,0.000021]s
-CURVE1 on EXPR FUNC 12000.0                                                 t1 0.000021 t2 0.00035 // constant value of 12000 in [0.000021,0.00035]s
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 12000.0  // initial pressure identical to CURVE1
+COMPONENT 0 FUNCTION 0
+COMPONENT 1 FUNCTION 0
+COMPONENT 2 FUNCTION 0
+COMPONENT 3 FUNCTION 12000.0
 ----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION v
+VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 5 TIMES 0.0 0.000005 0.000007 0.000021 0.00035 DESCRIPTION -2.6e9*t+12000.0 -1000.0 928571428.6*t-7500.0 12000.0
 -------------------------------------------------RESULT DESCRIPTION
 PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE 5.00362842293659363e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 0.05 TOLERANCE 1.0e-12
@@ -199,7 +191,7 @@ NDPARTICLE  1
 -------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   1
 // prescribe pressure on fluid_volume
-E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 1.0 CURVE none none none 1 FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 1.0 FUNCT 0 0 0 2
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY

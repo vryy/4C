@@ -150,11 +150,9 @@ NONGAUSSPARAM1                  1.08574
 NONGAUSSPARAM2                  0.920457
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_AAANeoHooke YOUNG 0.3544 BETA 4.61 NUE 0.49 DENS 1.0e-7
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (0.5*sin(-3.1415927*0.5+t*3.14152927*t)+0.5) t1 0.0 t2 20.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 20.0 500000.0 DESCRIPTION (0.5*sin(-3.1415927*0.5+t*3.14152927*t)+0.5) (0.5*sin(-3.1415927*0.5+20*3.14152927*20)+0.5)
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -174,7 +172,7 @@ DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              inner_wall
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -0.0798 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -0.0798 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
@@ -198,11 +196,11 @@ DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 //                              clamped_side
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              free_side
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              clamp_at_ends
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

@@ -68,7 +68,7 @@ NDVOL                           0
 NDPARTICLE                      2
 -------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
 DPARTICLE                       1
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN PARTICLE INITIAL FIELD CONDITIONS
 DPARTICLE                       1
 E 2 - Velocity 1
@@ -133,15 +133,13 @@ NODE 8 COORD 1.1000000000000001e+00 1.1000000000000001e+00 1.1000000000000001e+0
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10. NUE 0.2 DENS 1.0
 MAT 2 MAT_Particle DENSITY 1.3 INITRADIUS 0.01 NUE 0.0 YOUNG 1.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 10. NUE 0.2 DENS 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t/1.5 t1 0. t2 1.5
 ----------------------------------------------------------------------FUNCT1
 // initial velocity (x component)
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 6.0
+COMPONENT 0 FUNCTION 6.0
 // initial velocity (y component)
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
 // initial velocity (z component)
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE 0.0 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE -1.0 TOLERANCE 1.0e-12

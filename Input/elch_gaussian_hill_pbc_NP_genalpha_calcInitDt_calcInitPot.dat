@@ -96,13 +96,13 @@ MAT 2 MAT_ion DIFFUSIVITY 0.0005 VALENCE +1.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY
 // Krylov space projection works only with one CrsMatrix -> Elch_ENC_PDE_ELIM
 MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0+((5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2)))
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1.0+((5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2))) // need posivtive concentrations!
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.5 // potential field -> integral of phi in domain will be always kept to 0.5, since integral over increments will be enforced to have integral value of zero!!!
+COMPONENT 0 FUNCTION 1.0+((5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2)))
+COMPONENT 1 FUNCTION 1.0+((5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2))) // need posivtive concentrations!
+COMPONENT 2 FUNCTION 0.5 // potential field -> integral of phi in domain will be always kept to 0.5, since integral over increments will be enforced to have integral value of zero!!!
 ----------------------------------------------------------RESULT DESCRIPTION
 // result test for doing 2steps (one cycle):
 // values below are identical to scatra version of this test case and must be fulfilled!!!

@@ -1,3 +1,8 @@
+//
+// Maintainer: XXX YYY
+// XXX
+// XXX
+//
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        2
 NODES                           3
@@ -56,12 +61,9 @@ NDVOL                           0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.0000179105 DENSITY 0.000001176 GAMMA 1.0
 MAT 2 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0e-1 Stiffness2 1.0e-1 Viscosity1 1.0e-1 Viscosity2 1.0e-1
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 500*(1-cos(pi*t)) t1 0.0 t2 1.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
+---------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 50000 DESCRIPTION 500*(1-cos(pi*t)) 500*(1-cos(pi*1))
 -------------------------DESIGN NODE Reduced D AIRWAYS PRESCRIBED CONDITIONS
 DPOINT                          2
 E 1 - pressure 1.0 1 none none

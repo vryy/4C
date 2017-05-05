@@ -1,7 +1,7 @@
 //
-// Maintainer: Matthias Mayr
-// mayr@mhpc.mw.tum.de
-// 089 - 289-10362
+// Maintainer: Andrea La Spina
+// laspina@lnm.mw.tum.de
+// 089 - 289-15265
 //
 -----------------------------------------------------------------------TITLE
 created by pre_exodus
@@ -233,20 +233,11 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.018 DENSITY 1.0E-3
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.E1 NUE 0.3 DENS 1E-0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (0.25*(1-cos(2*pi*t/120))) t1 0.0 t2 60.0
-CURVE1 on EXPR FUNC 0.5 t1 60.0 t2 3600.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC (0.25*(1-cos(2*pi*t/60))) t1 0.0 t2 30.0
-CURVE2 on EXPR FUNC (0.5*sin(2*pi*(t-15)/60)) t1 30.0 t2 1000.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION y
+COMPONENT 0 FUNCTION y
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0 0 FUNCTION (y^2)
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
+COMPONENT 0 FUNCTION y*a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 60 3600 DESCRIPTION (0.25*(1-cos(2*pi*t/120))) 0.5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          4
@@ -255,11 +246,11 @@ NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 // inflow
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.5 0.0 0.0 CURVE 1 none none FUNCT 1 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.5 0.0 0.0 FUNCT 2 0 0
 -------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE 1
 // flui_out
-E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
+E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE 2
 // coupling_struct

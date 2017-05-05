@@ -102,18 +102,10 @@ XFLUIDFLUID                     yes
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC BELTRAMI c1 1.0 c2 1.0
-----------------------------------------------------------------------CURVE2
-CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------FUNCT1
-FUNCT1 BELTRAMI
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-
+------------------------------------------------------------FUNCT1
+BELTRAMI c1 1.0 c2 1.0
+------------------------------------------------------------FUNCT2
+BELTRAMI c1 2.0 c2 1.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0
@@ -122,7 +114,7 @@ NDVOL 1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 1
 // Cube surface
-E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 CURVE 1 1 1 2 FUNCT 1 1 1 1
+E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 --------------------------------------DESIGN XFEM FLUIDFLUID SURF CONDITIONS
 DSURF 1
 // Sphere surface

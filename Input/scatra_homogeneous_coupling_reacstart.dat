@@ -65,7 +65,6 @@ RESTARTEVRY                     1
 MATID                           -1
 VELOCITYFIELD                   zero
 VELFUNCNO                       -1
-VELCURVENO                      -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CALCERROR                       No
@@ -227,25 +226,21 @@ MAT 78 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 0 0 0 0 REACCOEFF 
 MAT 79 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 -1 1 0 0 0 REACCOEFF 1.0 COUPLING michaelis_menten ROLE 0 0 0 0 0 0 0 -1 0 0 0 0 REACSTART 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0 3.0
 MAT 80 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 0 0 -1 0 0 REACCOEFF -2.0 COUPLING simple_multiplicative ROLE 0 0 0 0 0 0 0 0 0 1 0 0
 MAT 81 MAT_scatra_reaction NUMSCAL 12 STOICH 0 0 0 0 0 0 0 0 0 -1 -2 1 REACCOEFF 5.0 COUPLING simple_multiplicative ROLE 0 0 0 0 0 0 0 0 0 1 1 0 REACSTART 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 2.0 0.8 0.0
--------------------------------------------------------------CURVE1
--------------------------------------------------------------CURVE2
--------------------------------------------------------------CURVE3
--------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
-FUNCT 1 COMPONENT 0 EXPR 0 0 0 FUNCTION 3.0
-FUNCT 1 COMPONENT 1 EXPR 0 0 0 FUNCTION 3.0
-FUNCT 1 COMPONENT 2 EXPR 0 0 0  FUNCTION 4.0
-FUNCT 1 COMPONENT 3 EXPR 0 0 0 FUNCTION 1.0
-FUNCT 1 COMPONENT 4 EXPR 0 0 0 FUNCTION 2.0
-FUNCT 1 COMPONENT 5 EXPR 0 0 0  FUNCTION 1.0
-FUNCT 1 COMPONENT 6 EXPR 0 0 0 FUNCTION 3.0
-FUNCT 1 COMPONENT 7 EXPR 0 0 0 FUNCTION 10.0
-FUNCT 1 COMPONENT 8 EXPR 0 0 0  FUNCTION 1.0
-FUNCT 1 COMPONENT 9 EXPR 0 0 0  FUNCTION 1.0
-FUNCT 1 COMPONENT 10 EXPR 0 0 0  FUNCTION 1.0
-FUNCT 1 COMPONENT 11 EXPR 0 0 0  FUNCTION 1.0
+COMPONENT 0 FUNCTION 3.0
+COMPONENT 1 FUNCTION 3.0
+COMPONENT 2  FUNCTION 4.0
+COMPONENT 3 FUNCTION 1.0
+COMPONENT 4 FUNCTION 2.0
+COMPONENT 5  FUNCTION 1.0
+COMPONENT 6 FUNCTION 3.0
+COMPONENT 7 FUNCTION 10.0
+COMPONENT 8  FUNCTION 1.0
+COMPONENT 9  FUNCTION 1.0
+COMPONENT 10  FUNCTION 1.0
+COMPONENT 11  FUNCTION 1.0
 -------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi8
+COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi8
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION

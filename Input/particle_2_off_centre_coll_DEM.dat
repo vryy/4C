@@ -129,22 +129,20 @@ NODE 8 COORD 1.1000000000000001e+00 1.1000000000000001e+00 1.1000000000000001e+0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0E9 NUE 0.3 DENS 1.0
 MAT 2 MAT_Particle DENSITY 7.85E3 INITRADIUS 0.01 NUE 0.3 YOUNG 210.0E9
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t/1.5 t1 0. t2 1.5
 ----------------------------------------------------------------------FUNCT1
 // initial velocity (x component)
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 1.0
+COMPONENT 0 FUNCTION 1.0
 // initial velocity (y component)
-FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
 // initial velocity (z component)
-FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial velocity (x component)
-FUNCT2 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION -1.0
+COMPONENT 0 FUNCTION -1.0
 // initial velocity (y component)
-FUNCT2 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
 // initial velocity (z component)
-FUNCT2 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE 1.94976584290106406e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12

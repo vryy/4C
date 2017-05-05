@@ -94,8 +94,8 @@ DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           2
-E 21 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE none none FUNCT 0 0
-E 49 - NUMDOF 2 ONOFF 1 1 VAL 0.0 -1.0 CURVE none 1 FUNCT 0 0
+E 21 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
+E 49 - NUMDOF 2 ONOFF 1 1 VAL 0.0 -1.0 FUNCT 0 1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           0
@@ -5109,19 +5109,9 @@ NODE 1440 COORD 3.750837401696085e+00 2.014457284375037e-01 0.000000000000000e+0
 //                              MAT_Struct_NeoHooke
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.01
 MAT 2 ELAST_CoupNeoHooke YOUNG 15000.0 NUE 0.125
-----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 7.0
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.5 3.0 FACTOR 7.0 10.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 3 VALUES 0 7 10
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 329 QUANTITY dispx VALUE 1.64287231176420356e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 329 QUANTITY dispy VALUE -4.15899019305031548e+00 TOLERANCE 1e-8

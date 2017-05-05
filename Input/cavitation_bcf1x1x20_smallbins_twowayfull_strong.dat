@@ -170,17 +170,13 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 MAT 1 MAT_cavitation DYNVISCOSITY 3.73 DENSITY 0.970 GAMMA 0.0 PVAPOR 0.0
 MAT 2 MAT_Particle DENSITY 1.120 INITRADIUS 2.5e-3 NUE 0.0 YOUNG 1.0
 MAT 3 MAT_Struct_StVenantKirchhoff   YOUNG 210.0E9 NUE 0.3 DENS 7.8E3
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 1.0+100*t t1 0.0 t2 1000.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 1.0
+COMPONENT 3 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 1.0+100*t
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
@@ -196,21 +192,21 @@ E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  6
 // neg_x_surface
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 1 none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 FUNCT 0 0 2 0
 // pos_x_surface
-E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 1 none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 FUNCT 0 0 2 0
 // neg_y_surface
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 1 none FUNCT 0 0 0 0
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 FUNCT 0 0 2 0
 // pos_y_surface
-E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 1 none FUNCT 0 0 0 0
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 FUNCT 0 0 2 0
 // neg_z_surface
-E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 1 none FUNCT 0 0 0 0
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 FUNCT 0 0 2 0
 // pos_z_surface
-E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 1 none FUNCT 0 0 0 0
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 FUNCT 0 0 2 0
 --------------------------------------------DESIGN PARTICLE INFLOW CONDITION
 DPARTICLE 1
 // particle inflow
-E 1 - vertex1 4.0 4.0 12.0 vertex2 4.0 4.0 12.0 num_per_dir 1 1 1 inflow_vel 0.0 0.0 1.0 inflow_vel_curve 1 inflow_freq 200 timedelay 0.0 stopinflowtime 999
+E 1 - vertex1 4.0 4.0 12.0 vertex2 4.0 4.0 12.0 num_per_dir 1 1 1 inflow_vel 0.0 0.0 1.0 inflow_vel_funct 2 inflow_freq 200 timedelay 0.0 stopinflowtime 999
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY

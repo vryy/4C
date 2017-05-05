@@ -1,7 +1,7 @@
 //
-// Maintainer: Matthias Mayr
-// mayr@mhpc.mw.tum.de
-// 089 - 289-10362
+// Maintainer: Andrea La Spina
+// laspina@lnm.mw.tum.de
+// 089 - 289-15265
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
@@ -112,8 +112,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 200000 NUE 0.49 DENS 7.8e-7 THEXPANS 0.
 MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 1
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -t*t t1 0.0 t2 2.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION -t*t
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          0
@@ -122,33 +122,33 @@ NDVOL                           3
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          3
 // fluid_inflow_nodes
-E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid_fsi_nodes
-E 2 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // struct_dry_nodes
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 // fluid_inflow_surf
-E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // fluid_fsi_surf
-E 2 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // struct_dry_surf
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // fluid_vol
-E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // struct_vol
-E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           1
 // fluid_inflow_surf
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 --------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL                            1
 // fluid_vol
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
 // fluid_fsi_surf

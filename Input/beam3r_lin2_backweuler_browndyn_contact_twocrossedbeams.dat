@@ -89,11 +89,11 @@ NDSURF  0
 NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
-E 2 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 -0.3 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 -0.3 0.0 0.0 0.0 0.0 FUNCT 0 1 0 0 0 0
 --------------------------------------------------FILAMENT NUMBERS
 DLINE 2
 E 1 - 0
@@ -172,8 +172,8 @@ NODE           22     COORD 7.000000000000000e+00     3.000000000000000e+00     
 20 BEAM3R LIN2      21     22 MAT 1 TRIADS 0.0 0.0 0.0  0.0 0.0 0.0
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 1.9e-05 SHEARCORR 1.0 MOMINPOL 5.7e-11 MOMIN2 2.85e-11 MOMIN3 2.85e-11
----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.01 FACTOR 0.0 1.0
+-------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 100*t
 ---------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -3.43813859926662344e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -3.03384163350776892e-01 TOLERANCE 1e-10

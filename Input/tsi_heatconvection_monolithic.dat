@@ -9,25 +9,20 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus and jou2dat on Di 13. Dez 08:12:24 CET 2011
-
 2nd problem of Danilovskaya
 c.f. M.Tanaka et al.(1995), Application of boundary element method to
 3-D problems of coupled thermoelasticity
-
 benchmark for linear thermo-structure interaction
 -> validation of fully-coupled partitioned TSI-algorithm
 -> for comparison with literature use: tmax = 4.0, dt = 0.01
-
 Be careful if you want to compare these results with Tanaka: coupling
 term in thermal equation depends only on initial temperature T_0,
 whereas:
 in BACI the coupling term depends on current temperature T
 -> Switch on #define COUPLEINITTEMPERATURE in tsi_defines.H
-
 12x4x4 elements, i.e., 192 elements: to test monolithic TSI with
 BGS(AMG) mesh is too coarse, but for nightly test case better and
 faster.
-
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      192
 //NODES                         325
@@ -230,10 +225,11 @@ MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e08 NUE 0.3 DENS 7.85e-06 THEX
 MAT 2 THERM_FourierIso CAPA 6.445 CONDUCT 1031.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/4)-(pi/2)))+0.5 t1 0.0 t2 4.0 // Tmax=4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 273.15 //0°C
+COMPONENT 0 FUNCTION 273.15 //0°C
+------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 4 500000.0 DESCRIPTION 0.5*(sin((t*pi/4)-(pi/2)))+0.5 0.5*(sin((4*pi/4)-(pi/2)))+0.5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -242,27 +238,27 @@ NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // STR left T_xx=0
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ---------------------------------------DESIGN SURF THERMO NEUMANN CONDITIONS
 DSURF                           5
 // No THR heatflux front z=2
-E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux upper surf y=4
-E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux right surf x=6
-E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 5 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux lower surf y=0
-E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 6 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 // No THR heatflux back z=-2.0
-E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Live Mid
+E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // No STR Neumann right surf x=6
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 // STR fix vol in y,z
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ----------------------------------------DESIGN SURF THERMO DIRICH CONDITIONS
 DSURF 0 //1
 // THR left surf heat convection
@@ -270,7 +266,7 @@ DSURF 0 //1
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           1
 // THR left surf heat convection
-E 8 - Tempnp coeff -6.444497425 surtemp 373.15 surtempcurve none curve none
+E 8 - Tempnp coeff -6.444497425 surtemp 373.15 surtempfunct 0 funct 0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 49 DSURFACE 1
 NODE 50 DSURFACE 1

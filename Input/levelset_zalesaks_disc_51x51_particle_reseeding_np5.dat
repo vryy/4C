@@ -53,7 +53,6 @@ THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.4
 VELFUNCNO                       1
-VELCURVENO                      -1
 VELOCITYFIELD                   function
 RESULTSEVRY                     1
 CONVFORM                        convective
@@ -94,20 +93,16 @@ PARTICLE DIS particle NODE 5951 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 5610 QUANTITY dispx VALUE -2.03401068074262253e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 5610 QUANTITY dispy VALUE 7.56031890277376328e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 5610 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12
------------------------------------------------------------CURVE1
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1*(-y)
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.1*x
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.1*(-y)
+COMPONENT 1 FUNCTION 0.1*x
+COMPONENT 2 FUNCTION 0.0
 ------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION sqrt(x*x+y*y)-sqrt(0.20)
+COMPONENT 0 FUNCTION sqrt(x*x+y*y)-sqrt(0.20)
 ------------------------------------------------------------FUNCT3
-FUNCT3 ZALESAKSDISK
+ZALESAKSDISK
 ------------------------------------------------------------FUNCT4
-FUNCT4 EXPR 0 0.0 0 FUNCTION x
+COMPONENT 0 FUNCTION x
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0

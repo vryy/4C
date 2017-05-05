@@ -64,12 +64,10 @@ NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.01
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1)-(pi/2)))+0.5 t1 0.0 t2 1.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.5
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.5
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 0.5
+COMPONENT 1 FUNCTION 0.5
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1265 QUANTITY phi1 VALUE 5.65262708281948911e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 569 QUANTITY phi1 VALUE 4.86300567208149848e-01 TOLERANCE 1e-10
@@ -85,8 +83,8 @@ NDSURF                          1
 NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
-E 1 - NUMDOF 1 ONOFF 1 VAL 0.1 CURVE none FUNCT 0
-E 2 - NUMDOF 1 ONOFF 1 VAL 0.9 CURVE none FUNCT 0
+E 1 - NUMDOF 1 ONOFF 1 VAL 0.1 FUNCT 0
+E 2 - NUMDOF 1 ONOFF 1 VAL 0.9 FUNCT 0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
 DLINE                           2
 // left internal boundary

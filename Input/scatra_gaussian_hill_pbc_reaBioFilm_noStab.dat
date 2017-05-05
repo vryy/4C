@@ -65,17 +65,12 @@ MAT 4 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 1 2 3 NUMREAC 3 REACIDS 5 6
 MAT 5 MAT_scatra_reaction NUMSCAL 3 STOICH -1 0 0 REACCOEFF 2.0 COUPLING michaelis_menten ROLE 0.300 0.0 0.0
 MAT 6 MAT_scatra_reaction NUMSCAL 3 STOICH 0 -1 0 REACCOEFF 0.2 COUPLING michaelis_menten ROLE 0.0 0.030 0.0
 MAT 7 MAT_scatra_reaction NUMSCAL 3 STOICH 0 0 -1 REACCOEFF 0.02 COUPLING michaelis_menten ROLE 0.0 0.0 0.003
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+COMPONENT 0 FUNCTION 1.0
+COMPONENT 1 FUNCTION 0.0
+COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION (5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2))
+COMPONENT 0 FUNCTION (5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2))
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5

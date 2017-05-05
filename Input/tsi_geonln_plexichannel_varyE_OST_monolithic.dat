@@ -9,20 +9,15 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus Wed May 22 10:45:07 CET 2013
-
 PRELIMINARY investigations for the design of the experiment of TP D9 of the
 SFB-TRR40: design of a Plexiglas channel loaded by a heatflux on the inner side
-
 compared to design simulation the present mesh (nightly test) is quite coarse
 number of elements in directions: x,y,z = 17,36,1
-
 curve fitting of E(T) using a polynom of order 6
 polynom valid ONLY for temperatures between [50°C,80°C], according to experimental data
 K.F. Lei, W.J. Li, Y. Yam (2004):
 "Effects of contact-stress on hot-embossed PMMA microchannel wall profile"
-
 chosen units: [m,kg,°C,s]
-
 stationary                      solution:
 STRUCTURE DIS structure NODE 433 QUANTITY dispx VALUE 0 TOLERANCE 1e-9 NAME ux(-3.5,0,0)
 STRUCTURE DIS structure NODE 433 QUANTITY dispy VALUE 0 TOLERANCE 1e-9 NAME uy(-3.5,0,0)
@@ -32,7 +27,6 @@ STRUCTURE DIS structure NODE 141 QUANTITY dispx VALUE -2.00898687345515845e-04 T
 THERMAL DIS thermo NODE 433 QUANTITY temp VALUE 79.9973213105214143 TOLERANCE 1.0e-8 NAME T(-3.5,0,0)
 THERMAL DIS thermo NODE 421 QUANTITY temp VALUE 79.9836533624902302 TOLERANCE 1.0e-8 NAME T(3.5,30,0)
 THERMAL DIS thermo NODE 141 QUANTITY temp VALUE 72.1374787600902448 TOLERANCE 1.0e-8 NAME T(8.5,35,0)
-
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      385
 //NODES                         936
@@ -200,10 +194,11 @@ MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 6 YOUNG 1.30406e+11 -1.09895e+10 3.64935e
 MAT 2 THERM_FourierIso CAPA 1737210 CONDUCT 0.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (1-cos(t*pi/500.0)) t1 0.0 t2 500.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT 1 EXPR 0 0 0 FUNCTION 50.0
+COMPONENT 0 FUNCTION 50.0
+-------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 500 500000.0 DESCRIPTION (1-cos(t*pi/500.0)) (1-cos(500*pi/500.0))
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          1
@@ -212,23 +207,23 @@ NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              surface_pseudo_orthopressure
-E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -5.0e5 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
+E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -5.0e5 0.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              bottom_line_fixed_xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 //                              bottom_surf_fixed_xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              front__end_surf_normal_z_fixed
-E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF                           2
 //                              inner_surf_temperature
-E 4 - Tempnp coeff -42700.0 surtemp 80.0 surtempcurve none curve none
+E 4 - Tempnp coeff -42700.0 surtemp 80.0  surtempfunct 0 funct 0
 //                              outer_surf_temperature
-E 5 - Tempnp coeff -5.0 surtemp 50.0 surtempcurve none curve none
+E 5 - Tempnp coeff -5.0 surtemp 50.0  surtempfunct 0 funct 0
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1

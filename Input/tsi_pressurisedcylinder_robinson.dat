@@ -9,25 +9,18 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 created by pre_exodus and jou2dat on Wed Jul 18 16:10:44 CEST 2012
-
 example taken from "VK Arya & A Kaufman, Finite Element Implementation of Robinson’s
 unified viscoplastic model and its application to some uniaxial and multiaxial
 problems, NASA-TM-89891, 1987."
-
 thick-walled cylinder subjected to internal pressure under isothermal conditions
 (constant temperature (T=699.81667K), alpha_T=0).
-
 quarter of a cylinder (r_i=4.06mm, r_a=6.35mm) loaded by an pseudo_orthopressure at
 the inner side of the body. The load is applied incrementally in the first 2
 seconds and then held constant at 25.17MPa.
-
 Due to the softening of the material, the stresses decrease in time.
-
 constant temperature of the body = 800° F = 699.81667 K
-
 //                              2013-04-05
 // changed convergence criterion from RelIter0 to Rel using new framwork
-
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      675
 //NODES                         1472
@@ -171,11 +164,11 @@ MAT 2 THERM_FourierIso CAPA 3.375e3 CONDUCT 5.2e4
 //
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0
-//CURVE1 on EXPR FUNC 0.5*(sin((t*pi/2)-(pi/2)))+0.5 t1 0.0 t2 2.0
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 699.81667 // = 800°F
+COMPONENT 0 FUNCTION 699.81667 // = 800°F
+-------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5 500000.0 DESCRIPTION 0.5*(sin((t*pi/5)-(pi/2)))+0.5 0.5*(sin((5*pi/5)-(pi/2)))+0.5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2
@@ -184,29 +177,29 @@ NDVOL                           2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              surf_pseudo_orthopressure
-E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -2.517e4 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 pseudo_orthopressure Mid
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -2.517e4 0.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 pseudo_orthopressure Mid
 // without time curve
 //E 1 - 0 1 0 0 0 0 0 -2.517e4 0.0 0.0 0.0 0.0 0.0 pseudo_orthopressure Mid 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              line_sym_edge__fix_yz_move_x
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              line_sym_edge_fix_xz_move_y
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 //                              surf_normal_x_and_fixed_in_x
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              surf_normal_y_and_fixed_in_y
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //                              fixed_complete_body_in_z
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL                            1
 //                              constant_temperature
-E 2 - NUMDOF 1 ONOFF 1 VAL 699.81667 CURVE 0.0 FUNCT 0.0
+E 2 - NUMDOF 1 ONOFF 1 VAL 699.81667 FUNCT 0
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1
