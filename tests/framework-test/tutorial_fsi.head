@@ -2340,11 +2340,6 @@ MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 // SRC_FIELD '' SRC_MAT 0 TAR_FIELD '' TAR_MAT 0
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 4
-----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 200.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 // CURVE 0 on Polygonal T 0 BYSTEP No 0 0 BYABSTIME Yes 0 0 FACTOR 0 0
 // CURVE 0 on Polygonal T 0 BYABSTIME Yes 0 0 FACTOR 0 0
 // CURVE 0 on Explicit FUNC '' c1 0 c2 0
@@ -2352,11 +2347,12 @@ CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 200.0
 // CURVE 0 on LungSinus Frequ 0 pPEEP 0 Phase 0
 // CURVE 0 on PhysiologicalWaveform InterpolType '' Period 0 Flowrate 0 Samplingpoints 0 Arrayread [...]
 // CURVE 0 on PeriodicRepetition Period 0 t1 0 t2 0
-----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION 10*(y-1)
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
+-------------------------------------------------------------FUNCT1
+FUNCTION (1-cos(2*t*pi/5))
+-------------------------------------------------------------FUNCT2
+FUNCTION 10*(y-1)*(1-cos(2*t*pi/5))
+-------------------------------------------------------------FUNCT3
+-------------------------------------------------------------FUNCT4
 // FUNCT 0 LINE_LIN 0 0 0 0 0 0 0 0
 // FUNCT 0 LINE_QUAD 0 0 0 0 0 0
 // FUNCT 0 RADIUS_LIN 0 0 0 0 0 0 0 0
