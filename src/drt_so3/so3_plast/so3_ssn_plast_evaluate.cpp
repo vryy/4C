@@ -3310,3 +3310,19 @@ void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::HeatFlux(
     Epetra_SerialDenseMatrix* ,
     Epetra_SerialDenseMatrix* ,
     Epetra_SerialDenseMatrix* );
+
+
+template
+void DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>::HeatFlux(
+    const std::vector<double>& ,
+    const std::vector<double>& ,
+    const LINALG::Matrix<nsd_,1>& ,
+    const LINALG::Matrix<nsd_,1>& ,
+    double& ,
+    Epetra_SerialDenseMatrix* ,
+    Epetra_SerialDenseMatrix* ,
+    LINALG::Matrix<nsd_,1>* ,
+    LINALG::Matrix<nsd_,1>* ,
+    Epetra_SerialDenseMatrix* ,
+    Epetra_SerialDenseMatrix* ,
+    Epetra_SerialDenseMatrix* );
