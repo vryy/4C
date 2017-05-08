@@ -1878,6 +1878,9 @@ MORTAR::MortarElementNitscheContainer& MORTAR::MortarElement::GetNitscheContaine
     case  DRT::Element::tet4:
       nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData<DRT::Element::tet4>());
       break;
+    case  DRT::Element::hex27:
+      nitsche_container_=Teuchos::rcp(new MORTAR::MortarElementNitscheData<DRT::Element::hex27>());
+      break;
     default: dserror("Nitsche data container not ready. Just add it here...");
     }
   return *nitsche_container_;

@@ -787,12 +787,6 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(
     GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test_d,
     GEN::pairedvector<int,LINALG::SerialDenseVector>& deriv_adjoint_test_T)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* parent_ele =
-      dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(
-          moEle.ParentElement());
-  if (!parent_ele)
-    dserror("thermo-mechanical Nitsche contact only for So3_Plast<DRT::Element::hex8> for now.");
-
   LINALG::Matrix<dim,1> pxsi(true);
   LINALG::Matrix<dim,dim> derivtravo_slave;
   DRT::Element::DiscretizationType distype = moEle.ParentElement()->Shape();
@@ -801,17 +795,8 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(
   case DRT::Element::hex8:
     SoEleGP<DRT::Element::hex8,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
     break;
-  case DRT::Element::tet4:
-    SoEleGP<DRT::Element::tet4,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::quad4:
-    SoEleGP<DRT::Element::quad4,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::quad9:
-    SoEleGP<DRT::Element::quad9,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::tri3:
-    SoEleGP<DRT::Element::tri3,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
+  case DRT::Element::hex27:
+    SoEleGP<DRT::Element::hex27,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
     break;
   default:
     dserror("Nitsche contact not implemented for used (bulk) elements");
@@ -1087,53 +1072,70 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(
     return;
   }
 
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* parent_ele =
-      dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(
-          moEle.ParentElement());
-  if (!parent_ele)
-    dserror("thermo-mechanical Nitsche contact only for So3_Plast<DRT::Element::hex8> for now.");
-
   LINALG::Matrix<dim,1> pxsi(true);
   LINALG::Matrix<dim,dim> derivtravo_slave;
   DRT::Element::DiscretizationType distype = moEle.ParentElement()->Shape();
-  switch (distype)
-  {
-  case DRT::Element::hex8:
-    SoEleGP<DRT::Element::hex8,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::tet4:
-    SoEleGP<DRT::Element::tet4,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::quad4:
-    SoEleGP<DRT::Element::quad4,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::quad9:
-    SoEleGP<DRT::Element::quad9,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  case DRT::Element::tri3:
-    SoEleGP<DRT::Element::tri3,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
-    break;
-  default:
-    dserror("Nitsche contact not implemented for used (bulk) elements");
-  }
 
   double q=0;
   Epetra_SerialDenseMatrix dq_dT_ele, dq_dd_ele, d2q_dT_dd, d2q_dT_dn,d2q_dT_dpxi;
   LINALG::Matrix<dim,1> dq_dn, dq_dpxi;
 
-  parent_ele->HeatFlux(
-      moEle.MoData().ParentTemp(),
-      moEle.MoData().ParentDisp(),
-      pxsi,
-      normal,
-      q,
-      & dq_dT_ele,
-      & dq_dd_ele,
-      & dq_dn,
-      & dq_dpxi,
-      & d2q_dT_dd,
-      & d2q_dT_dn,
-      & d2q_dT_dpxi);
+  switch (distype)
+  {
+  case DRT::Element::hex8:
+  {
+    DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* parent_ele =
+        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(
+            moEle.ParentElement());
+    if (!parent_ele)
+      dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
+
+    SoEleGP<DRT::Element::hex8,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
+
+    parent_ele->HeatFlux(
+        moEle.MoData().ParentTemp(),
+        moEle.MoData().ParentDisp(),
+        pxsi,
+        normal,
+        q,
+        & dq_dT_ele,
+        & dq_dd_ele,
+        & dq_dn,
+        & dq_dpxi,
+        & d2q_dT_dd,
+        & d2q_dT_dn,
+        & d2q_dT_dpxi);
+    break;
+  }
+  case DRT::Element::hex27:
+  {
+    DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>* parent_ele =
+        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(
+            moEle.ParentElement());
+    if (!parent_ele)
+      dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
+
+    SoEleGP<DRT::Element::hex27,dim>(moEle,gp_wgt,boundary_gpcoord,pxsi,derivtravo_slave);
+
+    parent_ele->HeatFlux(
+        moEle.MoData().ParentTemp(),
+        moEle.MoData().ParentDisp(),
+        pxsi,
+        normal,
+        q,
+        & dq_dT_ele,
+        & dq_dd_ele,
+        & dq_dn,
+        & dq_dpxi,
+        & d2q_dT_dd,
+        & d2q_dT_dn,
+        & d2q_dT_dpxi);
+    break;
+  }
+  default:
+    dserror("Nitsche contact not implemented for used (bulk) elements");
+    break;
+  }
 
   heatflux+=w*q;
 

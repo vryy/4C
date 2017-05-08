@@ -33,6 +33,9 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
     else
       dserror("how can an hex8 element have a surface that is not quad4 ???");
     break;
+  case DRT::Element::hex27:
+      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::hex27,DRT::Element::quad9>(parent_disp);
+      break;
   default:
     dserror("parent shape not implemented");
   }

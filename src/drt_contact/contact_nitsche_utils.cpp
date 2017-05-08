@@ -104,3 +104,4 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(
 
 template class MORTAR::MortarElementNitscheData<DRT::Element::hex8>;
 template class MORTAR::MortarElementNitscheData<DRT::Element::tet4>;
+template class MORTAR::MortarElementNitscheData<DRT::Element::hex27>;

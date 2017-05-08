@@ -1466,13 +1466,14 @@ void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling(
       return;
 
     // create an integrator instance with correct NumGP and Dim
-    CONTACT::CoIntegrator integrator(Params(), SlaveElement().Shape(), Comm());
+    Teuchos::RCP<CONTACT::CoIntegrator> integrator =
+        CONTACT::INTEGRATOR::BuildIntegrator(stype_,Params(),SlaveElement().Shape(),Comm());
 
     bool boundary_ele = false;
     bool proj = false;
 
     //Perform integration and linearization
-    integrator.IntegrateDerivEle3D(SlaveElement(), MasterElements(),
+    integrator->IntegrateDerivEle3D(SlaveElement(), MasterElements(),
         &boundary_ele, &proj, Comm(),mparams_ptr);
 
     if (IntType() == INPAR::MORTAR::inttype_elements_BS)
@@ -1557,7 +1558,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling(
   //*********************************
   // Mortar Contact
   //*********************************
-  if(algo==INPAR::MORTAR::algorithm_mortar)
+  if(algo==INPAR::MORTAR::algorithm_mortar || algo==INPAR::MORTAR::algorithm_gpts)
     IntegrateCoupling(mparams_ptr);
 
   //*********************************
