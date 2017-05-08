@@ -74,16 +74,16 @@ SRC_FIELD scatra SRC_MAT 1 TAR_FIELD thermo TAR_MAT 6 // anode
 SRC_FIELD scatra SRC_MAT 2 TAR_FIELD thermo TAR_MAT 7 // electrolyte
 SRC_FIELD scatra SRC_MAT 3 TAR_FIELD thermo TAR_MAT 8 // cathode
 -------------------------------------------------------------FUNCT1
-COMPONENT 0  0.0 0.0 0.0 FUNCTION 10.88              // initial concentration in anode
-COMPONENT 1  0.0 0.0 0.0 FUNCTION 0.0                // initial electric potential in anode
+COMPONENT 0 FUNCTION 10.88              // initial concentration in anode
+COMPONENT 1 FUNCTION 0.0                // initial electric potential in anode
 -------------------------------------------------------------FUNCT2
-COMPONENT 0  0.0 0.0 0.0 FUNCTION 1.2                // initial concentration in electrolyte
-COMPONENT 1  0.0 0.0 0.0 FUNCTION -0.080830788307857 // initial electric potential in electrolyte
+COMPONENT 0 FUNCTION 1.2                // initial concentration in electrolyte
+COMPONENT 1 FUNCTION -0.080830788307857 // initial electric potential in electrolyte
 -------------------------------------------------------------FUNCT3
-COMPONENT 0  0.0 0.0 0.0 FUNCTION 10.56              // initial concentration in cathode
-COMPONENT 1  0.0 0.0 0.0 FUNCTION 3.892392107528559  // initial electric potential in cathode
+COMPONENT 0 FUNCTION 10.56              // initial concentration in cathode
+COMPONENT 1 FUNCTION 3.892392107528559  // initial electric potential in cathode
 -------------------------------------------------------------FUNCT4
-COMPONENT 0  0.0 0.0 0.0 FUNCTION 300.0              // initial temperature
+FUNCTION 300.0                          // initial temperature
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 8.25404354207798185e+00 TOLERANCE 1.e-09                  // local lithium concentration at anode-electrolyte interface (anode side)
 SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE -7.10585317795364062e-08 TOLERANCE 1.e-16                 // local electric potential at anode-electrolyte interface (anode side)

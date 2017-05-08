@@ -81,7 +81,8 @@ COMPONENT 1 FUNCTION 4.0087   // initial electric potential in cathode
 -------------------------------------------------------------FUNCT4
 COMPONENT 0 FUNCTION 300.0    // initial temperature
 -------------------------------------------------------------FUNCT5
-FUNCTION 0.5*(sin((t*pi/7.0)-(pi/2)))+0.5
+FUNCTION a
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 7.0 20.0 DESCRIPTION 0.5*(sin((t*pi/7.0)-(pi/2)))+0.5 1.0
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 2066 QUANTITY phi1 VALUE 1.55898553223005099e+01 TOLERANCE 1.e-08                // local lithium concentration at anode-electrolyte interface (anode side)
 SCATRA DIS scatra NODE 2066 QUANTITY phi2 VALUE 1.18996813934742502e-02 TOLERANCE 1.e-11                // local electric potential at anode-electrolyte interface (anode side)
