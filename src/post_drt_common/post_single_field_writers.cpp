@@ -481,9 +481,6 @@ void ThermoFilter::WriteAllResults(PostField* field)
   // write temperature rate
   //writer_->WriteResult("rate", "rate", dofbased, numdofpernode);
 
-  // write element results (e.g. element owner)
-  WriteElementResults(field);
-
   if (heatfluxtype_ != "none")
   {
     // although appearing here twice, only one function call to PostHeatflux
@@ -505,6 +502,9 @@ void ThermoFilter::WriteAllResults(PostField* field)
 
   // write displacement field
   writer_->WriteResult("displacement", "displacement", nodebased, field->problem()->num_dim());
+
+  // write element results (e.g. element owner)
+  WriteElementResults(field);
 
 } // ThermoFilter::WriteAllResults
 
