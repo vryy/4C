@@ -1262,20 +1262,20 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
+      // since material has only 4 GPs with density information!
+      double density=0.;
+      double vol=0.;
+
+      for (int gp4=0; gp4<NUMGPT_SOTET10; ++gp4)
+      {
+        vol += gpweights_4gp[gp4];
+        density += gpweights_4gp[gp4] * Material()->Density(gp4);
+      }
+      density /= vol;
+
       //consistent mass matrix evaluated using a 11-point rule
       for (int gp=0; gp<NUMGPT_MASS_SOTET10; gp++)
       {
-        // since material has only 4 GPs with density information!
-        double density=0.;
-        double vol=0.;
-
-        for (int gp4=0; gp4<NUMGPT_SOTET10; ++gp4)
-        {
-          vol += gpweights_4gp[gp4];
-          density += gpweights_4gp[gp4] * Material()->Density(gp4);
-        }
-        density /= vol;
-
         // integrate consistent mass matrix
         double detJ_mass = detJ_mass_[gp];
         double detJ_mass_w = detJ_mass*gpweights_11gp[gp];
