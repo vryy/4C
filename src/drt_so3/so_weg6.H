@@ -407,17 +407,23 @@ protected:
   virtual void InitJacobianMapping();
 
   //! Calculate nonlinear stiffness and mass matrix
-  virtual void sow6_nlnstiffmass(std::vector<int>&         lm,
-                                 std::vector<double>&      disp,
-                                 std::vector<double>&      residual,
-                                 LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,
-                                 LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,
-                                 LINALG::Matrix<NUMDOF_WEG6,1>* force,
-                                 LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestress,
-                                 LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestrain,
-                                 Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
-                                 const INPAR::STR::StressType             iostress,
-                                 const INPAR::STR::StrainType             iostrain);
+  virtual void sow6_nlnstiffmass(
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>*      vel,           ///< current velocities
+      std::vector<double>*      acc,           ///< current accelerations
+      std::vector<double>&      residual,       ///< current residual displ
+      std::vector<double>&      dispmat,        ///< current material displacements
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix, ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,  ///< element mass matrix
+      LINALG::Matrix<NUMDOF_WEG6,1>* force,                 ///< element internal force vector
+      LINALG::Matrix<NUMDOF_WEG6,1>* forceinert,                 ///< element inertial force vector
+      LINALG::Matrix<NUMDOF_WEG6,1>* force_str,                 ///< element structural force vector
+      LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestress,   ///< stresses at GP
+      LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestrain,   ///< strains at GP
+      Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType   iostress,  ///< stress output option
+      const INPAR::STR::StrainType   iostrain);  ///< strain output option
 
   //! remodeling for fibers at the end of time step (st 01/10)
   void sow6_remodel(

@@ -27,6 +27,8 @@
 #include "prestress.H"
 #include "../drt_patspec/patspec.H"
 
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -43,7 +45,7 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
   LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOP5,1> elevec1(elevec1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOP5,1> elevec2(elevec2_epetra.A(),true);
-  // elevec3 is not used anyway
+  LINALG::Matrix<NUMDOF_SOP5,1> elevec3(elevec3_epetra.A(),true);
 
   // start with "none"
   DRT::ELEMENTS::So_pyramid5fbar::ActionType act = So_pyramid5fbar::none;
@@ -88,8 +90,10 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       std::vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      nlnstiffmass(lm,mydisp,NULL,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
-        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+      std::vector<double> mydispmat(lm.size(),0.0);
+
+      nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,NULL,NULL,params,
+                                  INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -106,9 +110,10 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
+      std::vector<double> mydispmat(lm.size(),0.0);
 
-      nlnstiffmass(lm,mydisp,NULL,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
-        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+      nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,matptr,NULL,&elevec1,NULL,NULL,NULL,NULL,NULL,params,
+                                  INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -125,7 +130,9 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5> myemat(true);
-      nlnstiffmass(lm,mydisp,NULL,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
+      std::vector<double> mydispmat(lm.size(),0.0);
+
+      nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,NULL,NULL,params,
         INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
@@ -142,18 +149,25 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      // need current velocities and accelerations (for non constant mass matrix)
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
       Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState("acceleration");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (vel==Teuchos::null ) dserror("Cannot get state vectors 'velocity'");
       if (acc==Teuchos::null ) dserror("Cannot get state vectors 'acceleration'");
 
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      std::vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      std::vector<double> myvel(lm.size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       std::vector<double> myacc(lm.size());
       DRT::UTILS::ExtractMyValues(*acc,myacc,lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-      nlnstiffmass(lm,mydisp,&myacc,myres,&elemat1,&elemat2,&elevec1,&elevec2,NULL,NULL,NULL,params,
+      std::vector<double> mydispmat(lm.size(),0.0);
+
+      nlnstiffmass(lm,mydisp,&myvel,&myacc,myres,mydispmat,&elemat1,&elemat2,&elevec1,&elevec2,&elevec3,NULL,NULL,NULL,params,
         INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
       if (act==calc_struct_nlnstifflmass) sop5_lumpmass(&elemat2);
@@ -182,13 +196,15 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
+        std::vector<double> mydispmat(lm.size(),0.0);
+
         // in case of small strain materials calculate plastic strains for post processing
         Teuchos::RCP<std::vector<char> > plstraindata = params.get<Teuchos::RCP<std::vector<char> > >("plstrain",Teuchos::null);
         if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
         LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D> plstrain;
         INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
-        nlnstiffmass(lm,mydisp,NULL,myres,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+        nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         {
           DRT::PackBuffer data;
           AddtoPack(data, stress);
@@ -688,21 +704,24 @@ int DRT::ELEMENTS::So_pyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& para
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(
-      std::vector<int>&         lm,             // location matrix
-      std::vector<double>&      disp,           // current displacements
-      std::vector<double>*      acc,           // current accelerations
-      std::vector<double>&      residual,       // current residual displ
-      LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5>* stiffmatrix, // element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5>* massmatrix,  // element mass matrix
-      LINALG::Matrix<NUMDOF_SOP5,1>* force,                 // element internal force vector
-      LINALG::Matrix<NUMDOF_SOP5,1>* forceinert,                 // element inertial force vector
-      LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
-      LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
-      LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
-      Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
-      const INPAR::STR::StressType   iostress,  // stress output option
-      const INPAR::STR::StrainType   iostrain,  // strain output option
-      const INPAR::STR::StrainType   ioplstrain)  // strain output option
+    std::vector<int>&         lm,             // location matrix
+    std::vector<double>&      disp,           // current displacements
+    std::vector<double>*      vel,           // current velocities
+    std::vector<double>*      acc,           // current accelerations
+    std::vector<double>&      residual,       // current residual displ
+    std::vector<double>&      dispmat,        // current material displacements
+    LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5>* stiffmatrix, // element stiffness matrix
+    LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5>* massmatrix,  // element mass matrix
+    LINALG::Matrix<NUMDOF_SOP5,1>* force,                 // element internal force vector
+    LINALG::Matrix<NUMDOF_SOP5,1>* forceinert,                 // element inertial force vector
+    LINALG::Matrix<NUMDOF_SOP5,1>* force_str,                 // element structural force vector
+    LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
+    LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
+    LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
+    Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
+    const INPAR::STR::StressType   iostress,  // stress output option
+    const INPAR::STR::StrainType   iostrain,  // strain output option
+    const INPAR::STR::StrainType   ioplstrain)  // plastic strain output option
 {
 /* ================================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for PYRAMID_5 with ? GAUSS POINTS*
@@ -1289,9 +1308,18 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(
          set within the respective time integrators and read from the parameter list inside the element (this is
          a little ugly...).
          */
-
-        double timintfac_dis = params.get<double>("timintfac_dis");
-        double timintfac_vel = params.get<double>("timintfac_vel");
+        double timintfac_dis = 0.0;
+        double timintfac_vel = 0.0;
+        if (IsParamsInterface())
+        {
+          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
+          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+        }
+        else
+        {
+          timintfac_dis = params.get<double>("timintfac_dis");
+          timintfac_vel = params.get<double>("timintfac_vel");
+        }
 
         LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_disp(true);
         LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_vel(true);

@@ -29,6 +29,8 @@
 #include "inversedesign.H"
 #include "prestress.H"
 
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -45,6 +47,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
   LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOTET10,1>              elevec1(elevec1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOTET10,1>              elevec2(elevec2_epetra.A(),true);
+  LINALG::Matrix<NUMDOF_SOTET10,1>              elevec3(elevec3_epetra.A(),true);
 
   // start with "none"
   DRT::ELEMENTS::So_tet10::ActionType act = So_tet10::none;
@@ -88,8 +91,10 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       std::vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
-                            INPAR::STR::stress_none,INPAR::STR::strain_none);//*
+      std::vector<double> mydispmat(lm.size(),0.0);
+
+      so_tet10_nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,&elevec3,NULL,NULL,params,
+                                  INPAR::STR::stress_none,INPAR::STR::strain_none);
 
     }
     break;
@@ -108,8 +113,10 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
-      so_tet10_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                            INPAR::STR::stress_none,INPAR::STR::strain_none);
+      std::vector<double> mydispmat(lm.size(),0.0);
+
+      so_tet10_nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,matptr,NULL,&elevec1,NULL,&elevec3,NULL,NULL,params,
+                                  INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -124,10 +131,12 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      std::vector<double> mydispmat(lm.size(),0.0);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10> myemat(true);
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-                            INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+      so_tet10_nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
+        INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -143,13 +152,25 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      // need current velocities and accelerations (for non constant mass matrix)
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState("acceleration");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (vel==Teuchos::null ) dserror("Cannot get state vectors 'velocity'");
+      if (acc==Teuchos::null ) dserror("Cannot get state vectors 'acceleration'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      std::vector<double> myvel(lm.size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      std::vector<double> myacc(lm.size());
+      DRT::UTILS::ExtractMyValues(*acc,myacc,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                            INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+      std::vector<double> mydispmat(lm.size(),0.0);
+
+      so_tet10_nlnstiffmass(lm,mydisp,&myvel,&myacc,myres,mydispmat,&elemat1,&elemat2,&elevec1,&elevec2,&elevec3,NULL,NULL,params,
+        INPAR::STR::stress_none,INPAR::STR::strain_none);
 
       if (act==calc_struct_nlnstifflmass) so_tet10_lumpmass(&elemat2);
     }
@@ -176,7 +197,10 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D> strain;
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+
+        std::vector<double> mydispmat(lm.size(),0.0);
+
+        so_tet10_nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         {
           DRT::PackBuffer data;
           AddtoPack(data, stress);
@@ -671,6 +695,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
+      std::vector<double> mydispmat(lm.size(),0.0);
 
       // if a linear analysis is desired
       if (kintype_ == INPAR::STR::kinem_linear)
@@ -686,7 +711,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
           //invdesign_->so_tet10_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 
         else // standard analysis
-          so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+          so_tet10_nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
       }
       // add stresses to global map
       //get EleID Id()
@@ -914,17 +939,22 @@ void DRT::ELEMENTS::So_tet10::InitJacobianMapping()
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
-      std::vector<int>&         lm,             // location matrix
-      std::vector<double>&      disp,           // current displacements
-      std::vector<double>&      residual,       // current residual displ
-      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix, // element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,  // element mass matrix
-      LINALG::Matrix<NUMDOF_SOTET10,1>* force,                 // element internal force vector
-      LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
-      LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
-      Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
-      const INPAR::STR::StressType   iostress,  // stress output option
-      const INPAR::STR::StrainType   iostrain)  // strain output option
+    std::vector<int>&         lm,             // location matrix
+    std::vector<double>&      disp,           // current displacements
+    std::vector<double>*      vel,           // current velocities
+    std::vector<double>*      acc,           // current accelerations
+    std::vector<double>&      residual,       // current residual displ
+    std::vector<double>&      dispmat,        // current material displacements
+    LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix, // element stiffness matrix
+    LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,  // element mass matrix
+    LINALG::Matrix<NUMDOF_SOTET10,1>* force,                 // element internal force vector
+    LINALG::Matrix<NUMDOF_SOTET10,1>* forceinert,                 // element inertial force vector
+    LINALG::Matrix<NUMDOF_SOTET10,1>* force_str,                 // element structural force vector
+    LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
+    LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
+    Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
+    const INPAR::STR::StressType   iostress,  // stress output option
+    const INPAR::STR::StrainType   iostrain)  // strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
@@ -1235,24 +1265,175 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
       //consistent mass matrix evaluated using a 11-point rule
       for (int gp=0; gp<NUMGPT_MASS_SOTET10; gp++)
       {
-          double density = Material()->Density();
-          // integrate consistent mass matrix
-          double detJ_mass = detJ_mass_[gp];
-          double detJ_mass_w = detJ_mass*gpweights_11gp[gp];
-          const double factor = detJ_mass_w * density;
-          double ifactor, massfactor;
-          for (int inod=0; inod<NUMNOD_SOTET10; ++inod)
+        // since material has only 4 GPs with density information!
+        double density=0.;
+        double vol=0.;
+
+        for (int gp4=0; gp4<NUMGPT_SOTET10; ++gp4)
+        {
+          vol += gpweights_4gp[gp4];
+          density += gpweights_4gp[gp4] * Material()->Density(gp4);
+        }
+        density /= vol;
+
+        // integrate consistent mass matrix
+        double detJ_mass = detJ_mass_[gp];
+        double detJ_mass_w = detJ_mass*gpweights_11gp[gp];
+        const double factor = detJ_mass_w * density;
+        double ifactor, massfactor;
+        for (int inod=0; inod<NUMNOD_SOTET10; ++inod)
+        {
+          ifactor = shapefcts_11gp[gp](inod) * factor;
+          for (int jnod=0; jnod<NUMNOD_SOTET10; ++jnod)
           {
-            ifactor = shapefcts_11gp[gp](inod) * factor;
-            for (int jnod=0; jnod<NUMNOD_SOTET10; ++jnod)
+            massfactor = shapefcts_11gp[gp](jnod) * ifactor;     // intermediate factor
+            (*massmatrix)(NUMDIM_SOTET10*inod+0,NUMDIM_SOTET10*jnod+0) += massfactor;
+            (*massmatrix)(NUMDIM_SOTET10*inod+1,NUMDIM_SOTET10*jnod+1) += massfactor;
+            (*massmatrix)(NUMDIM_SOTET10*inod+2,NUMDIM_SOTET10*jnod+2) += massfactor;
+          }
+        }
+
+        //check for non constant mass matrix
+        if(SolidMaterial()->VaryingDensity())
+        {
+          /*
+           If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
+           In general, the mass matrix can be dependent on the displacements, the velocities and the accelerations.
+           We write all the additional terms into the mass matrix, hence, conversion from accelerations to velocities
+           and displacements are needed. As those conversions depend on the time integration scheme, the factors are
+           set within the respective time integrators and read from the parameter list inside the element (this is
+           a little ugly...). */
+          LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> nxyz(nxyz_); // copy!
+
+          double timintfac_dis = 0.0;
+          double timintfac_vel = 0.0;
+          if (IsParamsInterface())
+          {
+            timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
+            timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+          }
+          else
+          {
+            timintfac_dis = params.get<double>("timintfac_dis");
+            timintfac_vel = params.get<double>("timintfac_vel");
+          }
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_disp(true);
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_vel(true);
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass(true);
+
+          /*----------------------------------------------------------------------*
+             the B-operator used is equivalent to the one used in hex8, this needs
+             to be checked if it is ok, but from the mathematics point of view, the only
+             thing that needed to be changed is the NUMDOF
+             ----------------------------------------------------------------------*/
+           /*
+           ** B = F . Bl *
+           **
+           **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+           **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+           **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+           ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+           **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+           **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+           **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+           **      [                                                         ]
+           **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+           **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+           **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+           **      [                                                         ]
+           **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+           **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+           **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+           */
+           // size is 6x12
+           LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET10> bop;
+           for (int i=0; i<NUMNOD_SOTET10; i++)
+           {
+             bop(0,NODDOF_SOTET10*i+0) = defgrd(0,0)*nxyz(i,0);
+             bop(0,NODDOF_SOTET10*i+1) = defgrd(1,0)*nxyz(i,0);
+             bop(0,NODDOF_SOTET10*i+2) = defgrd(2,0)*nxyz(i,0);
+             bop(1,NODDOF_SOTET10*i+0) = defgrd(0,1)*nxyz(i,1);
+             bop(1,NODDOF_SOTET10*i+1) = defgrd(1,1)*nxyz(i,1);
+             bop(1,NODDOF_SOTET10*i+2) = defgrd(2,1)*nxyz(i,1);
+             bop(2,NODDOF_SOTET10*i+0) = defgrd(0,2)*nxyz(i,2);
+             bop(2,NODDOF_SOTET10*i+1) = defgrd(1,2)*nxyz(i,2);
+             bop(2,NODDOF_SOTET10*i+2) = defgrd(2,2)*nxyz(i,2);
+             /* ~~~ */
+             bop(3,NODDOF_SOTET10*i+0) = defgrd(0,0)*nxyz(i,1) + defgrd(0,1)*nxyz(i,0);
+             bop(3,NODDOF_SOTET10*i+1) = defgrd(1,0)*nxyz(i,1) + defgrd(1,1)*nxyz(i,0);
+             bop(3,NODDOF_SOTET10*i+2) = defgrd(2,0)*nxyz(i,1) + defgrd(2,1)*nxyz(i,0);
+             bop(4,NODDOF_SOTET10*i+0) = defgrd(0,1)*nxyz(i,2) + defgrd(0,2)*nxyz(i,1);
+             bop(4,NODDOF_SOTET10*i+1) = defgrd(1,1)*nxyz(i,2) + defgrd(1,2)*nxyz(i,1);
+             bop(4,NODDOF_SOTET10*i+2) = defgrd(2,1)*nxyz(i,2) + defgrd(2,2)*nxyz(i,1);
+             bop(5,NODDOF_SOTET10*i+0) = defgrd(0,2)*nxyz(i,0) + defgrd(0,0)*nxyz(i,2);
+             bop(5,NODDOF_SOTET10*i+1) = defgrd(1,2)*nxyz(i,0) + defgrd(1,0)*nxyz(i,2);
+             bop(5,NODDOF_SOTET10*i+2) = defgrd(2,2)*nxyz(i,0) + defgrd(2,0)*nxyz(i,2);
+           }
+
+
+          // Right Cauchy-Green tensor = F^T * F
+          LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> cauchygreen;
+          cauchygreen.MultiplyTN(defgrd,defgrd);
+
+          // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+          // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+          Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
+          glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+          glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+          glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+          glstrain(3) = cauchygreen(0,1);
+          glstrain(4) = cauchygreen(1,2);
+          glstrain(5) = cauchygreen(2,0);
+
+          //evaluate derivative of mass w.r.t. to right cauchy green tensor
+          SolidMaterial()->EvaluateNonLinMass(&defgrd,&glstrain,params,&linmass_disp,&linmass_vel,Id());
+
+          //multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time integration factor
+          linmass_disp.Scale(2.0*timintfac_dis);
+          linmass_vel.Scale(2.0*timintfac_vel);
+          linmass.Update(1.0,linmass_disp,1.0,linmass_vel,0.0);
+
+          //evaluate accelerations at time n+1 at gauss point
+          LINALG::Matrix<NUMDIM_SOTET10,1> myacc(true);
+          for (int idim=0; idim<NUMDIM_SOTET10; ++idim)
+            for (int inod=0; inod<NUMNOD_SOTET10; ++inod)
+              myacc(idim) += shapefcts_11gp[gp](inod) * (*acc)[idim+(inod*NUMDIM_SOTET10)];
+
+          if (stiffmatrix != NULL)
+          {
+            // integrate linearisation of mass matrix
+            //(B^T . d\rho/d disp . a) * detJ * w(gp)
+            LINALG::Matrix<1,NUMDOF_SOTET10> cb;
+            cb.MultiplyTN(linmass_disp,bop);
+            for (int inod=0; inod<NUMNOD_SOTET10; ++inod)
             {
-              massfactor = shapefcts_11gp[gp](jnod) * ifactor;     // intermediate factor
-              (*massmatrix)(NUMDIM_SOTET10*inod+0,NUMDIM_SOTET10*jnod+0) += massfactor;
-              (*massmatrix)(NUMDIM_SOTET10*inod+1,NUMDIM_SOTET10*jnod+1) += massfactor;
-              (*massmatrix)(NUMDIM_SOTET10*inod+2,NUMDIM_SOTET10*jnod+2) += massfactor;
+              double factor = detJ_mass_w * shapefcts_11gp[gp](inod);
+              for (int idim=0; idim<NUMDIM_SOTET10; ++idim)
+              {
+                double massfactor = factor * myacc(idim);
+                for (int jnod=0; jnod<NUMNOD_SOTET10; ++jnod)
+                  for (int jdim=0; jdim<NUMDIM_SOTET10; ++jdim)
+                    (*massmatrix)(inod*NUMDIM_SOTET10+idim,jnod*NUMDIM_SOTET10+jdim) +=
+                        massfactor * cb(jnod*NUMDIM_SOTET10+jdim);
+              }
+            }
+          }
+
+          // internal force vector without EAS terms
+          if (forceinert != NULL)
+          {
+            //integrate nonlinear inertia force term
+            for (int inod=0; inod<NUMNOD_SOTET10; ++inod)
+            {
+              double forcefactor = shapefcts_11gp[gp](inod) * detJ_mass_w;
+              for (int idim=0; idim<NUMDIM_SOTET10; ++idim)
+                (*forceinert)(inod*NUMDIM_SOTET10+idim) += forcefactor * density * myacc(idim);
             }
           }
         }
+
+      }
 
     } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 

@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------
-\file so_pyramid5fbarH
+\file so_pyramid5fbar.H
+\brief
+\level 2
 
 <pre>
-Maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15271
@@ -210,21 +212,24 @@ protected:
 
   //! Calculate nonlinear stiffness and mass matrix
   virtual void nlnstiffmass(
-    std::vector<int>& lm,  ///< location matrix
-    std::vector<double>& disp,  ///< current displacements
-    std::vector<double>*      acc,           // current accelerations
-    std::vector<double>& residual,  ///< current residual displ
-    LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5>* stiffmatrix,  ///< element stiffness matrix
-    LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5>* massmatrix,  ///< element mass matrix
-    LINALG::Matrix<NUMDOF_SOP5,1>* force,  ///< element internal force vector
-    LINALG::Matrix<NUMDOF_SOP5,1>* forceinert,                 // element inertial force vector
-    LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-    LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-    LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
-    Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,  ///< stress output option
-    const INPAR::STR::StrainType iostrain,  ///< strain output option
-    const INPAR::STR::StrainType ioplstrain);  ///< strain output option
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>*      vel,           ///< current velocities
+      std::vector<double>*      acc,           ///< current accelerations
+      std::vector<double>&      residual,       ///< current residual displ
+      std::vector<double>&      dispmat,        ///< current material displacements
+      LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5>* stiffmatrix, ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOP5,NUMDOF_SOP5>* massmatrix,  ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOP5,1>* force,                 ///< element internal force vector
+      LINALG::Matrix<NUMDOF_SOP5,1>* forceinert,                 ///< element inertial force vector
+      LINALG::Matrix<NUMDOF_SOP5,1>* force_str,                 ///< element structural force vector
+      LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* elestress,   ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* elestrain,   ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOP5,MAT::NUM_STRESS_3D>* eleplstrain, ///< plastic strains at GP
+      Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType   iostress,  ///< stress output option
+      const INPAR::STR::StrainType   iostrain,  ///< strain output option
+      const INPAR::STR::StrainType   ioplstrain);  ///< plastic strain output option
 
   //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();

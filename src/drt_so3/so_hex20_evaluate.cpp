@@ -30,6 +30,8 @@
 #include "inversedesign.H"
 #include "prestress.H"
 
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -46,7 +48,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
   LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH20,1> elevec1(elevec1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH20,1> elevec2(elevec2_epetra.A(),true);
-  // elevec3 is not used anyway
+  LINALG::Matrix<NUMDOF_SOH20,1> elevec3(elevec3_epetra.A(),true);
 
   // start with "none"
   DRT::ELEMENTS::So_hex20::ActionType act = So_hex20::none;
@@ -85,8 +87,11 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       std::vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      soh20_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+      std::vector<double> mydispmat(lm.size(),0.0);
+
+      soh20_nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&elemat1,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
+                                  INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -104,6 +109,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
+      std::vector<double> mydispmat(lm.size(),0.0);
+
       // special case: geometrically linear
       if (kintype_ == INPAR::STR::kinem_linear)
       {
@@ -113,8 +120,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       // standard is: geometrically non-linear with Total Lagrangean approach
       else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
-        soh20_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh20_nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,matptr,NULL,&elevec1,NULL,&elevec3,NULL,NULL,params,
+                                    INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       else
         dserror("unknown kinematic type");
@@ -135,6 +142,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20> myemat(true);
 
+      std::vector<double> mydispmat(lm.size(),0.0);
+
       // special case: geometrically linear
       if (kintype_ == INPAR::STR::kinem_linear)
       {
@@ -144,8 +153,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       // standard is: geometrically non-linear with Total Lagrangean approach
       else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
-        soh20_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh20_nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,&myemat,NULL,&elevec1,NULL,NULL,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       else
         dserror("unknown kinematic type");
@@ -164,11 +173,23 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      // need current velocities and accelerations (for non constant mass matrix)
+      Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
+      Teuchos::RCP<const Epetra_Vector> acc = discretization.GetState("acceleration");
       if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (vel==Teuchos::null ) dserror("Cannot get state vectors 'velocity'");
+      if (acc==Teuchos::null ) dserror("Cannot get state vectors 'acceleration'");
+
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      std::vector<double> myvel(lm.size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+      std::vector<double> myacc(lm.size());
+      DRT::UTILS::ExtractMyValues(*acc,myacc,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+
+      std::vector<double> mydispmat(lm.size(),0.0);
 
       // special case: geometrically linear
       if (kintype_ == INPAR::STR::kinem_linear)
@@ -179,8 +200,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
       // standard is: geometrically non-linear with Total Lagrangean approach
       else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
-        soh20_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh20_nlnstiffmass(lm,mydisp,&myvel,&myacc,myres,mydispmat,&elemat1,&elemat2,&elevec1,&elevec2,&elevec3,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
       else
         dserror("unknown kinematic type");
@@ -211,6 +232,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
+        std::vector<double> mydispmat(lm.size(),0.0);
+
         // special case: geometrically linear
         if (kintype_ == INPAR::STR::kinem_linear)
         {
@@ -219,7 +242,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
         // standard is: geometrically non-linear with Total Lagrangean approach
         else if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
         {
-          soh20_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+          soh20_nlnstiffmass(lm,mydisp,NULL,NULL,myres,mydispmat,NULL,NULL,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         }
         else
           dserror("unknown kinematic type");
@@ -1071,17 +1094,22 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
-      std::vector<int>&         lm,             // location matrix
-      std::vector<double>&      disp,           // current displacements
-      std::vector<double>&      residual,       // current residual displ
-      LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* stiffmatrix, // element stiffness matrix
-      LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* massmatrix,  // element mass matrix
-      LINALG::Matrix<NUMDOF_SOH20,1>* force,                 // element internal force vector
-      LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
-      LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
-      Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
-      const INPAR::STR::StressType   iostress,  // stress output option
-      const INPAR::STR::StrainType   iostrain)  // strain output option
+    std::vector<int>&         lm,             // location matrix
+    std::vector<double>&      disp,           // current displacements
+    std::vector<double>*      vel,           // current velocities
+    std::vector<double>*      acc,           // current accelerations
+    std::vector<double>&      residual,       // current residual displ
+    std::vector<double>&      dispmat,        // current material displacements
+    LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* stiffmatrix, // element stiffness matrix
+    LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* massmatrix,  // element mass matrix
+    LINALG::Matrix<NUMDOF_SOH20,1>* force,                 // element internal force vector
+    LINALG::Matrix<NUMDOF_SOH20,1>* forceinert,                 // element inertial force vector
+    LINALG::Matrix<NUMDOF_SOH20,1>* force_str,                 // element structural force vector
+    LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
+    LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
+    Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
+    const INPAR::STR::StressType   iostress,  // stress output option
+    const INPAR::STR::StrainType   iostrain)  // strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_20 with 27 GAUSS POINTS*
@@ -1382,6 +1410,79 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
           (*massmatrix)(NUMDIM_SOH20*inod+0,NUMDIM_SOH20*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_SOH20*inod+1,NUMDIM_SOH20*jnod+1) += massfactor;
           (*massmatrix)(NUMDIM_SOH20*inod+2,NUMDIM_SOH20*jnod+2) += massfactor;
+        }
+      }
+
+      //check for non constant mass matrix
+      if(SolidMaterial()->VaryingDensity())
+      {
+        /*
+        If the density, i.e. the mass matrix, is not constant, a linearization is neccessary.
+        In general, the mass matrix can be dependent on the displacements, the velocities and the accelerations.
+        We write all the additional terms into the mass matrix, hence, conversion from accelerations to velocities
+        and displacements are needed. As those conversions depend on the time integration scheme, the factors are
+        set within the respective time integrators and read from the parameter list inside the element (this is
+        a little ugly...). */
+        double timintfac_dis = 0.0;
+        double timintfac_vel = 0.0;
+        if (IsParamsInterface())
+        {
+          timintfac_dis = StrParamsInterface().GetTimIntFactorDisp();
+          timintfac_vel = StrParamsInterface().GetTimIntFactorVel();
+        }
+        else
+        {
+          timintfac_dis = params.get<double>("timintfac_dis");
+          timintfac_vel = params.get<double>("timintfac_vel");
+        }
+        LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_disp(true);
+        LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_vel(true);
+        LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass(true);
+
+        //evaluate derivative of mass w.r.t. to right cauchy green tensor
+        SolidMaterial()->EvaluateNonLinMass(&defgrd,&glstrain,params,&linmass_disp,&linmass_vel,Id());
+
+        //multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time integration factor
+        linmass_disp.Scale(2.0*timintfac_dis);
+        linmass_vel.Scale(2.0*timintfac_vel);
+        linmass.Update(1.0,linmass_disp,1.0,linmass_vel,0.0);
+
+        //evaluate accelerations at time n+1 at gauss point
+        LINALG::Matrix<NUMDIM_SOH20,1> myacc(true);
+        for (int idim=0; idim<NUMDIM_SOH20; ++idim)
+          for (int inod=0; inod<NUMNOD_SOH20; ++inod)
+            myacc(idim) += shapefcts[gp](inod) * (*acc)[idim+(inod*NUMDIM_SOH20)];
+
+        if (stiffmatrix != NULL)
+        {
+          // integrate linearisation of mass matrix
+          //(B^T . d\rho/d disp . a) * detJ * w(gp)
+          LINALG::Matrix<1,NUMDOF_SOH20> cb;
+          cb.MultiplyTN(linmass_disp,bop);
+          for (int inod=0; inod<NUMNOD_SOH20; ++inod)
+          {
+            double factor = detJ_w * shapefcts[gp](inod);
+            for (int idim=0; idim<NUMDIM_SOH20; ++idim)
+            {
+              double massfactor = factor * myacc(idim);
+              for (int jnod=0; jnod<NUMNOD_SOH20; ++jnod)
+                for (int jdim=0; jdim<NUMDIM_SOH20; ++jdim)
+                  (*massmatrix)(inod*NUMDIM_SOH20+idim,jnod*NUMDIM_SOH20+jdim) +=
+                      massfactor * cb(jnod*NUMDIM_SOH20+jdim);
+            }
+          }
+        }
+
+        // internal force vector without EAS terms
+        if (forceinert != NULL)
+        {
+          //integrate nonlinear inertia force term
+          for (int inod=0; inod<NUMNOD_SOH20; ++inod)
+          {
+            double forcefactor = shapefcts[gp](inod) * detJ_w;
+            for (int idim=0; idim<NUMDIM_SOH20; ++idim)
+              (*forceinert)(inod*NUMDIM_SOH20+idim) += forcefactor * density * myacc(idim);
+          }
         }
       }
 

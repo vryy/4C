@@ -132,7 +132,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
-      std::vector<double> mydispmat(lm.size());
+      std::vector<double> mydispmat(lm.size(),0.0);
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");
@@ -164,7 +164,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
 
-      std::vector<double> mydispmat(lm.size());
+      std::vector<double> mydispmat(lm.size(),0.0);
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");
@@ -201,7 +201,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-      std::vector<double> mydispmat(lm.size());
+      std::vector<double> mydispmat(lm.size(),0.0);
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
@@ -236,7 +236,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-      std::vector<double> mydispmat(lm.size());
+      std::vector<double> mydispmat(lm.size(),0.0);
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");
@@ -455,7 +455,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> strain;
         LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> plstrain;
 
-        std::vector<double> mydispmat(lm.size());
+        std::vector<double> mydispmat(lm.size(),0.0);
         if (structale_)
         {
           Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
@@ -1323,7 +1323,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-      std::vector<double> mydispmat(lm.size());
+      std::vector<double> mydispmat(lm.size(),0.0);
       if (structale_)
       {
         Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
