@@ -1,5 +1,14 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+curves
+- removed in revision 23111 on 2017-05-05
+- In the course of BACI clean up, Andrea La Spina, Moritz Thon, and Svenja Schoeder were assigned to clean the functions and time
+  curves. Motivation was that functions allowed for time dependence but not the full flexibility as curves and that time derivatives
+  were not always correctly evaluated due to several time dependencies or return of 0 as default. Therefore, functions were extended
+  such that they can depend on self defined variables which in turn can have time dependencies. For details and the commit message,
+  see details/2017_Function.txt
+- Removed by: A. Laspina, S. Schoeder, M. Thon
+
 contact module (by Philipp Farah, Alexander Popp, Tobias Wiesner)
 - removed in revision 23062 on 2017-04-26
 - The code infrastructure that selects parts of the code and applies patches to remove inter-module dependencies turned out to be too brittle and fail regularly
