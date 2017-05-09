@@ -25,7 +25,7 @@ NUMSTEP                         101                           // series of stati
 MAXTIME                         1000
 TIMESTEP                        1.0
 THETA                           0.66
-VELOCITYFIELD                   function_and_curve
+VELOCITYFIELD                   function
 VELFUNCNO                       1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2

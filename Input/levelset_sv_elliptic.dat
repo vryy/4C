@@ -57,7 +57,7 @@ INITIALFIELD                    field_by_function
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 VELFUNCNO                       1
-VELOCITYFIELD                   function_and_curve //function
+VELOCITYFIELD                   function
 CONVFORM                        convective
 MATID                           1
 LINEAR_SOLVER                   1

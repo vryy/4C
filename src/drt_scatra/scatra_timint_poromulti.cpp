@@ -165,7 +165,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputState()
   output_->WriteVector("phinp", phinp_);
 
 //  // convective velocity (written in case of coupled simulations since volmortar is now possible)
-//  if ( cdvel_ == INPAR::SCATRA::velocity_function or cdvel_ == INPAR::SCATRA::velocity_function_and_curve or cdvel_ == INPAR::SCATRA::velocity_Navier_Stokes)
+//  if ( cdvel_ == INPAR::SCATRA::velocity_function or cdvel_ == INPAR::SCATRA::velocity_Navier_Stokes)
 //  {
 //    Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity field");
 //    if(convel == Teuchos::null)

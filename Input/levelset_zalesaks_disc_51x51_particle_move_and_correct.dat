@@ -49,7 +49,7 @@ THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.4
 VELFUNCNO                       1
-VELOCITYFIELD                   function_and_curve
+VELOCITYFIELD                   function
 RESULTSEVRY                     1
 CONVFORM                        convective
 MATID                           1

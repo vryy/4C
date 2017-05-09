@@ -50,7 +50,6 @@ namespace INPAR
     {
       velocity_zero,
       velocity_function,
-      velocity_function_and_curve,
       velocity_Navier_Stokes
     };
 

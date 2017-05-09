@@ -77,13 +77,11 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                tuple<std::string>(
                                  "zero",
                                  "function",
-                                 "function_and_curve",
                                  "Navier_Stokes"
                                  ),
                                tuple<int>(
                                    velocity_zero,
                                    velocity_function,
-                                   velocity_function_and_curve,
                                    velocity_Navier_Stokes),
                                &scatradyn);
 

@@ -88,7 +88,6 @@ void scatra_cardiac_monodomain_dyn(int restart)
   {
     case INPAR::SCATRA::velocity_zero:  // zero  (see case 1)
     case INPAR::SCATRA::velocity_function:  // function
-    case INPAR::SCATRA::velocity_function_and_curve: // function and time curve
     {
       // we directly use the elements from the scalar transport elements section
       if (scatradis->NumGlobalNodes()==0)

@@ -991,9 +991,9 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   strategy_->IncludeDirichletInCondensation();
 
   // -------------------------------------------------------------------
-  //     update velocity field if given by function AND time curve
+  //     update velocity field if given by function (it might depend on time)
   // -------------------------------------------------------------------
-  if (velocity_field_type_ == INPAR::SCATRA::velocity_function_and_curve)
+  if (velocity_field_type_ == INPAR::SCATRA::velocity_function)
     SetVelocityField(nds_vel_);
 
   // -------------------------------------------------------------------
@@ -1096,7 +1096,6 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
     }
 
     case INPAR::SCATRA::velocity_function:
-    case INPAR::SCATRA::velocity_function_and_curve:
     {
       int err(0);
       const int velfuncno = params_->get<int>("VELFUNCNO");
@@ -2909,7 +2908,6 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 
   // convective velocity (written in case of coupled simulations since volmortar is now possible)
   if ( velocity_field_type_ == INPAR::SCATRA::velocity_function or
-       velocity_field_type_ == INPAR::SCATRA::velocity_function_and_curve or
        velocity_field_type_ == INPAR::SCATRA::velocity_Navier_Stokes)
   {
     Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity field");

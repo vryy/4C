@@ -80,7 +80,7 @@ TIMEINTEGR                      One_Step_Theta                  // Stationary, O
 TIMESTEP                        0.06
 RESULTSEVRY                           1
 VELFUNCNO                       -1
-VELOCITYFIELD                   Navier_Stokes                   // zero, function, function_and_curve, Navier_Stokes
+VELOCITYFIELD                   Navier_Stokes                   // zero, function, Navier_Stokes
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1

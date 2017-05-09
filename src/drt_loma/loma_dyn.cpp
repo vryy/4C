@@ -76,7 +76,6 @@ void loma_dyn(int restart)
   {
   case INPAR::SCATRA::velocity_zero:  // zero velocity field (see case 1)
   case INPAR::SCATRA::velocity_function:  // velocity field prescribed by function
-  case INPAR::SCATRA::velocity_function_and_curve: // velocity field prescribed by function and time curve
   {
     // directly use elements from input section 'transport elements'
     if (scatradis->NumGlobalNodes()==0)

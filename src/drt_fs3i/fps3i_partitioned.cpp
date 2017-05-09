@@ -599,7 +599,6 @@ void FS3I::PartFPS3I::SetVelocityFields()
   {
     case INPAR::SCATRA::velocity_zero:
     case INPAR::SCATRA::velocity_function:
-    case INPAR::SCATRA::velocity_function_and_curve:
     {
       for (unsigned i=0; i<scatravec_.size(); ++i)
       {

@@ -54,7 +54,7 @@ void levelset_dyn(int restart)
   // check velocity field
   const INPAR::SCATRA::VelocityField veltype
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
-  if (veltype != INPAR::SCATRA::velocity_function and veltype != INPAR::SCATRA::velocity_function_and_curve)
+  if (veltype != INPAR::SCATRA::velocity_function)
     dserror("Other velocity fields than a field given by a function not yet supported for level-set problems");
 
   // add proxy of velocity related degrees of freedom to scatra discretization
