@@ -98,7 +98,6 @@ endmacro (baci_test_Nested_Par_CopyDat_prepost)
 macro (baci_framework_test arg nproc)
   set (RUNCUBIT ${CUBIT_DIR}/cubit\ -batch\ -nographics\ -nojournal\ ${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.jou)
   set (RUNPREEXODUS ./pre_exodus\ --exo=xxx_${arg}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${arg}.head\ --dat=xxx.dat)
-  set (RUNPRECURVE ./pre_curve\ --datfile=xxx.dat)
   set (RUNBACI ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx)
   set (RUNPOSTFILTER ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx)
 
