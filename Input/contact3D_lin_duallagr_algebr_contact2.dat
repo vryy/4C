@@ -155,7 +155,7 @@ DSURF                           2
 //                              dbc_xyz
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              dbc_ext
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
 -----------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 //                              slave
