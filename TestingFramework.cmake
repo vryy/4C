@@ -102,7 +102,7 @@ macro (baci_framework_test arg nproc)
   set (RUNPOSTFILTER ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx)
 
   add_test(NAME ${arg}-p${nproc}-fw
-  COMMAND sh -c "${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNPRECURVE} && ${RUNBACI} && ${RUNPOSTFILTER}")
+  COMMAND sh -c "${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}")
 
 # note: for the clean-up job in the end, every generated intermediate file has to start with "xxx"
 
