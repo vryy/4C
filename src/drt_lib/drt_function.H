@@ -5,7 +5,7 @@
 \brief Managing and evaluating of spatial functions
 
 <pre>
-\level 1
+\level 0
 
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
@@ -92,7 +92,7 @@ namespace UTILS {
 
       #ifdef DEBUG
         double dummy2[3] = {123.456};
-        if ( fabs(Evaluate(0,dummy,t)-Evaluate(0,dummy2,t))>1e-14 )
+        if ( fabs(Evaluate(0,dummy,t)-Evaluate(0,dummy2,t))>1.0e-14 )
           dserror("You evaluate a FUNCT solely by time even if it dependents on x,y or z!");
       #endif
 
@@ -135,12 +135,12 @@ namespace UTILS {
       double dummy[3] = {0.0};
 
       #ifdef DEBUG
-        std::vector<double> res1 = EvaluateTimeDerivative(0,dummy,t,deg)
+        std::vector<double> res1 = EvaluateTimeDerivative(0,dummy,t,deg);
         double dummy2[3] = {123.456};
-        std::vector<double> res2 = EvaluateTimeDerivative(0,dummy2,t,deg)
-        for( int i=0 ; i<deg; i++)
+        std::vector<double> res2 = EvaluateTimeDerivative(0,dummy2,t,deg);
+        for( unsigned int i=0 ; i<deg; i++)
         {
-          if ( fabs(res1[deg]-res2[deg])>1e-14 )
+          if ( fabs(res1[deg]-res2[deg])>1.0e-14 )
             dserror("You evaluate the time derivative of a FUNCT solely by time even if it dependents on x,y or z!");
         }
       #endif
