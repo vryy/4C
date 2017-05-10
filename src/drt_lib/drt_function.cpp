@@ -715,12 +715,12 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
               times.push_back(t_initial);
               int n = 0;
               double dt = (t_final - t_initial) / (numpoints - 1);
-              while(times[n] + dt <= t_final)
+              while(times[n] + dt <= t_final+1.0e-14)
               {
-                if (times[n] + 2*dt <= t_final)
-                    {
+                if (times[n] + 2*dt <= t_final+1.0e-14)
+                {
                   times.push_back(times[n] + dt);
-                    }
+                }
                 else
                 {
                   times.push_back(t_final);
@@ -770,9 +770,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
               times.push_back(t_initial);
               int n = 0;
               double dt = (t_final - t_initial) / (numpoints - 1);
-              while(times[n] + dt <= t_final)
+              while(times[n] + dt <= t_final+1.0e-14)
               {
-                if (times[n] + 2*dt <= t_final)
+                if (times[n] + 2*dt <= t_final+1.0e-14)
                 {
                   times.push_back(times[n] + dt);
                 }
@@ -830,9 +830,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
               times.push_back(t_initial);
               int n = 0;
               double dt = (t_final - t_initial) / (numpoints - 1);
-              while(times[n] + dt <= t_final)
+              while(times[n] + dt <= t_final+1.0e-14)
               {
-                if (times[n] + 2*dt <= t_final)
+                if (times[n] + 2*dt <= t_final+1.0e-14)
                 {
                   times.push_back(times[n] + dt);
                 }
