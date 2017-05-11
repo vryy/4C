@@ -215,9 +215,9 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     mat_dstruct_dcv0ddof_=Teuchos::rcp(new LINALG::SparseMatrix(*(actdisc_->DofRowMap()),numCardiovascular0DID_,false,true));
 
     Teuchos::ParameterList p;
-    double time = strparams.get<double>("total time",0.0);
-    double sc_timint = strparams.get("scale_timint",1.0);
-    double ts_size = strparams.get("time_step_size",1.0);
+    const double time = strparams.get<double>("total time",0.0);
+    const double sc_timint = strparams.get("scale_timint",1.0);
+    const double ts_size = strparams.get("time_step_size",1.0);
 
     if ( (theta_ <= 0.0) or (theta_ > 1.0) )
       dserror("theta for 0D cardiovascular model time integration out of range (0.0,1.0] !");
@@ -266,7 +266,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     v_n_->Export(*v_n_red,*cardvasc0dimpo_,Add);
 
     cv0ddof_n_->Export(*cv0ddof_n_red,*cardvasc0dimpo_,Insert);
-    cv0ddof_np_->Update(1.0,*cv0ddof_n_,0.0);
+
 
     LINALG::Export(*v_n_,*v_n_red2);
 
@@ -278,12 +278,19 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     // insert compartment volumes into vol vector
     v_n_->Export(*v_n_red2,*cardvasc0dimpo_,Insert);
 
-    v_np_->Update(1.0,*v_n_,0.0);
-
     cardvasc0d_df_n_->PutScalar(0.0);
     cardvasc0d_df_n_->Export(*cardvasc0d_df_n_red,*cardvasc0dimpo_,Insert);
     cardvasc0d_f_n_->PutScalar(0.0);
     cardvasc0d_f_n_->Export(*cardvasc0d_f_n_red,*cardvasc0dimpo_,Insert);
+
+    cv0ddof_np_->Update(1.0,*cv0ddof_n_,0.0);
+
+    cardvasc0d_df_np_->Update(1.0,*cardvasc0d_df_n_,0.0);
+    cardvasc0d_f_np_->Update(1.0,*cardvasc0d_f_n_,0.0);
+
+    v_np_->Update(1.0,*v_n_,0.0);
+
+
 
     cv0ddof_T_N_->Update(1.0,*cv0ddof_np_,0.0);
     cv0ddof_T_NP_->Update(1.0,*cv0ddof_np_,0.0);
@@ -313,8 +320,8 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
     Teuchos::ParameterList scalelist)
 {
 
-  double sc_strtimint = scalelist.get("scale_timint",1.0);
-  double ts_size = scalelist.get("time_step_size",1.0);
+  const double sc_strtimint = scalelist.get("scale_timint",1.0);
+  const double ts_size = scalelist.get("time_step_size",1.0);
 
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -386,7 +393,7 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
 
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since fint will be set to the generalized mid-point by the respective structural time-integrator!
-  LINALG::Export(*cv0ddof_np_,*cv0ddof_np_red);
+  //LINALG::Export(*cv0ddof_np_,*cv0ddof_np_red);
   EvaluateNeumannCardiovascular0DCoupling(p,cv0ddof_np_red,fint,stiff);
 
   return;
@@ -468,11 +475,12 @@ bool UTILS::Cardiovascular0DManager::ModuloIsRealtiveZero(const double value, co
 
 void UTILS::Cardiovascular0DManager::ResetStep()
 {
-  cv0ddof_np_->Update(1.0,*cv0ddof_n_,0.0);
+//  cv0ddof_np_->Update(1.0,*cv0ddof_n_,0.0);
   v_np_->Update(1.0,*v_n_,0.0);
 
   cardvasc0d_df_np_->Update(1.0,*cardvasc0d_df_n_,0.0);
   cardvasc0d_f_np_->Update(1.0,*cardvasc0d_f_n_,0.0);
+
 
   return;
 }
@@ -495,7 +503,7 @@ void UTILS::Cardiovascular0DManager::UpdateCv0DDof(Teuchos::RCP<Epetra_Vector> c
 void UTILS::Cardiovascular0DManager::ReadRestart(IO::DiscretizationReader& reader,const double& time)
 {
   // check if restart from non-Cardiovascular0D simulation is desired
-  bool restartwithcardiovascular0d = DRT::INPUT::IntegralValue<int>(Cardvasc0DParams(),"RESTART_WITH_CARDVASC0D");
+  const bool restartwithcardiovascular0d = DRT::INPUT::IntegralValue<int>(Cardvasc0DParams(),"RESTART_WITH_CARDVASC0D");
 
   if(!restartwithcardiovascular0d)
   {
@@ -524,7 +532,7 @@ void UTILS::Cardiovascular0DManager::ReadRestart(IO::DiscretizationReader& reade
 /*----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
     Teuchos::ParameterList params,
-    Teuchos::RCP<Epetra_Vector> actpres,
+    const Teuchos::RCP<Epetra_Vector> actpres,
     Teuchos::RCP<Epetra_Vector> systemvector,
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix
     )
@@ -540,21 +548,18 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
   if (structdis == Teuchos::null)
     dserror("No structure discretization available!");
 
-  // get all Neumann conditions on structure
-  structdis->GetCondition("SurfaceNeumannCardiovascular0D",surfneumcond);
-  unsigned int numneumcond = surfneumcond.size();
-  if (numneumcond == 0) dserror("No Neumann conditions on structure!");
-  // now filter those Neumann conditions that are due to the cardiovascular0d structure coupling
-
-  for (unsigned int k = 0; k < numneumcond; ++k)
-  {
-    DRT::Condition* actcond = surfneumcond[k];
-    if (actcond->Type() == DRT::Condition::Cardiovascular0DStructureCoupling)
-      cardvasc0dstructcoupcond.push_back(actcond);
-  }
-
+  // get all coupling conditions on structure
+  structdis->GetCondition("SurfaceNeumannCardiovascular0D",cardvasc0dstructcoupcond);
   unsigned int numcoupcond = cardvasc0dstructcoupcond.size();
   if (numcoupcond == 0) dserror("No coupling conditions found!");
+  // now filter those Neumann conditions that are due to the cardiovascular0d structure coupling
+
+//  for (unsigned int k = 0; k < numneumcond; ++k)
+//  {
+//    DRT::Condition* actcond = surfneumcond[k];
+//    if (actcond->Type() == DRT::Condition::Cardiovascular0DStructureCoupling)
+//      cardvasc0dstructcoupcond.push_back(actcond);
+//  }
 
   // fill the i-sorted wk coupling conditions vector with the id-sorted values of the wk pressure vector, at the respective coupling_id
   for (unsigned int i=0; i<numcoupcond; ++i)
@@ -605,7 +610,7 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
         }
       }
     }
-    coupcond->Add("val",newval);
+    if (assvec) coupcond->Add("val",newval);
 
 
     Teuchos::RCP<const Epetra_Vector> disp = params.get<Teuchos::RCP<const Epetra_Vector> >("new disp");
@@ -633,7 +638,7 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
       elevector.Scale(-1.0);
       if (assvec) LINALG::Assemble(*systemvector,elevector,lm,lmowner);
       // plus sign here since EvaluateNeumann already assumes that an fext vector enters, and thus puts a minus infront of the load linearization matrix !!
-      elematrix.Scale(1.0);
+      //elematrix.Scale(1.0);
       if (assmat) systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
     }
   }

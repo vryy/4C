@@ -55,27 +55,26 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
       curID.push_back(cardiovascular0dcond_[i]->GetInt("id"));
     }
 
-    std::vector<DRT::Condition*> surfneumcond;
+    //std::vector<DRT::Condition*> cardvasc0dstructcoupcond;
     //std::vector<int> tmp;
     Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
     if (structdis == Teuchos::null) dserror("no structure discretization available");
 
     // first get all Neumann conditions on structure
-    structdis->GetCondition("SurfaceNeumannCardiovascular0D",surfneumcond);
-    unsigned int numneumcond = surfneumcond.size();
-    if (numneumcond == 0) dserror("no Neumann conditions on structure");
-
-    // now filter those Neumann conditions that are due to the coupling
-    //std::vector<DRT::Condition*> coupcond;
-    for (unsigned int k = 0; k < numneumcond; ++k)
-    {
-      DRT::Condition* actcond = surfneumcond[k];
-      if (actcond->Type() == DRT::Condition::Cardiovascular0DStructureCoupling)
-        cardiovascular0dstructcoupcond_.push_back(actcond);
-    }
-    unsigned int numcond = cardiovascular0dstructcoupcond_.size();
-
-    if (numcond == 0) dserror("no coupling conditions found");
+    structdis->GetCondition("SurfaceNeumannCardiovascular0D",cardiovascular0dstructcoupcond_);
+//    unsigned int numneumcond = surfneumcond.size();
+//    if (numneumcond == 0) dserror("no Neumann conditions on structure");
+//
+//    // now filter those Neumann conditions that are due to the coupling
+//    //std::vector<DRT::Condition*> coupcond;
+//    for (unsigned int k = 0; k < numneumcond; ++k)
+//    {
+//      DRT::Condition* actcond = surfneumcond[k];
+//      if (actcond->Type() == DRT::Condition::Cardiovascular0DStructureCoupling)
+//        cardiovascular0dstructcoupcond_.push_back(actcond);
+//    }
+    unsigned int numcoupcond = cardiovascular0dstructcoupcond_.size();
+    if (numcoupcond == 0) dserror("no coupling conditions found");
 
     //if (cardiovascular0dcond_.size() != cardiovascular0dstructcoupcond_.size()) dserror("Coupling conditions do not match cardiovascular0d conditions!");
 
@@ -239,7 +238,7 @@ void UTILS::Cardiovascular0D::Evaluate(
     Teuchos::RCP<Epetra_Vector>    sysvec1,
     Teuchos::RCP<Epetra_Vector>    sysvec2,
     Teuchos::RCP<Epetra_Vector>    sysvec3,
-    Teuchos::RCP<Epetra_Vector>    sysvec4,
+    const Teuchos::RCP<Epetra_Vector>    sysvec4,
     Teuchos::RCP<Epetra_Vector>    sysvec5
     )
 {

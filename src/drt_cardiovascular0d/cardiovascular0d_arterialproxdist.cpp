@@ -63,7 +63,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(
     Teuchos::RCP<Epetra_Vector>    sysvec1,
     Teuchos::RCP<Epetra_Vector>    sysvec2,
     Teuchos::RCP<Epetra_Vector>    sysvec3,
-    Teuchos::RCP<Epetra_Vector>    sysvec4,
+    const Teuchos::RCP<Epetra_Vector>    sysvec4,
     Teuchos::RCP<Epetra_Vector>    sysvec5)
 {
 

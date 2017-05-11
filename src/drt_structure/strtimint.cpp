@@ -1187,6 +1187,17 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     {
       damp_->Multiply(false, (*vel_)[0], *rhs);
     }
+
+    // add initial forces due to 0D cardiovascular for consistent initial acceleration calculation!
+    // needed in case of initial ventricular pressures != 0
+    Teuchos::ParameterList pwindk;
+    if (cardvasc0dman_->HaveCardiovascular0D())
+    {
+      pwindk.set("scale_timint", 1.0);
+      pwindk.set("time_step_size", (*dt_)[0]);
+      cardvasc0dman_->EvaluateForceStiff((*time_)[0], (*dis_)(0), fint, stiff_, pwindk);
+    }
+
     //Contribution to rhs due to internal and external forces
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
 

@@ -16,7 +16,7 @@
         <ParameterList name="Quantity 0">
           <Parameter name="Quantity Type"  type="string" value="Structure" />
           <Parameter name="Tolerance Type" type="string" value="Absolute" />
-          <Parameter name="Tolerance"      type="double" value="1.0e-6" />
+          <Parameter name="Tolerance"      type="double" value="1.0e-8" />
           <Parameter name="Norm Type"      type="string" value="Two Norm" />
           <Parameter name="Scale Type"     type="string" value="Unscaled" />
         </ParameterList>
@@ -39,7 +39,7 @@
         <ParameterList name="Quantity 0">
           <Parameter name="Quantity Type"    type="string" value="Structure" />
           <Parameter name="Tolerance Type"   type="string" value="Absolute" />
-          <Parameter name="Tolerance"        type="double" value="1.0e-6" />
+          <Parameter name="Tolerance"        type="double" value="1.0e-8" />
           <Parameter name="Norm Type"        type="string" value="Two Norm" />
           <Parameter name="Scale Type"       type="string" value="Unscaled" />
         </ParameterList>

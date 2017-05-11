@@ -273,7 +273,9 @@ void STR::MODELEVALUATOR::Cardiovascular0D::RecoverState(
 void STR::MODELEVALUATOR::Cardiovascular0D::UpdateStepState(
     const double& timefac_n)
 {
-  cardvasc0dman_->UpdateTimeStep();
+  // only update 0D model at the end of the time step!
+  if (EvalData().GetTotalTime()==GState().GetTimeNp())
+    cardvasc0dman_->UpdateTimeStep();
 
   // only print state variables after a finished time step, not when we're
   // in the equilibriate initial state routine

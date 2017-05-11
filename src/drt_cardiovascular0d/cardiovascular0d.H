@@ -123,7 +123,7 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector> sysvec2,
       Teuchos::RCP<Epetra_Vector> sysvec3,
-      Teuchos::RCP<Epetra_Vector> sysvec4,
+      const Teuchos::RCP<Epetra_Vector> sysvec4,
       Teuchos::RCP<Epetra_Vector> sysvec5
     );
 

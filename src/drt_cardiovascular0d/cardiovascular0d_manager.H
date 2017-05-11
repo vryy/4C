@@ -162,7 +162,7 @@ namespace UTILS
     void EvaluateNeumannCardiovascular0DCoupling
     (
       Teuchos::ParameterList params,
-      Teuchos::RCP<Epetra_Vector> actpres,
+      const Teuchos::RCP<Epetra_Vector> actpres,
       Teuchos::RCP<Epetra_Vector> systemvector, ///< structural rhs
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix ///< structural stiffness matrix
     );
@@ -431,7 +431,7 @@ namespace UTILS
     INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice_;
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
-    double theta_;
+    const double theta_;
     const bool enhanced_output_;
     const bool ptc_3d0d_;
     double totaltime_;

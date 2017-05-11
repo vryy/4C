@@ -67,7 +67,7 @@ LINEAR_SOLVER                   1
 LOADLIN                         yes
 LUMPMASS                        no
 MAXITER                         200
-MAXTIME                         0.9
+MAXTIME                         0.54//0.9
 MINITER                         0
 MODIFIEDEXPLEULER               Yes
 M_DAMP                          0.0
@@ -85,7 +85,7 @@ PRESTRESS                       None
 PRESTRESSTIME                   1.001
 PTCDT                           0.3
 RESEVRYERGY                     0
-RESTARTEVRY                     1
+RESTARTEVRY                     0
 RESULTSEVRY                     10
 STC_LAYER                       1
 TIMESTEP                        0.009
@@ -93,7 +93,7 @@ TOLCONSTR                       1e-08
 TOLDISP                         1e-08
 TOLINCO                         1e-08
 TOLPRE                          1e-08
-TOLRES                          1e-05
+TOLRES                          1e-08
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -102,7 +102,7 @@ UZAWATOL                        1e-08
 GENAVG                          TrLike
 RHO_INF                         0.8
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
+THETA                           0.66
 -------------------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 ADAPTSTEPMAX                    5
 KIND                            None//AdamsBashforth2
@@ -124,27 +124,23 @@ MAT 1 MAT_ElastHyper NUMMAT 4 MATIDS 11 12 13 14 DENS 1.0e-6
 MAT 11 ELAST_IsoExpoPow K1 0.059 K2 8.023 C 1.0
 MAT 12 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 INIT 1 FIB_COMP No
 MAT 13 ELAST_VolSussmanBathe KAPPA 1000.0
-MAT 14 ELAST_AnisoActiveStress_Evolution SIGMA 60.0 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
+MAT 14 ELAST_AnisoActiveStress_Evolution SIGMA 50.0 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
 --------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION (5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)*heaviside(5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)-5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.0))))))-5.0*(t-(0.52-20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(0.52-20.0/(5.0*(20.0-(-30.0))))))+(5.0*(t-(0.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)*heaviside(5.0*(t-(0.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 0.18 0.9001 DESCRIPTION 0.0+0.5*(0.5-0.0)*(1.0-cos(pi*(t)/0.18)) (0.5-0.0)*exp(-(t-0.18)/0.18)+0.0
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 0.18 0.9001 DESCRIPTION 0.2+0.5*(0.5-0.2)*(1.0-cos(pi*(t)/0.18)) (0.5-0.2)*exp(-(t-0.18)/0.18)+0.2
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 0.18 0.9001 DESCRIPTION 0.0+0.5*(0.1-0.0)*(1.0-cos(pi*(t)/0.18)) (0.1-0.0)*exp(-(t-0.18)/0.18)+0.0
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 0.18 0.9001 DESCRIPTION 0.1+0.5*(0.1-0.1)*(1.0-cos(pi*(t)/0.18)) (0.1-0.1)*exp(-(t-0.18)/0.18)+0.1
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 1.08110419827050563e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 8.00901026463622223e+00 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
 NDSURF                          11
 NDVOL                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           2
-E 8 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 FUNCT 2 2 2 orthopressure Mid
-E 9 - NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 FUNCT 3 3 3 orthopressure Mid
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           3
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0  FUNCT 0 0 0
@@ -156,8 +152,8 @@ E 6 - 0
 E 7 - 1
 -----------------DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS
 DSURF                           2
-E 6 - id 0 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 6.67e-07 C_arp 7500.0 R_arp 120.0e-6 C_ard 10000.0 R_ard 120.0e-6 p_ref 2.0 p_v_0 0.0 p_arp_0 9.68378038166 y_arp_0 0.0 p_ard_0 9.68378038166 P_AT fac 1.0 crv 2
-E 7 - id 1 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 0.0 C_arp 20000.0 R_arp 100.0e-6 C_ard 30000.0 R_ard 100.0e-6 p_ref 1.5 p_v_0 0.0 p_arp_0 3.22792679389 y_arp_0 0.0 p_ard_0 3.22792679389 P_AT fac 1.0 crv 3
+E 6 - id 0 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 6.67e-07 C_arp 7500.0 R_arp 120.0e-6 C_ard 10000.0 R_ard 120.0e-6 p_ref 2.0 p_v_0 0.2 p_arp_0 9.68378038166 y_arp_0 0.0 p_ard_0 9.68378038166 P_AT fac 1.0 crv 2
+E 7 - id 1 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 0.0 C_arp 20000.0 R_arp 100.0e-6 C_ard 30000.0 R_ard 100.0e-6 p_ref 1.5 p_v_0 0.1 p_arp_0 3.22792679389 y_arp_0 0.0 p_ard_0 3.22792679389 P_AT fac 1.0 crv 3
 -----------------DESIGN SURF CARDIOVASCULAR 0D-STRUCTURE COUPLING CONDITIONS
 DSURF                           2
 E 8 - coupling_id 0
