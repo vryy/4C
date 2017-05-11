@@ -216,8 +216,10 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
 {
   const int lrowdim = (int) lmrow.size();
   const int lcoldim = (int) lmcol.size();
-  if (lrowdim != (int) lmrowowner.size() || lrowdim != Aele.M()
-      || lcoldim != Aele.N())
+  // allow Aele to provide entries past the end of lmrow and lmcol that are
+  // not used here, therefore check only for ">" rather than "!="
+  if (lrowdim != (int) lmrowowner.size() || lrowdim > Aele.M()
+      || lcoldim > Aele.N())
     dserror("Mismatch in dimensions");
 
   const int myrank = A.Comm().MyPID();

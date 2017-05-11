@@ -408,10 +408,10 @@ void LINALG::SparseMatrix::Assemble(
 
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
-#ifdef DEBUG
-  if (lrowdim!=(int)lmrowowner.size() || lrowdim!=Aele.M() || lcoldim!=Aele.N())
+  // allow Aele to provide entries past the end of lmrow and lmcol that are
+  // not used here, therefore check only for ">" rather than "!="
+  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.M() || lcoldim > Aele.N())
     dserror("Mismatch in dimensions");
-#endif
 
   const int myrank = sysmat_->Comm().MyPID();
   const Epetra_Map& rowmap = sysmat_->RowMap();
@@ -592,10 +592,10 @@ void LINALG::SparseMatrix::Assemble(
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
-#ifdef DEBUG
-  if (lrowdim!=(int)lmrowowner.size() || lrowdim!=Aele.M() || lcoldim!=Aele.N())
+  // allow Aele to provide entries past the end of lmrow and lmcol that are
+  // not used here, therefore check only for ">" rather than "!="
+  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.M() || lcoldim > Aele.N())
     dserror("Mismatch in dimensions");
-#endif
 
   const int myrank = sysmat_->Comm().MyPID();
   const Epetra_Map& rowmap = sysmat_->RowMap();
@@ -702,10 +702,11 @@ void LINALG::SparseMatrix::FEAssemble(
 {
   const int lrowdim = static_cast<int>( lmrow.size() );
   const int lcoldim = static_cast<int>( lmcol.size() );
-#ifdef DEBUG
-  if (lrowdim!=(int)lmrowowner.size() || lrowdim!=Aele.M() || lcoldim!=Aele.N())
+
+  // allow Aele to provide entries past the end of lmrow and lmcol that are
+  // not used here, therefore check only for ">" rather than "!="
+  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.M() || lcoldim > Aele.N())
     dserror("Mismatch in dimensions");
-#endif
 
   Teuchos::RCP<Epetra_FECrsMatrix> fe_mat = Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
   const int myrank = fe_mat->Comm().MyPID();
@@ -737,10 +738,10 @@ void LINALG::SparseMatrix::FEAssemble(
 {
   const int lrowdim = static_cast<int>( lmrow.size() );
   const int lcoldim = static_cast<int>( lmcol.size() );
-#ifdef DEBUG
-  if ( lrowdim != Aele.M() || lcoldim != Aele.N() )
+  // allow Aele to provide entries past the end of lmrow and lmcol that are
+  // not used here, therefore check only for ">" rather than "!="
+  if ( lrowdim > Aele.M() || lcoldim > Aele.N() )
     dserror("Mismatch in dimensions");
-#endif
 
   Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
 
