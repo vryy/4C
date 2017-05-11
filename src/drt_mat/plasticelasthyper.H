@@ -206,10 +206,14 @@ private:
     virtual double Kinhard() const { return MatParams()->kinhard_;}
 
     /// complementarity parameter
-    virtual double cpl() const { return MatParams()->cpl_;}
+    virtual double cpl() const {
+      if (MatParams()!=NULL) return MatParams()->cpl_;
+      else return 0.;}
 
     /// stabilization parameter
-    virtual double s() const { return MatParams()->stab_s_;}
+    virtual double s() const {
+      if (MatParams()!=NULL) return MatParams()->stab_s_;
+      else return 0.;}
 
     /// plastic spin unequal zero
     virtual bool HavePlasticSpin() const
@@ -247,7 +251,9 @@ private:
     {if (MatParams()!=NULL) MatParams()->dis_mode_=mode;}
 
     /// get dissipation mode
-    virtual INPAR::TSI::DissipationMode DisMode() const {return MatParams()->dis_mode_; }
+    virtual INPAR::TSI::DissipationMode DisMode() const {
+      if (MatParams()!=NULL) return MatParams()->dis_mode_;
+      else return (INPAR::TSI::DissipationMode)0;}
 
     /// evaluate quantities for elastic stiffness matrix
     /// in consideration of plastic history/deformation
