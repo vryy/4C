@@ -51,7 +51,7 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     );
 
   // output type
-  IntParameter("RESEVRYGLOB",1,"save temperature and other global quantities every RESEVRYGLOB steps",&tdyn);
+  IntParameter("RESULTSEVRY",1,"save temperature and other global quantities every RESULTSEVRY steps",&tdyn);
   IntParameter("RESEVRYERGY",0,"write system energies every requested step",&tdyn);
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tdyn);
 

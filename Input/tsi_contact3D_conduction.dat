@@ -77,7 +77,7 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         1
 PREDICT                         ConstTemp
-RESEVRYGLOB                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        2.5e-3
 TOLRES                          1e-08

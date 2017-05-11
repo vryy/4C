@@ -102,7 +102,7 @@ NORM_TEMP                       Abs
 NUMSTEP                         200
 PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
 RESEVRYERGY                     0
-RESEVRYGLOB                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-06

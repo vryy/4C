@@ -41,12 +41,6 @@ void thr_dyn_drt()
   const Teuchos::ParameterList& tdyn
     = DRT::Problem::Instance()->ThermalDynamicParams();
 
-  // the adapter expects a couple of variables that do not exist in the
-  // ThermalDynamicParams() list so rename them here to the expected name
-  // (like in stru_dyn_nln_drt.cpp)
-  int upres = DRT::Problem::Instance()->ThermalDynamicParams().get<int>("RESEVRYGLOB");
-  const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->ThermalDynamicParams()).set<int>("RESULTSEVRY",upres);
-
   // create instance of thermo basis algorithm (no structure discretization)
   Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermoonly
     = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(tdyn,thermodis));

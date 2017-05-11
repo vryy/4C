@@ -95,7 +95,7 @@ NORM_RESF                       Abs  // Rel,Abs,Mix
 NORM_TEMP                       Abs  // Rel,Abs,Mix
 NUMSTEP                         200
 PREDICT                         ConstTemp
-RESEVRYGLOB                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.05
 TOLRES                          1e-05

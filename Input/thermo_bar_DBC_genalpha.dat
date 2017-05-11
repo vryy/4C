@@ -68,7 +68,7 @@ NORM_TEMP                       Abs
 NUMSTEP                         50  // 100000
 PREDICT                         ConstTemp
 RESEVRYERGY                     10
-RESEVRYGLOB                     5
+RESULTSEVRY                     5
 RESTARTEVRY                     20
 TIMESTEP                        2.0 // 0.05
 TOLRES                          1e-08

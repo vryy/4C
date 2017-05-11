@@ -86,7 +86,7 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs                // Rel: relativ 10e-8, Mix: Minimum aus Rel oder Abs
 NUMSTEP                         40000
 PREDICT                         TangTemp           // ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
-RESEVRYGLOB                     1
+RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     10
 TIMESTEP                        0.05

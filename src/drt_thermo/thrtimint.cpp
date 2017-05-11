@@ -70,7 +70,7 @@ THR::TimInt::TimInt(
   printiter_(true),  // ADD INPUT PARAMETER
   writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
   writeglob_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"THERM_TEMPERATURE")),
-  writeglobevery_(tdynparams.get<int>("RESEVRYGLOB")),
+  writeglobevery_(tdynparams.get<int>("RESULTSEVRY")),
   writeheatflux_(DRT::INPUT::IntegralValue<INPAR::THR::HeatFluxType>(ioparams,"THERM_HEATFLUX")),
   writetempgrad_(DRT::INPUT::IntegralValue<INPAR::THR::TempGradType>(ioparams,"THERM_TEMPGRAD")),
   writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),

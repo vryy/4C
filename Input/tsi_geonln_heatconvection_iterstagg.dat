@@ -86,7 +86,7 @@ NORM_TEMP                       Abs
 NUMSTEP                         200
 PREDICT                         ConstTemp  // TangTemp
 RESEVRYERGY                     0
-RESEVRYGLOB                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.1
 TOLRES                          1e-08
