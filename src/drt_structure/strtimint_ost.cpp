@@ -376,8 +376,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   }
   else
   {
-    // F_{inert;1+theta} := theta * F_{inert;n+1} + (1-theta) * F_{inert;n}
-    finertt_->Update(theta_, *finertn_, (1.0-theta_), *finert_, 0.0);
+    DetermineMass();
   }
 
   // ************************** (4) DAMPING FORCES ****************************
@@ -512,6 +511,16 @@ void STR::TimIntOneStepTheta::EvaluateForceResidual()
   }
   fres_->Update(1.0, *finertt_, 1.0);
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::TimIntOneStepTheta::DetermineMass()
+{
+  // F_{inert;1+theta} := theta * F_{inert;n+1} + (1-theta) * F_{inert;n}
+  finertt_->Update(theta_, *finertn_, (1.0-theta_), *finert_, 0.0);
   return;
 }
 

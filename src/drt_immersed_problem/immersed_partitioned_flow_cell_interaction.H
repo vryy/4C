@@ -75,6 +75,9 @@ public:
   /// read restart
   virtual void ReadRestart(int step);
 
+  /// write drag on immersed solid to file
+  void WriteDrag();
+
 protected:
 
   /// composed Field-Field-Interaction operator
@@ -180,6 +183,7 @@ protected:
   Teuchos::RCP<Epetra_Vector> porofluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
   Teuchos::RCP<Epetra_Vector> poroscatra_segregated_phi_;    //!< background phi interpolated from immersed dis
   Teuchos::RCP<Epetra_Vector> cell_bdry_traction_;           //!< boundary traction rhs on immersed cell
+  Teuchos::RCP<Epetra_Vector> cell_bdry_traction_pressure_part_; //!< boundary traction rhs on immersed cell (only pressure part)
   //@}
 
   //! @name Pointers to Discretizations

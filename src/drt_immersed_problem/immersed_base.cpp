@@ -12,9 +12,11 @@
 
 *----------------------------------------------------------------------*/
 #include "immersed_base.H"
+#include "../drt_io/io_control.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_adapter/ad_fld_wrapper.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
+#include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
 
 
 IMMERSED::ImmersedBase::ImmersedBase():
@@ -31,7 +33,8 @@ isinit_(false)
 void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discretization>& dis,
                                                    const std::vector<int> dvol_fenode,
                                                    const DRT::Condition::ConditionType condtype,
-                                                   const std::string condname)
+                                                   const std::string condname,
+                                                   bool buildgeometry)
 {
   // determine id of condition
   std::multimap<std::string,Teuchos::RCP<DRT::Condition> > allconditions;
@@ -40,7 +43,6 @@ void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discr
   id += 1;
 
   // build condition
-  bool buildgeometry = false;
   Teuchos::RCP<DRT::Condition> condition =
           Teuchos::rcp(new DRT::Condition(id,condtype,buildgeometry,DRT::Condition::Volume));
 
@@ -52,7 +54,15 @@ void IMMERSED::ImmersedBase::CreateVolumeCondition(const Teuchos::RCP<DRT::Discr
 
    // fill complete if necessary
    if (!dis->Filled())
-     dis -> FillComplete(false,false,false);
+     dis -> FillComplete(false,false,buildgeometry);
+
+   std::map<int,Teuchos::RCP<DRT::Element> >& geom = dis->GetCondition(condname)->Geometry();
+   std::map<int,Teuchos::RCP<DRT::Element> >::iterator it;
+   for(it=geom.begin();it!=geom.end();it++)
+   {
+     int id = it->second->Id();
+     dis->gElement(id)->SetCondition(condname,condition);
+   }
 
    return;
 } // CreateVolumeCondition
@@ -112,14 +122,14 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
 void IMMERSED::ImmersedBase::DoDirichletCond(
     const Teuchos::RCP<Epetra_Vector>&        statevector,
     const Teuchos::RCP<const Epetra_Vector>&  dirichvals,
-    const Teuchos::RCP<const Epetra_Map>&     dbcmap)
+    const Teuchos::RCP<const Epetra_Map>&     dbcmap_new)
 {
-  int mynumvals = dbcmap->NumMyElements();
+  int mynumvals = dbcmap_new->NumMyElements();
   double* myvals = dirichvals->Values();
 
   for(int i=0;i<mynumvals;++i)
   {
-    int gid = dbcmap->GID(i);
+    int gid = dbcmap_new->GID(i);
 
 #ifdef DEBUG
     if(mynumvals==0)
@@ -145,6 +155,46 @@ void IMMERSED::ImmersedBase::DoDirichletCond(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::DoDirichletCond(
+    const Teuchos::RCP<Epetra_Vector>&        statevector,
+    const Teuchos::RCP<const Epetra_Vector>&  dirichvals,
+    const Teuchos::RCP<const Epetra_Map>&     dbcmap_new,
+    const Teuchos::RCP<const Epetra_Map>&     dbcmap_orig)
+{
+  int mynumvals = dbcmap_new->NumMyElements();
+  double* myvals = dirichvals->Values();
+
+  for(int i=0;i<mynumvals;++i)
+  {
+    int gid = dbcmap_new->GID(i);
+
+#ifdef DEBUG
+    if(mynumvals==0)
+      dserror("dbcmap empty!");
+    int err = -2;
+    int lid = dirichvals->Map().LID(gid);
+    err = statevector -> ReplaceGlobalValue(gid,0,myvals[lid]);
+    if(err==-1)
+      dserror("VectorIndex >= NumVectors()");
+    else if (err==1)
+        dserror("GlobalRow not associated with calling processor");
+    else if (err != -1 and err != 1 and err != 0)
+      dserror("Trouble using ReplaceGlobalValue on fluid state vector. ErrorCode = %d",err);
+#else
+    int lid = dirichvals->Map().LID(gid);
+
+    // we do not want to overwrite original values
+    if(dbcmap_orig->LID(gid) == -1)
+      statevector -> ReplaceGlobalValue(gid,0,myvals[lid]);
+#endif
+
+  }
+  return;
+} // DoDirichletCond
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::ApplyDirichlet(
     const Teuchos::RCP< ::ADAPTER::StructureWrapper>& field_wrapper,
     const Teuchos::RCP<DRT::Discretization>&  dis,
@@ -153,11 +203,14 @@ void IMMERSED::ImmersedBase::ApplyDirichlet(
     const int                                 numdof,
     const Teuchos::RCP<const Epetra_Vector>&  dirichvals)
 {
+  const Teuchos::RCP<const Epetra_Map> condmap_orig =
+      field_wrapper->GetDBCMapExtractor()->CondMap();
+
   // build map of dofs subjected to Dirichlet condition
   BuildConditionDofMap(
       dis,
       condname,
-      field_wrapper->GetDBCMapExtractor()->CondMap(),
+      condmap_orig,
       numdof,
       cond_dofrowmap);
 
@@ -184,11 +237,15 @@ void IMMERSED::ImmersedBase::ApplyDirichletToFluid(
     const int                                 numdof,
     const Teuchos::RCP<const Epetra_Vector>&  dirichvals)
 {
+  // save the original condition map
+  const Teuchos::RCP<const Epetra_Map> condmap_orig =
+      field_wrapper->GetDBCMapExtractor()->CondMap();
+
   // build map of dofs subjected to Dirichlet condition
   BuildConditionDofMap(
       dis,
       condname,
-      field_wrapper->GetDBCMapExtractor()->CondMap(),
+      condmap_orig,
       numdof,
       cond_dofrowmap);
 
@@ -198,6 +255,209 @@ void IMMERSED::ImmersedBase::ApplyDirichletToFluid(
   // write Dirichlet values to systemvector
   DoDirichletCond(
       field_wrapper->WriteAccessVelnp(),
+      dirichvals,
+      field_wrapper->GetDBCMapExtractor()->CondMap());
+
+  return;
+} // ApplyDirichlet
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::ApplyDirichletToArtificialECM(
+    const Teuchos::RCP< ::ADAPTER::StructureWrapper>& field_wrapper,
+    const Teuchos::RCP<DRT::Discretization>&  dis,
+    const std::string                         condname,
+    Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+    const int                                 numdof,
+    const Teuchos::RCP<const Epetra_Vector>&  dirichvals)
+{
+  const Teuchos::RCP<const Epetra_Map> cond_dofmap_orig =
+      field_wrapper->GetDBCMapExtractor()->CondMap();
+
+  // declare dof vector
+  std::vector<int> mydirichdofs(0);
+
+  // get condition and conditioned nodes
+  DRT::Condition* condition = dis->GetCondition(condname);
+  const std::vector<int>* cond_nodes = condition->Nodes();
+  int cond_nodes_size = cond_nodes->size();
+
+  if(cond_nodes_size==0)
+    dserror("No nodes in nodal cloud of condition %s",condname.c_str());
+
+  // loop over all conditioned nodes
+  for(int node=0;node<cond_nodes_size;node++)
+  {
+    bool attachedtoimmersedelement = false;
+    // get node id
+    int nodeid = cond_nodes->at(node);
+    // is node on this proc ?
+    if( DRT::Problem::Instance()->GetDis("porofluid")->NodeColMap()->MyGID(nodeid) )
+    {
+      // get node pointer
+      DRT::Node* node_ptr = DRT::Problem::Instance()->GetDis("porofluid")->gNode(nodeid);
+
+      if(node_ptr->Owner()==dis->Comm().MyPID())
+      {
+        // get adjacent elements
+        DRT::Element** element = node_ptr->Elements();
+        int numadjacentelements = node_ptr->NumElement();
+        for(int aele=0; aele<numadjacentelements;aele++)
+        {
+          DRT::Element* iele = DRT::Problem::Instance()->GetDis("porofluid")->gElement(element[aele]->Id());
+          DRT::ELEMENTS::FluidPoroImmersed* immersedele=dynamic_cast<DRT::ELEMENTS::FluidPoroImmersed* >(iele);
+          if(immersedele==NULL)
+            dserror("Dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidPoroImmersed* failed");
+
+          if(immersedele->IsImmersed())
+          {
+            if(immersedele->IsBoundaryImmersed())
+              dserror("Element must not be labeled IsImmersed and IsImmersedBoundary at once!");
+
+            attachedtoimmersedelement=true;
+            break;
+          }
+        }// loop over all adjacent elements
+
+        IMMERSED::ImmersedNode* immersed_node_ptr =
+            dynamic_cast<IMMERSED::ImmersedNode* >(node_ptr);
+        if(node_ptr==NULL)
+          dserror("Dynamic cast from DRT::Node* to IMMERSED::ImmersedNode* failed");
+
+        // we only set Dirichlet values to fully artificial nodes,
+        // which do not belong to pseudo-boundary
+        if((immersed_node_ptr->IsBoundaryImmersed()==false) and attachedtoimmersedelement)
+        {
+          // get dofs
+          std::vector<int> dofs = dis->Dof(0,node_ptr);
+
+          for (int dim=0;dim<numdof;++dim)
+          {
+            // if not already in original dirich map
+            if(cond_dofmap_orig->LID(dofs[dim]) == -1)
+              mydirichdofs.push_back(dofs[dim]);
+          }
+        }
+      }// if proc owns node
+    }// if proc has node
+  } // loop over all conditioned nodes
+
+  int nummydirichvals = mydirichdofs.size();
+
+  // construct new dof row map
+  cond_dofrowmap = Teuchos::rcp( new Epetra_Map(-1,nummydirichvals,&(mydirichdofs[0]),0,dis->Comm()) );
+
+  // add adhesion dofs to dbc map
+  field_wrapper->AddDirichDofs(cond_dofrowmap);
+
+  // write Dirichlet values to systemvector
+  DoDirichletCond(
+      field_wrapper->WriteAccessDispnp(),
+      dirichvals,
+      field_wrapper->GetDBCMapExtractor()->CondMap());
+
+  return;
+} // ApplyDirichlet
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::ApplyDirichletToRealECM(
+    const Teuchos::RCP< ::ADAPTER::StructureWrapper>& field_wrapper,
+    const Teuchos::RCP<DRT::Discretization>&  dis,
+    const std::string                         condname,
+    Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+    const int                                 numdof,
+    const Teuchos::RCP<const Epetra_Vector>&  dirichvals)
+{
+  const Teuchos::RCP<const Epetra_Map> cond_dofmap_orig =
+      field_wrapper->GetDBCMapExtractor()->CondMap();
+
+  // declare dof vector
+  std::vector<int> mydirichdofs(0);
+
+  // get condition and conditioned nodes
+  DRT::Condition* condition = dis->GetCondition(condname);
+  const std::vector<int>* cond_nodes = condition->Nodes();
+  int cond_nodes_size = cond_nodes->size();
+
+  if(cond_nodes_size==0)
+    dserror("No nodes in nodal cloud of condition %s",condname.c_str());
+
+  // loop over all conditioned nodes
+  for(int node=0;node<cond_nodes_size;node++)
+  {
+    bool attachedtoimmersedelement = false;
+    bool attachedtoimmersedbdryelement = false;
+    // get node id
+    int nodeid = cond_nodes->at(node);
+    // is node on this proc ?
+    if( DRT::Problem::Instance()->GetDis("porofluid")->NodeColMap()->MyGID(nodeid) )
+    {
+      // get node pointer
+      DRT::Node* node_ptr = DRT::Problem::Instance()->GetDis("porofluid")->gNode(nodeid);
+      if(node_ptr==NULL)
+        dserror("Could not get node with id %d",nodeid);
+      if(node_ptr->Owner()==dis->Comm().MyPID())
+      {
+        // get adjacent elements
+        DRT::Element** element = node_ptr->Elements();
+        int numadjacentelements = node_ptr->NumElement();
+        for(int aele=0; aele<numadjacentelements;aele++)
+        {
+          DRT::Element* iele = DRT::Problem::Instance()->GetDis("porofluid")->gElement(element[aele]->Id());
+          DRT::ELEMENTS::FluidPoroImmersed* immersedele=dynamic_cast<DRT::ELEMENTS::FluidPoroImmersed* >(iele);
+          if(immersedele==NULL)
+            dserror("Dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidPoroImmersed* failed");
+
+          if(immersedele->IsImmersed())
+          {
+            attachedtoimmersedelement=true;
+          }
+
+          if(immersedele->IsBoundaryImmersed())
+          {
+            attachedtoimmersedbdryelement=true;
+          }
+
+        } // loop over all adjacent elements
+
+        IMMERSED::ImmersedNode* immersed_node_ptr =
+            dynamic_cast<IMMERSED::ImmersedNode* >(node_ptr);
+        if(immersed_node_ptr==NULL)
+          dserror("Dynamic cast from DRT::Node* to IMMERSED::ImmersedNode* failed");
+
+        // we only set Dirichlet values to fully artificial nodes,
+        // which do not belong to pseudo-boundary
+        if(attachedtoimmersedbdryelement or (attachedtoimmersedbdryelement == false and attachedtoimmersedelement == false))
+        {
+          // get dofs
+          std::vector<int> dofs = dis->Dof(0,node_ptr);
+
+          for (int dim=0;dim<numdof;++dim)
+          {
+            // if not already in original dirich map
+            if(cond_dofmap_orig->LID(dofs[dim]) == -1)
+              mydirichdofs.push_back(dofs[dim]);
+          }
+        }
+      }// if node is owned by proc
+    }// if proc has node
+  }// loop over all conditioned nodes
+
+  int nummydirichvals = mydirichdofs.size();
+  if(nummydirichvals == 0)
+    dserror("Proc %i does not add any dof to Dirichlet map.",dis->Comm().MyPID());
+
+  // construct new dof row map
+  cond_dofrowmap = Teuchos::rcp( new Epetra_Map(-1,nummydirichvals,&(mydirichdofs[0]),0,dis->Comm()) );
+
+  // add adhesion dofs to dbc map
+  field_wrapper->AddDirichDofs(cond_dofrowmap);
+
+  // write Dirichlet values to systemvector
+  DoDirichletCond(
+      field_wrapper->WriteAccessDispnp(),
       dirichvals,
       field_wrapper->GetDBCMapExtractor()->CondMap());
 
@@ -582,3 +842,145 @@ void IMMERSED::ImmersedBase::EvaluateSubsetElements(Teuchos::ParameterList& para
   return;
 } // EvaluateSubsetElements
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::WriteExtraOutput(
+    const Epetra_Comm& comm,
+    const double time,
+    const std::string filenameending,
+    const std::vector<double> valuetowrite,
+    const std::vector<double> valuetowrite2,
+    const std::vector<double> valuetowrite3)
+{
+  // append values to output file
+  if (comm.MyPID()==0)
+  {
+    const std::string fname1 = DRT::Problem::Instance()->OutputControlFile()->FileName()+"."+filenameending;
+
+    std::ofstream f1;
+    f1.open(fname1.c_str(),std::fstream::ate | std::fstream::app);
+
+    f1 << time << " " << valuetowrite[0] << " " << valuetowrite[1] << " " << valuetowrite[2] << " " << valuetowrite[3]<< " " <<
+                         valuetowrite2[0] << " " << valuetowrite2[1] << " " << valuetowrite2[2] << " " << valuetowrite2[3] << " " <<
+                         valuetowrite3[0] << " " << valuetowrite3[1] << " " << valuetowrite3[2] << " " << valuetowrite3[3] << "   ";
+
+    f1 << "\n";
+    f1.flush();
+    f1.close();
+
+  } // only proc 0 writes
+
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<double> IMMERSED::ImmersedBase::
+    CalcGlobalResultantfromEpetraVector(
+        const Epetra_Comm& comm,
+        const Teuchos::RCP<const DRT::Discretization>& dis,
+        const Teuchos::RCP<const Epetra_Vector>& vec_epetra)
+{
+  double summyrowentriesx= 0.0;
+  double summyrowentriesy= 0.0;
+  double summyrowentriesz= 0.0;
+  double result_globalx  = 0.0;
+  double result_globaly  = 0.0;
+  double result_globalz  = 0.0;
+  double result_L2norm   = 0.0;
+
+  std::vector<double> result;
+
+  const int nummyrownodes = dis->NumMyRowNodes();
+  const int myveclength = vec_epetra->MyLength();
+
+  if(myveclength!=nummyrownodes*3)
+    dserror("local vector length is invalid!");
+
+  for(int i=0; i<nummyrownodes; i++)
+  {
+    summyrowentriesx += vec_epetra->Values()[i*3+0];
+    summyrowentriesy += vec_epetra->Values()[i*3+1];
+    summyrowentriesz += vec_epetra->Values()[i*3+2];
+  }
+
+  comm.Barrier();
+  comm.SumAll(&summyrowentriesx,&result_globalx,1);
+  comm.SumAll(&summyrowentriesy,&result_globaly,1);
+  comm.SumAll(&summyrowentriesz,&result_globalz,1);
+
+  result_L2norm = sqrt(pow(result_globalx,2)+pow(result_globaly,2)+pow(result_globalz,2));
+
+  result.push_back(result_globalx);
+  result.push_back(result_globaly);
+  result.push_back(result_globalz);
+  result.push_back(result_L2norm);
+
+  return result;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<int> IMMERSED::ImmersedBase::DetermineElesInFirstImmersedRow(
+    const Teuchos::RCP<const DRT::Discretization>& dis,
+    std::vector<int>* eleids)
+{
+  std::vector<int> returnvar;
+  bool isconnectedtointersectedelement=false;
+
+  const Epetra_Map* elecolmapptr = dis->ElementColMap();
+  const int nummyelements = elecolmapptr->NumMyElements();
+
+  // loop over all row elements
+  for(int lid=0;lid<nummyelements;lid++)
+  {
+    isconnectedtointersectedelement=false;
+
+    DRT::Element* eleptr = dis->gElement(elecolmapptr->GID(lid));
+    DRT::ELEMENTS::FluidPoroImmersed* immersedeleptr =
+        dynamic_cast<DRT::ELEMENTS::FluidPoroImmersed* >(eleptr);
+    if(immersedeleptr==NULL)
+      dserror("dynamic cast to FluidPoroImmersed failed!");
+
+    // if element is labeled as IsImmersed
+    if(immersedeleptr->IsImmersed())
+    {
+      // safety check
+      if(immersedeleptr->IsBoundaryImmersed())
+        dserror("Element cannot be IsImmersed and IsBoundaryImmersed at once!");
+
+      // loop over all nodes of immersed element
+      DRT::Node** nodesptr = immersedeleptr->Nodes();
+      for (int node=0;node<immersedeleptr->NumNode();node++)
+      {
+        DRT::Node* nodeptr = nodesptr[node];
+        IMMERSED::ImmersedNode* immersednodeptr = dynamic_cast<IMMERSED::ImmersedNode* >(nodeptr);
+        if(immersednodeptr==NULL)
+          dserror("dynamic cast to ImmersedNode failed!");
+
+        if(immersednodeptr->IsBoundaryImmersed())
+        {
+          eleids->push_back(immersedeleptr->Id());
+          immersedeleptr->SetIsImmersedFirstRow(true);
+          isconnectedtointersectedelement = true;
+          break;
+        }
+      } // loop over nodes of immersed element
+
+      // add nodeids to vector
+      if(isconnectedtointersectedelement)
+      {
+        for (int node=0;node<immersedeleptr->NumNode();node++)
+        {
+          dynamic_cast<IMMERSED::ImmersedNode* >(nodesptr[node])->SetIsPseudoBoundary(true);
+          returnvar.push_back(nodesptr[node]->Id());
+        }
+      }
+
+    } // if immersed element
+  } // loop over all row elements
+
+  return returnvar;
+}

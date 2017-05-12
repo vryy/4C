@@ -87,6 +87,8 @@ public:
 
   virtual void SetIsImmersed(int isimmersed){is_immersed_ = isimmersed;};
 
+  virtual void SetIsImmersedFirstRow(int isimmersed){is_first_row_immersed_ = isimmersed;};
+
   virtual void SetBoundaryIsImmersed(int IsBoundaryImmersed){is_immersed_bdry_ = IsBoundaryImmersed;};
 
   virtual void SetHasProjectedDirichlet(int has_projected_dirichletvalues){has_projected_dirichletvalues_ = has_projected_dirichletvalues;};
@@ -96,6 +98,8 @@ public:
   virtual void StoreProjectedIntPointDivergence(int gp, double projected_intpoint_divergence){stored_projected_intpoint_divergence_->at(gp) = projected_intpoint_divergence;};
 
   virtual int IsImmersed(){return is_immersed_;};
+
+  virtual int IsImmersedFirstRow(){return is_first_row_immersed_;};
 
   virtual int IsBoundaryImmersed(){return is_immersed_bdry_;};
 
@@ -142,6 +146,11 @@ public:
     names.insert(std::pair<std::string,int>("IsBoundaryImmersed",1));
     return; }
 
+  virtual void VisIsImmersedFirstRow(std::map<std::string,int>& names)
+  {
+    names.insert(std::pair<std::string,int>("IsImmersedFirstRow",1));
+    return; }
+
   /*!
   \brief Query data to be visualized using BINIO of a given name
 
@@ -156,7 +165,7 @@ public:
 
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if it recognizes the name
-  */
+   */
   virtual bool VisData(const std::string& name, std::vector<double>& data)
   {
     if (name=="Owner")
@@ -165,18 +174,24 @@ public:
       data[0] = Owner();
       return true;
     }
-      if (name=="IsImmersed")
-      {
-        if ((int)data.size()<1) dserror("Size mismatch");
-        data[0] = IsImmersed();
-        return true;
-      }
-      if (name=="IsBoundaryImmersed")
-          {
-            if ((int)data.size()<1) dserror("Size mismatch");
-            data[0] = IsBoundaryImmersed();
-            return true;
-          }
+    if (name=="IsImmersed")
+    {
+      if ((int)data.size()<1) dserror("Size mismatch");
+      data[0] = IsImmersed();
+      return true;
+    }
+    if (name=="IsBoundaryImmersed")
+    {
+      if ((int)data.size()<1) dserror("Size mismatch");
+      data[0] = IsBoundaryImmersed();
+      return true;
+    }
+    if (name=="IsImmersedFirstRow")
+    {
+      if ((int)data.size()<1) dserror("Size mismatch");
+      data[0] = IsImmersedFirstRow();
+      return true;
+    }
     if (name=="EleGId")
     {
       if ((int)data.size()<1) dserror("Size mismatch");
@@ -212,12 +227,15 @@ public:
 
 private:
 
-  int is_immersed_;
-  int is_immersed_bdry_;
-  int has_projected_dirichletvalues_;
-  Teuchos::RCP<std::vector<int> >    intpoint_has_projected_divergence_;     // 1000 max number of gp
-  Teuchos::RCP<std::vector<double> > stored_projected_intpoint_divergence_;  // 1000 max number of gp
-
+  //! @name immersed information
+  //@{
+  int is_immersed_;           //!< fully overed by immersed dis?
+  int is_immersed_bdry_;      //!< intersected by immersed boundary?
+  int is_first_row_immersed_; //!< is element in the first row of all is_immersed_ elements?
+  int has_projected_dirichletvalues_; //! get Dirichlet values from immersed dis?
+  Teuchos::RCP<std::vector<int> >    intpoint_has_projected_divergence_;     //!< max number of gp = 1000
+  Teuchos::RCP<std::vector<double> > stored_projected_intpoint_divergence_;  //!< max number of gp = 1000
+  //@}
 };
 }
 }

@@ -1,13 +1,16 @@
 /*!----------------------------------------------------------------------
 \file immersed_node.H
 
+\brief specialized node for immersed problems.
 
+\level 2
+
+<pre>
 \maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-
-\brief immersed node with special immersed functionality
+</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_NODE_H
@@ -129,23 +132,46 @@ public:
   void SetIsBoundaryImmersed(bool isbdryimmersed) { IsBoundaryImmersed_=isbdryimmersed; }
 
   /*!
+  \brief set 'true' if parent element is adjacent to immersed boundary and fully covered by immersed body.
+  */
+  void SetIsPseudoBoundary(bool isbdryimmersed) { IsPseudoBoundary_=isbdryimmersed; }
+
+  /*!
   \brief is an boundary immersed in parent element ?
   */
   int IsBoundaryImmersed()  const { return IsBoundaryImmersed_; }
+
+  /*!
+  \brief is pseudo boundary node ?
+  */
+  int IsPseudoBoundary()  const { return IsPseudoBoundary_; }
 
   /*!
   \brief Print this node
   */
   virtual void Print(std::ostream& os) const ;
 
+  /*! \brief Query names of node data to be visualized using BINIO
+   *
+   */
+  virtual void VisNames(std::map<std::string,int>& names);
+
+  /*! \brief Query data to be visualized using BINIO of a given name
+   *
+   */
+  virtual bool VisData(const std::string& name, std::vector<double>& data);
+
 protected:
 
-  int ismatched_;
-  int IsBoundaryImmersed_;
+  //! @name immersed information
+  //@{
+  int ismatched_;          //!< is covered by immersed dis?
+  int IsBoundaryImmersed_; //!< is attached to an element cut by immersed boundary?
+  int IsPseudoBoundary_;   //!< is part of the pseudo-boundary between physical and artificial domain?
+  //@}
 
 }; // class ImmersedNode
 } // namespace IMMERSED
-
 
 // << operator
 std::ostream& operator << (std::ostream& os, const IMMERSED::ImmersedNode& immersednode);

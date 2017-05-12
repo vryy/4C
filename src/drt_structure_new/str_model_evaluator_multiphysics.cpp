@@ -15,6 +15,9 @@
 
 
 #include "str_model_evaluator_multiphysics.H"
+#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
+#include "../drt_structure_new/str_timint_base.H"
+#include "../drt_io/io.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -60,5 +63,15 @@ bool STR::MODELEVALUATOR::Multiphysics::
 
   GetModelEvaluatorFromMap(active_mt_)->AssembleForce(f,timefac_np);
   return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void  STR::MODELEVALUATOR::Multiphysics::
+    OutputStepState(IO::DiscretizationWriter& iowriter) const
+{
+  // here you can write data, e.g.:
+  // iowriter.WriteVector("cell_adhesion_force",GState().GetFreactNp());
+
 }
 

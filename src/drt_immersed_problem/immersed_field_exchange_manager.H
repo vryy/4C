@@ -55,6 +55,13 @@ public:
   bool isinitialized_; //!< true if this data manager has been properly initialized
   //@}
 
+  //! @name selective assembly specific (e.g. for treatment of artificial ECM)
+  //@{
+  std::vector<int> eles_;  //!< vector of elements
+  std::vector<int> beles_; //!< vector of elements cut by the boundary
+  bool not_assemble_to_pseudoboundary_switch; //!< global switch to turn selective assembly on/off
+  //@}
+
   //! @name Simulation Type Flags
   //@{
   bool isfluidinteraction_;
@@ -144,6 +151,17 @@ public:
   void SetIsInitialized(bool trueorfalse){isinitialized_=trueorfalse; return;};
 
   bool IsInitialized(){return isinitialized_;};
+
+  void SetEles(std::vector<int> eles){eles_=eles; return;};
+
+  std::vector<int>* GetEles(){return &eles_;};
+
+  void SetBdryEles(std::vector<int> eles){beles_=eles; return;};
+
+  std::vector<int>* GetBdryEles(){return &beles_;};
+
+  void SetPseudoBoundarySwitch(bool trueorfalse){not_assemble_to_pseudoboundary_switch=trueorfalse;};
+  bool GetPseudoBoundarySwitch(){return not_assemble_to_pseudoboundary_switch;};
 
   void SetIsFluidInteraction(bool trueorfalse){isfluidinteraction_=trueorfalse; return;};
 
@@ -249,9 +267,9 @@ public:
 
    Teuchos::RCP<Epetra_Vector> GetPointerECMAdhesionForce(){return points_to_ecm_adhesion_force_;};
 
-   void SetPointerSurfaceTraction(const Teuchos::RCP<Epetra_Vector> vector){points_to_surface_traction_=vector; return;};
+   void SetPointerSurfaceTraction(Teuchos::RCP<Epetra_Vector> vector){points_to_surface_traction_=vector; return;};
 
-   Teuchos::RCP<Epetra_Vector> GetPointerSurfaceTraction(){return points_to_surface_traction_;};
+   Teuchos::RCP<Epetra_Vector>& GetPointerSurfaceTraction(){return points_to_surface_traction_;};
 
    void SetPointerToCurrentSubsetOfBackgrdDis(std::map<int,std::set<int> >* pointer){points_to_curr_subset_of_backgrounddis_ = pointer;};
 

@@ -50,6 +50,7 @@
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_comm/comm_utils.H"
+#include "../drt_immersed_problem/immersed_discretization.H"
 #include "../drt_inpar/inpar_problemtype.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
@@ -1924,7 +1925,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_immersed_cell:
   {
     // create empty discretizations
-    structdis     = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    structdis     = Teuchos::rcp(new DRT::DiscretizationImmersed("structure",reader.Comm()));
     porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
     celldis       = Teuchos::rcp(new DRT::Discretization("cell",reader.Comm()));
     scatradis     = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));

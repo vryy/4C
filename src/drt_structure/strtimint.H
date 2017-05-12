@@ -203,7 +203,7 @@ namespace STR
     virtual void Setup();
 
     //! create fields, based on dofrowmap, whose previous time step values are unimportant
-    void createFields();
+    virtual void createFields();
 
     //! Construct all solution vectors
     void createAllEpetraVectors();
@@ -246,6 +246,10 @@ namespace STR
     //! initial accelerations and (if applicable) internal variables
     //! Make damping and mass matrix
     void DetermineMassDampConsistAccel();
+
+    //! Clear mass matrix and evaluate mass matrix again.
+    //! \note not implemented in base class.
+    virtual void DetermineMass();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     //! (reimplemented in static time integrator)
@@ -551,7 +555,7 @@ namespace STR
     int HaveNonlinearMass() const;
 
     //! check whether the initial conditions are fulfilled */
-    void NonlinearMassSanityCheck
+    virtual void NonlinearMassSanityCheck
     (
       Teuchos::RCP<const Epetra_Vector> fext, ///< external forces
       Teuchos::RCP<const Epetra_Vector> dis, ///< displacements

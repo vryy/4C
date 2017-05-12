@@ -97,6 +97,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateStructure(
   case INPAR::STR::dyna_statics :
   case INPAR::STR::dyna_genalpha :
   case INPAR::STR::dyna_onesteptheta :
+  case INPAR::STR::dyna_onesteptheta_immersed :
   case INPAR::STR::dyna_gemm :
   case INPAR::STR::dyna_expleuler:
   case INPAR::STR::dyna_centrdiff :

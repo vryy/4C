@@ -351,6 +351,10 @@ namespace STR
     //! copy constructor is NOT wanted
     TimIntOneStepTheta(const TimIntOneStepTheta& old);
 
+    //! Clear mass matrix and evaluate mass matrix again.
+    //! \note not implemented in base class.
+    virtual void DetermineMass();
+
     //! @name Key coefficients
     //@{
     double theta_;  //!< factor (0,1]

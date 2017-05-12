@@ -25,6 +25,7 @@
 #include "strtimint_expleuler.H"
 #include "strtimint_centrdiff.H"
 #include "strtimint_ab2.H"
+#include "../drt_immersed_problem/str_timint_ost_immersed.H"
 
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
@@ -121,6 +122,14 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     {
       sti = Teuchos::rcp(new STR::TimIntGEMM(timeparams, ioflags, sdyn, xparams,
                                              actdis, solver, contactsolver, output));
+      break;
+    }
+
+    // One-step-theta (OST) time integration
+    case INPAR::STR::dyna_onesteptheta_immersed :
+    {
+      sti = Teuchos::rcp(new STR::TimIntOneStepThetaImmersed(timeparams, ioflags, sdyn, xparams,
+                                                     actdis, solver, contactsolver, output));
       break;
     }
 

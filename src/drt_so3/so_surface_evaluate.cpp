@@ -1492,7 +1492,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       bdryxi[0] = intpoints.IP().qxg[gp][0];
       bdryxi[1] = intpoints.IP().qxg[gp][1];
 
-      std::vector<double> interpolationresult (6);
+      std::vector<double> interpolationresult (7);
       int action = (int)FLD::interpolate_velgrad_to_given_point;
 
       IMMERSED::InterpolateToImmersedIntPoint <DRT::Element::hex8,  // source
@@ -1561,9 +1561,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       const double norm2 = unitnormal.Norm2();
       unitnormal.Scale(1/norm2);
 
-      //         //////////////////
-      //        // Debug output //
-      //       //////////////////
+//         //////////////////
+//        // Debug output //
+//       //////////////////
 //      std::cout<<"_________________________________________________________________________________"<<std::endl;
 //      std::cout<<unitnormal<<std::endl;
 
@@ -1638,6 +1638,30 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
           elevector1(node*numdofpernode+dof) += (gpweight*detA)*J*tempvec(dof,0)*funct(node);
         }
       }
+
+      if(elevector2 != NULL)
+      {
+        // just pressure part of traction
+        LINALG::Matrix<3,3> pressure_part;
+        pressure_part(0,0)=interpolationresult[6];
+        pressure_part(1,1)=interpolationresult[6];
+        pressure_part(2,2)=interpolationresult[6];
+
+        tempmat.Clear();
+        tempvec.Clear();
+
+        tempmat.MultiplyNT(pressure_part,defgrd_inv);
+        tempvec.MultiplyNN(tempmat,unitnormal);
+
+        // fill element vector
+        for(int node = 0; node < nen; node++)
+        {
+          for (int dof=0;dof<globdim;dof++)
+          {
+            elevector2(node*numdofpernode+dof) += (gpweight*detA)*J*tempvec(dof,0)*funct(node);
+          }
+        }
+      } // if elevector2 exists
 
     }// gauss point loop
   }

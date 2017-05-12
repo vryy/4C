@@ -59,6 +59,7 @@ FluidPoro(id,owner),
 FluidImmersedBase(id,owner),
 is_immersed_(0),
 is_immersed_bdry_(0),
+is_first_row_immersed_(0),
 has_projected_dirichletvalues_(0),
 intpoint_has_projected_divergence_(Teuchos::null),
 stored_projected_intpoint_divergence_(Teuchos::null)
@@ -76,6 +77,7 @@ FluidPoro(old),
 FluidImmersedBase(old),
 is_immersed_       (old.is_immersed_     ),
 is_immersed_bdry_  (old.is_immersed_bdry_),
+is_first_row_immersed_(old.is_first_row_immersed_),
 has_projected_dirichletvalues_ (old.has_projected_dirichletvalues_),
 intpoint_has_projected_divergence_(Teuchos::null),
 stored_projected_intpoint_divergence_(Teuchos::null)
@@ -110,6 +112,8 @@ void DRT::ELEMENTS::FluidPoroImmersed::Pack(DRT::PackBuffer& data) const
   DRT::ELEMENTS::FluidPoro::Pack(data);
   // Part of immersion domain?
   AddtoPack(data,is_immersed_);
+  // Part of immersion domain?
+  AddtoPack(data,is_first_row_immersed_);
   // Part of immersion domain for immersed boundary?
   AddtoPack(data,is_immersed_bdry_);
   // has dirichletvals projected?
@@ -136,6 +140,8 @@ void DRT::ELEMENTS::FluidPoroImmersed::Unpack(const std::vector<char>& data)
   DRT::ELEMENTS::FluidPoro::Unpack(basedata);
   // Part of immersion domain?
   is_immersed_ = ExtractInt(position,data);
+  // Part of immersion domain connected to is immersed boundary?
+  is_first_row_immersed_ = ExtractInt(position,data);
   // Part of immersion domain for immersed boundary?
   is_immersed_bdry_ = ExtractInt(position,data);
   // has dirichletvals projected?
@@ -146,5 +152,3 @@ void DRT::ELEMENTS::FluidPoroImmersed::Unpack(const std::vector<char>& data)
 
   return;
 }
-
-

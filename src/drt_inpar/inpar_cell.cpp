@@ -58,6 +58,17 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     &celldyn);
 
   setStringToIntegralParameter<int>(
+                                    "ARTIFICIAL_ECM_METHOD","none",
+                                    "How to treat artificial ECM solid phase",
+                                    tuple<std::string>(
+                                                       "none",
+                                                       "selective_assembly"),
+                                    tuple<int>(
+                                               0,
+                                               1),
+                                    &celldyn);
+
+  setStringToIntegralParameter<int>(
                                     "SIMTYPE","pureFSI",
                                     "Simulation Type",
                                     tuple<std::string>(
@@ -815,6 +826,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  "Statics",
                                  "GenAlpha",
                                  "OneStepTheta",
+                                 "OneStepThetaImmersed",
                                  "GEMM",
                                  "ExplicitEuler",
                                  "CentrDiff",
@@ -825,6 +837,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  dyna_statics,
                                  dyna_genalpha,
                                  dyna_onesteptheta,
+                                 dyna_onesteptheta_immersed,
                                  dyna_gemm,
                                  dyna_expleuler,
                                  dyna_centrdiff,

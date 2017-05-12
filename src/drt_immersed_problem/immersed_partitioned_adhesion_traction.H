@@ -107,10 +107,12 @@ protected:
   /*!
   \brief Distribute force from cell adhesion node inside ecm element to ecm element nodes.
 
-   Requires immersed cell discretization to have 'CellFocalAdhesion' defined in the input
-   file (via '--DESIGN FOCAL ADHESION SURF CONDITIONS'). Requires the same surface/s to
-   have also defined Dirichlet conditions to be able to retrieve the reaction forces from
-   the immersed cell.
+   Description: Fills members \ref adh_nod_param_coords_in_backgrd_ele_ and \ref adh_nod_backgrd_ele_mapping_ .
+   Performs the force spreading from the cell adhesion nodes onto the adjacent ecm nodes.
+
+   Parallelism: The adhesion nodes may be on different processors than the corresponding background elements.
+   We therefore have to perform a round-robin loop which tries to match the adhesion nodes belonging to each
+   processor to a background element on any proc.
 
    1) Loop over all nodes with 'CellFocalAdhesion' condition.
      -> 1.1 get displacement of current node.
@@ -123,14 +125,16 @@ protected:
         -> 1.2.5 spread reaction force at current node to nodes of backgrd. element by the ratio of
                  shapefcts. value at current 'xi' and add those contributions to ecm_adhesion_forces_.
 
-  \param adhesionforce  (in) : Force at adhesion nodes of immersed cell discretization
+  \param adhesionforce  (out) : Force at adhesion nodes of immersed cell discretization
 
-  \note This method uses member variables and cannot be used stand-alone
+  \note Requires immersed cell discretization to have 'CellFocalAdhesion' defined in the input
+        file (via '--DESIGN FOCAL ADHESION SURF CONDITIONS').
 
-  \warning none
+  \warning This method uses member variables and cannot be used stand-alone.
+
   \return void
   */
-  void DistributeAdhesionForce(Teuchos::RCP<Epetra_Vector> adhesionforce);
+  void DistributeAdhesionForce(const Teuchos::RCP<const Epetra_Vector>& force_to_distribute);
 
   /*!
   \brief Interpolate backgrd. ecm element displacements to immersed cell adhesion node inside element.
@@ -147,7 +151,7 @@ protected:
             material point.
      -> 1.3 save the interpolated displacements in cell_adhesion_disp_.
 
-  \note this method uses member variables and cannot be used stand-alone
+  \note this method uses member variables and cannot be used stand-alone.
 
   \warning none
   \return void
@@ -170,14 +174,15 @@ private:
   //! @name Various global vectors
   //@{
   Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_; //!< current nodal adhesion forces on ecm
+  Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_col_; //!< current nodal adhesion forces on ecm (column layout)
   Teuchos::RCP<Epetra_Vector> cell_adhesion_disp_;  //!< current nodal cell adhesion displacements
   Teuchos::RCP<Epetra_Vector> Freact_cell_;         //!< current nodal reaction force because of dirichlet at adhesions
   //@}
 
   //! @name adhesion dynamics related map to save parameter space coords. of adhesion nodes
   //@{
-  std::map<int, LINALG::Matrix<3,1> > adh_nod_param_coords_in_backgrd_ele_;
-  std::map<int, int> adh_nod_backgrd_ele_mapping_;
+  std::map<int, LINALG::Matrix<3,1> > adh_nod_param_coords_in_backgrd_ele_; //!< map adhesion node id <-> xi in backgrd. ele
+  std::map<int, int> adh_nod_backgrd_ele_mapping_; //!< map adhesion node id <-> backgrdele id
   //@}
 
   //! @name Pointers to Discretizations
@@ -206,17 +211,23 @@ private:
 
   //! @name current subsets of discretizations
   //@{
-  std::map<int,std::set<int> > curr_subset_of_backgrounddis_;    //!< background elements covered by immersed discretisation
+  std::map<int,std::set<int> > curr_subset_of_backgrounddis_; //!< background elements covered by immersed discretisation
   //@}
 
   /// true if problem is modeled as a quasi 2D problem
   bool isPseudo2D_;
+
+  /// method for treatment of artificial ecm solid phase
+  int artificial_ecm_treatment_;
 
   /// do we need an update of our immersed information (e.g. isimmersed_ in nodes)
   bool immersed_information_invalid_;
 
   /// write output after every fixed-point iteration
   bool output_evry_nlniter_;
+
+  /// switch deciding whether adhesion state has to be (re-)determined
+  bool determine_adhesion_information_;
 
   /// cell structure of the immersed problem
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure_;
@@ -239,15 +250,15 @@ private:
 
   /// get immersed nodes and determine their dofs
   void BuildImmersedDirichMap(
-      Teuchos::RCP<DRT::Discretization> dis,
-      Teuchos::RCP<const Epetra_Map>& dirichmap_orig,
-      Teuchos::RCP<Epetra_Map>& dirichmap,
+      const Teuchos::RCP<const DRT::Discretization>& dis,
+      const Teuchos::RCP<const Epetra_Map>& dirichmap_orig,
+      Teuchos::RCP<Epetra_Map>& dirichmap_new,
       std::map<int, int>& adh_nod_backgrd_ele_mapping);
 
   /// add immersed dirichlet values from immersed dis to systemvector of background dis
-  void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector,
-                               Teuchos::RCP<Epetra_Vector> dirichvals,
-                               Teuchos::RCP<const Epetra_Map> dbcmap);
+  void DoImmersedDirichletCond(const Teuchos::RCP<Epetra_Vector>& statevector,
+                               const Teuchos::RCP<Epetra_Vector>& dirichvals,
+                               const Teuchos::RCP<const Epetra_Map>& dbcmap);
 
   /// reset immersed information like e.g.: IsImmersed()
   void ResetImmersedInformation();

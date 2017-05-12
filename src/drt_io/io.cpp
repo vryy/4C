@@ -21,7 +21,7 @@
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_cell.H"
-#include "../drt_fluid_ele/fluid_ele_immersed_base.H"
+#include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
 
 #include "../pss_full/pss_cpp.h" // access to legacy parser module
 
@@ -1337,7 +1337,6 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
       }
     }
 
-//#ifdef DEBUG // rauch 07/14
     // for debugging purposes of immersed method; recognized background
     // elements and boundary elements become visible in post processing
     if ((int)elerowmap->NumMyElements() >= 1)
@@ -1352,10 +1351,15 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
               dis_->lRowElement(i))->VisIsImmersed(names);
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(
               dis_->lRowElement(i))->VisIsBoundaryImmersed(names);
+
+          DRT::ELEMENTS::FluidPoroImmersed* poroimmersedele =
+              dynamic_cast<DRT::ELEMENTS::FluidPoroImmersed* >(
+                  dis_->lRowElement(i));
+          if(poroimmersedele!=NULL)
+            poroimmersedele->VisIsImmersedFirstRow(names);
         }
       }
     }
-//#endif
 
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {

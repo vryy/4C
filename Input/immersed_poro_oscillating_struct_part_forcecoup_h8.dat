@@ -37,11 +37,12 @@ MIGRATIONTYPE                   ameboid
 PSEUDO2D                        yes
 SIMTYPE                         pureFSI
 FLUID_INTERACTION               yes
+ADHESION_DYNAMICS               no
 MAXTIME                         0.02
 TIMESTEP                        0.01
 NUMSTEP                         2
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESTARTEVRY                     999
 --------------------------------CELL DYNAMIC/FLOW INTERACTION MODULE
 COUPALGO                        iter_stagg_fixed_rel_param
 COUPVARIABLE                    Force

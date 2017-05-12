@@ -171,7 +171,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
 
     if ( not (
-                   (structtimealgo == INPAR::STR::dyna_onesteptheta and fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
+                   ((structtimealgo == INPAR::STR::dyna_onesteptheta or structtimealgo == INPAR::STR::dyna_onesteptheta_immersed) and fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
                or (structtimealgo == INPAR::STR::dyna_statics and fluidtimealgo == INPAR::FLUID::timeint_stationary)
                or (structtimealgo == INPAR::STR::dyna_genalpha and (fluidtimealgo == INPAR::FLUID::timeint_afgenalpha or fluidtimealgo == INPAR::FLUID::timeint_npgenalpha))
              )
@@ -181,7 +181,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     if(fluidtimealgo == INPAR::FLUID::timeint_npgenalpha)
       dserror("npgenalpha time integration for porous fluid is possibly not valid. Either check the theory or use afgenalpha instead!");
 
-    if(structtimealgo == INPAR::STR::dyna_onesteptheta and fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
+    if((structtimealgo == INPAR::STR::dyna_onesteptheta or structtimealgo == INPAR::STR::dyna_onesteptheta_immersed) and fluidtimealgo == INPAR::FLUID::timeint_one_step_theta)
     {
       double theta_struct = sdyn.sublist("ONESTEPTHETA").get<double>("THETA");
       double theta_fluid  = fdyn.get<double>("THETA");

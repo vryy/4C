@@ -1255,6 +1255,16 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::TimInt::DetermineMass()
+{
+  dserror("(Re-)Evaluation of only the mass matrix and intertial forces is "
+          "not implemented in the base class.\n Set 'MASSLIN' to 'No' in "
+          "--STRUCTURAL DYNAMIC if you want to use the chosen timint scheme.");
+  return;
+}
+
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
 void STR::TimInt::ApplyDirichletBC
@@ -3262,7 +3272,10 @@ void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fex
   {
     dserror("Nonlinear inertia terms (input flag 'MASSLIN' not set to 'none') "
         "are only possible for vanishing initial displacements, velocities and "
-        "accelerations so far!!!");
+        "accelerations so far!!!\n"
+        "norm disp = %f \n"
+        "norm vel  = %f \n"
+        "norm acc  = %f",dispnorm,velnorm,accnorm);
   }
 
   if (HaveNonlinearMass() == INPAR::STR::ml_rotations

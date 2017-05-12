@@ -3297,15 +3297,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
   elevec1_epetra(4)=cauchystress(1,2);
   elevec1_epetra(5)=cauchystress(0,2);
 
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-  // calc test velocity gradient on artificial element with sidelength 1 in the physical space
-  // the result is a measure for the differences in velocity in every direction over the element.
-  //
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-//  LINALG::Matrix<nsd_,nsd_> xji_test(true);
-//  xji_test(0,0)=2.0; xji_test(1,1)=2.0; xji_test(2,2)=2.0;
-//  dudxioJinv.MultiplyNT(dudxi,xji_test);
+  if(elevec1_epetra.M()==7)
+  {
+    elevec1_epetra(6)=-pressint(0,0);
+  }
 
     return 0;
 }

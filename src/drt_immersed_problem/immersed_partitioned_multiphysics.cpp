@@ -164,7 +164,7 @@ void IMMERSED::ImmersedPartitionedMultiphysics::CFIOperator()
        backgroundstructuredis_,
        "PoroCoupling",
        dofmap_ecm,
-       4,
+       3,
        poroscatra_subproblem_->PoroField()->StructureField()->Dispnp());
 
    // rebuild the monolithic poro dbc map
@@ -196,13 +196,30 @@ void IMMERSED::ImmersedPartitionedMultiphysics::CEIOperator()
 //       dofmap_ecm,
 //       4,
 //       poroscatra_subproblem_->FluidField()->Velnp());
+
+//   const double dt = globalproblem_->CellMigrationParams().get<double>("TIMESTEP");
 //
+//   disp_->Scale(0.0);
+//   disp_->Update(1.0,*poroscatra_subproblem_->PoroField()->StructureField()->Dispn(),1.0);
+//   disp_->Update(dt,
+//       *poroscatra_subproblem_->PoroField()->FluidToStructureField(poroscatra_subproblem_->FluidField()->Velnp()),
+//       1.0);
+//
+//   ApplyDirichletToArtificialECM(
+//       poroscatra_subproblem_->PoroField()->StructureField(),
+//       backgroundstructuredis_,
+//       "PoroCoupling",
+//       dofmap_ecm,
+//       3,
+//       disp_);
+
    // rebuild the monolithic poro dbc map
    poroscatra_subproblem_->PoroField()->BuildCombinedDBCMap();
    // solve adhesion module
    adh_module_->DoStep(adh_module_, Teuchos::null);
 
 //   RemoveDirichletFromFluid(dofmap_ecm,poroscatra_subproblem_->FluidField());
+//   RemoveDirichlet(dofmap_ecm,poroscatra_subproblem_->PoroField()->StructureField());
 
   return;
 } // CEIOperator
@@ -256,6 +273,8 @@ void IMMERSED::ImmersedPartitionedMultiphysics::Output()
   cellscatra_subproblem_->StructureField()->Output();
   cellscatra_subproblem_->ScaTraField()->ScaTraField()->Output();
   poroscatra_subproblem_->Output();
+
+  cfi_module_->WriteDrag();
 
   return;
 } // Output

@@ -1,8 +1,12 @@
 /*!----------------------------------------------------------------------
 \file immersed_node.cpp
 
+\brief specialized node for immersed problems.
+
+\level 2
+
 <pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
@@ -34,7 +38,8 @@ DRT::ParObject* IMMERSED::ImmersedNodeType::Create( const std::vector<char> & da
 IMMERSED::ImmersedNode::ImmersedNode(int id, const double* coords, const int owner) :
 DRT::Node(id,coords,owner),
 ismatched_(false),
-IsBoundaryImmersed_(false)
+IsBoundaryImmersed_(false),
+IsPseudoBoundary_(false)
 {
 }
 
@@ -44,7 +49,8 @@ IsBoundaryImmersed_(false)
 IMMERSED::ImmersedNode::ImmersedNode(const IMMERSED::ImmersedNode& old) :
 DRT::Node(old),
 ismatched_(old.ismatched_),
-IsBoundaryImmersed_(old.IsBoundaryImmersed_)
+IsBoundaryImmersed_(old.IsBoundaryImmersed_),
+IsPseudoBoundary_(old.IsPseudoBoundary_)
 {
 
   dserror("ERROR: ImmersedNode copy-ctor has not been used before. Be careful when using it.");
@@ -150,4 +156,30 @@ void IMMERSED::ImmersedNode::Unpack(const std::vector<char>& data)
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Visualization Data                                         (public) |
+ |                                                          rauch 03/17 |
+ *----------------------------------------------------------------------*/
+void IMMERSED::ImmersedNode::VisNames(std::map<std::string,int>& names)
+{
+  names.insert(std::pair<std::string,int>("IsBoundaryImmersedNode",1));
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Query data to be visualized by BINIO                       (public) |
+ |                                                          rauch 03/17 |
+ *----------------------------------------------------------------------*/
+bool IMMERSED::ImmersedNode::VisData(const std::string& name, std::vector<double>& data)
+{
+  if (name == "IsBoundaryImmersedNode")
+  {
+    if ((int)data.size() < 1) dserror("Size mismatch");
+    data[0] = IsBoundaryImmersed();
+    return true;
+  }
+  return false;
+}
 

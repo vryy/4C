@@ -170,8 +170,7 @@ namespace MODELEVALUATOR {
     {return;};
 
     //! [derived]
-    virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const
-    {return;};
+    virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
     //! derived
     virtual void ResetStepState()

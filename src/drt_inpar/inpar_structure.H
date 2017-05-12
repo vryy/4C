@@ -171,6 +171,7 @@ namespace INPAR
       dyna_genalpha,                   ///< generalised-alpha time integrator (implicit)
       dyna_genalpha_liegroup,          ///< generalised-alpha time integrator for Lie groups (e.g. SO3 group of rotation matrices) (implicit)
       dyna_onesteptheta,               ///< one-step-theta time integrator (implicit)
+      dyna_onesteptheta_immersed,      ///< specialized one-step-theta time integrator (implicit) for immersed problems with artificial solid domains
       dyna_gemm,                       ///< generalised energy-momementum method (implicit)
       dyna_expleuler,                  ///< forward Euler (explicit)
       dyna_centrdiff,                  ///< central differences (explicit)

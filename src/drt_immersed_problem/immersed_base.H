@@ -117,17 +117,30 @@ public:
   \author rauch
   \date 05/14
 
-  \param dis         (in) : discretization on which condition is to be constructed
-  \param dvol_fenode (in) : nodes to be conditioned
-  \param condtype    (in) : type of condition
-  \param condname    (in) : condition name
-
+  \param dis           (in) : discretization on which condition is to be constructed
+  \param dvol_fenode   (in) : nodes to be conditioned
+  \param condtype      (in) : type of condition
+  \param condname      (in) : condition name
+  \param buildgeometry (in) : build geometry for condition or not
   */
   void CreateVolumeCondition(const Teuchos::RCP<DRT::Discretization>& dis,
                              const std::vector<int> dvol_fenode,
                              const DRT::Condition::ConditionType condtype,
-                             const std::string condname);
+                             const std::string condname,
+                             bool buildgeometry);
 
+
+  /*!
+  \brief Determine Elements fully covered by the immersed dis., but connected to intersected elements.
+
+         These elements are, so to speak, the first row of elements with the property 'IsImmersed'.
+
+  \author rauch
+  \date 03/17
+  */
+  std::vector<int> DetermineElesInFirstImmersedRow(
+      const Teuchos::RCP<const DRT::Discretization>& dis,
+      std::vector<int>* eleids);
 
   /*!
   \brief construct the dof row map for a given condition.
@@ -146,13 +159,30 @@ public:
   /*!
   \brief Apply Dirichlet values to systemvector of conditioned field.
 
+         Do not touch original dofs.
+
   \author rauch
   \date 02/17
   */
   void DoDirichletCond(
       const Teuchos::RCP<Epetra_Vector>&       statevector,
       const Teuchos::RCP<const Epetra_Vector>& dirichvals,
-      const Teuchos::RCP<const Epetra_Map>&    dbcmap);
+      const Teuchos::RCP<const Epetra_Map>&    dbcmap_new,
+      const Teuchos::RCP<const Epetra_Map>&     dbcmap_orig);
+
+
+  /*!
+  \brief Apply Dirichlet values to systemvector of conditioned field.
+
+         Touch all dofs.
+
+  \author rauch
+  \date 02/17
+  */
+  void DoDirichletCond(
+      const Teuchos::RCP<Epetra_Vector>&       statevector,
+      const Teuchos::RCP<const Epetra_Vector>& dirichvals,
+      const Teuchos::RCP<const Epetra_Map>&    dbcmap_new);
 
 
   /*!
@@ -178,6 +208,35 @@ public:
   */
   void ApplyDirichletToFluid(
       const Teuchos::RCP< ::ADAPTER::FluidWrapper>& field_wrapper,
+      const Teuchos::RCP<DRT::Discretization>&  dis,
+      const std::string                         condname,
+      Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+      const int                                 numdof,
+      const Teuchos::RCP<const Epetra_Vector>&  dirichvals);
+
+
+  /*!
+  \brief Apply Dirichlet boundary condition to artificial part of solid ECM field.
+
+  \author rauch
+  \date 02/17
+  */
+  void ApplyDirichletToArtificialECM(
+      const Teuchos::RCP< ::ADAPTER::StructureWrapper>& field_wrapper,
+      const Teuchos::RCP<DRT::Discretization>&  dis,
+      const std::string                         condname,
+      Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
+      const int                                 numdof,
+      const Teuchos::RCP<const Epetra_Vector>&  dirichvals);
+
+  /*!
+  \brief Apply Dirichlet boundary condition to real part of solid ECM field.
+
+  \author rauch
+  \date 02/17
+  */
+  void ApplyDirichletToRealECM(
+      const Teuchos::RCP< ::ADAPTER::StructureWrapper>& field_wrapper,
       const Teuchos::RCP<DRT::Discretization>&  dis,
       const std::string                         condname,
       Teuchos::RCP<Epetra_Map>&                 cond_dofrowmap,
@@ -301,6 +360,44 @@ public:
                               Teuchos::RCP<DRT::Discretization> dis,
                               std::map<int,std::set<int> >& elementstoeval,
                               int action);
+
+
+  /*!
+  \brief write special output for immersed algorithms
+
+         Writes vectors of values provided as argument to a text file with standard
+         prefix and file ending which is also provided as argument to this method.
+         The values are written in one row for the provided current time.
+
+  \author rauch
+  \date 03/17
+
+  \param comm           (in) : communicator
+  \param time           (in) : current time will be the first value in the row
+  \param filenameending (in) : ending of file to write to
+  \param valuetowrite   (in) : first set of values to write to row
+  \param valuetowrite2  (in) : second set of values to wrtie to row
+  \param valuetowrite3  (in) : third set of values to write to row
+  */
+  void WriteExtraOutput(
+      const Epetra_Comm& comm,
+      const double time,
+      const std::string filenameending,
+      const std::vector<double> valuetowrite,
+      const std::vector<double> valuetowrite2,
+      const std::vector<double> valuetowrite3);
+
+
+  /*!
+  \brief Calculate the global resulting force from an epetra vector.
+
+  \author rauch
+  \date 03/17
+  */
+  std::vector<double> CalcGlobalResultantfromEpetraVector(
+      const Epetra_Comm& comm,
+      const Teuchos::RCP<const DRT::Discretization>& dis,
+      const Teuchos::RCP<const Epetra_Vector>& vec_epetra);
 
 private:
 
@@ -431,7 +528,7 @@ protected:
     Teuchos::RCP<Epetra_SerialDenseVector> targetxi_dense = Teuchos::rcp(new Epetra_SerialDenseVector(target_dim));
 
     Teuchos::RCP<Epetra_SerialDenseVector> normal_at_targetpoint = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-    std::vector<double> normal_vec(3);// normal_vec[0]=0.0;normal_vec[1]=0.0; normal_vec[2]=0.0;
+    std::vector<double> normal_vec(3);
 
     Epetra_SerialDenseMatrix dummy1;
     Epetra_SerialDenseMatrix dummy2;

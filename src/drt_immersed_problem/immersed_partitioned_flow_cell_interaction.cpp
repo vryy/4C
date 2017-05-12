@@ -174,6 +174,8 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
 
   // vector of fluid stresses interpolated to cell bdry int points integrated over cell surface
   cell_bdry_traction_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
+  // vector of pressure force interpolated to cell bdry int points integrated over cell surface
+  cell_bdry_traction_pressure_part_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   // vector with fluid velocities interpolated from structure
   porofluid_artificial_velocity_ = Teuchos::rcp(new Epetra_Vector(*(poroscatra_subproblem_->FluidField()->DofRowMap()),true));
   // vector with fluid velocities interpolated from structure
@@ -343,18 +345,17 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CouplingOp(const Epetra_V
   static int  itemax = globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<int>("ITEMAX");
   if((IterationCounter())[0] == itemax and nlnsolver_continue)
   {
+    double Fnorm = -1234.0;
+    F.Norm2(&Fnorm);
+    Fnorm=Fnorm/sqrt(F.GlobalLength());
+
     if(myrank_==0)
-      std::cout<<"\n  Continue with next time step after ITEMAX = "<<(IterationCounter())[0]<<" iterations. \n"<<std::endl;
-
-    // !!! EXPERIMENTAL !!!
+    {
+      std::cout<<"\n  Continue with next time step after ITEMAX = "<<(IterationCounter())[0]<<
+          " iterations. L2-Norm of F="<<std::setprecision(12)<<Fnorm<<"\n"<<std::endl;
+    }
     // set F to zero to tell NOX that this timestep is converged
-    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp( new Epetra_Vector(F.Map(),true));
-    F.Update(1.0,*zeros,0.0);
-    // !!! EXPERIMENTAL !!!
-
-    // clear states after time step was set converged
-    immerseddis_->ClearState();
-    backgroundfluiddis_->ClearState();
+    F.Scale(0.0);
 
     // increment the counter for unconverged steps
     continued_steps_++;
@@ -365,6 +366,10 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CouplingOp(const Epetra_V
     Teuchos::TimeMonitor::summarize();
     Teuchos::TimeMonitor::zeroOutTimers();
   }
+
+  // clear states after time step was set converged
+  immerseddis_->ClearState();
+  backgroundfluiddis_->ClearState();
 
   return;
 }
@@ -468,9 +473,7 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::InitialGuess()
   if(displacementcoupling_)
     return CalcArtificialVelocity();
   else // FORCE COUPLING
-  {
     return cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_);
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -682,8 +685,24 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::Output()
   cellstructure_->Output();
   poroscatra_subproblem_->Output();
 
+  WriteDrag();
+
   if(myrank_==0)
     std::cout<<" Number of unconverged steps: "<<continued_steps_<<"\n"<<std::endl;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedFlowCellInteraction::WriteDrag()
+{
+  std::vector<double> drag_total     = CalcGlobalResultantfromEpetraVector(Comm(),immerseddis_,cell_bdry_traction_);
+  std::vector<double> drag_pressure  = CalcGlobalResultantfromEpetraVector(Comm(),immerseddis_,cell_bdry_traction_pressure_part_);
+  std::vector<double> reaction_force = CalcGlobalResultantfromEpetraVector(Comm(),immerseddis_,cellstructure_->Freact());
+
+  WriteExtraOutput(Comm(),Time(),"drag",drag_total,drag_pressure, reaction_force);
 
   return;
 }
@@ -745,6 +764,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CalcFluidTractionOnStruct
 
   // reinitialize the transfer vector
   cell_bdry_traction_->Scale(0.0);
+  cell_bdry_traction_pressure_part_->Scale(0.0);
 
   // declare and fill parameter list
   Teuchos::ParameterList params;
@@ -761,7 +781,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::CalcFluidTractionOnStruct
       Teuchos::null,  // matrix 1
       Teuchos::null,  //
       cell_bdry_traction_, // vector 1
-      Teuchos::null,  //
+      cell_bdry_traction_pressure_part_,  //
       Teuchos::null   //
   );
 
@@ -1123,7 +1143,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::UpdateCurrentPositionsBac
      std::vector<double> mydisp(4);
 
      // get the current displacement
-     backgroundfluiddis_->Dof(node,0,dofstoextract);
+     backgroundfluiddis_->Dof(0,node,0,dofstoextract);
      DRT::UTILS::ExtractMyValues(*displacements,mydisp,dofstoextract);
 
      currpos(0) = node->X()[0]+mydisp.at(0);

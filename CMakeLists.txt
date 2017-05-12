@@ -2439,6 +2439,8 @@ src/drt_ssi/ssi_str_model_evaluator_partitioned.cpp
 set(OBJS_DRT_IMMERSED_LIB
 src/drt_fsi/fsi_nox_aitken_immersed_ale.cpp
 src/drt_immersed_problem/immersed_node.cpp
+src/drt_immersed_problem/immersed_discretization.cpp
+src/drt_immersed_problem/str_timint_ost_immersed.cpp
 src/drt_immersed_problem/immersed_field_exchange_manager.cpp
 src/drt_immersed_problem/scatra_timint_ost_endoexocytosis.cpp
 )
