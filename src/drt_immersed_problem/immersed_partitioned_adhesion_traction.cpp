@@ -927,7 +927,6 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(
 
   for(int i=0; i<max_size_over_all_procs;++i)
   {
-    bool mymatch = false;
     int node_id = -1;
     LINALG::Matrix<3,1> node_force(true);
 
@@ -948,8 +947,6 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(
       // check whether element is owned by this proc
       if(backgroundstructuredis_->NodeRowMap()->LID(node_id) != -1)
       {
-        mymatch = true;
-
         DRT::Node* mynode = backgroundstructuredis_->gNode(node_id);
         std::vector<int> sdofs = backgroundstructuredis_->Dof(0,mynode);
         if(sdofs.size()!=4)
