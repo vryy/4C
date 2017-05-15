@@ -235,196 +235,196 @@ void Cardiovascular0DResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, in
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+6)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+6);
     }
     // test for systemic arterial splanchnic flux
     if ( quantity == "q_arspl_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+7)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+7);
     }
     // test for systemic arterial extra-splanchnic flux
     if ( quantity == "q_arespl_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+8)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+8);
     }
     // test for systemic arterial muscular flux
     if ( quantity == "q_armsc_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+9)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+9);
     }
     // test for systemic arterial cerebral flux
     if ( quantity == "q_arcer_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+10)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+10);
     }
     // test for systemic arterial coronary flux
     if ( quantity == "q_arcor_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+11)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+11);
     }
     // test for systemic venous splanchnic pressure
     if ( quantity == "p_venspl_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+12)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+12);
     }
     // test for systemic venous splanchnic flux
     if ( quantity == "q_venspl_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+13)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+13);
     }
     // test for systemic venous extra-splanchnic pressure
     if ( quantity == "p_venespl_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+14)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+14);
     }
     // test for systemic venous extra-splanchnic flux
     if ( quantity == "q_venespl_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+15)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+15);
     }
     // test for systemic venous muscular pressure
     if ( quantity == "p_venmsc_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+16)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+16);
     }
     // test for systemic venous muscular flux
     if ( quantity == "q_venmsc_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+17)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+17);
     }
     // test for systemic venous cerebral pressure
     if ( quantity == "p_vencer_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+18)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+18);
     }
     // test for systemic venous cerebral flux
     if ( quantity == "q_vencer_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+19)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+19);
     }
     // test for systemic venous coronary pressure
     if ( quantity == "p_vencor_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+20)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+20);
     }
     // test for systemic venous coronary flux
     if ( quantity == "q_vencor_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+21)];
-      havegid = cardvasc0dmap.MyGID(offset+5);
+      havegid = cardvasc0dmap.MyGID(offset+21);
     }
     // test for systemic venous pressure
     if ( quantity == "p_ven_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+22)];
-      havegid = cardvasc0dmap.MyGID(offset+6);
+      havegid = cardvasc0dmap.MyGID(offset+22);
     }
     // test for systemic venous flux
     if ( quantity == "q_ven_sys" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+23)];
-      havegid = cardvasc0dmap.MyGID(offset+7);
+      havegid = cardvasc0dmap.MyGID(offset+23);
     }
     // test for right atrial pressure
     if ( quantity == "p_at_r" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+24)];
-      havegid = cardvasc0dmap.MyGID(offset+8);
+      havegid = cardvasc0dmap.MyGID(offset+24);
     }
     // test for right ventricular in-flux
     if ( quantity == "q_vin_r" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+25)];
-      havegid = cardvasc0dmap.MyGID(offset+9);
+      havegid = cardvasc0dmap.MyGID(offset+25);
     }
     // test for right ventricular out-flux
     if ( quantity == "q_vout_r" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+26)];
-      havegid = cardvasc0dmap.MyGID(offset+10);
+      havegid = cardvasc0dmap.MyGID(offset+26);
     }
     // test for right ventricular pressure
     if ( quantity == "p_v_r" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+27)];
-      havegid = cardvasc0dmap.MyGID(offset+11);
+      havegid = cardvasc0dmap.MyGID(offset+27);
     }
     // test for pulmonary arterial pressure
     if ( quantity == "p_ar_pul" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+28)];
-      havegid = cardvasc0dmap.MyGID(offset+12);
+      havegid = cardvasc0dmap.MyGID(offset+28);
     }
     // test for pulmonary arterial flux
     if ( quantity == "q_ar_pul" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+29)];
-      havegid = cardvasc0dmap.MyGID(offset+13);
+      havegid = cardvasc0dmap.MyGID(offset+29);
     }
     // test for pulmonary capillary pressure
     if ( quantity == "p_cap_pul" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+30)];
-      havegid = cardvasc0dmap.MyGID(offset+12);
+      havegid = cardvasc0dmap.MyGID(offset+30);
     }
     // test for pulmonary capillary flux
     if ( quantity == "q_cap_pul" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+31)];
-      havegid = cardvasc0dmap.MyGID(offset+13);
+      havegid = cardvasc0dmap.MyGID(offset+31);
     }
     // test for pulmonary venous pressure
     if ( quantity == "p_ven_pul" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+32)];
-      havegid = cardvasc0dmap.MyGID(offset+14);
+      havegid = cardvasc0dmap.MyGID(offset+32);
     }
     // test for pulmonary venous flux
     if ( quantity == "q_ven_pul" )
     {
       unknownquantity = false;
       result = (*cardvasc0d_dof_)[cardvasc0dmap.LID(offset+33)];
-      havegid = cardvasc0dmap.MyGID(offset+15);
+      havegid = cardvasc0dmap.MyGID(offset+33);
     }
 
     // catch quantity strings, which are not handled by cardiovascular 0D result test

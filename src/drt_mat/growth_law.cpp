@@ -1215,15 +1215,13 @@ void MAT::GrowthLawAnisoStress::EvaluateGrowthFunctionDerivTheta
                            + dCdachdthetavec(3) * Sdachvec(3)
                            + dCdachdthetavec(4) * Sdachvec(4)
                            + dCdachdthetavec(5) * Sdachvec(5)
-                           + dCdachdthetavec(6) * Sdachvec(6)
 
                            + dSdachdthetavec(0) * Cdachvec(0)
                            + dSdachdthetavec(1) * Cdachvec(1)
                            + dSdachdthetavec(2) * Cdachvec(2)
                            + dSdachdthetavec(3) * Cdachvec(3)
                            + dSdachdthetavec(4) * Cdachvec(4)
-                           + dSdachdthetavec(5) * Cdachvec(5)
-                           + dSdachdthetavec(6) * Cdachvec(6);
+                           + dSdachdthetavec(5) * Cdachvec(5);
 
 
   dgrowthfunctheta = (dktheta * (growthtrig - pcrit) + ktheta * dgrowthtrig);

@@ -251,15 +251,8 @@ class GrowthLaw;
     /// Return density
     double Density() const {dserror("growth material needs gauss point data for density!"); return -1.0;}
 
-//    double Density() const { return matelastic_->Density();}
-
     // growth law-specific!
     virtual double Density(int gp) const;
-//    {
-//      const double density = matelastic_->Density();
-//      const double theta_gp = (*theta_)[gp];
-//      return density * theta_gp * theta_gp * theta_gp;
-//    };
 
     /// Return whether material has a varying material density
     bool VaryingDensity() const { return true;}

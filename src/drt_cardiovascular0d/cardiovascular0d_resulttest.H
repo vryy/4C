@@ -54,12 +54,12 @@ private:
 
   Teuchos::RCP<DRT::Discretization> actdisc_; ///< standard discretization
 
-  Teuchos::RCP<Epetra_Vector> cardvasc0d_dof_;
+  const Teuchos::RCP<Epetra_Vector> cardvasc0d_dof_;
 
-  bool havecardio_4elementwindkessel_;
-  bool havecardio_arterialproxdist_;
-  bool havecardio_syspulcirculation_;
-  bool havecardiorespir_syspulperiphcirculation_;
+  const bool havecardio_4elementwindkessel_;
+  const bool havecardio_arterialproxdist_;
+  const bool havecardio_syspulcirculation_;
+  const bool havecardiorespir_syspulperiphcirculation_;
 
 };
 
