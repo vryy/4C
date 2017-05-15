@@ -67,6 +67,11 @@ PARTICLE::Rendering::Rendering(
     weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline(wf_dim));
     break;
   }
+  case INPAR::PARTICLE::QuinticBspline :
+  {
+    weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_QuinticBspline(wf_dim));
+    break;
+  }
   case INPAR::PARTICLE::SqrtHyperbola :
   {
     weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_SqrtHyperbola(wf_dim));

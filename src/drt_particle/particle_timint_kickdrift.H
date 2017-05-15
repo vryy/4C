@@ -1,22 +1,25 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file particle_timint_hybrid.H
+\file particle_timint_kickdrift.H
 
-\brief Hybrid particle time integration
+\brief SPH 2nd order (explicit) time integration scheme denoted as kick-drift-kick scheme as presented in Adami 2013, Eqs (14)-(17)
 
-\level 3
+\level 2
 
-\maintainer  Christoph Meier
-             meier@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
+<pre>
+\maintainer Christoph Meier
+            meier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+</pre>
+*/
 
-*-----------------------------------------------------------------------*/
-#ifndef PARTICLE_TIMINT_HYBRID_H
-#define PARTICLE_TIMINT_HYBRID_H
+/*----------------------------------------------------------------------*/
+#ifndef PARTICLE_TIMINT_KICKDRIFT_H
+#define PARTICLE_TIMINT_KICKDRIFT_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "particle_timint.H"
+#include "particle_timint_expl.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -26,16 +29,13 @@ namespace PARTICLE
 
   /*====================================================================*/
   /*!
-   * \brief Front-end for particle dynamics with hybrid time integrators
-   *
-   * <h3> About </h3>
-   * This object bridges the gap between the base time integator PARITCLE::TimInt
-   * and the specific implementation of hybrid time integrators.
-   *
-   * \author cattabiani
-   * \date 01/17
- */
-  class TimIntHybrid : public TimInt
+   * \brief kick-drift-kick scheme: 2nd order accurate,
+   *                                explicit time integrator,
+   *                                1-step method
+   * \author meier
+   * \date 04/17
+   */
+  class TimIntKickDrift : public TimIntExpl
   {
 
   public:
@@ -44,7 +44,7 @@ namespace PARTICLE
     //@{
 
     //! Constructor
-    TimIntHybrid
+    TimIntKickDrift
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& particledynparams,  //!< input parameters
@@ -54,17 +54,9 @@ namespace PARTICLE
     );
 
     //! Destructor
-    virtual ~TimIntHybrid(){ ; }
+    virtual ~TimIntKickDrift(){ ; }
 
     //@}
-
-    /// update at the end of the time step
-    virtual void Update()
-    {
-      UpdateStepState();
-      UpdateStepTime();
-      return;
-    }
 
     //! @name Actions
     //@{
@@ -73,13 +65,16 @@ namespace PARTICLE
     virtual void Init();
 
     //! Do time integration of single step
-    virtual int IntegrateStep() = 0;
+    virtual int IntegrateStep();
+
+    //! Overload
+    virtual void ReadRestartState();
 
     //@}
 
-  };  // class TimIntHybrid
+  };  // class TimIntKickDrift
 
 }  // namespace PARTICLE
 
 /*----------------------------------------------------------------------*/
-#endif /* SRC_DRT_PARTICLE_PARTICLE_TIMINT_HYBRID_H_ */
+#endif  // #ifndef PARTICLE_TIMINTKICKDRIFT_H

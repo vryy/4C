@@ -21,9 +21,14 @@
 /*----------------------------------------------------------------------*
  | gradient, r_ij = r_i - r_j                         cattabiani 08/16  |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3,1> PARTICLE::WeightFunction_Base::GradW(const LINALG::Matrix<3,1> &rVersor, const double& dw)
+LINALG::Matrix<3,1> PARTICLE::WeightFunction_Base::GradW(const LINALG::Matrix<3,1> &rRelVersor, const double& dw)
 {
-  LINALG::Matrix<3,1> gradW(rVersor);
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * e_{ij}
+  // The part DW = dW/dq * 1/h is determined in the function DW() while the part e_{ij}:=r_{ij}/||r_{ij}|| has to be multiplied in addition!
+  // Attention: If we want to split the gradient according to grad(W) = dW/dr_{ij}=:F_{ij}*r_{ij} (see e.g. Monaghan2005),
+  // we get the identity:F_{ij}=DW/||r_{ij}||!!!
+  // Attention: In Espanol2003, F_{ij} ist defined with the opposite sign convention as applied here or in Monaghan2005!!!
+  LINALG::Matrix<3,1> gradW(rRelVersor);
   gradW.Scale(dw);
 
   return gradW;
@@ -32,9 +37,14 @@ LINALG::Matrix<3,1> PARTICLE::WeightFunction_Base::GradW(const LINALG::Matrix<3,
 /*----------------------------------------------------------------------*
  | gradient, r_ij = r_i - r_j (FAD version)                meier 03/17  |
  *----------------------------------------------------------------------*/
-LINALG::TMatrix<FAD,3,1> PARTICLE::WeightFunction_Base::GradW(const LINALG::TMatrix<FAD,3,1> &rVersor, const FAD& dw)
+LINALG::TMatrix<FAD,3,1> PARTICLE::WeightFunction_Base::GradW(const LINALG::TMatrix<FAD,3,1> &rRelVersor, const FAD& dw)
 {
-  LINALG::TMatrix<FAD,3,1> gradW(rVersor);
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * e_{ij}
+  // The part DW = dW/dq * 1/h is determined in the function DW() while the part e_{ij}:=r_{ij}/||r_{ij}|| has to be multiplied in addition!
+  // Attention: If we want to split the gradient according to grad(W) = dW/dr_{ij}=:F_{ij}*r_{ij} (see e.g. Monaghan2005),
+  // we get the identity:F_{ij}=DW/||r_{ij}||!!!
+  // Attention: In Espanol2003, F_{ij} ist defined with the opposite sign convention as applied here or in Monaghan2005!!!
+  LINALG::TMatrix<FAD,3,1> gradW(rRelVersor);
   gradW.Scale(dw);
 
   return gradW;
@@ -44,20 +54,28 @@ LINALG::TMatrix<FAD,3,1> PARTICLE::WeightFunction_Base::GradW(const LINALG::TMat
 /*----------------------------------------------------------------------*
  | hessian, r_ij = r_i - r_j                          cattabiani 08/16  |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3,3> PARTICLE::WeightFunction_Base::HessW(const LINALG::Matrix<3,1> &rVersor, const double& dw, const double& rNorm2, const double& ddw)
+LINALG::Matrix<3,3> PARTICLE::WeightFunction_Base::HessW(const LINALG::Matrix<3,1> &rRelVersor, const double& dw, const double& rNorm2, const double& ddw)
 {
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * e_{ij}
+  // The part DW = dW/dq * 1/h is determined in the function DW() while the part e_{ij}:=r_{ij}/||r_{ij}|| has to be multiplied in addition!
+  // Following the product rule, the second derivative reads (x represents a dyadic product and I_3 a proper identify matrix):
+  // d^2W/dr_{ij}^2 = (d^2W/dq^2* 1/h * e_{ij}) * 1/h * e_{ij} + dW/dq * 1/h * de_{ij}/ddr_{ij}
+  //                =1/h^2*d^2W/dq^2*(e_{ij} x e_{ij}^T) + 1/h*dW/dq*(I_3-e_{ij} x e_{ij}^T)
+  //                =DDW*(e_{ij} x e_{ij}^T) + DW*(I_3-e_{ij} x e_{ij}^T)
+  //Here, the definition DDW=1/h^2*d^2W/dq^2 as applied in the funciton DDW() has been introduced.
+
   // compute the resized first derivative
   const double dw_r = dw / rNorm2;
   // diadic product
-  LINALG::Matrix<3,3> rVersor2;
-  rVersor2.MultiplyNT(rVersor, rVersor);
+  LINALG::Matrix<3,3> rRelVersor2;
+  rRelVersor2.MultiplyNT(rRelVersor, rRelVersor);
   // create the hessian and add the various terms
   LINALG::Matrix<3,3> hessW;
   for (int ii = 0; ii<3; ++ii)
   {
     hessW(ii,ii) = dw_r;
   }
-  hessW.Update(ddw - dw_r, rVersor2, 1.0);
+  hessW.Update(ddw - dw_r, rRelVersor2, 1.0);
 
   return hessW;
 }
@@ -279,8 +297,11 @@ FAD PARTICLE::WeightFunction_CubicBspline::W(
 double PARTICLE::WeightFunction_CubicBspline::DW(const double &disRel, const double &radius)
 {
 
-  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * r_{ij}/||r_{ij}||
-  // Here, we determine DW = dW/dq * 1/h while the part e_{ij}:=r_{ij}/||r_{ij}|| is multiplied outside!
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * e_{ij}
+  // The part DW = dW/dq * 1/h is determined in the function DW() while the part e_{ij}:=r_{ij}/||r_{ij}|| has to be multiplied in addition!
+  // Attention: If we want to split the gradient according to grad(W) = dW/dr_{ij}=:F_{ij}*r_{ij} (see e.g. Monaghan2005),
+  // we get the identity:F_{ij}=DW/||r_{ij}||!!!
+  // Attention: In Espanol2003, F_{ij} ist defined with the opposite sign convention as applied here or in Monaghan2005!!!
   const double rszDisRel = RszDisRel(disRel,radius);
 
   double dw = 0;
@@ -310,8 +331,11 @@ double PARTICLE::WeightFunction_CubicBspline::DW(const double &disRel, const dou
 FAD PARTICLE::WeightFunction_CubicBspline::DW(const FAD &disRel, const double &radius)
 {
 
-  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * r_{ij}/||r_{ij}||
-  // Here, we determine DW = dW/dq * 1/h while the part e_{ij}:=r_{ij}/||r_{ij}|| is multiplied outside!
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * e_{ij}
+  // The part DW = dW/dq * 1/h is determined in the function DW() while the part e_{ij}:=r_{ij}/||r_{ij}|| has to be multiplied in addition!
+  // Attention: If we want to split the gradient according to grad(W) = dW/dr_{ij}=:F_{ij}*r_{ij} (see e.g. Monaghan2005),
+  // we get the identity:F_{ij}=DW/||r_{ij}||!!!
+  // Attention: In Espanol2003, F_{ij} ist defined with the opposite sign convention as applied here or in Monaghan2005!!!
   const FAD rszDisRel = RszDisRel(disRel,radius);
 
   FAD dw = 0;
@@ -341,6 +365,14 @@ FAD PARTICLE::WeightFunction_CubicBspline::DW(const FAD &disRel, const double &r
 
 double PARTICLE::WeightFunction_CubicBspline::DDW(const double &disRel, const double &radius)
 {
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * e_{ij}
+  // The part DW = dW/dq * 1/h is determined in the function DW() while the part e_{ij}:=r_{ij}/||r_{ij}|| has to be multiplied in addition!
+  // Following the product rule, the second derivative reads (x represents a dyadic product and I_3 a proper identify matrix):
+  // d^2W/dr_{ij}^2 = (d^2W/dq^2* 1/h * e_{ij}) * 1/h * e_{ij} + dW/dq * 1/h * de_{ij}/ddr_{ij}
+  //                =1/h^2*d^2W/dq^2*(e_{ij} x e_{ij}^T) + 1/h*dW/dq*(I_3-e_{ij} x e_{ij}^T)
+  //                =DDW*(e_{ij} x e_{ij}^T) + DW*(I_3-e_{ij} x e_{ij}^T)
+  //Here, the definition DDW=1/h^2*d^2W/dq^2 as applied in the funciton DDW() has been introduced.
+
   const double rszDisRel = RszDisRel(disRel,radius);
 
   double ddw = 0;
@@ -384,6 +416,234 @@ double PARTICLE::WeightFunction_CubicBspline::RszDim(const double &radius)
 
   return rszdim;
 }
+
+
+
+
+
+//*************************************************************************************************************************
+//*************************************************************************************************************************
+
+/*----------------------------------------------------------------------*
+ | compute the QuinticBspline w function                   meier 04/17  |
+ *----------------------------------------------------------------------*/
+
+double PARTICLE::WeightFunction_QuinticBspline::W(
+  const double &disRel,
+  const double &radius
+  )
+{
+  //See Liu2010, Eq. (38) and Morris1997, Eq. (24) for the definition of the quintic spline in different space dimensions!
+  //Attention: The support of our kernel functions is (in 3D) defined by a sphere with radius measured by our variable "radius".
+  //In the SLM literature, typically the smoothing length !!!h:=radius/3!!! is used for defining the quintic kernel functions!!!
+  //q:=||r_{ij}||/h=3*||r_{ij}||/radius
+  const double h = radius/3.0;
+  const double q = disRel/h;
+
+  double w = 0;
+  if (q < 1)
+  {
+    w = std::pow(3-q,5)-6*std::pow(2-q,5)+15*std::pow(1-q,5);
+    //w(q=0)=RszDim(h)*(3^5-6*2^5+15*1^5)=66*RszDim(h) is evaluated in the method W0()
+  }
+  else if (q < 2)
+  {
+    w = std::pow(3-q,5)-6*std::pow(2-q,5);
+  }
+  else if (q < 3)
+  {
+    w = std::pow(3-q,5);
+  }
+
+  // resizing to have an integral = 1
+  w *= RszDim(h);
+
+  return w;
+}
+
+/*----------------------------------------------------------------------*
+ | compute the QuinticBspline w function (FAD version)     meier 04/17  |
+ *----------------------------------------------------------------------*/
+
+FAD PARTICLE::WeightFunction_QuinticBspline::W(
+  const FAD &disRel,
+  const double &radius
+  )
+{
+  //See Liu2010, Eq. (38) and Morris1997, Eq. (24) for the definition of the quintic spline in different space dimensions!
+  //Attention: The support of our kernel functions is (in 3D) defined by a sphere with radius measured by our variable "radius".
+  //In the SLM literature, typically the smoothing length !!!h:=radius/3!!! is used for defining the quintic kernel functions!!!
+  //q:=||r_{ij}||/h=3*||r_{ij}||/radius
+  const double h = radius/3.0;
+  const FAD q = disRel/h;
+
+  FAD w = 0;
+  if (q < 1)
+  {
+    w = std::pow(3-q,5)-6*std::pow(2-q,5)+15*std::pow(1-q,5);
+    //w(q=0)=RszDim(h)*(3^5-6*2^5+15*1^5)=66*RszDim(h) is evaluated in the method W0()
+  }
+  else if (q < 2)
+  {
+    w = std::pow(3-q,5)-6*std::pow(2-q,5);
+  }
+  else if (q < 3)
+  {
+    w = std::pow(3-q,5);
+  }
+
+  // resizing to have an integral = 1
+  w *= RszDim(h);
+
+  return w;
+}
+
+
+/*-----------------------------------------------------------------------------*
+ | compute the QuinticBspline w function derivative               meier 04/17  |
+ *-----------------------------------------------------------------------------*/
+
+double PARTICLE::WeightFunction_QuinticBspline::DW(const double &disRel, const double &radius)
+{
+
+  //See Liu2010, Eq. (38) and Morris1997, Eq. (24) for the definition of the quintic spline in different space dimensions!
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * e_{ij}
+  // The part DW = dW/dq * 1/h is determined in the function DW() while the part e_{ij}:=r_{ij}/||r_{ij}|| has to be multiplied in addition!
+  // Attention: If we want to split the gradient according to grad(W) = dW/dr_{ij}=:F_{ij}*r_{ij} (see e.g. Monaghan2005),
+  // we get the identity:F_{ij}=DW/||r_{ij}||!!!
+  // Attention: In Espanol2003, F_{ij} ist defined with the opposite sign convention as applied here or in Monaghan2005!!!
+  const double h = radius/3.0;
+  const double q = disRel/h;
+
+  double dw = 0;
+  if (q < 1)
+  {
+    dw = -5.0*std::pow(3-q,4)+30*std::pow(2-q,4)-75*std::pow(1-q,4);
+    //dw(q=0)=0 for symmetry reasons
+  }
+  else if (q < 2)
+  {
+    dw = -5.0*std::pow(3-q,4)+30.0*std::pow(2-q,4);
+  }
+  else if (q < 3)
+  {
+    dw = -5.0*std::pow(3-q,4);
+  }
+
+  // resizing to have an integral = 1 and consideration of factor 1/h in DW = dW/dq * 1/h (see comment above)
+  dw *= RszDim(h)/h;
+
+  return dw;
+}
+
+/*--------------------------------------------------------------------------------*
+ | compute the QuinticBspline w function derivative (FAD version)    meier 04/17  |
+ *-------------------------------------------------------------------------------*/
+
+FAD PARTICLE::WeightFunction_QuinticBspline::DW(const FAD &disRel, const double &radius)
+{
+
+  //See Liu2010, Eq. (38) and Morris1997, Eq. (24) for the definition of the quintic spline in different space dimensions!
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * e_{ij}
+  // The part DW = dW/dq * 1/h is determined in the function DW() while the part e_{ij}:=r_{ij}/||r_{ij}|| has to be multiplied in addition!
+  // Attention: If we want to split the gradient according to grad(W) = dW/dr_{ij}=:F_{ij}*r_{ij} (see e.g. Monaghan2005),
+  // we get the identity:F_{ij}=DW/||r_{ij}||!!!
+  // Attention: In Espanol2003, F_{ij} ist defined with the opposite sign convention as applied here or in Monaghan2005!!!
+  const double h = radius/3.0;
+  const FAD q = disRel/h;
+
+  FAD dw = 0;
+  if (q < 1)
+  {
+    dw = -5.0*std::pow(3-q,4)+30*std::pow(2-q,4)-75*std::pow(1-q,4);
+    //dw(q=0)=0 for symmetry reasons
+  }
+  else if (q < 2)
+  {
+    dw = -5.0*std::pow(3-q,4)+30.0*std::pow(2-q,4);
+  }
+  else if (q < 3)
+  {
+    dw = -5.0*std::pow(3-q,4);
+  }
+
+  // resizing to have an integral = 1 and consideration of factor 1/h in DW = dW/dq * 1/h (see comment above)
+  dw *= RszDim(h)/h;
+
+  return dw;
+}
+
+
+/*-----------------------------------------------------------------------------*
+ | compute the QuinticBspline w function derivative               meier 04/17  |
+ *-----------------------------------------------------------------------------*/
+
+double PARTICLE::WeightFunction_QuinticBspline::DDW(const double &disRel, const double &radius)
+{
+  //See Liu2010, Eq. (38) and Morris1997, Eq. (24) for the definition of the quintic spline in different space dimensions!
+  // In general, we have: grad(W) = dW/dr_{ij} = dW/dq * dq/d||r_{ij}|| * d||r_{ij}||/dr_{ij} = dW/dq * 1/h * e_{ij}
+  // The part DW = dW/dq * 1/h is determined in the function DW() while the part e_{ij}:=r_{ij}/||r_{ij}|| has to be multiplied in addition!
+  // Following the product rule, the second derivative reads (x represents a dyadic product and I_3 a proper identify matrix):
+  // d^2W/dr_{ij}^2 = (d^2W/dq^2* 1/h * e_{ij}) * 1/h * e_{ij} + dW/dq * 1/h * de_{ij}/ddr_{ij}
+  //                =1/h^2*d^2W/dq^2*(e_{ij} x e_{ij}^T) + 1/h*dW/dq*(I_3-e_{ij} x e_{ij}^T)
+  //                =DDW*(e_{ij} x e_{ij}^T) + DW*(I_3-e_{ij} x e_{ij}^T)
+  //Here, the definition DDW=1/h^2*d^2W/dq^2 as applied in the funciton DDW() has been introduced.
+
+  const double h = radius/3.0;
+  const double q = disRel/h;
+
+  double ddw = 0;
+  if (q < 1)
+  {
+    ddw = 20.0*std::pow(3-q,3)-120*std::pow(2-q,3)+300*std::pow(1-q,3);
+    //ddw(q=0)=RszDim(h)/(h*h)*(20*3^3-120*2^3+300*1^3)=-120*RszDim(h)/(h*h) is evaluated in the method DDW0()
+  }
+  else if (q < 2)
+  {
+    ddw = 20.0*std::pow(3-q,3)-120.0*std::pow(2-q,3);
+  }
+  else if (q < 3)
+  {
+    ddw = 20.0*std::pow(3-q,3);
+  }
+
+  // resizing to have an integral = 1 and consideration of factor 1/h in DW = dW/dq * 1/h (see comment above)
+  ddw *= RszDim(h)/(h*h);
+
+  return ddw;
+}
+
+
+/*-----------------------------------------------------------------------------*
+ | rsz in case of different dimensions                            meier 04/17  |
+ *-----------------------------------------------------------------------------*/
+
+double PARTICLE::WeightFunction_QuinticBspline::RszDim(const double &h)
+{
+  //See Liu2010, Eq. (38) and Morris1997, Eq. (24) for the definition of the quintic spline in different space dimensions!
+  double rszdim=0.0;
+  switch (WF_DIM_)
+  {
+  case INPAR::PARTICLE::WF_3D :
+    rszdim = 3.0 * M_1_PI / (359*std::pow(h,3));
+    break;
+  case INPAR::PARTICLE::WF_2D :
+    rszdim = 7.0 * M_1_PI / (478*std::pow(h,2));
+    break;
+  case INPAR::PARTICLE::WF_1D :
+    rszdim = 1.0 / (120*h);
+    break;
+  default :
+    dserror("Only the problem dimensions 1, 2 and 3 are possible!");
+  }
+
+  return rszdim;
+}
+
+//*************************************************************************************************************************
+//*************************************************************************************************************************
+
+
 
 /*----------------------------------------------------------------------*
  | compute the SqrtHyperbola w function          cattabiani 08/16  |

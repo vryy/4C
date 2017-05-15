@@ -18,8 +18,8 @@
  *----------------------------------------------------------------------*/
 #include "adapter_particle.H"
 #include "../drt_particle/particle_timint_genalpha.H"
-#include "../drt_particle/particle_timint_divfree.H"
 #include "../drt_particle/particle_timint_centrdiff.H"
+#include "../drt_particle/particle_timint_kickdrift.H"
 #include "../drt_particle/particle_timint_expleuler.H"
 #include "../drt_particle/particle_timint_rk.H"
 #include "../drt_lib/drt_discret.H"
@@ -109,15 +109,15 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
     tmppart = Teuchos::rcp(new PARTICLE::TimIntCentrDiff(ioflags, *partdyn, *xparams, actdis, output));
     break;
   }
+  case INPAR::PARTICLE::dyna_kickdrift:
+  {
+    tmppart = Teuchos::rcp(new PARTICLE::TimIntKickDrift(ioflags, *partdyn, *xparams, actdis, output));
+    break;
+  }
   case INPAR::PARTICLE::dyna_rk2:
   case INPAR::PARTICLE::dyna_rk4:
   {
     tmppart = Teuchos::rcp(new PARTICLE::TimIntRK(ioflags, *partdyn, *xparams, actdis, output));
-    break;
-  }
-  case INPAR::PARTICLE::dyna_hybridMeshFreeDivFree:
-  {
-    tmppart = Teuchos::rcp(new PARTICLE::TimIntDivFree(ioflags, *partdyn, *xparams, actdis, output));
     break;
   }
   case INPAR::PARTICLE::dyna_genAlpha:

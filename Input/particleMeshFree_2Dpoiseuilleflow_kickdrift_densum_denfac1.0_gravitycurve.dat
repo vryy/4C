@@ -6,9 +6,9 @@
                   General Data File BACI
 ==================================================================
 ---------------------------------------------------------------------------TITLE
-2D test case for Particle Meshfree Interaction (SPH): 2D Poiseuille flow for testing periodic boundary conditions
+2D test case for Particle Meshfree Interaction (SPH) employing kick-drift time integration scheme: 2D Poiseuille flow for testing periodic boundary conditions
 with fixed boundary particles according to Adami et al. 2012 (no slip condition), density summation,
-viscous and gravity forces,
+viscous and gravity forces smoothly increased according to a given ramp time.
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      MeshFree
 SHAPEFCT                        Meshfree
@@ -21,10 +21,12 @@ BOUNDINGBOX                    -0.1 -0.1 -0.01 0.1 0.1 0.01
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      KickDrift
 TIMESTEP                        0.01
 NUMSTEP                         10000000
 MAXTIME                         0.5
 GRAVITY_ACCELERATION            0.1 0.0 0.0 //Apply gravity force?
+GRAVITY_RAMP_TIME               0.25 //Increase gravity force smoothly in the initial time interval t \in [0,GRAVITY_RAMP_TIME]
 PARTICLE_INTERACTION            MeshFree  //None (default),Normal_DEM,Normal_MD,NormalAndTang_DEM,Normal_DEM_thermo,MeshFree
 WEIGHT_FUNCTION                 CubicBspline // CubicBspline (default), SqrtHyperbola, HyperbolaNoRsz
 WEIGHT_FUNCTION_DIM             WF_2D // Spatial dimension of problem entering weight functions: WF_3D (default), WF_2D, WF_1D
@@ -1046,6 +1048,10 @@ MAT 2 MAT_ExtParticle DENSITY 1 RESTDENSITY 1 REFDENSFAC 1.0 EXPONENT 1.0 INITRA
 //Old result due to error in second derivative occuring in viscosity terms
 //PARTICLE DIS particle NODE 210 QUANTITY velx VALUE 4.20999214526553076e-02 TOLERANCE 1.0e-14
 //PARTICLE DIS particle NODE 210 QUANTITY vely VALUE 3.74299320906163366e-05 TOLERANCE 1.0e-14
-PARTICLE DIS particle NODE 210 QUANTITY velx VALUE 4.61373874719243210e-02 TOLERANCE 1.0e-14
-PARTICLE DIS particle NODE 210 QUANTITY vely VALUE 3.33738845018686665e-05 TOLERANCE 1.0e-14
+//Correct viscosity terms and constant gravity during entire simuation
+//PARTICLE DIS particle NODE 210 QUANTITY velx VALUE 4.61373874719243210e-02 TOLERANCE 1.0e-14
+//PARTICLE DIS particle NODE 210 QUANTITY vely VALUE 3.33738845018686665e-05 TOLERANCE 1.0e-14
+//Correct viscosity terms and smoothly increasing gravity in time intervall t \in [0;0.25]
+PARTICLE DIS particle NODE 210 QUANTITY velx VALUE 3.60547748326043582e-02 TOLERANCE 1.0e-14
+PARTICLE DIS particle NODE 210 QUANTITY vely VALUE 2.84769152657619229e-05 TOLERANCE 1.0e-14
 -------------------------------------------------------------------------END

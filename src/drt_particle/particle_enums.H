@@ -22,6 +22,7 @@ namespace PARTICLE
   {
     Dis,
     Vel,
+    VelConv,
     ColorFieldGradient,
     Radius,
     Density,
@@ -30,8 +31,6 @@ namespace PARTICLE
     Mass,
     Pressure,
     Temperature,
-    Alpha,
-//    densityApprox,
     mGradW,
     mHessW
   };

@@ -32,9 +32,9 @@ namespace INPAR
     {
       dyna_expleuler,                  ///< forward Euler (explicit)
       dyna_centrdiff,                  ///< central differences (explicit)
+      dyna_kickdrift,                  ///< kick-dirft scheme (explicit)
       dyna_rk2,                        ///< Runge-Kutta 2 (explicit)
       dyna_rk4,                        ///< Runge-Kutta 4 (explicit)
-      dyna_hybridMeshFreeDivFree,      ///< divergence-free corrections (hybrid implicit-explicit)
       dyna_genAlpha                    ///< general alpha scheme (implicit)
     };
 
@@ -98,6 +98,7 @@ namespace INPAR
     enum WeightFunction
     {
       CubicBspline,
+      QuinticBspline,
       SqrtHyperbola,
       HyperbolaNoRsz
     };

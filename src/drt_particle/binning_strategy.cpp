@@ -2077,10 +2077,6 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
           std::cout << "INFO: PBC bounds for particles is computed automatically for direction " << dim
                     << " based on XAABB of bins (left: " <<  XAABB_(dim,0) << " , right: " <<  XAABB_(dim,1) << " )" << std::endl;
 
-        //additional safety check whether at least some bin layers exist in pbc direction
-        if(bin_per_dir_[dim] < 3)
-          dserror("There are just very few bins in pbc direction -> maybe nasty for neighborhood search (especially in contact)");
-
         // set flag
         pbconoff_[dim] = true;
 
@@ -2349,6 +2345,14 @@ void BINSTRATEGY::BinningStrategy::GetNeighborAndOwnBinIds(
 
   // add myself
   binIds.push_back(binId);
+
+   //in case of less than two bins in pbc direction, this is needed
+   //to avoid double contact evaluation
+  if( havepbc_ )
+  {
+    std::sort( binIds.begin(), binIds.end() );
+    binIds.erase( std::unique( binIds.begin(), binIds.end() ), binIds.end() );
+  }
 
   return;
 }

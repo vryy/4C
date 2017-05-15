@@ -8,25 +8,26 @@
 ---------------------------------------------------------------------------TITLE
 2D test case for Particle Meshfree Interaction (SPH): 2D Poiseuille flow for testing periodic boundary conditions
 with fixed boundary particles according to Adami et al. 2012 (no slip condition), density summation,
-viscous and gravity forces,
+viscous and gravity forces leading to an initial acceleration (no GRAVITY_RAMP_TIME).
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      MeshFree
 SHAPEFCT                        Meshfree
 RANDSEED                        1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle //maxent (default),particle,geo_decoupled
-CUTOFF_RADIUS                   0.05
+CUTOFF_RADIUS                   0.03
 PERIODICONOFF                   1 0 0
 BOUNDINGBOX                    -0.1 -0.1 -0.01 0.1 0.1 0.01
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      KickDrift
 TIMESTEP                        0.01
 NUMSTEP                         10000000
-MAXTIME                         0.5
+MAXTIME                         5
 GRAVITY_ACCELERATION            0.1 0.0 0.0 //Apply gravity force?
 PARTICLE_INTERACTION            MeshFree  //None (default),Normal_DEM,Normal_MD,NormalAndTang_DEM,Normal_DEM_thermo,MeshFree
-WEIGHT_FUNCTION                 CubicBspline // CubicBspline (default), SqrtHyperbola, HyperbolaNoRsz
+WEIGHT_FUNCTION                 QuinticBspline // CubicBspline (default), SqrtHyperbola, HyperbolaNoRsz
 WEIGHT_FUNCTION_DIM             WF_2D // Spatial dimension of problem entering weight functions: WF_3D (default), WF_2D, WF_1D
 DENSITY_SUMMATION               yes // Density via summation formula or via time integration?
 CONSISTENT_PROBLEM_VOLUME       0.02 // =-1.0(default): particle mass via sphere volume, >0: particle mass via DENSITY and problem volume
@@ -1041,11 +1042,8 @@ E 398 - NUMDOF 3 ONOFF 1 1 1 VAL 0.075 0.095 0.0 FUNCT 0 0 0
 E 399 - NUMDOF 3 ONOFF 1 1 1 VAL 0.085 0.095 0.0 FUNCT 0 0 0
 E 400 - NUMDOF 3 ONOFF 1 1 1 VAL 0.095 0.095 0.0 FUNCT 0 0 0
 -------------------------------------------------------------------MATERIALS
-MAT 2 MAT_ExtParticle DENSITY 1 RESTDENSITY 1 REFDENSFAC 1.0 EXPONENT 1.0 INITRADIUS 0.02 DISMEMBER_RADIUS 0.01 NUE 0.1 YOUNG 0.1 INITTEMPERATURE 0.0 CPS 0.0 CPL 0.0 LATENT_HEAT 0.0 TRANSITION_TEMPERATURE 0.0 THERMAL_EXPANSION_S 0.0 THERMAL_EXPANSION_L 0.0 THERMAL_EXPANSION_T 0.0 BULK_MODULUS 1.0 DYNAMIC_VISCOSITY 0.001 BULK_VISCOSITY 0.0 THERMAL_CONDUCTIVITY 0.0 SURFACE_VOID_TENSION 0.0 SURFACE_WALL_TENSION 0.0
+MAT 2 MAT_ExtParticle DENSITY 1 RESTDENSITY 1 REFDENSFAC 1.0 EXPONENT 1.0 INITRADIUS 0.03 DISMEMBER_RADIUS 0.01 NUE 0.1 YOUNG 0.1 INITTEMPERATURE 0.0 CPS 0.0 CPL 0.0 LATENT_HEAT 0.0 TRANSITION_TEMPERATURE 0.0 THERMAL_EXPANSION_S 0.0 THERMAL_EXPANSION_L 0.0 THERMAL_EXPANSION_T 0.0 BULK_MODULUS 1.0 DYNAMIC_VISCOSITY 0.001 BULK_VISCOSITY 0.0 THERMAL_CONDUCTIVITY 0.0 SURFACE_VOID_TENSION 0.0 SURFACE_WALL_TENSION 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
-//Old result due to error in second derivative occuring in viscosity terms
-//PARTICLE DIS particle NODE 210 QUANTITY velx VALUE 4.20999214526553076e-02 TOLERANCE 1.0e-14
-//PARTICLE DIS particle NODE 210 QUANTITY vely VALUE 3.74299320906163366e-05 TOLERANCE 1.0e-14
-PARTICLE DIS particle NODE 210 QUANTITY velx VALUE 4.61373874719243210e-02 TOLERANCE 1.0e-14
-PARTICLE DIS particle NODE 210 QUANTITY vely VALUE 3.33738845018686665e-05 TOLERANCE 1.0e-14
+PARTICLE DIS particle NODE 210 QUANTITY velx VALUE 1.26748957255011035e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 210 QUANTITY vely VALUE -3.46003001916090727e-05 TOLERANCE 1.0e-12
 -------------------------------------------------------------------------END

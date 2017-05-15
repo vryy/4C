@@ -25,6 +25,7 @@ MAT::PAR::ExtParticleMat::ExtParticleMat(
     ParticleMat(matdata),
     restDensity_(matdata->GetDouble("RESTDENSITY")),
     refdensfac_(matdata->GetDouble("REFDENSFAC")),
+    exponent_(matdata->GetDouble("EXPONENT")),
     dismemberRadius_(matdata->GetDouble("DISMEMBER_RADIUS")),
     initTemperature_(matdata->GetDouble("INITTEMPERATURE")),
     CPS_(matdata->GetDouble("CPS")),

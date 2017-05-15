@@ -88,6 +88,7 @@ PARTICLE::TimInt::TimInt
   dis_(Teuchos::null),
   vel_(Teuchos::null),
   acc_(Teuchos::null),
+  accmod_(Teuchos::null),
   angVel_(Teuchos::null),
   angAcc_(Teuchos::null),
   radius_(Teuchos::null),
@@ -99,6 +100,7 @@ PARTICLE::TimInt::TimInt
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
+  accmodn_(Teuchos::null),
   angVeln_(Teuchos::null),
   angAccn_(Teuchos::null),
   radiusn_(Teuchos::null),
@@ -121,6 +123,8 @@ PARTICLE::TimInt::TimInt
   initDensity_(-1.0),
   restDensity_(-1.0),
   refdensfac_(-1.0),
+
+  global_num_boundaryparticles_(0),
 
   dofmapexporter_(Teuchos::null),
   nodemapexporter_(Teuchos::null),
@@ -163,7 +167,6 @@ void PARTICLE::TimInt::Init()
   vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   radius_  = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
-
   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
   mass_ = LINALG::CreateVector(*NodeRowMapView(), true);
 
@@ -214,6 +217,12 @@ void PARTICLE::TimInt::Init()
   disn_ = Teuchos::rcp(new Epetra_Vector(*(*dis_)(0)));
   veln_ = Teuchos::rcp(new Epetra_Vector(*(*vel_)(0)));
   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
+
+  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  {
+    accmod_ =  Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+    accmodn_ = Teuchos::rcp(new Epetra_Vector(*(*accmod_)(0)));
+  }
 
   switch (particle_algorithm_->ParticleInteractionType())
   {
@@ -295,20 +304,14 @@ void PARTICLE::TimInt::SetInitialFields()
   else // particle mass via problem volume and density
   {
     //boundary particles are excluded for determination of particle mass since they are also not part of the consistent_problem_volume
-    int num_boundaryparticles=0;
-
     const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
     if(wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip)
     {
       double num_boundaryDoFs = 0.0;
       bpDoFs_->Norm1(&num_boundaryDoFs);
-      num_boundaryparticles=(int)(num_boundaryDoFs/3);
-      int tot_num_boundaryparticles=0;
-      if(wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip)
-      discret_->Comm().SumAll(&num_boundaryparticles,&tot_num_boundaryparticles,1);
+      global_num_boundaryparticles_=(int)(num_boundaryDoFs/3);
     }
-
-    const int num_particles=discret_->NumGlobalNodes()-num_boundaryparticles;
+    const int num_particles=discret_->NumGlobalNodes()-global_num_boundaryparticles_;
     mass_->PutScalar(initDensity * consistent_problem_volume / (double)(num_particles));
   }
 
@@ -505,11 +508,8 @@ void PARTICLE::TimInt::SetInitialFields()
   // It is here because it is a slave of the density
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
-    Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(refdensfac_*restDensity_);
-    deltaDensity->Update(1.0, *(*density_)(0), -1.0);
     bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    PARTICLE::Utils::Density2Pressure(deltaDensity, (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true, solve_thermal_problem);
+    PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,(*density_)(0), (*specEnthalpy_)(0), pressure_, particle_algorithm_->ExtParticleMat(), true, solve_thermal_problem);
   }
 
   // set vector of initial particle radii if necessary
@@ -544,7 +544,19 @@ void PARTICLE::TimInt::PrepareTimeStep()
 /* equilibrate system at initial state and identify consistent accelerations */
 void PARTICLE::TimInt::DetermineMassDampConsistAccel()
 {
-  ComputeAcc(Teuchos::null, Teuchos::null, (*acc_)(0), Teuchos::null);
+  if(particle_algorithm_->ParticleInteractionType()!=INPAR::PARTICLE::MeshFree)
+    ComputeAcc(Teuchos::null, Teuchos::null, (*acc_)(0), Teuchos::null);
+  else
+  {
+    INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP");
+    if(timinttype==INPAR::PARTICLE::dyna_kickdrift)
+    {
+      if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+        DetermineMeshfreeDensAndAcc((*acc_)(0),(*accmod_)(0),Teuchos::null,0.0);
+      else
+        DetermineMeshfreeDensAndAcc((*acc_)(0),Teuchos::null,Teuchos::null,0.0);
+    }
+  }
 
   return;
 }
@@ -602,6 +614,49 @@ void PARTICLE::TimInt::ComputeAcc(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* Determine acceleration */
+void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> acc,
+                                            Teuchos::RCP<Epetra_Vector> accmod,
+                                            Teuchos::RCP<Epetra_Vector> velConv,
+                                            const double time)
+{
+
+  //Initialize all columns and boundary particles. Set sate vectors disn_ and veln_
+  interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, Teuchos::null, bpDoFs_);
+  //Set also state vector velConv
+  if(velConv!=Teuchos::null)
+    interHandler_->SetStateVector(velConv, PARTICLE::VelConv);
+
+  //In case of density summation, the new density and new pressure have been determined as very first step since they are required for all the following calculations
+  interHandler_->MF_mW(densityn_,false);
+  //Determine also the new pressure and set state vectors for the new density and pressure
+  interHandler_->SetStateVector(densityn_, PARTICLE::Density);
+  bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
+  PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+  interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
+
+  //Asign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechanical energy contribution
+  const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
+  if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
+  {
+    interHandler_->InitBoundaryData(acc,particle_algorithm_->GetGravityAcc(time),bpintergy_);
+  }
+
+  //Acceleration contributions due to gravity forces
+  acc->PutScalar(0.0);
+  GravityAcc(acc,1.0,time);
+  //Acceleration contributions due to internal forces (pressure, viscosity etc.)
+  interHandler_->Inter_pvp_acc(acc,1.0);
+
+  // Modified accelerations according to Adami2013
+  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+    interHandler_->Inter_pvp_modacc(accmod,1.0);
+
+  // clear vectors, keep memory
+  interHandler_->Clear();
+}
+
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
 void PARTICLE::TimInt::ApplyDirichletBC
@@ -654,6 +709,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(dis_);
   UpdateStateVectorMap(vel_);
   UpdateStateVectorMap(acc_);
+  UpdateStateVectorMap(accmod_);
   UpdateStateVectorMap(angVel_);
   UpdateStateVectorMap(angAcc_);
   UpdateStateVectorMap(radius_,true);
@@ -664,6 +720,7 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
   UpdateStateVectorMap(disn_);
   UpdateStateVectorMap(veln_);
   UpdateStateVectorMap(accn_);
+  UpdateStateVectorMap(accmodn_);
   UpdateStateVectorMap(angVeln_);
   UpdateStateVectorMap(angAccn_);
   UpdateStateVectorMap(radiusn_,true);
@@ -733,6 +790,12 @@ void PARTICLE::TimInt::ReadRestartState()
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
 
+  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+  {
+    reader.ReadVector(accmodn_, "modified_acceleration");
+    accmod_->UpdateSteps(*accmodn_);
+  }
+
   reader.ReadVector(mass_, "mass");
 
 
@@ -747,11 +810,8 @@ void PARTICLE::TimInt::ReadRestartState()
 
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
-    Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(refdensfac_*restDensity_);
-    deltaDensity->Update(1.0,*densityn_,-1.0);
     bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+    PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
   }
 
   // read in particle collision relevant data
@@ -839,6 +899,9 @@ void PARTICLE::TimInt::OutputRestart
   WriteVector("displacement", dis_);
   WriteVector("velocity", vel_);
   WriteVector("acceleration", acc_);
+
+  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+    WriteVector("modified_acceleration", accmod_);
 
   WriteVector("radius", radius_, false);
   WriteVector("mass", mass_, false);
@@ -950,7 +1013,7 @@ void PARTICLE::TimInt::DetermineEnergy()
 
   if ( writeenergyevery_ and (stepn_%writeenergyevery_ == 0))
   {
-    LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc();
+    LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc(timen_);
 
     // total kinetic energy
     kinergy_ = 0.0;
@@ -992,11 +1055,6 @@ void PARTICLE::TimInt::DetermineEnergy()
       intergy_ = 0.0;
       extergy_ = 0.0;
       linmomentum_.Clear();
-
-      //First add energy contributions of boundary particles (bpintergy_ has already been determined in IntegrateStep())
-      //intergy_+=bpintergy_;
-
-      std::cout << "bpintergy_: " << bpintergy_ << std::endl;
 
       for(int i=0; i<numrownodes; ++i)
       {
@@ -1354,11 +1412,8 @@ void PARTICLE::TimInt::UpdatePressure()
 {
   if (pressure_ != Teuchos::null && specEnthalpyn_ != Teuchos::null && densityn_ != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(refdensfac_*restDensity_);
-    deltaDensity->Update(1.0,*densityn_,-1.0);
     bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    PARTICLE::Utils::Density2Pressure(deltaDensity, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat(),false,solve_thermal_problem);
+    PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_, specEnthalpyn_, pressure_, particle_algorithm_->ExtParticleMat(),false,solve_thermal_problem);
   }
 }
 
@@ -1404,7 +1459,17 @@ void PARTICLE::TimInt::UpdateStepState()
   UpdateStateVector(specEnthalpy_, specEnthalpyn_);
   UpdateStateVector(specEnthalpyDot_, specEnthalpyDotn_);
 
-  UpdateTemperaturenp();
+  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
+    UpdateStateVector(accmod_, accmodn_);
+
+  if( particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::Normal_DEM_thermo or
+     (particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree and
+      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM")) )
+  {
+    UpdateTemperaturenp();
+  }
+
+
   UpdatePressure();
 
   // legacy... we can probably erase this if (not what is inside tho!) but... whatever
@@ -1544,13 +1609,12 @@ void PARTICLE::TimInt::UpdateExtActions(bool init)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::UpdateExtActions");
 
-  LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc();
+  LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc(-1.0);
 
   // forces/accelerations
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
-    accn_->PutScalar(0.0);
-    GravityAcc(accn_);
+    //In SPH simulations, gravity and all other interaction forces are considered at once in the methdo IntegrateStep()
   }
   else if (fifc_ != Teuchos::null)
   {
@@ -1583,7 +1647,7 @@ void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force, const do
 {
   if (force != Teuchos::null)
   {
-    LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc();
+    LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc(-1.0);
     for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); ++i)
     {
       /*------------------------------------------------------------------*/
@@ -1604,11 +1668,14 @@ void PARTICLE::TimInt::GravityForces(Teuchos::RCP<Epetra_Vector> force, const do
 /*----------------------------------------------------------------------*
  | calculate and ADD gravity forces (no reset)             katta 01/17  |
  *----------------------------------------------------------------------*/
-void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc, const double extMulti)
+void PARTICLE::TimInt::GravityAcc(Teuchos::RCP<Epetra_Vector> acc, const double extMulti, const double time)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::TimInt::GravityAcc");
+
   if (acc != Teuchos::null)
   {
-    LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc();
+    LINALG::Matrix<3,1> gravity_acc = particle_algorithm_->GetGravityAcc(time);
+
     for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); ++i)
     {
       /*------------------------------------------------------------------*/

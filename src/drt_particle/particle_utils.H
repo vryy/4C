@@ -97,22 +97,48 @@ namespace PARTICLE
 
     //! Compute the pressure from the proper speed of sound and the density (small density variation hypothesis)
     /// if you change this function you need to touch Inter_pvp_gradAccP too!
-    static double Density2Pressure(const double& speedOfSound, const double& deltaDensity)
-      { return speedOfSound * speedOfSound * deltaDensity; };
+    static double Density2Pressure(const double& speedOfSound, const double& restDensity, const double& refdensfac, const double& density, const double& exponent)
+      {
+        if(exponent==1)
+          return speedOfSound * speedOfSound * (density-refdensfac*restDensity);
+        else
+        {
+          const double restPressure=speedOfSound * speedOfSound * restDensity / exponent;
+          return  restPressure*(pow(density/restDensity,exponent)-refdensfac);
+        }
+      };
 
     //! Compute the pressure from the proper speed of sound and the density (small density variation hypothesis)
     /// if you change this function you need to touch Inter_pvp_gradAccP too! (FAD version)
-    static FAD Density2Pressure(const double& speedOfSound, const FAD& deltaDensity)
-      { return speedOfSound * speedOfSound * deltaDensity; };
+    static FAD Density2Pressure(const double& speedOfSound, const double& restDensity, const double& refdensfac, const FAD& density, const double& exponent)
+      {
+        if(exponent==1)
+          return speedOfSound * speedOfSound * (density-refdensfac*restDensity);
+        else
+        {
+          const double restPressure=speedOfSound * speedOfSound * restDensity / exponent;
+          return  restPressure*(pow(density/restDensity,exponent)-refdensfac);
+        }
+      };
 
     //! Compute the density from the proper speed of sound and the pressure (small density variation hypothesis)
-    static double Pressure2Density(const double& speedOfSound, const double& restDensity, const double& refdensfac, const double& pressure)
-      { return pressure/(speedOfSound * speedOfSound) + refdensfac*restDensity; };
+    static double Pressure2Density(const double& speedOfSound, const double& restDensity, const double& refdensfac, const double& pressure, const double& exponent)
+    {
+      if(exponent==1)
+        return pressure/(speedOfSound * speedOfSound) + refdensfac*restDensity;
+      else
+      {
+        const double restPressure=speedOfSound * speedOfSound * restDensity / exponent;
+        return restDensity*(pow(pressure/restPressure+refdensfac,(double)(1.0/exponent)));
+      }
+    };
 
     //! Compute pressure for the entire vector
     /// if you change this function you need to touch Inter_pvp_gradAccP too!
     static void Density2Pressure(
-        const Teuchos::RCP<const Epetra_Vector> deltaDensity,
+        const double& restDensity,
+        const double& refdensfac,
+        const Teuchos::RCP<const Epetra_Vector> density,
         const Teuchos::RCP<const Epetra_Vector> specEnthalpy,
         Teuchos::RCP<Epetra_Vector> &pressure,
         const MAT::PAR::ExtParticleMat* extParticleMat,

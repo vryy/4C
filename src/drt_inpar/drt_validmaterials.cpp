@@ -2903,6 +2903,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DENSITY","initial mass density");
     AddNamedReal(m,"RESTDENSITY","reference mass density defining the speed of sound");
     AddNamedReal(m,"REFDENSFAC","scale factor for equation of state");
+    AddNamedReal(m,"EXPONENT","exponent in equation of state");
     AddNamedReal(m,"INITRADIUS","initial radius of particle");
     AddNamedReal(m,"DISMEMBER_RADIUS","dismember radius for melting particles");
     AddNamedReal(m,"NUE","poisson ratio",0.0,true);

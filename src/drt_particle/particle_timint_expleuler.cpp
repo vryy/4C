@@ -88,6 +88,9 @@ int PARTICLE::TimIntExplEuler::IntegrateStep()
   // starting point for new displacements \f$D_{n+1}\f$
   disn_->Update(1.0, *(*dis_)(0), 0.0);
 
+  //Transfer particles and heat sources into their correct bins
+  particle_algorithm_->UpdateConnectivity();
+
   // total internal energy (elastic spring and potential energy)
   intergy_ = 0.0;
   //---------------------Compute Collisions-----------------------

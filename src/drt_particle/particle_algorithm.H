@@ -1,4 +1,4 @@
-/*----------------------------------------------------------------------*/
+ /*----------------------------------------------------------------------*/
 /*!
 \file particle_algorithm.H
 
@@ -128,7 +128,7 @@ namespace PARTICLE
         );
 
     /// return gravity acceleration
-    virtual LINALG::Matrix<3,1> GetGravityAcc() {return gravity_acc_ ; }
+    virtual LINALG::Matrix<3,1> GetGravityAcc(const double time=-1.0);
 
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary, update states and do ghosting if needed

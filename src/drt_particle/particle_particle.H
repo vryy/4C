@@ -268,7 +268,6 @@ namespace PARTICLE
       const double pressure,
       const double temperature,
       const double densityDot,
-      const double alpha,
       const LINALG::Matrix<3,1> mGradW
       ) :
         ParticleBase(gid, owner, lm, dis, vel, radius, mass, density),
@@ -278,12 +277,12 @@ namespace PARTICLE
         pressure_(pressure),
         temperature_(temperature),
         densityDot_(densityDot),
-        alpha_(alpha),
-        boundarydata_(BoundaryData(false)) {}
+        boundarydata_(BoundaryData(false)),
+        velConv_(LINALG::Matrix<3,1>(true)){}
 
   /// constructor: empty
   ParticleMF() : ParticleBase(), ParticleThermoBase(), ParticleSurfTensionBase(), ParticleMFmGradWbase(),
-      pressure_(-1), temperature_(-1), densityDot_(-1), alpha_(-1), boundarydata_(BoundaryData(false)) {}
+      pressure_(-1), temperature_(-1), densityDot_(-1), boundarydata_(BoundaryData(false)), velConv_(LINALG::Matrix<3,1>(true)) {}
 
   // contructor: only identifiers
   ParticleMF(
@@ -298,8 +297,8 @@ namespace PARTICLE
         pressure_(-1),
         temperature_(-1),
         densityDot_(-1),
-        alpha_(-1),
-        boundarydata_(BoundaryData(boundaryparticle)){}
+        boundarydata_(BoundaryData(boundaryparticle)),
+        velConv_(LINALG::Matrix<3,1>(true)){}
 
   /// constructor: only the first round
   ParticleMF(
@@ -322,15 +321,15 @@ namespace PARTICLE
         pressure_(pressure),
         temperature_(temperature),
         densityDot_(-1),
-        alpha_(-1),
-        boundarydata_(BoundaryData(false)){}
+        boundarydata_(BoundaryData(false)),
+        velConv_(LINALG::Matrix<3,1>(true)){}
 
   /// internal variables
   double pressure_;
   double temperature_;
   double densityDot_;
-  double alpha_;
   BoundaryData boundarydata_;
+  LINALG::Matrix<3,1> velConv_;    //particle convection velocity that may differ from the particle momentum velocity in general (see Ref. Adami2013)
   }; // ParticleMF
 }
 

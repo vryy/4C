@@ -8,7 +8,7 @@
 ---------------------------------------------------------------------------TITLE
 1D test case for Particle Meshfree Interaction (SPH): 1D wave propagation (WF_1D) with initial velocity field,
 fixed boundary particles according to Adami et al. 2012 (wave reflection, no slip condition), density integration, no viscous forces,
-equation of state p=c_0^2\rho with REFDENSFAC=0, particle mass consistently determined via problem volume and density
+equation of state with REFDENSFAC=0, particle mass consistently determined via problem volume and density
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      MeshFree
 //PROBLEMTYP                      Particle //Particle, MeshFree, and many others... (is that required for fluid SPH or only for rendering?)
@@ -20,7 +20,7 @@ CUTOFF_RADIUS                   0.04
 BOUNDINGBOX                     -0.220000 -0.0010001 -0.0010001 0.220000 0.0010001 0.0010001
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-------------------------------------------------------------PARTICLE DYNAMIC
+----------------------------------------------------------PARTICLE DYNAMIC
 RESULTSEVRY                     1
 TIMESTEP                        0.001
 NUMSTEP                         1000000
@@ -358,7 +358,7 @@ COMPONENT 1 FUNCTION 0.0
 // initial velocity (z component)
 COMPONENT 2 FUNCTION 0.0
 -------------------------------------------------------------------MATERIALS
-MAT 2 MAT_ExtParticle DENSITY 1.0 RESTDENSITY 1.0 REFDENSFAC 0.0 INITRADIUS 0.015 DISMEMBER_RADIUS 0 NUE 0 YOUNG 0 INITTEMPERATURE 0 CPS 0 CPL 0 LATENT_HEAT 0 TRANSITION_TEMPERATURE 0 THERMAL_EXPANSION_S 0 THERMAL_EXPANSION_L 0 THERMAL_EXPANSION_T 0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0.0 BULK_VISCOSITY 0 THERMAL_CONDUCTIVITY 0 SURFACE_VOID_TENSION 0 SURFACE_WALL_TENSION 0
+MAT 2 MAT_ExtParticle DENSITY 1.0 RESTDENSITY 1.0 REFDENSFAC 0.0 EXPONENT 1.0 INITRADIUS 0.015 DISMEMBER_RADIUS 0 NUE 0 YOUNG 0 INITTEMPERATURE 0 CPS 0 CPL 0 LATENT_HEAT 0 TRANSITION_TEMPERATURE 0 THERMAL_EXPANSION_S 0 THERMAL_EXPANSION_L 0 THERMAL_EXPANSION_T 0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0.0 BULK_VISCOSITY 0 THERMAL_CONDUCTIVITY 0 SURFACE_VOID_TENSION 0 SURFACE_WALL_TENSION 0
 ----------------------------------------------------------RESULT DESCRIPTION
 PARTICLE DIS particle NODE 37 QUANTITY velx VALUE -3.00107622532983257e-04 TOLERANCE 1.0e-10
 -------------------------------------------------------------------------END

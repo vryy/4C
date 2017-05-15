@@ -223,6 +223,8 @@ namespace PARTICLE
     //@{
     std::vector<ParticleCollData> particleData_;   ///< temporary storage for all particle collision relevant data
 
+    int contactcounter_;
+
   };  // class ParticleCollisionHandlerBase
 
   /*====================================================================*/

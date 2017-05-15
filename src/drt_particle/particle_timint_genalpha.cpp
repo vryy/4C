@@ -366,10 +366,7 @@ void PARTICLE::TimIntGenAlpha::ReadRestartState()
   specEnthalpyDot_->UpdateSteps(*specEnthalpyDotn_);
 
   // set up the pressure
-  Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-  deltaDensity->PutScalar(refdensfac_*restDensity_);
-  deltaDensity->Update(1.0,*densityn_,-1.0);
-  PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
+  PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true);
 
   // reset to zero the additional state vectors
   SetupStateVectors();
@@ -413,8 +410,9 @@ void PARTICLE::TimIntGenAlpha::ResAcc()
   resAcc_->PutScalar(0.0);
 
   // build
-    // F_ext - gravity
-  GravityAcc(resAcc_, -1.0);
+  // F_ext - gravity
+  //TODO: Time ramp for gravity forces not considered here so far!
+  GravityAcc(resAcc_, -1.0, -1.0);
     // F_int - P
   interHandler_->Inter_pvp_acc(resAcc_, -1.0);
   interHandler_->Inter_pvw_acc(resAcc_, -1.0);

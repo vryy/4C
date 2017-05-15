@@ -18,6 +18,8 @@
  Monaghan2005: Smoothed particle hydrodynamics, doi:10.1088/0034-4885/68/8/R01.
  Espanol2003: Smoothed dissipative particle dynamics, DOI: 10.1103/PhysRevE.67.026705.
  Akinci2013: http://doi.acm.org/10.1145/2508363.2508395\nhttp://dl.acm.org/ft_gateway.cfm?id=2508395&type=pdf
+ Adami2012: A generalized wall boundary condition for smoothed particle hydrodynamics, http://dx.doi.org/10.1016/j.jcp.2012.05.005
+ Adami2013: A transport-velocity formulation for smoothed particle hydrodynamics, http://dx.doi.org/10.1016/j.jcp.2013.01.043
 */
 
 #ifndef SRC_DRT_PARTICLE_PARTICLEMESHFREE_INTERACTION_H_
@@ -188,15 +190,31 @@ namespace PARTICLE
     /// compute the momentum part of the particle vs particle interactions
     virtual void Inter_pvp_acc(
         const Teuchos::RCP<Epetra_Vector> accn,
-        const double extMulti = 1.0,
-        const bool clcPressure = true,
-        const double time=0.0);
+        const double extMulti = 1.0);
 
     /// compute the momentum part of the boundary particle vs particle interactions
     virtual void Inter_bpvp_acc(
         const Teuchos::RCP<Epetra_Vector> accn,
-        const double extMulti = 1.0,
-        const bool clcPressure = true);
+        const double extMulti = 1.0);
+
+    /// evaluate modified acceleration due to constant background pressure of the particle vs particle interactions
+    virtual void Inter_pvp_modacc(
+        const Teuchos::RCP<Epetra_Vector> accmod,
+        const double extMulti = 1.0);
+
+    ///Computes Gradient of divergence operator for vector v - pvp
+    virtual void Inter_pvp_Laplace_x(
+        const ParticleMF& particle_j,
+        const InterDataPvP& interData_ij,
+        const LINALG::Matrix<3,1>& x_ij,
+        LINALG::Matrix<3,1>& Laplace_x_ij);
+
+    /// Computes Laplace operator for vector v - pvp
+    virtual void Inter_pvp_GradDiv_x(
+        const ParticleMF& particle_j,
+        const InterDataPvP& interData_ij,
+        const LINALG::Matrix<3,1>& x_ij,
+        LINALG::Matrix<3,1>& GradDiv_x_ij);
 
     /// compute the heat of the particle vs particle interactions
     virtual void Inter_pvp_specEnthalpyDot(
@@ -211,20 +229,6 @@ namespace PARTICLE
     /// compute the accn from the color field gradient of the particle vs particle interactions
     virtual void Inter_pvp_surfaceTensionCFG(
         const Teuchos::RCP<Epetra_Vector> accn,
-        const double extMulti = 1.0);
-
-    /// compute the divergence-free pressure forces adjusting the stiffness parameters
-    /// Steps 6 and 7 (only the third term) of Algorithm 2 in http://dx.doi.org/10.1145/2786784.2786796
-    virtual void Inter_pvp_divFreePressureAcc(
-        const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
-        const double dt,
-        const double extMulti = 1.0);
-
-    /// compute the constant-density pressure forces adjusting the stiffness parameters
-    /// Steps 6 and 7 (only the third term) of Algorithm 3 in http://dx.doi.org/10.1145/2786784.2786796
-    virtual void Inter_pvp_constDensityPressureAcc(
-        const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
-        const double dt,
         const double extMulti = 1.0);
 
     /// compute the gradient of the momentum part of the particle vs particle interactions
@@ -268,11 +272,6 @@ namespace PARTICLE
 
     //! @name mesh free fields
     //@{
-
-    /// compute alpha factors and update colParticles - mesh free sense
-    // http://dx.doi.org/10.1145/2786784.2786796
-    // Equation 8
-    virtual void MF_alpha();
 
     /// compute density - mesh free sense
     virtual void MF_mW(
@@ -463,9 +462,6 @@ namespace PARTICLE
 
     /// factor defining the equation of state: pressure=c_0^2(density-refdensfac_*restDensity_)  with the speed of sound c_0^2=BULK_MODULUS/restDensity_;
     const double refdensfac_;
-
-    /// lower cap of the alpha parameter
-    const double alphaMin_;
 
     /// laplacian velocity, diffusion coefficient
     double diffusionCoeff_;

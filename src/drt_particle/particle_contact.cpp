@@ -91,7 +91,8 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   myrank_(discret->Comm().MyPID()),
   discret_(discret),
   particle_algorithm_(particlealgorithm),
-  particleData_(0)
+  particleData_(0),
+  contactcounter_(0)
 {
   // extract the material
   const MAT::PAR::ParticleMat* particleMat = particle_algorithm_->ParticleMat();
@@ -830,6 +831,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         LINALG::Assemble(*f_contact, contactforce_i, data_i.lm, data_i.owner);
         LINALG::Assemble(*m_contact, contactmoment_i, data_i.lm, data_i.owner);
 
+        if(data_i.owner==discret_->Comm().MyPID())
+          contactcounter_++;
+
         static LINALG::Matrix<3,1> contactforce_j, contactmoment_j;
         const double r_j = data_j.rad + g*0.5;
         contactforce_j.Update(-1.,contactforce_i); // actio = reactio
@@ -838,6 +842,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringParticlesContact(
         // assembly contact forces and moments for particle j
         LINALG::Assemble(*f_contact, contactforce_j, data_j.lm, data_j.owner);
         LINALG::Assemble(*m_contact, contactmoment_j, data_j.lm, data_j.owner);
+
+        if(data_j.owner==discret_->Comm().MyPID())
+          contactcounter_++;
 
         // --- calculate thermodinamic exchange ---//
         if (specEnthalpyDotn != Teuchos::null)

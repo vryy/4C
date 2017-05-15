@@ -28,6 +28,7 @@
 #include "particleMeshFree_surfaceTensionInteractions.H"
 #include "particle_algorithm.H"
 #include "particle_timint_centrdiff.H"
+#include "particle_timint_kickdrift.H"
 #include "particle_heatSource.H"
 #include "particle_utils.H"
 #include "../drt_adapter/ad_str_structure.H"
@@ -39,6 +40,8 @@
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_coordtrafo.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*
@@ -61,7 +64,6 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   initDensity_(initDensity),
   restDensity_(restDensity),
   refdensfac_(refdensfac),
-  alphaMin_(DRT::Problem::Instance()->ParticleParams().get<double>("ALPHA_MIN")),
   trg_updatedColorFieldGradient_(false),
   periodic_length_(-1.0)
 {
@@ -79,20 +81,6 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
       wallMeshFreeData_.mass_ = extParticleMat->initDensity_ * PARTICLE::Utils::Radius2Volume(extParticleMat->initRadius_);
       // the pressure is linked to the deltaDensity_ with the initial density. In case of this wall it is always 0
       wallMeshFreeData_.pressure_ = 0;
-      /*
-      if (extParticleMat->initTemperature_ < extParticleMat->transitionTemperature_)
-      {
-        wallMeshFreeData_.pressure_ = PARTICLE::Utils::Density2Pressure(extParticleMat->SpeedOfSoundS(),extParticleMat->initDensity_);
-      }
-      else if (extParticleMat->initTemperature_ > extParticleMat->transitionTemperature_)
-      {
-        wallMeshFreeData_.pressure_ = PARTICLE::Utils::Density2Pressure(extParticleMat->SpeedOfSoundL(),extParticleMat->initDensity_);
-      }
-      else
-      {
-        dserror("Start from the transition state not implemented");
-      }
-      */
       break;
     }
   case INPAR::PARTICLE::Mirror :
@@ -133,17 +121,17 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   {
     case INPAR::PARTICLE::WF_3D :
     {
-      diffusionCoeff_ = 5.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+      convectionCoeff_ = 5.0*(extParticleMat->bulkViscosity_+extParticleMat->dynamicViscosity_ / 3.0);
       break;
     }
     case INPAR::PARTICLE::WF_2D :
     {
-      diffusionCoeff_ = 8.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+      convectionCoeff_ = 4.0*(extParticleMat->bulkViscosity_+extParticleMat->dynamicViscosity_ / 3.0);
       break;
     }
     case INPAR::PARTICLE::WF_1D :
     {
-      diffusionCoeff_ = 11.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+      convectionCoeff_ = 3.0*(extParticleMat->bulkViscosity_+extParticleMat->dynamicViscosity_ / 3.0);
       break;
     }
     default :
@@ -152,7 +140,7 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
     }
   }
 
-  convectionCoeff_ = 5.0 * (extParticleMat->dynamicViscosity_ / 3.0  + extParticleMat->bulkViscosity_);
+  diffusionCoeff_ = 5.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
 
   // checks
   if (diffusionCoeff_<0)
@@ -175,6 +163,11 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
     case INPAR::PARTICLE::CubicBspline :
     {
       weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_CubicBspline(WF_DIM_));
+      break;
+    }
+    case INPAR::PARTICLE::QuinticBspline :
+    {
+      weightFunctionHandler_ = Teuchos::rcp(new PARTICLE::WeightFunction_QuinticBspline(WF_DIM_));
       break;
     }
     case INPAR::PARTICLE::SqrtHyperbola :
@@ -295,13 +288,19 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
   InitColParticles(bpDoFs);
 
   // set up positions and radii to set up the neighbours
-  SetStateVector(disn, PARTICLE::Dis);
-  SetStateVector(radiusn, PARTICLE::Radius);
+  if(disn!=Teuchos::null)
+    SetStateVector(disn, PARTICLE::Dis);
+
+  if(radiusn!=Teuchos::null)
+    SetStateVector(radiusn, PARTICLE::Radius);
 
   // keep going with the remaining state vectors
-  SetStateVector(veln, PARTICLE::Vel);
-  SetStateVector(mass, PARTICLE::Mass);
-  SetStateVector(specEnthalpyn, PARTICLE::SpecEnthalpy);
+  if(veln!=Teuchos::null)
+    SetStateVector(veln, PARTICLE::Vel);
+  if(mass!=Teuchos::null)
+    SetStateVector(mass, PARTICLE::Mass);
+  if(specEnthalpyn!=Teuchos::null)
+    SetStateVector(specEnthalpyn, PARTICLE::SpecEnthalpy);
 
   // set up the neighbours
   AddNewNeighbours(step);
@@ -341,6 +340,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
     Teuchos::RCP<const Epetra_Vector> pressure,
     Teuchos::RCP<Epetra_Vector> bpDoFs)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::Init");
+
   Init(step, disn, veln, radiusn, mass, specEnthalpyn, temperature, bpDoFs);
 
   // set the other state vectors
@@ -354,31 +356,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(Teuchos::RCP<Epetra_Vector> bpDoFs)
 {
-  // row to col vectors
-    // dof-based vectors
-  //Teuchos::RCP<Epetra_Vector> disnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-  //Teuchos::RCP<Epetra_Vector> velnCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-    // node-based vectors
-  //Teuchos::RCP<Epetra_Vector> radiusnCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  //Teuchos::RCP<Epetra_Vector> massCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  //Teuchos::RCP<Epetra_Vector> densitynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  //Teuchos::RCP<Epetra_Vector> specEnthalpynCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  //Teuchos::RCP<Epetra_Vector> pressureCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  //Teuchos::RCP<Epetra_Vector> temperatureCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  //Teuchos::RCP<Epetra_Vector> densityapproxCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-    // exports
-  //LINALG::Export(*disn ,*disnCol);
-  //LINALG::Export(*veln ,*velnCol);
-  //LINALG::Export(*radiusn ,*radiusnCol);
-  //LINALG::Export(*mass ,*massCol);
-  //LINALG::Export(*densityn ,*densitynCol);
-  //LINALG::Export(*specEnthalpyn ,*specEnthalpynCol);
-  //LINALG::Export(*pressure ,*pressureCol);
-  //LINALG::Export(*temperature ,*temperatureCol);
-  //LINALG::Export(*densityapproxn ,*densityapproxCol);
-
-
-
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles");
   const int numcolelements = discret_->NodeColMap()->NumMyElements();
 
   colParticles_.resize(numcolelements);
@@ -413,21 +391,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(Teuchos::RCP
         }
       }
     }
-
-    // dof-based vectors
-    //LINALG::Matrix<3,1> dis, vel;
-    //DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disnCol, dis, lm);
-    //DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velnCol, vel, lm);
-    // node-based vectors
-    //const double radius = (*radiusnCol)[lidNodeCol];
-    //const double mass = (*massCol)[lidNodeCol];
-    //const double density = (*densitynCol)[lidNodeCol];
-    //const double specEnthalpy = (*specEnthalpynCol)[lidNodeCol];
-    //const double pressure = (*pressureCol)[lidNodeCol];
-    //const double temperature = (*temperatureCol)[lidNodeCol];
-    //const double densityapprox = (*densityapproxCol)[lidNodeCol];
-    // set up the particles
-
 
     colParticles_[lidNodeCol] = ParticleMF(particle->Id(), particle->Owner(), lm, boundaryparticle);
     colFADParticles_[lidNodeCol] = Teuchos::rcp(new ParticleFAD(particle->Id()));
@@ -469,10 +432,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoundaryData(
     //For boundary particles, density and pressure are set to the initial values
     //Some modified definitions of pressure and density required for the calculation of the pressure gradient are calculated below
     particle_i->density_=initDensity_;
-    double deltadensity=initDensity_-refdensfac_*restDensity_;
 
     //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
-    particle_i->pressure_=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),deltadensity);
+    particle_i->pressure_=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),restDensity_,
+                                                            refdensfac_,initDensity_,particle_algorithm_->ExtParticleMat()->exponent_);
 
     //node ID equals particle ID id_i
     DRT::Node *node = discret_->gNode(id_i);
@@ -529,11 +492,13 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoundaryData(
       particle_i->boundarydata_.pressureMod_=pi;
 
       //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
-      double density_i=PARTICLE::Utils::Pressure2Density(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),restDensity_,refdensfac_,pi);
+      double density_i=PARTICLE::Utils::Pressure2Density(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),
+          restDensity_,refdensfac_,pi,particle_algorithm_->ExtParticleMat()->exponent_);
       particle_i->boundarydata_.densityMod_=density_i;
 
       //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
-      bpintergy+=PARTICLE::Utils::Density2Energy(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(), density_i, restDensity_, refdensfac_, particle_i->mass_);
+      bpintergy+=PARTICLE::Utils::Density2Energy(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),
+          density_i, restDensity_, refdensfac_, particle_i->mass_);
     }
     else
     {
@@ -606,122 +571,122 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Clear(const int step, const i
     }
   }
   #endif
-
 }
-
-
 
 /*----------------------------------------------------------------------*
  | set colVectors in the local data structs                katta 10/16  |
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector(Teuchos::RCP<const Epetra_Vector> stateVector, const PARTICLE::StateVectorType svt)
 {
-// checks
-if (stateVector == Teuchos::null)
-{
-  dserror("the state vector is empty");
-}
+  // checks
+  if (stateVector == Teuchos::null)
+  {
+    dserror("the state vector is empty");
+  }
 
-/// miraculous transformation into column vector... ///
-Teuchos::RCP<Epetra_Vector> stateVectorCol;
-switch (svt)
-{
-// dof based vectors
-case PARTICLE::Dis :
-case PARTICLE::Vel :
-case PARTICLE::ColorFieldGradient :
-case PARTICLE::mGradW :
-{
-  stateVectorCol = LINALG::CreateVector(*discret_->DofColMap(),false);
-  break;
-}
-// node based vectors
-default :
-{
-  stateVectorCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
-  break;
-}
-}
-LINALG::Export(*stateVector ,*stateVectorCol);
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector");
 
-// fill particleData_
-for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lidNodeCol)
-{
-  ParticleMF& data = colParticles_[lidNodeCol];
-
+  /// miraculous transformation into column vector... ///
+  Teuchos::RCP<Epetra_Vector> stateVectorCol;
   switch (svt)
   {
-  // dof based vectors
-  case PARTICLE::Dis :
-  {
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.dis_, data.lm_);
+    // dof based vectors
+    case PARTICLE::Dis :
+    case PARTICLE::Vel :
+    case PARTICLE::VelConv :
+    case PARTICLE::ColorFieldGradient :
+    case PARTICLE::mGradW :
+    {
+      stateVectorCol = LINALG::CreateVector(*discret_->DofColMap(),false);
+      break;
+    }
+    // node based vectors
+    default :
+    {
+      stateVectorCol = LINALG::CreateVector(*discret_->NodeColMap(),false);
+      break;
+    }
+  }
+  LINALG::Export(*stateVector ,*stateVectorCol);
 
-    break;
-  }
-  case PARTICLE::Vel :
+  // fill particleData_
+  for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lidNodeCol)
   {
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.vel_, data.lm_);
-    break;
+    ParticleMF& data = colParticles_[lidNodeCol];
+
+    switch (svt)
+    {
+      // dof based vectors
+      case PARTICLE::Dis :
+      {
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.dis_, data.lm_);
+
+        break;
+      }
+      case PARTICLE::Vel :
+      {
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.vel_, data.lm_);
+        break;
+      }
+      case PARTICLE::VelConv :
+      {
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.velConv_, data.lm_);
+        break;
+      }
+      case PARTICLE::ColorFieldGradient :
+      {
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.colorFieldGradient_, data.lm_);
+        trg_updatedColorFieldGradient_ = true;
+        break;
+      }
+      case PARTICLE::mGradW :
+      {
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.mGradW_, data.lm_);
+        break;
+      }
+      // node based vectors
+      case PARTICLE::Radius :
+      {
+        data.radius_ = (*stateVectorCol)[lidNodeCol];
+        break;
+      }
+      case PARTICLE::Density :
+      {
+        data.density_ = (*stateVectorCol)[lidNodeCol];
+        break;
+      }
+      case PARTICLE::DensityDot :
+      {
+        data.densityDot_ = (*stateVectorCol)[lidNodeCol];
+        break;
+      }
+      case PARTICLE::SpecEnthalpy :
+      {
+        data.specEnthalpy_ = (*stateVectorCol)[lidNodeCol];
+        break;
+      }
+      case PARTICLE::Mass :
+      {
+        data.mass_ = (*stateVectorCol)[lidNodeCol];
+        break;
+      }
+      case PARTICLE::Pressure :
+      {
+        data.pressure_ = (*stateVectorCol)[lidNodeCol];
+        break;
+      }
+      case PARTICLE::Temperature :
+      {
+        data.temperature_ = (*stateVectorCol)[lidNodeCol];
+        break;
+      }
+      default :
+      {
+        dserror("StateVector type unknown or wrong stateVector format inserted");
+        break;
+      }
+    }
   }
-  case PARTICLE::ColorFieldGradient :
-  {
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.colorFieldGradient_, data.lm_);
-    trg_updatedColorFieldGradient_ = true;
-    break;
-  }
-  case PARTICLE::mGradW :
-  {
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*stateVectorCol, data.mGradW_, data.lm_);
-    break;
-  }
-  // node based vectors
-  case PARTICLE::Radius :
-  {
-    data.radius_ = (*stateVectorCol)[lidNodeCol];
-    break;
-  }
-  case PARTICLE::Density :
-  {
-    data.density_ = (*stateVectorCol)[lidNodeCol];
-    break;
-  }
-  case PARTICLE::DensityDot :
-  {
-    data.densityDot_ = (*stateVectorCol)[lidNodeCol];
-    break;
-  }
-  case PARTICLE::SpecEnthalpy :
-  {
-    data.specEnthalpy_ = (*stateVectorCol)[lidNodeCol];
-    break;
-  }
-  case PARTICLE::Mass :
-  {
-    data.mass_ = (*stateVectorCol)[lidNodeCol];
-    break;
-  }
-  case PARTICLE::Pressure :
-  {
-    data.pressure_ = (*stateVectorCol)[lidNodeCol];
-    break;
-  }
-  case PARTICLE::Temperature :
-  {
-    data.temperature_ = (*stateVectorCol)[lidNodeCol];
-    break;
-  }
-  case PARTICLE::Alpha :
-  {
-    data.alpha_ = (*stateVectorCol)[lidNodeCol];
-    break;
-  }
-  default :
-  {
-    dserror("StateVector type unknown or wrong stateVector format inserted");
-    break;
-  }
-  }
-}
 }
 
 /*----------------------------------------------------------------------*
@@ -762,6 +727,9 @@ for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lid
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int step)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours");
+
   // resize the vectors
   const int numRowParticles = discret_->NodeRowMap()->NumMyElements();
   neighbours_p_.resize(numRowParticles);
@@ -778,7 +746,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
 
   //***********loop over the (real/fluid) particles (no superpositions)****************************************************************************************************************
   const int numrowparticles = discret_->NodeRowMap()->NumMyElements();
-
   for(int rowPar_i=0; rowPar_i<numrowparticles; ++rowPar_i)
   {
     // extract the particle
@@ -843,7 +810,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
       if(wallInteractionType_==INPAR::PARTICLE::Mirror or wallInteractionType_==INPAR::PARTICLE::InitParticle or wallInteractionType_==INPAR::PARTICLE::Custom)
         AddNewNeighbours_w(particle_i, neighboursLinf_w, step);
 
-      AddNewNeighbours_hs(particle_i, neighboursLinf_hs);
+      if(neighboursLinf_hs->size()!=0)
+        AddNewNeighbours_hs(particle_i, neighboursLinf_hs);
     }
   }
 
@@ -956,6 +924,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
     const std::list<DRT::Node*>& neighboursLinf_p,
     const int step)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p");
+
   // self-neighbours not allowed
   // insert the interaction only if meaningful
 
@@ -988,6 +958,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
 
       rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       const double rRelNorm2 = rRel_ij.Norm2();
+
+      //Only evaluate pairs that are close enough.
+      //TODO: In future applications (e.g. implicit time integration), where neighbors are not searched for every new configuration
+      //this criteron might be to stright!!!
+      if(rRelNorm2-std::max(particle_i.radius_,particle_j.radius_)>0)
+        continue;
 
       #ifdef PARTICLE_TENSILESAFETYFAC
         //Check that the particle distance does not become to small (danger of tensile instabilities).
@@ -1094,6 +1070,13 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_op(
 
       rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       rRelNorm2 = rRel_ij.Norm2();
+
+      //Only evaluate pairs that are close enough.
+      //TODO: In future applications (e.g. implicit time integration), where neighbors are not searched for every new configuration
+      //this criteron might be to stright!!!
+      if(rRelNorm2-std::max(particle_i.radius_,particle_j.radius_)>0)
+        continue;
+
       rRelVersor_ij.Update(1.0,rRel_ij,0.0);
       rRelVersor_ij.Scale(1/rRelNorm2);
 
@@ -1171,6 +1154,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_bp(
 
       rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       const double rRelNorm2 = rRel_ij.Norm2();
+
+      //Only evaluate pairs that are close enough.
+      //TODO: In future applications (e.g. implicit time integration), where neighbors are not searched for every new configuration
+      //this criteron might be to stright!!!
+      if(rRelNorm2-std::max(particle_i.radius_,particle_j.radius_)>0)
+        continue;
 
       #ifdef PARTICLE_TENSILESAFETYFAC
         //Check that the particle distance does not become to small (danger of tensile instabilities).
@@ -1463,7 +1452,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::ShiftPeriodicBoundaryPair(
 {
   //We dont want to have particles that can interact directly AND across the periodic boundary
   //(which would be possible in case of periodic_length_<4*particle_i.radius_)
-  if(periodic_length_<4.5*std::max(radius_1,radius_2))
+  if(periodic_length_<4.0*std::max(radius_1,radius_2))
     dserror("The length periodic_length_ of the periodic box has to be larger than four times the particle radius!");
 
   double x_coord_1=dis_1(0);
@@ -1890,6 +1879,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
     if(particle_i.boundarydata_.boundaryparticle_==true)
       continue;
 
+    double sumj_densityDotn_ij=0.0;
+
     // loop over the interaction particle list
     for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
     {
@@ -1907,9 +1898,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
       LINALG::Matrix<3,1> vRel_ij;
       vRel_ij.Update(1.0, particle_i.vel_, -1.0, particle_j.vel_);
 
-//      std::cout << "particle_i.gid: " << particle_i.gid_ << std::endl;
-//      std::cout << "particle_j.gid: " << particle_j.gid_ << std::endl;
-
       // write on particle i if appropriate specializing the quantities
       if (interData_ij.dw_ij_ != 0)
       {
@@ -1917,8 +1905,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
         LINALG::Matrix<3,1> gradW = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ij_);
         double densityDotn_ij = gradW.Dot(vRel_ij) * particle_j.mass_;
         densityDotn_ij *= extMulti;
-//        std::cout << "densityDotn_ij: " << densityDotn_ij << std::endl;
-        LINALG::Assemble(*densityDotn, densityDotn_ij, particle_i.gid_, particle_i.owner_);
+        sumj_densityDotn_ij+=densityDotn_ij;
       }
 
       // write on particle j if appropriate specializing the quantities
@@ -1929,11 +1916,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_densityDot(
         LINALG::Matrix<3,1> gradW = weightFunctionHandler_->GradW(interData_ij.rRelVersor_ij_, interData_ij.dw_ji_);
         double densityDotn_ji = gradW.Dot(vRel_ij) * particle_i.mass_;
         densityDotn_ji *= extMulti;
-//        std::cout << "densityDotn_ji: " << densityDotn_ji << std::endl;
         LINALG::Assemble(*densityDotn, densityDotn_ji, particle_j.gid_, particle_j.owner_);
       }
-    }
-  }
+    }//sum over j
+    //Assemble all contributions to particle i (we do this at once outside the j-loop since the assemble operation is expensive!)
+    LINALG::Assemble(*densityDotn, sumj_densityDotn_ij, particle_i.gid_, particle_i.owner_);
+  }//sum over i
 
   if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
     Inter_bpvp_densityDot(densityDotn);
@@ -1996,15 +1984,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_densityDot(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
     const Teuchos::RCP<Epetra_Vector> accn,
-    const double extMulti,
-    const bool clcPressure,
-    const double time)
+    const double extMulti)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc");
+
   //checks
   if (accn == Teuchos::null)
   {
     dserror("accn is empty");
   }
+
+  double damping_factor=DRT::Problem::Instance()->ParticleParams().get<double>("VISCOUS_DAMPING");
 
   // loop over the particles (no superpositions)
   for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
@@ -2019,7 +2010,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
       continue;
 
     //const double density_i = useDensityApprox ? particle_i.densityapprox_ : particle_i.density_;
-    const double density_i = particle_i.density_;
+    double density_i = particle_i.density_;
 
     // determine some useful quantities
     const double rhoSquare_i = std::pow(density_i,2);
@@ -2027,13 +2018,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
 
 
     //If required, add artificial viscous damping force in order to determine static equilibrium configurations
-    double damping_factor=DRT::Problem::Instance()->ParticleParams().get<double>("VISCOUS_DAMPING");
     if(damping_factor>0)
     {
       LINALG::Matrix<3,1> dampingforce(true);
       dampingforce.Update(-damping_factor/particle_i.mass_, particle_i.vel_);
       LINALG::Assemble(*accn, dampingforce, particle_i.lm_, particle_i.owner_);
     }
+
+    LINALG::Matrix<3,1> sumj_accn_ij(true);
 
     // loop over the interaction particle list
     for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
@@ -2048,7 +2040,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
         continue;
 
       //const double density_j = useDensityApprox ? particle_j.densityapprox_ : particle_j.density_;
-      const double density_j = particle_j.density_;
+      double density_j = particle_j.density_;
 
       // --- extract general data --- //
 
@@ -2060,25 +2052,23 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
       const double rho2 = density_i * density_j;
       const double rRelVersorDotVrel = rRelVersor_ij.Dot(vRel_ij);
 
-      LINALG::Matrix<3,1> momentum_ij;
+      LINALG::Matrix<3,1> momentum_ij(true);
         // pressure
       // compute the pressure term
       //(based on Monaghan2005, Eq(3.18); this expression differs from the variant in Espanol2003, Eq(22) in the general case m_i \neq m_j.
       //However, based on a similar derivation as in Espanol2003, Eq(18-22) it has been verified that also this variant can guarantee
       //for energy conservation of the dissipation-free, time-continous problem, if Monaghan2005, Eq(2.18) is applied for density integration [and not Eq(2.17)!])
-      if (clcPressure)
-      {
-        const double rhoSquare_j = std::pow(density_j,2);
-        const double gradP_Rho2 = (p_Rho2_i + particle_j.pressure_/rhoSquare_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
-          momentum_ij.Update(- gradP_Rho2, rRelVersor_ij, 1.0);
-      }
+      const double rhoSquare_j = std::pow(density_j,2);
+      const double gradP_Rho2 = (p_Rho2_i + particle_j.pressure_/rhoSquare_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
+        momentum_ij.Update(- gradP_Rho2, rRelVersor_ij, 1.0);
+
         // diffusion
       // The following two viscous terms are taken from Espanol2003, Eq(30) and re-expressed in terms of mass densities in an equivalent manner.
       // This is necessary since Espanol2003 only specifies the case m_i=m_j=m.
       const double dC_rho2rRelNorm2 = diffusionCoeff_ / (rho2 * rRelNorm2);
       momentum_ij.Update(dC_rho2rRelNorm2, vRel_ij, 1.0);
       // convection
-      const double cCrRelVersorDotVrel_rho2rRelNorm2 = convectionCoeff_ * rRelVersorDotVrel / (rho2 * rRelNorm2);
+      const double cCrRelVersorDotVrel_rho2rRelNorm2 =  convectionCoeff_ * rRelVersorDotVrel / (rho2 * rRelNorm2);
       momentum_ij.Update(cCrRelVersorDotVrel_rho2rRelNorm2, rRelVersor_ij, 1.0);
 
       // write on particle i if appropriate specializing the quantities
@@ -2090,7 +2080,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
         LINALG::Matrix<3,1> accn_ij;
         accn_ij.Update(generalCoeff_ij, momentum_ij);
         accn_ij.Scale(extMulti);
-        LINALG::Assemble(*accn, accn_ij, particle_i.lm_, particle_i.owner_);
+        sumj_accn_ij.Update(1.0,accn_ij,1.0);
       }
 
       // write on particle j if appropriate specializing the quantities
@@ -2104,11 +2094,13 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
         accn_ji.Scale(-extMulti); // actio = - reactio
         LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
       }
-    }
-  }
+    }//sum over j
+    //Assemble all contributions to particle i (we do this at once outside the j-loop since the assemble operation is expensive!)
+    LINALG::Assemble(*accn, sumj_accn_ij, particle_i.lm_, particle_i.owner_);
+  }//sum over i
 
   if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
-    Inter_bpvp_acc(accn,extMulti,clcPressure);
+    Inter_bpvp_acc(accn,extMulti);
 
 }
 
@@ -2118,8 +2110,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
     const Teuchos::RCP<Epetra_Vector> accn,
-    const double extMulti,
-    const bool clcPressure)
+    const double extMulti)
 {
   //checks
   if (accn == Teuchos::null)
@@ -2161,7 +2152,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
       //            Everything else is similar to Inter_bpvp_acc(), but with modified boundary particle pressurs and velocities.
 
       //fluid particle density;
-      const double density_j = particle_j.density_;
+      double density_j = particle_j.density_;
 
       // --- extract general data --- //
 
@@ -2176,13 +2167,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
       //(based on Monaghan2005, Eq(3.8); this expression differs from the variant in Espanol2003, Eq(22) in the general case m_i \neq m_j.
       //However, based on a similar derivation as in Espanol2003, Eq(18-22) it has been verified that also this variant can guarantee
       //for energy conservation of the dissipation-free, time-continous problem, if Monaghan2005, Eq(2.18) is applied for density integration [and not Eq(2.17)!])
-      if (clcPressure)
-      {
-
-        const double rhoSquare_j = std::pow(density_j,2);
-        const double gradP_Rho2 = (p_Rho2_i + particle_j.pressure_/rhoSquare_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
-        momentum_ij.Update(- gradP_Rho2, rRelVersor_ij, 1.0);
-      }
+      const double rhoSquare_j = std::pow(density_j,2);
+      const double gradP_Rho2 = (p_Rho2_i + particle_j.pressure_/rhoSquare_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
+      momentum_ij.Update(- gradP_Rho2, rRelVersor_ij, 1.0);
 
       //Viscous interaction with boundary particles is only required in case of a no-slip boundary condition!
       if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip)
@@ -2213,6 +2200,84 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
       }
     }
   }
+}
+
+/*-----------------------------------------------------------------------------------------*
+ | evaluate modified acceleration due to constant background pressure - pvp   meier 05/17  |
+ *-----------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_modacc(
+    const Teuchos::RCP<Epetra_Vector> accmod,
+    const double extMulti)
+{
+
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc");
+
+  //This method still has to be filled!
+
+}
+
+/*----------------------------------------------------------------------*
+ | Computes Laplace operator for vector v - pvp            meier 03/17  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_Laplace_x(
+    const ParticleMF& particle_j,
+    const InterDataPvP& interData_ij,
+    const LINALG::Matrix<3,1>& x_ij,
+    LINALG::Matrix<3,1>& Laplace_x_ij)
+{
+  //This method determines the contribution of the particle pair i and j to the Laplace operator applied to an arbitrary
+  //vector x according to Espanol2003 Eq. (28, first line). This formula is valid independent from the spatial dimension (1D, 2D or 3D).
+
+  Laplace_x_ij=x_ij;
+  double F_ij=interData_ij.dw_ij_/interData_ij.rRelNorm2_;
+  double d_j=particle_j.density_/particle_j.mass_;
+  Laplace_x_ij.Scale(-2.0*F_ij/d_j);
+}
+
+/*-----------------------------------------------------------------------------*
+ | Computes Gradient of divergence operator for vector v - pvp    meier 03/17  |
+ *-----------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_GradDiv_x(
+    const ParticleMF& particle_j,
+    const InterDataPvP& interData_ij,
+    const LINALG::Matrix<3,1>& x_ij,
+    LINALG::Matrix<3,1>& GradDiv_x_ij)
+{
+  //This method determines the contribution of the particle pair i and j to the Laplace operator applied to an arbitrary
+  //vector x according to Espanol2003 Eq. (28, second line). In this reference, the formula is only stated for the 3D
+  //case. By conducting the derivation in Appendix A for the 2D as well as for the 1D case, it can be shown that in these
+  //cases the original coefficient 5 (3D) has to be set to 4 (2D) or 3 (1D), respectively.
+
+  double dim_fac=0.0;
+  switch (WF_DIM_)
+  {
+    case INPAR::PARTICLE::WF_3D :
+    {
+      dim_fac=5.0;
+      break;
+    }
+    case INPAR::PARTICLE::WF_2D :
+    {
+      dim_fac=4.0;
+      break;
+    }
+    case INPAR::PARTICLE::WF_1D :
+    {
+      dim_fac=3.0;
+      break;
+    }
+    default :
+    {
+      dserror("Only the problem dimensions 1, 2 and 3 are possible!");
+    }
+  }
+
+  double eij_dot_xij=x_ij.Dot(interData_ij.rRelVersor_ij_);
+  double F_ij=interData_ij.dw_ij_/interData_ij.rRelNorm2_;
+  double d_j=particle_j.density_/particle_j.mass_;
+  GradDiv_x_ij.Update(-1.0,x_ij,0.0);
+  GradDiv_x_ij.Update(dim_fac*eij_dot_xij,interData_ij.rRelVersor_ij_,1.0);
+  GradDiv_x_ij.Scale(-F_ij/d_j);
 }
 
 /*----------------------------------------------------------------------*
@@ -2412,150 +2477,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_surfaceTensionCFG(
       LINALG::Matrix<3,1> acc_ji;
       acc_ji.Update(-1.0, acc_ij); // actio = - reaction
       LINALG::Assemble(*accn, acc_ji, particle_j.lm_, particle_j.owner_);
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- | evaluate divergence free pressures - pvp                katta 01/17  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_divFreePressureAcc(
-    const Teuchos::RCP<Epetra_Vector> divFreePressureAcc,
-    const double dt,
-    const double extMulti)
-{
-  //checks
-  if (divFreePressureAcc == Teuchos::null)
-  {
-    dserror("divFreePressureAcc is empty");
-  }
-
-  // loop over the particles (no superpositions)
-  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
-  {
-    // determine the particle_i
-    const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
-    const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
-    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
-
-    // determine some useful quantities
-    const double kv_rho_i = particle_i.densityDot_ * particle_i.alpha_ / (particle_i.density_ * dt);
-
-    // loop over the interaction particle list
-    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
-    {
-      // extract data for faster access
-      const int& lidNodeCol_j = jj->first;
-      const InterDataPvP& interData_ij = jj->second;
-      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
-      const double density_j = particle_j.density_;
-
-      // --- extract general data --- //
-
-      LINALG::Matrix<3,1> rRelVersor_ij(interData_ij.rRelVersor_ij_);
-      const double kv_rho_j = particle_j.densityDot_ * particle_j.alpha_ / (density_j * dt);
-
-      const double kv_rho = - (kv_rho_i + kv_rho_j);
-      LINALG::Matrix<3,1> momentum_ij;
-      momentum_ij.Update(kv_rho,rRelVersor_ij);
-
-      // write on particle i if appropriate specializing the quantities
-      if (interData_ij.dw_ij_ != 0)
-      {
-        // construct the specific ij coeff
-        const double generalCoeff_ij = interData_ij.dw_ij_ * particle_j.mass_;
-        // assemble and write
-        LINALG::Matrix<3,1> accn_ij;
-        accn_ij.Update(generalCoeff_ij, momentum_ij);
-        accn_ij.Scale(extMulti);
-        LINALG::Assemble(*divFreePressureAcc, accn_ij, particle_i.lm_, particle_i.owner_);
-      }
-
-      // write on particle j if appropriate specializing the quantities
-      if (interData_ij.dw_ji_ != 0)
-      {
-        // construct the specific ji coeff
-        const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
-        // assemble and write
-        LINALG::Matrix<3,1> accn_ji;
-        accn_ji.Update(generalCoeff_ji, momentum_ij);
-        accn_ji.Scale(-extMulti); // actio = - reactio
-        LINALG::Assemble(*divFreePressureAcc, accn_ji, particle_j.lm_, particle_j.owner_);
-      }
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- | evaluate constant-density pressures - pvp               katta 01/17  |
- *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_constDensityPressureAcc(
-    const Teuchos::RCP<Epetra_Vector> constDensityPressureAcc,
-    const double dt,
-    const double extMulti)
-{
-  //checks
-  if (constDensityPressureAcc == Teuchos::null)
-  {
-    dserror("constDensityPressureAcc is empty");
-  }
-
-  // loop over the particles (no superpositions)
-  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
-  {
-    // determine the particle_i
-    const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
-    const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
-    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
-
-    // determine some useful quantities
-    //TODO: restDensity=
-    const double k_rho_i = (particle_i.density_ - restDensity_) * particle_i.alpha_ / (particle_i.density_ * dt * dt);
-
-    // loop over the interaction particle list
-    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
-    {
-      // extract data for faster access
-      const int& lidNodeCol_j = jj->first;
-      const InterDataPvP& interData_ij = jj->second;
-      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
-      const double density_j = particle_j.density_;
-
-      // --- extract general data --- //
-
-      LINALG::Matrix<3,1> rRelVersor_ij(interData_ij.rRelVersor_ij_);
-      //TODO: restDensity=
-      const double k_rho_j = (density_j - restDensity_) * particle_j.alpha_ / (density_j * dt * dt);
-
-      const double kv_rho = - (k_rho_i + k_rho_j);
-      LINALG::Matrix<3,1> momentum_ij;
-      momentum_ij.Update(kv_rho,rRelVersor_ij);
-
-      // write on particle i if appropriate specializing the quantities
-      if (interData_ij.dw_ij_ != 0)
-      {
-        // construct the specific ij coeff
-        const double generalCoeff_ij = interData_ij.dw_ij_ * particle_j.mass_;
-        // assemble and write
-        LINALG::Matrix<3,1> accn_ij;
-        accn_ij.Update(generalCoeff_ij, momentum_ij);
-        accn_ij.Scale(extMulti);
-        LINALG::Assemble(*constDensityPressureAcc, accn_ij, particle_i.lm_, particle_i.owner_);
-      }
-
-      // write on particle j if appropriate specializing the quantities
-      if (interData_ij.dw_ji_ != 0)
-      {
-        // construct the specific ji coeff
-        const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
-        // assemble and write
-        LINALG::Matrix<3,1> accn_ji;
-        accn_ji.Update(generalCoeff_ji, momentum_ij);
-        accn_ji.Scale(-extMulti); // actio = - reactio
-        LINALG::Assemble(*constDensityPressureAcc, accn_ji, particle_j.lm_, particle_j.owner_);
-      }
     }
   }
 }
@@ -3255,87 +3176,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvw_gradAccPapproxOnlyH
   }
 }
 
-
-/*--------------------------------------------------------------------------*
- | compute density - mesh free style                           katta 01/17  |
- *--------------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::MF_alpha()
-{
-
-  //TODO: @katta: What is alpha, where is it required, on which paper / formulas is it based???
-
-  // create the buffer vectors in row mode
-  // final alpha vector
-  Teuchos::RCP<Epetra_Vector> alpha = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-  // buffer vector to compute | \Sum m grad(W) | ^2
-  Teuchos::RCP<Epetra_Vector> alphaDof = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
-
-  // loop over the particles (no superpositions)
-  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
-  {
-    // determine the particle_i
-    const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
-    const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
-    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
-
-    // loop over the interaction particle list
-    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
-    {
-      // extract data for faster access
-      const int& lidNodeCol_j = jj->first;
-      const InterDataPvP& interData_ij = jj->second;
-      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
-
-      LINALG::Matrix<3,1> rRelVersor_ij(interData_ij.rRelVersor_ij_);
-
-      // write on particle i if appropriate specializing the quantities
-      if (interData_ij.dw_ij_ != 0)
-      {
-        // construct the specific ij coeff
-         const double generalCoeff_ij = interData_ij.dw_ij_ * particle_j.mass_;
-         // assemble and write dof
-         LINALG::Matrix<3,1> alphaDof_ij;
-         alphaDof_ij.Update(generalCoeff_ij, rRelVersor_ij);
-         LINALG::Assemble(*alphaDof, alphaDof_ij, particle_i.lm_, particle_i.owner_);
-        // assemble and write node
-        double alpha_ij = alphaDof_ij.Dot(alphaDof_ij);
-        LINALG::Assemble(*alpha, alpha_ij, particle_i.gid_, particle_i.owner_);
-      }
-
-      // write on particle j if appropriate specializing the quantities
-      if (interData_ij.dw_ji_ != 0)
-      {
-        // construct the specific ij coeff
-         const double generalCoeff_ji = interData_ij.dw_ji_ * particle_i.mass_;
-         // assemble and write dof
-         LINALG::Matrix<3,1> alphaDof_ji;
-         alphaDof_ji.Update(-generalCoeff_ji, rRelVersor_ij); // actio = - reactio
-         LINALG::Assemble(*alphaDof, alphaDof_ji, particle_i.lm_, particle_i.owner_);
-        // assemble and write node
-        double alpha_ji = alphaDof_ji.Dot(alphaDof_ji);
-        LINALG::Assemble(*alpha, alpha_ji, particle_i.gid_, particle_i.owner_);
-      }
-    }
-  }
-
-  // compute and insert | \Sum m grad(W) | ^2 into alpha
-  for (int ii = 0; ii < alpha->MyLength(); ++ii)
-  {
-    for (int jj = 0; jj < 3 ; ++jj)
-    {
-      (*alpha)[ii] += (*alphaDof)[3*ii + jj] * (*alphaDof)[3*ii + jj];
-
-      if ((*alpha)[ii] < alphaMin_)
-      {
-        (*alpha)[ii] = alphaMin_;
-      }
-    }
-  }
-
-  // update the local ColParticles
-  SetStateVector(alpha, PARTICLE::Alpha);
-}
-
 /*--------------------------------------------------------------------------*
  | compute \sum m * W (usually the density) - mesh free style  katta 01/17  |
  *--------------------------------------------------------------------------*/
@@ -3344,6 +3184,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
     const bool withWalls,
     const double extMulti)
 {
+
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW");
+
   //checks
   if (mW == Teuchos::null)
   {
@@ -3370,6 +3213,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
     mW_ii *= extMulti;
     LINALG::Assemble(*mW, mW_ii, particle_i.gid_, particle_i.owner_);
 
+    double sumj_mW_ij=0.0;
+
     // loop over the interaction particle list
     for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
     {
@@ -3389,7 +3234,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
         double mW_ij = interData_ij.w_ij_ * particle_j.mass_;
         mW_ij *= extMulti;
 
-        LINALG::Assemble(*mW, mW_ij, particle_i.gid_, particle_i.owner_);
+        sumj_mW_ij+=mW_ij;
       }
 
       // write on particle j if appropriate specializing the quantities
@@ -3400,8 +3245,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_mW(
         mW_ji *= extMulti;
         LINALG::Assemble(*mW, mW_ji, particle_j.gid_, particle_j.owner_);
       }
-    }
-  }
+    }//loop over j
+    //Assemble all contributions to particle i (we do this at once outside the j-loop since the assemble operation is expensive!)
+    LINALG::Assemble(*mW, sumj_mW_ij, particle_i.gid_, particle_i.owner_);
+  }//loop over i
 
   // include the walls
   if (withWalls)
@@ -3524,7 +3371,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_DeltaP(
 
     //Caution: This method intends to calculate the pressure difference with respect to the rest pressure=c_0^2restDensity_
     //Consequently, this is the only spot where we use NO factor refdensfac_ in the calculation of deltadensity!!!
-    double deltadensity=0.0;
     double pressure_diff=0.0;
 
     //Boundary particles are considered separately
@@ -3535,18 +3381,16 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::MF_DeltaP(
         pressure_diff=-1000;
       else
       {
-        deltadensity=particle_i.boundarydata_.densityMod_-restDensity_;
-
         //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
-        pressure_diff=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),deltadensity);
+        pressure_diff=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),restDensity_,1.0,
+                                                        particle_i.boundarydata_.densityMod_,particle_algorithm_->ExtParticleMat()->exponent_);
       }
     }
     else
     {
-      deltadensity=particle_i.density_-restDensity_;
-
       //TODO: So far, boundary particles are only considered in the context of fluid problems (use of SpeedOfSoundL())!
-      pressure_diff=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),deltadensity);
+      pressure_diff=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),restDensity_,1.0,
+                                                      particle_i.density_,particle_algorithm_->ExtParticleMat()->exponent_);
     }
 
     LINALG::Assemble(*PressureDiff, pressure_diff, particle_i.gid_, particle_i.owner_);
@@ -3835,8 +3679,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP_consistent
       const double density_i=particle_i.density_;
       const double density_j=particle_j.density_;
       const double sos=particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
-      const double p_i=PARTICLE::Utils::Density2Pressure(sos,density_i-refdensfac_*restDensity_);
-      const double p_j=PARTICLE::Utils::Density2Pressure(sos,density_j-refdensfac_*restDensity_);
+      const double p_i=PARTICLE::Utils::Density2Pressure(sos,restDensity_,refdensfac_,density_i,particle_algorithm_->ExtParticleMat()->exponent_);
+      const double p_j=PARTICLE::Utils::Density2Pressure(sos,restDensity_,refdensfac_,density_j,particle_algorithm_->ExtParticleMat()->exponent_);
       const double density_i_2=density_i*density_i;
       const double density_j_2=density_j*density_j;
       const double gradP_Rho2=p_i/(density_i*density_i)+p_j/(density_j*density_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
@@ -4054,8 +3898,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_gradAccP_FAD(
         // Compute pressures and densities
         const FAD density_i=FADparticle_i->density_;
         const FAD density_j=FADparticle_j->density_;
-        const FAD p_i=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),density_i-refdensfac_*restDensity_);
-        const FAD p_j=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),density_j-refdensfac_*restDensity_);
+        const FAD p_i=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),
+            restDensity_,refdensfac_,density_i,particle_algorithm_->ExtParticleMat()->exponent_);
+        const FAD p_j=PARTICLE::Utils::Density2Pressure(particle_algorithm_->ExtParticleMat()->SpeedOfSoundL(),
+            restDensity_,refdensfac_,density_j,particle_algorithm_->ExtParticleMat()->exponent_);
         const FAD gradP_Rho2=p_i/(density_i*density_i)+p_j/(density_j*density_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
 
         // create interaction data on the fly (efficiency not important for FAD debugging tool...)

@@ -28,6 +28,7 @@
 #include "particle_heatSource.H"
 
 #include "../drt_io/io_control.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -55,7 +56,6 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
 /* mostly init of collision handling  */
 void PARTICLE::TimIntCentrDiff::Init()
 {
-
   // call base class init
   PARTICLE::TimIntExpl::Init();
 
@@ -149,7 +149,7 @@ void PARTICLE::TimIntCentrDiff::Init()
     v_max_thermo = std::max(v_max_thermo,2*(PARTICLE::Utils::Volume2Radius(volume) - r_max));
 
     if (v_max_thermo > 0.01 * v_max)
-      dserror("WARNING! The expansion speed of the particle radii is bigger that 1\% of MAX_VELOCITY. Dismembered particles can explode");
+      dserror("The expansion speed of the particle radii is bigger than 1 percent of MAX_VELOCITY. Dismembered particles can explode");
   }
 
   /////////////
@@ -167,20 +167,41 @@ void PARTICLE::TimIntCentrDiff::Init()
 int PARTICLE::TimIntCentrDiff::IntegrateStep()
 {
 
+
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::TimIntCentrDiff::IntegrateStep");
+
+  //Velocity-Verlet scheme,
+  //see e.g. Adami2012, Eqs. (14)-(18)
+  //Compared to Adami2012, which has been applied to SPH problems, the displacement updates Eq.(15)+(17) are done at once,
+  //since in our scheme the density update Eq. (16) (only required for SPH) is performed on the basis of the end point displacements.
+  //This variant of density update via time integration seems to work in practice. However, if the optimal temporal convergence
+  //rate is preserved has still to be verified. It has also been observed that this variant yields slightly smaller time step sizes
+  //in order to fullfil the CFL condition as compared to density summation.
+  //In case of density calculation via summation formula or non-SPH applications this issue does not arise.
+  /*
+  v_{n+1/2}=v_{n}+dt/2*a_{n}                                with              a_{n}=a(r_{n},v_{n-1/2})
+  r_{n+1}=r_{n}+dt*v_{n+1/2}
+  v_{n+1}=v_{n+1/2}+dt/2*a_{n+1}                            with              a_{n+1}=a(r_{n+1},v_{n+1/2})
+  Additionally, in case of SPH with density calculation via time integration:
+  \rho_{n+1}=\rho_{n}+dt*\dot{\rho}_{n+1}                   with              \dot{\rho}_{n+1}=\dot{\rho}(r_{n+1},v_{n+1/2})
+  */
+
   const double dt = (*dt_)[0];   // \f$\Delta t_{n}\f$
   const double dthalf = dt/2.0;  // \f$\Delta t_{n+1/2}\f$
 
-  // new velocities \f$V_{n+1/2}\f$
-  //TODO Meier: check, if the "postponed" subtraction of the accn_ term causes problems for SPH
+  // new velocities v_{n+1/2}=v_{n}+dt/2*a_{n}
   // In DEM, this procedure is known to reduce the temporal convergence order if velocity-proportional damping terms exist.
   veln_->Update(dthalf, *(*acc_)(0), 1.0);
 
-  // new displacements \f$D_{n+1}\f$
+  // new displacements r_{n+1}=r_{n}+dt*v_{n+1/2}
   disn_->Update(dt, *veln_, 1.0);
 
   // apply Dirichlet BCs
-  ApplyDirichletBC(timen_, disn_, Teuchos::null, Teuchos::null, false);
+  ApplyDirichletBC(timen_, disn_, Teuchos::null, accn_, false);
   ApplyDirichletBC(timen_-dthalf, Teuchos::null, veln_, Teuchos::null, false);
+
+  //Transfer particles and heat sources into their correct bins
+  particle_algorithm_->UpdateConnectivity();
 
   // define vector for contact force and moment
   Teuchos::RCP<Epetra_Vector> f_contact = Teuchos::null;
@@ -206,24 +227,12 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     {
       collhandler_->Init(disn_, veln_, angVeln_, (*radius_)(0), mass_);
     }
-
     intergy_ = collhandler_->EvaluateParticleContact(dt, f_contact, m_contact, specEnthalpyDotn_, f_structure_);
   }
   //--------------------------------------------------------------
 
   if (interHandler_ != Teuchos::null)
   {
-
-    //In case of periodic boundary conditions, the connectivity (assigmenment of particles to bins etc.) has to be updated
-    //in every time step and directly after the displacement update.
-    if(particle_algorithm_->BinStrategy()->HavePBC()==true)
-    {
-      particle_algorithm_->TransferParticles(true);
-      particle_algorithm_->UpdateHeatSourcesConnectivity(false);
-    }
-
-    // the density update scheme is equal to the acceleration update scheme. It can change at your will
-
     interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_,bpDoFs_);
     const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
 
@@ -237,38 +246,33 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
 
       //Determine also the new pressure and set state vectors for the new density and pressure
       interHandler_->SetStateVector(densityn_, PARTICLE::Density);
-      Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-      deltaDensity->PutScalar(refdensfac_*restDensity_);
-      deltaDensity->Update(1.0,*densityn_,-1.0);
       bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-      PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+      PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
       interHandler_->SetStateVector(pressure_, PARTICLE::Pressure);
     }
 
-    // Accelerations at Dirichlet DoFs are required for boundary particles
-    // TODO Meier: Check if here really acc(t_{n+1}) or rather acc(t_{n+0.5}) is required?
-    ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_,  false);
     // asign accelerations, modified pressures and modified velocities for boundary particles and calculate their mechancial energy contribution
     if(wallInteractionType==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType==INPAR::PARTICLE::BoundarParticle_FreeSlip)
     {
-      interHandler_->InitBoundaryData(accn_,particle_algorithm_->GetGravityAcc(),bpintergy_);
+      interHandler_->InitBoundaryData(accn_,particle_algorithm_->GetGravityAcc(timen_),bpintergy_);
     }
 
     if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
     {
       // Determine time derivative of density in case integration formula is used
       interHandler_->Inter_pvp_densityDot(densityDotn_);
-      if(wallInteractionType!=INPAR::PARTICLE::Mirror or wallInteractionType!=INPAR::PARTICLE::Custom or wallInteractionType!=INPAR::PARTICLE::InitParticle)
+
+      if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::Custom or wallInteractionType==INPAR::PARTICLE::InitParticle)
         interHandler_->Inter_pvw_densityDot(densityDotn_);
     }
 
-    // F_ext - gravity
-    GravityAcc(accn_, 1.0);
+    //Acceleration contributions due to gravity forces
+    accn_->PutScalar(0.0);
+    GravityAcc(accn_,1.0,timen_);
+    // Acceleration contributions due to internal forces
+    interHandler_->Inter_pvp_acc(accn_,1.0);
 
-    // Acceleration contributiolns due to internal forces
-    interHandler_->Inter_pvp_acc(accn_,1.0,true,timen_);
-
-    if(wallInteractionType!=INPAR::PARTICLE::Mirror or wallInteractionType!=INPAR::PARTICLE::Custom or wallInteractionType!=INPAR::PARTICLE::InitParticle)
+    if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::Custom or wallInteractionType==INPAR::PARTICLE::InitParticle)
       interHandler_->Inter_pvw_acc(accn_);
 
     // heat balance
@@ -298,7 +302,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
 
   //--- update with the new accelerations ---//
 
-  // update of end-velocities \f$V_{n+1}\f$
+  // update of end-velocities v_{n+1}=v_{n+1/2}+dt/2*a_{n+1}
   veln_->Update(dthalf, *accn_, 1.0);
 
   switch (particle_algorithm_->ParticleInteractionType())
@@ -308,7 +312,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     //Density update in case integration formula is used
     if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION")==false)
     {
-      //Explicit Euler for Density
+      // update of end-densities \rho_{n+1}=\rho_{n}+dt*\dot{\rho}_{n+1}
       densityn_->Update(dt, *densityDotn_, 1.0);
     }
 
@@ -378,10 +382,7 @@ void PARTICLE::TimIntCentrDiff::ReadRestartState()
 
   if (particle_algorithm_->ParticleInteractionType() == INPAR::PARTICLE::MeshFree)
   {
-    Teuchos::RCP<Epetra_Vector> deltaDensity = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    deltaDensity->PutScalar(refdensfac_*restDensity_);
-    deltaDensity->Update(1.0,*densityn_,-1.0);
     bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
-    PARTICLE::Utils::Density2Pressure(deltaDensity,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
+    PARTICLE::Utils::Density2Pressure(restDensity_,refdensfac_,densityn_,specEnthalpyn_,pressure_,particle_algorithm_->ExtParticleMat(),true,solve_thermal_problem);
   }
 }

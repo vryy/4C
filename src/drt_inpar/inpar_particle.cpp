@@ -35,16 +35,16 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                 tuple<std::string>(
                                   "ExplicitEuler",
                                   "CentrDiff",
+                                  "KickDrift",
                                   "RK2",
                                   "RK4",
-                                  "HybridMeshFreeDivFree",
                                   "GenAlpha"),
                                 tuple<int>(
                                   INPAR::PARTICLE::dyna_expleuler,
                                   INPAR::PARTICLE::dyna_centrdiff,
+                                  INPAR::PARTICLE::dyna_kickdrift,
                                   INPAR::PARTICLE::dyna_rk2,
                                   INPAR::PARTICLE::dyna_rk4,
-                                  INPAR::PARTICLE::dyna_hybridMeshFreeDivFree,
                                   INPAR::PARTICLE::dyna_genAlpha
                                 ),
                                 &particledyn);
@@ -136,11 +136,13 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                "weight function for meshFree interaction dynamics",
                                tuple<std::string>(
                                  "CubicBspline",
+                                 "QuinticBspline",
                                  "SqrtHyperbola",
                                  "HyperbolaNoRsz"
                                  ),
                                tuple<int>(
                                  INPAR::PARTICLE::CubicBspline,
+                                 INPAR::PARTICLE::QuinticBspline,
                                  INPAR::PARTICLE::SqrtHyperbola,
                                  INPAR::PARTICLE::HyperbolaNoRsz
                                  ),
@@ -186,10 +188,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("ERROR_TOLL",1e-6,"tolerance of the error for implicit schemes",&particledyn);
    IntParameter("ITER_MAX",10,"maximum iteration per time step for implicit schemes",&particledyn);
    DoubleParameter("ALPHA_MIN",1e-6,"cap of the alpha parameter for the divergence free scheme for meshfree",&particledyn);
-   DoubleParameter("CORRECT_DIVERGENCE_TOLL",1e-6,"tolerance for the iterative divergence corrector, divFree integration scheme, meshFree interaction",&particledyn);
-   IntParameter("CORRECT_DIVERGENCE_ITER",10,"iterations for the iterative divergence corrector, divFree integration scheme, meshFree interaction",&particledyn);
-   DoubleParameter("CORRECT_DENSITY_TOLL",1e-6,"tolerance for the iterative density corrector, divFree integration scheme, meshFree interaction",&particledyn);
-   IntParameter("CORRECT_DENSITY_ITER",10,"iterations for the iterative density corrector, divFree integration scheme, meshFree interaction",&particledyn);
    DoubleParameter("WALL_FAKE_DENSITY",-1.0,"fake density for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
    DoubleParameter("WALL_FAKE_MASS",-1.0,"fake mass of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
    DoubleParameter("WALL_FAKE_PRESSURE",-1.0,"fake pressure of the wall element for meshfree dynamics, in case of -1 the coefficients are extracted from the initial values of the particle material parameters",&particledyn);
@@ -239,6 +237,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
                              "Acceleration due to gravity in particle simulations.",
                              &particledyn);
+   DoubleParameter("GRAVITY_RAMP_TIME",-1.0,"increase gravity force smoothly within a time interval GRAVITY_RAMP_TIME in the beginning of the simulation",&particledyn);
+   DoubleParameter("BACKGROUND_PRESSURE",-1.0,"constant background pressure employed for modified particle convection velocity/acceleration in KickDrift time integrator (SPH only)",&particledyn);
 
    setStringToIntegralParameter<int>("DIMENSION","3D",
                                 "number of space dimensions for handling of quasi-2D problems with 3D particles",

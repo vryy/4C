@@ -283,8 +283,9 @@ void PASI::PartitionedAlgo::ParticleOutput()
   // calculate all output quantities
   particles_->AdapterParticle()->PrepareOutput();
 
+  //TODO: Sebastian
   // update particle connectivity
-  particles_->UpdateConnectivity();
+  // particles_->UpdateConnectivity();
 
   // update all single field solvers
   particles_->AdapterParticle()->Update();

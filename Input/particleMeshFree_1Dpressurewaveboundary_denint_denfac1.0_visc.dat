@@ -8,7 +8,7 @@
 ---------------------------------------------------------------------------TITLE
 1D test case for Particle Meshfree Interaction (SPH): 1D wave propagation (WF_1D) with initial velocity field,
 fixed boundary particles according to Adami et al. 2012 (wave reflection, no slip condition), density integration, viscous forces,
-equation of state p=c_0^2(\rho-REFDENSFAC*\rho_0) with REFDENSFAC=1, particle mass consistently determined via problem volume and density
+equation of state with REFDENSFAC=1, particle mass consistently determined via problem volume and density
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      MeshFree
 SHAPEFCT                        Meshfree
@@ -357,7 +357,9 @@ COMPONENT 1FUNCTION 0.0
 // initial velocity (z component)
 COMPONENT 2FUNCTION 0.0
 -------------------------------------------------------------------MATERIALS
-MAT 2 MAT_ExtParticle DENSITY 1.0 RESTDENSITY 1.0 REFDENSFAC 1.0 INITRADIUS 0.015 DISMEMBER_RADIUS 0 NUE 0 YOUNG 0 INITTEMPERATURE 0 CPS 0 CPL 0 LATENT_HEAT 0 TRANSITION_TEMPERATURE 0 THERMAL_EXPANSION_S 0 THERMAL_EXPANSION_L 0 THERMAL_EXPANSION_T 0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0.00005 BULK_VISCOSITY 0.000025 THERMAL_CONDUCTIVITY 0 SURFACE_VOID_TENSION 0 SURFACE_WALL_TENSION 0
+MAT 2 MAT_ExtParticle DENSITY 1.0 RESTDENSITY 1.0 REFDENSFAC 1.0 EXPONENT 1.0 INITRADIUS 0.015 DISMEMBER_RADIUS 0 NUE 0 YOUNG 0 INITTEMPERATURE 0 CPS 0 CPL 0 LATENT_HEAT 0 TRANSITION_TEMPERATURE 0 THERMAL_EXPANSION_S 0 THERMAL_EXPANSION_L 0 THERMAL_EXPANSION_T 0 BULK_MODULUS 0.01 DYNAMIC_VISCOSITY 0.00005 BULK_VISCOSITY 0.000025 THERMAL_CONDUCTIVITY 0 SURFACE_VOID_TENSION 0 SURFACE_WALL_TENSION 0
 ----------------------------------------------------------RESULT DESCRIPTION
-PARTICLE DIS particle NODE 37 QUANTITY velx VALUE -1.11774988996871558e-04 TOLERANCE 1.0e-10
+//Old result due to error in second derivative occuring in viscosity terms
+//PARTICLE DIS particle NODE 37 QUANTITY velx VALUE -1.11774988996871558e-04 TOLERANCE 1.0e-10
+PARTICLE DIS particle NODE 37 QUANTITY velx VALUE -1.27213020510670626e-04 TOLERANCE 1.0e-10
 -------------------------------------------------------------------------END

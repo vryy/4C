@@ -33,7 +33,6 @@
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_inpar/inpar_meshfree.H"
 #include "../drt_inpar/inpar_particle.H"
-
 #include "../drt_mat/particle_mat.H"
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -82,7 +81,6 @@ PARTICLE::Algorithm::Algorithm(
   //Check number of space dimensions chosen for meshfree weight functions
   if(particleInteractionType_==INPAR::PARTICLE::MeshFree)
   {
-
     if(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")!=INPAR::PARTICLE::particle_3D)
       dserror("The general Particle Meshfree Interactions framework (binning strategy etc.) does so far only cover 3D problems (DIMENSION  3D).\n"
               "However, if you want to treat quasi-2D or -1D problems, set the input parameter WEIGHT_FUNCTION_DIM to WF_2D or WF_1D, respectively.\n"
@@ -90,17 +88,20 @@ PARTICLE::Algorithm::Algorithm(
 
     switch(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION_DIM"))
     {
-      case INPAR::PARTICLE::WF_3D :
-        IO::cout << "Welcome to Particle Meshfree Interactions in 3D!" << IO::endl;
-      break;
-      case INPAR::PARTICLE::WF_2D :
-        IO::cout << "Welcome to Particle Meshfree Interactions in 2D!" << IO::endl;
-      break;
-      case INPAR::PARTICLE::WF_1D :
-        IO::cout << "Welcome to Particle Meshfree Interactions in 1D!" << IO::endl;
-      break;
-      default :  //nothing to do here
-      break;
+      if(MyRank() == 0)
+      {
+        case INPAR::PARTICLE::WF_3D :
+          IO::cout << "Welcome to Particle Meshfree Interactions in 3D!" << IO::endl;
+        break;
+        case INPAR::PARTICLE::WF_2D :
+          IO::cout << "Welcome to Particle Meshfree Interactions in 2D!" << IO::endl;
+        break;
+        case INPAR::PARTICLE::WF_1D :
+          IO::cout << "Welcome to Particle Meshfree Interactions in 1D!" << IO::endl;
+        break;
+        default :  //nothing to do here
+        break;
+      }
     }
 
     const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
@@ -119,6 +120,16 @@ PARTICLE::Algorithm::Algorithm(
         dserror("Density summation has so far not been tested in combination with wall boundaries. Use Boundary particles when applying density summation!");
     }
 
+    INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP");
+
+    if(timinttype==INPAR::PARTICLE::dyna_kickdrift and DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>=0.0)
+      dserror("Modified particle convection velocities based on a constant BACKGROUND_PRESSURE field only possible for KickDrift time integration scheme!");
+
+  }
+  else
+  {
+    if(DRT::Problem::Instance()->ParticleParams().get<double>("GRAVITY_RAMP_TIME")>=0.0)
+      dserror("Ramp time for smooth increase of gravity force only possible for SPH applications so far!");
   }
 
   if (moving_walls_ == true and DRT::Problem::Instance()->ProblemType() != prb_pasi)
@@ -176,9 +187,6 @@ void PARTICLE::Algorithm::Timeloop()
 
     // calculate stresses, strains, energies
     PrepareOutput();
-
-    // transfer particles and heat sources into their correct bins
-    UpdateConnectivity();
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
@@ -269,6 +277,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
     // set particle algorithm into time integration
     particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
+
     particles_->Init();
 
     // in case random noise is added to the particle position, particle transfer is necessary
@@ -559,7 +568,19 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
     }
     }
 
-    if(maxrad + transfer_every_*maxvel*dt > 0.5*BinStrategy()->CutoffRadius())
+    //Determine effective interaction distance (maximal particle distance at which interaction forces are active) for different particle applications
+    //TODO: Differentiate the case of particle contact in combination with adhesive forces (active for distances > 2*radius)
+    double half_interaction_distance=0.0;
+    if(particleInteractionType_==INPAR::PARTICLE::MeshFree)
+      half_interaction_distance=maxrad/2.0;
+    else
+      half_interaction_distance=maxrad;
+
+    //Here we changed the factor transfer_every_ applied in the previous revision (r23144) to (transfer_every_-1), since
+    //the call of the method UpdateConnectivity() has been shifted to the location directly between displacement update and evaluation of
+    //contact/interaction forces. Thus, in case UpdateConnectivity() is called in every time step (transfer_every_=1), the bin edge length
+    //has at least to be as large as the interaction distance!
+    if(half_interaction_distance + (transfer_every_-1)*maxvel*dt > 0.5*BinStrategy()->CutoffRadius())
     {
       int lid = -1;
       // find entry with max velocity
@@ -579,7 +600,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
       {
         const int gid = particles_->Veln()->Map().GID(lid);
         dserror("Particle %i (gid) travels more than one bin per time step (%f > %f). Increase bin size or reduce step size."
-            "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*dt), BinStrategy()->CutoffRadius(), maxrad);
+            "Max radius is: %f", (int)gid/3, 2.0*(half_interaction_distance + maxvel*dt), BinStrategy()->CutoffRadius(), half_interaction_distance);
         std::cout << "Particle %i (gid) travels more than one bin per time step!!!!!!!" << std::endl;
       }
     }
@@ -1237,6 +1258,10 @@ void PARTICLE::Algorithm::UpdateConnectivity()
     TransferParticles(true);
   }
 
+  // assign wall elements dynamically to bins
+  if(moving_walls_)
+    AssignWallElesToBins();
+
   // in case of thermal SPH problems: update heat sources
   UpdateHeatSourcesConnectivity(false);
 }
@@ -1273,10 +1298,6 @@ void PARTICLE::Algorithm::GetNeighbouringItems(
   binIds.reserve(27);
 
   BinStrategy().GetNeighborAndOwnBinIds(binId,binIds);
-
-  //std::cout << "Neighbor bins of bin " << binId << ": " << std::endl;
-//  for(int i=0;i<binIds.size();i++)
-//    std::cout << binIds[i]<< std::endl;
 
   GetBinContent(neighboursLinf_p, neighboursLinf_w, neighboursLinf_hs, binIds);
 }
@@ -1315,8 +1336,17 @@ void PARTICLE::Algorithm::GetBinContent(
     {
       DRT::Element** walleles = neighboringbin->AssociatedEles(bin_wallcontent_);
       const int numwalls = neighboringbin->NumAssociatedEle(bin_wallcontent_);
+      const int* ids=neighboringbin->AssociatedEleIds(bin_wallcontent_);
       for(int iwall=0;iwall<numwalls; ++iwall)
       {
+        if(ids[iwall]!=walleles[iwall]->Id())
+        {
+          std::cout << "Comm().MyPID(): " << Comm().MyPID() << std::endl;
+          std::cout << "ids[iwall]: " << ids[iwall] << std::endl;
+          std::cout << "walleles[iwall]->Id(): " << walleles[iwall]->Id() << std::endl << std::endl;
+          dserror("Ids of wall elements are different from Ids stored in multibin! Accidential access of random storage?");
+        }
+
         (*bin_w)[walleles[iwall]->Id()] = walleles[iwall];
       }
     }
@@ -1745,9 +1775,21 @@ void PARTICLE::Algorithm::SetUpWallDiscret()
     particlewalldis_->SetState("walldisn", walldisn);
     particlewalldis_->SetState("walldisnp", walldisnp);
     particlewalldis_->SetState("wallvelnp", wallvelnp);
-
-    // assign wall elements dynamically to bins
-    if(moving_walls_)
-      AssignWallElesToBins();
   }
+}
+
+/// return gravity acceleration
+LINALG::Matrix<3,1> PARTICLE::Algorithm::GetGravityAcc(const double time)
+{
+  double fac=1.0;
+  double gravity_ramp_time=DRT::Problem::Instance()->ParticleParams().get<double>("GRAVITY_RAMP_TIME");
+  if(gravity_ramp_time>0 and time >=0)
+  {
+    if(time<gravity_ramp_time)
+       fac=0.5*(1-cos(time*PI/gravity_ramp_time));
+  }
+
+  LINALG::Matrix<3,1> scaled_gravity_acc(gravity_acc_);
+  scaled_gravity_acc.Scale(fac);
+  return scaled_gravity_acc;
 }

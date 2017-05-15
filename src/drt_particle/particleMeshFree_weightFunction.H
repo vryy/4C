@@ -50,13 +50,13 @@ public :
   virtual double DDW(const double &disRel, const double &radius) = 0;
 
   // gradient, r = r_i - r_j
-  virtual LINALG::Matrix<3,1> GradW(const LINALG::Matrix<3,1> &rVersor, const double& dw);
+  virtual LINALG::Matrix<3,1> GradW(const LINALG::Matrix<3,1> &rRelVersor, const double& dw);
 
   // gradient, r = r_i - r_j (FAD)
-  virtual LINALG::TMatrix<FAD,3,1> GradW(const LINALG::TMatrix<FAD,3,1> &rVersor, const FAD& dw);
+  virtual LINALG::TMatrix<FAD,3,1> GradW(const LINALG::TMatrix<FAD,3,1> &rRelVersor, const FAD& dw);
 
   // hessian, r = r_i - r_j
-  virtual LINALG::Matrix<3,3> HessW(const LINALG::Matrix<3,1> &rVersor, const double& dw, const double& rNorm2, const double& ddw);\
+  virtual LINALG::Matrix<3,3> HessW(const LINALG::Matrix<3,1> &rRelVersor, const double& dw, const double& rNorm2, const double& ddw);\
 
   // weight function in 0 (auto-interactions)
   virtual double W0(const double& radius) = 0;
@@ -124,6 +124,62 @@ private :
    virtual FAD RszDisRel(const FAD& disRel, const double& radius) {return 2 * disRel / radius; }
 
    virtual double RszDim(const double& radius);
+
+protected:
+
+   // store problem dimension required by weight functions
+   INPAR::PARTICLE::WeightFunctionDim WF_DIM_;
+
+};
+
+class WeightFunction_QuinticBspline : public WeightFunction_Base
+{
+public :
+
+   //! @name Actions
+   //@{
+
+   //! constructor
+   WeightFunction_QuinticBspline(INPAR::PARTICLE::WeightFunctionDim dim):
+    WF_DIM_(dim){}
+
+   //! compute the QuinticBspline weight function
+   virtual double W(const double &disRel, const double &radius);
+
+   //! compute the QuinticBspline weight function (FAD)
+   virtual FAD W(const FAD &disRel, const double &radius);
+
+   //! compute the weight function 1 derivative of the QuinticBspline weight function
+   virtual double DW(const double &disRel, const double &radius);
+
+   //! compute the weight function 1 derivative of the QuinticBspline weight function (FAD)
+   virtual FAD DW(const FAD &disRel, const double &radius);
+
+   //! compute the weight function 2 derivative of the QuinticBspline weight function
+   virtual double DDW(const double &disRel, const double &radius);
+
+   // weight function in 0 (auto-interactions)
+   virtual inline double W0(const double& radius)
+   {
+     double h=radius/3.0;
+     return 66*RszDim(h);
+   }
+
+   // hessian of the weight function in 0 (auto-interactions)
+   virtual inline double DDW0(const double& radius)
+   {
+     double h=radius/3.0;
+     return -120*RszDim(h)/(h*h);
+   }
+
+   // weight function type
+   virtual inline INPAR::PARTICLE::WeightFunction Name() { return INPAR::PARTICLE::QuinticBspline; }
+
+   //@}
+
+private :
+
+   virtual double RszDim(const double& h);
 
 protected:
 
