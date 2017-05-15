@@ -475,12 +475,12 @@ bool UTILS::Cardiovascular0DManager::ModuloIsRealtiveZero(const double value, co
 
 void UTILS::Cardiovascular0DManager::ResetStep()
 {
-//  cv0ddof_np_->Update(1.0,*cv0ddof_n_,0.0);
+
+  cv0ddof_np_->Update(1.0,*cv0ddof_n_,0.0);
   v_np_->Update(1.0,*v_n_,0.0);
 
   cardvasc0d_df_np_->Update(1.0,*cardvasc0d_df_n_,0.0);
   cardvasc0d_f_np_->Update(1.0,*cardvasc0d_f_n_,0.0);
-
 
   return;
 }
