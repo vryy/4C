@@ -952,43 +952,53 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcSubgrVelocity(
   {
     const std::string* condtype = myfluidneumcond[0]->Get<std::string>("type");
 
-    // find out whether we will use a time curve
-    const std::vector<int>* funct  = myfluidneumcond[0]->Get<std::vector<int> >("funct");
-    int functnum = -1;
-
-    if (funct) functnum = (*funct)[0];
-
-    // initialisation
-    double functfac(0.0);
-
-    if (functnum >= 0) // yes, we have a timecurve
-    {
-      // time factor for the intermediate step
-      // (negative time value indicates error)
-      if(scatraparatimint_->Time() >= 0.0)
-        functfac = DRT::Problem::Instance()->Funct(functnum).EvaluateTime(scatraparatimint_->Time());
-      else
-        dserror("Negative time value in body force calculation: time = %f",scatraparatimint_->Time());
-    }
-    else // we do not have a timecurve: timefactors are constant equal 1
-      functfac = 1.0;
-
     // get values and switches from the condition
     const std::vector<int>*    onoff = myfluidneumcond[0]->Get<std::vector<int> >   ("onoff");
     const std::vector<double>* val   = myfluidneumcond[0]->Get<std::vector<double> >("val"  );
+    const std::vector<int>*    funct = myfluidneumcond[0]->Get<std::vector<int> >   ("funct");
 
-    // set this condition to the body force array
-    for (unsigned isd=0;isd<nsd_;isd++)
+    // factor given by spatial function
+    double functfac = 1.0;
+    int functnum = -1;
+
+    // set this condition to the body-force array
+    for (unsigned isd = 0; isd < nsd_; isd++)
     {
-      for (unsigned jnode=0; jnode<nen_; jnode++)
+      // get factor given by spatial function
+      if (funct) functnum = (*funct)[isd];
+      else       functnum = -1;
+
+      double num = (*onoff)[isd]*(*val)[isd];
+
+      for (unsigned jnode = 0; jnode < nen_; ++jnode )
       {
-        // get usual body force
-        if (*condtype == "neum_dead" or *condtype == "neum_live")
-          nodebodyforce(isd,jnode) = (*onoff)[isd]*(*val)[isd]*functfac;
+        if (functnum > 0)
+        {
+          // time factor for the intermediate step
+          // (negative time value indicates error)
+          if (scatraparatimint_->Time() >= 0.0)
+          {
+            // evaluate function at the position of the current node
+            // ------------------------------------------------------
+            // comment: this introduces an additional error compared to an
+            // evaluation at the integration point. However, we need a node
+            // based element bodyforce vector for prescribed pressure gradients
+            // in some fancy turbulance stuff.
+            functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(isd,
+                                                                            (ele->Nodes()[jnode])->X(),
+                                                                             scatraparatimint_->Time());
+          }
+          else dserror("Negative time value in body force calculation: time = %f",scatraparatimint_->Time());
+
+        }
+        else functfac = 1.0;
+
+        // compute body force
+        if (*condtype == "neum_dead" or *condtype == "neum_live") nodebodyforce(isd,jnode) = num*functfac;
         else nodebodyforce.Clear();
-        // get prescribed pressure gradient
-        if (*condtype == "neum_pgrad")
-          nodepressuregrad(isd,jnode) = (*onoff)[isd]*(*val)[isd]*functfac;
+
+        // compute prescribed pressure gradient
+        if (*condtype == "neum_pgrad") nodepressuregrad(isd,jnode) = num*functfac;
         else nodepressuregrad.Clear();
       }
     }
