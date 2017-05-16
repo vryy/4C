@@ -283,14 +283,13 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     cardvasc0d_f_n_->PutScalar(0.0);
     cardvasc0d_f_n_->Export(*cardvasc0d_f_n_red,*cardvasc0dimpo_,Insert);
 
+    // predict with initial values
     cv0ddof_np_->Update(1.0,*cv0ddof_n_,0.0);
 
     cardvasc0d_df_np_->Update(1.0,*cardvasc0d_df_n_,0.0);
     cardvasc0d_f_np_->Update(1.0,*cardvasc0d_f_n_,0.0);
 
     v_np_->Update(1.0,*v_n_,0.0);
-
-
 
     cv0ddof_T_N_->Update(1.0,*cv0ddof_np_,0.0);
     cv0ddof_T_NP_->Update(1.0,*cv0ddof_np_,0.0);
@@ -552,14 +551,6 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
   structdis->GetCondition("SurfaceNeumannCardiovascular0D",cardvasc0dstructcoupcond);
   unsigned int numcoupcond = cardvasc0dstructcoupcond.size();
   if (numcoupcond == 0) dserror("No coupling conditions found!");
-  // now filter those Neumann conditions that are due to the cardiovascular0d structure coupling
-
-//  for (unsigned int k = 0; k < numneumcond; ++k)
-//  {
-//    DRT::Condition* actcond = surfneumcond[k];
-//    if (actcond->Type() == DRT::Condition::Cardiovascular0DStructureCoupling)
-//      cardvasc0dstructcoupcond.push_back(actcond);
-//  }
 
   // fill the i-sorted wk coupling conditions vector with the id-sorted values of the wk pressure vector, at the respective coupling_id
   for (unsigned int i=0; i<numcoupcond; ++i)
