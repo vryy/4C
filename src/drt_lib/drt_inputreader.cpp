@@ -1148,6 +1148,7 @@ void DatFileReader::ReadDat()
   knownsections_["--FUNCT7"] = true;
   knownsections_["--FUNCT8"] = true;
   knownsections_["--FUNCT9"] = true;
+  knownsections_["--FUNCT10"] = true;
   knownsections_["--FUNCT11"] = true;
   knownsections_["--FUNCT12"] = true;
   knownsections_["--FUNCT13"] = true;
