@@ -22,25 +22,24 @@ STRUCT_DISP            Yes
 FILESTEPS              1000000
 STDOUTEVRY             100
 VERBOSITY              Standard
-// ----------------------------------------------------------------IO/RUNTIME VTP OUTPUT STRUCTURE
-// OUTPUT_DATA_FORMAT              binary
-// INTERVAL_STEPS                  1
-// EVERY_ITERATION                 No
-// OWNER                           Yes
-// ORIENTATION                     Yes
-// NUMBEROFBONDS                   Yes
-// //DISPLACEMENT                    Yes
-// -----------------------------------IO/RUNTIME VTK OUTPUT STRUCTURE
-// OUTPUT_DATA_FORMAT              binary
-// INTERVAL_STEPS                  1
-// EVERY_ITERATION                 No
-// DISPLACEMENT                    Yes
-// SPECIAL_OUTPUT_BEAMS            Yes
-// -----------------------------IO/RUNTIME VTK OUTPUT STRUCTURE/BEAMS
-// USE_ABSOLUTE_POSITIONS          Yes
-// TRIAD_VISUALIZATIONPOINT        Yes
-// STRAINS_GAUSSPOINT              Yes
-// STRESSES_GAUSSPOINT             Yes
+//----------------------------------------------------------------IO/RUNTIME VTP OUTPUT STRUCTURE
+//OUTPUT_DATA_FORMAT              binary
+//INTERVAL_STEPS                  1
+//EVERY_ITERATION                 No
+//OWNER                           Yes
+//ORIENTATION                     Yes
+//NUMBEROFBONDS                   Yes
+//-----------------------------------IO/RUNTIME VTK OUTPUT STRUCTURE
+//OUTPUT_DATA_FORMAT              binary
+//INTERVAL_STEPS                  1
+//EVERY_ITERATION                 No
+//DISPLACEMENT                    Yes
+//SPECIAL_OUTPUT_BEAMS            Yes
+//-----------------------------IO/RUNTIME VTK OUTPUT STRUCTURE/BEAMS
+//USE_ABSOLUTE_POSITIONS          Yes
+//TRIAD_VISUALIZATIONPOINT        Yes
+//STRAINS_GAUSSPOINT              Yes
+//STRESSES_GAUSSPOINT             Yes
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER          1
 INT_STRATEGY           Standard
@@ -172,7 +171,7 @@ MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 C
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 1.0 VALUES 0.0 0.0 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.34440752027130861e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  1.22048154181601798e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.34596432452338854e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  1.22123576288297486e+00 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1e-10
 ---------------------------------------------------------------END

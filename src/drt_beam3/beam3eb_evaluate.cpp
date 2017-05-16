@@ -286,21 +286,6 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   // value 1 for flag i says that condition is active for i-th degree of freedom
   const std::vector<int>* onoff = condition.Get<std::vector<int> >("onoff");
 
-  // amplitude of load curve at current time called
-  std::vector<double> functfac(6,1.0);
-
-  for (int i=0; i<6; ++i)
-  {
-    if ((*onoff)[i]==0) continue;
-    int functnum = -1;
-    // number of the load curve related with a specific line Neumann condition called
-    if (tmp_funct) functnum = (*tmp_funct)[i];
-
-    if (functnum>=0)
-      functfac[i] = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
-  }
-
-
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
   const std::vector<double>* val = condition.Get<std::vector<double> >("val");
@@ -327,6 +312,22 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 
     if (insert == -1)
       dserror("\nNode could not be found on nodemap!\n");
+
+
+    // amplitude of load curve at current time called
+    std::vector<double> functfac(6,1.0);
+
+    for (int i=0; i<6; ++i)
+    {
+      if ((*onoff)[i]==0) continue;
+      int functnum = -1;
+      // number of the load curve related with a specific line Neumann condition called
+      if (tmp_funct) functnum = (*tmp_funct)[i];
+
+      if (functnum>=0)
+        functfac[i] = DRT::Problem::Instance()->Funct(functnum-1).EvaluateTime(time);
+    }
+
 
     //add forces to Res_external according to (5.56). There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
     for(int i = 0; i < 3 ; i++)
@@ -424,6 +425,14 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   //if a line neumann condition needs to be linearized
   else if(condition.Type() == DRT::Condition::LineNeumann)
   {
+
+    // Check if MOMENT line Neumann conditions are applied accidentally and throw error
+    for (int dof=3; dof<6; ++dof)
+    {
+      if ( tmp_funct and (*tmp_funct)[dof] > 0 )
+        dserror("Line Neumann conditions for distributed moments are not implemented for beam3eb so far! Only the function first three function flags (i.e. related to forces) can be set!");
+    }
+
     #ifdef SIMPLECALC
       dserror("SIMPLECALC not implemented for LineNeumann conditions so far!!!");
     #endif

@@ -406,5 +406,5 @@ STRUCTURE DIS structure NODE 129 QUANTITY dispy VALUE 6.80357363336456274e+02 TO
 STRUCTURE DIS structure NODE 129 QUANTITY dispz VALUE -1.72753599573873373e+02 TOLERANCE 1e-8
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 10.0 VALUES 0 1.0 1.0
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 10.0 VALUES 0 0.1 0.1
 ---------------------------------------------------------------END

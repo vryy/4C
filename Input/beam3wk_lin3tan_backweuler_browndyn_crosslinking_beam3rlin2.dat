@@ -21,6 +21,24 @@ STRUCT_DISP            Yes
 FILESTEPS              1000000
 STDOUTEVRY             100
 VERBOSITY              standard
+//----------------------------------------------------------------IO/RUNTIME VTP OUTPUT STRUCTURE
+//OUTPUT_DATA_FORMAT              binary
+//INTERVAL_STEPS                  1
+//EVERY_ITERATION                 No
+//OWNER                           Yes
+//ORIENTATION                     Yes
+//NUMBEROFBONDS                   Yes
+//-----------------------------------IO/RUNTIME VTK OUTPUT STRUCTURE
+//OUTPUT_DATA_FORMAT              binary
+//INTERVAL_STEPS                  1
+//EVERY_ITERATION                 No
+//DISPLACEMENT                    Yes
+//SPECIAL_OUTPUT_BEAMS            Yes
+//-----------------------------IO/RUNTIME VTK OUTPUT STRUCTURE/BEAMS
+//USE_ABSOLUTE_POSITIONS          Yes
+//TRIAD_VISUALIZATIONPOINT        Yes
+//STRAINS_GAUSSPOINT              Yes
+//STRESSES_GAUSSPOINT             Yes
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER          1
 INT_STRATEGY           Standard
@@ -153,9 +171,9 @@ MAT 2 MAT_Crosslinker MATNUM 3 LINKINGLENGTH 0.5 LINKINGLENGTHTOL 0.2 LINKINGANG
 MAT 3 MAT_BeamReissnerElastHyper YOUNG 1.3e+09 POISSONRATIO 0.3 DENS 1.384e-09 CROSSAREA 4.751658e-06 SHEARCORR 1.0 MOMINPOL 8.9836e-11 MOMIN2 4.4918e-11 MOMIN3 4.4918e-11
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 1.0 VALUES 0 1.0 1.0 1.0
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.0001 0.01 1.0 VALUES 0.0 0.0 1.0 1.0
 ---------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.33917347029937606e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  1.22750229144136891e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.33926300071349003e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  1.22724592630733453e+00 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1e-10
 ---------------------------------------------------------------END
