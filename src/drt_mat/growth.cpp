@@ -48,22 +48,6 @@ MAT::PAR::Growth::Growth(
 
   switch (curmat->Type())
   {
-  case INPAR::MAT::m_growth_iso_stress_lin:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::GrowthLawIsoStressLin(curmat));
-    MAT::PAR::GrowthLawIsoStressLin* params = static_cast<MAT::PAR::GrowthLawIsoStressLin*>(curmat->Parameter());
-    growthlaw_ = params->CreateGrowthLaw();
-    break;
-  }
-  case INPAR::MAT::m_growth_iso_stress_exp:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::GrowthLawIsoStressExp(curmat));
-    MAT::PAR::GrowthLawIsoStressExp* params = static_cast<MAT::PAR::GrowthLawIsoStressExp*>(curmat->Parameter());
-    growthlaw_ = params->CreateGrowthLaw();
-    break;
-  }
   case INPAR::MAT::m_growth_aniso_strain:
   {
     if (curmat->Parameter() == NULL)
@@ -77,6 +61,14 @@ MAT::PAR::Growth::Growth(
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStress(curmat));
     MAT::PAR::GrowthLawAnisoStress* params = static_cast<MAT::PAR::GrowthLawAnisoStress*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_iso_stress:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawIsoStress(curmat));
+    MAT::PAR::GrowthLawIsoStress* params = static_cast<MAT::PAR::GrowthLawIsoStress*>(curmat->Parameter());
     growthlaw_ = params->CreateGrowthLaw();
     break;
   }
@@ -125,10 +117,9 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
 
   switch (growthlaw_->MaterialType())
   {
-  case INPAR::MAT::m_growth_iso_stress_lin:
-  case INPAR::MAT::m_growth_iso_stress_exp:
   case INPAR::MAT::m_growth_aniso_strain:
   case INPAR::MAT::m_growth_aniso_stress:
+  case INPAR::MAT::m_growth_iso_stress:
   case INPAR::MAT::m_growth_ac:
   case INPAR::MAT::m_growth_ac_radial:
   case INPAR::MAT::m_growth_ac_radial_refconc:
@@ -154,7 +145,6 @@ MAT::Growth::Growth()
     histdata_()
 {
 }
-
 
 /*----------------------------------------------------------------------------*/
 MAT::Growth::Growth(MAT::PAR::Growth* params)

@@ -78,10 +78,9 @@ namespace INPAR
       m_fluidporo_phaselaw_tangent,            ///< tangent pressure-saturation relationship
       m_fluidporo_phaselaw_constraint,         ///< the saturation constraint
       m_fluidporo_phaselaw_byfunction,         ///< pressure-saturation relationship defined by functions in input file
-      m_growth_iso_stress_exp,                 ///< isotropic exponential stress-dependent growth law
-      m_growth_iso_stress_lin,                 ///< isotropic linear stress-dependent growth law
-      m_growth_aniso_strain,                    ///< anisotropic strain-dependent growth law
+      m_growth_aniso_strain,                   ///< anisotropic strain-dependent growth law
       m_growth_aniso_stress,                   ///< anisotropic stress-dependent growth law
+      m_growth_iso_stress,                     ///< isotropic stress-dependent growth law
       m_growth_ac,                             ///< simple scalar depended growth law
       m_growth_ac_radial,                      ///< scalar depended growth in radial direction
       m_growth_ac_radial_refconc,              ///< scalar depended growth in radial direction using reference concentrations

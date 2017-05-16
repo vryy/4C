@@ -1910,29 +1910,71 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
    }
 
 
-   /*----------------------------------------------------------------------*/
-    // integration point based and scalar dependent interpolation between to materials
-    {
-      Teuchos::RCP<MaterialDefinition> mm
-        = Teuchos::rcp(new MaterialDefinition("MAT_ScDepInterp",
-                                              "integration point based and scalar dependent interpolation between to materials",
-                                              INPAR::MAT::m_sc_dep_interp));
+ /*----------------------------------------------------------------------*/
+  // integration point based and scalar dependent interpolation between to materials
+  {
+    Teuchos::RCP<MaterialDefinition> mm
+      = Teuchos::rcp(new MaterialDefinition("MAT_ScDepInterp",
+                                            "integration point based and scalar dependent interpolation between to materials",
+                                            INPAR::MAT::m_sc_dep_interp));
 
-      AddNamedInt(mm,"IDMATZEROSC","material for lambda equal to zero");
-      AddNamedInt(mm,"IDMATUNITSC","material for lambda equal to one");
+    AddNamedInt(mm,"IDMATZEROSC","material for lambda equal to zero");
+    AddNamedInt(mm,"IDMATUNITSC","material for lambda equal to one");
 //      AddNamedReal(mm,"ALPHA","size of ",-1.0,true);
 
-      AppendMaterialDefinition(matlist,mm);
-    }
+    AppendMaterialDefinition(matlist,mm);
+  }
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  // linear growth law
+  // anisotropic strain-dependent growth law (Göktepe et al., J Theor Biol 2010, Lee et al., BMMB 2017)
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthLinear",
-                                            "linear stress-dependent growth law",
-                                            INPAR::MAT::m_growth_iso_stress_lin));
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrain",
+                                            "growth law depending on elastic stretch in fiber direction, growth in fiber direction",
+                                            INPAR::MAT::m_growth_aniso_strain));
+
+    AddNamedReal(m,"TAU","growth time scale");
+    AddNamedReal(m,"TAU_REV","reverse growth time scale");
+    AddNamedReal(m,"THETA_MIN","lower limit for growth stretch");
+    AddNamedReal(m,"THETA_MAX","upper limit for growth stretch");
+    AddNamedReal(m,"GAMMA","growth non-linearity");
+    AddNamedReal(m,"GAMMA_REV","reverse growth non-linearity");
+    AddNamedReal(m,"LAMBDA_CRIT","critical fiber stretch");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // anisotropic strain-dependent growth law (Göktepe et al., J Theor Biol 2010, Lee et al., BMMB 2017)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStress",
+                                            "growth law depending on elastic Mandel stress, growth perpendicular to fiber direction",
+                                            INPAR::MAT::m_growth_aniso_stress));
+
+    AddNamedReal(m,"TAU","growth time scale");
+    AddNamedReal(m,"TAU_REV","reverse growth time scale");
+    AddNamedReal(m,"THETA_MIN","lower limit for growth stretch");
+    AddNamedReal(m,"THETA_MAX","upper limit for growth stretch");
+    AddNamedReal(m,"GAMMA","growth non-linearity");
+    AddNamedReal(m,"GAMMA_REV","reverse growth non-linearity");
+    AddNamedReal(m,"P_CRIT","critical pressure");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // isotropic growth law (cf. Diss Tinkl 2015, LNM)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthIsoStress",
+                                            "stress-dependent growth law",
+                                            INPAR::MAT::m_growth_iso_stress));
 
     AddNamedReal(m,"THETAPLUS","maximal growth stretch");
     AddNamedReal(m,"KPLUS","growth law parameter kthetaplus");
@@ -1946,74 +1988,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  // exponential growth law
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthExponential",
-                                            "exponential stress-dependent growth law",
-                                            INPAR::MAT::m_growth_iso_stress_exp));
-
-    AddNamedReal(m,"MANDEL","reference value for mandelstress");
-    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-
-    AppendMaterialDefinition(matlist,m);
-  }
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  // constant rate growth law
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthConst",
-                                            "constant growth law",
-                                            INPAR::MAT::m_growth_const));
-
-    AddNamedReal(m,"THETARATE","reference value for mandelstress");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  // anisotropic strain-dependent growth law
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrain",
-                                            "growth law depending on stretch in fiber direction, growth in fiber direction",
-                                            INPAR::MAT::m_growth_aniso_strain));
-
-    AddNamedReal(m,"TAU","growth time scale");
-    AddNamedReal(m,"THETA_MAX","upper limit for growth stretch");
-    AddNamedReal(m,"GAMMA","growth non-linearity");
-    AddNamedReal(m,"LAMBDA_CRIT","critical fiber stretch");
-    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  // anisotropic stress-dependent growth law
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStress",
-                                            "growth law depending on Mandel stress, growth perpendicular to fiber direction",
-                                            INPAR::MAT::m_growth_aniso_stress));
-
-    AddNamedReal(m,"TAU","growth time scale");
-    AddNamedReal(m,"THETA_MAX","upper limit for growth stretch");
-    AddNamedReal(m,"GAMMA","growth non-linearity");
-    AddNamedReal(m,"P_CRIT","critical pressure");
-    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  // simple atherosclerosis growth law, scalar depended volumetric growth
+  // simple atherosclerosis growth law, scalar-dependent volumetric growth
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAC",
@@ -2061,6 +2039,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // constant rate growth law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthConst",
+                                            "constant growth law",
+                                            INPAR::MAT::m_growth_const));
+
+    AddNamedReal(m,"THETARATE","reference value for mandelstress");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/

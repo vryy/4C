@@ -120,7 +120,7 @@ ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.0
-MAT 4 MAT_GrowthLinear THETAPLUS 1.5 KPLUS 1.0 MPLUS 2.0 THETAMINUS 0.5 KMINUS 2.0 MMINUS 3.0 HOMMANDEL 0.0 TOL 1.0E-10
+MAT 4 MAT_GrowthIsoStress THETAPLUS 1.5 KPLUS 1.0 MPLUS 2.0 THETAMINUS 0.5 KMINUS 2.0 MMINUS 3.0 HOMMANDEL 0.0 TOL 1.0e-10
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
 MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
 -------------------------------------------------------------FUNCT1

@@ -106,17 +106,17 @@ MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 21 22 DENS 1.0e-6
 MAT 21 ELAST_IsoNeoHooke MUE 50.0
 MAT 22 ELAST_VolSussmanBathe KAPPA 50.0
 
-MAT 3 MAT_GrowthAnisoStrain TAU 1.0 THETA_MAX 1.5 GAMMA 1.72 LAMBDA_CRIT 1.0 TOL 1.0E-10
+MAT 3 MAT_GrowthAnisoStrain TAU 1.0 TAU_REV 1.0 THETA_MIN 1.0 THETA_MAX 1.5 GAMMA 1.72 GAMMA_REV 1.0 LAMBDA_CRIT 1.0 TOL 1.0e-10
 -----------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 1.0 2.0 20.0 VALUES 0.0 0.0 150.0 150.0
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 2.0 VALUES 0.0 0.0 150.0
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 20.0 DESCRIPTION -sin((pi/2.0)*(t/1.0)) -1.0
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 2.0 DESCRIPTION -sin((pi/2.0)*(t/1.0)) -1.0
 -------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 20.0 DESCRIPTION 1.0-cos((pi/2.0)*(t/1.0)) 1.0
+VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 2.0 DESCRIPTION 1.0-cos((pi/2.0)*(t/1.0)) 1.0
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -3.98158821782485095e+00 TOLERANCE 1e-6
