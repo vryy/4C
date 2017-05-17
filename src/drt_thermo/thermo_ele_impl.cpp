@@ -2603,6 +2603,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplNlnCond(
         }
         if (nsd_==3)
         {
+          bgradTcmat(i,1) =   derxy_(1,i)*G(1);
           bgradTcmat(i,2) =   derxy_(2,i)*G(2);
           bgradTcmat(i,3) =  (derxy_(0,i)*G(1)+derxy_(1,i)*G(0));
           bgradTcmat(i,4) =  (derxy_(2,i)*G(1)+derxy_(1,i)*G(2));
