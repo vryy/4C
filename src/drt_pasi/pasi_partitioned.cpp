@@ -26,6 +26,8 @@
 
 #include "../drt_particle/particle_algorithm.H"
 
+#include "../linalg/linalg_mapextractor.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
@@ -230,33 +232,35 @@ void PASI::PartitionedAlgo::ParticleStep()
 } // PASI::PartitionedAlgo::ParticleStep()
 
 /*----------------------------------------------------------------------*
- | set structural displacements and velocities           sfuchs 02/2017 |
+ | set structural states                                 sfuchs 02/2017 |
  *----------------------------------------------------------------------*/
-void PASI::PartitionedAlgo::SetStructDispVel()
+void PASI::PartitionedAlgo::SetStructStates()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetStructDispVel");
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::SetStructStates");
+
+  // extract wall states from structural states
+  Teuchos::RCP<const Epetra_Vector> walldispn = particles_->GetWallExtractor()->ExtractCondVector(structure_->Dispn());
+  Teuchos::RCP<const Epetra_Vector> walldispnp = particles_->GetWallExtractor()->ExtractCondVector(structure_->Dispnp());
+  Teuchos::RCP<const Epetra_Vector> wallvelnp = particles_->GetWallExtractor()->ExtractCondVector(structure_->Velnp());
 
   double normbdrydispnp;
-  double normbdryvelnp;
-  structure_->Dispnp()->Norm2(&normbdrydispnp);
-  structure_->Velnp()->Norm2(&normbdryvelnp);
+  walldispnp->Norm2(&normbdrydispnp);
 
   if(Comm().MyPID() == 0)
   {
     std::cout << "----------------------------------------------------------------------" << std::endl;
-    std::cout << " Norm of boundary displacements:  " << std::setprecision(7) << normbdrydispnp <<std::endl;
-    std::cout << " Norm of boundary velocities:     " << std::setprecision(7) << normbdryvelnp <<std::endl;
+    std::cout << " Norm of boundary displacements:  " << std::setprecision(7) << normbdrydispnp << std::endl;
     std::cout << "----------------------------------------------------------------------" << std::endl;
   }
 
-  // hand structural states to particle field
-  particles_->SetStructStates(structure_->Dispn(),structure_->Dispnp(),structure_->Velnp());
+  // hand wall states to particle field
+  particles_->SetWallStates(walldispn,walldispnp,wallvelnp);
 
-  // set structural displacements to particle wall
+  // set wall states to particle wall discretization
   particles_->SetUpWallDiscret();
 
   return;
-} // PASI::PartitionedAlgo::UpdateParticleWall()
+} // PASI::PartitionedAlgo::SetStructStates()
 
 /*----------------------------------------------------------------------*
  | structural output                                     sfuchs 02/2017 |
@@ -282,10 +286,6 @@ void PASI::PartitionedAlgo::ParticleOutput()
 {
   // calculate all output quantities
   particles_->AdapterParticle()->PrepareOutput();
-
-  //TODO: Sebastian
-  // update particle connectivity
-  // particles_->UpdateConnectivity();
 
   // update all single field solvers
   particles_->AdapterParticle()->Update();

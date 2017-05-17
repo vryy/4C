@@ -120,7 +120,6 @@ void PARTICLE::TimIntCentrDiff::Init()
     const double thermalExpansionT = extParticleMat->thermalExpansionT_;
 
     // extract the boundaries
-    const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
     const double v_max = particleparams.get<double>("MAX_VELOCITY");
     const double r_max = particleparams.get<double>("MAX_RADIUS");
 

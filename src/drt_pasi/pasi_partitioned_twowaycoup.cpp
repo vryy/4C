@@ -195,8 +195,8 @@ void PASI::PASI_PartTwoWayCoup::Outerloop()
     // solve structural time step
     StructStep();
 
-    // set structural displacements and velocities in particle field
-    SetStructDispVel();
+    // set structural states in particle field
+    SetStructStates();
 
     // reset particle states
     ResetParticleStates();
@@ -530,8 +530,8 @@ void PASI::PASI_PartTwoWayCoup_ForceRelax::Outerloop()
     // solve structural time step
     StructStep();
 
-    // set structural displacements and velocities in particle field
-    SetStructDispVel();
+    // set structural states in particle field
+    SetStructStates();
 
     // reset particle states
     ResetParticleStates();

@@ -120,12 +120,18 @@ namespace PARTICLE
     /// get wall discretization
     virtual Teuchos::RCP<DRT::Discretization> WallDiscret() const { return particlewalldis_; }
 
-    /// set structural states
-    virtual void SetStructStates(
-        Teuchos::RCP<const Epetra_Vector> structdispn,   ///< structural displacements at \f$t_{n}\f$
-        Teuchos::RCP<const Epetra_Vector> structdispnp,  ///< structural displacements at \f$t_{n+1}\f$
-        Teuchos::RCP<const Epetra_Vector> structvelnp    ///< structural velocities at \f$t_{n+1}\f$
+    /// get wall extractor
+    virtual Teuchos::RCP<LINALG::MapExtractor> GetWallExtractor() { return wallextractor_; }
+
+    /// set wall states
+    virtual void SetWallStates(
+        Teuchos::RCP<const Epetra_Vector> walldispn,   ///< wall displacements at \f$t_{n}\f$
+        Teuchos::RCP<const Epetra_Vector> walldispnp,  ///< wall displacements at \f$t_{n+1}\f$
+        Teuchos::RCP<const Epetra_Vector> wallvelnp    ///< wall velocities at \f$t_{n+1}\f$
         );
+
+    /// set up walls
+    virtual void SetUpWallDiscret();
 
     /// return gravity acceleration
     virtual LINALG::Matrix<3,1> GetGravityAcc(const double time=-1.0);
@@ -171,9 +177,6 @@ namespace PARTICLE
     const MAT::PAR::ExtParticleMat* ExtParticleMat() const { return extParticleMat_; }
 
     virtual Teuchos::RCP<Rendering> GetRendering() { return rendering_; }
-
-    /// set up walls
-    virtual void SetUpWallDiscret();
 
     inline virtual void CalculateAndApplyForcesToParticles(bool init) { ; };
 
@@ -270,11 +273,11 @@ namespace PARTICLE
 
     Teuchos::RCP<LINALG::MapExtractor> wallextractor_;   ///< map extractor for particle wall
 
-    Teuchos::RCP<const Epetra_Vector> structdispn_; ///< structural displacements at t_n
+    Teuchos::RCP<const Epetra_Vector> walldispn_; ///< wall displacements at \f$t_{n}\f$
 
-    Teuchos::RCP<const Epetra_Vector> structdispnp_; ///< structural displacements at t_n+1
+    Teuchos::RCP<const Epetra_Vector> walldispnp_; ///< wall displacements at \f$t_{n+1}\f$
 
-    Teuchos::RCP<const Epetra_Vector> structvelnp_; ///< structural velocities at t_n
+    Teuchos::RCP<const Epetra_Vector> wallvelnp_; ///< wall velocities at \f$t_{n+1}\f$
 
     const bool moving_walls_;   ///< flag whether walls are moving
 

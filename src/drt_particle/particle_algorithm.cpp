@@ -319,7 +319,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
 }
 
 /*----------------------------------------------------------------------*
-| build connectivity from particle wall elements to bins    ghamm 04/13 |
+ | build connectivity from particle wall elements to bins   ghamm 04/13 |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::BuildElementToBinPointers(bool wallpointer)
 {
@@ -654,21 +654,34 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
 }
 
 /*----------------------------------------------------------------------*
- | set structural states                                   sfuchs 02/17 |
+ | set wall states                                         sfuchs 02/17 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::SetStructStates(
-    Teuchos::RCP<const Epetra_Vector> structdispn,   ///< structural displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> structdispnp,  ///< structural displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> structvelnp    ///< structural velocities at \f$t_{n+1}\f$
+void PARTICLE::Algorithm::SetWallStates(
+    Teuchos::RCP<const Epetra_Vector> walldispn,   ///< wall displacements at \f$t_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> walldispnp,  ///< wall displacements at \f$t_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> wallvelnp    ///< wall velocities at \f$t_{n+1}\f$
     )
 {
-  structdispn_ = structdispn;
-  structdispnp_ = structdispnp;
-  structvelnp_ = structvelnp;
+  walldispn_ = walldispn;
+  walldispnp_ = walldispnp;
+  wallvelnp_ = wallvelnp;
 
   return;
 }
 
+/*------------------------------------------------------------------------*
+ | set up wall discretizations                               sfuchs 04/17 |
+ *------------------------------------------------------------------------*/
+void PARTICLE::Algorithm::SetUpWallDiscret()
+{
+  if(particlewalldis_ != Teuchos::null)
+  {
+    // supply states for discretization
+    particlewalldis_->SetState("walldisn", walldispn_);
+    particlewalldis_->SetState("walldisnp", walldispnp_);
+    particlewalldis_->SetState("wallvelnp", wallvelnp_);
+  }
+}
 
 /*----------------------------------------------------------------------*
  | access structure and setup particle wall                 ghamm 03/13 |
@@ -812,6 +825,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   if(MyRank() == 0)
     std::cout << "after adding particle walls" << std::endl;
   DRT::UTILS::PrintParallelDistribution(*particlewalldis_);
+
   if(moving_walls_)
     wallextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*(basediscret->DofRowMap()),Teuchos::rcp(particlewalldis_->DofRowMap(), false)));
 
@@ -822,12 +836,17 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   output->NewStep(Step(), Time());
   output->WriteVector("displacement", LINALG::CreateVector(*particlewalldis_->DofRowMap(), true));
 
+  // initialize wall states
+  walldispn_ = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+  walldispnp_ = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+  wallvelnp_ = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+
   return;
 }
 
 
 /*----------------------------------------------------------------------*
-| particle walls are added from the structural discret      ghamm 03/13 |
+ | particle walls are added from the structural discret     ghamm 03/13 |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::AssignWallElesToBins()
 {
@@ -995,7 +1014,7 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
 }
 
 /*----------------------------------------------------------------------*
-| single fields are tested                                  ghamm 09/12 |
+ | single fields are tested                                 ghamm 09/12 |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::TestResults(const Epetra_Comm& comm)
 {
@@ -1033,7 +1052,7 @@ void PARTICLE::Algorithm::NormDemThermoAdapt()
 }
 
 /*----------------------------------------------------------------------*
- | output particle time step                                ghamm 10/12  |
+ | output particle time step                                ghamm 10/12 |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
 {
@@ -1041,96 +1060,18 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
   // be post-processed anyway (no nodes and connectivity available)
   particles_->OutputStep(forced_writerestart);
 
-  if(moving_walls_ and writeresultsevery_ and (Step()%writeresultsevery_ == 0))
+  if (writeresultsevery_ and (Step()%writeresultsevery_ == 0))
   {
-    Teuchos::RCP<Epetra_Vector> walldisnp = wallextractor_->ExtractCondVector(structdispnp_);
-    particlewalldis_->Writer()->NewStep(Step(), Time());
-    particlewalldis_->Writer()->WriteVector("displacement", walldisnp);
-  }
+    // visualize bins according to specification in input file ( MESHFREE -> WRITEBINS "" )
+    BinStrategy()->WriteBinOutput(Step(), Time());
 
-//  const std::string filename = IO::GMSH::GetFileName("particle_data", Step(), true, Comm().MyPID());
-//  std::ofstream gmshfilecontent(filename.c_str());
-//
-//  // velocity
-//  {
-//    gmshfilecontent << "View \" " << "velocity" << " \" {\n";
-//    LINALG::Matrix<3,1> vectorvalue(true);
-//
-//    for(int n=0; n<BinStrategy()->BinDiscret()->NumMyRowNodes(); n++)
-//    {
-//      DRT::Node* actnode = BinStrategy()->BinDiscret()->lRowNode(n);
-//      // get the first gid of a node and convert it into a LID
-//      int gid = BinStrategy()->BinDiscret()->Dof(actnode, 0);
-//      int lid = particles_->Dispnp()->Map().LID(gid);
-//      Teuchos::RCP<const Epetra_Vector> disnp = particles_->Dispnp();
-//      Teuchos::RCP<const Epetra_Vector> velnp = particles_->Velnp();
-//      LINALG::Matrix<3,1> posXYZDomain(true);
-//      for(int dim=0; dim < 3; dim++)
-//      {
-//        posXYZDomain(dim) = (*disnp)[lid+dim];
-//        vectorvalue(dim) = (*velnp)[lid+dim];
-//      }
-//
-//      // write data to Gmsh file
-//      IO::GMSH::VectorToStream(posXYZDomain, vectorvalue, gmshfilecontent);
-//    }
-//
-//    gmshfilecontent << "};\n";
-//  }
-//
-//  // density
-//  {
-//    gmshfilecontent << "View \" " << "density" << " \" {\n";
-//
-//    for(int n=0; n<BinStrategy()->BinDiscret()->NumMyRowNodes(); n++)
-//    {
-//      DRT::Node* actnode = BinStrategy()->BinDiscret()->lRowNode(n);
-//      // get the first gid of a node and convert it into a LID
-//      int gid = BinStrategy()->BinDiscret()->Dof(actnode, 0);
-//      int lid = particles_->Dispnp()->Map().LID(gid);
-//      Teuchos::RCP<const Epetra_Vector> disnp = particles_->Dispnp();
-//      LINALG::Matrix<3,1> posXYZDomain(true);
-//      for (int dim=0; dim<3; dim++)
-//      {
-//        posXYZDomain(dim) = (*disnp)[lid+dim];
-//      }
-//
-//      const double density = particles_->ParticleDensity();
-//
-//      // write data to Gmsh file
-//      IO::GMSH::ScalarToStream(posXYZDomain, density, gmshfilecontent);
-//    }
-//
-//    gmshfilecontent << "};\n";
-//  }
-//
-//  // radius
-//  {
-//    gmshfilecontent << "View \" " << "radius" << " \" {\n";
-//
-//    for(int n=0; n<BinStrategy()->BinDiscret()->NumMyRowNodes(); n++)
-//    {
-//      DRT::Node* actnode = BinStrategy()->BinDiscret()->lRowNode(n);
-//      // get the first gid of a node and convert it into a LID
-//      int gid = BinStrategy()->BinDiscret()->Dof(actnode, 0);
-//      int lid = particles_->Dispnp()->Map().LID(gid);
-//      Teuchos::RCP<const Epetra_Vector> disnp = particles_->Dispnp();
-//      LINALG::Matrix<3,1> posXYZDomain(true);
-//      for (int dim=0; dim<3; dim++)
-//      {
-//        posXYZDomain(dim) = (*disnp)[lid+dim];
-//      }
-//
-//      double radius = (*particles_->Radius())[n];
-//
-//      // write data to Gmsh file
-//      IO::GMSH::ScalarToStream(posXYZDomain, radius, gmshfilecontent);
-//    }
-//
-//    gmshfilecontent << "};\n";
-//  }
-//
-//  gmshfilecontent.close();
+    // write moving walls to file
+    if (moving_walls_)
+    {
+      particlewalldis_->Writer()->NewStep(Step(), Time());
+      particlewalldis_->Writer()->WriteVector("displacement", walldispnp_);
+    }
+  }
 
   return;
 }
@@ -1747,38 +1688,8 @@ void PARTICLE::Algorithm::ThermalExpansion()
 }
 
 /*------------------------------------------------------------------------*
- | set up wall discretizations                               catta 06/16  |
+ | return gravity acceleration                               meier 05/17  |
  *------------------------------------------------------------------------*/
-void PARTICLE::Algorithm::SetUpWallDiscret()
-{
-  if(particlewalldis_ != Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_Vector> walldisn = Teuchos::null;
-    Teuchos::RCP<Epetra_Vector> walldisnp = Teuchos::null;
-    Teuchos::RCP<Epetra_Vector> wallvelnp = Teuchos::null;
-
-    // solve for structural (wall) problem
-    if(moving_walls_)
-    {
-      // extract displacement and velocity from full structural field to obtain wall states
-      walldisn = wallextractor_->ExtractCondVector(structdispn_);
-      walldisnp = wallextractor_->ExtractCondVector(structdispnp_);
-      wallvelnp = wallextractor_->ExtractCondVector(structvelnp_);
-    }
-    else
-    {
-      walldisn = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-      walldisnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-      wallvelnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-    }
-
-    particlewalldis_->SetState("walldisn", walldisn);
-    particlewalldis_->SetState("walldisnp", walldisnp);
-    particlewalldis_->SetState("wallvelnp", wallvelnp);
-  }
-}
-
-/// return gravity acceleration
 LINALG::Matrix<3,1> PARTICLE::Algorithm::GetGravityAcc(const double time)
 {
   double fac=1.0;

@@ -2467,7 +2467,7 @@ void CAVITATION::Algorithm::IntegrateRadius(
 
   // init of RK sub time
   double subtime_rk = 0.0;
-  double r_dot_bub_kp;
+  double r_dot_bub_kp = 0.0;
 
   const double interpolfac = (pfluidnp-pfluidn)/(fluid_timenp-fluid_timen);
 

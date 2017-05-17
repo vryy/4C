@@ -469,9 +469,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoundaryData(
       sumjVjWij.Update(interData_ij.w_ij_,particle_j.vel_,1.0);
       //sum up the denominator of Ref. Adami2012, Eq.(22)
       sumjWij+=interData_ij.w_ij_;
-      //sum up the left sum of numerator of Ref. Adami2012, Eq.(22)
+      //sum up the left sum of numerator of Ref. Adami2012, Eq.(27)
       sumjpjWij+=particle_j.pressure_*interData_ij.w_ij_;
-      //sum up the right sum of numerator of Ref. Adami2012, Eq.(22)
+      //sum up the right sum of numerator of Ref. Adami2012, Eq.(27)
       sumjrhojrijWij.Update(interData_ij.rRelNorm2_*particle_j.density_*interData_ij.w_ij_,interData_ij.rRelVersor_ij_,1.0);
     }
 
@@ -1777,7 +1777,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_op(const int st
  *---------------------------------------------------------------------------------*/
 void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_w(const int step)
 {
-  // get wall discretization and states for particles
+  // get wall discretization and states
   Teuchos::RCP<DRT::Discretization> walldiscret = particle_algorithm_->WallDiscret();
   Teuchos::RCP<const Epetra_Vector> walldisn(Teuchos::null);
   if(walldiscret != Teuchos::null)

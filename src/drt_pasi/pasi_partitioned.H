@@ -144,8 +144,8 @@ protected:
   //! particle time step
   virtual void ParticleStep();
 
-  //! set structural displacements
-  virtual void SetStructDispVel();
+  //! set structural states
+  virtual void SetStructStates();
 
   //! structural output
   virtual void StructOutput();

@@ -280,7 +280,7 @@ void runEnsightVtuFilter(PostProblem    &problem)
           ParticleFilter particlewriter(particlefield, problem.outname());
           particlewriter.WriteFiles();
         }
-        else if (disname == "visbins")
+        else if (disname == "bins")
         {
           PostField* visualizebins = problem.get_discretization(i);
           StructureFilter binwriter(visualizebins, problem.outname());
