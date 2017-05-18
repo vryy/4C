@@ -1639,7 +1639,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
         }
       }
 
-      if(elevector2 != NULL)
+      if(elevector2.RowDim()>0)
       {
         // just pressure part of traction
         LINALG::Matrix<3,3> pressure_part;
