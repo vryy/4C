@@ -5857,9 +5857,9 @@ NODE 125 COORD 1.000000000000000e+00 1.000000000000000e+00 -1.000000000000000e+0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 ----------------------------------------------------------RESULT DESCRIPTION
 //FLUID SPECIAL 1
 FLUID DIS fluid NODE 39 QUANTITY velx VALUE -7.86550568191698329e-01 TOLERANCE 1e-8

@@ -5859,9 +5859,9 @@ NODE 125 COORD 1.000000000000000e+00 1.000000000000000e+00 -1.000000000000000e+0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION -pi/4.0*(exp(pi/4.0*x)*sin(pi/4.0*y+pi/2.0*z)+exp(pi/4.0*z)*cos(pi/4.0*x+pi/2.0*y))*exp(-0.001*pi*pi/4.0*t)
 COMPONENT 1 FUNCTION -pi/4.0*(exp(pi/4.0*y)*sin(pi/4.0*z+pi/2.0*x)+exp(pi/4.0*x)*cos(pi/4.0*y+pi/2.0*z))*exp(-0.001*pi*pi/4.0*t)

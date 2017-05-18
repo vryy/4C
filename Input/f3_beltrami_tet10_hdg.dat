@@ -1986,9 +1986,9 @@ NODE 974    COORD  -4.4851907865239188e-01  -1.7961537077272885e-01  -8.75539236
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 0.5 GAMMA 1.0
 ------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 -------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY L2errvel VALUE 3.29584883608942587e-04 TOLERANCE 1e-7
 FLUID DIS fluid NODE 1 QUANTITY H1errvel VALUE 3.52219204844658870e-03 TOLERANCE 1e-7

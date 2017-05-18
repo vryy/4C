@@ -5846,9 +5846,9 @@ NODE 125 COORD 1.000000000000000e+00 1.000000000000000e+00 -1.000000000000000e+0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 0.5 GAMMA 1.0
 ------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 -------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY L2errvel VALUE 9.41341485679150942e-03 TOLERANCE 1e-3
 FLUID DIS fluid NODE 1 QUANTITY H1errvel VALUE 4.30080611248700034e-02 TOLERANCE 1e-3

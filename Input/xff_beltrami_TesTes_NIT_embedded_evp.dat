@@ -108,9 +108,9 @@ GHOST_PENALTY_FAC               0.01                          // in [0.1;0.5]
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0

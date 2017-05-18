@@ -273,7 +273,7 @@ class BeltramiFunction : public DRT::UTILS::Function
 {
 public:
 
-  BeltramiFunction(double c1, double c2);
+  BeltramiFunction(double c1);
 
   /*!
 
@@ -320,7 +320,6 @@ public:
 
 private:
   double c1_;
-  double c2_;
 };
 
 

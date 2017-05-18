@@ -73,9 +73,9 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 0.5 GAMMA 1.0
 ------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.98658970986708983e-02 TOLERANCE 1e-12
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE -1.64627843818506009e-02 TOLERANCE 1e-12

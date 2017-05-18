@@ -128,9 +128,9 @@ MAT 6 ELAST_CoupLogNeoHooke MODE YN C1 1.0e1 C2 0.4995
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 4
 ------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 ------------------------------------------------------------FUNCT3
 FUNCTION 0.03*sin(20*pi*t)
 ------------------------------------------------RESULT DESCRIPTION

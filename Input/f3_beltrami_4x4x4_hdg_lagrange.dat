@@ -79,9 +79,9 @@ AZSCAL                          none
 MAT 1   MAT_fluid   DYNVISCOSITY 1 DENSITY 0.5 GAMMA 1
 -----------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ----------------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 -------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY L2errvel VALUE 1.70463244533022584e-02 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1 QUANTITY H1errvel VALUE 3.98070380684295219e-02 TOLERANCE 1e-12

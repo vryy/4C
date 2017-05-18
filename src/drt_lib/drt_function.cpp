@@ -127,7 +127,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   beltrami
   .AddTag("BELTRAMI")
   .AddNamedDouble("c1")
-  .AddNamedDouble("c2")
   ;
 
   DRT::INPUT::LineDefinition kimmoin;
@@ -324,11 +323,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       if (function->HaveNamed("BELTRAMI"))
       {
         double c1;
-        double c2;
         function->ExtractDouble("c1",c1);
-        function->ExtractDouble("c2",c2);
 
-        functions_.push_back(Teuchos::rcp(new FLD::BeltramiFunction(c1, c2)));
+        functions_.push_back(Teuchos::rcp(new FLD::BeltramiFunction(c1)));
       }
       else if (function->HaveNamed("KIM-MOIN"))
       {

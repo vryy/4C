@@ -123,9 +123,9 @@ MAT 4 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 // minus side
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 ----------------------------------------------------------------------FUNCT3
 // initial G-function outside of domain -> no cut, no interface
 FUNCTION x+100

@@ -117,9 +117,9 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0 // Re=6620
 ----------------------------------------------------------------------FUNCT1
-BELTRAMI c1 1.0 c2 1.0
+BELTRAMI c1 1.0
 ----------------------------------------------------------------------FUNCT2
-BELTRAMI c1 2.0 c2 1.0
+BELTRAMI c1 2.0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.40626081890903892e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE -1.19910383960408554e-01 TOLERANCE 1e-9
