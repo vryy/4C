@@ -58,16 +58,21 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
   bspotpos1_ = initpos[0];
   bspotpos2_ = initpos[1];
 
-  /* the initial triads of the connecting element are chosen such that the first
-   * base vector points in the direction of the distance vector of the two
-   * connection sites; second and third base vector are arbitrarily constructed
-   * with help of "smallest rotation" operation here. */
+
+  // *** initialization of the two triads of the connecting element ***
+
+  /* they are determined such that:
+   * - the first base vector points in the direction of the distance vector
+   *   of the two connection sites; (will be axis of connecting element)
+   * - second and third base vector are arbitrarily constructed from cross-product
+   *   of first base vector with either first or second base vector of global
+   *   coordinate system; this avoids any singularities */
   LINALG::Matrix<3,3> linkeletriad(true);
   LINALG::Matrix<3,1> distvec(true);
 
   distvec.Update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
 
-  // a bunch of safety checks until code is better tested
+  // feasibility check regarding coinciding connection sites
   if (distvec.Norm2() < 1e-12)
   {
     std::cout << "\nBeamToBeamLinkage initialized with ...";
@@ -84,15 +89,36 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
         "spot positions are almost identical!");
   }
 
-  distvec.Scale(1.0 / distvec.Norm2());
+  // first base vector
+  distvec.Scale( 1.0 / distvec.Norm2() );
 
-  // check relative orientation of desired crosslinker axis (distvec) and first base vector
-  // of first parent beam element binding spot
-  double scalarproduct=0.0;
-  const LINALG::Matrix<3,1> firstbasevector_beamele_bspot1(&(inittriad[0])(0,0));
-  scalarproduct = distvec.Dot(firstbasevector_beamele_bspot1);
+  std::copy( distvec.A(), distvec.A()+3, &linkeletriad(0,0) );
 
-  if (std::abs(scalarproduct - (-1.0)) < 1e-10)
+
+  // second base vector
+  // check included angle of desired crosslinker axis (normalized distvec = first
+  // base vector) and (1,0,0), i.e. scalar product which in this case simplifies to
+  // first component of distvec
+  LINALG::Matrix<3,1> unit_vector_global_x(true), unit_vector_global_y(true);
+  unit_vector_global_x(0) = 1.0;
+  unit_vector_global_y(1) = 1.0;
+
+  const double scalarproduct = distvec(0);
+
+  LINALG::Matrix<3,1> second_base_vecor_linkerele(true);
+
+  // is included angle smaller than 45° ? then avoid singularity at angle=0° ...
+  if ( std::abs(scalarproduct) > 0.5 * std::sqrt(2) )
+  {
+    second_base_vecor_linkerele.CrossProduct( distvec, unit_vector_global_y );
+  }
+  else
+  {
+    second_base_vecor_linkerele.CrossProduct( distvec, unit_vector_global_x );
+  }
+
+  // feasibility check
+  if ( second_base_vecor_linkerele.Norm2() < 1e-12 )
   {
     std::cout << "\nBeamToBeamLinkage initialized with ...";
     std::cout << "\ninitbspotpos1 =";
@@ -104,17 +130,56 @@ void BEAMINTERACTION::BeamToBeamLinkage::Init(
     std::cout << "\ninitbspottriad2 =";
     inittriad[1].Print(std::cout);
 
-    dserror("we got a problem with smallest rotation (SR) operation here, because"
-        " the crosslinker axis and the first base vector of the first beam element"
-        " enclose an angle of 180 degree such that the SR-operation becomes singular!");
+    std::cout << "\ndistvec = ";
+    distvec.Print(std::cout);
+    std::cout << "\nsecond_base_vecor_linkerele = ";
+    second_base_vecor_linkerele.Print(std::cout);
+
+    dserror("Initialization of BeamToBeamLinkage failed because the second base vector of the"
+        "linker element's triad has almost length zero!");
+  }
+  else
+  {
+    second_base_vecor_linkerele.Scale( 1.0 / second_base_vecor_linkerele.Norm2() );
   }
 
-  LARGEROTATIONS::CalculateSRTriads<double>(distvec,inittriad[0],linkeletriad);
+
+  // third base vector to complete orthonormal triad
+  LINALG::Matrix<3,1> third_base_vecor_linkerele(true);
+  third_base_vecor_linkerele.CrossProduct( distvec, second_base_vecor_linkerele );
+
+  // feasibility check
+  if ( std::abs( third_base_vecor_linkerele.Norm2() - 1.0 ) > 1e-12 )
+  {
+    std::cout << "\nBeamToBeamLinkage initialized with ...";
+    std::cout << "\ninitbspotpos1 =";
+    initpos[0].Print(std::cout);
+    std::cout << "\ninitbspotpos2 =";
+    initpos[1].Print(std::cout);
+    std::cout << "\ninitbspottriad1 =";
+    inittriad[0].Print(std::cout);
+    std::cout << "\ninitbspottriad2 =";
+    inittriad[1].Print(std::cout);
+
+    std::cout << "\ndistvec = ";
+    distvec.Print(std::cout);
+    std::cout << "\nsecond_base_vecor_linkerele = ";
+    second_base_vecor_linkerele.Print(std::cout);
+    std::cout << "\nthird_base_vecor_linkerele = ";
+    third_base_vecor_linkerele.Print(std::cout);
+
+    dserror("Initialization of BeamToBeamLinkage failed because the third base vector of the"
+        "linker element's triad is no unit vector!");
+  }
+
 
   /* store the initial triads as quaternions in class variables for the subsequent
    * use in setup of reference configuration of the connecting element */
-  LARGEROTATIONS::triadtoquaternion(linkeletriad,bspottriad1_);
-  bspottriad2_=bspottriad1_;
+  std::copy( second_base_vecor_linkerele.A(), second_base_vecor_linkerele.A()+3, &linkeletriad(0,1) );
+  std::copy( third_base_vecor_linkerele.A(), third_base_vecor_linkerele.A()+3, &linkeletriad(0,2) );
+
+  LARGEROTATIONS::triadtoquaternion( linkeletriad, bspottriad1_ );
+  bspottriad2_ = bspottriad1_;
 
   /* store relative rotation matrix between triads of connecting element and
    * the material triads of the "parent elements"; these remain constant over
