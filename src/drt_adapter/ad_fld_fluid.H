@@ -238,6 +238,17 @@ namespace ADAPTER {
                                    Teuchos::RCP<DRT::Discretization> scatradis,
                                    int dofset=0) = 0;
 
+    /// set scalar fields within outer iteration loop for low-Mach-number flow
+    virtual void SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+                                         Teuchos::RCP<const Epetra_Vector> scalaram,
+                                         Teuchos::RCP<const Epetra_Vector> scalardtam,
+                                         Teuchos::RCP<const Epetra_Vector> fsscalaraf,
+                                         const double             thermpressaf,
+                                         const double             thermpressam,
+                                         const double             thermpressdtaf,
+                                         const double             thermpressdtam,
+                                         Teuchos::RCP<DRT::Discretization> scatradis) = 0;
+
     /// set scalar fields
     virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,

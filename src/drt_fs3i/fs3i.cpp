@@ -378,11 +378,13 @@ void FS3I::FS3I_Base::ScatraEvaluateSolveIterUpdate()
   SetupCoupledScatraSystem();
   LinearSolveScatra();
   ScatraIterUpdate();
-  // in case of later use of generalized-alpha time integration, a
-  // routine for computing intermediate values is required at this point;
-  // for the time being, this merely serves as a reminder for this
-  // required inclusion
-  //ComputeIntermediateValues();
+
+  // generalized-alpha time integration: compute intermediate values
+  for (unsigned i=0; i<scatravec_.size(); ++i)
+  {
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
+    scatra->ScaTraField()->ComputeIntermediateValues();
+  }
 }
 
 /*----------------------------------------------------------------------*/

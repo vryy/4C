@@ -4,8 +4,10 @@
 
 \brief evaluation of ScaTra boundary elements for low Mach number problems
 
+\level 2
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -22,6 +24,7 @@ Maintainer: Rui Fang
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/yoghurt.H"
 
 #include "scatra_ele.H"
@@ -328,6 +331,14 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype>::GetDensity(
   {
     // compute density based on progress variable
     density = static_cast<const MAT::FerEchPV*>(material.get())->ComputeDensity(my::funct_.Dot(ephinp[k]));
+
+    break;
+  }
+
+  case INPAR::MAT::m_thermostvenant:
+  {
+    // get constant density
+    density = static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get())->Density();
 
     break;
   }

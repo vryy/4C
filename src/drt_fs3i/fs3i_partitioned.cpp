@@ -676,8 +676,27 @@ void FS3I::PartFS3I::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >&
 {
   // extract fluid velocities
 
-  convel.push_back(fsi_->FluidField()->ConvectiveVel());
-  vel.push_back(fsi_->FluidField()->Velnp());
+  switch(fsi_->FluidField()->TimIntScheme())
+  {
+    case INPAR::FLUID::timeint_afgenalpha:
+    {
+      Teuchos::RCP<Epetra_Vector> fluidconvel = Teuchos::rcp(new Epetra_Vector(*(fsi_->FluidField()->Velaf())));
+      vel.push_back(fluidconvel);
+      // now subtract the grid velocity
+      fluidconvel->Update(-1.0,*(fsi_->FluidField()->GridVel()),1.0);
+      convel.push_back(fluidconvel);
+    }
+    break;
+    case INPAR::FLUID::timeint_one_step_theta:
+    {
+      convel.push_back(fsi_->FluidField()->ConvectiveVel());
+      vel.push_back(fsi_->FluidField()->Velnp());
+    }
+    break;
+    default:
+      dserror("Time integration scheme not supported");
+    break;
+  }
 
   // extract structure velocities and accelerations
 

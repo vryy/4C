@@ -107,6 +107,17 @@ public:
   { return fluid_->RemoveDirichCond(maptoremove); };
   virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
   { return fluid_->UpdateNewton(vel); };
+  virtual void SetLomaIterScalarFields(
+     Teuchos::RCP<const Epetra_Vector>  scalaraf,
+      Teuchos::RCP<const Epetra_Vector> scalaram,
+      Teuchos::RCP<const Epetra_Vector> scalardtam,
+      Teuchos::RCP<const Epetra_Vector> fsscalaraf,
+      const double                      thermpressaf,
+      const double                      thermpressam,
+      const double                      thermpressdtaf,
+      const double                      thermpressdtam,
+      Teuchos::RCP<DRT::Discretization> scatradis)
+  { return fluid_->SetLomaIterScalarFields(scalaraf, scalaram, scalardtam, fsscalaraf, thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, scatradis); }
   virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
       Teuchos::RCP<const Epetra_Vector> scalaram,
       Teuchos::RCP<const Epetra_Vector> scalardtam,

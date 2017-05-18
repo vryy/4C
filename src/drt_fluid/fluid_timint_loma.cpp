@@ -92,7 +92,7 @@ FLD::TimIntLoma::~TimIntLoma()
  | set fields for scatra - fluid coupling, esp.                         |
  | set fields for low-Mach-number flow within iteration loop   vg 09/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::SetIterScalarFields(
+void FLD::TimIntLoma::SetLomaIterScalarFields(
    Teuchos::RCP<const Epetra_Vector> scalaraf,
    Teuchos::RCP<const Epetra_Vector> scalaram,
    Teuchos::RCP<const Epetra_Vector> scalardtam,
@@ -185,7 +185,7 @@ void FLD::TimIntLoma::SetIterScalarFields(
   thermpressdtam_ = thermpressdtam;
 
   return;
-} // TimIntLoma::SetIterScalarFields
+} // TimIntLoma::SetLomaIterScalarFields
 
 
 /*----------------------------------------------------------------------*

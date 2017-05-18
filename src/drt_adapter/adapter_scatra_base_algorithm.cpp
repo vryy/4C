@@ -147,7 +147,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // overrule flags for solid-based scalar transport!
   // (assumed disname = "scatra2" for solid-based scalar transport)
   // -------------------------------------------------------------------
-  if (probtype == prb_ac_fsi or probtype == prb_biofilm_fsi or probtype == prb_gas_fsi or probtype ==prb_fps3i)
+  if (probtype == prb_ac_fsi or probtype == prb_biofilm_fsi or probtype == prb_gas_fsi or probtype == prb_fps3i or probtype == prb_thermo_fsi)
   {
     //scatra1 (=fluid scalar) get's inputs from SCALAR TRANSPORT DYNAMIC/STABILIZATION, hence nothing is to do here
     //    if (disname== "scatra1") //get's inputs from SCALAR TRANSPORT DYNAMIC/STABILIZATION
@@ -204,7 +204,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
 
   // low Mach number flow
-  if (probtype == prb_loma)
+  if (probtype == prb_loma or probtype == prb_thermo_fsi)
   {
     Teuchos::RCP<Teuchos::ParameterList> lomaparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LOMAControlParams()));
     switch(timintscheme)

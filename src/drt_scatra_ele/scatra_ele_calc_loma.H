@@ -16,8 +16,10 @@
        parameters may overwrite the subgrid diffusivity added to the physical one. For avoiding this potential
        combination, it should be excluded in a loma parameter list, where a dserror() should be provided.
 
+\level 2
+
 <pre>
-Maintainer: Ursula Rasthofer/Volker Gravemeier
+\maintainer Ursula Rasthofer/Volker Gravemeier
             {rasthofer,vgravem}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15236/45
@@ -143,6 +145,16 @@ private:
 
     //! material Ferech PV
     void MatFerechPV(
+      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+      const int                               k,        //!< id of current scalar
+      double&                                 densn,    //!< density at t_(n)
+      double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+      double&                                 densam,   //!< density at t_(n+alpha_M)
+      double&                                 visc      //!< fluid viscosity
+    );
+
+    //! material thermo St. Venant Kirchhoff
+    void MatThermoStVenantKirchhoff(
       const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                               k,        //!< id of current scalar
       double&                                 densn,    //!< density at t_(n)

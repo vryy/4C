@@ -867,7 +867,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
     case prb_immersed_membrane_fsi:
     case prb_gas_fsi:
     case prb_biofilm_fsi:
-    case prb_thermo_fsi:
     case prb_fluid_ale:
     case prb_freesurf:
     { //
@@ -898,6 +897,30 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         fluid_ = Teuchos::rcp(new FluidFluidFSI(xffluid,tmpfluid,solver,fluidtimeparams,isale,dirichletcond));
       }
       else if ( coupling == fsi_iter_sliding_monolithicfluidsplit
+          or coupling == fsi_iter_sliding_monolithicstructuresplit)
+        fluid_ = Teuchos::rcp(new FluidFSIMsht(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+      else
+        fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
+    }
+    break;
+    case prb_thermo_fsi:
+    {
+      Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
+      if(timeint == INPAR::FLUID::timeint_afgenalpha
+         or timeint == INPAR::FLUID::timeint_npgenalpha)
+        tmpfluid = Teuchos::rcp(new FLD::TimIntLomaGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+      else if(timeint == INPAR::FLUID::timeint_one_step_theta)
+        tmpfluid = Teuchos::rcp(new FLD::TimIntLomaOst(actdis, solver, fluidtimeparams, output, isale));
+      else if(timeint == INPAR::FLUID::timeint_bdf2)
+        tmpfluid = Teuchos::rcp(new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
+      else
+        dserror("Unknown time integration for this fluid problem type\n");
+
+      const Teuchos::ParameterList& fsidyn =
+          DRT::Problem::Instance()->FSIDynamicParams();
+      int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+
+      if ( coupling == fsi_iter_sliding_monolithicfluidsplit
           or coupling == fsi_iter_sliding_monolithicstructuresplit)
         fluid_ = Teuchos::rcp(new FluidFSIMsht(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
       else

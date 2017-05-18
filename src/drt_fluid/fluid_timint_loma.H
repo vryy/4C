@@ -47,7 +47,7 @@ public:
   \brief set scalar fields within outer iteration loop
 
   */
-  void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+  void SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                          Teuchos::RCP<const Epetra_Vector> scalaram,
                          Teuchos::RCP<const Epetra_Vector> scalardtam,
                          Teuchos::RCP<const Epetra_Vector> fsscalaraf,
@@ -56,7 +56,6 @@ public:
                          const double             thermpressdtaf,
                          const double             thermpressdtam,
                          Teuchos::RCP<DRT::Discretization> scatradis);
-
 
   /*!
   \brief set scalar fields

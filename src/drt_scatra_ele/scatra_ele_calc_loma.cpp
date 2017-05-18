@@ -36,6 +36,7 @@
 #include "../drt_mat/arrhenius_temp.H"
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/ferech_pv.H"
+#include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/yoghurt.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
@@ -138,6 +139,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Materials(
     MatArrheniusTemp(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
     MatArrheniusPV(material,k,densn,densnp,densam,visc);
+  else if (material->MaterialType() == INPAR::MAT::m_thermostvenant)
+    MatThermoStVenantKirchhoff(material,k,densn,densnp,densam,visc);
   else if (material->MaterialType() == INPAR::MAT::m_yoghurt)
     MatYoghurt(material,k,densn,densnp,densam,visc);
   else dserror("Material type is not supported");
@@ -529,6 +532,64 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
    // or multifractal subgrid-scales are used
    if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
      visc = actmat->ComputeViscosity(tempnp);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | material thermo St. Venant Kirchhoff                        vg 02/17 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatThermoStVenantKirchhoff(
+  const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+  const int                               k,        //!< id of current scalar
+  double&                                 densn,    //!< density at t_(n)
+  double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
+  double&                                 densam,   //!< density at t_(n+alpha_M)
+  double&                                 visc      //!< fluid viscosity
+  )
+{
+  const Teuchos::RCP<const MAT::ThermoStVenantKirchhoff>& actmat
+    = Teuchos::rcp_dynamic_cast<const MAT::ThermoStVenantKirchhoff>(material);
+
+  // get constant density
+  densnp = actmat->Density();
+  densam = densnp;
+  densn = densnp;
+
+  // set zero factor for density gradient
+  densgradfac_[0] = 0.0;
+
+  // set specific heat capacity at constant volume
+  // (value divided by density here for its intended use on right-hand side)
+  shc_ = actmat->Capacity()/densnp;
+
+  // compute velocity divergence required for reaction coefficient
+  //double vdiv(0.0);
+  //GetDivergence(vdiv,evelnp_);
+
+  // compute reaction coefficient
+  // (divided by density due to later multiplication by density in CalMatAndRHS)
+  //const double reacoef = -vdiv_*actmat->STModulus()/(actmat->Capacity()*densnp);
+  const double reacoef = 0.0;
+
+  // set reaction flag to true, check whether reaction coefficient is positive
+  // and set derivative of reaction coefficient
+  //if (reacoef > EPS14) reaction_ = true;
+  //if (reacoef < -EPS14)
+  //  dserror("Reaction coefficient for Thermo St. Venant-Kirchhoff material is not positive: %f",0, reacoef);
+  //reacoeffderiv_[0] = reacoef;
+
+  // set different reaction terms in the reaction manager
+  my::reamanager_->SetReaCoeff(reacoef,0);
+
+  // ensure that temporal derivative of thermodynamic pressure is zero for
+  // the present structure-based scalar transport
+  thermpressdt_ = 0.0;
+
+  // compute diffusivity as ratio of conductivity and specific heat capacity at constant volume
+  my::diffmanager_->SetIsotropicDiff(actmat->Conductivity()/actmat->Capacity(),k);
 
   return;
 }

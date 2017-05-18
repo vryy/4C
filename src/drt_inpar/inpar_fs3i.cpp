@@ -92,6 +92,7 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                tuple<std::string>(
                                  "Undefined",
                                  "ConvectionDiffusion",
+                                 "Loma",
                                  "Advanced_Reaction",
                                  "Chemotaxis",
                                  "Chemo_Reac",
@@ -101,6 +102,7 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                tuple<int>(
                                  INPAR::SCATRA::impltype_undefined,
                                  INPAR::SCATRA::impltype_std,
+                                 INPAR::SCATRA::impltype_loma,
                                  INPAR::SCATRA::impltype_advreac,
                                  INPAR::SCATRA::impltype_chemo,
                                  INPAR::SCATRA::impltype_chemoreac,
@@ -143,12 +145,14 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                tuple<std::string>(
                                  "Undefined",
                                  "ConvectionDiffusion",
+                                 "Loma",
                                  "Advanced_Reaction",
                                  "Chemotaxis",
                                  "Chemo_Reac"),
                                tuple<int>(
                                  INPAR::SCATRA::impltype_undefined,
                                  INPAR::SCATRA::impltype_std,
+                                 INPAR::SCATRA::impltype_loma,
                                  INPAR::SCATRA::impltype_advreac,
                                  INPAR::SCATRA::impltype_chemo,
                                  INPAR::SCATRA::impltype_chemoreac),

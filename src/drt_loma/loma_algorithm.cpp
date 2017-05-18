@@ -558,28 +558,28 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
   {
   case INPAR::FLUID::timeint_afgenalpha:
   {
-    Teuchos::rcp_dynamic_cast<FLD::TimIntLoma>(FluidField())->SetIterScalarFields(ScaTraField()->Phiaf(),
-                                   ScaTraField()->Phiam(),
-                                   ScaTraField()->Phidtam(),
-                                   ScaTraField()->FsPhi(),
-                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressAf(),
-                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressAm(),
-                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressDtAf(),
-                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressDtAm(),
-                                   ScaTraField()->Discretization());
+    FluidField()->SetLomaIterScalarFields(ScaTraField()->Phiaf(),
+                                          ScaTraField()->Phiam(),
+                                          ScaTraField()->Phidtam(),
+                                          ScaTraField()->FsPhi(),
+                                          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressAf(),
+                                          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressAm(),
+                                          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressDtAf(),
+                                          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressDtAm(),
+                                          ScaTraField()->Discretization());
   }
   break;
   case INPAR::FLUID::timeint_one_step_theta:
   {
-    Teuchos::rcp_dynamic_cast<FLD::TimIntLoma>(FluidField())->SetIterScalarFields(ScaTraField()->Phinp(),
-                                   ScaTraField()->Phin(),
-                                   ScaTraField()->Phidtnp(),
-                                   ScaTraField()->FsPhi(),
-                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressNp(),
-                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressN(),
-                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressDtNp(),
-                                   Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressDtNp(),
-                                   ScaTraField()->Discretization());
+    FluidField()->SetLomaIterScalarFields(ScaTraField()->Phinp(),
+                                          ScaTraField()->Phin(),
+                                          ScaTraField()->Phidtnp(),
+                                          ScaTraField()->FsPhi(),
+                                          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressNp(),
+                                          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressN(),
+                                          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressDtNp(),
+                                          Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntLoma>(ScaTraField())->ThermPressDtNp(),
+                                          ScaTraField()->Discretization());
   }
   break;
   default:

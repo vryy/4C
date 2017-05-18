@@ -2,8 +2,10 @@
 \file fluid_timint.H
 \brief Baseclass for all fluid time integrations
 
+\level 2
+
 <pre>
-Maintainers: Benjamin Krank & Volker Gravemeier
+\maintainer Benjamin Krank & Volker Gravemeier
              {krank,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-245
@@ -310,6 +312,18 @@ public:
       Teuchos::RCP<DRT::Discretization> scatradis,
       int dofset)
   { dserror("Not implemented in the base class, may be overridden by a subclass."); }
+
+  virtual void SetLomaIterScalarFields(
+      Teuchos::RCP<const Epetra_Vector> scalaraf,
+      Teuchos::RCP<const Epetra_Vector> scalaram,
+      Teuchos::RCP<const Epetra_Vector> scalardtam,
+      Teuchos::RCP<const Epetra_Vector> fsscalaraf,
+      const double             thermpressaf,
+      const double             thermpressam,
+      const double             thermpressdtaf,
+      const double             thermpressdtam,
+      Teuchos::RCP<DRT::Discretization> scatradis)
+   { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
   /// set scalar fields
   virtual void SetScalarFields(
