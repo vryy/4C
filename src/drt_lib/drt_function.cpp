@@ -5,7 +5,7 @@
 \brief Managing and evaluating of spatial functions
 
 <pre>
-\level 0
+\level 1
 
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
