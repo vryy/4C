@@ -108,6 +108,14 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   intstrat_(DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(strparams,"INT_STRATEGY"))
 {
 
+  //Check what kind of Cardiovascular0D boundary conditions there are
+  havecardiovascular0d_ = (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D()
+      or cardvasc0d_syspulcirculation_->HaveCardiovascular0D() or cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D());
+
+  if(!havecardiovascular0d_)
+    return;
+
+
   switch (intstrat_)
   {
     case INPAR::STR::int_standard:
@@ -136,13 +144,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     actdisc_->EvaluateDirichlet(p, zeros_, Teuchos::null, Teuchos::null,Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0); // just in case of change
   }
-
-  //----------------------------------------------------------------------------
-  //-----------------------------------0D cardiovascular-structure coupling conditions!
-
-  //Check what kind of Cardiovascular0D boundary conditions there are
-  havecardiovascular0d_ = (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D() or cardvasc0d_arterialproxdist_->HaveCardiovascular0D()
-      or cardvasc0d_syspulcirculation_->HaveCardiovascular0D() or cardvascrespir0d_syspulperiphcirculation_->HaveCardiovascular0D());
 
   if (cardvasc0d_4elementwindkessel_->HaveCardiovascular0D())
   {
