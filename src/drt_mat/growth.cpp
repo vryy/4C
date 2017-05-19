@@ -322,7 +322,6 @@ void MAT::Growth::Update()
     thetaold_->at(i) = theta_->at(i);
   }
 
-
   matelastic_->Update();
 }
 
@@ -376,13 +375,31 @@ double MAT::Growth::Density(int gp) const
 
 
 
-
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthVolumetric::VisNames(std::map<std::string,int>& names)
 {
 
-  std::string fiber = "theta";
-  names[fiber] = 1;
+  std::string name = "theta";
+  names[name] = 1;
+
+  switch (Parameter()->growthlaw_->MaterialType())
+  {
+  case INPAR::MAT::m_growth_aniso_stress:
+  case INPAR::MAT::m_growth_iso_stress:
+  {
+    name = "tr_mandel_e";
+    names[name] = 1;
+  }
+    break;
+  case INPAR::MAT::m_growth_aniso_strain:
+  {
+    name = "lambda_fib_e";
+    names[name] = 1;
+  }
+    break;
+  default:
+    break;
+  }
 
   Matelastic()->VisNames(names);
 }
@@ -396,8 +413,26 @@ bool MAT::GrowthVolumetric::VisData(const std::string& name, std::vector<double>
     if ((int)data.size()!=1)
       dserror("size mismatch");
     double temp = 0.0;
-    for (int iter=0; iter<numgp; iter++)
-      temp += theta_->at(iter);
+    for (int gp=0; gp<numgp; gp++)
+      temp += theta_->at(gp);
+    data[0] = temp/numgp;
+  }
+  else if (name == "tr_mandel_e")
+  {
+    if ((int)data.size()!=1)
+      dserror("size mismatch");
+    double temp = 0.0;
+    for (int gp=0; gp<numgp; gp++)
+      temp += tr_mandel_e_->at(gp);
+    data[0] = temp/numgp;
+  }
+  else if (name == "lambda_fib_e")
+  {
+    if ((int)data.size()!=1)
+      dserror("size mismatch");
+    double temp = 0.0;
+    for (int gp=0; gp<numgp; gp++)
+      temp += lambda_fib_e_->at(gp);
     data[0] = temp/numgp;
   }
   else
@@ -421,7 +456,8 @@ DRT::ParObject* MAT::GrowthVolumetricType::Create( const std::vector<char> & dat
 /*----------------------------------------------------------------------------*/
 MAT::GrowthVolumetric::GrowthVolumetric()
   : Growth(),
-//    tr_mandel_(Teuchos::null),
+    tr_mandel_e_(Teuchos::null),
+    lambda_fib_e_(Teuchos::null),
     paramsVolumetric_(NULL),
     refdir_(true),
     curdir_(Teuchos::null),
@@ -433,7 +469,8 @@ MAT::GrowthVolumetric::GrowthVolumetric()
 /*----------------------------------------------------------------------------*/
 MAT::GrowthVolumetric::GrowthVolumetric(MAT::PAR::Growth* params)
   : Growth(params),
-//    tr_mandel_(Teuchos::null),
+    tr_mandel_e_(Teuchos::null),
+    lambda_fib_e_(Teuchos::null),
     paramsVolumetric_(params),
     refdir_(true),
     curdir_(Teuchos::null),
@@ -597,23 +634,12 @@ void MAT::GrowthVolumetric::Evaluate
   { // turn off growth or calculate stresses for output
     double theta = theta_->at(gp);
 
-    LINALG::Matrix<6,1> S(true);
+    LINALG::Matrix<6,1> Svec(true);
     LINALG::Matrix<6,6> cmatdach(true);
 
-    GetSAndCmatdach(theta,defgrd,&S,&cmatdach,params,eleGID);
+    GetSAndCmatdach(theta,defgrd,&Svec,&cmatdach,params,eleGID);
 
-    *stress=S;
-
-    //--------------------------------------------------------------------------------------
-    // build identity tensor I
-    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
-    for (int i = 0; i < 3; i++)
-      Id(i) = 1.0;
-
-    // right Cauchy-Green Tensor  C = 2 * E + I
-    LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
-    C.Scale(2.0);
-    C += Id;
+    *stress=Svec;
 
     // calculate growth part F_g of the deformation gradient F
     LINALG::Matrix<3,3> F_g(true);
@@ -639,13 +665,26 @@ void MAT::GrowthVolumetric::Evaluate
     for (int i = 0; i < 3; i++)
       Id(i) = 1.0;
     // right Cauchy-Green Tensor  C = 2 * E + I
-    LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
-    C.Scale(2.0);
-    C += Id;
-    LINALG::Matrix<NUM_STRESS_3D, 1> S(true);
-    S = *stress;
-//    tr_mandel_->at(gp) =   C(0) * S(0) + C(1) * S(1) + C(2) * S(2) + C(3) * S(3)
-//                      + C(4) * S(4) + C(5) * S(5);
+    LINALG::Matrix<NUM_STRESS_3D, 1> Cvec(*glstrain);
+    Cvec.Scale(2.0);
+    Cvec += Id;
+    LINALG::Matrix<NUM_STRESS_3D, 1> Svec(true);
+    Svec = *stress;
+
+    tr_mandel_e_->at(gp) = Cvec(0) * Svec(0) + Cvec(1) * Svec(1)
+                         + Cvec(2) * Svec(2) + Cvec(3) * Svec(3)
+                         + Cvec(4) * Svec(4) + Cvec(5) * Svec(5);
+
+    // elastic fiber stretch
+    LINALG::Matrix<3,3> C(true);
+    GrowthVolumetric().VectorToMatrix(C,Cvec,MAT::voigt_strain);
+
+    LINALG::Matrix<3,1> CDir(true);
+    CDir.MultiplyNN(1.0,C,refdir_);
+    lambda_fib_e_->at(gp) = sqrt(CDir(0) * refdir_(0)
+                               + CDir(1) * refdir_(1)
+                               + CDir(2) * refdir_(2));
+
   }
 }
 
@@ -671,8 +710,11 @@ void MAT::GrowthVolumetric::EvaluateGrowth(double* theta,
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthVolumetric::ResetAll(const int numgp)
 {
-//  for (int j=0; j<numgp; ++j)
-//    tr_mandel_->at(j) = 0.0;
+  for (int j=0; j<numgp; ++j)
+  {
+    tr_mandel_e_->at(j) = 0.0;
+    lambda_fib_e_->at(j) = 0.0;
+  }
 
   MAT::Growth::ResetAll(numgp);
 }
@@ -790,11 +832,17 @@ void MAT::GrowthVolumetric::GetSAndCmatdach
 
   MatrixToVector(S,*stress,MAT::voigt_stress);
 
-//  // trace of elastic Mandel stress Mdach = Cdach Sdach
-//  double mandel =   Cdachvec(0) * Sdachvec(0) + Cdachvec(1) * Sdachvec(1)
-//                  + Cdachvec(2) * Sdachvec(2) + Cdachvec(3) * Sdachvec(3) + Cdachvec(4) * Sdachvec(4)
-//                  + Cdachvec(5) * Sdachvec(5);
-//  tr_mandel_->at(gp) = mandel;
+  // trace of elastic Mandel stress Mdach = Cdach Sdach
+  tr_mandel_e_->at(gp) = Cdachvec(0) * Sdachvec(0) + Cdachvec(1) * Sdachvec(1)
+                       + Cdachvec(2) * Sdachvec(2) + Cdachvec(3) * Sdachvec(3)
+                       + Cdachvec(4) * Sdachvec(4) + Cdachvec(5) * Sdachvec(5);;
+
+  // elastic fiber stretch lambda = \sqrt(f_0 \cdot Cdach f_0)
+  LINALG::Matrix<3,1> CdachDir(true);
+  CdachDir.MultiplyNN(1.0,Cdach,refdir_);
+  lambda_fib_e_->at(gp) = sqrt(CdachDir(0) * refdir_(0)
+                             + CdachDir(1) * refdir_(1)
+                             + CdachDir(2) * refdir_(2));
 
 }
 
@@ -1167,12 +1215,15 @@ void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
   }
   AddtoPack(data,numgp);
 
-//  // Pack internal variables
-//  for (int gp = 0; gp < numgp; ++gp)
-//  {
-//    AddtoPack(data,tr_mandel_->at(gp));
-//  }
-
+  // Pack internal variables
+  for (int gp = 0; gp < numgp; ++gp)
+  {
+    AddtoPack(data,tr_mandel_e_->at(gp));
+  }
+  for (int gp = 0; gp < numgp; ++gp)
+  {
+    AddtoPack(data,lambda_fib_e_->at(gp));
+  }
 
   // Pack internal variables
   for (int i = 0; i < 3; ++i)
@@ -1247,14 +1298,22 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
     return;
   }
 
-//  // unpack growth internal variables
-//  tr_mandel_ = Teuchos::rcp(new std::vector<double> (numgp));
-//  for (int gp = 0; gp < numgp; ++gp)
-//  {
-//    double a;
-//    ExtractfromPack(position,data,a);
-//    tr_mandel_->at(gp) = a;
-//  }
+  // unpack growth internal variables
+  tr_mandel_e_ = Teuchos::rcp(new std::vector<double> (numgp));
+  for (int gp = 0; gp < numgp; ++gp)
+  {
+    double a;
+    ExtractfromPack(position,data,a);
+    tr_mandel_e_->at(gp) = a;
+  }
+
+  lambda_fib_e_ = Teuchos::rcp(new std::vector<double> (numgp));
+  for (int gp = 0; gp < numgp; ++gp)
+  {
+    double a;
+    ExtractfromPack(position,data,a);
+    lambda_fib_e_->at(gp) = a;
+  }
 
   // unpack growth internal variables
   // Pack internal variables
@@ -1316,9 +1375,13 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
 void MAT::GrowthVolumetric::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
 
-//  tr_mandel_ = Teuchos::rcp(new std::vector<double> (numgp));
-//  for (int j=0; j<numgp; ++j)
-//    tr_mandel_->at(j) = 0.0;
+  tr_mandel_e_ = Teuchos::rcp(new std::vector<double> (numgp));
+  lambda_fib_e_ = Teuchos::rcp(new std::vector<double> (numgp));
+  for (int j=0; j<numgp; ++j)
+  {
+    tr_mandel_e_->at(j) = 0.0;
+    lambda_fib_e_->at(j) = 0.0;
+  }
 
   // setup specific anisotropic growth laws
   switch (Parameter()->growthlaw_->MaterialType())

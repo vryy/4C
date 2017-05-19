@@ -564,10 +564,12 @@ class GrowthLaw;
 
     //@}
 
-//  protected:
-//
-//    /// trace of mandel stress
-//    Teuchos::RCP<std::vector<double> > tr_mandel_;
+  protected:
+
+    /// trace of elastic mandel stress - for postprocessing
+    Teuchos::RCP<std::vector<double> > tr_mandel_e_;
+    /// elastic fiber stretch - for postprocessing
+    Teuchos::RCP<std::vector<double> > lambda_fib_e_;
 
   private:
 
@@ -575,12 +577,12 @@ class GrowthLaw;
     MAT::PAR::Growth* paramsVolumetric_;
 
     ///a reference direction (i.e., a fiber direction or a surface normal etc...), for anisotropic growth laws
-    LINALG::Matrix<3,1> refdir_; //would be fine if it was constant...
+    LINALG::Matrix<3,1> refdir_;
 
-    ///some current direction, needed for anisotropic scalar-dependent growth in current radial direction...
+    ///some current direction, used for anisotropic scalar-dependent growth in current radial direction...
     std::vector<LINALG::Matrix<3,1> > curdir_;
 
-    ///Normal direction, needed for anisotropic scalar-dependent growth in current radial direction...
+    ///normal direction, used for anisotropic scalar-dependent growth in current radial direction...
     std::vector<LINALG::Matrix<3,1> > curdir_for_update_;
 
     /// history of growth matrix, needed for anisotropic scalar-dependent growth in current radial direction...
