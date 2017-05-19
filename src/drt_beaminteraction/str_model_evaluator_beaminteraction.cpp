@@ -405,7 +405,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting(
       extbintoelemap, auxmap );
 
   // 2) extend ghosting of discretization
-  binstrategy_->ExtendDiscretizationGhosting( ia_discret_, ia_elecolmap , true );
+  binstrategy_->ExtendDiscretizationGhosting( ia_discret_, ia_elecolmap , true , false, true );
 }
 
 /*----------------------------------------------------------------------------*

@@ -523,7 +523,7 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   if(particlewalldis_ != Teuchos::null)
   {
     if( not moving_walls_)
-      BinStrategy()->ExtendGhosting(particlewalldis_, particlewallelecolmap_standardghosting_, BinColMap(), true, false, false, false);
+      BinStrategy()->ExtendEleGhosting(particlewalldis_, particlewallelecolmap_standardghosting_, BinColMap(), true, false, false, false);
 
     BuildElementToBinPointers(true);
   }
@@ -789,7 +789,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
     particlewallelecolmap_standardghosting_ = Teuchos::rcp(new Epetra_Map(*particlewalldis->ElementColMap()));
 
     // extend ghosting to the bin col map
-    BinStrategy()->ExtendGhosting(particlewalldis, particlewallelecolmap_standardghosting_, BinColMap(), false, false, false, false);
+    BinStrategy()->ExtendEleGhosting(particlewalldis, particlewallelecolmap_standardghosting_, BinColMap(), false, false, false, false);
   }
   else  // ... or otherwise do fully redundant storage of wall elements in case of moving boundaries
   {

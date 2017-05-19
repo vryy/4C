@@ -221,7 +221,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ExtendGhostingForFilament
       static_cast<int>( colgids.size() ), &colgids[0], 0, DiscretPtr()->Comm() ) );
 
   // temporarily extend ghosting
-  BinStrategyPtr()->ExtendDiscretizationGhosting( DiscretPtr(), newelecolmap, true );
+  BinStrategyPtr()->ExtendDiscretizationGhosting( DiscretPtr(), newelecolmap, true , false , true );
 }
 
 /*-----------------------------------------------------------------------------*

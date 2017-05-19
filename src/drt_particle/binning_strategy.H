@@ -294,7 +294,9 @@ namespace BINSTRATEGY
     virtual void ExtendDiscretizationGhosting(
         Teuchos::RCP<DRT::Discretization> discret,
         Teuchos::RCP<Epetra_Map> const&   extendedelecolmap,
-        bool assigndegreesoffreedom = true
+        bool                              assigndegreesoffreedom,
+        bool                              initelements,
+        bool                              doboundaryconditions
      ) const;
 
     /// extend ghosting according to bin distribution
@@ -318,7 +320,7 @@ namespace BINSTRATEGY
       ) const;
 
     /// extend ghosting according to bin distribution
-    virtual void ExtendGhosting(
+    virtual void ExtendEleGhosting(
       Teuchos::RCP<DRT::Discretization> dis,
       Teuchos::RCP<Epetra_Map>          initial_elecolmap,
       Teuchos::RCP<Epetra_Map>          bincolmap,

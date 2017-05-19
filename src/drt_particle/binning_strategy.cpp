@@ -1141,7 +1141,9 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
 void BINSTRATEGY::BinningStrategy::ExtendDiscretizationGhosting(
     Teuchos::RCP<DRT::Discretization> discret,
     Teuchos::RCP<Epetra_Map> const&   extendedelecolmap,
-    bool assigndegreesoffreedom) const
+    bool assigndegreesoffreedom,
+    bool initelements,
+    bool doboundaryconditions) const
 {
   // make sure that all procs are either filled or unfilled
   // oldmap in ExportColumnElements must be Reset() on every proc or nowhere
@@ -1170,7 +1172,7 @@ void BINSTRATEGY::BinningStrategy::ExtendDiscretizationGhosting(
   discret->ExportColumnNodes( *nodecolmap );
 
   // fillcomplete discret with extended ghosting
-  discret->FillComplete( assigndegreesoffreedom, false, true );
+  discret->FillComplete( assigndegreesoffreedom, initelements, doboundaryconditions );
 
 #ifdef DEBUG
   // print distribution after standard ghosting
@@ -1204,7 +1206,7 @@ void BINSTRATEGY::BinningStrategy::ExtendBinGhosting(
   if( bincolmap->NumGlobalElements() == 1 && bindis_->Comm().NumProc() > 1 )
     dserror("one bin cannot be run in parallel -> reduce CUTOFF_RADIUS");
 
-  ExtendDiscretizationGhosting( bindis_ , bincolmap , assigndegreesoffreedom );
+  ExtendDiscretizationGhosting( bindis_ , bincolmap , assigndegreesoffreedom , false , true );
 
 #ifdef DEBUG
 
@@ -1555,7 +1557,7 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
 /*-------------------------------------------------------------------*
 | extend ghosting according to bin distribution          ghamm 11/16 |
  *-------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::ExtendGhosting(
+void BINSTRATEGY::BinningStrategy::ExtendEleGhosting(
     Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<Epetra_Map> initial_elecolmap,
     Teuchos::RCP<Epetra_Map> bincolmap,
@@ -1573,7 +1575,7 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
        ExtendGhosting(&*initial_elecolmap, rowelesinbin, dummy, Teuchos::null, bincolmap);
 
   // extend ghosting (add nodes/elements) according to the new column layout
-  dis->ExtendedGhosting(*elecolmapextended, assigndegreesoffreedom, initelements, doboundaryconditions, checkghosting);
+  ExtendDiscretizationGhosting(dis, elecolmapextended, assigndegreesoffreedom, initelements, doboundaryconditions);
 
   return;
 }
