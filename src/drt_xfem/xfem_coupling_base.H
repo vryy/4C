@@ -182,6 +182,7 @@ public:
     else if(type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)       return "WEAK DIRICHLET BC / MESH";
     else if(type == INPAR::XFEM::CouplingCond_SURF_NEUMANN)              return "NEUMANN BC        / MESH";
     else if(type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)          return "NAVIER SLIP BC    / MESH";
+    else if(type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE) return "NAVIER SLIP TWOPHASE BC    / MESH";
     else dserror("unsupported coupling condition type %i", type);
 
     return "UNKNOWN";
@@ -261,16 +262,19 @@ public:
   }
 
   std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& GetConfigurationmap(
-      double& kappa_m,    //< fluid sided weighting
-      double& visc_m,     //< fluid sided weighting
-      double& visc_s,     //< slave sided dynamic viscosity
-      double& visc_stab,  //< viscous NIT Penalty scaling
-      double& full_stab,  //< full NIT Penalty scaling
-      const LINALG::Matrix<3,1>& x, //<Position x
-      const DRT::Condition* cond //< Condition
+      double& kappa_m,              //< fluid sided weighting
+      double& visc_m,               //< fluid sided weighting
+      double& visc_s,               //< slave sided dynamic viscosity
+      double& visc_stab,            //< viscous NIT Penalty scaling
+      double& full_stab,            //< full NIT Penalty scaling
+      const LINALG::Matrix<3,1>& x, //< Position x
+      const DRT::Condition* cond,   //< Condition
+      DRT::Element *        ele,    //< Element
+      double*               funct,  //< local shape function for Gauss Point (from fluid element)
+      double*               derxy   //< local derivatives of shape function for Gauss Point (from fluid element)
       )
   {
-    UpdateConfigurationMap_GP(kappa_m,visc_m,visc_s, visc_stab, full_stab,x,cond);
+    UpdateConfigurationMap_GP(kappa_m,visc_m,visc_s, visc_stab, full_stab,x,cond,ele,funct,derxy);
     #ifdef DEBUG
     // Do some safety checks, every combination which is not handled correct by the element level should be caught here ...
     // As this check is done for every Gausspoint, just do this in DEBUG Version ...
@@ -397,7 +401,10 @@ protected:
       double& visc_stab,  //< viscous NIT Penalty scaling
       double& full_stab,  //< full NIT Penalty scaling
       const LINALG::Matrix<3,1>& x, //<Position x
-      const DRT::Condition* cond //< Condition
+      const DRT::Condition* cond, //< Condition
+      DRT::Element *        ele,    //< Element
+      double*               funct,  //< local shape function for Gauss Point (from fluid element)
+      double*               derxy   //< local derivatives of shape function for Gauss Point (from fluid element)
       ){};
 
   virtual void InitStateVectors(){};
@@ -432,6 +439,28 @@ protected:
       const DRT::Condition* cond,
       const double time
   );
+
+  //! @name Sets up a projection matrix
+  /*!
+  \brief Is utilized for seperating Dirichlet and Neumann conditions
+   */
+  template <class M1, class M2>
+  inline void SetupProjectionMatrix(
+      M1 & proj_matrix,
+      const M2 & normal
+  )
+  {
+    double n_j = 0.0;
+    for(unsigned int j=0; j<nsd_; ++j)
+    {
+      n_j = normal(j,0);
+      for(unsigned int i=0; i<nsd_; ++i)
+      {
+        proj_matrix(i,j) = ((i==j) ? 1.0 : 0.0) - normal(i,0) * n_j;
+      }
+    }
+    return;
+  }
 
   ///< number of spatial dimensions
   size_t nsd_;

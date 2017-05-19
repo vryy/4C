@@ -25,6 +25,8 @@ xfluid class and the cut-library
 #include "../drt_inpar/inpar_twophase.H"
 #include "../drt_cut/cut_point.H"
 
+#include "xfem_utils.H"
+
 namespace GEO
 {
   class CutWizard;
@@ -164,6 +166,7 @@ protected:
 
   //! scatra-dis (cutterdis) state vectors for levelset applications, prepares nonmatching discretizations between scatra and fluid
   Teuchos::RCP<Epetra_Vector>    cutter_phinp_;
+  Teuchos::RCP<Epetra_Vector>    cutter_phinp_col_;
 
   //! The nodal curvature and smoothed gradient of the levelset field. (Stored w.r.t to the scatra-dis = cutter-dis)
   Teuchos::RCP<Epetra_Vector>        curvaturenp_node_;
@@ -273,8 +276,18 @@ protected:
   virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
-  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
-      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
+  virtual void UpdateConfigurationMap_GP(
+      double& kappa_m,
+      double& visc_m,
+      double& visc_s,
+      double& visc_stab,
+      double& full_stab,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond,
+      DRT::Element *        ele,
+      double*               funct,
+      double*               derxy
+);
 };
 
 
@@ -378,7 +391,7 @@ public:
       V2&       itraction,                     ///< prescribed traction at interface
       X1&       x,                             ///< coordinates of gauss point
       const DRT::Condition* cond,              ///< condition prescribed to this surface
-      T1&       itraction_jump_matrix,         ///< Laplace-Beltrami matrix for surface tension calculations
+      T1&       projection_matrix,             ///< Laplace-Beltrami matrix for surface tension calculations
       int       eid,                           ///< element ID
       M1&       funct,                         ///< local shape function for Gauss Point (from fluid element)
       M2&       derxy,                         ///< local derivatives of shape function for Gauss Point (from fluid element)
@@ -388,7 +401,7 @@ public:
       double& visc_s                           ///< slave sided dynamic viscosity
   )
 {
-    EvalProjectionMatrix<DISTYPE>(itraction_jump_matrix,eid,funct,derxy,normal);
+    EvalProjectionMatrix<DISTYPE>(projection_matrix,eid,funct,derxy,normal);
     EvaluateCouplingConditions(ivel,itraction,x,cond);
 
     if(has_neumann_jump_)
@@ -406,7 +419,7 @@ public:
       {
         double sl_visc_fac  = sliplength/(kappa_m*visc_m + (1.0-kappa_m)*visc_s);
         V2 tmp_itraction(true);
-        tmp_itraction.MultiplyTN(itraction_jump_matrix,itraction);
+        tmp_itraction.MultiplyTN(projection_matrix,itraction);
          //Project this into tangential direction!!!
         ivel.Update(sl_visc_fac,tmp_itraction,1.0);
       }
@@ -423,7 +436,7 @@ public:
 
 #if(1) //If 0 project in normal direction
       LINALG::Matrix<3,1> tmp_ivel(true);
-      tmp_ivel.MultiplyTN(itraction_jump_matrix,ivel); //apply Projection matrix from the right. (u_0 * P^t)
+      tmp_ivel.MultiplyTN(projection_matrix,ivel); //apply Projection matrix from the right. (u_0 * P^t)
       ivel.Update(1.0,tmp_ivel,0.0);
 #else
       //If we want only normal direction for testing it can be "hacked" in here.
@@ -431,7 +444,7 @@ public:
       LINALG::Matrix<3,3> proj_normal(true);
 //      proj_normal.Scale(0.0);
       for(unsigned i=0; i<3; i++) proj_normal(i,i) = 1.0;
-      proj_normal.Update(-1.0,itraction_jump_matrix,1.0);
+      proj_normal.Update(-1.0,projection_matrix,1.0);
 
       LINALG::Matrix<3,1> tmp_ivel(true);
       tmp_ivel.MultiplyTN(proj_normal,ivel); //apply Projection matrix from the right. (u_0 * P^n)
@@ -448,7 +461,7 @@ public:
   template <DRT::Element::DiscretizationType DISTYPE,
   class T1, class M1, class M2, class M3>
   void EvalProjectionMatrix(
-      T1&       itraction_jump_matrix,         ///< Projection matrix
+      T1&       projection_matrix,             ///< Projection matrix
       int       eid,                           ///< element ID
       M1&       funct,                         ///< local shape function for Gauss Point (from fluid element)
       M2&       derxy,                         ///< local derivatives of shape function for Gauss Point (from fluid element)
@@ -473,55 +486,39 @@ public:
     //Should this be provided as well by the input?
     DRT::Element* actele = cutter_dis_->gElement(eid);
 
-
-    //Added this
-    DRT::Element::LocationArray la(cutter_dis_->NumDofSets());
-    actele->LocationVector(*cutter_dis_,la,false);
-    //-----------
-
-
-    //Create the identity matrix (Probably not the fastest way...) Might make it global?
-    LINALG::Matrix<nsd,nsd> eye(true);
-    for(unsigned int i =0; i<nsd; ++i)
-      eye(i,i)=1;
-
     //   Non-smoothed projection matrix
-    LINALG::Matrix<nsd,nsd> p_matrix(true);
-    if(projtosurf_!=INPAR::XFEM::Proj_smoothed)
+    LINALG::Matrix<nsd,1> gradphi;
+    if(projtosurf_==INPAR::XFEM::Proj_normal)
     {
-      for(unsigned int i =0; i<nsd; ++i)
-      {
-        for(unsigned int j =0; j<nsd; ++j)
-        {
-          p_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
-        }
-      }
+      gradphi = normal;
     }
-
-    //   Smoothed projection matrix
-    LINALG::Matrix<nsd,nsd> p_smoothed_matrix(true);
-    // Does the chosen Laplace-Beltrami configuration necessitate a smoothed projection matrix?
-    if(projtosurf_!=INPAR::XFEM::Proj_normal)
+    else if(projtosurf_==INPAR::XFEM::Proj_smoothed)
     {
-      if(gradphinp_smoothed_node_==Teuchos::null)
-        dserror("Smoothed projection only available if a smoothed level set gradient field is existing.");
+      // smoothed normal at cutter element nodes, the Gaussian point lies in
+      Epetra_SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
+      LINALG::Matrix<nsd,nen> esmoothedgradphi(esmoothedgradphi_test, View);
+      XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test,actele,gradphinp_smoothed_node_col_,cutter_dis_,cutter_nds_phi_,nsd_);
 
-      LINALG::Matrix<nsd,nen> esmoothedgradphi(true);
-
-      //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
-      std::vector<double> mygradphi;
-      //DRT::UTILS::ExtractMyNodeBasedValues(actele,mygradphi,*gradphinp_smoothed_node_);
-      DRT::UTILS::ExtractMyValues(*gradphinp_smoothed_node_col_, mygradphi, la[cutter_nds_phi_].lm_);
-
-      for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
-      {
-        for(unsigned int idim=0; idim<nsd; ++idim)   // number of dimensions
-        {
-          (esmoothedgradphi)(idim,inode) = mygradphi[idim+(inode*nsd)];
-        }  // end for(idim)
-      }
       //Gradients @ GaussPoints
-      LINALG::Matrix<nsd,1> gradphi;
+      gradphi.Multiply(esmoothedgradphi,funct);
+    }
+    else if(projtosurf_==INPAR::XFEM::Proj_normal_phi)
+    {
+      Epetra_SerialDenseMatrix ephi_test(nen,1);
+      LINALG::Matrix<nen,1> ephi(ephi_test, View);
+      XFEM::UTILS::ExtractQuantityAtElement(ephi_test,actele,cutter_phinp_col_,cutter_dis_,cutter_nds_phi_,1);
+
+      //Gradients @ GaussPoints
+      gradphi.Multiply(derxy,ephi);
+    }
+    else if(projtosurf_==INPAR::XFEM::Proj_normal_smoothed_comb)
+    {
+      // smoothed normal at cutter element nodes, the Gaussian point lies in
+      Epetra_SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
+      LINALG::Matrix<nsd,nen> esmoothedgradphi(esmoothedgradphi_test, View);
+      XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test,actele,gradphinp_smoothed_node_col_,cutter_dis_,cutter_nds_phi_,nsd_);
+
+      //Gradients @ GaussPoints
       gradphi.Multiply(esmoothedgradphi,funct);
 
       const double normgradphi=gradphi.Norm2();
@@ -529,121 +526,27 @@ public:
         gradphi.Scale(1.0/normgradphi);
       else
         gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
-
-      for(unsigned int i =0; i<nsd; ++i)
-      {
-        for(unsigned int j =0; j<nsd; ++j)
-        {
-          p_smoothed_matrix(i,j) = eye(i,j) - gradphi(i,0) * gradphi(j,0);
-        }
-      }
-    }
-
-    // If the smoothed and boundary normal are to be combined this option exists:
-    if(projtosurf_==INPAR::XFEM::Proj_normal_smoothed_comb)
-    {
-      if(gradphinp_smoothed_node_==Teuchos::null)
-        dserror("Smoothed projection only available if a smoothed level set gradient field is existing.");
-
-      LINALG::Matrix<nsd,nen> esmoothedgradphi(true);
-
-      //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
-      std::vector<double> mygradphi;
-      DRT::UTILS::ExtractMyValues(*gradphinp_smoothed_node_col_, mygradphi, la[cutter_nds_phi_].lm_);
-
-      for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
-      {
-        for(unsigned int idim=0; idim<nsd; ++idim)   // number of dimensions
-        {
-          (esmoothedgradphi)(idim,inode) = mygradphi[idim+(inode*nsd)];
-        }  // end for(idim)
-      }
-      //Gradients @ GaussPoints
-      LINALG::Matrix<nsd,1> gradphi;
-      gradphi.Multiply(esmoothedgradphi,funct);
-
-      const double normgradphi=gradphi.Norm2();
-      if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
-        gradphi.Scale(1.0/normgradphi);
-      else
-        gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
-
 
       // normal_comb = alpha_n * normal + (1-alpha)*gradphi
       LINALG::Matrix<nsd,1> normal_comb(true);
       double alpha_n = 0.3;
       normal_comb.Update(alpha_n,normal,-(1.0-alpha_n),gradphi);
 
-      const double normnormal_comb=normal_comb.Norm2();
-      if(normnormal_comb>1e-9) //1e-9 is set to create a reasonable scaling.
-        normal_comb.Scale(1.0/normnormal_comb);
-      else
-        normal_comb.Scale(0.0); //This to catch the cases when normal_comb \approx 0
-
-      for(unsigned int i =0; i<nsd; ++i)
-      {
-        for(unsigned int j =0; j<nsd; ++j)
-        {
-          p_smoothed_matrix(i,j) = eye(i,j) - normal_comb(i,0) * normal_comb(j,0);
-        }
-      }
+      gradphi = normal_comb;
     }
-
-    // normal vector extracted from the levelset field without smoothing
-    if(projtosurf_==INPAR::XFEM::Proj_normal_phi)
-    {
-
-      LINALG::Matrix<nen,1> ephi(true);
-
-      //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
-      std::vector<double> myphi;
-      //DRT::UTILS::ExtractMyNodeBasedValues(actele,myphi,*cutter_phinp_);
-      DRT::UTILS::ExtractMyValues(*cutter_phinp_, myphi, la[cutter_nds_phi_].lm_);
-
-      for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
-      {
-          (ephi)(inode,0) = myphi[inode];
-      }
-
-      //Gradients @ GaussPoints
-      LINALG::Matrix<nsd,1> gradphi;
-      gradphi.Multiply(derxy,ephi);
-
-      const double normgradphi=gradphi.Norm2();
-      if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
-        gradphi.Scale(1.0/normgradphi);
-      else
-        gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
-
-      for(unsigned int i =0; i<nsd; ++i)
-      {
-        for(unsigned int j =0; j<nsd; ++j)
-        {
-          p_smoothed_matrix(i,j) = eye(i,j) - gradphi(i,0) * gradphi(j,0);
-        }
-      }
-    }
-
-    switch(projtosurf_)
-    {
-    case INPAR::XFEM::Proj_normal:
-    {
-      itraction_jump_matrix.Update(p_matrix);
-      break;
-    }
-    case INPAR::XFEM::Proj_smoothed:
-    case INPAR::XFEM::Proj_normal_smoothed_comb:
-    case INPAR::XFEM::Proj_normal_phi:
-    {
-      itraction_jump_matrix.Update(p_smoothed_matrix);
-      break;
-    }
-    default:
+    else
     {
       dserror("This option for a projection matrix %d does not exist. \n",projtosurf_);
-      break;
     }
-    }
+
+    //Normalize the smoothed gradient
+    const double normgradphi=gradphi.Norm2();
+    if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
+      gradphi.Scale(1.0/normgradphi);
+    else
+      gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
+
+    SetupProjectionMatrix(projection_matrix,gradphi);
 
     return;
   }
@@ -671,8 +574,18 @@ protected:
   virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
-  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
-      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
+  virtual void UpdateConfigurationMap_GP(
+      double& kappa_m,
+      double& visc_m,
+      double& visc_s,
+      double& visc_stab,
+      double& full_stab,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond,
+      DRT::Element *        ele,
+      double*               funct,
+      double*               derxy
+);
 
 private:
 
@@ -791,6 +704,42 @@ public:
         nen);
 
     return;
+  }
+
+  template <DRT::Element::DiscretizationType DISTYPE,
+  class M1, class M2>
+  void GetPhiAtGP(
+      double&   phi_gp,             ///< phi at gausspoint
+      int       eid,                ///< element ID
+      M1&       funct,              ///< local shape function for Gauss Point (from fluid element)
+      M2&       derxy               ///< local derivatives of shape function for Gauss Point (from fluid element)
+  )
+  {
+    CheckForValidVectors();
+
+    // number space dimensions for element
+//    const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+
+    // number of nodes of element
+    const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+    //Should this be provided as well by the input?
+    DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
+
+    // smoothed normal at cutter element nodes, the Gaussian point lies in
+    Epetra_SerialDenseMatrix ephinp(nen, 1);
+    LINALG::Matrix<nen,1>   ephinp_T(ephinp, View);
+
+    //Get phi-values at node
+    GetPhiAtElement(
+        ephinp,
+        cutter_ele,
+        cutter_phinp_col_,
+        cutter_dis_,
+        cutter_nds_phi_);
+
+    phi_gp = funct.Dot(ephinp_T);
+
   }
 
   inline void CheckForValidVectors()
@@ -980,27 +929,6 @@ public:
     return;
   }
 
-  template <class M1, class M2>
-  inline void SetupProjectionMatrix(
-      M1 & proj_matrix,
-      const M2 & normal
-  )
-  {
-    double n_j = 0.0;
-
-    for(unsigned int j=0; j<nsd_; ++j)
-    {
-      n_j = normal(j,0);
-
-      for(unsigned int i=0; i<nsd_; ++i)
-      {
-        proj_matrix(i,j) = ((i==j) ? 1.0 : 0.0) - normal(i,0) * n_j;
-      }
-    }
-
-    return;
-  }
-
 
   template <class M1>
   inline void SetupConcatenatedProjectionMatrix(
@@ -1165,7 +1093,6 @@ protected:
       const int nds
   );
 
-
   void GetSmoothedQuantitiesAtElement(
       Epetra_SerialDenseMatrix & normal,
       Epetra_SerialDenseMatrix & curvature,
@@ -1175,6 +1102,14 @@ protected:
       Teuchos::RCP<DRT::Discretization> & dis,
       const int nds
   );
+
+  void GetPhiAtElement(
+      Epetra_SerialDenseMatrix & phi_ele,
+      const DRT::Element* element,
+      const Teuchos::RCP<const Epetra_MultiVector> & phinp,
+      Teuchos::RCP<DRT::Discretization> & dis,
+      const int nds
+      );
 
   template<DRT::Element::DiscretizationType DISTYPE,
     class M1, class M2>
@@ -1219,8 +1154,18 @@ protected:
   virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
-  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
-      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
+  virtual void UpdateConfigurationMap_GP(
+      double& kappa_m,
+      double& visc_m,
+      double& visc_s,
+      double& visc_stab,
+      double& full_stab,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond,
+      DRT::Element *        ele,
+      double*               funct,
+      double*               derxy
+);
 
   //! do normalization or a manipulation of the smoothed normal vector
   bool RescaleNormal( Epetra_SerialDenseVector & normal );

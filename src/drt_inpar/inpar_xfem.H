@@ -179,6 +179,7 @@ namespace INPAR
       CouplingCond_SURF_WEAK_DIRICHLET,
       CouplingCond_SURF_NEUMANN,
       CouplingCond_SURF_NAVIER_SLIP,
+      CouplingCond_SURF_NAVIER_SLIP_TWOPHASE,
       CouplingCond_LEVELSET_WEAK_DIRICHLET,
       CouplingCond_LEVELSET_NEUMANN,
       CouplingCond_LEVELSET_NAVIER_SLIP,

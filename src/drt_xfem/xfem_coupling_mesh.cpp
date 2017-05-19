@@ -88,7 +88,8 @@ void XFEM::MeshCoupling::SetConditionsToCopy()
   // for Navier Slip/ Robin boundary conditions
   // this implementation should be reviewed at some point as it requires these conditions
   //  to have a couplingID. In theory this should not be necessary.
-  if(cond_name_=="XFEMSurfNavierSlip")
+  if(cond_name_=="XFEMSurfNavierSlip" or
+     cond_name_=="XFEMSurfNavierSlipTwoPhase")
   {
     conditions_to_copy_.push_back("XFEMRobinDirichletSurf");
     conditions_to_copy_.push_back("XFEMRobinNeumannSurf");
@@ -1032,7 +1033,11 @@ void XFEM::MeshCouplingWeakDirichlet::UpdateConfigurationMap_GP(
     double& visc_stab,
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond)
+    const DRT::Condition* cond,
+    DRT::Element *        ele,
+    double*               funct,
+    double*               derxy
+)
 {
   //Configuration of Penalty Terms
   configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
@@ -1140,17 +1145,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
 {
 
   //Create normal projection matrix.
-  //  Add the smoothed normals here!!!
-  LINALG::Matrix<3,3> eye(true);
-  for(unsigned int i =0; i<3; ++i)
-    eye(i,i)=1;
-  for(unsigned int i =0; i<3; ++i)
-  {
-    for(unsigned int j =0; j<3; ++j)
-    {
-      proj_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
-    }
-  }
+  SetupProjectionMatrix(proj_matrix,normal);
 
   // help variable
   int robin_id_dirch;
@@ -1202,7 +1197,7 @@ void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
     }
   }
 
-  if( force_tangvel_map_.find(cond->Id())->second ) //forcetangvel_)
+  if( force_tangvel_map_.find(cond->Id())->second )
   {
     LINALG::Matrix<3,1> tmp_ivel(true);
     tmp_ivel.MultiplyTN(proj_matrix,ivel); //apply Projection matrix from the right. (u_0 * P^t)
@@ -1462,7 +1457,10 @@ void XFEM::MeshCouplingNavierSlip::UpdateConfigurationMap_GP(
     double& visc_stab,
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond)
+    const DRT::Condition* cond,
+    DRT::Element *        ele,
+    double*               funct,
+    double*               derxy)
 {
 
   double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
@@ -1845,7 +1843,10 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP(
     double& visc_stab,
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond)
+    const DRT::Condition* cond,
+    DRT::Element *        ele,
+    double*               funct,
+    double*               derxy)
 {
 #ifdef DEBUG
   if (kappa_m != 1) dserror("XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP: kappa_m == %d",kappa_m);
@@ -1956,7 +1957,10 @@ void XFEM::MeshCouplingFluidFluid::UpdateConfigurationMap_GP(
     double& visc_stab,
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond)
+    const DRT::Condition* cond,
+    DRT::Element *        ele,
+    double*               funct,
+    double*               derxy)
 {
 #ifdef DEBUG
   if (!(GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided ||

@@ -138,6 +138,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==XFEM_Surf_Weak_Dirichlet)      os << "XFEM Surface weak Dirichlet boundary condition: ";
   else if (Type()==XFEM_Surf_Neumann)             os << "XFEM Surface Neumann boundary condition: ";
   else if (Type()==XFEM_Surf_Navier_Slip)         os << "XFEM Surface Navier Slip boundary condition: ";
+  else if (Type()==XFEM_Surf_Navier_Slip_Twophase)         os << "XFEM Surface Navier Slip Two-phase boundary condition: ";
   else if (Type()==XFEM_Robin_Dirichlet_Surf)     os << "XFEM Mesh Navier Slip Robin(Dirichlet)-Volume Condition: ";
   else if (Type()==XFEM_Robin_Neumann_Surf)       os << "XFEM Mesh Navier Slip Robin(Neumann)-Volume Condition: ";
   else if (Type()==FluidFluidCoupling)            os << "Fluid Fluid Coupling condition: ";

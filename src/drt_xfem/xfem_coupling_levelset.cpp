@@ -190,6 +190,7 @@ void XFEM::LevelSetCoupling::InitStateVectors_Cutter()
   const Epetra_Map* cutter_dofcolmap  = cutter_dis_->DofColMap(cutter_nds_phi_); // used for level set field and its derivatives
 
   cutter_phinp_                = LINALG::CreateVector(*cutter_dofrowmap, true);
+  cutter_phinp_col_            = LINALG::CreateVector(*cutter_dofcolmap, true);
   gradphinp_smoothed_node_     = LINALG::CreateMultiVector(*cutter_dofrowmap,nsd_, true);
   gradphinp_smoothed_node_col_ = LINALG::CreateMultiVector(*cutter_dofcolmap,nsd_, true);
   curvaturenp_node_            = LINALG::CreateVector(*cutter_dofrowmap, true);
@@ -1089,7 +1090,11 @@ void XFEM::LevelSetCouplingWeakDirichlet::UpdateConfigurationMap_GP(
     double& visc_stab,
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond)
+    const DRT::Condition* cond,
+    DRT::Element *        ele,
+    double*               funct,
+    double*               derxy
+    )
 {
   //Configuration of Penalty Terms
   configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
@@ -1392,7 +1397,11 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
     double& visc_stab,
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond)
+    const DRT::Condition* cond,
+    DRT::Element *        ele,    //< Element
+    double*               funct,  //< local shape function for Gauss Point (from fluid element)
+    double*               derxy   //< local derivatives of shape function for Gauss Point (from fluid element)
+    )
 {
 
   double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
@@ -1608,6 +1617,8 @@ void XFEM::LevelSetCouplingTwoPhase::ExportGeometricQuantities()
       bg_dis_,
       phinp_,
       bg_nds_phi_);
+
+  LINALG::Export(*cutter_phinp_, *cutter_phinp_col_);
 
   if(require_smoothedgradphi_)
       LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
@@ -1887,7 +1898,11 @@ void XFEM::LevelSetCouplingTwoPhase::UpdateConfigurationMap_GP(
     double& visc_stab,
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond)
+    const DRT::Condition* cond,
+    DRT::Element *        ele,
+    double*               funct,
+    double*               derxy
+)
 {
   //Configuration of Penalty Terms
   configuration_map_[INPAR::XFEM::F_Pen_Row].second = full_stab;
@@ -1974,32 +1989,15 @@ void XFEM::LevelSetCouplingTwoPhase::GetSmoothedQuantitiesAtNode(
     const int nds
 )
 {
-  const std::vector<int> lm = dis->Dof(nds, node);
-
-
-  if(lm.size()!=1) dserror("assume a unique level-set dof in cutterdis-Dofset");
-
   if(require_nodalcurvature_)
   {
-    std::vector<double> local_curvature(1);
-    DRT::UTILS::ExtractMyValues(*curvaturenp_node_col, local_curvature, lm);
-
-    if(local_curvature.size() != 1)
-      dserror("wrong size of (potentially resized) local matrix!");
-
-    curvature = local_curvature[0];
+    Epetra_SerialDenseVector curvature_tmp(1);
+    XFEM::UTILS::ExtractQuantityAtNode(curvature_tmp,node,curvaturenp_node_col,dis,nds,1);
+    curvature = curvature_tmp(0);
   }
-
   if(require_smoothedgradphi_)
   {
-    std::vector<double> local_normal(nsd_);
-    DRT::UTILS::ExtractMyValues(*gradphinp_smoothed_node_col, local_normal, lm);
-
-    if(local_normal.size() != nsd_)
-      dserror("wrong size of (potentially resized) local matrix!");
-
-    // copy local to nvec....
-     std::copy(local_normal.begin(), local_normal.begin()+nsd_, normal.A());
+    XFEM::UTILS::ExtractQuantityAtNode(normal,node,gradphinp_smoothed_node_col,dis,nds,nsd_);
   }
 }
 
@@ -2017,37 +2015,30 @@ void XFEM::LevelSetCouplingTwoPhase::GetSmoothedQuantitiesAtElement(
     const int nds
 )
 {
-  // get the other nds-set which is connected to the current one via this boundary-cell
-  DRT::Element::LocationArray la( 1 );
-  element->LocationVector(*dis, la, false );
-
-  const size_t numnode = element->NumNode();
-
-  if(la[0].lm_.size()!=numnode)
-    dserror("assume a unique level-set dof in cutterdis-Dofset per node");
-
   if(require_nodalcurvature_)
   {
-    std::vector<double> local_curvature(numnode);
-    DRT::UTILS::ExtractMyValues(*curvaturenp_node_col, local_curvature, la[0].lm_);
-
-    if(local_curvature.size() != numnode)
-      dserror("wrong size of (potentially resized) local matrix!");
-
-    std::copy(local_curvature.begin(), local_curvature.begin()+numnode, curvature.A());
+    XFEM::UTILS::ExtractQuantityAtElement(curvature,element,curvaturenp_node_col,dis,nds,1);
   }
-
   if(require_smoothedgradphi_)
   {
-    std::vector<double> local_normal(nsd_*numnode);
-    DRT::UTILS::ExtractMyValues(*gradphinp_smoothed_node_col, local_normal, la[0].lm_);
-
-    if(local_normal.size() != nsd_*numnode)
-      dserror("wrong size of (potentially resized) local matrix!");
-
-    // copy local to normal....
-     std::copy(local_normal.begin(), local_normal.begin()+(nsd_*numnode), normal.A());
+    XFEM::UTILS::ExtractQuantityAtElement(normal,element,gradphinp_smoothed_node_col,dis,nds,nsd_);
   }
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ *------------------------------------------------------------------------------------------------*/
+//! get the smoothed level set gradient at a given node (not necessarily normalized to one)
+void XFEM::LevelSetCouplingTwoPhase::GetPhiAtElement(
+    Epetra_SerialDenseMatrix & phi_ele,
+    const DRT::Element* element,
+    const Teuchos::RCP<const Epetra_MultiVector> & phinp,
+    Teuchos::RCP<DRT::Discretization> & dis,
+    const int nds
+)
+{
+  XFEM::UTILS::ExtractQuantityAtElement(phi_ele,element,phinp,dis,nds,1);
+
 }
 
 

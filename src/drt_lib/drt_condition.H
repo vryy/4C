@@ -155,6 +155,7 @@ public:
     XFEM_Surf_Weak_Dirichlet,
     XFEM_Surf_Neumann,
     XFEM_Surf_Navier_Slip,
+    XFEM_Surf_Navier_Slip_Twophase,
     XFEM_Robin_Dirichlet_Surf,
     XFEM_Robin_Neumann_Surf,
     FluidFluidCoupling,

@@ -982,7 +982,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
       if( cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
           cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-          cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
+          cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP or
+          cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
       {
         si->SetInterfaceJumpStatenp(*cutter_dis, "ivelnp", cutla[0].lm_);
       }
@@ -1622,7 +1623,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
       if(cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
          cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-         cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
+         cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP or
+         cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
       {
         si->SetInterfaceJumpStatenp(*cutter_dis, "ivelnp", cutla[0].lm_);
         if (my::fldparatimint_->IsNewOSTImplementation())
@@ -3356,7 +3358,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
       if(cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
          cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-         cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
+         cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP or
+         cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
       {
         si->SetInterfaceJumpStatenp(*cutter_dis, "ivelnp", cutla[0].lm_);
         if (my::fldparatimint_->IsNewOSTImplementation())
@@ -3639,10 +3642,19 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           TEUCHOS_FUNC_TIME_MONITOR( "FluidEleCalcXFEM::NIT_evaluateCoupling" );
 
           //Get Configuration Map
-          std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap =
-              coupling->GetConfigurationmap(kappa_m,viscaf_master_,viscaf_slave_,NIT_visc_stab_fac, NIT_full_stab_fac,x_gp_lin_,coupcond.second);
+           std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> > configmap = coupling->GetConfigurationmap(
+              kappa_m,
+              viscaf_master_,
+              viscaf_slave_,
+              NIT_visc_stab_fac,
+              NIT_full_stab_fac,
+              x_gp_lin_,
+              coupcond.second,
+              ele,
+              my::funct_.A(),
+              my::derxy_.A());
 
-          //-----------------------------------------------------------------------------
+            //-----------------------------------------------------------------------------
           // evaluate the coupling terms for coupling with current side
           // (or embedded element through current side)
           // time step n+1
@@ -3685,7 +3697,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
             // Safety check
             if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP or
-               cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP       )
+               cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP or
+               cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
             {
 
               if (my::fldparatimint_->IsNewOSTImplementation())
@@ -3752,8 +3765,17 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             }
 
             //Get Configuration Map
-            std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> >& configmap_n =
-                coupling->GetConfigurationmap(kappa_m,viscaf_master_,viscaf_slave_,NIT_visc_stab_fac, NIT_full_stab_fac,x_gp_lin_,coupcond.second);
+             std::map<INPAR::XFEM::CoupTerm, std::pair<bool,double> > configmap_n = coupling->GetConfigurationmap(
+                kappa_m,
+                viscaf_master_,
+                viscaf_slave_,
+                NIT_visc_stab_fac,
+                NIT_full_stab_fac,
+                x_gp_lin_,
+                coupcond.second,
+                ele,
+                my::funct_.A(),
+                my::derxy_.A());
 
             const double timefacfacn = surf_fac * (my::fldparatimint_->Dt()-my::fldparatimint_->TimeFac());
             ci->NIT_evaluateCouplingOldState(
@@ -3887,7 +3909,18 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     bool eval_dirich_at_gp = (*(cond->Get<std::string>("evaltype")) == "funct_gausspoint");
 
     // The velocity is evaluated twice in this framework...
-    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)->EvaluateCouplingConditions(ivelint_jump,itraction_jump,proj_tangential,x,normal,cond,eval_dirich_at_gp,kappa_m,visc_m,visc_s);
+    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)->EvaluateCouplingConditions(
+        ivelint_jump,
+        itraction_jump,
+        proj_tangential,
+        x,
+        normal,
+        cond,
+        eval_dirich_at_gp,
+        kappa_m,
+        visc_m,
+        visc_s
+        );
 
     if(!eval_dirich_at_gp)
     {
@@ -3898,10 +3931,52 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
 
     break;
   }
+  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
+  {
+
+
+    bool eval_dirich_at_gp = (*(cond->Get<std::string>("evaltype")) == "funct_gausspoint");
+
+    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlipTwoPhase>(coupling)->EvaluateCouplingConditions<distype>(
+          ivelint_jump,
+          itraction_jump,
+          x,
+          cond,
+          proj_tangential,
+          my::eid_,
+          my::funct_,
+          my::derxy_,
+          normal,
+          eval_dirich_at_gp,
+          kappa_m,
+          visc_m,
+          visc_s);
+
+//    if(!eval_dirich_at_gp)
+//    {
+//
+//      si->GetInterfaceJumpVelnp(ivelint_jump);
+//
+//    }
+
+    break;
+  }
   case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
   {
 
-    Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)->EvaluateCouplingConditions<distype>(ivelint_jump,itraction_jump,x,cond,proj_tangential,my::eid_,my::funct_,my::derxy_,normal,kappa_m,visc_m,visc_s);
+    Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)->EvaluateCouplingConditions<distype>(
+          ivelint_jump,
+          itraction_jump,
+          x,
+          cond,
+          proj_tangential,
+          my::eid_,
+          my::funct_,
+          my::derxy_,
+          normal,
+          kappa_m,
+          visc_m,
+          visc_s);
 
     break;
   }
@@ -3952,7 +4027,8 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
   //   Furthermore, if it is a Laplace-Beltrami way of calculating the surface tension,
   //   do not fill the matrix as it contains the "projection matrix" for LB implementation.
   if(cond_type != INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP
-      and cond_type != INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
+      and cond_type != INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP
+      and cond_type != INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
   {
     //Create normal projection matrix.
     LINALG::Matrix<my::nsd_,my::nsd_> eye(true);
@@ -4022,6 +4098,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
   }
   case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
   case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
+  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
   {
     dserror("Navier Slip Condition not implemented for NEWOst yet!");
     //here you would need the dyn_visc for summing up vel_jump and traction_jump...

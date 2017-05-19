@@ -154,3 +154,59 @@ void XFEM::UTILS::SafetyCheckMaterials(
 
   return;
 }
+
+//! Extract a quantity for an element
+void XFEM::UTILS::ExtractQuantityAtElement(
+    Epetra_SerialDenseMatrix &                     element_vector,
+    const DRT::Element*                            element,
+    const Teuchos::RCP<const Epetra_MultiVector> & global_col_vector,
+    Teuchos::RCP<DRT::Discretization> &            dis,
+    const int                                      nds_vector,
+    const int                                      nsd
+)
+{
+  // get the other nds-set which is connected to the current one via this boundary-cell
+  DRT::Element::LocationArray la( dis->NumDofSets() );
+  element->LocationVector(*dis, la, false );
+
+  const size_t numnode = element->NumNode();
+
+  if(la[nds_vector].lm_.size()!=numnode)
+  {
+    std::cout << "la[nds_vector].lm_.size(): " << la[nds_vector].lm_.size() << std::endl;
+    dserror("assume a unique level-set dof in cutterdis-Dofset per node");
+  }
+
+  std::vector<double> local_vector(nsd*numnode);
+  DRT::UTILS::ExtractMyValues(*global_col_vector, local_vector, la[nds_vector].lm_);
+
+  if(local_vector.size() != nsd*numnode)
+    dserror("wrong size of (potentially resized) local matrix!");
+
+  // copy local to normal....
+  std::copy(local_vector.begin(), local_vector.begin()+(nsd*numnode), element_vector.A());
+}
+
+
+//! Extract a quantity for a node
+void XFEM::UTILS::ExtractQuantityAtNode(
+    Epetra_SerialDenseMatrix &                     element_vector,
+    const DRT::Node*                               node,
+    const Teuchos::RCP<const Epetra_MultiVector> & global_col_vector,
+    Teuchos::RCP<DRT::Discretization> &            dis,
+    const int                                      nds_vector,
+    const unsigned int                             nsd
+)
+{
+  const std::vector<int> lm = dis->Dof(nds_vector, node);
+  if(lm.size()!=1) dserror("assume a unique level-set dof in cutterdis-Dofset");
+
+  std::vector<double> local_vector(nsd);
+  DRT::UTILS::ExtractMyValues(*global_col_vector, local_vector, lm);
+
+  if(local_vector.size() != nsd)
+    dserror("wrong size of (potentially resized) local matrix!");
+
+  // copy local to nvec....
+  std::copy(local_vector.begin(), local_vector.begin()+nsd, element_vector.A());
+}

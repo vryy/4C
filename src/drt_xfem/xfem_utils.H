@@ -59,6 +59,31 @@ namespace XFEM
     void SafetyCheckMaterials(Teuchos::RCP<MAT::Material> &          pmat,
                               Teuchos::RCP<MAT::Material> &          nmat
                               );
+
+    //! @name Extract quantities on a element
+    /*!
+    \brief Needs a column-vector to extract correctly in parallel
+     */
+    void ExtractQuantityAtElement(
+        Epetra_SerialDenseMatrix &                     element_vector,
+        const DRT::Element*                            element,
+        const Teuchos::RCP<const Epetra_MultiVector> & global_col_vector,
+        Teuchos::RCP<DRT::Discretization> &            dis,
+        const int                                      nds_vector,
+        const int                                      nsd);
+
+    //! @name Extract quantities on a node
+    /*!
+    \brief Needs a column-vector to extract correctly in parallel
+     */
+    void ExtractQuantityAtNode(
+        Epetra_SerialDenseMatrix &                     element_vector,
+        const DRT::Node*                               node,
+        const Teuchos::RCP<const Epetra_MultiVector> & global_col_vector,
+        Teuchos::RCP<DRT::Discretization> &            dis,
+        const int                                      nds_vector,
+        const unsigned int                             nsd);
+
   }
 }
 

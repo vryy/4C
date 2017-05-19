@@ -49,6 +49,7 @@ INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& 
   else if(condname == "XFEMSurfWeakDirichlet")      return INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET;
   else if(condname == "XFEMSurfNeumann")            return INPAR::XFEM::CouplingCond_SURF_NEUMANN;
   else if(condname == "XFEMSurfNavierSlip")         return INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP;
+  else if(condname == "XFEMSurfNavierSlipTwoPhase") return INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE;
   //else dserror("condition type not supported: %s", condname.c_str());
 
   return INPAR::XFEM::CouplingCond_NONE;
@@ -386,6 +387,7 @@ void XFEM::CouplingBase::SetAveragingStrategy()
   case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
   case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
+  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
   case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
   case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
@@ -435,6 +437,7 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
   case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET: // set this to Teuchos::null when the values are read from the function instead of the ivelnp vector
   case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
   case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
+  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
   {
     coupl_dis_ = cutter_dis_;
     break;

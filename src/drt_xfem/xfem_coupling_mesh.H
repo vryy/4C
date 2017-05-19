@@ -160,25 +160,15 @@ protected:
     //-------------------------------------------------------------------------
 
     // number space dimensions for element
-    const size_t nsd = projection_matrix.Rows();
+    //const size_t nsd = projection_matrix.Rows();
 
     #ifdef DEBUG
         if (projection_matrix.Rows() != projection_matrix.Cols() || projection_matrix.Rows() != normal.Rows())
           dserror("EvalProjectionMatrix: Rows and Cols of projection_matrix and normal vector do not fit!");
     #endif
 
-
-      //create projection matrix
-   // if(projtosurf_== INPAR::XFEM::Proj_normal)
-    {
-      for(unsigned int i =0; i<nsd; ++i)
-      {
-        for(unsigned int j =0; j<nsd; ++j)
-        {
-          projection_matrix(i,j) = (i==j) - normal(i,0) * normal(j,0);
-        }
-      }
-    }
+    //create projection matrix
+    SetupProjectionMatrix(projection_matrix,normal);
 
     return;
   }
@@ -450,8 +440,17 @@ protected:
   void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
-  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
-      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
+  virtual void UpdateConfigurationMap_GP(
+      double& kappa_m,
+      double& visc_m,
+      double& visc_s,
+      double& visc_stab,
+      double& full_stab,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond,
+      DRT::Element *        ele,
+      double*               funct,
+      double*               derxy);
 
 };
 
@@ -582,10 +581,19 @@ protected:
   virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
-  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
-      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
+  virtual void UpdateConfigurationMap_GP(
+      double& kappa_m,
+      double& visc_m,
+      double& visc_s,
+      double& visc_stab,
+      double& full_stab,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond,
+      DRT::Element *        ele,
+      double*               funct,
+      double*               derxy);
 
-private:
+protected:
 
   // Condition map. Corelating robin_id from Navier Slip condition and
   //                 Robin Dirichlet/Neumann input sections
@@ -685,8 +693,17 @@ protected:
   virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
-  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
-      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
+  virtual void UpdateConfigurationMap_GP(
+      double& kappa_m,
+      double& visc_m,
+      double& visc_s,
+      double& visc_stab,
+      double& full_stab,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond,
+      DRT::Element *        ele,
+      double*               funct,
+      double*               derxy);
 
   //------------------------------- vectors -----------------------------
   //! @name cutter-dis state vectors
@@ -776,8 +793,17 @@ protected:
   virtual void SetupConfigurationMap();
 
   //! Updates configurationmap for specific Gausspoint
-  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
-      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
+  virtual void UpdateConfigurationMap_GP(
+      double& kappa_m,
+      double& visc_m,
+      double& visc_s,
+      double& visc_stab,
+      double& full_stab,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond,
+      DRT::Element *        ele,
+      double*               funct,
+      double*               derxy);
 
 private:
 

@@ -72,6 +72,7 @@ XFEM::ConditionManager::ConditionManager(
     conditions_to_check.push_back("XFEMSurfFPIMono");
     conditions_to_check.push_back("XFEMSurfFluidFluid");
     conditions_to_check.push_back("XFEMSurfNavierSlip");
+    conditions_to_check.push_back("XFEMSurfNavierSlipTwoPhase");
 
     CreateCouplings(meshcoupl_dis, conditions_to_check, true);
   }
@@ -281,6 +282,8 @@ void XFEM::ConditionManager::Init()
     levelset_coupl_[lc]->Init();
   }
 
+  SetPointerBetweenCouplingObjects();
+
   isinit_=true;
 }
 
@@ -370,6 +373,23 @@ void XFEM::ConditionManager::SetLevelSetField( const double time )
   for(int lsc=0; lsc<(int)levelset_coupl_.size(); lsc++)
   {
     levelset_coupl_[lsc]->SetLevelSetField(time);
+  }
+}
+
+void XFEM::ConditionManager::SetPointerBetweenCouplingObjects()
+{
+  for(int m=0; m<NumMeshCoupling(); m++)
+  {
+    if(mesh_coupl_[m]->GetName() == "XFEMSurfNavierSlipTwoPhase")
+    {
+      // TOOD: when using two-phase in combination with other levelset, how to access to the right coupling twophase coupling object?
+      // TODO: safety check, that there is a unique two-phase coupling object!?
+      if(levelset_coupl_.size() != 1)
+        dserror("level-set field is not unique, for the mesh condition XFEMSurfNavierSlipTwoPhase only a two-phase levelset may be present!!");
+
+      Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlipTwoPhase>(mesh_coupl_[m], true)->SetTwoPhaseCouplingPointer(
+          Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(levelset_coupl_[0], true));
+    }
   }
 }
 

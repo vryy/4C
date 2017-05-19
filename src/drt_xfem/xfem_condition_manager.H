@@ -24,6 +24,7 @@ xfluid class and the cut-library
 // the xfem_condition_manager.cpp file in a later stage
 #include "xfem_coupling_levelset.H"
 #include "xfem_coupling_mesh.H"
+#include "xfem_coupling_mesh_coupled_levelset.H"
 #include "xfem_coupling_fpi_mesh.H"
 
 #include <Epetra_IntVector.h>
@@ -169,6 +170,10 @@ public:
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
     {
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlip(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_==cond_dis))));
+    }
+    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
+    {
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlipTwoPhase(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_==cond_dis))));
     }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
     {
@@ -603,6 +608,7 @@ public:
     case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
     case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
     case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
+    case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE:
     case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
     case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
     case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
@@ -617,6 +623,8 @@ public:
   }
 
   void SetLevelSetField( const double time );
+
+  void SetPointerBetweenCouplingObjects();
 
   void WriteAccess_GeometricQuantities(
       Teuchos::RCP<Epetra_Vector> &      scalaraf,

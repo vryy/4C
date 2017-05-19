@@ -136,7 +136,11 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(
     double& visc_stab,
     double& full_stab,
     const LINALG::Matrix<3,1>& x,
-    const DRT::Condition* cond)
+    const DRT::Condition* cond,
+    DRT::Element *        ele,    //< Element
+    double*               funct,  //< local shape function for Gauss Point (from fluid element)
+    double*               derxy   //< local derivatives of shape function for Gauss Point (from fluid element)
+    )
 {
   double dynvisc   = (kappa_m*visc_m + (1.0-kappa_m)*visc_s);
 

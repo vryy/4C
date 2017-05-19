@@ -144,8 +144,18 @@ protected:
   virtual void SetCouplingName();
 
   //! Updates configurationmap for specific Gausspoint
-  virtual void UpdateConfigurationMap_GP( double& kappa_m, double& visc_m, double& visc_s,
-      double& visc_stab, double& full_stab, const LINALG::Matrix<3,1>& x, const DRT::Condition* cond);
+  virtual void UpdateConfigurationMap_GP(
+      double& kappa_m,
+      double& visc_m,
+      double& visc_s,
+      double& visc_stab,
+      double& full_stab,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond,
+      DRT::Element *        ele,    //< Element
+      double*               funct,  //< local shape function for Gauss Point (from fluid element)
+      double*               derxy   //< local derivatives of shape function for Gauss Point (from fluid element)
+      );
 
   virtual void InitStateVectors();
 
