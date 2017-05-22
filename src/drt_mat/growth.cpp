@@ -314,7 +314,6 @@ void MAT::Growth::ResetAll(const int numgp)
 /*----------------------------------------------------------------------------*/
 void MAT::Growth::Update()
 {
-
   const int numgp = theta_->size();
 
   for (int i=0; i<numgp; i++)
@@ -328,7 +327,13 @@ void MAT::Growth::Update()
 /*----------------------------------------------------------------------------*/
 void MAT::Growth::ResetStep()
 {
-  dserror("You need a backup of thetaold_ to be able to reset!");
+  const int numgp = theta_->size();
+
+  for (int i=0; i<numgp; i++)
+  {
+    theta_->at(i) = thetaold_->at(i);
+  }
+
   matelastic_->ResetStep();
 }
 
