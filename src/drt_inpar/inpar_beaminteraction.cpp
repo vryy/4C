@@ -13,9 +13,9 @@
 
 
 #include "inpar_beaminteraction.H"
-
 #include "drt_validparameters.H"
-
+#include "drt_validparameters.H"
+#include "../drt_lib/drt_conditiondefinition.H"
 
 void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -114,6 +114,32 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
         &beamtosolidcontact);
 
   // ...
+
+}
+
+void INPAR::BEAMINTERACTION::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)
+{
+  using namespace DRT::INPUT;
+
+  /*-------------------------------------------------------------------*/
+  // beam potential interaction: atom/charge density per unit length on LINE
+  Teuchos::RCP<ConditionDefinition> beam_filament_condition =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE BEAM FILAMENT CONDITIONS",
+                                         "BeamLineFilamentCondition",
+                                         "Beam_Line_Filament_Condition",
+                                         DRT::Condition::FilamentBeamLineCondition,
+                                         false,
+                                         DRT::Condition::Line));
+
+  beam_filament_condition->AddComponent( Teuchos::rcp( new SeparatorConditionComponent( "ID" ) ) );
+  beam_filament_condition->AddComponent( Teuchos::rcp( new IntConditionComponent( "FilamentId", false, false ) ) );
+  beam_filament_condition->AddComponent( Teuchos::rcp( new SeparatorConditionComponent( "TYPE", true ) ) );
+  beam_filament_condition->AddComponent( Teuchos::rcp( new StringConditionComponent( "Type",
+        "Arbitrary",
+        Teuchos::tuple<std::string>( "Arbitrary", "arbitrary", "Actin", "actin", "Collagen", "collagen" ),
+        Teuchos::tuple<std::string>( "Arbitrary", "arbitrary", "Actin", "actin", "Collagen", "collagen" ), true ) ) );
+
+  condlist.push_back(beam_filament_condition);
 
 
 }

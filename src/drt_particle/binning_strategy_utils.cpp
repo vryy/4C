@@ -17,12 +17,61 @@
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_so3/so_base.H"
 
+#include "../drt_lib/drt_utils_parallel.H"
 #include "binning_strategy_utils.H"
 
 namespace BINSTRATEGY
 {
 namespace UTILS
 {
+
+/*-----------------------------------------------------------------------------*
+*-----------------------------------------------------------------------------*/
+void ExtendDiscretizationGhosting(
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<Epetra_Map> const&   extendedelecolmap,
+    bool                              assigndegreesoffreedom,
+    bool                              initelements,
+    bool                              doboundaryconditions)
+{
+  // make sure that all procs are either filled or unfilled
+  // oldmap in ExportColumnElements must be Reset() on every proc or nowhere
+  discret->CheckFilledGlobally();
+
+  // adapt layout to extended ghosting in discret
+  // first export the elements according to the processor local element column maps
+  discret->ExportColumnElements( *extendedelecolmap );
+
+  // get the node ids of the elements that are to be ghosted
+  // and create a proper node column map for their export
+  std::set<int> nodes;
+  for ( int lid = 0; lid < extendedelecolmap->NumMyElements(); ++lid )
+  {
+    DRT::Element* ele = discret->gElement(extendedelecolmap->GID(lid));
+    const int* nodeids = ele->NodeIds();
+    for( int inode = 0; inode < ele->NumNode(); ++inode )
+      nodes.insert( nodeids[inode] );
+  }
+
+  std::vector<int> colnodes( nodes.begin(), nodes.end() );
+  Teuchos::RCP<Epetra_Map> nodecolmap =
+    Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,discret->Comm()));
+
+  // now ghost the nodes
+  discret->ExportColumnNodes( *nodecolmap );
+
+  // fillcomplete discret with extended ghosting
+  discret->FillComplete( assigndegreesoffreedom, initelements, doboundaryconditions );
+
+#ifdef DEBUG
+  // print distribution after standard ghosting
+  if( discret->Comm().MyPID() == 0 )
+    std::cout << "parallel distribution with extended ghosting" << std::endl;
+  DRT::UTILS::PrintParallelDistribution( *discret );
+#endif
+
+  return;
+}
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
@@ -63,57 +112,7 @@ BINSTRATEGY::UTILS::BinContentType ConvertElementToBinContentType(
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void GetCurrentNodePos(
-    Teuchos::RCP<DRT::Discretization> discret,
-    const DRT::Node* node,
-    Teuchos::RCP<Epetra_Vector> disnp,
-    double* currpos )
-{
-  // Todo make this nicer
 
-  // the problem is that we might have nodes without position DoFs
-  // (e.g. for beam elements with 'interior' nodes that are only used for
-  // triad interpolation)
-  // instead of the node position itself, we return the position of the
-  // first node of the  element here (for the sake of binning)
-
-  // standard case
-  DRT::Node const* node_with_position_Dofs = node;
-
-  const DRT::Element* element = node->Elements()[0];
-  const DRT::ELEMENTS::Beam3Base* beamelement =
-      dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
-
-  // if the node does not have position DoFs, we return the position of the first
-  // node of the corresponding element
-  if ( beamelement != NULL and not beamelement->IsCenterlineNode(*node) )
-  {
-    node_with_position_Dofs = beamelement->Nodes()[0];
-  }
-
-  if( disnp != Teuchos::null )
-  {
-    const int gid = discret->Dof(node_with_position_Dofs, 0);
-    const int lid = disnp->Map().LID(gid);
-    if( lid < 0 )
-      dserror("Your displacement is incomplete (need to be based on a column map"
-              " as this function is also called from a loop over elements and "
-              "each proc does (usually) not own all nodes of his row elements ");
-    for( int dim = 0; dim < 3; ++dim )
-    {
-      currpos[dim] = node_with_position_Dofs->X()[dim] + (*disnp)[lid+dim];
-    }
-  }
-  else
-  {
-    for( int dim = 0; dim < 3; ++dim )
-      currpos[dim] = node_with_position_Dofs->X()[dim];
-  }
-
-  return;
-}
 
 }
 }

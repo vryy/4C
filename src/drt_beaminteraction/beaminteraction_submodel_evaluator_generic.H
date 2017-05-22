@@ -76,6 +76,7 @@ namespace SUBMODELEVALUATOR {
         Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
         Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
         Teuchos::RCP<PARTICLE::ParticleHandler> const& particlehandler,
+        Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
         Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
         Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor
     );
@@ -228,6 +229,9 @@ namespace SUBMODELEVALUATOR {
 
     //! particle handler and binning strategy
     Teuchos::RCP<PARTICLE::ParticleHandler> particlehandler_;
+
+    //! binning strategy
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
     //! periodic bounding box
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> periodic_boundingbox_;

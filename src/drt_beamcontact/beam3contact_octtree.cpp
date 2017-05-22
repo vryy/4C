@@ -180,21 +180,6 @@ basisnodes_(discret.NumGlobalNodes())
     std::cout<<"max. tree depth        = "<<maxtreedepth_<<"\nmax. BB per octant     = "<<minbboxesinoctant_<<std::endl;
   }
 
-  // get line conditions
-  bbox2line_ = Teuchos::rcp(new Epetra_Vector(*(searchdis_.NodeColMap())));
-  bbox2line_->PutScalar(-1.0);
-  std::vector<DRT::Condition*> lines;
-  discret_.GetCondition("FilamentNumber", lines);
-
-  for(int i=0; i<(int)lines.size(); i++)
-    for(int j=0; j<(int)lines[i]->Nodes()->size(); j++)
-    {
-      if(searchdis_.NodeColMap()->LID(lines[i]->Nodes()->at(j))<0)
-        dserror("ID of node on FILAMENT NUMBERS condition not found in discretization searchdis_. Check your FILAMENT NUMBERS condition!");
-      else
-      (*bbox2line_)[searchdis_.NodeColMap()->LID(lines[i]->Nodes()->at(j))] = lines[i]->GetInt("Filament Number");
-    }
-
   return;
 }
 

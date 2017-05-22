@@ -39,7 +39,11 @@ namespace DRT
   class Element;
   class Node;
 }
-
+namespace GEO {
+namespace MESHFREE {
+  class BoundingBox;
+}
+}
 
 /*----------------------------------------------------------------------*
  | binning strategy                                         ghamm 11/13 |
@@ -81,7 +85,8 @@ namespace BINSTRATEGY
     /// initialize binning strategy
     virtual void Init( Teuchos::RCP<DRT::Discretization>& bindis,
                        Teuchos::RCP<DRT::Discretization> const discret = Teuchos::null,
-                       Teuchos::RCP<Epetra_Vector> const disnp = Teuchos::null);
+                       Teuchos::RCP<Epetra_Vector> const disnp = Teuchos::null,
+                       Teuchos::RCP<GEO::MESHFREE::BoundingBox>const pbb = Teuchos::null);
 
     /// setup binning strategy
     virtual void Setup();
@@ -291,15 +296,6 @@ namespace BINSTRATEGY
       ) const;
 
     /// extend ghosting according to bin distribution
-    virtual void ExtendDiscretizationGhosting(
-        Teuchos::RCP<DRT::Discretization> discret,
-        Teuchos::RCP<Epetra_Map> const&   extendedelecolmap,
-        bool                              assigndegreesoffreedom,
-        bool                              initelements,
-        bool                              doboundaryconditions
-     ) const;
-
-    /// extend ghosting according to bin distribution
     virtual void ExtendBinGhosting(
         Teuchos::RCP<Epetra_Map> rowbins,
         std::set< int > const&   colbins,
@@ -360,11 +356,6 @@ namespace BINSTRATEGY
     virtual void ConvertGidToijk(
       int gid,  ///< bin id to be converted into i,j,k
       int* ijk  ///< resulting i,j,k
-      ) const;
-
-    /// convert position into bin id
-    virtual int ConvertPosToGid(
-      const std::vector<double>& pos  ///< position of which the corresponding bin id is asked for
       ) const;
 
     /// convert position into bin id
@@ -446,7 +437,7 @@ namespace BINSTRATEGY
     virtual void WriteBinOutput(int const step, double const time);
 
     /// shift current particle positions in case periodic boundary conditions are applied
-    virtual void PeriodicBoundaryShift1D(double& currpos, int dim) const;
+    virtual void PeriodicBoundaryShift3D( LINALG::Matrix<3,1>& d, LINALG::Matrix<3,1> const X = LINALG::Matrix<3,1>( true ) ) const;
 
     // create XAABB for discretization
     virtual void CreateXAABB(Teuchos::RCP<DRT::Discretization> dis);
@@ -466,6 +457,14 @@ namespace BINSTRATEGY
       const Epetra_Comm& comm
       ) const;
 
+  private:
+
+    /// get current position of node
+    void GetCurrentNodePos(
+        Teuchos::RCP< const DRT::Discretization> const discret,
+        DRT::Node const * node,
+        Teuchos::RCP<const Epetra_Vector>const  disnp,
+        double* currpos ) const;
 
   private:
 
@@ -480,6 +479,8 @@ namespace BINSTRATEGY
     double cutoff_radius_;    ///< maximum influence radius
 
     LINALG::Matrix<3,2> XAABB_;    ///< extendedAxisAlignedBoundingBox of bins
+
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox> deforming_simulation_domain_handler; // if your simulation domain is deforming, e.g. under shear
 
     int writebinstype_;    ///< type of bin visualization
 

@@ -149,8 +149,6 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
-------------------------------------------------------------FILAMENT NUMBERS
-DLINE                           0
 -----------------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE                           2
 E 10 - 1 Master Inactive

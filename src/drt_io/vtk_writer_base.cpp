@@ -197,7 +197,7 @@ VtkWriterBase::VtkWriterBase()
     num_processor_digits_(0),
     time_(std::numeric_limits<double>::min()),
     timestep_(-1),
-    restart(DRT::Problem::Instance()->Restart()),
+    restart_( DRT::Problem::Instance()->Restart() ),
     cycle_ (std::numeric_limits<int>::max()),
     write_binary_output_(true),
     myrank_(0),
@@ -740,7 +740,7 @@ VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
     const std::string & restartfilename,
     double restart_time)
 {
-  if ( myrank_ != 0 or not restart )
+  if ( myrank_ != 0 or not restart_ )
     return;
 
   // get name and path of restarted collection file

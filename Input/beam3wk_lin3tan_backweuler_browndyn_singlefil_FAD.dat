@@ -60,9 +60,9 @@ NDPOINT 0
 NDLINE  1
 NDSURF  0
 NDVOL   0
---------------------------------------------------FILAMENT NUMBERS
+--------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 1
-E 1 - 0
+E 1 - ID 0 TYPE arbitrary
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE       1 DLINE 1
 NODE       2 DLINE 1

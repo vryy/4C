@@ -782,6 +782,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_fsi.cpp
   src/drt_inpar/inpar_immersed.cpp
   src/drt_inpar/inpar_invanalysis.cpp
+  src/drt_inpar/inpar_IO_runtime_vtk_output.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output_structure.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output_structure_beams.cpp
   src/drt_inpar/inpar_IO_runtime_vtp_output_structure.cpp
@@ -909,6 +910,7 @@ set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/str_model_evaluator_beaminteraction_old.cpp
 )
 set(OBJS_DRT_BEAMINTERACTION_LIB
+  src/drt_beaminteraction/periodic_boundingbox.cpp
   src/drt_beaminteraction/beam3contact_utils.cpp
   src/drt_beaminteraction/beam3contact_tangentsmoothing.cpp
   src/drt_beaminteraction/beam_contact_params.cpp
@@ -922,6 +924,18 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_sphere_potential_pair.cpp
   src/drt_beaminteraction/beam_to_beam_linkage.cpp
   src/drt_beaminteraction/beam3r_lin2_linkage.cpp
+  src/drt_beaminteraction/str_model_evaluator_beamdata.cpp
+  src/drt_beaminteraction/str_model_evaluator_beaminteraction.cpp
+  src/drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_factory.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
+  src/drt_beaminteraction/beaminteraction_calc_utils.cpp
+  src/drt_beaminteraction/crosslinking_params.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.cpp
+  src/drt_beaminteraction/contractilecells_params.cpp
+  src/drt_beaminteraction/beaminteraction_submodel_evaluator_contractilecells.cpp
 )
 set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/convert_mat.cpp
@@ -1522,7 +1536,6 @@ set(OBJS_DRT_MESHFREE_DISCRET_LIB
   src/drt_fem_general/drt_utils_maxent_basisfunctions.cpp
   src/drt_meshfree_discret/drt_meshfree_node.cpp
   src/drt_beaminteraction/crosslinker_node.cpp
-  src/drt_beaminteraction/periodic_boundingbox.cpp
   src/drt_particle/particle_node.cpp
   src/drt_particle/particle_radius_node.cpp
   src/drt_meshfree_discret/drt_meshfree_bin.cpp
@@ -1764,7 +1777,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_integrator.cpp
   src/drt_structure_new/str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_data.cpp
-  src/drt_beaminteraction/str_model_evaluator_beamdata.cpp
   src/drt_structure_new/str_model_evaluator_contactdata.cpp
   src/drt_browniandyn/str_model_evaluator_browniandyn.cpp
   src/drt_browniandyn/str_model_evaluator_browniandyndata.cpp
@@ -1777,17 +1789,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_contact.cpp
   src/drt_contact_xcontact/str_model_evaluator_xcontact.cpp
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
-  src/drt_beaminteraction/str_model_evaluator_beaminteraction.cpp
-  src/drt_beaminteraction/str_model_evaluator_beaminteraction_datastate.cpp
-  src/drt_beaminteraction/beaminteraction_submodel_evaluator_factory.cpp
-  src/drt_beaminteraction/beaminteraction_submodel_evaluator_generic.cpp
-  src/drt_beaminteraction/beaminteraction_submodel_evaluator_beamcontact.cpp
-  src/drt_beaminteraction/beaminteraction_submodel_evaluator_potential.cpp
-  src/drt_beaminteraction/beaminteraction_calc_utils.cpp
-  src/drt_beaminteraction/crosslinking_params.cpp
-  src/drt_beaminteraction/beaminteraction_submodel_evaluator_crosslinking.cpp
-  src/drt_beaminteraction/contractilecells_params.cpp
-  src/drt_beaminteraction/beaminteraction_submodel_evaluator_contractilecells.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
   src/drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
@@ -1806,6 +1807,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_timint_base.cpp
   src/drt_structure_new/str_timint_basedataio.cpp
   src/drt_structure_new/str_timint_basedataio_runtime_vtk_output.cpp
+  src/drt_structure_new/str_discretization_runtime_vtu_output_params.cpp
   src/drt_structure_new/str_timint_basedataio_runtime_vtp_output.cpp
   src/drt_structure_new/str_timint_basedataglobalstate.cpp
   src/drt_structure_new/str_timint_basedatasdyn.cpp

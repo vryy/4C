@@ -30,6 +30,7 @@
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner) :
     DRT::Element(id,owner),
+    filamenttype_(INPAR::BEAMINTERACTION::filtype_arbitrary),
     interface_ptr_(Teuchos::null),
     browndyn_interface_ptr_(Teuchos::null)
 {
@@ -41,7 +42,8 @@ DRT::ELEMENTS::Beam3Base::Beam3Base(int id, int owner) :
 DRT::ELEMENTS::Beam3Base::Beam3Base(const DRT::ELEMENTS::Beam3Base& old) :
    DRT::Element(old),
    bspotposxi_(old.bspotposxi_),
-   bspotstatus_(old.bspotstatus_)
+   bspotstatus_(old.bspotstatus_),
+   filamenttype_(old.filamenttype_)
 {
   //empty
 }
@@ -63,6 +65,10 @@ void DRT::ELEMENTS::Beam3Base::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,bspotposxi_);
   // bspotstatus_
   AddtoPack(data,bspotstatus_);
+  // filamenttype_
+  AddtoPack(data,filamenttype_);
+
+
 
   return;
 }
@@ -86,6 +92,8 @@ void DRT::ELEMENTS::Beam3Base::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,bspotposxi_);
   // bspotstatus_
   ExtractfromPack(position,data,bspotstatus_);
+  // filamenttype_
+  filamenttype_ = static_cast<INPAR::BEAMINTERACTION::FilamentType>( ExtractInt(position,data) );
 
   return;
 }
@@ -322,6 +330,9 @@ void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
   velbackgroundgrad.PutScalar(0.0);
 
   // fixme @grill: this needs to go somewhere else, outside element level
+  // note: from now on displacement state that is handed to element level in
+  // brownian dynamic model evaluator is from now on in unshifted configuration,
+  // velocity obviously needs be calculated in shifted configuration
 //  double time = -1.0;
 //
 //  double shearamplitude = BrownianDynParamsInterface().GetShearAmplitude();
@@ -367,17 +378,32 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
   /* get number of degrees of freedom per node; note:
    * the following function assumes the same number of degrees
    * of freedom for each element node*/
-  int numdof = NumDofPerNode(*(Nodes()[0]));
+  int numdof = NumDofPerNode( *( Nodes()[0] ) );
 
   // get number of nodes that are used for centerline interpolation
   unsigned int nnodecl = NumCenterlineNodes();
 
   // loop through all nodes except for the first node which remains
   // fixed as reference node
-  for(unsigned int i = 1; i < nnodecl; ++i)
+  static LINALG::Matrix<3,1> d(true), ref(true), X(true);
+  d.Clear(); ref.Clear(); X.Clear();
+  for( unsigned int i = 1; i < nnodecl; ++i )
+  {
     for( int dim = 0; dim < 3; ++dim )
-      periodic_boundingbox->UnShift1D( dim, disp[numdof*i+dim],
-          Nodes()[0]->X()[dim] + disp[numdof*0+dim], Nodes()[i]->X()[dim]);
+    {
+      d(dim) = disp[ numdof * i + dim ];
+      ref(dim) = Nodes()[0]->X()[dim] + disp[ numdof * 0 + dim ];
+      X(dim) = Nodes()[i]->X()[dim];
+    }
+
+    periodic_boundingbox->UnShift3D( d, ref, X );
+
+    for( unsigned int dim = 0; dim < 3; ++dim )
+    {
+      disp[ numdof * i + dim ] = d(dim);
+    }
+  }
+
 }
 
 /*---------------------------------------------------------------------------------------------   *

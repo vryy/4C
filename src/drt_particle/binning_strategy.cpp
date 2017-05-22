@@ -44,6 +44,9 @@
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_node.H"
 
+#include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "../drt_beam3/beam3_base.H"
+
 
 /*----------------------------------------------------------------------*
  | standard constructor                                                 |
@@ -52,12 +55,14 @@ BINSTRATEGY::BinningStrategy::BinningStrategy() :
     bindis_(Teuchos::null),
     visbindis_(Teuchos::null),
     cutoff_radius_(0.0),
+    XAABB_(true),
+    deforming_simulation_domain_handler(Teuchos::null),
     writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
     havepbc_(false),
     particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION"))
 {
   // initialize arrays
-  for(int idim=0; idim<3; ++idim)
+  for( int idim = 0; idim < 3; ++idim )
   {
     bin_size_[idim] = 0.0;
     inv_bin_size_[idim] = 0.0;
@@ -75,12 +80,15 @@ BINSTRATEGY::BinningStrategy::BinningStrategy() :
 void BINSTRATEGY::BinningStrategy::Init(
     Teuchos::RCP<DRT::Discretization>& bindis,
     Teuchos::RCP<DRT::Discretization> const discret,
-    Teuchos::RCP<Epetra_Vector> const disnp)
+    Teuchos::RCP<Epetra_Vector> const disnp,
+    Teuchos::RCP<GEO::MESHFREE::BoundingBox>const pbb)
 {
   // myrank
   myrank_ = bindis->Comm().MyPID();
   // binning discretization
   bindis_ = bindis;
+  //
+  deforming_simulation_domain_handler = pbb;
   // meshfree params
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
 
@@ -218,18 +226,19 @@ void BINSTRATEGY::BinningStrategy::Setup()
  | Binning strategy constructor                             ghamm 11/13 |
  *----------------------------------------------------------------------*/
 BINSTRATEGY::BinningStrategy::BinningStrategy(
-  const Epetra_Comm& comm,
-  double cutoff_radius,
-  LINALG::Matrix<3,2> XAABB
-  ) :
-  bindis_(Teuchos::null),
-  visbindis_(Teuchos::null),
-  cutoff_radius_(cutoff_radius),
-  XAABB_(XAABB),
-  writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
-  havepbc_(false),
-  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
-  myrank_(comm.MyPID())
+    const Epetra_Comm& comm,
+    double cutoff_radius,
+    LINALG::Matrix<3,2> XAABB
+    ) :
+    bindis_(Teuchos::null),
+    visbindis_(Teuchos::null),
+    cutoff_radius_(cutoff_radius),
+    XAABB_(XAABB),
+    deforming_simulation_domain_handler(Teuchos::null),
+    writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
+    havepbc_(false),
+    particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
+    myrank_(comm.MyPID())
 {
   if( XAABB_(0,0) >= XAABB_(0,1) or XAABB_(1,0) >= XAABB_(1,1) or XAABB_(2,0) >= XAABB_(2,1))
     dserror("XAABB is not computed correctly");
@@ -258,14 +267,17 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
  | Binning strategy constructor                             ghamm 11/13 |
  *----------------------------------------------------------------------*/
 BINSTRATEGY::BinningStrategy::BinningStrategy(
-  const Epetra_Comm& comm
-  ) :
-  bindis_(Teuchos::null),
-  visbindis_(Teuchos::null),
-  writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
-  havepbc_(false),
-  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
-  myrank_(comm.MyPID())
+    const Epetra_Comm& comm
+    ) :
+    bindis_(Teuchos::null),
+    visbindis_(Teuchos::null),
+    cutoff_radius_(0.0),
+    XAABB_(true),
+    deforming_simulation_domain_handler(Teuchos::null),
+    writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
+    havepbc_(false),
+    particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
+    myrank_(comm.MyPID())
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
 
@@ -313,16 +325,18 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
  | Repartitioning Binning strategy constructor              ghamm 06/14 |
  *----------------------------------------------------------------------*/
 BINSTRATEGY::BinningStrategy::BinningStrategy(
-  std::vector<Teuchos::RCP<DRT::Discretization> > dis,
-  std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
-  std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap
-  ) :
-  bindis_(Teuchos::null),
-  cutoff_radius_(0.0),
-  writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
-  havepbc_(false),
-  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
-  myrank_(dis[0]->Comm().MyPID())
+    std::vector<Teuchos::RCP<DRT::Discretization> > dis,
+    std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
+    std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap
+    ) :
+    bindis_(Teuchos::null),
+    cutoff_radius_(0.0),
+    XAABB_(true),
+    deforming_simulation_domain_handler(Teuchos::null),
+    writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
+    havepbc_(false),
+    particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
+    myrank_(dis[0]->Comm().MyPID())
 {
   // initialize arrays
   for(int idim=0; idim<3; ++idim)
@@ -356,9 +370,9 @@ void BINSTRATEGY::BinningStrategy::FillBinsIntoBinDiscretization(
 | assign elements into bins                                 ghamm 11/13 |
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
-  const DRT::Discretization& mortardis,
-  std::map<int, std::set<int> >& binelemap,
-  bool isslave) const
+    const DRT::Discretization& mortardis,
+    std::map<int, std::set<int> >& binelemap,
+    bool isslave) const
 {
   // exploit bounding box idea for elements and bins
   for (int lid = 0; lid<mortardis.NumMyColElements(); ++lid)
@@ -414,10 +428,10 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::DistributeRowElementsToBinsUsingEleXAABB(
-  Teuchos::RCP< DRT::Discretization > const& discret,
-  std::map< int, std::set< int > >&   bintorowelemap,
-  Teuchos::RCP< Epetra_Vector >       disnp
-  ) const
+    Teuchos::RCP< DRT::Discretization > const& discret,
+    std::map< int, std::set< int > >&   bintorowelemap,
+    Teuchos::RCP< Epetra_Vector >       disnp
+    ) const
 {
   bintorowelemap.clear();
 
@@ -440,11 +454,11 @@ void BINSTRATEGY::BinningStrategy::DistributeRowElementsToBinsUsingEleXAABB(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::DistributeElementToBinsUsingEleXAABB(
-  Teuchos::RCP< DRT::Discretization > const& discret,
-  DRT::Element* eleptr,
-  std::vector<int>& binIds,
-  Teuchos::RCP< Epetra_Vector > const& disnp
-  ) const
+    Teuchos::RCP< DRT::Discretization > const& discret,
+    DRT::Element* eleptr,
+    std::vector<int>& binIds,
+    Teuchos::RCP< Epetra_Vector > const& disnp
+    ) const
 {
   binIds.clear();
   DRT::Node** nodes = eleptr->Nodes();
@@ -489,7 +503,7 @@ void BINSTRATEGY::BinningStrategy::DistributeNodeToijk(
   ) const
 {
   double currpos[3] = { 0.0, 0.0, 0.0 };
-  BINSTRATEGY::UTILS::GetCurrentNodePos( discret, node, disnp, currpos );
+  GetCurrentNodePos( discret, node, disnp, currpos );
   double const* coords = currpos;
   ConvertPosToijk( coords, ijk );
 }
@@ -555,7 +569,7 @@ void BINSTRATEGY::BinningStrategy::BuildAxisAlignedijkRangeForRigidSphere(
 {
   double const& radius = dynamic_cast< const DRT::ELEMENTS::Rigidsphere* >(eleptr)->Radius();
   double currpos[3] = { 0.0, 0.0, 0.0 };
-  BINSTRATEGY::UTILS::GetCurrentNodePos( discret, eleptr->Nodes()[0], disnp, currpos );
+  GetCurrentNodePos( discret, eleptr->Nodes()[0], disnp, currpos );
 
   for ( int j = 0; j < 3; ++j )
   {
@@ -660,8 +674,7 @@ void BINSTRATEGY::BinningStrategy::GetBinContent(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::RemoveSpecificElesFromBins(
-    BINSTRATEGY::UTILS::BinContentType bincontent
-  )
+    BINSTRATEGY::UTILS::BinContentType bincontent )
 {
   // loop over all bins and remove assigned elements
   const int numcolbins = bindis_->NumMyColElements();
@@ -689,10 +702,10 @@ void BINSTRATEGY::BinningStrategy::RemoveAllElesFromBins()
 | assign nodes into bins                                    ghamm 06/14 |
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::DistributeNodesToBins(
-  Teuchos::RCP<DRT::Discretization> discret,
-  std::map<int, std::vector<int> >& nodesinbin,
-  Teuchos::RCP<Epetra_Vector> disnp
-  ) const
+    Teuchos::RCP<DRT::Discretization> discret,
+    std::map<int, std::vector<int> >& nodesinbin,
+    Teuchos::RCP<Epetra_Vector> disnp
+    ) const
 {
   // current position of nodes
   double currpos[3] = {0.0,0.0,0.0};
@@ -701,12 +714,16 @@ void BINSTRATEGY::BinningStrategy::DistributeNodesToBins(
   for ( int lid = 0; lid < discret->NumMyRowNodes(); ++lid )
   {
     DRT::Node* node = discret->lRowNode(lid);
-    BINSTRATEGY::UTILS::GetCurrentNodePos( discret, node, disnp, currpos );
+    GetCurrentNodePos( discret, node, disnp, currpos );
 
     const double* coords = currpos;
     int ijk[3];
     ConvertPosToijk( coords, ijk );
     const int binid = ConvertijkToGid(&ijk[0]);
+
+    if ( binid == -1 )
+      dserror( "There are nodes in your discretization that reside outside the binning \n"
+               "domain, this does not work at this point.");
 
     // assign node to bin
     nodesinbin[binid].push_back( node->Id() );
@@ -718,10 +735,10 @@ void BINSTRATEGY::BinningStrategy::DistributeNodesToBins(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedPartitioning(
-  std::vector<Teuchos::RCP<DRT::Discretization> > discret,
-  std::vector<Teuchos::RCP<Epetra_Map> >&         stdelecolmap,
-  std::vector<Teuchos::RCP<Epetra_Map> >&         stdnodecolmap
-  )
+    std::vector<Teuchos::RCP<DRT::Discretization> > discret,
+    std::vector<Teuchos::RCP<Epetra_Map> >&         stdelecolmap,
+    std::vector<Teuchos::RCP<Epetra_Map> >&         stdnodecolmap
+    )
 {
   // initialize dummys
   std::vector<std::map<int, std::set<int> > > dummy1(discret.size());
@@ -822,12 +839,12 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedPartitioning(
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBinsToProcs(
-  std::vector< Teuchos::RCP<DRT::Discretization> >&  discret,
-  std::vector< Teuchos::RCP<Epetra_Vector> >&        disnp,
-  std::vector< std::map<int, std::vector<int> > > &  nodesinbin,
-  double const& weight,
-  bool repartition
-  ) const
+    std::vector< Teuchos::RCP<DRT::Discretization> >&  discret,
+    std::vector< Teuchos::RCP<Epetra_Vector> >&        disnp,
+    std::vector< std::map<int, std::vector<int> > > &  nodesinbin,
+    double const& weight,
+    bool repartition
+    ) const
 {
   // calculate total number of bins
   const int numbin = bin_per_dir_[0] * bin_per_dir_[1] * bin_per_dir_[2];
@@ -1138,55 +1155,6 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
 /*-----------------------------------------------------------------------------*
 | extend ghosting according to bin distribution                eichinger 09/16 |
 *-----------------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::ExtendDiscretizationGhosting(
-    Teuchos::RCP<DRT::Discretization> discret,
-    Teuchos::RCP<Epetra_Map> const&   extendedelecolmap,
-    bool assigndegreesoffreedom,
-    bool initelements,
-    bool doboundaryconditions) const
-{
-  // make sure that all procs are either filled or unfilled
-  // oldmap in ExportColumnElements must be Reset() on every proc or nowhere
-  discret->CheckFilledGlobally();
-
-  // adapt layout to extended ghosting in discret
-  // first export the elements according to the processor local element column maps
-  discret->ExportColumnElements( *extendedelecolmap );
-
-  // get the node ids of the elements that are to be ghosted
-  // and create a proper node column map for their export
-  std::set<int> nodes;
-  for ( int lid = 0; lid < extendedelecolmap->NumMyElements(); ++lid )
-  {
-    DRT::Element* ele = discret->gElement(extendedelecolmap->GID(lid));
-    const int* nodeids = ele->NodeIds();
-    for( int inode = 0; inode < ele->NumNode(); ++inode )
-      nodes.insert( nodeids[inode] );
-  }
-
-  std::vector<int> colnodes( nodes.begin(), nodes.end() );
-  Teuchos::RCP<Epetra_Map> nodecolmap =
-    Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,discret->Comm()));
-
-  // now ghost the nodes
-  discret->ExportColumnNodes( *nodecolmap );
-
-  // fillcomplete discret with extended ghosting
-  discret->FillComplete( assigndegreesoffreedom, initelements, doboundaryconditions );
-
-#ifdef DEBUG
-  // print distribution after standard ghosting
-  if( myrank_ == 0 )
-    std::cout << "parallel distribution with extended ghosting" << std::endl;
-  DRT::UTILS::PrintParallelDistribution( *discret );
-#endif
-
-  return;
-}
-
-/*-----------------------------------------------------------------------------*
-| extend ghosting according to bin distribution                eichinger 09/16 |
-*-----------------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::ExtendBinGhosting(
     Teuchos::RCP<Epetra_Map> rowbins,
     std::set< int > const&   colbins,
@@ -1206,7 +1174,7 @@ void BINSTRATEGY::BinningStrategy::ExtendBinGhosting(
   if( bincolmap->NumGlobalElements() == 1 && bindis_->Comm().NumProc() > 1 )
     dserror("one bin cannot be run in parallel -> reduce CUTOFF_RADIUS");
 
-  ExtendDiscretizationGhosting( bindis_ , bincolmap , assigndegreesoffreedom , false , true );
+  BINSTRATEGY::UTILS::ExtendDiscretizationGhosting( bindis_ , bincolmap , assigndegreesoffreedom , false , true );
 
 #ifdef DEBUG
 
@@ -1236,10 +1204,10 @@ void BINSTRATEGY::BinningStrategy::ExtendBinGhosting(
 | extend ghosting according to bin distribution          ghamm 11/13 |
  *-------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
-  DRT::Discretization&           mortardis,
-  Teuchos::RCP<Epetra_Map>       initial_elecolmap,
-  std::map<int, std::set<int> >& slavebinelemap,
-  std::map<int, std::set<int> >& masterbinelemap) const
+    DRT::Discretization&           mortardis,
+    Teuchos::RCP<Epetra_Map>       initial_elecolmap,
+    std::map<int, std::set<int> >& slavebinelemap,
+    std::map<int, std::set<int> >& masterbinelemap) const
 {
   std::map<int, std::set<int> > extendedghosting;
 
@@ -1313,9 +1281,9 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
 | extend ghosting according to bin distribution          ghamm 02/14 |
  *-------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::ExtendGhosting(
-  Teuchos::RCP<DRT::Discretization> scatradis,
-  std::map<int, std::set<int> >& escapedpartelemap,
-  std::map<int, std::set<int> >& myescapedpartelemap) const
+    Teuchos::RCP<DRT::Discretization> scatradis,
+    std::map<int, std::set<int> >& escapedpartelemap,
+    std::map<int, std::set<int> >& myescapedpartelemap) const
 {
   // get fully redundant map of escaped particles
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1359,9 +1327,9 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
-  std::map<int, std::set<int> >& binelemap,
-  std::map<int, std::set<int> >& ext_bintoele_ghosting,
-  Teuchos::RCP<Epetra_Map>       bincolmap) const
+    std::map<int, std::set<int> >& binelemap,
+    std::map<int, std::set<int> >& ext_bintoele_ghosting,
+    Teuchos::RCP<Epetra_Map>       bincolmap) const
 {
   // do communication to gather all elements for extended ghosting
   const int numproc = bindis_->Comm().NumProc();
@@ -1420,11 +1388,11 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
 | extend ghosting according to bin distribution                   ghamm 06/14 |
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
-  const Epetra_Map*              initial_elecolmap,
-  std::map<int, std::set<int> >& binelemap,
-  std::map<int, std::set<int> >& ext_bintoele_ghosting,
-  Teuchos::RCP<Epetra_Map>       rowbins,
-  Teuchos::RCP<Epetra_Map>       bincolmap) const
+    const Epetra_Map*              initial_elecolmap,
+    std::map<int, std::set<int> >& binelemap,
+    std::map<int, std::set<int> >& ext_bintoele_ghosting,
+    Teuchos::RCP<Epetra_Map>       rowbins,
+    Teuchos::RCP<Epetra_Map>       bincolmap) const
 {
   // do communication to gather all elements for extended ghosting
   const int numproc = initial_elecolmap->Comm().NumProc();
@@ -1575,7 +1543,8 @@ void BINSTRATEGY::BinningStrategy::ExtendEleGhosting(
        ExtendGhosting(&*initial_elecolmap, rowelesinbin, dummy, Teuchos::null, bincolmap);
 
   // extend ghosting (add nodes/elements) according to the new column layout
-  ExtendDiscretizationGhosting(dis, elecolmapextended, assigndegreesoffreedom, initelements, doboundaryconditions);
+   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(dis, elecolmapextended,
+       assigndegreesoffreedom, initelements, doboundaryconditions);
 
   return;
 }
@@ -1583,10 +1552,10 @@ void BINSTRATEGY::BinningStrategy::ExtendEleGhosting(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::RevertExtendedGhosting(
-  std::vector<Teuchos::RCP<DRT::Discretization> > dis,
-  std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
-  std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap
-  ) const
+    std::vector<Teuchos::RCP<DRT::Discretization> > dis,
+    std::vector<Teuchos::RCP<Epetra_Map> >& stdelecolmap,
+    std::vector<Teuchos::RCP<Epetra_Map> >& stdnodecolmap
+    ) const
 {
   for(size_t i=0; i<dis.size(); ++i)
   {
@@ -1613,9 +1582,9 @@ void BINSTRATEGY::BinningStrategy::RevertExtendedGhosting(
 | extend ghosting according to bin distribution          ghamm 11/13 |
  *-------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::CollectInformation(
-  Teuchos::RCP<Epetra_Map> rowbins,
-  std::map<int, std::vector<int> >& nodesinbin,
-  std::map<int, std::vector<int> >& nodesinmybins) const
+    Teuchos::RCP<Epetra_Map> rowbins,
+    std::map<int, std::vector<int> >& nodesinbin,
+    std::map<int, std::vector<int> >& nodesinmybins) const
 {
   // do communication to gather all nodes
   const int numproc = rowbins->Comm().NumProc();
@@ -1816,18 +1785,18 @@ void BINSTRATEGY::BinningStrategy::CreateBinsScatra(Teuchos::RCP<DRT::Discretiza
 | find XAABB and cutoff                                     ghamm 06/14 |
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::CreateXAABB(
-  Teuchos::RCP<DRT::Discretization> discret,
-  Teuchos::RCP<Epetra_Vector> disnp,
-  LINALG::Matrix<3,2>& XAABB,
-  bool setcutoff
-  )
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<Epetra_Vector> disnp,
+    LINALG::Matrix<3,2>& XAABB,
+    bool setcutoff
+    )
 {
   // cutoff as largest element in discret on each proc
   double locmaxcutoff = 0.0;
   double currpos[3] = {0.0,0.0,0.0};
   // initialize XAABB of discret as rectangle around the first node of
   // discret on each proc
-  BINSTRATEGY::UTILS::GetCurrentNodePos(discret,discret->lRowNode(0),disnp,currpos);
+  GetCurrentNodePos(discret,discret->lRowNode(0),disnp,currpos);
   for(int dim=0; dim<3; ++dim)
   {
     XAABB(dim, 0) = currpos[dim] - GEO::TOL7;
@@ -1843,7 +1812,7 @@ void BINSTRATEGY::BinningStrategy::CreateXAABB(
     LINALG::Matrix<3,2> eleXAABB(false);
 
     // initialize eleXAABB as rectangle around the first node of ele
-    BINSTRATEGY::UTILS::GetCurrentNodePos(discret,ele->Nodes()[0],disnp,currpos);
+    GetCurrentNodePos(discret,ele->Nodes()[0],disnp,currpos);
     for(int dim=0; dim<3; ++dim)
     {
      eleXAABB(dim, 0) = currpos[dim] - GEO::TOL7;
@@ -1854,7 +1823,7 @@ void BINSTRATEGY::BinningStrategy::CreateXAABB(
     for (int lid = 1; lid < ele->NumNode(); ++lid)
     {
       const DRT::Node* node = ele->Nodes()[lid];
-      BINSTRATEGY::UTILS::GetCurrentNodePos(discret,node,disnp,currpos);
+      GetCurrentNodePos(discret,node,disnp,currpos);
 
       //  merge eleXAABB of all nodes of this element
       for(int dim=0; dim < 3; dim++)
@@ -1912,9 +1881,9 @@ void BINSTRATEGY::BinningStrategy::CreateXAABB(
 | in current configuration                              eichinger 09/16 |
  *----------------------------------------------------------------------*/
 double BINSTRATEGY::BinningStrategy::ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLargestEle(
-  std::vector<Teuchos::RCP<DRT::Discretization> > discret,
-  std::vector<Teuchos::RCP<Epetra_Vector> > disnp
-  )
+    std::vector<Teuchos::RCP<DRT::Discretization> > discret,
+    std::vector<Teuchos::RCP<Epetra_Vector> > disnp
+    )
 {
   double cutoff_radius = 0.0;
 
@@ -1934,7 +1903,7 @@ double BINSTRATEGY::BinningStrategy::ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLar
       LINALG::Matrix<3,2> eleXAABB(false);
 
       // initialize eleXAABB as rectangle around the first node of ele
-      BINSTRATEGY::UTILS::GetCurrentNodePos( discret[ndis], ele->Nodes()[0], disnp[ndis], currpos );
+      GetCurrentNodePos( discret[ndis], ele->Nodes()[0], disnp[ndis], currpos );
       for( int dim = 0; dim < 3; ++dim )
       {
        eleXAABB(dim, 0) = currpos[dim] - GEO::TOL7;
@@ -1957,7 +1926,7 @@ double BINSTRATEGY::BinningStrategy::ComputeMinCutoffAsMaxEdgeLengthOfXAABBOfLar
         for ( int lid = 1; lid < ele->NumNode(); ++lid )
         {
           const DRT::Node* node = ele->Nodes()[lid];
-          BINSTRATEGY::UTILS::GetCurrentNodePos( discret[ndis], node, disnp[ndis], currpos );
+          GetCurrentNodePos( discret[ndis], node, disnp[ndis], currpos );
 
           //  merge eleXAABB of all nodes of this element
           for( int dim = 0; dim < 3; ++dim )
@@ -1998,7 +1967,7 @@ void BINSTRATEGY::BinningStrategy::ComputeMinXAABBContainingAllElementsOfInputDi
   const DRT::Node* node = discret[0]->lRowNode(0);
   // calculate current position of this node
   double currpos[3] = { 0.0, 0.0, 0.0 };
-  BINSTRATEGY::UTILS::GetCurrentNodePos( discret[0], node, disnp[0], currpos );
+  GetCurrentNodePos( discret[0], node, disnp[0], currpos );
 
   for( int dim = 0; dim < 3 ; ++dim )
   {
@@ -2029,8 +1998,7 @@ void BINSTRATEGY::BinningStrategy::ComputeMinXAABBContainingAllElementsOfInputDi
 | find XAABB                                                ghamm 06/14 |
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::CreateXAABB(
-  Teuchos::RCP<DRT::Discretization> dis
-  )
+    Teuchos::RCP<DRT::Discretization> dis )
 {
   // if not yet specified, get XAABB_ from underlying discretization
   if( XAABB_(2,1) > 0.9e12  and  XAABB_(2,1) < 1.1e12 )
@@ -2101,26 +2069,23 @@ void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 01/13 |
  *----------------------------------------------------------------------*/
-int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const std::vector<double>& pos) const
-{
-  int ijk[3] = {0,0,0};
-  for(int dim=0; dim < 3; dim++)
-    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]));
-
-  return ConvertijkToGid(&ijk[0]);
-}
-
-
-/*----------------------------------------------------------------------*
-| convert position first to i,j,k, then into bin id         ghamm 01/13 |
- *----------------------------------------------------------------------*/
-int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos) const
+int BINSTRATEGY::BinningStrategy::ConvertPosToGid( const double* pos ) const
 {
   int ijk[3];
-  for(int dim=0; dim<3; ++dim)
-    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]));
+  double pos_ud[3];
+  if ( deforming_simulation_domain_handler != Teuchos::null )
+  {
+    deforming_simulation_domain_handler->TransformFromGlobalToUndeformedBoundingBoxSystem( pos, pos_ud );
+    for ( int dim = 0; dim < 3; ++dim )
+      ijk[dim] = static_cast<int>( std::floor( ( pos_ud[dim] - XAABB_( dim, 0 ) ) * inv_bin_size_[dim] ) );
+  }
+  else
+  {
+    for ( int dim = 0; dim < 3; ++dim )
+      ijk[dim] = static_cast<int>( std::floor( ( pos[dim] - XAABB_( dim, 0 ) ) * inv_bin_size_[dim] ) );
+  }
 
-  return ConvertijkToGid(&ijk[0]);
+  return ConvertijkToGid( &ijk[0] );
 }
 
 
@@ -2129,8 +2094,18 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos) const
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk) const
 {
-  for(int dim=0; dim<3; ++dim)
-    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]));
+  double pos_ud[3];
+  if ( deforming_simulation_domain_handler != Teuchos::null )
+  {
+    deforming_simulation_domain_handler->TransformFromGlobalToUndeformedBoundingBoxSystem( pos, pos_ud );
+    for ( int dim = 0; dim < 3; ++dim )
+      ijk[dim] = static_cast<int>( std::floor( ( pos_ud[dim] - XAABB_( dim, 0 ) ) * inv_bin_size_[dim] ) );
+  }
+  else
+  {
+    for ( int dim = 0; dim < 3; ++dim )
+      ijk[dim] = static_cast<int>( std::floor( ( pos[dim] - XAABB_( dim, 0 ) ) * inv_bin_size_[dim] ) );
+  }
 
   return;
 }
@@ -2138,27 +2113,45 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk) 
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 03/13 |
  *----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const LINALG::Matrix<3,1>& pos, int* ijk) const
+void BINSTRATEGY::BinningStrategy::ConvertPosToijk( const LINALG::Matrix<3,1>& pos, int* ijk ) const
 {
-  for(int dim=0; dim<3; ++dim)
-    ijk[dim] = (int)(std::floor((pos(dim)-XAABB_(dim,0)) * inv_bin_size_[dim]));
+  LINALG::Matrix<3,1> pos_ud;
+  if ( deforming_simulation_domain_handler != Teuchos::null )
+  {
+    deforming_simulation_domain_handler->TransformFromGlobalToUndeformedBoundingBoxSystem( pos, pos_ud );
+    for( int dim = 0; dim < 3; ++dim )
+      ijk[dim] = static_cast<int>( std::floor( ( pos_ud(dim) - XAABB_( dim, 0) ) * inv_bin_size_[dim] ) );
+  }
+  else
+  {
+    for( int dim = 0; dim < 3; ++dim )
+      ijk[dim] = static_cast<int>( std::floor( ( pos(dim) - XAABB_( dim, 0) ) * inv_bin_size_[dim] ) );
+  }
 
   return;
 }
 
-
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 03/13 |
  *----------------------------------------------------------------------*/
-int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3,1>& pos) const
+int BINSTRATEGY::BinningStrategy::ConvertPosToGid( const LINALG::Matrix<3,1>& pos ) const
 {
   int ijk[3];
-  for(int dim=0; dim<3; ++dim)
-    ijk[dim] = (int)(std::floor((pos(dim)-XAABB_(dim,0)) * inv_bin_size_[dim]));
+  LINALG::Matrix<3,1> pos_ud;
+  if ( deforming_simulation_domain_handler != Teuchos::null )
+  {
+    deforming_simulation_domain_handler->TransformFromGlobalToUndeformedBoundingBoxSystem( pos, pos_ud );
+    for ( int dim = 0; dim < 3; ++dim )
+      ijk[dim] = static_cast<int>( std::floor( ( pos_ud(dim) - XAABB_( dim, 0 ) ) * inv_bin_size_[dim] ) );
+  }
+  else
+  {
+    for ( int dim = 0; dim < 3; ++dim )
+      ijk[dim] = static_cast<int>( std::floor( ( pos(dim) - XAABB_( dim, 0 ) ) * inv_bin_size_[dim] ) );
+  }
 
-  return ConvertijkToGid(&ijk[0]);
+  return ConvertijkToGid( &ijk[0] );
 }
-
 
 /*----------------------------------------------------------------------*
 | convert i,j,k into bin id                                 ghamm 09/12 |
@@ -2554,8 +2547,8 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
 | create linear map with bin ids                            ghamm 11/16 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::CreateLinearMapForNumbin(
-  const Epetra_Comm& comm
-  ) const
+    const Epetra_Comm& comm
+    ) const
 {
   // initial dummy distribution using a linear map
   const int numproc = comm.NumProc();
@@ -2586,18 +2579,83 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::CreateLinearMapForNumbin(
   return Teuchos::rcp(new Epetra_Map(numbin, linearmap.size(), &linearmap[0], 0, comm));
 }
 
-/*-----------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::PeriodicBoundaryShift1D( double& currpos, int dim ) const
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::GetCurrentNodePos(
+    Teuchos::RCP< const DRT::Discretization> const discret,
+    DRT::Node const * node,
+    Teuchos::RCP<const Epetra_Vector>const  disnp,
+    double* currpos ) const
 {
-  if( pbconoff_[dim] )
+  // Todo make this nicer
+
+  // the problem is that we might have nodes without position DoFs
+  // (e.g. for beam elements with 'interior' nodes that are only used for
+  // triad interpolation)
+  // instead of the node position itself, we return the position of the
+  // first node of the  element here (for the sake of binning)
+
+  // standard case
+  DRT::Node const* node_with_position_Dofs = node;
+
+  const DRT::Element* element = node->Elements()[0];
+  const DRT::ELEMENTS::Beam3Base* beamelement =
+      dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element);
+
+  // if the node does not have position DoFs, we return the position of the first
+  // node of the corresponding element
+  if ( beamelement != NULL and not beamelement->IsCenterlineNode(*node) )
   {
-    if( currpos < XAABB_(dim,0) )
-      currpos += pbcdeltas_[dim];
-    else if( currpos > XAABB_(dim,1) )
-      currpos -= pbcdeltas_[dim];
+    node_with_position_Dofs = beamelement->Nodes()[0];
   }
 
+  if( disnp != Teuchos::null )
+  {
+    const int gid = discret->Dof(node_with_position_Dofs, 0);
+    const int lid = disnp->Map().LID(gid);
+    if( lid < 0 )
+      dserror("Your displacement is incomplete (need to be based on a column map"
+              " as this function is also called from a loop over elements and "
+              "each proc does (usually) not own all nodes of his row elements ");
+    for( int dim = 0; dim < 3; ++dim )
+    {
+      currpos[dim] = node_with_position_Dofs->X()[dim] + (*disnp)[lid+dim];
+    }
+  }
+  else
+  {
+    for( int dim = 0; dim < 3; ++dim )
+      currpos[dim] = node_with_position_Dofs->X()[dim];
+  }
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::PeriodicBoundaryShift3D( LINALG::Matrix< 3, 1 >& d,
+    LINALG::Matrix< 3, 1 > const X ) const
+{
+  if ( not havepbc_ )
+    return;
+
+  if ( deforming_simulation_domain_handler != Teuchos::null )
+  {
+    deforming_simulation_domain_handler->Shift3D( d, X );
+  }
+  else
+  {
+    for( int dim = 0; dim < 3 ; ++dim )
+    {
+      if ( not pbconoff_[dim] )
+        continue;
+
+      if( d(dim) + X(dim) < XAABB_( dim, 0 ) )
+        d(dim) += pbcdeltas_[dim];
+      else if( d(dim) + X(dim) > XAABB_( dim, 1 ) )
+        d(dim) -= pbcdeltas_[dim];
+    }
+  }
   return;
 }
 
@@ -2620,7 +2678,7 @@ void BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
   {
     // get current node and position
     DRT::Node* currnode = discret->lColNode(i);
-    BINSTRATEGY::UTILS::GetCurrentNodePos( discret, currnode, disnp, currpos );
+    GetCurrentNodePos( discret, currnode, disnp, currpos );
 
     int const gidofbin = ConvertPosToGid(currpos);
 

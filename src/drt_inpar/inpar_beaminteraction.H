@@ -14,6 +14,16 @@
 #define INPAR_BEAMINTERACTION_H
 
 #include "inpar_parameterlist_utils.H"
+#include <boost/algorithm/string/predicate.hpp>
+
+#include "../drt_lib/drt_dserror.H"
+
+// forward declaration
+namespace DRT {
+namespace INPUT {
+class ConditionDefinition;
+}
+}
 
 /*----------------------------------------------------------------------*/
 namespace INPAR
@@ -23,7 +33,7 @@ namespace INPAR
   namespace BEAMINTERACTION
   {
 
-  /// Type of the used submodel for beaminteraction
+  /// type of the used submodel for beaminteraction
   enum SubModelType
   {
     submodel_crosslinking,         ///< evaluate the structural model
@@ -33,7 +43,7 @@ namespace INPAR
     submodel_vague                 ///< undefined model type
   };
 
-  /// Type of employed solving strategy for contact
+  /// type of employed solving strategy for contact
   /// (this enum represents the input file parameter STRATEGY)
   enum Strategy
   {
@@ -41,8 +51,60 @@ namespace INPAR
     bstr_penalty      ///< penalty method
   };
 
-  /// set the beaminteraction parameters
+  /// type of filament
+  enum FilamentType
+  {
+    filtype_arbitrary,        ///< no special type
+    filtype_actin,           ///< actin type
+    filtype_collagen         ///< collagen type
+  };
+
+  /// type of crosslinker
+  enum CrosslinkerType
+  {
+    linkertype_arbitrary,        ///< binds to all filament
+    linkertype_actin,           ///< only binds to actin filaments
+    linkertype_collagen         ///< only binds to collagen filaments
+  };
+
+  //! Map type std::string to enum
+  inline enum FilamentType String2FilamentType(const std::string& name)
+  {
+    FilamentType type = filtype_arbitrary;
+    if ( boost::iequals( name, "arbitrary" ) )
+      type = filtype_arbitrary;
+    else if ( boost::iequals( name, "actin" ) )
+      type = filtype_actin;
+    else if ( boost::iequals( name, "collagen" ) )
+      type = filtype_collagen;
+    else
+      dserror("invalid filament type std::string ");
+
+    return type;
+  };
+
+  //! Map type std::string to enum
+  inline enum CrosslinkerType String2CrosslinkerType(const std::string& name)
+  {
+    CrosslinkerType type = linkertype_arbitrary;
+    if ( boost::iequals( name, "arbitrary" ) )
+      type = linkertype_arbitrary;
+    else if ( boost::iequals( name, "actin" ) )
+      type = linkertype_actin;
+    else if ( boost::iequals( name, "collagen" ) )
+      type = linkertype_collagen;
+    else
+      dserror("invalid crosslinker type std::string ");
+
+    return type;
+  };
+
+
+  /// set the beam interaction parameters
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+  /// set beam interaction specific conditions
+  void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
   }
 

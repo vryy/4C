@@ -36,19 +36,26 @@ namespace UTILS
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void PeriodicBoundaryConsistentDisVector(
-    Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
-    Teuchos::RCP<DRT::Discretization> const& discret)
+    Teuchos::RCP<Epetra_Vector>                           dis,
+    Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& pbb,
+    Teuchos::RCP<const DRT::Discretization> const&        discret)
 {
+  LINALG::Matrix<3,1> d;
+  LINALG::Matrix<3,1> X;
+  int doflid[3];
+
   for ( int i = 0; i < discret->NumMyRowNodes(); ++i )
   {
+    d.Clear();
+    X.Clear();
+
     //get a pointer at i-th row node
     DRT::Node* node = discret->lRowNode(i);
 
     /* Hermite Interpolation: Check whether node is a beam node which is NOT
      * used for centerline interpolation if so, we simply skip it because
      * it does not have position DoFs */
-    if (BEAMCONTACT::BeamNode(*node) and not BEAMCONTACT::BeamCenterlineNode(*node))
+    if ( BEAMCONTACT::BeamNode(*node) and not BEAMCONTACT::BeamCenterlineNode(*node) )
       continue;
 
     //get GIDs of this node's degrees of freedom
@@ -56,8 +63,16 @@ void PeriodicBoundaryConsistentDisVector(
 
     for ( int dim = 0; dim < 3; ++dim )
     {
-      int doflid = dis->Map().LID(dofnode[dim]);
-      pbb->Shift1D( dim, (*dis)[doflid], node->X()[dim] );
+      doflid[dim] = dis->Map().LID( dofnode[dim] );
+      d(dim) = (*dis)[ doflid[dim] ];
+      X(dim) = node->X()[dim];
+    }
+    // shift
+    pbb->Shift3D( d, X );
+
+    for ( int dim = 0; dim < 3; ++dim )
+    {
+      (*dis)[ doflid[dim] ] = d(dim);
     }
   }
 }
@@ -687,7 +702,7 @@ void ApplyBindingSpotForceStiffToParentElements(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SetupEleTypeMapExtractor(
-    Teuchos::RCP<DRT::Discretization> const& discret,
+    Teuchos::RCP<const DRT::Discretization> const& discret,
     Teuchos::RCP<LINALG::MultiMapExtractor>& eletypeextractor)
 {
   std::vector< std::set<int> > eletypeset(3);

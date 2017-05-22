@@ -21,10 +21,13 @@
 DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
     : isinit_(false),
       issetup_(false),
+      output_displacement_state_(false),
       use_absolute_positions_visualizationpoint_coordinates_(true),
       write_triads_visualizationpoints_(false),
       write_material_crosssection_strains_gausspoints_(false),
-      write_material_crosssection_stresses_gausspoints_(false)
+      write_material_crosssection_stresses_gausspoints_(false),
+      write_spatial_crosssection_stresses_gausspoints_(false),
+      write_filament_condition_(false)
 {
   // empty constructor
 }
@@ -38,6 +41,10 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
   issetup_ = false;
 
   // initialize the parameter values
+
+  output_displacement_state_ =
+      (bool) DRT::INPUT::IntegralValue<int>(
+          IO_vtk_structure_beams_paramslist, "DISPLACEMENT");
 
   use_absolute_positions_visualizationpoint_coordinates_ =
       (bool) DRT::INPUT::IntegralValue<int>(
@@ -53,7 +60,15 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
 
   write_material_crosssection_stresses_gausspoints_ =
       (bool) DRT::INPUT::IntegralValue<int>(
-          IO_vtk_structure_beams_paramslist, "STRESSES_GAUSSPOINT");
+          IO_vtk_structure_beams_paramslist, "MATERIAL_FORCES_GAUSSPOINT");
+
+  write_spatial_crosssection_stresses_gausspoints_ =
+      (bool) DRT::INPUT::IntegralValue<int>(
+          IO_vtk_structure_beams_paramslist, "SPATIAL_FORCES_GAUSSPOINT");
+
+  write_filament_condition_ =
+      (bool) DRT::INPUT::IntegralValue<int>(
+          IO_vtk_structure_beams_paramslist, "BEAMFILAMENTCONDITION");
 
   isinit_ = true;
 }

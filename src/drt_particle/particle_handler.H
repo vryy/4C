@@ -47,7 +47,15 @@ namespace PARTICLE
   public:
 
     // constructor
-    ParticleHandler(const int myrank);
+    ParticleHandler();
+
+    /// initialize particle handler
+    void Init(
+        int myrank,
+        Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy);
+
+    /// setup particle handler
+    void Setup();
 
     // constructor
     ParticleHandler(const Epetra_Comm& comm);
@@ -139,7 +147,7 @@ namespace PARTICLE
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
     /// myrank
-    const int myrank_;
+    int myrank_;
 
     /// colmap of bins
     Teuchos::RCP<Epetra_Map> bincolmap_;

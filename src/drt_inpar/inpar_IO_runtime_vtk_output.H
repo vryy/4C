@@ -1,17 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_IO_runtime_vtk_output_structure_beams.H
+\file inpar_IO_runtime_vtk_output.H
 
-\brief input parameters for VTK output of beam discretization at runtime
+\brief input parameters for VTK output of structural problem at runtime
 
-\level 3
+\level 2
 
 \maintainer Maximilian Grill
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef INPAR_IO_RUNTIME_VTK_OUTPUT_STRUCTURE_BEAMS_H
-#define INPAR_IO_RUNTIME_VTK_OUTPUT_STRUCTURE_BEAMS_H
+#ifndef INPAR_IO_RUNTIME_VTK_OUTPUT_H
+#define INPAR_IO_RUNTIME_VTK_OUTPUT_H
 
 
 /*----------------------------------------------------------------------*/
@@ -19,19 +19,23 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-
 /*----------------------------------------------------------------------*/
 namespace INPAR
 {
 namespace IO_RUNTIME_VTK
 {
-namespace BEAMS
-{
+
+  /// data format for written numeric data
+  enum OutputDataFormat
+  {
+    binary,
+    ascii,
+    vague
+  };
 
   /// set the valid parameters related to writing of VTK output at runtime
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-}
 }
 }
 

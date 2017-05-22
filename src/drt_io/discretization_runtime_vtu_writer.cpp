@@ -72,6 +72,7 @@ DiscretizationRuntimeVtuWriter::Initialize(
 
   // todo: if you want to use absolute positions, do this every time you write output
   // with current col displacements
+  // fixme: if parallel distribution changes during simulation, do this each time this is the case
   SetGeometryFromDiscretizationStandard();
 }
 
@@ -133,7 +134,7 @@ DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
     // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
     if ( beamele != NULL )
     {
-      num_skipped_eles++;
+      ++num_skipped_eles;
       continue;
     }
 

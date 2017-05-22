@@ -85,16 +85,16 @@ public:
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void PeriodicBoundaryConsistentDisVector(
-    Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
-    Teuchos::RCP<DRT::Discretization> const&        discret);
+    Teuchos::RCP<Epetra_Vector>                           dis,
+    Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& pbb,
+    Teuchos::RCP<const DRT::Discretization> const&        discret);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void UpdateCellsPositionRandomly(
-    Teuchos::RCP<Epetra_Vector> dis,
+    Teuchos::RCP<Epetra_Vector>              dis,
     Teuchos::RCP<DRT::Discretization> const& discret,
-    int const step);
+    int const                                step);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -113,40 +113,40 @@ std::vector<int> Permutation( int const number );
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GetCurrentElementDis(
-    DRT::Discretization const& discret,
-    DRT::Element const* ele,
+    DRT::Discretization const&               discret,
+    DRT::Element const*                      ele,
     Teuchos::RCP<const Epetra_Vector> const& ia_discolnp,
-    std::vector<double>& eledisp);
+    std::vector<double>&                     eledisp);
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GetCurrentUnshiftedElementDis(
-    DRT::Discretization const& discret,
-    DRT::Element const* ele,
-    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+    DRT::Discretization const&                      discret,
+    DRT::Element const*                             ele,
+    Teuchos::RCP<Epetra_Vector> const&              ia_discolnp,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
-    std::vector<double>& eledisp);
+    std::vector<double>&                            eledisp);
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GetPosAndTriadOfBindingSpot(
-    DRT::Element* ele,
+    DRT::Element*                                   ele,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
-    int const locbspotnum,
-    LINALG::Matrix<3,1>& bspotpos,
-    LINALG::Matrix<3,3>& bspottriad,
-    std::vector<double>& eledisp);
+    int const                                       locbspotnum,
+    LINALG::Matrix<3,1>&                            bspotpos,
+    LINALG::Matrix<3,3>&                            bspottriad,
+    std::vector<double>&                            eledisp);
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void GetPosAndTriadOfBindingSpot(
-    DRT::Discretization const& discret,
-    DRT::Element* ele,
-    Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
+    DRT::Discretization const&                      discret,
+    DRT::Element*                                   ele,
+    Teuchos::RCP<Epetra_Vector> const&              ia_discolnp,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& pbb,
-    int const locbspotnum,
-    LINALG::Matrix<3,1>& bspotpos,
-    LINALG::Matrix<3,3>& bspottriad);
+    int const                                       locbspotnum,
+    LINALG::Matrix<3,1>&                            bspotpos,
+    LINALG::Matrix<3,3>&                            bspottriad);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -171,10 +171,10 @@ void AssembleCenterlineDofForceStiffIntoElementForceStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ExtractPosDofVecAbsoluteValues(
-    DRT::Discretization const& discret,
-    DRT::Element const* ele,
+    DRT::Discretization const&         discret,
+    DRT::Element const*                ele,
     Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
-    std::vector<double>& element_posdofvec_absolutevalues);
+    std::vector<double>&               element_posdofvec_absolutevalues);
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -211,8 +211,8 @@ void ApplyBindingSpotForceStiffToParentElements(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SetupEleTypeMapExtractor(
-    Teuchos::RCP<DRT::Discretization> const& discret,
-    Teuchos::RCP<LINALG::MultiMapExtractor>& eletypeextractor);
+    Teuchos::RCP<const DRT::Discretization> const& discret,
+    Teuchos::RCP<LINALG::MultiMapExtractor>&       eletypeextractor);
 
 }
 }

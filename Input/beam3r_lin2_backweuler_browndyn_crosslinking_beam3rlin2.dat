@@ -85,10 +85,10 @@ E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -30.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
 NODE      16 DNODE 1
 NODE       1 DNODE 2
 NODE      12 DNODE 3
---------------------------------------------------FILAMENT NUMBERS
+--------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 2
-E 1 - 0
-E 2 - 1
+E 1 - ID 0 TYPE arbitrary
+E 2 - ID 1 TYPE arbitrary
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE       1 DLINE 1
 NODE       2 DLINE 1

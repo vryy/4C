@@ -73,20 +73,6 @@ IFPACKGFILL            1                     // graph fill for ILU
 IFPACKOVERLAP          1                     // amount of ASM overlap for ILU, ILU, ICC, LU
 IFPACKCOMBINE          Zero                  // Add, Insert
 AZSCAL                 sym                   // none sym infnorm scaling of the system
-ML_PRINT               0                     // ML print-out level (0-10)
-ML_MAXCOARSESIZE       5000                  // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL            5                     // ML max number of levels
-ML_COARSEN             UC                    // UC MIS METIS VBMETIS
-ML_AGG_SIZE            27                    // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO         0.0                   // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES       0.0                   // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE        ILU                   // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED         ILU                   // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE      Umfpack               // SGS GS DGS Jacobi Chebychev MLS KLU Superlu Umfpack
-ML_SMOTIMES            0 0 0 0 1             // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE            1.0                   // damping fine grid
-ML_DAMPMED             1.0                   // damping med grids
-ML_DAMPCOARSE          1.0                   // damping coarse grid //header_02 end (settings by M. Gee)
 ------------------------------------------------STRUCT NOX/Printing
 Outer Iteration                 = Yes
 Inner Iteration                 = No
@@ -99,113 +85,112 @@ NDPOINT 0
 NDLINE  104
 NDSURF  0
 NDVOL   0
-NDPARTICLE 1
---------------------------------------------------FILAMENT NUMBERS
+--------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 104
-E 1 - 0
-E 2 - 1
-E 3 - 2
-E 4 - 3
-E 5 - 4
-E 6 - 5
-E 7 - 6
-E 8 - 7
-E 9 - 8
-E 10 - 9
-E 11 - 10
-E 12 - 11
-E 13 - 12
-E 14 - 13
-E 15 - 14
-E 16 - 15
-E 17 - 16
-E 18 - 17
-E 19 - 18
-E 20 - 19
-E 21 - 20
-E 22 - 21
-E 23 - 22
-E 24 - 23
-E 25 - 24
-E 26 - 25
-E 27 - 26
-E 28 - 27
-E 29 - 28
-E 30 - 29
-E 31 - 30
-E 32 - 31
-E 33 - 32
-E 34 - 33
-E 35 - 34
-E 36 - 35
-E 37 - 36
-E 38 - 37
-E 39 - 38
-E 40 - 39
-E 41 - 40
-E 42 - 41
-E 43 - 42
-E 44 - 43
-E 45 - 44
-E 46 - 45
-E 47 - 46
-E 48 - 47
-E 49 - 48
-E 50 - 49
-E 51 - 50
-E 52 - 51
-E 53 - 52
-E 54 - 53
-E 55 - 54
-E 56 - 55
-E 57 - 56
-E 58 - 57
-E 59 - 58
-E 60 - 59
-E 61 - 60
-E 62 - 61
-E 63 - 62
-E 64 - 63
-E 65 - 64
-E 66 - 65
-E 67 - 66
-E 68 - 67
-E 69 - 68
-E 70 - 69
-E 71 - 70
-E 72 - 71
-E 73 - 72
-E 74 - 73
-E 75 - 74
-E 76 - 75
-E 77 - 76
-E 78 - 77
-E 79 - 78
-E 80 - 79
-E 81 - 80
-E 82 - 81
-E 83 - 82
-E 84 - 83
-E 85 - 84
-E 86 - 85
-E 87 - 86
-E 88 - 87
-E 89 - 88
-E 90 - 89
-E 91 - 90
-E 92 - 91
-E 93 - 92
-E 94 - 93
-E 95 - 94
-E 96 - 95
-E 97 - 96
-E 98 - 97
-E 99 - 98
-E 100 - 99
-E 101 - 100
-E 102 - 101
-E 103 - 102
-E 104 - 103
+E 1 - ID 0 TYPE arbitrary
+E 2 - ID 1 TYPE arbitrary
+E 3 - ID 2 TYPE arbitrary
+E 4 - ID 3 TYPE arbitrary
+E 5 - ID 4 TYPE arbitrary
+E 6 - ID 5 TYPE arbitrary
+E 7 - ID 6 TYPE arbitrary
+E 8 - ID 7 TYPE arbitrary
+E 9 - ID 8 TYPE arbitrary
+E 10 - ID 9 TYPE arbitrary
+E 11 - ID 10 TYPE arbitrary
+E 12 - ID 11 TYPE arbitrary
+E 13 - ID 12 TYPE arbitrary
+E 14 - ID 13 TYPE arbitrary
+E 15 - ID 14 TYPE arbitrary
+E 16 - ID 15 TYPE arbitrary
+E 17 - ID 16 TYPE arbitrary
+E 18 - ID 17 TYPE arbitrary
+E 19 - ID 18 TYPE arbitrary
+E 20 - ID 19 TYPE arbitrary
+E 21 - ID 20 TYPE arbitrary
+E 22 - ID 21 TYPE arbitrary
+E 23 - ID 22 TYPE arbitrary
+E 24 - ID 23 TYPE arbitrary
+E 25 - ID 24 TYPE arbitrary
+E 26 - ID 25 TYPE arbitrary
+E 27 - ID 26 TYPE arbitrary
+E 28 - ID 27 TYPE arbitrary
+E 29 - ID 28 TYPE arbitrary
+E 30 - ID 29 TYPE arbitrary
+E 31 - ID 30 TYPE arbitrary
+E 32 - ID 31 TYPE arbitrary
+E 33 - ID 32 TYPE arbitrary
+E 34 - ID 33 TYPE arbitrary
+E 35 - ID 34 TYPE arbitrary
+E 36 - ID 35 TYPE arbitrary
+E 37 - ID 36 TYPE arbitrary
+E 38 - ID 37 TYPE arbitrary
+E 39 - ID 38 TYPE arbitrary
+E 40 - ID 39 TYPE arbitrary
+E 41 - ID 40 TYPE arbitrary
+E 42 - ID 41 TYPE arbitrary
+E 43 - ID 42 TYPE arbitrary
+E 44 - ID 43 TYPE arbitrary
+E 45 - ID 44 TYPE arbitrary
+E 46 - ID 45 TYPE arbitrary
+E 47 - ID 46 TYPE arbitrary
+E 48 - ID 47 TYPE arbitrary
+E 49 - ID 48 TYPE arbitrary
+E 50 - ID 49 TYPE arbitrary
+E 51 - ID 50 TYPE arbitrary
+E 52 - ID 51 TYPE arbitrary
+E 53 - ID 52 TYPE arbitrary
+E 54 - ID 53 TYPE arbitrary
+E 55 - ID 54 TYPE arbitrary
+E 56 - ID 55 TYPE arbitrary
+E 57 - ID 56 TYPE arbitrary
+E 58 - ID 57 TYPE arbitrary
+E 59 - ID 58 TYPE arbitrary
+E 60 - ID 59 TYPE arbitrary
+E 61 - ID 60 TYPE arbitrary
+E 62 - ID 61 TYPE arbitrary
+E 63 - ID 62 TYPE arbitrary
+E 64 - ID 63 TYPE arbitrary
+E 65 - ID 64 TYPE arbitrary
+E 66 - ID 65 TYPE arbitrary
+E 67 - ID 66 TYPE arbitrary
+E 68 - ID 67 TYPE arbitrary
+E 69 - ID 68 TYPE arbitrary
+E 70 - ID 69 TYPE arbitrary
+E 71 - ID 70 TYPE arbitrary
+E 72 - ID 71 TYPE arbitrary
+E 73 - ID 72 TYPE arbitrary
+E 74 - ID 73 TYPE arbitrary
+E 75 - ID 74 TYPE arbitrary
+E 76 - ID 75 TYPE arbitrary
+E 77 - ID 76 TYPE arbitrary
+E 78 - ID 77 TYPE arbitrary
+E 79 - ID 78 TYPE arbitrary
+E 80 - ID 79 TYPE arbitrary
+E 81 - ID 80 TYPE arbitrary
+E 82 - ID 81 TYPE arbitrary
+E 83 - ID 82 TYPE arbitrary
+E 84 - ID 83 TYPE arbitrary
+E 85 - ID 84 TYPE arbitrary
+E 86 - ID 85 TYPE arbitrary
+E 87 - ID 86 TYPE arbitrary
+E 88 - ID 87 TYPE arbitrary
+E 89 - ID 88 TYPE arbitrary
+E 90 - ID 89 TYPE arbitrary
+E 91 - ID 90 TYPE arbitrary
+E 92 - ID 91 TYPE arbitrary
+E 93 - ID 92 TYPE arbitrary
+E 94 - ID 93 TYPE arbitrary
+E 95 - ID 94 TYPE arbitrary
+E 96 - ID 95 TYPE arbitrary
+E 97 - ID 96 TYPE arbitrary
+E 98 - ID 97 TYPE arbitrary
+E 99 - ID 98 TYPE arbitrary
+E 100 - ID 99 TYPE arbitrary
+E 101 - ID 100 TYPE arbitrary
+E 102 - ID 101 TYPE arbitrary
+E 103 - ID 102 TYPE arbitrary
+E 104 - ID 103 TYPE arbitrary
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE       1 DLINE 1

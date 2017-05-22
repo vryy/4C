@@ -1880,7 +1880,7 @@ DRT::Element* CAVITATION::Algorithm::GetUnderlyingFluidEleData(
     std::vector<double> tmpposition(dim_);
     for(int d=0; d<dim_; ++d)
       tmpposition[d] = particleposition(d);
-    int bubbleBinId = BinStrategy()->ConvertPosToGid(tmpposition);
+    int bubbleBinId = BinStrategy()->ConvertPosToGid( &(tmpposition[0] ) );
 
     std::cout << "particle is in binId: " << bubbleBinId << " while currbin->Id() is " << currbin->Id() <<
         " . The following number of fluid eles is in this bin:" << currbin->NumAssociatedEle(bin_fluidcontent_) << std::endl;
@@ -3381,7 +3381,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
           const double dist_x = ((*vertex2)[0] - (*vertex1)[0]) / ((((*num_per_dir)[0]-1)!=0) ? ((*num_per_dir)[0]-1) : 1);
           source_pos[0] = (*vertex1)[0] + x * dist_x;
           // check whether this source position is on this proc
-          const int binId = BinStrategy()->ConvertPosToGid(source_pos);
+          const int binId = BinStrategy()->ConvertPosToGid(&(source_pos[0]));
           const int found = BinStrategy()->BinDiscret()->ElementRowMap()->LID(binId);
           if(found != -1)
           {

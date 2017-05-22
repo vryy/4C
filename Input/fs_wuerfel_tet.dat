@@ -200,8 +200,6 @@ E 3 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
 E 4 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
 E 5 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
 E 6 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
-------------------------------------------------------------FILAMENT NUMBERS
-DLINE                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0
 -------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D

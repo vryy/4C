@@ -53,7 +53,7 @@ namespace MODELEVALUATOR {
     void Init();
 
     /// setup of the new class variables
-    void Setup(Teuchos::RCP<DRT::Discretization> const& ia_discret);
+    void Setup(Teuchos::RCP<const DRT::Discretization> const& ia_discret);
 
   protected:
     inline const bool& IsInit() const

@@ -192,8 +192,6 @@ DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
-------------------------------------------------------------FILAMENT NUMBERS
-DLINE                           0
 ---------------------------------------------------------------FORCE SENSORS
 DPOINT                          0
 -----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D

@@ -288,39 +288,39 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::ContractileCells::UpdateCellsPositionRa
 {
   CheckInit();
 
-  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
-  int const numcells = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
-  std::vector<double> randpos;
-  DRT::Problem::Instance()->Random()->Uni( randpos, 3 * numcells );
-
-  //todo: this is of course not nice, this needs to be done somewhere else
-  for( int i = 0; i < numcells; ++i )
-  {
-    DRT::Element* eleptr = Discret().gElement(EleTypeMapExtractorPtr()->SphereMap()->GID(i) );
-
-    std::vector<int> dofnode  = Discret().Dof(eleptr->Nodes()[0]);
-
-    // random position of cell inside box
-    static std::vector< std::vector< double > > Xnew(numcells, std::vector< double >(3) );
-    if( GState().GetStepN() % 20 == 0 and GState().GetStepN() != 0)
-    {
-      for ( int dim = 0; dim < 3; ++dim )
-      {
-        double edgelength = 5.5;
-        double min = 0.5;
-        Xnew[i][dim] = min + ( edgelength * randpos[ i + dim ] );
-      }
-    }
-
-    // loop over all dofs
-    for( int dim = 0; dim < 3; ++dim )
-    {
-      int doflid = BeamInteractionDataStatePtr()->GetMutableDisNp()->Map().LID(dofnode[dim]);
-      (*BeamInteractionDataStatePtr()->GetMutableDisNp() )[doflid] = Xnew[i][dim] - eleptr->Nodes()[0]->X()[dim];
-    }
- /*   int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(i);
-    DiscretPtr()->gElement(elegid)->Nodes()[0]->SetPos(Xnew);*/
-   }
+//  DRT::Problem::Instance()->Random()->SetRandRange( 0.0, 1.0 );
+//  int const numcells = EleTypeMapExtractorPtr()->SphereMap()->NumMyElements();
+//  std::vector<double> randpos;
+//  DRT::Problem::Instance()->Random()->Uni( randpos, 3 * numcells );
+//
+//  //todo: this is of course not nice, this needs to be done somewhere else
+//  for( int i = 0; i < numcells; ++i )
+//  {
+//    DRT::Element* eleptr = Discret().gElement(EleTypeMapExtractorPtr()->SphereMap()->GID(i) );
+//
+//    std::vector<int> dofnode  = Discret().Dof(eleptr->Nodes()[0]);
+//
+//    // random position of cell inside box
+//    static std::vector< std::vector< double > > Xnew(numcells, std::vector< double >(3) );
+//    if( GState().GetStepN() % 20 == 0 and GState().GetStepN() != 0)
+//    {
+//      for ( int dim = 0; dim < 3; ++dim )
+//      {
+//        double edgelength = 5.5;
+//        double min = 0.5;
+//        Xnew[i][dim] = min + ( edgelength * randpos[ i + dim ] );
+//      }
+//    }
+//
+//    // loop over all dofs
+//    for( int dim = 0; dim < 3; ++dim )
+//    {
+//      int doflid = BeamInteractionDataStatePtr()->GetMutableDisNp()->Map().LID(dofnode[dim]);
+//      (*BeamInteractionDataStatePtr()->GetMutableDisNp() )[doflid] = Xnew[i][dim] - eleptr->Nodes()[0]->X()[dim];
+//    }
+// /*   int const elegid = EleTypeMapExtractorPtr()->SphereMap()->GID(i);
+//    DiscretPtr()->gElement(elegid)->Nodes()[0]->SetPos(Xnew);*/
+//   }
 }
 
 

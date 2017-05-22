@@ -287,9 +287,6 @@ class Beam3ContactOctTree
     //!\brief vector holding information on how many times a bounding box is shifted due to periodic boundary conditions
     Teuchos::RCP<Epetra_Vector> numshifts_;
 
-    //!\brief vector holding information to which line (design line) a bounding box belongs
-    Teuchos::RCP<Epetra_Vector> bbox2line_;
-
     //!\brief Bounding Box type
     Beam3ContactOctTree::BboxType boundingbox_;
 

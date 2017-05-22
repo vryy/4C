@@ -29,23 +29,35 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-PARTICLE::ParticleHandler::ParticleHandler(
-  const int myrank) :
-    binstrategy_(Teuchos::rcp(new BINSTRATEGY::BinningStrategy())),
-    myrank_(myrank),
+PARTICLE::ParticleHandler::ParticleHandler( ) :
+    binstrategy_( Teuchos::null),
+    myrank_(-1),
     bincolmap_(Teuchos::null)
 {
   // empty constructor
 }
 
+void PARTICLE::ParticleHandler::Init(
+    int myrank,
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy)
+{
+  binstrategy_ = binstrategy;
+  myrank_ = myrank;
+}
+
+void PARTICLE::ParticleHandler::Setup()
+{
+  // so far nothing to do
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PARTICLE::ParticleHandler::ParticleHandler(
-  const Epetra_Comm& comm
-  ) :
-  binstrategy_(Teuchos::rcp(new BINSTRATEGY::BinningStrategy(comm))),
-  myrank_(comm.MyPID()),
-  bincolmap_(Teuchos::null)
+  const Epetra_Comm& comm)
+    :
+    binstrategy_(Teuchos::rcp(new BINSTRATEGY::BinningStrategy(comm))),
+    myrank_(comm.MyPID()),
+    bincolmap_(Teuchos::null)
 {
 
   // empty constructor
@@ -745,7 +757,7 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::TransferParticles(
       DRT::Node* currnode = particles[iparticle];
 
       // get current position
-      std::vector<double> pos(3,0.0);
+      LINALG::Matrix< 3, 1 > pos_mat(true);
       if( disnp != Teuchos::null )
       {
         // get the first gid of a node and convert it into a LID
@@ -754,53 +766,49 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::TransferParticles(
         if( lid < 0 )
           dserror("displacement for node %d not stored on this proc: %d",gid,myrank_);
 
-        // we need to adapt the state vector consistent with periodic boundary conditions
-        if( binstrategy_->HavePBC() )
-        {
-          for( int dim = 0; dim < 3; dim++ )
-            binstrategy_->PeriodicBoundaryShift1D( (*disnp)[lid+dim], dim );
-        }
+        for( int dim = 0; dim < 3; ++dim )
+          pos_mat(dim) = (*disnp)[ lid + dim ];
 
-        for(int dim=0; dim<3; ++dim)
-          pos[dim] = (*disnp)[lid+dim];
+        // shift in case of periodic boundary conditions
+        binstrategy_->PeriodicBoundaryShift3D( pos_mat );
+
+        for( int dim = 0; dim < 3; ++dim )
+          (*disnp)[ lid + dim ] = pos_mat(dim);
       }
       else
       {
-        for(int dim=0; dim<3; ++dim)
-          pos[dim] = currnode->X()[dim];
+        for( int dim = 0; dim < 3; ++dim )
+          pos_mat(dim) = currnode->X()[dim];
 
-        // apply periodic boundary conditions for particles
-        if(binstrategy_->HavePBC())
-        {
-          for(int dim=0; dim<3; dim++)
-            binstrategy_->PeriodicBoundaryShift1D(pos[dim],dim);
-        }
+        // shift in case of periodic boundary conditions
+        binstrategy_->PeriodicBoundaryShift3D( pos_mat );
       }
+
+      // transform to array
+      std::vector<double> pos( 3, 0.0 );
+      for( int dim = 0; dim < 3; ++dim )
+        pos[dim] = pos_mat(dim);
 
       // change X() of current particle
       currnode->SetPos(pos);
 
-      // transform to array
-      double* currpos = &pos[0];
-
-      const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
-      if(gidofbin != binId) // particle has left current bin
+      const int gidofbin = binstrategy_->ConvertPosToGid( &pos[0] );
+      if ( gidofbin != binId ) // particle has left current bin
       {
         // gather all node Ids that will be removed and remove them afterwards
         // (looping over nodes and deleting at the same time is detrimental)
-        tobemoved.push_back(currnode->Id());
+        tobemoved.push_back( currnode->Id() );
         // find new bin for particle
-        /*bool placed = */PlaceNodeCorrectly(Teuchos::rcp(currnode,false), currpos, homelessparticles);
+        /*bool placed = */PlaceNodeCorrectly( Teuchos::rcp( currnode, false ), &pos[0] , homelessparticles );
       }
 
     }
 
     // finally remove nodes from their old bin
-    for(size_t iter=0; iter<tobemoved.size(); iter++)
+    for( size_t iter = 0; iter < tobemoved.size(); ++iter )
     {
-      dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode(tobemoved[iter]);
+      dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currbin)->DeleteNode( tobemoved[iter] );
     }
-
   }
 
 #ifdef DEBUG
@@ -837,9 +845,13 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::TransferParticles(
    //---------------------------------------------------------------------------
    // homeless particles are sent to their new processors where they are inserted into their correct bin
   if (ghosting)
+  {
     deletedparticles = FillParticlesIntoBinsUsingGhosting(homelessparticles);
+  }
   else
+  {
     deletedparticles = FillParticlesIntoBinsRemoteIdList(homelessparticles);
+  }
 
   return deletedparticles;
 }

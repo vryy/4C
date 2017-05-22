@@ -188,8 +188,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==TransferTurbulentInflow)       os << "transfer turbulent inflow: ";
   else if (Type()==TurbulentInflowSection)        os << "turbulent inflow section: ";
   else if (Type()==BlendMaterial)                 os << "blend materials: ";
-  else if (Type()==Brownian_Motion)               os << "stochastical surface condition (Brownian Motion): ";
-  else if (Type()==FilamentNumber)                os << "line condition for polymer networks: ";
+  else if (Type()==FilamentBeamLineCondition)     os << "line condition for polymer networks: ";
   else if (Type()==ForceSensor)                   os << "marking points in a system where force sensors are applied: ";
   else if (Type()==FlowRateThroughLine_2D)        os << "Monitor flow rate through an line interface: ";
   else if (Type()==FlowRateThroughSurface_3D)     os << "Monitor flow rate through a surface interface: ";

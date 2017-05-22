@@ -346,12 +346,12 @@ DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  twist_GP_elastm_(old.twist_GP_elastm_),
  curvature_2_GP_elastm_(old.curvature_2_GP_elastm_),
  curvature_3_GP_elastm_(old.curvature_3_GP_elastm_),
- axial_force_GP_elastf_(old.axial_force_GP_elastf_),
- shear_force_2_GP_elastf_(old.shear_force_2_GP_elastf_),
- shear_force_3_GP_elastf_(old.shear_force_3_GP_elastf_),
- torque_GP_elastm_(old.torque_GP_elastm_),
- bending_moment_2_GP_elastm_(old.bending_moment_2_GP_elastm_),
- bending_moment_3_GP_elastm_(old.bending_moment_3_GP_elastm_)
+ material_axial_force_GP_elastf_(old.material_axial_force_GP_elastf_),
+ material_shear_force_2_GP_elastf_(old.material_shear_force_2_GP_elastf_),
+ material_shear_force_3_GP_elastf_(old.material_shear_force_3_GP_elastf_),
+ material_torque_GP_elastm_(old.material_torque_GP_elastm_),
+ material_bending_moment_2_GP_elastm_(old.material_bending_moment_2_GP_elastm_),
+ material_bending_moment_3_GP_elastm_(old.material_bending_moment_3_GP_elastm_)
 {
   return;
 }
@@ -462,27 +462,6 @@ void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,rnewGPmass_);
   AddtoPack<4,1>(data,QconvGPdampstoch_);
   AddtoPack<4,1>(data,QnewGPdampstoch_);
-  AddtoPack(data,Eint_);
-  AddtoPack(data,Ekin_);
-  AddtoPack(data,Ekintorsion_);
-  AddtoPack(data,Ekinbending_);
-  AddtoPack(data,Ekintrans_);
-  AddtoPack<3,1>(data,L_);
-  AddtoPack<3,1>(data,P_);
-  AddtoPack(data,Kmax_);
-  AddtoPack(data,axial_strain_GP_elastf_);
-  AddtoPack(data,shear_strain_2_GP_elastf_);
-  AddtoPack(data,shear_strain_3_GP_elastf_);
-  AddtoPack(data,twist_GP_elastm_);
-  AddtoPack(data,curvature_2_GP_elastm_);
-  AddtoPack(data,curvature_3_GP_elastm_);
-  AddtoPack(data,axial_force_GP_elastf_);
-  AddtoPack(data,shear_force_2_GP_elastf_);
-  AddtoPack(data,shear_force_3_GP_elastf_);
-  AddtoPack(data,torque_GP_elastm_);
-  AddtoPack(data,bending_moment_2_GP_elastm_);
-  AddtoPack(data,bending_moment_3_GP_elastm_);
-
   return;
 }
 
@@ -537,26 +516,34 @@ void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,rnewGPmass_);
   ExtractfromPack<4,1>(position,data,QconvGPdampstoch_);
   ExtractfromPack<4,1>(position,data,QnewGPdampstoch_);
-  ExtractfromPack(position,data,Eint_);
-  ExtractfromPack(position,data,Ekin_);
-  ExtractfromPack(position,data,Ekintorsion_);
-  ExtractfromPack(position,data,Ekinbending_);
-  ExtractfromPack(position,data,Ekintrans_);
-  ExtractfromPack<3,1>(position,data,L_);
-  ExtractfromPack<3,1>(position,data,P_);
-  ExtractfromPack(position,data,Kmax_);
-  ExtractfromPack(position,data,axial_strain_GP_elastf_);
-  ExtractfromPack(position,data,shear_strain_2_GP_elastf_);
-  ExtractfromPack(position,data,shear_strain_3_GP_elastf_);
-  ExtractfromPack(position,data,twist_GP_elastm_);
-  ExtractfromPack(position,data,curvature_2_GP_elastm_);
-  ExtractfromPack(position,data,curvature_3_GP_elastm_);
-  ExtractfromPack(position,data,axial_force_GP_elastf_);
-  ExtractfromPack(position,data,shear_force_2_GP_elastf_);
-  ExtractfromPack(position,data,shear_force_3_GP_elastf_);
-  ExtractfromPack(position,data,torque_GP_elastm_);
-  ExtractfromPack(position,data,bending_moment_2_GP_elastm_);
-  ExtractfromPack(position,data,bending_moment_3_GP_elastm_);
+
+  // NOT communicated
+  Eint_ = 0.0;
+  Ekin_ = 0.0;
+  Ekintorsion_ = 0.0;
+  Ekinbending_ = 0.0;
+  Ekintrans_ = 0.0;
+  L_.Clear();
+  P_.Clear();
+  Kmax_ = 0.0;
+  axial_strain_GP_elastf_.clear();
+  shear_strain_2_GP_elastf_.clear();
+  shear_strain_3_GP_elastf_.clear();
+  twist_GP_elastm_.clear();
+  curvature_2_GP_elastm_.clear();
+  curvature_3_GP_elastm_.clear();
+  material_axial_force_GP_elastf_.clear();
+  material_shear_force_2_GP_elastf_.clear();
+  material_shear_force_3_GP_elastf_.clear();
+  material_torque_GP_elastm_.clear();
+  material_bending_moment_2_GP_elastm_.clear();
+  material_bending_moment_3_GP_elastm_.clear();
+  spatial_axial_force_GP_elastf_.clear();
+  spatial_shear_force_2_GP_elastf_.clear();
+  spatial_shear_force_3_GP_elastf_.clear();
+  spatial_torque_GP_elastm_.clear();
+  spatial_bending_moment_2_GP_elastm_.clear();
+  spatial_bending_moment_3_GP_elastm_.clear();
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -912,17 +899,24 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     shear_strain_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
     std::fill( shear_strain_3_GP_elastf_.begin(), shear_strain_3_GP_elastf_.end(), 0.0 );
 
-    axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
-    std::fill( axial_force_GP_elastf_.begin(), axial_force_GP_elastf_.end(), 0.0 );
-    shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
-    std::fill( shear_force_2_GP_elastf_.begin(), shear_force_2_GP_elastf_.end(), 0.0 );
-    shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
-    std::fill( shear_force_3_GP_elastf_.begin(), shear_force_3_GP_elastf_.end(), 0.0 );
+    material_axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( material_axial_force_GP_elastf_.begin(), material_axial_force_GP_elastf_.end(), 0.0 );
+    material_shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( material_shear_force_2_GP_elastf_.begin(), material_shear_force_2_GP_elastf_.end(), 0.0 );
+    material_shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( material_shear_force_3_GP_elastf_.begin(), material_shear_force_3_GP_elastf_.end(), 0.0 );
+
+    spatial_axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( spatial_axial_force_GP_elastf_.begin(), spatial_axial_force_GP_elastf_.end(), 0.0 );
+    spatial_shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( spatial_shear_force_2_GP_elastf_.begin(), spatial_shear_force_2_GP_elastf_.end(), 0.0 );
+    spatial_shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
+    std::fill( spatial_shear_force_3_GP_elastf_.begin(), spatial_shear_force_3_GP_elastf_.end(), 0.0 );
 
     dummy.Clear();
 
     // Loop through all GPs for under-integration and calculate jacobi determinants at the GPs
-    for (int numgp=0; numgp < gausspoints_elast_force.nquad; numgp++)
+    for (int numgp=0; numgp < gausspoints_elast_force.nquad; ++numgp)
     {
       Calc_r_xi<nnodecl,vpernode,double>(disp_refe_centerline,H_i_xi[numgp],dr0dxi);
 
@@ -966,12 +960,19 @@ void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry(const std::vector<double>& xr
     curvature_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
     std::fill( curvature_3_GP_elastm_.begin(), curvature_3_GP_elastm_.end(), 0.0 );
 
-    torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-    std::fill( torque_GP_elastm_.begin(), torque_GP_elastm_.end(), 0.0 );
-    bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-    std::fill( bending_moment_2_GP_elastm_.begin(), bending_moment_2_GP_elastm_.end(), 0.0 );
-    bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-    std::fill( bending_moment_3_GP_elastm_.begin(), bending_moment_3_GP_elastm_.end(), 0.0 );
+    material_torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( material_torque_GP_elastm_.begin(), material_torque_GP_elastm_.end(), 0.0 );
+    material_bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( material_bending_moment_2_GP_elastm_.begin(), material_bending_moment_2_GP_elastm_.end(), 0.0 );
+    material_bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( material_bending_moment_3_GP_elastm_.begin(), material_bending_moment_3_GP_elastm_.end(), 0.0 );
+
+    spatial_torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( spatial_torque_GP_elastm_.begin(), spatial_torque_GP_elastm_.end(), 0.0 );
+    spatial_bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( spatial_bending_moment_2_GP_elastm_.begin(), spatial_bending_moment_2_GP_elastm_.end(), 0.0 );
+    spatial_bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+    std::fill( spatial_bending_moment_3_GP_elastm_.begin(), spatial_bending_moment_3_GP_elastm_.end(), 0.0 );
 
 
     dummy.Clear();

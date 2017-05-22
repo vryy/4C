@@ -2252,16 +2252,21 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
   LINALG::TMatrix<FAD,ndim,1> delta_r_ost(true);
   Teuchos::RCP<GEO::MESHFREE::BoundingBox> pbb = BrownianDynParamsInterface().GetPeriodicBoundingBox();
 
-  for (unsigned int idim=0; idim<ndim; idim++)
+  LINALG::Matrix<3,1> unshiftedrconvmass_i(true), position_i_double(true);
+
+  for ( unsigned int idim = 0; idim < ndim; ++idim )
   {
-    double unshiftedrconvmass_i = rconvmass_[gausspoint_index](idim);
-    double position_i_double = FADUTILS::CastToDouble(position(idim));
+    unshiftedrconvmass_i(idim) = rconvmass_[gausspoint_index](idim);
+    position_i_double(idim) = FADUTILS::CastToDouble(position(idim));
+  }
 
-    // difference in position of this GP as compared to last time step
-    pbb->UnShift1D(idim, unshiftedrconvmass_i, position_i_double);
+  // difference in position of this GP as compared to last time step
+  pbb->UnShift3D( unshiftedrconvmass_i, position_i_double);
 
+  for ( unsigned int idim = 0; idim < ndim; ++idim )
+  {
     // difference in position of this GP as compared to last time step
-    delta_r_ost(idim) = position(idim) - unshiftedrconvmass_i;
+    delta_r_ost(idim) = position(idim) - unshiftedrconvmass_i(idim);
 
     // velocity according to Backward Euler scheme
     velocity(idim) = delta_r_ost(idim)/dt;

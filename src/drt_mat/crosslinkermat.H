@@ -18,6 +18,7 @@
 #define CROSSLINKER_H_
 
 #include "matpar_parameter.H"
+#include "../drt_inpar/inpar_beaminteraction.H"
 #include "material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Teuchos_ParameterList.hpp>
@@ -65,6 +66,9 @@ namespace MAT
 
       /// deltaD in Bell's equation for force dependent off rate
       double const deltabelleq_;
+
+      /// type of crosslinker
+      INPAR::BEAMINTERACTION::CrosslinkerType linkertype_;
 
 
       //@}
@@ -172,6 +176,9 @@ private:
 
     /// force depedent off rate according to bells equation
     virtual double DeltaBellEq() const { return params_->deltabelleq_; };
+
+    /// force depedent off rate according to bells equation
+    virtual INPAR::BEAMINTERACTION::CrosslinkerType LinkingType() const { return params_->linkertype_; };
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

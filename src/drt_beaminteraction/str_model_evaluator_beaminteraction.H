@@ -234,7 +234,10 @@ namespace MODELEVALUATOR{
     virtual void BuildRowEleToBinMap();
 
     /// create new bins
-    virtual void CreateNewBins(bool newxaabb, bool newcutoff);
+    virtual void CreateNewBins(
+        Teuchos::RCP< Epetra_Vector > disnp_ptr,
+        bool newxaabb,
+        bool newcutoff);
 
     /// print some information about binning
     virtual void PrintBinningInfoToScreen() const;
@@ -289,10 +292,10 @@ namespace MODELEVALUATOR{
     //! structural stiffness matrix based on Discret()
     Teuchos::RCP<LINALG::SparseMatrix> stiff_beaminteraction_;
 
-    //! particle handler and binning strategy
+    //! particle handler
     Teuchos::RCP<PARTICLE::ParticleHandler> particlehandler_;
 
-    //! particle handler and binning strategy
+    //! binning strategy
     Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy_;
 
     //! crosslinker and bin discretization

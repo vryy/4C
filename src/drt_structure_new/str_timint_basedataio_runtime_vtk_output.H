@@ -15,7 +15,7 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATAIO_RUNTIME_VTK_OUTPUT_H_
 
 
-#include "../drt_inpar/inpar_IO_runtime_vtk_output_structure.H"
+#include "../drt_inpar/inpar_IO_runtime_vtk_output.H"
 
 namespace Teuchos {
   class ParameterList;
@@ -23,6 +23,7 @@ namespace Teuchos {
 
 namespace DRT {
 namespace ELEMENTS {
+  class StructureRuntimeVtuOutputParams;
   class BeamRuntimeVtuOutputParams;
 }
 }
@@ -54,7 +55,7 @@ namespace TIMINT {
     bool WriteBinaryOutput() const
     {
       CheckInitSetup();
-      return ( output_data_format_ == INPAR::IO_RUNTIME_VTK_STRUCTURE::binary );
+      return ( output_data_format_ == INPAR::IO_RUNTIME_VTK::binary );
     }
 
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
@@ -71,18 +72,25 @@ namespace TIMINT {
       return output_every_iteration_;
     };
 
-    /// whether to write displacements
-    bool OutputDisplacementState() const
+    /// whether to write special output for structure elements
+    bool OutputStructure() const
     {
       CheckInitSetup();
-      return output_displacement_state_;
+      return output_structure_;
     };
 
-    /// whether to write special output for beam elements
-    bool SpecialOutputBeams() const
+    /// whether to write special output for structure elements
+    bool OutputBeams() const
     {
       CheckInitSetup();
-      return special_output_beams_;
+      return output_beams_;
+    };
+
+    /// get the data container for parameters regarding beams
+    Teuchos::RCP<const DRT::ELEMENTS::StructureRuntimeVtuOutputParams> GetStructureParams() const
+    {
+      CheckInitSetup();
+      return params_runtime_vtu_output_structure_;
     };
 
     /// get the data container for parameters regarding beams
@@ -117,7 +125,7 @@ namespace TIMINT {
     /// @{
 
     /// data format for numeric output data
-    INPAR::IO_RUNTIME_VTK_STRUCTURE::OutputDataFormat output_data_format_;
+    INPAR::IO_RUNTIME_VTK::OutputDataFormat output_data_format_;
 
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
     int output_interval_steps_;
@@ -125,11 +133,14 @@ namespace TIMINT {
     /// whether to write output in every iteration of the nonlinear solver
     bool output_every_iteration_;
 
-    /// whether to write displacement output
-    bool output_displacement_state_;
+    /// whether to write output for structural elements
+    bool output_structure_;
 
     /// whether to write special output for beam elements
-    bool special_output_beams_;
+    bool output_beams_;
+
+    /// data container for input parameters related to VTU output of structure at runtime
+    Teuchos::RCP<DRT::ELEMENTS::StructureRuntimeVtuOutputParams> params_runtime_vtu_output_structure_;
 
     /// data container for input parameters related to VTU output of beams at runtime
     Teuchos::RCP<DRT::ELEMENTS::BeamRuntimeVtuOutputParams> params_runtime_vtu_output_beams_;
@@ -140,5 +151,6 @@ namespace TIMINT {
 
 }
 }
+
 
 #endif

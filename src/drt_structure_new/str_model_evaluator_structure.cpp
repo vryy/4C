@@ -35,6 +35,7 @@
 #include "../drt_io/io.H"
 #include "../drt_io/discretization_runtime_vtu_writer.H"
 
+#include "str_discretization_runtime_vtu_output_params.H"
 #include "../drt_beam3/beam_discretization_runtime_vtu_writer.H"
 #include "../drt_beam3/beam_discretization_runtime_vtu_output_params.H"
 
@@ -84,9 +85,10 @@ void STR::MODELEVALUATOR::Structure::Setup()
 
   if ( GInOutput().GetRuntimeVtkOutputParams() != Teuchos::null )
   {
-    InitOutputRuntimeVtkStructure();
+    if ( GInOutput().GetRuntimeVtkOutputParams()->OutputStructure() )
+      InitOutputRuntimeVtkStructure();
 
-    if ( GInOutput().GetRuntimeVtkOutputParams()->SpecialOutputBeams() )
+    if ( GInOutput().GetRuntimeVtkOutputParams()->OutputBeams() )
       InitOutputRuntimeVtkBeams();
   }
 
@@ -589,8 +591,8 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure() const
   CheckInit();
 
   // get the parameter container object
-  const STR::TIMINT::ParamsRuntimeVtkOutput & vtu_output_params =
-      * GInOutput().GetRuntimeVtkOutputParams();
+  const DRT::ELEMENTS::StructureRuntimeVtuOutputParams & strucuture_vtu_output_params =
+      * GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams();
 
   // export displacement state to column format
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>( Discret() );
@@ -601,18 +603,14 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure() const
   // reset time and time step of the writer object
   vtu_writer_ptr_->ResetTimeAndTimeStep( GState().GetTimeN(), GState().GetStepN() );
 
-
   // append all desired output data to the writer object's storage
 
   // append displacement if desired
-  if ( vtu_output_params.OutputDisplacementState() )
+  if ( strucuture_vtu_output_params.OutputDisplacementState() )
     vtu_writer_ptr_->AppendDofBasedResultDataVector( disn_col, 3, 0, "displacement" );
 
-  // finalize everything and write all required VTU files to filesystem
+  // finalize everything and write all required files to filesystem
   vtu_writer_ptr_->WriteFiles();
-
-  // Todo: this will not work as expected yet in case you terminate your
-  // simulation by strg + c or in case of a restart
   vtu_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
 }
 
@@ -680,7 +678,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   beam_vtu_writer_ptr_->AppendElementCircularCrossSectionRadius();
 
   // append displacement if desired
-  if ( GInOutput().GetRuntimeVtkOutputParams()->OutputDisplacementState() )
+  if ( beam_vtu_output_params.OutputDisplacementState() )
     beam_vtu_writer_ptr_->AppendDisplacementField( disn_col );
 
   // append triads if desired
@@ -694,6 +692,12 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams() const
   // append material cross-section stress resultants if desired
   if ( beam_vtu_output_params.IsWriteMaterialStressesGaussPoints() )
     beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStressResultants();
+
+  // append filament id and type if desired
+  if ( beam_vtu_output_params.IsWriteElementFilamentCondition() )
+    beam_vtu_writer_ptr_->AppendElementFilamentIdAndType();
+
+//  beam_vtu_writer_ptr_->AppendPeriodicBoxCrossSectionStressResultants( disn_col );
 
   // finalize everything and write all required VTU files to filesystem
   beam_vtu_writer_ptr_->WriteFiles();

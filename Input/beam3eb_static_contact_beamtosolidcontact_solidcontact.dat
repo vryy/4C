@@ -35,7 +35,7 @@ FILESTEPS                       1000
 //-----------------------------IO/RUNTIME VTK OUTPUT STRUCTURE/BEAMS
 //TRIAD_VISUALIZATIONPOINT        No
 //STRAINS_GAUSSPOINT              No
-//STRESSES_GAUSSPOINT             No
+//MATERIAL_FORCES_GAUSSPOINT             No
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1

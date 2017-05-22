@@ -41,7 +41,6 @@
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::BrownianDyn::BrownianDyn():
     eval_browniandyn_ptr_(Teuchos::null),
-    pbc_disnp_ptr_(Teuchos::null),
     f_brown_np_ptr_(Teuchos::null),
     f_ext_np_ptr_(Teuchos::null),
     stiff_brownian_ptr_(Teuchos::null),
@@ -105,17 +104,6 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
     dserror("The reference length of one of your beam elements is larger than half"
         "of the periodic box length. Shifting algorithm will fail!");
 
-  pbc_disnp_ptr_ = Teuchos::rcp( new Epetra_Vector( *GStatePtr()->GetMutableDisNp() ) );
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
-      pbc_disnp_ptr_,                           // disnp
-      eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
-      discret_ptr_);
-
-//  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
-//      GStatePtr()->GetMutableDisNp(),                           // disnp
-//      discret_ptr_,
-//      GState().GetStepN() );
-
   // -------------------------------------------------------------------------
   // get maximal number of random numbers required by any element in the
   // discretization and store them in randomnumbersperelement_
@@ -142,21 +130,9 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
 void STR::MODELEVALUATOR::BrownianDyn::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
-  // -------------------------------------------------------------------------
-  // adapt displacement vector so that node positions are consistent with
-  // periodic boundary condition.
-  // -------------------------------------------------------------------------
-  pbc_disnp_ptr_->Update( 1.0, (*GStatePtr()->GetDisNp()), 0.0 );
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
-      pbc_disnp_ptr_,                           // disnp
-      eval_browniandyn_ptr_->GetPeriodicBoundingBox(),
-      discret_ptr_);
 
-//  BEAMINTERACTION::UTILS::UpdateCellsPositionRandomly(
-//      GStatePtr()->GetMutableDisNp(),                           // disnp
-//      discret_ptr_,
-//      GState().GetStepN() );
-//
+  // todo: somewhat illegal considering of const correctness
+  TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->ApplyDirichlet( GState().GetTimeN() );
 
   // -------------------------------------------------------------------------
   // reset brownian (stochastic and damping) forces
@@ -338,8 +314,8 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceBrownian()
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   Discret().ClearState();
-  Discret().SetState(0,"displacement", pbc_disnp_ptr_ );
-  Discret().SetState(0,"velocity", GState().GetVelNp());
+  Discret().SetState( 0, "displacement", GStatePtr()->GetMutableDisNp() );
+  Discret().SetState( 0, "velocity", GState().GetVelNp() );
   // -------------------------------------------------------------------------
   // Evaluate Browian (stochastic and damping forces)
   // -------------------------------------------------------------------------
@@ -403,11 +379,11 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffBrownian()
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   Discret().ClearState();
-  Discret().SetState(0,"displacement", pbc_disnp_ptr_ );
-  Discret().SetState(0,"velocity", GState().GetVelNp());
+  Discret().SetState( 0, "displacement", GStatePtr()->GetMutableDisNp() );
+  Discret().SetState( 0, "velocity", GState().GetVelNp() );
   // -------------------------------------------------------------------------
   // Evaluate brownian (stochastic and damping) forces
-  EvaluateBrownian(&eval_mat[0],&eval_vec[0]);
+  EvaluateBrownian( &eval_mat[0], &eval_vec[0] );
 
   return ok;
 }

@@ -160,8 +160,6 @@ DSURF                           0
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 DSURF                           0
-------------------------------------------------------------FILAMENT NUMBERS
-DLINE                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0
 -------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D

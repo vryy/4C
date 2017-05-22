@@ -17,6 +17,7 @@
 
 // forward declarations
 class Epetra_Vector;
+class Epetra_Map;
 namespace DRT
 {
   class Discretization;
@@ -41,16 +42,16 @@ namespace UTILS
     enumsize                ///< NOTE: This entry gives the size of the enum and is used somewhere else in baci therefore put it ALWAYS in last place
   };
 
+  void ExtendDiscretizationGhosting(
+      Teuchos::RCP<DRT::Discretization> discret,
+      Teuchos::RCP<Epetra_Map> const&   extendedelecolmap,
+      bool                              assigndegreesoffreedom,
+      bool                              initelements,
+      bool                              doboundaryconditions );
+
   /// convert element to bin content type
   BinContentType ConvertElementToBinContentType(
       DRT::Element const * const eleptr );
-
-  /// get current position of node
-  void GetCurrentNodePos(
-      Teuchos::RCP<DRT::Discretization> disret,
-      const DRT::Node* node,
-      Teuchos::RCP<Epetra_Vector> disnp,
-      double* currpos );
 
 }
 }

@@ -33,7 +33,8 @@ MAT::PAR::CrosslinkerMat::CrosslinkerMat(
     linkingangletol_( matdata->GetDouble("LINKINGANGLETOL") ),
     k_on_( matdata->GetDouble("K_ON") ),
     k_off_( matdata->GetDouble("K_OFF") ),
-    deltabelleq_( matdata->GetDouble("DELTABELLEQ") )
+    deltabelleq_( matdata->GetDouble("DELTABELLEQ") ),
+    linkertype_( INPAR::BEAMINTERACTION::String2CrosslinkerType( *(matdata->Get<std::string>("TYPE") ) ) )
 {
   if ( beamelasthypermatnum_ < 0 )
     dserror("Material number defining beam elasthyper material for crosslinker"

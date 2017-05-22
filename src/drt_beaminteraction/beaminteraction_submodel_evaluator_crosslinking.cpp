@@ -69,6 +69,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Setup()
   crosslinking_params_ptr_->Setup();
 
   // set binding spot positions on filament elements according input file specifications
+  SetFilamentFilamentTypes();
   SetFilamentBindingSpotPositions();
 
   // add crosslinker to bin discretization
@@ -99,6 +100,43 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitSubmodelDependencies(
   // no active influence on other submodels
 }
 
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentFilamentTypes()
+{
+  CheckInit();
+
+  std::set<int> examined_fils;
+
+  // loop over all col nodes
+  for( int coln = 0; coln < Discret().NumMyColNodes(); ++coln )
+  {
+    DRT::Node* currnode = Discret().lColNode(coln);
+    // get filament number of current node ( requirement: node belongs to only one filament)
+    DRT::Condition* cond = currnode->GetCondition("BeamLineFilamentCondition");
+
+    // in case node (e.g. node of rigid sphere element) does not belong to a filament, go to next node
+    if ( cond == NULL )
+      continue;
+
+    // get filament type
+    INPAR::BEAMINTERACTION::FilamentType filtype =
+        INPAR::BEAMINTERACTION::String2FilamentType( *(cond->Get<std::string>("Type") ) );
+
+    for ( int i = 0; i < currnode->NumElement(); ++i )
+    {
+      DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>( currnode->Elements()[i] );
+
+#ifdef DEBUG
+      if ( beamele == NULL )
+        dserror(" DESIGN LINE BEAM FILAMENT CONDITIONS only suitable for beam elements.");
+#endif
+
+      beamele->SetFilamentType(filtype);
+    }
+  }
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentBindingSpotPositions()
@@ -106,8 +144,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentBindingSpotPos
   CheckInit();
 
   // get pointers to all filament number conditions set
-  std::vector<DRT::Condition*> filamentnumberconditions(0);
-  DiscretPtr()->GetCondition( "FilamentNumber", filamentnumberconditions );
+  std::vector<DRT::Condition*> filamentconditions(0);
+  DiscretPtr()->GetCondition( "BeamLineFilamentCondition", filamentconditions );
 
   // get distance between two binding spots on a filament
   double const filamentbspotinterval = crosslinking_params_ptr_->FilamentBspotInterval();
@@ -128,7 +166,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentBindingSpotPos
   for( filiter = relevantfilaments.begin(); filiter != relevantfilaments.end(); ++filiter )
   {
     // loop over all nodes of current filament, sort elements and calculate total filament length
-    std::vector<int> const* nodeids = filamentnumberconditions[*filiter]->Nodes();
+    std::vector<int> const* nodeids = filamentconditions[*filiter]->Nodes();
     std::vector< DRT::Element* > sortedfilamenteles(0);
     double filreflength = 0.0;
     ComputeFilamentLengthAndSortItsElements( sortedfilamenteles, nodeids, filreflength );
@@ -221,7 +259,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ExtendGhostingForFilament
       static_cast<int>( colgids.size() ), &colgids[0], 0, DiscretPtr()->Comm() ) );
 
   // temporarily extend ghosting
-  BinStrategyPtr()->ExtendDiscretizationGhosting( DiscretPtr(), newelecolmap, true , false , true );
+  BINSTRATEGY::UTILS::ExtendDiscretizationGhosting( DiscretPtr(), newelecolmap, true , false , true );
 }
 
 /*-----------------------------------------------------------------------------*
@@ -237,14 +275,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   for( int rown = 0; rown < Discret().NumMyRowNodes(); ++rown )
   {
     // get filament number of current node ( requirement: node belongs to only one filament)
-    DRT::Condition* cond = Discret().lRowNode(rown)->GetCondition("FilamentNumber");
+    DRT::Condition* cond = Discret().lRowNode(rown)->GetCondition("BeamLineFilamentCondition");
 
     // in case node (e.g. node of rigid sphere element) does not belong to a filament, go to next node
     if ( cond == NULL )
       continue;
 
     // get filament number
-    int const currfilnum = cond->GetInt("Filament Number");
+    int const currfilnum = cond->GetInt("FilamentId");
 
     // if a filament has already been examined --> continue with next node
     if( relevantfilaments.find(currfilnum) != relevantfilaments.end() )
@@ -281,6 +319,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ComputeFilamentLengthAndS
       if ( std::find( sortedfilamenteles.begin(), sortedfilamenteles.end(), node->Elements()[j] )
                 != sortedfilamenteles.end() )
         continue;
+
+#ifdef DEBUG
+      if ( dynamic_cast<DRT::ELEMENTS::Beam3Base*>(node->Elements()[j]) == NULL )
+        dserror("DESIGN LINE BEAM FILAMENT CONDITIONS only applicable to beam elements.");
+#endif
 
       // add element reference length of new element to filament reference length
       filreflength += dynamic_cast<DRT::ELEMENTS::Beam3Base*>(node->Elements()[j])->RefLength();
@@ -320,7 +363,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetBindingSpotsPositionsO
     while ( ( currbspotarcparam > ( elearcinterval.first - tol) and currbspotarcparam <= ( elearcinterval.second + tol ) )
         and bspotcounter < numbspot )
     {
-     // default unoccupied binding spots
+      // default unoccupied binding spots
       bspotstatus[bspotposxi.size()] = -1;
 
       // linear mapping from arc pos to xi (local element system)
@@ -359,8 +402,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddCrosslinkerToBinDiscre
       for ( int cltype_i_cl_j = 0; cltype_i_cl_j < numcrosslinkerpertype[cltype_i]; ++cltype_i_cl_j )
       {
         // random reference position of crosslinker in bounding box
+        LINALG::Matrix< 3, 1 > Xmat;
+        PeriodicBoundingBoxPtr()->RandomPosWithin(Xmat);
+
         std::vector<double> X(3);
-        PeriodicBoundingBoxPtr()->RandomPosWithin(X);
+        for( int dim = 0; dim < 3; ++dim )
+          X[dim] = Xmat(dim);
 
         // construct node, init data container, set material and add to bin discret
         Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
@@ -1438,6 +1485,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreComputeBeamData()
     bdata.bbspotstatus = beamele_i->GetBindingSpotStatus();
     // get owner
     bdata.bowner = beamele_i->Owner();
+    // get filament type
+    bdata.filamenttype = beamele_i->GetFilamentType();
   }
 }
 
@@ -1682,13 +1731,19 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
     DRT::Element const * const potbeampartner,
     CrosslinkerData const& cldata_i,
     BeamData const& beamdata_i,
-    int const locnbspot,
+    int locnbspot,
     std::vector< std::set <int> >& intendedbeambonds,
-    bool const checklinkingprop) const
+    bool checklinkingprop) const
 {
   CheckInit();
 
   // 3. criterion:
+  // check compatibility of crosslinker type and filament type (some linker can only
+  // bind to certain filament types)
+  if ( not CheckLinkerAndFilamentTypeCompatibility( crosslinker_i, beamdata_i ) )
+    return false;
+
+  // 4. criterion:
   // a crosslink is set if and only if it passes the probability check
   // for a binding event to happen
   double plink = 1.0 - exp( (-1.0) * crosslinking_params_ptr_->DeltaTime() * crosslinker_i->GetMaterial()->KOn() );
@@ -1696,19 +1751,19 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
   if( checklinkingprop and ( DRT::Problem::Instance()->Random()->Uni() > plink ) )
     return false;
 
-  // 4. criterion:
+  // 5. criterion:
   // first check if binding spot is free, if not, check next bspot on curr ele
   // note: bspotstatus in bonded case holds cl gid, otherwise -1 (meaning free)
   if( beamdata_i.bbspotstatus.at(locnbspot) != -1 )
     return false;
 
-  // 5. criterion: check RELEVANT distance criterion
-  // if free:
-  // distance between crosslinker center and current beam binding spot
-  // if singly bound:
-  // distance between already bound bspot of crosslinker and current beam binding spot
-  // note: as we set the crosslinker position to coincide with beam bspot position if singly bound,
-  //       we can also use cldata_i.clpos in the second case
+  /* 6. criterion: check RELEVANT distance criterion
+   * if free:
+   *   distance between crosslinker center and current beam binding spot
+   * if singly bound:
+   *   distance between already bound bspot of crosslinker and current beam binding spot
+   * note: as we set the crosslinker position to coincide with beam bspot position if singly bound,
+   *       we can also use cldata_i.clpos in the second case*/
 
   // get current position and tangent vector of filament axis at free binding spot
   LINALG::Matrix<3,1> const& currbbspos = beamdata_i.bbspotpos.at(locnbspot);
@@ -1735,7 +1790,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
     )
     return false;
 
-  // 6. criterion: orientation of centerline tangent vectors at binding spots
+  // 7. criterion: orientation of centerline tangent vectors at binding spots
   // a crosslink (double-bonded crosslinker) will only be established if the
   // enclosed angle is in the specified range
   double const linkanglemin = crosslinker_i->GetMaterial()->LinkingAngle()
@@ -1759,7 +1814,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
     )
     return false;
 
-  // 7. criterion
+  // 8. criterion
   // check if current beam binding spot yet intended to bind this timestep
   // by a crosslinker that came before in this random order
   int const beamrowlid = Discret().ElementRowMap()->LID( potbeampartner->Id() );
@@ -1782,6 +1837,51 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
   // (rejection afterwards only possible in case of parallel simulation)
   return true;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckLinkerAndFilamentTypeCompatibility(
+    CROSSLINKING::CrosslinkerNode const * const crosslinker_i,
+    BeamData const& beamdata) const
+{
+  INPAR::BEAMINTERACTION::CrosslinkerType linkertype = crosslinker_i->GetMaterial()->LinkingType();
+  INPAR::BEAMINTERACTION::FilamentType filamenttype = beamdata.filamenttype;
+
+  switch ( linkertype )
+  {
+    case INPAR::BEAMINTERACTION::linkertype_arbitrary:
+    {
+      // no check of filament type necessary
+      return true;
+      break;
+    }
+    case INPAR::BEAMINTERACTION::linkertype_actin:
+    {
+      if ( filamenttype == INPAR::BEAMINTERACTION::filtype_actin )
+        return true;
+      else
+        return false;
+      break;
+    }
+    case INPAR::BEAMINTERACTION::linkertype_collagen:
+    {
+      if ( filamenttype == INPAR::BEAMINTERACTION::filtype_collagen )
+        return true;
+      else
+        return false;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown linker type.");
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  // default false
+  return false;
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetOccupiedClBSpotBeamTangent(
@@ -2253,15 +2353,23 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CreateNewDoubleBondedCros
   // print some information
   if( mynewdbondcl.size() > 0 or doublebondcl_.size() > 0 )
   {
-    IO::cout(IO::standard) <<"\n************************************************"<<IO::endl;
-    IO::cout(IO::standard) << "PID " << GState().GetMyRank() << ": added " << mynewdbondcl.size()
+    IO::cout(IO::verbose) <<"************************************************"<<IO::endl;
+    IO::cout(IO::verbose) << "PID " << GState().GetMyRank() << ": added " << mynewdbondcl.size()
         << " new db crosslinkers. Now have " << doublebondcl_.size() <<IO::endl;
   }
 
-//  // print all linker on each proc
-//  std::map<int, Teuchos::RCP<BEAMINTERACTION::BeamToBeamLinkage> >::const_iterator p;
-//  for( p = doublebondcl_.begin(); p != doublebondcl_.end(); ++p )
-//    std::cout << " id " << p->first << " on rank " << GState().GetMyRank() << std::endl;
+  // print all linker
+  int num_local_linker = doublebondcl_.size();
+  int num_global_linker = 0;
+  MPI_Reduce( &num_local_linker, &num_global_linker, 1, MPI_INT, MPI_SUM, 0,
+      dynamic_cast<const Epetra_MpiComm*>( &(Discret().Comm() ) )->Comm() );
+  if ( GState().GetMyRank() == 0 )
+  {
+    IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
+    IO::cout(IO::standard) << "total number of double-bonded crosslinker: " << num_global_linker <<IO::endl;
+    IO::cout(IO::standard) << "\n************************************************\n" <<IO::endl;
+  }
+
 }
 
 /*----------------------------------------------------------------------------*

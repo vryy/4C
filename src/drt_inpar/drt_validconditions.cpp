@@ -42,7 +42,7 @@
 #include "inpar_particle.H"
 #include "inpar_cavitation.H"
 #include "inpar_beampotential.H"
-
+#include "inpar_beaminteraction.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -75,50 +75,6 @@ namespace DRT
     // collect some problem-specific conditions that do not fit in the generic sections
     void SetMiscellaneousConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)
     {
-      /*--------------------------------------------------------------------*/
-      // Brownian Motion
-
-      Teuchos::RCP<ConditionDefinition> brownian_motion =
-        Teuchos::rcp(new ConditionDefinition("DESIGN BROWNIAN MOTION SURF CONDITIONS",
-                                             "BrownianMotion",
-                                             "Brownian_Motion",
-                                             DRT::Condition::Brownian_Motion,
-                                             true,
-                                             DRT::Condition::Surface));
-
-      brownian_motion->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-      AddNamedInt(brownian_motion,"label");
-      AddNamedReal(brownian_motion,"boltz_const");
-      AddNamedReal(brownian_motion,"temperatur");
-      AddNamedReal(brownian_motion,"frict_coeff");
-
-      condlist.push_back(brownian_motion);
-
-      /*--------------------------------------------------------------------*/
-      // Filament Number
-
-      //declaration of a variable which contains all the components of the condition
-      std::vector<Teuchos::RCP<ConditionComponent> > filamentnumbercomponents;
-
-      //the condition consists of one component which has to read an integer value (the so called filament number):
-      filamentnumbercomponents.push_back(Teuchos::rcp(new IntConditionComponent("Filament Number")));
-
-      //the condition itself hast to be defined so that it is clear how to read or write such a condition in the dat file
-      Teuchos::RCP<ConditionDefinition> filamentnumber =
-        Teuchos::rcp(new ConditionDefinition("FILAMENT NUMBERS",              //name of input file section
-                                             "FilamentNumber",                //name to get the condition from a discretization
-                                             "Filament Number",               //description of condition
-                                             DRT::Condition::FilamentNumber,  //type of condition in DRT (cf. drt_condition.H)
-                                             false,                           //should explicit elements be generated (e.g. line elements for line contact condition in 2D)?
-                                             DRT::Condition::Line));          //type of geometry the condition lives on
-
-      //after definition of the condition all its components have to be added:
-      for (unsigned i =0 ; i < filamentnumbercomponents.size(); ++i)
-        filamentnumber->AddComponent(filamentnumbercomponents[i]);
-
-      //the condition itself has to be added to the condition list
-      condlist.push_back(filamentnumber);
-
       /*--------------------------------------------------------------------*/
       // Force Sensor
 
@@ -1619,6 +1575,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   INPAR::ACOU::SetValidConditions(condlist);
 
   INPAR::BEAMPOTENTIAL::SetValidConditions(condlist);
+
+  INPAR::BEAMINTERACTION::SetValidConditions(condlist);
 
   // finally some conditions that do not have their own files yet are problem-specific
   SetMiscellaneousConditions(condlist);

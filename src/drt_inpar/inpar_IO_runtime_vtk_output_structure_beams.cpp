@@ -21,7 +21,7 @@
 
 namespace INPAR
 {
-namespace IO_RUNTIME_VTK_STRUCTURE
+namespace IO_RUNTIME_VTK
 {
 namespace BEAMS
 {
@@ -40,10 +40,19 @@ namespace BEAMS
     // related sublist
     Teuchos::ParameterList& sublist_IO = list->sublist("IO",false,"");
     Teuchos::ParameterList& sublist_IO_VTK_structure =
-        sublist_IO.sublist("RUNTIME VTK OUTPUT STRUCTURE",false,"");
+        sublist_IO.sublist("RUNTIME VTK OUTPUT",false,"");
     Teuchos::ParameterList& sublist_IO_VTK_beams =
         sublist_IO_VTK_structure.sublist("BEAMS",false,"");
 
+    // whether to write special output for beam elements
+    setStringToIntegralParameter<int>("OUTPUT_BEAMS","No",
+                                 "write special output for beam elements",
+                                 yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
+    // whether to write displacement state
+    setStringToIntegralParameter<int>("DISPLACEMENT","No",
+                                 "write displacement output",
+                                 yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
 
     // use absolute positions or initial positions for vtu geometry (i.e. point coordinates)
     // 'absolute positions' requires writing geometry in every output step (default for now)
@@ -64,8 +73,20 @@ namespace BEAMS
 
     // write material cross-section stresses at the Gauss points:
     // axial and shear forces, torque and bending moments
-    setStringToIntegralParameter<int>("STRESSES_GAUSSPOINT","No",
+    setStringToIntegralParameter<int>("MATERIAL_FORCES_GAUSSPOINT","No",
         "write material cross-section stresses at the Gauss points",
+        yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
+    // write spatial cross-section stresses at the Gauss points:
+    // axial and shear forces, torque and bending moments
+    setStringToIntegralParameter<int>("SPATIAL_FORCES_GAUSSPOINT","No",
+        "write material cross-section stresses at the Gauss points",
+        yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
+
+    // write element filament numbers
+    setStringToIntegralParameter<int>("BEAMFILAMENTCONDITION","No",
+        "write element filament numbers",
         yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
   }
 

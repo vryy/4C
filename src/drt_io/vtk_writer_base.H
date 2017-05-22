@@ -41,37 +41,35 @@ template <typename T>
 void writeCompressedBlock (const std::vector<T> &data,
                            std::ostream         &out)
 {
-  if (!data.empty()) {
-    uLongf compressed_data_length = compressBound(data.size() * sizeof(T));
-    char *compressed_data = new char[compressed_data_length];
-    int err = compress2((Bytef *) compressed_data, &compressed_data_length,
-                        (const Bytef *) &data[0], data.size() * sizeof(T),
-                        Z_BEST_COMPRESSION);
-    if (err != Z_OK)
-      dserror("zlib compression failed");
+  uLongf compressed_data_length = compressBound(data.size() * sizeof(T));
+  char *compressed_data = new char[compressed_data_length];
+  int err = compress2((Bytef *) compressed_data, &compressed_data_length,
+                      (const Bytef *) &data[0], data.size() * sizeof(T),
+                      Z_BEST_COMPRESSION);
+  if (err != Z_OK)
+    dserror("zlib compression failed");
 
-    // now encode the compression header
-    const uint32_t compression_header[4] =
-        { 1, /* number of blocks */
-          (uint32_t) (data.size() * sizeof(T)), /* size of block */
-          (uint32_t) (data.size() * sizeof(T)), /* size of last block */
-          (uint32_t) compressed_data_length };  /* list of compressed sizes of blocks */
+  // now encode the compression header
+  const uint32_t compression_header[4] =
+      { 1, /* number of blocks */
+        (uint32_t) (data.size() * sizeof(T)), /* size of block */
+        (uint32_t) (data.size() * sizeof(T)), /* size of last block */
+        (uint32_t) compressed_data_length };  /* list of compressed sizes of blocks */
 
-    char *encoded_header = encode_block((char *) &compression_header[0],
-                                        4 * sizeof(compression_header[0]));
-    out << encoded_header;
-    delete[] encoded_header;
+  char *encoded_header = encode_block((char *) &compression_header[0],
+                                      4 * sizeof(compression_header[0]));
+  out << encoded_header;
+  delete[] encoded_header;
 
-    // next do the compressed
-    // data encoding in base64
-    char *encoded_data = encode_block(compressed_data,
-                                      compressed_data_length);
-    delete[] compressed_data;
+  // next do the compressed
+  // data encoding in base64
+  char *encoded_data = encode_block(compressed_data,
+                                    compressed_data_length);
+  delete[] compressed_data;
 
-    out << encoded_data;
-    out << std::endl;
-    delete[] encoded_data;
-  }
+  out << encoded_data;
+  out << std::endl;
+  delete[] encoded_data;
 }
 
 /**
@@ -268,7 +266,10 @@ private:
       const std::vector<std::pair<double, std::string> > & masterfiles_time_and_name
       ) const;
 
-  //! write a VTK collection file that summarizes paths to all the given files
+  /** write a VTK collection file that summarizes paths to all the given files
+  *
+  *  \author eichinger
+  *  \date 05/17 */
   void CreateRestartedInitialCollectionFileMidSection(
       const std::string & geometryname,
       const std::string & restartfilename,
@@ -348,7 +349,7 @@ protected:
   int timestep_;
 
   //! restart step
-  int restart;
+  int restart_;
 
   //! Current cycle step (e.g. in nonlinear iteration, not used yet)
   int cycle_;

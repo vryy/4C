@@ -187,9 +187,6 @@ namespace MODELEVALUATOR{
     //! brownian dyn evaluation data container
     Teuchos::RCP<STR::MODELEVALUATOR::BrownianDynData> eval_browniandyn_ptr_;
 
-    //! structural displacement at \d$t_{n+1}\f$ consistent with periodic boundary conditions
-    Teuchos::RCP<Epetra_Vector> pbc_disnp_ptr_;
-
     //! global internal force at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> f_brown_np_ptr_;
 

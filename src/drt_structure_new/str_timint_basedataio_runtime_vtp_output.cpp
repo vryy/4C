@@ -67,20 +67,6 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "NUMBEROFBONDS");
 
 
-/*  // check for special beam output which is to be handled by an own writer object
-  special_output_beams_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "SPECIAL_OUTPUT_BEAMS");
-
-  // create and initialize parameter container object for beam sepcific runtime vtp output
-  if ( special_output_beams_ )
-  {
-    params_runtime_vtu_output_beams_ = Teuchos::rcp( new DRT::ELEMENTS::BeamRuntimeVtuOutputParams() );
-
-    params_runtime_vtu_output_beams_->Init( IO_vtp_structure_paramslist.sublist("BEAMS") );
-    params_runtime_vtu_output_beams_->Setup();
-  }*/
-
-
   isinit_ = true;
 }
 

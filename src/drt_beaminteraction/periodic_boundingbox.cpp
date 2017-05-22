@@ -12,6 +12,9 @@
 /*-----------------------------------------------------------*/
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
+#include "../drt_particle/binning_strategy_utils.H"
+
+#include "../drt_io/discretization_runtime_vtu_writer.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -21,6 +24,9 @@
 #include "../drt_inpar/inpar_meshfree.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../linalg/linalg_utils.H"
+#include "../drt_geometry/intersection_math.H"
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -28,10 +34,12 @@ GEO::MESHFREE::BoundingBox::BoundingBox()
   : isinit_( false ),
     issetup_( false ),
     boxdiscret_ ( Teuchos::null ),
-    dis_ ( Teuchos::null ),
+    disn_row_ ( Teuchos::null ),
+    disn_col_ ( Teuchos::null ),
     empty_( true ),
     havepbc_( false ),
-    box_( true )
+    box_( true ),
+    vtu_writer_ptr_( Teuchos::null )
 {
   // initialize arrays
   for( int idim = 0; idim < 3; ++idim )
@@ -47,13 +55,8 @@ void GEO::MESHFREE::BoundingBox::Init()
 {
   issetup_ = false;
 
-//  boxdiscret_ = DRT::Problem::Instance()->GetDis( "boundingbox" );
-//  if (not boxdiscret_->Filled() || not boxdiscret_->HaveDofs())
-//    boxdiscret_->FillComplete( true, false, false );
-//
-//  dis_ = LINALG::CreateVector( *boxdiscret_->DofRowMap(), true );
-
   // get bounding box specified in the input file
+  // fixme: like this or by eight nodes of element in discret
   box_.PutScalar(1.0e12);
   std::istringstream xaabbstream( Teuchos::getNumericStringParameter(
       DRT::Problem::Instance()->MeshfreeParams(),"BOUNDINGBOX") );
@@ -69,13 +72,17 @@ void GEO::MESHFREE::BoundingBox::Init()
                 " Fix your input file.");
     }
   }
-//
-//  // fixme: hack for xaabb in z direction
-//  for( int dim = 0; dim < 3; ++dim )
-//  {
-//    box_( dim, 0 ) = 0.0;
-//    box_( dim, 1 ) = 5.0;
-//  }
+
+  // initialize bounding box discretization
+  InitBoundingBoxDiscretization();
+
+  // displacement vector in row and col format
+  disn_row_ = LINALG::CreateVector( *boxdiscret_->DofRowMap(), true );
+  disn_col_ = LINALG::CreateVector( *boxdiscret_->DofColMap(), true );
+
+  // initialize bounding box runtime output
+  if ( DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1 )
+    InitRuntimeOutput();
 
   isinit_ = true;
 }
@@ -101,12 +108,12 @@ void GEO::MESHFREE::BoundingBox::Setup()
         // set flag
         pbconoff_[dim] = true;
 
-        // offset delta for pbc direction
-        edgelength_[dim] = box_(dim,1) - box_(dim,0);
-
         // set global flag
         havepbc_ = true;
       }
+
+      // edge length of box
+      edgelength_[dim] = box_(dim,1) - box_(dim,0);
     }
     else
     {
@@ -121,86 +128,190 @@ void GEO::MESHFREE::BoundingBox::Setup()
 }
 
 /*----------------------------------------------------------------------------*
+ * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::Shift1D( const int dim, double& d, double const& X ) const
+void GEO::MESHFREE::BoundingBox::InitBoundingBoxDiscretization()
 {
-  CheckInitSetup();
+  if ( DRT::Problem::Instance()->DoesExistDis("boundingbox") )
+  {
+    boxdiscret_ = DRT::Problem::Instance()->GetDis( "boundingbox" );
 
-  if( !pbconoff_[dim] )
-    return;
+    // create fully overlapping boundingbox discret
+    Teuchos::RCP<Epetra_Map> rednodecolmap = LINALG::AllreduceEMap( *boxdiscret_->NodeRowMap() );
+    Teuchos::RCP<Epetra_Map> redelecolmap = LINALG::AllreduceEMap( *boxdiscret_->ElementRowMap() );
 
-  double x = d + X;
+    // do the fully overlapping ghosting of the bounding box element to have everything redundant
+    boxdiscret_->ExportColumnNodes( *rednodecolmap );
+    boxdiscret_->ExportColumnElements( *redelecolmap );
 
-  if( x < min(dim) )
-    d += edgelength_[dim] * std::ceil( std::abs( ( x - box_(dim,0) ) / edgelength_[dim] ) );
-  else if ( x > max(dim) )
-    d -= edgelength_[dim] * std::ceil( std::abs( ( x - box_(dim,1) ) / edgelength_[dim] ) );
+    boxdiscret_->FillComplete( true, false, false );
+  }
+
+  if ( not DRT::Problem::Instance()->DoesExistDis("boundingbox") or boxdiscret_->NumMyColElements() == 0 )
+  {
+    if ( not DRT::Problem::Instance()->DoesExistDis("boundingbox") )
+    {
+      Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp( DRT::Problem::Instance()->GetDis("structure")->Comm().Clone() );
+      boxdiscret_ = Teuchos::rcp( new DRT::Discretization( "boundingbox", com ) );
+    }
+    else
+    {
+      boxdiscret_ = DRT::Problem::Instance()->GetDis( "boundingbox" );
+    }
+
+    // create nodes
+    double cornerpos[3];
+    int node_ids[8];
+    for( int corner_i = 0; corner_i < 8; ++corner_i )
+    {
+      UndeformedBoxCornerPointPosition( corner_i, cornerpos );
+      node_ids[corner_i] = corner_i;
+
+      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp( new DRT::Node( corner_i, cornerpos, 0 ) );
+      boxdiscret_->AddNode(newnode);
+    }
+
+    // assign nodes to element
+    Teuchos::RCP<DRT::Element> newele = DRT::UTILS::Factory( "VELE3", "Polynomial", 0, 0 );
+    newele->SetNodeIds( 8 , node_ids );
+    boxdiscret_->AddElement(newele);
+  }
+
+  // build independent dof set
+  Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp( new DRT::IndependentDofSet(true) );
+  boxdiscret_->ReplaceDofSet(independentdofset);
+  boxdiscret_->FillComplete();
 
 }
 
 /*----------------------------------------------------------------------------*
+ * (public)                                                                   |
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::Shift3D( LINALG::Matrix<3,1>& d,
-    LINALG::Matrix<3,1> const X ) const
-{
-  CheckInitSetup();
-
-  if(!havepbc_)
-    return;
-
-  for( int dim = 0; dim < 3 ; ++dim )
-    Shift1D( dim, d(dim), X(dim) );
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-bool GEO::MESHFREE::BoundingBox::UnShift1D( const int dim, double& d,
-    double const& ref, double const& X ) const
+bool GEO::MESHFREE::BoundingBox::Shift3D( LINALG::Matrix< 3, 1 >& d,
+    LINALG::Matrix< 3, 1 > const X ) const
 {
   CheckInitSetup();
 
   bool shifted = false;
 
-  if(!pbconoff_[dim])
+  if ( not havepbc_ )
     return shifted;
 
-  double x = d + X;
+  // x = X + d
+  LINALG::Matrix< 3, 1 > x(X);
+  x.Update( 1.0, d, 1.0 );
 
-  if (x - ref < -0.5 * edgelength_[dim] )
-  {
-    shifted = true;
-    d += edgelength_[dim];
-  }
-  else if ( x - ref > 0.5 * edgelength_[dim] )
-  {
-    shifted = true;
-    d -= edgelength_[dim];
-  }
+  LINALG::Matrix< 3, 1 > x_ud( true );
+  TransformFromGlobalToUndeformedBoundingBoxSystem( x, x_ud );
+
+  // shift
+  for( int dim = 0; dim < 3 ; ++dim )
+    if ( Shift1D( dim, x_ud(dim) ) ) shifted = true;
+
+  x.Clear();
+  d.Clear();
+  TransformFromUndeformedBoundingBoxSystemToGlobal( x_ud, x );
+
+  // d = x - X
+  d.Update( 1.0, x, -1.0, X );
 
   return shifted;
 }
 
 /*----------------------------------------------------------------------------*
+ * (public)                                                                   |
  *----------------------------------------------------------------------------*/
 bool GEO::MESHFREE::BoundingBox::UnShift3D( LINALG::Matrix<3,1>& d,
     LINALG::Matrix<3,1> const& ref, LINALG::Matrix<3,1> const X ) const
 {
   CheckInitSetup();
 
+  bool unshifted = false;
+
+  if ( not havepbc_ )
+    return unshifted;
+
+  // x = X + d
+  LINALG::Matrix< 3, 1 > x(X);
+  x.Update( 1.0, d, 1.0 );
+
+  LINALG::Matrix< 3, 1 > x_ud( true ), ref_ud( true );
+  TransformFromGlobalToUndeformedBoundingBoxSystem( x, x_ud );
+  TransformFromGlobalToUndeformedBoundingBoxSystem( ref, ref_ud );
+
+  for ( int dim = 0; dim < 3 ; ++dim )
+    if ( UnShift1D( dim, x_ud(dim), ref_ud(dim) ) ) unshifted = true;
+
+  x.Clear();
+  d.Clear();
+  TransformFromUndeformedBoundingBoxSystemToGlobal( x_ud, x );
+
+  // d = x - X
+  d.Update( 1.0, x, -1.0, X );
+
+  return unshifted;
+}
+
+/*----------------------------------------------------------------------------*
+ * (private)                                                                   |
+ *----------------------------------------------------------------------------*/
+bool GEO::MESHFREE::BoundingBox::Shift1D( int dim, double& d, double const& X ) const
+{
+  CheckInitSetup();
+
   bool shifted = false;
 
-  if(!havepbc_)
+  if( not pbconoff_[dim] )
     return shifted;
 
-  for( int dim = 0; dim < 3 ; ++dim )
-    if( UnShift1D( dim, d(dim), ref(dim), X(dim) ) ) shifted = true;
+  double x = d + X;
+
+  if ( x < min(dim) )
+  {
+    shifted = true;
+    d += edgelength_[dim] * std::ceil( std::abs( ( x - box_(dim,0) ) / edgelength_[dim] ) );
+  }
+  else if ( x > max(dim) )
+  {
+    shifted = true;
+    d -= edgelength_[dim] * std::ceil( std::abs( ( x - box_(dim,1) ) / edgelength_[dim] ) );
+  }
 
   return shifted;
 }
 
 /*----------------------------------------------------------------------------*
+ * (private)                                                                   |
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::RandomPosWithin( std::vector<double>& pos ) const
+bool GEO::MESHFREE::BoundingBox::UnShift1D( const int dim, double& d,
+    double const& ref, double const& X ) const
+{
+  CheckInitSetup();
+
+  bool unshifted = false;
+
+  if ( not pbconoff_[dim] )
+    return unshifted;
+
+  double x = d + X;
+
+  if ( x - ref < -0.5 * edgelength_[dim] )
+  {
+    unshifted = true;
+    d += edgelength_[dim];
+  }
+  else if ( x - ref > 0.5 * edgelength_[dim] )
+  {
+    unshifted = true;
+    d -= edgelength_[dim];
+  }
+
+  return unshifted;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::RandomPosWithin( LINALG::Matrix< 3, 1 >& randpos ) const
 {
   CheckInitSetup();
 
@@ -208,14 +319,18 @@ void GEO::MESHFREE::BoundingBox::RandomPosWithin( std::vector<double>& pos ) con
   std::vector<double> randuni;
   DRT::Problem::Instance()->Random()->Uni( randuni, 3 );
 
+  LINALG::Matrix< 3, 1 > randpos_ud(true);
   for ( int dim = 0; dim < 3; ++dim )
-    pos[dim] = min(dim) + ( edgelength_[dim] * randuni[dim] );
+    randpos_ud(dim) = min(dim) + ( edgelength_[dim] * randuni[dim] );
+
+  TransformFromUndeformedBoundingBoxSystemToGlobal( randpos_ud, randpos );
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void GEO::MESHFREE::BoundingBox::AddPoint( const double * x )
 {
+  dserror("Check before use.");
   if ( empty_ )
   {
     empty_ = false;
@@ -238,6 +353,7 @@ void GEO::MESHFREE::BoundingBox::AddPoint( const double * x )
  *----------------------------------------------------------------------------*/
 bool GEO::MESHFREE::BoundingBox::Within( const BoundingBox & b, double norm ) const
 {
+  dserror("Check before use.");
   if ( empty_ )
     return true;
   return ( InBetween( norm, minx(), maxx(), b.minx(), b.maxx() ) and
@@ -249,6 +365,7 @@ bool GEO::MESHFREE::BoundingBox::Within( const BoundingBox & b, double norm ) co
  *----------------------------------------------------------------------------*/
 bool GEO::MESHFREE::BoundingBox::Within( const double * x, double norm ) const
 {
+  dserror("Check before use.");
   if ( empty_ )
     return true;
   return ( InBetween( norm, minx(), maxx(), x[0], x[0] ) and
@@ -260,7 +377,7 @@ bool GEO::MESHFREE::BoundingBox::Within( const double * x, double norm ) const
  *----------------------------------------------------------------------------*/
 bool GEO::MESHFREE::BoundingBox::Within( const Epetra_SerialDenseMatrix & xyz, double norm ) const
 {
-  dserror("init and setup not called, check this before use");
+  dserror("Check before use.");
   BoundingBox bb;
   int numnode = xyz.N();
   for ( int i=0; i<numnode; ++i )
@@ -293,45 +410,102 @@ void GEO::MESHFREE::BoundingBox::Print()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::ApplyDirichlet( double const timen )
+void GEO::MESHFREE::BoundingBox::ApplyDirichlet( double timen )
 {
   CheckInitSetup();
 
-//  Teuchos::ParameterList p;
-//  p.set( "total time", timen );
-//
-//  // predicted Dirichlet values
-//  // \c dis then also holds prescribed new Dirichlet displacements
-//  boxdiscret_->ClearState();
-//  boxdiscret_->EvaluateDirichlet( p, dis_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null );
-//  boxdiscret_->ClearState();
-//
-//  // fixme: hack for xaabb in z direction
-//  for( int dim = 0; dim < 3; ++dim )
-//  {
-//    box_( dim, 0 ) = 0.0 + (*dis_)[dim];
-//    box_( dim, 1 ) = 5.0 + (*dis_)[ ( 6 * 3 ) + dim ];
-//    // offset delta for pbc direction
-//    edgelength_[dim] = box_(dim,1) - box_(dim,0);
-//  }
+  Teuchos::ParameterList p;
+  p.set( "total time", timen );
+
+  // disn_ then also holds prescribed new Dirichlet displacements
+  boxdiscret_->ClearState();
+  boxdiscret_->EvaluateDirichlet( p, disn_row_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null );
+  boxdiscret_->ClearState();
+
+  // export to col format
+  LINALG::Export( *disn_row_, *disn_col_ );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
+{
+  vtu_writer_ptr_ = Teuchos::rcp( new DiscretizationRuntimeVtuWriter() );
+
+  // Todo: we need a better upper bound for total number of time steps here
+  // however, this 'only' affects the number of leading zeros in the vtk file names
+  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
+
+  // initialize the writer object
+  double time = -1.0;
+  if ( DRT::Problem::Instance()->Restart() )
+  {
+    IO::DiscretizationReader ioreader( DRT::Problem::Instance()->GetDis("structure"),
+        DRT::Problem::Instance()->Restart() );
+    time = ioreader.ReadDouble("time");
+  }
+  else
+  {
+    time = 0.0;
+  }
+
+  vtu_writer_ptr_->Initialize( boxdiscret_, num_timesteps_in_simulation_upper_bound, time, true );
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::RuntimeOutputStepState( double timen, int stepn ) const
+{
+  CheckInitSetup();
+
+  if ( vtu_writer_ptr_ == Teuchos::null )
+    return;
+
+  // reset time and time step of the writer object
+  vtu_writer_ptr_->ResetTimeAndTimeStep( timen, stepn );
+  vtu_writer_ptr_->AppendDofBasedResultDataVector( disn_col_, 3, 0, "displacement" );
+
+  // finalize everything and write all required VTU files to filesystem
+  vtu_writer_ptr_->WriteFiles();
+  vtu_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
 
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::Output( int const stepn, double const timen ) const
+LINALG::Matrix< 3, 1 > GEO::MESHFREE::BoundingBox::ReferencePosOfCornerPoint( int i ) const
 {
-  CheckInitSetup();
+  // dof gids of node i (note: each proc just has one element and eight nodes,
+  // therefore local numbering from 0 to 7 on each proc)
+  DRT::Node* node_i = boxdiscret_->lColNode(i);
+  std::vector<int> dofnode = boxdiscret_->Dof( node_i );
 
-//  Teuchos::RCP< IO::DiscretizationWriter > ia_writer = boxdiscret_->Writer();
-//  ia_writer->WriteMesh( stepn, timen );
-//  ia_writer->NewStep( stepn, timen );
-//  ia_writer->WriteVector( "displacement", dis_ );
+  LINALG::Matrix< 3, 1 > x(true);
+  for ( int dim = 0; dim < 3; ++dim )
+    x(dim) = node_i->X()[dim];
+
+  return x;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void GEO::MESHFREE::BoundingBox::CornerPoint( int i, double * x )
+LINALG::Matrix< 3, 1 > GEO::MESHFREE::BoundingBox::CurrentPositionOfCornerPoint( int i ) const
+{
+  // dof gids of node i (note: each proc just has one element and eight nodes,
+  // therefore local numbering from 0 to 7 on each proc)
+  DRT::Node* node_i = boxdiscret_->lColNode(i);
+  std::vector<int> dofnode = boxdiscret_->Dof( node_i );
+
+  LINALG::Matrix< 3, 1 > x(true);
+  for ( int dim = 0; dim < 3; ++dim )
+    x(dim) = node_i->X()[dim] + (*disn_col_)[ disn_col_->Map().LID( dofnode[dim] ) ];
+
+  return x;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition( int i, double * x )
 {
   // to get numbering according to baci convention of hex eles ( p.122 global report)
   if( i == 2 or i == 6 )
@@ -342,4 +516,281 @@ void GEO::MESHFREE::BoundingBox::CornerPoint( int i, double * x )
   x[0] = ( ( i & 1 ) == 1 ) ? maxx() : minx();
   x[1] = ( ( i & 2 ) == 2 ) ? maxy() : miny();
   x[2] = ( ( i & 4 ) == 4 ) ? maxz() : minz();
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGlobal(
+    LINALG::Matrix<3,1> const& xi,
+    LINALG::Matrix<3,1>&       x ) const
+{
+  CheckInitSetup();
+
+  DRT::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
+  if ( !mynodes )
+    dserror("ERROR: LocalToGlobal: Null pointer!");
+
+  // reset globcoord variable
+  x.Clear();
+
+  // Evaluate lagrangian shape functions at xi
+  LINALG::Matrix< 8, 1 > funct;
+  LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobal( funct, xi(0), xi(1), xi(2) );
+
+  LINALG::Matrix< 3, 8 > coord;
+  for ( unsigned int i = 0; i < 8; ++i )
+  {
+    for ( unsigned int j = 0; j < 3; ++j )
+    {
+      // use shape function values for interpolation
+      coord( j, i )   = CurrentPositionOfCornerPoint(i)(j);
+      x(j) += funct(i) * coord( j, i );
+    }
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::TransformFromUndeformedBoundingBoxSystemToGlobal(
+    double const* xi,
+    double *      x ) const
+{
+  CheckInitSetup();
+
+  DRT::Node** mynodes = boxdiscret_->lColElement(0)->Nodes();
+  if ( !mynodes )
+    dserror("ERROR: LocalToGlobal: Null pointer!");
+
+  // reset globcoord variable
+  for ( unsigned int dim = 0; dim < 3; ++dim )
+    x[dim] = 0.0;
+
+  // Evaluate lagrangian shape functions at xi
+  LINALG::Matrix< 8, 1 > funct;
+  LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobal( funct, xi[0], xi[1], xi[2] );
+
+  LINALG::Matrix< 3, 8 > coord;
+  for ( unsigned int i = 0; i < 8; ++i )
+  {
+    for ( unsigned int j = 0; j < 3; ++j )
+    {
+      // use shape function values for interpolation
+      coord( j, i )   = CurrentPositionOfCornerPoint(i)(j);
+      x[j] += funct(i) * coord( j, i );
+    }
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSystem(
+    LINALG::Matrix< 3, 1 > const& x,
+    LINALG::Matrix< 3, 1 >&       xi) const
+{
+  CheckInitSetup();
+  // initialize variables
+  int const numnode = 8;
+  int const ndim   = 3;
+  double tol = GEO::TOL12;
+  bool converged = false;
+  LINALG::Matrix< numnode, 1 >    funct;
+  LINALG::Matrix< ndim, numnode > deriv;
+  LINALG::Matrix< ndim, numnode > pbbcurrnodepos;
+  LINALG::Matrix< ndim, ndim >    xjm;
+  LINALG::Matrix< ndim, 1 >       rhs;
+
+  // spatial configuration of this element!
+  for ( int k = 0; k < numnode; ++k )
+    for ( int j = 0; j < ndim; ++j )
+      pbbcurrnodepos( j, k ) = CurrentPositionOfCornerPoint(k)(j);
+
+  // first estimation for xi
+  for ( int dim = 0; dim < ndim; ++dim )
+    xi(dim) = x(dim);
+
+  // solve linearized system R(xi) = x(xi) - x = N(xi) x^ - x != 0
+  int numiter = 10;
+  int j = 0;
+  while ( not converged and j < numiter )
+  {
+    // reset matrices
+    xjm.Clear();
+    deriv.Clear();
+    rhs.Clear();
+
+    // evaluate lagrangian shape functions at xi
+    LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobal      ( funct, xi(0), xi(1), xi(2) );
+    LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobalDeriv1( deriv, xi(0), xi(1), xi(2) );
+
+    // compute dN/dxi x^
+    for ( int k = 0; k < numnode; ++k )
+      for ( int p = 0; p < ndim; ++p )
+        for( int l = 0; l < ndim; ++l )
+          xjm( p, l ) += deriv( l, k ) * pbbcurrnodepos( p, k );
+
+    // rhs of (linearized equation) I
+    for ( int p = 0; p < ndim; ++p )
+      rhs(p) = -x(p);
+
+    // rhs of (linearized equation) I
+    for ( int k = 0; k < numnode; ++k )
+      for( int p = 0; p < ndim; ++p )
+        rhs(p) += funct(k) * pbbcurrnodepos( p, k );
+
+    // compute norm
+    double norm = 0.0;
+    for ( int p = 0; p < ndim;++p )
+      norm += rhs(p) * rhs(p);
+
+    // check if we are converged
+    if ( sqrt(norm) < tol )
+    {
+      converged = true;
+      break;
+    }
+
+    // safety check
+    if ( abs( xjm.Determinant() ) < 1e-15 )
+    {
+      std::cout << "WARNING !!! jacobi determinant singular! In DeformedToUndeformed(...)" << std::endl;
+      std::cout << "JAC= " << xjm.Determinant() << std::endl;
+      std::cout << "CONVERGED= " << converged << std::endl;
+      dserror("*** WARNING: jacobi singular ***");
+      converged = false;
+      break;
+    }
+
+    // solve equation
+    double xjm_invert = xjm.Invert();
+    if ( abs(xjm_invert) < 1e-15 )
+      dserror("ERROR: Singular Jacobian");
+
+    // compute increment
+    LINALG::Matrix< ndim, 1 > deltaxi( true );
+    for ( int z = 0; z < ndim; ++z )
+      for ( int p = 0; p < ndim; ++p )
+        deltaxi(z) -= xjm( z, p ) * rhs(p);
+
+    // incremental update
+    for( int p = 0; p < ndim; ++p )
+      xi(p) += deltaxi(p);
+
+    ++j;
+  }
+  return converged;
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+bool GEO::MESHFREE::BoundingBox::TransformFromGlobalToUndeformedBoundingBoxSystem(
+    double const* x,
+    double*       xi) const
+{
+  CheckInitSetup();
+  static LINALG::Matrix< 3, 1 > x_m(true), xi_m(true);
+  for ( int dim = 0; dim < 3; ++dim )
+    x_m(dim) = x[dim];
+
+  bool converged = TransformFromGlobalToUndeformedBoundingBoxSystem( x_m, xi_m );
+
+  for ( int dim = 0; dim < 3; ++dim )
+    xi[dim] = xi_m(dim);
+
+  x_m.Clear();
+  xi_m.Clear();
+  return converged;
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobal(
+    LINALG::Matrix< 8, 1 >& funct, ///< to be filled with shape function values
+    double                  r,
+    double                  s,
+    double                  t ) const
+{
+  CheckInitSetup();
+  // safety check
+#ifdef DEBUG
+  for ( int dim = 0; dim < 3; ++dim )
+    if ( abs( edgelength_[dim] ) < 1e-12 )
+      dserror(" you are about to devide by zero, edgelength not correctly initialized.");
+#endif
+
+  const double Q = 1.0 / ( edgelength_[0] * edgelength_[1] * edgelength_[2] );
+
+
+  const double rp = r - minx();
+  const double rm = maxx() - r;
+  const double sp = s - miny();
+  const double sm = maxy() - s;
+  const double tp = t - minz();
+  const double tm = maxz() - t;
+
+  funct(0) = Q * rm * sm * tm;
+  funct(1) = Q * rp * sm * tm;
+  funct(2) = Q * rp * sp * tm;
+  funct(3) = Q * rm * sp * tm;
+  funct(4) = Q * rm * sm * tp;
+  funct(5) = Q * rp * sm * tp;
+  funct(6) = Q * rp * sp * tp;
+  funct(7) = Q * rm * sp * tp;
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void GEO::MESHFREE::BoundingBox::LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobalDeriv1(
+    LINALG::Matrix< 3, 8 >& deriv1, ///< to be filled with shape function derivative values
+    double                  r,
+    double                  s,
+    double                  t ) const
+{
+  CheckInitSetup();
+  // safety check
+#ifdef DEBUG
+  for ( int dim = 0; dim < 3; ++dim )
+    if ( abs( edgelength_[dim] ) < 1e-12 )
+      dserror(" you are about to devide by zero, edgelength not correctly initialized.");
+#endif
+
+  const double Q = 1.0 / ( edgelength_[0] * edgelength_[1] * edgelength_[2] );
+
+  const double rp = r - minx();
+  const double rm = maxx() - r;
+  const double sp = s - miny();
+  const double sm = maxy() - s;
+  const double tp = t - minz();
+  const double tm = maxz() - t;
+
+  deriv1(0, 0) = -Q * sm * tm;
+  deriv1(1, 0) = -Q * tm * rm;
+  deriv1(2, 0) = -Q * rm * sm;
+
+  deriv1(0, 1) = Q * sm * tm;
+  deriv1(1, 1) = -Q * tm * rp;
+  deriv1(2, 1) = -Q * rp * sm;
+
+  deriv1(0, 2) = Q * sp * tm;
+  deriv1(1, 2) = Q * tm * rp;
+  deriv1(2, 2) = -Q * rp * sp;
+
+  deriv1(0, 3) = -Q * sp * tm;
+  deriv1(1, 3) = Q * tm * rm;
+  deriv1(2, 3) = -Q * rm * sp;
+
+  deriv1(0, 4) = -Q * sm * tp;
+  deriv1(1, 4) = -Q * tp * rm;
+  deriv1(2, 4) = Q * rm * sm;
+
+  deriv1(0, 5) = Q * sm * tp;
+  deriv1(1, 5) = -Q * tp * rp;
+  deriv1(2, 5) = Q * rp * sm;
+
+  deriv1(0, 6) = Q * sp * tp;
+  deriv1(1, 6) = Q * tp * rp;
+  deriv1(2, 6) = Q * rp * sp;
+
+  deriv1(0, 7) = -Q * sp * tp;
+  deriv1(1, 7) = Q * tp * rm;
+  deriv1(2, 7) = Q * rm * sp;
 }

@@ -96,11 +96,11 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     writesurfactant_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_SURFACTANT");
 
     // check whether VTK output at runtime is desired
-    if ( ioparams.sublist("RUNTIME VTK OUTPUT STRUCTURE").get<int>("INTERVAL_STEPS") != -1 )
+    if ( ioparams.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1 )
     {
       params_runtime_vtk_output_ = Teuchos::rcp( new ParamsRuntimeVtkOutput() );
 
-      params_runtime_vtk_output_->Init( ioparams.sublist("RUNTIME VTK OUTPUT STRUCTURE") );
+      params_runtime_vtk_output_->Init( ioparams.sublist("RUNTIME VTK OUTPUT") );
       params_runtime_vtk_output_->Setup();
     }
 

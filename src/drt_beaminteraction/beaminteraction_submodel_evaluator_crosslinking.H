@@ -169,12 +169,12 @@ private:
 
     //! struct to store beam data for faster access
     struct BeamData {
-        std::map<int, LINALG::Matrix<3,1> > bbspotpos;    // current position at bindingspots (xi) (key is local number of binding spot)
-        std::map<int, LINALG::Matrix<3,3> > bbspottriad;  // current triad at bindingspots (xi) (key is local number of binding spot)
-        std::map<int, int> bbspotstatus;                  // key is locn of bspot, holds gid of crosslinker if binded, if free = -1
-        int bowner;                                       // owner of current beam
-//      int type;
-//      int filnumber;
+        std::map<int, LINALG::Matrix<3,1> > bbspotpos;      // current position at bindingspots (xi) (key is local number of binding spot)
+        std::map<int, LINALG::Matrix<3,3> > bbspottriad;    // current triad at bindingspots (xi) (key is local number of binding spot)
+        std::map<int, int> bbspotstatus;                    // key is locn of bspot, holds gid of crosslinker if binded, if free = -1
+        int bowner;                                         // owner of current beam
+        INPAR::BEAMINTERACTION::FilamentType filamenttype;  // type of filament
+//        int filnumber;
     };
 
     //! struct that stores all necessary data to handle the crosslining between two elements on each proc
@@ -209,8 +209,11 @@ private:
     /// add crosslinker to bin discretization initially
     virtual void AddCrosslinkerToBinDiscretization();
 
-    /// set binding spot positions on filaments initially
+    /// set binding spot positions on filament initially
     virtual void SetFilamentBindingSpotPositions();
+
+    /// set filament types on elements
+    virtual void SetFilamentFilamentTypes();
 
     /// extent ghosting so that each proc has all nodes and elemens of a filament containing
     /// at least one of its nodes
@@ -371,10 +374,15 @@ private:
         DRT::Element const * const potbeampartner,
         CrosslinkerData const& cldata_i,
         BeamData const& beamdata_i,
-        int const locnbspot,
+        int locnbspot,
         std::vector< std::set <int> >& intendedbeambonds,
-        bool const checklinkingprop
+        bool checklinkingprop
     ) const;
+
+    /// check if crosslinke and filament type are compatible
+    virtual bool CheckLinkerAndFilamentTypeCompatibility(
+        CROSSLINKING::CrosslinkerNode const * const crosslinker_i,
+        BeamData const& beamdata) const;
 
     /// if crosslinker is singly bound, we fetch the orientation vector of the
     /// filament axis at the already occupied binding spot for the orientation

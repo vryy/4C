@@ -1030,13 +1030,17 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   shear_strain_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
   shear_strain_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
 
-  axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
-  shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
-  shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  material_axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  material_shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  material_shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
+
+  spatial_axial_force_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  spatial_shear_force_2_GP_elastf_.resize( gausspoints_elast_force.nquad );
+  spatial_shear_force_3_GP_elastf_.resize( gausspoints_elast_force.nquad );
 
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
-  for (int numgp=0; numgp < gausspoints_elast_force.nquad; numgp++)
+  for (int numgp=0; numgp < gausspoints_elast_force.nquad; ++numgp)
   {
     // weight of GP in parameter space
     const double wgt = gausspoints_elast_force.qwgt[numgp];
@@ -1113,9 +1117,13 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     shear_strain_2_GP_elastf_[numgp] = FADUTILS::CastToDouble( Gamma(1) );
     shear_strain_3_GP_elastf_[numgp] = FADUTILS::CastToDouble( Gamma(2) );
 
-    axial_force_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(0) );
-    shear_force_2_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(1) );
-    shear_force_3_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(2) );
+    material_axial_force_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(0) );
+    material_shear_force_2_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(1) );
+    material_shear_force_3_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressN(2) );
+
+    spatial_axial_force_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressn(0) );
+    spatial_shear_force_2_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressn(1) );
+    spatial_shear_force_3_GP_elastf_[numgp] = FADUTILS::CastToDouble( stressn(2) );
 
   }
 
@@ -1140,9 +1148,13 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   curvature_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
   curvature_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
 
-  torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-  bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
-  bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  material_torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  material_bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  material_bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+
+  spatial_torque_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  spatial_bending_moment_2_GP_elastm_.resize( gausspoints_elast_moment.nquad );
+  spatial_bending_moment_3_GP_elastm_.resize( gausspoints_elast_moment.nquad );
 
 
   // Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
@@ -1221,9 +1233,13 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     curvature_2_GP_elastm_[numgp] = FADUTILS::CastToDouble( K(1) );
     curvature_3_GP_elastm_[numgp] = FADUTILS::CastToDouble( K(2) );
 
-    torque_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(0) );
-    bending_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(1) );
-    bending_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(2) );
+    material_torque_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(0) );
+    material_bending_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(1) );
+    material_bending_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressM(2) );
+
+    spatial_torque_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressm(0) );
+    spatial_bending_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressm(1) );
+    spatial_bending_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble( stressm(2) );
   }
 
   return;

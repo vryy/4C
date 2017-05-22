@@ -11,6 +11,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "str_timint_basedataio_runtime_vtk_output.H"
+#include "str_discretization_runtime_vtu_output_params.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -18,16 +19,18 @@
 
 #include "../drt_beam3/beam_discretization_runtime_vtu_output_params.H"
 
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 STR::TIMINT::ParamsRuntimeVtkOutput::ParamsRuntimeVtkOutput()
     : isinit_(false),
       issetup_(false),
-      output_data_format_( INPAR::IO_RUNTIME_VTK_STRUCTURE::vague ),
+      output_data_format_( INPAR::IO_RUNTIME_VTK::vague ),
       output_interval_steps_(-1),
       output_every_iteration_(false),
-      output_displacement_state_(false),
-      special_output_beams_(false),
+      output_structure_(false),
+      output_beams_(false),
+      params_runtime_vtu_output_structure_(Teuchos::null),
       params_runtime_vtu_output_beams_(Teuchos::null)
 {
   // empty constructor
@@ -43,7 +46,7 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
 
   // initialize the parameter values
   output_data_format_ =
-      DRT::INPUT::IntegralValue<INPAR::IO_RUNTIME_VTK_STRUCTURE::OutputDataFormat>(
+      DRT::INPUT::IntegralValue<INPAR::IO_RUNTIME_VTK::OutputDataFormat>(
           IO_vtk_structure_paramslist, "OUTPUT_DATA_FORMAT" );
 
   output_interval_steps_ = IO_vtk_structure_paramslist.get<int>("INTERVAL_STEPS");
@@ -51,19 +54,29 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
   output_every_iteration_ =
       (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
 
-  output_displacement_state_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "DISPLACEMENT");
-
   if ( output_every_iteration_ )
     dserror("not implemented yet!");
 
-
   // check for special beam output which is to be handled by an own writer object
-  special_output_beams_ =
-      (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "SPECIAL_OUTPUT_BEAMS");
+  output_structure_ =
+      (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist.sublist("STRUCTURE"), "OUTPUT_STRUCTURE");
 
   // create and initialize parameter container object for beam sepcific runtime vtk output
-  if ( special_output_beams_ )
+  if ( output_structure_ )
+  {
+    params_runtime_vtu_output_structure_ = Teuchos::rcp( new DRT::ELEMENTS::StructureRuntimeVtuOutputParams() );
+
+    params_runtime_vtu_output_structure_->Init( IO_vtk_structure_paramslist.sublist("STRUCTURE") );
+    params_runtime_vtu_output_structure_->Setup();
+  }
+
+
+  // check for special beam output which is to be handled by an own writer object
+  output_beams_ =
+      (bool) DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist.sublist("BEAMS"), "OUTPUT_BEAMS");
+
+  // create and initialize parameter container object for beam sepcific runtime vtk output
+  if ( output_beams_ )
   {
     params_runtime_vtu_output_beams_ = Teuchos::rcp( new DRT::ELEMENTS::BeamRuntimeVtuOutputParams() );
 
@@ -94,3 +107,5 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::CheckInitSetup() const
   if ( not IsInit() or not IsSetup() )
     dserror("Call Init() and Setup() first!");
 }
+
+

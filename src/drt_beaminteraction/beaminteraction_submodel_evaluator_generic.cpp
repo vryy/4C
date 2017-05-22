@@ -34,6 +34,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
       gio_ptr_(Teuchos::null),
       beaminteractiondatastate_(Teuchos::null),
       particlehandler_(Teuchos::null),
+      binstrategy_(Teuchos::null),
       periodic_boundingbox_(Teuchos::null),
       eletypeextractor_(Teuchos::null)
 {
@@ -49,6 +50,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
     Teuchos::RCP<STR::TIMINT::BaseDataIO> const& gio_ptr,
     Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
     Teuchos::RCP<PARTICLE::ParticleHandler> const& particlehandler,
+    Teuchos::RCP<BINSTRATEGY::BinningStrategy> binstrategy,
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
     Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor)
 {
@@ -60,6 +62,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Init(
   gio_ptr_ = gio_ptr;
   beaminteractiondatastate_ = ia_gstate_ptr;
   particlehandler_ = particlehandler;
+  binstrategy_ = binstrategy;
   periodic_boundingbox_ = periodic_boundingbox;
   eletypeextractor_ = eletypeextractor;
 
@@ -225,7 +228,7 @@ Teuchos::RCP<PARTICLE::ParticleHandler>& BEAMINTERACTION::SUBMODELEVALUATOR::Gen
 BINSTRATEGY::BinningStrategy const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategy() const
 {
   CheckInit();
-  return *particlehandler_->BinStrategy();
+  return *binstrategy_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -233,7 +236,7 @@ BINSTRATEGY::BinningStrategy const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic:
 BINSTRATEGY::BinningStrategy& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategy()
 {
   CheckInit();
-  return *particlehandler_->BinStrategy();
+  return *binstrategy_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -241,7 +244,7 @@ BINSTRATEGY::BinningStrategy& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinSt
 Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::BinStrategyPtr()
 {
   CheckInit();
-  return particlehandler_->BinStrategy();
+  return binstrategy_;
 }
 
 /*----------------------------------------------------------------------------*

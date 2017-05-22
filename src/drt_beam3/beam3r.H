@@ -400,25 +400,46 @@ public:
     curvature_3_GPs = curvature_3_GP_elastm_;
   }
 
+  /** \brief Get spatial cross-section stress resultants
+   *
+   *  \author grill
+   *  \date 04/17 */
+  virtual inline void GetSpatialStressResultantsAtAllGPs(
+      std::vector<double>& spatial_axial_force_GPs,
+      std::vector<double>& spatial_shear_force_2_GPs,
+      std::vector<double>& spatial_shear_force_3_GPs,
+      std::vector<double>& spatial_torque_GPs,
+      std::vector<double>& spatial_bending_moment_2_GPs,
+      std::vector<double>& spatial_bending_moment_3_GPs) const
+  {
+    spatial_axial_force_GPs = spatial_axial_force_GP_elastf_;
+    spatial_shear_force_2_GPs = spatial_shear_force_2_GP_elastf_;
+    spatial_shear_force_3_GPs = spatial_shear_force_3_GP_elastf_;
+
+    spatial_torque_GPs = spatial_torque_GP_elastm_;
+    spatial_bending_moment_2_GPs = spatial_bending_moment_2_GP_elastm_;
+    spatial_bending_moment_3_GPs = spatial_bending_moment_3_GP_elastm_;
+  }
+
   /** \brief Get material cross-section stress resultants
    *
    *  \author grill
    *  \date 04/17 */
   virtual inline void GetMaterialStressResultantsAtAllGPs(
-      std::vector<double>& axial_force_GPs,
-      std::vector<double>& shear_force_2_GPs,
-      std::vector<double>& shear_force_3_GPs,
-      std::vector<double>& torque_GPs,
-      std::vector<double>& bending_moment_2_GPs,
-      std::vector<double>& bending_moment_3_GPs) const
+      std::vector<double>& material_axial_force_GPs,
+      std::vector<double>& material_shear_force_2_GPs,
+      std::vector<double>& material_shear_force_3_GPs,
+      std::vector<double>& material_torque_GPs,
+      std::vector<double>& material_bending_moment_2_GPs,
+      std::vector<double>& material_bending_moment_3_GPs) const
   {
-    axial_force_GPs = axial_force_GP_elastf_;
-    shear_force_2_GPs = shear_force_2_GP_elastf_;
-    shear_force_3_GPs = shear_force_3_GP_elastf_;
+    material_axial_force_GPs = material_axial_force_GP_elastf_;
+    material_shear_force_2_GPs = material_shear_force_2_GP_elastf_;
+    material_shear_force_3_GPs = material_shear_force_3_GP_elastf_;
 
-    torque_GPs = torque_GP_elastm_;
-    bending_moment_2_GPs = bending_moment_2_GP_elastm_;
-    bending_moment_3_GPs = bending_moment_3_GP_elastm_;
+    material_torque_GPs = material_torque_GP_elastm_;
+    material_bending_moment_2_GPs = material_bending_moment_2_GP_elastm_;
+    material_bending_moment_3_GPs = material_bending_moment_3_GP_elastm_;
   }
 
   /** \brief get access to the reference length
@@ -1137,6 +1158,9 @@ private:
   //! current triads at Gauss points for integration of damping/stochastic forces in quaternion form (required for computation of angular velocity)
   std::vector<LINALG::Matrix<4,1> > QnewGPdampstoch_;
 
+  //!@name variables only needed/used for output purposes. Note: No need to pack and unpack
+  //! @{
+
   //! internal (elastic) energy of element
   double Eint_;
 
@@ -1161,7 +1185,6 @@ private:
   //! norm of maximal bending curvature occurring in this element Todo obsolete?
   double Kmax_;
 
-
   //! strain resultant values at GPs
   std::vector<double> axial_strain_GP_elastf_;
   std::vector<double> shear_strain_2_GP_elastf_;
@@ -1171,14 +1194,25 @@ private:
   std::vector<double> curvature_2_GP_elastm_;
   std::vector<double> curvature_3_GP_elastm_;
 
-  //! stress resultant values at GPs
-  std::vector<double> axial_force_GP_elastf_;
-  std::vector<double> shear_force_2_GP_elastf_;
-  std::vector<double> shear_force_3_GP_elastf_;
+  //! material stress resultant values at GPs
+  std::vector<double> material_axial_force_GP_elastf_;
+  std::vector<double> material_shear_force_2_GP_elastf_;
+  std::vector<double> material_shear_force_3_GP_elastf_;
 
-  std::vector<double> torque_GP_elastm_;
-  std::vector<double> bending_moment_2_GP_elastm_;
-  std::vector<double> bending_moment_3_GP_elastm_;
+  std::vector<double> material_torque_GP_elastm_;
+  std::vector<double> material_bending_moment_2_GP_elastm_;
+  std::vector<double> material_bending_moment_3_GP_elastm_;
+
+  //! spatial stress resultant values at GPs
+  std::vector<double> spatial_axial_force_GP_elastf_;
+  std::vector<double> spatial_shear_force_2_GP_elastf_;
+  std::vector<double> spatial_shear_force_3_GP_elastf_;
+
+  std::vector<double> spatial_torque_GP_elastm_;
+  std::vector<double> spatial_bending_moment_2_GP_elastm_;
+  std::vector<double> spatial_bending_moment_3_GP_elastm_;
+
+  //! @}
 };
 
 // << operator

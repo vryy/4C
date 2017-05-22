@@ -203,8 +203,6 @@ E 8 - FIELD fluid COUPLING lagrange VAL 0.0 NODENORMALFUNCT 0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 //                              DOBJECT
 DSURF                           0
-------------------------------------------------------------FILAMENT NUMBERS
-DLINE                           0
 -----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
 DSURF                           0
 -------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D

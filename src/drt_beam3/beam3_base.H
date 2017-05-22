@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_inpar/inpar_beaminteraction.H"
 #include "../drt_lib/drt_element.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -231,17 +232,32 @@ public:
     dserror("not implemented");
   }
 
+  /** \brief Get spatial cross-section stress resultants
+   *
+   *  \author eichinger
+   *  \date 05/17 */
+  virtual inline void GetSpatialStressResultantsAtAllGPs(
+      std::vector<double>& spatial_axial_force_GPs,
+      std::vector<double>& spatial_shear_force_2_GPs,
+      std::vector<double>& spatial_shear_force_3_GPs,
+      std::vector<double>& spatial_torque_GPs,
+      std::vector<double>& spatial_bending_moment_2_GPs,
+      std::vector<double>& spatial_bending_moment_3_GPs) const
+  {
+    dserror("not implemented");
+  }
+
   /** \brief Get material cross-section stress resultants
    *
    *  \author grill
    *  \date 04/17 */
   virtual inline void GetMaterialStressResultantsAtAllGPs(
-      std::vector<double>& axial_force_GPs,
-      std::vector<double>& shear_force_2_GPs,
-      std::vector<double>& shear_force_3_GPs,
-      std::vector<double>& torque_GPs,
-      std::vector<double>& bending_moment_2_GPs,
-      std::vector<double>& bending_moment_3_GPs) const
+      std::vector<double>& material_axial_force_GPs,
+      std::vector<double>& material_shear_force_2_GPs,
+      std::vector<double>& material_shear_force_3_GPs,
+      std::vector<double>& material_torque_GPs,
+      std::vector<double>& material_bending_moment_2_GPs,
+      std::vector<double>& material_bending_moment_3_GPs) const
   {
     dserror("not implemented");
   }
@@ -579,7 +595,7 @@ protected:
    *  \date 03/17 */
   void GetTranslationalMassInertiaFactor(double& mass_inertia_translational) const;
 
-  //! @name Methods and variables for Brownian dynamics simulations
+  //! @name Methods and variables for Brownian dynamics or beaminteraction simulations
   //! @{
   //! computes damping coefficients
   void GetDampingCoefficients( LINALG::Matrix<3,1>& gamma ) const;
@@ -637,14 +653,22 @@ public:
     bspotposxi_ = bspotposxi;
     bspotstatus_ = bspotstatus;
   }
+  /** \brief set status (bonded or unbonded) of binding spot
+   *
+   *  \author eichinger
+   *  \date 03/17 */
+  void SetBindingSpotStatus(std::map<int, int> bspotstatus) { bspotstatus_ = bspotstatus; }
 
-  void SetBindingSpotStatus(std::map<int, int> bspotstatus)
-  {
-    bspotstatus_ = bspotstatus;
-    return;
-  }
+  /** \brief set/get type of filament the element is part of
+   *
+   *  \author eichinger
+   *  \date 03/17 */
+  void SetFilamentType( INPAR::BEAMINTERACTION::FilamentType filamenttype ) { filamenttype_ = filamenttype; }
 
-protected:
+  INPAR::BEAMINTERACTION::FilamentType GetFilamentType( ) { return filamenttype_; }
+
+
+private:
 
   //! position of binding spots on beam element in local coordinate system
   //! size of vector equals number of binding spots on this element
@@ -652,6 +676,9 @@ protected:
 
   //! key is locn of bspot, holds gid of crosslinker if binded, if free = -1
   std::map<int, int> bspotstatus_;
+
+  //! type of filament element belongs to
+  INPAR::BEAMINTERACTION::FilamentType filamenttype_;
 
   //! @}
 

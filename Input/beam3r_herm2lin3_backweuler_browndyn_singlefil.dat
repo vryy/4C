@@ -21,17 +21,20 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 FILESTEPS                       1000000
 VERBOSITY                       standard
-// -----------------------------------IO/RUNTIME VTK OUTPUT STRUCTURE
+// ----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 // OUTPUT_DATA_FORMAT              binary
 // INTERVAL_STEPS                  1
 // EVERY_ITERATION                 No
+// ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
+// OUTPUT_STRUCTURE                Yes
 // DISPLACEMENT                    Yes
-// SPECIAL_OUTPUT_BEAMS            Yes
-// -----------------------------IO/RUNTIME VTK OUTPUT STRUCTURE/BEAMS
+// ----------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
+// OUTPUT_BEAMS                    Yes
+// DISPLACEMENT                    Yes
 // USE_ABSOLUTE_POSITIONS          Yes
 // TRIAD_VISUALIZATIONPOINT        Yes
 // STRAINS_GAUSSPOINT              Yes
-// STRESSES_GAUSSPOINT             Yes
+// MATERIAL_FORCES_GAUSSPOINT             Yes
 ------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER          1
 INT_STRATEGY           Standard
@@ -77,9 +80,9 @@ NDPOINT 0
 NDLINE  1
 NDSURF  0
 NDVOL   0
---------------------------------------------------FILAMENT NUMBERS
+--------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 1
-E 1 - 0
+E 1 - ID 0 TYPE arbitrary
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE       1 DLINE 1
 NODE       2 DLINE 1

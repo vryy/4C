@@ -44,6 +44,13 @@ namespace ELEMENTS {
     void Setup();
 
 
+    /// whether to write displacements
+    bool OutputDisplacementState() const
+    {
+      CheckInitSetup();
+      return output_displacement_state_;
+    };
+
     /// whether to write triads at the Gauss points
     bool IsWriteTriadVisualizationPoints() const
     {
@@ -73,6 +80,20 @@ namespace ELEMENTS {
       return write_material_crosssection_stresses_gausspoints_;
     };
 
+    /// whether to write material cross-section stresses at the Gauss points
+    bool IsWriteSpatialStressesGaussPoints() const
+    {
+      CheckInitSetup();
+      return write_spatial_crosssection_stresses_gausspoints_;
+    };
+
+    /// whether to write material cross-section stresses at the Gauss points
+    bool IsWriteElementFilamentCondition() const
+    {
+      CheckInitSetup();
+      return write_filament_condition_;
+    };
+
   private:
     /// get the init indicator status
     const bool& IsInit() const { return isinit_; };
@@ -96,6 +117,9 @@ namespace ELEMENTS {
     /// @name variables controlling output
     /// @{
 
+    /// whether to write displacement output
+    bool output_displacement_state_;
+
     /// whether to use abolute positions or initial positions for the vtu geometry definition
     /// (i.e. for the visualization point coordinates)
     bool use_absolute_positions_visualizationpoint_coordinates_;
@@ -108,6 +132,12 @@ namespace ELEMENTS {
 
     /// whether to write material cross-section stresses at the Gauss points
     bool write_material_crosssection_stresses_gausspoints_;
+
+    /// whether to write spatial cross-section stresses at the Gauss points
+    bool write_spatial_crosssection_stresses_gausspoints_;
+
+    /// whether to write beam filament condition (id, type)
+    bool write_filament_condition_;
 
     //@}
   };

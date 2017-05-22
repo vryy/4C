@@ -120,6 +120,12 @@ public:
    *  \date 03/17 */
   void AppendElementOwningProcessor();
 
+  /** \brief append information about to which filament an element belonging
+   *
+   *  \author eichinger
+   *  \date 05/17 */
+  void AppendElementFilamentIdAndType();
+
   /** \brief append circular cross-section radius of elements to output data
    *
    *  \author grill
@@ -144,6 +150,15 @@ public:
    *  \author grill
    *  \date 03/17 */
   void AppendGaussPointMaterialCrossSectionStressResultants();
+
+  /** \brief append spatial cross-section stress resultant values at Gauss points to output data
+   *
+   *  \author grill
+   *  \date 03/17 */
+  void AppendGaussPointSpatialCrossSectionStressResultants();
+
+  void AppendPeriodicBoxCrossSectionStressResultants(
+      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector);
 
   /** \brief append current internal energy of the elements to output data
    *

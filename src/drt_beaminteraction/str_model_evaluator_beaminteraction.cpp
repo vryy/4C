@@ -133,11 +133,20 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   bindis_->SetWriter( Teuchos::rcp(new IO::DiscretizationWriter(bindis_) ) );
   bindis_->FillComplete( false, false, false );
 
+  // construct, init and setup binning strategy
+  binstrategy_ = Teuchos::rcp( new BINSTRATEGY::BinningStrategy() );
+  binstrategy_->Init( bindis_, ia_discret_, ia_state_ptr_->GetMutableDisNp(),
+      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox() );
+  binstrategy_->Setup();
+
   // construct, init and setup particle handler and binning strategy
-  particlehandler_ = Teuchos::rcp( new PARTICLE::ParticleHandler( myrank_ ) );
-  particlehandler_->BinStrategy()->Init( bindis_, ia_discret_, ia_state_ptr_->GetMutableDisNp() );
-  particlehandler_->BinStrategy()->Setup();
-  binstrategy_ = particlehandler_->BinStrategy();
+  // todo: move this and its single call during partition to crosslinker submodel
+  if ( HaveSubModelType( INPAR::BEAMINTERACTION::submodel_crosslinking ) )
+  {
+    particlehandler_ = Teuchos::rcp( new PARTICLE::ParticleHandler() );
+    particlehandler_->Init( GState().GetMyRank(), binstrategy_ );
+    particlehandler_->Setup();
+  }
 
   // some screen output for binning
   PrintBinningInfoToScreen();
@@ -222,7 +231,7 @@ void STR::MODELEVALUATOR::BeamInteraction::InitAndSetupSubModeEvaluators()
   for ( sme_iter = (*me_vec_ptr_).begin(); sme_iter != (*me_vec_ptr_).end(); ++sme_iter )
   {
     (*sme_iter)->Init( ia_discret_, bindis_, GStatePtr(), GInOutputPtr(), ia_state_ptr_, particlehandler_,
-        TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
+        binstrategy_, TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(),
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>( eletypeextractor_, true ) );
     (*sme_iter)->Setup();
   }
@@ -285,7 +294,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   std::vector< Teuchos::RCP< DRT::Discretization > > discret_vec( 1, ia_discret_);
 
   // displacement vector according to periodic boundary conditions
-  std::vector< Teuchos::RCP<Epetra_Vector> > disnp( 1, Teuchos::rcp(new Epetra_Vector( *ia_discret_->DofColMap() ) ));
+  std::vector< Teuchos::RCP<Epetra_Vector> > disnp( 1, Teuchos::rcp(new Epetra_Vector( *ia_discret_->DofColMap() ) ) );
   LINALG::Export( *ia_state_ptr_->GetMutableDisNp(), *disnp[0] );
 
   // nodes, that are owned by a proc, are distributed to the bins of this proc
@@ -405,7 +414,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting(
       extbintoelemap, auxmap );
 
   // 2) extend ghosting of discretization
-  binstrategy_->ExtendDiscretizationGhosting( ia_discret_, ia_elecolmap , true , false, true );
+  BINSTRATEGY::UTILS::ExtendDiscretizationGhosting( ia_discret_, ia_elecolmap , true , false, true );
 }
 
 /*----------------------------------------------------------------------------*
@@ -413,6 +422,9 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting(
 void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
 {
   CheckInitSetup();
+
+  // todo: somewhat illegal as of const correctness
+  TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->ApplyDirichlet( GState().GetTimeN() );
 
   // get current displacement state and export to interaction discretization dofmap
   UpdateDofMapOfVector( ia_discret_, ia_state_ptr_->GetMutableDisNp(), GState().GetMutableDisNp() );
@@ -705,8 +717,6 @@ void STR::MODELEVALUATOR::BeamInteraction::OutputStepState() const
   // visualize bins according to specification in input file ( MESHFREE -> WRITEBINS "" )
   binstrategy_->WriteBinOutput( GState().GetStepN(), GState().GetTimeN() );
 
-  // write periodic bounding box output
-  TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->Output( stepn, timen );
 }
 
 /*----------------------------------------------------------------------------*
@@ -718,6 +728,9 @@ void STR::MODELEVALUATOR::BeamInteraction::RuntimeOutputStepState() const
   Vector::iterator sme_iter;
   for ( sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter )
     (*sme_iter)->RuntimeOutputStepState();
+
+  TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->RuntimeOutputStepState(
+      GState().GetTimeN(), GState().GetStepN() );
 }
 
 /*----------------------------------------------------------------------------*
@@ -751,7 +764,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BeamInteraction::
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteraction::PostOutput()
 {
-  TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->ApplyDirichlet( GState().GetTimeN() );
+//  TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox()->ApplyDirichlet( GState().GetTimeN() );
 }
 
 /*----------------------------------------------------------------------------*
@@ -775,8 +788,10 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateCouplingAdapterAndMatrixTransfo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::CreateNewBins(bool newxaabb,
-                                                         bool newcutoff)
+void STR::MODELEVALUATOR::BeamInteraction::CreateNewBins(
+    Teuchos::RCP< Epetra_Vector > disnp_ptr,
+    bool newxaabb,
+    bool newcutoff)
 {
   CheckInitSetup();
 
@@ -787,7 +802,7 @@ void STR::MODELEVALUATOR::BeamInteraction::CreateNewBins(bool newxaabb,
   // store structure discretization in vector
   std::vector< Teuchos::RCP< DRT::Discretization > > discret_vec( 1, ia_discret_);
   // displacement vector according to periodic boundary conditions
-  std::vector< Teuchos::RCP< Epetra_Vector > > disnp( 1, ia_state_ptr_->GetMutableDisNp());
+  std::vector< Teuchos::RCP< Epetra_Vector > > disnp( 1, disnp_ptr);
 
   // create XAABB and optionally set cutoff radius
   if(newxaabb)

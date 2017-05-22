@@ -34,7 +34,7 @@ VERBOSITY                       standard
 //USE_ABSOLUTE_POSITIONS          Yes
 //TRIAD_VISUALIZATIONPOINT        Yes
 //STRAINS_GAUSSPOINT              Yes
-//STRESSES_GAUSSPOINT             Yes
+//MATERIAL_FORCES_GAUSSPOINT             Yes
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
