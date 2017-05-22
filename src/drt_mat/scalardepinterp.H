@@ -8,7 +8,7 @@ come from the idea, that there is a scalar quantity (e.g. foam cells) which indu
 fraction thereby consists of another material (e.g. softer or stiffer material parameters or totally different
 strain energy function).
 
-\level 3
+\level 2
 
 
 \maintainer Moritz Thon
@@ -227,12 +227,13 @@ private:
     /// indicates if material is initialized
     bool isinit_;
 
-    /// elastic material for zero concentration
+    /// elastic material for zero lambda
     Teuchos::RCP<MAT::So3Material> lambda_zero_mat_;
 
-    /// elastic material for infinity concentration
+    /// elastic material for unit lambda
     Teuchos::RCP<MAT::So3Material> lambda_unit_mat_;
 
+    /// interpolation parameter (0-->IDMATZEROSC,1-->IDMATUNITSC)
     std::vector<double> lambda_;
 
   };

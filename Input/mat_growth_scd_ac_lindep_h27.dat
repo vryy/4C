@@ -175,7 +175,7 @@ ML_DAMPMED                      0.69                            // damping med g
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 5 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 1.0e10
-MAT 2 MAT_ScDepInterp IDMATZEROSC 3 IDMATUNITSC 4
+MAT 2 MAT_ScDepInterp IDMATZEROSC 4 IDMATUNITSC 3
 MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0
 MAT 31 ELAST_IsoYeoh C1 10.0e2 C2 0 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
 MAT 32 ELAST_VolOgden KAPPA 10.0e0 BETA -2.0 //KAPPA 2.2116e6 BETA -2.0

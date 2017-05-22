@@ -8,7 +8,7 @@ come from the idea, that there is a scalar quantity (e.g. foam cells) which indu
 fraction thereby consists of another material (e.g. softer or stiffer material parameters or totally different
 strain energy function).
 
-\level 3
+\level 2
 
 The input line should read
 MAT 1 MAT_ScalarDepInterp IDMATZEROSC 2 IDMATUNITSC 3
@@ -102,7 +102,7 @@ void MAT::ScalarDepInterp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
     dserror("The densities of the materials specified in IDMATZEROSC and IDMATUNITSC must be equal!");
 
 
-  double lambda=1.0;
+  double lambda=0.0;
   //Read lambda from input file, if available
   if(linedef->HaveNamed("lambda"))
     ReadLambda(linedef,"lambda",lambda);
@@ -142,16 +142,16 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   lambda_unit_mat_->Evaluate(defgrd, glstrain, params, &stress_lambda_unit, &cmat_infty_conc,eleGID);
 
   double lambda;
-  //get the ratio of interpolation
-  // NOTE: if no ratio is available, we use the conc_zero material!
-  if (params.isParameter("conc_zero_ratio"))
+  // get the ratio of interpolation
+  // NOTE: if no ratio is available, we use the IDMATZEROSC material!
+  if (params.isParameter("lambda"))
   {
-    lambda = params.get< double >("conc_zero_ratio");
+    lambda = params.get< double >("lambda");
 
     // NOTE: this would be nice, but since negative concentrations can occur,
     // we have to catch 'unnatural' cases different...
-    //  if ( conc_zero_ratio < -1.0e-14 or conc_zero_ratio > (1.0+1.0e-14) )
-    //      dserror("The conc_zero_ratio must be in [0,1]!");
+    //  if ( lambda < -1.0e-14 or lambda > (1.0+1.0e-14) )
+    //      dserror("The lambda must be in [0,1]!");
 
     // e.g. like that:
     if ( lambda < -1.0e-14 )
@@ -167,22 +167,22 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
+  // \mym Psi = (1-\lambda(C)) * \Psi_0(\mym C) + \lambda(C) * \Psi_1(\mym C) +  = ...
   // \mym S = 2 \frac{\partial}{\partial \mym C} \left( \Psi(\mym C) \right) = ...
-  // \mym S = 2 \frac{\partial}{\partial \mym C} \left( \gamma(J) * \Psi_1(\mym C) + (1-\gamma(J)) * \Psi_2(\mym C) \right) = ...
+  // \mym S = 2 \frac{\partial}{\partial \mym C} \left( (1-\lambda(C)) * \Psi_0(\mym C) + \lambda(C) * \Psi_1(\mym C) \right) = ...
   ///////////////////////////////////////////////////////////////////////////////////////////////
 
-  //TODO:make a substitution: \tilde{\lambda}=1-\lambda
-  //do the linear interpolation between stresses:
-  // ... = \gamma * 2 * \frac{\partial}{\partial \mym C} \Psi_1 + (1-\gamma) * 2* \frac{\partial}{\partial \mym C} \Psi_2)
-  stress->Update(lambda,stress_lambda_zero,1.0-lambda,stress_lambda_unit,0.0);
+  // do the linear interpolation between stresses:
+  // ... = (1-\lambda(C)) * 2* \frac{\partial}{\partial \mym C} \Psi_0) + \lambda(C) * 2 * \frac{\partial}{\partial \mym C} \Psi_1
+  stress->Update(1.0-lambda,stress_lambda_zero,lambda,stress_lambda_unit,0.0);
 
-  cmat->Update(lambda,cmat_zero_conc,1.0-lambda,cmat_infty_conc,0.0);
+  cmat->Update(1.0-lambda,cmat_zero_conc,lambda,cmat_infty_conc,0.0);
 
-  if (params.isParameter("dconc_zero_ratio_dC"))
+  if (params.isParameter("dlambda_dC"))
   {
     //get derivative of interpolation ratio w.r.t. glstrain
     Teuchos::RCP<LINALG::Matrix<6,1> > dlambda_dC =
-        params.get< Teuchos::RCP<LINALG::Matrix<6,1> > >( "dconc_zero_ratio_dC");
+        params.get< Teuchos::RCP<LINALG::Matrix<6,1> > >( "dlambda_dC");
 
     //evaluate strain energy functions
     double psi_lambda_zero = 0.0;
@@ -191,9 +191,9 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     double psi_lambda_unit = 0.0;
     lambda_unit_mat_->StrainEnergy(*glstrain,psi_lambda_unit,eleGID);
 
-    //...and add the stresses due to possible dependency of the ratio w.r.t. to C
-    // ... + * 2 * \Psi_1 * \frac{\partial}{\partial \mym C} \gamma - 2 * \Psi_2 * \frac{\partial}{\partial \mym C} \gamma )
-    stress->Update(2.0*psi_lambda_zero,*dlambda_dC,-2.0*psi_lambda_unit,*dlambda_dC,1.0);
+    // and add the stresses due to possible dependency of the ratio w.r.t. to C
+    // ... - 2 * \Psi_0 * \frac{\partial}{\partial \mym C} \lambda(C) ) + * 2 * \Psi_1 * \frac{\partial}{\partial \mym C} \lambda(C)
+    stress->Update(-2.0*psi_lambda_zero,*dlambda_dC,+2.0*psi_lambda_unit,*dlambda_dC,1.0);
 
     //Note: for the linearization we do neglect the derivatives of the ratio w.r.t. glstrain
   }
@@ -394,7 +394,6 @@ void MAT::ScalarDepInterp::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
   }
   lambda=lambda/(lambda_.size());
 
-  //TODO:make a substitution: \tilde{\lambda}=1-\lambda
-  psi+=lambda*psi_lambda_zero+(1-lambda)*psi_lambda_unit;
+  psi+=(1-lambda)*psi_lambda_zero+lambda*psi_lambda_unit;
   return;
 }

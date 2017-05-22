@@ -1177,22 +1177,22 @@ void MAT::GrowthLawAC::Evaluate(double* theta,
   (*dthetadC)(5)=2.*dThetadC(0,2);
 
   // set ratio for potential linear interpolation between two elastic materials
-  double conc_zero_ratio = 1.0/(1.0+deltagrowth);
+  double lambda = 1.0/(1.0+deltagrowth);
   // linearization of ratio for potential linear interpolation of between two elastic materials
   Cinv.Scale(-0.5*deltagrowth*pow(1.0+deltagrowth,-2.0));
 
   //transform into a vector in Voigt notation
-  Teuchos::RCP<LINALG::Matrix<6,1> > dconc_zero_ratio_dC = Teuchos::rcp( new LINALG::Matrix<6,1>(true) );
-  (*dconc_zero_ratio_dC)(0)=Cinv(0,0);
-  (*dconc_zero_ratio_dC)(1)=Cinv(1,1);
-  (*dconc_zero_ratio_dC)(2)=Cinv(2,2);
-  (*dconc_zero_ratio_dC)(3)=2.*Cinv(0,1);
-  (*dconc_zero_ratio_dC)(4)=2.*Cinv(1,2);
-  (*dconc_zero_ratio_dC)(5)=2.*Cinv(0,2);
+  Teuchos::RCP<LINALG::Matrix<6,1> > dlambda_dC = Teuchos::rcp( new LINALG::Matrix<6,1>(true) );
+  (*dlambda_dC)(0)=Cinv(0,0);
+  (*dlambda_dC)(1)=Cinv(1,1);
+  (*dlambda_dC)(2)=Cinv(2,2);
+  (*dlambda_dC)(3)=2.*Cinv(0,1);
+  (*dlambda_dC)(4)=2.*Cinv(1,2);
+  (*dlambda_dC)(5)=2.*Cinv(0,2);
 
   // save values in parameter list
-  params.set< double >("conc_zero_ratio",conc_zero_ratio);
-  params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dconc_zero_ratio_dC",dconc_zero_ratio_dC);
+  params.set< double >("lambda",lambda);
+  params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dlambda_dC",dlambda_dC);
 }
 
 
@@ -1318,22 +1318,22 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
   (*dthetadC)(5)=2.*dThetadC(0,2);
 
   // set ratio for potential linear interpolation between two elastic materials
-  const double conc_zero_ratio = 1.0/ *theta;
+  const double lambda = 1.0/ *theta;
   // linearization of ratio for potential linear interpolation of between two elastic materials
   Cinv.Scale(-0.5*deltagrowth*pow(1.0+deltagrowth,-2.0));
 
   //transform into a vector in Voigt notation
-  Teuchos::RCP<LINALG::Matrix<6,1> > dconc_zero_ratio_dC = Teuchos::rcp( new LINALG::Matrix<6,1>(true) );
-  (*dconc_zero_ratio_dC)(0)=Cinv(0,0);
-  (*dconc_zero_ratio_dC)(1)=Cinv(1,1);
-  (*dconc_zero_ratio_dC)(2)=Cinv(2,2);
-  (*dconc_zero_ratio_dC)(3)=2.*Cinv(0,1);
-  (*dconc_zero_ratio_dC)(4)=2.*Cinv(1,2);
-  (*dconc_zero_ratio_dC)(5)=2.*Cinv(0,2);
+  Teuchos::RCP<LINALG::Matrix<6,1> > dlambda_dC = Teuchos::rcp( new LINALG::Matrix<6,1>(true) );
+  (*dlambda_dC)(0)=Cinv(0,0);
+  (*dlambda_dC)(1)=Cinv(1,1);
+  (*dlambda_dC)(2)=Cinv(2,2);
+  (*dlambda_dC)(3)=2.*Cinv(0,1);
+  (*dlambda_dC)(4)=2.*Cinv(1,2);
+  (*dlambda_dC)(5)=2.*Cinv(0,2);
 
   // save values in parameter list
-  params.set< double >("conc_zero_ratio",conc_zero_ratio);
-  params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dconc_zero_ratio_dC",dconc_zero_ratio_dC);
+  params.set< double >("lambda",lambda);
+  params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dlambda_dC",dlambda_dC);
 
 }
 
@@ -1452,13 +1452,13 @@ void MAT::GrowthLawACRadialRefConc::Evaluate(double* theta,
   dthetadC->PutScalar(0.0);
 
   // set ratio for potential linear interpolation between two elastic materials
-  const double conc_zero_ratio = 1.0/ *theta;
+  const double lambda = 1.0/ *theta;
 
   // save values in parameter list
-  params.set< double >("conc_zero_ratio",conc_zero_ratio);
+  params.set< double >("lambda",lambda);
 
   //here we don't need this:
-  //  params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dconc_zero_ratio_dC",dconc_zero_ratio_dC);
+  //  params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dlambda_dC",dlambda_dC);
 }
 
 
