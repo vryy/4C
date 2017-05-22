@@ -1196,6 +1196,9 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
   //volume of a tetrahedra
   double detJ = V_;
 
+
+  // size is 3x3
+  LINALG::Matrix<3,3> defgrd(true);
   /* =========================================================================*/
   /* ============================================== Loop over Gauss Points ===*/
   /* =========================================================================*/
@@ -1220,9 +1223,6 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
     **             [  ------   ------   ------  ]
     **             [    dZ       dZ       dZ    ]
     */
-
-    // size is 3x3
-    LINALG::Matrix<3,3> defgrd(true);
 
     if (pstype_==INPAR::STR::prestress_mulf)
     {
@@ -1675,63 +1675,6 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
         LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_disp(true);
         LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_vel(true);
         LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass(true);
-
-        // size is 3x3
-        LINALG::Matrix<3,3> defgrd(true);
-
-        if (pstype_==INPAR::STR::prestress_mulf)
-        {
-          // get derivatives wrt to last spatial configuration
-          LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_xyz;
-          prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
-
-          // build multiplicative incremental defgrd
-          if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
-          {
-            //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
-            defgrd.MultiplyTN(xdisp,N_xyz);
-          }
-          defgrd(0,0) += 1.0;
-          defgrd(1,1) += 1.0;
-          defgrd(2,2) += 1.0;
-
-          // get stored old incremental F
-          LINALG::Matrix<3,3> Fhist;
-          prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
-
-          // build total defgrd = delta F * F_old
-          LINALG::Matrix<3,3> Fnew;
-          Fnew.Multiply(defgrd,Fhist);
-          defgrd = Fnew;
-        }
-        else
-        {
-          // in kinematically linear analysis the deformation gradient is equal to identity
-          if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
-          {
-            defgrd.MultiplyTN(xdisp,nxyz);
-          }
-          defgrd(0,0)+=1.0;
-          defgrd(1,1)+=1.0;
-          defgrd(2,2)+=1.0;
-        }
-
-        if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
-        {
-          // make the multiplicative update so that defgrd refers to
-          // the reference configuration that resulted from the inverse
-          // design analysis
-          LINALG::Matrix<3,3> Fhist;
-          invdesign_->StoragetoMatrix(gp,Fhist,invdesign_->FHistory());
-          LINALG::Matrix<3,3> tmp3x3;
-          tmp3x3.Multiply(defgrd,Fhist);
-          defgrd = tmp3x3;
-
-          // make detJ and nxyzmat refer to the ref. configuration that resulted from
-          // the inverse design analysis
-          detJ = invdesign_->DetJHistory()[gp];
-          invdesign_->StoragetoMatrix(gp,nxyz,invdesign_->JHistory());
-        }
 
         /*----------------------------------------------------------------------*
            the B-operator used is equivalent to the one used in hex8, this needs
