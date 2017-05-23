@@ -587,8 +587,8 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
 
       double qn_weighted_average=0.;
       GEN::pairedvector<int,double> deriv_qn_weighted_average_d(
-          sele.NumNode()*dim
-          +mele.NumNode()*dim
+          sele.ParentElement()->NumNode()*dim
+          +mele.ParentElement()->NumNode()*dim
           +dnmap_unit[0].size()
           +dsxi[0].size()
           +dmxi[0].size());
@@ -621,8 +621,8 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
       {
         double test_val=0.;
         GEN::pairedvector<int,double> deriv_test_val_d(
-            sele.NumNode()*dim
-            +mele.NumNode()*dim
+            sele.ParentElement()->NumNode()*dim
+            +mele.ParentElement()->NumNode()*dim
             +dnmap_unit[0].size()
             +dsxi[0].size()
             +dmxi[0].size());
@@ -679,8 +679,8 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
       {
         double test_val=0.;
         GEN::pairedvector<int,double> deriv_test_val_d(
-            sele.NumNode()*dim
-            +mele.NumNode()*dim
+            sele.ParentElement()->NumNode()*dim
+            +mele.ParentElement()->NumNode()*dim
             +dnmap_unit[0].size()
             +dsxi[0].size()
             +dmxi[0].size());
