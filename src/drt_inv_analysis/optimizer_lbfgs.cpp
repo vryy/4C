@@ -497,7 +497,13 @@ void INVANA::OptimizerLBFGS::WriteOutput()
   {
     double * const to = pointers[i];
     for(int j = 0; j < stdev->MyLength(); j++)
-      to[j] = sqrt(to[j]);
+    {
+      // saftey check
+      if (to[j]>0)
+        to[j] = sqrt(to[j]);
+      else
+        std::cout<<"WARNING: Your standard deviation is negative. No square calculated."<<std::endl;
+    }
   }
 
   Writer()->WriteNamedVectors("stdev_vb", stdev);

@@ -105,6 +105,18 @@ namespace ELASTIC
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coup1pow; }
 
+    virtual void CopyStatInvAnaMatParams(
+        std::vector< Teuchos::RCP<Epetra_Vector> > input);
+
+    /// Add parameters of elasthyper-summand for stat inverse analysis
+    virtual void SetStatInvAnaSummandMatParams(
+    );
+
+    /// Add parameters of elasthyper-summand for stat inverse analysis
+    virtual void AddElastOptParams(
+        std::map<std::string, int>* pnames
+    );
+
     //@}
 
     // add strain energy

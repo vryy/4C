@@ -1,0 +1,168 @@
+// Maintainer: Anna Birzle
+//             birzle@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15255
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    8
+//NODES       27
+DIM           3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Inverse_Analysis
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   Cauchy                        // Cauchy 2PK
+STRUCT_STRAIN                   ea                            // ea gl
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+WRITE_TO_SCREEN                 yes
+STDOUTEVRY                      1
+-------------------------------------------------------STAT INVERSE ANALYSIS
+STAT_INV_ANALYSIS               LBFGS
+MONITORFILE                     invana_cube2by2.mon
+ITERTOPC                        100
+PARAMLIST                       1 CoupNeoHooke_C CoupNeoHooke_BETA Coup1Pow_C
+MAXITER                         3
+STEPSIZE                        1.0
+CONVTOL                         1.0e-16
+PARAMETRIZATION                 uniform
+REGULARIZATION                  tikhonov
+REG_WEIGHT                      0.0
+OBJECTIVEFUNCT                  displacements
+SIZESTORAGE                     100
+METAPARAMS                      none
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+DYNAMICTYP                      Statics
+RESULTSEVRY                     1
+RESTARTEVRY                     1
+NLNSOL                          fullnewton                    // fullnewton lsnewton modnewton matfreenewton nlncg ptc
+TIMESTEP                        0.02
+NUMSTEP                         1
+MAXTIME                         0.02                           // prestress bis 0.3
+DAMPING                         no
+M_DAMP                          0.001
+K_DAMP                          0.001
+PREDICT                         ConstDisVelAcc                // ConstDis ConstDisVelAcc
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              And
+TOLDISP                         1.0E-09
+TOLRES                          1.0E-09
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.01
+MAXITER                         150
+UZAWAPARAM                      1.0
+LOADLIN                         yes
+INT_STRATEGY                    Standard
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = No
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 0.002
+MAT 2 ELAST_CoupNeoHooke YOUNG 0.5 NUE 0.3
+MAT 3 ELAST_Coup1Pow C 0.1 D 2
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.02 VALUES 0 3.200072e-02
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  0
+NDSURF  2
+NDVOL   0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF  1
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 orthopressure Mid
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE 1
+NODE    2 DSURFACE 1
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+NODE    9 DSURFACE 1
+NODE    10 DSURFACE 1
+NODE    13 DSURFACE 1
+NODE    14 DSURFACE 1
+NODE    17 DSURFACE 1
+NODE    19 DSURFACE 2
+NODE    20 DSURFACE 2
+NODE    21 DSURFACE 2
+NODE    22 DSURFACE 2
+NODE    23 DSURFACE 2
+NODE    24 DSURFACE 2
+NODE    25 DSURFACE 2
+NODE    26 DSURFACE 2
+NODE    27 DSURFACE 2
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1    COORD  -5.0000000000000000e-01  -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 2    COORD  -5.0000000000000000e-01  -5.0000000000000000e-01  0.0000000000000000e+00
+NODE 3    COORD  -5.0000000000000000e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE 4    COORD  -5.0000000000000000e-01  0.0000000000000000e+00  5.0000000000000000e-01
+NODE 5    COORD  0.0000000000000000e+00  -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 6    COORD  0.0000000000000000e+00  -5.0000000000000000e-01  0.0000000000000000e+00
+NODE 7    COORD  0.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE 8    COORD  0.0000000000000000e+00  0.0000000000000000e+00  5.0000000000000000e-01
+NODE 9    COORD  -5.0000000000000000e-01  -5.0000000000000000e-01  -5.0000000000000000e-01
+NODE 10    COORD  -5.0000000000000000e-01  0.0000000000000000e+00  -5.0000000000000000e-01
+NODE 11    COORD  0.0000000000000000e+00  -5.0000000000000000e-01  -5.0000000000000000e-01
+NODE 12    COORD  0.0000000000000000e+00  0.0000000000000000e+00  -5.0000000000000000e-01
+NODE 13    COORD  -5.0000000000000000e-01  5.0000000000000000e-01  0.0000000000000000e+00
+NODE 14    COORD  -5.0000000000000000e-01  5.0000000000000000e-01  5.0000000000000000e-01
+NODE 15    COORD  0.0000000000000000e+00  5.0000000000000000e-01  0.0000000000000000e+00
+NODE 16    COORD  0.0000000000000000e+00  5.0000000000000000e-01  5.0000000000000000e-01
+NODE 17    COORD  -5.0000000000000000e-01  5.0000000000000000e-01  -5.0000000000000000e-01
+NODE 18    COORD  0.0000000000000000e+00  5.0000000000000000e-01  -5.0000000000000000e-01
+NODE 19    COORD  5.0000000000000000e-01  -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 20    COORD  5.0000000000000000e-01  -5.0000000000000000e-01  0.0000000000000000e+00
+NODE 21    COORD  5.0000000000000000e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE 22    COORD  5.0000000000000000e-01  0.0000000000000000e+00  5.0000000000000000e-01
+NODE 23    COORD  5.0000000000000000e-01  -5.0000000000000000e-01  -5.0000000000000000e-01
+NODE 24    COORD  5.0000000000000000e-01  0.0000000000000000e+00  -5.0000000000000000e-01
+NODE 25    COORD  5.0000000000000000e-01  5.0000000000000000e-01  0.0000000000000000e+00
+NODE 26    COORD  5.0000000000000000e-01  5.0000000000000000e-01  5.0000000000000000e-01
+NODE 27    COORD  5.0000000000000000e-01  5.0000000000000000e-01  -5.0000000000000000e-01
+------------------------------------------------STRUCTURE ELEMENTS
+   1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 KINEM nonlinear EAS none
+   2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 KINEM nonlinear EAS none
+   3 SOLIDH8 HEX8  4 3 13 14 8 7 15 16    MAT 1 KINEM nonlinear EAS none
+   4 SOLIDH8 HEX8  3 10 17 13 7 12 18 15    MAT 1 KINEM nonlinear EAS none
+   5 SOLIDH8 HEX8  5 6 7 8 19 20 21 22    MAT 1 KINEM nonlinear EAS none
+   6 SOLIDH8 HEX8  6 11 12 7 20 23 24 21    MAT 1 KINEM nonlinear EAS none
+   7 SOLIDH8 HEX8  8 7 15 16 22 21 25 26    MAT 1 KINEM nonlinear EAS none
+   8 SOLIDH8 HEX8  7 12 18 15 21 24 27 25    MAT 1 KINEM nonlinear EAS none
+------------------------------------------------RESULT DESCRIPTION
+INVANA SPECIAL QUANTITY gradient VALUE 5.10032790645801887e-03 TOLERANCE 1e-12
+INVANA SPECIAL QUANTITY error VALUE 6.60322836855451226e-04 TOLERANCE 1e-12
+---------------------------------------------------------------END
+// END

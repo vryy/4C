@@ -100,7 +100,8 @@ namespace MAT
     }
 
     /// Set elementwise material parameters
-    virtual void Init(double val, std::string name){dserror("not implemented in this material");};
+    void Init(double val, std::string name){dserror("not implemented in this material");};
+
 
   };
 

@@ -28,6 +28,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_mat/elasthyper.H" //to fit elasthyper-materials
 #include "../drt_mat/growth_law.H"
 
 /*----------------------------------------------------------------------*/
@@ -76,12 +77,13 @@ void INVANA::MatParManager::InitParams()
   for (it=paramap_.begin(); it!=paramap_.end(); it++)
   {
     Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(it->first);
+
     switch(actmat->Parameter()->Type())
     {
     case INPAR::MAT::m_aaaneohooke:
     case INPAR::MAT::m_scatra:
     case INPAR::MAT::m_growth_const:
-//    case INPAR::MAT::m_growth_linsimple:
+      // case INPAR::MAT::m_growth_linsimple:
     case INPAR::MAT::m_acousticmat:
     {
       std::vector<int>::const_iterator jt;
@@ -92,8 +94,52 @@ void INVANA::MatParManager::InitParams()
       }
       break;
     }
+    // elasthyper materials
+    case INPAR::MAT::m_elasthyper:
+    {
+      MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
+      if (!params) dserror("Cannot cast material parameters");
+      const int nummat               = params->nummat_;
+      const std::vector<int>* matids = params->matids_;
+      for (int i=0; i<nummat; ++i)
+      {
+        const int id = (*matids)[i];
+        const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+
+        switch (actelastmat->Type())
+        {
+        case INPAR::MAT::mes_coupneohooke:
+        {
+          std::vector<int>::const_iterator jt;
+          for (jt = it->second.begin(); jt != it->second.end(); jt++)
+          {
+            double val = metaparams_.Material2Meta( actelastmat->Parameter()->GetParameter(*jt,0) );
+            InitParameters(parapos_.at(it->first).at(jt-it->second.begin()),val);
+          }
+          break;
+        }
+        case INPAR::MAT::mes_coup1pow:
+        {
+          std::vector<int>::const_iterator jt;
+          for (jt = it->second.begin(); jt != it->second.end(); jt++)
+          {
+            double val = metaparams_.Material2Meta( actelastmat->Parameter()->GetParameter(*jt,0) );
+            InitParameters(parapos_.at(it->first).at(jt-it->second.begin()),val);
+          }
+          break;
+          // add additional summands here
+        }
+        default:
+          dserror("Elasthyper-Material not provided by the Material Manager for Optimization");
+        }
+      }
+      break;
+    } // end elasthyper
     default:
-      dserror("Material not provided by the Material Manager for Optimization");
+    {
+      std::cout<<"This material "<<*actmat<<std::endl;
+      dserror(".. is not provided by the Material Manager for Optimization");
+    }
     break;
     }
   }
@@ -188,14 +234,39 @@ void INVANA::MatParManager::PushParamsToElements()
   {
     Teuchos::RCP<MAT::PAR::Material> actmat = mats.at(curr->first);
 
-    // loop the parameters to be optimized
-    std::vector<int> actparams = paramap_.at(curr->first);
-    std::vector<int>::const_iterator it;
-    for ( it=actparams.begin(); it!=actparams.end(); it++)
+    // in case of elasthyper-materials --> actmat is summand
+    if (actmat->Parameter()->Type() == INPAR::MAT::m_elasthyper)
     {
-      actmat->Parameter()->SetParameter(*it,Teuchos::rcp((*tmp)( parapos_.at(curr->first).at(it-actparams.begin()) ),false));
+      MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
+      if (!params) dserror("Cannot cast material parameters");
+      const int nummat               = params->nummat_;
+      const std::vector<int>* matids = params->matids_;
+      for (int i=0; i<nummat; ++i)
+      {
+        const int id = (*matids)[i];
+        const Teuchos::RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+
+        // loop the parameters to be optimized
+        std::vector<int> actparams = paramap_.at(curr->first);
+        std::vector<int>::const_iterator it;
+        for ( it=actparams.begin(); it!=actparams.end(); it++)
+        {
+          actelastmat->Parameter()->SetParameter(*it,Teuchos::rcp((*tmp)( parapos_.at(curr->first).at(it-actparams.begin()) ),false));
+        }
+      }
     }
-  }//loop optimized materials
+    // for all other materials
+    else
+    {
+      // loop the parameters to be optimized
+      std::vector<int> actparams = paramap_.at(curr->first);
+      std::vector<int>::const_iterator it;
+      for ( it=actparams.begin(); it!=actparams.end(); it++)
+      {
+        actmat->Parameter()->SetParameter(*it,Teuchos::rcp((*tmp)( parapos_.at(curr->first).at(it-actparams.begin()) ),false));
+      }
+    }//loop optimized materials
+  }
 }
 
 /*----------------------------------------------------------------------*/

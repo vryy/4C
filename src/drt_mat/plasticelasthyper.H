@@ -62,6 +62,9 @@ namespace MAT
          const int id  ///< ID to look for in collection of summands
          ) const;
 
+       // elasthyper needs this for stat inverse analysis
+       virtual void OptParams(std::map<std::string, int>* pnames){dserror("This material is not implemented in OptParams.");};
+
       /// initial yield stress
       const double inityield_;
       /// linear isotropic hardening parameter

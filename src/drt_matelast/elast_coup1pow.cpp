@@ -46,6 +46,34 @@ MAT::ELASTIC::Coup1Pow::Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params)
 }
 
 
+/*----------------------------------------------------------------------*
+ * copy matparmas to summands
+ *----------------------------------------------------------------------*/
+void MAT::ELASTIC::Coup1Pow::CopyStatInvAnaMatParams(
+    std::vector< Teuchos::RCP<Epetra_Vector> > input)
+{
+  params_->ReturnMatparams()=input;
+}
+
+/*----------------------------------------------------------------------*
+ * Add parameters of elasthyper-summand for stat inverse analysis to matparams_
+ *----------------------------------------------------------------------*/
+void MAT::ELASTIC::Coup1Pow::SetStatInvAnaSummandMatParams()
+{
+  params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coup1pow_c)->PutScalar(params_->c_);
+  params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coup1pow_d)->PutScalar(params_->d_);
+}
+
+/*----------------------------------------------------------------------*
+ * Add parameters of elasthyper-summand for stat inverse analysis
+ *----------------------------------------------------------------------*/
+void MAT::ELASTIC::Coup1Pow::AddElastOptParams(
+    std::map<std::string,int>* pnames)
+{
+  pnames->insert(std::pair<std::string,int>("Coup1Pow_C", MAT::ELASTIC::PAR::coup1pow_c));
+  pnames->insert(std::pair<std::string,int>("Coup1Pow_D", MAT::ELASTIC::PAR::coup1pow_d));
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(
@@ -75,8 +103,23 @@ void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(
     const LINALG::Matrix<3,1>& prinv,
     const int eleGID )
 {
-  const double c = params_ -> c_;
-  const int    d = params_ -> d_;
+
+  double c = 0.;
+  int d = 0;
+
+  // in case of stat inverse analysis use getparameter
+  if (params_->ReturnMatparams().size()!=0)
+  {
+    c = params_->GetParameter(MAT::ELASTIC::PAR::coup1pow_c,eleGID);
+    d = params_->GetParameter(MAT::ELASTIC::PAR::coup1pow_d,eleGID);
+  }
+  // in other cases (e.g. gen-inv-analysis) matparams_ does not exist
+  else
+  {
+    c = params_ -> c_;
+    d = params_ -> d_;
+  }
+
 
   // If d<2 the material model is not stress free in the reference configuration
   if (d<2)

@@ -96,15 +96,16 @@ namespace MAT
       //! \brief return element specific or global material parameter using enum parametername which is defined in respective MAT::PAR classes
       double GetParameter(int parametername ,const int EleId);
 
-    protected:
+      /// return matparams_
+      virtual std::vector< Teuchos::RCP<Epetra_Vector> >& ReturnMatparams() { return matparams_;}
 
+    protected:
       /*! \brief
        * data structure to store all material parameters in.
        * By default all elements with the same mat share the same material properties, hence the Epetra_Vector has length 1
        * However for elementwise material properties the Epetra_Vector has EleColMap layout.
        */
       std::vector< Teuchos::RCP<Epetra_Vector> > matparams_;
-
 
     private:
 

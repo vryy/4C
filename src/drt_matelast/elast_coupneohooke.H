@@ -132,6 +132,18 @@ namespace ELASTIC
     /// material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupneohooke; }
 
+    virtual void CopyStatInvAnaMatParams(
+        std::vector< Teuchos::RCP<Epetra_Vector> > input);
+
+    /// Add parameters of elasthyper-summand for stat inverse analysis
+    virtual void SetStatInvAnaSummandMatParams(
+    );
+
+    /// Add parameters of elasthyper-summand for stat inverse analysis
+    virtual void AddElastOptParams(
+        std::map<std::string, int>* pnames
+    );
+
     /// add shear modulus equivalent
     virtual void AddShearMod(
       bool& haveshearmod,  ///< non-zero shear modulus was added
@@ -142,7 +154,6 @@ namespace ELASTIC
     virtual void AddYoungsMod(double& young, double& shear, double& bulk) {young+=YOUNGS();};
 
     //@}
-
     // add strain energy
     virtual void AddStrainEnergy(
         double& psi,                      ///< strain energy function

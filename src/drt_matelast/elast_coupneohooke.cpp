@@ -53,6 +53,34 @@ MAT::ELASTIC::CoupNeoHooke::CoupNeoHooke(MAT::ELASTIC::PAR::CoupNeoHooke* params
 {
 }
 
+/*----------------------------------------------------------------------*
+ * copy matparmas to summands
+ *----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupNeoHooke::CopyStatInvAnaMatParams(
+    std::vector< Teuchos::RCP<Epetra_Vector> > input)
+{
+  params_->ReturnMatparams()=input;
+}
+
+/*----------------------------------------------------------------------*
+ * Add parameters of elasthyper-summand for stat inverse analysis to matparams
+ *----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupNeoHooke::SetStatInvAnaSummandMatParams()
+{
+  params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coupneohooke_c)->PutScalar(params_->c_);
+  params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coupneohooke_beta)->PutScalar(params_->beta_);
+}
+
+/*----------------------------------------------------------------------*
+ * Add parameters of elasthyper-summand for stat inverse analysis
+ *----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupNeoHooke::AddElastOptParams(
+    std::map<std::string,int>* pnames)
+{
+  pnames->insert(std::pair<std::string,int>("CoupNeoHooke_C", MAT::ELASTIC::PAR::coupneohooke_c));
+  pnames->insert(std::pair<std::string,int>("CoupNeoHooke_BETA", MAT::ELASTIC::PAR::coupneohooke_beta));
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddShearMod(
@@ -102,8 +130,23 @@ void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(
     const int eleGID
 )
 {
-  const double beta  = params_->beta_;
-  const double c     = params_->c_;
+
+  double c = 0.;
+  double beta = 0.;
+
+  // in case of stat inverse analysis use getparameter
+  if (params_->ReturnMatparams().size() !=0  )
+  {
+    c = params_->GetParameter(MAT::ELASTIC::PAR::coupneohooke_c,eleGID);
+    beta = params_->GetParameter(MAT::ELASTIC::PAR::coupneohooke_beta,eleGID);
+  }
+  // in other cases (e.g. gen-inv-analysis) matparams_ does not exist
+  else
+  {
+    beta  = params_->beta_;
+    c     = params_->c_;
+  }
+
 
   dPI(0) += c;
   // computing exp(log(a)*b) is faster than pow(a,b)

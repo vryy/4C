@@ -28,6 +28,9 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
+#include "../drt_comm/comm_utils.H" // for stat inverse analysis
+#include "../drt_inpar/inpar_statinvanalysis.H" // for stat inverse analysis
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -38,7 +41,8 @@ MAT::PAR::ElastHyper::ElastHyper(
   nummat_(matdata->GetInt("NUMMAT")),
   matids_(matdata->Get<std::vector<int> >("MATIDS")),
   density_(matdata->GetDouble("DENS")),
-  polyconvex_(matdata->GetInt("POLYCONVEX"))
+  polyconvex_(matdata->GetInt("POLYCONVEX")),
+  statiaelasthyper_(NULL)
 
 {
   // check if sizes fit
@@ -48,6 +52,15 @@ MAT::PAR::ElastHyper::ElastHyper(
   // output, that polyconvexity is checked
   if(polyconvex_)
     std::cout<<"Polyconvexity of your simulation is checked."<<std::endl;
+
+  // STAT INVERSE ANALYSIS
+  // For stat inverse analysis, add all parameters to matparams_
+  // set size of matparams_ here, add values in summands
+  Epetra_Map dummy_map(1,1,0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm()));
+  for(int i=MAT::ELASTIC::PAR::first ; i<=MAT::ELASTIC::PAR::last; i++)
+  {
+    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map,true)));
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -57,6 +70,12 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ElastHyper::CreateMaterial()
   return Teuchos::rcp(new MAT::ElastHyper(this));
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::PAR::ElastHyper::OptParams(std::map<std::string, int>* pnames)
+{
+  statiaelasthyper_->ElastOptParams(pnames);
+}
 
 MAT::ElastHyperType MAT::ElastHyperType::instance_;
 
@@ -87,9 +106,12 @@ const int MAT::ElastHyper::VOIGT3X3SYM_[9] = {0,3,5, 3,1,4, 5,4,2};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ElastHyper::ElastHyper()
-  : params_(NULL),
-    potsum_(0)
-
+: isoprinc_(false),
+  isomod_(false),
+  anisoprinc_(false),
+  anisomod_(false),
+  params_(NULL),
+  potsum_(0)
 {
 }
 
@@ -97,9 +119,12 @@ MAT::ElastHyper::ElastHyper()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
-  : params_(params),
+  : isoprinc_(false),
+    isomod_(false),
+    anisoprinc_(false),
+    anisomod_(false),
+    params_(params),
     potsum_(0)
-
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
@@ -109,6 +134,23 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
     if (sum == Teuchos::null) dserror("Failed to allocate");
     potsum_.push_back(sum);
+  }
+
+  // For Stat Inverse Analysis
+  // pointer to elasthyper
+  params_->SetMaterialPtrSIA(this);
+
+  // just in case of stat inverse analysis (so far just tested for lbfgs)
+  const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  if (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(invp,"STAT_INV_ANALYSIS")==INPAR::INVANA::stat_inv_lbfgs)
+  {
+    // copy matparams_ to summands, to fill it with respective parameters
+    // loop map of associated potential summands
+    for (unsigned int p=0; p<potsum_.size(); ++p)
+    {
+      potsum_[p]->CopyStatInvAnaMatParams(params_->matparams_);
+      potsum_[p]->SetStatInvAnaSummandMatParams();
+    }
   }
 }
 
@@ -695,6 +737,8 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   return ;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ElastHyper::EvaluateCauchyDerivs(
     const LINALG::Matrix<3,1>& prinv,
     const int eleGID,
@@ -1752,4 +1796,21 @@ void MAT::ElastHyper::CheckPolyconvexity(
         }
 
 return ;
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Fit parameters of elasthyper materials in
+ * stat inverse analysis
+*                                                        birzle 05/2017 */
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::ElastOptParams(
+    std::map<std::string,int>* pnames)
+{
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    potsum_[p]->AddElastOptParams(pnames);
+  }
+  return ;
 }

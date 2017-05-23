@@ -48,7 +48,12 @@ namespace MAT
 
     /// This namespace contains the input data -- parameters -- for
     /// hyperelastic summands
-    namespace PAR { }
+    namespace PAR
+    {
+    // !brief enum for mapping between material parameter and entry in the matparams_ vector
+    // for all elasthyper summands
+    enum matparamelastnames_ {coupneohooke_c, coupneohooke_beta, coup1pow_c, coup1pow_d, first=coupneohooke_c, last=coup1pow_d};
+    }
 
     /*----------------------------------------------------------------------*/
     /// Interface for hyperelastic potentials
@@ -583,6 +588,22 @@ namespace MAT
           bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
       )
       {        /* do nothing for non viscoelastic material models */      };
+
+      /// Copy matparams_ to summands for stat inverse analysis
+      virtual void CopyStatInvAnaMatParams(
+          std::vector< Teuchos::RCP<Epetra_Vector> > input){};
+
+      /// Add parameters of elasthyper-summands for stat inverse analysis to matparams
+      virtual void SetStatInvAnaSummandMatParams(){};
+
+      /// Add paramters to optimize from summands for stat inverse analysis
+      virtual void AddElastOptParams(
+          std::map<std::string, int>* pnames
+      )
+      {
+        dserror("This summand does not support the stat inverse analysis. \n"
+            "Have a look in CoupNeoHooke, how to add an additional summand.");
+      };
       //@}
 
       //! @name Visualization methods

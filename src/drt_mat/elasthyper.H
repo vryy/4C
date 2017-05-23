@@ -90,6 +90,17 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
+      /// for stat inverse analysis: add paramters for optimization
+      virtual void OptParams(std::map<std::string, int>* pnames);
+
+      /// for stat inverse analysis: set pointer to elasthyper
+      void SetMaterialPtrSIA(MAT::ElastHyper* in)
+      { statiaelasthyper_=in;}
+
+    protected:
+      /// pointer to elasthyper for stat inverse analysis
+      MAT::ElastHyper* statiaelasthyper_;
+
       //@}
 
     };  // class ElastHyper
@@ -144,6 +155,8 @@ private:
   class ElastHyper : public So3Material
   {
   public:
+
+    friend class MAT::PAR::ElastHyper;
 
     /// construct empty material object
     ElastHyper();
@@ -608,12 +621,16 @@ private:
         const int eleGID
         );
 
-    /// @name Flags to specify the elastic formulations
+    /// Sat Inverse Analysis: add params of summands
+    virtual void ElastOptParams(
+        std::map<std::string,int>* pnames);
+
+    /// @name Flags to specify the elastic formulations (initialize with false)
     //@{
     bool isoprinc_; ///< global indicator for isotropic principal formulation
     bool isomod_; ///< global indicator for isotropic splitted formulation
-    bool anisoprinc_ ; ///< global indicator for anisotropic principal formulation
-    bool anisomod_ ; ///< global indicator for anisotropic splitted formulation
+    bool anisoprinc_; ///< global indicator for anisotropic principal formulation
+    bool anisomod_; ///< global indicator for anisotropic splitted formulation
     //@}
 
     /// @name Voigt index arrays
