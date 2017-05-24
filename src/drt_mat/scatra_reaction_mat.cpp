@@ -328,7 +328,7 @@ double MAT::ScatraReactionMat::ReacCoeff(
 
     reaccoeff *= (DRT::Problem::Instance()->Funct(DisFunctReacCoeffID()-1).Evaluate(0,gpcoord,time));
 
-    //TODO:(thon) the following is nicer but works only for VarExpr Function :(
+    //TODO:(thon) the following is nicer but works only for VARFUNCTION Function :(
 //    try
 //    {
 //      DRT::UTILS::VariableExprFunction& funct = dynamic_cast<DRT::UTILS::VariableExprFunction&>(DRT::Problem::Instance()->Funct(DisFunctReacCoeffID()-1));
@@ -336,7 +336,7 @@ double MAT::ScatraReactionMat::ReacCoeff(
 //    }
 //    catch(std::bad_cast & exp)
 //    {
-//      dserror("Cast to VarExp Function failed! For phase law definition only 'VAREXPR' functions are allowed!\n"
+//      dserror("Cast to VarExp Function failed! For phase law definition only 'VARFUNCTION' functions are allowed!\n"
 //          "Check your input file!");
 //    }
   }

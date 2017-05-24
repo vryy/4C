@@ -169,13 +169,13 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 0 FUNCTION 4.2e-6
 COMPONENT 1 FUNCTION 4.2e-6
 ----------------------------------------------------------------------FUNCT4
-COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1
+VARFUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1
 ----------------------------------------------------------------------FUNCT5
-COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (1e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))+0.5*heaviside(p1-1.3e6))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
+VARFUNCTION (1e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))+0.5*heaviside(p1-1.3e6))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
 ----------------------------------------------------------------------FUNCT6
-COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (2e-7*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1)+3e-7*sin(0.5*pi*phi1/4.2e-6))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
+VARFUNCTION (2e-7*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1)+3e-7*sin(0.5*pi*phi1/4.2e-6))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
 ----------------------------------------------------------------------FUNCT7
-COMPONENT 0 VAREXPR 0 0.0 0 FUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
+VARFUNCTION (4e-5*(phi1-1e-6)/(4.2e-6-1e-6)*heaviside((phi1-1e-6)/(4.2e-6-1e-6))*heaviside(1.3e6-p1))*(1-phi2)*porosity*S1 NUMCONSTANTS 3 CONSTANTS p1 0.0 porosity 0.0 S1 0.0
 ----------------------------------------------------------------------FUNCT8
 COMPONENT 0 FUNCTION 4.2e-6
 COMPONENT 1 FUNCTION 0.0

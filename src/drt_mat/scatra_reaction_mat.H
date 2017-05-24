@@ -171,9 +171,9 @@ namespace MAT
   MAT 5 MAT_scatra DIFFUSIVITY 0.0
   MAT 3 MAT_scatra_reaction NUMSCAL 4 STOICH +2 -1 0 0  REACCOEFF 2.1 COUPLING by_function ROLE 1 1 0 0
   -------------------------------------------------------------FUNCT1
-  FUNCT 1 COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi1*phi3/(phi3+1.2)*phi4/(phi4+3.0)
+  COMPONENT 0 VARFUNCTION phi1*phi3/(phi3+1.2)*phi4/(phi4+3.0)
 
-  Note: You have to use the VAREXPR function in order to be able to read the 'phix' variables.
+  Note: You have to use the VARFUNCTION function in order to be able to read the 'phix' variables.
         The function is defined within the role list
 
 

@@ -150,7 +150,7 @@ COMPONENT 4 FUNCTION 0.0
 COMPONENT 0 FUNCTION 0.1*x+1
 COMPONENT 1 FUNCTION 0.2*x+1.0
 ----------------------------------------------------------------------FUNCT3
-COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi2*p2*S2
+VARFUNCTION phi2*p2*S2
 ----------------------------------------------------------------------FUNCT4
 COMPONENT 0 FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 1000.0 DESCRIPTION 1000.0*0.5*(1-cos(t*pi/1.0)) 1000.0

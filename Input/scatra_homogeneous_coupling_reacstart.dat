@@ -240,7 +240,7 @@ COMPONENT 9  FUNCTION 1.0
 COMPONENT 10  FUNCTION 1.0
 COMPONENT 11  FUNCTION 1.0
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi8
+VARFUNCTION phi8
 -------------------------------------------------------------FUNCT3
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION

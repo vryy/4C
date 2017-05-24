@@ -222,9 +222,9 @@ COMPONENT 0 FUNCTION 1.0
 COMPONENT 1 FUNCTION 1.0
 COMPONENT 2  FUNCTION 1.0
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi2
+VARFUNCTION phi2
 -------------------------------------------------------------FUNCT3
-COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi1
+VARFUNCTION phi1
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE  1.35334921116613854e-01 TOLERANCE 1e-9

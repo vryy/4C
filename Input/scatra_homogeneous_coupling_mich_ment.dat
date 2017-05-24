@@ -240,9 +240,9 @@ COMPONENT 6 FUNCTION 2.0
 COMPONENT 7 FUNCTION 2.0
 COMPONENT 8  FUNCTION 2.0
 -------------------------------------------------------------FUNCT2
-COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi7*phi8/(1+phi8)*phi9/(7+phi9)
+VARFUNCTION phi7*phi8/(1+phi8)*phi9/(7+phi9)
 -------------------------------------------------------------FUNCT3
-COMPONENT 0 VAREXPR 0 0 0 FUNCTION phi4/(1+phi4)*phi6/(2+phi6)
+VARFUNCTION phi4/(1+phi4)*phi6/(2+phi6)
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.12076462536474697e+00 TOLERANCE 1e-9

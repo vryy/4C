@@ -264,17 +264,11 @@ namespace UTILS {
            vector-valued function.
 
     \param buf (i) (c-string) expression to be parsed during evaluation of this component
-    \param x   (i) x-coordinate of the origin of the coordinate system of this component
-    \param y   (i) y-coordinate of the origin of the coordinate system of this component
-    \param z   (i) z-coordinate of the origin of the coordinate system of this component
     \param constants   (i) vector containing constants defined by a pair (name and value)
 
     */
     virtual void AddExpr(
         std::string buf,
-        double x,
-        double y,
-        double z,
         std::vector<std::pair<std::string,double> > constants);
 
     /*!

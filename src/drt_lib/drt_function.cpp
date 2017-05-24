@@ -91,19 +91,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(variableexprmulti);
 
   // Old function +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  DRT::INPUT::LineDefinition componentvarexpr;
-  componentvarexpr
+  DRT::INPUT::LineDefinition componentvarfunct;
+  componentvarfunct
     .AddNamedInt("COMPONENT")
-    .AddNamedDoubleVector("VAREXPR",3)
-    .AddNamedString("FUNCTION")
+    .AddNamedString("VARFUNCTION")
     .AddOptionalNamedInt("NUMCONSTANTS")
     .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS","NUMCONSTANTS")
     ;
 
-  DRT::INPUT::LineDefinition varexpr;
-  varexpr
-    .AddNamedDoubleVector("VAREXPR",3)
-    .AddNamedString("FUNCTION")
+  DRT::INPUT::LineDefinition varfunct;
+  varfunct
+    .AddNamedString("VARFUNCTION")
     .AddOptionalNamedInt("NUMCONSTANTS")
     .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS","NUMCONSTANTS")
     ;
@@ -265,8 +263,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   .AddNamedDouble("CASSINIA")
   ;
 
-  lines->Add(componentvarexpr);
-  lines->Add(varexpr);
+  lines->Add(componentvarfunct);
+  lines->Add(varfunct);
   lines->Add(linelin);
   lines->Add(radiuslin);
   lines->Add(radiusquad);
@@ -562,20 +560,18 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         functions_.push_back(Teuchos::rcp(new AccelerationProfileFunction(fileName)));
       }
-      else if (function->HaveNamed("VAREXPR"))
+      else if (function->HaveNamed("VARFUNCTION"))
       {
         Teuchos::RCP<VariableExprFunction> vecfunc = Teuchos::rcp(new VariableExprFunction());
 
-        std::vector<double> origin;
-        function->ExtractDoubleVector("VAREXPR",origin);
         std::string component;
-        function->ExtractString("FUNCTION",component);
+        function->ExtractString("VARFUNCTION",component);
 
         std::vector<std::pair<std::string,double> > constants;
         if (function->HaveNamed("CONSTANTS"))
           function->ExtractPairOfStringAndDoubleVector("CONSTANTS",constants);
 
-        vecfunc->AddExpr(component,origin[0],origin[1],origin[2],constants);
+        vecfunc->AddExpr(component,constants);
         functions_.push_back(vecfunc);
       }
       else if (COMBUST::CombustFunctionHaveNamed(function, &functions_))
@@ -1365,11 +1361,9 @@ DRT::UTILS::VariableExprFunction::~VariableExprFunction()
 }
 
 
-void DRT::UTILS::VariableExprFunction::AddExpr(std::string buf,
-                                       double x,
-                                       double y,
-                                       double z,
-                                       std::vector<std::pair<std::string,double> > constants
+void DRT::UTILS::VariableExprFunction::AddExpr(
+    std::string buf,
+    std::vector<std::pair<std::string,double> > constants
   )
 {
   // do the almost same as the expression function (base class) but do not yet parse!
