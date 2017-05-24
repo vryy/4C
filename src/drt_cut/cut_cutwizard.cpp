@@ -199,7 +199,6 @@ void GEO::CutWizard::SetMarkedConditionSides(
   //  -- Set ids in correspondence to this ID.
   //  -- Loop over the surface elements and find (if it exists) a corresponding side loaded into the cut
   //  ## WARNING: Not sure what happens if it doesn't find a surface?
-  int counter=start_ele_gid;
   for( int lid=0; lid < cutter_dis->NumMyRowElements(); ++lid)
   {
     DRT::Element* cutter_dis_ele = cutter_dis->lRowElement(lid);
@@ -207,6 +206,9 @@ void GEO::CutWizard::SetMarkedConditionSides(
     const int numnode = cutter_dis_ele->NumNode();
     const int * nodeids = cutter_dis_ele->NodeIds();
     std::vector<int> node_ids_of_cutterele( nodeids, nodeids+numnode );
+
+    const int eid = cutter_dis_ele->Id();       // id of marked side based on the cutter discretization
+    const int marked_sid = eid + start_ele_gid; // id of marked side within the cut library
 
     //Get sidehandle to corresponding background surface discretization
     // -- if it exists!!!
@@ -220,13 +222,11 @@ void GEO::CutWizard::SetMarkedConditionSides(
       // Set Id's and mark the sides in correspondence with the coupling manager object.
       for (GEO::CUT::plain_side_set::iterator it=cut_sides.begin(); it!=cut_sides.end(); ++it)
       {
-        (*it)->SetMarkedSideProperties(counter,GEO::CUT::mark_and_create_boundarycells);
+        (*it)->SetMarkedSideProperties(marked_sid,GEO::CUT::mark_and_create_boundarycells);
       }
     }
     else
       dserror("If we don't find a marked side it's not sure what happens... You are on your own!");
-
-    ++counter;
   }
 }
 
