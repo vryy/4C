@@ -100,13 +100,12 @@ void UTILS::SpringDashpotManager::Output(
   bool found_cursurfnormal = false;
   for (int i=0; i<n_conds_; ++i)
   {
+    springs_[i]->OutputGapNormal(gap, normals, springstress);
+
     // get spring type from current condition
     const UTILS::SpringDashpot::SpringType stype = springs_[i]->GetSpringType();
     if(stype == UTILS::SpringDashpot::cursurfnormal)
-    {
-      springs_[i]->OutputGapNormal(gap, normals, springstress);
       found_cursurfnormal = true;
-    }
   }
 
   // write vectors to output
@@ -114,8 +113,10 @@ void UTILS::SpringDashpotManager::Output(
   {
     output->WriteVector("gap", gap);
     output->WriteVector("curnormals", normals);
-    output->WriteVector("springstress", springstress);
   }
+
+  // always write spring stress
+  output->WriteVector("springstress", springstress);
 
   return;
 }
@@ -146,6 +147,9 @@ void UTILS::SpringDashpotManager::OutputRestart(
   output->WriteVector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
   output->WriteVector("springoffsetprestr_old", springoffsetprestr_old);
+
+  // normal output as well
+  Output(output, discret, disp);
 
   return;
 }

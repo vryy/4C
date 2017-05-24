@@ -2524,6 +2524,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
             for (int node=0; node<numnode; ++node)
               elevector1[node*numdf+dim] +=
                   funct[node] * (fac_d * (dispnp_gp-(*disploffset)[dim]+offprestrn_gp) + fac_v * velonp_gp);
+
+            // spring stress for output (const per element)
+            for (int node=0; node<numnode; ++node)
+              elevector3[node*numdf+dim] -=
+                  (*springstiff)[dim] * (dispnp_gp-(*disploffset)[dim]+offprestrn_gp) + (*dashpotvisc)[dim] * velonp_gp;
           }
         }
 
@@ -2569,6 +2574,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
           for (int node=0; node<numnode; ++node)
             elevector1[node*numdf+dim] +=
                 funct[node] * (fac_d * (dispnp_refnormal_gp+offprestrn_refnormal_gp) + fac_v * velonp_refnormal_gp);
+
+          // spring stress for output (const per element)
+          for (int node=0; node<numnode; ++node)
+            elevector3[node*numdf+dim] -=
+                ref_stiff * (dispnp_refnormal_gp+offprestrn_refnormal_gp) + ref_visco * velonp_refnormal_gp;
         }
 
         for (int dim1=0 ; dim1<numdim; dim1++)

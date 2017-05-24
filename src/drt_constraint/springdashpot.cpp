@@ -96,6 +96,8 @@ void UTILS::SpringDashpot::EvaluateRobin(
     const Teuchos::RCP<const Epetra_Vector> velo,
     Teuchos::ParameterList p)
 {
+  // reset last Newton step
+  springstress_.clear();
 
   const bool assvec = fint!=Teuchos::null;
   const bool assmat = stiff!=Teuchos::null;
@@ -150,6 +152,7 @@ void UTILS::SpringDashpot::EvaluateRobin(
 
     elevector1.Size(eledim);
     elevector2.Size(eledim);
+    elevector3.Size(eledim);
     elematrix1.Shape(eledim,eledim);
 
     int err = curr->second->Evaluate(params,*actdisc_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
@@ -158,6 +161,17 @@ void UTILS::SpringDashpot::EvaluateRobin(
     if (assvec) LINALG::Assemble(*fint,elevector1,lm,lmowner);
     if (assmat) stiff->Assemble(curr->second->Id(),lmstride,elematrix1,lm,lmowner);
 
+    // save spring stress for postprocessing
+    const int numdim = 3;
+    const int numdf = 3;
+    std::vector<double> stress(numdim, 0.0);
+
+    for (int node=0; node<curr->second->NumNode(); ++node)
+    {
+      for (int dim=0; dim<numdim; dim++)
+        stress[dim] = elevector3[node*numdf+dim];
+      springstress_.insert(std::pair<int, std::vector<double> >(curr->second->NodeIds()[node], stress));
+    }
   } /* end of loop over geometry */
 
   return;
@@ -273,8 +287,8 @@ void UTILS::SpringDashpot::Evaluate(
           {
 //            dserror("Projection does not exist for node %d.", gid+1);
           }
-          // store negative value of internal force for output (=reaction force)
-          out_vec[k] = - val;
+          // store spring stress for output
+          out_vec[k] = (springstiff*(gap-offsetprestr[k]-offset_) + viscosity_*gapdt)*normal[k];
         }
         // add to output
         springstress_.insert(std::pair<int, std::vector<double> >(gid, out_vec));

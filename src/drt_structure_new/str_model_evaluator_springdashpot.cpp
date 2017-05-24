@@ -333,13 +333,12 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
   bool found_cursurfnormal = false;
   for (int i=0; i<n_conds_; ++i)
   {
+    springs_[i]->OutputGapNormal(gap, normals, springstress);
+
     // get spring type from current condition
     const UTILS::SpringDashpotNew::SpringType stype = springs_[i]->GetSpringType();
     if(stype == UTILS::SpringDashpotNew::cursurfnormal)
-    {
-      springs_[i]->OutputGapNormal(gap, normals, springstress);
       found_cursurfnormal = true;
-    }
   }
 
   // write vectors to output
@@ -347,8 +346,10 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
   {
     iowriter.WriteVector("gap", gap);
     iowriter.WriteVector("curnormals", normals);
-    iowriter.WriteVector("springstress", springstress);
   }
+
+  // always write spring stress
+  iowriter.WriteVector("springstress", springstress);
 
   return;
 }
