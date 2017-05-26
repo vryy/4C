@@ -3463,7 +3463,7 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
     case INPAR::STR::divcont_adapt_penaltycontact:
     {
       // adapt penalty and search parameter
-      if(cmtbridge_->HaveContact())
+      if(HaveContactMeshtying())
       {
         cmtbridge_->GetStrategy().ModifyPenalty();
       }
@@ -3486,6 +3486,61 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
       return nonlinsoldiv; // so that time loop will be aborted
     }
     break;
+    case INPAR::STR::divcont_adapt_3D0Dptc_ele_err:
+    {
+      // maximal possible refinementlevel
+      const int maxdivconrefinementlevel_ptc = 15;
+      const int adapt_penaltycontact_after = 7;
+      const double sum = 10.0;
+      const double fac = 2.0;
+
+      if(divconrefinementlevel_<(maxdivconrefinementlevel_ptc))
+      {
+        if (myrank_ == 0)
+        {
+          if(cardvasc0dman_->Get_k_ptc()==0.0)
+          {
+            IO::cout << "Nonlinear solver failed to converge at time t= "<< timen_ << ". Increase PTC parameter. "
+                     << "Old PTC parameter: " << cardvasc0dman_->Get_k_ptc() << IO::endl
+                     << "New PTC parameter: " << sum+cardvasc0dman_->Get_k_ptc() << IO::endl
+                     << IO::endl;
+          }
+          else
+          {
+            IO::cout << "Nonlinear solver failed to converge at time t= "<< timen_ << ". Increase PTC parameter. "
+                     << "Old PTC parameter: " << cardvasc0dman_->Get_k_ptc() << IO::endl
+                     << "New PTC parameter: " << fac*cardvasc0dman_->Get_k_ptc() << IO::endl
+                     << IO::endl;
+          }
+        }
+        // increase PTC factor
+        cardvasc0dman_->Modify_k_ptc(sum,fac);
+
+        // adapt penalty parameter
+        if(HaveContactMeshtying() and divconrefinementlevel_ > adapt_penaltycontact_after)
+        {
+          if (myrank_ == 0)
+          {
+            IO::cout << "Nonlinear solver still did not converge. Slightly adapt penalty parameter for contact."
+                     << IO::endl;
+          }
+
+          cmtbridge_->GetStrategy().ModifyPenalty();
+        }
+
+        divconrefinementlevel_++;
+        divconnumfinestep_=0;
+      }
+
+      else
+        dserror("Maximal divercont refinement level reached. Finally nonlinear solver did not converge. :-(");
+
+      // reset step (e.g. quantities on element level)
+      ResetStep();
+
+      return INPAR::STR::conv_success;
+    }
+
     default:
       dserror("Unknown DIVER_CONT case");
     return INPAR::STR::conv_nonlin_fail;

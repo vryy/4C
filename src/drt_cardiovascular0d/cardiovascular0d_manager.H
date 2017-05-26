@@ -388,7 +388,7 @@ namespace UTILS
 
     void Reset_k_ptc()
     {
-      // reset PTC factor - for adaptivity!
+      // reset PTC factor - for adaptivity, if divcont flag is set to "adapt_3D0Dptc_ele_err"
       k_ptc_=0.0;
     };
 

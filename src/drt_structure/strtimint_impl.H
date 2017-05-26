@@ -814,6 +814,9 @@ namespace STR
     //! check, if according to divercont flag time step size can be increased
     void CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status);
 
+    //! check, if according to divercont flag 3D0D PTC can be reset to normal Newton
+    void CheckFor3D0DPTCReset(INPAR::STR::ConvergenceStatus& status);
+
     /*! \brief Prepare system for solving with Newton's method
      *
      *  Blank DOFs with Dirichlet BCs in the residual. By default

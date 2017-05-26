@@ -316,7 +316,8 @@ namespace INPAR
                                     "rand_adapt_step",
                                     "rand_adapt_step_ele_err",
                                     "repeat_simulation",
-                                    "adapt_penaltycontact"),
+                                    "adapt_penaltycontact",
+                                    "adapt_3D0Dptc_ele_err"),
                                   tuple<int>(
                                     divcont_stop,
                                     divcont_continue,
@@ -326,7 +327,8 @@ namespace INPAR
                                     divcont_rand_adapt_step,
                                     divcont_rand_adapt_step_ele_err,
                                     divcont_repeat_simulation,
-                                    divcont_adapt_penaltycontact),
+                                    divcont_adapt_penaltycontact,
+                                    divcont_adapt_3D0Dptc_ele_err),
                                   &sdyn);
 
     IntParameter("MAXDIVCONREFINEMENTLEVEL",10,

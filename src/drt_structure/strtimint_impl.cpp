@@ -1645,6 +1645,7 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
   // After a prescribed number of converged time steps, the time step is doubled again. The following
   // methods checks, if the time step size can be increased again.
   CheckForTimeStepIncrease(status);
+  CheckFor3D0DPTCReset(status);
 
   // things to be done after solving
   PostSolve();
@@ -1970,7 +1971,7 @@ int STR::TimIntImpl::ElementErrorCheck(bool evalerr)
 {
   // merly care about element problems if there is a fancy divcont action
   // and element errors are considered
-  if (evalerr and divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+  if (evalerr and (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
   {
     if (myrank_ == 0)
     IO::cout<< "Element error in form of a negative Jacobian determinant " << IO::endl;
@@ -2988,7 +2989,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // set flag for element error in form of a negative Jacobian determinant
       // in parameter list in case of potential continuation
-      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err)
       {
         params.set<bool>("tolerate_errors",true);
         params.set<bool>("eval_error",false);
@@ -3000,7 +3001,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // check for element error in form of a negative Jacobian determinant
       // in case of potential continuation
-      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err)
         element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
       // blank residual at (locally oriented) Dirichlet DOFs
@@ -3101,7 +3102,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
 
   // now some error checks: do we have an element problem
   // only check if we continue in this case; other wise, we ignore the error
-  if (eleerror and divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+  if (eleerror and (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
   {
     return eleerror;
   }
@@ -3109,7 +3110,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
   // now some error checks
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact) )
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact or divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err) )
   {
     return linerror;
   }
@@ -3131,7 +3132,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror, int eleerror)
           conman_->ComputeMonitorValues(disn_);
       return 0;
     }
-    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact))
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact or divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err))
     {
       if (myrank_ == 0)
         IO::cout<< "Newton unconverged in " << iter_ << " iterations " << IO::endl;
@@ -4918,6 +4919,34 @@ void STR::TimIntImpl::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& st
       {
         divconnumfinestep_--;
       }
+    }
+    return;
+  }
+}
+
+void STR::TimIntImpl::CheckFor3D0DPTCReset(INPAR::STR::ConvergenceStatus& status)
+{
+  const int maxnumfinestep = 1;
+
+  if(divcontype_!=INPAR::STR::divcont_adapt_3D0Dptc_ele_err)
+    return;
+  else if(status == INPAR::STR::conv_success and divconrefinementlevel_!=0 and cardvasc0dman_->Get_k_ptc()!=0.0)
+  {
+    divconnumfinestep_++;
+
+    if(divconnumfinestep_==maxnumfinestep)
+    {
+      if (myrank_ == 0)
+      {
+        IO::cout << "Nonlinear solver successful. Reset 3D-0D PTC to normal Newton!"
+                 << IO::endl;
+      }
+      divconrefinementlevel_=0;
+      divconnumfinestep_=0;
+
+      // reset k_ptc
+      cardvasc0dman_->Reset_k_ptc();
+
     }
     return;
   }
