@@ -77,6 +77,8 @@ void MAT::PAR::ElastHyper::OptParams(std::map<std::string, int>* pnames)
   statiaelasthyper_->ElastOptParams(pnames);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 MAT::ElastHyperType MAT::ElastHyperType::instance_;
 
 
@@ -247,6 +249,11 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     if (position != data.size())
       dserror("Mismatch in size of data %d <-> %d",data.size(),position);
   }
+
+  // For Stat Inverse Analysis
+  // pointer to elasthyper
+  if (params_!=NULL)
+    params_->SetMaterialPtrSIA(this);
 }
 
 /*----------------------------------------------------------------------*/

@@ -109,16 +109,8 @@ void INVANA::MatParManager::InitParams()
         switch (actelastmat->Type())
         {
         case INPAR::MAT::mes_coupneohooke:
-        {
-          std::vector<int>::const_iterator jt;
-          for (jt = it->second.begin(); jt != it->second.end(); jt++)
-          {
-            double val = metaparams_.Material2Meta( actelastmat->Parameter()->GetParameter(*jt,0) );
-            InitParameters(parapos_.at(it->first).at(jt-it->second.begin()),val);
-          }
-          break;
-        }
         case INPAR::MAT::mes_coup1pow:
+          // add additional summands here
         {
           std::vector<int>::const_iterator jt;
           for (jt = it->second.begin(); jt != it->second.end(); jt++)
@@ -127,7 +119,6 @@ void INVANA::MatParManager::InitParams()
             InitParameters(parapos_.at(it->first).at(jt-it->second.begin()),val);
           }
           break;
-          // add additional summands here
         }
         default:
           dserror("Elasthyper-Material not provided by the Material Manager for Optimization");

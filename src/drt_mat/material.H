@@ -99,10 +99,6 @@ namespace MAT
       return 0.0;
     }
 
-    /// Set elementwise material parameters
-    void Init(double val, std::string name){dserror("not implemented in this material");};
-
-
   };
 
 }
