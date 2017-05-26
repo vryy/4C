@@ -1247,10 +1247,11 @@ void UQ::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp,
     }
     if(discret_->gElement(output_elements->at(i))->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke)
     {
-      // Get LID
-      int mylid=discret_->gElement(output_elements->at(i))->LID();
-      mat_params[0]=discret_->gElement(output_elements->at(i))->Material()->Parameter()->GetParameter(0,mylid);
-      mat_params[1]=discret_->gElement(output_elements->at(i))->Material()->Parameter()->GetParameter(2,mylid);
+      // map in GetParameter can now calculate LID, so we need GID here       05/2017 birzle
+      // int myid=discret_->gElement(output_elements->at(i))->LID();
+      int mygid = output_elements->at(i);
+      mat_params[0]=discret_->gElement(output_elements->at(i))->Material()->Parameter()->GetParameter(0,mygid);
+      mat_params[1]=discret_->gElement(output_elements->at(i))->Material()->Parameter()->GetParameter(2,mygid);
     }
     // else ,no need initialized
     my_output_elements_mat_params->push_back(mat_params);

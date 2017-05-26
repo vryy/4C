@@ -1565,8 +1565,9 @@ void MAT::GrowthLawConst::Evaluate(double* theta,
                                 const int eleGID)
 {
   double dt = params.get<double>("delta time", -1.0);
-  int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
-  *theta = thetaold + Parameter()->GetParameter(Parameter()->thetarate,eleID)*dt;
+  // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
+  // int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  *theta = thetaold + Parameter()->GetParameter(Parameter()->thetarate,eleGID)*dt;
   //*theta = Parameter()->GetParameter(Parameter()->thetarate,eleID);
 
   dthetadC->Scale(0.0);

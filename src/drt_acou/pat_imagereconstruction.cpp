@@ -3353,8 +3353,9 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::UpdateAcousticalParameters(
     if(lid>=0)
     {
       DRT::Element* actele = scatra_discret_->gElement(i);
-      loc_reac = actele->Material()->Parameter()->GetParameter(1,scatra_discret_->ElementColMap()->LID(actele->Id()));
-      loc_D = actele->Material()->Parameter()->GetParameter(0,scatra_discret_->ElementColMap()->LID(actele->Id()));
+      // map in GetParameter calculates LID, so we need GID here       05/2017 birzle
+      loc_reac = actele->Material()->Parameter()->GetParameter(1,actele->Id());
+      loc_D = actele->Material()->Parameter()->GetParameter(0,actele->Id());
     }
     double D = 0.0, reac = 0.0;
     scatra_discret_->Comm().SumAll(&loc_D,&D,1);
@@ -4514,8 +4515,9 @@ void ACOU::PatImageReconstruction::OutputReactionAndDiffusion()
   {
     DRT::Element* actele;
     actele = scatra_discret_->lRowElement(i);
-    double reac = actele->Material()->Parameter()->GetParameter(1,scatra_discret_->ElementColMap()->LID(actele->Id()));
-    double diff = actele->Material()->Parameter()->GetParameter(0,scatra_discret_->ElementColMap()->LID(actele->Id()));
+    // map in GetParameter calculates LID, so we need GID here       05/2017 birzle
+    double reac = actele->Material()->Parameter()->GetParameter(1,actele->Id());
+    double diff = actele->Material()->Parameter()->GetParameter(0,actele->Id());
     reacvec->operator [](i) = reac;
     diffvec->operator [](i) = diff;
   }
@@ -4564,7 +4566,7 @@ void ACOU::PatImageReconstruction::ComputeNodeBasedReactionCoefficient()
         if( nodeids[i] == nd+minnodeidscatra )
         {
           const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(roptele->Material().get());
-          loc_mu_a += actmat->ReaCoeff(scatra_discret_->ElementColMap()->LID(roptele->Id()));
+          loc_mu_a += actmat->ReaCoeff(roptele->Id());
           loc_numoptiele++;
         }
     }

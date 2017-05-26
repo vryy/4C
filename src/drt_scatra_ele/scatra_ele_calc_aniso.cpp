@@ -132,15 +132,16 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype,probdim>::MatScaTraAniso(
   const int                               iquad   //!< id of current gauss point (default = -1)
   )
 {
-  int leleid = -1;
-  if(DRT::Problem::Instance()->ProblemType()==prb_acou) leleid = DRT::Problem::Instance()->GetDis("scatra")->ElementColMap()->LID(my::eid_);
+  int geleid = -1;
+  if(DRT::Problem::Instance()->ProblemType()==prb_acou)
+    geleid = my::eid_;
 
   const Teuchos::RCP<const MAT::ScatraMatAniso>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMatAniso>(material);
 
   // get constant diffusivity
   LINALG::Matrix<my::nsd_,my::nsd_> difftensor(true);
-  LINALG::Matrix<3,1> diff = actmat->Diffusivity(leleid);
+  LINALG::Matrix<3,1> diff = actmat->Diffusivity(geleid);
 
   for (unsigned i=0; i<my::nsd_; i++)
     difftensor(i,i) = diff(i);

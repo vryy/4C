@@ -110,14 +110,15 @@ void MAT::ELASTIC::IsoVolAAAGasser::UnpackSummand(
 /*----------------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
 {
-  int eleID =
-      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
-          eleGID);
+  // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
+//  int eleID =
+//      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
+//          eleGID);
 
   // extend parameters to elecolmap_layout
   params_->ExpandParametersToEleColLayout();
   // new style
-  double normdist_myele = params_->GetParameter(params_->normdist, eleID);
+  double normdist_myele = params_->GetParameter(params_->normdist, eleGID);
   double cele_myele = -999.0;
   if (normdist_myele == -999.0)
     dserror("Aneurysm mean ilt distance not found. Did you switch on 'PATSPEC'? (besides other possible errors of course)");
@@ -126,17 +127,17 @@ void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
   if (0.0 <= normdist_myele and normdist_myele <= 0.5)
   {
     cele_myele = ((normdist_myele - 0.5) / (-0.5))
-        * params_->GetParameter(params_->clum, eleID)
-        + (normdist_myele / 0.5) * params_->GetParameter(params_->cmed, eleID);
-    params_->SetParameter(params_->cele, cele_myele, eleGID, eleID);
+        * params_->GetParameter(params_->clum, eleGID)
+        + (normdist_myele / 0.5) * params_->GetParameter(params_->cmed, eleGID);
+    params_->SetParameter(params_->cele, cele_myele, eleGID);
   }
   else if (0.5 < normdist_myele and normdist_myele <= 1.0)
   {
     cele_myele = ((normdist_myele - 1.0) / (-0.5))
-        * params_->GetParameter(params_->cmed, eleID)
+        * params_->GetParameter(params_->cmed, eleGID)
         + ((normdist_myele - 0.5) / 0.5)
-            * params_->GetParameter(params_->cablum, eleID);
-    params_->SetParameter(params_->cele, cele_myele, eleGID, eleID);
+            * params_->GetParameter(params_->cablum, eleGID);
+    params_->SetParameter(params_->cele, cele_myele, eleGID);
   }
   else
     dserror(
@@ -150,38 +151,39 @@ void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params,
     const int eleGID)
 {
 
+  // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
-  int eleID =
-      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
-          eleGID);
+//  int eleID =
+//      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
+//          eleGID);
 
   CalcCele(eleGID);
 
   // if xi is smaller 10e12 it has been set by uq routine and hence we
   // compute the element stiffness a little different
 
-  if(params_->GetParameter(params_->xi,eleID)<10e12)
+  if(params_->GetParameter(params_->xi,eleGID)<10e12)
   {
     double clum = exp(
-        params_->GetParameter(params_->mu_lum, eleID)
-            + params_->GetParameter(params_->xi, eleID)
-                * params_->GetParameter(params_->sigma_lum, eleID));
+        params_->GetParameter(params_->mu_lum, eleGID)
+            + params_->GetParameter(params_->xi, eleGID)
+                * params_->GetParameter(params_->sigma_lum, eleGID));
     double cmed = exp(
-        params_->GetParameter(params_->mu_med, eleID)
-            + params_->GetParameter(params_->xi, eleID)
-                * params_->GetParameter(params_->sigma_med, eleID));
+        params_->GetParameter(params_->mu_med, eleGID)
+            + params_->GetParameter(params_->xi, eleGID)
+                * params_->GetParameter(params_->sigma_med, eleGID));
     double cablum = exp(
-        params_->GetParameter(params_->mu_ablum, eleID)
-            + params_->GetParameter(params_->xi, eleID)
-                * params_->GetParameter(params_->sigma_ablum, eleID));
+        params_->GetParameter(params_->mu_ablum, eleGID)
+            + params_->GetParameter(params_->xi, eleGID)
+                * params_->GetParameter(params_->sigma_ablum, eleGID));
 
     // set params
-    params_->SetParameter(params_->clum,clum,eleGID,eleID);
-    params_->SetParameter(params_->cmed,cmed,eleGID,eleID);
-    params_->SetParameter(params_->cablum,cablum,eleGID,eleID);
+    params_->SetParameter(params_->clum,clum,eleGID);
+    params_->SetParameter(params_->cmed,cmed,eleGID);
+    params_->SetParameter(params_->cablum,cablum,eleGID);
 
 
-    if (params_->GetParameter(params_->normdist, eleID)==-999.0)
+    if (params_->GetParameter(params_->normdist, eleGID)==-999.0)
       dserror("Aneurysm mean ilt distance not found. Did you switch on 'PATSPEC'? (besides other possible errors of course)");
 
     // recalculate cele_
@@ -201,16 +203,17 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(
   const LINALG::Matrix<6,1>& glstrain,
   const int eleGID)
 {
+  // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
-  int eleID =
-      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
-          eleGID);
+//  int eleID =
+//      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
+//          eleGID);
 
   if (params_->IsInit())
   {
-    double my_cele = params_->GetParameter(params_->cele, eleID);
-    double nue_myele = params_->GetParameter(params_->nue, eleID);
-    double beta_myele = params_->GetParameter(params_->beta, eleID);
+    double my_cele = params_->GetParameter(params_->cele, eleGID);
+    double nue_myele = params_->GetParameter(params_->nue, eleGID);
+    double beta_myele = params_->GetParameter(params_->beta, eleGID);
 
     // An Ogden type material is chosen for the isochoric part
     // \f$\Psi=c\underset{i=1}{\overset{3}{\sum}}(\lambda_{i}^{4}-1)\f$
@@ -241,17 +244,18 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(
     const LINALG::Matrix<3,1>& modinv,
     const int eleGID)
 {
+  // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
-  int eleID =
-      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
-          eleGID);
+//  int eleID =
+//      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
+//          eleGID);
 
   if (params_->IsInit())
   {
 
-    double nue_myele  = params_->GetParameter(params_->nue, eleID);
-    double beta_myele = params_->GetParameter(params_->beta, eleID);
-    double my_cele    = params_->GetParameter(params_->cele, eleID);
+    double nue_myele  = params_->GetParameter(params_->nue, eleGID);
+    double beta_myele = params_->GetParameter(params_->beta, eleGID);
+    double my_cele    = params_->GetParameter(params_->cele, eleGID);
 
     dPmodI(0) += 2. * my_cele * modinv(0);
     dPmodI(1) -= 2. * my_cele;
@@ -283,16 +287,17 @@ void MAT::ELASTIC::IsoVolAAAGasser::VisNames(std::map<std::string,int>& names)
 bool MAT::ELASTIC::IsoVolAAAGasser::VisData(const std::string& name,
     std::vector<double>& data, int numgp, int eleGID)
 {
+  // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID in case we have element specific material parameters
-  int eleID =
-      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
-          eleGID);
+//  int eleID =
+//      DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(
+//          eleGID);
 
   if (name == "cele")
   {
     if ((int) data.size() != 1)
       dserror("size mismatch");
-    data[0] = params_->GetParameter(params_->cele, eleID);
+    data[0] = params_->GetParameter(params_->cele, eleGID);
   }
   else
   {

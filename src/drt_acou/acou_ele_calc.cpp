@@ -164,8 +164,8 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     const int useacouoptvecs = params.get<int>("useacouoptvecs");
     double dt = params.get<double>("dt");
     const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-    double c = actmat->SpeedofSound(discretization.ElementColMap()->LID(ele->Id()));
-    double rho = actmat->Density(discretization.ElementColMap()->LID(ele->Id()));
+    double c = actmat->SpeedofSound(ele->Id());
+    double rho = actmat->Density(ele->Id());
     dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
     if(dyna_!=INPAR::ACOU::acou_impleuler) // explicit time integration does not need the scaling with c!
     {
@@ -182,7 +182,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     const int useacouoptvecs = params.get<int>("useacouoptvecs");
     double dt = params.get<double>("dt");
     const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-    double rho = actmat->Density(discretization.ElementColMap()->LID(ele->Id()));
+    double rho = actmat->Density(ele->Id());
 
     localSolver_->ComputeMatrices(discretization, mat, *ele, dt, dyna_, false);
 
@@ -325,8 +325,8 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     elemat1 = localSolver_->Gmat;
 
     const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-    double rho = actmat->Density(discretization.ElementColMap()->LID(ele->Id()));
-    double c = actmat->SpeedofSound(discretization.ElementColMap()->LID(ele->Id()));
+    double rho = actmat->Density(ele->Id());
+    double c = actmat->SpeedofSound(ele->Id());
     localSolver_->ComputeADERResidual(ele, discretization, params, elevec1, interiorVelnp_, interiorPressnp_,c,rho);
 
     break;
@@ -382,7 +382,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     double dt = params.get<double>("dt");
     dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
     const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-    double rho = actmat->Density(discretization.ElementColMap()->LID(ele->Id()));
+    double rho = actmat->Density(ele->Id());
 
     ReadGlobalVectors(ele, discretization, lm, padapty, useacouoptvecs);
 
@@ -404,8 +404,8 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     double dt = params.get<double>("dt");
     dyna_ = params.get<INPAR::ACOU::DynamicType>("dynamic type");
     const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-    double rho = actmat->Density(discretization.ElementColMap()->LID(ele->Id()));
-    double c = actmat->SpeedofSound(discretization.ElementColMap()->LID(ele->Id()));
+    double rho = actmat->Density(ele->Id());
+    double c = actmat->SpeedofSound(ele->Id());
     DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(ele);
 
     ReadGlobalVectors(ele, discretization, lm, padapty, useacouoptvecs);
@@ -1836,8 +1836,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::ComputeGradientContribution(
 {
   // get the material parameters
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density(discretization.ElementColMap()->LID(ele.Id()));
-  double c = actmat->SpeedofSound(discretization.ElementColMap()->LID(ele.Id()));
+  double rho = actmat->Density(ele.Id());
+  double c = actmat->SpeedofSound(ele.Id());
 
   // contribution to speed of sound gradient
   Epetra_SerialDenseVector temp1(localSolver_->ndofs_);
@@ -2341,8 +2341,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   bool resonly = params.get<bool>("resonly");
 
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double c = actmat->SpeedofSound(discretization.ElementColMap()->LID(ele->Id()));
-  double rho = actmat->Density(discretization.ElementColMap()->LID(ele->Id()));
+  double c = actmat->SpeedofSound(ele->Id());
+  double rho = actmat->Density(ele->Id());
 
   if (!resonly)
   {
@@ -2891,8 +2891,8 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeMatrices(
     bool adjoint)
 {
   const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density(discretization.ElementColMap()->LID(ele.Id()));
-  double c = actmat->SpeedofSound(discretization.ElementColMap()->LID(ele.Id()));
+  double rho = actmat->Density(ele.Id());
+  double c = actmat->SpeedofSound(ele.Id());
 
   // init face matrices
   zeroMatrix(Cmat);

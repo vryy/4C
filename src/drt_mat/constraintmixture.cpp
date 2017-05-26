@@ -732,9 +732,11 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   // get gauss point number
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");
+
+  // map in GetParameter can now calculate LID, so we do not need it here   05/2017 birzle
   // get element lID incase we have element specific material parameters
-  int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
-  const double growthfactor =  params_->GetParameter(params_->growthfactor,eleID);
+  //int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  const double growthfactor =  params_->GetParameter(params_->growthfactor,eleGID);
 
   // get variables from params
   double dt = params.get<double>("delta time",-1.0);
@@ -776,7 +778,7 @@ void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     }
   }
   if (*params_->elastindegrad_ == "InvEla")
-    elastin_survival = params_->GetParameter(params_->elastin_survival,eleID);
+    elastin_survival = params_->GetParameter(params_->elastin_survival,eleGID);
 
   // stuff for collagen damage
   deletemass_->resize(0);
@@ -3031,16 +3033,18 @@ bool MAT::ConstraintMixture::VisData(const std::string& name, std::vector<double
   {
     if ((int)data.size()!=1)
       dserror("size mismatch");
-    int eleLID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
-    data[0] = params_->GetParameter(params_->growthfactor,eleLID);
+    // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
+    //int eleLID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
+    data[0] = params_->GetParameter(params_->growthfactor,eleID);
   }
   else if (name == "elastin_survival")
   {
     if ((int)data.size()!=1)
       dserror("size mismatch");
-    int eleLID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
+    // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
+    //int eleLID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleID);
     if (*params_->elastindegrad_ == "InvEla")
-      data[0] = params_->GetParameter(params_->elastin_survival,eleLID);
+      data[0] = params_->GetParameter(params_->elastin_survival,eleID);
     else if (*params_->elastindegrad_ == "Rectangle" || *params_->elastindegrad_ == "RectanglePlate"
         || *params_->elastindegrad_ == "Wedge" || *params_->elastindegrad_ == "Circles")
     {

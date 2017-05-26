@@ -190,12 +190,14 @@ void MAT::AAAneohooke::Evaluate(
   LINALG::Matrix<6,6>* cmat,
   const int eleGID)
 {
+  // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
   // get element lID incase we have element specific material parameters
-  int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+  //  int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
+
   // material parameters for isochoric part
-  const double youngs   = params_->GetParameter(params_->young,eleID);// Young's modulus
-  const double beta     = params_->GetParameter(params_->beta,eleID);      // second parameter
-  const double nue      = params_->GetParameter(params_->nue,eleID);       // Poisson's ratio
+  const double youngs   = params_->GetParameter(params_->young,eleGID);// Young's modulus
+  const double beta     = params_->GetParameter(params_->beta,eleGID);      // second parameter
+  const double nue      = params_->GetParameter(params_->nue,eleGID);       // Poisson's ratio
   const double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 
   // material parameters for volumetric part
@@ -417,22 +419,21 @@ void MAT::AAAneohooke::VisNames(std::map<std::string,int>& names)
 
 bool MAT::AAAneohooke::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleGID)
 {
-  // get element lID incase we have element specific material parameters
-  int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
-
   if (name=="beta")
   {
     if ((int)data.size()!=1) dserror("size mismatch");
-    data[0] = params_->GetParameter(params_->beta,eleID);
+    data[0] = params_->GetParameter(params_->beta,eleGID);
   }
   else if (name=="youngs")
   {
     if ((int)data.size()!=1) dserror("size mismatch");;
-    data[0] = params_->GetParameter(params_->young,eleID);
+    data[0] = params_->GetParameter(params_->young,eleGID);
   }
   else if (name=="BaciEleId")
   {
     if ((int)data.size()!=1) dserror("size mismatch");
+    // get element lID incase we have element specific material parameters
+    int eleID = DRT::Problem::Instance()->GetDis("structure")->ElementColMap()->LID(eleGID);
     data[0] = eleID;
   }
   else

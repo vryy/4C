@@ -72,7 +72,7 @@ void MAT::PAR::Parameter::SetParameter(int parametername,Teuchos::RCP<Epetra_Vec
 
 }
 
-void MAT::PAR::Parameter::SetParameter(int parametername,const double val, const int eleGID, const int eleLID)
+void MAT::PAR::Parameter::SetParameter(int parametername,const double val, const int eleGID)
 {
   // check if we own this element
   Teuchos::RCP<Epetra_Vector> fool = matparams_.at(parametername);
@@ -83,7 +83,9 @@ void MAT::PAR::Parameter::SetParameter(int parametername,const double val, const
     dserror("I do not have this element");
 
   // otherwise set parameter for element
-  (*matparams_.at(parametername))[eleLID]=val;
+  // calculate LID here, instead of before each call              01/2017 birzle
+  (*matparams_.at(parametername))[matparams_[parametername]->Map().LID(eleGID)]=val;
+  // old: (*matparams_.at(parametername))[eleLID]=val;
 }
 
 void MAT::PAR::Parameter::ExpandParametersToEleColLayout()
@@ -118,6 +120,9 @@ double MAT::PAR::Parameter::GetParameter(int parametername,const int EleId)
   }
   // otherwise just return the element specific value
   else
-    return (*matparams_[parametername])[EleId];
+  {
+   // calculate LID here, instead of before each call              01/2017 birzle
+    return (*matparams_[parametername])[matparams_[parametername]->Map().LID(EleId)];
+  }
 }
 /*----------------------------------------------------------------------*/

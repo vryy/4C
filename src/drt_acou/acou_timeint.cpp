@@ -225,7 +225,7 @@ void ACOU::AcouTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector>
             elevec2.Shape(discret_->NumDof(1,acouele), 1);
 
           // we need the absorption coefficient of the light element
-          double absorptioncoeff = static_cast <MAT::ScatraMat*>((optele->Material()).get())->ReaCoeff(scatradis->ElementColMap()->LID(optele->Id()));
+          double absorptioncoeff = static_cast <MAT::ScatraMat*>((optele->Material()).get())->ReaCoeff(optele->Id());
 
           initParams.set<double>("absorption",absorptioncoeff);
           Teuchos::RCP<std::vector<double> > nodevals = Teuchos::rcp(new std::vector<double>);
@@ -279,7 +279,7 @@ void ACOU::AcouTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector>
         if ( myrank_ == opteleowner )
         {
           // we need the absorption coefficient of the light element
-          absorptioncoeff = static_cast <MAT::ScatraMat*>((optele->Material()).get())->ReaCoeff(scatradis->ElementColMap()->LID(optele->Id()));
+          absorptioncoeff = static_cast <MAT::ScatraMat*>((optele->Material()).get())->ReaCoeff(optele->Id());
 
           int numlightnode = optele->NumNode();
           size = (numdim_+1)*numlightnode;
@@ -518,7 +518,7 @@ void ACOU::AcouTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector>
 
             if(!(count == 10 || xi.NormInf()>1.0+0.1))
             {
-              double absorptioncoeff = static_cast <MAT::ScatraMat*>((ele->Material()).get())->ReaCoeff(scatradis->ElementColMap()->LID(ele->Id()));
+              double absorptioncoeff = static_cast <MAT::ScatraMat*>((ele->Material()).get())->ReaCoeff(ele->Id());
               // get the values!
               double values[4] = {0};
               for(int nd=0;nd<4;++nd) // quad4 has 4 nodes
@@ -660,8 +660,9 @@ void ACOU::AcouTimeInt::OutputDensityAndSpeedOfSound()
   {
     DRT::Element* actele;
     actele = discret_->lRowElement(i);
-    double dens = actele->Material()->Parameter()->GetParameter(0,discret_->ElementColMap()->LID(actele->Id()));
-    double c = actele->Material()->Parameter()->GetParameter(1,discret_->ElementColMap()->LID(actele->Id()));
+    // map in GetParameter calculates LID, so we need GID here       05/2017 birzle
+    double dens = actele->Material()->Parameter()->GetParameter(0,actele->Id());
+    double c = actele->Material()->Parameter()->GetParameter(1,actele->Id());
     densvec->operator [](i) = dens;
     cvec->operator [](i) = c;
   }
