@@ -2988,7 +2988,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // set flag for element error in form of a negative Jacobian determinant
       // in parameter list in case of potential continuation
-      if (divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err or divcontype_==INPAR::STR::divcont_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
       {
         params.set<bool>("tolerate_errors",true);
         params.set<bool>("eval_error",false);
@@ -3000,7 +3000,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // check for element error in form of a negative Jacobian determinant
       // in case of potential continuation
-      if (divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err or divcontype_==INPAR::STR::divcont_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
         element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
       // blank residual at (locally oriented) Dirichlet DOFs
