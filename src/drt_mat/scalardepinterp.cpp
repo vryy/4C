@@ -102,7 +102,7 @@ void MAT::ScalarDepInterp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
     dserror("The densities of the materials specified in IDMATZEROSC and IDMATUNITSC must be equal!");
 
 
-  double lambda=0.0;
+  double lambda=1.0;
   //Read lambda from input file, if available
   if(linedef->HaveNamed("lambda"))
     ReadLambda(linedef,"lambda",lambda);
