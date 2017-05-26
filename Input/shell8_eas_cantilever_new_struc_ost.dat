@@ -71,7 +71,7 @@ Forcing Term Minimum Tolerance  = 1e-06
 Forcing Term Maximum Tolerance  = 0.01
 Forcing Term Alpha              = 1.5
 Forcing Term Gamma              = 0.9
-Rescue Bad Newton Solver        = Yes
+Rescue Bad Newton Solve         = Yes
 -----------------------------------STRUCT NOX/Direction/Newton/Linear Solver
 Adaptive Control                = No
 Adaptive Control Objective      = 0.1

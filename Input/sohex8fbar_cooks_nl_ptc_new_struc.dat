@@ -93,7 +93,7 @@ Forcing Term Gamma              = 0.9
 //
 // If set to true, we will use the computed direction even if the linear solve does not achieve the tolerance specified by the forcing term
 //     Yes,No,yes,no,YES,NO
-Rescue Bad Newton Solver        = Yes
+Rescue Bad Newton Solve         = Yes
 //
 ------------------------------STRUCT NOX/Direction/Steepest Descent
 //

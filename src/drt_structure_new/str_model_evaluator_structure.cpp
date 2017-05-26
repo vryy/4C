@@ -71,7 +71,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
       GState().CreateStructuralStiffnessMatrixBlock() );
 
   if ( stiff_ptr_ == NULL )
-    dserror( "Dynmaic cast to LINALG::SparseMatrix failed!" );
+    dserror( "Dynamic cast to LINALG::SparseMatrix failed!" );
 
   // get the structural dynamic content
   {

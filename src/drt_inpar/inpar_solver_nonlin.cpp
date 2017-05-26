@@ -2,9 +2,12 @@
 /*!
 \file inpar_solver_nonlin.cpp
 
-\maintainer Matthias Mayr, Michael Hiermeier
 
 \brief Input parameters for nonlinear solvers
+
+\maintainer Michael Hiermeier
+
+\level 1
 */
 
 /*----------------------------------------------------------------------*/
@@ -81,7 +84,7 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
     DoubleParameter("Forcing Term Maximum Tolerance",0.01,"",&newton);
     DoubleParameter("Forcing Term Alpha",1.5,"used only by \"Type 2\"",&newton);
     DoubleParameter("Forcing Term Gamma",0.9,"used only by \"Type 2\"",&newton);
-    BoolParameter("Rescue Bad Newton Solver","Yes","If set to true, we will use "
+    BoolParameter("Rescue Bad Newton Solve","Yes","If set to true, we will use "
         "the computed direction even if the linear solve does not achieve the tolerance "
         "specified by the forcing term",&newton);
   }

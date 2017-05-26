@@ -2,13 +2,12 @@
 /*!
 \file inpar_solver_nonlin.H
 
-\brief input stuff specific for the nonlinear solver tool box NLNSOL
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 10362
-</pre>
+\brief Input parameters for nonlinear solvers
+
+\maintainer Michael Hiermeier
+
+\level 1
 */
 
 /*----------------------------------------------------------------------*/

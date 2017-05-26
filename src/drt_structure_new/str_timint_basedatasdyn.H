@@ -299,8 +299,7 @@ namespace TIMINT {
     /// Returns periodic bounding box object (read access)
     Teuchos::RCP<GEO::MESHFREE::BoundingBox> const& GetPeriodicBoundingBox() const
     {
-      if ( periodic_boundingbox.is_null() )
-        dserror("Periodic bounding box not initialized!");
+      CheckInitSetup();
       return periodic_boundingbox;
     }
     ///@}

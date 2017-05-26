@@ -189,12 +189,14 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
       else
         beamele->GetRefPosAtXi( interpolated_position, xi );
 
-      periodic_boundingbox_->Shift3D( interpolated_position );
+      if ( periodic_boundingbox_ != Teuchos::null )
+        periodic_boundingbox_->Shift3D( interpolated_position );
+
       LINALG::Matrix<3,1> unshift_interpolated_position = interpolated_position;
 
       // if there is a shift between two consecutive points, double that point and create new cell
       // not for first and last point
-      if( ipoint != 0
+      if ( ipoint != 0 and periodic_boundingbox_ != Teuchos::null
           and periodic_boundingbox_->UnShift3D( unshift_interpolated_position, interpolated_position_priorpoint )
           and ipoint != BEAMSVTUVISUALSUBSEGMENTS )
       {
@@ -237,14 +239,15 @@ BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
         num_beam_row_elements, cell_types.size() );
   }
 
-  if ( !periodic_boundingbox_->HavePBC() and
+  if ( periodic_boundingbox_ != Teuchos::null and !periodic_boundingbox_->HavePBC() and
        ( point_coordinates.size() != num_spatial_dimensions * num_vtk_points ) )
   {
     dserror("RuntimeVtuWriter expected %d coordinate values, but got %d",
         num_spatial_dimensions * num_vtk_points, point_coordinates.size() );
   }
 
-  if ( !periodic_boundingbox_->HavePBC() and ( cell_offsets.size() != num_beam_row_elements ) )
+  if ( periodic_boundingbox_ != Teuchos::null and !periodic_boundingbox_->HavePBC() and
+      ( cell_offsets.size() != num_beam_row_elements ) )
   {
     dserror("RuntimeVtuWriter expected %d cell offset values, but got %d",
         num_beam_row_elements, cell_offsets.size() );

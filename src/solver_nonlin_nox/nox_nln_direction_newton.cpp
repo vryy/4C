@@ -57,7 +57,18 @@ bool NOX::NLN::Direction::Newton::compute(NOX::Abstract::Vector& dir,
   // computeJacobian(). In many cases this is uneconomical and instead we do it
   // here at once. In this way the base class compute function calls perform a
   // direct return, because the isValid flags are already set to true!
-  return NOX::Direction::Newton::compute(dir,soln,solver);
+  try
+  {
+    return NOX::Direction::Newton::compute(dir,soln,solver);
+  }
+  catch ( const char* e )
+  {
+    if (utils_->isPrintType(NOX::Utils::Warning))
+    {
+      utils_->out() << e;
+    }
+  }
+  return false;
 }
 
 /*----------------------------------------------------------------------------*

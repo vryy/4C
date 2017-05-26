@@ -75,7 +75,7 @@ Nonlinear Solver                = Line Search Based
 --------------------------------------------------------STRUCT NOX/Direction
 Method                          = Newton
 -------------------------------------------------STRUCT NOX/Direction/Newton
-Rescue Bad Newton Solver        = No
+Rescue Bad Newton Solve         = No
 -----------------------------------STRUCT NOX/Direction/Newton/Linear Solver
 Output Solver Details           = Yes
 -----------------------------------------------------STRUCT NOX/Line Search

@@ -191,7 +191,13 @@ namespace BINSTRATEGY
       ) const;
 
     /// add ijk to a given axis aligned ijk range
-    virtual void AddijkToAxisAlignedijkRange(
+    virtual void AddijkToAxisAlignedijkRangeOfElement(
+        int const ijk[3],
+        int ijk_range[6]
+      ) const;
+
+    /// add ijk to a given axis aligned ijk range
+    virtual void AddijkToAxisAlignedijkRangeOfBeamElement(
         int const ijk[3],
         int ijk_range[6]
       ) const;

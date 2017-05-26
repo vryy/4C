@@ -286,8 +286,15 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
   if (iter==-10)
     throwError("applyJacobianInverse", "\"Number of Nonlinear Iterations\" was not specified");
 
-  if (currSolver->NoxSolve(linProblem,true,iter==0))
-      throwError("applyJacobianInverse", "linear solve failed");
+  if ( currSolver->NoxSolve(linProblem,true,iter==0) )
+  {
+    if ( utils_.isPrintType( NOX::Utils::Warning ) )
+      utils_.out() << "NOX::NLN::LinearSystem::applyJacobianInverse -- "
+          "linear solve failed\n";
+
+    prePostOperatorPtr_->runPostApplyJacobianInverse(nonConstInput,Jacobian(),*this);
+    return false;
+  }
 
   // ************* Begin linear system unscaling *************
   if ( !Teuchos::is_null(scaling_) )

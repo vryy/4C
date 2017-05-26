@@ -477,6 +477,16 @@ void BINSTRATEGY::BinningStrategy::DistributeElementToBinsUsingEleXAABB(
   {
     BuildAxisAlignedijkRangeForRigidSphere( discret, eleptr, disnp, ijk, ijk_range );
   }
+  else if ( dynamic_cast<DRT::ELEMENTS::Beam3Base*>(eleptr) != NULL )
+  {
+    // fill in remaining nodes
+    for ( int j = 1; j < eleptr->NumNode(); ++j )
+    {
+      DRT::Node const * const node = nodes[j];
+      DistributeNodeToijk( discret, node, disnp, ijk );
+      AddijkToAxisAlignedijkRangeOfBeamElement( ijk, ijk_range );
+    }
+  }
   else
   {
     // fill in remaining nodes
@@ -484,7 +494,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElementToBinsUsingEleXAABB(
     {
       DRT::Node const * const node = nodes[j];
       DistributeNodeToijk( discret, node, disnp, ijk );
-      AddijkToAxisAlignedijkRange( ijk, ijk_range );
+      AddijkToAxisAlignedijkRangeOfElement( ijk, ijk_range );
     }
   }
 
@@ -518,7 +528,28 @@ int BINSTRATEGY::BinningStrategy::GetNumberOfBinsInijkRange( int const ijk_range
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::AddijkToAxisAlignedijkRange(
+void BINSTRATEGY::BinningStrategy::AddijkToAxisAlignedijkRangeOfElement(
+    int const ijk[3],
+    int ijk_range[6]
+  ) const
+{
+  for( int dim = 0; dim < 3; ++dim )
+  {
+    if( ijk[dim] < ijk_range[dim * 2] )
+    {
+      ijk_range[dim * 2] = ijk[dim];
+    }
+
+    if( ijk[dim] > ijk_range[dim * 2 + 1] )
+    {
+      ijk_range[dim * 2 + 1] = ijk[dim];
+    }
+  }
+}
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::AddijkToAxisAlignedijkRangeOfBeamElement(
     int const ijk[3],
     int ijk_range[6]
   ) const
@@ -576,10 +607,10 @@ void BINSTRATEGY::BinningStrategy::BuildAxisAlignedijkRangeForRigidSphere(
     double* coords = currpos;
     coords[j] += radius;
     ConvertPosToijk( coords, ijk );
-    AddijkToAxisAlignedijkRange( ijk, ijk_range );
+    AddijkToAxisAlignedijkRangeOfElement( ijk, ijk_range );
     coords[j] -= (2.0 * radius);
     ConvertPosToijk( coords, ijk );
-    AddijkToAxisAlignedijkRange( ijk, ijk_range );
+    AddijkToAxisAlignedijkRangeOfElement( ijk, ijk_range );
     coords[j] += radius;
   }
 }
