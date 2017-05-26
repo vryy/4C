@@ -101,6 +101,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   theta_(cv0dparams.get("TIMINT_THETA",0.5)),
   enhanced_output_(DRT::INPUT::IntegralValue<int>(cv0dparams,"ENHANCED_OUTPUT")),
   ptc_3d0d_(DRT::INPUT::IntegralValue<int>(cv0dparams,"PTC_3D0D")),
+  k_ptc_(cv0dparams.get("K_PTC",0.0)),
   totaltime_(0.0),
   linsolveerror_(0),
   strparams_(strparams),
@@ -128,13 +129,6 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
       dserror("Unknown integration strategy!");
       break;
   }
-
-  // safety check
-  if(ptc_3d0d_ == true)
-    if(myrank_ == 0)
-      std::cout << "*** WARNING: You have set PTC_3D0D to 'Yes', however it most certainly will not be activated unless "
-          "you've explicitly set (hacked) this option in the structural solver! This is still experimental "
-          "functionality... ***" << std::endl;
 
   // Map containing Dirichlet DOFs
   {

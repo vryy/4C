@@ -2913,11 +2913,28 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     normcardvasc0ddofincr_ = cardvasc0dman_->GetCardiovascular0DDofIncrNorm();
     timer_->ResetStartTime();
 
+    double nc;
+    double ncstr; fres_->NormInf(&ncstr);
+    double nc0d = 0.0;//cardvasc0dman_->GetCardiovascular0DRHSInfNorm();
+    if(ncstr >= nc0d) nc = ncstr;
+    else nc = nc0d;
+
+    double dti = cardvasc0dman_->Get_k_ptc();
+
+    const bool ptc_3D0D = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->Cardiovascular0DStructuralParams(),"PTC_3D0D");
+
     // equilibrium iteration loop
     while ( ( (not Converged() and (not linsolve_error) and (not element_error)) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
     {
       // make negative residual
       fres_->Scale(-1.0);
+
+      // modify stiffness matrix with dti
+      if(ptc_3D0D)
+      {
+        if (myrank_ == 0 and dti>0.0)
+          IO::cout << "k_ptc = " << dti << IO::endl;
+      }
 
       // uncomplete stiffness matrix, so stuff can be inserted again
       // stiff_->UnComplete();
@@ -2940,15 +2957,15 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // linear solver call (contact / meshtying case or default)
       if (HaveContactMeshtying())
-        linsolve_error = CmtWindkConstrLinearSolve(0.0);
+        linsolve_error = CmtWindkConstrLinearSolve(dti);
       else
       {
         // Call Cardiovascular0D solver to solve system
-        linsolve_error = cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_,0.0);
+        linsolve_error = cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_,dti);
       }
 
       // check for problems in linear solver
-      // however we only care about this if we have a fancy divcont action (meaning function will return 0)
+      // however we only care about this if we have a fancy divcont action  (meaning function will return 0)
       linsolve_error=LinSolveErrorCheck(linsolve_error);
 
       // recover contact / meshtying Lagrange multipliers
@@ -2971,7 +2988,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // set flag for element error in form of a negative Jacobian determinant
       // in parameter list in case of potential continuation
-      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      if (divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err or divcontype_==INPAR::STR::divcont_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
       {
         params.set<bool>("tolerate_errors",true);
         params.set<bool>("eval_error",false);
@@ -2983,7 +3000,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // check for element error in form of a negative Jacobian determinant
       // in case of potential continuation
-      if (divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
+      if (divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err or divcontype_==INPAR::STR::divcont_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err)
         element_error = ElementErrorCheck(params.get<bool>("eval_error"));
 
       // blank residual at (locally oriented) Dirichlet DOFs
@@ -3031,6 +3048,21 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // print stuff
       PrintNewtonIter();
+
+      // update ptc
+      if(ptc_3D0D)
+      {
+        double np;
+        double npstr; fres_->NormInf(&npstr);
+        double np0d = 0.0;//cardvasc0dman_->GetCardiovascular0DRHSInfNorm();
+        if(npstr >= np0d) np = npstr;
+        else np = np0d;
+
+        dti *= (np/nc);
+        dti = std::max(dti,0.0);
+
+        nc = np;
+      }
 
       // increment equilibrium loop index
       iter_ += 1;

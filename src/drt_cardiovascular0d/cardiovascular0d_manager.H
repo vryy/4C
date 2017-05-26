@@ -374,6 +374,25 @@ namespace UTILS
       return is_periodic_;
     };
 
+    double Get_k_ptc() const
+    {
+      return k_ptc_;
+    };
+
+    void Modify_k_ptc(const double sum, const double fac)
+    {
+      // increase PTC factor
+      if(k_ptc_==0.0) k_ptc_+=sum;
+      else k_ptc_*=fac;
+    };
+
+    void Reset_k_ptc()
+    {
+      // reset PTC factor - for adaptivity!
+      k_ptc_=0.0;
+    };
+
+
   private:
 
     // don't want = operator, cctor and destructor
@@ -434,6 +453,7 @@ namespace UTILS
     const double theta_;
     const bool enhanced_output_;
     const bool ptc_3d0d_;
+    double k_ptc_;
     double totaltime_;
     int linsolveerror_;
     Teuchos::ParameterList strparams_; ///< structure input parameters
