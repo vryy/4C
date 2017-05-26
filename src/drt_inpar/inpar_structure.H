@@ -374,7 +374,7 @@ namespace INPAR
       divcont_rand_adapt_step_ele_err,    ///< adapt randomly time step and carry on with simulation, including acceptance of element errors in form of negative Jacobian determinant
       divcont_repeat_simulation,  ///< repeat the whole simulation
       divcont_adapt_penaltycontact,  ///< slightly adapt the penalty contact parameter if timestep doesn't converge
-      divcont_adapt_3D0Dptc_ele_err ///< adaptive pseudo-transient continuation of strucural part of 3D0D-coupled problem
+      divcont_adapt_3D0Dptc_ele_err ///< adaptive pseudo-transient continuation of structural part of 3D0D-coupled problem
     };
 
     /// Map  enum to string

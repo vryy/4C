@@ -401,7 +401,7 @@ namespace UTILS
 
 
     Teuchos::RCP<DRT::Discretization> actdisc_; ///< discretization where elements of cardiovascular0d boundary live in
-    int myrank_;
+    int myrank_; ///< processor
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Cardiovascular0DDofSet> cardiovascular0ddofset_; ///< degrees of freedom of pressures
     Teuchos::RCP<Epetra_Map> cardiovascular0dmap_;  ///< unique map of Cardiovascular0D values
@@ -431,7 +431,7 @@ namespace UTILS
     int numCardiovascular0DID_;  ///< number of Cardiovascular0D bcs
     int Cardiovascular0DID_;  ///< smallest Cardiovascular0D bc id
     int offsetID_;  ///< smallest Cardiovascular0D bc id
-    std::vector<int> currentID_;
+    std::vector<int> currentID_; ///< bc id
     bool havecardiovascular0d_;  ///< are there Cardiovascular0D bcs at all?
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_model_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_4elementwindkessel_;
@@ -449,13 +449,13 @@ namespace UTILS
     double tolres_cardvasc0d_; ///< tolerace for cardiovascular0d residual
     INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice_;
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
-    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
-    const double theta_;
-    const bool enhanced_output_;
-    const bool ptc_3d0d_;
-    double k_ptc_;
-    double totaltime_;
-    int linsolveerror_;
+    Teuchos::RCP<Epetra_Vector> zeros_;  ///< a zero vector of full length
+    const double theta_; ///< time-integration factor for One Step Theta scheme
+    const bool enhanced_output_; ///< for enhanced output
+    const bool ptc_3d0d_; ///< if we want to use PTC (pseudo-transient continuation)
+    double k_ptc_; ///< PTC factor, stiff*incr + k_ptc_ * Id = -red
+    double totaltime_; ///< total simulation time
+    int linsolveerror_; ///< indicates error / problem in linear solver
     Teuchos::ParameterList strparams_; ///< structure input parameters
     Teuchos::ParameterList cv0dparams_; ///< 0D cardiovascular input parameters
     INPAR::STR::IntegrationStrategy intstrat_; ///< structural time-integration strategy (old vs. standard)
