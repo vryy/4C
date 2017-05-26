@@ -136,6 +136,9 @@ void GEO::MESHFREE::BoundingBox::InitBoundingBoxDiscretization()
   {
     boxdiscret_ = DRT::Problem::Instance()->GetDis( "boundingbox" );
 
+    if ( boxdiscret_->Filled() == false )
+      boxdiscret_->FillComplete( true, false, false );
+
     // create fully overlapping boundingbox discret
     Teuchos::RCP<Epetra_Map> rednodecolmap = LINALG::AllreduceEMap( *boxdiscret_->NodeRowMap() );
     Teuchos::RCP<Epetra_Map> redelecolmap = LINALG::AllreduceEMap( *boxdiscret_->ElementRowMap() );

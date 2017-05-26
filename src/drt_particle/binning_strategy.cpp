@@ -1208,24 +1208,21 @@ void BINSTRATEGY::BinningStrategy::ExtendBinGhosting(
   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting( bindis_ , bincolmap , assigndegreesoffreedom , false , true );
 
 #ifdef DEBUG
-
   // check whether each proc has only particles that are within bins on this proc
-  for(int k=0; k<bindis_->NumMyColElements(); k++)
+  for ( int k = 0; k<bindis_->NumMyColElements(); ++k )
   {
     int binid = bindis_->lColElement(k)->Id();
     DRT::Node** particles = bindis_->lColElement(k)->Nodes();
 
-    for(int iparticle=0; iparticle<bindis_->lColElement(k)->NumNode(); iparticle++)
+    for ( int iparticle = 0; iparticle < bindis_->lColElement(k)->NumNode(); ++iparticle )
     {
-      int ijk[3] = {-1,-1,-1};
-      for(int dim=0; dim<3; ++dim)
-      {
-        ijk[dim] = (int)((particles[iparticle]->X()[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]);
-      }
+      double const* pos = particles[iparticle]->X();
+      int ijk[3] = { -1, -1, -1 };
+      ConvertPosToijk( pos, ijk );
 
-      int gidofbin = ConvertijkToGid(&ijk[0]);
-      if(gidofbin != binid)
-        dserror("after ghosting: particle which should be in bin no. %i is in %i",gidofbin,binid);
+      int gidofbin = ConvertijkToGid( &ijk[0] );
+      if ( gidofbin != binid )
+        dserror("after ghosting: particle which should be in bin no. %i is in %i", gidofbin, binid );
     }
   }
 #endif
