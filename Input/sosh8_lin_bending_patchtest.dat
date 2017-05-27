@@ -50,7 +50,7 @@ Forcing                         Term Initial Tolerance = 0.1
 Forcing                         Term Maximum Tolerance = 0.01
 Forcing                         Term Method = Constant
 Forcing                         Term Minimum Tolerance = 1e-06
-Rescue                          Bad Newton Solver = Yes
+Rescue                          Bad Newton Solve = Yes
 ---------------------------------------STRUCT NOX/Direction/Steepest Descent
 Scaling                         Type = None
 ------------------------------------------------------STRUCT NOX/Line Search
