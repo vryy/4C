@@ -1952,7 +1952,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror, int eleerror)
 int STR::TimIntImpl::LinSolveErrorCheck(int linerror)
 {
   // we only care about problems in the linear solver if we have a fancy divcont action
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact) )
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact or divcontype_==INPAR::STR::divcont_adapt_3D0Dptc_ele_err) )
   {
     if (myrank_ == 0)
     IO::cout<< "Linear solver is having trouble " << IO::endl;
