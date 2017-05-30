@@ -734,6 +734,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_remodelfiber:
   case INPAR::MAT::m_growth_aniso_strain:
   case INPAR::MAT::m_growth_aniso_stress:
+  case INPAR::MAT::m_growth_aniso_strain_const_trig:
+  case INPAR::MAT::m_growth_aniso_stress_const_trig:
   case INPAR::MAT::m_growth_iso_stress:
   case INPAR::MAT::m_growth_ac:
   case INPAR::MAT::m_growth_ac_radial:

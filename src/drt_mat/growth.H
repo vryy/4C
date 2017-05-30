@@ -570,6 +570,8 @@ class GrowthLaw;
     Teuchos::RCP<std::vector<double> > tr_mandel_e_;
     /// elastic fiber stretch - for postprocessing
     Teuchos::RCP<std::vector<double> > lambda_fib_e_;
+    /// growth trigger for aniso stress / strain growth laws with constant prescribed trigger (element-wise, in .dat file!)
+    double growthtrig_const_;
 
   private:
 

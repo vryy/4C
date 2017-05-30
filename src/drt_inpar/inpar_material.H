@@ -80,6 +80,8 @@ namespace INPAR
       m_fluidporo_phaselaw_byfunction,         ///< pressure-saturation relationship defined by functions in input file
       m_growth_aniso_strain,                   ///< anisotropic strain-dependent growth law
       m_growth_aniso_stress,                   ///< anisotropic stress-dependent growth law
+      m_growth_aniso_strain_const_trig,        ///< anisotropic strain-dependent growth law with constant prescribed trigger (for multiscale in time)
+      m_growth_aniso_stress_const_trig,        ///< anisotropic stress-dependent growth law with constant prescribed trigger (for multiscale in time)
       m_growth_iso_stress,                     ///< isotropic stress-dependent growth law
       m_growth_ac,                             ///< simple scalar depended growth law
       m_growth_ac_radial,                      ///< scalar depended growth in radial direction

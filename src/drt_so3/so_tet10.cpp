@@ -93,6 +93,7 @@ void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition( std::map<std::string,s
     .AddOptionalNamedDouble("STRENGTH")
     .AddOptionalNamedDouble("HU")
     .AddOptionalNamedDouble("lambda")
+    .AddOptionalNamedDouble("GROWTHTRIG")
     ;
 }
 

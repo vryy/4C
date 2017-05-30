@@ -93,6 +93,7 @@ void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("HU")
     .AddOptionalNamedDouble("lambda")
+    .AddOptionalNamedDouble("GROWTHTRIG")
     ;
 }
 

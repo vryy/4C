@@ -90,6 +90,7 @@ void DRT::ELEMENTS::So_hex20Type::SetupElementDefinition( std::map<std::string,s
     .AddOptionalNamedDouble("STRENGTH")
     .AddOptionalNamedDouble("HU")
     .AddOptionalNamedDouble("lambda")
+    .AddOptionalNamedDouble("GROWTHTRIG")
     ;
 }
 

@@ -98,6 +98,7 @@ void DRT::ELEMENTS::So_tet4Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("HU")
     .AddOptionalNamedDouble("lambda")
+    .AddOptionalNamedDouble("GROWTHTRIG")
     ;
 }
 

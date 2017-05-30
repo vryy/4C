@@ -101,6 +101,7 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDouble("STRENGTH")
     .AddOptionalNamedDouble("HU")
     .AddOptionalNamedDouble("lambda")
+    .AddOptionalNamedDouble("GROWTHTRIG")
     ;
 }
 

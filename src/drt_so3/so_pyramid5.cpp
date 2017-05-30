@@ -92,6 +92,7 @@ void DRT::ELEMENTS::So_pyramid5Type::SetupElementDefinition( std::map<std::strin
     .AddOptionalNamedDouble("STRENGTH")
     .AddOptionalNamedDouble("HU")
     .AddOptionalNamedDouble("lambda")
+    .AddOptionalNamedDouble("GROWTHTRIG")
     ;
 }
 

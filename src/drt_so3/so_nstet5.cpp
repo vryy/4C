@@ -157,6 +157,7 @@ void DRT::ELEMENTS::NStet5Type::SetupElementDefinition( std::map<std::string,std
   .AddOptionalNamedDoubleVector("FIBER3",3)
   .AddOptionalNamedDouble("HU")
   .AddOptionalNamedDouble("lambda")
+  .AddOptionalNamedDouble("GROWTHTRIG")
   ;
 }
 

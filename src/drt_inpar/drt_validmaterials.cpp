@@ -1967,6 +1967,50 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // anisotropic strain-dependent growth law with constant prescribed trigger (for multiscale in time)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStrainConstTrig",
+                                            "growth law depending on prescribed constant elastic stretch in fiber direction, growth in fiber direction",
+                                            INPAR::MAT::m_growth_aniso_strain_const_trig));
+
+    AddNamedReal(m,"TAU","growth time scale");
+    AddNamedReal(m,"TAU_REV","reverse growth time scale");
+    AddNamedReal(m,"THETA_MIN","lower limit for growth stretch");
+    AddNamedReal(m,"THETA_MAX","upper limit for growth stretch");
+    AddNamedReal(m,"GAMMA","growth non-linearity");
+    AddNamedReal(m,"GAMMA_REV","reverse growth non-linearity");
+    AddNamedReal(m,"LAMBDA_CRIT","critical fiber stretch");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  // anisotropic strain-dependent growth law with constant prescribed trigger (for multiscale in time)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_GrowthAnisoStressConstTrig",
+                                            "growth law depending on prescribed constant elastic Mandel stress, growth perpendicular to fiber direction",
+                                            INPAR::MAT::m_growth_aniso_stress_const_trig));
+
+    AddNamedReal(m,"TAU","growth time scale");
+    AddNamedReal(m,"TAU_REV","reverse growth time scale");
+    AddNamedReal(m,"THETA_MIN","lower limit for growth stretch");
+    AddNamedReal(m,"THETA_MAX","upper limit for growth stretch");
+    AddNamedReal(m,"GAMMA","growth non-linearity");
+    AddNamedReal(m,"GAMMA_REV","reverse growth non-linearity");
+    AddNamedReal(m,"P_CRIT","critical pressure");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // isotropic growth law (cf. Diss Tinkl 2015, LNM)

@@ -82,6 +82,7 @@ void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition( std::map<std::s
     .AddOptionalNamedDoubleVector("FIBER3",3)
     .AddOptionalNamedDouble("HU")
     .AddOptionalNamedDouble("lambda")
+    .AddOptionalNamedDouble("GROWTHTRIG")
     ;
 }
 

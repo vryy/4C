@@ -64,6 +64,22 @@ MAT::PAR::Growth::Growth(
     growthlaw_ = params->CreateGrowthLaw();
     break;
   }
+  case INPAR::MAT::m_growth_aniso_strain_const_trig:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStrainConstTrig(curmat));
+    MAT::PAR::GrowthLawAnisoStrainConstTrig* params = static_cast<MAT::PAR::GrowthLawAnisoStrainConstTrig*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
+  case INPAR::MAT::m_growth_aniso_stress_const_trig:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStressConstTrig(curmat));
+    MAT::PAR::GrowthLawAnisoStressConstTrig* params = static_cast<MAT::PAR::GrowthLawAnisoStressConstTrig*>(curmat->Parameter());
+    growthlaw_ = params->CreateGrowthLaw();
+    break;
+  }
   case INPAR::MAT::m_growth_iso_stress:
   {
     if (curmat->Parameter() == NULL)
@@ -119,6 +135,8 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
   {
   case INPAR::MAT::m_growth_aniso_strain:
   case INPAR::MAT::m_growth_aniso_stress:
+  case INPAR::MAT::m_growth_aniso_strain_const_trig:
+  case INPAR::MAT::m_growth_aniso_stress_const_trig:
   case INPAR::MAT::m_growth_iso_stress:
   case INPAR::MAT::m_growth_ac:
   case INPAR::MAT::m_growth_ac_radial:
@@ -463,6 +481,7 @@ MAT::GrowthVolumetric::GrowthVolumetric()
   : Growth(),
     tr_mandel_e_(Teuchos::null),
     lambda_fib_e_(Teuchos::null),
+    growthtrig_const_(0.0),
     paramsVolumetric_(NULL),
     refdir_(true),
     curdir_(Teuchos::null),
@@ -476,6 +495,7 @@ MAT::GrowthVolumetric::GrowthVolumetric(MAT::PAR::Growth* params)
   : Growth(params),
     tr_mandel_e_(Teuchos::null),
     lambda_fib_e_(Teuchos::null),
+    growthtrig_const_(0.0),
     paramsVolumetric_(params),
     refdir_(true),
     curdir_(Teuchos::null),
@@ -709,7 +729,7 @@ void MAT::GrowthVolumetric::EvaluateGrowth(double* theta,
   double thetaold = ThetaOld_atgp(gp);
 
   MAT::Growth* matgrowth = this;
-  Parameter()->growthlaw_->Evaluate(theta,thetaold,dthetadC,*matgrowth,defgrd,glstrain,refdir_,curdir_,F_g_hist_,params,eleGID);
+  Parameter()->growthlaw_->Evaluate(theta,thetaold,dthetadC,*matgrowth,defgrd,glstrain,refdir_,curdir_,F_g_hist_,growthtrig_const_,params,eleGID);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -748,7 +768,7 @@ void MAT::GrowthVolumetric::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* defg
     double thetaold = ThetaOld()->at(gp);
 
     MAT::Growth* matgrowth = this;
-    Parameter()->growthlaw_->Evaluate(&theta,thetaold,linmass_disp,*matgrowth,defgrd,glstrain,refdir_,curdir_,F_g_hist_,params,eleGID);
+    Parameter()->growthlaw_->Evaluate(&theta,thetaold,linmass_disp,*matgrowth,defgrd,glstrain,refdir_,curdir_,F_g_hist_,growthtrig_const_,params,eleGID);
 
     const double density_deriv_scale = Parameter()->growthlaw_->DensityDerivScale(theta);
     linmass_disp->Scale(density_deriv_scale * Matelastic()->Density());
@@ -1206,9 +1226,9 @@ void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
+
   // matid
   int matid = -1;
-
   MAT::PAR::Growth* params=Parameter();
   if (params != NULL) matid = params->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
@@ -1229,6 +1249,9 @@ void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
   {
     AddtoPack(data,lambda_fib_e_->at(gp));
   }
+
+  // Pack prescribed const growth trigger
+  AddtoPack(data,growthtrig_const_);
 
   // Pack internal variables
   for (int i = 0; i < 3; ++i)
@@ -1319,6 +1342,10 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
     ExtractfromPack(position,data,a);
     lambda_fib_e_->at(gp) = a;
   }
+
+  double growthtrigconst;
+  ExtractfromPack(position,data,growthtrigconst);
+  growthtrig_const_ = growthtrigconst;
 
   // unpack growth internal variables
   // Pack internal variables
@@ -1416,6 +1443,28 @@ void MAT::GrowthVolumetric::Setup(int numgp, DRT::INPUT::LineDefinition* linedef
       dserror("If you want growth in fiber direction you need to specify FIBER1 in your input file!");
 
     ReadFiber(linedef,"FIBER1",refdir_);
+
+    // only refdir is used - rest remains unused...
+    curdir_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
+    curdir_for_update_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);
+    LINALG::Matrix<3,3> Id(true);
+    for (int i = 0; i < 3; i++)
+      Id(i,i) = 1.0;
+    F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,Id);
+  }
+    break;
+  case INPAR::MAT::m_growth_aniso_strain_const_trig:
+  case INPAR::MAT::m_growth_aniso_stress_const_trig:
+  {
+    // FIBER1 nomenclature
+    if (not (linedef->HaveNamed("FIBER1")))
+      dserror("If you want growth in fiber direction you need to specify FIBER1 in your input file!");
+
+    ReadFiber(linedef,"FIBER1",refdir_);
+
+    linedef->ExtractDouble("GROWTHTRIG",growthtrig_const_);
+    if (not (linedef->HaveNamed("GROWTHTRIG")))
+      dserror("You need to specify GROWTHTRIG in your input file!");
 
     // only refdir is used - rest remains unused...
     curdir_=std::vector<LINALG::Matrix<3,1> >(numgp,refdir_);

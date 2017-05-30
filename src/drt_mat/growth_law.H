@@ -95,6 +95,7 @@ namespace MAT
         const LINALG::Matrix<3,1>& refdir,
         const std::vector<LINALG::Matrix<3,1> >& curdir,
         const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+        const double& consttrig,
         Teuchos::ParameterList& params,
         const int eleGID ) = 0;
 
@@ -274,7 +275,9 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    virtual void Evaluate(double* theta,
+    virtual void Evaluate
+    (
+        double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* dthetadC,
         MAT::Growth& matgrowth,
@@ -283,8 +286,10 @@ namespace MAT
         const LINALG::Matrix<3,1>& refdir,
         const std::vector<LINALG::Matrix<3,1> >& curdir,
         const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+        const double& consttrig,
         Teuchos::ParameterList& params,
-        const int eleGID);
+        const int eleGID
+    );
 
     /*! \brief derivative of theta wrt parameters
      *
@@ -340,11 +345,12 @@ namespace MAT
 
     virtual void EvaluateGrowthTrigger
     (
-        double & growthtrig,
+        double& growthtrig,
         const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const LINALG::Matrix<6,1>& Cdachvec,
         const LINALG::Matrix<3,1>& direction,
-        const double theta
+        const double& theta,
+        const double& consttrig
     ) = 0;
 
     /*! Evaluate growth function wrt growth factor theta
@@ -469,7 +475,9 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    virtual void Evaluate(double* theta,
+    virtual void Evaluate
+    (
+        double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* dthetadC,
         MAT::Growth& matgrowth,
@@ -478,8 +486,10 @@ namespace MAT
         const LINALG::Matrix<3,1>& refdir,
         const std::vector<LINALG::Matrix<3,1> >& curdir,
         const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+        const double& consttrig,
         Teuchos::ParameterList& params,
-        const int eleGID ) = 0;
+        const int eleGID
+    ) = 0;
 
     /*! \brief derivative of theta wrt parameters
      *
@@ -628,11 +638,12 @@ namespace MAT
 
     virtual void EvaluateGrowthTrigger
     (
-        double & growthtrig,
+        double& growthtrig,
         const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const LINALG::Matrix<6,1>& Cdachvec,
         const LINALG::Matrix<3,1>& direction,
-        const double theta
+        const double& theta,
+        const double& consttrig
     );
 
     /*! Evaluate growth function wrt growth factor theta
@@ -805,11 +816,12 @@ namespace MAT
 
     virtual void EvaluateGrowthTrigger
     (
-        double & growthtrig,
+        double& growthtrig,
         const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const LINALG::Matrix<6,1>& Cdachvec,
         const LINALG::Matrix<3,1>& direction,
-        const double theta
+        const double& theta,
+        const double& consttrig
     );
 
     /*! Evaluate growth function wrt growth factor theta
@@ -890,6 +902,256 @@ namespace MAT
     MAT::PAR::GrowthLawAnisoStress* Parameter() {return dynamic_cast<MAT::PAR::GrowthLawAnisoStress*>(MAT::GrowthLawDyn::Parameter()); };
 
   };
+
+
+  namespace PAR
+  {
+  /*----------------------------------------------------------------------*/
+  /*! \class GrowthLawAnisoStrainConstTrig
+       \brief Common parameters for growth law
+
+       \author hirschvogel
+       \date 5/2017
+   */
+    class GrowthLawAnisoStrainConstTrig : public GrowthLawAnisoStrain
+    {
+    public:
+
+      /// standard constructor
+      GrowthLawAnisoStrainConstTrig(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~GrowthLawAnisoStrainConstTrig() { ; }
+
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// create growth law instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+
+    };  // class Growth
+
+  }  // namespace PAR
+
+
+  /*----------------------------------------------------------------------*/
+  /*! \class GrowthLawAnisoStrainConstTrig
+   */
+  class GrowthLawAnisoStrainConstTrig : public GrowthLawAnisoStrain
+  {
+
+  public:
+
+    /// construct empty material object
+    GrowthLawAnisoStrainConstTrig();
+    explicit GrowthLawAnisoStrainConstTrig(MAT::PAR::GrowthLawAnisoStrainConstTrig* params);
+
+    /// destructor
+    virtual ~GrowthLawAnisoStrainConstTrig() { ; }
+
+    //! @name Evaluation methods for the ode's rhs
+    //@{
+
+
+    virtual void EvaluateGrowthTrigger
+    (
+        double& growthtrig,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const LINALG::Matrix<6,1>& Cdachvec,
+        const LINALG::Matrix<3,1>& direction,
+        const double& theta,
+        const double& consttrig
+    );
+
+    /*! Evaluate growth function wrt growth factor theta
+     * \param Out
+     * dgrowthfunctheta - derivation of the growthfunction wrt theta
+     * \param In
+     * traceM - the trace of the mandel stress
+     * \param In
+     * theta - the current growth factor theta
+     * \param In
+     * Cdach - cauchy green tensor of the elastic part of the deformation
+     * \param In
+     * cmatelastic - elastic part of the cmat
+     *
+     */
+    virtual void EvaluateGrowthFunctionDerivTheta
+    (
+        double & dgrowthfunctheta,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const LINALG::Matrix<3,3>& F_g,
+        const LINALG::Matrix<3,1>& direction
+    );
+
+    /*! Evaluate growth function wrt right cauchy green tensor
+     * \param Out
+     * dgrowthfuncdC - derivation of the growthfunction wrt theta
+     * \param In
+     * traceM - the trace of the mandel stress
+     * \param In
+     * theta - the current growth factor theta
+     * \param In
+     * C - cauchy green tensor of the whole deformation
+     * \param In
+     * S - the stresses
+     * \param In
+     * cmatelastic - elastic part of the cmat
+     */
+    virtual void EvaluateGrowthFunctionDerivC
+    (
+        LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const LINALG::Matrix<3,1>& direction
+    );
+
+    //@}
+
+    //! material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_aniso_strain_const_trig; };
+
+    //! material parameters
+    MAT::PAR::GrowthLawAnisoStrainConstTrig* Parameter() {return dynamic_cast<MAT::PAR::GrowthLawAnisoStrainConstTrig*>(MAT::GrowthLawDyn::Parameter()); };
+
+  };
+
+
+
+
+
+  namespace PAR
+  {
+  /*----------------------------------------------------------------------*/
+  /*! \class GrowthLawAnisoStressConstTrig
+       \brief Common parameters for growth law
+
+       \author hirschvogel
+       \date 5/2017
+   */
+    class GrowthLawAnisoStressConstTrig : public GrowthLawAnisoStress
+    {
+    public:
+
+      /// standard constructor
+      GrowthLawAnisoStressConstTrig(
+        Teuchos::RCP<MAT::PAR::Material> matdata
+        );
+
+      /// destructor
+      virtual ~GrowthLawAnisoStressConstTrig() { ; }
+
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+      /// create growth law instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+
+    };  // class Growth
+
+  }  // namespace PAR
+
+
+  /*----------------------------------------------------------------------*/
+  /*! \class GrowthLawAnisoStressConstTrig
+   */
+  class GrowthLawAnisoStressConstTrig : public GrowthLawAnisoStress
+  {
+
+  public:
+
+    /// construct empty material object
+    GrowthLawAnisoStressConstTrig();
+    explicit GrowthLawAnisoStressConstTrig(MAT::PAR::GrowthLawAnisoStressConstTrig* params);
+
+    /// destructor
+    virtual ~GrowthLawAnisoStressConstTrig() { ; }
+
+    //! @name Evaluation methods for the ode's rhs
+    //@{
+
+
+    virtual void EvaluateGrowthTrigger
+    (
+        double& growthtrig,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const LINALG::Matrix<6,1>& Cdachvec,
+        const LINALG::Matrix<3,1>& direction,
+        const double& theta,
+        const double& consttrig
+    );
+
+    /*! Evaluate growth function wrt growth factor theta
+     * \param Out
+     * dgrowthfunctheta - derivation of the growthfunction wrt theta
+     * \param In
+     * traceM - the trace of the mandel stress
+     * \param In
+     * theta - the current growth factor theta
+     * \param In
+     * Cdach - cauchy green tensor of the elastic part of the deformation
+     * \param In
+     * cmatelastic - elastic part of the cmat
+     *
+     */
+    virtual void EvaluateGrowthFunctionDerivTheta
+    (
+        double & dgrowthfunctheta,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const LINALG::Matrix<3,3>& F_g,
+        const LINALG::Matrix<3,1>& direction
+    );
+
+    /*! Evaluate growth function wrt right cauchy green tensor
+     * \param Out
+     * dgrowthfuncdC - derivation of the growthfunction wrt theta
+     * \param In
+     * traceM - the trace of the mandel stress
+     * \param In
+     * theta - the current growth factor theta
+     * \param In
+     * C - cauchy green tensor of the whole deformation
+     * \param In
+     * S - the stresses
+     * \param In
+     * cmatelastic - elastic part of the cmat
+     */
+    virtual void EvaluateGrowthFunctionDerivC
+    (
+        LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double traceM,
+        double theta,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const LINALG::Matrix<3,1>& direction
+    );
+
+    //@}
+
+    //! material type
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_aniso_stress_const_trig; };
+
+    //! material parameters
+    MAT::PAR::GrowthLawAnisoStressConstTrig* Parameter() {return dynamic_cast<MAT::PAR::GrowthLawAnisoStressConstTrig*>(MAT::GrowthLawDyn::Parameter()); };
+
+  };
+
+
+
 
 
 
@@ -988,11 +1250,12 @@ namespace MAT
 
     virtual void EvaluateGrowthTrigger
     (
-        double & growthtrig,
+        double& growthtrig,
         const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
         const LINALG::Matrix<6,1>& Cdachvec,
         const LINALG::Matrix<3,1>& direction,
-        const double theta
+        const double& theta,
+        const double& consttrig
     );
 
     /*! Evaluate growth function wrt growth factor theta
@@ -1179,6 +1442,7 @@ namespace MAT
       const LINALG::Matrix<3,1>& refdir,
       const std::vector<LINALG::Matrix<3,1> >& curdir,
       const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+      const double& consttrig,
       Teuchos::ParameterList& params,
       const int eleGID
     );
@@ -1282,6 +1546,7 @@ namespace MAT
       const LINALG::Matrix<3,1>& refdir,
       const std::vector<LINALG::Matrix<3,1> >& curdir,
       const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+      const double& consttrig,
       Teuchos::ParameterList& params,
       const int eleGID
     );
@@ -1384,6 +1649,7 @@ namespace MAT
       const LINALG::Matrix<3,1>& refdir,
       const std::vector<LINALG::Matrix<3,1> >& curdir,
       const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+      const double& consttrig,
       Teuchos::ParameterList& params,
       const int eleGID
     );
@@ -1500,6 +1766,7 @@ namespace MAT
       const LINALG::Matrix<3,1>& refdir,
       const std::vector<LINALG::Matrix<3,1> >& curdir,
       const std::vector<LINALG::Matrix<3,3> >& histdefgrd,
+      const double& consttrig,
       Teuchos::ParameterList& params,
       const int eleGID
     );
