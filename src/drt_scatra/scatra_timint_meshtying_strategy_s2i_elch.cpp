@@ -101,7 +101,7 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockMaps(
         if(scatratimint_->Discretization()->HaveGlobalNode(nodegid) and scatratimint_->Discretization()->gNode(nodegid)->Owner() == scatratimint_->Discretization()->Comm().MyPID())
         {
           // extract dof IDs associated with current node
-          const std::vector<int> nodedofs = scatratimint_->Discretization()->Dof(scatratimint_->Discretization()->gNode(nodegid));
+          const std::vector<int> nodedofs = scatratimint_->Discretization()->Dof(0,scatratimint_->Discretization()->gNode(nodegid));
 
           // add concentration dof IDs to associated set
           std::copy(nodedofs.begin(),--nodedofs.end(),std::inserter(dofids[0],dofids[0].end()));

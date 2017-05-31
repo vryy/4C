@@ -2772,7 +2772,7 @@ void SCATRA::MeshtyingStrategyS2I::BuildBlockMaps(
         if(scatratimint_->Discretization()->HaveGlobalNode(nodegid) and scatratimint_->Discretization()->gNode(nodegid)->Owner() == scatratimint_->Discretization()->Comm().MyPID())
         {
           // add dof IDs associated with current node to corresponding set
-          const std::vector<int> nodedofs = scatratimint_->Discretization()->Dof(scatratimint_->Discretization()->gNode(nodegid));
+          const std::vector<int> nodedofs = scatratimint_->Discretization()->Dof(0,scatratimint_->Discretization()->gNode(nodegid));
           std::copy(nodedofs.begin(),nodedofs.end(),std::inserter(dofids,dofids.end()));
         }
       }
