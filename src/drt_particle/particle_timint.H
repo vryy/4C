@@ -210,6 +210,9 @@ namespace PARTICLE
     //! Energy output
     virtual void OutputEnergy();
 
+    //! Meshfree rendering output
+    virtual void OutputMeshfreeRendering();
+
     //! output particle statistics
     void OutputParticleStatistics();
 
@@ -552,6 +555,7 @@ namespace PARTICLE
     const bool writevelacc_;  //!< write velocity and acceleration on/off
     const int writeresultsevery_;  //!< write state/stress/strain every given step
     const int writeenergyevery_;  //!< write system energy every given step
+    const int writerenderingevery_; //!< write meshfree rendering every given step
     const int writeparticlestatsevery_;  //!< write particle statistics every given step
     Teuchos::RCP<std::ofstream> energyfile_;  //!< output file for energy
     Teuchos::RCP<std::ofstream> particlestatsfile_;  //!< output file for particle statistics

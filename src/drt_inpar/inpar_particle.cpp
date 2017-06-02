@@ -63,6 +63,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    // Output type
    IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&particledyn);
    IntParameter("RESEVRYERGY",0,"write system energies every requested step",&particledyn);
+   IntParameter("RESEVRYREND",0,"write meshfree rendering every requested step",&particledyn);
    IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&particledyn);
    IntParameter("CONTACTFORCESEVRY",0,"output particle-particle and particle-wall contact forces to *.csv file every CONTACTFORCESEVRY steps",&particledyn);
    IntParameter("PARTICLESTATSEVRY",0,"output particle statistics to *.csv file every PARTICLESTATSEVRY steps",&particledyn);

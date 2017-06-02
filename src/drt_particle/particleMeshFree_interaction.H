@@ -172,6 +172,13 @@ namespace PARTICLE
     //! clear content, keep memory and keep interactions up to step-memory
     virtual void Clear(const int step, const int memory);
 
+    //! Apply coordinate shift in case of periodic boundary conditions
+    virtual void ShiftPeriodicBoundaryPair(
+        const LINALG::Matrix<3,1>& dis_i,
+        LINALG::Matrix<3,1>& dis_j,
+        const double& radius_1,
+        const double& radius_2);
+
     //@}
 
     //! @name interactions
@@ -275,8 +282,12 @@ namespace PARTICLE
 
     /// compute density - mesh free sense
     virtual void MF_mW(
-        const Teuchos::RCP<Epetra_Vector> densityn,
-        const bool withWalls = true,
+        const Teuchos::RCP<Epetra_Vector> mW,
+        const double extMulti = 1.0);
+
+    /// compute density - mesh free sense - wall contributions
+    virtual void MF_mW_Wall(
+        const Teuchos::RCP<Epetra_Vector> mW,
         const double extMulti = 1.0);
 
     /// compute density - mesh free sense - boundary particle contributions
@@ -367,15 +378,8 @@ namespace PARTICLE
      //! update the neighbours_op_ map
      virtual void UpdateWeights_op(const int step = -1);
 
-     //! build periodic boundary conditions                       meier 03/17 |
+     //! build periodic boundary conditions
      virtual void BuildPeriodicBC();
-
-     //! Apply coordinate shift in case of periodic boundary conditions
-     virtual void ShiftPeriodicBoundaryPair(
-         const LINALG::Matrix<3,1>& dis_i,
-         LINALG::Matrix<3,1>& dis_j,
-         const double& radius_1,
-         const double& radius_2);
 
     /// template to print neighbours
     template <typename obj>

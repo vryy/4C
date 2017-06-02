@@ -1551,7 +1551,7 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
 }
 
 /*-------------------------------------------------------------------*
-| extend ghosting according to bin distribution          ghamm 11/16 |
+ | extend ghosting according to bin distribution         ghamm 11/16 |
  *-------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::ExtendEleGhosting(
     Teuchos::RCP<DRT::Discretization> dis,
@@ -1559,8 +1559,7 @@ void BINSTRATEGY::BinningStrategy::ExtendEleGhosting(
     Teuchos::RCP<Epetra_Map> bincolmap,
     bool assigndegreesoffreedom,
     bool initelements,
-    bool doboundaryconditions,
-    bool checkghosting) const
+    bool doboundaryconditions) const
 {
   std::map<int, std::set<int> > rowelesinbin;
   DistributeRowElementsToBinsUsingEleXAABB(dis, rowelesinbin);

@@ -68,6 +68,7 @@ PARTICLE::TimInt::TimInt
   writevelacc_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_VEL_ACC")),
   writeresultsevery_(particledynparams.get<int>("RESULTSEVRY")),
   writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
+  writerenderingevery_(particledynparams.get<int>("RESEVRYREND")),
   writeparticlestatsevery_(particledynparams.get<int>("PARTICLESTATSEVRY")),
   energyfile_(Teuchos::null),
   particlestatsfile_(Teuchos::null),
@@ -629,7 +630,7 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
     interHandler_->SetStateVector(velConv, PARTICLE::VelConv);
 
   //In case of density summation, the new density and new pressure have been determined as very first step since they are required for all the following calculations
-  interHandler_->MF_mW(densityn_,false);
+  interHandler_->MF_mW(densityn_);
   //Determine also the new pressure and set state vectors for the new density and pressure
   interHandler_->SetStateVector(densityn_, PARTICLE::Density);
   bool solve_thermal_problem=DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM");
@@ -875,6 +876,12 @@ void PARTICLE::TimInt::OutputStep(bool forced_writerestart)
     OutputEnergy();
   }
 
+  // output meshfree rendering
+  if ( writerenderingevery_ and ((step_-restart_)%writerenderingevery_ == 0) )
+  {
+    OutputMeshfreeRendering();
+  }
+
   // output particle statistics
   if(writeparticlestatsevery_ and (step_-restart_) % writeparticlestatsevery_ == 0)
     OutputParticleStatistics();
@@ -950,14 +957,6 @@ void PARTICLE::TimInt::OutputRestart
     fflush(errfile_);
   }
 
-  Teuchos::RCP<Rendering> rendering = particle_algorithm_->GetRendering();
-  if (rendering != Teuchos::null)
-  {
-    rendering->UpdateStateVectors(discret_, (*dis_)(0), (*vel_)(0),
-        (*acc_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
-    rendering->OutputState();
-  }
-
   return;
 }
 
@@ -997,13 +996,7 @@ void PARTICLE::TimInt::OutputState
   // keeps memory usage bounded
   output_->ClearMapCache();
 
-  Teuchos::RCP<Rendering> rendering = particle_algorithm_->GetRendering();
-  if (rendering != Teuchos::null)
-  {
-    rendering->UpdateStateVectors(discret_, (*dis_)(0), (*vel_)(0),
-        (*acc_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
-    rendering->OutputState();
-  }
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1154,6 +1147,23 @@ void PARTICLE::TimInt::OutputEnergy()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | meshfree rendering output                               sfuchs 06/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::TimInt::OutputMeshfreeRendering()
+{
+  if(interHandler_ != Teuchos::null  and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree)
+  {
+    Teuchos::RCP<Rendering> rendering = particle_algorithm_->GetRendering();
+    if (rendering != Teuchos::null)
+    {
+      rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
+      rendering->OutputState();
+    }
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | output particle statistics                                fang 04/17 |

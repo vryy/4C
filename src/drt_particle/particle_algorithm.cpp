@@ -86,9 +86,9 @@ PARTICLE::Algorithm::Algorithm(
               "However, if you want to treat quasi-2D or -1D problems, set the input parameter WEIGHT_FUNCTION_DIM to WF_2D or WF_1D, respectively.\n"
               "In Particle Meshfree Interactions, the definition of the weight functions have to be adapted according to the number of space dimensions considered!");
 
-    switch(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION_DIM"))
+    if(MyRank() == 0)
     {
-      if(MyRank() == 0)
+      switch(DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION_DIM"))
       {
         case INPAR::PARTICLE::WF_3D :
           IO::cout << "Welcome to Particle Meshfree Interactions in 3D!" << IO::endl;
@@ -310,12 +310,6 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
   // update connectivity
   //UpdateHeatSourcesConnectivity(true);
-
-  if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RENDERING"))
-  {
-    INPAR::PARTICLE::WeightFunctionDim wf_dim=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WeightFunctionDim>(DRT::Problem::Instance()->ParticleParams(),"WEIGHT_FUNCTION_DIM");
-    rendering_ = Teuchos::rcp(new PARTICLE::Rendering(Teuchos::rcp(this,false),wf_dim));
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -523,7 +517,7 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   if(particlewalldis_ != Teuchos::null)
   {
     if( not moving_walls_)
-      BinStrategy()->ExtendEleGhosting(particlewalldis_, particlewallelecolmap_standardghosting_, BinColMap(), true, false, false, false);
+      BinStrategy()->ExtendEleGhosting(particlewalldis_, particlewallelecolmap_standardghosting_, BinColMap(), true, false, false);
 
     BuildElementToBinPointers(true);
   }
@@ -789,7 +783,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
     particlewallelecolmap_standardghosting_ = Teuchos::rcp(new Epetra_Map(*particlewalldis->ElementColMap()));
 
     // extend ghosting to the bin col map
-    BinStrategy()->ExtendEleGhosting(particlewalldis, particlewallelecolmap_standardghosting_, BinColMap(), false, false, false, false);
+    BinStrategy()->ExtendEleGhosting(particlewalldis, particlewallelecolmap_standardghosting_, BinColMap(), false, false, false);
   }
   else  // ... or otherwise do fully redundant storage of wall elements in case of moving boundaries
   {
@@ -1019,6 +1013,10 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
 void PARTICLE::Algorithm::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem::Instance()->AddFieldTest(particles_->CreateFieldTest());
+
+  if (GetRendering() != Teuchos::null)
+    DRT::Problem::Instance()->AddFieldTest(GetRendering()->CreateFieldTest());
+
   DRT::Problem::Instance()->TestAll(comm);
   return;
 }

@@ -328,8 +328,7 @@ namespace BINSTRATEGY
       Teuchos::RCP<Epetra_Map>          bincolmap,
       bool                              assigndegreesoffreedom,
       bool                              initelements,
-      bool                              doboundaryconditions,
-      bool                              checkghosting
+      bool                              doboundaryconditions
       ) const;
 
     /// collect information of content in bins from other procs via Round Robin loop

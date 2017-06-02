@@ -1851,6 +1851,7 @@ set(OBJS_DRT_PARTICLE
   src/drt_particle/particleMeshFree_weightFunction.cpp
   src/drt_particle/particleMeshFree_surfaceTensionInteractions.cpp
   src/drt_particle/particleMeshFree_rendering.cpp
+  src/drt_particle/particleMeshFree_rendering_resulttest.cpp
   src/drt_particle/particle_utils.cpp
 )
 set(OBJS_DRT_ACOU

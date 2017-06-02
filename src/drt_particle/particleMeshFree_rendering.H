@@ -2,115 +2,141 @@
 /*!
 \file particleMeshFree_rendering.H
 
-\brief Handler of the rendering-related stuff
+\brief rendering routine for smoothed particle hydrodynamics
 
-\level 1
+\level 3
 
-\maintainer  Christoph Meier
-             meier@lnm.mw.tum.de
+\maintainer  Sebastian Fuchs
+             fuchs@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
+             089 - 289 -15262
 
 *-----------------------------------------------------------------------*/
 
-#ifndef SRC_DRT_PARTICLE_PARTICLEMESHFREE_RENDERING_H_
-#define SRC_DRT_PARTICLE_PARTICLEMESHFREE_RENDERING_H_
+/*----------------------------------------------------------------------*
+ | definitions                                                          |
+ *----------------------------------------------------------------------*/
+#ifndef PARTICLEMESHFREE_RENDERING_H
+#define PARTICLEMESHFREE_RENDERING_H
 
-/*----------------------------------------------------------------------*/
-/* headers */
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Vector.h>
+/*----------------------------------------------------------------------*
+ | headers                                                              |
+ *----------------------------------------------------------------------*/
+#include "../drt_lib/drt_discret.H"
 #include <Epetra_FEVector.h>
-#include <Epetra_Time.h>
 
-#include "../drt_lib/drt_globalproblem.H"
-#include "particle_node.H"
-#include "particleMeshFree_weightFunction.H"
-#include "../drt_inpar/inpar_particle.H"
+/*----------------------------------------------------------------------*
+ | forward declarations                                                 |
+ *----------------------------------------------------------------------*/
+namespace PARTICLE
+{
+class Algorithm;
+class ParticleMeshFreeInteractionHandler;
+class WeightFunction_Base;
+} // namespace PARTICLE
 
-// forward declarations
 namespace DRT
 {
-  class Discretization;
-}
+class ResultTest;
+} // namespace DRT
+
+/*----------------------------------------------------------------------*
+ | rendering routine for smoothed particle hydrodynamics                |
+ *----------------------------------------------------------------------*/
 namespace PARTICLE
 {
-  class Algorithm;
-}
-
-namespace PARTICLE
+class Rendering
 {
-  class Rendering
-  {
 
-  public:
+public:
 
-    //! @name Life
-    //@{
+  //! constructor
+  Rendering(
+      Teuchos::RCP<DRT::Discretization> discret,
+      Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm,
+      Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandler> interHandler,
+      Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler
+      );
 
-    //! Constructor (the writer should already be set)
-    Rendering(Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm,
-              INPAR::PARTICLE::WeightFunctionDim wf_dim);
+  //! virtual destructor
+  virtual ~Rendering() { ; }
 
-    //! Destructor
-    virtual ~Rendering() { ; }
+  //! update the rendering vectors
+  virtual void UpdateRenderingVectors(
+      Teuchos::RCP<DRT::Discretization> pDiscret,
+      Teuchos::RCP<const Epetra_Vector> pDis,
+      Teuchos::RCP<const Epetra_Vector> pVel,
+      Teuchos::RCP<const Epetra_Vector> pAcc,
+      Teuchos::RCP<const Epetra_Vector> pDensity,
+      Teuchos::RCP<const Epetra_Vector> pSpecEnthalpy,
+      Teuchos::RCP<const Epetra_Vector> pTemperature,
+      Teuchos::RCP<const Epetra_Vector> pRadius,
+      Teuchos::RCP<const Epetra_Vector> pPressure,
+      Teuchos::RCP<const Epetra_Vector> pMass
+      );
 
-    //@}
+  //! rendering output state
+  virtual void OutputState();
 
-    //! update the rendering state vectors
-    virtual void UpdateStateVectors(
-        Teuchos::RCP<DRT::Discretization> pDiscret,
-        Teuchos::RCP<const Epetra_Vector> pDis,
-        Teuchos::RCP<const Epetra_Vector> pVel,
-        Teuchos::RCP<const Epetra_Vector> pAcc,
-        Teuchos::RCP<const Epetra_Vector> pDensity,
-        Teuchos::RCP<const Epetra_Vector> pSpecEnthalpy,
-        Teuchos::RCP<const Epetra_Vector> pTemperature,
-        Teuchos::RCP<const Epetra_Vector> pRadius,
-        Teuchos::RCP<const Epetra_Vector> pPressure,
-        Teuchos::RCP<const Epetra_Vector> pMass);
+  //! read-only rendering discretization
+  virtual Teuchos::RCP<const DRT::Discretization> GetRenderingDiscret() { return discret_; }
 
-    //! Rendering output state
-    virtual void OutputState();
+  //! read-only rendering velocity
+  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingVelocity() { return vel_; }
 
-  private:
+  //! read-only rendering acceleration
+  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingAcceleration() { return acc_; }
 
-    //! search for the neighbouring rendering nodes
-    std::list<DRT::Node*> GetNeighbouringRenderingNodes(const int binId);
+  //! read-only rendering density
+  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingDensity() { return density_; }
 
-    //!< rendering discretisation
-    Teuchos::RCP<DRT::Discretization> discret_;
+  //! read-only rendering specific enthalpy
+  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingSpecEnthalpy() { return specEnthalpy_; }
 
-    //!< link to the big particle_algorithm box. From this we can access the particle discretization
-    Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
+  //! read-only rendering temperature
+  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingTemperature() { return temperature_; }
 
-    //! weight function pointer
-    Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
+  //! read-only rendering pressure
+  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingPressure() { return pressure_; }
 
-    bool trg_writeMesh_;
+  //! create result test for rendering
+  virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
-    ///< bins 2 rendering nodes map
-    std::map<int,std::list<DRT::Node* > > bins2renderingNodes_;
+private:
 
-    //! rendering vectors
-    //! rendering velocity
-    Teuchos::RCP<Epetra_FEVector> vel_;
-    //! rendering acceleration
-    Teuchos::RCP<Epetra_FEVector> acc_;
-    //! rendering density
-    Teuchos::RCP<Epetra_FEVector> density_;
-    //! rendering specific enthalpy
-    Teuchos::RCP<Epetra_FEVector> specEnthalpy_;
-    //! rendering temeprature
-    Teuchos::RCP<Epetra_FEVector> temperature_;
-    //! rendering pressure
-    Teuchos::RCP<Epetra_FEVector> pressure_;
+  //! get neighboring rendering nodes
+  std::list<DRT::Node*> GetNeighboringRenderingNodes(const int binId);
 
-  };
+  //! rendering discretization
+  Teuchos::RCP<DRT::Discretization> discret_;
+
+  //! pointer to underlying particle algorithm
+  Teuchos::RCP<PARTICLE::Algorithm> particle_algorithm_;
+
+  //! pointer to interaction handler
+  Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandler> interHandler_;
+
+  //! pointer to weight function handler
+  Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
+
+  //! bins to rendering nodes map
+  std::map<int,std::list<DRT::Node* > > binsToRenderingNodes_;
+
+  //! rendering vectors
+  Teuchos::RCP<Epetra_FEVector> vel_; //! rendering velocity
+
+  Teuchos::RCP<Epetra_FEVector> acc_; //! rendering acceleration
+
+  Teuchos::RCP<Epetra_FEVector> density_; //! rendering density
+
+  Teuchos::RCP<Epetra_FEVector> specEnthalpy_; //! rendering specific enthalpy
+
+  Teuchos::RCP<Epetra_FEVector> temperature_; //! rendering temperature
+
+  Teuchos::RCP<Epetra_FEVector> pressure_; //! rendering pressure
+
+};
 
 }
 
-
-
-#endif /* SRC_DRT_PARTICLE_PARTICLEMESHFREE_RENDERING_H_ */
+#endif // PARTICLEMESHFREE_RENDERING_H

@@ -488,6 +488,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddNamedDouble("TOLERANCE")
     ;
 
+  DRT::INPUT::LineDefinition particle_rendering;
+  particle_rendering
+    .AddTag("PARTICLE_RENDERING")
+    .AddNamedString("DIS")
+    .AddNamedInt("NODE")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
   DRT::INPUT::LineDefinition acou;
   acou
     .AddTag("ACOUSTIC")
@@ -545,6 +556,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(invana_special);
   lines->Add(particle);
   lines->Add(particle_special);
+  lines->Add(particle_rendering);
   lines->Add(acou);
   lines->Add(invacou);
   lines->Add(cardiovascular0d);

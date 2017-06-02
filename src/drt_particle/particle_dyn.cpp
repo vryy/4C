@@ -38,39 +38,8 @@ void particle_drt()
 
   switch (probtype)
   {
-    case prb_meshfree:
-    {
-      const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
-
-      if (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RENDERING"))
-      {
-        problem->GetDis("rendering")->FillComplete();
-      }
-
-      /// algorithm is created
-      Teuchos::RCP<PARTICLE::Algorithm> particlesimulation = Teuchos::rcp(new PARTICLE::Algorithm(comm,params));
-
-      /// init particle simulation
-      particlesimulation->Init(false);
-
-      /// read the restart information, set vectors and variables ---
-      const int restart = problem->Restart();
-      if (restart)
-      {
-        particlesimulation->ReadRestart(restart);
-      }
-
-      /// setup particle simulation
-      particlesimulation->SetupSystem();
-
-      /// solve the whole problem
-      particlesimulation->Timeloop();
-
-      /// perform the result test
-      particlesimulation->TestResults(comm);
-    }
-    break;
     case prb_particle:
+    case prb_meshfree:
     {
       const Teuchos::ParameterList& params = DRT::Problem::Instance()->ParticleParams();
       /// algorithm is created

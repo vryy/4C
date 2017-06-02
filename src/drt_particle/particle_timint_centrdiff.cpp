@@ -238,10 +238,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     // In case of density summation the new density and new pressure have been determined as very first step since they are required for all the following calculations
     if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"DENSITY_SUMMATION"))
     {
-      if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::Custom or wallInteractionType==INPAR::PARTICLE::InitParticle)
-        interHandler_->MF_mW(densityn_);
-      else
-        interHandler_->MF_mW(densityn_,false);
+      interHandler_->MF_mW(densityn_);
 
       //Determine also the new pressure and set state vectors for the new density and pressure
       interHandler_->SetStateVector(densityn_, PARTICLE::Density);

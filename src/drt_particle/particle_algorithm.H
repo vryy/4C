@@ -176,7 +176,11 @@ namespace PARTICLE
     /// Return the pointer to the extended particle material
     const MAT::PAR::ExtParticleMat* ExtParticleMat() const { return extParticleMat_; }
 
+    /// get meshfree rendering handler
     virtual Teuchos::RCP<Rendering> GetRendering() { return rendering_; }
+
+    /// set meshfree rendering handler
+    virtual void SetRendering(Teuchos::RCP<Rendering> rendering) { rendering_ = rendering; }
 
     inline virtual void CalculateAndApplyForcesToParticles(bool init) { ; };
 
