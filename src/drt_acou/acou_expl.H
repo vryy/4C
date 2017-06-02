@@ -254,12 +254,14 @@ public:
   double GetSoSGradient(int rowid)
   {
     dserror("Explicit time integration requires interface to deal.II package");
+    return 0.0;
   }
 
   // get values for density gradient
   double GetDensityGradient(int rowid)
   {
     dserror("Explicit time integration requires interface to deal.II package");
+    return 0.0;
   }
 
 };
