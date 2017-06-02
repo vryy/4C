@@ -70,10 +70,6 @@ namespace ELEMENTS
     virtual void ElementInit(DRT::ELEMENTS::Acou*                 ele,
                              Teuchos::ParameterList&              params);
 
-    /// projection of optical field
-    virtual void ElementAcouOptInit(DRT::ELEMENTS::Acou*                 ele,
-                             Teuchos::ParameterList&              params);
-
     /// map solution values to nodes
     void NodeBasedValues(DRT::ELEMENTS::Acou*                 ele,
                          Epetra_SerialDenseVector&            elevec1,
@@ -179,31 +175,12 @@ namespace ELEMENTS
                               Teuchos::ParameterList&     params,
                               int                         face);
 
-      /// add terms corresponding to the absorbing boundary condition
-      void ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
-                              Teuchos::ParameterList&     params,
-                              Teuchos::RCP<MAT::Material> & mat,
-                              int                         face,
-                              Epetra_SerialDenseMatrix    &elemat,
-                              Epetra_SerialDenseVector    &elevec,
-                              int                          indexstart);
-
-      /// add terms corresponding to the absorbing boundary condition
-      void ComputeSourcePressureMonitorLine3D(DRT::ELEMENTS::Acou*        ele,
-                                Teuchos::ParameterList&     params,
-                                Teuchos::RCP<MAT::Material> & mat,
-                                int                         face,
-                                Epetra_SerialDenseMatrix    &elemat,
-                                Epetra_SerialDenseVector    &elevec,
-                                int                          indexstart);
-
       /// calls local solver to compute matrices: internal and face
       void ComputeMatrices(DRT::Discretization &             discretization,
                            const Teuchos::RCP<MAT::Material> &mat,
                            DRT::ELEMENTS::Acou &             ele,
                            double                            dt,
-                           INPAR::ACOU::DynamicType          dyna,
-                           bool                              adjoint);
+                           INPAR::ACOU::DynamicType          dyna);
 
       /// set up interior matrices
       void ComputeInteriorMatrices(double                            dt,
@@ -219,12 +196,6 @@ namespace ELEMENTS
       // condense the local matrix (involving cell velocity gradients, velocities and pressure) into
       // the element matrix for the trace and similarly for the residuals
       void CondenseLocalPart(Epetra_SerialDenseMatrix &elemat);
-
-      void EvaluateFaceAdjoint(double fnodexyz[][nsd_],
-                               double values[],
-                               int numfnode,
-                               const double (&xyz)[nsd_],
-                               double &val) const;
 
       /// projection of function field
       int ProjectField(DRT::ELEMENTS::Acou*                 ele,
@@ -246,13 +217,6 @@ namespace ELEMENTS
                        const double (&xyz)[nsd_],
                        double  &p,
                        double  (&v)[nsd_]) const;
-
-      void EvaluateLight(double lightxyz[][nsd_],
-                         double values[],
-                         int    numnode,
-                         const double (&xyz)[nsd_],
-                         double  &p,
-                         double absorptioncoeff) const;
 
       // convention: we sort the entries in the matrices the following way:
       // first come the velocity gradients, then the velocities, and finally the pressure
@@ -325,8 +289,7 @@ namespace ELEMENTS
     void ReadGlobalVectors(DRT::Element     * ele,
                            DRT::Discretization    & discretization,
                            const std::vector<int> & lm,
-                           const bool               padaptivity,
-                           const int                acouopt);
+                           const bool               padaptivity);
 
     /// writes internal field to global vectors
     void FillRestartVectors(DRT::Element           * ele,
@@ -335,11 +298,6 @@ namespace ELEMENTS
     /// writes internal field to global vectors
     void ElementInitFromRestart(DRT::Element           * ele,
                                 DRT::Discretization    & discretization);
-
-    /// writes internal field to global vectors
-    void ElementInitFromAcouOptRestart(DRT::Element    * ele,
-                                DRT::Discretization    & discretization,
-                                const std::vector<int> & lm);
 
     /// calculate error maps with local postprocessing
     double EstimateError(DRT::ELEMENTS::Acou & ele, Epetra_SerialDenseVector & p);

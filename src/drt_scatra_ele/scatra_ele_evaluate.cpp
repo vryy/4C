@@ -305,6 +305,8 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_cell_growth_sourcesandsinks:
     case SCATRA::calc_heteroreac_mat_and_rhs:
     case SCATRA::calc_mass_matrix:
+    case SCATRA::transform_real_to_reference_point:
+    case SCATRA::evaluate_field_in_point:
     {
       return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateService(
                this,

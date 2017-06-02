@@ -132,8 +132,8 @@ public:
   void get_matrix (const std::vector<int>  &layer_reference,
       const unsigned int vec_array_no,
       const Point<dim>   &position,
-      std::vector<VectorizedArray<value_type> > &sigma_values,
-      std::vector<VectorizedArray<value_type> > &eigenvalues,
+      Tensor<1,dim,VectorizedArray<value_type> > &sigma_values,
+      Tensor<1,dim,VectorizedArray<value_type> > &eigenvalues,
       Tensor<2,dim,VectorizedArray<value_type> > &Matrix_A,
       Tensor<3,dim,VectorizedArray<value_type> > &eigen_tensors) const;
 

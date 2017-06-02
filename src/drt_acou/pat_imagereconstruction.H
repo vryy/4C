@@ -62,6 +62,7 @@ namespace ACOU
 class PATSearchDirection;
 class PATLineSearch;
 class PATRegula;
+class PATMonitorManager;
 
 class PatImageReconstruction
 {
@@ -208,27 +209,11 @@ protected:
   //! the initial error value
   double error_start_;
 
-  //! consider impulse response or not
-  bool conv_imp_resp_;
-
   //! overwrite output (recommended for big simulations)
   bool overwrite_output_;
 
-  //! the impulse respone already calculated for dtacou_
-  Epetra_SerialDenseVector imp_resp_;
-
-  //! list of observed node gids
-  std::vector<int> nodes_;
-
-  //! simulated "measurement" values of acoustic forward problem
-  Teuchos::RCP<Epetra_MultiVector> acou_rhs_;
-
-  //! measurement values from monitor file
-  Teuchos::RCP<Epetra_MultiVector> acou_rhsm_;
-
-  //! map belonging to acou_rhs_ and acou_rhsm_ holding the nodes of the measurement boundary
-  Teuchos::RCP<Epetra_Map> abcnodes_map_;
-  Teuchos::RCP<Epetra_Map> abcnodes_colmap_;
+  //! write output for the acoustical field
+  bool write_baci_acou_output_;
 
   //! node based vector holding absorption coefficient
   Teuchos::RCP<Epetra_Vector> node_reac_;
@@ -261,20 +246,8 @@ protected:
   //! regularization for reaction
   Teuchos::RCP<PATRegula> reac_regula_;
 
-  //@}
-
-  //@{ read of monitored values and helper functions
-  //! read in measured values from the monitor file
-  void ReadMonitor(std::string monitorfilename, double dtacou);
-
-  //! calculate the distance between mics and nods in x,y,z
-  double ReadMonitorDelta(double coord_M_x,double coord_M_y, double coord_M_z, double coord_N_x,double coord_N_y, double coord_N_z);
-
-  //! write interpolated data
-  void ReadMonitorInterpol(const double nod_coords[3],std::vector<std::vector<double> > mic_coords, unsigned int mic_1, unsigned int mic_2, int nmic, unsigned int nod, int timesteps, Epetra_SerialDenseVector& curve, Epetra_SerialDenseVector& inter_curve);
-
-  //! calculate epsilon
-  double ReadMonitorGetEpsilon(int nnodes);
+  //! monitor manager
+  Teuchos::RCP<PATMonitorManager> monitor_manager_;
   //@}
 
   //! the underlying subproblems
@@ -300,9 +273,6 @@ protected:
 
   //! calculate the value of the objective function
   virtual double EvalulateObjectiveFunction();
-
-  //! calculate the value of the error in the objective function
-  void EvaluateError();
 
   //! build the gradient
   virtual void EvaluateGradient();
@@ -340,6 +310,8 @@ protected:
   //! bring the restart parameters to the vectors and elements (each derived class implements this, since derived classes have different parameter fields)
   virtual void SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos);
 
+  //! in case reconstruction needs special output
+  virtual void ProblemSpecificOutput() {}
 };
 
 class PatImageReconstructionReduction: public PatImageReconstruction
@@ -461,6 +433,9 @@ public:
 
   //! finite difference gradient check
   virtual void FDCheck();
+
+  //! in case reconstruction needs special output
+  virtual void ProblemSpecificOutput();
 
 protected:
 

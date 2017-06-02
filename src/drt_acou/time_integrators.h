@@ -77,12 +77,8 @@ public:
       const double              current_time,
       const double              time_step)
   {
-    // init
-    for (unsigned int d=0; d<vec_n.size(); ++d)
-      vec_np[d] = 0;
-
     // apply ader scheme
-    this->operation.apply(vec_n,vec_np,current_time,time_step);
+    this->operation.apply_ader(vec_n,vec_np,current_time,time_step);
 
     // add
     for (unsigned int d=0; d<vec_n.size(); ++d)
@@ -114,12 +110,8 @@ public:
       const double              current_time,
       const double              time_step)
   {
-    // init
-    for (unsigned int d=0; d<vec_n.size(); ++d)
-      vec_np[d] = 0;
-
     // apply ader scheme
-    this->operation.apply(vec_n,vec_np,current_time,time_step);
+    this->operation.apply_ader(vec_n,vec_np,current_time,time_step);
   }
 };
 

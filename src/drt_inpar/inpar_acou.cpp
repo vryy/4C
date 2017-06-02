@@ -29,6 +29,7 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&acousticdyn);
   IntParameter("NUMSTEP",100,"Total number of time steps",&acousticdyn);
   DoubleParameter("MAXTIME",1.0,"Total simulation time",&acousticdyn);
+  DoubleParameter("COURANTNUMBER",0.3,"Total simulation time",&acousticdyn);
 
   // additional parameters
   IntParameter("CALCERRORFUNCNO",-1,"Function for Error Calculation",&acousticdyn);
@@ -62,6 +63,15 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("ERRORMAPS","No","Output of error maps obtained by local postprocessing",&acousticdyn);
   BoolParameter("P_ADAPTIVITY","No","p-adaptivity in time integration",&acousticdyn);
   DoubleParameter("P_ADAPT_TOL",1.0e-15,"Error tolerance for p-adaptivity",&acousticdyn);
+
+  // ader specific
+  BoolParameter("SPECTRAL_EVALUATION","yes","fast evaluation of Taylor-Cauchy-Kovalewski",&acousticdyn);
+  BoolParameter("USE_ADER_POST","no","need superconvergent pressure results?",&acousticdyn);
+
+  // ader lts specific
+  IntParameter("MAX_NUM_CLUSTERS",10,"Allowed number of clusters",&acousticdyn);
+  IntParameter("MAX_DIFF_CLUSTERS",3,"Allowed difference of timestep between clusters",&acousticdyn);
+
 
   // time integration
   setStringToIntegralParameter<int>("TIMEINT","impleuler",
@@ -155,7 +165,18 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                       pat_patch_reacvals,
                                       pat_patch_mixed),
                                     &acou_inv);
+  setStringToIntegralParameter<int>("TOMOGRAPHTYPE","unknown",
+                                    "type of tomograph",
+                                    tuple<std::string>(
+                                      "circle",
+                                      "unknown"),
+                                    tuple<int>(
+                                      pat_circle,
+                                      pat_unknown),
+                                    &acou_inv);
+
   BoolParameter("OVERWRITEOUTPUT","Yes","overwrite output (recommended)", &acou_inv);
+  BoolParameter("ACOUOUTPUT","No","write BACI output for the acoustic problem", &acou_inv);
   StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
   BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
   DoubleParameter("INV_TOL",1e-16,"Tolerance for objective function of inverse pat analysis",&acou_inv);
@@ -184,6 +205,7 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   StringParameter("IMPULSERESPONSE","none.impresp","Filename of file containing the impulse response",&acou_inv);
   BoolParameter("ACOUIDENT_AVG","No","should acoustical properties set according to their two closest?",&acou_inv);
   DoubleParameter("REDUCTIONCUTTIME",0.0,"the new monitor file shall only have values until this time",&acou_inv);
+
 }
 
 

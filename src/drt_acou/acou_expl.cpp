@@ -38,6 +38,8 @@
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/distributed/tria.h>
 
+#include <deal.II/lac/vector_view.h>
+
 #include <deal.II/lac/parallel_vector.h>
 #include <deal.II/matrix_free/matrix_free.h>
 #include <deal.II/matrix_free/fe_evaluation.h>
@@ -58,8 +60,12 @@
 #include <iostream>
 #include <iomanip>
 
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+
 #include "time_integrators.h"
 #include "acou_pml.H"
+#include "pat_utils.H"
 #include "../drt_lib/drt_discret_hdg.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -83,7 +89,8 @@ AcouExplicitTimeInt::AcouExplicitTimeInt(
   const Teuchos::RCP<IO::DiscretizationWriter>& output
   ):
   AcouTimeInt(actdis,solver,params,output),
-  doubleorfloat_(DRT::INPUT::IntegralValue<bool>(*params_,"DOUBLEORFLOAT"))
+  doubleorfloat_(DRT::INPUT::IntegralValue<bool>(*params_,"DOUBLEORFLOAT")),
+  writebacioutput_(params_->get<bool>("writeacououtput"))
 {
   dealii::MultithreadInfo::set_thread_limit(1);
 
@@ -101,7 +108,11 @@ AcouExplicitTimeInt::AcouExplicitTimeInt(
   // in case time step is reduced through deal cfl, tell baci
   UpdateTimeStepSize();
 
-  output_->WriteMesh(0,0.0);
+  if(writebacioutput_)
+    output_->WriteMesh(0,0.0);
+
+  if(!params->isParameter("name"))
+    params->set<std::string>("name",DRT::Problem::Instance()->OutputControlFile()->FileName());
 }
 
 /*----------------------------------------------------------------------*
@@ -208,12 +219,9 @@ void AcouExplicitTimeInt::SetInitialField(int startfuncno)
 /*----------------------------------------------------------------------*
  | Initialization by given scatra solution vector (pub)  schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouExplicitTimeInt::SetInitialPhotoAcousticField(
-                                                       Teuchos::RCP<Epetra_Vector> light,
-                                                       Teuchos::RCP<DRT::Discretization> scatradis,
-                                                       bool meshconform)
+void ACOU::AcouExplicitTimeInt::SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo)
 {
-  ACOU::AcouTimeInt::SetInitialPhotoAcousticField(light,scatradis,meshconform);
+  ACOU::AcouTimeInt::SetInitialPhotoAcousticField(scatraalgo);
 
 
   // read initial conditions by loop over elements of discret.
@@ -232,19 +240,77 @@ void ACOU::AcouExplicitTimeInt::SetInitialPhotoAcousticField(
 /*----------------------------------------------------------------------*
  |  Integrate                                            schoeder 03/15 |
  *----------------------------------------------------------------------*/
-void AcouExplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history)
+void AcouExplicitTimeInt::Integrate()
 {
 
   if(numdim_==2 && doubleorfloat_==true)
-      wave2dd_->run(history);
+      wave2dd_->run();
   else if(numdim_==3 && doubleorfloat_==true)
-      wave3dd_->run(history);
+      wave3dd_->run();
   else if(numdim_==2 && doubleorfloat_==false)
-      wave2df_->run(history);
+      wave2df_->run();
   else if(numdim_==3 && doubleorfloat_==false)
-      wave3df_->run(history);
+      wave3df_->run();
 
   return;
+}
+
+
+double AcouExplicitTimeInt::GetSoSGradient(int colid)
+{
+  double value = 0.0;
+
+//  for(int p=0; p<discret_->Comm().NumProc(); ++p)
+//  {
+//    if(discret_->Comm().MyPID()==p)
+//      for(int i=0; i<discret_->NumMyRowElements(); ++i)
+//        std::cout<<p<<" "<<i<<" "<< wave2dd_->get_SoS_gradient(i)<<" "<<discret_->ElementRowMap()->GID(i)<<" col "<<discret_->ElementColMap()->LID(discret_->ElementRowMap()->GID(i))<<std::endl;
+//    discret_->Comm().Barrier();
+//    std::cout<<std::flush;
+//    discret_->Comm().Barrier();
+//  }
+
+  if(numdim_==2 && doubleorfloat_==true)
+    value = wave2dd_->get_SoS_gradient(colid);
+  else if(numdim_==3 && doubleorfloat_==true)
+    value = wave3dd_->get_SoS_gradient(colid);
+  else if(numdim_==2 && doubleorfloat_==false)
+    value = wave2df_->get_SoS_gradient(colid);
+  else if(numdim_==3 && doubleorfloat_==false)
+    value = wave3df_->get_SoS_gradient(colid);
+
+  return value;
+}
+
+double AcouExplicitTimeInt::GetDensityGradient(int colid)
+{
+  double value = 0.0;
+
+  if(numdim_==2 && doubleorfloat_==true)
+    value = wave2dd_->get_density_gradient(colid);
+  else if(numdim_==3 && doubleorfloat_==true)
+    value = wave3dd_->get_density_gradient(colid);
+  else if(numdim_==2 && doubleorfloat_==false)
+    value = wave2df_->get_density_gradient(colid);
+  else if(numdim_==3 && doubleorfloat_==false)
+    value = wave3df_->get_density_gradient(colid);
+
+  return value;
+}
+
+void AcouExplicitTimeInt::NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec)
+{
+  // first: get the deal values and put them in the baci elements (output is probably a bit more expensive than usually)
+  if(numdim_==2 && doubleorfloat_==true)
+      wave2dd_->write_deal_cell_values();
+  else if(numdim_==3 && doubleorfloat_==true)
+      wave3dd_->write_deal_cell_values();
+  else if(numdim_==2 && doubleorfloat_==false)
+    wave2df_->write_deal_cell_values();
+  else if(numdim_==3 && doubleorfloat_==false)
+    wave3df_->write_deal_cell_values();
+
+  AcouTimeInt::NodalPsiField(outvec);
 }
 
 /*----------------------------------------------------------------------*
@@ -522,12 +588,14 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
          Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)==0),
   triangulation(discretin),
   fe(QGaussLobatto<1>(discretin->lRowElement(0)->Degree()+1)),
+  fe_spectral(QGauss<1>(discretin->lRowElement(0)->Degree()+1)),
   fe_post_disp(QGaussLobatto<1>(discretin->lRowElement(0)->Degree()+2)),
   dof_handler(triangulation),
+  dof_handler_spectral(triangulation),
   dof_handler_post_disp(triangulation),
   time(0.0),
   step(0),
-  cfl_number (0.3/fe.degree/dim), //cfl_number (0.1/fe.degree/dim),
+  cfl_number (params->get<double>("COURANTNUMBER")/fe.degree/dim), //cfl_number (0.1/fe.degree/dim),
   discret(discretin),
   bacitimeint(timeintin),
   invana(params->get<bool>("invana")),
@@ -535,9 +603,10 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   acouopt(params->get<bool>("acouopt")),
   timereversal(params->get<bool>("timereversal")),
   solid((DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(*params,"PHYSICAL_TYPE"))==INPAR::ACOU::acou_solid),
-  reduction(params->get<bool>("reduction"))
+  reduction(params->get<bool>("reduction")),
+  writebacioutput(params->get<bool>("writeacououtput"))
 {
-  make_grid_and_dofs(discret,bacitimeint->AdjointSourceVec());
+  make_grid_and_dofs(discret);
 
   // get some parameters:
   final_time = params->get<double>("MAXTIME");
@@ -546,17 +615,73 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   dyna = DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(*params,"TIMEINT");
   exactsolutionfuncno = (params->get<int>("CALCERRORFUNCNO"))-1;
 
+
+
+  // calculation of the time step size by use of the smallest cell
+  typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),endc = triangulation.end();
+  double min_cell_diameter = std::numeric_limits<double>::max();
+  double diameter = 0.0;
+  double given_time_step = params->get<double>("TIMESTEP");
+
+  for (; cell!=endc; ++cell)
+  {
+    diameter = cell->diameter()/std::sqrt(dim);
+    //diameter = cell->minimum_vertex_distance();
+    //diameter = cell->extent_in_direction(0);
+    const int element_index = cell->index();
+    Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
+    double c = 0.0;
+    if(solid)
+    {
+      MAT::AcousticSolMat* actmat = static_cast<MAT::AcousticSolMat*>(mat.get());
+      c = actmat->SpeedofSound();
+    }
+    else
+    {
+      MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
+      c = actmat->SpeedofSound(element_index);
+    }
+    diameter /= c;
+
+    if (diameter < min_cell_diameter)
+      min_cell_diameter = diameter;
+  }
+  const double glob_min_cell_diameter = -Utilities::MPI::max(-min_cell_diameter, MPI_COMM_WORLD);
+
+  time_step = cfl_number * glob_min_cell_diameter;
+  time_step = (final_time-time)/(1+int((final_time-time)/time_step));
+
+  if( time_step < given_time_step )
+  {
+    pcout <<"WARNING: Time step size set to "<<time_step<<" to prevent stability problems"<<std::endl;
+    pcout <<"   finest cell / speed of sound "<< glob_min_cell_diameter<< std::endl << std::endl;
+    if(invana)
+    {
+      time_step = 0.0;
+      //dserror("set your time step size smaller, otherwise mismatch with monitored values");
+    }
+
+  }
+  else
+  {
+    time_step = given_time_step;
+    pcout << "Time step size: " << time_step << " (smaller than critical timestep) " << std::endl << std::endl;
+  }
+
   // create the wave equation operation object
   set_evaluator(params,discret->lRowElement(0)->Degree());
   evaluator->set_adjoint_eval(invana&&adjoint);
 
   // resize solutions vector
   solutions.resize(evaluator->number_of_solutionvectors());
+  previous_solutions.resize(evaluator->number_of_solutionvectors());
 
   // initialize solution vectors
   evaluator->initialize_dof_vector(solutions[0]);
   for (unsigned int d=1; d<solutions.size(); ++d)
     solutions[d] = solutions[0];
+  for(unsigned int d=0; d<solutions.size(); ++d)
+    previous_solutions[d] = solutions[0];
 
   // TODO
   if(solid)
@@ -574,61 +699,74 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
     for(unsigned int i=0; i<stored_forward_solutions.size(); ++i)
       stored_forward_solutions[i].resize(evaluator->number_of_solutionvectors());
   }
-  // calculation of the time step size by use of the smallest cell
-  typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),endc = triangulation.end();
-  double min_cell_diameter = std::numeric_limits<double>::max();
-  double diameter = 0.0;
-  double given_time_step = params->get<double>("TIMESTEP");
 
-  if(dyna!=INPAR::ACOU::acou_ader_lts)
+  if(bacitimeint->MonitorManager()!=Teuchos::null)
   {
+    double eps = time_step/1000.0;
+    std::vector<double> positions;
+    bacitimeint->MonitorManager()->GetMonitorPositions(positions);
+    int numdetec = positions.size()/dim;
+    std::vector<int> cellids(numdetec,-1);
+    std::vector<bool> cellrowflag(numdetec,false);
+
+    std::vector<DRT::Condition*> pressmonBC;
+    if(bacitimeint->iswithPMLS())
+      discret->GetCondition("PressureMonitor",pressmonBC);
+
+    typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),endc = triangulation.end();
     for (; cell!=endc; ++cell)
     {
-      diameter = cell->diameter()/std::sqrt(dim);
-      //diameter = cell->minimum_vertex_distance();
-      //diameter = cell->extent_in_direction(0);
-      const int element_index = cell->index();
-      Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
-      double c = 0.0;
-      if(solid)
+      bool cellhasmonitoredface = false;
+      for(unsigned f=0; f<GeometryInfo<dim>::faces_per_cell; ++f)
       {
-        MAT::AcousticSolMat* actmat = static_cast<MAT::AcousticSolMat*>(mat.get());
-        c = actmat->SpeedofSound();
+        if(cell->face(f)->at_boundary())
+        {
+          // check boundary id
+          const types::boundary_id boundary_index = cell->face(f)->boundary_id();
+          const int int_boundary_id = int(boundary_index);
+          if(int_boundary_id==1 || int_boundary_id==2) // monitored or monitored and absorbing
+            cellhasmonitoredface = true;
+        }
+        else
+        {
+          // check if inner face is monitored
+          if(bacitimeint->iswithPMLS())
+          {
+            DRT::Element* ele = discret->lColElement(int(cell->index()));
+            unsigned int count = 0;
+            for(int n=0; n<ele->NumNode(); ++n)
+              if(pressmonBC[0]->ContainsNode(ele->NodeIds()[n]))
+                count++;
+
+            if(count>1)
+              cellhasmonitoredface = true;
+          }
+        }
       }
-      else
-      {
-        MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
-        c = actmat->SpeedofSound(element_index);
-      }
-      diameter /= c;
-
-      if (diameter < min_cell_diameter)
-        min_cell_diameter = diameter;
+      if(cellhasmonitoredface)
+        if(discret->ElementColMap()->GID(cell->index())>=0)
+        {
+          //if( (discret->gElement(discret->ElementColMap()->GID(cell->index())))->Owner() == discret->Comm().MyPID()) // exclude column elements
+          for(int det=0; det<numdetec; ++det)
+          {
+            Point<dim> position;
+            for(unsigned int d=0; d<dim; ++d)
+              position[d] = positions[det*dim+d]*(1.0-eps);
+            if(cell->point_inside(position))
+            {
+              cellids[det] = cell->index();
+              if(discret->ElementColMap()->GID(cell->index())>=0)
+                if( (discret->gElement(discret->ElementColMap()->GID(cell->index())))->Owner() == discret->Comm().MyPID())
+                  cellrowflag[det] = true;
+            }
+          }
+        }
     }
-    const double glob_min_cell_diameter = -Utilities::MPI::max(-min_cell_diameter, MPI_COMM_WORLD);
 
-    time_step = cfl_number * glob_min_cell_diameter;
-    time_step = (final_time-time)/(1+int((final_time-time)/time_step));
+   bacitimeint->MonitorManager()->SetCellIds(cellids,cellrowflag);
 
-    if( time_step < given_time_step )
-    {
-      pcout <<"WARNING: Time step size set to "<<time_step<<" to prevent stability problems"<<std::endl;
-      pcout <<"   finest cell / speed of sound "<< glob_min_cell_diameter<< std::endl << std::endl;
-      if(invana)
-      {
-        time_step = 0.0;
-        //dserror("set your time step size smaller, otherwise mismatch with monitored values");
-      }
-
-    }
-    else
-    {
-      time_step = given_time_step;
-      pcout << "Time step size: " << time_step << " (smaller than critical timestep) " << std::endl << std::endl;
-    }
   }
-  else
-    time_step = given_time_step;
+
 }
 
 template <int dim, typename Number>
@@ -636,6 +774,8 @@ WaveEquationProblem<dim,Number>::~WaveEquationProblem()
 {
   evaluator.reset();
   dof_handler.clear();
+  dof_handler_spectral.clear();
+  dof_handler_post_disp.clear();
 }
 
 template<int dim, typename Number>
@@ -655,51 +795,60 @@ void WaveEquationProblem<dim,Number>::set_evaluator(const Teuchos::RCP<Teuchos::
   // read PML
   std::string filename_pml = params->get<std::string>("PML_DEFINITION_FILE");
 
+  std::vector<const DoFHandler<dim> *> dof_handlers(3);
+  dof_handlers[0] = &dof_handler;
+  dof_handlers[2] = &dof_handler_spectral;
+  dof_handlers[1] = &dof_handler_post_disp;
+
+
+
   if(solid)
   {
     if (fe_degree==1)
-      evaluator.reset(new WaveEquationOperationElasticWave<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,1,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==2)
-      evaluator.reset(new WaveEquationOperationElasticWave<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,2,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==3)
-      evaluator.reset(new WaveEquationOperationElasticWave<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,3,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==4)
-      evaluator.reset(new WaveEquationOperationElasticWave<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,4,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==5)
-      evaluator.reset(new WaveEquationOperationElasticWave<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,5,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==6)
-      evaluator.reset(new WaveEquationOperationElasticWave<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationElasticWave<dim,6,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
 
   }
   else if(dyna==INPAR::ACOU::acou_ader_lts)
   {
     if (fe_degree==1)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,1,Number>(dof_handlers, discret, diriboundary, rhs, time_step, cfl_number*fe.degree*dim, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==2)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,2,Number>(dof_handlers, discret, diriboundary, rhs, time_step, cfl_number*fe.degree*dim, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==3)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,3,Number>(dof_handlers, discret, diriboundary, rhs, time_step, cfl_number*fe.degree*dim, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==4)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,4,Number>(dof_handlers, discret, diriboundary, rhs, time_step, cfl_number*fe.degree*dim, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==5)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,5,Number>(dof_handlers, discret, diriboundary, rhs, time_step, cfl_number*fe.degree*dim, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==6)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADERLTS<dim,6,Number>(dof_handlers, discret, diriboundary, rhs, time_step, cfl_number*fe.degree*dim, sourcetermfuncno, bacitimeint->MonitorManager()));
+
+    time_step = evaluator->get_global_time_step_size();
   }
   else if(dyna==INPAR::ACOU::acou_ader)
   {
     if (fe_degree==1)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,1,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==2)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,2,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==3)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,3,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==4)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,4,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==5)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,5,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==6)
-      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWaveADER<dim,6,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
   }
   else if (filename_pml != std::string("none.txt"))
   {
@@ -707,32 +856,32 @@ void WaveEquationProblem<dim,Number>::set_evaluator(const Teuchos::RCP<Teuchos::
     sigma->read_pml_definition(filename_pml);
 
     if (fe_degree==1)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,1,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
     else if (fe_degree==2)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,2,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
     else if (fe_degree==3)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,3,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
     else if (fe_degree==4)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,4,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
     else if (fe_degree==5)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,5,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
     else if (fe_degree==6)
-      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sigma, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWavePML<dim,6,Number>(dof_handlers, discret, diriboundary, rhs, sigma, time_step, sourcetermfuncno, bacitimeint->MonitorManager(),invana&&adjoint));
   }
   else
   {
     if (fe_degree==1)
-      evaluator.reset(new WaveEquationOperationAcousticWave<dim,1,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,1,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==2)
-      evaluator.reset(new WaveEquationOperationAcousticWave<dim,2,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,2,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==3)
-      evaluator.reset(new WaveEquationOperationAcousticWave<dim,3,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,3,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==4)
-      evaluator.reset(new WaveEquationOperationAcousticWave<dim,4,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,4,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==5)
-      evaluator.reset(new WaveEquationOperationAcousticWave<dim,5,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,5,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
     else if (fe_degree==6)
-      evaluator.reset(new WaveEquationOperationAcousticWave<dim,6,Number>(dof_handler, discret, diriboundary, rhs, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
+      evaluator.reset(new WaveEquationOperationAcousticWave<dim,6,Number>(dof_handlers, discret, diriboundary, rhs, time_step, sourcetermfuncno, bacitimeint->MonitorManager()));
   }
 
   return;
@@ -740,7 +889,7 @@ void WaveEquationProblem<dim,Number>::set_evaluator(const Teuchos::RCP<Teuchos::
 
 
 template<int dim, typename Number>
-void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::DiscretizationHDG> discret, Teuchos::RCP<Epetra_MultiVector> adjoint_source)
+void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::DiscretizationHDG> discret)
 {
   if(!invana)
   {
@@ -754,6 +903,7 @@ void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::Discr
   }
 
   assign_dg_dofs(fe, dof_handler);
+  assign_dg_dofs(fe_spectral, dof_handler_spectral);
   assign_dg_dofs(fe_post_disp, dof_handler_post_disp);
 
   if(!invana)
@@ -826,6 +976,8 @@ void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::Discr
             cell->face(f)->set_boundary_id(0);
         }
 
+        if(cell->index()==59||cell->index()==99)std::cout<<cell->index()<<"is_abc "<<is_abc<<std::endl;
+
         if(is_diri < GeometryInfo<dim>::vertices_per_face) // monitored cannot be where Dirichlet is prescribed but it can be absorbing and monitored
         {
           // check for Pressure Monitor conditions
@@ -834,6 +986,7 @@ void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::Discr
             for(unsigned v=0;  v<GeometryInfo<dim>::vertices_per_face; ++v)
               is_pmon += int(pressmonBC[pmon]->ContainsNode(nodeids[v]));
           }
+          if(cell->index()==59||cell->index()==99)std::cout<<cell->index()<<" is_pmon "<<is_pmon<<std::endl;
           if(reduction)
           {
             bool is_pmon0 = false;
@@ -843,15 +996,19 @@ void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::Discr
             for(unsigned v=0;  v<GeometryInfo<dim>::vertices_per_face; ++v)
               is_pmon1 = is_pmon1 || pressmonBC[1]->ContainsNode(nodeids[v]);
             if(is_pmon0)
+            {
+              is_pmon = 23;
               cell->face(f)->set_boundary_id(4); // first is where the values are read
+            }
             if(is_pmon1)
+            {
+              is_pmon = 23;
               cell->face(f)->set_boundary_id(2); // second pmon condition is at the inner ring (write into new monitor file)
-            break;
+            }
           }
           else if(is_pmon >= GeometryInfo<dim>::vertices_per_face && timereversal)
           {
             cell->face(f)->set_boundary_id(4);
-            break;
           }
           else if(is_pmon >= GeometryInfo<dim>::vertices_per_face)
           {
@@ -859,13 +1016,12 @@ void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::Discr
              cell->face(f)->set_boundary_id(2);
             else
               cell->face(f)->set_boundary_id(1);
-            break;
           }
-          else if (is_abc >= GeometryInfo<dim>::vertices_per_face)
-            break;
         }
         // if you come here (no break previously) then it is free
-        if(is_diri < GeometryInfo<dim>::vertices_per_face)
+        if(is_diri < GeometryInfo<dim>::vertices_per_face &&
+           is_pmon < GeometryInfo<dim>::vertices_per_face &&
+           is_abc  < GeometryInfo<dim>::vertices_per_face )
           cell->face(f)->set_boundary_id(3);
       }
     }
@@ -1162,9 +1318,79 @@ WaveEquationProblem<dim,Number>::compute_post_velocity()
 }
 
 template <int dim, typename Number>
-void
-WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history)
+Number
+WaveEquationProblem<dim,Number>::determine_pressure_value(Point<dim> point, unsigned int cellindex)
 {
+  unsigned int degree = discret->lRowElement(0)->Degree();
+  MappingQGeneric<dim> mapping(degree);
+  const unsigned int dofs_per_cell = dof_handler.get_fe().dofs_per_cell;
+  std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
+  QGauss<dim> quadrature(degree+1);
+
+  FEValues<dim> fe_values(dof_handler.get_fe(),quadrature,
+      update_values | update_gradients | update_quadrature_points |
+      update_JxW_values);
+
+  double pressure_value = 0.0;
+  typename DoFHandler<dim>::active_cell_iterator cell(&dof_handler.get_triangulation(), 0, cellindex, &dof_handler);
+
+  Point<dim> referencepoint = mapping.transform_real_to_unit_cell(cell,point);
+  fe_values.reinit(cell);
+  cell->get_dof_indices(local_dof_indices);
+
+  bool inrange = true;
+  for (unsigned int i=0; i<dofs_per_cell; ++i)
+    if(solutions[dim].get_partitioner()->in_local_range(local_dof_indices[i])==false&&solutions[dim].get_partitioner()->is_ghost_entry(local_dof_indices[i])==false)
+      inrange= false;
+
+  if(!inrange)
+  {
+    //std::cout<<"WARNING"<<std::endl;
+    return 0.0;
+  }
+
+  for (unsigned int i=0; i<dofs_per_cell; ++i)
+    pressure_value += dof_handler.get_fe().shape_value(i,referencepoint)*solutions[dim](local_dof_indices[i]);
+
+  return pressure_value;
+}
+
+template <int dim, typename Number>
+void
+WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_number)
+{
+
+  if(step%up_res == 0)
+  {
+    if(invana && !adjoint && acouopt)
+      write_restart(timestep_number);
+  }
+
+  if(invana && !adjoint)
+  {
+    // slow version
+    //  values[det] = VectorTools::point_value(dof_handler,solutions[dim],position);
+
+    solutions[dim].update_ghost_values();
+
+    // fast version
+    std::vector<double> positions;
+    double eps = time_step/1000.0;
+    bacitimeint->MonitorManager()->GetMonitorPositions(positions);
+    std::vector<unsigned int> cellids = bacitimeint->MonitorManager()->GetCellIds();
+    int numdetec = positions.size()/dim;
+    std::vector<double> values(numdetec);
+
+    for(int det=0; det<numdetec; ++det)
+    {
+      Point<dim> position;
+      for(unsigned int d=0; d<dim; ++d)
+        position[d] = positions[det*dim+d]*(1.0-eps); // we don't want errors from points which are on the boundary
+      values[det] = determine_pressure_value(position,cellids[det]);
+    }
+    bacitimeint->MonitorManager()->StoreForwardValues(time,values);
+  }
+
   if (exactsolutionfuncno>=0 && this->solid==false)
   {
     for(int d=0; d<dim+1; ++d)
@@ -1180,6 +1406,11 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
                                          VectorTools::L2_norm);
       double solution_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 
+      IndexSet relevant_set;
+      get_relevant_set(dof_handler, relevant_set);
+      parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
+                                                        solutions[d].get_mpi_communicator());
+
       // calculate norm of difference between field and analytic field
       norm_per_cell_p = 0;
       VectorTools::integrate_difference (dof_handler,
@@ -1191,33 +1422,33 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
       double error_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 
       // calculate norm of analytic solution
-      /*norm_per_cell_p =0;
+      norm_per_cell_p =0;
       ghosted_sol = 0.0;
       VectorTools::integrate_difference (dof_handler,
           ghosted_sol,
           ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
           norm_per_cell_p,
           QGauss<dim>(fe.degree+3),
-          VectorTools::L2_norm);*/
-      double exact_sol_mag = 0.0; //std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+          VectorTools::L2_norm);
+      double exact_sol_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 
       pcout<<"d "<<d<<" absolute error "<<(error_mag)<<" exact solution norm "<<(exact_sol_mag)<<" solution norm "<<(solution_mag)<<" at time "<<time<<std::endl;
 
     }
 
-    // calculate norm of difference betwenn POSTPROCESSED pressure and analytic solution
-    Vector<double> norm_per_cell_p (triangulation.n_active_cells());
-
-    compute_post_pressure();
-
-    VectorTools::integrate_difference (dof_handler_post_disp,
-                                       post_quantity[0],
-                                       ExactSolution<dim>(dim,time,exactsolutionfuncno+dim),
-                                       norm_per_cell_p,
-                                       QGauss<dim>(fe.degree+3),
-                                       VectorTools::L2_norm);
-    double error_post_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
-    pcout<<"post absolute error "<<(error_post_mag)<<std::endl;
+//    // calculate norm of difference betwenn POSTPROCESSED pressure and analytic solution
+//    Vector<double> norm_per_cell_p (triangulation.n_active_cells());
+//
+//    compute_post_pressure();
+//
+//    VectorTools::integrate_difference (dof_handler_post_disp,
+//                                       post_quantity[0],
+//                                       ExactSolution<dim>(dim,time,exactsolutionfuncno+dim),
+//                                       norm_per_cell_p,
+//                                       QGauss<dim>(fe.degree+3),
+//                                       VectorTools::L2_norm);
+//    double error_post_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+//    pcout<<"post absolute error "<<(error_post_mag)<<std::endl;
 
 
   }
@@ -1360,6 +1591,43 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
   /* VTU output */
   if(!invana && step%up_res == 0) // otherwise we  get way too much output files
   {
+    Vector<double> clusterids(triangulation.n_active_cells()), timestepsizes(triangulation.n_active_cells());
+    for (unsigned int i=0; i<evaluator->get_matrix_free().n_macro_cells(); ++i)
+      for (unsigned int v=0; v<evaluator->get_matrix_free().n_components_filled(i); ++v)
+        {
+          typename Triangulation<dim>::cell_iterator cell = evaluator->get_matrix_free().get_cell_iterator(i, v);
+          clusterids(cell->active_cell_index()) = evaluator->cluster_id(i);
+          timestepsizes(cell->active_cell_index()) = evaluator->get_time_step_size(i);
+        }
+
+    /*DataOut<dim> data_out;
+
+    data_out.attach_dof_handler (dof_handler);
+    data_out.add_data_vector (solutions[dim], "solution_pressure");
+    for (unsigned int d=0; d<dim; ++d)
+      data_out.add_data_vector (solutions[d], "solution_velocity_" + Utilities::int_to_string(d));
+    data_out.add_data_vector (clusterids, "cluster_id");
+    data_out.add_data_vector (timestepsizes, "time_step");
+
+    data_out.build_patches ();
+
+    const std::string filename_pressure =
+      "sol_step" + Utilities::int_to_string (timestep_number, 3);
+
+
+    {
+      std::ostringstream filename;
+      filename
+               << filename_pressure;
+      if (Utilities::MPI::n_mpi_processes(MPI_COMM_WORLD) > 1)
+        filename << "_Proc"
+                 << Utilities::MPI::this_mpi_process(MPI_COMM_WORLD);
+      filename << ".vtu";
+
+      std::ofstream output_pressure (filename.str().c_str());
+      data_out.write_vtu (output_pressure);
+    }*/
+
 //    IndexSet relevant_set;
 //    get_relevant_set(dof_handler, relevant_set);
 //    parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
@@ -1382,68 +1650,118 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
 //    data_out.write_vtu (output_pressure);
   }
 
-  // write baci output
-  write_deal_cell_values();
-
-  //if(!adjoint)
+  // write baci output if desired
+  if(writebacioutput)
   {
-    //if(bacitimeint->Step()%bacitimeint->UpRes()==0)
-      bacitimeint->Output(history);
-//    else
-//    {
-//      // deal write node output to history please!
-//      if( history != Teuchos::null )
-//      {
-//        IndexSet relevant_set;
-//        get_relevant_set(dof_handler, relevant_set);
-//        parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
-//                                                          solutions[dim].get_mpi_communicator());
-//        ghosted_sol = solutions[dim];
-//        ghosted_sol.update_ghost_values();
-//
-//        Point<dim> eval_point;
-//
-//        // monitor boundary condition
-//        std::string condname = "PressureMonitor";
-//        std::vector<DRT::Condition*> pressuremon;
-//        discret->GetCondition(condname,pressuremon);
-//        const std::vector<int> pressuremonnodes = *(pressuremon[0]->Nodes());
-//        for(unsigned int i=0; i<pressuremonnodes.size(); ++i)
-//        {
-//          if(discret->NodeRowMap()->LID(pressuremonnodes[i])>=0)
-//          {
-//            for(unsigned int d=0; d<dim; ++d)
-//              eval_point[d] = discret->lRowNode(discret->NodeRowMap()->LID(pressuremonnodes[i]))->X()[d];
-//
-//            double press = VectorTools::point_value(dof_handler,ghosted_sol,eval_point);
-//
-//            history->ReplaceMyValue(history->Map().LID(pressuremonnodes[i]),bacitimeint->Step(),press);
-//          }
-//        }
-//      }
-//    }
+    write_deal_cell_values();
+    bacitimeint->Output();
   }
+
   return;
 }
 
-
-
-template<int dim, typename Number>
-void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> history)
+template <int dim, typename Number>
+void
+WaveEquationProblem<dim,Number>::write_restart (const unsigned int timestep_number)
 {
+  std::ostringstream oss;
+  boost::archive::binary_oarchive oa(oss);
 
-  if(time_step == 0.0 && invana && history!=Teuchos::null)
+  // write time
+  oa & time;
+
+  // write restart vectors
   {
-    history->PutScalar(1000000000000.0);
-    return;
+    VectorView<value_type> tmp(solutions[0].local_size(),
+                               solutions[0].begin());
+    oa << tmp;
+    for (unsigned int i=1; i<solutions.size(); i++)
+    {
+      tmp.reinit(solutions[i].local_size(),
+          solutions[i].begin());
+      oa << tmp;
+    }
   }
 
+  // write restart file
+  {
+    std::string filename = bacitimeint->Params()->get<std::string>("name");
+    if(adjoint)
+      filename.append("_adjo_");
+    else
+      filename.append("_forw_");
+    filename.append("step_");
+    filename.append(std::to_string(timestep_number));
+    filename.append("_rank_");
+    filename.append(std::to_string(discret->Comm().MyPID()));
+    filename.append(".restart");
+
+    int n_ranks = discret->Comm().NumProc();
+
+    // if all procs write their data at the same time, this causes severe problems when going above 1000 cores
+    // so the data is not written at once
+    for(int i=0;i<n_ranks;i++)
+    {
+      if(i == discret->Comm().MyPID())
+      {
+        std::ofstream stream(filename.c_str());
+        stream << oss.str() << std::endl;
+      }
+      else if(i < discret->Comm().MyPID())
+        usleep(8000); //sleep for 8 milliseconds
+    }
+
+    // barrier such that the following time measurement gives a reasonable result
+    discret->Comm().Barrier();
+  }
+}
+
+template <int dim, typename Number>
+void
+WaveEquationProblem<dim,Number>::read_restart (const unsigned int timestep_number, double &restarttime, bool fw)
+{
+  std::string filename = bacitimeint->Params()->get<std::string>("name");
+  if(!fw)
+    filename.append("_adjo_");
+  else
+    filename.append("_forw_");
+  filename.append("step_");
+  filename.append(std::to_string(timestep_number));
+  filename.append("_rank_");
+  filename.append(std::to_string(discret->Comm().MyPID()));
+  filename.append(".restart");
+
+  std::ifstream in (filename.c_str());
+  if(!in)
+    dserror("file %s cannot be read for restart",filename.c_str());
+
+  boost::archive::binary_iarchive ia (in);
+
+  // read time
+  ia & restarttime;
+
+  // read restart vectors
+  Vector<value_type> tmp;
+  for (unsigned int i=0; i<solutions.size(); i++)
+  {
+    ia >> tmp;
+    std::copy(tmp.begin(), tmp.end(),
+              solutions[i].begin());
+  }
+
+  return;
+}
+
+template<int dim, typename Number>
+void WaveEquationProblem<dim,Number>::run()
+{
   previous_solutions = solutions;
 
-  // if necessary, write a monitor file
-  bacitimeint->InitMonitorFile();
+  output_results(0);
 
-  output_results(0,history);
+  // if necessary, write a monitor file
+  if(!invana)
+    bacitimeint->InitMonitorFile();
 
   Teuchos::RCP<ExplicitIntegrator<WaveEquationOperationBase<dim,Number> > > integrator;
   switch(dyna)
@@ -1507,7 +1825,7 @@ void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> histo
   int percent_count = 0;
 
   // the time loop
-  for (time+=time_step; time<=final_time+1.e-7 && step<step_max; time+=time_step, ++step)
+  for (time+=time_step; time<=final_time+time_step/100.0 && step<step_max; time+=time_step, ++step)
   {
     bacitimeint->IncrementTimeAndStep();
     timer.restart();
@@ -1516,10 +1834,6 @@ void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> histo
     // in case of adjoint run with acoustic parameter optimization, calculate the gradient contributions
     if(invana&&adjoint&&acouopt)
       evaluator->compute_gradient_contributions(stored_forward_solutions[(step-1)%up_res],stored_forward_solutions[(step-1)%up_res+1],solutions);
-
-    // in case of backward inverse run, we need the driving force (pressure differences)
-    if(bacitimeint->AdjointSourceVec()!=Teuchos::null)
-      evaluator->set_timestep_source_number(bacitimeint->AdjointSourceVec()->NumVectors()-step-1);
 
     // do the actual time integration
     integrator->do_time_step(previous_solutions, solutions, time-time_step, time_step);
@@ -1546,7 +1860,7 @@ void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> histo
     timer.restart();
 
     // output results
-    output_results(step / up_res, history);
+    output_results(step / up_res);
 
     output_time += timer.wall_time();
 
@@ -1556,8 +1870,12 @@ void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> histo
   if(invana)
     pcout<<"-> 100%"<<std::endl;
 
-  if(invana&&adjoint&&acouopt)
-    evaluator->write_gradient_contributions(discret,time_step);
+  if(bacitimeint->isWriteMonitor() && !adjoint && invana)
+  {
+    std::string monitorfilename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    monitorfilename.append(".monitor");
+    bacitimeint->MonitorManager()->WriteMonitorFileInvana(monitorfilename);
+  }
 
   pcout << std::endl
         << "   Performed " << step << " time steps."
@@ -1570,6 +1888,20 @@ void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> histo
 
   pcout << "   Spent " << output_time << "s on output and "
         << wtime << "s on computations." << std::endl;
+}
+
+// get sos gradient value for row element with id rowid
+template<int dim, typename Number>
+double WaveEquationProblem<dim,Number>::get_SoS_gradient(int rowid)
+{
+  return evaluator->get_SoS_gradient(rowid);
+}
+
+// get density gradient value for row element with id rowid
+template<int dim, typename Number>
+double WaveEquationProblem<dim,Number>::get_density_gradient(int rowid)
+{
+  return evaluator->get_density_gradient(rowid);
 }
 
 template<int dim, typename Number>
@@ -1592,65 +1924,38 @@ void WaveEquationProblem<dim,Number>::intermediate_integrate(Teuchos::RCP<Explic
     adjoint_previous_solutions[i] = previous_solutions[i];
   }
 
-  // read the restart from the forward run
+  // **** NEW VERSION with DEAL RESTART
   double restarttime = 0.0;
-  int restartstep = -1;
-  {
-    restartstep = (step_max<(final_time/time_step)) ? step_max : (final_time/time_step);
-    restartstep -= step + up_res;
+  int restartstep = (step_max<(final_time/time_step)) ? step_max : (final_time/time_step);
+  restartstep -= step + up_res;
     if(restartstep < 0) return; // happens in the last adjoint step
-    std::stringstream name;
-    name<< bacitimeint->Params()->get<std::string>("name");
-    name<<"_invforward_acou_run_"<<bacitimeint->Params()->get<int>("outputcount");
 
-    Teuchos::RCP<IO::InputControl> inputfile = Teuchos::rcp(new IO::InputControl(name.str(), discret->Comm()));
-    IO::DiscretizationReader reader(discret,inputfile,restartstep);
-    restarttime = reader.ReadDouble("time");
+  read_restart(restartstep/up_res,restarttime,true); // sets restarttime to correct value and writes into solutions
 
-    // read the internal field
-    Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret->DofRowMap(1))));
-    reader.ReadVector(intvelnp,"intvelnp");
-    // bring the internal field to the baci elements
-    Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action",ACOU::ele_init_from_restart);
-    eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna);
-    eleparams.set<bool>("padaptivity",false);
-    if(solutions.size()==dim+dim+1)
-      eleparams.set<bool>("withPML",true);
-    else
-      eleparams.set<bool>("withPML",false);
-    discret->SetState(1,"intvelnp",intvelnp);
-    discret->Evaluate(eleparams);
-    discret->ClearState(true);
+  // store this
+  int count = up_res;
+  for(unsigned i=0; i<solutions.size(); ++i)
+    stored_forward_solutions[count][i] = solutions[i];
 
-    // bring the internal field from baci to deal values
-    evaluator->read_initial_conditions(discret, solutions);
-    // store this
-    int count = up_res;
+  // do the intermediate time loop
+  evaluator->set_adjoint_eval(false);
+  int maxstep = restartstep + up_res;
+  while (restartstep<maxstep)
+  {
+    // increment time and step
+    restartstep++;
+    restarttime += time_step;
+
+    // update state vectors
+    previous_solutions.swap(solutions);
+
+    // do the actual time step
+    integrator->do_time_step(previous_solutions, solutions, restarttime-time_step, time_step);
+
+    // store the forward solutions
+    count--;
     for(unsigned i=0; i<solutions.size(); ++i)
       stored_forward_solutions[count][i] = solutions[i];
-
-    // do the intermediate time loop
-    evaluator->set_adjoint_eval(false);
-    int maxstep = restartstep + up_res;
-    while (restartstep<maxstep)
-    {
-      // increment time and step
-      restartstep++;
-      restarttime += time_step;
-
-      // update state vectors
-      previous_solutions.swap(solutions);
-
-      // do the actual time step
-      integrator->do_time_step(previous_solutions, solutions, restarttime-time_step, time_step);
-
-      // store the forward solutions
-      count--;
-      for(unsigned i=0; i<solutions.size(); ++i)
-        stored_forward_solutions[count][i] = solutions[i];
-
-    }
   }
 
   // reset the solution vectors and act if nothing ever happened

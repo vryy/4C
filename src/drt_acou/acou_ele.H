@@ -367,20 +367,7 @@ public:
 
   Epetra_SerialDenseVector eleADERimprovedGrad_;
   Epetra_SerialDenseVector eleADERimprovedDiv_;
-
-  /// local values for acoustical parameter optimization
-  std::vector<Epetra_SerialDenseVector> eleintPressForward_;
-  std::vector<Epetra_SerialDenseVector> eleintVelForward_;
-  std::vector<Epetra_SerialDenseVector> eleintAuxiliaryPMLForward_;
   //@}
-
-  double GetDensityGradient() const { return grad_rho_; }
-  double GetSoSGradient()     const { return grad_c_;   }
-
-  void AddToDensityGradient(double toadd) { grad_rho_ += toadd; return; }
-  void AddToSoSGradient(double toadd)     { grad_c_   += toadd; return; }
-
-  void InitDensityAndSoSGradient() { grad_rho_=0.0; grad_c_=0.0; return; }
 
 protected:
 

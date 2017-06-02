@@ -46,6 +46,9 @@ ACOU::AcouImplicitTimeInt::AcouImplicitTimeInt(
   calcerr_        (false),
   allelesequal_   (DRT::INPUT::IntegralValue<bool>(*params_,"ALLELESEQUAL"))
 {
+  if(invana_)
+    dserror("photoacoustic image recosntruction no longer supported for implicit time integration");
+
   // some security checks
   if(dtp_ == 0.0)
     dserror("Can't work with time step size == 0.0");
@@ -158,7 +161,7 @@ void ACOU::AcouImplicitTimeInt::SetInitialField(int startfuncno)
 /*----------------------------------------------------------------------*
  |  Time loop (public)                                   schoeder 01/14 |
  *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history)
+void ACOU::AcouImplicitTimeInt::Integrate()
 {
   // time measurement: integration
   TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Integrate");
@@ -167,13 +170,10 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
   InitMonitorFile();
 
   // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
-  Output(history);
+  Output();
 
   // evaluate error
   EvaluateErrorComparedToAnalyticalSol();
-
-  // intermediate integrate
-  IntermediateIntegrate();
 
   // call elements to calculate system matrix/rhs and assemble
   AssembleMatAndRHS();
@@ -197,13 +197,11 @@ void ACOU::AcouImplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> histo
     UpdatePolyAndState();
 
     // output of solution
-    Output(history);
+    Output();
 
     // evaluate error
     EvaluateErrorComparedToAnalyticalSol();
 
-    // intermediate integrate
-    IntermediateIntegrate();
   } // while (step_<stepmax_ and time_<maxtime_)
 
   if (!myrank_) printf("\n");
@@ -278,7 +276,6 @@ void ACOU::AcouImplicitTimeInt::AssembleMatAndRHS()
   eleparams.set<int>("action",ACOU::calc_systemmat_and_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
   eleparams.set<bool>("adjoint",adjoint_);
-  eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
   eleparams.set<double>("time",time_);
   eleparams.set<double>("timep",time_+dtp_);
   eleparams.set<int>("step",step_);
@@ -358,7 +355,6 @@ void ACOU::AcouImplicitTimeInt::UpdateInteriorVariablesAndAssemebleRHS()
   int offset = uprestart_-step_%uprestart_;
   if(offset==uprestart_) offset = 0;
   eleparams.set<int>("calcgradoffset",offset);
-  eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
   eleparams.set<int>("step",step_);
   eleparams.set<bool>("resonly",true);
 
@@ -439,172 +435,6 @@ void ACOU::AcouImplicitTimeInt::UpdatePolyAndState()
   AssembleMatAndRHS();
 
   return;
-}
-/*----------------------------------------------------------------------*
- |  Intermediate forward integration in adjoint run      schoeder 06/15 |
- *----------------------------------------------------------------------*/
-void ACOU::AcouImplicitTimeInt::IntermediateIntegrate()
-{
-  // if this is no adjoint run or no acouopt_, return
-  if(acouopt_==false || adjoint_ == false)
-   return;
-
-  // if this is no "starting step", return
-  if(step_%uprestart_!=0)
-    return;
-
-  // save the trace field of the adjoint integration
-  Teuchos::RCP<Epetra_Vector> adjointvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(0))));
-  adjointvelnp->Update(1.0,*velnp_,0.0);
-
-  // read the restart
-  double time = 0.0;
-  int restartstep = -1;
-  {
-    // determine "start" for the intermediate integration
-    restartstep = (stepmax_<(maxtime_/dtp_)) ? stepmax_ : (maxtime_/dtp_);
-    restartstep -= step_ + uprestart_;
-    if(restartstep < 0) return; // happens in the last adjoint step
-
-    // prepare and do the restart read
-    std::stringstream name;
-    name<< params_->get<std::string>("name");
-    name<<"_invforward_acou_run_"<<outputcount_;
-    Teuchos::RCP<IO::InputControl> inputfile = Teuchos::rcp(new IO::InputControl(name.str(), discret_->Comm()));
-    IO::DiscretizationReader reader(discret_,inputfile,restartstep);
-    time = reader.ReadDouble("time");
-
-    // read the trace field
-    reader.ReadVector(velnp_,"velnps");
-
-    // read the internal field
-    Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
-    reader.ReadVector(intvelnp,"intvelnp");
-
-    // bring the internal field to the elements BUT DO NOT OVERWRITE THEIR FIELD VECTORS
-    Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action",ACOU::ele_init_from_acouoptrestart);
-    eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
-    eleparams.set<bool>("padaptivity",padaptivity_);
-    eleparams.set<int>("length",uprestart_+1); // +1 is for the last step
-    discret_->SetState(1,"intvelnp",intvelnp);
-    discret_->SetState("trace",velnp_);
-    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-    discret_->ClearState(true);
-  }
-
-  // perform the time steps!
-  {
-    // first step with setup of system matrix
-    // reset residual
-    residual_->Scale(0.0);
-
-    // delete all entries of the system matrix
-    sysmat_->Zero();
-
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-    eleparams.set<double>("dt",dtp_);
-    eleparams.set<int>("sourcefuncno",sourcefuncno_);
-    eleparams.set<bool>("resonly",false);
-    eleparams.set<bool>("padaptivity",padaptivity_);
-    eleparams.set<int>("action",ACOU::calc_systemmat_and_residual);
-    eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
-    eleparams.set<bool>("adjoint",false); // this is forward integration!
-    eleparams.set<int>("useacouoptvecs",0); // elements have to use the different vectors!!!
-    eleparams.set<double>("time",time);
-    eleparams.set<double>("timep",time+dtp_);
-    eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
-
-    // evaluate system matrix and residual
-    discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-    discret_->ClearState(true);
-
-    // add contribution to sysmat from absorbing boundary conditions
-    std::string condname = "Absorbing";
-    std::vector<DRT::Condition*> absorbingBC;
-    discret_->GetCondition(condname,absorbingBC);
-    if(absorbingBC.size())
-    {
-      eleparams.remove("action",false);
-      eleparams.set<int>("action",ACOU::calc_abc);
-      discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
-    }
-
-    // sysmat is ready to go
-    sysmat_->Complete();
-
-    // apply the Dirichlet conditions (no function call due to different time)
-    {
-      Teuchos::ParameterList params;
-      params.set<double>("total time",time);
-      discret_->EvaluateDirichlet(params,zeros_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-      LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,residual_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
-      zeros_->PutScalar(0.0);
-    }
-
-    // do the "time loop"
-    int maxstep = restartstep + uprestart_;
-    int minstep = restartstep;
-    while (restartstep<maxstep)
-    {
-      // increment time and step
-      restartstep++;
-      time += dtp_;
-
-      // output to screen
-      if(!myrank_) printf(">");
-
-      // solve
-      solver_->Solve(sysmat_->EpetraOperator(),velnp_,residual_,true,false,Teuchos::null);
-
-      // update interior variables and compute residual
-      {
-        // parameters
-        Teuchos::ParameterList eleparams;
-        eleparams.set<int>("sourcefuncno",sourcefuncno_);
-        eleparams.set<double>("dt",dtp_);
-        eleparams.set<double>("time",time);
-        eleparams.set<double>("timep",time+dtp_);
-        eleparams.set<bool>("adjoint",false);
-        eleparams.set<int>("useacouoptvecs",restartstep-minstep-1);
-        eleparams.set<bool>("errormaps",errormaps_);
-        eleparams.set<bool>("padaptivity",padaptivity_);
-        eleparams.set<double>("padaptivitytol",padapttol_);
-        eleparams.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
-        eleparams.set<bool>("allelesequal",allelesequal_);
-        eleparams.set<int>("action",ACOU::update_secondary_solution_and_calc_residual);
-        eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
-        //eleparams.set<int>("step",restartstep);
-        eleparams.set<bool>("resonly",true);
-        eleparams.set<bool>("calculategradient",false);
-
-        // reset residual
-        residual_->Scale(0.0);
-
-        // evaluate
-        discret_->SetState("trace",velnp_);
-        discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-      }
-
-      // apply dirichlet
-      {
-        Teuchos::ParameterList params;
-        params.set<double>("total time",time);
-        discret_->EvaluateDirichlet(params,zeros_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-        LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,residual_,Teuchos::null,zeros_,*(dbcmaps_->CondMap()));
-        zeros_->PutScalar(0.0);
-      }
-    } // while (restartstep<restartstep+uprestart_)
-  }
-
-  // now the elements hold the correct state vectors
-  // act if nothing ever happened!
-  velnp_->Update(1.0,*adjointvelnp,0.0);
-  AssembleMatAndRHS();
-  ApplyDirichletToSystem();
-
- return;
 }
 
 /*----------------------------------------------------------------------*
@@ -780,11 +610,11 @@ ACOU::AcouTimeIntAderTriTet::AcouTimeIntAderTriTet(
   tempsrc_ = LINALG::CreateVector(*(discret_->DofRowMap(1)),true);
 }
 
-void ACOU::AcouTimeIntAderTriTet::Integrate(Teuchos::RCP<Epetra_MultiVector> history)
+void ACOU::AcouTimeIntAderTriTet::Integrate()
 {
 
   // output of initial field (given by function for purely acoustic simulation or given by optics for PAT simulation)
-  Output(history);
+  Output();
 
   // evaluate error
   //EvaluateErrorComparedToAnalyticalSol();
@@ -804,7 +634,7 @@ void ACOU::AcouTimeIntAderTriTet::Integrate(Teuchos::RCP<Epetra_MultiVector> his
     Solve();
 
     // output of solution
-    Output(history);
+    Output();
 
     // evaluate error
     EvaluateErrorComparedToAnalyticalSol();
@@ -872,8 +702,6 @@ void ACOU::AcouTimeIntAderTriTet::AssembleMatAndRHS()
   eleparams.set<int>("useacouoptvecs",-1);
   eleparams.set<int>("action",ACOU::calc_ader_sysmat_and_residual);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
-  eleparams.set<bool>("adjoint",adjoint_);
-  eleparams.set<Teuchos::RCP<Epetra_MultiVector> >("adjointrhs",adjoint_rhs_);
   eleparams.set<double>("time",time_);
   eleparams.set<double>("timep",time_+dtp_);
   eleparams.set<int>("step",step_);

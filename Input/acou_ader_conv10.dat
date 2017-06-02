@@ -20,20 +20,22 @@ RESTART                         0
 ----------------------------------------------------------------IO
 ------------------------------------------------------------ACOUSTIC DYNAMIC
 LINEAR_SOLVER                   1
-TIMESTEP                        0.0033333333333333333
+TIMESTEP                        0.00333333
 MAXTIME                         0.2
-NUMSTEP                         2000000
-RESTARTEVRY                     20
-RESULTSEVRY                     10
+NUMSTEP                         61
+RESTARTEVRY                     0
+RESULTSEVRY                     5
 STARTFUNCNO                     1
 SOURCETERMFUNCNO                2
-CALCERRORFUNCNO                 0 // 3
+CALCERRORFUNCNO                 0
 PHOTOACOU                       No
 PHYSICAL_TYPE                   lossless
 ERRORMAPS                       No
 TIMEINT                         ader
 INV_ANALYSIS                    none
 WRITESTRESS                     No
+SPECTRAL_EVALUATION             no
+USE_ADER_POST                   no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Acoustic_Solver
@@ -82,7 +84,7 @@ VERBOSITY                       0
 STRATIMIKOS_XMLFILE             none
 SIMPLE_DAMPING                  1
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Acoustic DENSITY 2.0 C 2.0
+MAT 1 MAT_Acoustic DENSITY 1.0 C 1.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION sin(pi*x)*sin(pi*y)
 COMPONENT 1 FUNCTION 0

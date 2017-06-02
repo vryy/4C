@@ -164,24 +164,6 @@ private:
                        Epetra_SerialDenseVector          & interiorSourcen,
                        Epetra_SerialDenseVector          & interiorSourcenp);
 
-    /// add terms corresponding to the absorbing boundary condition
-    void ComputeSourcePressureMonitor(DRT::ELEMENTS::Acou*        ele,
-                            Teuchos::ParameterList&     params,
-                            Epetra_SerialDenseVector    &elevec);
-
-    /// add terms corresponding to the absorbing boundary condition
-    void ComputeSourcePressureMonitorVector(DRT::ELEMENTS::Acou*        ele,
-                            Teuchos::ParameterList&     params,
-                            Epetra_SerialDenseVector    &sourceterm);
-
-    /// add terms corresponding to the absorbing boundary condition
-    void ComputeSourcePressureMonitorLine3D(DRT::ELEMENTS::Acou*        ele,
-                              Teuchos::ParameterList&     params,
-                              Teuchos::RCP<MAT::Material> & mat,
-                              int                         face,
-                              Epetra_SerialDenseMatrix    &elemat,
-                              Epetra_SerialDenseVector    &elevec);
-
     /// set up interior matrices
     void ComputeInteriorMatrices();
 
@@ -201,13 +183,6 @@ private:
                          Epetra_SerialDenseVector          & interiorPressn,
                          std::vector<double>               traceVal,
                          INPAR::ACOU::DynamicType          dyna);
-
-    /// evaluates source term for given coordinates
-    void EvaluateFaceAdjoint(double fnodexyz[][nsd_],
-                             double values[],
-                             int numfnode,
-                             const double (&xyz)[nsd_],
-                             double &val) const;
 
     const unsigned int ndofs_;
 
@@ -247,14 +222,7 @@ private:
   void ComputeMatrices(const Teuchos::RCP<MAT::Material> &mat,
                        DRT::ELEMENTS::Acou &             ele,
                        double                            dt,
-                       INPAR::ACOU::DynamicType          dyna,
-                       bool                              adjoint);
-
-
-  /// add terms corresponding to the absorbing boundary condition
-  void ComputePMonNodeVals(DRT::ELEMENTS::Acou*        ele,
-                          int                         face,
-                          Epetra_SerialDenseVector    &elevec);
+                       INPAR::ACOU::DynamicType          dyna);
 
   /// reads from global vectors
   void ReadGlobalVectors(DRT::Element     * ele,
@@ -279,14 +247,6 @@ private:
                    double  (&v)[nsd_],
                    double  (&gv)[nsd_*nsd_],
                    double t) const;
-
-  void EvaluateLight(double lightxyz[][nsd_],
-                     double values[],
-                     int    numnode,
-                     const double (&xyz)[nsd_],
-                     double  &p,
-                     double absorptioncoeff) const;
-
 
   /// local data object
   Teuchos::RCP<DRT::UTILS::ShapeValues<distype> > shapes_;

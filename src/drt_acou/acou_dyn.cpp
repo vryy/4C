@@ -34,7 +34,8 @@
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
-#include "../drt_scatra/scatra_timint_implicit.H"
+//#include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_stat.H"
 
 void printacoulogo()
 {
@@ -200,6 +201,7 @@ void acoustics_drt()
     params->set<bool>("adjoint",false);
     params->set<bool>("acouopt",false);
     params->set<bool>("reduction",false);
+    params->set<bool>("writeacououtput",true);
   }
 
   // set restart step if we do not perform inverse analysis
@@ -247,11 +249,21 @@ void acoustics_drt()
       break;
     }
 
-    // in case we do a photoacoustic simulation
-    Teuchos::RCP<Epetra_Vector> scatrainitialpress;
+    acoualgo->PrintInformationToScreen();
 
-    if ( photoacou  && restart == 0)
+    // set initial field
+    if (restart) // standard restart scenario
     {
+      acoualgo->ReadRestart(restart);
+    }
+    else if (!photoacou) // standard acoustic simulation
+    {
+      int startfuncno = acouparams.get<int>("STARTFUNCNO");
+      acoualgo->SetInitialField(startfuncno);
+    }
+    else // initial field calculated in dependence on light distribution - photoacoustic setting
+    {
+
       // access the problem-specific parameter list
       const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
@@ -267,7 +279,9 @@ void acoustics_drt()
       if(scatradis->NumGlobalElements()==0)
         dserror("you said you want to do photoacoustics but you did not supply TRANSP elements");
 
-      // set velocity field
+      Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo;
+
+      // do the scatra
       const INPAR::SCATRA::VelocityField veltype = DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatradyn,"VELOCITYFIELD");
       switch (veltype)
       {
@@ -287,39 +301,41 @@ void acoustics_drt()
           // finalize discretization
           scatradis->FillComplete(true, false, false);
 
-          // get linear solver id from SCALAR TRANSPORT DYNAMIC
-          const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
-          if (linsolvernumber == (-1))
-            dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+          // create solver
+          Teuchos::RCP<LINALG::Solver> scatrasolver =
+            Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(scatradyn.get<int>("LINEAR_SOLVER")),
+                                            scatradis->Comm(),
+                                            DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+          // create scatra output
+          Teuchos::RCP<IO::DiscretizationWriter> scatraoutput = scatradis->Writer();
+          scatraoutput->WriteMesh(0,0.0);
+          // access the problem-specific parameter list
+          Teuchos::RCP<Teuchos::ParameterList> scatraparams = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ScalarTransportDynamicParams()));
+
+          // create necessary extra parameter list for scatra
+          //{
+          Teuchos::RCP<Teuchos::ParameterList> scatraextraparams;
+          scatraextraparams = Teuchos::rcp(new Teuchos::ParameterList());
+          scatraextraparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+          scatraextraparams->set<bool>("isale",false);
+          const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+          scatraextraparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+          scatraextraparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
+          scatraextraparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
+          scatraextraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
+          //}
+
 
           // create instance of scalar transport basis algorithm (empty fluid discretization)
-          Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly =
-              Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+          scatraalgo = Teuchos::rcp(new SCATRA::TimIntStationary(scatradis, scatrasolver, scatraparams, scatraextraparams, scatraoutput));
 
-          // now we can call Init() on the base algorithm
-          // time integrator is constructed and initialized inside
-          scatraonly->Init(
-              scatradyn,
-              scatradyn,
-              DRT::Problem::Instance()->SolverParams(linsolvernumber));
+          // run
 
-          // now me may redistribute or ghost the scatra discretization
-
-          // only now we must call Setup() on th base algorithm
-          // all objects relying on the parallel distribution are
-          // created and pointers are set.
-          // calls Setup() on time integrator inside.
-          scatraonly->Setup();
-
-          // set velocity field
-          //(this is done only once. Time-dependent velocity fields are not supported)
-          (scatraonly->ScaTraField())->SetVelocityField(1);
-
-          // enter time loop to solve problem with given convective velocity
-          (scatraonly->ScaTraField())->TimeLoop();
-
-          // get the solution of the scatra problem
-          scatrainitialpress = (scatraonly->ScaTraField())->Phinp();
+          scatraalgo->Init();
+          scatraalgo->Setup();
+          scatraalgo->SetVelocityField(1);
+          scatraalgo->TimeLoop();
 
           break;
         }
@@ -327,25 +343,9 @@ void acoustics_drt()
           dserror("unknown velocity field type for transport of passive scalar in problem type Acoustics");
           break;
       }
-    }
 
-    acoualgo->PrintInformationToScreen();
-
-    // set initial field
-    if (restart) // standard restart scenario
-    {
-      acoualgo->ReadRestart(restart);
-    }
-    else if (!photoacou) // standard acoustic simulation
-    {
-      int startfuncno = acouparams.get<int>("STARTFUNCNO");
-      acoualgo->SetInitialField(startfuncno);
-    }
-    else // initial field calculated in dependence on light distribution - photoacoustic setting
-    {
-      bool meshconform = DRT::INPUT::IntegralValue<bool>(acouparams,"MESHCONFORM");
       // calculate initial pressure distribution by means of the scalar transport problem
-      acoualgo->SetInitialPhotoAcousticField(scatrainitialpress,DRT::Problem::Instance()->GetDis("scatra"), meshconform);
+      acoualgo->SetInitialPhotoAcousticField(scatraalgo);
     }
 
     acoualgo->Integrate();

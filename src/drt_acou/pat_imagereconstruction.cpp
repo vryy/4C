@@ -80,11 +80,13 @@ J_(0.0),
 J_start_(0.0),
 error_(0.0),
 error_start_(0.0),
-overwrite_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("OVERWRITEOUTPUT")))
+overwrite_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("OVERWRITEOUTPUT"))),
+write_baci_acou_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("ACOUOUTPUT")))
 {
   // set time reversal to false
   acouparams_->set<bool>("timereversal",false);
   acouparams_->set<bool>("reduction",false);
+  acouparams_->set<std::string>("name",name_);
 
   // create necessary extra parameter list for scatra
   //{
@@ -165,89 +167,15 @@ overwrite_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE
 
 
   // read monitor file, create multivector and map for measured values
-  ReadMonitor(acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<std::string>("MONITORFILE"),acouparams_->get<double>("TIMESTEP"));
+  monitor_manager_ = Teuchos::rcp(new PATMonitorManager(acou_discret_,acouparams_));
+  acouparams_->set<Teuchos::RCP<PATMonitorManager> >("monitormanager",monitor_manager_);
 
   // compute node based reaction vector
   ComputeNodeBasedReactionCoefficient();
 
-  // check if we need the impulse response and if so, transform it to the used time step
-  double dtimpresp = acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("IMPULSERESPONSE_DT");
-  if(dtimpresp!=0.0)
-    conv_imp_resp_ = true;
-  else
-    conv_imp_resp_ = false;
-  if(conv_imp_resp_)
-  {
-    // get file name in which the impulse response is held
-    std::string impulseresponsefilename = acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<std::string>("IMPULSERESPONSE");
-
-    // check if file is given
-    if(impulseresponsefilename=="none.impresp")
-      dserror("if you set IMPULSERESPONSE_DT != 0.0 you have to provide an impulse response in a file");
-
-    // insert path to file if necessary
-    if (impulseresponsefilename[0]!='/')
-    {
-      std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
-      std::string::size_type pos = filename.rfind('/');
-      if (pos!=std::string::npos)
-      {
-        std::string path = filename.substr(0,pos+1);
-        impulseresponsefilename.insert(impulseresponsefilename.begin(), path.begin(), path.end());
-      }
-    }
-
-    // open file
-    FILE* file = fopen(impulseresponsefilename.c_str(),"rb");
-    if (file==NULL) dserror("Could not open impulse response file %s",impulseresponsefilename.c_str());
-
-    // read file
-    char buffer[150000];
-    fgets(buffer,150000,file);
-    char* foundit = NULL;
-    char* test = NULL;
-    foundit = buffer;
-
-    std::vector<double> impulseresponse;
-    int num_imprespvals = 0;
-    double norm = 0.0;
-    do{
-      impulseresponse.push_back(strtod(foundit,&foundit));
-      test = fgets(buffer,150000,file);
-      foundit = buffer;
-      num_imprespvals++;
-      norm += impulseresponse[num_imprespvals-1];
-    } while(test!=NULL);
-
-    double dtacou = acouparams_->get<double>("TIMESTEP");
-
-    // in case time steps are the same just copy the impulse response
-    if(dtimpresp==dtacou)
-    {
-      imp_resp_.Resize(num_imprespvals);
-      for(int i=0; i<num_imprespvals; ++i)
-        imp_resp_(i)=impulseresponse[i];
-      if(norm!=0.0)
-        imp_resp_.Scale(1.0/std::abs(norm));
-    }
-    else // otherwise interpolate the given impulse response to the dtacou_ timestep
-    {
-      double maxtime = dtimpresp*num_imprespvals;
-      int num_baciimprespvals = maxtime/dtacou;
-      imp_resp_.Resize(num_baciimprespvals);
-
-      for(int i=0; i<num_baciimprespvals; ++i)
-      {
-        double actualt = i * dtacou; // we need values for this time point
-        int impresindex = actualt / dtimpresp; // corresponds to this index
-        imp_resp_(i) = impulseresponse[impresindex] + (impulseresponse[impresindex+1]-impulseresponse[impresindex])*(actualt - impresindex*dtimpresp)/(dtimpresp);
-      }
-      imp_resp_.Scale(double(num_imprespvals)/std::abs(norm)/double(num_baciimprespvals));
-    }
-  } // read impulse response end
-
   // set parameter for aocustic time integration
   acouparams_->set<bool>("acouopt",false);
+  acouparams_->set<bool>("writeacououtput",write_baci_acou_output_);
 }
 
 
@@ -335,7 +263,7 @@ void ACOU::PatImageReconstruction::FDCheck()
 double ACOU::PatImageReconstruction::EvalulateObjectiveFunction()
 {
   // evaluate error contribution
-  EvaluateError();
+  error_ = monitor_manager_->EvaluateError();
   J_ = error_;
 
   if(reac_regula_!=Teuchos::null)
@@ -608,52 +536,6 @@ void ACOU::PatImageReconstruction::CheckNeighborsReacGrad(DRT::Element* actele, 
     }
   }
 
-  /* serial version
-  if(actele->Shape()==DRT::Element::quad4)
-  {
-    // ask each node for its elements
-    for(int n=0; n<actele->NumNode(); ++n) // should be 4
-    {
-      DRT::Node* node = actele->Nodes()[n];
-      for(int e=0; e<node->NumElement(); ++e)
-      {
-        DRT::Element* neighborele = node->Elements()[e];
-
-        // is it real neighbor (only if they share 2 nodes)
-        int share = 0;
-        for(int a=0; a<actele->NumNode(); ++a)
-          for(int b=0; b<neighborele->NumNode(); ++b)
-          {
-            if(actele->NodeIds()[a]==neighborele->NodeIds()[b])
-              share++;
-          }
-        if(share == 4) // same element -> skip
-          continue;
-        else if(share == 2) // neighbor element
-        {
-          // if already evaluated, skip
-          if(setsids->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) <= set && setsids->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) >= 0.0)
-            continue;
-
-          double neighborreac = reac_objgrad_->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id()));
-          if(abs(neighborreac-reacval) <= interval)
-          {
-            setsids->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) = set;
-            auxvals->operator [](scatra_discret_->ElementRowMap()->LID(neighborele->Id())) = 123456.789;
-            CheckNeighbors(neighborele,owner,setsids,set,reacval,interval,auxvals);
-          }
-        }
-        else if(share == 1) // not really connected
-          continue;
-        else
-          dserror("to be implemented for parallel usage");
-      }
-    }
-  }
-  else
-    dserror("distype not yet implemented");
-  */
-
   return;
 }
 
@@ -918,7 +800,7 @@ void ACOU::PatImageReconstructionOptiSplit::SetRestartParameters(Teuchos::RCP<Ep
 double ACOU::PatImageReconstructionOptiSplit::EvalulateObjectiveFunction()
 {
   // evaluate error contribution
-  EvaluateError();
+  error_ = monitor_manager_->EvaluateError();
   J_ = error_;
 
   if(reac_regula_!=Teuchos::null)
@@ -1358,6 +1240,20 @@ ACOU::PatImageReconstructionOptiSplitAcouSplit::PatImageReconstructionOptiSplitA
   // set parameter for aocustic time integration
   acouparams_->set<bool>("acouopt",true);
 
+  // write iteration wise baci output if no pressure and velocity output desired
+  if(!write_baci_acou_output_)
+  {
+    std::string outname = name_;
+    outname.append("_c_and_rho_iter");
+    acououtput_->NewResultFile(outname,0);
+    output_count_++;
+    acououtput_->WriteMesh(0,0.0);
+    acououtput_->NewStep(0,0.0);
+    acououtput_->WriteElementData(true);
+    acououtput_->WriteVector("density",rho_vals_,IO::elementvector);
+    acououtput_->WriteVector("speedofsound",c_vals_,IO::elementvector);
+  }
+
   /* only for optimization with "correctly set" acoustical properties */
   if(0)
   {
@@ -1689,7 +1585,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::SetRestartParameters(Teucho
 double ACOU::PatImageReconstructionOptiSplitAcouSplit::EvalulateObjectiveFunction()
 {
   // evaluate error contribution
-  EvaluateError();
+  error_ = monitor_manager_->EvaluateError();
   J_ = error_;
 
   if(reac_regula_!=Teuchos::null)
@@ -1749,16 +1645,16 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateGradient()
 //  rho_objgrad_->Norm1(&norm1); rho_objgrad_->Norm2(&norm2); rho_objgrad_->NormInf(&norminf);
 //  std::cout<<"rho  "<<norm1<<" "<<norm2<<" "<<norminf<<std::endl;
 //
-  // output the solution
-  std::string outname = name_;
-  outname.append("_c_and_rho_grad");
-  acououtput_->NewResultFile(outname,0);
-  output_count_++;
-  acououtput_->WriteMesh(0,0.0);
-  acououtput_->NewStep(1,1.0);
-  acououtput_->WriteElementData(true);
-  acououtput_->WriteVector("density",rho_objgrad_);
-  acououtput_->WriteVector("speedofsound",c_objgrad_);
+//  // output the solution
+//  std::string outname = name_;
+//  outname.append("_c_and_rho_grad");
+//  acououtput_->NewResultFile(outname,0);
+//  output_count_++;
+//  acououtput_->WriteMesh(0,0.0);
+//  acououtput_->NewStep(1,1.0);
+//  acououtput_->WriteElementData(true);
+//  acououtput_->WriteVector("density",rho_objgrad_);
+//  acououtput_->WriteVector("speedofsound",c_objgrad_);
 //
 //  std::string soutname = name_;
 //  soutname.append("_reac_and_diff_grad");
@@ -2455,23 +2351,17 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::CheckNeighborsPatchReacVals
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateCGrad()
 {
-  // loop the row elements
-  for (int i=0; i<acou_discret_->NumMyRowElements(); i++)
+  // loop the col elements
+  for (int i=0; i<acou_discret_->NumMyColElements(); i++)
   {
-    DRT::Element* actele = acou_discret_->lRowElement(i);
-
-    // we do not have to do the calculation for elements which are not optimized
-    if (acou_opt_ind_->operator [](i)==0.0)
-      continue;
-
-    const DRT::ELEMENTS::Acou * hdgele = dynamic_cast<const DRT::ELEMENTS::Acou*>(actele);
-    double val = hdgele->GetSoSGradient();
+    double val = acoualgo_->GetSoSGradient(i);
 
     // write it to the gradient
-    c_objgrad_->ReplaceMyValue(i,0,val);
+    if(acou_discret_->ElementRowMap()->LID(acou_discret_->ElementColMap()->GID(i))>=0)
+      c_objgrad_->ReplaceMyValue(acou_discret_->ElementRowMap()->LID(acou_discret_->ElementColMap()->GID(i)),0,val);
   }
 
-  // just to be safe
+  // to set the entries for not optimizable material to zero
   c_objgrad_->Multiply(1.0,*acou_opt_ind_,*c_objgrad_,0.0);
 
   // regularization
@@ -2486,20 +2376,14 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateCGrad()
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateRhoGrad()
 {
-  // loop the row elements
-  for (int i=0; i<acou_discret_->NumMyRowElements(); i++)
+  // loop the col elements
+  for (int i=0; i<acou_discret_->NumMyColElements(); i++)
   {
-    DRT::Element* actele = acou_discret_->lRowElement(i);
-
-    // we do not have to do the calculation for elements which are not optimized
-    if (acou_opt_ind_->operator [](i)==0.0)
-      continue;
-
-    const DRT::ELEMENTS::Acou * hdgele = dynamic_cast<const DRT::ELEMENTS::Acou*>(actele);
-    double val = hdgele->GetDensityGradient();
+    double val = acoualgo_->GetDensityGradient(i);
 
     // write it to the gradient
-    rho_objgrad_->ReplaceMyValue(i,0,val);
+    if(acou_discret_->ElementRowMap()->LID(acou_discret_->ElementColMap()->GID(i))>=0)
+      rho_objgrad_->ReplaceMyValue(acou_discret_->ElementRowMap()->LID(acou_discret_->ElementColMap()->GID(i)),0,val);
   }
 
   // just to be safe
@@ -2546,20 +2430,20 @@ bool ACOU::PatImageReconstructionOptiSplitAcouSplit::PerformIteration()
   {
     if(!myrank_)
       std::cout<<"REACTION ITERATION "<<i<<std::endl;
-    linesearch_->Init(J_,reac_objgrad_,reac_searchdirection_->ComputeDirection(reac_objgrad_,reac_vals_,iter_),reac_vals_,scatra_discret_->ElementRowMap());
-    reacsucc = linesearch_->Run();
-
-    if(!myrank_)
-    {
-      std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
-      std::cout<<"*** objective function value          "<<J_<<std::endl;
-      std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
-      std::cout<<"*** error value                       "<<error_<<std::endl;
-      std::cout<<"*** output count                      "<<output_count_<<std::endl;
-    }
-    ComputeParameterError();
-    if(reacsucc==false)
-      break;
+//    linesearch_->Init(J_,reac_objgrad_,reac_searchdirection_->ComputeDirection(reac_objgrad_,reac_vals_,iter_),reac_vals_,scatra_discret_->ElementRowMap());
+//    reacsucc = linesearch_->Run();
+//
+//    if(!myrank_)
+//    {
+//      std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
+//      std::cout<<"*** objective function value          "<<J_<<std::endl;
+//      std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
+//      std::cout<<"*** error value                       "<<error_<<std::endl;
+//      std::cout<<"*** output count                      "<<output_count_<<std::endl;
+//    }
+//    ComputeParameterError();
+//    if(reacsucc==false)
+//      break;
   }
 
   if(!myrank_)
@@ -3429,7 +3313,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::UpdateAcousticalParameters(
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouIdent::ComputeParameterError()
 {
-  std::cout<<"here could be an error evaluation "<< std::endl; // TODO
+  std::cout<<"here could be an error evaluation "<< std::endl;
   return;
 }
 
@@ -3453,16 +3337,14 @@ ACOU::PatImageReconstructionReduction::PatImageReconstructionReduction(
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionReduction::Optimize()
 {
-  // set parameter indicating that not the adjoint problem is solved
+  // set parameters
   acouparams_->set<bool>("adjoint",false);
   acouparams_->set<bool>("timereversal",true);
   acouparams_->set<bool>("reduction",true);
-
-  // set parameter for acoustic time integration
   acouparams_->set<bool>("acouopt",false);
 
-  Teuchos::RCP<Epetra_MultiVector> tempvec = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_map_,acou_rhsm_->NumVectors(),true));
-  acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",acou_rhsm_);
+  // set the monitor manager
+  acouparams_->set<Teuchos::RCP<PATMonitorManager> >("monitormanager",monitor_manager_);
 
   // create time integrator
   switch(dyna_)
@@ -3490,7 +3372,7 @@ void ACOU::PatImageReconstructionReduction::Optimize()
   acoualgo_->SetInitialZeroField();
 
   // do the time integration
-  acoualgo_->Integrate(acou_rhs_);
+  acoualgo_->Integrate();
 
   // now read the values from the newly written monitor file, return them in time and overwrite the monitor file!
   if(myrank_==0)
@@ -3593,380 +3475,11 @@ const Teuchos::RCP<Epetra_MultiVector> ACOU::PatImageReconstruction::ElementMatV
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PatImageReconstruction::ReadMonitor(std::string monitorfilename, double dtacou)
-{
-  // initialize acou_rhs_: we need a vector with the nodes of the boundary where
-  // the pressure is monitored-> Read the monitor file and create a vector with
-  // corresponding nodes OR take the boundary where absorbing bcs are prescribed!
-  // we need this map extractor thing!
-  // we deal with NODES here, not with DOFS
-
-  std::string condname = "PressureMonitor";
-  std::vector<DRT::Condition*> pressuremon;
-  acou_discret_->GetCondition(condname,pressuremon);
-  if(pressuremon.size()==0)
-    dserror("you have to use pressure monitor conditions for inverse analysis!");
-  const std::vector<int> pressuremonmics = *(pressuremon[0]->Nodes());
-  std::vector<int> pressuremonmicsunique;
-  std::vector<int> pressuremonmicscolumn;
-
-  nodes_.resize(pressuremonmics.size());
-  for(unsigned int i=0; i<pressuremonmics.size(); ++i)
-    nodes_[i] = pressuremonmics[i];
-
-  // create unique map
-  acou_discret_->Comm().Barrier();
-  for(int i=0; i<acou_discret_->Comm().NumProc(); ++i)
-  {
-    if(acou_discret_->Comm().MyPID() == i)
-    {
-      for(unsigned int j=0; j<pressuremonmics.size(); ++j)
-      {
-        if(acou_discret_->HaveGlobalNode(pressuremonmics[j]))
-        {
-          pressuremonmicscolumn.push_back(pressuremonmics[j]);
-          if(acou_discret_->gNode(pressuremonmics[j])->Owner()==int(i))
-            pressuremonmicsunique.push_back(pressuremonmics[j]);
-        }
-      }
-    }
-    acou_discret_->Comm().Barrier();
-  }
-  acou_discret_->Comm().Barrier();
-
-  // create map
-  abcnodes_map_ = Teuchos::rcp(new Epetra_Map(-1, pressuremonmicsunique.size(), &pressuremonmicsunique[0], 0, acou_discret_->Comm()));
-  abcnodes_colmap_ = Teuchos::rcp(new Epetra_Map(-1, pressuremonmicscolumn.size(), &pressuremonmicscolumn[0], 0, acou_discret_->Comm()));
-
-  // determine the number of vectors for monitoring
-  int numvec = acouparams_->get<int>("NUMSTEP");
-  int oderso = acouparams_->get<double>("MAXTIME")/dtacou;
-  if ( oderso < numvec)
-    numvec = oderso;
-
-  acou_rhs_ = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_map_,numvec+1,true));
-  acou_rhsm_ = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_map_,numvec+1,true));
-
-  unsigned int nsteps = 0;
-  unsigned int nmics = 0;
-
-  std::vector<std::vector<double> > meascoords;
-  Epetra_SerialDenseVector mcurve;
-
-  // check for monitor file
-  if (monitorfilename=="none.monitor")
-    dserror("No monitor file provided");
-
-  // insert path to monitor file if necessary
-  if (monitorfilename[0]!='/')
-  {
-    std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
-    std::string::size_type pos = filename.rfind('/');
-    if (pos!=std::string::npos)
-    {
-      std::string path = filename.substr(0,pos+1);
-      monitorfilename.insert(monitorfilename.begin(), path.begin(), path.end());
-    }
-  }
-
-  // open monitor file and read it
-  FILE* file = fopen(monitorfilename.c_str(),"rb");
-  if (file==NULL) dserror("Could not open monitor file %s",monitorfilename.c_str());
-
-  char buffer[150000];
-  fgets(buffer,150000,file);
-  char* foundit = NULL;
-
-  // read steps
-  foundit = strstr(buffer,"steps"); foundit += strlen("steps");
-  nsteps = strtol(foundit,&foundit,10);
-  std::vector<double> timesteps(nsteps);
-
-  // read mics
-  foundit = strstr(buffer,"mics"); foundit += strlen("mics");
-  nmics = strtol(foundit,&foundit,10);
-
-  // read measurement coordinates for every microphone
-  meascoords.resize(nmics);
-  for (unsigned int i=0; i<nmics; ++i)
-  {
-    meascoords[i].resize(3);
-    fgets(buffer,150000,file);
-    foundit = buffer;
-    for(int j=0; j<3; ++j)
-      meascoords[i][j] = strtod(foundit,&foundit);
-  }
-
-  // read in measured curve
-  {
-    mcurve = Epetra_SerialDenseVector(nmics*nsteps);
-
-    // read comment lines
-    foundit = buffer;
-    fgets(buffer,150000,file);
-    while(strstr(buffer,"#"))
-      fgets(buffer,150000,file);
-
-    // read in the values for each node
-    unsigned int count = 0;
-    for (unsigned int i=0; i<nsteps; ++i)
-    {
-      // read the time step
-      timesteps[i] = strtod(foundit,&foundit);
-      for (unsigned int j=0; j<nmics; ++j)
-        mcurve[count++] = strtod(foundit,&foundit);
-      fgets(buffer,150000,file);
-      foundit = buffer;
-    }
-    if (count != nmics*nsteps) dserror("Number of measured pressure values wrong on input");
-  }
-  fclose(file);
-
-  // interpolation
-  // vector for the interpolated data
-  Epetra_SerialDenseVector nodcurvinterpol(pressuremonmicsunique.size()*nsteps);
-
-  if((pressuremonmicsunique.size())!=0)
-  {
-    unsigned int i=0, j=0, l=0;
-    unsigned int must_set_curve=1;
-    double help;
-    double distance[nmics];
-    double epsilon = acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<double>("EPSILON");
-
-    //if the user doesn't want to give an espilon as input, we'll calculate it individually
-    if(epsilon==-1.0)
-      epsilon=ReadMonitorGetEpsilon(pressuremonmicsunique.size());
-
-    //interpolation-loop for every single nod
-    for (i=0; i<pressuremonmicsunique.size(); ++i)
-    {
-      const double* nod_coords = acou_discret_->gNode(pressuremonmicsunique[i])->X();
-      unsigned int M_1=0, M_2=0;
-
-      for(j=0;j<nmics;j++)
-      {
-        distance[j] = ReadMonitorDelta(meascoords[j][0],meascoords[j][1],meascoords[j][2],nod_coords[0],nod_coords[1],nod_coords[2]);
-
-        // if the nod is in an epsilon bubble of any of the microphones, the measured curve of this microphone and the nod's curve should be equal
-        if(distance[j]<0.9*epsilon)
-        {
-          for(l=0;l<nsteps;l++)
-            nodcurvinterpol[i*nsteps+l]=mcurve[j+l*nmics];
-          must_set_curve=0;
-        }
-        else
-          must_set_curve=1;
-      }
-
-      // finds those two microphones, that are the nearest ones to the actual nod
-      if(must_set_curve)
-      {
-        help=distance[0];
-        for(j=0;j<nmics;j++)
-        {
-          if(distance[j]<help)
-          {
-            help=distance[j];
-            M_1=j;
-          }
-        }
-        if((M_1+1)==nmics)
-        {
-          help=distance[M_1-1];
-          M_2=M_1-1;
-        }
-        else
-        {
-          help=distance[M_1+1];
-          M_2=M_1+1;
-        }
-        for(j=0;j<nmics;j++)
-        {
-          if(j==M_1)
-            ++j;
-          if(distance[j]<help&&j<nmics)
-          {
-            help=distance[j];
-            M_2=j;
-          }
-        }
-        ReadMonitorInterpol(nod_coords,meascoords, M_1,M_2, nmics,i, nsteps, mcurve,nodcurvinterpol);
-      }
-    }
-  }
-
-  double eps = dtacou/1000.0;
-  if((numvec-1)*dtacou>timesteps[nsteps-1]+eps) dserror("You want to simulate till %.15f but your monitor file only provides values till %.15f! Fix it!",(numvec-1)*dtacou,timesteps[nsteps-1]);
-
-  // every proc knows mcurve, now, we want to write mcurve to a Epetra_MultiVector in the same form as acou_rhs_
-  // with the same parallel distribution!
-  // and we want to interpolate measured values in case the monitored time step size is not the same as the one for the simulation
-  acou_rhsm_->PutScalar(0.0);
-
-  if( timesteps[0] != 0.0 )
-    dserror("your measured values have to start at time 0.0");
-  else if( timesteps[0] == 0.0 && timesteps[1] == dtacou ) // the standard case
-  {
-    for(unsigned int i=0; i<pressuremonmicsunique.size(); ++i)
-      if( acou_discret_->HaveGlobalNode(pressuremonmicsunique[i]) )
-        for(unsigned int j=0; j<nsteps; ++j)
-          acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,nodcurvinterpol(i*nsteps+j)); // the proc who has this row, writes the value
-  }
-  else // we have to interpolate!
-  {
-    if( numvec < int(nsteps) )
-    {
-      if(  (dtacou/(timesteps[1]-timesteps[0]) - std::ceil(dtacou/(timesteps[1]-timesteps[0]))< 1e-16) && (dtacou/(timesteps[1]-timesteps[0]) - std::ceil(dtacou/(timesteps[1]-timesteps[0]))> -1e-16) ) // dtacou is a multiple of the monitor time step
-      {
-        int mult = std::ceil(dtacou/(timesteps[1]-timesteps[0]));
-        for(unsigned int i=0; i<pressuremonmicsunique.size(); ++i)
-          if( acou_discret_->HaveGlobalNode(pressuremonmicsunique[i]) )
-            for(int j=0; j<numvec; j++)
-              acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,nodcurvinterpol(i*nsteps+j*mult)); // the proc who has this row, writes the value
-      }
-      else
-      {
-        for(unsigned int i=0; i<pressuremonmicsunique.size(); ++i)
-          if( acou_discret_->HaveGlobalNode(pressuremonmicsunique[i]) )
-          {
-            for(int j=0; j<numvec; j++)
-            {
-              double actualt = j * dtacou; // we need values for this time
-              int timeval = 0;
-              // find next higher and next lower value
-              while(actualt>timesteps[timeval]-eps)
-              {
-                timeval++;
-              }
-
-              // timesteps[timeval] has the next higher point in time
-              // now interpolate from this and the value before
-              if(timeval == 0)
-              {
-                acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,0.0);
-              }
-              else if(actualt<timesteps[timeval]+eps && actualt>timesteps[timeval]-eps) // then this is more or less it
-              {
-                acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,nodcurvinterpol(i*nsteps+timeval));
-              }
-              else
-              {
-                double value = nodcurvinterpol(i*nsteps+(timeval-1)) + (nodcurvinterpol(i*nsteps+(timeval))-nodcurvinterpol(i*nsteps+(timeval-1))) * (actualt - timesteps[timeval-1]) / (timesteps[timeval]-timesteps[timeval-1]);
-                acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,value);
-              }
-            }
-          }
-      }
-      //else
-      //  dserror("time step bigger than monitor time step but no multiple -> implement here!");
-    }
-    else
-    {
-      for(unsigned int i=0; i<pressuremonmicsunique.size(); ++i)
-      {
-        if( acou_discret_->HaveGlobalNode(pressuremonmicsunique[i]) )
-        {
-          for(int j=0; j<numvec; ++j)
-          {
-            double actualt = j * dtacou; // we need values for this time
-            int timeval = 0;
-
-            // find next higher and next lower value
-            while(actualt>timesteps[timeval]-eps)
-            {
-              timeval++;
-            }
-
-            // timesteps[timeval] has the next higher point in time
-            // now interpolate from this and the value before
-            if(timeval == 0)
-            {
-              acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,0.0);
-            }
-            else if(actualt<timesteps[timeval]+eps && actualt>timesteps[timeval]-eps) // then this is more or less it
-            {
-              acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,nodcurvinterpol(i*nsteps+timeval));
-            }
-            else
-            {
-              double value = nodcurvinterpol(i*nsteps+(timeval-1)) + (nodcurvinterpol(i*nsteps+(timeval))-nodcurvinterpol(i*nsteps+(timeval-1))) * (actualt - timesteps[timeval-1]) / (timesteps[timeval]-timesteps[timeval-1]);
-              acou_rhsm_->ReplaceGlobalValue(pressuremonmicsunique[i],j,value);
-            }
-          } // for(int j=0; j<numvec; ++j)
-        } // if( acou_discret_->HaveGlobalNode(nodes_[i]) )
-      } // for(unsigned int i=0; i<nnodes; ++i)
-      acou_discret_->Comm().Barrier();
-    } // else ** if( numvec < nsteps_ )
-  } // else ** if( timesteps[0] == dtacou || (timesteps_[0]==0.0 && timesteps_[1] = dtacou) )
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-double ACOU::PatImageReconstruction::ReadMonitorDelta(double coord_M_x,double coord_M_y, double coord_M_z, double coord_N_x,double coord_N_y, double coord_N_z)
-{
-  double distance = sqrt((coord_M_x-coord_N_x)*(coord_M_x-coord_N_x)+(coord_M_y-coord_N_y)*(coord_M_y-coord_N_y)+(coord_M_z-coord_N_z)*(coord_M_z-coord_N_z));
-  return distance;
-}
-
-/*----------------------------------------------------------------------*/
-void ACOU::PatImageReconstruction::ReadMonitorInterpol(const double nod_coords[3],std::vector<std::vector<double> > mic_coords, unsigned int mic_1, unsigned int mic_2, int nmic, unsigned int nod, int timesteps, Epetra_SerialDenseVector& curve, Epetra_SerialDenseVector& inter_curve)
-{
-  double d1 = ReadMonitorDelta(mic_coords[mic_1][0],mic_coords[mic_1][1],mic_coords[mic_1][2],nod_coords[0],nod_coords[1],nod_coords[2]);
-  double d2 = ReadMonitorDelta(mic_coords[mic_2][0],mic_coords[mic_2][1],mic_coords[mic_2][2],nod_coords[0],nod_coords[1],nod_coords[2]);
-  double D2 = d2/(d1+d2);
-  double D1 = d1/(d1+d2);
-
-  for(int i=0;i<timesteps;i++)
-    inter_curve[nod*timesteps+i]=D2*curve[mic_1+i*nmic]+D1*curve[mic_2+i*nmic];
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-double ACOU::PatImageReconstruction::ReadMonitorGetEpsilon(int nnodes)
-{
-  double min_dis[nnodes];
-  double dist;
-  double min_abs;
-  double eps;
-
-  //creates a vector which contains the distance of every nod to its nearest neighbor
-  for(int i=0;i<abcnodes_map_->NumMyElements();i++)
-  {
-    const double* nc= acou_discret_->gNode(abcnodes_map_->GID(i))->X();//acou_discret_->gNode(nodes_[i])->X();
-    int iter=0;
-    for(int j=0; j<nnodes; j++)
-    {
-      if(j==i)
-        j++;
-      if(j==nnodes)
-        break;
-      const double* ncc=acou_discret_->gNode(abcnodes_map_->GID(j))->X();
-      dist = sqrt((nc[0]-ncc[0])*(nc[0]-ncc[0])+(nc[1]-ncc[1])*(nc[1]-ncc[1])+(nc[2]-ncc[2])*(nc[2]-ncc[2]));
-      if(iter==0)
-        min_dis[i]=dist;
-      else if(dist<min_dis[i])
-        min_dis[i]=dist;
-      ++iter;
-    }
-  }
-
-  //searches for the (absolute) smallest distance
-  min_abs = min_dis[0];
-  for(int i=0; i<nnodes; i++)
-    if(min_abs>min_dis[i])
-      min_abs=min_dis[i];
-
-  eps = min_abs;
-
-  return eps;
-}
-
-/*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::SolveStandardScatra()
 {
+  // this has to be done before every new solve, that is why it is here
+  monitor_manager_->Reset();
+
   // output for user
   scatra_discret_->Comm().Barrier();
   if(!myrank_)
@@ -4002,14 +3515,14 @@ void ACOU::PatImageReconstruction::SolveStandardScatra()
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       scatraalgo_ = Teuchos::rcp(new SCATRA::TimIntStationary(scatra_discret_, scatrasolver_, scatraparams_, scatraextraparams_, scatraoutput_));
 
+      // run
       scatraalgo_->Init();
       scatraalgo_->Setup();
       scatraalgo_->SetVelocityField(1);
-
       scatraalgo_->TimeLoop();
 
       // output of elemental reaction coefficient
-      //OutputReactionAndDiffusion();
+      OutputReactionAndDiffusion();
 
       // store the solution vector
       phi_ = scatraalgo_->Phinp();
@@ -4043,12 +3556,14 @@ void ACOU::PatImageReconstruction::SolveStandardAcou()
   outname.append("_invforward_acou");
   if(overwrite_output_)
   {
-    acououtput_->NewResultFile(outname,0);
+    if(write_baci_acou_output_)
+      acououtput_->NewResultFile(outname,0);
     last_acou_fw_output_count_ = 0;
   }
   else
   {
-    acououtput_->NewResultFile(outname,output_count_);
+    if(write_baci_acou_output_)
+      acououtput_->NewResultFile(outname,output_count_);
     last_acou_fw_output_count_ = output_count_;
   }
   output_count_++;
@@ -4074,32 +3589,31 @@ void ACOU::PatImageReconstruction::SolveStandardAcou()
     dserror("Unknown time integration scheme for problem type Acoustics");
     break;
   }
-  acoualgo_->SetInitialPhotoAcousticField(phi_,scatra_discret_,meshconform_);
-
-  // we have to call a slightly changed routine, which fills our history vector which we need for the adjoint problem
-  acou_rhs_->Scale(0.0);
+  acoualgo_->SetInitialPhotoAcousticField(scatraalgo_);
 
   // do the time integration
-  acoualgo_->Integrate(acou_rhs_);
+  acoualgo_->Integrate();
 
-  // in case a impulse response of the detectors is given, convolve the simulated pressure curves with this thing
-  if(conv_imp_resp_)
+  ProblemSpecificOutput();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstructionOptiSplitAcouSplit::ProblemSpecificOutput()
+{
+  std::cout<<"ProblemSpecificOutput"<<std::endl;
+  if(!write_baci_acou_output_)
   {
-    // create temporal vector to hold the convolved values
-    Epetra_MultiVector acou_rhs_conv(acou_rhs_->Map(),acou_rhs_->NumVectors());
-    for(int n=0; n<acou_rhs_->MyLength(); ++n) // for each node ("detector")
-    {
-      for(int j=0; j<acou_rhs_->NumVectors(); ++j) // for each time step
-      {
-        for(int i=0; i<imp_resp_.Length() && i<=j; ++i) // for the length of the impulse response (careful with the first values -> i<=j)
-        {
-          acou_rhs_conv.SumIntoMyValue(n,j,(acou_rhs_->operator ()(j-i)->operator [](n))*imp_resp_(i));
-        }
-      }
-    }
-    acou_rhs_->Update(1.0,acou_rhs_conv,0.0);
+    std::cout<<"ProblemSpecificOutput "<<output_count_<<std::endl;
+    std::string outname = name_;
+    outname.append("_c_and_rho_iter");
+    acououtput_->NewResultFile(outname,output_count_);
+    acououtput_->WriteMesh(0,0.0);
+    acououtput_->NewStep(0,0.0);
+    acououtput_->WriteVector("density",rho_vals_);
+    acououtput_->WriteVector("speedofsound",c_vals_);
   }
-
   return;
 }
 
@@ -4115,56 +3629,20 @@ void ACOU::PatImageReconstruction::SolveAdjointAcou()
     std::cout << std::endl;
   }
 
-  // set parameter indicating that the adjoint problem is solved
+  // set relevant parameters
   acouparams_->set<bool>("adjoint",true);
-
-  // set list of monitored nodes
-  Teuchos::RCP<std::vector<int> > nodes_rcp= Teuchos::rcp(new std::vector<int> (nodes_.size()));
-  for(unsigned int i=0; i<nodes_.size(); ++i)
-    (*nodes_rcp)[i] = nodes_[i];
-  acouparams_->set<Teuchos::RCP<std::vector<int> > >("monitorednodes",nodes_rcp);
   acouparams_->set<int>("outputcount",last_acou_fw_output_count_);
-  acouparams_->set<std::string>("name",name_);
-
-  // build difference vector for adjoint source term
-  Teuchos::RCP<Epetra_MultiVector> tempvec = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_map_,acou_rhsm_->NumVectors(),true));
-  tempvec->Update(1.0,*acou_rhs_,0.0);
-  tempvec->Update(-1.0,*acou_rhsm_,1.0);
-
-  // in case a impulse response of the detectors is given, do ADJOINT convolution (do this before adjoint mapping with touchcount)
-  if(conv_imp_resp_)
-  {
-    Epetra_MultiVector acou_rhs_conv(acou_rhs_->Map(),acou_rhs_->NumVectors());
-    for(int n=0; n<acou_rhs_->MyLength(); ++n) // for each node ("detector")
-    {
-      for(int j=0; j<acou_rhs_->NumVectors(); ++j) // for each time step
-      {
-        for(int i=0; i<imp_resp_.Length() && (j+i)<acou_rhs_->NumVectors(); ++i) // for the length of the impulse response (careful with the first values -> i<=j)
-        {
-          acou_rhs_conv.SumIntoMyValue(n,j,(tempvec->operator ()(j+i)->operator [](n))*imp_resp_(i));
-        }
-      }
-    }
-    tempvec->Update(1.0,acou_rhs_conv,0.0);
-  }
-
-  // acou_rhs_ has to be scaled with weighting (adjoint of the mapping)
-  Teuchos::RCP<Epetra_Vector> touchcountvec = LINALG::CreateVector(*abcnodes_map_);
-  acoualgo_->FillTouchCountVec(touchcountvec);
-  tempvec->Multiply(1.0,*touchcountvec,*tempvec,0.0);
-
-  // set the difference between measured and simulated values
-  Teuchos::RCP<Epetra_MultiVector> tosetvec = Teuchos::rcp(new Epetra_MultiVector(*abcnodes_colmap_,acou_rhsm_->NumVectors(),true));
-  LINALG::Export(*tempvec,*tosetvec);
-  acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",tosetvec);
 
   // prepare the output
-  std::string outname = name_;
-  outname.append("_invadjoint_acou");
-  if(overwrite_output_)
-    acououtput_->NewResultFile(outname,0);
-  else
-    acououtput_->NewResultFile(outname,output_count_);
+  if(write_baci_acou_output_)
+  {
+    std::string outname = name_;
+    outname.append("_invadjoint_acou");
+    if(overwrite_output_)
+      acououtput_->NewResultFile(outname,0);
+    else
+      acououtput_->NewResultFile(outname,output_count_);
+  }
   output_count_++;
 
   // create the acoustic algorithm
@@ -4261,15 +3739,14 @@ void ACOU::PatImageReconstruction::SolveAdjointScatra()
   scatrasolver_->Solve(sysmatscatra->EpetraOperator(),adjoint_phi_,b,true,true);
 
   // output the solution
-
-  std::string outname = name_;
+  /*std::string outname = name_;
   outname.append("_invadjoint_opti");
   scatraoutput_->NewResultFile(outname,output_count_);
   output_count_++;
   scatraoutput_->WriteMesh(0,0.0);
   scatraoutput_->NewStep(1,1.0);
   scatraoutput_->WriteElementData(true);
-  scatraoutput_->WriteVector("phinp",adjoint_phi_);
+  scatraoutput_->WriteVector("phinp",adjoint_phi_);*/
 
   return;
 }
@@ -4284,23 +3761,25 @@ void ACOU::PatImageReconstruction::TimeReversalEstimate()
   acouparams_->set<bool>("timereversal",true);
 
   // initialize output
-  std::string outname = name_;
-  outname.append("_invforward_acou");
-  if(overwrite_output_)
+  if(write_baci_acou_output_)
   {
-    acououtput_->NewResultFile(outname,0);
-    last_acou_fw_output_count_ = 0;
-  }
-  else
-  {
-    acououtput_->NewResultFile(outname,output_count_);
-    last_acou_fw_output_count_ = output_count_;
+    std::string outname = name_;
+    outname.append("_invforward_acou");
+    if(overwrite_output_)
+    {
+      acououtput_->NewResultFile(outname,0);
+      last_acou_fw_output_count_ = 0;
+    }
+    else
+    {
+      acououtput_->NewResultFile(outname,output_count_);
+      last_acou_fw_output_count_ = output_count_;
+    }
   }
   output_count_++;
 
   // set parameter for acoustic time integration
   acouparams_->set<bool>("acouopt",false);
-  acouparams_->set<Teuchos::RCP<Epetra_MultiVector> >("rhsvec",acou_rhsm_);
 
   // create time integrator
   switch(dyna_)
@@ -4328,7 +3807,7 @@ void ACOU::PatImageReconstruction::TimeReversalEstimate()
   acoualgo_->SetInitialZeroField();
 
   // do the time integration
-  acoualgo_->Integrate(acou_rhs_);
+  acoualgo_->Integrate();
 
   // reset parameter
   acouparams_->set<bool>("timereversal",false);
@@ -4480,28 +3959,6 @@ void ACOU::PatImageReconstruction::UpdateAbsorptionCoefficientFromTimeReversal()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-void ACOU::PatImageReconstruction::EvaluateError()
-{
-  // contribution from difference between measured and simulated values
-
-  // build difference vector
-  Epetra_MultiVector tempvec = Epetra_MultiVector(*abcnodes_map_,acou_rhsm_->NumVectors());
-  tempvec.Update(1.0,*acou_rhsm_,0.0);
-  tempvec.Update(1.0,*acou_rhs_,-1.0);
-
-  // take the square
-  tempvec.Multiply(1.0,tempvec,tempvec,0.0);
-
-  // build the norm of each vector
-  Epetra_SerialDenseVector normvec(acou_rhsm_->NumVectors());
-  tempvec.Norm1(normvec.Values());
-
-  // sum all norms and do not forget factor 0.5
-  error_ = 0.5 * normvec.Norm1();
-
-  return;
-}
 
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::OutputReactionAndDiffusion()
@@ -4631,6 +4088,7 @@ Teuchos::RCP<Epetra_Vector> ACOU::PatImageReconstruction::CalculateAdjointOptiRh
   }
   else
   {
+    // TODO muss ueberarbeitet werden
     // export input vector to column map
     Teuchos::RCP<Epetra_Vector> acounodeveccol = Teuchos::rcp(new Epetra_Vector(*(acou_discret_->NodeColMap())),true);
     LINALG::Export(*acounodevec,*acounodeveccol);

@@ -36,6 +36,81 @@ namespace DRT
 namespace ACOU
 {
 
+class PATMonitorManager
+{
+  public:
+  //! standard constructor
+  PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Teuchos::ParameterList> params);
+
+  void EvaluateMonitorValues(double time, const std::vector<double> &point, double &value);
+
+  void GetMonitorPositions(std::vector<double>& positions){ positions = positions_; return; }
+
+  void SetCellIds(std::vector<int> cellidsin, std::vector<bool> rowelesin);
+
+  std::vector<unsigned int> GetCellIds() { return cellids_; }
+
+  void StoreForwardValues(const double time, const std::vector<double> values);
+
+  double EvaluateError();
+
+  void Reset();
+
+  void WriteMonitorFileInvana(std::string filename);
+
+  private:
+
+  // communicator
+  Teuchos::RCP<DRT::Discretization> discret_;
+
+  // spatial dimension
+  unsigned int ndim_;
+
+  // number of time steps
+  unsigned int nsteps_;
+
+  // number of microphones
+  unsigned int nmics_;
+
+  // eps
+  double eps_;
+
+  // maximal simulation time
+  double maxtime_;
+
+  // vector of times
+  std::vector<double> times_;
+
+  // microphone positions
+  std::vector<double> positions_;
+
+  // cell ids
+  std::vector<unsigned int> cellids_;
+
+  // cell flag
+  std::vector<bool> cellrowflag_;
+
+  // measured values
+  std::vector<double> measurementvalues_;
+
+  // simulated values
+  std::vector<double> simulatedvalues_;
+
+  // for interpolation to monitor times
+  std::vector<double> simulatedvalues_previous_;
+  double time_previous_;
+  int step_previous_;
+
+  // tomograph type
+  INPAR::ACOU::TomographType tomotype_;
+
+  // impulse response
+  std::vector<double> impulse_response_;
+
+  // consider impulse response or not
+  bool consider_impulse_response_;
+};
+
 class PATSearchDirection
 {
 public:

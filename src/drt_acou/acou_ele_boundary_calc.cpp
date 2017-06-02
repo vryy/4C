@@ -249,7 +249,6 @@ int DRT::ELEMENTS::AcouBoundaryImpl<distype>::Evaluate(
     break;
   }
   case ACOU::bd_integrate:
-  case ACOU::calc_pmon_nodevals:
   {
 
     const int* nodeids = ele->NodeIds();

@@ -76,6 +76,21 @@
 //#include "../drt_io/io_gmsh.H"
 
 
+namespace
+{
+  double distance_between_two_points(std::vector<double> point1, std::vector<double> point2)
+  {
+    if(point1.size()!=point2.size())
+      dserror("cannot calculate disctance between points of differing dimension");
+
+    double distance = (point1[0]-point2[0])*(point1[0]-point2[0]);
+    for(unsigned int i=1; i<point1.size(); ++i)
+      distance += (point1[i]-point2[i])*(point1[i]-point2[i]);
+
+    return std::sqrt(distance);
+  }
+}
+
 /*==========================================================================*/
 // Constructors and destructors and related methods
 /*==========================================================================*/
@@ -3068,6 +3083,137 @@ const std::map<const int,std::vector<double> >& SCATRA::ScaTraTimIntImpl::MeanSc
   return outputscalarstrategy_->MeanScalars();
 }
 
+void  SCATRA::ScaTraTimIntImpl::GetPointPhiValue(const std::vector<double> &point, double &value, bool evalreac, unsigned int numscal)
+{
+  if(int(numscal)>this->NumScal())
+    dserror("you requested the point value for scalar %d but there is only %d scalar fields",numscal,this->NumScal());
+
+  int dim = point.size();
+  if(dim>3 || dim<1)
+    dserror("point has less than 1 or more than 3 coordinates which is quite uncommon");
+
+  double lvalue = 0.0;
+
+  //{ first step: find the element in which the point is located
+  double bestdistance = 1.0e-10;
+  double currentdistance = std::numeric_limits<double>::max();
+  int lid_closestnode = -1;
+  double lh = (discret_->lRowNode(0)->X()[0]-discret_->lRowNode(1)->X()[0])*(discret_->lRowNode(0)->X()[0]-discret_->lRowNode(1)->X()[0]);
+  for(int d=1; d<dim; ++d)
+    lh += (discret_->lRowNode(0)->X()[d]-discret_->lRowNode(1)->X()[d])*(discret_->lRowNode(0)->X()[d]-discret_->lRowNode(1)->X()[d]);
+  lh = std::sqrt(lh);
+  double gh = 0.0;
+  discret_->Comm().MaxAll(&lh,&gh,1);
+
+  // find closest node
+  for(int n=0; n<discret_->NodeRowMap()->NumMyElements(); ++n)
+  {
+    std::vector<double> nodecoords(dim,0.0);
+    for(int i=0; i<dim; ++i)
+      nodecoords[i] = discret_->lRowNode(n)->X()[i];
+
+    double distance = distance_between_two_points(point,nodecoords);
+    if(distance<currentdistance)
+    {
+      currentdistance = distance;
+      lid_closestnode = n;
+    }
+    if(currentdistance<bestdistance)
+      break;
+  }
+  // find closest point across processors
+  double globbestdistance = 0.0;
+  discret_->Comm().MinAll(&currentdistance,&globbestdistance,1);
+
+  if(globbestdistance>10*gh)
+  {
+    //std::cout<<"warning: you called PointValue on a point which is not inside of the Scatra domain"<<std::endl;
+    lvalue = 0.0;
+  }
+  else
+  {
+    int owner = -1;
+    if(globbestdistance<=currentdistance+1.0e-13 && globbestdistance >= currentdistance-1.0e-13)
+      owner = myrank_;
+
+    int globowner = -1;
+    discret_->Comm().MaxAll(&owner, &globowner, 1);
+
+    discret_->SetState("phinp",phinp_);
+
+    // check adjacent elements to node
+    int anywhere_inside = 0;
+    if(myrank_==globowner) // this process has the closest node
+    {
+      int numele_adjacent_to_node = discret_->lRowNode(lid_closestnode)->NumElement();
+      for(int e=0; e<numele_adjacent_to_node; ++e)
+      {
+        // try to calculate real coordinates to reference coordinates
+        DRT::Element* actele = discret_->lColElement(discret_->ElementColMap()->LID(discret_->lRowNode(lid_closestnode)->Elements()[e]->Id()));
+
+        int ndof = actele->NumNode();
+
+        Epetra_SerialDenseMatrix elematrix1(ndof,ndof,false);
+        Epetra_SerialDenseMatrix elematrix2(ndof,ndof,false);
+        Epetra_SerialDenseVector elevector1(ndof);
+        Epetra_SerialDenseVector elevector2(ndof);
+        Epetra_SerialDenseVector elevector3(ndof);
+
+        DRT::Element::LocationArray la(discret_->NumDofSets());
+        actele->LocationVector(*discret_,la,false);
+
+        Teuchos::ParameterList p;
+        p.set<int>("action",SCATRA::transform_real_to_reference_point);
+        double pointarr[dim];
+        for(int d=0;d<dim;++d)
+          pointarr[d] = point[d];
+        p.set<double*>("point",pointarr);
+
+        actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+        for(int d=0;d<dim;++d)
+          pointarr[d] = p.get<double*>("point")[d];
+
+        if(p.get<bool>("inside")) // third step: evaluate in the element
+        {
+          anywhere_inside = 1;
+          p.set<int>("action",SCATRA::evaluate_field_in_point);
+          p.set<int>("numscal",numscal);
+          actele->Evaluate(p,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+          lvalue = p.get<double>("value");
+
+          if(evalreac) // multiply with reaction coefficient
+          {
+            lvalue *= actele->Material()->Parameter()->GetParameter(1,actele->Id());
+          }
+        }
+      }
+    }
+    int foundit = 0;
+    discret_->Comm().MaxAll(&anywhere_inside,&foundit,1);
+    if(foundit < 1)
+    {
+      lvalue = 0.0;
+      //std::cout<<"warning: you called PointValue on a point which is not inside of the Scatra domain"<<std::endl;
+    }
+  }
+  double gvalue = 0.0;
+  discret_->Comm().SumAll(&lvalue,&gvalue,1);
+
+  value = gvalue;
+
+  return;
+}
+
+void  SCATRA::ScaTraTimIntImpl::GetPointsPhiValues(const std::vector<std::vector<double> > &points, std::vector<double> &values, bool evalreac, unsigned int numscal)
+{
+  if(int(numscal)>this->NumScal())
+    dserror("you requested the point values for scalar %d but there is only %d scalar fields",numscal,this->NumScal());
+
+  for(unsigned int p=0; p<points.size(); ++p)
+    GetPointPhiValue(points[p],values[p],evalreac,numscal);
+
+  return;
+}
 
 /*----------------------------------------------------------------------------------------------------*
  | evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems   fang 01/16 |

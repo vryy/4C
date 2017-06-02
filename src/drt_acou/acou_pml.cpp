@@ -993,8 +993,8 @@ template <int dim, typename Number>
 void AttenuationPML<dim,Number>::get_matrix (const std::vector<int> &layer_reference,
     const unsigned int vec_array_no,
     const Point<dim>   &position,
-    std::vector<VectorizedArray<value_type> > &sigma_values,
-    std::vector<VectorizedArray<value_type> > &eigenvalues,
+    Tensor<1,dim,VectorizedArray<value_type> > &sigma_values,
+    Tensor<1,dim,VectorizedArray<value_type> > &eigenvalues,
     Tensor<2,dim,VectorizedArray<value_type> > &Matrix_A,
     Tensor<3,dim,VectorizedArray<value_type> > &eigen_tensors) const
     {
@@ -1004,8 +1004,6 @@ void AttenuationPML<dim,Number>::get_matrix (const std::vector<int> &layer_refer
   for (unsigned int n = 0; n < n_layer; ++n)
 
   // initialize the variables
-  eigenvalues.resize(dim);
-
   for (unsigned int n = 0; n < dim; ++n)
   {
     sigma_values[n][vec_array_no] = 0.0;

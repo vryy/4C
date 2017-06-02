@@ -1045,6 +1045,84 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     break;
   }
 
+  case SCATRA::transform_real_to_reference_point:
+  {
+    // init quantities
+    LINALG::Matrix<nsd_,1> x_real;
+    for(unsigned int d=0;d<nsd_;++d)
+      x_real(d,0) = params.get<double*>("point")[d];
+    xsi_(0,0) = 0.0;
+    for(unsigned int d=1;d<nsd_;++d)
+      xsi_(d,0) = 0.0;
+    int count = 0;
+    LINALG::Matrix<nsd_,1> diff;
+
+    // do the Newton loop
+    bool inside = true;
+    do
+    {
+      count++;
+      EvalShapeFuncAndDerivsInParameterSpace();
+      LINALG::Matrix<nsd_,1> x_eval;
+      for(unsigned int d=0; d<nsd_; ++d)
+      {
+        for(unsigned int n=0; n<nen_; ++n)
+          x_eval(d,0) += funct_(n,0) * xyze_(d,n);
+        x_eval(d,0) -= x_real(d,0);
+      }
+      diff.MultiplyTN(xij_,x_eval);
+
+      for(unsigned int d=0; d<nsd_; ++d)
+      {
+        xsi_(d,0) -= diff(d,0);
+        if(xsi_(d,0)>10.0 || xsi_(d,0)<-10.0)
+          inside = false;
+      }
+    }while(count<20 && diff.Norm1()>1.0e-10 && inside);
+
+    inside = true;
+    for(unsigned int d=0; d<nsd_; ++d)
+      if(xsi_(d,0)>1.0 || xsi_(d,0)<-1.0)
+        inside = false;
+
+    double pointarr[nsd_];
+    if(!inside)
+    {
+      for(unsigned int d=0; d<nsd_; ++d)
+        pointarr[d] = -123.0;
+    }
+    else
+    {
+      for(unsigned int d=0; d<nsd_; ++d)
+        pointarr[d] = xsi_(d,0);
+    }
+    params.set<double*>("point",pointarr);
+    params.set<bool>("inside",inside);
+
+    break;
+  }
+
+  case SCATRA::evaluate_field_in_point:
+  {
+    for(unsigned int d=0;d<nsd_;++d)
+      xsi_(d,0) = params.get<double*>("point")[d];
+
+    EvalShapeFuncAndDerivsInParameterSpace();
+
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
+
+    if(params.get<int>("numscal")>numscal_)
+      dserror("you requested the pointvalue of the %d-th scalar but there is only %d scalars",params.get<int>("numscal"),numscal_);
+
+    const double value = funct_.Dot(ephinp_[params.get<int>("numscal")]);
+
+    params.set<double>("value",value);
+
+    break;
+  }
+
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");

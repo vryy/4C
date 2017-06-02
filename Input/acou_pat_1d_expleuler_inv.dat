@@ -27,23 +27,27 @@ RESTART                         0
 LINEAR_SOLVER                   1
 TIMESTEP                        1e-8
 NUMSTEP                         600000
-MAXTIME                         0.0000059999
+MAXTIME                         0.000006
 RESULTSEVRY                           1
-RESTARTEVRY                     10
+RESTARTEVRY                     0
 STARTFUNCNO                     1
 PHOTOACOU                       Yes
 MESHCONFORM                     Yes
 ERRORMAPS                       No
-TIMEINT                         impleuler
+TIMEINT                         lsrk33reg2
 INV_ANALYSIS                    patopti
+WRITEMONITOR                    no
 ------------------------------------ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION
-MONITORFILE                     acou_pat_1d_impleuler_inv.monitor
+MONITORFILE                     acou_pat_1d_expleuler_inv.monitor
 FDCHECK                         No
 INV_TOL                         1e-3
-INV_MAX_RUN                     20
-INV_LS_MAX_RUN                  30
+INV_MAX_RUN                     3
+INV_LS_MAX_RUN                  3
 OPTIMIZATION                    LBFGS
 OPTIPARAMLIST                   2 a
+TOMOGRAPHTYPE                   circle
+ACOUOUTPUT                      no
+OVERWRITEOUTPUT                 no
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
 SOLVERTYPE                      linear_full

@@ -94,7 +94,9 @@ namespace SCATRA
     set_time_parameter,                          // set time-integration parameters for element evaluation
     set_turbulence_scatra_parameter,             // set turbulence parameters for element evaluation
     time_update_material,                        // time update for materials
-    update_interior_variables                    // update interior variables for hdg
+    update_interior_variables,                   // update interior variables for hdg
+    transform_real_to_reference_point,           // gets a point in real coordinates and returns reference coordinates
+    evaluate_field_in_point                      // evaluates field in given point (in reference coordinates)
   }; // enum Action
 
 

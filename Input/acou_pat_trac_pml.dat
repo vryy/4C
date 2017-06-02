@@ -24,14 +24,14 @@ LINEAR_SOLVER                   1
 TIMESTEP                        0.03
 NUMSTEP                         10000
 MAXTIME                         30
-RESULTSEVRY                     100
+RESULTSEVRY                     10
 RESTARTEVRY                     100
 STARTFUNCNO                     1
 PHOTOACOU                       yes
 TIMEINT                         lsrk33reg2
 INV_ANALYSIS                    patopti
 MESHCONFORM                     Yes
-WRITEMONITOR                    Yes
+WRITEMONITOR                    no
 PML_DEFINITION_FILE             acou_pml_definition.txt
 ------------------------------------ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION
 MONITORFILE                     acou_pat_trac.monitor
@@ -41,7 +41,9 @@ INV_MAX_RUN                     1
 INV_LS_MAX_RUN                  10
 OPTIMIZATION                    GradientDescent
 OPTIPARAMLIST                   1 2 a
-OVERWRITEOUTPUT                 yes
+OVERWRITEOUTPUT                 no
+ACOUOUTPUT                      no
+TOMOGRAPHTYPE                   circle
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_full
@@ -114,11 +116,11 @@ MAT 5 MAT_Acoustic DENSITY 1.0 C 1.5
 MAT 6 MAT_Acoustic DENSITY 1.0 C 1.5
 ------------------------------------------------RESULT DESCRIPTION
 ACOUSTIC_INVANA DIS scatra ELEMENT 44 QUANTITY absorptioncoeff VALUE 0.11 TOLERANCE 1e-5
-ACOUSTIC_INVANA DIS scatra ELEMENT 100 QUANTITY absorptioncoeff VALUE 9.49950901329333318e-03 TOLERANCE 1e-5
-ACOUSTIC_INVANA DIS scatra ELEMENT 200 QUANTITY absorptioncoeff VALUE 1.48923509479897270e-03 TOLERANCE 1e-5
-ACOUSTIC_INVANA DIS scatra ELEMENT 300 QUANTITY absorptioncoeff VALUE 4.56271591240012438e-03 TOLERANCE 1e-5
-ACOUSTIC_INVANA DIS scatra ELEMENT 400 QUANTITY absorptioncoeff VALUE 5.32877193586483479e-03 TOLERANCE 1e-5
-ACOUSTIC_INVANA DIS scatra ELEMENT 500 QUANTITY absorptioncoeff VALUE 4.51103692189526971e-03 TOLERANCE 1e-5
+ACOUSTIC_INVANA DIS scatra ELEMENT 100 QUANTITY absorptioncoeff VALUE 1.00599193984360243e-02 TOLERANCE 1e-5
+ACOUSTIC_INVANA DIS scatra ELEMENT 200 QUANTITY absorptioncoeff VALUE 1.72377650053536120e-03 TOLERANCE 1e-5
+ACOUSTIC_INVANA DIS scatra ELEMENT 300 QUANTITY absorptioncoeff VALUE 5.45144802501800092e-03 TOLERANCE 1e-5
+ACOUSTIC_INVANA DIS scatra ELEMENT 400 QUANTITY absorptioncoeff VALUE 5.55122201806829228e-03 TOLERANCE 1e-5
+ACOUSTIC_INVANA DIS scatra ELEMENT 500 QUANTITY absorptioncoeff VALUE 4.82298850610929104e-03 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  3

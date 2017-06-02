@@ -57,6 +57,13 @@ namespace INPAR
       pat_reduction   // to reduce the computational domain on a ring (e.g. a mouse completely surrounded by lots of water)
     };
 
+    ///  list of all tomograph types (important for interpretation of measurement data)
+    enum TomographType
+    {
+      pat_circle,  // detectors on circle
+      pat_unknown   // to be filled in
+    };
+
     /// Type of Algorithm
     enum OptimizationType
     {

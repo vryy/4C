@@ -40,14 +40,15 @@ namespace ACOU
 {
 template<int dim, int fe_degree, typename Number>
 WaveEquationOperationElasticWave<dim,fe_degree,Number>::
-WaveEquationOperationElasticWave(const DoFHandler<dim> &dof_handler,
+WaveEquationOperationElasticWave(const std::vector<const DoFHandler<dim> *> &dof_handlers,
                                   Teuchos::RCP<DRT::DiscretizationHDG> &discret,
                                   Teuchos::RCP<Function<dim> > boundary_conditions,
                                   Teuchos::RCP<Function<dim> > source_term,
+                                  value_type time_step_in,
                                   int sourceno,
-                                  Teuchos::RCP<Epetra_MultiVector> source_adjoint)
+                                  Teuchos::RCP<PATMonitorManager> monitormanagerin)
   :
-  WaveEquationOperation<dim,fe_degree,Number>(dof_handler,discret,boundary_conditions,source_term,sourceno,source_adjoint)
+  WaveEquationOperation<dim,fe_degree,Number>(dof_handlers,discret,boundary_conditions,source_term,time_step_in,sourceno,monitormanagerin)
 {
   this->viscs.resize(this->data.n_macro_cells()+this->data.n_macro_ghost_cells());
 
@@ -442,19 +443,18 @@ local_apply_mass_matrix(const MatrixFree<dim,value_type>                  &data,
                         const std::vector<parallel::distributed::Vector<value_type> >  &src,
                         const std::pair<unsigned int,unsigned int>    &cell_range) const
 {
-  internal::InverseMassMatrixData<dim,fe_degree,dim*dim+dim+1,value_type>& mass_data = this->mass_matrix_data_solid.get();
   for (unsigned int cell=cell_range.first; cell<cell_range.second; ++cell)
-    {
-      mass_data.phi[0].reinit(cell);
-      mass_data.phi[0].read_dof_values(src, 0);
+  {
+    this->mass_matrix_data_solid->phi[0].reinit(cell);
+    this->mass_matrix_data_solid->phi[0].read_dof_values(src, 0);
 
-      mass_data.inverse.fill_inverse_JxW_values(mass_data.coefficients);
-      mass_data.inverse.apply(mass_data.coefficients, dim*dim+dim+1,
-                              mass_data.phi[0].begin_dof_values(),
-                              mass_data.phi[0].begin_dof_values());
+    this->mass_matrix_data_solid->inverse.fill_inverse_JxW_values(this->mass_matrix_data_solid->coefficients);
+    this->mass_matrix_data_solid->inverse.apply(this->mass_matrix_data_solid->coefficients, dim+1,
+                                    this->mass_matrix_data_solid->phi[0].begin_dof_values(),
+                                    this->mass_matrix_data_solid->phi[0].begin_dof_values());
 
-      mass_data.phi[0].set_dof_values(dst,0);
-    }
+    this->mass_matrix_data_solid->phi[0].set_dof_values(dst,0);
+  }
 }
 
 template<int dim, int fe_degree, typename Number>

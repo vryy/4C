@@ -7,8 +7,8 @@
 -------------------------------------------------------------TITLE
 This test case tests the strong stability preserving Runge-Kutta
 time integration together with HDG spatial discretization with
-cubical shape functions. An initial Gauss pulse shaped pressure
-profile propagates.
+cubical shape functions. This test case tests heterogeneous
+Dirichlet boundary conditions as well as source terms.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    100
 //NODES       121
@@ -86,10 +86,10 @@ COMPONENT 0 FUNCTION 0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION exp(1000000*(-x^2.0-y^2.0))
 ------------------------------------------------RESULT DESCRIPTION
-ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE 1.98228641006591877e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 21 QUANTITY pressure VALUE 9.99975722704322334e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 49 QUANTITY pressure VALUE 9.25194891323149582e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 121 QUANTITY pressure VALUE 9.99975722704321224e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE 1.92663141020120832e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 21 QUANTITY pressure VALUE 9.99883786771415539e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 49 QUANTITY pressure VALUE 9.57191835761271315e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 121 QUANTITY pressure VALUE 9.99883786771416760e-01 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4

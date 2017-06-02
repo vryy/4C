@@ -600,6 +600,12 @@ public:
   //! return rcp ptr to neumann loads vector
   virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr(){return neumann_loads_;};
 
+  //! evaluate field in a given point in real space
+  virtual void GetPointPhiValue(const std::vector<double> &point, double &value, bool evalreac, unsigned int numscal=0);
+
+  //! evaluate field in a given point in real space
+  virtual void GetPointsPhiValues(const std::vector<std::vector<double> > &points, std::vector<double> &values, bool evalreac, unsigned int numscal=0);
+
   /*========================================================================*/
   //! @name turbulence and related
   /*========================================================================*/

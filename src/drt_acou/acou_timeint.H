@@ -53,11 +53,18 @@ namespace IO
   class DiscretizationWriter;
 }
 
+namespace SCATRA
+{
+  class TimIntStationary;
+}
 /*----------------------------------------------------------------------*
  | general time intergrator for acoustics                schoeder 03/15 |
  *----------------------------------------------------------------------*/
 namespace ACOU
 {
+
+  class PATMonitorManager;
+
 class AcouTimeInt
 {
 public:
@@ -85,13 +92,13 @@ public:
   virtual void SetInitialField(int startfuncno) = 0;
 
   /// set initial field by given light distribution
-  virtual void SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform);
+  virtual void SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo);
 
   /// Output nodal internal pressure field at new time step
   virtual void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec) = 0;
 
   /// output routine: not inherited since it does something completely different than the one for the implicit integration
-  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null);
+  virtual void Output();
 
   // output of material parameters for inverse analysis
   void OutputDensityAndSpeedOfSound();
@@ -106,7 +113,7 @@ public:
   void PrintInformationToScreen();
 
   /// run a complete simulation
-  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null) = 0;
+  virtual void Integrate() = 0;
 
   /// increment time and step value
   void IncrementTimeAndStep()
@@ -126,14 +133,24 @@ public:
   /// returns pointer to the discretization
   Teuchos::RCP<DRT::Discretization> Discretization();
 
-  /// Fill Touch Count Vector (needed for inverse analysis)
-  virtual void FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount);
-
   /// Output nodal internal psi field at new time step
-  void NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec);
+  virtual void NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec);
 
   /// return the name of the time integration scheme
   virtual std::string Name() = 0;
+
+  /// return the adjoint source vector
+  const Teuchos::RCP<PATMonitorManager> MonitorManager() { return monitor_manager_; }
+
+  bool iswithPMLS() {return withpmls_;}
+
+  bool isWriteMonitor() {return writemonitor_;}
+
+  // get values for speed of sound gradient
+  virtual double GetSoSGradient(int colid) = 0;
+
+  // get values for density gradient
+  virtual double GetDensityGradient(int colid) = 0;
 
 protected:
 
@@ -170,8 +187,8 @@ protected:
   //! @name trace at time n+1
   Teuchos::RCP<Epetra_Vector>    velnp_;
 
-  /// difference between measured and simulated pressure values; needed in case of adjoint problem solve
-  Teuchos::RCP<Epetra_MultiVector>    adjoint_rhs_;
+  //! monitor manager for inverse analysis
+  Teuchos::RCP<PATMonitorManager> monitor_manager_;
 };
 
 } // namespace ACOU

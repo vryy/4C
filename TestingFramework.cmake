@@ -224,8 +224,6 @@ endmacro(result_file)
 ###------------------------------------------------------------------ List of tests
 baci_test(aaa_mat_input 2 "")
 baci_test(acou_pat_1d_impleuler 2 "" minimal)
-baci_test(acou_pat_1d_impleuler_inv 2 "")
-baci_test(acou_pat_1d_impleuler_inv_sol 2 "")
 baci_test(ale2d_laplace_material 2 1)
 baci_test(ale2d_laplace_spatial 2 "")
 baci_test(ale2d_solid_lin 1 "")
@@ -1806,11 +1804,14 @@ endif (HAVE_MueLu)
 
 if (HAVE_DEAL_II)
 baci_test(acou_ader_conv10 2 "")
+baci_test(acou_aderlts_conv10 1 "")
 baci_test(acou_sol_conv10 1 "")
 baci_test(acou_2d_lsrk33reg2 2 "")
 baci_test(acou_2d_ssprk 2 "")
 baci_test(acou_pat_2d_classrk4 2 "")
 baci_test(acou_pat_trac_pml 2 "")
+baci_test(acou_pat_1d_expleuler_inv 2 "")
+#baci_test(acou_pat_1d_impleuler_inv_sol 2 "")to be done in near future
 endif (HAVE_DEAL_II)
 
 # brownian dynamic and particle test cases using random numbers from Boost Random libraries

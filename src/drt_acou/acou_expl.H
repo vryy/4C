@@ -55,7 +55,7 @@ public:
                      const int fe_degree);
 
   // Integration, i.e. time loop
-  void run(Teuchos::RCP<Epetra_MultiVector> history);
+  void run();
 
   // preparation for output in baci format
   void write_deal_cell_values();
@@ -75,19 +75,28 @@ public:
   // set time and step, required for restart
   void set_time_and_step(double timein, int stepin);
 
+  // get sos gradient value for row element with id rowid
+  double get_SoS_gradient(int rowid);
+
+  // get density gradient value for row element with id rowid
+  double get_density_gradient(int rowid);
+
 private:
-  void make_grid_and_dofs (Teuchos::RCP<DRT::DiscretizationHDG> discret, Teuchos::RCP<Epetra_MultiVector> adjoint_source);
-  void output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history);
+  void make_grid_and_dofs (Teuchos::RCP<DRT::DiscretizationHDG> discret);
+  void output_results (const unsigned int timestep_number);
+  void write_restart (const unsigned int timestep_number);
+  void read_restart (const unsigned int timestep_number, double &restarttime, bool fw);
   void compute_post_pressure();
   void compute_post_velocity();
+  Number determine_pressure_value(Point<dim> point, unsigned int cell);
 
   std::vector<parallel::distributed::Vector<value_type> > post_quantity; // pressure for fluid, velocity for solid
 
   ConditionalOStream             pcout;
 
   DistributedTriangulation<dim>  triangulation;
-  FE_DGQArbitraryNodes<dim>      fe, fe_post_disp;
-  DoFHandler<dim>                dof_handler, dof_handler_post_disp;
+  FE_DGQArbitraryNodes<dim>      fe, fe_spectral, fe_post_disp;
+  DoFHandler<dim>                dof_handler, dof_handler_spectral, dof_handler_post_disp;
 
   IndexSet                       locally_relevant_dofs, loc_disp;
 
@@ -113,7 +122,7 @@ private:
   Teuchos::RCP<ACOU::AcouExplicitTimeInt> bacitimeint;
 
   // flags needed for image reconstruction
-  bool invana, adjoint, acouopt, timereversal, solid, reduction;
+  bool invana, adjoint, acouopt, timereversal, solid, reduction, writebacioutput;
 
   // forward time integration in the adjoint run
   void intermediate_integrate(Teuchos::RCP<ExplicitIntegrator<WaveEquationOperationBase<dim,Number> > > integrator);
@@ -144,10 +153,10 @@ public:
   void SetInitialField(int startfuncno);
 
   /// set initial field by given light distribution
-  void SetInitialPhotoAcousticField(Teuchos::RCP<Epetra_Vector> light, Teuchos::RCP<DRT::Discretization> scatradis, bool meshconform);
+  void SetInitialPhotoAcousticField(Teuchos::RCP<SCATRA::TimIntStationary> scatraalgo);
 
   /// run a complete simulation
-  void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null);
+  void Integrate();
 
   /// Output nodal internal pressure field at new time step
   virtual void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec);
@@ -155,14 +164,19 @@ public:
   /// return the name of the time integration scheme
   std::string Name();
 
-  /// return the adjoint source vector
-  const Teuchos::RCP<Epetra_MultiVector> AdjointSourceVec() { return adjoint_rhs_; }
-
   /// return the protected parameter list
   const Teuchos::RCP<Teuchos::ParameterList> Params() { return params_; }
 
   /// return the protected processor id
   int ProcId() { return myrank_; }
+
+  // get values for speed of sound gradient
+  double GetSoSGradient(int rowid);
+
+  // get values for density gradient
+  double GetDensityGradient(int rowid);
+
+  virtual void NodalPsiField(Teuchos::RCP<Epetra_Vector> outvec);
 
 private:
 
@@ -176,6 +190,8 @@ private:
   Teuchos::RCP<WaveEquationProblem<3,float> > wave3df_;
 
   bool doubleorfloat_;
+
+  bool writebacioutput_;
 
 };
 
@@ -223,13 +239,25 @@ public:
   }
 
   /// run a complete simulation
-  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null)
+  virtual void Integrate()
   {
     dserror("Explicit time integration requires interface to deal.II package");
   }
 
   /// output routine: not inherited since it does something completely different than the one for the implicit integration
-  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null)
+  virtual void Output()
+  {
+    dserror("Explicit time integration requires interface to deal.II package");
+  }
+
+  // get values for speed of sound gradient
+  double GetSoSGradient(int rowid)
+  {
+    dserror("Explicit time integration requires interface to deal.II package");
+  }
+
+  // get values for density gradient
+  double GetDensityGradient(int rowid)
   {
     dserror("Explicit time integration requires interface to deal.II package");
   }

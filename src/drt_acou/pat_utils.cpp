@@ -27,8 +27,539 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "acou_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_io/io_control.H"
 
+/*----------------------------------------------------------------------*/
+ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Teuchos::ParameterList> params)
+{
+  discret_ = discret;
 
+  // determine dimensionality of the problem
+  ndim_ = DRT::Problem::Instance()->NDim();
+
+  // get tomograph type
+  tomotype_ = DRT::INPUT::IntegralValue<INPAR::ACOU::TomographType>(params->sublist("PA IMAGE RECONSTRUCTION"),"TOMOGRAPHTYPE");
+
+  // read monitor file
+  std::string monitorfilename = params->sublist("PA IMAGE RECONSTRUCTION").get<std::string>("MONITORFILE");
+  if (monitorfilename=="none.monitor")
+    dserror("No monitor file provided but required for optoacoustic image reconstruction");
+
+  // insert path to monitor file if necessary
+  if (monitorfilename[0]!='/')
+  {
+    std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+    std::string::size_type pos = filename.rfind('/');
+    if (pos!=std::string::npos)
+    {
+      std::string path = filename.substr(0,pos+1);
+      monitorfilename.insert(monitorfilename.begin(), path.begin(), path.end());
+    }
+  }
+
+  // open monitor file and read it
+  FILE* file = fopen(monitorfilename.c_str(),"rb");
+  if (file==NULL) dserror("Could not open monitor file %s",monitorfilename.c_str());
+
+  char buffer[150000];
+  fgets(buffer,150000,file);
+  char* foundit = NULL;
+
+  // read steps
+  foundit = strstr(buffer,"steps");
+  foundit += strlen("steps");
+  nsteps_ = strtol(foundit,&foundit,10);
+  times_.resize(nsteps_);
+
+  // read mics
+  foundit = strstr(buffer,"mics"); foundit += strlen("mics");
+  nmics_ = strtol(foundit,&foundit,10);
+  positions_.resize(nmics_*ndim_);
+
+  for (unsigned int i=0; i<nmics_; ++i)
+  {
+    fgets(buffer,150000,file);
+    foundit = buffer;
+    for(unsigned int j=0; j<ndim_; ++j) // if it is a two dimensional problem, the third coordinate is discarded
+      positions_[i*ndim_+j] = strtod(foundit,&foundit);
+  }
+
+  // read in measured curve
+  measurementvalues_.resize(nmics_*nsteps_);
+
+  // initialize other relevant quantities
+  simulatedvalues_.resize(nmics_*nsteps_);
+  simulatedvalues_previous_.resize(nmics_);
+  time_previous_ = -1.0;
+  step_previous_ = -1;
+
+  // read comment lines
+  foundit = buffer;
+  fgets(buffer,150000,file);
+  while(strstr(buffer,"#"))
+    fgets(buffer,150000,file);
+
+  // read in the values for each node
+  unsigned int count = 0;
+  for (unsigned int i=0; i<nsteps_; ++i)
+  {
+    // read the time step
+    times_[i] = strtod(foundit,&foundit);
+    for (unsigned int j=0; j<nmics_; ++j)
+      measurementvalues_[count++] = strtod(foundit,&foundit);
+    fgets(buffer,150000,file);
+    foundit = buffer;
+  }
+  if (count != nmics_*nsteps_) dserror("Number of measured pressure values wrong on input");
+
+  // close input file
+  fclose(file);
+
+  // security check
+  eps_ = params->get<double>("TIMESTEP")/1000.0;
+  if(times_[0]>eps_) dserror("monitor file has to start at 0 but starts at %e",times_[0]);
+  maxtime_ = std::min(params->get<int>("NUMSTEP")*params->get<double>("TIMESTEP"),params->get<double>("MAXTIME"));
+  if(times_[nsteps_-1]<maxtime_-eps_)
+    dserror("you only provide monitor values until %f but you want to simulate until %f.",times_[nsteps_-1],maxtime_);
+
+  // read quantities concerning impulse response
+  // check if we need the impulse response and if so, transform it to the used time step
+  double dtimpresp = params->sublist("PA IMAGE RECONSTRUCTION").get<double>("IMPULSERESPONSE_DT");
+  if(dtimpresp!=0.0)
+    consider_impulse_response_ = true;
+  else
+    consider_impulse_response_ = false;
+  if(consider_impulse_response_)
+  {
+    // get file name in which the impulse response is held
+    std::string impulseresponsefilename = params->sublist("PA IMAGE RECONSTRUCTION").get<std::string>("IMPULSERESPONSE");
+
+    // check if file is given
+    if(impulseresponsefilename=="none.impresp")
+      dserror("if you set IMPULSERESPONSE_DT != 0.0 you have to provide an impulse response in a file");
+
+    // insert path to file if necessary
+    if (impulseresponsefilename[0]!='/')
+    {
+      std::string filename = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+      std::string::size_type pos = filename.rfind('/');
+      if (pos!=std::string::npos)
+      {
+        std::string path = filename.substr(0,pos+1);
+        impulseresponsefilename.insert(impulseresponsefilename.begin(), path.begin(), path.end());
+      }
+    }
+
+    // open file
+    FILE* file = fopen(impulseresponsefilename.c_str(),"rb");
+    if (file==NULL) dserror("Could not open impulse response file %s",impulseresponsefilename.c_str());
+
+    // read file
+    char buffer[150000];
+    fgets(buffer,150000,file);
+    char* foundit = NULL;
+    char* test = NULL;
+    foundit = buffer;
+
+    std::vector<double> impulseresponse;
+    int num_imprespvals = 0;
+    double norm = 0.0;
+    do{
+      impulseresponse.push_back(strtod(foundit,&foundit));
+      test = fgets(buffer,150000,file);
+      foundit = buffer;
+      num_imprespvals++;
+      norm += impulseresponse[num_imprespvals-1];
+    } while(test!=NULL);
+
+    double dtacou = params->get<double>("TIMESTEP");
+
+    // in case time steps are the same just copy the impulse response
+    if(dtimpresp==dtacou)
+    {
+      impulse_response_.resize(num_imprespvals);
+      for(int i=0; i<num_imprespvals; ++i)
+        impulse_response_[i]=impulseresponse[i]/std::abs(norm);
+    }
+    else // otherwise interpolate the given impulse response to the dtacou_ timestep
+    {
+      int num_baciimprespvals = dtimpresp*num_imprespvals/dtacou;
+      impulse_response_.resize(num_baciimprespvals);
+      double fac = double(num_imprespvals)/std::abs(norm)/double(num_baciimprespvals);
+
+      for(int i=0; i<num_baciimprespvals; ++i)
+      {
+        double actualt = i * dtacou; // we need values for this time point
+        int impresindex = actualt / dtimpresp; // corresponds to this index
+        impulse_response_[i] = fac * ( impulseresponse[impresindex] + (impulseresponse[impresindex+1]-impulseresponse[impresindex])*(actualt - impresindex*dtimpresp)/(dtimpresp) );
+      }
+    }
+  } // read impulse response end
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PATMonitorManager::Reset()
+{
+  time_previous_ = -1.0;
+  step_previous_ = -1;
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector<bool> rowelesin)
+{
+  if(nmics_!=cellidsin.size())
+    dserror("the number of cell ids should be the number of detectors");
+
+  std::vector<bool> owned(nmics_,false);
+
+  // reduce the number of stored values by checking the discretization on this processor and the nodes in the monitor line condition
+  // this is necessary because otherwise the objective function is evaluated wrongly if the simulation is run on several processors
+  int countowned = 0;
+  int countrowelesin = 0;
+  for(unsigned int i=0; i<cellidsin.size(); ++i)
+  {
+    if(cellidsin[i]>=0)
+    {
+      owned[i] = true;
+      countowned++;
+    }
+    if(rowelesin[i])
+      countrowelesin++;
+  }
+
+  // recalculate local quantities
+  std::vector<double> measurementvaluesshort(countowned*nsteps_);
+  std::vector<double> simulatedvaluesshort(countowned*nsteps_);
+  std::vector<double> simulatedvaluespreviousshort(countowned);
+  std::vector<unsigned int> cellidsshort(countowned);
+  std::vector<double> positionsshort(countowned*ndim_);
+  std::vector<bool> cellrowflagshort(countowned);
+  int count = 0;
+  for(unsigned int i=0; i<cellidsin.size(); ++i)
+  {
+    if(owned[i])
+    {
+      cellidsshort[count] = cellidsin[i];
+      for(unsigned int s=0; s<nsteps_; ++s)
+      {
+        measurementvaluesshort[s*countowned+count] = measurementvalues_[s*nmics_+i];
+        simulatedvaluesshort[s*countowned+count] = simulatedvalues_[s*nmics_+i];
+      }
+      simulatedvaluespreviousshort[count] = simulatedvalues_previous_[i];
+
+      for(unsigned int d=0; d<ndim_; ++d)
+        positionsshort[count*ndim_+d] = positions_[i*ndim_+d];
+      cellrowflagshort[count] = rowelesin[i];
+      count++;
+    }
+  }
+
+  // reset everything
+  nmics_ = countowned;
+  cellrowflag_.clear();
+  cellrowflag_ = cellrowflagshort;
+  cellids_.clear();
+  cellids_ = cellidsshort;
+  measurementvalues_.clear();
+  measurementvalues_ = measurementvaluesshort;
+  simulatedvalues_.clear();
+  simulatedvalues_ = simulatedvaluesshort;
+  simulatedvalues_previous_.clear();
+  simulatedvalues_previous_ = simulatedvaluespreviousshort;
+  positions_.clear();
+  positions_ = positionsshort;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PATMonitorManager::EvaluateMonitorValues(double time, const std::vector<double> &point, double &value)
+{
+  time = maxtime_-time; // recalculate for adjoint evaluation
+
+  unsigned int last_smaller_index = -1;
+  unsigned int first_larger_index = -1;
+  for(unsigned int n=0; n<nsteps_; ++n)
+    if(times_[n]<time+eps_)
+      last_smaller_index = n;
+  for(unsigned int n=1; n<=nsteps_; ++n)
+    if(times_[nsteps_-n]>time-eps_)
+      first_larger_index = nsteps_-n;
+  if(last_smaller_index==first_larger_index)
+    first_larger_index++;
+
+  // find closest microphone
+  switch(tomotype_)
+  {
+  case INPAR::ACOU::pat_circle: // every tomograph determines distances different, e.g. for this one the z-component does not matter
+  {
+    double smallestdistance       = std::numeric_limits<double>::max();
+    double secondsmallestdistance = std::numeric_limits<double>::max();
+    unsigned int smallestdistindex       = -1;
+    unsigned int secondsmallestdistindex = -1;
+    for(unsigned int m=0; m<nmics_; ++m)
+    {
+      double currentdistance = std::sqrt( (positions_[m*ndim_+0]-point[0])*(positions_[m*ndim_+0]-point[0])
+                                        + (positions_[m*ndim_+1]-point[1])*(positions_[m*ndim_+1]-point[1]));
+
+      if(currentdistance<smallestdistance)
+      {
+        smallestdistance = currentdistance;
+        smallestdistindex = m;
+      }
+    }
+    for(unsigned int m=0; m<nmics_; ++m)
+    {
+      double currentdistance = std::sqrt( (positions_[m*ndim_+0]-point[0])*(positions_[m*ndim_+0]-point[0])
+                                        + (positions_[m*ndim_+1]-point[1])*(positions_[m*ndim_+1]-point[1]));
+      if(currentdistance<secondsmallestdistance && currentdistance>smallestdistance)
+      {
+        secondsmallestdistance = currentdistance;
+        secondsmallestdistindex = m;
+      }
+    }
+
+    // interpolate the values in time and space
+    // first: interpolate in time
+    double value_time_smallestdistance = (simulatedvalues_[smallestdistindex+last_smaller_index*nmics_]-measurementvalues_[smallestdistindex+last_smaller_index*nmics_])
+                                       + (time-times_[last_smaller_index])/(times_[first_larger_index]-times_[last_smaller_index])
+                                       * ( (simulatedvalues_[smallestdistindex+first_larger_index*nmics_]-measurementvalues_[smallestdistindex+first_larger_index*nmics_])
+                                       - (simulatedvalues_[smallestdistindex+last_smaller_index*nmics_]-measurementvalues_[smallestdistindex+last_smaller_index*nmics_]) ) ;
+    double value_time_secondsmallestdistance = (simulatedvalues_[secondsmallestdistindex+last_smaller_index*nmics_]-measurementvalues_[secondsmallestdistindex+last_smaller_index*nmics_])
+                                             + (time-times_[last_smaller_index])/(times_[first_larger_index]-times_[last_smaller_index])
+                                             * ((simulatedvalues_[secondsmallestdistindex+first_larger_index*nmics_]-measurementvalues_[secondsmallestdistindex+first_larger_index*nmics_])
+                                             - (simulatedvalues_[secondsmallestdistindex+last_smaller_index*nmics_]-measurementvalues_[secondsmallestdistindex+last_smaller_index*nmics_])) ;
+
+    // second: interpolate in space (this is tomograph specific!! this one does not care about z-component!)
+    value = value_time_smallestdistance
+          + smallestdistance/(smallestdistance+secondsmallestdistance)
+          * value_time_secondsmallestdistance;
+  }
+    break;
+  default:
+    dserror("other tomograph types except circular not implemented");
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PATMonitorManager::StoreForwardValues(const double time, const std::vector<double> values)
+{
+
+  // first time this function is called
+  if(time_previous_<0.0 && time<eps_)
+  {
+    time_previous_ = time;
+    step_previous_ = 0;
+    for(unsigned int i=0;i<values.size(); ++i)
+    {
+      simulatedvalues_[i] = values[i];
+      simulatedvalues_previous_[i] = values[i];
+    }
+  }
+  else // all other times
+  {
+    if( (time>times_[step_previous_+1]-eps_) && (time<times_[step_previous_+1]+eps_) ) // it is the required time
+    {
+      step_previous_++;
+      for(unsigned int v=0; v<values.size(); ++v)
+        simulatedvalues_[nmics_*step_previous_+v] = values[v];
+      time_previous_ = time;
+      for(unsigned int i=0;i<values.size(); ++i)
+        simulatedvalues_previous_[i] = values[i]; // in case they are required for the next evaluation
+    }
+    else if(time>times_[step_previous_+1]-eps_) // interpolate
+    {
+      if((times_[1]-times_[0])<(time-time_previous_)) // in this case we might need several interpolations
+      {
+        unsigned int numpotevals = (time-time_previous_)/(times_[1]-times_[0]) +1;
+        for(unsigned int e=0; e<numpotevals; ++e)
+        {
+          if( (time>times_[step_previous_]-eps_) && (time<times_[step_previous_]+eps_) )
+          {
+            step_previous_++;
+            for(unsigned int v=0; v<values.size(); ++v)
+              simulatedvalues_[nmics_*step_previous_+v] = values[v];
+          }
+          else if(time>times_[step_previous_+1]-eps_)
+          {
+            step_previous_++;
+            double timequotient =  (times_[step_previous_]-time_previous_)/(time-time_previous_);  //(time-time_previous_)/(times_[step_previous_]-time_previous_);
+            for(unsigned int v=0; v<values.size(); ++v)
+              simulatedvalues_[nmics_*step_previous_+v] = simulatedvalues_previous_[v] + timequotient * (values[v]-simulatedvalues_previous_[v]);
+          }
+        }
+      }
+      else
+      {
+        step_previous_++;
+        double timequotient =  (times_[step_previous_]-time_previous_)/(time-time_previous_);  //(time-time_previous_)/(times_[step_previous_]-time_previous_);
+        for(unsigned int v=0; v<values.size(); ++v)
+          simulatedvalues_[nmics_*step_previous_+v] = simulatedvalues_previous_[v] + timequotient * (values[v]-simulatedvalues_previous_[v]);
+      }
+      time_previous_ = time;
+      for(unsigned int i=0;i<values.size(); ++i)
+        simulatedvalues_previous_[i] = values[i]; // in case they are required for the next evaluation
+    }
+    else
+    {
+      for(unsigned int v=0; v<values.size(); ++v)
+        simulatedvalues_previous_[v] = values[v]; // store the values for next evaluation
+      time_previous_ = time;
+    }
+  }
+
+  return;
+}
+
+void ACOU::PATMonitorManager::WriteMonitorFileInvana(std::string filename)
+{
+  int myrank = discret_->Comm().MyPID();
+  std::vector<int> l_numrowdetecperproc(discret_->Comm().NumProc(),-1);
+  std::vector<int> g_numrowdetecperproc(discret_->Comm().NumProc(),-1);
+
+  // write header
+  FILE *fp = NULL;
+  if(myrank==0)
+  {
+    fp = fopen(filename.c_str(), "w");
+    if(fp == NULL)
+      dserror("Couldn't open file.");
+  }
+
+  int l_numrowdetec = 0;
+  for(unsigned int i=0; i<cellrowflag_.size(); ++i)
+    if(cellrowflag_[i])
+      l_numrowdetec++;
+
+  l_numrowdetecperproc[myrank] = l_numrowdetec;
+  discret_->Comm().MaxAll(&l_numrowdetecperproc[0],&g_numrowdetecperproc[0],l_numrowdetecperproc.size());
+
+  int g_numrowdetec = g_numrowdetecperproc[0];
+  for(int p=1; p<discret_->Comm().NumProc(); ++p)
+    g_numrowdetec += g_numrowdetecperproc[p];
+
+  if(myrank == 0)
+  {
+    fprintf(fp,"steps %d ",nsteps_);
+    fprintf(fp,"mics %d\n",g_numrowdetec);
+
+    for(unsigned int i=0; i<nmics_; ++i)
+      if(cellrowflag_[i])
+      {
+        if(ndim_==2)
+          fprintf(fp,"%e %e %e\n",positions_[i*ndim_],positions_[i*ndim_+1],0.0);
+        else if(ndim_==3)
+          fprintf(fp,"%e %e %e\n",positions_[i*ndim_],positions_[i*ndim_+1],positions_[i*ndim_+2]);
+      }
+  }
+
+  for(int p=1; p<discret_->Comm().NumProc(); ++p)
+  {
+    std::vector<double> positionstemp(g_numrowdetec*ndim_);
+    int count = 0;
+    if(p==myrank)
+    {
+      for(unsigned int i=0; i<cellrowflag_.size(); ++i)
+      {
+        if(cellrowflag_[i])
+        {
+          for(unsigned int d=0; d<ndim_; ++d)
+            positionstemp[count*ndim_+d] = positions_[i*ndim_+d];
+          count++;
+        }
+      }
+    }
+
+    discret_->Comm().Broadcast(&positionstemp[0],g_numrowdetec*ndim_,p);
+    if(myrank==0)
+    {
+      for(int i=0; i<g_numrowdetecperproc[0]; ++i)
+      {
+        if(ndim_==2)
+           fprintf(fp,"%e %e %e\n",positionstemp[i*ndim_],positionstemp[i*ndim_+1],0.0);
+         else if(ndim_==3)
+           fprintf(fp,"%e %e %e\n",positionstemp[i*ndim_],positionstemp[i*ndim_+1],positionstemp[i*ndim_+2]);
+      }
+    }
+  }
+
+  if(myrank==0)
+  {
+    fprintf(fp,"#\n");
+    fprintf(fp,"#\n");
+    fprintf(fp,"#\n");
+  }
+
+  // get all measurement values from the other procs and then write all at once
+  std::vector<double> l_allmeasurementsonproczero(g_numrowdetec*nsteps_,0.0);
+  if(myrank == 0)
+  {
+    int count = 0;
+    for(unsigned int i=0; i<nmics_; ++i)
+    {
+      if(cellrowflag_[i])
+      {
+        for(unsigned int t=0; t<nsteps_; ++t)
+          l_allmeasurementsonproczero[count+g_numrowdetec*t] = simulatedvalues_[i+nmics_*t];
+        count++;
+      }
+    }
+  }
+
+  for(int p=1; p<discret_->Comm().NumProc(); ++p)
+  {
+    int offset = g_numrowdetecperproc[0];
+    if(p==myrank)
+    {
+      for(int i=1; i<p; ++i)
+        offset += g_numrowdetecperproc[p];
+
+      int count = 0;
+      for(unsigned int i=0; i<nmics_; ++i)
+      {
+        if(cellrowflag_[i])
+        {
+          for(unsigned int t=0; t<nsteps_; ++t)
+            l_allmeasurementsonproczero[offset+count+g_numrowdetec*t] = simulatedvalues_[i+nmics_*t];
+          count++;
+        }
+      }
+    }
+  }
+  std::vector<double> g_allmeasurementsonproczero(g_numrowdetec*nsteps_,0.0);
+  discret_->Comm().SumAll(&l_allmeasurementsonproczero[0],&g_allmeasurementsonproczero[0],g_numrowdetec*nsteps_);
+  if(myrank == 0)
+  {
+    for(unsigned int t=0; t<nsteps_; ++t)
+    {
+      fprintf(fp,"%e ",times_[t]);
+      for(int d=0; d<g_numrowdetec; ++d)
+        fprintf(fp,"%e ", g_allmeasurementsonproczero[t*g_numrowdetec+d]);
+      fprintf(fp,"\n");
+    }
+    fclose(fp);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+double ACOU::PATMonitorManager::EvaluateError()
+{
+  double error = 0.0;
+  for(unsigned int m=0; m<simulatedvalues_.size(); ++m)
+    if(cellrowflag_[int(m%nmics_)])
+      error += (simulatedvalues_[m]-measurementvalues_[m]) * (simulatedvalues_[m]-measurementvalues_[m]);
+
+  double gerror = 0.0;
+
+  discret_->Comm().SumAll(&error,&gerror,1);
+
+  return 0.5*gerror;
+}
 
 /*----------------------------------------------------------------------*/
 ACOU::PATSearchDirection::PATSearchDirection(INPAR::ACOU::OptimizationType opti)

@@ -20,6 +20,7 @@
 #define ACOU_IMPLTIMINT_H
 
 #include "acou_timeint.H"
+#include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*
  | implicit time integration for acoustics               schoeder 01/14 |
@@ -49,7 +50,7 @@ public:
   virtual void SetInitialField(int startfuncno);
 
   /// run a complete simulation
-  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null);
+  virtual void Integrate();
 
   /// solve the system for trace and interior variables
   virtual void Solve();
@@ -84,6 +85,20 @@ public:
   /// return the name of the time integration scheme
   virtual std::string Name() = 0;
 
+  // get values for speed of sound gradient
+  virtual double GetSoSGradient(int rowid)
+  {
+    dserror("inverse analysis no longer supported with implicit time integration");
+    return -1.0;
+  }
+
+  // get values for density gradient
+  virtual double GetDensityGradient(int rowid)
+  {
+    dserror("inverse analysis no longer supported with implicit time integration");
+    return -1.0;
+  }
+
 protected:
 
   int     sourcefuncno_;                /// function number of source term for wave equation
@@ -114,23 +129,6 @@ protected:
   /// element based error vector, only if desired by user
   Teuchos::RCP<Epetra_Vector>    error_;
 
-  /// @name acoustical parameter optimization (forward run in adjoint run)
-  //@{
-
-  /// run a forward simulation during adjoint integration (for storage and optimization)
-  /*!
-    This function has to perform the following steps:
-    - clear the system matrix
-    - assemble forward system matrix
-    - read the corresponding restart from the forward simulation
-    - perform upres_ time steps and store the results
-    - clear the system matrix and assemble adjoint systemmatrix
-    - reset everything such that the standard time integration does not have to do anything
-  */
-  virtual void IntermediateIntegrate();
-
-  //@}
-
 };
 
 class AcouTimeIntAderTriTet : public AcouImplicitTimeInt
@@ -148,7 +146,7 @@ public:
   virtual std::string Name() { return "AderTriTet"; }
 
   /// run a complete simulation
-  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null);
+  virtual void Integrate();
 
   /// solve the system for trace and interior variables
   virtual void Solve();
