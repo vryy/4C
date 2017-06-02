@@ -976,8 +976,6 @@ void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::Discr
             cell->face(f)->set_boundary_id(0);
         }
 
-        if(cell->index()==59||cell->index()==99)std::cout<<cell->index()<<"is_abc "<<is_abc<<std::endl;
-
         if(is_diri < GeometryInfo<dim>::vertices_per_face) // monitored cannot be where Dirichlet is prescribed but it can be absorbing and monitored
         {
           // check for Pressure Monitor conditions
@@ -986,7 +984,7 @@ void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::Discr
             for(unsigned v=0;  v<GeometryInfo<dim>::vertices_per_face; ++v)
               is_pmon += int(pressmonBC[pmon]->ContainsNode(nodeids[v]));
           }
-          if(cell->index()==59||cell->index()==99)std::cout<<cell->index()<<" is_pmon "<<is_pmon<<std::endl;
+
           if(reduction)
           {
             bool is_pmon0 = false;
