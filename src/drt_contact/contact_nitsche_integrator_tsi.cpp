@@ -350,7 +350,7 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
         mele,t2_adjoint_test_master,deriv_t2_adjoint_test_master,deriv_t2_adjoint_test_master_T);
   }
 
-  if (gap+cauchy_nn_weighted_average/pen>=0.)
+  if (snn_av_pen_gap>=0.)
   {
     IntegrateAdjointTest<dim>(-theta_/pen,jac,jacintcellmap,wgt,
         cauchy_nn_weighted_average,cauchy_nn_weighted_average_deriv,cauchy_nn_weighted_average_deriv_T,

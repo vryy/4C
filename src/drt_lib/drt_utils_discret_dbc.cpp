@@ -463,6 +463,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(
       for (unsigned i=0; i<deg+1; ++i)
       {
         value[i] *= functimederivfac[i];
+std::cout << "lid: " << lid<<"\tdeg: "<< i<<"\tval: " <<  value[i] << std::endl;
       }
 
       // assign value
