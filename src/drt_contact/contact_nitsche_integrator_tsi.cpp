@@ -527,26 +527,26 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
     {
     case INPAR::CONTACT::NitThr_substitution:
     {
-      const double q1 =-beta*snn_av_pen_gap*(s_gp_temp-m_gp_temp);
+      const double q1 =beta*snn_av_pen_gap*(s_gp_temp-m_gp_temp);
 
       GEN::pairedvector<int,double> d_q1_d(d_snn_av_pen_gap.size()+d_s_gp_temp_dd.size()+d_m_gp_temp_dd.size());
       for (_CI p=d_snn_av_pen_gap.begin();p!=d_snn_av_pen_gap.end();++p)
-        d_q1_d[p->first]+=-beta*p->second*(s_gp_temp-m_gp_temp);
+        d_q1_d[p->first]+=beta*p->second*(s_gp_temp-m_gp_temp);
       for (_CI p=d_s_gp_temp_dd.begin();p!=d_s_gp_temp_dd.end();++p)
-        d_q1_d[p->first]+=-beta*snn_av_pen_gap*p->second;
+        d_q1_d[p->first]+=beta*snn_av_pen_gap*p->second;
       for (_CI p=d_m_gp_temp_dd.begin();p!=d_m_gp_temp_dd.end();++p)
-        d_q1_d[p->first]+=-beta*snn_av_pen_gap*(-p->second);
+        d_q1_d[p->first]+=beta*snn_av_pen_gap*(-p->second);
 
       GEN::pairedvector<int,double> d_q1_T(cauchy_nn_weighted_average_deriv_T.size()+d_s_gp_temp_dT.size()+d_m_gp_temp_dT.size());
       for (_CI p=cauchy_nn_weighted_average_deriv_T.begin();p!=cauchy_nn_weighted_average_deriv_T.end();++p)
-        d_q1_T[p->first]+=-beta*p->second*(s_gp_temp-m_gp_temp);
+        d_q1_T[p->first]+=beta*p->second*(s_gp_temp-m_gp_temp);
       for (_CI p=d_s_gp_temp_dT.begin();p!=d_s_gp_temp_dT.end();++p)
-        d_q1_T[p->first]+=-beta*snn_av_pen_gap*p->second;
+        d_q1_T[p->first]+=beta*snn_av_pen_gap*p->second;
       for (_CI p=d_m_gp_temp_dT.begin();p!=d_m_gp_temp_dT.end();++p)
-        d_q1_T[p->first]+=-beta*snn_av_pen_gap*(-p->second);
+        d_q1_T[p->first]+=beta*snn_av_pen_gap*(-p->second);
 
-      IntegrateThermalTest<dim>(+1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,q1,d_q1_d,d_q1_T);
-      IntegrateThermalTest<dim>(-1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,q1,d_q1_d,d_q1_T);
+      IntegrateThermalTest<dim>(-1.,sele,sval,sderiv,dsxi,jac,jacintcellmap,wgt,q1,d_q1_d,d_q1_T);
+      IntegrateThermalTest<dim>(+1.,mele,mval,mderiv,dmxi,jac,jacintcellmap,wgt,q1,d_q1_d,d_q1_T);
 
       if (frtype_)
       {
