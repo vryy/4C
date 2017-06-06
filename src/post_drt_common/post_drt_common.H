@@ -156,6 +156,9 @@ public:
 
   //! returns struct_mat_disp_
   std::string struct_mat_disp() { return struct_mat_disp_; }
+
+  //! returns struct_rot_
+  std::string struct_rot() { return struct_rot_; }
   //@}
 
   //! returns outputtype_
@@ -234,6 +237,9 @@ private:
 
   //! material displacement output optionally set by command line argument
   std::string struct_mat_disp_;
+
+  //! structural rotation output optionally set by command line argument
+  std::string struct_rot_;
 
   //! output to be written in binary of ascii format optionally set by commend line argument
   std::string outputtype_;

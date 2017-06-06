@@ -1,16 +1,15 @@
+/*----------------------------------------------------------------------*/
 /*!
-  \file post_drt_structure_stress.cpp
+\file post_structure_stress.cpp
 
-  \brief postprocessing of structural stresses
+\brief postprocessing of structural stresses
 
-  <pre>
-  Maintainer: Lena Wiechert
-              yoshihara@lnm.mw.tum.de
-              http://www.lnm.mw.tum.de/Members/wiechert
-              089-289-15303
-  </pre>
+\level 1
+
+\maintainer Lena Yoshihara
 
 */
+/*----------------------------------------------------------------------*/
 
 
 
@@ -188,6 +187,52 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
 
 
 
+//--------------------------------------------------------------------
+// Get structural rotation tensor R at element center     pfaller may17
+//--------------------------------------------------------------------
+struct WriteElementCenterRotation : public SpecialFieldInterface
+{
+  WriteElementCenterRotation (StructureFilter &filter)
+  :
+    filter_(filter)
+  {}
+
+  virtual std::vector<int> NumDfMap()
+  {
+    return std::vector<int>(1,9);
+  }
+
+  virtual void operator ()(std::vector<Teuchos::RCP<std::ofstream> >& files,
+                           PostResult& result,
+                           std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                           const std::string &groupname,
+                           const std::vector<std::string> &name)
+  {
+    dsassert(name.size() == 1, "Unexpected number of names");
+    const Teuchos::RCP<DRT::Discretization> dis = result.field()->discretization();
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > data =
+        result.read_result_serialdensematrix(groupname);
+    Teuchos::ParameterList p;
+    p.set("action","postprocess_stress");
+    p.set("stresstype","rotation");
+    // this is not really stress at gp! we are misusing "postprocess_stress" here
+    // we rather store the rotation tensor R at the element center
+    p.set("gpstressmap", data);
+    Teuchos::RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),9));
+    p.set("poststress",elestress);
+    dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    if (elestress==Teuchos::null)
+    {
+      dserror("vector containing element center stresses/strains not available");
+    }
+    filter_.GetWriter().WriteElementResultStep(*files[0], elestress, resultfilepos, groupname, name[0],9, 0);
+  }
+
+  StructureFilter &filter_;
+};
+
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void StructureFilter::WriteStress(const std::string groupname,
@@ -242,28 +287,43 @@ void StructureFilter::WriteStress(const std::string groupname,
     name="pl_EA_strains_xyz";
     out="Plastic Euler-Almansi strains";
   }
+  else if (groupname=="rotation")
+  {
+    name="rotation";
+    out="structural rotation tensor";
+  }
   else
   {
     dserror("trying to write something that is not a stress or a strain");
     exit(1);
   }
 
-  if (stresskind == nodebased)
-  {
-    name = "nodal_" + name;
-    WriteNodalStressStep stresses(*this);
-    writer_->WriteSpecialField(stresses, result, nodebased, groupname,
-                               std::vector<std::string>(1,name), out);
-  }
-  else if (stresskind == elementbased)
+  if (groupname=="rotation")
   {
     name = "element_" + name;
-    WriteElementCenterStressStep stresses(*this);
+    WriteElementCenterRotation stresses(*this);
     writer_->WriteSpecialField(stresses, result, elementbased, groupname,
-                               std::vector<std::string>(1,name), out);
+        std::vector<std::string>(1,name), out);
   }
   else
-    dserror("Unknown stress type");
+  {
+    if (stresskind == nodebased)
+    {
+      name = "nodal_" + name;
+      WriteNodalStressStep stresses(*this);
+      writer_->WriteSpecialField(stresses, result, nodebased, groupname,
+          std::vector<std::string>(1,name), out);
+    }
+    else if (stresskind == elementbased)
+    {
+      name = "element_" + name;
+      WriteElementCenterStressStep stresses(*this);
+      writer_->WriteSpecialField(stresses, result, elementbased, groupname,
+          std::vector<std::string>(1,name), out);
+    }
+    else
+      dserror("Unknown stress type");
+  }
 }
 
 

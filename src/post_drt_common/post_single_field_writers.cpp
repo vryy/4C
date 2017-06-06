@@ -151,6 +151,10 @@ void StructureFilter::WriteAllResults(PostField* field)
     PostStress("gauss_pl_EA_strains_xyz", straintype_);
   }
 
+  // write structural rotation tensor R
+  if(field->problem()->struct_rot() == "yes")
+    PostStress("rotation", "cxyz");
+
   // Write element and node owners
   WriteElementResults(field);
   //  WriteNod eResults(field); // Uncomment to visualize owner proc on a nodal basis

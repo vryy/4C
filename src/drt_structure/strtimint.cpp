@@ -133,6 +133,7 @@ STR::TimInt::TimInt
   writeplstrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_PLASTIC_STRAIN")),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
   writesurfactant_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_SURFACTANT")),
+  writerotation_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"OUTPUT_ROT")),
   energyfile_(Teuchos::null),
   damping_(DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sdynparams,"DAMPING")),
   dampk_(sdynparams.get<double>("K_DAMP")),
@@ -2590,6 +2591,10 @@ void STR::TimInt::DetermineStressStrain()
       plastman_->SetData().dt_=(*dt_)[0];
     }
 
+    // rotation tensor
+    rotdata_ = Teuchos::rcp(new std::vector<char>());
+    p.set("rotation", rotdata_);
+
     // set vector values needed by elements
     discret_->ClearState();
     // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
@@ -2758,6 +2763,10 @@ void STR::TimInt::OutputStressStrain
     // we don't need this anymore
     plstraindata_ = Teuchos::null;
   }
+
+  // write structural rotation tensor
+  if (writerotation_)
+    output_->WriteVector("rotation", *rotdata_, *(discret_->ElementRowMap()));
 
   // leave me alone
   return;

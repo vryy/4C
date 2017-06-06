@@ -37,6 +37,7 @@ STRUCT_STRESS                   Yes
 STRUCT_STRAIN                   Yes
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
+OUTPUT_ROT                      Yes
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0

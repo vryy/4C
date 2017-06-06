@@ -944,6 +944,7 @@ set(OBJS_DRT_STRU_MULTI
   src/drt_stru_multi/microstatic_service.cpp
 )
 set(OBJS_SOH8_LIB
+  src/drt_so3/so_utils.cpp
   src/drt_so3/inversedesign.cpp
   src/drt_so3/inversedesign_evaluate.cpp
   src/drt_so3/prestress.cpp

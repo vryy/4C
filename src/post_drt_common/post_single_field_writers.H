@@ -53,6 +53,7 @@ protected:
   void WriteEigenStress(const std::string groupname,
                         PostResult& result,
                         const ResultType stresskind);
+  void PostRotation();
 
   std::string stresstype_;
   std::string straintype_;

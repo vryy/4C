@@ -54,6 +54,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   filter_ = "ensight";
   struct_vel_acc_ = "no";
   struct_mat_disp_ = "no";
+  struct_rot_ = "no";
 
   int printparobjecttypes = 0;
 
@@ -73,6 +74,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("tempgradtype",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("tempgrad",&tempgradtype_,"tempgrad output type [cxyz, ndxyz, cxyz_ndxyz, c123, nd123, c123_nd123]");
   CLP.setOption("structvelacc",&struct_vel_acc_,"structural velocity and acceleration output [yes]");
+  CLP.setOption("rotation",&struct_rot_,"structural rotation matrix R [yes]");
   CLP.setOption("structmatdisp",&struct_mat_disp_,"material displacement output output [yes]");
   CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
   CLP.setOption("outputtype",&outputtype_,"binary (bin) or ascii (ascii) output, option works for vtu filter only");

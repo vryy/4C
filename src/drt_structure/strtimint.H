@@ -1113,12 +1113,14 @@ namespace STR
     INPAR::STR::StrainType writeplstrain_;  //!< plastic strain output type
     int writeenergyevery_;  //!< write system energy every given step
     bool writesurfactant_;  //!< write surfactant output
+    bool writerotation_;  //!< write strutural rotation tensor output
     Teuchos::RCP<std::ofstream> energyfile_;  //!< outputfile for energy
 
     Teuchos::RCP<std::vector<char> > stressdata_; //!< container for element GP stresses
     Teuchos::RCP<std::vector<char> > couplstressdata_; //!< container for element GP coupling stresses
     Teuchos::RCP<std::vector<char> > straindata_; //!< container for element GP strains
     Teuchos::RCP<std::vector<char> > plstraindata_; //!< container for element GP plastic strains
+    Teuchos::RCP<std::vector<char> > rotdata_; //!< container for element rotation tensor
     double kinergy_; //!< kinetic energy
     double intergy_; //!< internal energy
     double extergy_; //!< external energy

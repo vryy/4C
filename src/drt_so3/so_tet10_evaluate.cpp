@@ -24,6 +24,7 @@
 #include "../drt_mat/so3_material.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "so_utils.H"
 
 // inverse design object
 #include "inversedesign.H"
@@ -215,6 +216,21 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
           AddtoPack(data, strain);
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
         }
+
+        // output of rotation matrix R with F = U*R
+        if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(),"OUTPUT_ROT") == true)
+        {
+          LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> R;
+          DRT::ELEMENTS::UTILS::CalcR<DRT::Element::tet10>(this,mydisp,R);
+
+          Teuchos::RCP<std::vector<char> > rotdata = params.get<Teuchos::RCP<std::vector<char> > >("rotation",Teuchos::null);
+
+          DRT::PackBuffer data;
+          AddtoPack(data, R);
+          data.StartPacking();
+          AddtoPack(data, R);
+          std::copy(data().begin(),data().end(),std::back_inserter(*rotdata));
+        }
       }
     }
     break;
@@ -232,7 +248,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         dserror("no gp stress/strain map available for postprocessing");
       std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
-      LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D> gpstress(((*gpstressmap)[gid])->A(),true);
 
       Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
       if (poststress==Teuchos::null)
@@ -240,11 +255,15 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
       if (stresstype=="ndxyz")
       {
+        LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D> gpstress(((*gpstressmap)[gid])->A(),true);
+
         // extrapolate stresses/strains at Gauss points to nodes
         so_tet10_expol(gpstress,*poststress);
       }
       else if (stresstype=="cxyz")
       {
+        LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D> gpstress(((*gpstressmap)[gid])->A(),true);
+
         const Epetra_BlockMap elemap = poststress->Map();
         int lid = elemap.LID(Id());
         if (lid!=-1)
@@ -260,6 +279,17 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
             s *= 1.0/NUMGPT_SOTET10;
           }
         }
+      }
+      else if (stresstype=="rotation")
+      {
+        LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10> elecenterrot(((*gpstressmap)[gid])->A(),true);
+
+        const Epetra_BlockMap elemap = poststress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1)
+          for (int i = 0; i < NUMDIM_SOTET10; ++i)
+            for (int j = 0; j < NUMDIM_SOTET10; ++j)
+            (*((*poststress)(i*NUMDIM_SOTET10+j)))[lid] = elecenterrot(i,j);
       }
       else
       {
