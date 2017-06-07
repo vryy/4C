@@ -314,7 +314,6 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     Teuchos::RCP<Epetra_Vector> lmincrement_;
 
     //! transformation operators for auxiliary system matrices
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> imastertoslaverowtransform_;
     Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastercoltransform_;
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransform_;
     Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> islavetomasterrowcoltransform_;

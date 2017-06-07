@@ -201,6 +201,9 @@ namespace STI
       //! global map extractor (0: scatra, 1: thermo)
       Teuchos::RCP<LINALG::MapExtractor> maps_;
 
+      // flag for double condensation of linear equations associated with temperature field
+      const bool condensationthermo_;
+
       //! global system matrix
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
 
@@ -216,7 +219,7 @@ namespace STI
       //! map extractor associated with blocks of global system matrix
       Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
 
-      //! map extractor associated with single thermo block of global system matrix
+      //! map extractor associated with all degrees of freedom inside temperature field
       Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermo_;
 
       //! global increment vector for Newton-Raphson iteration
@@ -271,7 +274,7 @@ namespace STI
       Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastercoltransformthermood_;
 
       //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
-      Teuchos::RCP<FSI::UTILS::MatrixRowTransform> imastertoslaverowtransformthermood_;
+      Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransformthermood_;
   }; // class Algorithm : public ADAPTER::AlgorithmBase
 } // namespace STI
 #endif

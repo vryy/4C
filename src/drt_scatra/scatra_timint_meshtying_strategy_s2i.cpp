@@ -79,7 +79,6 @@ lm_(Teuchos::null),
 extendedmaps_(Teuchos::null),
 lmresidual_(Teuchos::null),
 lmincrement_(Teuchos::null),
-imastertoslaverowtransform_(Teuchos::null),
 islavetomastercoltransform_(Teuchos::null),
 islavetomasterrowtransform_(Teuchos::null),
 islavetomasterrowcoltransform_(Teuchos::null),
@@ -349,54 +348,54 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         }
 
         // In case the interface linearizations and residuals are evaluated on slave side only,
-        // we now apply a standard meshtying algorithm to condense out the master-side degrees of freedom.
+        // we now apply a standard meshtying algorithm to condense out the slave-side degrees of freedom.
         else if(!scatratimint_->Discretization()->GetCondition("PointCoupling"))
         {
-          // initialize temporary matrix for master-side rows of system matrix
-          LINALG::SparseMatrix systemmatrixrowsmaster(*icoup_->MasterDofMap(),81);
+          // initialize temporary matrix for slave-side rows of system matrix
+          LINALG::SparseMatrix systemmatrixrowsslave(*icoup_->SlaveDofMap(),81);
 
-          // extract master-side rows of system matrix into temporary matrix
-          ExtractMatrixRows(*systemmatrix,systemmatrixrowsmaster,*icoup_->MasterDofMap());
+          // extract slave-side rows of system matrix into temporary matrix
+          ExtractMatrixRows(*systemmatrix,systemmatrixrowsslave,*icoup_->SlaveDofMap());
 
-          // zero out master-side rows of system matrix and put a one on the main diagonal
+          // zero out slave-side rows of system matrix and put a one on the main diagonal
           systemmatrix->Complete();
-          systemmatrix->ApplyDirichlet(*icoup_->MasterDofMap(),true);
+          systemmatrix->ApplyDirichlet(*icoup_->SlaveDofMap(),true);
           systemmatrix->UnComplete();
 
-          // loop over all master-side rows of system matrix
-          for(int masterdoflid=0; masterdoflid<icoup_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+          // loop over all slave-side rows of system matrix
+          for(int slavedoflid=0; slavedoflid<icoup_->SlaveDofMap()->NumMyElements(); ++slavedoflid)
           {
             // determine global ID of current matrix row
-            const int masterdofgid = icoup_->MasterDofMap()->GID(masterdoflid);
-            if(masterdofgid < 0)
-              dserror("Couldn't find local ID %d in map!",masterdoflid);
-
-            // determine global ID of associated slave-side matrix column
-            const int slavedofgid = icoup_->PermSlaveDofMap()->GID(masterdoflid);
+            const int slavedofgid = icoup_->SlaveDofMap()->GID(slavedoflid);
             if(slavedofgid < 0)
-              dserror("Couldn't find local ID %d in permuted map!",masterdoflid);
+              dserror("Couldn't find local ID %d in map!",slavedoflid);
 
-            // insert value -1. into intersection of master-side row and slave-side column in system matrix
-            // this effectively forces the master-side degree of freedom to assume the same value as the slave-side degree of freedom
+            // determine global ID of associated master-side matrix column
+            const int masterdofgid = icoup_->PermMasterDofMap()->GID(slavedoflid);
+            if(masterdofgid < 0)
+              dserror("Couldn't find local ID %d in permuted map!",slavedoflid);
+
+            // insert value -1. into intersection of slave-side row and master-side column in system matrix
+            // this effectively forces the slave-side degree of freedom to assume the same value as the master-side degree of freedom
             const double value(-1.);
-            if(systemmatrix->EpetraMatrix()->InsertGlobalValues(masterdofgid,1,&value,&slavedofgid) < 0)
-              dserror("Cannot insert value -1. into matrix row with global ID %d and matrix column with global ID %d!",masterdofgid,slavedofgid);
+            if(systemmatrix->EpetraMatrix()->InsertGlobalValues(slavedofgid,1,&value,&masterdofgid) < 0)
+              dserror("Cannot insert value -1. into matrix row with global ID %d and matrix column with global ID %d!",slavedofgid,masterdofgid);
 
-            // insert zero into intersection of master-side row and slave-side column in temporary matrix
+            // insert zero into intersection of slave-side row and master-side column in temporary matrix
             // this prevents the system matrix from changing its graph when calling this function again during the next Newton iteration
             const double zero(0.);
-            if(systemmatrixrowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,1,&zero,&slavedofgid) < 0)
-              dserror("Cannot insert zero into matrix row with global ID %d and matrix column with global ID %d!",masterdofgid,slavedofgid);
+            if(systemmatrixrowsslave.EpetraMatrix()->InsertGlobalValues(slavedofgid,1,&zero,&masterdofgid) < 0)
+              dserror("Cannot insert zero into matrix row with global ID %d and matrix column with global ID %d!",slavedofgid,masterdofgid);
           }
 
-          // finalize temporary matrix with master-side rows of system matrix
-          systemmatrixrowsmaster.Complete(*scatratimint_->DofRowMap(),*icoup_->MasterDofMap());
+          // finalize temporary matrix with slave-side rows of system matrix
+          systemmatrixrowsslave.Complete(*scatratimint_->DofRowMap(),*icoup_->SlaveDofMap());
 
-          // add master-side rows of system matrix to corresponding slave-side rows to finalize matrix condensation of master-side degrees of freedom
-          (*imastertoslaverowtransform_)(
-              systemmatrixrowsmaster,
+          // add slave-side rows of system matrix to corresponding master-side rows to finalize matrix condensation of slave-side degrees of freedom
+          (*islavetomasterrowtransform_)(
+              systemmatrixrowsslave,
               1.,
-              ADAPTER::CouplingMasterConverter(*icoup_),
+              ADAPTER::CouplingSlaveConverter(*icoup_),
               *systemmatrix,
               true
               );
@@ -502,31 +501,31 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       interfacemaps_->AddVector(icoup_->SlaveToMaster(islaveresidual_),2,scatratimint_->Residual(),-1.);
 
     // In case the interface linearizations and residuals are evaluated on slave side only,
-    // we now apply a standard meshtying algorithm to condense out the master-side degrees of freedom.
+    // we now apply a standard meshtying algorithm to condense out the slave-side degrees of freedom.
     else if(!scatratimint_->Discretization()->GetCondition("PointCoupling"))
     {
-      // initialize temporary vector for master-side entries of residual vector
-      Teuchos::RCP<Epetra_Vector> residualmaster = Teuchos::rcp(new Epetra_Vector(*icoup_->MasterDofMap()));
+      // initialize temporary vector for slave-side entries of residual vector
+      Teuchos::RCP<Epetra_Vector> residualslave = Teuchos::rcp(new Epetra_Vector(*icoup_->SlaveDofMap()));
 
-      // loop over all master-side entries of residual vector
-      for(int masterdoflid=0; masterdoflid<icoup_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+      // loop over all slave-side entries of residual vector
+      for(int slavedoflid=0; slavedoflid<icoup_->SlaveDofMap()->NumMyElements(); ++slavedoflid)
       {
         // determine global ID of current vector entry
-        const int masterdofgid = icoup_->MasterDofMap()->GID(masterdoflid);
-        if(masterdofgid < 0)
-          dserror("Couldn't find local ID %d in map!",masterdoflid);
+        const int slavedofgid = icoup_->SlaveDofMap()->GID(slavedoflid);
+        if(slavedofgid < 0)
+          dserror("Couldn't find local ID %d in map!",slavedoflid);
 
         // copy current vector entry into temporary vector
-        if(residualmaster->ReplaceGlobalValue(masterdofgid,0,(*scatratimint_->Residual())[scatratimint_->DofRowMap()->LID(masterdofgid)]))
-          dserror("Cannot insert residual vector entry with global ID %d into temporary vector!",masterdofgid);
+        if(residualslave->ReplaceGlobalValue(slavedofgid,0,(*scatratimint_->Residual())[scatratimint_->DofRowMap()->LID(slavedofgid)]))
+          dserror("Cannot insert residual vector entry with global ID %d into temporary vector!",slavedofgid);
 
         // zero out current vector entry
-        if(scatratimint_->Residual()->ReplaceGlobalValue(masterdofgid,0,0.))
-          dserror("Cannot insert zero into residual vector entry with global ID %d!",masterdofgid);
+        if(scatratimint_->Residual()->ReplaceGlobalValue(slavedofgid,0,0.))
+          dserror("Cannot insert zero into residual vector entry with global ID %d!",slavedofgid);
       }
 
-      // add master-side entries of residual vector to corresponding slave-side entries to finalize vector condensation of master-side degrees of freedom
-      interfacemaps_->AddVector(icoup_->MasterToSlave(residualmaster),1,scatratimint_->Residual());
+      // add slave-side entries of residual vector to corresponding master-side entries to finalize vector condensation of slave-side degrees of freedom
+      interfacemaps_->AddVector(icoup_->SlaveToMaster(residualslave),2,scatratimint_->Residual());
     }
 
     break;
@@ -1784,14 +1783,12 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
     // initialize auxiliary system matrices and associated transformation operators
     islavematrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()),81));
     imastermatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()),81));
+    islavetomasterrowtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
     if(not slaveonly_)
     {
       islavetomastercoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-      islavetomasterrowtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
       islavetomasterrowcoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
     }
-    else
-      imastertoslaverowtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
 
     // initialize auxiliary residual vector
     islaveresidual_ = Teuchos::rcp(new Epetra_Vector(*(icoup_->SlaveDofMap())));

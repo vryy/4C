@@ -1211,6 +1211,8 @@ baci_test(sti_3D_hex8_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard 3 "
 baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic 3 15)
 post_processing(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic 3 "" "" 20 "_scatra" "")
 post_processing(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic 3 "" "" 20 "_thermo" "")
+baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_condensed 3 "")
+baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_condensed_mortar_standard 3 "")
 baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard 3 "")
 baci_test(sti_3D_tet4_elch_s2i_pointcoupling_butlervolmerpeltier_adiabatic 1 "")
 baci_test(sti_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard 3 "")
@@ -1797,9 +1799,13 @@ baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_BGS-AMG_3x3 3 "")
 
 # scatra-thermo interaction using the AMGnxn framework
 baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_BGS-AMG_2x2 3 15)
+baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_condensed_BGS-AMG_2x2 3 15)
 baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_AMG-BGS_4x4 3 "")
 baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4 3 "")
+baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_condensed_BGS-AMG_4x4 3 "")
+baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_condensed_mortar_standard_BGS-AMG_2x2 3 "")
 baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard_BGS-AMG_2x2 3 "")
+baci_test(sti_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_condensed_mortar_standard_BGS-AMG_4x4 3 15)
 baci_test(sti_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard_BGS-AMG_4x4 3 15)
 endif (HAVE_MueLu)
 

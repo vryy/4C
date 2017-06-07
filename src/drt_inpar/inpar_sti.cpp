@@ -96,6 +96,9 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // ID of linear solver for temperature field
   IntParameter("THERMO_LINEAR_SOLVER",-1,"ID of linear solver for temperature field",&stidyn);
+
+  // flag for double condensation of linear equations associated with temperature field
+  BoolParameter("THERMO_CONDENSATION","No","flag for double condensation of linear equations associated with temperature field",&stidyn);
 }
 
 

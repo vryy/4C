@@ -52,6 +52,7 @@ THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
 LINEAR_SOLVER                   1
 THERMO_LINEAR_SOLVER            1
+THERMO_CONDENSATION             yes
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS

@@ -16,7 +16,7 @@ Test case for scatra-thermo interaction involving electrochemistry and electrode
 - charge transfer kinetics characterized by Butler-Volmer-Peltier kinetics
 - discharge from fully charged state at C rate of 10
 - 1560 tet4 elements with matching interface nodes
-- cf. bachelor thesis by Tobias Crönert (2015) for details
+- cf. bachelor thesis by Tobias Crönert (2015) and term paper by Maximilian Wurzer (2016) for details
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1560
 //NODES       533
@@ -33,7 +33,7 @@ VELOCITYFIELD                   zero
 INITIALFIELD                    field_by_condition
 CALCFLUX_BOUNDARY               total
 SKIPINITDER                     no
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -45,14 +45,26 @@ DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
+MATRIXTYPE                      block_condition
+EQUILIBRATION                   rows
 --------------------------------------------------------STI DYNAMIC
 SCATRATYPE                      Elch
-MATRIXTYPE                      sparse
 THERMO_INITIALFIELD             field_by_function
 THERMO_INITFUNCNO               4
 LINEAR_SOLVER                   1
-THERMO_LINEAR_SOLVER            1
+THERMO_LINEAR_SOLVER            3
+THERMO_CONDENSATION             yes
 -----------------------------------------------------------SOLVER 1
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4.xml
+-----------------------------------------------------------SOLVER 2
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_BGS-AMG_4x4_scatra.xml
+-----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_electrode DIFFCOEF -1 COND -1 DIFF_PARA_NUM 1 DIFF_PARA 2.e-10 COND_PARA_NUM 1 COND_PARA 1.e5 C_MAX 16.1 OCP_MODEL Redlich-Kister OCP_PARA_NUM 16 OCP_PARA 1.1652e4 -3.268e3 3.955e3 -4.573e3 6.147e3 -3.339e3 1.117e4 2.997e2 -4.866e4 1.362e2 1.373e5 -2.129e4 -1.722e5 3.956e4 9.302e4 -3.280e4 END
@@ -77,7 +89,7 @@ COMPONENT 1 FUNCTION -0.080830788307857 // initial electric potential in electro
 COMPONENT 0 FUNCTION 10.56              // initial concentration in cathode
 COMPONENT 1 FUNCTION 3.892392107528559  // initial electric potential in cathode
 -------------------------------------------------------------FUNCT4
-COMPONENT 0 FUNCTION 300.0              // initial temperature
+FUNCTION 300.0                          // initial temperature
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 40 QUANTITY phi1 VALUE 8.25404354285118558e+00 TOLERANCE 1.e-09                  // local lithium concentration at anode-electrolyte interface (anode side)
 SCATRA DIS scatra NODE 40 QUANTITY phi2 VALUE -7.10585317795950367e-08 TOLERANCE 1.e-16                 // local electric potential at anode-electrolyte interface (anode side)
@@ -107,6 +119,7 @@ SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.44444416539958476e-01 TOLERANCE 
 SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58363865002511583e-01 TOLERANCE 1.e-10                  // cathode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.77030388966926777e+00 TOLERANCE 1.e-09           // cell voltage
 STI SPECIAL QUANTITY numiterlastnewton VALUE 4.0 TOLERANCE 1.e-20                                       // number of Newton-Raphson iterations during last time step
+STI SPECIAL QUANTITY numiterlastsolve VALUE 5.0 TOLERANCE 1.e-20                                        // number of iterations performed by linear solver during last Newton-Raphson iteration
 ------------------------------------------------DESIGN DESCRIPTION
 NDSURF  14
 NDVOL   5
@@ -127,6 +140,11 @@ E 2 - 0 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e-
 E 3 - 0 Master
 E 4 - 1 Master
 E 5 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5 peltier -0.038
+-----------------DESIGN S2I COUPLING VOL CONDITIONS / PARTITIONING
+DVOL   3
+E 1 -
+E 2 -
+E 3 -
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   2
 E 1 - ID 0 c_0% 2.029 c_100% 10.88
