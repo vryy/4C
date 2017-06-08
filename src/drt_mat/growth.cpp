@@ -408,6 +408,7 @@ void MAT::GrowthVolumetric::VisNames(std::map<std::string,int>& names)
   switch (Parameter()->growthlaw_->MaterialType())
   {
   case INPAR::MAT::m_growth_aniso_stress:
+  case INPAR::MAT::m_growth_aniso_stress_const_trig:
   case INPAR::MAT::m_growth_iso_stress:
   {
     name = "tr_mandel_e";
@@ -415,6 +416,7 @@ void MAT::GrowthVolumetric::VisNames(std::map<std::string,int>& names)
   }
     break;
   case INPAR::MAT::m_growth_aniso_strain:
+  case INPAR::MAT::m_growth_aniso_strain_const_trig:
   {
     name = "lambda_fib_e";
     names[name] = 1;
