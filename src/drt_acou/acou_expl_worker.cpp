@@ -1596,11 +1596,9 @@ WaveEquationOperationAcousticWave(const std::vector<const DoFHandler<dim> *> &do
         dserror("Refined meshes currently not implemented!");
 
       const int element_index = this->data.get_cell_iterator(i,v)->index();
-      Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
 
-      MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
-      this->densities[i][v] = actmat->Density(element_index);
-      this->speeds[i][v] = actmat->SpeedofSound(element_index);
+      this->densities[i][v] = discret->lColElement(element_index)->Material()->Parameter()->GetParameter(0,discret->lColElement(element_index)->Id());
+      this->speeds[i][v] = discret->lColElement(element_index)->Material()->Parameter()->GetParameter(1,discret->lColElement(element_index)->Id());
     }
   }
 }
