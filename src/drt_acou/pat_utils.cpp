@@ -68,8 +68,16 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
   // read steps
   foundit = strstr(buffer,"steps");
   foundit += strlen("steps");
-  nsteps_ = strtol(foundit,&foundit,10);
+  unsigned int nsteps = strtol(foundit,&foundit,10);
+
+  dtacou_ = params->get<double>("TIMESTEP");
+  if(params->get<double>("MAXTIME")/dtacou_<params->get<int>("NUMSTEP"))
+    nsteps_ = params->get<double>("MAXTIME")/dtacou_+1;
+  else
+    nsteps_ = params->get<int>("NUMSTEP")+1;
+
   times_.resize(nsteps_);
+  std::vector<double> timesteps(nsteps);
 
   // read mics
   foundit = strstr(buffer,"mics"); foundit += strlen("mics");
@@ -84,14 +92,9 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
       positions_[i*ndim_+j] = strtod(foundit,&foundit);
   }
 
-  // read in measured curve
-  measurementvalues_.resize(nmics_*nsteps_);
-
   // initialize other relevant quantities
   simulatedvalues_.resize(nmics_*nsteps_);
-  simulatedvalues_previous_.resize(nmics_);
-  time_previous_ = -1.0;
-  step_previous_ = -1;
+  measurementvalues_.resize(nmics_*nsteps_);
 
   // read comment lines
   foundit = buffer;
@@ -101,26 +104,55 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 
   // read in the values for each node
   unsigned int count = 0;
-  for (unsigned int i=0; i<nsteps_; ++i)
+  Epetra_SerialDenseVector mcurve(nmics_*nsteps);
+  for (unsigned int i=0; i<nsteps; ++i)
   {
     // read the time step
-    times_[i] = strtod(foundit,&foundit);
+    timesteps[i] = strtod(foundit,&foundit);
     for (unsigned int j=0; j<nmics_; ++j)
-      measurementvalues_[count++] = strtod(foundit,&foundit);
+      mcurve[count++] = strtod(foundit,&foundit);
     fgets(buffer,150000,file);
     foundit = buffer;
   }
-  if (count != nmics_*nsteps_) dserror("Number of measured pressure values wrong on input");
+  if (count != nmics_*nsteps) dserror("Number of measured pressure values wrong on input");
 
   // close input file
   fclose(file);
 
   // security check
-  eps_ = params->get<double>("TIMESTEP")/1000.0;
-  if(times_[0]>eps_) dserror("monitor file has to start at 0 but starts at %e",times_[0]);
-  maxtime_ = std::min(params->get<int>("NUMSTEP")*params->get<double>("TIMESTEP"),params->get<double>("MAXTIME"));
-  if(times_[nsteps_-1]<maxtime_-eps_)
-    dserror("you only provide monitor values until %f but you want to simulate until %f.",times_[nsteps_-1],maxtime_);
+  eps_ = dtacou_/1000.0;
+  if(timesteps[0]>eps_) dserror("monitor file has to start at 0 but starts at %e",times_[0]);
+  maxtime_ = std::min(params->get<int>("NUMSTEP")*dtacou_,params->get<double>("MAXTIME"));
+  if(timesteps[nsteps-1]<maxtime_-eps_)
+    dserror("you only provide monitor values until %f but you want to simulate until %f.",timesteps[nsteps-1],maxtime_);
+
+  // interpolate the read-in monitor values to the baci times
+  for(unsigned int t=0; t<nsteps_; ++t)
+    times_[t] = double(t)*dtacou_;
+
+  if(dtacou_<timesteps[1]+eps_ && dtacou_>timesteps[1]-eps_) // no interpolation necessary, just copy data
+  {
+    for(int i=0; i<mcurve.Length();++i)
+      measurementvalues_[i] = mcurve[i];
+  }
+  else // time steps not equally sized
+  {
+    // first line is simple because it is t=0
+    for(unsigned int i=0; i<nmics_;++i)
+      measurementvalues_[i] = mcurve[i];
+
+    // all following times
+    double dtmon = timesteps[1];
+    for(unsigned int s=1; s<nsteps_; ++s)
+    {
+      double sought_time = times_[s];
+
+      int index = sought_time/dtmon; // index of the smaller value
+      double timequotient = (sought_time-timesteps[index])/(timesteps[index+1]-timesteps[index]);
+      for(unsigned int i=0; i<nmics_;++i)
+        measurementvalues_[s*nmics_+i] = mcurve[index*nmics_+i] + timequotient * (mcurve[(index+1)*nmics_+i]-mcurve[index*nmics_+i]);
+    }
+  }
 
   // read quantities concerning impulse response
   // check if we need the impulse response and if so, transform it to the used time step
@@ -172,10 +204,8 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
       norm += impulseresponse[num_imprespvals-1];
     } while(test!=NULL);
 
-    double dtacou = params->get<double>("TIMESTEP");
-
     // in case time steps are the same just copy the impulse response
-    if(dtimpresp==dtacou)
+    if(dtimpresp==dtacou_)
     {
       impulse_response_.resize(num_imprespvals);
       for(int i=0; i<num_imprespvals; ++i)
@@ -183,13 +213,13 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
     }
     else // otherwise interpolate the given impulse response to the dtacou_ timestep
     {
-      int num_baciimprespvals = dtimpresp*num_imprespvals/dtacou;
+      int num_baciimprespvals = dtimpresp*num_imprespvals/dtacou_;
       impulse_response_.resize(num_baciimprespvals);
       double fac = double(num_imprespvals)/std::abs(norm)/double(num_baciimprespvals);
 
       for(int i=0; i<num_baciimprespvals; ++i)
       {
-        double actualt = i * dtacou; // we need values for this time point
+        double actualt = i * dtacou_; // we need values for this time point
         int impresindex = actualt / dtimpresp; // corresponds to this index
         impulse_response_[i] = fac * ( impulseresponse[impresindex] + (impulseresponse[impresindex+1]-impulseresponse[impresindex])*(actualt - impresindex*dtimpresp)/(dtimpresp) );
       }
@@ -198,18 +228,12 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 }
 
 /*----------------------------------------------------------------------*/
-void ACOU::PATMonitorManager::Reset()
-{
-  time_previous_ = -1.0;
-  step_previous_ = -1;
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector<bool> rowelesin)
+void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector<bool> rowelesin, double fullfacemeasure)
 {
   if(nmics_!=cellidsin.size())
     dserror("the number of cell ids should be the number of detectors");
+
+  fullfacemeasure_ = fullfacemeasure;
 
   std::vector<bool> owned(nmics_,false);
 
@@ -231,10 +255,10 @@ void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector
   // recalculate local quantities
   std::vector<double> measurementvaluesshort(countowned*nsteps_);
   std::vector<double> simulatedvaluesshort(countowned*nsteps_);
-  std::vector<double> simulatedvaluespreviousshort(countowned);
   std::vector<unsigned int> cellidsshort(countowned);
   std::vector<double> positionsshort(countowned*ndim_);
   std::vector<bool> cellrowflagshort(countowned);
+  std::vector<double> facemeasuresshort(countowned);
   int count = 0;
   for(unsigned int i=0; i<cellidsin.size(); ++i)
   {
@@ -246,7 +270,6 @@ void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector
         measurementvaluesshort[s*countowned+count] = measurementvalues_[s*nmics_+i];
         simulatedvaluesshort[s*countowned+count] = simulatedvalues_[s*nmics_+i];
       }
-      simulatedvaluespreviousshort[count] = simulatedvalues_previous_[i];
 
       for(unsigned int d=0; d<ndim_; ++d)
         positionsshort[count*ndim_+d] = positions_[i*ndim_+d];
@@ -265,8 +288,6 @@ void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector
   measurementvalues_ = measurementvaluesshort;
   simulatedvalues_.clear();
   simulatedvalues_ = simulatedvaluesshort;
-  simulatedvalues_previous_.clear();
-  simulatedvalues_previous_ = simulatedvaluespreviousshort;
   positions_.clear();
   positions_ = positionsshort;
 
@@ -277,17 +298,6 @@ void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector
 void ACOU::PATMonitorManager::EvaluateMonitorValues(double time, const std::vector<double> &point, double &value)
 {
   time = maxtime_-time; // recalculate for adjoint evaluation
-
-  unsigned int last_smaller_index = -1;
-  unsigned int first_larger_index = -1;
-  for(unsigned int n=0; n<nsteps_; ++n)
-    if(times_[n]<time+eps_)
-      last_smaller_index = n;
-  for(unsigned int n=1; n<=nsteps_; ++n)
-    if(times_[nsteps_-n]>time-eps_)
-      first_larger_index = nsteps_-n;
-  if(last_smaller_index==first_larger_index)
-    first_larger_index++;
 
   // find closest microphone
   switch(tomotype_)
@@ -313,7 +323,7 @@ void ACOU::PATMonitorManager::EvaluateMonitorValues(double time, const std::vect
     {
       double currentdistance = std::sqrt( (positions_[m*ndim_+0]-point[0])*(positions_[m*ndim_+0]-point[0])
                                         + (positions_[m*ndim_+1]-point[1])*(positions_[m*ndim_+1]-point[1]));
-      if(currentdistance<secondsmallestdistance && currentdistance>smallestdistance)
+      if(currentdistance<secondsmallestdistance && currentdistance>smallestdistance-eps_ && m!=smallestdistindex)
       {
         secondsmallestdistance = currentdistance;
         secondsmallestdistindex = m;
@@ -321,20 +331,30 @@ void ACOU::PATMonitorManager::EvaluateMonitorValues(double time, const std::vect
     }
 
     // interpolate the values in time and space
-    // first: interpolate in time
-    double value_time_smallestdistance = (simulatedvalues_[smallestdistindex+last_smaller_index*nmics_]-measurementvalues_[smallestdistindex+last_smaller_index*nmics_])
-                                       + (time-times_[last_smaller_index])/(times_[first_larger_index]-times_[last_smaller_index])
-                                       * ( (simulatedvalues_[smallestdistindex+first_larger_index*nmics_]-measurementvalues_[smallestdistindex+first_larger_index*nmics_])
-                                       - (simulatedvalues_[smallestdistindex+last_smaller_index*nmics_]-measurementvalues_[smallestdistindex+last_smaller_index*nmics_]) ) ;
-    double value_time_secondsmallestdistance = (simulatedvalues_[secondsmallestdistindex+last_smaller_index*nmics_]-measurementvalues_[secondsmallestdistindex+last_smaller_index*nmics_])
-                                             + (time-times_[last_smaller_index])/(times_[first_larger_index]-times_[last_smaller_index])
-                                             * ((simulatedvalues_[secondsmallestdistindex+first_larger_index*nmics_]-measurementvalues_[secondsmallestdistindex+first_larger_index*nmics_])
-                                             - (simulatedvalues_[secondsmallestdistindex+last_smaller_index*nmics_]-measurementvalues_[secondsmallestdistindex+last_smaller_index*nmics_])) ;
+    // first: evaluate in time
+    int index = std::round(time/dtacou_); // find time index
+
+    double value_time_smallestdistance = simulatedvalues_[smallestdistindex+index*nmics_] - measurementvalues_[smallestdistindex+index*nmics_];
+    double value_time_secondsmallestdistance = simulatedvalues_[secondsmallestdistindex+index*nmics_] - measurementvalues_[secondsmallestdistindex+index*nmics_];
+
+    //value_time_smallestdistance /= facemeasures_[smallestdistindex];
+    //value_time_secondsmallestdistance /= facemeasures_[secondsmallestdistance];
+    value_time_smallestdistance *= nmics_/fullfacemeasure_;
+    value_time_secondsmallestdistance *= nmics_/fullfacemeasure_;
 
     // second: interpolate in space (this is tomograph specific!! this one does not care about z-component!)
-    value = value_time_smallestdistance
-          + smallestdistance/(smallestdistance+secondsmallestdistance)
-          * value_time_secondsmallestdistance;
+    value = secondsmallestdistance/(smallestdistance+secondsmallestdistance) * value_time_smallestdistance
+          + smallestdistance/(smallestdistance+secondsmallestdistance) * value_time_secondsmallestdistance;
+
+
+ /*   std::cout<<value_time_smallestdistance<<" "<<smallestdistance<<" "<<secondsmallestdistance<<" "<<value_time_secondsmallestdistance<<
+        " "<<" point "<<point[0]<<" "<<point[1]<<" closest value earlier "<<(simulatedvalues_[smallestdistindex+last_smaller_index*nmics_]-measurementvalues_[smallestdistindex+last_smaller_index*nmics_])
+                                                <<" closest value later  "<< (simulatedvalues_[smallestdistindex+first_larger_index*nmics_]-measurementvalues_[smallestdistindex+first_larger_index*nmics_])
+                                                <<" times "<<times_[last_smaller_index]<<" "<<times_[first_larger_index]<<" "<<time<<std::endl;
+    std::cout<<"second closest value earlier "<<(simulatedvalues_[secondsmallestdistindex+last_smaller_index*nmics_]-measurementvalues_[secondsmallestdistindex+last_smaller_index*nmics_])
+                                                <<" closest value later  "<< (simulatedvalues_[secondsmallestdistindex+first_larger_index*nmics_]-measurementvalues_[secondsmallestdistindex+first_larger_index*nmics_])
+                                                <<" times "<<times_[last_smaller_index]<<" "<<times_[first_larger_index]<<" "<<time<<" timequotient "<<(time-times_[last_smaller_index])/(times_[first_larger_index]-times_[last_smaller_index])<<std::endl;
+  */
   }
     break;
   default:
@@ -347,70 +367,9 @@ void ACOU::PATMonitorManager::EvaluateMonitorValues(double time, const std::vect
 /*----------------------------------------------------------------------*/
 void ACOU::PATMonitorManager::StoreForwardValues(const double time, const std::vector<double> values)
 {
-
-  // first time this function is called
-  if(time_previous_<0.0 && time<eps_)
-  {
-    time_previous_ = time;
-    step_previous_ = 0;
-    for(unsigned int i=0;i<values.size(); ++i)
-    {
-      simulatedvalues_[i] = values[i];
-      simulatedvalues_previous_[i] = values[i];
-    }
-  }
-  else // all other times
-  {
-    if( (time>times_[step_previous_+1]-eps_) && (time<times_[step_previous_+1]+eps_) ) // it is the required time
-    {
-      step_previous_++;
-      for(unsigned int v=0; v<values.size(); ++v)
-        simulatedvalues_[nmics_*step_previous_+v] = values[v];
-      time_previous_ = time;
-      for(unsigned int i=0;i<values.size(); ++i)
-        simulatedvalues_previous_[i] = values[i]; // in case they are required for the next evaluation
-    }
-    else if(time>times_[step_previous_+1]-eps_) // interpolate
-    {
-      if((times_[1]-times_[0])<(time-time_previous_)) // in this case we might need several interpolations
-      {
-        unsigned int numpotevals = (time-time_previous_)/(times_[1]-times_[0]) +1;
-        for(unsigned int e=0; e<numpotevals; ++e)
-        {
-          if( (time>times_[step_previous_]-eps_) && (time<times_[step_previous_]+eps_) )
-          {
-            step_previous_++;
-            for(unsigned int v=0; v<values.size(); ++v)
-              simulatedvalues_[nmics_*step_previous_+v] = values[v];
-          }
-          else if(time>times_[step_previous_+1]-eps_)
-          {
-            step_previous_++;
-            double timequotient =  (times_[step_previous_]-time_previous_)/(time-time_previous_);  //(time-time_previous_)/(times_[step_previous_]-time_previous_);
-            for(unsigned int v=0; v<values.size(); ++v)
-              simulatedvalues_[nmics_*step_previous_+v] = simulatedvalues_previous_[v] + timequotient * (values[v]-simulatedvalues_previous_[v]);
-          }
-        }
-      }
-      else
-      {
-        step_previous_++;
-        double timequotient =  (times_[step_previous_]-time_previous_)/(time-time_previous_);  //(time-time_previous_)/(times_[step_previous_]-time_previous_);
-        for(unsigned int v=0; v<values.size(); ++v)
-          simulatedvalues_[nmics_*step_previous_+v] = simulatedvalues_previous_[v] + timequotient * (values[v]-simulatedvalues_previous_[v]);
-      }
-      time_previous_ = time;
-      for(unsigned int i=0;i<values.size(); ++i)
-        simulatedvalues_previous_[i] = values[i]; // in case they are required for the next evaluation
-    }
-    else
-    {
-      for(unsigned int v=0; v<values.size(); ++v)
-        simulatedvalues_previous_[v] = values[v]; // store the values for next evaluation
-      time_previous_ = time;
-    }
-  }
-
+  int index = std::round(time/dtacou_);
+  for(unsigned int v=0; v<values.size(); ++v)
+    simulatedvalues_[nmics_*index+v] = values[v];
   return;
 }
 
@@ -553,6 +512,25 @@ double ACOU::PATMonitorManager::EvaluateError()
   for(unsigned int m=0; m<simulatedvalues_.size(); ++m)
     if(cellrowflag_[int(m%nmics_)])
       error += (simulatedvalues_[m]-measurementvalues_[m]) * (simulatedvalues_[m]-measurementvalues_[m]);
+
+//  for(int t=0; t<times_.size(); ++t)
+//  {
+//    std::cout<<times_[t]<<" ";
+//      for(int d=0; d<nmics_; ++d)
+//        std::cout<<simulatedvalues_[t*nmics_+d]<<" ";
+//      std::cout<<std::endl;
+//
+//  }
+//
+//
+//  for(int t=0; t<times_.size(); ++t)
+//  {
+//    std::cout<<times_[t]<<" ";
+//      for(int d=0; d<nmics_; ++d)
+//        std::cout<<measurementvalues_[t*nmics_+d]<<" ";
+//      std::cout<<std::endl;
+//
+//  }
 
   double gerror = 0.0;
 

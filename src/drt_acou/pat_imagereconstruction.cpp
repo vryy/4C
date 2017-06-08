@@ -1075,8 +1075,8 @@ void ACOU::PatImageReconstructionOptiSplit::FDCheck()
 
     for(int i=0; i<reac_vals_->MyLength(); ++i)
     {
-      double perturba = 1.0e-3;
-      double perturbb = 1.0e-4;
+      double perturba = 1.0e-2;
+      double perturbb = 0.0;//1.0e-4;
 
       double pn=0.0;
       double p=0.0;
@@ -2722,7 +2722,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::FDCheck()
     for(int i=0; i<reac_vals_->MyLength(); ++i)
     {
       double perturba = 0.0; //1.0e-3;
-      double perturbb = 1.0e-6;
+      double perturbb = 1.0e-4;
 
       double pn=0.0;
       double p=0.0;
@@ -3477,9 +3477,6 @@ const Teuchos::RCP<Epetra_MultiVector> ACOU::PatImageReconstruction::ElementMatV
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::SolveStandardScatra()
 {
-  // this has to be done before every new solve, that is why it is here
-  monitor_manager_->Reset();
-
   // output for user
   scatra_discret_->Comm().Barrier();
   if(!myrank_)
@@ -3602,10 +3599,8 @@ void ACOU::PatImageReconstruction::SolveStandardAcou()
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::ProblemSpecificOutput()
 {
-  std::cout<<"ProblemSpecificOutput"<<std::endl;
   if(!write_baci_acou_output_)
   {
-    std::cout<<"ProblemSpecificOutput "<<output_count_<<std::endl;
     std::string outname = name_;
     outname.append("_c_and_rho_iter");
     acououtput_->NewResultFile(outname,output_count_);

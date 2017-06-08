@@ -630,6 +630,7 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
     //diameter = cell->extent_in_direction(0);
     const int element_index = cell->index();
     Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
+
     double c = 0.0;
     if(solid)
     {
@@ -702,7 +703,8 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
 
   if(bacitimeint->MonitorManager()!=Teuchos::null)
   {
-    double eps = time_step/1000.0;
+    // careful with this if h and delta t scale differently
+    double eps = time_step/10.0;
     std::vector<double> positions;
     bacitimeint->MonitorManager()->GetMonitorPositions(positions);
     int numdetec = positions.size()/dim;
@@ -714,9 +716,12 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
       discret->GetCondition("PressureMonitor",pressmonBC);
 
     typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),endc = triangulation.end();
+    int countcell = 0;
+    double fullfacemeasure = 0.0;
     for (; cell!=endc; ++cell)
     {
       bool cellhasmonitoredface = false;
+      double facemeasure = 0.0;
       for(unsigned f=0; f<GeometryInfo<dim>::faces_per_cell; ++f)
       {
         if(cell->face(f)->at_boundary())
@@ -725,7 +730,11 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
           const types::boundary_id boundary_index = cell->face(f)->boundary_id();
           const int int_boundary_id = int(boundary_index);
           if(int_boundary_id==1 || int_boundary_id==2) // monitored or monitored and absorbing
+          {
             cellhasmonitoredface = true;
+            facemeasure = cell->face(f)->measure();
+            fullfacemeasure += facemeasure;
+          }
         }
         else
         {
@@ -739,10 +748,17 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
                 count++;
 
             if(count>1)
+            {
               cellhasmonitoredface = true;
+              facemeasure = cell->face(f)->measure();
+              fullfacemeasure += facemeasure/2.0; // an inner face is touched two times by this
+            }
           }
         }
       }
+      if(cellhasmonitoredface)
+        countcell++;
+
       if(cellhasmonitoredface)
         if(discret->ElementColMap()->GID(cell->index())>=0)
         {
@@ -762,8 +778,7 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
           }
         }
     }
-
-   bacitimeint->MonitorManager()->SetCellIds(cellids,cellrowflag);
+   bacitimeint->MonitorManager()->SetCellIds(cellids,cellrowflag,fullfacemeasure);
 
   }
 

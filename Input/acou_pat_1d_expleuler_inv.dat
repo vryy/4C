@@ -42,7 +42,7 @@ MONITORFILE                     acou_pat_1d_expleuler_inv.monitor
 FDCHECK                         No
 INV_TOL                         1e-3
 INV_MAX_RUN                     3
-INV_LS_MAX_RUN                  3
+INV_LS_MAX_RUN                  5
 OPTIMIZATION                    LBFGS
 OPTIPARAMLIST                   2 a
 TOMOGRAPHTYPE                   circle

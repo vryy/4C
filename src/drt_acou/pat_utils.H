@@ -46,15 +46,13 @@ class PATMonitorManager
 
   void GetMonitorPositions(std::vector<double>& positions){ positions = positions_; return; }
 
-  void SetCellIds(std::vector<int> cellidsin, std::vector<bool> rowelesin);
+  void SetCellIds(std::vector<int> cellidsin, std::vector<bool> rowelesin, double fullfacemeasure);
 
   std::vector<unsigned int> GetCellIds() { return cellids_; }
 
   void StoreForwardValues(const double time, const std::vector<double> values);
 
   double EvaluateError();
-
-  void Reset();
 
   void WriteMonitorFileInvana(std::string filename);
 
@@ -71,6 +69,9 @@ class PATMonitorManager
 
   // number of microphones
   unsigned int nmics_;
+
+  // time step of acoustical solver
+  double dtacou_;
 
   // eps
   double eps_;
@@ -96,11 +97,6 @@ class PATMonitorManager
   // simulated values
   std::vector<double> simulatedvalues_;
 
-  // for interpolation to monitor times
-  std::vector<double> simulatedvalues_previous_;
-  double time_previous_;
-  int step_previous_;
-
   // tomograph type
   INPAR::ACOU::TomographType tomotype_;
 
@@ -109,6 +105,9 @@ class PATMonitorManager
 
   // consider impulse response or not
   bool consider_impulse_response_;
+
+  // size of entire measurement boundary
+  double fullfacemeasure_;
 };
 
 class PATSearchDirection
