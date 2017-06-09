@@ -172,8 +172,8 @@ void CONTACT::CoIntegratorNitsche::GPTS_forces(
       wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
       ws/=(ws+wm);
       wm=1.-ws;
-      pen/=ws*dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-      pet/=ws*dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      pen=ws*pen/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pen/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+      pet=ws*pet/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pet/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
       break;
     default: dserror("unknown Nitsche weighting"); break;
     }

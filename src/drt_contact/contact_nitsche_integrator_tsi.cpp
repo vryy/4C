@@ -195,8 +195,8 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
     wm=1./dynamic_cast<CONTACT::CoElement&>(sele).TraceHE();
     ws/=(ws+wm);
     wm=1.-ws;
-    pen/=ws*dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
-    pet/=ws*dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+    pen=ws*pen/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pen/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
+    pet=ws*pet/dynamic_cast<CONTACT::CoElement&>(sele).TraceHE()+wm*pet/dynamic_cast<CONTACT::CoElement&>(mele).TraceHE();
     break;
   default: dserror("unknown Nitsche weighting"); break;
   }
@@ -575,12 +575,12 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(
         ws_thermo=1./dynamic_cast<CONTACT::CoElement&>(mele).TraceHCond();
         ws_thermo/=(ws_thermo+wm_thermo);
         wm_thermo=1.-ws_thermo;
-        pen_thermo/=ws_thermo*dynamic_cast<CONTACT::CoElement&>(sele).TraceHCond()+wm_thermo*dynamic_cast<CONTACT::CoElement&>(mele).TraceHCond();
+        pen_thermo=ws_thermo*pen_thermo/dynamic_cast<CONTACT::CoElement&>(sele).TraceHCond()+wm_thermo*pen_thermo/dynamic_cast<CONTACT::CoElement&>(mele).TraceHCond();
         break;
       case INPAR::CONTACT::NitWgt_phyiscal:
         ws_thermo=1.-delta_c;
         wm_thermo=delta_c;
-        pen_thermo/=ws_thermo*dynamic_cast<CONTACT::CoElement&>(sele).TraceHCond()+wm_thermo*dynamic_cast<CONTACT::CoElement&>(mele).TraceHCond();
+        pen_thermo=ws_thermo*pen_thermo/dynamic_cast<CONTACT::CoElement&>(sele).TraceHCond()+wm_thermo*pen_thermo/dynamic_cast<CONTACT::CoElement&>(mele).TraceHCond();
         break;
       default: dserror("unknown Nitsche weighting"); break;
       }

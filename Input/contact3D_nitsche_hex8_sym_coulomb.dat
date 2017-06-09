@@ -52,8 +52,7 @@ STRATEGY                  Nitsche
 FRICTION                  Coulomb
 -------------------------------------------------------------MORTAR COUPLING
 ALGORITHM                 gpts
-NUMGP_PER_DIM             1
-TRIANGULATION             center
+NUMGP_PER_DIM             7
 SEARCH_PARAM              0.3
 LM_DUAL_CONSISTENT        none
 PARALLEL_REDIST           dynamic
@@ -722,9 +721,9 @@ NODE       350 COORD  4.0000000000000000e+00  4.0000000000000000e+00  0.00000000
 ---------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 335 QUANTITY dispx VALUE 1.93098084300862127e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 335 QUANTITY dispy VALUE -4.71034771319874951e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 335 QUANTITY dispz VALUE -5.99318974379038361e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 335 QUANTITY dispx VALUE 1.91125126906242393e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 335 QUANTITY dispy VALUE -5.00950315000512555e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 335 QUANTITY dispz VALUE -5.79982755653151938e-01 TOLERANCE 1e-10
 ---------------------------------------------------------------END
 // END
    65 SOLIDH8 HEX8  101 102 103 104 126 127 128 129    MAT 1 KINEM nonlinear EAS none
