@@ -4,8 +4,10 @@
 
 \brief Provide time adaptivity functionalities within the Monolithic class
 
+\level 3
+
 <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
 </pre>
@@ -727,7 +729,9 @@ void FSI::Monolithic::SetDt(const double dtnew)
   AleField()->SetDt(dtnew);
 
   // FSI algorithm
-  dt_->SetStep(1, Dt()); // save step size of previous run of this time step for ResetTime()
+  if (IsAdaStructure() or IsAdaFluid() or IsAdaSolver())
+    dt_->SetStep(1, Dt()); // save step size of previous run of this time step for ResetTime()
+
   ADAPTER::AlgorithmBase::SetDt(dtnew);
 
   return;
