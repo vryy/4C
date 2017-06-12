@@ -187,6 +187,8 @@ void FluidFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("idispnfull", "ale_idisp", dofbased, field->problem()->num_dim());
   writer_->WriteResult("traction", "traction", dofbased, field->problem()->num_dim());
   writer_->WriteResult("wss", "wss", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("wss_mean", "wss_mean", dofbased, field->problem()->num_dim());
+
   // for xwall
   writer_->WriteResult("xwall_enrvelnp", "xwall_enrvelnp", dofbased, field->problem()->num_dim());
   writer_->WriteResult("xwall_tauw", "xwall_tauw", nodebased, 1);

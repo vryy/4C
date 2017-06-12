@@ -88,13 +88,6 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
   //set mean values in scatra fields
   LargeTimeScaleSetFSISolution();
 
-  //----------------------------------------------------------------------
-  // recalculate fluid scatra contributions due to changes time step size
-  // and the using of mean wss and mean phi for the fluid scatra field
-  //----------------------------------------------------------------------
-  EvaluateithScatraSurfacePermeability(0);
-
-
   // set back large time scale flags
   fsineedsupdate_=false;
   growth_updates_counter_ = 0;
@@ -107,7 +100,7 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
 /*----------------------------------------------------------------------*
  |  Set mean wall shear stresses in scatra fields            Thon 11/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::SetMeanWallShearStresses()
+void FS3I::ACFSI::SetMeanWallShearStresses() const
 {
   std::vector<Teuchos::RCP<const Epetra_Vector> > wss;
 
@@ -212,7 +205,6 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
   double tmp = fmod(time_,dt_large_);
   tmp = tmp-fmod(tmp,10.0*fsiperiod_)+10.0*fsiperiod_;
   time_= tmp;
-  step_ = round(step_-fmod(step_,1000.0)+1000.0);
 
   SetTimeAndStepInFSI(time_,step_);
   scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
@@ -273,6 +265,10 @@ bool FS3I::ACFSI::LargeTimeScaleLoopNotFinished()
  *----------------------------------------------------------------------*/
 void FS3I::ACFSI::LargeTimeScalePrepareTimeStep()
 {
+  //Set large time scale time step in both scatra fields
+  scatravec_[0]->ScaTraField()->SetDt( dt_large_ );
+  scatravec_[1]->ScaTraField()->SetDt( dt_large_ );
+
   //Increment time and step
   step_ += 1;
   time_ += dt_large_;
@@ -349,6 +345,12 @@ void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
   // calculate contributions due to finite interface permeability
   //----------------------------------------------------------------------
   EvaluateithScatraSurfacePermeability(1);
+
+  //----------------------------------------------------------------------
+  // recalculate fluid scatra contributions due to possible changed time step size
+  // and the using of mean wss and mean phi for the fluid scatra field
+  //----------------------------------------------------------------------
+  EvaluateithScatraSurfacePermeability(0);
 
   //----------------------------------------------------------------------
   // add coupling to the resiudal
@@ -442,7 +444,7 @@ bool FS3I::ACFSI::StructScatraConvergenceCheck(const int itnum)
       printf("+---------------------------------------------------------------+\n");
     }
     // yes, we stop!
-    dserror("Structure scatra not converged in itemax steps!");
+//    dserror("Structure scatra not converged in itemax steps!");
     return true;
   }
   else
@@ -611,6 +613,8 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   //----------------------------------------------------------------------
   // Fix time_ and step_ counters
   //----------------------------------------------------------------------
+  //time_+=dt_;
+
   SetTimeAndStepInFSI(time_-dt_,step_-1);
   fluidscatra->SetTimeStep(time_-dt_,step_-1);
   structurescatra->SetTimeStep(time_-dt_,step_-1);
@@ -635,6 +639,8 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   //----------------------------------------------------------------------
   // do the growth update
   //----------------------------------------------------------------------
+  //Safety check:
+  CheckIfTimesAndStepsAndDtsMatch();
 
   //the actual calculations
   LargeTimeScaleOuterLoopIterStagg();
@@ -661,11 +667,6 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
 
   //set mean values in scatra fields
   LargeTimeScaleSetFSISolution();
-
-  //----------------------------------------------------------------------
-  // recalculate fluid scatra contributions due to finite interface permeability
-  //----------------------------------------------------------------------
-  EvaluateithScatraSurfacePermeability(0);
 
   //----------------------------------------------------------------------
   // higher growth counter

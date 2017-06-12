@@ -40,6 +40,9 @@
 #include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 
+//FOR WSS CALCULATIONS
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_structure/stru_aux.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               Thon 12/14 |
@@ -183,20 +186,38 @@ void FS3I::ACFSI::ReadRestart()
       fsiisperiodic_ = (bool)fluidreader.ReadInt("fsi_periodic_flag");
       scatraisperiodic_ = (bool)fluidreader.ReadInt("scatra_periodic_flag");
 
-      //reconstruct WallShearStress_lp_
-      const int beginnperiodstep = GetStepOfBeginnOfThisPeriodAndPrepareReading(fsi_->FluidField()->Step(),fsi_->FluidField()->Time(),fsi_->FluidField()->Dt());
-      IO::DiscretizationReader fluidreaderbeginnperiod = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),beginnperiodstep);
+      fluidreader.ReadVector(WallShearStress_lp_, "wss_mean");
 
-      fluidreaderbeginnperiod.ReadVector(WallShearStress_lp_, "SumWss");
-      const double SumDtWss = fluidreaderbeginnperiod.ReadDouble("SumDtWss");
-      if ( abs(SumDtWss - fsiperiod_) > 1e-14 )
-        dserror("SumWss and SumDtWss must be read from a step, which was written at the end of a fsi period!");
+      if (not (fsiisperiodic_ and scatraisperiodic_)) //restart while in a small time scale loop
+      {
+        //reconstruct WallShearStress_lp_
+        const int beginnperiodstep = GetStepOfBeginnOfThisPeriodAndPrepareReading(fsi_->FluidField()->Step(),fsi_->FluidField()->Time(),fsi_->FluidField()->Dt());
+        IO::DiscretizationReader fluidreaderbeginnperiod = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),beginnperiodstep);
 
-      WallShearStress_lp_->Scale(1/SumDtWss);
+        //some safety check:
+        Teuchos::RCP<Epetra_Vector> WallShearStress_lp_new = LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0),true);
 
-      //reconstruct fluidphinp_lp_
-      fluidreaderbeginnperiod.ReadVector(fluidphinp_lp_, "SumPhi");
-      fluidphinp_lp_->Scale(1/SumDtWss);
+        fluidreaderbeginnperiod.ReadVector(WallShearStress_lp_new, "SumWss");
+        const double SumDtWss = fluidreaderbeginnperiod.ReadDouble("SumDtWss");
+        if ( abs(SumDtWss - fsiperiod_) > 1e-14 )
+          dserror("SumWss and SumDtWss must be read from a step, which was written at the end of a fsi period!");
+
+        WallShearStress_lp_new->Scale(1/SumDtWss);
+        WallShearStress_lp_new->Update(1.0,*WallShearStress_lp_,-1.0);
+        double diff_norm(0.0);
+        WallShearStress_lp_new->Norm2(&diff_norm);
+        if (diff_norm>1e-10)
+          dserror("WallShearStress_lp_ is not written/read correctly!");
+
+        //reconstruct fluidphinp_lp_
+        fluidreaderbeginnperiod.ReadVector(fluidphinp_lp_, "SumPhi");
+        fluidphinp_lp_->Scale(1/SumDtWss);
+      }
+      else //restart while in a large time scale loop
+      {
+
+      }
+
     }
     else //we do not want to read the scatras values and the lagrange multiplyer, since we start from a partitioned FSI
     {
@@ -404,7 +425,7 @@ void FS3I::ACFSI::DoFSIStep()
     if (fsiperssisteps == 1) //no subcycling
     {
       // this is the normal case, here we also check before
-      CheckifTimesAndStepsAndDtsMatch();
+      CheckIfTimesAndStepsAndDtsMatch();
 
       DoFSIStepStandard();
     }
@@ -420,7 +441,7 @@ void FS3I::ACFSI::DoFSIStep()
 
   //just for safety reasons we check if all marching quantities match
   //NOTE: we do this after the actual solving since in case of subcycling the may differ in between
-  CheckifTimesAndStepsAndDtsMatch();
+  CheckIfTimesAndStepsAndDtsMatch();
 }
 
 void FS3I::ACFSI::IsSmallTimeScalePeriodic()
@@ -499,6 +520,18 @@ void FS3I::ACFSI::IsFsiPeriodic()
   }
 
   return;
+}
+
+///*----------------------------------------------------------------------*
+// |  Extract wall shear stresses                              Thon 11/14 |
+// *----------------------------------------------------------------------*/
+void FS3I::ACFSI::SetWallShearStresses( ) const
+{
+  //set current WSS
+  PartFS3I::SetWallShearStresses();
+
+  //Set MeanWSS
+  //SetMeanWallShearStresses();
 }
 
 /*----------------------------------------------------------------------*
@@ -853,6 +886,7 @@ void FS3I::ACFSI::FsiOutput()
 
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
   const int uprestart = fs3idyn.get<int>("RESTARTEVRY");
+  const int upresults = fs3idyn.get<int>("RESULTSEVRY");
 
   //    /* Note: The order is important here! In here control file entries are
   //     * written. And these entries define the order in which the filters handle
@@ -868,11 +902,18 @@ void FS3I::ACFSI::FsiOutput()
   fsi_->FluidField()->Output();
   if (coupling == fsi_iter_monolithicfluidsplit)
     fsi_->OutputLambda();
-  //AC specific fluid output iff it is a restart step or we are at the end of a fsi circle
-  if ((uprestart != 0 && step_ % uprestart == 0) or ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
+
+  if ( (step_ % upresults == 0) or (uprestart != 0 && step_ % uprestart == 0) or ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
   {
     Teuchos::RCP<IO::DiscretizationWriter> fluiddiskwriter = fsi_->FluidField()->DiscWriter();
-//    fluiddiskwriter->WriteVector("wss", WallShearStress_lp_);
+    fluiddiskwriter->WriteVector("wss_mean", WallShearStress_lp_);
+  }
+  //AC specific fluid output iff it is a restart step or we are at the end of a fsi circle
+  if ( (uprestart != 0 && step_ % uprestart == 0) or ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
+  {
+    Teuchos::RCP<IO::DiscretizationWriter> fluiddiskwriter = fsi_->FluidField()->DiscWriter();
+
+    //fluiddiskwriter->WriteVector("wss", fsi_->FluidField()->CalculateWallShearStresses());
     meanmanager_->WriteRestart(fluiddiskwriter);
 
     fluiddiskwriter->WriteInt("fsi_periodic_flag",(int)fsiisperiodic_);
@@ -1033,7 +1074,7 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck( const int itnum)
                    "           OUTER ITERATION STEP NOT CONVERGED IN ITEMAX STEPS"
                  "\n************************************************************************\n"<<std::endl;
     }
-    dserror("The partitioned FS3I solver did not converge in ITEMAX steps!");
+//    dserror("The partitioned FS3I solver did not converge in ITEMAX steps!");
   }
 
   return stopnonliniter;
@@ -1042,10 +1083,10 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck( const int itnum)
 /*----------------------------------------------------------------------*
  | Compare if two doubles are relatively equal               Thon 08/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::CheckifTimesAndStepsAndDtsMatch()
+void FS3I::ACFSI::CheckIfTimesAndStepsAndDtsMatch()
 {
-  // NOTE: this check should pass each time after all PrepareTimeStep() has been called,
-  // i.e. direclty before a actuall computation beginns. I wish you luck :-)
+  // NOTE: this check should pass each time after all PrepareTimeStep() have been called,
+  // i.e. directly before a actual computation begins. I wish you luck :-)
 
   //check times
   const double fluidtime = fsi_->FluidField()->Time();

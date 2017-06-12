@@ -86,7 +86,7 @@ namespace FS3I
     virtual void Timeloop() = 0;
 
     //! flag whether time loop should be finished
-    bool NotFinished() { return ((step_ < numstep_) and ((time_+1e-14) < timemax_)); };
+    bool NotFinished() const { return ((step_ < numstep_) and ((time_+1e-14) < timemax_)); };
 
     //! read and set fields needed for restart
     virtual void ReadRestart();
@@ -130,11 +130,11 @@ namespace FS3I
 
     void SetMeshDisp() const;
 
-    ///provide wall shear stresses from FPSI subproblem for scatra subproblem
-    void SetWallShearStresses() const;
+    ///provide wall shear stresses from FS3I subproblem for scatra subproblem
+    virtual void SetWallShearStresses() const;
 
     /// extract Wall Shear Stresses at the interface
-    virtual void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss) const;
+    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss) const;
 
     Teuchos::ParameterList& ManipulateFsiTimeParams(const Teuchos::ParameterList& fs3idyn) const;
 

@@ -104,6 +104,9 @@ namespace FS3I
     ///Decide if fsi problem is already periodic
     void IsFsiPeriodic();
 
+    ///provide wall shear stresses from FS3I subproblem for scatra subproblem
+    void SetWallShearStresses() const;
+
     ///Decide if fluid scatra problem is periodic
     void IsScatraPeriodic();
 
@@ -154,7 +157,7 @@ namespace FS3I
     void PrepareLargeTimeScaleLoop();
 
     ///Set mean wall shear stresses in scatra fields
-    void SetMeanWallShearStresses();
+    void SetMeanWallShearStresses() const;
 
     ///Set mean concentration of the fluid scatra field
     void SetMeanFluidScatraConcentration();
@@ -210,7 +213,7 @@ namespace FS3I
     std::vector<Teuchos::RCP<LINALG::MapExtractor> > BuildMapExtractor();
 
     /// optional safety check for times and dt's of all fields
-    void CheckifTimesAndStepsAndDtsMatch();
+    void CheckIfTimesAndStepsAndDtsMatch();
 
     ///Compare if two doubles are relatively zero
     bool IsRealtiveEqualTo(
