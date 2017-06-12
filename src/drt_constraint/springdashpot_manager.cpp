@@ -19,6 +19,8 @@
 #include "springdashpot.H"
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_inpar/inpar_structure.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 UTILS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis):
 actdisc_(dis),
@@ -115,8 +117,9 @@ void UTILS::SpringDashpotManager::Output(
     output->WriteVector("curnormals", normals);
   }
 
-  // always write spring stress
-  output->WriteVector("springstress", springstress);
+  // write spring stress if defined in io-flag
+  if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(),"OUTPUT_SPRING") == true)
+    output->WriteVector("springstress", springstress);
 
   return;
 }

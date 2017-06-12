@@ -21,12 +21,15 @@
 #include <Epetra_Time.h>
 #include <Teuchos_ParameterList.hpp>
 
+#include "../drt_inpar/inpar_structure.H"
+
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io.H"
 
@@ -348,8 +351,9 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
     iowriter.WriteVector("curnormals", normals);
   }
 
-  // always write spring stress
-  iowriter.WriteVector("springstress", springstress);
+  // write spring stress if defined in io-flag
+  if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(),"OUTPUT_SPRING") == true)
+    iowriter.WriteVector("springstress", springstress);
 
   return;
 }

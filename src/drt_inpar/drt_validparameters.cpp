@@ -484,6 +484,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("OUTPUT_GMSH","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("OUTPUT_ROT","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("OUTPUT_SPRING","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("OUTPUT_BIN","yes","Do you want to have binary output?",yesnotuple,yesnovalue,&io);
 
   // Output every iteration (for debugging purposes)
