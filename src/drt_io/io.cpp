@@ -1341,7 +1341,6 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
     // elements and boundary elements become visible in post processing
     if ((int)elerowmap->NumMyElements() >= 1)
     {
-
       if(dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(0)) != NULL)
       { // if dynamic cast is successful write those data
         for (int i=0; i<elerowmap->NumMyElements(); ++i)
@@ -1359,7 +1358,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
             poroimmersedele->VisIsImmersedFirstRow(names);
         }
       }
-    }
+    } // end immersed method specific output
 
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {

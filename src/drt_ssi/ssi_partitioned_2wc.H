@@ -96,6 +96,9 @@ namespace SSI
     //! perform iteration loop between fields
     virtual void OuterLoop();
 
+    //! prepare time loop
+    virtual void PrepareTimeLoop();
+
     //! prepare time step for single fields
     virtual void PrepareTimeStep(bool printheader = true);
 

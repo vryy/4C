@@ -153,7 +153,8 @@ int SSI::SSI_Base::Init(
     {
       if (comm.MyPID()==0)
         std::cout<<"\n"<<
-        " USING OLD STRUCTURAL TIME INTEGRATION! FIX THIS! THIS IS ONLY SUPPOSED TO BE TEMPORARY!"
+        " USING OLD STRUCTURAL TIME INTEGRATION FOR STRUCTURE-SCATRA-INTERACTION!\n"
+        " FIX THIS! THIS IS ONLY SUPPOSED TO BE TEMPORARY!"
         "\n"<<std::endl;
 
       use_old_structure_ = true;
@@ -175,17 +176,18 @@ int SSI::SSI_Base::Init(
   // create scatra field
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
+  // do discretization specific setup (e.g. clone discr. scatra from structure)
+  InitDiscretizations(comm,struct_disname,scatra_disname);
+
   // initialize scatra base algorithm.
   // scatra time integrator constructed and initialized inside.
+  // mesh is writen inside. cloning must happen before!
   scatra_->Init(
       *scatratimeparams,
       scatraparams,
       problem->SolverParams(linsolvernumber),
       scatra_disname,
       isAle);
-
-  // do discretization specific setup
-  InitDiscretizations(comm,struct_disname,scatra_disname);
 
   int redistribute = InitFieldCoupling(comm,struct_disname,scatra_disname);
 

@@ -108,6 +108,8 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // context for output and restart
   // -------------------------------------------------------------------
   Teuchos::RCP<IO::DiscretizationWriter> output = discret->Writer();
+  if(discret->NumGlobalElements() == 0)
+    dserror("No elements in discretization %s",discret->Name().c_str());
   output->WriteMesh(0,0.0);
 
   // -------------------------------------------------------------------

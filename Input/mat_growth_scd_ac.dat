@@ -8,50 +8,34 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------------TITLE
 
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
 DIM                             3
 MATERIALS                       2
 NUMDF                           6
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1
 NUMARTNETDIS                    1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
---------------------------------------------------------------------------IO
-FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
+----------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_STRAIN                   No
 STRUCT_STRESS                   Cauchy
-STRUCT_SURFACTANT               No
-THERM_HEATFLUX                  None
-THERM_TEMPERATURE               No
-THERM_TEMPGRAD                  None
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
 RESTART                         0
-SHAPEFCT                        Polynomial
--------------------------------------------SCALAR TRANSPORT DYNAMIC
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-CALCERROR                       No
+------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CONVFORM                        conservative //convective
-CONV_HEAT_TRANS                 no
-FSSUGRDIFF                      No
 GAMMA                           0.5
 INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 LINEAR_SOLVER                   1
-MATID                           -1
 MAXTIME                         1000
 MESHTYING                       no
 NEUMANNINFLOW                   no
@@ -63,18 +47,16 @@ SOLVERTYPE                      nonlinear
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
-RESULTSEVRY                           1
-VELFUNCNO                       -1
+RESULTSEVRY                     1
 VELOCITYFIELD                   Navier_Stokes
-WRITEFLUX_IDS                   -1
----------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-10
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-06
 EXPLPREDICT                     no
 ITEMAX                          10
------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
@@ -83,30 +65,18 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 STABTYPE                        SUPG
 SUGRVEL                         no
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta //Statics
 MASSLIN                         Standard
 ITERNORM                        L2
-K_DAMP                          0.5
-LOADLIN                         no
 MAXITER                         100
 MAXTIME                         100.0
 MINITER                         0
-M_DAMP                          0.25
-NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         50
 PREDICT                         ConstDis
@@ -114,68 +84,29 @@ RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     10
 TIMESTEP                        0.1
-TOLCONSTR                       1e-09
 TOLDISP                         1e-09
-TOLINCO                         1e-09
-TOLPRE                          1e-09
 TOLRES                          1e-09
-UZAWAALGO                       uzawa
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
------------------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.666666
---------------------------------------------------------SSI CONTROL
+-------------------------------------------------------------SSI CONTROL
 COUPALGO                        ssi_IterStagg
 ITEMAX                          30
 MAXTIME                         100.0
 NUMSTEP                         3
 RESTARTEVRY                     1
 TIMESTEP                        0.05
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 SCATRATYPE                      Advanced_Reaction
---------------------------------------------------------SSI CONTROL/PARTITIONED
+FIELDCOUPLING                   volume_matching
+-------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e-08
 STARTOMEGA                      0.9
 MAXOMEGA                        1.2
 MINOMEGA                        0.7
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-AZDROP                          0
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-AZPOLY                          3
-AZPREC                          ILU
-AZREUSE                         0
-AZSCAL                          none
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-DWINDTAU                        1.5
-IFPACKFILL                      1.0
-IFPACKGFILL                     0
-IFPACKOVERLAP                   0
-IFPACKCOMBINE                   Add                           // Add Insert Zero
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------------MATERIALS
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 100.0
 
 MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3

@@ -125,11 +125,7 @@ void SSI::SSI_Part2WC::Timeloop()
   CheckIsInit();
   CheckIsSetup();
 
-  //initial output
-  structure_-> PrepareOutput();
-  structure_-> Output();
-  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
-  scatra_->ScaTraField()->Output();
+  PrepareTimeLoop();
 
   //time loop
   while (NotFinished())
@@ -179,6 +175,19 @@ void SSI::SSI_Part2WC::DoScatraStep()
 
   // set structure-based scalar transport values
   return SetScatraSolution(scatra_->ScaTraField()->Phinp());
+}
+
+/*----------------------------------------------------------------------*/
+//prepare time step
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC::PrepareTimeLoop()
+{
+  // initial output
+  structure_-> PrepareOutput();
+  structure_-> Output();
+  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
+  scatra_->ScaTraField()->PrepareTimeLoop();
+
 }
 
 /*----------------------------------------------------------------------*/
