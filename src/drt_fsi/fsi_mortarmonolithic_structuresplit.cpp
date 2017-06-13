@@ -305,7 +305,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
 //
 //      //mortar business still has to be done here..
 //
-//      lambda_ = FluidToStruct(lambdafluid);
+//      lambdaold_ = FluidToStruct(lambdafluid);
     }
   }
 }
@@ -411,7 +411,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicStructureSplit::SetupRHSLambda(Epetra_Vector& f)
 {
-  if (lambda_ != Teuchos::null)
+  if (lambdaold_ != Teuchos::null)
   {
     // get time integration parameters of structure and fluid time integrators
     // to enable consistent time integration among the fields
@@ -426,7 +426,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHSLambda(Epetra_Vector& f)
 
     // project Lagrange multiplier field onto the master interface DOFs and consider temporal scaling
     Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(mortarm->DomainMap(), true));
-    mortarm->Multiply(true, *lambda_, *lambda);
+    mortarm->Multiply(true, *lambdaold_, *lambda);
     Teuchos::RCP<Epetra_Vector> lambdafull = FluidField()->Interface()->InsertFSICondVector(lambda);
     lambdafull->Scale((-ftiparam + (stiparam * (1.0 - ftiparam)) / (1.0 - stiparam)) / fluidscale);
 
@@ -884,6 +884,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicStructureSplit::Update()
 {
+  lambdaold_->Update(1.0, *lambda_, 0.0);
 
   // update history variables for sliding ale
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
@@ -913,7 +914,7 @@ void FSI::MortarMonolithicStructureSplit::Update()
   }
 
   // call Update()-routine in base class to handle the single fields
-  FSI::MonolithicBase::Update();
+  FSI::BlockMonolithic::Update();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1462,6 +1463,8 @@ void FSI::MortarMonolithicStructureSplit::ReadRestart(int step)
     Teuchos::RCP<Epetra_Vector> lambdafull = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
     reader.ReadVector(lambdafull, "fsilambda");
+    lambdaold_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
+    //Note: the above is normally enough. However, we can use the restart in order to periodically repeat the fsi simulation (see AC-FS3I)
     lambda_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
   }
 
@@ -1551,7 +1554,7 @@ void FSI::MortarMonolithicStructureSplit::RecoverLagrangeMultiplier()
    */
 
   // ---------Addressing term (1)
-  lambda_->Scale(-stiparam);
+  lambda_->Update(-stiparam,*lambdaold_,0.0);
   // ---------End of term (1)
 
   // ---------Addressing term (3)

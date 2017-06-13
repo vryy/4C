@@ -303,7 +303,7 @@ void FSI::MonolithicFluidSplit::SetupRHSResidual(Epetra_Vector& f)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::SetupRHSLambda(Epetra_Vector& f)
 {
-  if (lambda_ != Teuchos::null)
+  if (lambdaold_ != Teuchos::null)
   {
     // get time integration parameters of structure and fluid time integrators
     // to enable consistent time integration among the fields
@@ -311,7 +311,7 @@ void FSI::MonolithicFluidSplit::SetupRHSLambda(Epetra_Vector& f)
     const double ftiparam = FluidField()->TimIntParam();
 
     // project Lagrange multiplier field onto the master interface DOFs and consider temporal scaling
-    Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(lambda_));
+    Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(lambdaold_));
     lambdafull->Scale(stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam));
 
     // add Lagrange multiplier
@@ -1309,6 +1309,15 @@ void FSI::MonolithicFluidSplit::OutputLambda()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void FSI::MonolithicFluidSplit::Update()
+{
+  lambdaold_->Update(1.0, *lambda_, 0.0);
+
+  FSI::BlockMonolithic::Update();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FSI::MonolithicFluidSplit::ReadRestart(int step)
 {
   StructureField()->ReadRestart(step);
@@ -1319,6 +1328,8 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
     Teuchos::RCP<Epetra_Vector> lambdafull = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(),true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(FluidField()->Discretization(),step);
     reader.ReadVector(lambdafull, "fsilambda");
+    lambdaold_ = FluidField()->Interface()->ExtractFSICondVector(lambdafull);
+    //Note: the above is normally enough. However, we can use the restart in order to periodically repeat the fsi simulation (see AC-FS3I)
     lambda_ = FluidField()->Interface()->ExtractFSICondVector(lambdafull);
   }
 
@@ -1360,9 +1371,6 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   // some scaling factors for fluid
   const double timescale  = FluidField()->TimeScaling();
   const double scale      = FluidField()->ResidualScaling();
-
-  // get fluid shape derivative matrix
-  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
 
   // some often re-used vectors
   Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::null;     // stores intermediate result of terms (3)-(8)
@@ -1408,7 +1416,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
    */
 
   // ---------Addressing term (1)
-  lambda_->Update(ftiparam,*lambda_,0.0);
+  lambda_->Update(ftiparam,*lambdaold_,0.0);
   // ---------End of term (1)
 
   // ---------Addressing term (3)

@@ -827,7 +827,7 @@ FSI::LungMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 void FSI::LungMonolithic::Update()
 {
-  FSI::MonolithicBase::Update();
+  FSI::BlockMonolithic::Update();
 
   // update fluid flow rates and structure volumes and lagrange multipliers
   OldVols_->Update(1.0, *CurrVols_, 0.0);

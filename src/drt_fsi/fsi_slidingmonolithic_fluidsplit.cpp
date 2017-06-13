@@ -413,7 +413,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupRHSResidual(Epetra_Vector& f)
 /*----------------------------------------------------------------------------*/
 void FSI::SlidingMonolithicFluidSplit::SetupRHSLambda(Epetra_Vector& f)
 {
-  if (lambda_ != Teuchos::null)
+  if (lambdaold_ != Teuchos::null)
   {
     // get time integration parameters of structure and fluid time integrators
     // to enable consistent time integration among the fields
@@ -427,7 +427,7 @@ void FSI::SlidingMonolithicFluidSplit::SetupRHSLambda(Epetra_Vector& f)
      * consider temporal scaling */
     Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(
         new Epetra_Vector(mortarm->DomainMap(), true));
-    mortarm->Multiply(true, *lambda_, *lambda);
+    mortarm->Multiply(true, *lambdaold_, *lambda);
     Teuchos::RCP<Epetra_Vector> lambdafull =
         StructureField()->Interface()->InsertFSICondVector(lambda);
     lambdafull->Scale(
@@ -1507,6 +1507,7 @@ void FSI::SlidingMonolithicFluidSplit::ExtractFieldVectors(
 /*----------------------------------------------------------------------------*/
 void FSI::SlidingMonolithicFluidSplit::Update()
 {
+  lambdaold_->Update(1.0, *lambda_, 0.0);
 
   // update history variabels for sliding ale
   if (aleproj_ != INPAR::FSI::ALEprojection_none)
@@ -1538,7 +1539,7 @@ void FSI::SlidingMonolithicFluidSplit::Update()
   }
 
   // call Update()-routine in base class to handle the single fields
-  FSI::MonolithicBase::Update();
+  FSI::BlockMonolithic::Update();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1605,6 +1606,8 @@ void FSI::SlidingMonolithicFluidSplit::ReadRestart(int step)
     IO::DiscretizationReader reader = IO::DiscretizationReader(
         FluidField()->Discretization(), step);
     reader.ReadVector(lambdafull, "fsilambda");
+    lambdaold_ = FluidField()->Interface()->ExtractFSICondVector(lambdafull);
+    //Note: the above is normally enough. However, we can use the restart in order to periodically repeat the fsi simulation (see AC-FS3I)
     lambda_ = FluidField()->Interface()->ExtractFSICondVector(lambdafull);
   }
 
@@ -1652,9 +1655,6 @@ void FSI::SlidingMonolithicFluidSplit::PrepareTimeStep()
 /*----------------------------------------------------------------------------*/
 void FSI::SlidingMonolithicFluidSplit::RecoverLagrangeMultiplier()
 {
-  // store previous Lagrange multiplier for calculation of interface energy
-  lambdaold_->Update(1.0, *lambda_, 0.0);
-
   // get time integration parameter of fluid time integrator
   // to enable consistent time integration among the fields
   const double ftiparam = FluidField()->TimIntParam();
@@ -1729,7 +1729,7 @@ void FSI::SlidingMonolithicFluidSplit::RecoverLagrangeMultiplier()
    */
 
   // ---------Addressing term (1)
-  lambda_->Scale(ftiparam);
+  lambda_->Update(ftiparam,*lambdaold_,0.0);
   // ---------End of term (1)
 
   // ---------Addressing term (3)

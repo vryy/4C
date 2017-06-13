@@ -3,8 +3,9 @@
 \file fsi_lungmonolithic.H
 \brief Volume-coupled FSI (base class)
 
+\level 3
 <pre>
-Maintainer: Lena Yoshihara
+\maintainer Lena Yoshihara
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -101,9 +102,6 @@ namespace FSI
     ADAPTER::Coupling& StructureAleOutflowCoupling() { return *coupsaout_; }
 
     virtual void ReadRestart(int step);
-
-    /// recover Lagrange multiplier at the interface needed for rhs in next time step
-    virtual void RecoverLagrangeMultiplier(){};
 
     //! @name Time Adaptivity
     //@{

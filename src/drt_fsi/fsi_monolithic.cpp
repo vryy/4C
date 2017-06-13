@@ -197,27 +197,6 @@ void FSI::MonolithicBase::PrepareTimeStepFields()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MonolithicBase::Update()
-{
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
-  bool timeadapton = DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
-
-  if (not timeadapton)
-    StructureField()->Update(); // constant dt
-  else
-  {
-    StructureField()->Update(Time()); // variable/adaptive dt
-
-    if (IsAdaStructure())
-      Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->UpdateStepSize(Dt());
-  }
-
-  FluidField()->Update();
-  AleField()->Update();
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::PrepareOutput()
 {
   StructureField()->PrepareOutput();
@@ -744,6 +723,27 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   NonLinErrorCheck();
 
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void FSI::Monolithic::Update()
+{
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  bool timeadapton = DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
+
+  if (not timeadapton)
+    StructureField()->Update(); // constant dt
+  else
+  {
+    StructureField()->Update(Time()); // variable/adaptive dt
+
+    if (IsAdaStructure())
+      Teuchos::rcp_dynamic_cast<ADAPTER::StructureFSITimIntAda>(StructureField(), true)->UpdateStepSize(Dt());
+  }
+
+  FluidField()->Update();
+  AleField()->Update();
 }
 
 /*----------------------------------------------------------------------------*/

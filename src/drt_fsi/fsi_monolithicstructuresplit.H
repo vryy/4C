@@ -133,6 +133,9 @@ namespace FSI
     /// Write Lagrange multiplier
     virtual void OutputLambda();
 
+    //! take current results for converged and save for next time step
+    virtual void Update();
+
     /// read restart data
     virtual void ReadRestart(int step);
 

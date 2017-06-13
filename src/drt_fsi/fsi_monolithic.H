@@ -133,7 +133,7 @@ namespace FSI
     virtual void PrepareTimeStep();
 
     /// take current results for converged and save for next time step
-    virtual void Update();
+    virtual void Update() = 0;
 
     /// calculate stresses, strains, energies
     virtual void PrepareOutput();
@@ -316,6 +316,9 @@ namespace FSI
     //!
     //! return error code that indicates whether the nonlinear solver converged or not
     virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+
+    //! take current results for converged and save for next time step
+    virtual void Update();
 
     //@}
 
