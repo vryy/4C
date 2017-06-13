@@ -41,6 +41,7 @@ void poromultiphasescatra_dyn(int restart)
   // print problem type
   if (comm.MyPID() == 0)
   {
+    POROMULTIPHASESCATRA::PrintLogo();
     std::cout << "###################################################"
         << std::endl;
     std::cout << "# YOUR PROBLEM TYPE: "
@@ -112,6 +113,9 @@ void poromultiphasescatra_dyn(int restart)
   // note: to be done after potential restart, as in ReadRestart()
   //       the secondary material is destroyed
   POROMULTIPHASESCATRA::UTILS::AssignMaterialPointers(struct_disname,fluid_disname,scatra_disname);
+
+  // Setup Solver (necessary if poro-structure coupling solved monolithically)
+  algo->SetupSolver();
 
   //Run of the actual problem.
 

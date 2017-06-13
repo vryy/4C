@@ -154,6 +154,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSystem()
 }
 
 /*----------------------------------------------------------------------*
+ | setup the solver if necessary                        kremheller 03/17 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::SetupSolver()
+{
+  poromulti_->SetupSolver();
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | update fields and output results                         vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::UpdateAndOutput()
@@ -175,7 +184,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Solve()
 
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+    std::cout<<"\n";
+    std::cout<<"********************************************************************************" <<
+        "***************************************************************\n";
+    std::cout<<"* PARTITIONED OUTER ITERATION LOOP ----- MULTIPORO  <-------> SCATRA         " <<
+        "                                                                 *\n";
+    std::cout<<"* STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step() << "/"
+        << std::setw(5) << std::setprecision(4) << std::scientific << NStep() << ", Time: "
+        << std::setw(11) << std::setprecision(4) << std::scientific << Time() << "/"
+        << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime() << ", Dt: "
+        << std::setw(11) << std::setprecision(4) << std::scientific << Dt() <<
+        "                                                                           *"<< std::endl;
   }
 
   while (stopnonliniter==false)
@@ -214,11 +233,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Solve()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoPoroStep()
 {
-  if (Comm().MyPID() == 0)
-  {
-    std::cout
-        << "\n***********************\n POROUS MEDIUM SOLVER \n***********************\n";
-  }
 
   // Newton-Raphson iteration
   poromulti_-> TimeStep();
@@ -231,8 +245,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::DoScatraStep()
 {
   if (Comm().MyPID() == 0)
   {
-    std::cout
-        << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
+    std::cout<<"\n";
+    std::cout<<"*****************************************************************************************************************\n";
+    std::cout<<"TRANSPORT SOLVER   \n";
+    std::cout<<"*****************************************************************************************************************\n";
+
   }
 
   // -------------------------------------------------------------------
@@ -286,16 +303,15 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
   // print the incremental based convergence check to the screen
   if (Comm().MyPID()==0 )
   {
-    std::cout<<"\n";
-    std::cout<<"***********************************************************************************\n";
-    std::cout<<"    OUTER ITERATION STEP    \n";
-    std::cout<<"***********************************************************************************\n";
-    printf("+--------------+------------------------+--------------------+--------------------+--------------------+\n");
-    printf("|-  step/max  -|-  tol      [norm]     -|--  scalar-inc      --|--  disp-inc      --|--  fluid-inc      --|\n");
+    std::cout<<"                                                                                                                                              *\n";
+    std::cout<<"+------------------------------------------------------------------------------------------------------+                                      *\n";
+    std::cout<<"| PARTITIONED OUTER ITERATION STEP ----- MULTIPORO  <-------> SCATRA                                   |                                      *\n";
+    printf("+--------------+------------------------+--------------------+--------------------+--------------------+                                      *\n");
+    printf("|-  step/max  -|-  tol      [norm]     -|--  scalar-inc    --|--  disp-inc      --|--  fluid-inc     --|                                      *\n");
     printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         | %10.3E         |",
          itnum,itmax_,ittol_,scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2,fluidincnorm_L2/fluidnorm_L2);
-    printf("\n");
-    printf("+--------------+------------------------+--------------------+--------------------+--------------------+\n");
+    printf("                                      *\n");
+    printf("+--------------+------------------------+--------------------+--------------------+--------------------+                                      *\n");
   }
 
   // converged
@@ -307,9 +323,8 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
     stopnonliniter = true;
     if (Comm().MyPID()==0 )
     {
-      printf("\n");
-      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax_);
-      printf("+--------------+------------------------+--------------------+--------------------+\n");
+      printf("* MULTIPORO  <-------> SCATRA Outer Iteration loop converged after iteration %3d/%3d !                                                        *\n", itnum,itmax_);
+      printf("***********************************************************************************************************************************************\n");
     }
   }
 
@@ -322,8 +337,8 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
     stopnonliniter = true;
     if ((Comm().MyPID()==0) )
     {
-      printf("|     >>>>>> not converged in itemax steps!                                       |\n");
-      printf("+--------------+------------------------+--------------------+--------------------+\n");
+      printf("* MULTIPORO  <-------> SCATRA Outer Iteration loop not converged in itemax steps                                                              *\n");
+      printf("***********************************************************************************************************************************************\n");
       printf("\n");
       printf("\n");
     }

@@ -45,18 +45,34 @@ void INPAR::POROMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLi
   // number of linear solver used for poroelasticity
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for poroelasticity problems",&poromultiphasedyn);
 
+  // here the computation of the structure can be skipped, this is helpful if only fluid-scatra coupling should be calculated
+  BoolParameter("SOLVE_STRUCTURE",
+      "yes","Flag to skip computation of structural field",&poromultiphasedyn);
+
 
   // Coupling strategy for solvers
   setStringToIntegralParameter<int>(
-                              "COUPALGO","twoway",
+                              "COUPALGO","twoway_partitioned",
                               "Coupling strategies for poro multiphase solvers",
                               tuple<std::string>(
-                                "twoway"
+                                "twoway_partitioned",
+                                "twoway_monolithic"
                                 ),
                               tuple<int>(
-                                  solscheme_twoway
+                                  solscheme_twoway_partitioned,
+                                  solscheme_twoway_monolithic
                                 ),
                               &poromultiphasedyn);
+
+  // parameters for finite difference check
+  setStringToIntegralParameter<int>("FDCHECK", "none", "flag for finite difference check: none or global",
+                                    tuple<std::string>(
+                                      "none",
+                                      "global"),  // perform finite difference check on time integrator level
+                                    tuple<int>(
+                                        fdcheck_none,
+                                        fdcheck_global),
+                                    &poromultiphasedyn);
 
 }
 

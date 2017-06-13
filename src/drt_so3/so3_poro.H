@@ -22,6 +22,7 @@ namespace MAT
 {
   class StructPoro;
   class FluidPoro;
+  class FluidPoroMultiPhase;
 }
 
 namespace DRT
@@ -385,6 +386,16 @@ protected:
       Teuchos::ParameterList&                 params        //< algorithmic parameters e.g. time
       );
 
+  //! Calculate nonlinear stiffness and internal force for poroelasticity problems (pressure based formulation)
+  void nlnstiff_poroelast_presbased(
+      std::vector<int>&                   lm,           ///< location matrix
+      LINALG::Matrix<numdim_, numnod_>&   disp,         //< current displacements
+      LINALG::Matrix<numnod_,1> &         epreaf,       //< fluid pressure of element
+      LINALG::Matrix<numdof_,numdof_>*    stiffmatrix,  //< element stiffness matrix
+      LINALG::Matrix<numdof_,1>*          force,        //< element internal force vector
+      Teuchos::ParameterList&             params        //< algorithmic parameters e.g. time
+      );
+
   //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
   void coupling_poroelast(
       std::vector<int>& lm, ///< location matrix
@@ -396,6 +407,15 @@ protected:
       LINALG::Matrix<numdof_,(numdim_+1)*numnod_>*    reamatrix,    //< element reactive matrix
       LINALG::Matrix<numdof_,1>*                      force,        //< element internal force vector
       Teuchos::ParameterList&                         params        //< algorithmic parameters e.g. time
+      );
+
+  //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems (pressure based formulation)
+  virtual void coupling_poroelast_presbased(
+      std::vector<int>&                            lm,          ///< location matrix
+      LINALG::Matrix<numdim_, numnod_>&            disp,        //< current displacements
+      Epetra_SerialDenseMatrix&                    phi,         ///< current primary variable for poro-multiphase flow
+      Epetra_SerialDenseMatrix&                    couplmat,    ///< element stiffness matrix
+      Teuchos::ParameterList&                      params       ///< algorithmic parameters e.g. time
       );
 
   //! Calculate coupling stress for poroelasticity problems
@@ -421,6 +441,27 @@ protected:
                                       LINALG::Matrix<numdof_,numdof_>&        erea_v,
                                       LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,
                                       LINALG::Matrix<numdof_,1>*              force
+                                          );
+
+  //! Gauss Point Loop evaluating stiffness and force for pressure-based formulation
+  void GaussPointLoop_presbased(
+      Teuchos::ParameterList& params,
+      const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+      const LINALG::Matrix<numdim_,numnod_>&  xcurr,
+      const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
+      const LINALG::Matrix<numnod_,1> &       epreaf,
+      LINALG::Matrix<numdof_, numdof_>*       stiffmatrix,
+      LINALG::Matrix<numdof_,1>*              force
+          );
+
+  //! Gauss Point Loop evaluating stiffness (off diagonal)
+  void GaussPointLoopOD_presbased(
+      Teuchos::ParameterList&                 params,
+      const LINALG::Matrix<numdim_,numnod_>&  xrefe,
+      const LINALG::Matrix<numdim_,numnod_>&  xcurr,
+      const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
+      Epetra_SerialDenseMatrix&               phi,
+      Epetra_SerialDenseMatrix&               couplmat
                                           );
 
   //! fill stiffness matrix and rhs vector for darcy flow
@@ -465,6 +506,20 @@ protected:
       LINALG::Matrix<numdof_,1>*                      force,
       LINALG::Matrix<numstr_,1>&                      fstress);
 
+  //! fill stiffness matrix and rhs vector for pressure-based formulation
+  void FillMatrixAndVectors_presbased(
+      const int &                                     gp,
+      const LINALG::Matrix<numnod_,1>&                shapefct,
+      const LINALG::Matrix<numdim_,numnod_>&          N_XYZ,
+      const double&                                   J,
+      const double&                                   press,
+      const LINALG::Matrix<numstr_,numdof_>&          bop,
+      const LINALG::Matrix<numdim_,numdim_>&          C_inv,
+      const LINALG::Matrix<1,numdof_>&                dJ_dus,
+      const LINALG::Matrix<numstr_,numdof_>&          dCinv_dus,
+      LINALG::Matrix<numdof_, numdof_>*               stiffmatrix,
+      LINALG::Matrix<numdof_,1>*                      force);
+
   //! fill stiffness matrix and rhs vector for darcy flow (off diagonal terms)
   void FillMatrixAndVectorsOD(
       const int &                             gp,
@@ -480,6 +535,17 @@ protected:
       const LINALG::Matrix<numstr_,numdof_>&  bop,
       const LINALG::Matrix<numdim_,numdim_>&  C_inv,
       LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix);
+
+  //! fill stiffness matrix (off diagonal terms) -- pressure-based formulation
+  void FillMatrixAndVectorsOD_presbased(
+      const int &                             gp,
+      const LINALG::Matrix<numnod_,1>&        shapefct,
+      const LINALG::Matrix<numdim_,numnod_>&  N_XYZ,
+      const double&                           J,
+      const LINALG::Matrix<numstr_,numdof_>&  bop,
+      const LINALG::Matrix<numdim_,numdim_>&  C_inv,
+      const Epetra_SerialDenseMatrix&         solpressderiv,
+      Epetra_SerialDenseMatrix&               couplmat);
 
   //! fill stiffness matrix and rhs vector for darcy brinkman flow (off diagonal terms)
   void FillMatrixAndVectorsBrinkmanOD(
@@ -532,6 +598,16 @@ protected:
 
   //! get materials (solid and fluid)
   void GetMaterials();
+
+  //! get materials (solid and fluid) for pressure based formulation
+  void GetMaterials_presbased();
+
+  //! Compute Solid-pressure derivative w.r.t. primary variable phi at node
+  void ComputeSolPressureDeriv(
+    const Epetra_SerialDenseMatrix&  phi,           ///<< phi at nodes
+    const int&                       numphases,     ///<< number of fluid phases
+    Epetra_SerialDenseMatrix&        solpressderiv  ///<< solid pressure derivative at GP
+    );
 
   //! evaluate shape functions and their derivatives at gauss point
   void ComputeShapeFunctionsAndDerivatives(
@@ -617,6 +693,9 @@ protected:
 
   //!corresponding fluid material
   Teuchos::RCP< MAT::FluidPoro > fluidmat_;
+
+  //!corresponding multiphase fluid material
+  Teuchos::RCP< MAT::FluidPoroMultiPhase > fluidmultimat_;
 
   //!own poro structure material
   Teuchos::RCP< MAT::StructPoro > structmat_;

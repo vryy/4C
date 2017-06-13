@@ -73,6 +73,9 @@ namespace POROMULTIPHASESCATRA
     /// setup
     virtual void SetupSystem() = 0;
 
+    /// setup solver (only needed in monolithic case)
+    virtual void SetupSolver() = 0;
+
     /// prepare timeloop of coupled problem
     virtual void PrepareTimeLoop() = 0;
 

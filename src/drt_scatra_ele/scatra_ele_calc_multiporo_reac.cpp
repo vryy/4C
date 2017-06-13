@@ -359,9 +359,11 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::MatMultiPoro(
   //read the porosity from the diffusion manager and scale it with the saturation and the density
   const double porosity = poro::DiffManager()->GetPorosity(k)*VarManager()->Saturation(k)*actmat->Density();
 
+  // d_eff = d_0 * (porosity * saturation(k))^delta
+  const double d_eff = std::pow(poro::DiffManager()->GetPorosity(k)*VarManager()->Saturation(k),actmat->Delta());
   {
     // set diffusivity (scaled with porosity)
-    poro::SetDiffusivity(actmat,k,porosity);
+    poro::SetDiffusivity(actmat,k,porosity*d_eff);
 
     // set densities (scaled with porosity)
     poro::SetDensities(porosity,densn,densnp,densam);
@@ -483,9 +485,23 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConv(
   const LINALG::Matrix<my::nen_,1>& sgconv
   )
 {
-  //the only difference to the base class version is, that there is no scaling with the density
-  pororeac::CalcMatConv(emat,k,timefacfac,1.0,sgconv);
-
+  if(fabs(densnp)>1.0e-09)
+  {
+    //the only difference to the base class version is, that there is no scaling with the density
+    pororeac::CalcMatConv(emat,k,timefacfac,1.0,sgconv);
+  }
+  else
+  {
+    // If we have zero "densities" (porosity*saturation(k)), which mostly happens for tumor
+    // cells, the whole equation will be equal to zero since it is scaled with the density
+    // In that case also the mass fraction of the species (necrotic tumor cells) has to be zero
+    // --> here we explicitly force it to be zero through a "Dirichlet" boundary condition
+    for(unsigned vi=0; vi<my::nen_; ++vi)
+    {
+      const int fvi = vi*my::numdofpernode_+k;
+      emat(fvi,fvi) += penalty_;
+    }
+  }
   return;
 } // ScaTraEleCalc<distype>::CalcMatConv
 

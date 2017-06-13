@@ -84,13 +84,13 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::PrintTimeStepInfo()
 {
   if (myrank_ == 0)
   {
-    std::cout << "TIME: "
+    std::cout << "| TIME: "
               << std::setw(11) << std::setprecision(4) << std::scientific << time_ << "/"
               << std::setw(11) << std::setprecision(4) << std::scientific << maxtime_ << "  DT = "
               << std::setw(11) << std::setprecision(4) << std::scientific << dt_ << "  "
               << "One-Step-Theta (theta = "
               << std::setw(3)  << std::setprecision(2) << theta_ << ") STEP = "
-              << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_ << std::endl;
+              << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_ << "           |"<< std::endl;
   }
   return;
 }
@@ -219,6 +219,30 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::ReadRestart(const int step)
   reader->ReadVector(phin_,  "phin");
   reader->ReadVector(phidtn_,"phidtn");
 
+
+  return;
+}
+
+/*--------------------------------------------------------------------*
+ | calculate init time derivatives of state variables kremheller 03/17 |
+ *--------------------------------------------------------------------*/
+void POROFLUIDMULTIPHASE::TimIntOneStepTheta::CalcInitialTimeDerivative()
+{
+  // standard general element parameter without stabilization
+  SetElementGeneralParameters();
+
+  // we also have to modify the time-parameter list (incremental solve)
+  // actually we do not need a time integration scheme for calculating the initial time derivatives,
+  // but the rhs of the standard element routine is used as starting point for this special system of equations.
+  // Therefore, the rhs vector has to be scaled correctly.
+  SetElementTimeStepParameter();
+
+  // call core algorithm
+  TimIntImpl::CalcInitialTimeDerivative();
+
+  // and finally undo our temporary settings
+  SetElementGeneralParameters();
+  SetElementTimeStepParameter();
 
   return;
 }

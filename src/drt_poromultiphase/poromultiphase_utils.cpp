@@ -20,6 +20,8 @@
 
 #include "poromultiphase_partitioned.H"
 #include "poromultiphase_partitioned_twoway.H"
+#include "poromultiphase_monolithic.H"
+#include "poromultiphase_monolithic_twoway.H"
 
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele.H"
 #include "../drt_poroelast/poroelast_utils.H"
@@ -120,11 +122,20 @@ Teuchos::RCP<ADAPTER::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhas
 
   switch(solscheme)
   {
-  case INPAR::POROMULTIPHASE::solscheme_twoway:
+  case INPAR::POROMULTIPHASE::solscheme_twoway_partitioned:
   {
     // call constructor
     algo =
         Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay(
+                comm,
+                timeparams));
+    break;
+  }
+  case INPAR::POROMULTIPHASE::solscheme_twoway_monolithic:
+  {
+    // call constructor
+    algo =
+        Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay(
                 comm,
                 timeparams));
     break;
@@ -137,3 +148,46 @@ Teuchos::RCP<ADAPTER::PoroMultiPhase> POROMULTIPHASE::UTILS::CreatePoroMultiPhas
   return algo;
 }
 
+/*----------------------------------------------------------------------*
+ |                                                    kremheller 03/17  |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PrintLogo()
+{
+ std::cout << "This is a Porous Media problem with multiphase flow and deformation" << std::endl;
+ std::cout << "       .--..--..--..--..--..--. " << std::endl;
+ std::cout << "      .'  \\  (`._   (_)     _   \\ " << std::endl;
+ std::cout << "     .'    |  '._)         (_)  | " << std::endl;
+ std::cout << "     \\ _.')\\      .----..---.   / " << std::endl;
+ std::cout << "     |(_.'  |    /    .-\\-.  \\  | " << std::endl;
+ std::cout << "     \\     0|    |   ( O| O) | o| " << std::endl;
+ std::cout << "      |  _  |  .--.____.'._.-.  | " << std::endl;
+ std::cout << "      \\ (_) | o         -` .-`  | " << std::endl;
+ std::cout << "       |    \\   |`-._ _ _ _ _\\ / " << std::endl;
+ std::cout << "       \\    |   |  `. |_||_|   | " << std::endl;
+ std::cout << "       | o  |    \\_      \\     |                       -.   .-.         \\" << std::endl;
+ std::cout << "       |.-.  \\     `--..-'   O |                       `.`-' .'          \\" << std::endl;
+ std::cout << "     _.'  .' |     `-.-'      /-.____________________   ' .-' ------------o" << std::endl;
+ std::cout << "   .' `-.` '.|='=.='=.='=.='=|._/___________________ `-'.'               /" << std::endl;
+ std::cout << "   `-._  `.  |________/\\_____|                      `-.'                /" << std::endl;
+ std::cout << "      .'   ).| '=' '='\\/ '=' | " << std::endl;
+ std::cout << "      `._.`  '---------------' " << std::endl;
+ std::cout << "            //___\\   //___\\ " << std::endl;
+ std::cout << "              ||       || " << std::endl;
+ std::cout << "              ||_.-.   ||_.-. " << std::endl;
+ std::cout << "              ||       || " << std::endl;
+ std::cout << "              ||_.-.   ||_.-. " << std::endl;
+ std::cout << "              ||       || " << std::endl;
+ std::cout << "              ||_.-.   ||_.-. " << std::endl;
+ std::cout << "              ||       || " << std::endl;
+ std::cout << "              ||_.-.   ||_.-. " << std::endl;
+ std::cout << "             (_.--__) (_.--__) " << std::endl;
+ std::cout << "                |         | " << std::endl;
+ std::cout << "                |         | " << std::endl;
+ std::cout << "              \\   /     \\   / " << std::endl;
+ std::cout << "               \\ /       \\ / " << std::endl;
+ std::cout << "                .         . " << std::endl;
+
+  return;
+
+
+}

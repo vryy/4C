@@ -27,6 +27,7 @@
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/structporo_reaction.H"
 #include "../drt_mat/fluidporo.H"
+#include "../drt_mat/fluidporo_multiphase.H"
 
 
 /*----------------------------------------------------------------------*
@@ -276,6 +277,47 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials( )
        // dserror("cast to fluid poro material failed");
       if(fluidmat_->MaterialType() != INPAR::MAT::m_fluidporo)
         dserror("invalid fluid material for poroelasticity");
+    }
+    else
+      dserror("no second material defined for element %i",Id());
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *                                                      kremheller 03/17|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Wall1_Poro<distype>::GetMaterials_presbased( )
+{
+
+  //get structure material
+  if(structmat_==Teuchos::null)
+  {
+    structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+    if(structmat_==Teuchos::null)
+      dserror("cast to poro material failed");
+
+    if(structmat_->MaterialType() != INPAR::MAT::m_structporo and
+       structmat_->MaterialType() != INPAR::MAT::m_structpororeaction and
+       structmat_->MaterialType() != INPAR::MAT::m_structpororeactionECM)
+      dserror("invalid structure material for poroelasticity");
+  }
+
+  // Get Fluid-multiphase-Material
+  if(fluidmultimat_==Teuchos::null)
+  {
+    //access second material in structure element
+    if (NumMaterial() > 1)
+    {
+      fluidmultimat_ = Teuchos::rcp_dynamic_cast<MAT::FluidPoroMultiPhase>(Material(1));
+      if(fluidmultimat_==Teuchos::null)
+        return;
+       // dserror("cast to fluid poro material failed");
+      if(fluidmultimat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase and
+         fluidmultimat_->MaterialType() != INPAR::MAT::m_fluidporo_multiphase_reactions)
+        dserror("invalid fluid material for poro-multiphase-elasticity");
     }
     else
       dserror("no second material defined for element %i",Id());

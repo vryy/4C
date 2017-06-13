@@ -28,9 +28,7 @@
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Material> matdata) :
   Parameter(matdata),
-  viscosity_(matdata->GetDouble("DYNVISCOSITY")),
   density_(matdata->GetDouble("DENSITY")),
-  permeability_(matdata->GetDouble("PERMEABILITY")),
   bulkmodulus_(matdata->GetDouble("BULKMODULUS")),
   isinit_(false)
 {
@@ -46,6 +44,12 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
 
   // create density law
   densitylaw_ = MAT::PAR::PoroDensityLaw::CreateDensityLaw(matdata->GetInt("DENSITYLAWID"));
+
+  // create permeability law
+  relpermeabilitylaw_ = MAT::PAR::FluidPoroRelPermeabilityLaw::CreateRelPermeabilityLaw(matdata->GetInt("RELPERMEABILITYLAWID"));
+
+  // create viscosity law
+  viscositylaw_ = MAT::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(matdata->GetInt("VISCOSITYLAWID"));
 
   // retrieve validated input line of material ID in question
   Teuchos::RCP<MAT::PAR::Material> curmat =
@@ -246,9 +250,21 @@ double MAT::FluidPoroSinglePhase::EvaluateSaturation(
 double MAT::FluidPoroSinglePhase::EvaluateDerivOfSaturationWrtPressure(
     int phasenum,
     int doftoderive,
-    const std::vector<double>& state) const
+    const std::vector<double>& pressure) const
 {
-  return params_->phasedof_->EvaluateDerivOfSaturationWrtPressure(phasenum,doftoderive,state);
+  return params_->phasedof_->EvaluateDerivOfSaturationWrtPressure(phasenum,doftoderive,pressure);
+}
+
+/*--------------------------------------------------------------------------*
+ *  Evaluate 2nd derivative of saturation w.r.t. pressure  kremheller 05/17 |
+*---------------------------------------------------------------------------*/
+double MAT::FluidPoroSinglePhase::EvaluateSecondDerivOfSaturationWrtPressure(
+    int phasenum,
+    int firstdoftoderive,
+    int seconddoftoderive,
+    const std::vector<double>& pressure) const
+{
+  return params_->phasedof_->EvaluateSecondDerivOfSaturationWrtPressure(phasenum,firstdoftoderive,seconddoftoderive,pressure);
 }
 
 /*----------------------------------------------------------------------------------------*

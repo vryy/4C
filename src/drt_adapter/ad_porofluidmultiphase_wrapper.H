@@ -131,6 +131,31 @@ namespace ADAPTER {
     /// prepare timeloop of coupled problem
     virtual void PrepareTimeLoop();
 
+    //! Return MapExtractor for Dirichlet boundary conditions
+    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;
+
+    //! right-hand side alias the dynamic force residual
+    Teuchos::RCP<const Epetra_Vector> RHS() const;
+
+    //! iterative update of phinp
+    virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc);
+
+    //! reconstruct pressures and saturation from current solution
+    virtual void ReconstructPressuresAndSaturations();
+
+    //! reconstruct flux from current solution
+    virtual void ReconstructFlux();
+
+    //! build linear system tangent matrix, rhs/force residual
+    virtual void Evaluate();
+
+    // Assemble Off-Diagonal Fluid-Structure Coupling matrix
+    virtual void AssembleFluidCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs);
+
+    /// direct access to system matrix
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+
+
   private:
 
     /// multiphase porous flow time integrator

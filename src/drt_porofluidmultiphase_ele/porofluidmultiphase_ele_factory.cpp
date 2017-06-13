@@ -89,6 +89,22 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleInterface* DRT::ELEMENTS::PoroFluidMultiPha
       dserror("invalid problem dimension for line3 porofluidmultiphase element!");
     break;
   }
+  case DRT::Element::hex8:
+  {
+    if(ndim==3)
+      return DefineProblemType<DRT::Element::hex8>(numdofpernode,disname);
+    else
+      dserror("invalid problem dimension for hex8 porofluidmultiphase element!");
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    if(ndim==3)
+      return DefineProblemType<DRT::Element::tet4>(numdofpernode,disname);
+    else
+      dserror("invalid problem dimension for tet4 porofluidmultiphase element!");
+    break;
+  }
   default:
     dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
     break;

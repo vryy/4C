@@ -52,7 +52,9 @@ CreatePoroMultiPhaseScatraAlgorithm(
     const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
     const Epetra_Comm& comm //!< communicator(i)
     );
-}
+} // UTILS
+// Print the logo
+void PrintLogo();
 }
 
 

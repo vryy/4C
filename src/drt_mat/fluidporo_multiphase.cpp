@@ -336,7 +336,7 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfDofWrtPressure(
 *---------------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
     Epetra_SerialDenseMatrix& derivs,
-    const std::vector<double>& state) const
+    const std::vector<double>& pressure) const
 {
   // get the number of the phase, which saturation is calculated by the saturation constraint
   const int constraintsaturationphase = paramsporo_->constraintphaseID_;
@@ -354,7 +354,7 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
 
     for(int jphase=0; jphase<NumMat(); jphase++)
     {
-      const double saturationderiv = singlephase.EvaluateDerivOfSaturationWrtPressure(iphase,jphase,state);
+      const double saturationderiv = singlephase.EvaluateDerivOfSaturationWrtPressure(iphase,jphase,pressure);
       derivs(iphase,jphase) = saturationderiv;
       // the saturation of the last phase is 1.0- (sum of all saturations)
       // -> the derivative of this saturation = -1.0 (sum of all saturation derivatives)
@@ -364,4 +364,40 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
   return;
 }
 
+/*--------------------------------------------------------------------------*
+ *  Evaluate 2nd derivative of saturation w.r.t. pressure  kremheller 05/17 |
+*---------------------------------------------------------------------------*/
+void MAT::FluidPoroMultiPhase::EvaluateSecondDerivOfSaturationWrtPressure(
+    std::vector<Epetra_SerialDenseMatrix>& derivs,
+    const std::vector<double>& pressure) const
+{
+  // get the number of the phase, which saturation is calculated by the saturation constraint
+  const int constraintsaturationphase = paramsporo_->constraintphaseID_;
+
+  for(int iphase=0; iphase<NumMat(); iphase++)
+  {
+    // skip constraint saturation phase
+    if(iphase == constraintsaturationphase)
+      continue;
+
+    // get the single phase material by its ID
+    const int matid = MatID(iphase);
+    Teuchos::RCP< MAT::Material> singlemat = MaterialById(matid);
+    const MAT::FluidPoroSinglePhase& singlephase = static_cast<const MAT::FluidPoroSinglePhase&>(*singlemat);
+
+    for(int jphase=0; jphase<NumMat(); jphase++)
+    {
+      for(int kphase=0; kphase<NumMat(); kphase++)
+      {
+        const double saturationderivderiv
+                    = singlephase.EvaluateSecondDerivOfSaturationWrtPressure(iphase,jphase,kphase,pressure);
+        derivs[iphase](jphase,kphase) = saturationderivderiv;
+        // the saturation of the last phase is 1.0- (sum of all saturations)
+        // -> the derivative of this saturation = -1.0 (sum of all saturation derivatives)
+        derivs[constraintsaturationphase](jphase,kphase) += -1.0*saturationderivderiv;
+      }
+    }
+  }
+  return;
+}
 

@@ -307,6 +307,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
     AddNamedReal(m,"SCNUM","schmidt number",0.0,true);
     AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
+    AddNamedReal(m,"DELTA","delta",0.0,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -2266,6 +2267,54 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
   /*----------------------------------------------------------------------*/
+  // permeability law for constant permeability in porous multiphase medium
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroRelPermeabilityLawConstant",
+                                            "permeability law for constant permeability in porous multiphase medium",
+                                            INPAR::MAT::m_fluidporo_relpermeabilitylaw_constant));
+
+    AddNamedReal(m,"VALUE","constant value of permeability");
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // permeability law for permeability depending on saturation according to (saturation)^exp
+  // in porous multiphase medium
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroRelPermeabilityLawExp",
+                                            "permeability law depending on saturation in porous multiphase medium",
+                                            INPAR::MAT::m_fluidporo_relpermeabilitylaw_exp));
+
+    AddNamedReal(m,"EXP","exponent of the saturation of this phase");
+    AddNamedReal(m,"MIN_SAT","minimum saturation which is used for calculation");
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // viscosity law for constant viscosity in porous multiphase medium
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroViscosityLawConstant",
+                                            "viscosity law for constant viscosity in porous multiphase medium",
+                                            INPAR::MAT::m_fluidporo_viscositylaw_constant));
+
+    AddNamedReal(m,"VALUE","constant value of viscosity");
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // viscosity law for viscosity-dependency modelling cell adherence
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_FluidPoroViscosityLawCellAdherence",
+                                            "visosity law depending on pressure gradient in porous multiphase medium",
+                                            INPAR::MAT::m_fluidporo_viscositylaw_celladh));
+
+    AddNamedReal(m,"VISC_0","Visc0 parameter for modelling cell adherence");
+    AddNamedReal(m,"XI","xi parameter for modelling cell adherence");
+    AddNamedReal(m,"PSI","psi parameter for modelling cell adherence");
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
   // hyperelastic material for poroelasticity with reaction
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -2375,11 +2424,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "one phase for multiphase flow in deformable porous media",
                                             INPAR::MAT::m_fluidporo_singlephase));
 
-    AddNamedReal(m,"DYNVISCOSITY","dynamic viscosity");
     AddNamedInt(m,"DENSITYLAWID","ID of density law");
     AddNamedReal(m,"DENSITY","reference/initial density");
     AddNamedReal(m,"BULKMODULUS","bulk modulus of phase");
-    AddNamedReal(m,"PERMEABILITY","relative permeability of phase");
+    AddNamedInt(m,"RELPERMEABILITYLAWID","ID of relative permeability law");
+    AddNamedInt(m,"VISCOSITYLAWID","ID of viscosity law");
     AddNamedInt(m,"DOFTYPEID","ID of dof definition");
 
     AppendMaterialDefinition(matlist,m);

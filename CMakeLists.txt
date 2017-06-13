@@ -532,6 +532,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/fluidporo_multiphase.cpp
   src/drt_mat/fluidporo_multiphase_reactions.cpp
   src/drt_mat/fluidporo_multiphase_singlereaction.cpp
+  src/drt_mat/fluidporo_relpermeability_law.cpp
+  src/drt_mat/fluidporo_viscosity_law.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/growthremodel_elasthyper.cpp
   src/drt_mat/growth.cpp
@@ -2411,7 +2413,9 @@ set(OBJS_DRT_POROMULTIPHASE
   src/drt_poromultiphase/poromultiphase_dyn.cpp
   src/drt_poromultiphase/poromultiphase_base.cpp
   src/drt_poromultiphase/poromultiphase_partitioned.cpp
+  src/drt_poromultiphase/poromultiphase_monolithic.cpp
   src/drt_poromultiphase/poromultiphase_partitioned_twoway.cpp
+  src/drt_poromultiphase/poromultiphase_monolithic_twoway.cpp
   src/drt_poromultiphase/poromultiphase_utils_clonestrategy.cpp
   src/drt_poromultiphase/poromultiphase_utils.cpp
   src/drt_poromultiphase_scatra/poromultiphase_scatra_dyn.cpp

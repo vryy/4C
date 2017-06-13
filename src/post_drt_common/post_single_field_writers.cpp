@@ -340,6 +340,9 @@ void PoroFluidMultiPhaseFilter::WriteAllResults(PostField* field)
   // write solid pressure solution
   writer_->WriteResult("solidpressure", "solid_pressure", nodebased, 1);
 
+  // write porosity
+  writer_->WriteResult("porosity", "porosity", nodebased, 1);
+
   // write displacement field
   writer_->WriteResult("dispnp", "ale-displacement", nodebased, field->problem()->num_dim());
 

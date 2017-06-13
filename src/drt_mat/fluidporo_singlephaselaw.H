@@ -63,7 +63,13 @@ namespace PAR
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state) = 0;
+        const std::vector<double>& pressure) = 0;
+
+    //! evaluate second derivative of saturation w.r.t. pressure
+    virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+        int firstdoftoderive,
+        int seconddoftoderive,
+        const std::vector<double>& pressure) = 0;
 
     //! evaluate generalized pressure related to phase law
     virtual double EvaluateGenPressure(double saturation) = 0;
@@ -116,7 +122,13 @@ namespace PAR
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state);
+        const std::vector<double>& pressure);
+
+    //! evaluate second derivative of saturation w.r.t. pressure
+    virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+        int firstdoftoderive,
+        int seconddoftoderive,
+        const std::vector<double>& pressure);
 
     //! evaluate derivative of pressure w.r.t. saturtion
     virtual double EvaluateDerivOfPressureWrtSaturation(int doftoderive,
@@ -166,7 +178,13 @@ namespace PAR
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state);
+        const std::vector<double>& pressure);
+
+    //! evaluate second derivative of saturation w.r.t. pressure
+    virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+        int firstdoftoderive,
+        int seconddoftoderive,
+        const std::vector<double>& pressure);
 
     //! evaluate generalized pressure related to phase law
     virtual double EvaluateGenPressure(double saturation);
@@ -213,7 +231,14 @@ namespace PAR
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state)
+        const std::vector<double>& pressure)
+    {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
+
+    //! evaluate second derivative of saturation w.r.t. pressure
+    virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+        int firstdoftoderive,
+        int seconddoftoderive,
+        const std::vector<double>& pressure)
     {dserror("The constraint phase law does not implement evaluation routines!"); return 0.0;};
 
     //! evaluate generalized pressure related to phase law
@@ -268,7 +293,13 @@ namespace PAR
     //! evaluate derivative of saturation w.r.t. pressure
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int doftoderive,
-        const std::vector<double>& state);
+        const std::vector<double>& pressure);
+
+    //! evaluate second derivative of saturation w.r.t. pressure
+    virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+        int firstdoftoderive,
+        int seconddoftoderive,
+        const std::vector<double>& pressure);
 
     //! evaluate generalized pressure related to phase law
     virtual double EvaluateGenPressure(double saturation);

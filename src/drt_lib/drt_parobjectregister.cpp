@@ -139,6 +139,8 @@
 #include "../drt_mat/fluidporo_multiphase.H"
 #include "../drt_mat/fluidporo_multiphase_reactions.H"
 #include "../drt_mat/fluidporo_multiphase_singlereaction.H"
+#include "../drt_mat/fluidporo_relpermeability_law.H"
+#include "../drt_mat/fluidporo_viscosity_law.H"
 #include "../drt_mat/acoustic.H"
 #include "../drt_mat/acoustic_sol.H"
 #include "../drt_mortar/mortar_node.H"

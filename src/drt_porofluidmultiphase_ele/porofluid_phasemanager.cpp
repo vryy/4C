@@ -95,6 +95,8 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
   }
   // standard evaluate call
   case POROFLUIDMULTIPHASE::calc_mat_and_rhs:
+  case POROFLUIDMULTIPHASE::calc_initial_time_deriv:
+  case POROFLUIDMULTIPHASE::calc_fluid_coupl_mat:
   {
     // porosity (includes derivatves) needed
     phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
@@ -120,6 +122,12 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface::WrapPhaseManager(
       phasemanager = Teuchos::rcp(new PhaseManagerReaction(phasemanager));
     break;
   }
+  case POROFLUIDMULTIPHASE::calc_porosity:
+  {
+    // porosity (includes derivatves) needed
+    phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
+    break;
+  }
   default:
     dserror("unknown action %i for creating the phase manager!",action);
     break;
@@ -138,6 +146,8 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(int numphase
     pressure_(numphases,0.0),
     saturation_(numphases,0.0),
     solidpressure_(0.0),
+    invbulkmodulifluid_(numphases,0.0),
+    invbulkmodulussolid_(0.0),
     ele_(NULL),
     isevaluated_(false),
     issetup_(false)
@@ -154,6 +164,8 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(const PhaseM
     pressure_(old.pressure_),
     saturation_(old.saturation_),
     solidpressure_(old.solidpressure_),
+    invbulkmodulifluid_(old.invbulkmodulifluid_),
+    invbulkmodulussolid_(old.invbulkmodulussolid_),
     ele_(NULL),
     isevaluated_(old.isevaluated_),
     issetup_(old.issetup_)
@@ -223,6 +235,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
   genpressure_.resize(numphases_,0.0);
   pressure_.resize(numphases_,0.0);
   saturation_.resize(numphases_,0.0);
+  invbulkmodulifluid_.resize(numphases_,0.0);
 
   // evaluate the pressures
   multiphasemat.EvaluateGenPressure(genpressure_,phinp);
@@ -242,6 +255,16 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateGPState(
 
   // cast second material to poro material
   Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_static_cast<MAT::StructPoro>(ele_->Material(1));
+
+  invbulkmodulussolid_ = structmat->InvBulkmodulus();
+
+  for(int iphase=0; iphase<numphases_; iphase++)
+  {
+    //get the single phase material
+    const MAT::FluidPoroSinglePhase& singlephasemat =
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,iphase);
+    invbulkmodulifluid_[iphase]=singlephasemat.InvBulkmodulus();
+  }
 
   // done
   isevaluated_ = true;
@@ -263,8 +286,10 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::ClearGPState()
   std::fill(saturation_.begin(), saturation_.end(), 0.0);
   solidpressure_=0.0;
   std::vector<double> zero(pressure_.size(),0.0);
+  invbulkmodulussolid_ = 0.0;
+  std::fill(invbulkmodulifluid_.begin(), invbulkmodulifluid_.end(), 0.0);
 
-  // states are reseted
+  // states are reset
   isevaluated_ = false;
 
   return;
@@ -320,39 +345,26 @@ const std::vector<double>& DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Pr
   return pressure_;
 }
 
-
-/*----------------------------------------------------------------------*
- *   get bulk modulus of phase 'phasenum'                    vuong 08/16 |
-*----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulus(
-    const MAT::Material& material,
-    int phasenum) const
-{
-
-  //get the single phase material
-  const MAT::FluidPoroSinglePhase& singlephasemat =
-      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
-
-  return singlephasemat.InvBulkmodulus();
-}
-
 /*----------------------------------------------------------------------*
  *   get bulk modulus of phase 'phasenum'                    vuong 08/16 |
 *----------------------------------------------------------------------*/
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulus(
     int phasenum) const
 {
-  return InvBulkmodulus(*Element()->Material(),phasenum);
+  CheckIsEvaluated();
+
+  return invbulkmodulifluid_[phasenum];
 }
 
 /*----------------------------------------------------------------------*
- *   get inverse bulk modulus of solid phase                 vuong 08/16 |
+ *  check if fluid phase 'phasenum' is incompressible  kremheller 06/17 |
 *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulusSolid(
-    const MAT::StructPoro& material
-    ) const
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::IncompressibleFluidPhase(
+    int phasenum) const
 {
-  return material.InvBulkmodulus();
+  CheckIsEvaluated();
+
+  return invbulkmodulifluid_[phasenum] < 1.0e-14;
 }
 
 /*----------------------------------------------------------------------*
@@ -360,14 +372,19 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulusSolid(
 *----------------------------------------------------------------------*/
 double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::InvBulkmodulusSolid() const
 {
-  //access second material in structure element
-  dsassert(ele_->NumMaterial() > 1,"no second material defined for element ");
-  dsassert(ele_->Material(1)->MaterialType() == INPAR::MAT::m_structporo,"invalid structure material for poroelasticity");
+  CheckIsEvaluated();
 
-  // cast second material to poro material
-  Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_static_cast<MAT::StructPoro>(ele_->Material(1));
+  return invbulkmodulussolid_;
+}
 
-  return InvBulkmodulusSolid(*structmat);
+/*----------------------------------------------------------------------*
+ *  check if solid is incompressible                   kremheller 06/17 |
+*----------------------------------------------------------------------*/
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::IncompressibleSolid() const
+{
+  CheckIsEvaluated();
+
+  return invbulkmodulussolid_ < 1.0e-14;
 }
 
 /*----------------------------------------------------------------------*
@@ -395,22 +412,6 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Density(
 }
 
 /*----------------------------------------------------------------------*
- * evaluate relative diffusivity of phase 'phasenum'         vuong 08/16 |
-*----------------------------------------------------------------------*/
-double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::EvaluateRelDiffusivity(
-    const MAT::Material& material,
-    int phasenum) const
-{
-  CheckIsEvaluated();
-
-  //get the single phase material
-  const MAT::FluidPoroSinglePhase& singlephasemat =
-      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
-
-  return singlephasemat.Permeability()/singlephasemat.Viscosity();
-}
-
-/*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
 
@@ -422,6 +423,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::PhaseManagerDeriv(
 :   PhaseManagerDecorator(phasemanager),
     pressurederiv_(Teuchos::null),
     saturationderiv_(Teuchos::null),
+    saturationderivderiv_(Teuchos::null),
     solidpressurederiv_(Teuchos::null),
     solidpressurederivderiv_(Teuchos::null)
 {
@@ -429,6 +431,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::PhaseManagerDeriv(
   // initialize matrixes and vectors
   pressurederiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numphases,numphases));
   saturationderiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numphases,numphases));
+  saturationderivderiv_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numphases,Epetra_SerialDenseMatrix(numphases,numphases)));
   solidpressurederiv_= Teuchos::rcp(new Epetra_SerialDenseVector(numphases));
   solidpressurederivderiv_= Teuchos::rcp(new Epetra_SerialDenseMatrix(numphases,numphases));
 
@@ -478,11 +481,22 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
 
   // calculate derivatives of saturation w.r.t. pressure
   Epetra_SerialDenseMatrix deriv(numphases,numphases);
-  multiphasemat.EvaluateDerivOfSaturationWrtPressure(deriv,phinp);
+  multiphasemat.EvaluateDerivOfSaturationWrtPressure(deriv,pressure);
 
   // chain rule: the derivative of saturation w.r.t. dof =
   // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
   saturationderiv_->Multiply('N','N',1.0,deriv,*pressurederiv_,0.0);
+
+  // calculate 2nd derivatives of saturation w.r.t. pressure
+  Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > dummyderiv =
+      Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numphases,Epetra_SerialDenseMatrix(numphases,numphases)));
+  deriv.Scale(0.0);
+  multiphasemat.EvaluateSecondDerivOfSaturationWrtPressure(*dummyderiv,pressure);
+  for (int i = 0; i < numphases; i++)
+  {
+    deriv.Multiply('T','N',1.0,*pressurederiv_,(*dummyderiv)[i],0.0);
+    (*saturationderivderiv_)[i].Multiply('N','N',1.0,deriv,*pressurederiv_,0.0);
+  }
 
   // compute derivative of solid pressure w.r.t. dofs with product rule
   solidpressurederiv_->Scale(0.0);
@@ -512,11 +526,14 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::ClearGPState()
   // this is just a safety call. All quantities should be recomputed
   // in the next EvaluateGPState call anyway, but you never know ...
 
+  const int numphases = phasemanager_->NumPhases();
   phasemanager_->ClearGPState();
 
   //zero everything
   pressurederiv_->Scale(0.0);
   saturationderiv_->Scale(0.0);
+  for (int iphase = 0; iphase < numphases; iphase++)
+    (*saturationderivderiv_)[iphase].Scale(0.0);
   solidpressurederiv_->Scale(0.0);
   solidpressurederivderiv_->Scale(0.0);
 
@@ -534,6 +551,19 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::SaturationDeriv(
   phasemanager_->CheckIsEvaluated();
 
   return (*saturationderiv_)(phasenum,doftoderive);
+}
+
+/*----------------------------------------------------------------------*
+ *  get 2nd derivative of saturation of phase          kremheller 05/17 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::SaturationDerivDeriv(
+    int phasenum,
+    int firstdoftoderive,
+    int seconddoftoderive) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return (*saturationderivderiv_)[phasenum](firstdoftoderive,seconddoftoderive);
 }
 
 /*----------------------------------------------------------------------*
@@ -583,6 +613,8 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PhaseManagerDeriv
     Teuchos::RCP< POROFLUIDMANAGER::PhaseManagerInterface > phasemanager)
 :   PhaseManagerDeriv(phasemanager),
     porosity_(0.0),
+    J_(0.0),
+    dporosity_dJ_(0.0),
     porosityderiv_(Teuchos::null)
 {
   const int numphases = phasemanager_->NumPhases();
@@ -616,6 +648,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
   //empty parameter list
   Teuchos::ParameterList params;
 
+  J_ = J;
+
   //use structure material to evaluate porosity
   structmat->ComputePorosity( params,
                               phasemanager_->SolidPressure(),
@@ -623,7 +657,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
                               -1,
                               porosity_,
                               &dporosity_dp,
-                              NULL,
+                              &dporosity_dJ_,
                               NULL,
                               NULL,
                               NULL,
@@ -648,6 +682,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::ClearGPState
 
   //zero everything
   porosity_=0.0;
+  J_ = 0.0;
+  dporosity_dJ_ = 0.0;
   porosityderiv_->Scale(0.0);
 
   return;
@@ -660,7 +696,27 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::Porosity()
 {
   CheckIsEvaluated();
 
-  return porosity_;
+  return  porosity_;
+}
+
+/*----------------------------------------------------------------------*
+ *  get Jacobian                                       kremheller 08/16 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::Jacobian() const
+{
+  CheckIsEvaluated();
+
+  return J_;
+}
+
+/*----------------------------------------------------------------------*
+ *  get derivative of porosity wrt jacobian            kremheller 08/16 |
+*----------------------------------------------------------------------*/
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PorosityDerivWrtJacobian() const
+{
+  CheckIsEvaluated();
+
+  return dporosity_dJ_;
 }
 
 /*----------------------------------------------------------------------*
@@ -859,6 +915,43 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::PhaseManagerDiffusi
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 template<int nsd>
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
+    const DRT::Element* ele
+    )
+{
+  // setup the wrapped class
+  phasemanager_->Setup(ele);
+
+  // get number of phases
+  const int numphases = phasemanager_->NumPhases();
+
+  // resize vectors to numphase
+  constrelpermeability_.resize(numphases,false);
+  relpermeabilities_.resize(numphases,false);
+  derrelpermeabilities_.resize(numphases,false);
+
+  const MAT::Material& material = *( phasemanager_->Element()->Material());
+
+  // check material type
+  if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase
+      and material.MaterialType()
+          != INPAR::MAT::m_fluidporo_multiphase_reactions)
+    dserror("only poro multiphase material valid");
+
+  for(int iphase=0; iphase<numphases; iphase++)
+  {
+    //get the single phase material
+    const MAT::FluidPoroSinglePhase& singlephasemat =
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,iphase);
+    constrelpermeability_[iphase]=singlephasemat.HasConstantRelPermeability();
+  }
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ | constructor                                              vuong 08/16 |
+ *----------------------------------------------------------------------*/
+template<int nsd>
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPState(
     double                 J,
     const VariableManagerMinAccess& varmanager
@@ -874,8 +967,10 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
   // get number of phases
   const int numphases = phasemanager_->NumPhases();
 
-  // resize vector
-  difftensors_.resize(numphases);
+  // resize vectors
+  permeabilitytensors_.resize(numphases);
+  relpermeabilities_.resize(numphases);
+  derrelpermeabilities_.resize(numphases);
 
   // check material type
   if (material.MaterialType() != INPAR::MAT::m_fluidporo_multiphase
@@ -890,16 +985,22 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::EvaluateGPStat
   for (int iphase = 0; iphase < numphases; iphase++)
   {
     // TODO only isotropic, constant permeability for now
-    difftensors_[iphase].Clear();
+    permeabilitytensors_[iphase].Clear();
     const double permeability = multiphasemat.Permeability();
     for (int i = 0; i < nsd; i++)
-      (difftensors_[iphase])(i, i) = permeability;
+      (permeabilitytensors_[iphase])(i, i) = permeability;
 
-    // relative diffusivity (permeability)
-    const double reldiffusivity = phasemanager_->EvaluateRelDiffusivity(
-        material, iphase);
+    //get the single phase material
+    const MAT::FluidPoroSinglePhase& singlephasemat =
+        POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(multiphasemat,iphase);
 
-    difftensors_[iphase].Scale(reldiffusivity);
+    // evaluate relative permeabilities
+    relpermeabilities_[iphase] =
+        singlephasemat.RelPermeability(phasemanager_->Saturation(iphase));
+
+    // evaluate derivative of relative permeability w.r.t. saturation
+    derrelpermeabilities_[iphase] =
+        singlephasemat.EvaluateDerivOfRelPermeabilityWrtSaturation(phasemanager_->Saturation(iphase));
   }
 
   return;
@@ -915,7 +1016,9 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::ClearGPState()
   // in the next EvaluateGPState call anyway, but you never know ...
   phasemanager_->ClearGPState();
 
-  difftensors_.clear();
+  permeabilitytensors_.clear();
+  relpermeabilities_.clear();
+  derrelpermeabilities_.clear();
 
   return;
 }
@@ -924,12 +1027,75 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::ClearGPState()
  * get diffusion tensor                                         vuong 08/16 |
 *---------------------------------------------------------------------------*/
 template<int nsd>
-void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DiffTensor(
-    int phasenum, LINALG::Matrix<nsd,nsd>& difftensor) const
+void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::PermeabilityTensor(
+    int phasenum, LINALG::Matrix<nsd,nsd>& permeabilitytensor) const
 {
   phasemanager_->CheckIsEvaluated();
   // make a hard copy for now
-  difftensor = difftensors_[phasenum];
+  permeabilitytensor = permeabilitytensors_[phasenum];
+}
+
+/*---------------------------------------------------------------------------*
+ * check for constant rel permeability                      kremheller 02/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::HasConstantRelPermeability(
+    int phasenum) const
+{
+  CheckIsSetup();
+
+  return constrelpermeability_[phasenum];
+}
+/*---------------------------------------------------------------------------*
+ * get relative diffusivity of phase 'phasenum'             kremheller 02/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::RelPermeability(
+    int phasenum) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return relpermeabilities_[phasenum];
+}
+/*---------------------------------------------------------------------------*
+ * get relative diffusivity of phase 'phasenum'             kremheller 02/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::RelPermeabilityDeriv(
+    int phasenum) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return derrelpermeabilities_[phasenum];
+}
+/*---------------------------------------------------------------------------*
+ * get dynamic viscosity of phase 'phasenum'                kremheller 02/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity(
+    int phasenum,
+    double abspressgrad) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return DynViscosity(*Element()->Material(),phasenum,abspressgrad);
+}
+
+/*----------------------------------------------------------------------*
+ *   get dynamic viscosity of phase 'phasenum'         kremheller 02/17 |
+*----------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity(
+    const MAT::Material& material,
+    int phasenum,
+    double abspressgrad) const
+{
+
+  //get the single phase material
+  const MAT::FluidPoroSinglePhase& singlephasemat =
+      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
+
+  return singlephasemat.Viscosity(abspressgrad);
 }
 
 ///*----------------------------------------------------------------------*

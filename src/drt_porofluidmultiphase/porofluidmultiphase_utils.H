@@ -76,7 +76,9 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> CreateAlgorithm(
     Teuchos::RCP<IO::DiscretizationWriter>            output              //!< output writer
     );
 
-}
+} // UTILS
+// Print the logo
+void PrintLogo();
 }
 
 

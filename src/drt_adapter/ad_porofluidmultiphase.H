@@ -18,6 +18,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
+#include "../linalg/linalg_utils.H"
 
 // forward declarations
 namespace DRT
@@ -123,6 +124,30 @@ namespace ADAPTER {
 
     //! return number of dof set associated with solid pressure
     virtual int GetDofSetNumberOfSolidPressure() const =0;
+
+    //! Return MapExtractor for Dirichlet boundary conditions
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const=0;
+
+    //! right-hand side alias the dynamic force residual
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() const=0;
+
+    //! iterative update of phinp
+    virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)=0;
+
+    //! reconstruct pressures and saturation from current solution
+    virtual void ReconstructPressuresAndSaturations()=0;
+
+    //! reconstruct flux from current solution
+    virtual void ReconstructFlux()=0;
+
+    //! build linear system tangent matrix, rhs/force residual
+    virtual void Evaluate()=0;
+
+    // Assemble Off-Diagonal Fluid-Structure Coupling matrix
+    virtual void AssembleFluidCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs)=0;
+
+    //! direct access to system matrix
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
 
 
   }; // class PoroFluidMultiphase

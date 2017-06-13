@@ -22,6 +22,9 @@
 #include "material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "fluidporo_relpermeability_law.H"
+#include "fluidporo_viscosity_law.H"
+
 
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
@@ -61,18 +64,18 @@ namespace MAT
         /// @name material parameters
         //@{
 
-        /// kinematic or dynamic viscosity
-        const double viscosity_;
         /// density
         const double density_;
-        /// permeability
-        const double permeability_;
         /// bulk modulus
         const double bulkmodulus_;
         /// type of degree of freedom
         FluidPoroPhaseDof* phasedof_;
-        /// type of degree of freedom
+        /// density law
         PoroDensityLaw* densitylaw_;
+        /// permeability law
+        FluidPoroRelPermeabilityLaw* relpermeabilitylaw_;
+        /// viscosity law
+        FluidPoroViscosityLaw* viscositylaw_;
 
         //@}
 
@@ -193,22 +196,40 @@ namespace MAT
         return Teuchos::rcp(new FluidPoroSinglePhase(*this));
       }
 
-      /// return viscosity
-      double Viscosity() const
-      {
-        return params_->viscosity_;
-      }
-
       /// return density
       double Density() const
       {
         return params_->density_;
       }
 
-      /// return permeability
-      double Permeability() const
+      /// return relative permeability
+      double RelPermeability(const double saturation) const
       {
-        return params_->permeability_;
+        return params_->relpermeabilitylaw_->GetRelPermeability(saturation);
+      }
+
+      // check for constant relative permeability
+      bool HasConstantRelPermeability() const
+      {
+        return params_->relpermeabilitylaw_->HasConstantRelPermeability();
+      }
+
+      /// return derivative of relative permeabilty w.r.t. saturation
+      double EvaluateDerivOfRelPermeabilityWrtSaturation(const double saturation) const
+      {
+        return params_->relpermeabilitylaw_->GetDerivOfRelPermeabilityWrtSaturation(saturation);
+      }
+
+      /// return viscosity
+      double Viscosity(const double abspressgrad) const
+      {
+        return params_->viscositylaw_->GetViscosity(abspressgrad);
+      }
+
+      // check for constant viscosity
+      bool HasConstantViscosity() const
+      {
+        return params_->viscositylaw_->HasConstantViscosity();
       }
 
       /// return inverse bulk modulus (compressibility)
@@ -244,6 +265,13 @@ namespace MAT
           int phasenum,
           int doftoderive,
           const std::vector<double>& state) const;
+
+      //! evaluate 2nd derivative of saturation with respect to pressure
+      double EvaluateSecondDerivOfSaturationWrtPressure(
+          int phasenum,
+          int firstdoftoderive,
+          int seconddoftoderive,
+          const std::vector<double>& pressure) const;
 
       //! evaluate derivative of degree of freedom with respect to pressure
       double EvaluateDerivOfDofWrtPressure(

@@ -179,7 +179,12 @@ private:
     //! evaluate derivative of saturation with respect to pressure
     void EvaluateDerivOfSaturationWrtPressure(
         Epetra_SerialDenseMatrix& derivs,
-        const std::vector<double>& state) const;
+        const std::vector<double>& pressure) const;
+
+    //! evaluate second derivative of saturation with respect to pressure
+    void EvaluateSecondDerivOfSaturationWrtPressure(
+        std::vector<Epetra_SerialDenseMatrix>& derivs,
+        const std::vector<double>& pressure) const;
 
   private:
 

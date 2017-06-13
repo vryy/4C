@@ -114,6 +114,9 @@ public:
   //! initialization procedure prior to evaluation of first time step
   virtual void PrepareFirstTimeStep();
 
+  //! initialization procedure prior to evaluation of first time step
+  virtual void CalcInitialTimeDerivative();
+
   //! read restart data
   virtual void ReadRestart(int step) = 0;
 
@@ -175,6 +178,12 @@ public:
   //! build linear system tangent matrix, rhs/force residual
   void Evaluate();
 
+  //! apply Dirichlet Boundary Condition
+  void PrepareSystemForNewtonSolve();
+
+  //! direct access to system matrix
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() {return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);};
+
   //! Return MapExtractor for Dirichlet boundary conditions
   const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
   { return dbcmaps_; }
@@ -190,6 +199,9 @@ public:
 
   //! output solution and restart data to file
   virtual void Output();
+
+  //! output solution and restart data to file
+  virtual void PrintHeader();
 
   //! write additional data required for restart
   virtual void OutputRestart() = 0;
@@ -310,6 +322,9 @@ protected:
   //! call elements to calculate system matrix and rhs and assemble
   virtual void AssembleMatAndRHS();
 
+  //! call elements to calculate fluid coupling matrix and assemble
+  virtual void AssembleFluidCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs);
+
   //! return the right time-scaling-factor for the true residual
   virtual double ResidualScaling() const = 0;
 
@@ -341,6 +356,9 @@ protected:
 
   //! reconstruct fluxes from current solution
   void ReconstructFlux();
+
+  //! reconstruct porosity from current solution
+  void ReconstructPorosity();
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -417,6 +435,12 @@ protected:
 
   //! flag for Eulerian or ALE formulation of equation(s)
   bool isale_;
+
+  //! flag if initial time derivative should be skipped
+  bool skipinitder_;
+
+  //! flag if porosity should be output
+  bool output_porosity_;
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -511,6 +535,9 @@ protected:
 
   //! solid pressure at time n+1
   Teuchos::RCP<Epetra_Vector> solidpressure_;
+
+  //! porosity at time n+1
+  Teuchos::RCP<Epetra_Vector> porosity_;
 
   //! velocity of each phase at time n+1 (post-processed from pressure solution)
   Teuchos::RCP<Epetra_MultiVector> flux_;

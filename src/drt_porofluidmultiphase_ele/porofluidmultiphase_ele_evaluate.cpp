@@ -46,10 +46,13 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(
     // all physics-related stuff is included in the implementation class(es) that can
     // be used in principle inside any element (at the moment: only PoroFluidMultiPhase element)
     case POROFLUIDMULTIPHASE::calc_mat_and_rhs:
+    case POROFLUIDMULTIPHASE::calc_fluid_coupl_mat:
     case POROFLUIDMULTIPHASE::calc_error:
     case POROFLUIDMULTIPHASE::calc_pres_and_sat:
     case POROFLUIDMULTIPHASE::calc_solidpressure:
+    case POROFLUIDMULTIPHASE::calc_porosity:
     case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
+    case POROFLUIDMULTIPHASE::calc_initial_time_deriv:
     {
       std::vector<Epetra_SerialDenseMatrix*> elemat(2);
       elemat[0]=&elemat1;

@@ -74,7 +74,14 @@ namespace PAR
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int phasenum,
         int doftoderive,
-        const std::vector<double>& state) const =0;
+        const std::vector<double>& pressure) const =0;
+
+    //! evaluate 2nd derivative of saturation with respect to pressure
+    virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+        int phasenum,
+        int firstdoftoderive,
+        int seconddoftoderive,
+        const std::vector<double>& pressure) const =0;
 
     //! evaluate derivative of degree of freedom with respect to pressure
     virtual double EvaluateDerivOfDofWrtPressure(
@@ -125,7 +132,14 @@ namespace PAR
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int phasenum,
         int doftoderive,
-        const std::vector<double>& state) const;
+        const std::vector<double>& pressure) const;
+
+    //! evaluate 2nd derivative of saturation with respect to pressure
+    virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+        int phasenum,
+        int firstdoftoderive,
+        int seconddoftoderive,
+        const std::vector<double>& pressure) const;
 
     //! evaluate derivative of degree of freedom with respect to pressure
     virtual double EvaluateDerivOfDofWrtPressure(
@@ -181,7 +195,14 @@ namespace PAR
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int phasenum,
         int doftoderive,
-        const std::vector<double>& state) const;
+        const std::vector<double>& pressure) const;
+
+    //! evaluate 2nd derivative of saturation with respect to pressure
+    virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+        int phasenum,
+        int firstdoftoderive,
+        int seconddoftoderive,
+        const std::vector<double>& pressure) const;
 
     //! evaluate derivative of degree of freedom with respect to pressure
     virtual double EvaluateDerivOfDofWrtPressure(
@@ -239,7 +260,14 @@ namespace PAR
     virtual double EvaluateDerivOfSaturationWrtPressure(
         int phasenum,
         int doftoderive,
-        const std::vector<double>& state) const;
+        const std::vector<double>& pressure) const;
+
+    //! evaluate 2nd derivative of saturation with respect to pressure
+    virtual double EvaluateSecondDerivOfSaturationWrtPressure(
+        int phasenum,
+        int firstdoftoderive,
+        int seconddoftoderive,
+        const std::vector<double>& pressure) const;
 
     //! evaluate derivative of degree of freedom with respect to pressure
     virtual double EvaluateDerivOfDofWrtPressure(

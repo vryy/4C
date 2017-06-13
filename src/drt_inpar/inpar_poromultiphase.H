@@ -34,7 +34,15 @@ namespace POROMULTIPHASE
   enum SolutionSchemeOverFields
   {
     solscheme_undefined,
-    solscheme_twoway
+    solscheme_twoway_partitioned,
+    solscheme_twoway_monolithic
+  };
+
+  /// type of finite difference check
+  enum FDCheck
+  {
+    fdcheck_none,
+    fdcheck_global
   };
 
 

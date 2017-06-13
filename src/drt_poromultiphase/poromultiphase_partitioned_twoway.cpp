@@ -2,7 +2,7 @@
 /*!
  \file poromultiphase_partitioned_twoway.cpp
 
- \brief two-way coupled solution algorithm
+ \brief two-way coupled partitioned solution algorithm
         for porous multiphase flow through elastic medium problems
 
    \level 3
@@ -66,66 +66,12 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
       ndsporofluid_scatra);
 
   // initialize increment vectors
-  phiincnp_ = LINALG::CreateVector(*fluid_->DofRowMap(0),true);
-  dispincnp_ = LINALG::CreateVector(*structure_->DofRowMap(0),true);
+  phiincnp_ = LINALG::CreateVector(*FluidField()->DofRowMap(0),true);
+  dispincnp_ = LINALG::CreateVector(*StructureField()->DofRowMap(0),true);
 
   // Get the parameters for the ConvergenceCheck
   itmax_ = algoparams.get<int>("ITEMAX");
   ittol_ = algoparams.get<double>("CONVTOL");
-}
-
-/*----------------------------------------------------------------------*
- | time loop                                                 vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Timeloop()
-{
-  // prepare the loop
-  PrepareTimeLoop();
-
-  //time loop
-  while (NotFinished())
-  {
-    PrepareTimeStep();
-
-    TimeStep();
-
-    UpdateAndOutput();
-
-  }
-
-  return;
-
-}
-
-/*----------------------------------------------------------------------*
- | prepare one time step                                     vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PrepareTimeStep(bool printheader)
-{
-  IncrementTimeAndStep();
-  if(printheader)
-    PrintHeader();
-
-  SetSolidPressure(fluid_->SolidPressure());
-  //NOTE: the predictor of the structure is called in here
-  structure_-> PrepareTimeStep();
-
-  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
-  fluid_->PrepareTimeStep();
-}
-
-/*----------------------------------------------------------------------*
- | prepare the time loop                                     vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::PrepareTimeLoop()
-{
-  //initial output
-  structure_-> PrepareOutput();
-  structure_-> Output();
-  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
-  fluid_->PrepareTimeLoop();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -147,7 +93,16 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
 
   if (Comm().MyPID()==0)
   {
-    std::cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+    std::cout<<"********************************************************************************" <<
+        "***********************************************\n";
+    std::cout<<"* PARTITIONED OUTER ITERATION LOOP ----- FLUID  <-------> STRUCTURE         " <<
+        "                                                  *\n";
+    std::cout<<"* STEP: " << std::setw(5) << std::setprecision(4) << std::scientific << Step() << "/"
+        << std::setw(5) << std::setprecision(4) << std::scientific << NStep() << ", Time: "
+        << std::setw(11) << std::setprecision(4) << std::scientific << Time() << "/"
+        << std::setw(11) << std::setprecision(4) << std::scientific << MaxTime() << ", Dt: "
+        << std::setw(11) << std::setprecision(4) << std::scientific << Dt() <<
+        "                                                           *"<< std::endl;
   }
 
   while (stopnonliniter==false)
@@ -158,17 +113,26 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::OuterLoop()
     // update the states to the last solutions obtained
     IterUpdateStates();
 
-    // 1.) solve structural system
-    DoStructStep();
-    // 2.) set disp and vel states in scatra field
-    SetStructSolution(structure_->Dispnp(),structure_->Velnp());
+    if(solve_structure_)
+    {
+      // 1.) solve structural system
+      DoStructStep();
+      // 2.) set disp and vel states in porofluid field
+      SetStructSolution(StructureField()->Dispnp(),StructureField()->Velnp());
+    }
+    else
+    {
+      // Inform user that structure field has been disabled
+      PrintStructureDisabledInfo();
+      // just set displacements and velocities to zero
+      SetStructSolution(zeros_,zeros_);
+    }
 
     // 1.) solve scalar transport equation
     DoFluidStep();
 
     // 2.) set solid pressure state in structure field
-    SetSolidPressure(fluid_->SolidPressure());
-
+    SetSolidPressure(FluidField()->SolidPressure());
 
     // check convergence for all fields
     // stop iteration loop if converged
@@ -209,14 +173,14 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  phiincnp_->Update(1.0,*(fluid_->Phinp()),-1.0);
-  dispincnp_->Update(1.0,*(structure_->Dispnp()),-1.0);
+  phiincnp_->Update(1.0,*(FluidField()->Phinp()),-1.0);
+  dispincnp_->Update(1.0,*(StructureField()->Dispnp()),-1.0);
 
   // build the L2-norm of the scalar increment and the scalar
   phiincnp_->Norm2(&phiincnorm_L2);
-  fluid_->Phinp()->Norm2(&phinorm_L2);
+  FluidField()->Phinp()->Norm2(&phinorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
-  structure_->Dispnp()->Norm2(&dispnorm_L2);
+  StructureField()->Dispnp()->Norm2(&dispnorm_L2);
 
   // care for the case that there is (almost) zero scalar
   if (phinorm_L2 < 1e-6) phinorm_L2 = 1.0;
@@ -225,16 +189,15 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
   // print the incremental based convergence check to the screen
   if (Comm().MyPID()==0 )
   {
-    std::cout<<"\n";
-    std::cout<<"***********************************************************************************\n";
-    std::cout<<"    OUTER ITERATION STEP    \n";
-    std::cout<<"***********************************************************************************\n";
-    printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
-    printf("|-  step/max  -|-  tol      [norm]  -|-  scalar-inc  -|-  disp-inc      -|-  scalar-rel-inc  -|-  disp-rel-inc  -|\n");
+    std::cout<<"                                                                                                                              *\n";
+    std::cout<<"+----------------------------------------------------------------------------------------------------------------+            *\n";
+    std::cout<<"| PARTITIONED OUTER ITERATION STEP ----- FLUID  <-------> STRUCTURE                                              |            *\n";
+    printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+            *\n");
+    printf("|-  step/max  -|-  tol      [norm]  -|-  fluid-inc   -|-  disp-inc      -|-  fluid-rel-inc   -|-  disp-rel-inc  -|            *\n");
     printf("|   %3d/%3d    |  %10.3E[L_2 ]   |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E      |",
          itnum,itmax_,ittol_,phiincnorm_L2/Dt()/sqrt(phiincnp_->GlobalLength()),dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()),phiincnorm_L2/phinorm_L2,dispincnorm_L2/dispnorm_L2);
-    printf("\n");
-    printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
+    printf("            *\n");
+    printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+            *\n");
   }
 
   // converged
@@ -243,8 +206,8 @@ bool POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::ConvergenceCheck(int itnum
     stopnonliniter = true;
     if (Comm().MyPID()==0 )
     {
-      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                                                      |\n", itnum,itmax_);
-      printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
+      printf("* FLUID  <-------> STRUCTURE Outer Iteration loop converged after iteration %3d/%3d !                                         *\n", itnum,itmax_);
+      printf("*******************************************************************************************************************************\n");
     }
   }
 
@@ -273,12 +236,15 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::DoStructStep()
 {
   if (Comm().MyPID() == 0)
   {
-    std::cout
-        << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
+    std::cout<<"\n";
+    std::cout<<"*****************************************************************************************************************\n";
+    std::cout<<"STRUCTURE SOLVER   \n";
+    std::cout<<"*****************************************************************************************************************\n";
+
   }
 
   // Newton-Raphson iteration
-  structure_-> Solve();
+  StructureField()-> Solve();
 
   return;
 }
@@ -288,38 +254,12 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::DoStructStep()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::DoFluidStep()
 {
-  if (Comm().MyPID() == 0)
-  {
-    std::cout
-        << "\n****************************\n  PORO MULTIPHASE FLUID SOLVER \n****************************\n";
-  }
-
   // -------------------------------------------------------------------
   //                  solve nonlinear / linear equation
   // -------------------------------------------------------------------
-  fluid_->Solve();
+  FluidField()->Solve();
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- | update fields and output results                         vuong 08/16 |
- *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::UpdateAndOutput()
-{
-  // prepare the output
-  structure_-> PrepareOutput();
-
-  // update single fields
-  structure_-> Update();
-  fluid_->Update();
-
-  // evaluate error if desired
-  fluid_->EvaluateErrorComparedToAnalyticalSol();
-
-  // output single fields
-  structure_-> Output();
-  fluid_->Output();
 }
 
 /*----------------------------------------------------------------------*
@@ -330,8 +270,8 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::IterUpdateStates()
   // store last solutions (current states).
   // will be compared in ConvergenceCheck to the solutions,
   // obtained from the next Struct and Scatra steps.
-  phiincnp_ ->Update(1.0,*fluid_->Phinp(),0.0);
-  dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
+  phiincnp_ ->Update(1.0,*FluidField()->Phinp(),0.0);
+  dispincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
 
   return;
 }  // IterUpdateStates()

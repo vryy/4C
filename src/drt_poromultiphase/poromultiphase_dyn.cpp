@@ -42,6 +42,7 @@ void poromultiphase_dyn(int restart)
   // print problem type
   if (comm.MyPID() == 0)
   {
+    POROMULTIPHASE::PrintLogo();
     std::cout << "###################################################"
         << std::endl;
     std::cout << "# YOUR PROBLEM TYPE: "
@@ -104,6 +105,9 @@ void poromultiphase_dyn(int restart)
   // note: to be done after potential restart, as in ReadRestart()
   //       the secondary material is destroyed
   POROMULTIPHASE::UTILS::AssignMaterialPointers(struct_disname,fluid_disname);
+
+  // Setup the solver (only for the monolithic problem)
+  algo->SetupSolver();
 
   //Run of the actual problem.
 

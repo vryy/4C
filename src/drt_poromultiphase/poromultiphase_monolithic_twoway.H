@@ -1,0 +1,241 @@
+/*----------------------------------------------------------------------*/
+/*!
+ \file poromultiphase_monolithic_twoway.H
+
+ \brief two-way coupled monolithic solution algorithm
+        for porous multiphase flow through elastic medium problems
+
+   \level 3
+
+   \maintainer  Johannes Kremheller
+                kremheller@lnm.mw.tum.de
+                http://www.lnm.mw.tum.de
+ *----------------------------------------------------------------------*/
+
+#ifndef SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_
+#define SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_
+
+#include "poromultiphase_monolithic.H"
+#include <Epetra_Time.h>
+
+#include "../drt_inpar/inpar_poromultiphase.H"
+
+namespace LINALG
+{
+  class SparseMatrix;
+  class SparseOperator;
+  class MultiMapExtractor;
+  class BlockSparseMatrixBase;
+  class Solver;
+}
+
+namespace DRT
+{
+  namespace UTILS
+  {
+    class LocsysManager;
+  }
+}
+
+namespace POROMULTIPHASE
+{
+
+  //! Base class of all solid-scatra algorithms
+  class PoroMultiPhaseMonolithicTwoWay : public PoroMultiPhaseMonolithic
+  {
+  public:
+
+    /// create using a Epetra_Comm
+    PoroMultiPhaseMonolithicTwoWay(
+        const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams);
+
+    /// virtual destructor
+    virtual ~PoroMultiPhaseMonolithicTwoWay(){};
+
+    /// initialization
+    virtual void Init(
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& algoparams,
+        const Teuchos::ParameterList& structparams,
+        const Teuchos::ParameterList& fluidparams,
+        const std::string& struct_disname,
+        const std::string& fluid_disname,
+        bool isale,
+        int nds_disp,
+        int nds_vel,
+        int nds_solidpressure,
+        int ndsporofluid_scatra);
+
+    /// setup
+    virtual void SetupSystem();
+
+    /// time step of coupled problem
+    virtual void TimeStep();
+
+    //! extractor to communicate between full monolithic map and block maps
+    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const
+    {
+      return blockrowdofmap_;
+    }
+
+  private:
+
+    //! Newton output to screen
+    virtual void NewtonOutput();
+
+    //! Newton error check after loop
+    virtual void NewtonErrorCheck();
+
+    //! build the combined dirichletbcmap
+    void BuildCombinedDBCMap();
+
+    //! full monolithic dof row map
+    Teuchos::RCP<const Epetra_Map> DofRowMap();
+
+    virtual void SetupRHS();
+
+    //! build block vector from field vectors, e.g. rhs, increment vector
+    void SetupVector(Epetra_Vector &f, //!< vector of length of all dofs
+        Teuchos::RCP<const Epetra_Vector> sv, //!< vector containing only structural dofs
+        Teuchos::RCP<const Epetra_Vector> fv //!< vector containing only fluid dofs
+        );
+
+    //! extract the field vectors from a given composed vector.
+    /*!
+     x is the sum of all increments up to this point.
+     \param x  (i) composed vector that contains all field vectors
+     \param sx (o) structural vector (e.g. displacements)
+     \param fx (o) fluid vector (e.g. velocities and pressure)
+     */
+    virtual void ExtractFieldVectors(
+        Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& sx,
+        Teuchos::RCP<const Epetra_Vector>& fx);
+
+    /// setup composed system matrix from field solvers
+    virtual void SetupSystemMatrix() { SetupSystemMatrix(*systemmatrix_); }
+
+    /// setup composed system matrix from field solvers
+    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) ;
+
+    //Setup solver for monolithic system
+    virtual bool SetupSolver();
+
+    //! Evaluate mechanical-fluid system matrix
+    virtual void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf //!< mechanical-fluid stiffness matrix
+        );
+
+    //! Evaluate fluid-mechanical system matrix
+    virtual void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs //!< fluid-mechanical tangent matrix
+          );
+
+    //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc
+    );
+
+    //! return structure fluid coupling sparse matrix
+    Teuchos::RCP<LINALG::SparseMatrix> StructFluidCouplingMatrix();
+
+    //! return fluid structure coupling sparse matrix
+    Teuchos::RCP<LINALG::SparseMatrix> FluidStructCouplingMatrix();
+
+    //! unique map of all dofs that should be constrained with DBC
+    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const {return combinedDBCMap_;};
+
+    //! Solve the linear system of equations
+    void LinearSolve();
+
+    //! Setup Newton-Raphson
+    void SetupNewton();
+
+    //! Print Header to screen
+    void PrintHeader();
+
+    // build norms for convergence check
+    void BuildConvergenceNorms();
+
+    void PoroFDCheck();
+
+    // check for convergence
+    bool Converged();
+
+
+    //! linear solver
+    bool directsolve_;
+    //! convergence tolerance
+    double ittol_;
+    //! maximally permitted iterations
+    int itmax_;
+    //! minimally necessary iterations
+    int itmin_;
+    //! current iteration step
+    int itnum_;
+    //! @name Global vectors
+    Teuchos::RCP<Epetra_Vector> zeros_; //!< a zero vector of full length
+
+    Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
+    //!< \f$\Delta{x}^{<k>}_{n+1}\f$
+
+    Teuchos::RCP<Epetra_Vector> rhs_; //!< rhs of Poroelasticity system
+
+    Teuchos::RCP<LINALG::Solver> solver_;   //!< linear algebraic solver
+
+
+    //@}
+
+    //! @name Global matrixes
+
+    //! block systemmatrix
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+
+    //! structure-fluid coupling matrix
+    Teuchos::RCP<LINALG::SparseOperator> k_sf_;
+    //! fluid-structure coupling matrix
+    Teuchos::RCP<LINALG::SparseOperator> k_fs_;
+
+    //@}
+
+    //! dof row map (not splitted)
+    Teuchos::RCP<Epetra_Map> fullmap_;
+
+    //! dof row map splitted in (field) blocks
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
+
+    //! dirichlet map of monolithic system
+    Teuchos::RCP<Epetra_Map> combinedDBCMap_;
+
+    double tolinc_;     //!< tolerance residual increment
+    double tolfres_;    //!< tolerance force residual
+
+    double tolinc_struct_;     //!< tolerance residual increment for structure displacements
+    double tolfres_struct_;    //!< tolerance force residual for structure displacements
+
+    double tolinc_fluid_;     //!< tolerance residual increment for fluid
+    double tolfres_fluid_;    //!< tolerance force residual for fluid
+
+    double normrhs_;  //!< norm of residual forces
+    double norminc_;  //!< norm of residual unknowns
+
+    double normrhsfluid_;     //!< norm of residual forces (fluid )
+    double normincfluid_;     //!< norm of residual unknowns (fluid )
+
+    double normrhsstruct_;    //!< norm of residual forces (structure)
+    double normincstruct_;    //!< norm of residual unknowns (structure)
+
+    Epetra_Time timernewton_; //!< timer for measurement of solution time of newton iterations
+    double dtsolve_; //!< linear solver time
+    double dtele_; //!< time for element evaluation + build-up of system matrix
+
+    //! Dirichlet BCs with local co-ordinate system
+    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+
+    //! flag for finite difference check
+    INPAR::POROMULTIPHASE::FDCheck fdcheck_;
+
+  }; //PoroMultiPhasePartitioned
+
+
+}
+
+#endif /* SRC_DRT_POROMULTIPHASE_POROMULTIPHASE_MONOLITHIC_TWOWAY_H_ */

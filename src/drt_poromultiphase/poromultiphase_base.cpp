@@ -40,7 +40,8 @@ POROMULTIPHASE::PoroMultiPhaseBase::PoroMultiPhaseBase(
     AlgorithmBase(comm, globaltimeparams),
     structure_(Teuchos::null),
     fluid_(Teuchos::null),
-    zeros_(Teuchos::null)
+    zeros_(Teuchos::null),
+    solve_structure_(true)
 {
 
 }
@@ -77,6 +78,8 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(
 
   // initialize zero vector for convenience
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+  // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh deformation
+  solve_structure_ = DRT::INPUT::IntegralValue<int>(algoparams,"SOLVE_STRUCTURE");
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = fluidparams.get<int>("LINEAR_SOLVER");
@@ -153,6 +156,74 @@ void POROMULTIPHASE::PoroMultiPhaseBase::ReadRestart( int restart )
 }
 
 /*----------------------------------------------------------------------*
+ | time loop                                            kremheller 03/17 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseBase::Timeloop()
+{
+  // prepare the loop
+  PrepareTimeLoop();
+
+  //time loop
+  while (NotFinished())
+  {
+    PrepareTimeStep();
+
+    TimeStep();
+
+    UpdateAndOutput();
+
+  }
+
+  return;
+
+}
+
+/*----------------------------------------------------------------------*
+ | prepare the time loop                                     vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeLoop()
+{
+  //initial output
+  if(solve_structure_)
+  {
+    StructureField()-> PrepareOutput();
+    StructureField()-> Output();
+    SetStructSolution(StructureField()->Dispnp(),StructureField()->Velnp());
+  }
+  else
+  {
+    // Inform user that structure field has been disabled
+    PrintStructureDisabledInfo();
+    // just set displacements and velocities to zero
+    SetStructSolution(zeros_,zeros_);
+  }
+  FluidField()->PrepareTimeLoop();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | prepare one time step                                     vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseBase::PrepareTimeStep()
+{
+  IncrementTimeAndStep();
+
+  SetSolidPressure(FluidField()->SolidPressure());
+
+  if(solve_structure_)
+  {
+    //NOTE: the predictor of the structure is called in here
+    StructureField()-> PrepareTimeStep();
+    SetStructSolution(StructureField()->Dispnp(),StructureField()->Velnp());
+  }
+  else
+    SetStructSolution(zeros_,zeros_);
+
+  FluidField()->PrepareTimeStep();
+}
+
+/*----------------------------------------------------------------------*
  | Test the results of all subproblems                       vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::CreateFieldTest()
@@ -210,6 +281,26 @@ void POROMULTIPHASE::PoroMultiPhaseBase::SetSolidPressure(
 {
   const int nds_solidpressure = fluid_->GetDofSetNumberOfSolidPressure();
   structure_->Discretization()->SetState(nds_solidpressure,"solid_pressure",pressure);
+}
+
+/*----------------------------------------------------------------------*
+ | update fields and output results                         vuong 08/16 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseBase::UpdateAndOutput()
+{
+  // prepare the output
+  StructureField()-> PrepareOutput();
+
+  // update single fields
+  StructureField()-> Update();
+  FluidField()->Update();
+
+  // evaluate error if desired
+  FluidField()->EvaluateErrorComparedToAnalyticalSol();
+
+  // output single fields
+  StructureField()-> Output();
+  FluidField()->Output();
 }
 
 /*------------------------------------------------------------------------*
@@ -282,4 +373,20 @@ Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::FluidPress
 Teuchos::RCP<const Epetra_Vector> POROMULTIPHASE::PoroMultiPhaseBase::SolidPressure() const
 {
   return fluid_->SolidPressure();
+}
+
+/*----------------------------------------------------------------------*
+ | inform user that structure is not solved            kremheller 04/17 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASE::PoroMultiPhaseBase::PrintStructureDisabledInfo()
+{
+  // print out Info
+  if (Comm().MyPID()==0 )
+  {
+    std::cout<<"\n";
+    std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+    std::cout<<" INFO:    STRUCTURE FIELD IS NOT SOLVED   \n";
+    std::cout<<"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
+  }
+
 }

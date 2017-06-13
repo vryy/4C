@@ -138,6 +138,11 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::SetupElementDefinition( std::map<st
     .AddNamedInt("MAT")
     ;
 
+  defs["HEX8"]
+    .AddIntVector("HEX8",8)
+    .AddNamedInt("MAT")
+    ;
+
 }
 
 /*----------------------------------------------------------------------*

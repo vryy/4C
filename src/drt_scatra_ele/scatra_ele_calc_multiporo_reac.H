@@ -159,6 +159,9 @@ public:
   //! (i.e. pressures, saturations and porosity)
   std::vector<std::pair<std::string,double> > couplingvalues_;
 
+  //! penalty factor to avoid very small "densities"
+  const double penalty_ = 1000.0;
+
 };
 
 

@@ -83,6 +83,10 @@ namespace INPAR
       m_growth_aniso_strain_const_trig,        ///< anisotropic strain-dependent growth law with constant prescribed trigger (for multiscale in time)
       m_growth_aniso_stress_const_trig,        ///< anisotropic stress-dependent growth law with constant prescribed trigger (for multiscale in time)
       m_growth_iso_stress,                     ///< isotropic stress-dependent growth law
+      m_fluidporo_relpermeabilitylaw_constant, ///< permeability law for constant permeability in porous multiphase medium
+      m_fluidporo_relpermeabilitylaw_exp,      ///< permeability law for permeability depending on saturations^exponenent in porous multiphase medium
+      m_fluidporo_viscositylaw_constant,       ///< viscosity law for constant viscosity in porous multiphase medium
+      m_fluidporo_viscositylaw_celladh,        ///< viscosity law modelling cell adherence
       m_growth_ac,                             ///< simple scalar depended growth law
       m_growth_ac_radial,                      ///< scalar depended growth in radial direction
       m_growth_ac_radial_refconc,              ///< scalar depended growth in radial direction using reference concentrations

@@ -67,8 +67,8 @@ protected:
   //! set time for evaluation of Neumann boundary conditions
   virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
 
-  //! calculate consistent initial scalar time derivatives in compliance with initial scalar field
-  //virtual void CalcInitialTimeDerivative();
+  //! initialization procedure prior to evaluation of first time step
+  virtual void CalcInitialTimeDerivative();
 
   /// set part of residual vector belonging to previous time step
   virtual void SetOldPartOfRighthandside();

@@ -69,25 +69,31 @@ namespace POROMULTIPHASE
     virtual void SetupSystem() = 0;
 
     /// prepare timeloop of coupled problem
-    virtual void PrepareTimeLoop() = 0;
+    void PrepareTimeLoop();
 
     /// timeloop of coupled problem
-    virtual void Timeloop() = 0;
+    void Timeloop();
 
     /// time step of coupled problem
     virtual void TimeStep() = 0;
 
-    /// time step of coupled problem
-    virtual void PrepareTimeStep() = 0;
+    /// prepare time step of coupled problem
+    void PrepareTimeStep();
 
-    //! update time step and print to screen
-    virtual void UpdateAndOutput() = 0;
+    //! update fields after convergence
+    void UpdateAndOutput();
 
     /// dof map of vector of unknowns of structure field
     virtual Teuchos::RCP<const Epetra_Map> StructDofRowMap() const;
 
     /// dof map of vector of unknowns of fluid field
     virtual Teuchos::RCP<const Epetra_Map> FluidDofRowMap() const;
+
+    //! access to structural field
+    const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
+
+    //! access to fluid field
+    const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& FluidField(){return fluid_;}
 
     /// set structure solution on scatra field
     void SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
@@ -98,6 +104,9 @@ namespace POROMULTIPHASE
 
     /// set scatra solution on fluid field
     void SetScatraSolution(unsigned nds, Teuchos::RCP<const Epetra_Vector> scalars ) ;
+
+    //! setup solver (for monolithic only)
+    virtual bool SetupSolver(){return false;};
 
     /// unknown displacements at \f$t_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> StructDispnp() const;
@@ -128,15 +137,21 @@ namespace POROMULTIPHASE
     /// set structure velocity field on fluid field
     void SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel ) ;
 
-  protected:
     /// underlying structure of the PoroMultiPhase problem
     Teuchos::RCP< ::ADAPTER::Structure>    structure_;
 
     /// underlying fluid problem of the PoroMultiPhase problem
     Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper> fluid_;
 
+  protected:
+
     /// a zero vector of full length of structure dofs
     Teuchos::RCP<Epetra_Vector> zeros_;
+    //! here the computation of the structure can be skipped, this is helpful if only fluid-scatra coupling should be calculated
+    bool solve_structure_;
+
+    /// Print user output that structure field is disabled
+    void PrintStructureDisabledInfo() ;
 
   }; //PoroMultiPhaseBase
 

@@ -44,9 +44,10 @@ void porofluidmultiphase_dyn(int restart)
   // access the problem
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  // print problem type
+  // print problem type and logo
   if (comm.MyPID() == 0)
   {
+    POROFLUIDMULTIPHASE::PrintLogo();
     std::cout << "###################################################"
         << std::endl;
     std::cout << "# YOUR PROBLEM TYPE: "

@@ -28,8 +28,11 @@ enum Action {
   set_general_parameter,     // set general parameters for element evaluation
   set_timestep_parameter,    // set time-integration parameters for element evaluation
   calc_mat_and_rhs,          // calc system matrix and residual,
+  calc_fluid_coupl_mat,      // calculate off-diagonal fluid-structure coupling matrix
+  calc_initial_time_deriv,   // calculate initial time derivative
   calc_pres_and_sat,         // calculate pressure and saturation
   calc_solidpressure,        // calculate solid pressure
+  calc_porosity,             // calculate porosity
   calc_error,                // calc_error
   recon_flux_at_nodes        // reconstruct flux at nodes
 }; // enum Action

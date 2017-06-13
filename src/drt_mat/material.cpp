@@ -114,6 +114,8 @@
 #include "biochemo_mechano_cell_activefiber.H"
 #include "biochemo_mechano_cell_passivefiber.H"
 #include "growth.H"
+#include "fluidporo_relpermeability_law.H"
+#include "fluidporo_viscosity_law.H"
 #include "superelastic_sma.H"
 
 
@@ -529,6 +531,34 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
     MAT::PAR::FluidPoroPhaseLawByFunction* params = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_relpermeabilitylaw_constant:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroRelPermeabilityLawConstant(curmat));
+    MAT::PAR::FluidPoroRelPermeabilityLawConstant* params = static_cast<MAT::PAR::FluidPoroRelPermeabilityLawConstant*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_relpermeabilitylaw_exp:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroRelPermeabilityLawExponent(curmat));
+    MAT::PAR::FluidPoroRelPermeabilityLawExponent* params = static_cast<MAT::PAR::FluidPoroRelPermeabilityLawExponent*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_viscositylaw_constant:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroViscosityLawConstant(curmat));
+    MAT::PAR::FluidPoroViscosityLawConstant* params = static_cast<MAT::PAR::FluidPoroViscosityLawConstant*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_fluidporo_viscositylaw_celladh:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::FluidPoroViscosityLawCellAdherence(curmat));
+    MAT::PAR::FluidPoroViscosityLawCellAdherence* params = static_cast<MAT::PAR::FluidPoroViscosityLawCellAdherence*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_fluidporo_phasedof_diffpressure:

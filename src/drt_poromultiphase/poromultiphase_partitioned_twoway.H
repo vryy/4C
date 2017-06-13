@@ -2,7 +2,7 @@
 /*!
  \file poromultiphase_partitioned_twoway.H
 
- \brief two-way coupled solution algorithm
+ \brief two-way coupled partitioned solution algorithm
         for porous multiphase flow through elastic medium problems
 
    \level 3
@@ -50,28 +50,13 @@ namespace POROMULTIPHASE
     /// setup
     virtual void SetupSystem();
 
-    /// timeloop of coupled problem
-    virtual void Timeloop();
-
     /// time step of coupled problem
     virtual void TimeStep() {OuterLoop();};
-
-    /// time step of coupled problem
-    virtual void PrepareTimeStep() {PrepareTimeStep(false);};
-
-    /// time step of coupled problem
-    virtual void PrepareTimeStep(bool printheader);
-
-    //! update time step and print to screen
-    virtual void UpdateAndOutput();
 
   private:
 
     //! perform iteration loop between fields
     virtual void OuterLoop();
-
-    /// prepare timeloop of coupled problem
-    virtual void PrepareTimeLoop();
 
     //! perform iteration step of structure field and set the new disp and vel states in the fluid field
     virtual void DoStructStep();

@@ -210,4 +210,51 @@ void ADAPTER::PoroFluidMultiphaseWrapper::PrepareTimeLoop()
 {
   porofluid_->PrepareTimeLoop();
 }
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::RCP<const LINALG::MapExtractor>  ADAPTER::PoroFluidMultiphaseWrapper::GetDBCMapExtractor() const
+{
+  return porofluid_->GetDBCMapExtractor();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector>  ADAPTER::PoroFluidMultiphaseWrapper::RHS() const
+{
+  return porofluid_->RHS();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphaseWrapper::UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)
+{
+  porofluid_->UpdateIter(inc);
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphaseWrapper::ReconstructPressuresAndSaturations()
+{
+  porofluid_->ReconstructPressuresAndSaturations();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphaseWrapper::ReconstructFlux()
+{
+  porofluid_->ReconstructFlux();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphaseWrapper::Evaluate()
+{
+  porofluid_->Evaluate();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::PoroFluidMultiphaseWrapper::SystemMatrix()
+{
+  return porofluid_->SystemMatrix();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::PoroFluidMultiphaseWrapper::AssembleFluidCouplingMat(Teuchos::RCP< LINALG::SparseOperator> k_fs)
+{
+  return porofluid_->AssembleFluidCouplingMat(k_fs);
+}

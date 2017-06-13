@@ -72,7 +72,9 @@ class AssembleInterface
 {
 public:
   //! constructor
-  AssembleInterface(){};
+  AssembleInterface(const bool inittimederiv):
+  inittimederiv_(inittimederiv)
+  {};
 
   //! destructor
   virtual ~AssembleInterface(){};
@@ -80,6 +82,12 @@ public:
   virtual int NumPhasesToAssembleInto() const =0;
 
   virtual int PhaseToAssembleInto(int iassemble, int numdofpernode) const =0;
+
+  bool CalcInitTimeDeriv() const {return inittimederiv_;};
+
+private:
+  // do we calculate the inital time derivative?
+  const bool inittimederiv_;
 
 };
 
@@ -91,7 +99,8 @@ class AssembleStandard : public AssembleInterface
 {
 public:
   //! constructor
-  AssembleStandard(int curphase):
+  AssembleStandard(int curphase, const bool inittimederiv):
+  AssembleInterface(inittimederiv),
   curphase_(curphase)
   {};
 
@@ -114,7 +123,8 @@ class AssembleAlsoIntoOtherPhase : public AssembleInterface
 {
 public:
   //! constructor
-  AssembleAlsoIntoOtherPhase(int curphase ,int otherphase):
+  AssembleAlsoIntoOtherPhase(int curphase ,int otherphase, const bool inittimederiv):
+    AssembleInterface(inittimederiv),
       phasestoassemble_(2)
   {
     phasestoassemble_[0] = curphase;
@@ -181,8 +191,8 @@ public:
       int                                                         numdofpernode,  //!< total number of DOFs/phases
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
-      double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      timefacfac,     //!< domain-integration factor times time-integration factor
+      double                                                      fac             //!< domain-integration factor
     ) = 0;
 
   //! evaluate vectors (RHS vector)
@@ -197,6 +207,22 @@ public:
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
       double                                                      fac              //!< domain-integration factor
       )=0;
+
+  //! evaluate off-diagonal coupling matrix with structure
+  virtual void EvaluateMatrixOD(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         iter,           //!< iteration index (gauss point or node)
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor
+      double                                                      det
+  ) = 0;
 
 };
 
@@ -277,6 +303,42 @@ public:
           fac);
   };
 
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixOD(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         iter,            //!< iteration index (gauss point or node)
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
+    )
+  {
+    // loop over the evaluators
+    typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd,nen> > >::iterator it;
+    for(it=evaluators_.begin();it!=evaluators_.end();it++)
+    {
+      (*it)->EvaluateMatrixOD(
+            elemat,
+            funct,
+            deriv,
+            derxy,
+            xjm,
+            iter,
+            numdofpernode,
+            phasemanager,
+            variablemanager,
+            timefacfac,
+            fac,
+            det);
+    }
+  };
+
   //! add an evaluator to the list of evaluators
   void AddEvaluator(Teuchos::RCP<EvaluatorInterface<nsd,nen> > evaluator)
   {evaluators_.push_back(evaluator);};
@@ -324,7 +386,7 @@ public:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac            //!< domain-integration factor times time-integration factor
     )
   {
     // the assembler class decides, where the terms are assembled into
@@ -341,7 +403,8 @@ public:
           phasemanager,
           variablemanager,
           timefacfac,
-          fac
+          fac,
+          assembler_->CalcInitTimeDeriv()
         );
     }
   };
@@ -356,7 +419,7 @@ public:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac             //!< domain-integration factor
       )
   {
     // the assembler class decides, where the terms are assembled into
@@ -373,7 +436,46 @@ public:
           phasemanager,
           variablemanager,
           rhsfac,
-          fac
+          fac,
+          assembler_->CalcInitTimeDeriv()
+        );
+    }
+  };
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixOD(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         iter,           //!< iteration index (gauss point or node)
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,           //!< domain-integration factor times time-integration factor
+      double                                                      det
+    )
+  {
+    // the assembler class decides, where the terms are assembled into
+    for(int iassemble=0; iassemble<assembler_->NumPhasesToAssembleInto(); iassemble++)
+    {
+      // call the actual evaluation and assembly of the respective term (defined by derived class)
+       EvaluateMatrixODAndAssemble(
+          elemat,
+          funct,
+          deriv,
+          derxy,
+          xjm,
+          myphase_,
+          assembler_->PhaseToAssembleInto(iassemble,numdofpernode),
+          numdofpernode,
+          phasemanager,
+          variablemanager,
+          timefacfac,
+          fac,
+          det
         );
     }
   };
@@ -391,7 +493,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     )=0;
 
   // actual evaluation and assembly of the respective term in the RHS vector (defined by derived class)
@@ -405,7 +508,25 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      )=0;
+
+  // actual evaluation and assembly of the respective term in the off-diagonal matrix (defined by derived class)
+  virtual void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of phase to add into
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       )=0;
 
 private:
@@ -453,7 +574,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -467,7 +589,25 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv    //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 
 };
@@ -507,7 +647,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -521,7 +662,25 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv    //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 
 };
@@ -561,7 +720,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -575,7 +735,25 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 
 };
@@ -615,8 +793,9 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
-    );
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+  );
 
   //! evaluate element RHS vector
   void EvaluateVectorAndAssemble(
@@ -629,7 +808,25 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 };
 
@@ -668,7 +865,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -682,7 +880,25 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 
 };
@@ -722,8 +938,9 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
-    );
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+  );
 
   //! evaluate element RHS vector
   void EvaluateVectorAndAssemble(
@@ -736,7 +953,36 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
+      );
+
+  //! get transient term for rhs and OD
+  double GetRhsTrans(
+      int                                                         curphase,        //!< index of current phase
+      int                                                         phasetoadd,      //!< index of current phase
+      int                                                         numdofpernode,   //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
+      double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
+      double                                                      fac              //!< domain-integration factor);
       );
 
 };
@@ -776,7 +1022,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -790,7 +1037,36 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv    //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
+      );
+
+  //! get transient term for rhs and OD
+  double GetRhsTrans(
+      int                                                         curphase,        //!< index of current phase
+      int                                                         phasetoadd,      //!< index of current phase
+      int                                                         numdofpernode,   //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
+      double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
+      double                                                      fac              //!< domain-integration factor);
       );
 
 };
@@ -831,7 +1107,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -845,7 +1122,25 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 
 };
@@ -885,7 +1180,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -899,7 +1195,36 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv    //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
+      );
+
+  //! get transient term for rhs and OD
+  double GetRhsTrans(
+      int                                                         curphase,        //!< index of current phase
+      int                                                         phasetoadd,      //!< index of current phase
+      int                                                         numdofpernode,   //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
+      double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
+      double                                                      fac              //!< domain-integration factor);
       );
 
 };
@@ -940,7 +1265,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -954,7 +1280,25 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 
 };
@@ -994,7 +1338,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -1008,7 +1353,98 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
+      );
+
+};
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
+/*!
+\brief helper class for evaluation of porosity
+
+This class implements the post processing of the porosity at the nodes.
+
+\author kremheller
+*/
+template<int nsd, int nen>
+class EvaluatorPorosity : public EvaluatorBase<nsd,nen>
+{
+public:
+  //! constructor
+  EvaluatorPorosity(Teuchos::RCP<AssembleInterface> assembler,int curphase)
+  : EvaluatorBase<nsd,nen>(assembler,curphase)
+    {};
+
+  //! destructor
+  virtual ~EvaluatorPorosity(){};
+
+protected:
+
+  //! evaluate element matrix
+  void EvaluateMatrixAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+    );
+
+  //! evaluate element RHS vector
+  void EvaluateVectorAndAssemble(
+      std::vector<Epetra_SerialDenseVector*>&                     elevec,           //!< element vector to be filled
+      const LINALG::Matrix<nen,1>&                                funct,           //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              derxy,           //! array for shape function derivatives w.r.t x,y,z
+      int                                                         curphase,        //!< index of current phase
+      int                                                         phasetoadd,      //!< index of current phase
+      int                                                         numdofpernode,   //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
+      double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 
 };
@@ -1049,7 +1485,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -1063,7 +1500,25 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 
 };
@@ -1104,7 +1559,8 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
       double                                                      timefacfac,     //!< domain-integration factor
-      double                                                      fac             //!< domain-integration factor times time-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
     );
 
   //! evaluate element RHS vector
@@ -1118,9 +1574,28 @@ protected:
       const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,    //!< phase manager
       const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager, //!< variable manager
       double                                                      rhsfac,          //!< time-integration factor for rhs times domain-integration factor
-      double                                                      fac              //!< domain-integration factor
+      double                                                      fac,             //!< domain-integration factor
+      bool                                                        inittimederiv   //!< calculate only parts for initial time derivative
+      );
+
+  //! evaluate off-diagonal coupling matrix with structure
+  void EvaluateMatrixODAndAssemble(
+      std::vector<Epetra_SerialDenseMatrix*>&                     elemat,         //!< element matrix to be filled
+      const LINALG::Matrix<nen,1>&                                funct,          //! array for shape functions
+      const LINALG::Matrix<nsd,nen>&                              deriv,          //! array for shape function derivatives w.r.t r,s,t
+      const LINALG::Matrix<nsd,nen>&                              derxy,          //! array for shape function derivatives w.r.t x,y,z
+      const LINALG::Matrix<nsd,nsd>&                              xjm,
+      int                                                         curphase,       //!< index of current phase
+      int                                                         phasetoadd,     //!< index of current phase
+      int                                                         numdofpernode,  //!< total number of DOFs/phases
+      const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,   //!< phase manager
+      const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,//!< variable manager
+      double                                                      timefacfac,     //!< domain-integration factor
+      double                                                      fac,            //!< domain-integration factor times time-integration factor
+      double                                                      det
       );
 };
+
 
 
 } //namespace POROFLUIDEVALUATOR

@@ -137,6 +137,7 @@ class VariableManagerInterface : public VariableManagerMinAccess
     virtual const std::vector<double>* Hist() const=0;
     virtual const LINALG::Matrix<nsd,1>* ConVelnp() const=0;
     virtual double DivConVelnp() const=0;
+    virtual const LINALG::Matrix<nsd,nen>* EConVelnp() const=0;
     virtual const LINALG::Matrix<nsd,1>* Dispnp() const=0;
     virtual const std::vector<double>* Scalarnp() const =0;
     //@}
@@ -214,6 +215,11 @@ class VariableManagerBase : public VariableManagerInterface<nsd,nen>
     {
       dserror("Access method DivConVelnp() not implemented! Wrong VariableManager?");
       return 0.0;
+    };
+   virtual const LINALG::Matrix<nsd,nen>* EConVelnp() const
+    {
+      dserror("Access method EConVelnp() not implemented! Wrong VariableManager?");
+      return NULL;
     };
    virtual const LINALG::Matrix<nsd,1>* Dispnp() const
     {
@@ -388,6 +394,10 @@ class VariableManagerDecorator : public VariableManagerInterface<nsd,nen>
    {
     return varmanager_->DivConVelnp();
    };
+  virtual const LINALG::Matrix<nsd,nen>* EConVelnp() const
+   {
+    return varmanager_->EConVelnp();
+   };
   virtual const LINALG::Matrix<nsd,1>* Dispnp() const
    {
     return varmanager_->Dispnp();
@@ -542,6 +552,8 @@ class VariableManagerStruct : public VariableManagerDecorator<nsd,nen>
    {this->varmanager_->CheckIsEvaluated(); return &dispint_;}
   virtual double DivConVelnp() const
    {this->varmanager_->CheckIsEvaluated(); return divconvelint_;}
+  virtual const LINALG::Matrix<nsd,nen>* EConVelnp() const
+   {this->varmanager_->CheckIsEvaluated(); return &econvelnp_;}
 
   //@}
 

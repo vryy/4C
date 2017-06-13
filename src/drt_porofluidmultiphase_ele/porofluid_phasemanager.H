@@ -127,11 +127,6 @@ class PhaseManagerInterface
     //! get the number of phases
     virtual int NumPhases() const=0;
 
-    //! evaluate relative diffusivity of phase 'phasenum'
-    virtual double EvaluateRelDiffusivity(
-        const MAT::Material& material,
-        int phasenum) const=0;
-
     //! get solid pressure
     virtual double SolidPressure() const=0;
 
@@ -149,19 +144,17 @@ class PhaseManagerInterface
 
     //! get bulk modulus of phase 'phasenum'
     virtual double InvBulkmodulus(
-        const MAT::Material& material,
         int phasenum) const=0;
 
-    //! get bulk modulus of phase 'phasenum'
-    virtual double InvBulkmodulus(
+    //! check if fluid phase 'phasenum' is incompressible (very low compressibility < 1e-14)
+    virtual bool IncompressibleFluidPhase(
         int phasenum) const=0;
-
-    //! get inverse bulk modulus of solid phase
-    virtual double InvBulkmodulusSolid(
-        const MAT::StructPoro& material) const=0;
 
     //! get inverse bulk modulus of solid phase
     virtual double InvBulkmodulusSolid() const=0;
+
+    //! check if solid is incompressible (either very low compressibility < 1e-14 or MAT_PoroLawConstant)
+    virtual bool IncompressibleSolid() const = 0;
 
     //! get density of phase 'phasenum'
     virtual double Density(
@@ -178,6 +171,12 @@ class PhaseManagerInterface
     //! get porosity
     virtual double Porosity() const=0;
 
+    //! get jacobian
+    virtual double Jacobian() const=0;
+
+    //! get derivative of porosity wrt Jacobian
+    virtual double PorosityDerivWrtJacobian() const=0;
+
     //! get derivative of porosity w.r.t. DOF 'doftoderive'
     virtual double PorosityDeriv(
             int doftoderive) const=0;
@@ -186,6 +185,12 @@ class PhaseManagerInterface
     virtual double SaturationDeriv(
             int phasenum,
             int doftoderive) const=0;
+
+    //! get 2nd derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
+    virtual double SaturationDerivDeriv(
+            int phasenum,
+            int firstdoftoderive,
+            int seconddoftoderive) const=0;
 
     //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double PressureDeriv(
@@ -210,11 +215,23 @@ class PhaseManagerInterface
     virtual double ReacDeriv(int phasenum, int doftoderive) const=0;
 
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<3,3>& difftensor) const=0;
+    virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<3,3>& permeabilitytensor) const=0;
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<2,2>& difftensor) const=0;
+    virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<2,2>& permeabilitytensor) const=0;
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<1,1>& difftensor) const=0;
+    virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<1,1>& permeabilitytensor) const=0;
+
+    //! check for constant relpermeability
+    virtual bool HasConstantRelPermeability(int phasenum) const=0;
+    //! get relative diffusivity of phase
+    virtual double RelPermeability(int phasenum) const=0;
+    //! get derivative of relative permeability of phase
+    virtual double RelPermeabilityDeriv(int phasenum) const=0;
+
+    //! get dynamic viscosity of phase
+    virtual double DynViscosity(int phasenum, double abspressgrad) const=0;
+    //! get dynamic viscosity of phase
+    virtual double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const=0;
 
     //@}
 
@@ -264,11 +281,6 @@ class PhaseManagerCore : public PhaseManagerInterface
     //! get the number of phases
     int NumPhases() const {return numphases_;};
 
-    //! evaluate relative diffusivity of phase 'phasenum'
-    double EvaluateRelDiffusivity(
-        const MAT::Material& material,
-        int phasenum) const;
-
     //! get solid pressure
     double SolidPressure() const;
 
@@ -286,19 +298,17 @@ class PhaseManagerCore : public PhaseManagerInterface
 
     //! get bulk modulus of phase 'phasenum'
     double InvBulkmodulus(
-        const MAT::Material& material,
         int phasenum) const;
 
-    //! get bulk modulus of phase 'phasenum'
-    double InvBulkmodulus(
+    //! check if fluid phase 'phasenum' is incompressible (very low compressibility < 1e-14)
+    bool IncompressibleFluidPhase(
         int phasenum) const;
-
-    //! get inverse bulk modulus of solid phase
-    double InvBulkmodulusSolid(
-        const MAT::StructPoro& material) const;
 
     //! get inverse bulk modulus of solid phase
     double InvBulkmodulusSolid() const;
+
+    //! check if solid is incompressible (either very low compressibility < 1e-14 or MAT_PoroLawConstant)
+    bool IncompressibleSolid() const;
 
     //! get density of phase 'phasenum'
     double Density(
@@ -332,6 +342,14 @@ class PhaseManagerCore : public PhaseManagerInterface
     virtual double Porosity() const
     {dserror("Porosity not available for this phase manager!");return 0.0;};
 
+    //! get porosity
+    virtual double Jacobian() const
+    {dserror("Jacobian not available for this phase manager!");return 0.0;};
+
+    //! get derivative of porosity wrt Jacobian
+    virtual double PorosityDerivWrtJacobian() const
+    {dserror("Derivative of Porosity w.r.t. Jacobian not available for this phase manager!");return 0.0;};
+
     //! get derivative of porosity w.r.t. DOF 'doftoderive'
     virtual double PorosityDeriv(
             int doftoderive) const
@@ -342,6 +360,13 @@ class PhaseManagerCore : public PhaseManagerInterface
             int phasenum,
             int doftoderive) const
     {dserror("Derivative of saturation not available for this phase manager!");return 0.0;};
+
+    //! get 2nd derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
+    virtual double SaturationDerivDeriv(
+            int phasenum,
+            int firstdoftoderive,
+            int seconddoftoderive) const
+    {dserror("2nd Derivative of saturation not available for this phase manager!");return 0.0;};
 
     //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double PressureDeriv(
@@ -371,14 +396,31 @@ class PhaseManagerCore : public PhaseManagerInterface
     {dserror("Reaction term not available for this phase manager!");return 0.0;};
 
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<3,3>& difftensor) const
+    virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<3,3>& permeabilitytensor) const
         {dserror("Diffusion tensor (3D) not available for this phase manager!");};
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<2,2>& difftensor) const
+    virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<2,2>& permeabilitytensor) const
         {dserror("Diffusion tensor (2D) not available for this phase manager!");};
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<1,1>& difftensor) const
+    virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<1,1>& permeabilitytensor) const
         {dserror("Diffusion tensor (1D) not available for this phase manager!");};
+
+    //! check for constant relpermeability
+    virtual bool HasConstantRelPermeability(int phasenum) const
+        {dserror("Check for Constant Relative Permeability not available for this phase manager!");return false;};
+    //! get relative diffusivity of phase
+    virtual double RelPermeability(int phasenum) const
+        {dserror("Relative Diffusivity not available for this phase manager!");return 0.0;};
+    //! get derivative of relative permeability of phase
+    virtual double RelPermeabilityDeriv(int phasenum) const
+        {dserror("Derivativ of relativ permeability not available for this phase manager!");return 0.0;};
+
+    //! get relative diffusivity of phase
+    virtual double DynViscosity(int phasenum, double abspressgrad) const
+        {dserror("Dynamic Viscosity not available for this phase manager!");return 0.0;};
+    //! get dynamic viscosity of phase
+    virtual double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const
+        {dserror("Dynamic Viscosity not available for this phase manager!");return 0.0;};
 
   private:
     //! number of phases
@@ -392,6 +434,10 @@ class PhaseManagerCore : public PhaseManagerInterface
     std::vector<double> saturation_;
     //! solid pressure
     double solidpressure_;
+    //! inverse bulk moduli of the fluid phases
+    std::vector<double> invbulkmodulifluid_;
+    //! inverse solid bulk modulus
+    double invbulkmodulussolid_;
 
     //! the current element
     const DRT::Element* ele_;
@@ -455,6 +501,13 @@ class PhaseManagerDecorator : public PhaseManagerInterface
             int doftoderive) const
     {return phasemanager_->SaturationDeriv(phasenum,doftoderive);};
 
+    //! get 2nd derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive'
+    virtual double SaturationDerivDeriv(
+            int phasenum,
+            int firstdoftoderive,
+            int seconddoftoderive) const
+    {return phasemanager_->SaturationDerivDeriv(phasenum,firstdoftoderive,seconddoftoderive);};
+
     //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
     virtual double PressureDeriv(
             int phasenum,
@@ -482,12 +535,6 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual int NumPhases() const
     {return phasemanager_->NumPhases();};
 
-    //! evaluate relative diffusivity of phase 'phasenum'
-    virtual double EvaluateRelDiffusivity(
-        const MAT::Material& material,
-        int phasenum) const
-    {return phasemanager_->EvaluateRelDiffusivity(material,phasenum);};
-
     //! get solid pressure
     virtual double SolidPressure() const
     {return phasemanager_->SolidPressure();};
@@ -510,27 +557,33 @@ class PhaseManagerDecorator : public PhaseManagerInterface
 
     //! get bulk modulus of phase 'phasenum'
     virtual double InvBulkmodulus(
-        const MAT::Material& material,
-        int phasenum) const
-    {return phasemanager_->InvBulkmodulus(material,phasenum);};
-
-    //! get bulk modulus of phase 'phasenum'
-    virtual double InvBulkmodulus(
         int phasenum) const
     {return phasemanager_->InvBulkmodulus(phasenum);};
 
-    //! get inverse bulk modulus of solid phase
-    double InvBulkmodulusSolid(
-        const MAT::StructPoro& material) const
-    {return phasemanager_->InvBulkmodulusSolid(material);};
+    //! check if fluid phase 'phasenum' is incompressible (very low compressibility < 1e-14)
+    virtual bool IncompressibleFluidPhase(
+        int phasenum) const
+    {return phasemanager_->IncompressibleFluidPhase(phasenum);};
 
     //! get inverse bulk modulus of solid phase
     double InvBulkmodulusSolid() const
     {return phasemanager_->InvBulkmodulusSolid();};
 
+    //! check if solid is incompressible (either very low compressibility < 1e-14 or MAT_PoroLawConstant)
+    bool IncompressibleSolid() const
+    {return phasemanager_->IncompressibleSolid();};
+
     //! get porosity
     virtual double Porosity() const
     {return phasemanager_->Porosity();};
+
+    //! get Jacobian
+    virtual double Jacobian() const
+    {return phasemanager_->Jacobian();};
+
+    //! get derivative of porosity wrt Jacobian
+    virtual double PorosityDerivWrtJacobian() const
+    {return phasemanager_->PorosityDerivWrtJacobian();};
 
     //! get density of phase 'phasenum'
     virtual double Density(
@@ -556,14 +609,33 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     {return phasemanager_->ReacDeriv(phasenum,doftoderive);};
 
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<3,3>& difftensor) const
-    {phasemanager_->DiffTensor(phasenum,difftensor);};
+    virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<3,3>& permeabilitytensor) const
+    {phasemanager_->PermeabilityTensor(phasenum,permeabilitytensor);};
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<2,2>& difftensor) const
-    {phasemanager_->DiffTensor(phasenum,difftensor);};
+    virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<2,2>& permeabilitytensor) const
+    {phasemanager_->PermeabilityTensor(phasenum,permeabilitytensor);};
     //! get the diffusion tensor
-    virtual void DiffTensor(int phasenum,  LINALG::Matrix<1,1>& difftensor) const
-    {phasemanager_->DiffTensor(phasenum,difftensor);};
+    virtual void PermeabilityTensor(int phasenum,  LINALG::Matrix<1,1>& permeabilitytensor) const
+    {phasemanager_->PermeabilityTensor(phasenum,permeabilitytensor);};
+
+    //! check for constant relpermeability
+    virtual bool HasConstantRelPermeability(int phasenum) const
+    {return phasemanager_->HasConstantRelPermeability(phasenum);};
+
+    //! get relative diffusivity of phase
+    virtual double RelPermeability(int phasenum) const
+    {return phasemanager_->RelPermeability(phasenum);};
+
+    //! get derivative of relative permeability of phase
+    virtual double RelPermeabilityDeriv(int phasenum) const
+    {return phasemanager_->RelPermeabilityDeriv(phasenum);};
+
+    //! get dynamic viscosity of phase
+    virtual double DynViscosity(int phasenum, double abspressgrad) const
+    {return phasemanager_->DynViscosity(phasenum, abspressgrad);};
+    //! get dynamic viscosity of phase
+    virtual double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const
+    {return phasemanager_->DynViscosity(material, phasenum, abspressgrad);};
 
     //@}
 
@@ -610,6 +682,12 @@ class PhaseManagerDeriv : public PhaseManagerDecorator
             int phasenum,
             int doftoderive) const;
 
+    //! get 2nd derivative of saturation of phase 'phasenum' w.r.t. DOF 'doftoderive' (dS/dphi_{ii})
+    double SaturationDerivDeriv(
+            int phasenum,
+            int firstdoftoderive,
+            int seconddoftoderive) const;
+
     //! get derivative of pressure of phase 'phasenum' w.r.t. DOF 'doftoderive'
     double PressureDeriv(
             int phasenum,
@@ -636,6 +714,9 @@ class PhaseManagerDeriv : public PhaseManagerDecorator
     //! derivative of saturations w.r.t. degrees of freedom
     // first index: saturation, second index: dof
     Teuchos::RCP<Epetra_SerialDenseMatrix> saturationderiv_;
+    //! second derivative of saturations w.r.t. degrees of freedom
+    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > saturationderivderiv_;
+
     //! derivative of solid pressure w.r.t. degrees of freedom
     Teuchos::RCP<Epetra_SerialDenseVector> solidpressurederiv_;
     //! second derivative of solid pressure w.r.t. degrees of freedom;
@@ -678,6 +759,12 @@ class PhaseManagerDerivAndPorosity : public PhaseManagerDeriv
     //! get porosity
     double Porosity() const;
 
+    //! get porosity
+    double Jacobian() const;
+
+    //! get derivative of porosity wrt Jacobian
+    double PorosityDerivWrtJacobian() const;
+
     //! get derivative of porosity w.r.t. DOF 'doftoderive'
     double PorosityDeriv(
             int doftoderive) const;
@@ -688,6 +775,12 @@ class PhaseManagerDerivAndPorosity : public PhaseManagerDeriv
 
     //! porosity
     double porosity_;
+
+    //! Jacobian of def gradient
+    double J_;
+
+    //! derivative of porosity w.r.t. Jacobian of defgradient
+    double dporosity_dJ_;
 
     //! derivative of porosity w.r.t. degrees of freedom
     Teuchos::RCP<Epetra_SerialDenseVector> porosityderiv_;
@@ -779,6 +872,9 @@ class PhaseManagerDiffusion : public PhaseManagerDecorator
     //! destructor
     virtual ~PhaseManagerDiffusion(){};
 
+    //! setup
+    void Setup(const DRT::Element* ele);
+
     //! evaluate pressures, saturations and derivatives at GP
     void EvaluateGPState(
         double                 J,
@@ -790,13 +886,33 @@ class PhaseManagerDiffusion : public PhaseManagerDecorator
     //! @name Access methods
 
     //! get the diffusion tensor
-    void DiffTensor(int phasenum, LINALG::Matrix<nsd,nsd>& difftensor) const;
+    void PermeabilityTensor(int phasenum, LINALG::Matrix<nsd,nsd>& permeabilitytensor) const;
+
+    //! check for constant relpermeability
+    bool HasConstantRelPermeability(int phasenum) const;
+
+    //! get relative diffusivity of phase
+    double RelPermeability(int phasenum) const;
+
+    //! get derivative of relative permeability of phase
+    double RelPermeabilityDeriv(int phasenum) const;
+
+    //! get dynamic viscosity of phase
+    double DynViscosity(int phasenum, double abspressgrad) const;
+    //! get dynamic viscosity of phase
+    double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const;
 
     //@}
 
   private:
     //! diffusion tensor
-    std::vector<LINALG::Matrix<nsd,nsd> > difftensors_;
+    std::vector<LINALG::Matrix<nsd,nsd> > permeabilitytensors_;
+    //! relative diffusivities
+    std::vector<double> relpermeabilities_;
+    //! derivative of relative permeabilities w.r.t. saturation
+    std::vector<double> derrelpermeabilities_;
+    //! check for constant relative permeabilities of phase
+    std::vector<bool> constrelpermeability_;
 
   };
 

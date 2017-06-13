@@ -44,6 +44,7 @@ isNurbs_(false),
 weights_(true),
 myknots_(numdim_),
 fluidmat_(Teuchos::null),
+fluidmultimat_(Teuchos::null),
 structmat_(Teuchos::null)
 //numscal_(0)
 {
@@ -77,6 +78,7 @@ isNurbs_(old.isNurbs_),
 weights_(old.weights_),
 myknots_(old.myknots_),
 fluidmat_(old.fluidmat_),
+fluidmultimat_(old.fluidmultimat_),
 structmat_(old.structmat_)
 //numscal_(old.numscal_)
 {

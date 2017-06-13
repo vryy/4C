@@ -151,8 +151,26 @@ depending on the action provided by the global algorithm.
         DRT::Element::LocationArray&               la                //!< location array
         );
 
+    void GaussPointLoopOD(
+        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,      ///< integration points
+        DRT::Element*                              ele,              //!< current element
+        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
+        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
+        DRT::Discretization&                       discretization,   //!< discretization
+        DRT::Element::LocationArray&               la                //!< location array
+        );
+
     //! calculate matrix and rhs. Here the whole thing is hidden.
     void GaussPointLoop(
+        DRT::Element*                              ele,              //!< current element
+        std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
+        std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
+        DRT::Discretization&                       discretization,   //!< discretization
+        DRT::Element::LocationArray&               la                //!< location array
+    );
+
+    //! calculate off-diagonal fluid-coupling matrix. Here the whole thing is hidden.
+    void GaussPointLoopOD(
         DRT::Element*                              ele,              //!< current element
         std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
         std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
@@ -169,6 +187,11 @@ depending on the action provided by the global algorithm.
     //! evaluate shape functions and their derivatives at current integration point
     double EvalShapeFuncAndDerivsInParameterSpace();
 
+    // Compute Jacobian (determinant of deformation gradient) at node 'inode'
+    void ComputeJacobianAtNode(
+        const int                                  inode       //!< local node number
+        );
+
     /*========================================================================*/
     //! @name routines for additional element evaluations (called from EvaluateAction)
     /*========================================================================*/
@@ -179,7 +202,8 @@ depending on the action provided by the global algorithm.
       std::vector<Epetra_SerialDenseMatrix*>&    elemat,           //!< element matrixes to calculate
       std::vector<Epetra_SerialDenseVector*>&    elevec,           //!< element rhs vectors to calculate
       DRT::Discretization&                       discretization,   //!< discretization
-      DRT::Element::LocationArray&               la                //!< location array
+      DRT::Element::LocationArray&               la,               //!< location array
+      const bool                                 jacobian_needed   //!< necessary to compute Jacobian at node
     );
 
   private:

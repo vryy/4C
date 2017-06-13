@@ -162,10 +162,22 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
   switch(action)
   {
   case POROFLUIDMULTIPHASE::calc_mat_and_rhs:
+  case POROFLUIDMULTIPHASE::calc_initial_time_deriv:
   case POROFLUIDMULTIPHASE::recon_flux_at_nodes:
   {
     // loop over gauss points and evaluate terms (standard call)
     GaussPointLoop(
+        ele,
+        elemat,
+        elevec,
+        discretization,
+        la);
+    break;
+  }
+  case POROFLUIDMULTIPHASE::calc_fluid_coupl_mat:
+  {
+    // loop over gauss points and evaluate off-diagonal terms
+    GaussPointLoopOD(
         ele,
         elemat,
         elevec,
@@ -182,7 +194,21 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvaluateAction(
       elemat,
       elevec,
       discretization,
-      la
+      la,
+      false  // no Jacobian at the node needed
+      );
+    break;
+  }
+  case POROFLUIDMULTIPHASE::calc_porosity:
+  {
+    // loop over nodes and evaluate terms
+    NodeLoop(
+      ele,
+      elemat,
+      elevec,
+      discretization,
+      la,
+      true  // Jacobian at the node needed since porosity depends on J
       );
     break;
   }
@@ -222,6 +248,30 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
   return;
 }
 
+/*----------------------------------------------------------------------*
+| calculate off-diagonal fluid-coupling matrix         kremheller 03/17 |
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopOD(
+    DRT::Element*                              ele,
+    std::vector<Epetra_SerialDenseMatrix*>&    elemat,
+    std::vector<Epetra_SerialDenseVector*>&    elevec,
+    DRT::Discretization&                       discretization,
+    DRT::Element::LocationArray&               la
+  )
+{
+
+  // prepare gauss point evaluation
+  PrepareGaussPointLoop(ele);
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(POROFLUIDMULTIPHASE::ELEUTILS::DisTypeToOptGaussRule<distype>::rule);
+
+  // start loop over gauss points
+  GaussPointLoopOD(intpoints,ele,elemat,elevec,discretization,la);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 vuong 08/16|
@@ -302,6 +352,60 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoop(
 
 }
 
+/*----------------------------------------------------------------------*
+|  calculate off-diagonal fluid-coupling matrix        kremheller 03/17 |
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::GaussPointLoopOD(
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,
+    DRT::Element*                                ele,
+    std::vector<Epetra_SerialDenseMatrix*>&      elemat,
+    std::vector<Epetra_SerialDenseVector*>&      elevec,
+    DRT::Discretization&                         discretization,
+    DRT::Element::LocationArray&                 la
+)
+{
+  // start the loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    variablemanager_->EvaluateGPVariables(funct_,derxy_);
+
+    // set the current gauss point state in the manager
+    phasemanager_->EvaluateGPState(J_,*variablemanager_);
+
+    // stabilization parameter and integration factors
+    //const double taufac     = tau[k]*fac;
+    double rhsfac = para_->TimeFacRhs() * fac;
+    //const double timetaufac = para_->TimeFac()*taufac;
+
+    //----------------------------------------------------------------
+    // 1) element off-diagonal matrix
+    //----------------------------------------------------------------
+    evaluator_->EvaluateMatrixOD(
+        elemat,
+        funct_,
+        deriv_,
+        derxy_,
+        xjm_,
+        iquad,
+        numdofpernode_,
+        *phasemanager_,
+        *variablemanager_,
+        rhsfac,
+        fac,
+        det_
+      );
+
+    // clear current gauss point data for safety
+    phasemanager_->ClearGPState();
+  }
+
+  return;
+
+}
+
 /*-----------------------------------------------------------------------------*
  | loop over nodes for evaluation                                  vuong 08/16 |
  *-----------------------------------------------------------------------------*/
@@ -311,7 +415,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(
     std::vector<Epetra_SerialDenseMatrix*>& elemat,
     std::vector<Epetra_SerialDenseVector*>& elevec,
     DRT::Discretization&                    discretization,
-    DRT::Element::LocationArray&            la
+    DRT::Element::LocationArray&            la,
+    const bool                              jacobian_needed
     )
 {
 
@@ -329,11 +434,18 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::NodeLoop(
     // set value at current node to 1
     funct_(inode) = 1.0;
 
+    if(jacobian_needed)
+    {
+      ComputeJacobianAtNode(inode);
+    }
+    else
+      J_ = 1.0;
+
     // evaluate needed variables
     variablemanager_->EvaluateGPVariables(funct_,derxy_);
 
     // set the current node state as GP state in the manager
-    phasemanager_->EvaluateGPState(1.0,*variablemanager_);
+    phasemanager_->EvaluateGPState(J_,*variablemanager_);
 
     //----------------------------------------------------------------
     // 1) element matrix
@@ -531,6 +643,39 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
   return det;
 }
 
+/*--------------------------------------------------------------------------*
+ | Compute Jacobian at node 'inode'                        kremheller 04/17 |
+ *--------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(
+    const int                         inode)
+{
+
+  // get parameter space coordinates of current node
+  LINALG::Matrix<3,1> myXi = DRT::UTILS::getNodeCoordinates(inode,distype);
+  for (int idim=0;idim<nsd_;idim++)
+    xsi_(idim) = myXi(idim);
+
+  det_ = EvalShapeFuncAndDerivsInParameterSpace();
+
+  if (det_ < 1E-16)
+    dserror("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->Id(), det_);
+
+  // compute global spatial derivatives
+  derxy_.Multiply(xij_,deriv_);
+
+  //------------------------get determinant of Jacobian dX / ds
+  // transposed jacobian "dX/ds"
+  LINALG::Matrix<nsd_,nsd_> xjm0;
+  xjm0.MultiplyNT(deriv_,xyze0_);
+
+  // inverse of transposed jacobian "ds/dX"
+  const double det0= xjm0.Determinant();
+
+  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+  J_ = det_/det0;
+
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

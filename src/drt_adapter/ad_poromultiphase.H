@@ -52,6 +52,9 @@ public:
   /// setup
   virtual void SetupSystem() = 0;
 
+  /// setup the solver (only for monolithic system)
+  virtual bool SetupSolver() = 0;
+
   /// prepare timeloop of coupled problem
   virtual void PrepareTimeLoop() = 0;
 

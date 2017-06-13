@@ -85,7 +85,10 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
                                     &porofluidmultiphasedyn);
   DoubleParameter("FDCHECKEPS",1.e-6,"dof perturbation magnitude for finite difference check (1.e-6 seems to work very well, whereas smaller values don't)",&porofluidmultiphasedyn);
   DoubleParameter("FDCHECKTOL",1.e-6,"relative tolerance for finite difference check",&porofluidmultiphasedyn);
-
+  BoolParameter("SKIPINITDER",
+      "yes","Flag to skip computation of initial time derivative",&porofluidmultiphasedyn);
+  BoolParameter("OUTPUT_POROSITY",
+      "yes","Flag if output of porosity should be calculated",&porofluidmultiphasedyn);
 
   setStringToIntegralParameter<int>("NORM_PRE","Abs",
     "type of norm for temperature convergence check",

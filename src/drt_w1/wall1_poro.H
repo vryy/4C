@@ -26,6 +26,7 @@ namespace MAT
 {
   class StructPoro;
   class FluidPoro;
+  class FluidPoroMultiPhase;
 }
 
 namespace DRT
@@ -355,7 +356,8 @@ namespace ELEMENTS
     virtual void coupling_poroelast_presbased(
         std::vector<int>&                            lm,          ///< location matrix
         LINALG::Matrix<numdim_, numnod_>&            disp,        //< current displacements
-        LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* stiffmatrix, ///< element stiffness matrix
+        Epetra_SerialDenseMatrix&                    phi,         ///< current primary variable for poro-multiphase flow
+        Epetra_SerialDenseMatrix&                    couplmat,    ///< element stiffness matrix
         Teuchos::ParameterList&                      params       ///< algorithmic parameters e.g. time
         );
 
@@ -415,7 +417,8 @@ namespace ELEMENTS
         const LINALG::Matrix<numdim_,numnod_>&  xrefe,
         const LINALG::Matrix<numdim_,numnod_>&  xcurr,
         const LINALG::Matrix<numdim_,numnod_>&  nodaldisp,
-        LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& stiffmatrix
+        Epetra_SerialDenseMatrix&               phi,
+        Epetra_SerialDenseMatrix&               couplmat
                                             );
 
     //!compute porosity at gausspoint and linearization of porosity w.r.t. structural displacements
@@ -485,7 +488,7 @@ namespace ELEMENTS
         LINALG::Matrix<numdof_,1>*                      force,
         LINALG::Matrix<numstr_,1>&                      fstress);
 
-    //! fill stiffness matrix and rhs vector for darcy flow
+    //! fill stiffness matrix and rhs vector for pressure-based formulation
     void FillMatrixAndVectors_presbased(
         const int &                                     gp,
         const LINALG::Matrix<numnod_,1>&                shapefct,
@@ -532,7 +535,7 @@ namespace ELEMENTS
         const LINALG::Matrix<numdim_,numdim_>&  C_inv,
         LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
 
-    //! fill stiffness matrix and rhs vector for darcy flow (off diagonal terms)
+    //! fill stiffness matrix (off diagonal terms) -- pressure-based formulation
     void FillMatrixAndVectorsOD_presbased(
         const int &                             gp,
         const LINALG::Matrix<numnod_,1>&        shapefct,
@@ -540,7 +543,8 @@ namespace ELEMENTS
         const double&                           J,
         const LINALG::Matrix<numstr_,numdof_>&  bop,
         const LINALG::Matrix<numdim_,numdim_>&  C_inv,
-        LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl);
+        const Epetra_SerialDenseMatrix&         solpressderiv,
+        Epetra_SerialDenseMatrix&               couplmat);
 
     //! fill stiffness matrix and rhs vector for darcy brinkman flow (off diagonal terms)
     void FillMatrixAndVectorsBrinkmanOD(
@@ -620,8 +624,18 @@ namespace ELEMENTS
                                         const std::string                   state           ///< state of the global vector
                                         );
 
+    //! Compute Solid-pressure derivative w.r.t. primary variable phi at node
+    void ComputeSolPressureDeriv(
+      const Epetra_SerialDenseMatrix&  phi,           ///<< phi at nodes
+      const int&                       numphases,     ///<< number of fluid phases
+      Epetra_SerialDenseMatrix&        solpressderiv  ///<< solid pressure derivative at GP
+      );
+
     //! get materials (solid and fluid)
     void GetMaterials();
+
+    //! get materials (solid and fluidmulti)
+    void GetMaterials_presbased();
 
     //!Gauss integration rule
     DRT::UTILS::GaussIntegration intpoints_;
@@ -637,6 +651,9 @@ namespace ELEMENTS
 
     //!corresponding fluid material
     Teuchos::RCP< MAT::FluidPoro > fluidmat_;
+
+    //!corresponding multiphase fluid material
+    Teuchos::RCP< MAT::FluidPoroMultiPhase > fluidmultimat_;
 
     //!own poro structure material
     Teuchos::RCP< MAT::StructPoro > structmat_;
