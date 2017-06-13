@@ -266,7 +266,10 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
     accn_->PutScalar(0.0);
     GravityAcc(accn_,1.0,timen_);
     // Acceleration contributions due to internal forces
-    interHandler_->Inter_pvp_acc(accn_,1.0);
+    if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"CALC_ACC_VAR2")==false)
+      interHandler_->Inter_pvp_acc_var1(accn_);
+    else
+      interHandler_->Inter_pvp_acc_var2(accn_);
 
     if(wallInteractionType==INPAR::PARTICLE::Mirror or wallInteractionType==INPAR::PARTICLE::Custom or wallInteractionType==INPAR::PARTICLE::InitParticle)
       interHandler_->Inter_pvw_acc(accn_);

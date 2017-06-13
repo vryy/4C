@@ -122,9 +122,8 @@ PARTICLE::Algorithm::Algorithm(
 
     INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(DRT::Problem::Instance()->ParticleParams(),"DYNAMICTYP");
 
-    if(timinttype==INPAR::PARTICLE::dyna_kickdrift and DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>=0.0)
+    if(timinttype!=INPAR::PARTICLE::dyna_kickdrift and DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>=0.0)
       dserror("Modified particle convection velocities based on a constant BACKGROUND_PRESSURE field only possible for KickDrift time integration scheme!");
-
   }
   else
   {
@@ -1550,8 +1549,6 @@ void PARTICLE::Algorithm::ThermalExpansion()
   const double thermalExpansionS = extParticleMat_->thermalExpansionS_;
   const double thermalExpansionL = extParticleMat_->thermalExpansionL_;
   const double thermalExpansionT = extParticleMat_->thermalExpansionT_;
-
-
 
   // update the other state vectors (\rho and R)
   for (int lidNode = 0; lidNode < mass->MyLength(); ++lidNode)

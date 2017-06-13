@@ -36,8 +36,11 @@
 #include <boost/unordered_map.hpp>
 
 //Usefull defines (tolerances and debugging tools)
-#define PARTICLE_TENSILESAFETYFAC 0.000001          //Factor prescribing the minimal particle distance as compared to the average initial particle distance (tensile instabilites)
+#define PARTICLE_TENSILESAFETYFAC 0.0000001         //Factor prescribing the minimal particle distance as compared to the average initial particle distance (tensile instabilites)
 //#define PARTICLE_OVERLAPPINGNEIGHBORS             //Determine also fully overlapping variant of neighbors vectors
+//#define PARTICLE_ONLYLAPLACETERM                  //Apply only Laplace term in viscous force calculation according to variant 1 (this is sufficient for incompressible flows)
+#define PARTICLE_MINMAXOUTPUT_EVRY 100              //Ouput of minimal/maximal pressures, particle distances etc. every PARTICLE_MINMAXOUTPUT_EVRY time steps
+
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 09/12 |

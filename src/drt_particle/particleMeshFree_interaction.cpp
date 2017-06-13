@@ -66,7 +66,11 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   restDensity_(restDensity),
   refdensfac_(refdensfac),
   trg_updatedColorFieldGradient_(false),
-  periodic_length_(-1.0)
+  periodic_length_(-1.0),
+  min_pvp_dist_(1.0e10),
+  min_pvw_dist_(1.0e10),
+  min_pressure_(1.0e10),
+  max_pressure_(-1.0e10)
 {
   // checks
   if (particle_algorithm_->ExtParticleMat() == NULL)
@@ -115,6 +119,7 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
       dserror("the value of WALL_FAKE_MASS is unacceptable");
   }
 
+  #ifndef PARTICLE_ONLYLAPLACETERM
   //Attention: The trace of a tensor as required to derive equation (28) from equation (25) in Espanol2003 depends
   //on the spatial dimension --> SPH approximations of the Laplace operator typically differ for different dimensions!
   switch (WF_DIM_)
@@ -141,6 +146,12 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   }
 
   diffusionCoeff_ = 5.0 * extParticleMat->dynamicViscosity_ / 3.0 - extParticleMat->bulkViscosity_;
+  #else
+  diffusionCoeff_ = 2.0 * extParticleMat->dynamicViscosity_;
+  convectionCoeff_= 0.0;
+  if(extParticleMat->bulkViscosity_>0)
+    dserror("Bulk Viscosity not considered here!");
+  #endif
 
   // checks
   if (diffusionCoeff_<0)
@@ -454,8 +465,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitBoundaryData(
     double sumjpjWij(0.0);
     LINALG::Matrix<3,1> sumjrhojrijWij(true);
 
-    //TODO: So far, the gravity is assumed to be zero. In case gravity or any other type of body forces are applied,
-    // these terms are required in Ref. Adami2012, Eq.(23) and have to be considered in the vector "gravity"!
     LINALG::Matrix<3,1> gminusacci(true);
     gminusacci.Update(1.0,g,1.0);
     gminusacci.Update(-1.0,particle_i->boundarydata_.acc_,1.0);
@@ -676,6 +685,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector(Teuchos::RCP<c
       case PARTICLE::Pressure :
       {
         data.pressure_ = (*stateVectorCol)[lidNodeCol];
+        if(data.boundarydata_.boundaryparticle_==false and data.pressure_ > max_pressure_)
+          max_pressure_=data.pressure_;
+        if(data.boundarydata_.boundaryparticle_==false and data.pressure_ < min_pressure_)
+          min_pressure_=data.pressure_;
         break;
       }
       case PARTICLE::Temperature :
@@ -691,39 +704,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector(Teuchos::RCP<c
     }
   }
 }
-
-/*----------------------------------------------------------------------*
- | set colVectors in the local data structs                katta 10/16  |
- *----------------------------------------------------------------------*/
-/*
-void PARTICLE::ParticleMeshFreeInteractionHandler::SetStateVector(Teuchos::RCP<const Epetra_MultiVector> stateVector)
-{
-// checks
-if (stateVector == Teuchos::null)
-{
-  dserror("the state vector is empty");
-}
-if (stateVector->NumVectors() != 3)
-{
-  dserror("the multi vector does not contain 3 vectors");
-}
-
-
-/// miraculous transformation into column vector... ///
-Teuchos::RCP<Epetra_MultiVector> stateVectorCol;
-
-stateVectorCol = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofColMap()), 3, true));
-LINALG::Export(*stateVector ,*stateVectorCol);
-
-// fill particleData_
-for (int lidNodeCol=0; lidNodeCol<discret_->NodeColMap()->NumMyElements(); ++lidNodeCol)
-{
-  ParticleMF& data = colParticles_[lidNodeCol];
-  PARTICLE::Utils::ExtractMyValues(*stateVectorCol, data.mHessW_, data.lm_);
-}
-
-}
-*/
 
 /*----------------------------------------------------------------------*
  | set all the neighbours                                  katta 12/16  |
@@ -779,8 +759,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours(const int st
 
     // first neighbours_ round
     particle_algorithm_->GetNeighbouringItems(binId, neighboursLinf_p, &neighboursLinf_w, neighboursLinf_hs);
-
-    //std::cout << "binId: " << binId << std::endl;
 
     // do some checks
     if(neighboursLinf_hs->size()!=0)
@@ -951,17 +929,21 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
       LINALG::Matrix<3,1> dis_i=particle_i.dis_;
       LINALG::Matrix<3,1> dis_j=particle_j.dis_;
 
-      //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
-      //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
-      //particles but not on the absolut positions.
-      ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+//TODO???
+//      if(periodic_length_>0)
+//      {
+        //In case both particles i and j are close to two opposite periodic boundaries, the position of particle j is shifted correspondingly.
+        //It is sufficient to only shift dis_j since the terms evaluated in the following do only depend on the relative distance between two
+        //particles but not on the absolute positions.
+        ShiftPeriodicBoundaryPair(dis_i,dis_j,particle_i.radius_,particle_j.radius_);
+//      }
 
       rRel_ij.Update(1.0, dis_i, -1.0, dis_j); // inward vector
       const double rRelNorm2 = rRel_ij.Norm2();
 
       //Only evaluate pairs that are close enough.
       //TODO: In future applications (e.g. implicit time integration), where neighbors are not searched for every new configuration
-      //this criteron might be to stright!!!
+      //this criterion might be to strict!!!
       if(rRelNorm2-std::max(particle_i.radius_,particle_j.radius_)>0)
         continue;
 
@@ -972,6 +954,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
         if(rRelNorm2<PARTICLE_TENSILESAFETYFAC*initAverageDist)
           dserror("Particle distance to small: rRelNorm2=%f, initAverageDist=%f. Danger of tensile instability!",rRelNorm2,initAverageDist);
       #endif
+
+      //check for minimal distance
+      if(rRelNorm2<min_pvp_dist_)
+        min_pvp_dist_=rRelNorm2;
 
       const double w_ij = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
       const double dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
@@ -1000,20 +986,17 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_p(
       // push_back
       LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
       rRelVersor_ij.Scale(1/rRelNorm2);
- //     if (w_ij != 0 || w_ji != 0)
-  //    {
-        const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid_);
-        (neighbours_p_[lidNodeRow_i])[lidNodeCol_j] = InterDataPvP(
-            rRelVersor_ij,
-            rRelNorm2,
-            step,
-            w_ij,
-            w_ji,
-            dw_ij,
-            dw_ji,
-            ddw_ij,
-            ddw_ji);
-  //    }
+      const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid_);
+      (neighbours_p_[lidNodeRow_i])[lidNodeCol_j] = InterDataPvP(
+          rRelVersor_ij,
+          rRelNorm2,
+          step,
+          w_ij,
+          w_ji,
+          dw_ij,
+          dw_ji,
+          ddw_ij,
+          ddw_ji);
     }
   }
 }
@@ -1070,7 +1053,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_op(
 
       //Only evaluate pairs that are close enough.
       //TODO: In future applications (e.g. implicit time integration), where neighbors are not searched for every new configuration
-      //this criteron might be to stright!!!
+      //this criterion might be to strict!!!
       if(rRelNorm2-std::max(particle_i.radius_,particle_j.radius_)>0)
         continue;
 
@@ -1103,16 +1086,16 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_op(
     double dw_ji = -1000;
     double ddw_ji = -1000;
 
-      (overlappingneighbours_p_[lidNodeCol_i])[lidNodeCol_j] = InterDataPvP(
-          rRelVersor_ij,
-          rRelNorm2,
-          step,
-          w_ij,
-          w_ji,
-          dw_ij,
-          dw_ji,
-          ddw_ij,
-          ddw_ji);
+    (overlappingneighbours_p_[lidNodeCol_i])[lidNodeCol_j] = InterDataPvP(
+        rRelVersor_ij,
+        rRelNorm2,
+        step,
+        w_ij,
+        w_ji,
+        dw_ij,
+        dw_ji,
+        ddw_ij,
+        ddw_ji);
   }
 }
 
@@ -1151,7 +1134,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_bp(
 
       //Only evaluate pairs that are close enough.
       //TODO: In future applications (e.g. implicit time integration), where neighbors are not searched for every new configuration
-      //this criteron might be to stright!!!
+      //this criterion might be to strict!!!
       if(rRelNorm2-std::max(particle_i.radius_,particle_j.radius_)>0)
         continue;
 
@@ -1163,6 +1146,10 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_bp(
           dserror("Particle distance to small: rRelNorm2=%f, initAverageDist=%f. Danger of tensile instability!",rRelNorm2,initAverageDist);
       #endif
 
+      //check for minimal distance
+       if(rRelNorm2<min_pvw_dist_)
+         min_pvw_dist_=rRelNorm2;
+
       const double w_ij = weightFunctionHandler_->W(rRelNorm2, particle_i.radius_);
       const double dw_ij = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
       const double ddw_ij = weightFunctionHandler_->DDW(rRelNorm2, particle_i.radius_);
@@ -1171,32 +1158,32 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_bp(
       double dw_ji = 0;
       double ddw_ji = 0;
 
-        if (particle_i.radius_ == particle_j.radius_)
-        {
-            w_ji = w_ij;
-           dw_ji = dw_ij;
-          ddw_ji = ddw_ij;
-        }
-        else
-        {
-            w_ji = weightFunctionHandler_->W(rRelNorm2, particle_j.radius_);
-           dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
-          ddw_ji = weightFunctionHandler_->DDW(rRelNorm2, particle_j.radius_);
-        }
+      if (particle_i.radius_ == particle_j.radius_)
+      {
+          w_ji = w_ij;
+         dw_ji = dw_ij;
+        ddw_ji = ddw_ij;
+      }
+      else
+      {
+          w_ji = weightFunctionHandler_->W(rRelNorm2, particle_j.radius_);
+         dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
+        ddw_ji = weightFunctionHandler_->DDW(rRelNorm2, particle_j.radius_);
+      }
 
-      // push_back
-      LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
-      rRelVersor_ij.Scale(1/rRelNorm2);
-      (neighbours_bp_[particle_i.gid_])[particle_j.gid_] = InterDataPvP(
-            rRelVersor_ij,
-            rRelNorm2,
-            step,
-            w_ij,
-            w_ji,
-            dw_ij,
-            dw_ji,
-            ddw_ij,
-            ddw_ji);
+    // push_back
+    LINALG::Matrix<3,1> rRelVersor_ij(rRel_ij);
+    rRelVersor_ij.Scale(1/rRelNorm2);
+    (neighbours_bp_[particle_i.gid_])[particle_j.gid_] = InterDataPvP(
+          rRelVersor_ij,
+          rRelNorm2,
+          step,
+          w_ij,
+          w_ji,
+          dw_ij,
+          dw_ji,
+          ddw_ij,
+          ddw_ji);
     }
   }
 }
@@ -1392,22 +1379,18 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::AddNewNeighbours_w(
     const double dw = weightFunctionHandler_->DW(rRelNorm2, particle_i.radius_);
     const double ddw = weightFunctionHandler_->DDW(rRelNorm2, particle_i.radius_);
 
-    // insert in the set if appropriate
-//    if (dw != 0)
-//    {
-      LINALG::Matrix<3,1> rRelVersor(rRel);
-      rRelVersor.Scale(1/rRelNorm2);
+    LINALG::Matrix<3,1> rRelVersor(rRel);
+    rRelVersor.Scale(1/rRelNorm2);
 
-      const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid_);
-      InterDataPvW& interData_ij = (neighbours_w_[lidNodeRow_i])[wallcontact.elemId_];
-      interData_ij = InterDataPvW(
-        rRelVersor,
-        rRelNorm2,
-        step,
-        w,
-        dw,
-        ddw);
-//    }
+    const int lidNodeRow_i = discret_->NodeRowMap()->LID(particle_i.gid_);
+    InterDataPvW& interData_ij = (neighbours_w_[lidNodeRow_i])[wallcontact.elemId_];
+    interData_ij = InterDataPvW(
+      rRelVersor,
+      rRelNorm2,
+      step,
+      w,
+      dw,
+      ddw);
   }
 }
 
@@ -1450,6 +1433,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::ShiftPeriodicBoundaryPair(
 
   //We dont want to have particles that can interact directly AND across the periodic boundary
   //(which would be possible in case of periodic_length_<4*particle_i.radius_)
+  //Update 05/24/2017: Actually, the factor 4 could be replaced by 2 in the SPH case since interaction
+  //is only possible for distances < radius (and not for distance < 2 radius as in DEM)!
   if(periodic_length_<4.0*std::max(radius_1,radius_2))
     dserror("The length periodic_length_ of the periodic box has to be larger than four times the particle radius!");
 
@@ -1549,8 +1534,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int ste
         double dw_ji = 0;
         double ddw_ji = 0;
 
-        //if (particle_j.owner_ == myrank_)
-        //{
           if (particle_i.radius_ == particle_j.radius_)
           {
             w_ji = w_ij;
@@ -1563,8 +1546,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::UpdateWeights_p(const int ste
             dw_ji = weightFunctionHandler_->DW(rRelNorm2, particle_j.radius_);
             ddw_ji = weightFunctionHandler_->DDW(rRelNorm2, particle_j.radius_);
           }
-        //}
-
 
         // insert the new weights, do not touch the step
         interData_ij = InterDataPvP(
@@ -1967,14 +1948,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_densityDot(
       }
     }
   }
-
 }
 
 /*----------------------------------------------------------------------*
  | evaluate acceleration - pvp                             katta 10/16  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var1(
     const Teuchos::RCP<Epetra_Vector> accn,
+    const Teuchos::RCP<Epetra_Vector> p0_acc,
     const double extMulti)
 {
 
@@ -1986,6 +1967,19 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
     dserror("accn is empty");
   }
 
+  // Constant background pressure for modified accelerations according to Adami2013
+  // The terms associated with the constant background pressure are similar to the real pressure terms
+  // but with the pressures p_i and p_j replaced by the background pressure. All the related variables
+  // and terms are marked by a prefix p0, e.g. p0_momentum_ij etc.
+  double background_pressure=-1.0;
+  if (p0_acc != Teuchos::null)
+  {
+    background_pressure=DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE");
+    if(background_pressure<0.0)
+      dserror("Negative background pressure! Why is the vector accmod handed in for this case?");
+  }
+
+  // Additional damping force applied in order to achieve static equilibrium solution?
   double damping_factor=DRT::Problem::Instance()->ParticleParams().get<double>("VISCOUS_DAMPING");
 
   // loop over the particles (no superpositions)
@@ -2007,7 +2001,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
     const double rhoSquare_i = std::pow(density_i,2);
     const double p_Rho2_i = particle_i.pressure_/rhoSquare_i;
 
-
+    //******damping (optional)*******************************************************************************************************
     //If required, add artificial viscous damping force in order to determine static equilibrium configurations
     if(damping_factor>0)
     {
@@ -2017,9 +2011,11 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
     }
 
     LINALG::Matrix<3,1> sumj_accn_ij(true);
+    LINALG::Matrix<3,1> p0_sumj_accn_ij(true);
 
     // loop over the interaction particle list
-    for (boost::unordered_map<int, InterDataPvP>::const_iterator jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
+    boost::unordered_map<int, InterDataPvP>::const_iterator jj;
+    for (jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
     {
       // extract data for faster access
       const int& lidNodeCol_j = jj->first;
@@ -2044,18 +2040,48 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
       const double rRelVersorDotVrel = rRelVersor_ij.Dot(vRel_ij);
 
       LINALG::Matrix<3,1> momentum_ij(true);
-        // pressure
+      LINALG::Matrix<3,1> p0_momentum_ij(true);
+
+      //*******pressure*********************************************************************************************************
       // compute the pressure term
       //(based on Monaghan2005, Eq(3.18); this expression differs from the variant in Espanol2003, Eq(22) in the general case m_i \neq m_j.
       //However, based on a similar derivation as in Espanol2003, Eq(18-22) it has been verified that also this variant can guarantee
-      //for energy conservation of the dissipation-free, time-continous problem, if Monaghan2005, Eq(2.18) is applied for density integration [and not Eq(2.17)!])
+      //for energy conservation of the dissipation-free, time-continous problem, if Monaghan2005, Eq(2.18) is applied for density
+      // integration [and not Eq(2.17)!])
       const double rhoSquare_j = std::pow(density_j,2);
       const double gradP_Rho2 = (p_Rho2_i + particle_j.pressure_/rhoSquare_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
-        momentum_ij.Update(- gradP_Rho2, rRelVersor_ij, 1.0);
+      momentum_ij.Update(- gradP_Rho2, rRelVersor_ij, 1.0);
 
-        // diffusion
-      // The following two viscous terms are taken from Espanol2003, Eq(30) and re-expressed in terms of mass densities in an equivalent manner.
-      // This is necessary since Espanol2003 only specifies the case m_i=m_j=m.
+      //*******background pressure (optional)***********************************************************************************
+      if(background_pressure>0)
+      {
+        //background pressure term for modified convection velocities/accelerations
+        const double p0_gradP0_Rho2 = background_pressure*(1.0/rhoSquare_i + 1.0/rhoSquare_j);  // p_0(1.0/\rho_i^2 + 1.0/\rho_j^2)
+        p0_momentum_ij.Update(- p0_gradP0_Rho2, rRelVersor_ij, 1.0);
+
+        //additional term div(A) in Navier-Stokes equation due to non-material particle convection
+        //with ternsor A_{ab}:=\rho*vel_a*(\tilde{vel}_b-vel_b) according to Adami 2013, Eq. (4).
+        LINALG::Matrix<3,3> p0_A_Rho2(true);
+        LINALG::Matrix<3,1> p0_A_Rho2_e_ij(true);
+        for(int a=0;a<3;a++)
+        {
+          for(int b=0;b<3;b++)
+          {
+            p0_A_Rho2(a,b)=particle_i.vel_(a)*(particle_i.velConv_(b)-particle_i.vel_(b))/density_i;
+            p0_A_Rho2(a,b)+=particle_j.vel_(a)*(particle_j.velConv_(b)-particle_j.vel_(b))/density_j;
+          }
+        }
+        p0_A_Rho2_e_ij.MultiplyNN(p0_A_Rho2,rRelVersor_ij);
+        if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"NO_VELDIFF_TERM")==false)
+        {
+          momentum_ij.Update(1.0, p0_A_Rho2_e_ij, 1.0);
+        }
+      }
+
+      //*******viscous forces***************************************************************************************************
+      // The following two viscous terms are taken from Espanol2003, Eq(30) and re-expressed in terms of mass densities in an
+      // equivalent manner. This is necessary since Espanol2003 only specifies the case m_i=m_j=m.
+      // diffusion
       const double dC_rho2rRelNorm2 = diffusionCoeff_ / (rho2 * rRelNorm2);
       momentum_ij.Update(dC_rho2rRelNorm2, vRel_ij, 1.0);
       // convection
@@ -2072,6 +2098,14 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
         accn_ij.Update(generalCoeff_ij, momentum_ij);
         accn_ij.Scale(extMulti);
         sumj_accn_ij.Update(1.0,accn_ij,1.0);
+
+        if(background_pressure>0)
+        {
+          LINALG::Matrix<3,1> p0_accn_ij;
+          p0_accn_ij.Update(generalCoeff_ij, p0_momentum_ij);
+          p0_accn_ij.Scale(extMulti);
+          p0_sumj_accn_ij.Update(1.0,p0_accn_ij,1.0);
+        }
       }
 
       // write on particle j if appropriate specializing the quantities
@@ -2084,29 +2118,51 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc(
         accn_ji.Update(generalCoeff_ji, momentum_ij);
         accn_ji.Scale(-extMulti); // actio = - reactio
         LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
+
+        if(background_pressure>0)
+        {
+          LINALG::Matrix<3,1> p0_accn_ji;
+          p0_accn_ji.Update(generalCoeff_ji, p0_momentum_ij);
+          p0_accn_ji.Scale(-extMulti); // actio = - reactio
+          LINALG::Assemble(*p0_acc, p0_accn_ji, particle_j.lm_, particle_j.owner_);
+        }
       }
     }//sum over j
     //Assemble all contributions to particle i (we do this at once outside the j-loop since the assemble operation is expensive!)
     LINALG::Assemble(*accn, sumj_accn_ij, particle_i.lm_, particle_i.owner_);
+    if(background_pressure>0)
+      LINALG::Assemble(*p0_acc, p0_sumj_accn_ij, particle_i.lm_, particle_i.owner_);
   }//sum over i
 
   if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
-    Inter_bpvp_acc(accn,extMulti);
-
+    Inter_bpvp_acc_var1(accn, p0_acc, extMulti);
 }
 
 
 /*----------------------------------------------------------------------*
  | evaluate acceleration - bpvp                            meier 02/17  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var1(
     const Teuchos::RCP<Epetra_Vector> accn,
+    const Teuchos::RCP<Epetra_Vector> p0_acc,
     const double extMulti)
 {
   //checks
   if (accn == Teuchos::null)
   {
     dserror("accn is empty");
+  }
+
+  // Constant background pressure for modified accelerations according to Adami2013
+  // The terms associated with the constant background pressure are similar to the real pressure terms
+  // but with the pressures p_i and p_j replaced by the background pressure. All the related variables
+  // and terms are marked by a prefix p0, e.g. p0_momentum_ij etc.
+  double background_pressure=-1.0;
+  if (p0_acc != Teuchos::null)
+  {
+    background_pressure=DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE");
+    if(background_pressure<0.0)
+      dserror("Negative background pressure! Why is the vector accmod handed in for this case?");
   }
 
   // loop over the boundary particles
@@ -2153,8 +2209,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
       vRel_ij.Update(1.0, particle_i->boundarydata_.velMod_, -1.0, particle_j.vel_);
 
       LINALG::Matrix<3,1> momentum_ij;
-        // pressure
-      // compute the pressure term
+      LINALG::Matrix<3,1> p0_momentum_ij(true);
+
+      //*******pressure*********************************************************************************************************
       //(based on Monaghan2005, Eq(3.8); this expression differs from the variant in Espanol2003, Eq(22) in the general case m_i \neq m_j.
       //However, based on a similar derivation as in Espanol2003, Eq(18-22) it has been verified that also this variant can guarantee
       //for energy conservation of the dissipation-free, time-continous problem, if Monaghan2005, Eq(2.18) is applied for density integration [and not Eq(2.17)!])
@@ -2162,6 +2219,34 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
       const double gradP_Rho2 = (p_Rho2_i + particle_j.pressure_/rhoSquare_j);  // p_i/\rho_i^2 + p_j/\rho_j^2
       momentum_ij.Update(- gradP_Rho2, rRelVersor_ij, 1.0);
 
+      //*******background pressure (optional)***********************************************************************************
+      if(background_pressure>0)
+      {
+        //background pressure term for modified convection velocities/accelerations
+        const double p0_gradP0_Rho2 = background_pressure*(1.0/rhoSquare_i + 1.0/rhoSquare_j);  // p_0(1.0/\rho_i^2 + 1.0/\rho_j^2)
+        p0_momentum_ij.Update(- p0_gradP0_Rho2, rRelVersor_ij, 1.0);
+
+        //additional term div(A) in Navier-Stokes equation due to non-material particle convection
+        //with ternsor A_{ab}:=\rho*vel_a*(\tilde{vel}_b-vel_b) according to Adami 2013, Eq. (4).
+        LINALG::Matrix<3,3> p0_A_Rho2(true);
+        LINALG::Matrix<3,1> p0_A_Rho2_e_ij(true);
+        for(int a=0;a<3;a++)
+        {
+          for(int b=0;b<3;b++)
+          {
+            // The difference in momentum and convection velocitiy vanishes for boundary particles: (particle_i->velConv_(b)-particle_i->vel_(b))=0
+            // Hence, we only have one contribution here:
+            p0_A_Rho2(a,b)=particle_j.vel_(a)*(particle_j.velConv_(b)-particle_j.vel_(b))/density_j;
+          }
+        }
+        p0_A_Rho2_e_ij.MultiplyNN(p0_A_Rho2,rRelVersor_ij);
+        if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"NO_VELDIFF_TERM")==false)
+        {
+          momentum_ij.Update(1.0, p0_A_Rho2_e_ij, 1.0);
+        }
+      }
+
+      //*******viscous forces***************************************************************************************************
       //Viscous interaction with boundary particles is only required in case of a no-slip boundary condition!
       if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip)
       {
@@ -2188,23 +2273,326 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc(
         accn_ji.Update(generalCoeff_ji, momentum_ij);
         accn_ji.Scale(-extMulti); // actio = - reactio
         LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
+
+        if(background_pressure>0)
+        {
+          LINALG::Matrix<3,1> p0_accn_ji;
+          p0_accn_ji.Update(generalCoeff_ji, p0_momentum_ij);
+          p0_accn_ji.Scale(-extMulti); // actio = - reactio
+          LINALG::Assemble(*p0_acc, p0_accn_ji, particle_j.lm_, particle_j.owner_);
+        }
       }
-    }
-  }
+    }//loop over j
+  }//loop over i
 }
 
-/*-----------------------------------------------------------------------------------------*
- | evaluate modified acceleration due to constant background pressure - pvp   meier 05/17  |
- *-----------------------------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_modacc(
-    const Teuchos::RCP<Epetra_Vector> accmod,
+
+/*------------------------------------------------------------------------------------------*
+ | evaluate acceleration - pvp: alternative variant according to Adami2013     meier 05/17  |
+ *------------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc_var2(
+    const Teuchos::RCP<Epetra_Vector> accn,
+    const Teuchos::RCP<Epetra_Vector> p0_acc,
     const double extMulti)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::Inter_pvp_acc");
 
-  //This method still has to be filled!
+  //checks
+  if (accn == Teuchos::null)
+  {
+    dserror("accn is empty");
+  }
 
+  // Constant background pressure for modified accelerations according to Adami2013
+  // The terms associated with the constant background pressure are similar to the real pressure terms
+  // but with the pressures p_i and p_j replaced by the background pressure. All the related variables
+  // and terms are marked by a prefix p0, e.g. p0_momentum_ij etc.
+  double background_pressure=-1.0;
+  if (p0_acc != Teuchos::null)
+  {
+    background_pressure=DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE");
+    if(background_pressure<0.0)
+      dserror("Negative background pressure! Why is the vector accmod handed in for this case?");
+  }
+
+  // Additional damping force applied in order to achieve static equilibrium solution?
+  const double damping_factor=DRT::Problem::Instance()->ParticleParams().get<double>("VISCOUS_DAMPING");
+  const double viscosity=particle_algorithm_->ExtParticleMat()->dynamicViscosity_;
+
+  // loop over the particles (no superpositions)
+  for (unsigned int lidNodeRow_i = 0; lidNodeRow_i != neighbours_p_.size(); ++lidNodeRow_i)
+  {
+    // determine the particle_i
+    const int gid_i = discret_->NodeRowMap()->GID(lidNodeRow_i);
+    const int lidNodeCol_i = discret_->NodeColMap()->LID(gid_i);
+    const ParticleMF& particle_i = colParticles_[lidNodeCol_i];
+
+    //Boundary particles are not considered here
+    if(particle_i.boundarydata_.boundaryparticle_==true)
+      continue;
+
+    double density_i = particle_i.density_;
+    double pressure_i = particle_i.pressure_;
+    double V_i=particle_i.mass_/density_i;
+
+    //******damping (optional)*******************************************************************************************************
+    //If required, add artificial viscous damping force in order to determine static equilibrium configurations
+    if(damping_factor>0)
+    {
+      LINALG::Matrix<3,1> dampingforce(true);
+      dampingforce.Update(-damping_factor/particle_i.mass_, particle_i.vel_);
+      LINALG::Assemble(*accn, dampingforce, particle_i.lm_, particle_i.owner_);
+    }
+
+    LINALG::Matrix<3,1> sumj_accn_ij(true);
+    LINALG::Matrix<3,1> p0_sumj_accn_ij(true);
+
+    // loop over the interaction particle list
+    boost::unordered_map<int, InterDataPvP>::const_iterator jj;
+    for (jj = neighbours_p_[lidNodeRow_i].begin(); jj != neighbours_p_[lidNodeRow_i].end(); ++jj)
+    {
+      // extract data for faster access
+      const int& lidNodeCol_j = jj->first;
+      const InterDataPvP& interData_ij = jj->second;
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+
+      //Boundary particles are not considered here
+      if(particle_j.boundarydata_.boundaryparticle_==true)
+        continue;
+
+      //const double density_j = useDensityApprox ? particle_j.densityapprox_ : particle_j.density_;
+      double density_j = particle_j.density_;
+      double pressure_j = particle_j.pressure_;
+      double V_j=particle_j.mass_/density_j;
+
+      // --- extract general data --- //
+
+      const double rRelNorm2 = interData_ij.rRelNorm2_;
+      LINALG::Matrix<3,1> rRelVersor_ij(interData_ij.rRelVersor_ij_);
+      LINALG::Matrix<3,1> vRel_ij;
+      vRel_ij.Update(1.0, particle_i.vel_, -1.0, particle_j.vel_);
+
+      LINALG::Matrix<3,1> momentum_ij(true);
+      LINALG::Matrix<3,1> p0_momentum_ij(true);
+
+      //*******pressure*********************************************************************************************************
+      // compute the pressure term
+      const double tilde_p_ij = (density_i*pressure_j+density_j*pressure_i)/(density_i+density_j);
+      momentum_ij.Update(- tilde_p_ij, rRelVersor_ij, 1.0);
+
+      //*******background pressure (optional)***********************************************************************************
+      if(background_pressure>0)
+      {
+        //background pressure term for modified convection velocities/accelerations
+        p0_momentum_ij.Update(- background_pressure, rRelVersor_ij, 1.0);
+
+        //additional term div(A) in Navier-Stokes equation due to non-material particle convection
+        //with ternsor A_{ab}:=\rho*vel_a*(\tilde{vel}_b-vel_b) according to Adami 2013, Eq. (4).
+        LINALG::Matrix<3,3> p0_A(true);
+        LINALG::Matrix<3,1> p0_A_e_ij(true);
+        for(int a=0;a<3;a++)
+        {
+          for(int b=0;b<3;b++)
+          {
+            p0_A(a,b)=density_i*particle_i.vel_(a)*(particle_i.velConv_(b)-particle_i.vel_(b));
+            p0_A(a,b)+=density_j*particle_j.vel_(a)*(particle_j.velConv_(b)-particle_j.vel_(b));
+          }
+        }
+        p0_A_e_ij.MultiplyNN(p0_A,rRelVersor_ij);
+
+        if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"NO_VELDIFF_TERM")==false)
+        {
+          momentum_ij.Update(0.5, p0_A_e_ij, 1.0);
+        }
+      }
+
+      //*******viscous forces***************************************************************************************************
+      momentum_ij.Update(viscosity/rRelNorm2, vRel_ij, 1.0);
+
+      // write on particle i if appropriate specializing the quantities
+      if (interData_ij.dw_ij_ != 0)
+      {
+        // construct the specific ij coeff
+        const double generalCoeff_ij = (V_i*V_i+V_j*V_j)*interData_ij.dw_ij_ / particle_i.mass_;
+        // assemble and write
+        LINALG::Matrix<3,1> accn_ij;
+        accn_ij.Update(generalCoeff_ij, momentum_ij);
+        accn_ij.Scale(extMulti);
+        sumj_accn_ij.Update(1.0,accn_ij,1.0);
+
+        if(background_pressure>0)
+        {
+          LINALG::Matrix<3,1> p0_accn_ij;
+          p0_accn_ij.Update(generalCoeff_ij, p0_momentum_ij);
+          p0_accn_ij.Scale(extMulti);
+          p0_sumj_accn_ij.Update(1.0,p0_accn_ij,1.0);
+        }
+      }
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.dw_ji_ != 0)
+      {
+        // construct the specific ji coeff
+        const double generalCoeff_ji = (V_i*V_i+V_j*V_j)*interData_ij.dw_ji_ / particle_j.mass_;
+        // assemble and write
+        LINALG::Matrix<3,1> accn_ji;
+        accn_ji.Update(generalCoeff_ji, momentum_ij);
+        accn_ji.Scale(-extMulti); // actio = - reactio
+        LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
+
+        if(background_pressure>0)
+        {
+          LINALG::Matrix<3,1> p0_accn_ji;
+          p0_accn_ji.Update(generalCoeff_ji, p0_momentum_ij);
+          p0_accn_ji.Scale(-extMulti); // actio = - reactio
+          LINALG::Assemble(*p0_acc, p0_accn_ji, particle_j.lm_, particle_j.owner_);
+        }
+      }
+    }//sum over j
+    //Assemble all contributions to particle i (we do this at once outside the j-loop since the assemble operation is expensive!)
+    LINALG::Assemble(*accn, sumj_accn_ij, particle_i.lm_, particle_i.owner_);
+    if(background_pressure>0)
+      LINALG::Assemble(*p0_acc, p0_sumj_accn_ij, particle_i.lm_, particle_i.owner_);
+  }//sum over i
+
+  if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
+    Inter_bpvp_acc_var2(accn, p0_acc, extMulti);
+}
+
+/*-----------------------------------------------------------------------------------------*
+ | evaluate acceleration - bpvp: alternative variant according to Adami2013   meier 02/17  |
+ *-----------------------------------------------------------------------------------------*/
+void PARTICLE::ParticleMeshFreeInteractionHandler::Inter_bpvp_acc_var2(
+    const Teuchos::RCP<Epetra_Vector> accn,
+    const Teuchos::RCP<Epetra_Vector> p0_acc,
+    const double extMulti)
+{
+  //checks
+  if (accn == Teuchos::null)
+  {
+    dserror("accn is empty");
+  }
+
+  // Constant background pressure for modified accelerations according to Adami2013
+  // The terms associated with the constant background pressure are similar to the real pressure terms
+  // but with the pressures p_i and p_j replaced by the background pressure. All the related variables
+  // and terms are marked by a prefix p0, e.g. p0_momentum_ij etc.
+  double background_pressure=-1.0;
+  if (p0_acc != Teuchos::null)
+  {
+    background_pressure=DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE");
+    if(background_pressure<0.0)
+      dserror("Negative background pressure! Why is the vector accmod handed in for this case?");
+  }
+
+  const double viscosity=particle_algorithm_->ExtParticleMat()->dynamicViscosity_;
+
+  // loop over the boundary particles
+  for (std::map<int,std::map<int, InterDataPvP> >::iterator ii = neighbours_bp_.begin(); ii!=neighbours_bp_.end(); ++ii)
+  {
+    int id_i = ii->first;
+    ParticleMF *particle_i = boundaryparticles_[id_i];
+
+    //-1000 means there are no relevant fluid particle neighbors for this boundary particle
+    if(particle_i->boundarydata_.pressureMod_==-1000)
+      continue;
+
+    //Here, the initial density of the boundary particles is applied
+    //(the density of boundary particles remains unchanged since no data is assembled during the simulation to boundary particle DoFs)
+    //In Ref. Adami2012, Eq. (28), an alternative density is proposed for calculating a density weighted pressure average.
+    //Since we do not apply a density weighted pressure average, this alternative density definition is not required.
+    double density_i = particle_i->boundarydata_.densityMod_;
+    double pressure_i =  particle_i->boundarydata_.pressureMod_;
+    double V_i=particle_i->mass_/density_i;
+
+    // loop over the boundary particles
+    for (std::map<int, InterDataPvP>::iterator jj = neighbours_bp_[id_i].begin(); jj!=neighbours_bp_[id_i].end(); ++jj)
+    {
+      int id_j = jj->first;
+      int lidNodeCol_j = discret_->NodeColMap()->LID(id_j);
+      const ParticleMF& particle_j = colParticles_[lidNodeCol_j];
+      const InterDataPvP& interData_ij =(neighbours_bp_[id_i])[id_j];
+
+      //Atenttion:  particle_i is allways a boundary particle and particle_j is allways a fluid particle.
+      //            Forces are only assembled to the fluid particles particle_j!
+      //            Everything else is similar to Inter_bpvp_acc(), but with modified boundary particle pressurs and velocities.
+
+      //const double density_j = useDensityApprox ? particle_j.densityapprox_ : particle_j.density_;
+      double density_j = particle_j.density_;
+      double pressure_j = particle_j.pressure_;
+      double V_j=particle_j.mass_/density_j;
+
+      // --- extract general data --- //
+      const double rRelNorm2 = interData_ij.rRelNorm2_;
+      LINALG::Matrix<3,1> rRelVersor_ij(interData_ij.rRelVersor_ij_);
+      LINALG::Matrix<3,1> vRel_ij;
+      //The viscous terms require modified velocities of the boundary particles according to Ref. Adami2012, Eq. (23)
+      vRel_ij.Update(1.0, particle_i->boundarydata_.velMod_, -1.0, particle_j.vel_);
+
+      LINALG::Matrix<3,1> momentum_ij;
+      LINALG::Matrix<3,1> p0_momentum_ij(true);
+
+      //*******pressure*********************************************************************************************************
+      // compute the pressure term
+      const double tilde_p_ij = (density_i*pressure_j+density_j*pressure_i)/(density_i+density_j);
+      momentum_ij.Update(- tilde_p_ij, rRelVersor_ij, 1.0);
+
+      //*******background pressure (optional)***********************************************************************************
+      if(background_pressure>0)
+      {
+        //background pressure term for modified convection velocities/accelerations
+        p0_momentum_ij.Update(- background_pressure, rRelVersor_ij, 1.0);
+
+        //additional term div(A) in Navier-Stokes equation due to non-material particle convection
+        //with ternsor A_{ab}:=\rho*vel_a*(\tilde{vel}_b-vel_b) according to Adami 2013, Eq. (4).
+        LINALG::Matrix<3,3> p0_A(true);
+        LINALG::Matrix<3,1> p0_A_e_ij(true);
+        for(int a=0;a<3;a++)
+        {
+          for(int b=0;b<3;b++)
+          {
+            // The difference in momentum and convection velocitiy vanishes for boundary particles: (particle_i->velConv_(b)-particle_i->vel_(b))=0
+            // Hence, we only have one contribution here:
+            p0_A(a,b)+=density_j*particle_j.vel_(a)*(particle_j.velConv_(b)-particle_j.vel_(b));
+          }
+        }
+        p0_A_e_ij.MultiplyNN(p0_A,rRelVersor_ij);
+
+        if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"NO_VELDIFF_TERM")==false)
+        {
+            momentum_ij.Update(0.5, p0_A_e_ij, 1.0);
+        }
+      }
+
+      //*******viscous forces***************************************************************************************************
+      //Viscous interaction with boundary particles is only required in case of a no-slip boundary condition!
+      if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip)
+        momentum_ij.Update(viscosity/rRelNorm2, vRel_ij, 1.0);
+
+      // write on particle j if appropriate specializing the quantities
+      if (interData_ij.dw_ji_ != 0)
+      {
+        // construct the specific ji coeff
+        double generalCoeff_ji = 1.0;
+        generalCoeff_ji = (V_i*V_i+V_j*V_j)*interData_ij.dw_ji_ / particle_j.mass_;
+
+        // assemble and write
+        LINALG::Matrix<3,1> accn_ji;
+        accn_ji.Update(generalCoeff_ji, momentum_ij);
+        accn_ji.Scale(-extMulti); // actio = - reactio
+        LINALG::Assemble(*accn, accn_ji, particle_j.lm_, particle_j.owner_);
+
+        if(background_pressure>0)
+        {
+          LINALG::Matrix<3,1> p0_accn_ji;
+          p0_accn_ji.Update(generalCoeff_ji, p0_momentum_ij);
+          p0_accn_ji.Scale(-extMulti); // actio = - reactio
+          LINALG::Assemble(*p0_acc, p0_accn_ji, particle_j.lm_, particle_j.owner_);
+        }
+      }
+    }//loop over j
+  }//loop over i
 }
 
 /*----------------------------------------------------------------------*

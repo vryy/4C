@@ -195,18 +195,28 @@ namespace PARTICLE
         const double extMulti = 1.0);
 
     /// compute the momentum part of the particle vs particle interactions
-    virtual void Inter_pvp_acc(
+    virtual void Inter_pvp_acc_var1(
         const Teuchos::RCP<Epetra_Vector> accn,
+        const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
+
         const double extMulti = 1.0);
 
     /// compute the momentum part of the boundary particle vs particle interactions
-    virtual void Inter_bpvp_acc(
+    virtual void Inter_bpvp_acc_var1(
         const Teuchos::RCP<Epetra_Vector> accn,
+        const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
         const double extMulti = 1.0);
 
-    /// evaluate modified acceleration due to constant background pressure of the particle vs particle interactions
-    virtual void Inter_pvp_modacc(
-        const Teuchos::RCP<Epetra_Vector> accmod,
+    /// compute the momentum part of the particle vs particle interactions: alternative variant according to Adami2013
+    virtual void Inter_pvp_acc_var2(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
+        const double extMulti = 1.0);
+
+    /// compute the momentum part of the boundary particle vs particle interactions: alternative variant according to Adami2013
+    virtual void Inter_bpvp_acc_var2(
+        const Teuchos::RCP<Epetra_Vector> accn,
+        const Teuchos::RCP<Epetra_Vector> p0_acc = Teuchos::null,
         const double extMulti = 1.0);
 
     ///Computes Gradient of divergence operator for vector v - pvp
@@ -328,6 +338,19 @@ namespace PARTICLE
 
     /// wrapper for the template
     void PrintNeighbours(const PARTICLE::NeighbourType& nt);
+
+    /// Get min / max pressure etc.
+    void GetExtremeValues(
+        double& min_pvp_dist,
+        double& min_pvw_dist,
+        double& min_pressure,
+        double& max_pressure)
+    {
+      min_pvp_dist=min_pvp_dist_;
+      min_pvw_dist=min_pvw_dist_;
+      min_pressure=min_pressure_;
+      max_pressure=max_pressure_;
+    }
 
     //@}
 
@@ -484,6 +507,18 @@ namespace PARTICLE
 
     // length of periodic box if appicable (=-1.0 if not)
     double periodic_length_;
+
+    // minimal distance (over all particles) between two particles
+    double min_pvp_dist_;
+
+    // minimal distance (over all particles) between particles and walls
+    double min_pvw_dist_;
+
+    // minimal pressure (over all particles)
+    double min_pressure_;
+
+    // maximal pressure (over all particles)
+    double max_pressure_;
 
     //@}
 

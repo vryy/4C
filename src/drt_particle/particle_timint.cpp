@@ -553,7 +553,16 @@ void PARTICLE::TimInt::DetermineMassDampConsistAccel()
     if(timinttype==INPAR::PARTICLE::dyna_kickdrift)
     {
       if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
-        DetermineMeshfreeDensAndAcc((*acc_)(0),(*accmod_)(0),Teuchos::null,0.0);
+      {
+        //Initially, the convection velocity velConv is set equal to the initial velocity veln_
+        Teuchos::RCP<Epetra_Vector> velConv = Teuchos::rcp(new Epetra_Vector(*veln_));
+        velConv->Update(1.0,*veln_,0.0);
+        //Initialize veln_ and velConv since required for (*acc_)(0) and (*accmod_)(0)
+        ApplyDirichletBC(0.0, Teuchos::null, veln_, Teuchos::null, false);
+        ApplyDirichletBC(0.0, Teuchos::null, velConv, Teuchos::null, false);
+
+        DetermineMeshfreeDensAndAcc((*acc_)(0),(*accmod_)(0),velConv,0.0);
+      }
       else
         DetermineMeshfreeDensAndAcc((*acc_)(0),Teuchos::null,Teuchos::null,0.0);
     }
@@ -646,13 +655,16 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 
   //Acceleration contributions due to gravity forces
   acc->PutScalar(0.0);
+
+  if(accmod!=Teuchos::null)
+    accmod->PutScalar(0.0);
+
   GravityAcc(acc,1.0,time);
   //Acceleration contributions due to internal forces (pressure, viscosity etc.)
-  interHandler_->Inter_pvp_acc(acc,1.0);
-
-  // Modified accelerations according to Adami2013
-  if (DRT::Problem::Instance()->ParticleParams().get<double>("BACKGROUND_PRESSURE")>0.0)
-    interHandler_->Inter_pvp_modacc(accmod,1.0);
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"CALC_ACC_VAR2")==false)
+    interHandler_->Inter_pvp_acc_var1(acc,accmod);
+  else
+    interHandler_->Inter_pvp_acc_var2(acc,accmod);
 
   // clear vectors, keep memory
   interHandler_->Clear();
@@ -1069,16 +1081,16 @@ void PARTICLE::TimInt::DetermineEnergy()
         // thermodynamic energy E with p=-dE/dV, T=dE/dS (see Espanol2003, Eq.(5))
         // Attention: currently, only the first, pressure-dependent contribution of the thermodynamic energy is implemented!
         // Thus, it is only valid for isentrop problems, i.e.dE/dS=0! Furthermore, it is only considered for the fluid phase so far (since SpeedOfSoundL is used)!
-        // In the following, for simplicity, all particles including also boundary particles are considered. The boundary particles are represented by their initial
-        // density (usually initDensity_=restDensity) in the vector densityn_ and do not yield energy changes in the following lines. However, the actual energy
-        // contributions of the boundary particles is contained in bpintergy_!
 
         //TODO: So far, energy output is only considered in the context of fluid problems (use of SpeedOfSoundL())!
         if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"SOLVE_THERMAL_PROBLEM"))
           dserror("Energy output is only considered in the context of pure fluid problems so far!");
 
         double c0 = particle_algorithm_->ExtParticleMat()->SpeedOfSoundL();
-        intergy_+=PARTICLE::Utils::Density2Energy(c0, (*densityn_)[i], restDensity_, refdensfac_, (*mass_)[i]);
+
+        //Very small / zero densities that might result from boundary particles are not considered here!
+        if((*densityn_)[i]>0.1*restDensity_)
+          intergy_+=PARTICLE::Utils::Density2Energy(c0, (*densityn_)[i], restDensity_, refdensfac_, (*mass_)[i]);
       }
     }
     else
@@ -1099,6 +1111,7 @@ void PARTICLE::TimInt::DetermineEnergy()
     linmomentum_(0) = global_linmomentum[0];
     linmomentum_(1) = global_linmomentum[1];
     linmomentum_(2) = global_linmomentum[2];
+
   }
 
   return;

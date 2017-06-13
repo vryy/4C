@@ -235,6 +235,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    DoubleParameter("CONSISTENT_PROBLEM_VOLUME",-1.0,"prescribe problem volume and determine particle masses consistently based on this volume and the initial density",&particledyn);
    DoubleParameter("VISCOUS_DAMPING",-1.0,"apply artificial viscous damping force to particles in order to determine static equilibrium solutions",&particledyn);
    BoolParameter("SOLVE_THERMAL_PROBLEM","yes","solve also the thermal problem?",&particledyn);
+   BoolParameter("NO_VELDIFF_TERM","no","Do not apply velocity difference tensor in case of transport velocity formulation",&particledyn);
+   BoolParameter("CALC_ACC_VAR2","no","I apply alternative variant for discretization of pressure gradient and viscous forces according to Adami et al. 2013",&particledyn);
    setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
                              "Acceleration due to gravity in particle simulations.",
                              &particledyn);

@@ -70,7 +70,24 @@ namespace PARTICLE
     //! Overload
     virtual void ReadRestartState();
 
+    //! Determination (and output) of extreme values */
+    virtual void GetExtremeValues();
+
     //@}
+
+  protected:
+
+  // minimal distance (over all particles and the entire simulation time) between two particles
+  double alltimemin_pvp_dist_;
+
+  // minimal distance (over all particles and the entire simulation time) between particles and walls
+  double alltimemin_pvw_dist_;
+
+  // minimal pressure (over all particles and the entire simulation time)
+  double alltimemin_pressure_;
+
+  // maximal pressure (over all particles and the entire simulation time)
+  double alltimemax_pressure_;
 
   };  // class TimIntKickDrift
 

@@ -44,6 +44,7 @@
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_node.H"
 
+#include "../drt_particle/particle_algorithm.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beam3/beam3_base.H"
 
@@ -2677,9 +2678,10 @@ void BINSTRATEGY::BinningStrategy::PeriodicBoundaryShift3D( LINALG::Matrix< 3, 1
       if ( not pbconoff_[dim] )
         continue;
 
-      if( d(dim) + X(dim) < XAABB_( dim, 0 ) )
+      while( d(dim) + X(dim) < XAABB_( dim, 0 ) )
         d(dim) += pbcdeltas_[dim];
-      else if( d(dim) + X(dim) > XAABB_( dim, 1 ) )
+
+      while( d(dim) + X(dim) > XAABB_( dim, 1 ) )
         d(dim) -= pbcdeltas_[dim];
     }
   }
