@@ -23,7 +23,7 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_discret.H"
-#include <Epetra_FEVector.h>
+#include "../drt_inpar/inpar_particle.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                 |
@@ -52,7 +52,6 @@ public:
 
   //! constructor
   Rendering(
-      Teuchos::RCP<DRT::Discretization> discret,
       Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm,
       Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandler> interHandler,
       Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler
@@ -75,29 +74,32 @@ public:
       Teuchos::RCP<const Epetra_Vector> pMass
       );
 
-  //! rendering output state
+  //! output rendering state
   virtual void OutputState();
+
+  //! clear rendering state
+  virtual void ClearState();
 
   //! read-only rendering discretization
   virtual Teuchos::RCP<const DRT::Discretization> GetRenderingDiscret() { return discret_; }
 
   //! read-only rendering velocity
-  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingVelocity() { return vel_; }
+  virtual Teuchos::RCP<const Epetra_Vector> GetRenderingVelocity() { return vel_; }
 
   //! read-only rendering acceleration
-  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingAcceleration() { return acc_; }
+  virtual Teuchos::RCP<const Epetra_Vector> GetRenderingAcceleration() { return acc_; }
 
   //! read-only rendering density
-  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingDensity() { return density_; }
+  virtual Teuchos::RCP<const Epetra_Vector> GetRenderingDensity() { return density_; }
 
   //! read-only rendering specific enthalpy
-  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingSpecEnthalpy() { return specEnthalpy_; }
+  virtual Teuchos::RCP<const Epetra_Vector> GetRenderingSpecEnthalpy() { return specEnthalpy_; }
 
   //! read-only rendering temperature
-  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingTemperature() { return temperature_; }
+  virtual Teuchos::RCP<const Epetra_Vector> GetRenderingTemperature() { return temperature_; }
 
   //! read-only rendering pressure
-  virtual Teuchos::RCP<const Epetra_FEVector> GetRenderingPressure() { return pressure_; }
+  virtual Teuchos::RCP<const Epetra_Vector> GetRenderingPressure() { return pressure_; }
 
   //! create result test for rendering
   virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -119,21 +121,30 @@ private:
   //! pointer to weight function handler
   Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler_;
 
+  //! type of rendering
+  INPAR::PARTICLE::RenderingType renderingType_;
+
+  //! output rendering on discretization and/or in matlab format
+  INPAR::PARTICLE::RenderingOutput renderingOutput_;
+
+  //! average rendering vectors over time steps
+  int avrgRendering_;
+
   //! bins to rendering nodes map
   std::map<int,std::list<DRT::Node* > > binsToRenderingNodes_;
 
   //! rendering vectors
-  Teuchos::RCP<Epetra_FEVector> vel_; //! rendering velocity
+  Teuchos::RCP<Epetra_Vector> vel_; //! rendering velocity
 
-  Teuchos::RCP<Epetra_FEVector> acc_; //! rendering acceleration
+  Teuchos::RCP<Epetra_Vector> acc_; //! rendering acceleration
 
-  Teuchos::RCP<Epetra_FEVector> density_; //! rendering density
+  Teuchos::RCP<Epetra_Vector> density_; //! rendering density
 
-  Teuchos::RCP<Epetra_FEVector> specEnthalpy_; //! rendering specific enthalpy
+  Teuchos::RCP<Epetra_Vector> specEnthalpy_; //! rendering specific enthalpy
 
-  Teuchos::RCP<Epetra_FEVector> temperature_; //! rendering temperature
+  Teuchos::RCP<Epetra_Vector> temperature_; //! rendering temperature
 
-  Teuchos::RCP<Epetra_FEVector> pressure_; //! rendering pressure
+  Teuchos::RCP<Epetra_Vector> pressure_; //! rendering pressure
 
 };
 

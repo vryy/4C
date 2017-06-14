@@ -200,11 +200,10 @@ PARTICLE::ParticleMeshFreeInteractionHandler::ParticleMeshFreeInteractionHandler
   BuildPeriodicBC();
 
   // initialize rendering handler
-  if (DRT::INPUT::IntegralValue<int>(particledynparams,"RENDERING"))
+  const INPAR::PARTICLE::RenderingType renderingType = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(DRT::Problem::Instance()->ParticleParams(),"RENDERING");
+  if (renderingType == INPAR::PARTICLE::StandardRendering or renderingType == INPAR::PARTICLE::NormalizedRendering)
   {
-    Teuchos::RCP<DRT::Discretization> renderingdis = DRT::Problem::Instance()->GetDis("rendering");
-
-    Teuchos::RCP<Rendering> rendering = Teuchos::rcp(new PARTICLE::Rendering(renderingdis,particle_algorithm_,Teuchos::rcp(this,false),weightFunctionHandler_));
+    Teuchos::RCP<Rendering> rendering = Teuchos::rcp(new PARTICLE::Rendering(particle_algorithm_, Teuchos::rcp(this,false), weightFunctionHandler_));
     particle_algorithm_->SetRendering(rendering);
 
     if (particle_algorithm_->GetRendering() == Teuchos::null)

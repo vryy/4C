@@ -69,6 +69,7 @@ PARTICLE::TimInt::TimInt
   writeresultsevery_(particledynparams.get<int>("RESULTSEVRY")),
   writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
   writerenderingevery_(particledynparams.get<int>("RESEVRYREND")),
+  avrgrenderingsteps_(particledynparams.get<int>("AVRG_REND_STEPS")),
   writeparticlestatsevery_(particledynparams.get<int>("PARTICLESTATSEVRY")),
   energyfile_(Teuchos::null),
   particlestatsfile_(Teuchos::null),
@@ -889,9 +890,17 @@ void PARTICLE::TimInt::OutputStep(bool forced_writerestart)
   }
 
   // output meshfree rendering
-  if ( writerenderingevery_ and ((step_-restart_)%writerenderingevery_ == 0) )
+  int mod = (step_-restart_)%writerenderingevery_;
+  int range = (mod == 0) ? writerenderingevery_ : mod; // gives the range from first averaging step to output step
+  if ( writerenderingevery_ and (range > (writerenderingevery_-avrgrenderingsteps_)) and (range <= writerenderingevery_) )
   {
-    OutputMeshfreeRendering();
+    // clear rendering states before first averaging step
+    bool clearstate = (range == (writerenderingevery_-avrgrenderingsteps_+1));
+
+    // write rendering states at output step
+    bool writeoutput = (range == writerenderingevery_);
+
+    PerformMeshfreeRendering(clearstate, writeoutput);
   }
 
   // output particle statistics
@@ -1163,15 +1172,23 @@ void PARTICLE::TimInt::OutputEnergy()
 /*----------------------------------------------------------------------*
  | meshfree rendering output                               sfuchs 06/17 |
  *----------------------------------------------------------------------*/
-void PARTICLE::TimInt::OutputMeshfreeRendering()
+void PARTICLE::TimInt::PerformMeshfreeRendering(bool clearstate, bool writeoutput)
 {
   if(interHandler_ != Teuchos::null  and particle_algorithm_->ParticleInteractionType()==INPAR::PARTICLE::MeshFree)
   {
     Teuchos::RCP<Rendering> rendering = particle_algorithm_->GetRendering();
     if (rendering != Teuchos::null)
     {
+      // clear the (averaged) rendering vectors
+      if (clearstate)
+        rendering->ClearState();
+
+      // determine the (averaged) rendering vectors
       rendering->UpdateRenderingVectors(discret_, (*dis_)(0), (*vel_)(0), (*acc_)(0), (*density_)(0), (*specEnthalpy_)(0), temperature_, (*radius_)(0), pressure_, mass_);
-      rendering->OutputState();
+
+      // write the (averaged) rendering vectors
+      if (writeoutput)
+        rendering->OutputState();
     }
   }
 

@@ -63,7 +63,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    // Output type
    IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&particledyn);
    IntParameter("RESEVRYERGY",0,"write system energies every requested step",&particledyn);
-   IntParameter("RESEVRYREND",0,"write meshfree rendering every requested step",&particledyn);
+   IntParameter("RESEVRYREND",1,"write meshfree rendering every requested step",&particledyn);
    IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&particledyn);
    IntParameter("CONTACTFORCESEVRY",0,"output particle-particle and particle-wall contact forces to *.csv file every CONTACTFORCESEVRY steps",&particledyn);
    IntParameter("PARTICLESTATSEVRY",0,"output particle statistics to *.csv file every PARTICLESTATSEVRY steps",&particledyn);
@@ -230,7 +230,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
    DoubleParameter("RADIUS_DISTRIBUTION_SIGMA",-1.0,"standard deviation of particle radii distribution",&particledyn);
    IntParameter("RADIUS_CHANGE_FUNCT",-1,"number of curve governing radius change",&particledyn);
-   BoolParameter("RENDERING","no","switch on/off the rendering domain. If it is yes... you better have a RENDERING DOMAIN available",&particledyn);
    BoolParameter("DENSITY_SUMMATION","no","determine density via summation formula instead of time integration",&particledyn);
    DoubleParameter("CONSISTENT_PROBLEM_VOLUME",-1.0,"prescribe problem volume and determine particle masses consistently based on this volume and the initial density",&particledyn);
    DoubleParameter("VISCOUS_DAMPING",-1.0,"apply artificial viscous damping force to particles in order to determine static equilibrium solutions",&particledyn);
@@ -256,6 +255,38 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   INPAR::PARTICLE::particle_2Dy,
                                   INPAR::PARTICLE::particle_2Dz),
                                 &particledyn);
+
+   setStringToIntegralParameter<int>(
+                               "RENDERING","None",
+                               "rendering for smoothed particle hydrodynamics",
+                               tuple<std::string>(
+                                 "None",
+                                 "Standard",
+                                 "Normalized"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::NoRendering,
+                                 INPAR::PARTICLE::StandardRendering,
+                                 INPAR::PARTICLE::NormalizedRendering
+                                 ),
+                               &particledyn);
+
+   setStringToIntegralParameter<int>(
+                               "RENDERING_OUTPUT","DiscretAndMatlab",
+                               "rendering for smoothed particle hydrodynamics",
+                               tuple<std::string>(
+                                 "DiscretAndMatlab",
+                                 "Discret",
+                                 "Matlab"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::DiscretAndMatlab,
+                                 INPAR::PARTICLE::Discret,
+                                 INPAR::PARTICLE::Matlab
+                                 ),
+                               &particledyn);
+
+   IntParameter("AVRG_REND_STEPS",1,"Average rendering vectors over AVRG_REND_STEPS time steps",&particledyn);
 
    DoubleParameter("ADHESION_EQ_GAP",0.0,"gap between two particles or between particle and wall in adhesion equilibrium",&particledyn);
    DoubleParameter("ADHESION_NORMAL_STIFF",-1.0,"stiffness for normal adhesion force",&particledyn);

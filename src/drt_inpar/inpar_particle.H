@@ -122,6 +122,21 @@ namespace INPAR
       NoWallInteraction
     };
 
+    /// rendering for smoothed particle hydrodynamics
+    enum RenderingType
+    {
+      NoRendering,
+      StandardRendering,
+      NormalizedRendering
+    };
+
+    enum RenderingOutput
+    {
+      DiscretAndMatlab,
+      Discret,
+      Matlab
+    };
+
     /// time step choice
     enum TimeStepType
     {

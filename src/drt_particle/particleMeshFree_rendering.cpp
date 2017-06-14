@@ -23,21 +23,22 @@
 #include "particle_algorithm.H"
 
 #include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../linalg/linalg_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+#include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------*
  | constructor                                             sfuchs 06/17 |
  *----------------------------------------------------------------------*/
 PARTICLE::Rendering::Rendering(
-    Teuchos::RCP<DRT::Discretization> discret,
     Teuchos::RCP<PARTICLE::Algorithm> particleAlgorithm,
     Teuchos::RCP<PARTICLE::ParticleMeshFreeInteractionHandler> interHandler,
     Teuchos::RCP<PARTICLE::WeightFunction_Base> weightFunctionHandler
     ) :
-    discret_(discret),
     particle_algorithm_(particleAlgorithm),
     interHandler_(interHandler),
     weightFunctionHandler_(weightFunctionHandler),
@@ -48,6 +49,23 @@ PARTICLE::Rendering::Rendering(
     temperature_(Teuchos::null),
     pressure_(Teuchos::null)
 {
+  // get pointer to global problem
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  // get parameter list
+  const Teuchos::ParameterList& particle_params = problem->ParticleParams();
+
+  // get type of rendering
+  renderingType_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(particle_params,"RENDERING");
+  renderingOutput_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingOutput>(particle_params,"RENDERING_OUTPUT");
+  avrgRendering_ = particle_params.get<int>("AVRG_REND_STEPS");
+
+  if ( avrgRendering_ > particle_params.get<int>("RESEVRYREND") )
+    dserror("Averaging of rendering results just possible over a maximum of RESEVRYREND steps!");
+
+  // get rendering discretization
+  discret_ = problem->GetDis("rendering");
+
   // row node map of rendering discretization
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*discret_->NodeRowMap()));
   // fully overlapping node map
@@ -80,9 +98,60 @@ PARTICLE::Rendering::Rendering(
     binsToRenderingNodes_[binID].push_back(currentNode);
   }
 
+  // initialize the dof-based rendering vectors
+  vel_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
+  acc_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
+
+  // initialize the node-based rendering vectors
+  density_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
+  specEnthalpy_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
+  temperature_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
+  pressure_ = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(), true));
+
   // write mesh file once
-  Teuchos::RCP<IO::DiscretizationWriter> output = discret_->Writer();
-  output->WriteMesh(particle_algorithm_->Step(), particle_algorithm_->Time());
+  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or renderingOutput_ == INPAR::PARTICLE::Discret)
+  {
+    Teuchos::RCP<IO::DiscretizationWriter> output = discret_->Writer();
+    output->WriteMesh(particle_algorithm_->Step(), particle_algorithm_->Time());
+  }
+
+  // write rendering node positions and map relating dof gids to node gids once in matlab format
+  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or renderingOutput_ == INPAR::PARTICLE::Matlab)
+  {
+    Teuchos::RCP<Epetra_Vector> rdgNodePos = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
+    Teuchos::RCP<Epetra_Vector> rdgNodeMap = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
+
+    // loop over all rendering nodes
+    for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); ++i)
+    {
+      // extract node
+      DRT::Node *node = discret_->lRowNode(i);
+
+      // gid of node
+      std::vector<double> gid(3);
+      gid[0] = gid[1] = gid[2] = node->Id() + 1;
+
+      // extract global dof ids
+      std::vector<int> lm = discret_->Dof(0,node);
+
+      int err = 0;
+      err = rdgNodePos->ReplaceGlobalValues(3, &(node->X())[0], &lm[0]);
+      err = rdgNodeMap->ReplaceGlobalValues(3, &gid[0], &lm[0]);
+      if (err > 0)
+        dserror("Could not insert values into vector rdgNodePos: error %d",err);
+    }
+
+    // output in matlab format
+    const std::string outname(DRT::Problem::Instance()->OutputControlFile()->FileName());
+
+    std::ostringstream filename_pos;
+    filename_pos << outname << "_rendering_position.m";
+    LINALG::PrintVectorInMatlabFormat(filename_pos.str(), *rdgNodePos);
+
+    std::ostringstream filename_map;
+    filename_map << outname << "_rendering_doftonodemap.m";
+    LINALG::PrintVectorInMatlabFormat(filename_map.str(), *rdgNodeMap);
+  }
 
   return;
 } // PARTICLE::Rendering::Rendering
@@ -104,21 +173,25 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Rendering::UpdateStateVectors");
 
-  // re-create the dof-based rendering vectors
-  vel_ = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
-  acc_ = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
+  // create the dof-based rendering vectors
+  Teuchos::RCP<Epetra_FEVector> vel = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> acc = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
 
-  // re-create the node-based rendering vectors
-  density_ = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
-  specEnthalpy_ = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
-  temperature_ = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
-  pressure_ = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
+  // create the node-based rendering vectors
+  Teuchos::RCP<Epetra_FEVector> density = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> specEnthalpy = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> temperature = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> pressure = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
+
+  // create vector of normalization weights (dof and nodal based)
+  Teuchos::RCP<Epetra_FEVector> sumkWikDof = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap(), true));
+  Teuchos::RCP<Epetra_FEVector> sumkWikNode = Teuchos::rcp(new Epetra_FEVector(*discret_->NodeRowMap(), true));
 
   // set that keeps track of the bins that have been already examined
   std::set<int> examinedbins;
 
   // loop over the particles (to check only the bins that own particles)
-  for(int rowPar_i=0; rowPar_i<pDiscret->NodeRowMap()->NumMyElements(); ++rowPar_i)
+  for (int rowPar_i=0; rowPar_i<pDiscret->NodeRowMap()->NumMyElements(); ++rowPar_i)
   {
     // extract the particle
     DRT::Node *currparticle = pDiscret->lRowNode(rowPar_i);
@@ -140,7 +213,7 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
     DRT::Node** currentBinParticles = currentBin->Nodes();
     for (int i=0; i<currentBin->NumNode(); ++i)
     {
-      // determine the particle we are analizing
+      // determine the particle we are analyzing
       DRT::Node* particle_i = currentBinParticles[i];
       // extract the gid
       const int gidNode_i = particle_i->Id();
@@ -226,31 +299,63 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
         lmRdgNode_k.reserve(3);
         discret_->Dof(*nbrRdgNode_k, lmRdgNode_k);
 
-        // write the rendering vectors
         // use of Epetra_FEVectors to take care of ghosted rendering nodes
-        vel_->SumIntoGlobalValues(3, &lmRdgNode_k[0], &vel_ik(0));
-        acc_->SumIntoGlobalValues(3, &lmRdgNode_k[0], &acc_ik(0));
+        vel->SumIntoGlobalValues(3, &lmRdgNode_k[0], &vel_ik(0));
+        acc->SumIntoGlobalValues(3, &lmRdgNode_k[0], &acc_ik(0));
 
-        density_->SumIntoGlobalValues(1, &gidRdgNode_k, &density_ik);
-        specEnthalpy_->SumIntoGlobalValues(1, &gidRdgNode_k, &specEnthalpy_ik);
-        temperature_->SumIntoGlobalValues(1, &gidRdgNode_k, &temperature_ik);
-        pressure_->SumIntoGlobalValues(1, &gidRdgNode_k, &pressure_ik);
+        density->SumIntoGlobalValues(1, &gidRdgNode_k, &density_ik);
+        specEnthalpy->SumIntoGlobalValues(1, &gidRdgNode_k, &specEnthalpy_ik);
+        temperature->SumIntoGlobalValues(1, &gidRdgNode_k, &temperature_ik);
+        pressure->SumIntoGlobalValues(1, &gidRdgNode_k, &pressure_ik);
+
+        if (renderingType_ == INPAR::PARTICLE::NormalizedRendering)
+        {
+          sumkWikDof->SumIntoGlobalValues(3, &lmRdgNode_k[0], &massOverDensityWeight_ik);
+          sumkWikNode->SumIntoGlobalValues(1, &gidRdgNode_k, &massOverDensityWeight_ik);
+        }
       }
     }
   }
 
   // assemble rendering vectors
   int err = 0;
-  err += vel_->GlobalAssemble(Add, false);
-  err += acc_->GlobalAssemble(Add, true);
-  err += density_->GlobalAssemble(Add, true);
-  err += specEnthalpy_->GlobalAssemble(Add, true);
-  err += temperature_->GlobalAssemble(Add, true);
-  err += pressure_->GlobalAssemble(Add, true);
-  if (err!=0)
+  err += vel->GlobalAssemble(Add, true);
+  err += acc->GlobalAssemble(Add, true);
+  err += density->GlobalAssemble(Add, true);
+  err += specEnthalpy->GlobalAssemble(Add, true);
+  err += temperature->GlobalAssemble(Add, true);
+  err += pressure->GlobalAssemble(Add, true);
+  if (renderingType_ == INPAR::PARTICLE::NormalizedRendering)
   {
-    dserror("global assemble of rendering vectors failed!");
+    err += sumkWikDof->GlobalAssemble(Add, true);
+    err += sumkWikNode->GlobalAssemble(Add, true);
   }
+  if (err!=0)
+    dserror("global assemble of rendering vectors failed!");
+
+  // normalize rendering vectors
+  if (renderingType_ == INPAR::PARTICLE::NormalizedRendering)
+  {
+    sumkWikDof->Reciprocal(*sumkWikDof);
+    sumkWikNode->Reciprocal(*sumkWikNode);
+
+    vel->Multiply(1.0, *sumkWikDof, *vel, 0.0);
+    acc->Multiply(1.0, *sumkWikDof, *acc, 0.0);
+
+    density->Multiply(1.0, *sumkWikNode, *density, 0.0);
+    specEnthalpy->Multiply(1.0, *sumkWikNode, *specEnthalpy, 0.0);
+    temperature->Multiply(1.0, *sumkWikNode, *temperature, 0.0);
+    pressure->Multiply(1.0, *sumkWikNode, *pressure, 0.0);
+  }
+
+  // average rendering vectors over time steps
+  vel_->Update(1.0/avrgRendering_, *vel, 1.0);
+  acc_->Update(1.0/avrgRendering_, *acc, 1.0);
+
+  density_->Update(1.0/avrgRendering_, *density, 1.0);
+  specEnthalpy_->Update(1.0/avrgRendering_, *specEnthalpy, 1.0);
+  temperature_->Update(1.0/avrgRendering_, *temperature, 1.0);
+  pressure_->Update(1.0/avrgRendering_, *pressure, 1.0);
 
   return;
 } // PARTICLE::Rendering::UpdateStateVectors
@@ -280,32 +385,90 @@ std::list<DRT::Node*> PARTICLE::Rendering::GetNeighboringRenderingNodes(const in
 } // PARTICLE::Rendering::GetNeighboringRenderingNodes
 
 /*----------------------------------------------------------------------*
- | rendering output state                                  sfuchs 06/17 |
+ | output rendering state                                  sfuchs 06/17 |
  *----------------------------------------------------------------------*/
 void PARTICLE::Rendering::OutputState()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Rendering::OutputState");
 
-  Teuchos::RCP<IO::DiscretizationWriter> output = discret_->Writer();
-
   // extract step and time
   const int step = particle_algorithm_->Step();
   const double time = particle_algorithm_->Time();
 
-  output->NewStep(step, time);
+  // output discretization writer
+  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or renderingOutput_ == INPAR::PARTICLE::Discret)
+  {
+    Teuchos::RCP<IO::DiscretizationWriter> output = discret_->Writer();
 
-  // write dof-based vectors
-  output->WriteVector("velocity", vel_, IO::dofvector);
-  output->WriteVector("acceleration", acc_, IO::dofvector);
+    output->NewStep(step, time);
 
-  // write node-based vectors
-  output->WriteVector("density", density_, IO::nodevector);
-  output->WriteVector("specEnthalpy", specEnthalpy_, IO::nodevector);
-  output->WriteVector("temperature", temperature_, IO::nodevector);
-  output->WriteVector("pressure", pressure_, IO::nodevector);
+    // write dof-based vectors
+    output->WriteVector("velocity", vel_, IO::dofvector);
+    output->WriteVector("acceleration", acc_, IO::dofvector);
+
+    // write node-based vectors
+    output->WriteVector("density", density_, IO::nodevector);
+    output->WriteVector("specEnthalpy", specEnthalpy_, IO::nodevector);
+    output->WriteVector("temperature", temperature_, IO::nodevector);
+    output->WriteVector("pressure", pressure_, IO::nodevector);
+  }
+
+  // output in matlab format
+  if (renderingOutput_ == INPAR::PARTICLE::DiscretAndMatlab or renderingOutput_ == INPAR::PARTICLE::Matlab)
+  {
+    const std::string outname(DRT::Problem::Instance()->OutputControlFile()->FileName());
+
+    // velocity
+    std::ostringstream filename_vel;
+    filename_vel << outname << "_rendering_velocity_t" << time << ".m";
+    LINALG::PrintVectorInMatlabFormat(filename_vel.str(), *vel_);
+
+    // acceleration
+    std::ostringstream filename_acc;
+    filename_acc << outname << "_rendering_acceleration_t" << time << ".m";
+    LINALG::PrintVectorInMatlabFormat(filename_acc.str(), *acc_);
+
+    // density
+    std::ostringstream filename_dens;
+    filename_dens << outname << "_rendering_density_t" << time << ".m";
+    LINALG::PrintVectorInMatlabFormat(filename_dens.str(), *density_);
+
+    // specEnthalpy
+    std::ostringstream filename_enth;
+    filename_enth << outname << "_rendering_specenthalpy_t" << time << ".m";
+    LINALG::PrintVectorInMatlabFormat(filename_enth.str(), *specEnthalpy_);
+
+    // density
+    std::ostringstream filename_temp;
+    filename_temp << outname << "_rendering_temperature_t" << time << ".m";
+    LINALG::PrintVectorInMatlabFormat(filename_temp.str(), *temperature_);
+
+    // density
+    std::ostringstream filename_pres;
+    filename_pres << outname << "_rendering_pressure_t" << time << ".m";
+    LINALG::PrintVectorInMatlabFormat(filename_pres.str(), *pressure_);
+  }
 
   return;
 } // PARTICLE::Rendering::OutputState
+
+/*----------------------------------------------------------------------*
+ | clear rendering state                                   sfuchs 06/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Rendering::ClearState()
+{
+  // clear dof-based vectors
+  vel_->Scale(0.0);
+  acc_->Scale(0.0);
+
+  // clear node-based vectors
+  density_->Scale(0.0);
+  specEnthalpy_->Scale(0.0);
+  temperature_->Scale(0.0);
+  pressure_->Scale(0.0);
+
+  return;
+} // PARTICLE::Rendering::ClearState
 
 /*----------------------------------------------------------------------*
  | create result test for rendering                        sfuchs 06/17 |

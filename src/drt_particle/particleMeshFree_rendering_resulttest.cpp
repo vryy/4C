@@ -33,12 +33,12 @@ ParticleMeshfreeRenderingResultTest::ParticleMeshfreeRenderingResultTest(PARTICL
 {
   discret_ = rendering.GetRenderingDiscret();
 
-  vel_ = Teuchos::rcp(new Epetra_Vector(Copy,*rendering.GetRenderingVelocity(),0));
-  acc_ = Teuchos::rcp(new Epetra_Vector(Copy,*rendering.GetRenderingAcceleration(),0));
-  density_ = Teuchos::rcp(new Epetra_Vector(Copy,*rendering.GetRenderingDensity(),0));
-  specEnthalpy_ = Teuchos::rcp(new Epetra_Vector(Copy,*rendering.GetRenderingSpecEnthalpy(),0));
-  temperature_ = Teuchos::rcp(new Epetra_Vector(Copy,*rendering.GetRenderingTemperature(),0));
-  pressure_ = Teuchos::rcp(new Epetra_Vector(Copy,*rendering.GetRenderingPressure(),0));
+  vel_ = rendering.GetRenderingVelocity();
+  acc_ = rendering.GetRenderingAcceleration();
+  density_ = rendering.GetRenderingDensity();
+  specEnthalpy_ = rendering.GetRenderingSpecEnthalpy();
+  temperature_ = rendering.GetRenderingTemperature();
+  pressure_ = rendering.GetRenderingPressure();
 
   return;
 } // ParticleMeshfreeRenderingResultTest::ParticleMeshfreeRenderingResultTest
