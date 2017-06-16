@@ -23,11 +23,10 @@
 #include "../drt_mat/scatra_reaction_mat.H"
 #include "../drt_mat/scatra_bondreac_mat.H"
 
-#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
-
 
 namespace DRT
 {
+
 namespace ELEMENTS
 {
 
@@ -78,7 +77,7 @@ protected:
 
 
   //! extract element based or nodal values
-  //  return extracted values of phinp
+  //! return extracted values of phinp
   virtual void ExtractElementAndNodeValues(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
@@ -99,13 +98,6 @@ private:
       const DRT::Element*  ele,       //!< the element we are dealing with
       const int            iquad      //!< id of current gauss point
   ) const;
-
-  //! traction at adhesion surface
-  Teuchos::RCP<Epetra_Vector> surface_traction_;
-
-  //! Manager for data exchange between fields
-  DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
-
 
 }; //end class ScaTraEleCalcBondReac
 

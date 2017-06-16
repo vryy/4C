@@ -123,6 +123,9 @@ class HeterogeneousReactionStrategy : public MeshtyingStrategyStd
     //! private copy constructor
     HeterogeneousReactionStrategy(const HeterogeneousReactionStrategy& old);
 
+    //! check assumptions and conventions for heterogeneous reaction simulations
+    void HeterogeneousReactionSanityCheck();
+
   private:
 
     //! flag indicating if class is setup

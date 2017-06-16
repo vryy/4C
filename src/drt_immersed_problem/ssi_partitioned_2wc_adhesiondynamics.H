@@ -81,8 +81,19 @@ protected:
     \param dis        (in)  : discretization wearing the condition
     \param conddofmap (out) : dofrowmap for conditioned nodes
    */
-  void BuildConditionNodeMap(const DRT::Condition* condition,
-      const Teuchos::RCP<const DRT::Discretization> dis,
+  void BuildConditionDofRowMap(const DRT::Condition* condition,
+      const Teuchos::RCP<const DRT::Discretization>& dis,
+      Teuchos::RCP<Epetra_Map>& condnodemap);
+
+  /*!
+    \brief build map containing col dofs of conditioned nodes
+
+    \param condition  (in)  : condition to be considered
+    \param dis        (in)  : discretization wearing the condition
+    \param conddofmap (out) : dofcolmap for conditioned nodes
+   */
+  void BuildConditionDofColMap(const DRT::Condition* condition,
+      const Teuchos::RCP<const DRT::Discretization>& dis,
       Teuchos::RCP<Epetra_Map>& condnodemap);
 
   //! update the current states in every iteration
@@ -94,9 +105,11 @@ private:
 
   //! structure reaction forces
   Teuchos::RCP<Epetra_Vector> surface_traction_;
+  Teuchos::RCP<Epetra_Vector> surface_traction_col_;
 
   //! map containing the dofs of conditioned adhesion nodes
   Teuchos::RCP<Epetra_Map> conditiondofrowmap_;
+  Teuchos::RCP<Epetra_Map> conditiondofcolmap_;
 
   //! Manager for data exchange between fields
   DRT::ImmersedFieldExchangeManager* exchange_manager_;

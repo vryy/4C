@@ -250,7 +250,8 @@ void SSI::SSI_Base::Setup()
   // re-connect the material pointers.
   // At this point all the ghosting should have been done
   ssicoupling_->AssignMaterialPointers(
-      structure_->Discretization(),scatra_->ScaTraField()->Discretization());
+      structure_->Discretization(),
+      scatra_->ScaTraField()->Discretization() );
 
   // set flag issetup true
   SetIsSetup(true);

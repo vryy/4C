@@ -72,23 +72,33 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::Setup()
   // call setup of base class
   SSI::SSI_Part2WC::Setup();
 
-  // build condition node map
-  BuildConditionNodeMap((StructureField()->Discretization())->GetCondition("CellFocalAdhesion"),StructureField()->Discretization(),conditiondofrowmap_);
+  // build condition dof map with row layout
+  BuildConditionDofRowMap(
+      StructureField()->Discretization()->GetCondition("CellFocalAdhesion"),
+      StructureField()->Discretization(),
+      conditiondofrowmap_);
+
+  // build condition dof map with row layout
+  BuildConditionDofColMap(
+      StructureField()->Discretization()->GetCondition("CellFocalAdhesion"),
+      StructureField()->Discretization(),
+      conditiondofcolmap_);
 
   // create traction vector
   surface_traction_ = LINALG::CreateVector(*conditiondofrowmap_,true);
+  surface_traction_col_ = LINALG::CreateVector(*conditiondofcolmap_,true);
 
   // give traction vector pointer to ExchangeManager
-  exchange_manager_->SetPointerSurfaceTraction(surface_traction_);
+  exchange_manager_->SetPointerSurfaceTraction(surface_traction_col_);
 }
 
 
 /*------------------------------------------------------------------------*
  | BuildConditionDofRowMap                                    rauch 03/16 |
  *------------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_ADHESIONDYNAMICS::BuildConditionNodeMap(
+void SSI::SSI_Part2WC_ADHESIONDYNAMICS::BuildConditionDofRowMap(
     const DRT::Condition* condition,
-    const Teuchos::RCP<const DRT::Discretization> dis,
+    const Teuchos::RCP<const DRT::Discretization>& dis,
     Teuchos::RCP<Epetra_Map>& condnodemap)
 {
   const std::vector<int>* conditionednodes = condition->Nodes();
@@ -102,7 +112,39 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::BuildConditionNodeMap(
 
     for (int dim=0;dim<3;++dim)
     {
-      mydirichdofs.push_back(dofs[dim]);
+      if(dis->DofRowMap()->LID(dofs[dim]) != -1)
+        mydirichdofs.push_back(dofs[dim]);
+    }
+  }
+
+  int nummydirichvals = mydirichdofs.size();
+  condnodemap = Teuchos::rcp( new Epetra_Map(-1,nummydirichvals,&(mydirichdofs[0]),0,dis->Comm()) );
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------*
+ | BuildConditionDofColMap                                    rauch 03/16 |
+ *------------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_ADHESIONDYNAMICS::BuildConditionDofColMap(
+    const DRT::Condition* condition,
+    const Teuchos::RCP<const DRT::Discretization>& dis,
+    Teuchos::RCP<Epetra_Map>& condnodemap)
+{
+  const std::vector<int>* conditionednodes = condition->Nodes();
+
+  std::vector<int> mydirichdofs(0);
+
+  for(int i=0; i<(int)conditionednodes->size(); ++i)
+  {
+    DRT::Node* currnode = dis->gNode(conditionednodes->at(i));
+    std::vector<int> dofs = dis->Dof(0,currnode);
+
+    for (int dim=0;dim<3;++dim)
+    {
+      if(dis->DofColMap()->LID(dofs[dim]) != -1)
+        mydirichdofs.push_back(dofs[dim]);
     }
   }
 
@@ -190,6 +232,11 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::EvaluateBondTraction()
 
   // solve for least squares optimal nodal values
   solver->Solve(leastsquares_matrix->EpetraOperator(), surface_traction_, leastsquares_rhs, refactor, reset);
+
+  surface_traction_col_ -> Scale(0.0);
+
+  // export to column map
+  LINALG::Export(*surface_traction_,*surface_traction_col_);
 }
 
 

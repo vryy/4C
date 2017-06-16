@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_mat/matlist_bondreacs.H"
 #include "../drt_mat/matlist_reactions.H"
@@ -27,6 +28,8 @@
 #include "../drt_mat/matlist.H"
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
+
+#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 
 
 /*----------------------------------------------------------------------*
@@ -45,9 +48,6 @@ DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::ScaTraEleCalcBondReac(
       numscal,
       disname)
   {
-    // give pointer to traction vector to ScatraEleBondReacCalc
-    exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
-    surface_traction_ = exchange_manager_->GetPointerSurfaceTraction();
   }
 
 
@@ -220,45 +220,51 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetTraction(
     const int            iquad      //!< id of current gauss point
 ) const
 {
+  // get RCP to auxdis which is evaluated in heterogeneous reaction strategy
+  const Teuchos::RCP<const DRT::Discretization> auxdis =
+      DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToAuxDis();
 
-  double traction=-1234.0;
+  // get RCP to surface traction vector
+  Teuchos::RCP<Epetra_Vector> surface_traction =
+      DRT::ImmersedFieldExchangeManager::Instance()->GetPointerSurfaceTraction();
 
-  // get global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
+  // initialize result variable
+  double traction=0.0;
 
-  // get struct discretization
-  Teuchos::RCP<DRT::Discretization> dis = problem->GetDis("cellscatra");
+  // is ele conditioned with CellFocalAdhesion condition?
+  bool is_adhesion_element=true;
 
   // get element location vector
-  DRT::Element::LocationArray la(dis->NumDofSets());
-  ele->LocationVector(*dis,la,false);
+  DRT::Element::LocationArray la(auxdis->NumDofSets());
+  ele->LocationVector(*auxdis,la,false);
 
   // get structure_lm from second dofset
   // the first dofset is the scatra surface and the second dofset the structure
-  const std::vector<int>& struct_lm = la[1].lm_;
+  const std::vector<int>& cell_lm = la[1].lm_;
 
-  // evaluate traction only for elements which are mapped on surface_traction_ vector.
-  // this is done by checking whether all the nodal locations are mapped
-  // todo replace with something else! or check whether compatible with multi processors!
-  const size_t ldim = struct_lm.size();
-  bool ele_is_condition=true;
+  // evaluate traction only for elements which wear a CellFocalAdhesion condition.
+  // this condition is defined on the cell discretization.
+  // the map of vector surface_traction_ contains only conditioned cell dofs.
+  const size_t ldim = cell_lm.size();
+
   for (size_t i=0; i<ldim; ++i)
   {
-    const int lid = (*surface_traction_).Map().LID(struct_lm[i]);
+    const int lid = (*surface_traction).Map().LID(cell_lm[i]);
     if (lid<0)
-      ele_is_condition=false;
+    {
+      is_adhesion_element=false;
+      break;
+    }
   }
 
-  //extract values if element is adhesion surface element
-  if (ele_is_condition)
+  // extract values if element is adhesion surface element
+  if (is_adhesion_element)
   {
-    // extract values to helper variable mytraction
-    std::vector<double> mytraction(struct_lm.size());
-    DRT::UTILS::ExtractMyValues(*surface_traction_,mytraction,struct_lm);
-
     // number of nodes and numdofs per node
     const int numNode = ele->NumNode();
-    const int struct_numdofpernode = struct_lm.size()/numNode;
+    if(numNode!=4)
+      dserror("only implemented for quad4 surface elements.");
+    const int cell_numdofpernode = cell_lm.size()/numNode;
 
     // integration points and weights for boundary (!) gp --> quad4
     const DRT::UTILS::IntPointsAndWeights<2> intpoints (DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
@@ -272,29 +278,24 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetTraction(
     LINALG::Matrix<4, 1> shapefunct;
     DRT::UTILS::shape_function<DRT::Element::quad4>(xsi,shapefunct);
 
-    // nodal drag vector
-    LINALG::Matrix<4,1> drag_nd(true);
+    // extract values to helper variable mytraction
+    std::vector<double> mytraction(cell_lm.size());
+    DRT::UTILS::ExtractMyValues(*surface_traction,mytraction,cell_lm);
+
+    // nodal traction vector
+    LINALG::Matrix<4,1> traction_nd(true);
 
     // loop over all scatra element nodes to get surface traction at nodes (quad4)
     for (int node=0; node<numNode; node++)
     {
-      drag_nd(node,0) = mytraction[node*struct_numdofpernode];
+      traction_nd(node,0) = mytraction[node*cell_numdofpernode];
     }
 
-    // drag at gauss point
-    double drag_gp=0;
-
-    // get drag at gp from nodal drag
+    // interpolate traction at gp from nodal traction
     for (int node=0; node<numNode; node++)
-      drag_gp += shapefunct(node) * drag_nd(node,0);
+      traction += shapefunct(node) * traction_nd(node,0);
 
-    // write final traction value
-    traction = drag_gp;
-  }
-  else
-  {
-    traction=0.0;
-  }
+  } // if ele is part of adhesion boundary
 
   return traction;
 

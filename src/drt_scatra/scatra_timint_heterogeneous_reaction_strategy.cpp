@@ -30,6 +30,8 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
 
+#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
+
 /*----------------------------------------------------------------------*
  | constructor                                               vuong 06/16 |
  *----------------------------------------------------------------------*/
@@ -108,6 +110,9 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
   // call Init() of base class
   SCATRA::MeshtyingStrategyStd::SetupMeshtying();
 
+  // make sure we set up everything properly
+  HeterogeneousReactionSanityCheck();
+
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp( scatratimint_->Discretization()->Comm().Clone());
 
   // standard case
@@ -144,6 +149,14 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 
   {
     // build a dofset that merges the DOFs from both sides
+    // convention: the order of the merged dofset will be
+    //  _            _
+    // | slave dofs   |
+    // |              |
+    // |_master dofs _|
+    //
+    // slave side is supposed to be the surface discretization
+    //
     Teuchos::RCP<DRT::DofSetMergedWrapper> newdofset =
         Teuchos::rcp(new DRT::DofSetMergedWrapper(
             scatradis->GetDofSetProxy(),
@@ -171,6 +184,8 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
     DRT::UTILS::PrintParallelDistribution(*discret_);
   }
+
+  DRT::ImmersedFieldExchangeManager::Instance()->SetPointerToAuxDis(discret_);
 
   SetIsSetup(true);
   return;
@@ -236,6 +251,75 @@ void SCATRA::HeterogeneousReactionStrategy::SetState(
     )
 {
   discret_->SetState(nds,name,state);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | sanity check for some assumptions and conventions        rauch 06/17 |
+ *----------------------------------------------------------------------*/
+void SCATRA::HeterogeneousReactionStrategy::
+    HeterogeneousReactionSanityCheck()
+{
+  bool valid_slave=false;
+
+  const Epetra_Comm& com = scatratimint_->Discretization()->Comm();
+
+  if(com.MyPID() == 0)
+    std::cout<<" Sanity check for HeterogeneousReactionStrategy ...";
+
+  DRT::Condition* slave_cond =
+      scatratimint_->Discretization()->
+          GetCondition("ScatraHeteroReactionSlave");
+
+  const Epetra_Map* element_row_map =
+      scatratimint_->Discretization()->ElementRowMap();
+
+  // loop over row elements
+  for (int lid=0;lid<element_row_map->NumMyElements();lid++)
+  {
+    const int gid = element_row_map->GID(lid);
+
+    DRT::Element* ele = scatratimint_->Discretization()->gElement(gid);
+    DRT::Node** nodes = ele -> Nodes();
+    if(ele->Shape() == DRT::Element::quad4 or
+       ele->Shape() == DRT::Element::tri3     )
+    {
+      for(int node=0;node<ele->NumNode();node++)
+      {
+        const int node_gid = nodes[node]->Id();
+
+        if(not slave_cond->ContainsNode(node_gid))
+        {
+          dserror("Surface discretization for membrane transport is "
+              "supposed to wear ScatraHeteroReactionSlave condition!");
+        }
+        else
+        {valid_slave=true; break;}
+      } // loop over nodes of row ele
+
+      if(valid_slave) break;
+    } // if surface transport element
+
+    else if (ele->Shape() == DRT::Element::hex8 or
+             ele->Shape() == DRT::Element::tet4 )
+    {
+      // no check so far
+    } // if volume transport element
+
+    else
+    {
+      dserror("please implement check for new combination of volume transport "
+        "- surface transport elements.");
+    }
+
+  } // loop over row elements
+
+
+com.Barrier();
+if(com.MyPID() == 0)
+  std::cout<<" Passed."<<std::endl;
+
   return;
 }
 

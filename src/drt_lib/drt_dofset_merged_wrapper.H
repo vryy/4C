@@ -32,7 +32,7 @@ namespace DRT
 
   The Dofs of the nodes to be merged are defined by master and slave side conditions given as input.
   Overlapping nodes are identified using a search tree and this dofset will handle the dofs of one node
-  as if there were one in the Dof(..) and NumDof(..) methods (see the implementation of theses methods).
+  as if there were one in the Dof(..) and NumDof(..) methods (see the implementation of these methods).
 
 \warning For the Dof(..) methods providing the full dof vector an ordering of the nodes is assumed. That
          is, first the Dofs from the slave node are filled into the dof vector followed by the Dofs of the
@@ -241,15 +241,16 @@ namespace DRT
      //! get the master node to a corresponding slave node (given by LID)
      const DRT::Node* GetMasterNode(int slaveLid) const
      {
-       dsassert(slaveLid<=master_nodegids_col_layout_->MyLength(),"Slave node Lid out of range!");
+       dsassert(slaveLid<master_nodegids_col_layout_->MyLength(),"Slave node Lid out of range!");
        int mastergid = (*master_nodegids_col_layout_)[slaveLid];
+       //std::cout<<"master gid = "<<mastergid<<" <-> slave lid ="<<slaveLid<<"  size of map = "<<master_nodegids_col_layout_->MyLength()<<std::endl;
        return sourcedis_->gNode(mastergid);
      }
 
      //! get the slave node to a corresponding master node (given by LID)
      const DRT::Node* GetSlaveNode(int masterLid) const
      {
-       dsassert(masterLid<=slave_nodegids_col_layout_->MyLength(),"Master node Lid out of range!");
+       dsassert(masterLid<slave_nodegids_col_layout_->MyLength(),"Master node Lid out of range!");
        int slavegid = (*slave_nodegids_col_layout_)[masterLid];
        return sourcedis_->gNode(slavegid);
      }

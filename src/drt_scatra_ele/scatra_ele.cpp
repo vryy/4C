@@ -832,6 +832,11 @@ int DRT::ELEMENTS::Transport::Initialize()
     Teuchos::RCP<MAT::MatListReactions> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListReactions>(mat);
     actmat->Initialize();
   }
+  else if (mat->MaterialType() == INPAR::MAT::m_matlist_bondreacs)
+  {
+    Teuchos::RCP<MAT::MatListBondReacs> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListBondReacs>(mat);
+    actmat->Initialize();
+  }
   else if (mat->MaterialType() == INPAR::MAT::m_myocard)
   {
     Teuchos::RCP<MAT::Myocard> actmat = Teuchos::rcp_dynamic_cast<MAT::Myocard>(mat);

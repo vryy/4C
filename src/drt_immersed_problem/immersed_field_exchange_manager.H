@@ -36,6 +36,8 @@ class FSIStructureWrapperImmersed;
 namespace DRT
 {
 
+class Discretization;
+
 class ImmersedFieldExchangeManager : public DRT::SingletonDestruction
 {
 
@@ -129,6 +131,9 @@ public:
 
   /// pointer to immersed search tree
   Teuchos::RCP<GEO::SearchTree> immersed_SearchTree_;
+
+  /// ptr to auxiliary discretization in heterogeneous reaction strategy
+  Teuchos::RCP<DRT::Discretization> points_to_auxdis_;
 
   /*!
     \brief initialize the map containing the porosity at integration points (gauss points)
@@ -269,7 +274,7 @@ public:
 
    void SetPointerSurfaceTraction(Teuchos::RCP<Epetra_Vector> vector){points_to_surface_traction_=vector; return;};
 
-   Teuchos::RCP<Epetra_Vector>& GetPointerSurfaceTraction(){return points_to_surface_traction_;};
+   Teuchos::RCP<Epetra_Vector> GetPointerSurfaceTraction(){if(points_to_surface_traction_==Teuchos::null) dserror("null ptr"); return points_to_surface_traction_;};
 
    void SetPointerToCurrentSubsetOfBackgrdDis(std::map<int,std::set<int> >* pointer){points_to_curr_subset_of_backgrounddis_ = pointer;};
 
@@ -310,6 +315,11 @@ public:
    void SetPointerToRatesActin(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_Rates_Actin_=vector; return;};
 
    Teuchos::RCP<Epetra_MultiVector> GetPointerToRatesActin(){return points_to_Rates_Actin_;};
+
+   void SetPointerToAuxDis(const Teuchos::RCP<DRT::Discretization> auxdis){points_to_auxdis_=auxdis; return;};
+
+   const Teuchos::RCP<const DRT::Discretization> GetPointerToAuxDis(){if(points_to_auxdis_==Teuchos::null) dserror("null ptr"); return points_to_auxdis_;};
+
    //@}
 
 protected:

@@ -174,7 +174,6 @@ private:
   //! @name Various global vectors
   //@{
   Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_; //!< current nodal adhesion forces on ecm
-  Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_col_; //!< current nodal adhesion forces on ecm (column layout)
   Teuchos::RCP<Epetra_Vector> cell_adhesion_disp_;  //!< current nodal cell adhesion displacements
   Teuchos::RCP<Epetra_Vector> Freact_cell_;         //!< current nodal reaction force because of dirichlet at adhesions
   //@}

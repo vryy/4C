@@ -87,6 +87,8 @@ DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
   points_to_Rates_=Teuchos::null;
   points_to_Rates_Actin_=Teuchos::null;
 
+  points_to_auxdis_=Teuchos::null;
+
   not_assemble_to_pseudoboundary_switch=false;
 
 }

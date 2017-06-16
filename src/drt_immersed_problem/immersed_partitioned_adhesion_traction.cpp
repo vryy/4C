@@ -96,7 +96,6 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
 
   // vector of adhesion forces in ecm
   ecm_adhesion_forces_ = Teuchos::rcp(new Epetra_Vector(*(poroscatra_subproblem_->StructureField()->DofRowMap()),true));
-  ecm_adhesion_forces_col_ = Teuchos::rcp(new Epetra_Vector(*(backgroundstructuredis_->DofColMap()),true));
   cell_adhesion_disp_  = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   Freact_cell_ = cellstructure_->Freact();
 
