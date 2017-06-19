@@ -28,16 +28,14 @@ wrt. \f$\frac{\partial \vartheta}{\partial C}\f$.
 
 /*----------------------------------------------------------------------------*/
 MAT::GrowthLaw::GrowthLaw()
-  : params_(NULL),
-    cfac_(1,1.0)
+  : params_(NULL)
 {
 
 }
 
 /*----------------------------------------------------------------------------*/
 MAT::GrowthLaw::GrowthLaw(MAT::PAR::Parameter* params)
-  : params_(params),
-    cfac_(1,1.0)
+  : params_(params)
 {
 }
 
@@ -1370,8 +1368,7 @@ void MAT::GrowthLawAC::Evaluate(double* theta,
     dserror("No Gauss point number provided in material.");
   //get pointer to vector containing the scalar values at the Gauss points
   Teuchos::RCP<std::vector<std::vector<double> > > concentrations=
-      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc");
-  SetFactor( concentrations->at(gp) );
+      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",Teuchos::rcp(new std::vector<std::vector<double> >(30,std::vector<double>(20,0.0))));
 
   const int Sc1 = Parameter()->Sc1_;
   const double alpha= Parameter()->alpha_;
@@ -1380,7 +1377,7 @@ void MAT::GrowthLawAC::Evaluate(double* theta,
   // NOTE: if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
   const double beta= Parameter()->beta_;
 
-  const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*defgrd->Determinant();
+  const double deltagrowth = (alpha*concentrations->at(gp).at(Sc1-1) + beta * concentrations->at(gp).at(Sc2-1))*defgrd->Determinant();
 
   *theta = pow(1.0 + deltagrowth ,0.33333333333333333);
 
@@ -1512,8 +1509,7 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
     dserror("No Gauss point number provided in material.");
   //get pointer to vector containing the scalar values at the Gauss points
   Teuchos::RCP<std::vector<std::vector<double> > > concentrations=
-      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc");
-  SetFactor( concentrations->at(gp) );
+      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",Teuchos::rcp(new std::vector<std::vector<double> >(30,std::vector<double>(20,0.0))));
 
   const int Sc1 = Parameter()->Sc1_;
   const double alpha= Parameter()->alpha_;
@@ -1522,7 +1518,7 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
   // NOTE: if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
   const double beta= Parameter()->beta_;
 
-  const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*defgrd->Determinant();
+  const double deltagrowth = (alpha*concentrations->at(gp).at(Sc1-1) + beta * concentrations->at(gp).at(Sc2-1))*defgrd->Determinant();
 
   *theta = 1.0 + deltagrowth;
 
@@ -1664,8 +1660,7 @@ void MAT::GrowthLawACRadialRefConc::Evaluate(double* theta,
     dserror("no Gauss point number provided in material");
   //get pointer to vector containing the scalar values at the Gauß points
   Teuchos::RCP<std::vector<std::vector<double> > > concentrations=
-      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc");
-  SetFactor( concentrations->at(gp) );
+      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",Teuchos::rcp(new std::vector<std::vector<double> >(30,std::vector<double>(20,0.0))));
 
   const int Sc1 = Parameter()->Sc1_;
   const double alpha= Parameter()->alpha_;
@@ -1675,7 +1670,7 @@ void MAT::GrowthLawACRadialRefConc::Evaluate(double* theta,
   const double beta= Parameter()->beta_;
 
   //const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*defgrd->Determinant();
-  const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*1.0;
+  const double deltagrowth = (alpha*concentrations->at(gp).at(Sc1-1) + beta * concentrations->at(gp).at(Sc2-1))*1.0;
 
   *theta = 1.0 + deltagrowth;
 

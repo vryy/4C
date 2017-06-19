@@ -93,7 +93,7 @@ public:
   //! total dofs per element
   static const int numdof_ = noddof_ * numnod_;
 
-  //! number of dofs per node
+  //! number of strains/stresses
   static const int numstr_ = 6;
 
   //!total gauss points per element

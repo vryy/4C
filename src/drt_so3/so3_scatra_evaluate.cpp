@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_lib/drt_element_integration_select.H"
 
 /*----------------------------------------------------------------------*
  |  preevaluate the element (public)                                       |
@@ -40,6 +41,104 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
 
     if (discretization.HasState(1,"temperature")) //if concentrations were set
     {
+      //get reference coordinated of current element
+      DRT::Node** nodes = Nodes();
+      LINALG::Matrix<numnod_,numdim_> xrefe;  // reference coord. of element
+
+      for (int k=0; k<numnod_; ++k)
+      {
+        const double* x = nodes[k]->X();
+        xrefe(k,0) = x[0];
+        xrefe(k,1) = x[1];
+        xrefe(k,2) = x[2];
+      }
+
+      std::vector<LINALG::Matrix<numnod_,1> > shapefunct(numgpt_);
+      std::vector<LINALG::Matrix<numdim_,numnod_> > derivs(numgpt_);
+      std::vector<double> detJref(numgpt_);
+
+      if (not (distype == DRT::Element::hex8 or distype == DRT::Element::hex27))
+        dserror("The Solidscatra elements are only tested for the Hex8 case. The following should work, but keep you eyes open (especially with the order of the gauß points");
+
+      if (distype == DRT::Element::hex8)
+      {
+        // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+        const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+        const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+        const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+        const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+        // fill up nodal f at each gp
+        for (int igp=0; igp<numgpt_; ++igp)
+        {
+          (shapefunct[igp])(0) = (1.0-r[igp])*(1.0-s[igp])*(1.0-t[igp])*0.125;
+          (shapefunct[igp])(1) = (1.0+r[igp])*(1.0-s[igp])*(1.0-t[igp])*0.125;
+          (shapefunct[igp])(2) = (1.0+r[igp])*(1.0+s[igp])*(1.0-t[igp])*0.125;
+          (shapefunct[igp])(3) = (1.0-r[igp])*(1.0+s[igp])*(1.0-t[igp])*0.125;
+          (shapefunct[igp])(4) = (1.0-r[igp])*(1.0-s[igp])*(1.0+t[igp])*0.125;
+          (shapefunct[igp])(5) = (1.0+r[igp])*(1.0-s[igp])*(1.0+t[igp])*0.125;
+          (shapefunct[igp])(6) = (1.0+r[igp])*(1.0+s[igp])*(1.0+t[igp])*0.125;
+          (shapefunct[igp])(7) = (1.0-r[igp])*(1.0+s[igp])*(1.0+t[igp])*0.125;
+
+          // df wrt to r for each node(0..7) at each gp [igp]
+          (derivs[igp])(0,0) = -(1.0-s[igp])*(1.0-t[igp])*0.125;
+          (derivs[igp])(0,1) =  (1.0-s[igp])*(1.0-t[igp])*0.125;
+          (derivs[igp])(0,2) =  (1.0+s[igp])*(1.0-t[igp])*0.125;
+          (derivs[igp])(0,3) = -(1.0+s[igp])*(1.0-t[igp])*0.125;
+          (derivs[igp])(0,4) = -(1.0-s[igp])*(1.0+t[igp])*0.125;
+          (derivs[igp])(0,5) =  (1.0-s[igp])*(1.0+t[igp])*0.125;
+          (derivs[igp])(0,6) =  (1.0+s[igp])*(1.0+t[igp])*0.125;
+          (derivs[igp])(0,7) = -(1.0+s[igp])*(1.0+t[igp])*0.125;
+
+          // df wrt to s for each node(0..7) at each gp [igp]
+          (derivs[igp])(1,0) = -(1.0-r[igp])*(1.0-t[igp])*0.125;
+          (derivs[igp])(1,1) = -(1.0+r[igp])*(1.0-t[igp])*0.125;
+          (derivs[igp])(1,2) =  (1.0+r[igp])*(1.0-t[igp])*0.125;
+          (derivs[igp])(1,3) =  (1.0-r[igp])*(1.0-t[igp])*0.125;
+          (derivs[igp])(1,4) = -(1.0-r[igp])*(1.0+t[igp])*0.125;
+          (derivs[igp])(1,5) = -(1.0+r[igp])*(1.0+t[igp])*0.125;
+          (derivs[igp])(1,6) =  (1.0+r[igp])*(1.0+t[igp])*0.125;
+          (derivs[igp])(1,7) =  (1.0-r[igp])*(1.0+t[igp])*0.125;
+
+          // df wrt to t for each node(0..7) at each gp [igp]
+          (derivs[igp])(2,0) = -(1.0-r[igp])*(1.0-s[igp])*0.125;
+          (derivs[igp])(2,1) = -(1.0+r[igp])*(1.0-s[igp])*0.125;
+          (derivs[igp])(2,2) = -(1.0+r[igp])*(1.0+s[igp])*0.125;
+          (derivs[igp])(2,3) = -(1.0-r[igp])*(1.0+s[igp])*0.125;
+          (derivs[igp])(2,4) =  (1.0-r[igp])*(1.0-s[igp])*0.125;
+          (derivs[igp])(2,5) =  (1.0+r[igp])*(1.0-s[igp])*0.125;
+          (derivs[igp])(2,6) =  (1.0+r[igp])*(1.0+s[igp])*0.125;
+          (derivs[igp])(2,7) =  (1.0-r[igp])*(1.0+s[igp])*0.125;
+
+          LINALG::Matrix<numdim_,numdim_> invJ;
+          invJ.Multiply(derivs[igp],xrefe);
+          detJref[igp] = invJ.Determinant();
+        }
+      }
+      else //all other elements use the standard shape function from DRT::UTILS::shape_function_3D
+      {
+        const DRT::UTILS::GaussRule3D gaussrule = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
+        const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+        for (int igp = 0; igp < numgpt_; ++igp)
+        {
+          const double r = intpoints.qxg[igp][0];
+          const double s = intpoints.qxg[igp][1];
+          const double t = intpoints.qxg[igp][2];
+
+          //get shape functions evaluated at current gauß point
+          DRT::UTILS::shape_function_3D(shapefunct[igp], r, s, t, distype);
+
+          //get first derivative of shape functions evaluated at current gauß point
+          DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, distype);
+
+          LINALG::Matrix<numdim_,numdim_> invJ;
+          invJ.Multiply(derivs[igp],xrefe);
+          detJref[igp] = invJ.Determinant();
+        }
+      }
+
+      /* =========================================================================*/
+      // start concentration business
+      /* =========================================================================*/
       Teuchos::RCP<std::vector<std::vector<double> > > gpconc =
           Teuchos::rcp(new std::vector<std::vector<double> >(numgpt_,std::vector<double>(numscal,0.0)));
 
@@ -54,95 +153,58 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
 
       DRT::UTILS::ExtractMyValues(*concnp,*myconc,la[1].lm_);
 
-      std::vector<LINALG::Matrix<numnod_,1> > shapefunct(numgpt_);
-
-      //TODO: (thon) this must be redone, if all base elements finally use the same integration rule!!
-      // like simply: DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct_gp);
-      switch(distype)
+      //element vector for k-th scalar
+      std::vector<LINALG::Matrix<numnod_,1> > econc(numscal);
+      for (int k=0; k<numscal; ++k)
       {
-      case DRT::Element::hex8:
-      {
-        // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-        const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-        const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-        const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-        const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
-        // fill up nodal f at each gp
-
-        for (int i=0; i<NUMGPT_SOH8; ++i)
+        for (int i=0; i<numnod_; ++i)
         {
-          (shapefunct[i])(0) = (1.0-r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
-          (shapefunct[i])(1) = (1.0+r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
-          (shapefunct[i])(2) = (1.0+r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
-          (shapefunct[i])(3) = (1.0-r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
-          (shapefunct[i])(4) = (1.0-r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
-          (shapefunct[i])(5) = (1.0+r[i])*(1.0-s[i])*(1.0+t[i])*0.125;
-          (shapefunct[i])(6) = (1.0+r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
-          (shapefunct[i])(7) = (1.0-r[i])*(1.0+s[i])*(1.0+t[i])*0.125;
+          (econc.at(k))(i,0) = myconc->at(numscal*i+k);
         }
-
-        break;
-      }
-      case DRT::Element::hex27:
-      {
-        // (r,s,t) gp-locations of fully integrated quadratic Hex 27
-        // fill up nodal f at each gp
-        const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
-        const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-        for (int igp = 0; igp < intpoints.nquad; ++igp)
-        {
-          const double r = intpoints.qxg[igp][0];
-          const double s = intpoints.qxg[igp][1];
-          const double t = intpoints.qxg[igp][2];
-
-          DRT::UTILS::shape_function_3D(shapefunct[igp], r, s, t, DRT::Element::hex27);
-        }
-        break;
-      }
-      case DRT::Element::tet4:
-      {
-        // There is only one gausspoint, so the loop (and the vector) is not really needed.
-        for (int gp=0; gp<NUMGPT_SOTET4; gp++)
-        {
-          (shapefunct[gp])(0) = 0.25;
-          (shapefunct[gp])(1) = 0.25;
-          (shapefunct[gp])(2) = 0.25;
-          (shapefunct[gp])(3) = 0.25;
-        }
-      break;
-      }
-      default:
-        dserror("Element type not supported!");
-        break;
       }
 
       /* =========================================================================*/
       /* ================================================= Loop over Gauss Points */
       /* =========================================================================*/
-      for (int gp=0; gp<numgpt_; ++gp)
+      // volume of current element in reference configuration
+      double volume_ref = 0.0;
+      // mass in current element in reference configuration
+      std::vector<double> mass_ref(numscal,0.0);
+
+      for (int igp=0; igp<numgpt_; ++igp)
       {
-        std::vector<double> conck(numscal,0.0);
+        volume_ref+=detJref[igp];
+
+        //concentrations at current gauß point
+        std::vector<double> conc_gp_k(numscal,0.0);
 
         // shape functions evaluated at current gauß point
-        LINALG::Matrix<numnod_,1> shapefunct_gp = shapefunct.at(gp);
+        const LINALG::Matrix<numnod_,1> shapefunct_gp = shapefunct.at(igp);
 
         for (int k=0; k<numscal; ++k)
         {
-          //element vector for k-th scalar
-          LINALG::Matrix<numnod_,1> econck(true);
-
-          for (int i=0; i<numnod_; ++i)
-          {
-            econck(i,0) = myconc->at(numscal*i+k);
-          }
           // identical shapefunctions for displacements and temperatures
-          conck.at(k) = shapefunct_gp.Dot(econck);
+          conc_gp_k.at(k) = shapefunct_gp.Dot(econc.at(k));
+
+          mass_ref.at(k) += conc_gp_k.at(k)*detJref[igp];
         }
 
-        gpconc->at(gp)=conck;
+        gpconc->at(igp)=conc_gp_k;
       }
 
       params.set< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",gpconc);
+
+      //compute average concentrations
+      for (int k=0; k<numscal; ++k)
+      {
+        //now mass_ref is the element averaged concentration
+        mass_ref.at(k) /= volume_ref;
+      }
+      Teuchos::RCP<std::vector<std::vector<double> > > avgconc =
+                Teuchos::rcp(new std::vector<std::vector<double> >(numgpt_,mass_ref));
+
+      params.set< Teuchos::RCP<std::vector<std::vector<double> > > >("avg_conc",avgconc);
+
     }
 
     //If you need a pointer to the scatra material, use these lines:

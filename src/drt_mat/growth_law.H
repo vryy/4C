@@ -150,22 +150,6 @@ namespace MAT
 
     //@}
 
-
-    //! @name Pre-Evaluation methods
-    //@{
-
-    /*! \brief set scalar factor
-     * set one double as scalar factor
-     */
-    void SetFactor(double& fac) {cfac_.clear(); cfac_.push_back(fac);}
-
-    /*! \brief set scalar factor
-     * set a vector of doubles as factors
-     */
-    void SetFactor(std::vector<double> fac) {cfac_=fac;};
-
-    //@}
-
     //! @name Query methods
     //@{
 
@@ -175,18 +159,12 @@ namespace MAT
     //! return material parameters
     MAT::PAR::Parameter* Parameter() {return params_;};
 
-    //! access factor vector of scalar factors
-    virtual std::vector<double> GetCfac() {return cfac_;}
-
     //@}
 
   private:
 
     //! material parameters
     MAT::PAR::Parameter* params_;
-
-    //! possible scalars to be processed eventually by the specific laws
-    std::vector<double> cfac_;
 
   };
 
