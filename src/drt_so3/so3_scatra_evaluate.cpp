@@ -111,7 +111,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
 
           LINALG::Matrix<numdim_,numdim_> invJ;
           invJ.Multiply(derivs[igp],xrefe);
-          detJref[igp] = invJ.Determinant();
+          detJref[igp] = invJ.Determinant()*1.0;
         }
       }
       else //all other elements use the standard shape function from DRT::UTILS::shape_function_3D
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
 
           LINALG::Matrix<numdim_,numdim_> invJ;
           invJ.Multiply(derivs[igp],xrefe);
-          detJref[igp] = invJ.Determinant();
+          detJref[igp] = invJ.Determinant()*intpoints.qwgt[igp];
         }
       }
 
