@@ -57,8 +57,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
       std::vector<LINALG::Matrix<numdim_,numnod_> > derivs(numgpt_);
       std::vector<double> detJref(numgpt_);
 
-      if (not (distype == DRT::Element::hex8 or distype == DRT::Element::hex27))
-        dserror("The Solidscatra elements are only tested for the Hex8 case. The following should work, but keep you eyes open (especially with the order of the gauß points");
+      if (not (distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or distype == DRT::Element::tet4))
+        dserror("The Solidscatra elements are only tested for the Hex8, Hex27 and Tet4 case. The following should work, but keep your eyes open (especially with the order of the Gauß points");
 
       if (distype == DRT::Element::hex8)
       {
@@ -112,6 +112,31 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
           LINALG::Matrix<numdim_,numdim_> invJ;
           invJ.Multiply(derivs[igp],xrefe);
           detJref[igp] = invJ.Determinant()*1.0;
+        }
+      }
+      else if (distype == DRT::Element::tet4)
+      {
+        //TODO: there is something wrong with the Tet4 case. (e.g. numgp_ is 5 and standard gausspoint rule is intrule_tet_4point)
+        const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_1point;//
+        const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+        // There is only one gausspoint, so the loop (and the vector) is not really needed.
+        //NOTE: numgp_ is not correct for this case
+        for (int igp = 0; igp < NUMGPT_SOTET4; ++igp)
+        {
+          const double r = intpoints.qxg[igp][0];
+          const double s = intpoints.qxg[igp][1];
+          const double t = intpoints.qxg[igp][2];
+
+          //get shape functions evaluated at current gauß point
+          DRT::UTILS::shape_function_3D(shapefunct[igp], r, s, t, distype);
+
+          //get first derivative of shape functions evaluated at current gauß point
+          DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, distype);
+
+          LINALG::Matrix<numdim_,numdim_> invJ;
+          invJ.Multiply(derivs[igp],xrefe);
+          detJref[igp] = invJ.Determinant()*intpoints.qwgt[igp];
         }
       }
       else //all other elements use the standard shape function from DRT::UTILS::shape_function_3D
