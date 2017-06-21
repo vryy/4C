@@ -729,12 +729,22 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
           // check boundary id
           const types::boundary_id boundary_index = cell->face(f)->boundary_id();
           const int int_boundary_id = int(boundary_index);
-          if(int_boundary_id==1 || int_boundary_id==2) // monitored or monitored and absorbing
+          if(reduction)
           {
-            cellhasmonitoredface = true;
-            facemeasure = cell->face(f)->measure();
-            fullfacemeasure += facemeasure;
+            if(int_boundary_id==4)
+            {
+              cellhasmonitoredface = true;
+              facemeasure = cell->face(f)->measure();
+              fullfacemeasure += facemeasure;
+            }
           }
+          else
+            if(int_boundary_id==1 || int_boundary_id==2) // monitored or monitored and absorbing
+            {
+              cellhasmonitoredface = true;
+              facemeasure = cell->face(f)->measure();
+              fullfacemeasure += facemeasure;
+            }
         }
         else
         {
