@@ -78,9 +78,9 @@ public:
   InterfaceDataPML (const Point<dim> center, const double radius);
 
   // public get functions
-  Tensor<1,dim,double> get_normal_vector() const;
-  Tensor<1,dim,double> get_normal_vector(const Point<dim> point) const;
-  Tensor<2,dim,double> get_tensor(const Point<dim> point) const;
+  Tensor<1,dim,Number> get_normal_vector() const;
+  Tensor<1,dim,Number> get_normal_vector(const Point<dim> point) const;
+  Tensor<2,dim,Number> get_tensor(const Point<dim> point) const;
   double get_distance(const Point<dim> point) const;
   double get_sigma(const Point<dim> point) const;
   enum OuterGeometry get_geometry() const;
@@ -93,7 +93,7 @@ public:
   void set_geometry(enum OuterGeometry geometry_in){geometry=geometry_in;}
   void set_attenuation(double attenuation_in){attenuation=attenuation_in;}
   void set_attenuation_fct(enum AttenuationFunction attenuation_fct_in){attenuation_fct=attenuation_fct_in;}
-  void set_normal_vector(Tensor<1,dim,double> normal_vector_in){normal_vector=normal_vector_in;}
+  void set_normal_vector(Tensor<1,dim,value_type> normal_vector_in){normal_vector=normal_vector_in;}
 
   // public fuctions for evaluation
   double sigma_fct(double distance, double width, int fct_choice) const;
@@ -108,7 +108,7 @@ private:
   enum OuterGeometry       geometry;
   double                   attenuation;
   enum AttenuationFunction attenuation_fct;
-  Tensor<1,dim,double>     normal_vector;
+  Tensor<1,dim,value_type>     normal_vector;
 };
 
 

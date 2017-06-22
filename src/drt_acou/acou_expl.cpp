@@ -584,8 +584,7 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
                                               const Teuchos::RCP<Teuchos::ParameterList> params,
                                               Teuchos::RCP<ACOU::AcouExplicitTimeInt>    timeintin)
   :
-  pcout (std::cout,
-         Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)==0),
+  pcout (std::cout,Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)==0),
   triangulation(discretin),
   fe(QGaussLobatto<1>(discretin->lRowElement(0)->Degree()+1)),
   fe_spectral(QGauss<1>(discretin->lRowElement(0)->Degree()+1)),
@@ -702,95 +701,98 @@ WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::Discretiz
   }
 
   if(bacitimeint->MonitorManager()!=Teuchos::null)
-  {
-    // careful with this if h and delta t scale differently
-    double eps = time_step/10.0;
-    std::vector<double> positions;
-    bacitimeint->MonitorManager()->GetMonitorPositions(positions);
-    int numdetec = positions.size()/dim;
-    std::vector<int> cellids(numdetec,-1);
-    std::vector<bool> cellrowflag(numdetec,false);
-
-    std::vector<DRT::Condition*> pressmonBC;
-    if(bacitimeint->iswithPMLS())
-      discret->GetCondition("PressureMonitor",pressmonBC);
-
-    typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),endc = triangulation.end();
-    int countcell = 0;
-    double fullfacemeasure = 0.0;
-    for (; cell!=endc; ++cell)
+    if(bacitimeint->MonitorManager()->CellIdsRequired())
     {
-      bool cellhasmonitoredface = false;
-      double facemeasure = 0.0;
-      for(unsigned f=0; f<GeometryInfo<dim>::faces_per_cell; ++f)
+      // careful with this if h and delta t scale differently
+      double eps = time_step/10.0;
+      std::vector<double> positions;
+      bacitimeint->MonitorManager()->GetMonitorPositions(positions);
+      int numdetec = positions.size()/dim;
+      std::vector<int> cellids(numdetec,-1);
+      std::vector<bool> cellrowflag(numdetec,false);
+
+      std::vector<DRT::Condition*> pressmonBC;
+      if(bacitimeint->iswithPMLS())
+        discret->GetCondition("PressureMonitor",pressmonBC);
+
+      typename Triangulation<dim>::active_cell_iterator cell = triangulation.begin_active(),endc = triangulation.end();
+      int countcell = 0;
+      double fullfacemeasure = 0.0;
+      for (; cell!=endc; ++cell)
       {
-        if(cell->face(f)->at_boundary())
+        bool cellhasmonitoredface = false;
+        double facemeasure = 0.0;
+        for(unsigned f=0; f<GeometryInfo<dim>::faces_per_cell; ++f)
         {
-          // check boundary id
-          const types::boundary_id boundary_index = cell->face(f)->boundary_id();
-          const int int_boundary_id = int(boundary_index);
-          if(reduction)
+          if(cell->face(f)->at_boundary())
           {
-            if(int_boundary_id==4)
+            // check boundary id
+            const types::boundary_id boundary_index = cell->face(f)->boundary_id();
+            const int int_boundary_id = int(boundary_index);
+            if(reduction)
             {
-              cellhasmonitoredface = true;
-              facemeasure = cell->face(f)->measure();
-              fullfacemeasure += facemeasure;
+              if(int_boundary_id==4)
+              {
+                cellhasmonitoredface = true;
+                facemeasure = cell->face(f)->measure();
+                fullfacemeasure += facemeasure;
+              }
             }
+            else
+              if(int_boundary_id==1 || int_boundary_id==2) // monitored or monitored and absorbing
+              {
+                cellhasmonitoredface = true;
+                facemeasure = cell->face(f)->measure();
+                fullfacemeasure += facemeasure;
+              }
           }
           else
-            if(int_boundary_id==1 || int_boundary_id==2) // monitored or monitored and absorbing
-            {
-              cellhasmonitoredface = true;
-              facemeasure = cell->face(f)->measure();
-              fullfacemeasure += facemeasure;
-            }
-        }
-        else
-        {
-          // check if inner face is monitored
-          if(bacitimeint->iswithPMLS())
           {
-            DRT::Element* ele = discret->lColElement(int(cell->index()));
-            unsigned int count = 0;
-            for(int n=0; n<ele->NumNode(); ++n)
-              if(pressmonBC[0]->ContainsNode(ele->NodeIds()[n]))
-                count++;
-
-            if(count>1)
+            // check if inner face is monitored
+            if(bacitimeint->iswithPMLS())
             {
-              cellhasmonitoredface = true;
-              facemeasure = cell->face(f)->measure();
-              fullfacemeasure += facemeasure/2.0; // an inner face is touched two times by this
+              DRT::Element* ele = discret->lColElement(int(cell->index()));
+              unsigned int count = 0;
+              for(int n=0; n<ele->NumNode(); ++n)
+                if(pressmonBC[0]->ContainsNode(ele->NodeIds()[n]))
+                  count++;
+
+              if(count>1)
+              {
+                cellhasmonitoredface = true;
+                facemeasure = cell->face(f)->measure();
+                fullfacemeasure += facemeasure/2.0; // an inner face is touched two times by this
+              }
             }
           }
         }
+        if(cellhasmonitoredface)
+          countcell++;
+
+        if(cellhasmonitoredface)
+          if(discret->ElementColMap()->GID(cell->index())>=0)
+          {
+            //if( (discret->gElement(discret->ElementColMap()->GID(cell->index())))->Owner() == discret->Comm().MyPID()) // exclude column elements
+            for(int det=0; det<numdetec; ++det)
+            {
+              Point<dim> position;
+              for(unsigned int d=0; d<dim; ++d)
+                position[d] = positions[det*dim+d]*(1.0-eps);
+              if(cell->point_inside(position))
+              {
+                cellids[det] = cell->index();
+                if(discret->ElementColMap()->GID(cell->index())>=0)
+                  if( (discret->gElement(discret->ElementColMap()->GID(cell->index())))->Owner() == discret->Comm().MyPID())
+                    cellrowflag[det] = true;
+              }
+            }
+          }
       }
-      if(cellhasmonitoredface)
-        countcell++;
 
-      if(cellhasmonitoredface)
-        if(discret->ElementColMap()->GID(cell->index())>=0)
-        {
-          //if( (discret->gElement(discret->ElementColMap()->GID(cell->index())))->Owner() == discret->Comm().MyPID()) // exclude column elements
-          for(int det=0; det<numdetec; ++det)
-          {
-            Point<dim> position;
-            for(unsigned int d=0; d<dim; ++d)
-              position[d] = positions[det*dim+d]*(1.0-eps);
-            if(cell->point_inside(position))
-            {
-              cellids[det] = cell->index();
-              if(discret->ElementColMap()->GID(cell->index())>=0)
-                if( (discret->gElement(discret->ElementColMap()->GID(cell->index())))->Owner() == discret->Comm().MyPID())
-                  cellrowflag[det] = true;
-            }
-          }
-        }
+      double globalfacemeasure = 0.0;
+      discret->Comm().SumAll(&fullfacemeasure,&globalfacemeasure,1);
+      bacitimeint->MonitorManager()->SetCellIds(cellids,cellrowflag,globalfacemeasure);
     }
-   bacitimeint->MonitorManager()->SetCellIds(cellids,cellrowflag,fullfacemeasure);
-
-  }
 
 }
 
@@ -1389,7 +1391,7 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
       write_restart(timestep_number);
   }
 
-  if(invana && !adjoint)
+  if(invana && !adjoint && !reduction)
   {
     // slow version
     //  values[det] = VectorTools::point_value(dof_handler,solutions[dim],position);
@@ -1783,7 +1785,7 @@ void WaveEquationProblem<dim,Number>::run()
   output_results(0);
 
   // if necessary, write a monitor file
-  if(!invana)
+  if(!invana || reduction)
     bacitimeint->InitMonitorFile();
 
   Teuchos::RCP<ExplicitIntegrator<WaveEquationOperationBase<dim,Number> > > integrator;
@@ -1893,12 +1895,15 @@ void WaveEquationProblem<dim,Number>::run()
   if(invana)
     pcout<<"-> 100%"<<std::endl;
 
-  if(bacitimeint->isWriteMonitor() && !adjoint && invana)
+  if(bacitimeint->isWriteMonitor() && !adjoint && invana && !reduction)
   {
     std::string monitorfilename = DRT::Problem::Instance()->OutputControlFile()->FileName();
     monitorfilename.append(".monitor");
     bacitimeint->MonitorManager()->WriteMonitorFileInvana(monitorfilename);
   }
+
+  if(invana && !adjoint && !reduction)
+    bacitimeint->MonitorManager()->ConvolveSignals();
 
   pcout << std::endl
         << "   Performed " << step << " time steps."

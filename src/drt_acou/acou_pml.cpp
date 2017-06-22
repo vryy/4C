@@ -239,7 +239,7 @@ attenuation(0.0)
  * Date: 04.04.2016
  */
 template <int dim, typename Number>
-Tensor<1,dim,double> InterfaceDataPML<dim,Number>::get_normal_vector() const
+Tensor<1,dim,Number> InterfaceDataPML<dim,Number>::get_normal_vector() const
 {
   return normal_vector;
 }
@@ -259,9 +259,9 @@ Tensor<1,dim,double> InterfaceDataPML<dim,Number>::get_normal_vector() const
  * Date: 04.04.2016
  */
 template <int dim, typename Number>
-Tensor<1,dim,double> InterfaceDataPML<dim,Number>::get_normal_vector(const Point<dim> point) const
+Tensor<1,dim,Number> InterfaceDataPML<dim,Number>::get_normal_vector(const Point<dim> point) const
 {
-  Tensor<1,dim,double> return_vector;
+  Tensor<1,dim,value_type> return_vector;
   return_vector = 0;
   switch(geometry)
   {
@@ -275,7 +275,7 @@ Tensor<1,dim,double> InterfaceDataPML<dim,Number>::get_normal_vector(const Point
   case hyper_sphere_radial_inv:
   case hyper_sphere_tangential_inv:
   {
-    Tensor<1,dim,double> vec_diff;
+    Tensor<1,dim,value_type> vec_diff;
     for (unsigned int i = 0; i < dim; ++i)
       vec_diff[i] = point(i) - x_0(i);
 
@@ -287,7 +287,7 @@ Tensor<1,dim,double> InterfaceDataPML<dim,Number>::get_normal_vector(const Point
   case hyper_cylinder_radial:
   case hyper_cylinder_tangential:
   {
-    Tensor<1,dim,double> vec_diff;
+    Tensor<1,dim,value_type> vec_diff;
     for (unsigned int i = 0; i < 2; ++i)
       vec_diff[i] = point(i) - x_0(i);
 
@@ -321,7 +321,7 @@ template <int dim, typename Number>
 double InterfaceDataPML<dim,Number>::get_distance(const Point<dim> point) const
 {
   double     tmp = 0.0;
-  Tensor<1,dim,double> vec_diff;
+  Tensor<1,dim,value_type> vec_diff;
 
   for (unsigned int i = 0; i < dim; ++i)
     vec_diff[i] = point(i) - x_0(i);
@@ -344,7 +344,7 @@ double InterfaceDataPML<dim,Number>::get_distance(const Point<dim> point) const
   case hyper_cylinder_radial:
   case hyper_cylinder_tangential:
   {
-    Tensor<1,dim,double> vec_tmp = get_normal_vector(point);
+    Tensor<1,dim,value_type> vec_tmp = get_normal_vector(point);
     tmp = 0.0;
     for (unsigned int i = 0; i < 2; ++i)
       tmp += vec_diff[i] * vec_tmp[i];
@@ -446,10 +446,10 @@ double InterfaceDataPML<dim,Number>::get_sigma(const Point<dim> point) const
  * Date: 04.04.2016
  */
 template <int dim, typename Number>
-Tensor<2,dim,double> InterfaceDataPML<dim,Number>::get_tensor(const Point<dim> point) const
+Tensor<2,dim,Number> InterfaceDataPML<dim,Number>::get_tensor(const Point<dim> point) const
 {
-  Tensor<2,dim,double> tensor;
-  Tensor<1,dim,double> normal_vector;
+  Tensor<2,dim,value_type> tensor;
+  Tensor<1,dim,value_type> normal_vector;
 
   tensor = 0;
   normal_vector = get_normal_vector(point);
@@ -506,7 +506,7 @@ template <int dim, typename Number>
 bool InterfaceDataPML<dim,Number>::is_active(const Point<dim> point) const
 {
   double     tmp = 0.0;
-  Tensor<1,dim,double> vec_diff;
+  Tensor<1,dim,value_type> vec_diff;
   for (unsigned int i = 0; i < dim; ++i)
     vec_diff[i] = point(i) - x_0(i);
 
@@ -717,7 +717,7 @@ void AttenuationPML<dim,Number>::read_pml_definition(std::string filename)
           {
             interface_tmp.set_geometry(hyper_cube);
 
-            Tensor<1,dim,double> normal_vector_tmp;
+            Tensor<1,dim,value_type> normal_vector_tmp;
             double tmp;
             for (unsigned int i = 0; i < 3; ++i)
             {
@@ -997,11 +997,10 @@ void AttenuationPML<dim,Number>::get_matrix (const std::vector<int> &layer_refer
     Tensor<1,dim,VectorizedArray<value_type> > &eigenvalues,
     Tensor<2,dim,VectorizedArray<value_type> > &Matrix_A,
     Tensor<3,dim,VectorizedArray<value_type> > &eigen_tensors) const
-    {
+{
 
   unsigned int n_layer = layer_reference.size();
-  Tensor<2,dim,double> tensor_tmp;
-  for (unsigned int n = 0; n < n_layer; ++n)
+  Tensor<2,dim,value_type> tensor_tmp;
 
   // initialize the variables
   for (unsigned int n = 0; n < dim; ++n)
@@ -1044,7 +1043,7 @@ void AttenuationPML<dim,Number>::get_matrix (const std::vector<int> &layer_refer
   // if the layer are not orthogonal then use the spectral decomposition
   else if (dim == 2)
   {
-    std::vector<double> sigma_tmp(n_layer,0.0);
+    std::vector<value_type> sigma_tmp(n_layer,0.0);
     for (unsigned int n = 0; n < n_layer; ++n)
     {
       sigma_tmp[n] = interface_pml[layer_reference[n]].get_sigma(position);
@@ -1055,7 +1054,7 @@ void AttenuationPML<dim,Number>::get_matrix (const std::vector<int> &layer_refer
     }
 
     // calculate the eigenvalues and eigenvectors with the mohr's circle
-    double tmp, phi, R, x_M;
+    value_type tmp, phi, R, x_M;
     tmp  = Matrix_A[1][1][vec_array_no]-Matrix_A[0][0][vec_array_no];
     phi = -0.5 * std::atan2(Matrix_A[0][1][vec_array_no], 0.5 * tmp);
     tmp *= 0.25 * tmp;
@@ -1068,7 +1067,7 @@ void AttenuationPML<dim,Number>::get_matrix (const std::vector<int> &layer_refer
     eigenvalues[1][vec_array_no] = x_M - R;
 
     // eigenvectors
-    Tensor<2,dim,double> eigenvectors;
+    Tensor<2,dim,value_type> eigenvectors;
     eigenvectors[0][0] = std::sin(phi);
     eigenvectors[1][0] = std::cos(phi);
     eigenvectors[0][1] = - eigenvectors[1][0];
@@ -1090,7 +1089,7 @@ void AttenuationPML<dim,Number>::get_matrix (const std::vector<int> &layer_refer
     dserror("spectral decomposition only implemented for 2D");
   }
 
-    }
+}
 
 
 

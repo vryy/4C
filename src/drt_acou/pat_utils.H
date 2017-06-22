@@ -46,6 +46,8 @@ class PATMonitorManager
 
   void GetMonitorPositions(std::vector<double>& positions){ positions = positions_; return; }
 
+  bool CellIdsRequired() { return !cellidsset_; }
+
   void SetCellIds(std::vector<int> cellidsin, std::vector<bool> rowelesin, double fullfacemeasure);
 
   std::vector<unsigned int> GetCellIds() { return cellids_; }
@@ -55,6 +57,8 @@ class PATMonitorManager
   double EvaluateError();
 
   void WriteMonitorFileInvana(std::string filename);
+
+  void ConvolveSignals();
 
   private:
 
@@ -67,8 +71,11 @@ class PATMonitorManager
   // number of time steps
   unsigned int nsteps_;
 
-  // number of microphones
+  // number of (local) microphones
   unsigned int nmics_;
+
+  // number of global microphoines
+  unsigned int ngmics_;
 
   // time step of acoustical solver
   double dtacou_;
@@ -97,6 +104,9 @@ class PATMonitorManager
   // simulated values
   std::vector<double> simulatedvalues_;
 
+  // source values  (simulated - measured) and potentially convolved with adjoint impulse response
+  std::vector<double> sourcevalues_;
+
   // tomograph type
   INPAR::ACOU::TomographType tomotype_;
 
@@ -108,6 +118,9 @@ class PATMonitorManager
 
   // size of entire measurement boundary
   double fullfacemeasure_;
+
+  // indicator if this has been done
+  bool cellidsset_;
 };
 
 class PATSearchDirection

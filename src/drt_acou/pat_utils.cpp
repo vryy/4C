@@ -81,8 +81,9 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 
   // read mics
   foundit = strstr(buffer,"mics"); foundit += strlen("mics");
-  nmics_ = strtol(foundit,&foundit,10);
+  ngmics_ = nmics_ = strtol(foundit,&foundit,10);
   positions_.resize(nmics_*ndim_);
+  cellidsset_ = false;
 
   for (unsigned int i=0; i<nmics_; ++i)
   {
@@ -93,6 +94,7 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
   }
 
   // initialize other relevant quantities
+  simulatedvalues_.clear();
   simulatedvalues_.resize(nmics_*nsteps_);
   measurementvalues_.resize(nmics_*nsteps_);
 
@@ -230,6 +232,8 @@ ACOU::PATMonitorManager::PATMonitorManager(Teuchos::RCP<DRT::Discretization> dis
 /*----------------------------------------------------------------------*/
 void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector<bool> rowelesin, double fullfacemeasure)
 {
+  cellidsset_ = true;
+
   if(nmics_!=cellidsin.size())
     dserror("the number of cell ids should be the number of detectors");
 
@@ -291,6 +295,9 @@ void ACOU::PATMonitorManager::SetCellIds(std::vector<int> cellidsin, std::vector
   positions_.clear();
   positions_ = positionsshort;
 
+  sourcevalues_.clear();
+  sourcevalues_ = measurementvaluesshort; // in the first run we set it like this (then it works for reduction simulations)
+
   return;
 }
 
@@ -334,13 +341,13 @@ void ACOU::PATMonitorManager::EvaluateMonitorValues(double time, const std::vect
     // first: evaluate in time
     int index = std::round(time/dtacou_); // find time index
 
-    double value_time_smallestdistance = simulatedvalues_[smallestdistindex+index*nmics_] - measurementvalues_[smallestdistindex+index*nmics_];
-    double value_time_secondsmallestdistance = simulatedvalues_[secondsmallestdistindex+index*nmics_] - measurementvalues_[secondsmallestdistindex+index*nmics_];
+    double value_time_smallestdistance = sourcevalues_[smallestdistindex+index*nmics_];
+    double value_time_secondsmallestdistance = sourcevalues_[secondsmallestdistindex+index*nmics_];
 
     //value_time_smallestdistance /= facemeasures_[smallestdistindex];
     //value_time_secondsmallestdistance /= facemeasures_[secondsmallestdistance];
-    value_time_smallestdistance *= nmics_/fullfacemeasure_;
-    value_time_secondsmallestdistance *= nmics_/fullfacemeasure_;
+    value_time_smallestdistance *= ngmics_/fullfacemeasure_;
+    value_time_secondsmallestdistance *= ngmics_/fullfacemeasure_;
 
     // second: interpolate in space (this is tomograph specific!! this one does not care about z-component!)
     value = secondsmallestdistance/(smallestdistance+secondsmallestdistance) * value_time_smallestdistance
@@ -370,6 +377,37 @@ void ACOU::PATMonitorManager::StoreForwardValues(const double time, const std::v
   int index = std::round(time/dtacou_);
   for(unsigned int v=0; v<values.size(); ++v)
     simulatedvalues_[nmics_*index+v] = values[v];
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PATMonitorManager::ConvolveSignals()
+{
+  if(consider_impulse_response_)
+  {
+    // convolve forward signals with the impulse response
+    std::vector<double> simulatedvalues_convolved(simulatedvalues_.size(),0.0);
+    for(unsigned m=0; m<nmics_; ++m)
+      for(unsigned s=0; s<nsteps_; ++s)
+        for(unsigned i=0; i<impulse_response_.size() && i<=s; ++i)
+          simulatedvalues_convolved[nmics_*s+m] += simulatedvalues_[nmics_*(s-i)+m]*impulse_response_[i];
+
+    // overwrite
+    simulatedvalues_ = simulatedvalues_convolved;
+
+    // adjoint convolution for source values
+    for(unsigned m=0; m<nmics_; ++m)
+      for(unsigned s=0; s<nsteps_; ++s)
+        for(unsigned i=0; i<impulse_response_.size() && i+s<nsteps_; ++i)
+          sourcevalues_[nmics_*s+m] += ( simulatedvalues_[nmics_*(s+i)+m] - measurementvalues_[nmics_*(s+i)+m] )*impulse_response_[i];
+  }
+  else
+  {
+    // no convolution, only evaluation of source as difference
+    for(unsigned i=0; i<simulatedvalues_.size(); ++i)
+      sourcevalues_[i]= simulatedvalues_[i] - measurementvalues_[i];
+  }
+
   return;
 }
 

@@ -63,6 +63,12 @@ ACOU::AcouTimeInt::AcouTimeInt(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   velnp_ = LINALG::CreateVector(*dofrowmap,true);
 
+  if(invana_ && (DRT::INPUT::IntegralValue<INPAR::ACOU::InvAnalysisType>(*params_,"INV_ANALYSIS")==INPAR::ACOU::pat_reduction))
+    reduction_ = true;
+  else
+    reduction_ = false;
+
+
   if(invana_) // has to be provided for inverse analysis (forward and adjoint)
     monitor_manager_ = params_->get<Teuchos::RCP<PATMonitorManager> >("monitormanager");
 
@@ -511,7 +517,7 @@ void ACOU::AcouTimeInt::Output()
     }
 
     //fill in pressure values into monitor file, if required
-    if(!invana_)
+    if(!invana_  || reduction_)
       FillMonitorFile(interpolatedPressure);
 
     Teuchos::RCP<Epetra_Vector> dmap;

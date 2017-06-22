@@ -164,6 +164,7 @@ protected:
   INPAR::ACOU::PhysicalType phys_;      /// physical type
 
   bool    invana_;                      /// flag indicating whether inverse analysis is performed
+  bool    reduction_;
   bool    padaptivity_;                 /// p-adaptivity flag
   bool    adjoint_;                     /// flag indicating whether this is standard or an adjoint solve
   bool    withpmls_;
