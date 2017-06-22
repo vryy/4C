@@ -502,9 +502,9 @@ void MAT::GrowthLawAnisoStrain::EvaluateGrowthFunctionDerivC
   dgrowthfuncdCvec(0)=dgrowthfuncdC(0,0);
   dgrowthfuncdCvec(1)=dgrowthfuncdC(1,1);
   dgrowthfuncdCvec(2)=dgrowthfuncdC(2,2);
-  dgrowthfuncdCvec(3)=2.*dgrowthfuncdC(0,1);
-  dgrowthfuncdCvec(4)=2.*dgrowthfuncdC(1,2);
-  dgrowthfuncdCvec(5)=2.*dgrowthfuncdC(0,2);
+  dgrowthfuncdCvec(3)=dgrowthfuncdC(0,1);
+  dgrowthfuncdCvec(4)=dgrowthfuncdC(1,2);
+  dgrowthfuncdCvec(5)=dgrowthfuncdC(0,2);
 
   return;
 }
@@ -1397,9 +1397,9 @@ void MAT::GrowthLawAC::Evaluate(double* theta,
   (*dthetadC)(0)=dThetadC(0,0);
   (*dthetadC)(1)=dThetadC(1,1);
   (*dthetadC)(2)=dThetadC(2,2);
-  (*dthetadC)(3)=2.*dThetadC(0,1);
-  (*dthetadC)(4)=2.*dThetadC(1,2);
-  (*dthetadC)(5)=2.*dThetadC(0,2);
+  (*dthetadC)(3)=dThetadC(0,1);
+  (*dthetadC)(4)=dThetadC(1,2);
+  (*dthetadC)(5)=dThetadC(0,2);
 
   // set ratio for potential linear interpolation between two elastic materials
   double lambda = 1.0/(1.0+deltagrowth);
@@ -1411,9 +1411,9 @@ void MAT::GrowthLawAC::Evaluate(double* theta,
   (*dlambda_dC)(0)=Cinv(0,0);
   (*dlambda_dC)(1)=Cinv(1,1);
   (*dlambda_dC)(2)=Cinv(2,2);
-  (*dlambda_dC)(3)=2.*Cinv(0,1);
-  (*dlambda_dC)(4)=2.*Cinv(1,2);
-  (*dlambda_dC)(5)=2.*Cinv(0,2);
+  (*dlambda_dC)(3)=Cinv(0,1);
+  (*dlambda_dC)(4)=Cinv(1,2);
+  (*dlambda_dC)(5)=Cinv(0,2);
 
   // save values in parameter list
   params.set< double >("lambda",lambda);
@@ -1538,9 +1538,9 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
   (*dthetadC)(0)=dThetadC(0,0);
   (*dthetadC)(1)=dThetadC(1,1);
   (*dthetadC)(2)=dThetadC(2,2);
-  (*dthetadC)(3)=2.*dThetadC(0,1);
-  (*dthetadC)(4)=2.*dThetadC(1,2);
-  (*dthetadC)(5)=2.*dThetadC(0,2);
+  (*dthetadC)(3)=dThetadC(0,1);
+  (*dthetadC)(4)=dThetadC(1,2);
+  (*dthetadC)(5)=dThetadC(0,2);
 
   // set ratio for potential linear interpolation between two elastic materials
   const double lambda = 1.0/ *theta;
@@ -1552,9 +1552,9 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
   (*dlambda_dC)(0)=Cinv(0,0);
   (*dlambda_dC)(1)=Cinv(1,1);
   (*dlambda_dC)(2)=Cinv(2,2);
-  (*dlambda_dC)(3)=2.*Cinv(0,1);
-  (*dlambda_dC)(4)=2.*Cinv(1,2);
-  (*dlambda_dC)(5)=2.*Cinv(0,2);
+  (*dlambda_dC)(3)=Cinv(0,1);
+  (*dlambda_dC)(4)=Cinv(1,2);
+  (*dlambda_dC)(5)=Cinv(0,2);
 
   // save values in parameter list
   params.set< double >("lambda",lambda);
