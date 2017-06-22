@@ -29,7 +29,8 @@ namespace CARDIOVASCULAR0D
   enum Cardvasc0DSolveAlgo
   {
     cardvasc0dsolve_direct, ///< build monolithic 0D cardiovascular-structural system
-    cardvasc0dsolve_simple  ///< use simple preconditioner for iterative solve
+    cardvasc0dsolve_simple,  ///< use simple preconditioner for iterative solve
+    cardvasc0dsolve_AMGnxn
   };
 
   enum Cardvasc0DAtriumModel

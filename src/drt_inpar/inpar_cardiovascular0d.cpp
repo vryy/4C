@@ -51,10 +51,12 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
   setStringToIntegralParameter<int>("SOLALGORITHM","direct","",
                                  tuple<std::string>(
                                    "simple",
-                                   "direct"),
+                                   "direct",
+                                   "AMGnxn"),
                                  tuple<int>(
                                    INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_simple,
-                                   INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_direct),
+                                   INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_direct,
+                                   INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_AMGnxn),
                                  &cardvasc0dstruct);
 
   DoubleParameter("T_PERIOD",-1.0,"periodic time",&cardvasc0dstruct);
