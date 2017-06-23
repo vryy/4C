@@ -1802,10 +1802,10 @@ baci_test(poro_3D_hex8_p1 2 5)
 # fpsi using the AMGnxn framework
 baci_test(fpsi_bending_struct_BGSAMG 2 "")
 
-# scalar transport using the AMGnxn framework
+# scalar transport using the MueLu framework
 baci_test(scatra_2D_quad4_s2i_constperm_AMG 2 "")
 
-# electrochemistry using the AMGnxn framework
+# electrochemistry using the MueLu/AMGnxn framework
 baci_test(elch_3D_tet4_s2i_butlervolmer_AMG 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_AMG-BGS_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 3 "")
@@ -1815,8 +1815,9 @@ baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_4x4 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_BGS-AMG_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_redist_BGS-AMG_3x3 3 "")
 
-# scatra-thermo interaction using the AMGnxn framework
-baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_AMG 3 "")
+# scatra-thermo interaction using the MueLu/AMGnxn framework
+baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_AMG_pointbased 3 "")
+baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_AMG_vectorbased 3 "")
 baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_BGS-AMG_2x2 3 15)
 baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_condensed_BGS-AMG_2x2 3 15)
 baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_AMG-BGS_4x4 3 "")

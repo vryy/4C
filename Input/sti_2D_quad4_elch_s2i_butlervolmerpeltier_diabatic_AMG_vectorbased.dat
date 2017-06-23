@@ -26,7 +26,6 @@ PROBLEMTYP                      Scalar_Thermo_Interaction
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 TIMESTEP                        1.0
-THETA                           0.5
 INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   2
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

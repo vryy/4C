@@ -1042,7 +1042,7 @@ void STI::Algorithm::ComputeNullSpaceIfNecessary(
     Teuchos::ParameterList&   solverparams   //! solver parameter list for scatra-thermo interaction
     ) const
 {
-  // compute null space information for ML preconditioner only
+  // compute vector-based null space information for ML preconditioner
   if(solverparams.isSublist("ML Parameters"))
   {
     // extract parameter list for ML preconditioner
@@ -1089,6 +1089,21 @@ void STI::Algorithm::ComputeNullSpaceIfNecessary(
     mllist.set("null space: dimension",dimns);
     mllist.set("null space: type","pre-computed");
     mllist.set("null space: add default vectors",false);
+    mllist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
+    mllist.set("null space: vectors",&((*ns)[0]));
+    mllist.set<bool>("ML validate parameter list",false);
+  }
+
+  // compute point-based null space information for MueLu preconditioner
+  else if(solverparams.isSublist("MueLu Parameters"))
+  {
+    // extract and fill parameter list for MueLu preconditioner
+    Teuchos::ParameterList& mllist = solverparams.sublist("MueLu Parameters",true);
+    mllist.set("PDE equations",1);
+    mllist.set("null space: dimension",1);
+    mllist.set("null space: type","pre-computed");
+    mllist.set("null space: add default vectors",false);
+    const Teuchos::RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(DofRowMap()->NumMyElements(),1.));
     mllist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
     mllist.set("null space: vectors",&((*ns)[0]));
     mllist.set<bool>("ML validate parameter list",false);
