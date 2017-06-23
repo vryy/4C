@@ -37,7 +37,7 @@ scalefac_(1.0)
   scaling_ = DRT::INPUT::IntegralValue<bool>(invap, "OBJECTIVEFUNCTSCAL");
 
   if (scaling_)
-    scalefac_ = sqrt(mstate_->GlobalLength());
+    scalefac_ = 1.0/sqrt(mstate_->GlobalLength());
 
   // estimation of the variance of the measurement noise
   var_estim_ = invap.get<double>("MEASVARESTIM");

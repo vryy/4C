@@ -57,7 +57,7 @@ iter_adapt_(invp.get<int>("MH_ACCADAPT_ITER")),
 adapt_evry_iter_(invp.get<int>("MH_ACCADAPT_EVRY")),
 iter_adapted_(0),
 doadapt_(true),
-covscale_(1.0),
+covscale_(invp.get<double>("MC_INIT_SCALE")),
 thin_(invp.get<int>("MH_THIN")),
 burnin_(invp.get<int>("MH_BURNIN")),
 acc_cum_(0.0),
@@ -274,6 +274,8 @@ void INVANA::OptimizerMH::Integrate()
     {
       // get visualized elementwise parameters
       Teuchos::RCP<Epetra_MultiVector> state;
+      // the optprob might have invalid parameters from the kernel evaluation
+      OptProb()->Matman()->ReplaceParamsShallow(particles_->GetState());
       state = OptProb()->Matman()->GetRawParams();
 
       // update mean
@@ -379,12 +381,15 @@ void INVANA::OptimizerMH::Integrate()
       for (it=data_stdev.begin(); it!=data_stdev.end(); it++)
         dummy2.Update(1.0, it->second->GetState(), 1.0);
 
+      dummy2.Scale(1.0/(size));
+
       double* vals;
       dummy2.ExtractView(&vals);
       for (int j=0; j<dummy2.MyLength(); j++)
         vals[j] = sqrt(vals[j]);
 
-      (*stddev_)(i)->Scale(1.0/(size),dummy2);
+      (*stddev_)(i)->Scale(1.0,dummy2);
+
     }
   // -------- end
   }

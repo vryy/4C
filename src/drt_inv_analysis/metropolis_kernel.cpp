@@ -55,7 +55,7 @@ void INVANA::MetropolisKernel::Sample(const int& numiter, const double& scale,
 
 
   //evaluate mixture loglikelihood at the current state
-  double m_old = data.GetPosterior()*scale + data.GetPrior()*(1-scale);
+  double m_old = data.GetPosterior()*scale + data.GetPrior()*(1.0-scale);
 
   acceptance = 0.0;
   for (int i=0; i<numiter; i++)
@@ -104,12 +104,12 @@ void INVANA::MetropolisKernel::Sample(const int& numiter, const double& scale,
       }
     }
 
-    double m_new = posterior*scale + prior*(1-scale);
+    double m_new = posterior*scale + prior*(1.0-scale);
 
     double a = exp(m_new-m_old);
 
     // decide upon acceptance
-    if (a>1)
+    if (a>=1.0)
     {
       data.SetState(proposal);
       data.SetData(posterior,prior);

@@ -110,6 +110,35 @@ private:
   //! Setup restriction and prolongation operators
   void SetupRandP(int numvecs);
 
+  /*! Broadcast Eigenvectors uniquely across all groups
+   *  (in case of nested parallelity)
+   *
+   * Due to intrinsic randomness in Anasazi, the eigenvectors
+   * despite unique random initializations across all groups
+   * come out multiplied by -1. So they have to be made unique
+   * by broadcasting from one group to all the other groups.
+   *
+   * This function relies on vectors being already all-reduced
+   * to local rank 0.
+   *
+   * \author kehl \date 02/2017
+   */
+  void BroadcastEigenvectors(Epetra_MultiVector& evecs);
+
+  /*! Make `sign' of eigenvectors unique across groups and restarts
+   *
+   * Due to intrinsic randomness in Anasazi, the eigenvectors
+   * despite unique random initializations across all groups
+   * come out multiplied by -1 at random. So they have to be
+   * made unique among all groups and also restarts.
+   *
+   * Here the convention of a positive sign of the maximum
+   * absolute value is enforced.
+   *
+   * \author kehl \date 04/2017
+   */
+  void MakeConsistentEigenvectors(Epetra_MultiVector& evecs);
+
   //! number of eigenvectors to use
   int max_num_levels_;
 

@@ -101,6 +101,20 @@ public:
 
   //! Draw particle states from prior
   void DrawInitialStates();
+
+  /*! \brief Preevaluate particles
+   *
+   *  The levels of the loglikelhood function might be quite
+   *  different, such that the computation of the likelihood
+   *  ratio of posterior and prior overflows due to the use
+   *  of the exponential function. Since the absolute value
+   *  of the ratio is not of interest, it can be scaled by
+   *  a multiplicative factor which can be pulled in to the
+   *  exponential function to enable its evaluation.
+   *
+   *  \author kehl \date 01/2017
+  */
+  void PreEvaluate();
   //@}
 
   //! @name Query
@@ -234,6 +248,11 @@ private:
    */
   Teuchos::RCP<LogLikeMixture> loglikemixture_;
 
+  //! posterior correction factor from PreEvaluate()
+  double lhcorrectpost_;
+
+  //! prior correction factor from PreEvaluate
+  double lhcorrectprior_;
   //@}
 
   //! @name MetropolisKernel
@@ -244,6 +263,9 @@ private:
 
   //! adaptive scale for proposal generator in metropolis kernel
   double mc_adapt_scale_;
+
+  //! number of kernel applications in smc rejuvenation
+  int mc_kernel_iter_;
   //@}
 
   //! @name Internal access

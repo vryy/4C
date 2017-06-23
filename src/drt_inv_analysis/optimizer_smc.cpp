@@ -127,6 +127,11 @@ void INVANA::OptimizerSMC::SetupParticles()
 /*----------------------------------------------------------------------*/
 void INVANA::OptimizerSMC::Integrate()
 {
+  // preevaluate each group to adapt likelihood levels
+  particles_->PreEvaluate();
+
+  if (particles_->PComm().LComm().MyPID()==0)
+    std::cout << "(Group "<< mygroup_ << ") Particles pre-evaluated" << std::endl;
 
   // particles must be initialized if not restarted
   if (not is_restart_)

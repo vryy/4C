@@ -282,6 +282,12 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   // seed used for synthetic noise geenration
   IntParameter("SYNTHNOISESEED",1,"seed to be used for synthetic noise generation",&statinvp);
 
+  // initial scale of the markov kernel used by the SMC algorithm
+  DoubleParameter("MC_INIT_SCALE", 0.1, "inital scaling factor for the markov kernel in the SMC", &statinvp);
+
+  // number of kernel applications in smc rejuvenation step
+  IntParameter("SMC_KERNEL_ITER",1,"number of kernel applications in smc rejuvenation",&statinvp);
+
   // scale the covariance matrix for monte carlo algorithms using it
   DoubleParameter("MAP_PRIOR_SCALE", 1.0, "scaling for the prior covariance in the LogLikePrior", &statinvp);
 

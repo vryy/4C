@@ -42,6 +42,8 @@
 #include "AnasaziEpetraAdapter.hpp"
 #include "Teuchos_CommandLineProcessor.hpp"
 
+#include <fenv.h>
+
 typedef std::map<int, std::vector<int> > PATCHES;
 
 /*----------------------------------------------------------------------*/
@@ -288,6 +290,9 @@ void INVANA::MatParManagerTVSVD::CreateProjection()
   // Quadratic approximation of the TV functional
   SetupTVOperator();
 
+  // hack
+  // LINALG::PrintMatrixInMatlabFormat("lintvop",*lintvop_);
+
   // Factorization of the linear operator
   Factorize();
 
@@ -313,8 +318,12 @@ void INVANA::MatParManagerTVSVD::SetupRandP(int numvecs)
   projector_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*paramlayoutmapunique_,*colmap,maxbw,false));
 
   // get all the eigenvectors to proc 0
-  Epetra_MultiVector evecs(*colmap,10,true);
+  Epetra_MultiVector evecs(*colmap,nev_,true);
   LINALG::Export(*evecs_,evecs);
+
+  // make unique eigenvectors in all groups
+  //BroadcastEigenvectors(evecs);
+  MakeConsistentEigenvectors(evecs);
 
   // insert (unit-) eigenvectors into projection
   for (int i=0; i<projector_->NumMyRows(); i++)
@@ -425,7 +434,7 @@ void INVANA::MatParManagerTVSVD::SetupTVOperator()
 
   // regularization helps anasazi
   Epetra_Vector newdiag(optparams_elewise_->Map(), false);
-  newdiag.PutScalar(.001);
+  newdiag.PutScalar(0.00001);
   lintvop_->ExtractDiagonalCopy(diagsum);
   diagsum.Update(1.0,newdiag,1.0);
   lintvop_->ReplaceDiagonalValues(diagsum);
@@ -456,9 +465,43 @@ void INVANA::MatParManagerTVSVD::Factorize()
   params.set("Relative Convergence Tolerance",false);
   params.set("Verbosity", Anasazi::Errors);
 
-  AnasaziEigenProblem(lintvop_,evecs_,params);
-  //AnasaziEigenProblem(fullcovariance_->FillMatrix(),evecs_,params);
+  // the following seems a little sensible and occasionally fails
+  // with floating points exceptions --> Catch them
+#ifdef TRAP_FE
+  fedisableexcept(FE_ALL_EXCEPT);
+#endif
 
+  int iraised = 0;
+  int graised = 1;
+  while (graised)
+  {
+    feclearexcept(FE_ALL_EXCEPT);
+
+    try {
+
+    AnasaziEigenProblem(lintvop_,evecs_,params);
+    //AnasaziEigenProblem(fullcovariance_->FillMatrix(),evecs_,params);
+
+    iraised = fetestexcept(FE_INVALID | FE_DIVBYZERO);
+
+    Comm().SumAll(&iraised,&graised,1);
+
+    if (graised)
+      throw std::runtime_error("AnasaziEigenProblem failed with exception. Try again.");
+    }
+    catch (std::exception& e){
+      std::cout << e.what() << std::endl;
+      graised = 1;
+      // Reset seed, since otherwise this group will maybe get evecs_*(-1)
+      util_.SetSeed(seed_+Comm().MyPID());
+      Comm().Barrier();
+    }
+  }
+
+#ifdef TRAP_FE
+  feclearexcept(FE_ALL_EXCEPT);
+  feenableexcept(FE_INVALID | FE_DIVBYZERO);
+#endif
   return;
 }
 
@@ -559,6 +602,115 @@ void INVANA::MatParManagerTVSVD::Random(Epetra_MultiVector& randvec)
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerTVSVD::BroadcastEigenvectors(Epetra_MultiVector& evecs)
+{
+  // Prerequisite: Only data from global proc 0 to all other local proc 0s will
+  // be performed
+
+  // get the necessary communicators
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<Epetra_Comm> gcomm = problem->GetNPGroup()->GlobalComm();
+  Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
+
+  // pack the Multivector on global proc0
+  std::map<int, std::vector<double> > data;
+  if (gcomm->MyPID()==0)
+  {
+    const int numvecs = evecs.NumVectors();
+    const int mylength = evecs.MyLength();
+    double** pointers = evecs.Pointers();
+
+    for(int i=0; i<numvecs; i++)
+    {
+      double* const val = pointers[i];
+      std::vector<double> dummy(mylength,0.0);
+      data[i] = dummy;
+      for(int j=0; j<mylength; j++)
+        data[i][j] = val[j];
+    }
+  }
+
+  // create source map
+  int sourcegids=0;
+  if (gcomm->MyPID()==0)
+    sourcegids = evecs.NumVectors();
+  Epetra_Map sourcemap(-1,sourcegids,0,*gcomm);
+
+  // create target map
+  int numtargetgids=0;
+  std::vector<int> targetgids;
+  if (lcomm->MyPID()==0)
+  {
+    numtargetgids = evecs.NumVectors();
+    targetgids.resize(numtargetgids);
+    for (int i=0; i<numtargetgids; i++)
+      targetgids[i] = i;
+  }
+  Epetra_Map targetmap(-1,numtargetgids,&targetgids[0],0,*gcomm);
+
+  // create exporter for the data and export
+  DRT::Exporter ex(sourcemap,targetmap,*gcomm);
+  ex.Export(data);
+
+  //zero out target to be sure
+  evecs.PutScalar(0.0);
+
+  // Unpack on every local proc 0
+  if (lcomm->MyPID()==0)
+  {
+    const int numvecs = evecs.NumVectors();
+    const int mylength = evecs.MyLength();
+    double** pointers = evecs.Pointers();
+
+    for(int i=0; i<numvecs; i++)
+    {
+      double* const val = pointers[i];
+      for(int j=0; j<mylength; j++)
+        val[j] = data[i][j];
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerTVSVD::MakeConsistentEigenvectors(Epetra_MultiVector& evecs)
+{
+  //prerequesite: Evecs must live on local proc 0 already
+
+  Epetra_MultiVector abs_evecs(evecs);
+  abs_evecs.Abs(evecs);
+
+  const int numvecs = abs_evecs.NumVectors();
+  const int length = abs_evecs.MyLength();
+
+  double** pointers = abs_evecs.Pointers();
+
+  for (int i=0; i<numvecs; i++)
+  {
+    // find max abs value
+    int maxi = -1;
+    double maxv = 0.0;
+    double* const val = pointers[i];
+    for (int j=0; j<length; j++)
+    {
+      if (val[j]>maxv)
+      {
+        maxi = j;
+        maxv = val[j];
+      }
+    }
+
+    //correct signs in case
+    if (maxi!=-1)
+    {
+      double mval = evecs[i][maxi];
+      if (mval<0.0)
+        evecs(i)->Scale(-1.0);
+    }
+  }
+
 }
 
 /*----------------------------------------------------------------------*/

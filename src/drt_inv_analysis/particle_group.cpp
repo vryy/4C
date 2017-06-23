@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <limits>
 #include <stdexcept>
+#include <iomanip>
 
 #include <fenv.h>
 
@@ -43,8 +44,11 @@ INVANA::ParticleGroup::ParticleGroup(const Teuchos::ParameterList& invp):
 particle_data_(),
 weights_(),
 loglikemixture_(Teuchos::null),
+lhcorrectpost_(0.0),
+lhcorrectprior_(0.0),
 mc_kernel_(Teuchos::null),
-mc_adapt_scale_(0.0),
+mc_adapt_scale_(0.1),
+mc_kernel_iter_(1),
 gnumparticles_(0),
 lnumparticles_(0),
 ngroups_(0),
@@ -60,7 +64,8 @@ void INVANA::ParticleGroup::Init(Teuchos::RCP<LogLikeMixture> mixtures)
   // init mc kernel
   mc_kernel_ = Teuchos::rcp(new MetropolisKernel());
   mc_kernel_->Init(mixtures);
-  mc_adapt_scale_ = 0.1;
+  mc_adapt_scale_ = params_.get<double>("MC_INIT_SCALE");
+  mc_kernel_iter_ = params_.get<int>("SMC_KERNEL_ITER");
 
   return;
 }
@@ -123,6 +128,35 @@ void INVANA::ParticleGroup::InitializeParticleData()
     Data()[pgid]->Init(loglikemixture_->StateMap());
   }
   new_weights_=weights_;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::ParticleGroup::PreEvaluate()
+{
+
+  // no need for particular fpe trapping in here; if the particle
+  // evaluation at the MAP-point fails something else is wrong!
+
+  // Get mean from prior as preevaluation point
+  Epetra_Vector sample(loglikemixture_->EvalPrior().Mean());
+
+  double posterior;
+  double prior;
+  int err = 0;
+
+  // evaluate mixture loglikelihood at the sample
+  err = EvaluateMixture(sample,posterior,prior);
+  if (err)
+    dserror("PreEvaluation of particles failed. This is fatal!");
+
+  // compute likelihood correction factor
+  lhcorrectpost_ = posterior;
+  lhcorrectprior_ = prior;
+
+  // lets wait here
+  pcomm_->GComm().Barrier();
 
   return;
 }
@@ -259,9 +293,11 @@ double INVANA::ParticleGroup::NewEffectiveSampleSize(double scale_next, double s
    {
      // get posterior value
      double posterior = it->second->GetPosterior();
+     posterior -= lhcorrectpost_;
 
      // get prior value
      double prior = it->second->GetPrior();
+     prior -= lhcorrectprior_;
 
      // compute current mixture
      double m_curr = posterior*scale_curr + prior*(1.0-scale_curr);
@@ -416,10 +452,13 @@ void INVANA::ParticleGroup::ResampleParticles()
 /*----------------------------------------------------------------------*/
 void INVANA::ParticleGroup::RedistributeParticleData(std::vector<int> pgids)
 {
-//  std::cout << "Particles to be redistributed: ";
-//  for (int i=0; i<(int)pgids.size(); i++)
-//    std::cout << pgids[i] << " ";
-//  std::cout << std::endl;
+//  if (pcomm_->GComm().MyPID()==0)
+//  {
+//    std::cout << "Particles to be redistributed: ";
+//    for (int i=0; i<(int)pgids.size(); i++)
+//      std::cout << pgids[i] << " ";
+//    std::cout << std::endl;
+//  }
 
   if ((int)pgids.size() != gnumparticles_)
     dserror("something went wrong in resampling the particles!");
@@ -463,6 +502,7 @@ void INVANA::ParticleGroup::RedistributeParticleData(std::vector<int> pgids)
     int irecv=0;
     std::vector<int> pgidtarget;
     int ntorecv=0;
+    int stilltosend=ntosend;
     for (int j=0; j<ngroups_; j++)
     {
       if (mygroup_==j)
@@ -472,9 +512,9 @@ void INVANA::ParticleGroup::RedistributeParticleData(std::vector<int> pgids)
         {
 
           int nn=0;
-          if (ntosend<=(int)nrecvs.size())
-            nn = ntosend; //this group takes all
-          else if (ntosend>(int)nrecvs.size())
+          if (stilltosend<=(int)nrecvs.size())
+            nn = stilltosend; //this group takes all
+          else if (stilltosend>(int)nrecvs.size())
             nn = (int) nrecvs.size(); // this group takes some
           else
             dserror("don't know this case!");
@@ -486,14 +526,16 @@ void INVANA::ParticleGroup::RedistributeParticleData(std::vector<int> pgids)
             nrecvs.pop_back();
           }
 
-          // increase number fo received particles
+          // increase number of received particles
           ntorecv += nn;
+          stilltosend -= nn;
 
         } // nrecvs>0
       } // mygroup
 
       // broadcast number of received particles
       pcomm_->IComm().Broadcast(&ntorecv,1,j);
+      pcomm_->IComm().Broadcast(&stilltosend,1,j);
       //pcomm_->GComm().Barrier();
 
       // all particles have a destination already skip the rest of the groups
@@ -505,12 +547,20 @@ void INVANA::ParticleGroup::RedistributeParticleData(std::vector<int> pgids)
     int isend = 0;
     std::map<int, Teuchos::RCP<ParticleData> > data;
     int dummygid=0;
+    double post=0.0;
+    double prior=0.0;
+    double state=0.0;
     if (weights_.count(ptosend))
     {
       isend=1;
       // we can just set the pointer here!
       // copying is done upon communication
       data[dummygid] = Data()[ptosend];
+
+      // set data to compare
+      post = data[0]->GetPosterior();
+      prior = data[0]->GetPrior();
+      data[0]->GetState().Norm2(&state);
     }
     Epetra_Map frommap(-1,isend,&dummygid,0,pcomm_->IComm());
 
@@ -521,10 +571,34 @@ void INVANA::ParticleGroup::RedistributeParticleData(std::vector<int> pgids)
     DRT::Exporter ex(frommap,tomap,pcomm_->IComm());
     ex.Export(data);
 
-    // store at the new positions if i have any new particles
-    for (std::vector<int>::iterator it=pgidtarget.begin(); it!=pgidtarget.end(); it++)
-      particle_data[*it] = data[dummygid];
+    // broadcast particle data to compare against
+    double postall = 0.0;
+    double priorall = 0.0;
+    double stateall = 0.0;
+    pcomm_->IComm().SumAll(&post,&postall,1);
+    pcomm_->IComm().SumAll(&prior,&priorall,1);
+    pcomm_->IComm().SumAll(&state,&stateall,1);
 
+    // store at the new positions if i have any new particles
+    for (std::vector<int>::iterator kt=pgidtarget.begin(); kt!=pgidtarget.end(); kt++)
+    {
+      particle_data[*kt] = data[dummygid];
+
+      double priornew = particle_data[*kt]->GetPrior();
+      double postnew = particle_data[*kt]->GetPosterior();
+      double normstate;
+      particle_data[*kt]->GetState().Norm2(&normstate);
+      double eps = 1.0e-14;
+      if (abs(priorall - priornew)>eps)
+      {
+        std::cout << std::setprecision(10) << "priorall: " << priorall << " priornew: " << priornew << std::endl;
+        dserror("Data distribution failed: Wrong prior data.");
+      }
+      if (abs(postall - postnew)>eps)
+        dserror("Data distribution failed: Wrong posterior data.");
+      if ( abs(stateall - normstate) > eps)
+        dserror("Data distribution failed: Wrong state data.");
+    }
     pcomm_->GComm().Barrier();
   }
 
@@ -536,15 +610,12 @@ void INVANA::ParticleGroup::RedistributeParticleData(std::vector<int> pgids)
   for (std::map<int,double>::iterator it=weights_.begin(); it!=weights_.end(); it++)
     it->second = 1.0/gnumparticles_;
 
-//  if (mygroup_==1)
-//    Data()[7]->GetState().Print(std::cout);
-
 }
 
 /*----------------------------------------------------------------------*/
 void INVANA::ParticleGroup::RejuvenateParticles(double scale)
 {
-  int numiter = 1;
+  int numiter = mc_kernel_iter_;
   double covscale = mc_adapt_scale_;
 
   // backup copy of the particle data (in case the MC move is not proper)
@@ -554,8 +625,8 @@ void INVANA::ParticleGroup::RejuvenateParticles(double scale)
     p_bak[it->first] = Teuchos::rcp(new ParticleData(*(it->second)));
   }
 
-  double boundl=0.15;
-  double boundu=0.30;
+  double boundl=0.20;
+  double boundu=0.40;
   double acceptance = 0.0;
   while(acceptance<boundl || acceptance >boundu)
   {
