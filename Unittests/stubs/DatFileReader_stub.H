@@ -5,7 +5,7 @@
 
 \level 3
 
-\maintainer Karl-Robert Wichmann
+\maintainer Martin Kronbichler
 *-----------------------------------------------------------------------*/
 
 #ifndef DATFILEREADER_STUB_H

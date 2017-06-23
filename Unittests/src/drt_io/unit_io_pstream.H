@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Karl-Robert Wichmann
+\maintainer Magnus Winter
 *-----------------------------------------------------------------------*/
 
 #ifndef UNIT_IO_PSTREAM_H_

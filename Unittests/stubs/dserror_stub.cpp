@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Karl-Robert Wichmann
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #include "src/drt_lib/drt_dserror.H"

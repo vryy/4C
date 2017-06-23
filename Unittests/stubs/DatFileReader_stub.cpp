@@ -5,7 +5,7 @@
 
 \level 3
 
-\maintainer Karl-Robert Wichmann
+\maintainer Martin Kronbichler
 *-----------------------------------------------------------------------*/
 
 #include "DatFileReader_stub.H"

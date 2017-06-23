@@ -5,15 +5,9 @@
 \brief This class is meant as a drop-in replacement for std::maps, when other
        storage and access characteristics are needed.
 
-<pre>
-\maintainer Karl-Robert Wichmann
-            wichmann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Michael Hiermeier
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 #ifndef PAIREDVECTOR_H_

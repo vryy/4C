@@ -5,7 +5,7 @@
 
 \level 1
 
-\maintainer Karl-Robert Wichmann
+\maintainer Magnus Winter
 *-----------------------------------------------------------------------*/
 
 #ifndef UNIT_DRT_DOMAINREADER_H_

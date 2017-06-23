@@ -6,7 +6,7 @@
 
 \level 0
 
-\maintainer Karl-Robert Wichmann
+\maintainer Martin Kronbichler
 */
 
 /*----------------------------------------------------------------------*/

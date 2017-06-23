@@ -4,13 +4,9 @@
 
 \brief Read domain sections of dat files.
 
-<pre>
 \level 0
 
-\maintainer Karl-Robert Wichmann
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Magnus Winter
 */
 /*----------------------------------------------------------------------*/
 

@@ -4,13 +4,10 @@
 
 \brief General input parameters
 
-<pre>
-Maintainer: Karl-Robert Wichmann
-            wichmann@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
-*/
+\maintainer Martin Kronbichler
 
+\level 1
+*/
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_H
 #define INPAR_H

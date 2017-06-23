@@ -4,7 +4,7 @@
 
 \brief VTI filter
 
-\maintainer Karl-Robert Wichmann
+\maintainer Martin Kronbichler
 
 \level 2
 */
