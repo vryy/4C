@@ -233,22 +233,25 @@ void SCATRA::ScaTraResultTest::TestSpecial(
     int&                          test_count
     )
 {
-  // make sure that quantity is tested only on specified discretization and only by one processor
+  // make sure that quantity is tested only on specified discretization
   std::string disname;
   res.ExtractString("DIS",disname);
-  if(disname == scatratimint_->Discretization()->Name() and scatratimint_->Discretization()->Comm().MyPID() == 0)
+  if(disname == scatratimint_->Discretization()->Name())
   {
     // extract name of quantity to be tested
     std::string quantity;
     res.ExtractString("QUANTITY",quantity);
 
-    // get result to be tested
+    // get result to be tested on all processors
     const double result = ResultSpecial(quantity);
 
-    // compare values
-    const int err = CompareValues(result,"SPECIAL",res);
-    nerr += err;
-    test_count++;
+    // compare values on first processor
+    if(scatratimint_->Discretization()->Comm().MyPID() == 0)
+    {
+      const int err = CompareValues(result,"SPECIAL",res);
+      nerr += err;
+      test_count++;
+    }
   }
 
   return;
@@ -376,6 +379,56 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
     if(scatratimint_->Solver()->Params().get("solver","none") != "aztec")
       dserror("Must have Aztec solver for result test involving number of solver iterations during last Newton-Raphson iteration!");
     result = (double) scatratimint_->Solver()->getNumIters();
+  }
+
+  // test parallel distribution of scatra-scatra coupling interface
+  else if(!quantity.compare(0,9,"s2inumdof"))
+  {
+    // extract string part behind "s2inumdof"
+    std::string suffix = quantity.substr(9);
+
+    // check syntax
+    if(suffix.compare(0,4,"_int"))
+      dserror("Wrong syntax!");
+
+    // initialize auxiliary variables
+    const char* index(suffix.substr(4).c_str());
+    char* locator(NULL);
+
+    // extract interface ID
+    const int interface = strtol(index,&locator,10);
+    if(locator == index)
+      dserror("Couldn't read interface ID!");
+
+    // extract string part behind interface ID
+    suffix.assign(locator);
+
+    // check syntax
+    if(suffix.compare(0,5,"_proc"))
+      dserror("Wrong syntax!");
+
+    // move index to processor ID
+    index = suffix.substr(5).c_str();
+
+    // extract processor ID
+    const int processor = strtol(index,&locator,10);
+    if(locator == index)
+      dserror("Couldn't read processor ID!");
+    if(processor >= scatratimint_->Discretization()->Comm().NumProc())
+      dserror("Invalid processor ID!");
+
+    // check syntax
+    if(*locator != '\0')
+      dserror("Wrong syntax!");
+
+    // extract scatra-scatra interface meshtying strategy class
+    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint_->Strategy());
+    if(strategy == Teuchos::null)
+      dserror("Couldn't extract scatra-scatra interface meshtying strategy class!");
+
+    // extract number of degrees of freedom owned by specified processor at specified scatra-scatra coupling interface
+    result = strategy->MortarDiscretization(interface).DofRowMap()->NumMyElements();
+    scatratimint_->Discretization()->Comm().Broadcast(&result,1,processor);
   }
 
   // catch unknown quantity strings

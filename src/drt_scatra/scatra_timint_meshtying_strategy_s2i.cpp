@@ -33,6 +33,9 @@
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_mat/material.H"
+#include "../drt_mat/matpar_parameter.H"
+
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_projector.H"
@@ -64,6 +67,9 @@ blockmaps_master_(Teuchos::null),
 icoup_(Teuchos::null),
 icoupmortar_(),
 imortarcells_(),
+imortarredistribution_(DRT::INPUT::IntegralValue<INPAR::S2I::CouplingType>(parameters,"COUPLINGTYPE") == INPAR::S2I::coupling_mortar_standard and DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(DRT::Problem::Instance()->MortarCouplingParams(),"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none),
+islavemap_(Teuchos::null),
+imastermap_(Teuchos::null),
 islavenodestomasterelements_(),
 islavenodesimpltypes_(),
 islavenodeslumpedareas_(),
@@ -657,8 +663,10 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           case INPAR::S2I::coupling_mortar_standard:
           case INPAR::S2I::coupling_nts_standard:
           {
-            systemmatrix->Add(*islavematrix_,false,1.,1.);
-            systemmatrix->Add(*imastermatrix_,false,1.,1.);
+            const Teuchos::RCP<const LINALG::SparseMatrix> islavematrix = not imortarredistribution_ ? islavematrix_ : MORTAR::MatrixRowTransform(islavematrix_,islavemap_);
+            const Teuchos::RCP<const LINALG::SparseMatrix> imastermatrix = not imortarredistribution_ ? imastermatrix_ : MORTAR::MatrixRowTransform(imastermatrix_,imastermap_);
+            systemmatrix->Add(*islavematrix,false,1.,1.);
+            systemmatrix->Add(*imastermatrix,false,1.,1.);
             interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
             interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
 
@@ -787,9 +795,11 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           case INPAR::S2I::coupling_mortar_standard:
           {
             // split interface sparse matrices into block matrices
-            Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockslavematrix(islavematrix_->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_,*blockmaps_slave_));
+            const Teuchos::RCP<const LINALG::SparseMatrix> islavematrix = not imortarredistribution_ ? islavematrix_ : MORTAR::MatrixRowTransform(islavematrix_,islavemap_);
+            Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockslavematrix(islavematrix->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_,*blockmaps_slave_));
             blockslavematrix->Complete();
-            Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmastermatrix(imastermatrix_->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_,*blockmaps_master_));
+            const Teuchos::RCP<const LINALG::SparseMatrix> imastermatrix = not imortarredistribution_ ? imastermatrix_ : MORTAR::MatrixRowTransform(imastermatrix_,imastermap_);
+            Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmastermatrix(imastermatrix->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_,*blockmaps_master_));
             blockmastermatrix->Complete();
 
             // assemble interface block matrices into global block system matrix
@@ -1804,23 +1814,28 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   case INPAR::S2I::coupling_mortar_condensed_bubnov:
   case INPAR::S2I::coupling_nts_standard:
   {
-    // extract parameter list for mortar coupling from problem instance
-    const Teuchos::ParameterList& mortarparams = DRT::Problem::Instance()->MortarCouplingParams();
-
     // safety checks
-    if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortarparams,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
-      dserror("Parallel redistribution not yet implemented for scatra-scatra interface coupling!");
-    if(DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(mortarparams,"MESH_RELOCATION") != INPAR::MORTAR::relocation_none)
+    if(imortarredistribution_ and couplingtype_ != INPAR::S2I::coupling_mortar_standard)
+      dserror("Parallel redistribution only implemented for scatra-scatra interface coupling based on standard mortar approach!");
+    if(DRT::INPUT::IntegralValue<INPAR::MORTAR::MeshRelocation>(DRT::Problem::Instance()->MortarCouplingParams(),"MESH_RELOCATION") != INPAR::MORTAR::relocation_none)
       dserror("Mesh relocation not yet implemented for scatra-scatra interface coupling!");
 
     // initialize empty interface maps
     Teuchos::RCP<Epetra_Map> imastermap = Teuchos::rcp(new Epetra_Map(0,0,scatratimint_->Discretization()->Comm()));
     Teuchos::RCP<Epetra_Map> islavemap = Teuchos::rcp(new Epetra_Map(0,0,scatratimint_->Discretization()->Comm()));
     Teuchos::RCP<Epetra_Map> ifullmap = Teuchos::rcp(new Epetra_Map(0,0,scatratimint_->Discretization()->Comm()));
+    if(imortarredistribution_)
+    {
+      imastermap_ = Teuchos::rcp(new Epetra_Map(0,0,scatratimint_->Discretization()->Comm()));
+      islavemap_ = Teuchos::rcp(new Epetra_Map(0,0,scatratimint_->Discretization()->Comm()));
+    }
 
     // loop over all slave-side scatra-scatra interface coupling conditions
     for(std::map<const int,DRT::Condition* const>::iterator islavecondition=slaveconditions_.begin(); islavecondition!=slaveconditions_.end(); ++islavecondition)
     {
+      // extract condition ID
+      const int condid = islavecondition->first;
+
       // initialize maps for row nodes associated with current condition
       std::map<int,DRT::Node*> masternodes;
       std::map<int,DRT::Node*> slavenodes;
@@ -1834,7 +1849,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       std::map<int,Teuchos::RCP<DRT::Element> > slaveelements;
 
       // extract current slave-side and associated master-side scatra-scatra interface coupling conditions
-      std::vector<DRT::Condition*> mastercondition(1,masterconditions[islavecondition->first]);
+      std::vector<DRT::Condition*> mastercondition(1,masterconditions[condid]);
       std::vector<DRT::Condition*> slavecondition(1,islavecondition->second);
 
       // fill maps
@@ -1842,9 +1857,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       DRT::UTILS::FindConditionObjects(*scatratimint_->Discretization(),slavenodes,slavegnodes,slaveelements,slavecondition);
 
       // initialize mortar coupling adapter
-      icoupmortar_[islavecondition->first] = Teuchos::rcp(new ADAPTER::CouplingMortar());
+      icoupmortar_[condid] = Teuchos::rcp(new ADAPTER::CouplingMortar());
+      ADAPTER::CouplingMortar& icoupmortar = *icoupmortar_[condid];
       std::vector<int> coupleddof(scatratimint_->NumDofPerNode(),1);
-      icoupmortar_[islavecondition->first]->SetupInterface(
+      icoupmortar.SetupInterface(
           scatratimint_->Discretization(),
           scatratimint_->Discretization(),
           coupleddof,
@@ -1855,26 +1871,53 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           scatratimint_->Discretization()->Comm()
       );
 
+      // extract mortar interface
+      MORTAR::MortarInterface& interface = *icoupmortar.Interface();
+
+      // extract mortar discretization
+      const DRT::Discretization& idiscret = interface.Discret();
+
       if(couplingtype_ != INPAR::S2I::coupling_nts_standard)
       {
+        // provide each slave-side mortar element with material of corresponding parent element
+        for(int iele=0; iele<interface.SlaveColElements()->NumMyElements(); ++iele)
+        {
+          // determine global ID of current slave-side mortar element
+          const int elegid = interface.SlaveColElements()->GID(iele);
+
+          // add material
+          idiscret.gElement(elegid)->SetMaterial(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(islavecondition->second->Geometry()[elegid])->ParentElement()->Material()->Parameter()->Id());
+        }
+
+        // assign physical implementation type to each slave-side mortar element by copying the physical implementation type of the corresponding parent volume element
+        Epetra_IntVector impltypes_row(*interface.SlaveRowElements());
+        for(int iele=0; iele<interface.SlaveRowElements()->NumMyElements(); ++iele)
+          impltypes_row[iele] = dynamic_cast<const DRT::ELEMENTS::Transport*>(Teuchos::rcp_dynamic_cast<const DRT::FaceElement>(islavecondition->second->Geometry()[interface.SlaveRowElements()->GID(iele)])->ParentElement())->ImplType();
+
+        // perform parallel redistribution if desired
+        if(imortarredistribution_ and idiscret.Comm().NumProc() > 1)
+        {
+          interface.IParams().set<std::string>("PARALLEL_REDIST",DRT::Problem::Instance()->MortarCouplingParams().get<std::string>("PARALLEL_REDIST"));
+          interface.Redistribute();
+          interface.FillComplete();
+          interface.PrintParallelDistribution(condid);
+          interface.CreateSearchTree();
+        }
+
         // generate mortar integration cells
         std::vector<Teuchos::RCP<MORTAR::IntCell> > imortarcells(0,Teuchos::null);
-        icoupmortar_[islavecondition->first]->EvaluateGeometry(imortarcells);
+        icoupmortar.EvaluateGeometry(imortarcells);
 
-        // assign physical implementation type to mortar integration cells and store as pair in map
-        imortarcells_[islavecondition->first].resize(imortarcells.size());
+        // assign physical implementation type to each mortar integration cell by copying the physical implementation type of the corresponding slave-side mortar element
+        Epetra_IntVector impltypes_col(*interface.SlaveColElements());
+        LINALG::Export(impltypes_row,impltypes_col);
+        imortarcells_[condid].resize(imortarcells.size());
         for(unsigned icell=0; icell<imortarcells.size(); ++icell)
-          imortarcells_[islavecondition->first][icell] = std::pair<Teuchos::RCP<MORTAR::IntCell>,INPAR::SCATRA::ImplType>(imortarcells[icell],dynamic_cast<DRT::ELEMENTS::Transport*>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(islavecondition->second->Geometry()[imortarcells[icell]->GetSlaveId()])->ParentElement())->ImplType());
+          imortarcells_[condid][icell] = std::pair<Teuchos::RCP<MORTAR::IntCell>,INPAR::SCATRA::ImplType>(imortarcells[icell],static_cast<INPAR::SCATRA::ImplType>(impltypes_col[interface.SlaveColElements()->LID(imortarcells[icell]->GetSlaveId())]));
       }
 
       else
       {
-        // extract mortar interface
-        MORTAR::MortarInterface& interface = *icoupmortar_[islavecondition->first]->Interface();
-
-        // extract mortar discretization
-        const DRT::Discretization& idiscret = interface.Discret();
-
         // match slave-side and master-side elements at mortar interface
         switch(interface.SearchAlg())
         {
@@ -1904,12 +1947,12 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         const Epetra_Map& noderowmap_slave = *interface.SlaveRowNodes();
 
         // initialize vector for node-to-segment connectivity, i.e., for pairings between slave nodes and master elements
-        Teuchos::RCP<Epetra_IntVector>& islavenodestomasterelements = islavenodestomasterelements_[islavecondition->first];
+        Teuchos::RCP<Epetra_IntVector>& islavenodestomasterelements = islavenodestomasterelements_[condid];
         islavenodestomasterelements = Teuchos::rcp(new Epetra_IntVector(noderowmap_slave,false));
         islavenodestomasterelements->PutValue(-1);
 
         // initialize vector for physical implementation types of slave-side nodes
-        Teuchos::RCP<Epetra_IntVector>& islavenodesimpltypes = islavenodesimpltypes_[islavecondition->first];
+        Teuchos::RCP<Epetra_IntVector>& islavenodesimpltypes = islavenodesimpltypes_[condid];
         islavenodesimpltypes = Teuchos::rcp(new Epetra_IntVector(noderowmap_slave,false));
         islavenodesimpltypes->PutValue(INPAR::SCATRA::impltype_undefined);
 
@@ -2012,16 +2055,21 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         );
 
         // transform map of result vector
-        Teuchos::RCP<Epetra_Vector>& islavenodeslumpedareas = islavenodeslumpedareas_[islavecondition->first];
+        Teuchos::RCP<Epetra_Vector>& islavenodeslumpedareas = islavenodeslumpedareas_[condid];
         islavenodeslumpedareas = LINALG::CreateVector(noderowmap_slave);
         for(int inode=0; inode<noderowmap_slave.NumMyElements(); ++inode)
           (*islavenodeslumpedareas)[inode] = (*islavenodeslumpedareas_dofvector)[dofrowmap_slave.LID(idiscret.Dof(idiscret.gNode(noderowmap_slave.GID(inode)),0))];
       }
 
       // build interface maps
-      imastermap = LINALG::MergeMap(imastermap,icoupmortar_[islavecondition->first]->MasterDofMap(),false);
-      islavemap = LINALG::MergeMap(islavemap,icoupmortar_[islavecondition->first]->SlaveDofMap(),false);
-      ifullmap = LINALG::MergeMap(ifullmap,LINALG::MergeMap(icoupmortar_[islavecondition->first]->MasterDofMap(),icoupmortar_[islavecondition->first]->SlaveDofMap(),false),false);
+      imastermap = LINALG::MergeMap(imastermap,interface.MasterRowDofs(),false);
+      islavemap = LINALG::MergeMap(islavemap,interface.SlaveRowDofs(),false);
+      ifullmap = LINALG::MergeMap(ifullmap,LINALG::MergeMap(interface.MasterRowDofs(),interface.SlaveRowDofs(),false),false);
+      if(imortarredistribution_)
+      {
+        imastermap_ = LINALG::MergeMap(imastermap_,icoupmortar.MasterDofMap(),false);
+        islavemap_ = LINALG::MergeMap(islavemap_,icoupmortar.SlaveDofMap(),false);
+      }
     }
 
     // generate interior and interface maps
@@ -2714,9 +2762,9 @@ void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
     {
       std::vector<Teuchos::RCP<const Epetra_Map> > maps(2);
       maps[0] = blockmaps[iblock];
-      maps[1] = interfacemaps_->Map(1);
+      maps[1] = not imortarredistribution_ ? interfacemaps_->Map(1) : Teuchos::rcp_dynamic_cast<const Epetra_Map>(islavemap_);
       blockmaps_slave[iblock] = LINALG::MultiMapExtractor::IntersectMaps(maps);
-      maps[1] = interfacemaps_->Map(2);
+      maps[1] = not imortarredistribution_ ? interfacemaps_->Map(2) : Teuchos::rcp_dynamic_cast<const Epetra_Map>(imastermap_);
       blockmaps_master[iblock] = LINALG::MultiMapExtractor::IntersectMaps(maps);
     }
     blockmaps_slave_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*interfacemaps_->Map(1),blockmaps_slave));

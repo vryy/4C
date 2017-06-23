@@ -543,6 +543,7 @@ baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_saddlepoint_bubnov_lmmaster 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_saddlepoint_petrov 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_saddlepoint_petrov_lmmaster 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard 3 "")
+baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_redist 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_nts_standard 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_plating_monolithic_reg_none 3 25)
 post_processing(elch_3D_tet4_s2i_butlervolmer_plating_monolithic_reg_none 3 "" "" 35)
@@ -1077,6 +1078,7 @@ baci_test(scatra_3D_tet4_hex8_s2i_constperm_mortar_saddlepoint_bubnov_lmmaster 3
 baci_test(scatra_3D_tet4_hex8_s2i_constperm_mortar_saddlepoint_petrov 3 "10")
 baci_test(scatra_3D_tet4_hex8_s2i_constperm_mortar_saddlepoint_petrov_lmmaster 3 "10")
 baci_test(scatra_3D_tet4_hex8_s2i_constperm_mortar_standard 3 "10")
+baci_test(scatra_3D_tet4_hex8_s2i_constperm_mortar_standard_redist 3 "10")
 baci_test(scatra_3D_tet4_hex8_s2i_constperm_nts_standard 3 "10")
 baci_test(scatra_3D_hex8_distrreaccoeff_cube 2 "")
 baci_test(scatra_assugrdiff_art_lin_2d 2 "")
@@ -1800,15 +1802,21 @@ baci_test(poro_3D_hex8_p1 2 5)
 # fpsi using the AMGnxn framework
 baci_test(fpsi_bending_struct_BGSAMG 2 "")
 
+# scalar transport using the AMGnxn framework
+baci_test(scatra_2D_quad4_s2i_constperm_AMG 2 "")
+
 # electrochemistry using the AMGnxn framework
+baci_test(elch_3D_tet4_s2i_butlervolmer_AMG 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_AMG-BGS_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 3 "")
 muelu_agg2vtk(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 2 3 3 100.)
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3_geometry 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_4x4 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_BGS-AMG_3x3 3 "")
+baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_redist_BGS-AMG_3x3 3 "")
 
 # scatra-thermo interaction using the AMGnxn framework
+baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_AMG 3 "")
 baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_BGS-AMG_2x2 3 15)
 baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_condensed_BGS-AMG_2x2 3 15)
 baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic_AMG-BGS_4x4 3 "")

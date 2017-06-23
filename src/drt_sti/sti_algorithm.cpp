@@ -326,7 +326,12 @@ STI::Algorithm::Algorithm(
       if(strategyscatra_->MatrixType() != INPAR::S2I::matrix_sparse)
         dserror("Incompatible matrix type associated with scalar transport field!");
 
+      // initialize global system matrix
       systemmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMap(),27,false,true));
+
+      // feed AMG preconditioner with null space information associated with global system matrix if applicable
+      ComputeNullSpaceIfNecessary(solver_->Params());
+
       break;
     }
 
@@ -1028,6 +1033,69 @@ void STI::Algorithm::ComputeInvRowSums(
 
   return;
 } // STI::Algorithm::ComputeInvRowSums
+
+
+/*------------------------------------------------------------------------------------------------*
+ | compute null space information associated with global system matrix if applicable   fang 06/17 |
+ *------------------------------------------------------------------------------------------------*/
+void STI::Algorithm::ComputeNullSpaceIfNecessary(
+    Teuchos::ParameterList&   solverparams   //! solver parameter list for scatra-thermo interaction
+    ) const
+{
+  // compute null space information for ML preconditioner only
+  if(solverparams.isSublist("ML Parameters"))
+  {
+    // extract parameter list for ML preconditioner
+    Teuchos::ParameterList& mllist = solverparams.sublist("ML Parameters",true);
+
+    // determine null space dimension
+    const int numdofpernode_scatra = scatra_->NumDofPerNode();
+    const int numdofpernode_thermo = thermo_->NumDofPerNode();
+    const int dimns = numdofpernode_scatra+numdofpernode_thermo;
+
+    // allocate vector for null space information
+    const Teuchos::RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(dimns*DofRowMap()->NumMyElements(),0.));
+
+    // compute null space modes associated with scatra field
+    const DRT::Discretization& scatradis = *scatra_->Discretization();
+    double* modes_scatra[numdofpernode_scatra];
+    for(int i=0; i<numdofpernode_scatra; ++i)
+      modes_scatra[i] = &((*ns)[i*DofRowMap()->NumMyElements()]);
+    for(int i=0; i<scatradis.NumMyRowNodes(); ++i)
+    {
+      const int lid = DofRowMap()->LID(scatradis.Dof(0,scatradis.lRowNode(i),0));
+      if(lid < 0)
+        dserror("Cannot find scatra degree of freedom!");
+      for(int j=0; j<numdofpernode_scatra; ++j)
+        modes_scatra[j][lid+j] = 1.;
+    }
+
+    // compute null space modes associated with thermo field
+    const DRT::Discretization& thermodis = *thermo_->Discretization();
+    double* modes_thermo[numdofpernode_thermo];
+    for(int i=0; i<numdofpernode_thermo; ++i)
+      modes_thermo[i] = &((*ns)[(numdofpernode_scatra+i)*DofRowMap()->NumMyElements()]);
+    for(int i=0; i<thermodis.NumMyRowNodes(); ++i)
+    {
+      const int lid = DofRowMap()->LID(thermodis.Dof(0,thermodis.lRowNode(i),0));
+      if(lid < 0)
+        dserror("Cannot find thermo degree of freedom!");
+      for(int j=0; j<numdofpernode_thermo; ++j)
+        modes_thermo[j][lid+j] = 1.;
+    }
+
+    // fill parameter list
+    mllist.set("PDE equations",dimns);
+    mllist.set("null space: dimension",dimns);
+    mllist.set("null space: type","pre-computed");
+    mllist.set("null space: add default vectors",false);
+    mllist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
+    mllist.set("null space: vectors",&((*ns)[0]));
+    mllist.set<bool>("ML validate parameter list",false);
+  }
+
+  return;
+} // STI::Algorithm::ComputeNullSpaceIfNecessary
 
 
 /*----------------------------------------------------------------------*

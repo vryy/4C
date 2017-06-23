@@ -266,6 +266,15 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! mortar integration cells
     std::map<int,std::vector<std::pair<Teuchos::RCP<MORTAR::IntCell>,INPAR::SCATRA::ImplType> > > imortarcells_;
 
+    //! flag for parallel redistribution of mortar interfaces
+    const bool imortarredistribution_;
+
+    //! map of all slave-side degrees of freedom before parallel redistribution
+    Teuchos::RCP<Epetra_Map> islavemap_;
+
+    //! map of all master-side degrees of freedom before parallel redistribution
+    Teuchos::RCP<Epetra_Map> imastermap_;
+
     //! vectors for node-to-segment connectivity, i.e., for pairings between slave nodes and master elements
     std::map<int,Teuchos::RCP<Epetra_IntVector> > islavenodestomasterelements_;
 

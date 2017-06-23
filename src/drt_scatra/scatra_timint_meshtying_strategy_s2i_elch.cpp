@@ -453,7 +453,7 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
     dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // access material of slave element
-  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(condition->Geometry()[slaveelement.Id()])->ParentElement()->Material());
+  Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(slaveelement.Material());
   if(matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
 

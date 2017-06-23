@@ -123,6 +123,11 @@ namespace STI
           const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
           ) const;
 
+      //! compute null space information associated with global system matrix if applicable
+      void ComputeNullSpaceIfNecessary(
+          Teuchos::ParameterList&   solverparams   //! solver parameter list for scatra-thermo interaction
+          ) const;
+
       //! global map of degrees of freedom
       const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
 

@@ -91,6 +91,12 @@ SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58384649836708236e-01 TOLERANCE 
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.76630562579041861e+00 TOLERANCE 1.e-09   // cell voltage
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                 // number of Newton-Raphson iterations during last time step
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastsolve VALUE 9.0 TOLERANCE 1.e-20                  // number of iterations performed by linear solver during last Newton-Raphson iteration
+SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int0_proc0 VALUE 122.0 TOLERANCE 1.e-20            // number of degrees of freedom owned by zeroth processor at zeroth scatra-scatra coupling interface
+SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int0_proc1 VALUE 48.0 TOLERANCE 1.e-20             // number of degrees of freedom owned by first processor at zeroth scatra-scatra coupling interface
+SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int0_proc2 VALUE 0.0 TOLERANCE 1.e-20              // number of degrees of freedom owned by second processor at zeroth scatra-scatra coupling interface
+SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int1_proc0 VALUE 0.0 TOLERANCE 1.e-20              // number of degrees of freedom owned by zeroth processor at first scatra-scatra coupling interface
+SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int1_proc1 VALUE 44.0 TOLERANCE 1.e-20             // number of degrees of freedom owned by first processor at first scatra-scatra coupling interface
+SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int1_proc2 VALUE 122.0 TOLERANCE 1.e-20            // number of degrees of freedom owned by second processor at first scatra-scatra coupling interface
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDSURF                          14
 NDVOL                           5
