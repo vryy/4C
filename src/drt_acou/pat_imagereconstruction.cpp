@@ -3443,7 +3443,7 @@ void ACOU::PatImageReconstructionReduction::Optimize()
     fprintf(file,"#\n#\n#\n");
 
     double finaltime = acoualgo_->Time();
-    double dt = acoualgo_->TimeStep();
+    double dt = timesteps[1]-timesteps[0];
     for(unsigned int i=0; i<nsteps; ++i)
     {
       double time = finaltime-(nsteps-1-i)*dt;

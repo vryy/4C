@@ -677,9 +677,9 @@ void ACOU::AcouTimeInt::InitMonitorFile()
     int mics=pressuremonmics.size();
     int steps=0;
     if(dtp_*stepmax_<maxtime_)
-      steps=stepmax_;
+      steps=stepmax_/upres_;
     else
-      steps=maxtime_/dtp_+1;//+3; // first, last and int cut off
+      steps=maxtime_/dtp_/upres_+1;//+3; // first, last and int cut off
 
     if(myrank_ == 0)
     {
