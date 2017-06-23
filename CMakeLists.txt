@@ -1794,6 +1794,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_struct_ale/struct_ale_str_model_evaluator.cpp
   src/drt_structure_new/str_model_evaluator_multiphysics.cpp
   src/drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.cpp
+  src/drt_immersed_problem/str_model_evaluator_partitioned_ssi_adhesiondynamics.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
   src/drt_structure_new/str_nln_solver_utils.cpp
   src/drt_structure_new/str_nln_solver_generic.cpp

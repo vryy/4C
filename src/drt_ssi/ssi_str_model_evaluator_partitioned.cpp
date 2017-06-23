@@ -40,6 +40,7 @@ STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI()
 void STR::MODELEVALUATOR::PartitionedSSI::
     Setup()
 {
+  CheckInit();
   // set flag
   issetup_ = true;
 

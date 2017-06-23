@@ -135,7 +135,6 @@ void SSI::SSI_Part2WC::Timeloop()
     OuterLoop();
 
     UpdateAndOutput();
-
   }
 }
 
@@ -175,6 +174,19 @@ void SSI::SSI_Part2WC::DoScatraStep()
 
   // set structure-based scalar transport values
   return SetScatraSolution(scatra_->ScaTraField()->Phinp());
+}
+
+/*----------------------------------------------------------------------*
+ | Solve Scatra field                                        Thon 12/14 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC::PreOperator1()
+{
+  if(Itnum()!=1 and use_old_structure_)
+  {
+    // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
+    // we only get norm of the evaluation of the structure problem
+    structure_->PreparePartitionStep();
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -239,11 +251,12 @@ void SSI::SSI_Part2WC::IterUpdateStates()
 
 
 /*----------------------------------------------------------------------*
- | Outer Timeloop for 2WC SSi without relaxation
+ | Outer Timeloop for 2WC SSi without relaxation            rauch 06/17 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::OuterLoop()
 {
-  int  itnum = 0;
+  // reset iteration number
+  itnum_ = 0;
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
@@ -253,30 +266,29 @@ void SSI::SSI_Part2WC::OuterLoop()
 
   while (stopnonliniter==false)
   {
-    // increment number of iteration
-    itnum++;
+    // increment iteration number
+    itnum_++;
 
     // update the states to the last solutions obtained
     IterUpdateStates();
 
-    if(itnum!=1 and use_old_structure_)
-    {
-      // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
-      // we only get norm of the evaluation of the structure problem
-      structure_->PreparePartitionStep();
-    }
-
+    // standard ssi_2wc :
     // 1.) solve structural system
     // 2.) set disp and vel states in scatra field
-    DoStructStep();
+    PreOperator1();
+    Operator1();
+    PostOperator1();
 
+    // standard ssi_2wc :
     // 1.) solve scalar transport equation
     // 2.) set phi state in structure field
-    DoScatraStep();
+    PreOperator2();
+    Operator2();
+    PostOperator2();
 
     // check convergence for all fields
     // stop iteration loop if converged
-    stopnonliniter = ConvergenceCheck(itnum);
+    stopnonliniter = ConvergenceCheck(Itnum());
   }
 
   return;

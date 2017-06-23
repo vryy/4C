@@ -47,7 +47,7 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
     dserror("number of scalars %d does not fit to size of the STOICH vector %d", numscal_, stoich_->size());
 
   if (numscal_ != (int)couprole_->size())
-    dserror("number of scalars %d does not fit to size of the ROLE vector %d", numscal_, stoich_->size());
+    dserror("number of scalars %d does not fit to size of the ROLE vector %d", numscal_, couprole_->size());
 
   if (numscal_ != (int)reacstart_->size())
     dserror("number of scalars %d does not fit to size of the REACSTART vector %d", numscal_, reacstart_->size());

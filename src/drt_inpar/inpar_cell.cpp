@@ -270,21 +270,34 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                                   "Control the models and algorithms for cell-ecm adhesion");
 
   setStringToIntegralParameter<int>("COUPALGO","iter_stagg_fixed_rel_param",
-                                    "Iteration Scheme over the fields",
-                                    coupname,
-                                    couplabel,
-                                    &adhesiondyn);
+      "Iteration Scheme over the fields",
+      coupname,
+      couplabel,
+      &adhesiondyn);
 
-    setStringToIntegralParameter<int>("COUPVARIABLE","Force",
-                                 "Coupling variable at the interface",
-                                 tuple<std::string>("Displacement","Force"),
-                                 tuple<int>(0,1),
-                                 &adhesiondyn);
 
-    DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&adhesiondyn);
-    DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned solver",&adhesiondyn);
-    DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&adhesiondyn);
-    IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&adhesiondyn);
+  setStringToIntegralParameter<int>("COUPMETHOD","Dirichlet",
+      "Coupling method at the adhesion interface",
+      tuple<std::string>("Dirichlet","Penalty"),
+      tuple<int>(0,1),
+      &adhesiondyn);
+
+  setStringToIntegralParameter<int>("COUPVARIABLE","Force",
+      "Coupling variable at the interface",
+      tuple<std::string>("Displacement","Force"),
+      tuple<int>(0,1),
+      &adhesiondyn);
+
+
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&adhesiondyn);
+  DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned solver",&adhesiondyn);
+  DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&adhesiondyn);
+  IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&adhesiondyn);
+  IntParameter("NUM_BOUNDSPECIES",-1,"Number of scalar fields which bind to ECM",&adhesiondyn);
+
+  DoubleParameter("PENALTY",1.0e6,"Penalty parameter for cell adhesion coupling",&adhesiondyn);
+  DoubleParameter("RESET_CONC",1.0e-10,"Minimum concentration defining adhesion site coupling (computational zero conc.)",&adhesiondyn);
+  DoubleParameter("ECM_FIBER_DIAMETER",-1.0,"Average ECM fiber diameter for Mikado model",&adhesiondyn);
 
 
 

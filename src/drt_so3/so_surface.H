@@ -254,7 +254,7 @@ public: // changed to public rauch 05/2014
     mark_immersed_elements,
     calc_struct_robinforcestiff,
     calc_cell_growth,
-    calc_cell_nodal_bond_traction
+    calc_cell_adhesion_forces
   };
 
 protected:

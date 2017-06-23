@@ -3,7 +3,7 @@
 
 \brief specialization of ssi2wc, including adhesion dynamics
 
-\level 3
+\level 2
 
 \maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
@@ -68,14 +68,10 @@ public:
 
 protected:
 
-  //! do the scatra solve and related stuff
-  virtual void DoScatraStep();
-
   //! update bond traction vector
   void EvaluateBondTraction();
 
-  /*!
-    \brief build map containing row dofs of conditioned nodes
+  /*! \brief build map containing row dofs of conditioned nodes
 
     \param condition  (in)  : condition to be considered
     \param dis        (in)  : discretization wearing the condition
@@ -85,8 +81,7 @@ protected:
       const Teuchos::RCP<const DRT::Discretization>& dis,
       Teuchos::RCP<Epetra_Map>& condnodemap);
 
-  /*!
-    \brief build map containing col dofs of conditioned nodes
+  /*! \brief build map containing col dofs of conditioned nodes
 
     \param condition  (in)  : condition to be considered
     \param dis        (in)  : discretization wearing the condition
@@ -101,17 +96,44 @@ protected:
   virtual void IterUpdateStates();
 
 
+protected:
+
+  //! solve field 1
+  virtual void Operator1(){DoScatraStep();};
+
+  //! solve field 2
+  virtual void Operator2(){DoStructStep();};
+
+  //! pre operator called before first field operator
+  virtual void PreOperator1(){};
+
+  //! pre operator called before second field operator
+  virtual void PreOperator2();
+
+  //! post operator called after first field operator
+  virtual void PostOperator1();
+
+  //! post operator called after second field operator
+  virtual void PostOperator2();
+
+
 private:
 
-  //! structure reaction forces
-  Teuchos::RCP<Epetra_Vector> surface_traction_;
-  Teuchos::RCP<Epetra_Vector> surface_traction_col_;
+  //! @name Various global vectors
+  //@{
+  Teuchos::RCP<Epetra_Vector> cell_adhesion_forces_;   //!< cell adhesion forces
+  Teuchos::RCP<Epetra_Vector> surface_traction_;       //!< cell surface traction at adhesions row layout
+  Teuchos::RCP<Epetra_Vector> surface_traction_col_;   //!< cell surface traction at adhesions col layout
+  Teuchos::RCP<Epetra_Vector> cell_adhesion_fixpoints_;//!< adhesion fixpoints (the concrete spatial coordinates to which the integrins adhere)
+  //@}
 
-  //! map containing the dofs of conditioned adhesion nodes
-  Teuchos::RCP<Epetra_Map> conditiondofrowmap_;
-  Teuchos::RCP<Epetra_Map> conditiondofcolmap_;
+  //! @name Various global vectors
+  //@{
+  Teuchos::RCP<Epetra_Map> conditiondofrowmap_; //!< map containing the dofs of conditioned adhesion nodes row layout
+  Teuchos::RCP<Epetra_Map> conditiondofcolmap_; //!< map containing the dofs of conditioned adhesion nodes col layout
+  //@}
 
-  //! Manager for data exchange between fields
+  //! manager for data exchange between fields
   DRT::ImmersedFieldExchangeManager* exchange_manager_;
 
 }; // class SSI_Part2WC_ADHESIONDYNAMICS

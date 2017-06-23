@@ -110,6 +110,24 @@ namespace SSI
 
   protected:
 
+    //! solve field 1
+    virtual void Operator1(){DoStructStep();};
+
+    //! solve field 2
+    virtual void Operator2(){DoScatraStep();};
+
+    //! pre operator called before first field operator
+    virtual void PreOperator1();
+
+    //! pre operator called before second field operator
+    virtual void PreOperator2(){};
+
+    //! post operator called after first field operator
+    virtual void PostOperator1(){};
+
+    //! post operator called after second field operator
+    virtual void PostOperator2(){};
+
     //! perform iteration step of structure field and set the new disp and vel states in the scatra field
     virtual void DoStructStep();
 

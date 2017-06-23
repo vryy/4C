@@ -296,8 +296,8 @@ bool POROELAST::PoroScatraPart2WC::ConvergenceCheck(int itnum)
     std::cout<<"    OUTER ITERATION STEP    \n";
     std::cout<<"***********************************************************************************\n";
     printf("+--------------+------------------------+--------------------+--------------------+--------------------+\n");
-    printf("|-  step/max  -|-  tol      [norm]     -|--  scalar-inc      --|--  disp-inc      --|--  fluid-inc      --|\n");
-    printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         | %10.3E         |",
+    printf("|-  step/max  -|-  tol      [norm]     -|-  scalar-inc      -|-  disp-inc        -|-  fluid-inc       -|\n");
+    printf("|   %3d/%3d    |  %10.3E[L_2 ]      |  %10.3E        |  %10.3E        |  %10.3E        |",
          itnum,itmax_,ittol_,scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2,fluidincnorm_L2/fluidnorm_L2);
     printf("\n");
     printf("+--------------+------------------------+--------------------+--------------------+--------------------+\n");

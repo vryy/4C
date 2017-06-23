@@ -27,6 +27,9 @@
 namespace DRT
 {
 
+  // forward declaration
+  class ImmersedFieldExchangeManager;
+
 namespace ELEMENTS
 {
 
@@ -70,34 +73,32 @@ protected:
   virtual void SetBondReactionTerms(
       const int                                 k,           //!< index of current scalar
       const Teuchos::RCP<MAT::MatListBondReacs> matreaclist, //!< index of current scalar
-      const double                              traction,    //!< traction at current gp
+      const double                              violation,   //!< penalty violation at current gp
       const double                              porosity,    //!< porosity of background element
       const double* gpcoord                                  //!< current Gauss-point coordinates
   );
 
 
-  //! extract element based or nodal values
-  //! return extracted values of phinp
-  virtual void ExtractElementAndNodeValues(
-    DRT::Element*                 ele,
-    Teuchos::ParameterList&       params,
-    DRT::Discretization&          discretization,
-    DRT::Element::LocationArray&  la
-  );
-
 private:
 
-  //! extract traction at current gauss point from surface_traction_
-  double GetTraction(
+  //! calculate adhesion violation at Gauss point
+  double GetAdhesionViolation(
       const DRT::Element*  ele,       //!< the element we are dealing with
       const int            iquad      //!< id of current gauss point
   ) const;
 
   //! get average distance of integrin to ECM ligand
-  double GetPorosity(
+  double GetPorosityFromBackgroundEle(
       const DRT::Element*  ele,       //!< the element we are dealing with
       const int            iquad      //!< id of current gauss point
   ) const;
+
+  //! cell adhesion fixpoint coordinates
+  Teuchos::RCP<Epetra_Vector> cell_adhesion_fixpoints_;
+
+  //! manager for global data exchange between fields
+  DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
+
 
 }; //end class ScaTraEleCalcBondReac
 

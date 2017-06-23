@@ -105,7 +105,9 @@ public:
   Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_gap_;
   Teuchos::RCP<Epetra_Vector> cell_current_nodal_normals_;
   Teuchos::RCP<Epetra_Vector> points_to_ecm_adhesion_force_;
+  Teuchos::RCP<Epetra_Vector> points_to_cell_adhesion_force_;
   Teuchos::RCP<Epetra_Vector> points_to_surface_traction_;
+  Teuchos::RCP<Epetra_Vector> points_to_cell_adhesion_fixpoints_;
   //@}
 
   //! @name Misc. epetra multivectors
@@ -272,9 +274,17 @@ public:
 
    Teuchos::RCP<Epetra_Vector> GetPointerECMAdhesionForce(){return points_to_ecm_adhesion_force_;};
 
+   void SetPointerCellAdhesionForce(const Teuchos::RCP<Epetra_Vector> vector){points_to_cell_adhesion_force_=vector; return;};
+
    void SetPointerSurfaceTraction(Teuchos::RCP<Epetra_Vector> vector){points_to_surface_traction_=vector; return;};
 
+   Teuchos::RCP<Epetra_Vector> GetPointerCellAdhesionForce(){return points_to_cell_adhesion_force_;};
+
    Teuchos::RCP<Epetra_Vector> GetPointerSurfaceTraction(){if(points_to_surface_traction_==Teuchos::null) dserror("null ptr"); return points_to_surface_traction_;};
+
+   void SetPointerCellAdhesionFixpoints(const Teuchos::RCP<Epetra_Vector> vector){points_to_cell_adhesion_fixpoints_=vector; return;};
+
+   Teuchos::RCP<Epetra_Vector> GetPointerCellAdhesionFixpoints(){return points_to_cell_adhesion_fixpoints_;};
 
    void SetPointerToCurrentSubsetOfBackgrdDis(std::map<int,std::set<int> >* pointer){points_to_curr_subset_of_backgrounddis_ = pointer;};
 

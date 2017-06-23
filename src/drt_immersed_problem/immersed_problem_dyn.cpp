@@ -463,6 +463,8 @@ void CellMigrationControlAlgorithm()
       "Partitioned Coupling Model",
       multiphysics_model_evaluator_cellmigration );
 
+  // set model type to fsi (default, needed for Setup of structure base algo)
+  multiphysics_model_evaluator_cellmigration->SetActiveModelType(STR::MODELEVALUATOR::mt_fsi);
 
 
   ///////////////////////////////////////////////////////////////////////
@@ -645,6 +647,9 @@ void CellMigrationControlAlgorithm()
   if(cellstructure==Teuchos::null)
     dserror("dynamic cast from Structure to MultiphysicsStructureWrapperCellMigration failed");
 
+  // set pointer to model evaluator in cell migration wrapper
+  cellstructure->SetModelEvaluatorPtr(multiphysics_model_evaluator_cellmigration);
+
 
 
   ///////////////////////////////////////////////////////////////////////
@@ -810,6 +815,9 @@ void CellMigrationControlAlgorithm()
   else if (simtype==INPAR::CELL::sim_type_pureAdhesion)
   {
     params.set<bool>("IsPureAdhesionSimulation", true);
+
+    // set model type to ssi
+    multiphysics_model_evaluator_cellmigration->SetActiveModelType(STR::MODELEVALUATOR::mt_ssi);
 
     Teuchos::RCP<IMMERSED::ImmersedPartitionedAdhesionTraction> algo =
         Teuchos::rcp(new IMMERSED::ImmersedPartitionedAdhesionTraction(params,comm));

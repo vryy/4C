@@ -24,6 +24,7 @@
 
 #include "../drt_mat/matlist_bondreacs.H"
 #include "../drt_mat/matlist_reactions.H"
+#include "../drt_mat/structporo.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/matlist.H"
 
@@ -39,28 +40,31 @@ DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::ScaTraEleCalcBondReac(
     const int numdofpernode,
     const int numscal,
     const std::string& disname)
-: DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(
-    numdofpernode,
-    numscal,
-    disname),
-  DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(
-      numdofpernode,
-      numscal,
-      disname)
-  {
-  }
+    : DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ScaTraEleCalc(
+        numdofpernode,
+        numscal,
+        disname),
+      DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ScaTraEleCalcAdvReac(
+        numdofpernode,
+        numscal,
+        disname)
+{
+  // get pointer to adhesion fixpoint vector
+  exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
+  cell_adhesion_fixpoints_ = exchange_manager_->GetPointerCellAdhesionFixpoints();
+}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype,int probdim>
 DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim> *
-    DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::Instance(
-        const int numdofpernode,
-        const int numscal,
-        const std::string& disname,
-        const ScaTraEleCalcBondReac *delete_me )
-    {
+DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::Instance(
+    const int numdofpernode,
+    const int numscal,
+    const std::string& disname,
+    const ScaTraEleCalcBondReac *delete_me )
+{
   static std::map<std::pair<std::string,int>,ScaTraEleCalcBondReac<distype,probdim>* > instances;
 
   std::pair<std::string,int> key(disname,numdofpernode);
@@ -88,7 +92,7 @@ DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim> *
   }
 
   return instances[key];
-    }
+}
 
 
 /*----------------------------------------------------------------------*
@@ -115,15 +119,10 @@ void DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetMaterialParams(
     const int            iquad      //!< id of current gauss point
 )
 {
-  // get surface traction  and porosity at gauss point
-  const double porosity = GetPorosity(ele,iquad);
-  const double traction = GetTraction(ele,iquad);
-
-
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
 
-  // We may have some reactive and some non-reactive elements in one discretisation.
+  // We may have some reactive and some non-reactive elements in one discretization.
   // But since the calculation classes are singleton, we have to reset all reactive stuff in case
   // of non-reactive elements:
   advreac::ReaManager()->Clear(my::numscal_);
@@ -161,6 +160,10 @@ void DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetMaterialParams(
 
   else if (material->MaterialType() == INPAR::MAT::m_matlist_bondreacs)
   {
+    // get surface traction  and porosity at gauss point
+    const double porosity  = GetPorosityFromBackgroundEle(ele,iquad);
+    const double violation = GetAdhesionViolation(ele,iquad);
+
     const Teuchos::RCP<MAT::MatListBondReacs> actmat = Teuchos::rcp_dynamic_cast<MAT::MatListBondReacs>(material);
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
@@ -172,7 +175,7 @@ void DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetMaterialParams(
       //Note: order is important here!!
       advreac::Materials(singlemat,k,densn[k],densnp[k],densam[k],visc,iquad);
 
-      SetBondReactionTerms(k,actmat,traction,porosity,advreac::GetGpCoord()); //every reaction calculation stuff happens in here!!
+      SetBondReactionTerms(k,actmat,violation,porosity,advreac::GetGpCoord()); //every reaction calculation stuff happens in here!!
     }
   }
 
@@ -192,7 +195,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::SetBondReactionTerms(
     const int                                 k,            //!< index of current scalar
     const Teuchos::RCP<MAT::MatListBondReacs> matreaclist,  //!< index of current scalar
-    const double                              traction,     //!< traction at current gp
+    const double                              violation,    //!< penalty violation at current gp
     const double                              porosity,     //!< average receptor-ligand distance
     const double* gpcoord
 )
@@ -205,9 +208,9 @@ void DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::SetBondReactionTerms
   //! scalar values at t_(n)
   const std::vector<double>& phin = my::scatravarmanager_->Phin();
 
-  remanager->AddToReaBodyForce( matreaclist->CalcReaBodyForceTerm(k,phinp,phin,traction,porosity,gpcoord) ,k );
+  remanager->AddToReaBodyForce( matreaclist->CalcReaBodyForceTerm(k,phinp,phin,violation,porosity,gpcoord) ,k );
 
-  matreaclist->CalcReaBodyForceDerivMatrix(k,remanager->GetReaBodyForceDerivVector(k),phinp,phin,traction,porosity,gpcoord);
+  matreaclist->CalcReaBodyForceDerivMatrix(k,remanager->GetReaBodyForceDerivVector(k),phinp,phin,violation,porosity,gpcoord);
 }
 
 
@@ -215,11 +218,20 @@ void DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::SetBondReactionTerms
  |  evaluate single bond traction at gauss point                     rauch 12/16 |
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetTraction(
+double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetAdhesionViolation(
     const DRT::Element*  ele,       //!< the element we are dealing with
     const int            iquad      //!< id of current gauss point
 ) const
 {
+  // adhesion violation (return variable)
+  double violation=-1234.0;
+
+  // initialize result variable
+  double traction=0.0;
+
+  // get global problem
+  DRT::Problem* problem = DRT::Problem::Instance();
+
   // get RCP to auxdis which is evaluated in heterogeneous reaction strategy
   const Teuchos::RCP<const DRT::Discretization> auxdis =
       DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToAuxDis();
@@ -228,8 +240,8 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetTraction(
   Teuchos::RCP<Epetra_Vector> surface_traction =
       DRT::ImmersedFieldExchangeManager::Instance()->GetPointerSurfaceTraction();
 
-  // initialize result variable
-  double traction=0.0;
+  // get discretization
+  Teuchos::RCP<DRT::Discretization> dis = problem->GetDis("cellscatra");
 
   // is ele conditioned with CellFocalAdhesion condition?
   bool is_adhesion_element=true;
@@ -262,9 +274,31 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetTraction(
   {
     // number of nodes and numdofs per node
     const int numNode = ele->NumNode();
+
     if(numNode!=4)
       dserror("only implemented for quad4 surface elements.");
     const int cell_numdofpernode = cell_lm.size()/numNode;
+
+    // extract fixpoint values to helper variable
+    std::vector<double> myadhesionfixpoints(ldim);
+    DRT::UTILS::ExtractMyValues(*cell_adhesion_fixpoints_,myadhesionfixpoints,cell_lm);
+
+    // get displacement state from structure discretization
+    Teuchos::RCP<const Epetra_Vector> dispnp = dis->GetState(1,"dispnp");
+    if (dispnp == Teuchos::null)
+      dserror("Cannot get displacement vector from scatra discretization");
+
+    // extract displacement values to helper variable
+    std::vector<double> myvalues_displ(ldim);
+    DRT::UTILS::ExtractMyValues(*dispnp,myvalues_displ,cell_lm);
+
+    // calculate adhesion penalty violation
+    double adhesion_violation_nd[numNode*cell_numdofpernode] = {};
+
+    for(int node=0;node<numNode;++node)
+      for(int dof=0; dof<cell_numdofpernode;++dof)
+        adhesion_violation_nd[node*cell_numdofpernode+dof] =
+            myvalues_displ[node*cell_numdofpernode+dof] + (ele->Nodes())[node]->X()[dof] - myadhesionfixpoints[node*cell_numdofpernode+dof];
 
     // integration points and weights for boundary (!) gp --> quad4
     const DRT::UTILS::IntPointsAndWeights<2> intpoints (DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
@@ -278,6 +312,13 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetTraction(
     LINALG::Matrix<4, 1> shapefunct;
     DRT::UTILS::shape_function<DRT::Element::quad4>(xsi,shapefunct);
 
+    // get violation at gp from nodal violation
+    double adhesion_violation_gp[cell_numdofpernode] = {};
+
+    for (int node=0; node<numNode; ++node)
+      for (int dof=0; dof<cell_numdofpernode; ++dof)
+        adhesion_violation_gp[dof] += shapefunct(node) * adhesion_violation_nd[node*cell_numdofpernode+dof];
+
     // extract values to helper variable mytraction
     std::vector<double> mytraction(cell_lm.size());
     DRT::UTILS::ExtractMyValues(*surface_traction,mytraction,cell_lm);
@@ -287,62 +328,41 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetTraction(
 
     // loop over all scatra element nodes to get surface traction at nodes (quad4)
     for (int node=0; node<numNode; node++)
-    {
       traction_nd(node,0) = mytraction[node*cell_numdofpernode];
-    }
 
     // interpolate traction at gp from nodal traction
     for (int node=0; node<numNode; node++)
       traction += shapefunct(node) * traction_nd(node,0);
 
-  } // if ele is part of adhesion boundary
+    // write final traction value
+    violation = sqrt( adhesion_violation_gp[0]*adhesion_violation_gp[0] +
+                      adhesion_violation_gp[1]*adhesion_violation_gp[1] +
+                      adhesion_violation_gp[2]*adhesion_violation_gp[2]    );
+  }
+  else
+    violation=0.0;
 
-  return traction;
+  return violation;
 
 }
 
 
 /*-------------------------------------------------------------------------------*
- |  evaluate single bond traction at gauss point                     rauch 12/16 |
+ |  get background element porosity                                  rauch 12/16 |
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetPorosity(
+double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetPorosityFromBackgroundEle(
     const DRT::Element*  ele,       //!< the element we are dealing with
     const int            iquad      //!< id of current gauss point
 ) const
 {
-  // todo so far we have a hard coded porosity for experimental testing purposes
-  double porosity = 0.8;
+  // so far we assume spatial and temporal constant porosity
+  Teuchos::RCP<DRT::Discretization> porostructdis = DRT::Problem::Instance()->GetDis("structure");
+  const int elegid = porostructdis->ElementRowMap()->GID(0);
+  Teuchos::RCP<MAT::Material> poromat = porostructdis->gElement(elegid)->Material();
+  double porosity = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(poromat)->Initporosity();
 
   return porosity;
-
-}
-
-
-/*----------------------------------------------------------------------*
- | extract element based or nodal values                    rauch 12/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::ExtractElementAndNodeValues(
-    DRT::Element*                 ele,
-    Teuchos::ParameterList&       params,
-    DRT::Discretization&          discretization,
-    DRT::Element::LocationArray&  la
-)
-{
-  // call abse class version
-  DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(ele,params,discretization,la);
-
-  // we additionally add phin to our variables
-  if (params.get<int>("action") == SCATRA::calc_heteroreac_mat_and_rhs )
-  {
-    const std::vector<int>&    lm = la[0].lm_;
-
-    // extract additional local values from global vector
-    Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-    if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phin,my::ephin_,lm);
-  }
 }
 
 

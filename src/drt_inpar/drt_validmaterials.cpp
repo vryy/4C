@@ -288,7 +288,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
       AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,false);
       AddNamedRealVector(m,"REACSTART","starting point of reaction","NUMSCAL",0.0,true);
       AddNamedString(m,"BONDTYPE","type of bond", "no_bondtype",false);
-      AddNamedReal(m,"GAMMA","characteristic binding length of a slip bond",-1.0,true);
+      AddNamedReal(m,"SLIPCOEFF","slip bond coefficient",-1.0,true);
+      AddNamedReal(m,"CATCHCOEFF1","catch bond coefficient 1",-123.0,true);
+      AddNamedReal(m,"CATCHCOEFF2","catch bond coefficient 2",-123.0,true);
+      AddNamedReal(m,"CATCHCOEFF3","catch bond coefficient 3",-123.0,true);
+      AddNamedReal(m,"CATCHCOEFF4","catch bond coefficient 4",-123.0,true);
+      AddNamedReal(m,"BINDING_RADIUS","binding radius of cell-ECM binding",-1.0,true);
 
       AppendMaterialDefinition(matlist,m);
     }

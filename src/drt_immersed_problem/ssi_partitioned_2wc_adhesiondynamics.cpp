@@ -3,7 +3,7 @@
 
 \brief specialization of ssi2wc, including adhesion dynamics
 
-\level 3
+\level 2
 
 \maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
@@ -17,13 +17,17 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_base.H"
+
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../linalg/linalg_utils.H"
+
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_io/io_control.H"
+
 #include "../linalg/linalg_solver.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_utils.H"
+
 
 
 /*----------------------------------------------------------------------*
@@ -32,6 +36,8 @@
 SSI::SSI_Part2WC_ADHESIONDYNAMICS::SSI_Part2WC_ADHESIONDYNAMICS(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams)
 : SSI_Part2WC(comm, globaltimeparams),
+  cell_adhesion_forces_(Teuchos::null),
+  cell_adhesion_fixpoints_(Teuchos::null),
   exchange_manager_(DRT::ImmersedFieldExchangeManager::Instance())
 {
   // empty
@@ -39,7 +45,7 @@ SSI::SSI_Part2WC_ADHESIONDYNAMICS::SSI_Part2WC_ADHESIONDYNAMICS(const Epetra_Com
 
 
 /*----------------------------------------------------------------------*
- | Setup this object                                        rauch 08/16 |
+ | Initialize this object                                   rauch 08/16 |
  *----------------------------------------------------------------------*/
 int SSI::SSI_Part2WC_ADHESIONDYNAMICS::Init(
     const Epetra_Comm& comm,
@@ -85,7 +91,7 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::Setup()
       conditiondofcolmap_);
 
   // create traction vector
-  surface_traction_ = LINALG::CreateVector(*conditiondofrowmap_,true);
+  surface_traction_     = LINALG::CreateVector(*conditiondofrowmap_,true);
   surface_traction_col_ = LINALG::CreateVector(*conditiondofcolmap_,true);
 
   // give traction vector pointer to ExchangeManager
@@ -155,91 +161,6 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::BuildConditionDofColMap(
 }
 
 
-/*----------------------------------------------------------------------*
- | Solve Scatra field                                       rauch 12/16 |
- *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_ADHESIONDYNAMICS::DoScatraStep()
-{
-  if (Comm().MyPID() == 0)
-  {
-    std::cout
-    << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
-  }
-
-  // set displacement state
-  StructureField()->Discretization()->SetState("displacement", StructureField()->Dispnp());
-  // evaluate bond traction
-  EvaluateBondTraction();
-
-  // -------------------------------------------------------------------
-  //                  solve nonlinear / linear equation
-  // -------------------------------------------------------------------
-  scatra_->ScaTraField()->Solve();
-
-  // set structure-based scalar transport values
-  return SetScatraSolution(scatra_->ScaTraField()->Phinp());
-}
-
-
-/*----------------------------------------------------------------------*
- | Calculate traction at the adhesion surface               rauch 12/16 |
- *----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC_ADHESIONDYNAMICS::EvaluateBondTraction()
-{
-
-  Teuchos::ParameterList params;
-
-  // add action for bond traction evaluation
-  params.set<std::string>("action","calc_cell_nodal_bond_traction");
-
-  // least squares system-matrix
-  Teuchos::RCP<LINALG::SparseOperator> leastsquares_matrix =
-      Teuchos::rcp(new LINALG::SparseMatrix(*conditiondofrowmap_,18,false,true));
-  // least squares right-hand side
-  Teuchos::RCP<Epetra_Vector> leastsquares_rhs = LINALG::CreateVector(*conditiondofrowmap_,true);
-
-  // evaluate least squares traction
-  StructureField()->Discretization()->EvaluateCondition(params,
-      leastsquares_matrix,
-      Teuchos::null,
-      leastsquares_rhs,
-      Teuchos::null,
-      Teuchos::null,
-      "CellFocalAdhesion",
-      -1);
-
-  /////////////////////////////////////////////////////
-  // Calc nodal traction from gauss point traction
-  // with least squares method, i.e.:
-  // Minimize sum|N * d - d_gp|²
-  // And solve the resulting system of equations for
-  // the leastsquares_traction x :
-  // b = A * x --> x = A^1 * b
-  // with
-  // b = leastsquares_rhs from Evaluate Condition
-  // A = leastsquares_matrix from Evaluate Condition
-  ///////////////////////////////////////////////////
-  // SOLVE LEAST SQUARES SYSTEM
-  // solver setup
-  Teuchos::ParameterList param_solve = DRT::Problem::Instance()->UMFPACKSolverParams();
-  bool refactor = true;
-  bool reset = true;
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(param_solve, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
-  StructureField()->Discretization()->ComputeNullSpaceIfNecessary(solver->Params());
-
-  // complete matrix
-  leastsquares_matrix->Complete();
-
-  // solve for least squares optimal nodal values
-  solver->Solve(leastsquares_matrix->EpetraOperator(), surface_traction_, leastsquares_rhs, refactor, reset);
-
-  surface_traction_col_ -> Scale(0.0);
-
-  // export to column map
-  LINALG::Export(*surface_traction_,*surface_traction_col_);
-}
-
-
 /*------------------------------------------------------------------------*
  | update the current states in every iteration               rauch 05/16 |
  *------------------------------------------------------------------------*/
@@ -249,7 +170,7 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::IterUpdateStates()
   SSI::SSI_Part2WC::IterUpdateStates();
 
   // clear surface traction vector
-  surface_traction_->PutScalar(0.0);
+  surface_traction_->Scale(0.0);
 
   return;
 }
@@ -264,7 +185,63 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::UpdateAndOutput()
   SSI::SSI_Part2WC::UpdateAndOutput();
 
   // clear surface traction vector
-  surface_traction_->PutScalar(0.0);
+  surface_traction_->Scale(0.0);
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------*
+ | Pre operator for second field operator                     rauch 06/17 |
+ *------------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_ADHESIONDYNAMICS::PreOperator2()
+{
+
+  if(Itnum()!=1 and use_old_structure_)
+  {
+    // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
+    // we only get norm of the evaluation of the structure problem
+    structure_->PreparePartitionStep();
+  }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------*
+ | Post operator for first field operator                     rauch 06/17 |
+ *------------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_ADHESIONDYNAMICS::PostOperator1()
+{
+  // print norm of bound linker protein concentration
+  // todo generalize dofs of species
+  const int adh_node_size =
+      DRT::Problem::Instance()->GetDis("cell")->GetCondition("CellFocalAdhesion")->Nodes()->size();
+  double root = 0.0;
+  double* vals = scatra_->ScaTraField()->Phinp()->Values();
+  for(int ii=0;ii<adh_node_size;++ii)
+    root += pow(vals[ii*2+0],2.0);
+  double conc_bound = sqrt(root);
+  std::cout<<"L2-Norm of Bound Species Concentration: "<<std::setprecision(11)<<conc_bound<<std::endl;
+  std::cout<<"---------------"<<std::endl;
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------*
+ | Post operator for second field operator                    rauch 06/17 |
+ *------------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_ADHESIONDYNAMICS::PostOperator2()
+{
+  // print norm of cell adhesion force vector
+  // first we have to get the adhesion vector. this can't be done in Setup(), as the pointer is not yet set there...
+  if(cell_adhesion_forces_==Teuchos::null)
+    cell_adhesion_forces_ = exchange_manager_->GetPointerCellAdhesionForce();
+  double fadhnorm =-1234.0;
+  cell_adhesion_forces_->Norm2(&fadhnorm);
+  std::cout<<std::endl<<"L2-Norm of Cell Adhesion Force Vector: "<<std::setprecision(11)<<fadhnorm<<std::endl;
+  std::cout<<"---------------"<<std::endl;
 
   return;
 }

@@ -2,7 +2,7 @@
 /*!
 \file str_model_evaluator_multiphysics.H
 
-\brief Generic class for all model evaluators.
+\brief Base class for modelevaluators in partitioned algorithms.
 
 \maintainer Andreas Rauch
 
@@ -85,6 +85,15 @@ namespace MODELEVALUATOR {
     //! setup class variables
     virtual void Setup();
 
+    //! set the active model type wrapped in this class.
+    //! only active model type is evaluated.
+    //! e.g. mt_fsi in case fluid-structure interaction is to be evaluated
+    void SetActiveModelType(enum STR::MODELEVALUATOR::MultiphysicType mtype)
+    {active_mt_=mtype;};
+
+    void CheckActiveModelType() const
+    {if(active_mt_ == mt_none) dserror("No active model evaluator set for Multiphysics");};
+
     //! @name Functions which are derived from the base generic class
     //! @{
     //! [derived]
@@ -92,24 +101,20 @@ namespace MODELEVALUATOR {
     { return INPAR::STR::model_partitioned_coupling; }
 
     //! reset class variables (without jacobian) [derived]
-    virtual void Reset(const Epetra_Vector& x)
-    {return;};
+    virtual void Reset(const Epetra_Vector& x);
 
     //! [derived]
-    virtual bool EvaluateForce()
-    {return true;};
+    virtual bool EvaluateForce();
 
     //! [derived]
-    virtual bool EvaluateStiff()
-    {return true;};
+    virtual bool EvaluateStiff();
 
     //! [derived] not needed in partitioned scheme
-    virtual bool EvaluateForceStiff()
-    {return true;};
+    virtual bool EvaluateForceStiff();
 
     //! derived
     virtual void PostEvaluate()
-    { /* currently unused */ };
+    {return;};
 
     //! derived
     virtual bool AssembleForce(Epetra_Vector& f,
@@ -118,8 +123,7 @@ namespace MODELEVALUATOR {
     //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
     virtual bool AssembleJacobian(
         LINALG::SparseOperator& jac,
-        const double & timefac_np) const
-    {return true;};
+        const double & timefac_np) const;
 
     //! [derived]
     virtual void WriteRestart(
@@ -154,8 +158,7 @@ namespace MODELEVALUATOR {
     { return; };
 
     //! [derived]
-    virtual void UpdateStepState(const double& timefac_n)
-    {return;};
+    virtual void UpdateStepState(const double& timefac_n);
 
     //! [derived]
     virtual void UpdateStepElement()
@@ -170,7 +173,8 @@ namespace MODELEVALUATOR {
     {return;};
 
     //! [derived]
-    virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+    virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const
+    {return;};
 
     //! derived
     virtual void ResetStepState()

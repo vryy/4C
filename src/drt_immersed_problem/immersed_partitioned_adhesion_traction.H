@@ -98,11 +98,22 @@ protected:
   /// initial guess
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
 
-  /// calculate force from cell adhesion node inside ecm element to ecm element nodes
-  void CalcAdhesionForce();
+  /*!
+  \brief Reset the set of coupled cell-ECM nodes.
+
+   Resets the coupled ECM fixpoints depending on whether there are bound surface proteins or not.
+
+  \param none
+  \note none
+  \warning none
+  \return void
+  */
+  void ResetAdhesionFixpoints();
+
 
   /// print information on the current solution step
   virtual void PrintStepInfo();
+
 
   /*!
   \brief Distribute force from cell adhesion node inside ecm element to ecm element nodes.
@@ -168,14 +179,19 @@ private:
   /// pointer to global problem
   DRT::Problem* globalproblem_;
 
-  /// immersed coupling variable
-  bool displacementcoupling_;
+  /// adhesion coupling by Dirichlet or penalty
+  bool dirichletcoupling_;
+
+  /// concentration defining reset concentration for adhesion sites
+  double reset_conc_;
 
   //! @name Various global vectors
   //@{
-  Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_; //!< current nodal adhesion forces on ecm
-  Teuchos::RCP<Epetra_Vector> cell_adhesion_disp_;  //!< current nodal cell adhesion displacements
-  Teuchos::RCP<Epetra_Vector> Freact_cell_;         //!< current nodal reaction force because of dirichlet at adhesions
+  Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_;       //!< current nodal adhesion forces on ecm
+  Teuchos::RCP<Epetra_Vector> cell_adhesion_forces_;      //!< current nodal adhesion forces on cell
+  Teuchos::RCP<Epetra_Vector> cell_adhesion_disp_;        //!< current nodal cell adhesion displacements
+  Teuchos::RCP<Epetra_Vector> cell_adhesion_nod_coords_;  //!< current nodal cell adhesion coordinates
+  Teuchos::RCP<Epetra_Vector> Freact_cell_;               //!< current nodal reaction force because of dirichlet at adhesions
   //@}
 
   //! @name adhesion dynamics related map to save parameter space coords. of adhesion nodes
@@ -189,6 +205,7 @@ private:
   Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;
   Teuchos::RCP<DRT::Discretization> backgroundstructuredis_;
   Teuchos::RCP<DRT::Discretization> immerseddis_;
+  Teuchos::RCP<DRT::Discretization> immersedscatradis_;
   //@}
 
   //! @name Manager for data exchange between fields
@@ -242,8 +259,9 @@ private:
   Teuchos::RCP<SSI::SSI_Part2WC> cellscatra_subproblem_;
 
   /// reinitialize the transfer vectors
-  void ReinitTransferVectors(){  ecm_adhesion_forces_->Scale(0.0);
-                                 cell_adhesion_disp_ ->Scale(0.0);
+  void ReinitTransferVectors(){  ecm_adhesion_forces_->   Scale(0.0);
+                                 if(dirichletcoupling_)
+                                   cell_adhesion_disp_ -> Scale(0.0);
                                  return;
                               };
 

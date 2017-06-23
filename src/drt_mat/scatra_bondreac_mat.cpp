@@ -26,18 +26,33 @@ MAT::PAR::ScatraBondReacMat::ScatraBondReacMat(
     Teuchos::RCP<MAT::PAR::Material> matdata
 )
 : ScatraReactionMat(matdata),
+  // get thermal energy
+  kBT_(DRT::Problem::Instance()->CellMigrationParams().get<double>("kBT")),
+  penalty_(DRT::Problem::Instance()->CellMigrationParams().sublist("ADHESION MODULE").get<double>("PENALTY")),
   bondtype_(SetBondType(matdata)),
-  bindinglength_((matdata->GetDouble("GAMMA")))
+  slipcoeff_(matdata->GetDouble("SLIPCOEFF")),
+  catchcoeff1_(matdata->GetDouble("CATCHCOEFF1")),
+  catchcoeff2_(matdata->GetDouble("CATCHCOEFF2")),
+  catchcoeff3_(matdata->GetDouble("CATCHCOEFF3")),
+  catchcoeff4_(matdata->GetDouble("CATCHCOEFF4")),
+  r_bind_(matdata->GetDouble("BINDING_RADIUS")),
+  fiber_diameter_(DRT::Problem::Instance()->CellMigrationParams().sublist("ADHESION MODULE").get<double>("ECM_FIBER_DIAMETER"))
 {
+
   //Some checks for more safety
   if (bondtype_ == bondtype_none)
     dserror("The bond type '%s' is not a valid type. Valid bond types are 'no_bond', 'slip_bond' and 'integrin_binding' and 'integrin_rupture'.",(matdata->Get<std::string >("TYPE"))->c_str() );
 
-  if (bondtype_ == bondtype_slip_bond  &&  bindinglength_==-1.0)
+  // check if slipcoeff is defined
+  if (bondtype_ == bondtype_slip_bond  and  slipcoeff_==-1.0)
     dserror("No binding length defined for the slip bond!");
 
+  // check if catchcoeffs are defined
+  if (bondtype_ == bondtype_catch_bond  and (catchcoeff1_==-123.0 or catchcoeff2_==-123.0 or catchcoeff3_==-123.0 or catchcoeff4_==-123.0))
+      dserror("No binding length defined for the slip bond!");
+
   // only one species is allowed to disassemble
-  if ( bondtype_ != bondtype_no_bond and bondtype_ != bondtype_integrin_binding )
+  if ( bondtype_ == bondtype_slip_bond or bondtype_ == bondtype_catch_bond)
   {
     int counter = 0;
     for (int ii=0; ii < numscal_; ii++)
@@ -46,18 +61,28 @@ MAT::PAR::ScatraBondReacMat::ScatraBondReacMat(
         counter += 1;
     }
     if (counter != 1)
-      dserror("reac_coup_power_multiplicative must contain at least one positive entry in the ROLE list");
+      dserror("More than one species is disassembled! Fix input file!");
   }
 
-  // the reaction coefficient has to be set to 1.0 for bondtype_integrin_rupture,
-  // as the real reaction coefficient is set in MAT::ScatraBondReacMat::AdjustReacCoeff.
-  if ( bondtype_ == bondtype_integrin_rupture and  reaccoeff_!=1.0)
-    dserror("The reaction coefficient has to be set to 1.0 for bond types integrin_binding and integrin_rupture!");
+  // the reaction coefficient has to be set to 1.0 for bondtype_integrin_rupture
+  // as the reaction coefficient is calculated using the catchbondcoeffs.
+  if ( bondtype_ == bondtype_catch_bond and  reaccoeff_!=1.0)
+    dserror("The reaction coefficient has to be set to 1.0 for bond type bondtype_catch_bond!");
+
+  // check if binding radius is defined
+  if (bondtype_ == bondtype_integrin_binding  and  r_bind_==-1.0)
+    dserror("No binding radius defined for cell-ECM interaction!");
+
+  // check if ECM fiber diameter is defined
+  if (bondtype_ == bondtype_integrin_binding  and  fiber_diameter_==-1.0)
+    dserror("No fiber diameter defined for cell-ECM interaction!");
 
   return;
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::ScatraBondReacMat::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ScatraBondReacMat(this));
@@ -67,6 +92,8 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraBondReacMat::CreateMaterial()
 MAT::ScatraBondReacMatType MAT::ScatraBondReacMatType::instance_;
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 MAT::PAR::bond_type MAT::PAR::ScatraBondReacMat::SetBondType( Teuchos::RCP<MAT::PAR::Material> matdata )
 {
   if ( *(matdata->Get<std::string >("BONDTYPE")) == "no_bond" )
@@ -77,13 +104,13 @@ MAT::PAR::bond_type MAT::PAR::ScatraBondReacMat::SetBondType( Teuchos::RCP<MAT::
   {
     return bondtype_slip_bond;
   }
+  else if ( *(matdata->Get<std::string >("BONDTYPE")) == "catch_bond")
+  {
+    return bondtype_catch_bond;
+  }
   else if ( *(matdata->Get<std::string >("BONDTYPE")) == "integrin_binding")
   {
     return bondtype_integrin_binding;
-  }
-  else if ( *(matdata->Get<std::string >("BONDTYPE")) == "integrin_rupture")
-  {
-    return bondtype_integrin_rupture;
   }
   else if ( *(matdata->Get<std::string >("BONDTYPE")) == "no_bondtype")
   {
@@ -95,6 +122,9 @@ MAT::PAR::bond_type MAT::PAR::ScatraBondReacMat::SetBondType( Teuchos::RCP<MAT::
   }
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::ParObject* MAT::ScatraBondReacMatType::Create( const std::vector<char> & data )
 {
   MAT::ScatraBondReacMat* scatra_bond_mat = new MAT::ScatraBondReacMat();
@@ -172,17 +202,17 @@ void MAT::ScatraBondReacMat::Unpack(const std::vector<char>& data)
  | calculate advanced reaction terms                        Thon 08/16 |
 /----------------------------------------------------------------------*/
 double MAT::ScatraBondReacMat::CalcReaBodyForceTerm(
-    const int k,                         //!< current scalar id
-    const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
-    const std::vector<double>& phin,     //!< scalar values at t_n
-    const double traction,               //!< traction at curren gp
-    const double porosity,               //!< porosity of background element
-    const double scale_phi,              //!< scaling factor for scalar values (used for reference concentrations)
-    const double* gpcoord                //!< Gauss-point coordinates
+    const int k,                                                     //!< current scalar id
+    const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
+    const std::vector<double>& phin,                                 //!< scalar values at t_n
+    const double violation,                                          //!< traction at curren gp
+    const double porosity,                                           //!< porosity of background element
+    const double scale_phi,                                          //!< scaling factor for scalar values (used for reference concentrations)
+    const double* gpcoord                                            //!< Gauss-point coordinates
     ) const
 {
-  // set time and space coordinates
-  std::vector<std::pair<std::string,double> > constants;
+  // add time and space coordinates
+  std::vector<std::pair<std::string,double> >constants;
   constants.push_back(std::pair<std::string,double>("t",0.0));
   constants.push_back(std::pair<std::string,double>("x",gpcoord[0]));
   constants.push_back(std::pair<std::string,double>("y",gpcoord[1]));
@@ -190,13 +220,14 @@ double MAT::ScatraBondReacMat::CalcReaBodyForceTerm(
 
   if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(constants))>1.0e-14)
   {
-    double ReacCoeffFactor = AdjustReacCoeff(traction,porosity,phin,k);
+    double ReacCoeffFactor = CalcReacCoeffFactor(violation,porosity,phin);
 
-    return CalcReaBodyForceTerm(k,phinp,ReacCoeffFactor*ReacCoeff(constants)*Stoich()->at(k),scale_phi);// scalar at integration point np
+    return  CalcReaBodyForceTerm(k,phinp,ReacCoeffFactor*ReacCoeff(constants)*Stoich()->at(k),scale_phi);// scalar at integration point np
   }
   else
     return 0.0;
 }
+
 
 /*----------------------------------------------------------------------/
  | calculate advanced reaction term derivatives             Thon 08/16 |
@@ -206,7 +237,7 @@ void MAT::ScatraBondReacMat::CalcReaBodyForceDerivMatrix(
     std::vector<double>& derivs,         //!< vector with derivatives (to be filled)
     const std::vector<double>& phinp,    //!< scalar values at t_(n+1)
     const std::vector<double>& phin,     //!< scalar values at t_n
-    const double traction,               //!< traction at curren gp
+    const double violation,              //!< penalty violation at current gp
     const double porosity,               //!< porosity of background element
     const double scale_phi,              //!< scaling factor for scalar values (used for reference concentrations)
     const double* gpcoord                //!< Gauss-point coordinates
@@ -221,9 +252,11 @@ void MAT::ScatraBondReacMat::CalcReaBodyForceDerivMatrix(
 
   if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(constants))>1.0e-14)
   {
-    double ReacCoeffFactor = AdjustReacCoeff(traction,porosity,phin,k);
+    // get reaction coefficient derivative force scale factor
+    double ReacCoeffDerivFactor = CalcReacCoeffFactor(violation,porosity,phinp);
 
-    CalcReaBodyForceDeriv(k,derivs,phinp,constants,ReacCoeffFactor*ReacCoeff(constants)*Stoich()->at(k),scale_phi);
+    CalcReaBodyForceDeriv(k,derivs,phinp,constants,ReacCoeffDerivFactor*ReacCoeff(constants)*Stoich()->at(k),scale_phi);
+
   }
 
   return;
@@ -238,7 +271,7 @@ double MAT::ScatraBondReacMat::CalcReaBodyForceTerm(
     const std::vector<double>& phinp,                                //!< scalar values at t_(n+1)
     const std::vector<double>& phin,                                 //!< scalar values at t_n
     const std::vector<std::pair<std::string,double> >& constants,    //!< vector containing values which are independent of the scalars
-    const double traction,                                           //!< traction at curren gp
+    const double violation,                                          //!< traction at curren gp
     const double porosity,                                           //!< porosity of background element
     const double scale_phi,                                          //!< scaling factor for scalar values (used for reference concentrations)
     const double* gpcoord                                            //!< Gauss-point coordinates
@@ -251,15 +284,16 @@ double MAT::ScatraBondReacMat::CalcReaBodyForceTerm(
   constants_mod.push_back(std::pair<std::string,double>("y",gpcoord[1]));
   constants_mod.push_back(std::pair<std::string,double>("z",gpcoord[2]));
 
-  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(constants_mod))>1.0e-14)
+  if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(constants))>1.0e-14)
   {
-    double ReacCoeffFactor = AdjustReacCoeff(traction,porosity,phin,k);
+    double ReacCoeffFactor = CalcReacCoeffFactor(violation,porosity,phin);
 
     return  CalcReaBodyForceTerm(k,phinp,constants_mod,ReacCoeffFactor*ReacCoeff(constants_mod)*Stoich()->at(k),scale_phi);// scalar at integration point np
   }
   else
     return 0.0;
 }
+
 
 /*----------------------------------------------------------------------/
  | calculate advanced reaction term derivatives             Thon 08/16 |
@@ -284,17 +318,13 @@ void MAT::ScatraBondReacMat::CalcReaBodyForceDerivMatrix(
 
   if ( Stoich()->at(k)!=0 and fabs(ReacCoeff(constants_mod))>1.0e-14)
   {
-    double ReacCoeffFactor = AdjustReacCoeff(traction,porosity,phin,k);
+    double ReacCoeffFactor = CalcReacCoeffFactor(traction,porosity,phin);
 
     CalcReaBodyForceDeriv(k,derivs,phinp,constants_mod,ReacCoeffFactor*ReacCoeff(constants_mod)*Stoich()->at(k),scale_phi);
   }
 
   return;
 }
-
-
-
-
 
 
 /*----------------------------------------------------------------------*
@@ -333,56 +363,74 @@ double MAT::ScatraBondReacMat::CalcReaBodyForceTerm(
 }
 
 
-
-
-
-
-
 /*----------------------------------------------------------------------/
  | calculate the force/porosity dependency of the reaction coefficient  |
 /----------------------------------------------------------------------*/
-double MAT::ScatraBondReacMat::AdjustReacCoeff(
-    const double traction,              //!< traction at current gauss point
+double MAT::ScatraBondReacMat::CalcReacCoeffFactor(
+    const double violation,             //!< penalty violation at current gauss point
     const double porosity,              //!< porosity of background element
-    const std::vector<double>& phin,    //!< scalar values at t_(n)
-    const int k                         //!< current scalar id
+    const std::vector<double>& phinp    //!< scalar values at t_(n+1)
 ) const
 {
-
   double fac= 1.0;                      //!< reaction rate scaling factor
 
-  switch( BondType() )
+  // thermal energy
+  const double kBT = params_->kBT_;
+
+  // adhesion penalty parameter
+  double penalty = params_->penalty_;
+
+  switch(params_->bondtype_)
   {
   case MAT::PAR::bondtype_no_bond:
   {
-    // in the case of bondtype_no_bond, the reaction coefficient is constant
-    // --> do nothing here!
+    // --> no force-dependency --> do nothing here!
     break;
   }
   case MAT::PAR::bondtype_slip_bond:
   {
-    // slip bond model according to Bell 1978
+    // slip bond model according to Bell, 1978
     // k_0: reaction rate of unstressed bond
     // gamma: binding length of specific bond
-    // f: traction of single bond
+    // f: traction of single bond (penalty * violation)
     // kBT: thermal energy
     // reaction rate k = k_0 * exp(gamma * f / kBT)
 
-    // define constants
-    const double therm_nrg= 4.04530016e-3;      //!< thermal energy at 293K
+    // get slip bond coefficient
+    double gamma = params_->slipcoeff_;
 
-    // get traction of one single bond
-    double single_bond_trac = CalcSingleBondTrac(traction,phin);
+    // limit exponent to avoid errors in exponential function
+    if(gamma*penalty*violation/kBT>45)
+      penalty = 45*kBT/gamma/violation;
 
-    // restrict single_bond_trac to values <= 1.0e100/BindingLength/therm_nrg
-    // (Otherwise, the calculated vector norm for the concentration is going to be infinity!)
-    if (BindingLength()*single_bond_trac/therm_nrg>20)
-    {
-      single_bond_trac = 20.0*therm_nrg/BindingLength();
-    }
+    // scaling factor according to Bell, 1978
+    fac = exp(gamma*penalty*violation/kBT);
 
-    // scaling factor according to Bell 1978
-    fac = exp(BindingLength()*single_bond_trac/therm_nrg);
+    break;
+  }
+  case MAT::PAR::bondtype_catch_bond:
+  {
+    // model according to Bell model (see slip bond), but with two factors:
+    // one slip pathway and one catch pathway. Small forces therefore prolong
+    // bond lifetime, whereas high forces reduce it.
+    // k_c: reaction rate constant of catch pathway
+    // x_c: binding length of catch pathway
+    // k_s: reaction rate constant of slip pathway
+    // x_s: binding length of slip pathway
+    // f: single bond traction (f = F/conc = penalty * violation)
+    // reaction rate k = k_c * exp(x_c * f / kBT) + k_s * exp(x_s * f / kBT)
+
+    // get catch bond constants
+    const double coeff_a =  params_->catchcoeff1_;
+    const double coeff_b =  params_->catchcoeff2_;
+    const double coeff_c =  params_->catchcoeff3_;
+    const double coeff_d =  params_->catchcoeff4_;
+
+    // limit exponent to avoid errors in exponential function
+    if(penalty*violation>400)
+      penalty = 400/violation;
+
+    fac = coeff_a*exp(coeff_b*penalty*violation/kBT) + coeff_c*exp(coeff_d*penalty*violation/kBT);
 
     break;
   }
@@ -393,106 +441,22 @@ double MAT::ScatraBondReacMat::AdjustReacCoeff(
     // actual reaction takes place, characterized by the reaction rate k.
     // Here, the first step is modeled via a probability rho of the ligand and receptor
     // to be close to each other, which mainly depends on the porosity.
-    // The actual reaction rate is therefore scaled with this probability.
-
-
+    // The actual reaction rate is scaled with this probability.
 
     // define constants
-    const double l_bind = 23.0e-3;             //!< binding radius in micrometers
-    const double fiber_diameter = 25.0e-3;     //!< effective ECM fiber diameter in micrometers
-    const double coll_spec_vol = 1.89e9;      //!< effective specific volume of collagen in micrometers3/mg
-    const double coll_mol_mass = 300.0;       //!< collagen molar mass in mg/micromoles
-    const double avogadro = 6.022141e17;      //!< Avogadro's number in micromoles-1
+    const double l_bind =  params_->r_bind_;                  //!< integrin binding radius in microns
+    const double fiber_diameter = params_->fiber_diameter_;   //!< effective ECM fiber diameter in microns
 
-    // the probability is modeled according to the mikado model of Metzner et al. 2011
-    double rho = 1.0 - exp( -4.0 * pow(l_bind/fiber_diameter,2) * (1.0-porosity) );
-
-    // calculate the collagen concentration based on the porosity
-    // (multiplied by avogadro's number to get number of species from moles)
-    double coll_conc = (1.0-porosity)/(coll_spec_vol * coll_mol_mass) * avogadro;
-
-    // reaction rate has to be multiplied by both the probability of the reactants
-    // to be close and the unbound ligand concentration
-    fac = rho * coll_conc;
-
-    break;
-  }
-  case MAT::PAR::bondtype_integrin_rupture:
-  {
-    // scaling factor curve fitted to data from Kong et al. 2007
-    // model according to Bell model (see slip bond), but with two factors:
-    // one slip pathway and one catch pathway. Small forces therefore prolong
-    // bond lifetime, whereas high forces reduce it.
-    // k_c: reaction rate constant of catch pathway
-    // x_c: binding length of catch pathway
-    // k_s: reaction rate constant of slip pathway
-    // x_s: binding length of slip pathway
-    // f: single bond traction
-    // reaction rate k = k_c * exp(x_c * f / kBT) + k_s * exp(x_s * f / kBT)
-
-    // define constants
-    const double coeff_a =  1.082719e+01;
-    const double coeff_b = -1.719530e-01;
-    const double coeff_c =  1.825432e-03;
-    const double coeff_d =  1.262438e-01;
-
-    // get the traction of one single bond
-    double single_bond_trac = CalcSingleBondTrac(traction,phin);
-
-    // restrict single_bond_trac to values <= 1.0e100/x_s/therm_nrg
-    // (Otherwise, the calculated vector norm for the concentration is going to be infinity in some cases!)
-    if (single_bond_trac>200)
-      single_bond_trac = 200;
-
-    fac = coeff_a*exp(coeff_b*single_bond_trac) + coeff_c*exp(coeff_d*single_bond_trac);
+    // the probability is modeled according to the mikado model of Metzner et al., 2011
+    fac = 1.0 - exp( -4.0 * (l_bind*l_bind)/(fiber_diameter*fiber_diameter) * (1.0-porosity) );
 
     break;
   }
   default:
   {
-    dserror("Reaction rate dependency for selected bond type not implemented!");
+    dserror("Force dependency for selected bond type not implemented!");
   }
-  }
+  }// switch(params_->bondtype_)
 
   return fac;
-}
-
-
-/*----------------------------------------------------------------------/
- | calculate the single bond traction                                   |
-/----------------------------------------------------------------------*/
-double MAT::ScatraBondReacMat::CalcSingleBondTrac(
-    const double traction,              //!< traction at current gauss point
-    const std::vector<double>& phin     //!< scalar values at t_(n)
-) const
-{
-  // get scalar of species that is disassembled ( Stoich()==-1 )
-  int bond_scalar=-1234;
-
-  for (int ii=0; ii < NumScal(); ii++)
-  {
-    if (Stoich()->at(ii) == -1)
-    {
-      // check if there is only one species disassembled
-      if (bond_scalar != -1234)
-        dserror("More than one species is disassembled in integrin rupture reaction. Check definition!");
-
-      bond_scalar = ii;
-      break;
-    }
-  }
-  if ( bond_scalar==-1234 )
-    dserror("Couldn't get scalar of disassembled bond. Check your reaction definition!");
-
-  // traction experienced by one single bond = traction/concentration
-  // the concentration of t_(n) has to be used, otherwise the process is self-energizing
-  // check whether phin > 0 (too high forces otherwise!)
-  double single_bond_trac=0;
-
-  if ( phin.at(bond_scalar) > 1e-10 )
-  {
-    single_bond_trac = traction/phin.at(bond_scalar);
-  }
-
-  return single_bond_trac;
 }

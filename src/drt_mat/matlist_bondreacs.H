@@ -133,7 +133,7 @@ public:
       const int k,
       const std::vector<double>& phinp,
       const std::vector<double>& phin,
-      const double traction,
+      const double violation,
       const double porosity,
       const double* gpcoord,      //!< Gauss-point coordinates
       const double scale = 1.0
@@ -145,7 +145,7 @@ public:
       std::vector<double>& derivs,
       const std::vector<double>& phinp,
       const std::vector<double>& phin,
-      const double traction,
+      const double violation,
       const double porosity,
       const double* gpcoord,      //!< Gauss-point coordinates
       const double scale = 1.0
@@ -157,7 +157,7 @@ public:
       const std::vector<double>& phinp,
       const std::vector<double>& phin,
       const std::vector<std::pair<std::string,double> >& constants,
-      const double traction,
+      const double violation,
       const double porosity,
       const double* gpcoord,      //!< Gauss-point coordinates
       const double scale = 1.0
@@ -170,7 +170,7 @@ public:
       const std::vector<double>& phinp,
       const std::vector<double>& phin,
       const std::vector<std::pair<std::string,double> >& constants,
-      const double traction,
+      const double violation,
       const double porosity,
       const double* gpcoord,      //!< Gauss-point coordinates
       const double scale = 1.0
@@ -184,9 +184,10 @@ private:
 
   /// my material parameters
   MAT::PAR::MatListBondReacs* paramsbondreac_;
-};
 
-}
+}; // class MatListBondReacs
+
+} // namespace MAT
 
 
 #endif /* MATLIST_BONDREACS_H_ */

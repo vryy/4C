@@ -185,7 +185,7 @@ double MAT::MatListBondReacs::CalcReaBodyForceTerm(
     const int k,
     const std::vector<double>& phinp,
     const std::vector<double>& phin,
-    const double traction,
+    const double violation,
     const double porosity,
     const double* gpcoord,
     const double scale
@@ -198,7 +198,7 @@ double MAT::MatListBondReacs::CalcReaBodyForceTerm(
     const int reacid = ReacID(condnum);
     const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
 
-    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, phin, traction, porosity, scale, gpcoord);
+    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, phin, violation, porosity, scale, gpcoord);
   }
 
   return bodyforcetermK;
@@ -213,7 +213,7 @@ void MAT::MatListBondReacs::CalcReaBodyForceDerivMatrix(
     std::vector<double>& derivs,
     const std::vector<double>& phinp,
     const std::vector<double>& phin,
-    const double traction,
+    const double violation,
     const double porosity,
     const double* gpcoord,
     const double scale
@@ -225,7 +225,7 @@ void MAT::MatListBondReacs::CalcReaBodyForceDerivMatrix(
     const int reacid = ReacID(condnum);
     const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
 
-    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, phin, traction, porosity, scale, gpcoord);
+    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, phin, violation, porosity, scale, gpcoord);
   }
 
   return;
@@ -240,7 +240,7 @@ double MAT::MatListBondReacs::CalcReaBodyForceTerm(
     const std::vector<double>& phinp,
     const std::vector<double>& phin,
     const std::vector<std::pair<std::string,double> >& constants,
-    const double traction,
+    const double violation,
     const double porosity,
     const double* gpcoord,
     const double scale
@@ -253,7 +253,7 @@ double MAT::MatListBondReacs::CalcReaBodyForceTerm(
     const int reacid = ReacID(condnum);
     const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
 
-    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, phin, traction, porosity, scale, gpcoord);
+    bodyforcetermK += reacmat->CalcReaBodyForceTerm(k, phinp, phin, violation, porosity, scale, gpcoord);
   }
 
   return bodyforcetermK;
@@ -269,7 +269,7 @@ void MAT::MatListBondReacs::CalcReaBodyForceDerivMatrix(
     const std::vector<double>& phinp,
     const std::vector<double>& phin,
     const std::vector<std::pair<std::string,double> >& constants,
-    const double traction,
+    const double violation,
     const double porosity,
     const double* gpcoord,
     const double scale
@@ -281,7 +281,7 @@ void MAT::MatListBondReacs::CalcReaBodyForceDerivMatrix(
     const int reacid = ReacID(condnum);
     const Teuchos::RCP<const MAT::ScatraBondReacMat> reacmat = Teuchos::rcp_static_cast<const MAT::ScatraBondReacMat>(MaterialById(reacid));
 
-    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, phin, traction, porosity, scale, gpcoord);
+    reacmat->CalcReaBodyForceDerivMatrix(k, derivs, phinp, phin, violation, porosity, scale, gpcoord);
   }
 
   return;

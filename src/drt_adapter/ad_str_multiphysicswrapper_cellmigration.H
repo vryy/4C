@@ -16,6 +16,7 @@
 
 
 #include "ad_str_wrapper.H"
+#include "../drt_immersed_problem/str_model_evaluator_multiphysics_cellmigration.H"
 
 namespace ADAPTER
 {
@@ -70,6 +71,16 @@ class FSIStructureWrapperImmersed;
     \author rauch  */
     virtual void Setup();
 
+    /// set pointer to cellmigration model evaluator
+    void SetModelEvaluatorPtr(Teuchos::RCP< ::STR::MODELEVALUATOR::CellMigration> me)
+    {
+      cellmigration_model_evaluator_=me;
+      return;
+    }
+
+    /// access the cellmigration model evaluator
+    Teuchos::RCP< ::STR::MODELEVALUATOR::CellMigration> CellmigrationModelEvaluator(){return cellmigration_model_evaluator_;};
+
   private:
 
     //! @name Field wrappers
@@ -82,7 +93,9 @@ class FSIStructureWrapperImmersed;
     Teuchos::RCP< ::ADAPTER::StructAleWrapper>            struct_ale_structure_wrapper_;
     //@}
 
-  private:
+
+    /// the cellmigration model evaluator object
+    Teuchos::RCP< ::STR::MODELEVALUATOR::CellMigration> cellmigration_model_evaluator_;
 
     //! flag indicating if class is setup
     bool issetup_;

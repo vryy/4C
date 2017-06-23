@@ -2648,7 +2648,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_cur_nodal_normals")       act = StructuralSurface::calc_cur_nodal_normals;
   else if (action=="calc_ref_nodal_normals")       act = StructuralSurface::calc_ref_nodal_normals;
   else if (action=="calc_cell_growth")             act = StructuralSurface::calc_cell_growth;
-  else if (action=="calc_cell_nodal_bond_traction")act = StructuralSurface::calc_cell_nodal_bond_traction;
+  else if (action=="calc_cell_adhesion_forces")    act = StructuralSurface::calc_cell_adhesion_forces;
   else
     dserror("Unknown type of action for StructuralSurface");
 
@@ -3055,285 +3055,153 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
 
   }
   break;
-  case calc_cell_nodal_bond_traction:
+  case calc_cell_adhesion_forces:
   {
-    //////////////////////////////////////////////////////////////
-    // get parameters, pointers, and perform safety checks
-    /////////////////////////////////////////////////////////////
+    const int numnodes = this->NumNode();                             //< number of nodes of FaceElement
+    const int numdofpernode = this->NumDofPerNode(*this->Nodes()[0]); //< numdof of FaceElemet nodes
 
-    const int numNode = this->NumNode();   //< number of nodes of FaceElement
-    const int numdofpernode = this->NumDofPerNode(*this->Nodes()[0]);//< numdof of FaceElemet nodes
+    // get penalty parameter
+    const double penalty_param = params.get<double>("penalty_parameter");
+
+    // get number of bound species
+    const int num_bound_species = params.get<int>("NUM_BOUNDSPECIES");
+    if(num_bound_species<0)
+      dserror("No valid number of bound species given in .dat file!");
+
+    // get adhesion fixpoints
+    Teuchos::RCP<const Epetra_Vector> adhesion_fixpoints = discretization.GetState(0,"adh_fixpoint_coords");
+    if(adhesion_fixpoints==Teuchos::null)
+      dserror("Cannot get adhesion_fixpoints vector");
 
     // get displacement state from structure discretization
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
     if (dispnp == Teuchos::null)
       dserror("Cannot get displacement vector of structure");
 
+    // get scatra state from structure discretization
+    // the state is called temperature in the SSI algo for some odd reason (you don't wanna know, pal)
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(1,"temperature");
+    if (phinp == Teuchos::null)
+      dserror("Cannot get phinp vector of structure");
 
-    //////////////////////////////////////////////////////////////
-    // prerequisites for evaluation at integration point
-    /////////////////////////////////////////////////////////////
+    // get displacements
+    DRT::Element::LocationArray la(2);
+    this->LocationVector(discretization,la,false);
+    // extract local values of the global vectors
+    std::vector<double> myvalues_displ(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,myvalues_displ,la[0].lm_);
+    double adhesion_nd_coord[numnodes*numdofpernode];
+    for(int node=0;node<numnodes;++node)
+      for(int dof=0; dof<numdofpernode;++dof)
+        adhesion_nd_coord[node*numdofpernode+dof] = myvalues_displ[node*numdofpernode+dof] + (this->Nodes())[node]->X()[dof];
 
-    // get parent element (Hex8)
-    DRT::Element* parentele = this->ParentElement();
-    static const int numnodeparentele = parentele->NumNode();
-    if (numnodeparentele != 8)
-      dserror("only tested for hex8 elements.\n"
-          "check this implementation before using other element types !");
+    // get fixpoints
+    std::vector<double> myvalues_fixpoint_coords(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*adhesion_fixpoints,myvalues_fixpoint_coords,la[0].lm_);
+    double adhesion_fixpoint_nd_coord[numnodes*numdofpernode];
+    for(int node=0;node<numnodes;++node)
+      for(int dof=0; dof<numdofpernode;++dof)
+        adhesion_fixpoint_nd_coord[node*numdofpernode+dof]=myvalues_fixpoint_coords[node*numdofpernode+dof];
 
-    // define const int for LINALG::Matrix
-    const int numdim = 3;
-    const int numnod = 8;
+    // get concentrations
+    // extract local values of the global vectors
+    std::vector<double> myvalues_conc(la[1].lm_.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myvalues_conc,la[1].lm_);
+    const int numscatradofpernode = la[1].lm_.size()/numnodes;
+    double adhesioneleconc_nd[numnodes*numscatradofpernode];
+    for(int node=0;node<numnodes;++node)
+      for(int dof=0; dof<numscatradofpernode;++dof)
+        adhesioneleconc_nd[node*numscatradofpernode+dof]=myvalues_conc[node*numscatradofpernode+dof];
 
-    DRT::Element::LocationArray  parentele_la(discretization.NumDofSets());
-    parentele->LocationVector(discretization, parentele_la, false);
-
-    LINALG::Matrix<3,8> myeledispnp;
-    // extract local values of displacement field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,8> >(*dispnp, myeledispnp, parentele_la[0].lm_);
-
-    // get displacement field of face element
-    DRT::Node** elenodes = this->Nodes();
-    LINALG::Matrix<3,4> eledispnp;
-    for (int i=0; i<numNode; i++)
+    // get concentration of bound surface receptors
+    double adhesion_bound_conc_nd[numnodes];
+    for(int node=0; node<numnodes; ++node)
     {
-      int elenodeID = elenodes[i]->Id();          // node ID face element node
-      for (int k=0; k<numnodeparentele; k++)
-      {
-        int nodeID = parentele->Nodes()[k]->Id(); // node ID parent element node
-        if (elenodeID == nodeID)
-        {
-          eledispnp(0,i) = myeledispnp(0,k);
-          eledispnp(1,i) = myeledispnp(1,k);
-          eledispnp(2,i) = myeledispnp(2,k);
-        }
-      }
+      adhesion_bound_conc_nd[node]=0.0;
+
+      for(int species=0; species<num_bound_species; ++species)
+        adhesion_bound_conc_nd[node] += adhesioneleconc_nd[node*numscatradofpernode+species];
     }
 
     // integration points and weights for boundary (!) gp --> quad4
     const DRT::UTILS::IntPointsAndWeights<2> intpoints (DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
 
-    // get coordinates of gauss point with respect to local parent coordinate system
-    LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad, 3);
-    LINALG::Matrix<3,1> pxsi(true);
-    LINALG::Matrix<3,3> derivtrafo(true);
+    // allocate vector for shape functions and matrix for derivatives
+    LINALG::SerialDenseVector  funct(numnodes);
+    LINALG::SerialDenseMatrix  deriv(2,numnodes);
 
-    DRT::UTILS::BoundaryGPToParentGP<3>(pqxg,
-        derivtrafo,
-        intpoints,
-        parentele->Shape(),
-        DRT::Element::quad4,
-        this->FaceMasterNumber());
+    LINALG::SerialDenseMatrix xc(numnodes,numdofpernode);
+    SpatialConfiguration(xc,myvalues_displ);
 
-    // define reference configuration of coordinates of face element
-    LINALG::Matrix<3,4> xrefe;
-    LINALG::Matrix<3,4> xcurre;
-
-    // element geometry of face element
-    for (int i=0; i<numNode; i++)
-    {
-      const double* elex = elenodes[i]->X();
-      xrefe(0,i) = elex[0];
-      xrefe(1,i) = elex[1];
-      xrefe(2,i) = elex[2];
-
-      xcurre(0,i) = xrefe(0,i) + eledispnp(0,i);
-      xcurre(1,i) = xrefe(1,i) + eledispnp(1,i);
-      xcurre(2,i) = xrefe(2,i) + eledispnp(2,i);
-    }
-    // define current and reference configuration coordinates of parent element
-    LINALG::Matrix<3,8> xref;  //reference configuration coordinates
-    LINALG::Matrix<3,8> xcurr;  //current configuration coordinates
-    DRT::Node** nodes = parentele->Nodes();
-
-    // element geometry of parent element
-    for (int i=0; i<numnodeparentele; i++)
-    {
-      const double* x = nodes[i]->X();
-      for ( int k=0; k<3; k++)
-      {
-        xref(k,i) = x[k];
-        xcurr(k,i) = xref(k,i) + myeledispnp(k,i);
-      }
-    }
-
-    Teuchos::RCP<MAT::So3Material> mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(parentele->Material(0));
-    if (mat == Teuchos::null)
-      dserror("cast to MAT::So3Material failed");
 
     /////////////////////////////////////////////////////////////////////////////////
     // loop over all integration points
-    /////////////////////////////////////////////////////////////////////////////////
-    for (int iquad = 0; iquad<intpoints.IP().nquad; iquad++)
+    ////////////////////////////////////////////////////////////////////////////////
+    for (int iquad = 0; iquad<intpoints.IP().nquad; ++iquad)
     {
-      // coordinates of the current integration point in parent coordinate system --> HEX8
-      for(int idim=0; idim<3; idim++)
-      {
-        pxsi(idim) = pqxg (iquad, idim); //< pxsi := coordinates of current gauss point for parent element (HEX8) [3x1]
-      }
+
       // coordinates of current integration point in face element coordinate system --> QUAD4
       LINALG::Matrix<2,1> xsi(true);
       xsi(0) = intpoints.IP().qxg[iquad][0];
       xsi(1) = intpoints.IP().qxg[iquad][1];
 
-      // derivatives of parent element shape functions in parent element coordinates system
-      LINALG::Matrix<numdim,numnod> pderiv_loc(true);
-      DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(pxsi, pderiv_loc);
+      // get shape functions and derivatives in the plane of the element
+      DRT::UTILS::shape_function_2D(funct,xsi(0),xsi(1),Shape());
+      DRT::UTILS::shape_function_2D_deriv1(deriv,xsi(0),xsi(1),Shape());
 
-      // shapefunct and derivates of face element in face element coordinate system
-      LINALG::Matrix<4, 1> shapefunct;
-      DRT::UTILS::shape_function<DRT::Element::quad4>(xsi,shapefunct);
-      LINALG::Matrix<2,4> deriv(true);
-      DRT::UTILS::shape_function_deriv1<DRT::Element::quad4>(xsi, deriv);
+      // returns fac := gp_weight * jacobian determinant
+      double detA;
+      std::vector<double> normal(3);
+      SurfaceIntegration(detA,normal,xc,deriv);
+      const double fac = intpoints.IP().qwgt[iquad] * detA;
 
-      /////////////////////////////////////////////////////////////////////////////////
-      // calc surface traction
-      /////////////////////////////////////////////////////////////////////////////////
+      // calc penalty violation at gp
+      double adhesion_penalty_distance_gp[numdofpernode];
+      for(int dof=0;dof<numdofpernode;++dof)
+        adhesion_penalty_distance_gp[dof] = 0;
 
-      /*get inverse of Jacobian-Determinant
-       *             [x_r  y_r    z_r]^-1
-       *     J^-1 =  [x_s  y_s    z_s]
-       *             [x_t  y_t    z_t]
-       */
-      // invJ = N_rst*xref^T
-      LINALG::Matrix<numdim,numdim> invJ;
-      invJ.MultiplyNT(pderiv_loc, xref);
-      invJ.Invert();
+      for (int node=0; node<numnodes; ++node)
+        for(int dof=0;dof<numdofpernode;++dof)
+          adhesion_penalty_distance_gp[dof] += funct[node]  * (adhesion_nd_coord[node*numdofpernode+dof]-adhesion_fixpoint_nd_coord[node*numdofpernode+dof]);
 
-      // compute derivatives N_XYZ at gp with respect to material coordinates by N_XYZ = invJ*N_rst
-      LINALG::Matrix<numdim, numnod> N_XYZ;
-      N_XYZ.Multiply(invJ, pderiv_loc);
+      // calc gp concentrations from nodal concentrations
+      double adhesion_conc_gp = 0.0;
+      for (int node=0; node<numnodes; ++node)
+        adhesion_conc_gp += funct[node] * adhesion_bound_conc_nd[node];
 
-      //material deformation gradient F = dxcurr/dxref = xcurr^T*N_XYZ^T
-      LINALG::Matrix<numdim, numdim> defgrd(false);
-      defgrd.MultiplyNT(xcurr, N_XYZ);
+      if(adhesion_conc_gp<1e-12)
+        adhesion_conc_gp = 0.0;
 
-      // right Cauchy-Green tensor C = F^{T} \cdot F
-      LINALG::Matrix<numdim, numdim> cauchygreen;
-      cauchygreen.MultiplyTN(defgrd, defgrd);
+      // calc adhesion force
+      // this is a continuous formulation of the discontinuous adhesion condition
+      std::vector<double> f_adh(numdofpernode);
+      for(int dof=0; dof<numdofpernode; ++dof)
+        f_adh[dof] = penalty_param * adhesion_conc_gp * adhesion_penalty_distance_gp[dof];
 
-      // Green-Lagrange strain glstrain = [E11, E22, E33, 2*E12, 2*E23, 2*E31]
-      Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-      LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(), true);
-      // E=1/2*(C-I)
-      glstrain(0) = 0.5 * (cauchygreen(0,0) -1.0);
-      glstrain(1) = 0.5 * (cauchygreen(1,1) -1.0);
-      glstrain(2) = 0.5 * (cauchygreen(2,2) -1.0);
-      glstrain(3) = cauchygreen(0,1);
-      glstrain(4) = cauchygreen(1,2);
-      glstrain(5) = cauchygreen(2,0);
+      // calc linearization
+      std::vector<double> f_adh_lin(numdofpernode);
+      for(int dof=0; dof<numdofpernode; ++dof)
+        f_adh_lin[dof] = penalty_param * adhesion_conc_gp;
 
-      // evaluate material to get surface stress
-      LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-      LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-      mat->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, parentele->Id());
+      // get eval_type (assemble vector, matrix, or both?)
+      std::string eval_type = params.get<std::string>("eval_type");
 
-      // stress = PK2
-      // convert PK2 to cauchy stress
-      LINALG::Matrix<3,3> cauchystress(true);
-      LINALG::Matrix<3,3> PK2stress;
-      PK2stress(0,0) = stress(0);
-      PK2stress(0,1) = stress(3);
-      PK2stress(0,2) = stress(5);
-      PK2stress(1,0) = PK2stress(0,1);
-      PK2stress(1,1) = stress(1);
-      PK2stress(1,2) = stress(4);
-      PK2stress(2,0) = PK2stress(0,2);
-      PK2stress(2,1) = PK2stress(1,2);
-      PK2stress(2,2) = stress(2);
+      // assemble elevector
+      if(eval_type!="EvaluateStiff")
+        for(int node=0;node<numnodes;++node)
+          for(int dof=0;dof<numdofpernode;++dof)
+            elevector1[node*numdofpernode+dof] += f_adh[dof] * funct[node] * fac;
 
-      // \sigma = \frac{1}{J} * F \cdot PK2 \cdot F^{T}
-      double detF = defgrd.Determinant();
-      LINALG::Matrix<3,3> temp(true);
-      temp.MultiplyNN(defgrd, PK2stress);
-      cauchystress.MultiplyNT(temp, defgrd);
-      cauchystress.Scale(1.0/detF);
+      // assemble elematrix
+      if(eval_type!="EvaluateForce")
+        for(int dof=0;dof<numdofpernode;++dof)
+          for(int node1=0; node1<numnodes; ++node1)
+            for(int node2=0; node2<numnodes; ++node2)
+              (elematrix1)(node1*numdofpernode+dof,node2*numdofpernode+dof) +=
+                  f_adh_lin[dof] * funct[node1]*funct[node2] * fac;
 
-      // calc unitnormal N in current configuration
-      LINALG::Matrix<3,1> unitnormal;
-      LINALG::Matrix<3,1> normal(3);
-      // note that the length of this normal is the area dA
-      // compute dXYZ / drs
-      LINALG::Matrix<2,3> dxyzdrs;
-      dxyzdrs.MultiplyNT(deriv,xcurre); // to calculate unitnormal in current config. argument must be xcurr
+    } // gp loop
 
-      normal(0) = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
-      normal(1) = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
-      normal(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
-
-      for(int i=0;i<3;++i)
-        unitnormal(i,0)=normal(i);
-      const double norm2 = unitnormal.Norm2();
-      unitnormal.Scale(1.0/norm2);
-
-      // calculation of traction at gp t = \sigma \cdot n
-      LINALG::Matrix<3,1> traction(true);
-      traction.Multiply(cauchystress,unitnormal);
-
-      // calculation of the drag
-      LINALG::Matrix<1,1> drag(true);
-      drag.MultiplyTN(traction,unitnormal);
-
-      // evaluate the final bond drag:
-      // Only forces pointing outward the cell are relevant, as these are the forces
-      // causing bond rupture. This is tested by checking if the drag (traction x normal)
-      // is positive (small negative values are accepted as well to include forces that are
-      // merely parallel to the cell surface). If the drag is negative, the bond drag is
-      // set to zero, so the reaction coefficient is the coefficient of an unstrained bond.
-      double bond_drag=0.0;
-      if (drag(0,0)>-1e-10)
-      {
-        bond_drag = traction.Norm2();
-      }
-
-      ////////////////////////////////////////////////////////////////////////////////////////
-      //  LEAST SQUARES METHOD
-      //
-      //  Calc the least squares error minimized nodal traction from the
-      //  gauss point traction, evaluated in this action.
-      //  This is done, as later we need the nodal traction vector instead of the
-      //  nodal force.
-      //
-      //  Here we assemble the least squares system matrix and the right-hand side.
-      //  The system is solved globally in ssi_partitioned_2wc_adhesiondynamics.
-      //
-      ///////////////////////////////////////////////////////////////////////////////////////
-
-      // sum over all gp: traction at gp * shapefunction
-      // loop over element nodes
-      for (int node=0; node<numNode; node++)
-      {
-        // store only the bond_drag
-        elevector1[node*numdofpernode] += bond_drag*shapefunct(node);
-        elevector1[node*numdofpernode+1] += 0;
-        elevector1[node*numdofpernode+2] += 0;
-
-        // fill elematrix
-        // sum over all gp: combination of shapefunctions
-        for (int i=0; i<numNode; i++)
-        {
-          int dofrow1 = i*numdofpernode+0;
-          int dofrow2 = i*numdofpernode+1;
-          int dofrow3 = i*numdofpernode+2;
-
-          int dofcol1 = node*numdofpernode +0;
-          int dofcol2 = node*numdofpernode +1;
-          int dofcol3 = node*numdofpernode +2;
-
-          elematrix1[dofrow1][dofcol1] += shapefunct(node)*shapefunct(i);
-          elematrix1[dofrow1][dofcol2] += 0.0;
-          elematrix1[dofrow1][dofcol3] += 0.0;
-
-          elematrix1[dofrow2][dofcol1] += 0.0;
-          elematrix1[dofrow2][dofcol2] += shapefunct(node)*shapefunct(i);
-          elematrix1[dofrow2][dofcol3] += 0.0;
-
-          elematrix1[dofrow3][dofcol1] += 0.0;
-          elematrix1[dofrow3][dofcol2] += 0.0;
-          elematrix1[dofrow3][dofcol3] += shapefunct(node)*shapefunct(i);
-        }// loop i
-      }// loop node
-    }
   }
   break;
   default:

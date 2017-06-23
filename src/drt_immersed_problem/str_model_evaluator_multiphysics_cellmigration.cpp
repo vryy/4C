@@ -17,7 +17,7 @@
 #include "str_model_evaluator_multiphysics_cellmigration.H"
 
 #include "../drt_fsi/fsi_str_model_evaluator_partitioned.H"
-#include "../drt_ssi/ssi_str_model_evaluator_partitioned.H"
+#include "str_model_evaluator_partitioned_ssi_adhesiondynamics.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -43,7 +43,7 @@ void STR::MODELEVALUATOR::CellMigration::Init(
   Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI>
       fsi_model_evaluator = Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedFSI());
   Teuchos::RCP<STR::MODELEVALUATOR::PartitionedSSI>
-      ssi_model_evaluator = Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSI());
+      ssi_model_evaluator = Teuchos::rcp(new STR::MODELEVALUATOR::PartitionedSSIAdhesionDynamics());
 
   // initialize model evaluators of sub modules
   fsi_model_evaluator -> Init(eval_data_ptr,gstate_ptr,gio_ptr,int_ptr,timint_ptr,dof_offset);

@@ -321,7 +321,7 @@ IMMERSED::ImmersedPartitioned::CreateLinearSystem(Teuchos::ParameterList& nlPara
 
   // ==================================================================
   // decide on Jacobian and preconditioner
-  // We migh want to use no preconditioner at all. Some kind of
+  // We might want to use no preconditioner at all. Some kind of
   // Jacobian has to be provided, otherwise the linear system uses
   // plain finite differences.
 
@@ -424,7 +424,7 @@ IMMERSED::ImmersedPartitioned::CreateStatusTest(Teuchos::ParameterList& nlParams
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitioned::PrepareOutput()
 {
-  dserror("not implemented in this class. my be overriden by derived class.");
+  dserror("not implemented in this class. my be overridden by derived class.");
 }
 
 
@@ -432,7 +432,7 @@ void IMMERSED::ImmersedPartitioned::PrepareOutput()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitioned::CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
-  dserror("not implemented in this class. my be overriden by derived class.");
+  dserror("not implemented in this class. my be overridden by derived class.");
 }
 
 
