@@ -293,7 +293,7 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetAdhesionViolati
     DRT::UTILS::ExtractMyValues(*dispnp,myvalues_displ,cell_lm);
 
     // calculate adhesion penalty violation
-    double adhesion_violation_nd[numNode*cell_numdofpernode] = {};
+    std::vector<double> adhesion_violation_nd(numNode*cell_numdofpernode);
 
     for(int node=0;node<numNode;++node)
       for(int dof=0; dof<cell_numdofpernode;++dof)
@@ -313,7 +313,7 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetAdhesionViolati
     DRT::UTILS::shape_function<DRT::Element::quad4>(xsi,shapefunct);
 
     // get violation at gp from nodal violation
-    double adhesion_violation_gp[cell_numdofpernode] = {};
+    std::vector<double> adhesion_violation_gp(cell_numdofpernode);
 
     for (int node=0; node<numNode; ++node)
       for (int dof=0; dof<cell_numdofpernode; ++dof)
