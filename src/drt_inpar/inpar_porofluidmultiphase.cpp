@@ -90,6 +90,14 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   BoolParameter("OUTPUT_POROSITY",
       "yes","Flag if output of porosity should be calculated",&porofluidmultiphasedyn);
 
+  // Biot stabilization
+  BoolParameter("STAB_BIOT","No","Flag to (de)activate BIOT stabilization.",&porofluidmultiphasedyn);
+  DoubleParameter(
+    "STAB_BIOT_SCALING",
+    1.0,
+    "Scaling factor for stabilization parameter for biot stabilization of porous flow.",
+    &porofluidmultiphasedyn);
+
   setStringToIntegralParameter<int>("NORM_PRE","Abs",
     "type of norm for temperature convergence check",
     tuple<std::string>(

@@ -488,9 +488,10 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   saturationderiv_->Multiply('N','N',1.0,deriv,*pressurederiv_,0.0);
 
   // calculate 2nd derivatives of saturation w.r.t. pressure
+  // TODO: this should work for pressure und diffpressure DOFs, however not for
+  //       saturation DOFs
   Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > dummyderiv =
       Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numphases,Epetra_SerialDenseMatrix(numphases,numphases)));
-  deriv.Scale(0.0);
   multiphasemat.EvaluateSecondDerivOfSaturationWrtPressure(*dummyderiv,pressure);
   for (int i = 0; i < numphases; i++)
   {
@@ -927,6 +928,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
 
   // resize vectors to numphase
   constrelpermeability_.resize(numphases,false);
+  constdynviscosity_.resize(numphases,false);
   relpermeabilities_.resize(numphases,false);
   derrelpermeabilities_.resize(numphases,false);
 
@@ -944,6 +946,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::Setup(
     const MAT::FluidPoroSinglePhase& singlephasemat =
         POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,iphase);
     constrelpermeability_[iphase]=singlephasemat.HasConstantRelPermeability();
+    constdynviscosity_[iphase]=singlephasemat.HasConstantViscosity();
   }
 
   return;
@@ -1069,6 +1072,17 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::RelPermeabil
   return derrelpermeabilities_[phasenum];
 }
 /*---------------------------------------------------------------------------*
+ * check for constant dynamic viscosity                     kremheller 06/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+bool DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::HasConstantDynViscosity(
+    int phasenum) const
+{
+  CheckIsSetup();
+
+  return constdynviscosity_[phasenum];
+}
+/*---------------------------------------------------------------------------*
  * get dynamic viscosity of phase 'phasenum'                kremheller 02/17 |
 *---------------------------------------------------------------------------*/
 template<int nsd>
@@ -1096,6 +1110,36 @@ double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosity
       POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
 
   return singlephasemat.Viscosity(abspressgrad);
+}
+
+/*---------------------------------------------------------------------------*
+ * get derivative of dynamic viscosity of phase 'phasenum'  kremheller 06/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDeriv(
+    int phasenum,
+    double abspressgrad) const
+{
+  phasemanager_->CheckIsEvaluated();
+
+  return DynViscosityDeriv(*Element()->Material(),phasenum,abspressgrad);
+}
+
+/*---------------------------------------------------------------------------*
+ * get derivative of dynamic viscosity of phase 'phasenum'  kremheller 06/17 |
+*---------------------------------------------------------------------------*/
+template<int nsd>
+double DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDeriv(
+    const MAT::Material& material,
+    int phasenum,
+    double abspressgrad) const
+{
+
+  //get the single phase material
+  const MAT::FluidPoroSinglePhase& singlephasemat =
+      POROFLUIDMULTIPHASE::ELEUTILS::GetSinglePhaseMatFromMaterial(material,phasenum);
+
+  return singlephasemat.ViscosityDeriv(abspressgrad);
 }
 
 ///*----------------------------------------------------------------------*

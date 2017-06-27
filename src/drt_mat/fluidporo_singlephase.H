@@ -220,16 +220,22 @@ namespace MAT
         return params_->relpermeabilitylaw_->GetDerivOfRelPermeabilityWrtSaturation(saturation);
       }
 
+      // check for constant viscosity
+      bool HasConstantViscosity() const
+      {
+        return params_->viscositylaw_->HasConstantViscosity();
+      }
+
       /// return viscosity
       double Viscosity(const double abspressgrad) const
       {
         return params_->viscositylaw_->GetViscosity(abspressgrad);
       }
 
-      // check for constant viscosity
-      bool HasConstantViscosity() const
+      /// return derivative of viscosity w.r.t. to absolute value of pressure gradient
+      double ViscosityDeriv(const double abspressgrad) const
       {
-        return params_->viscositylaw_->HasConstantViscosity();
+        return params_->viscositylaw_->GetDerivOfViscosityWrtAbsPressGrad(abspressgrad);
       }
 
       /// return inverse bulk modulus (compressibility)

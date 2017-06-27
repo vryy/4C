@@ -77,6 +77,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
         is_genalpha_(false),
         is_stationary_(false),
         is_ale_(false),
+        stab_biot_(false),
         nds_disp_(-1),
         nds_vel_(-1),
         nds_solidpressure_(-1),
@@ -165,6 +166,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::SetGeneralParameters(
 
   // set ale case
   is_ale_ = parameters.get<bool>("isale",false);
+  // set biot stabilization
+  stab_biot_ = parameters.get<bool>("stab_biot",false);
 
   // set number of dof set related to mesh displacements
   nds_disp_ = parameters.get<int>("nds_disp",false);

@@ -167,10 +167,10 @@ double MAT::PAR::FluidPoroPhaseDofDiffPressure::EvaluateSaturation(
 double MAT::PAR::FluidPoroPhaseDofDiffPressure::EvaluateDerivOfSaturationWrtPressure(
     int phasenum,
     int doftoderive,
-    const std::vector<double>& state) const
+    const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive,state);
+  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive,pressure);
 }
 
 /*--------------------------------------------------------------------------*
@@ -272,10 +272,10 @@ double MAT::PAR::FluidPoroPhaseDofPressure::EvaluateSaturation(
 double MAT::PAR::FluidPoroPhaseDofPressure::EvaluateDerivOfSaturationWrtPressure(
     int phasenum,
     int doftoderive,
-    const std::vector<double>& state) const
+    const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive,state);
+  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive,pressure);
 }
 
 /*--------------------------------------------------------------------------*
@@ -398,10 +398,10 @@ double MAT::PAR::FluidPoroPhaseDofSaturation::EvaluateSaturation(
 double MAT::PAR::FluidPoroPhaseDofSaturation::EvaluateDerivOfSaturationWrtPressure(
     int phasenum,
     int doftoderive,
-    const std::vector<double>& state) const
+    const std::vector<double>& pressure) const
 {
   // call the phase law
-  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive,state);
+  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive,pressure);
 }
 
 /*--------------------------------------------------------------------------*
@@ -423,10 +423,10 @@ double MAT::PAR::FluidPoroPhaseDofSaturation::EvaluateSecondDerivOfSaturationWrt
 double MAT::PAR::FluidPoroPhaseDofSaturation::EvaluateDerivOfDofWrtPressure(
     int phasenum,
     int doftoderive,
-    const std::vector<double>& state) const
+    const std::vector<double>& pressure) const
 {
   // call the phase law for the derivative
-  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive,state);
+  return phaselaw_->EvaluateDerivOfSaturationWrtPressure(doftoderive,pressure);
 }
 
 /************************************************************************/

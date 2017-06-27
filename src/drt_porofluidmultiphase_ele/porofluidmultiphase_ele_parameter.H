@@ -59,6 +59,7 @@ namespace DRT
         double TimeFacRhsTau() const {return timefacrhstau_;};
         double AlphaF() const {return alphaF_;};
         bool IsAle() const {return is_ale_;};
+        bool BiotStab() const {return stab_biot_;};
         int NdsDisp() const {return nds_disp_;};
         int NdsVel() const {return nds_vel_;};
         int NdsSolidPressure() const {return nds_solidpressure_;};
@@ -98,6 +99,8 @@ namespace DRT
         bool is_stationary_;
         //! ALE flag
         bool is_ale_;
+        //! flag for biot stabilization
+        bool stab_biot_;
         //! number of dof set related to mesh displacements
         int nds_disp_;
         //! number of dof set related to mesh velocities

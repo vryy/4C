@@ -109,3 +109,20 @@ double MAT::PAR::FluidPoroViscosityLawCellAdherence::GetViscosity(
     return visc0_/((1.0-xi_)*(1.0-psi_/abspressgrad)+xi_);
 
 }
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::PAR::FluidPoroViscosityLawCellAdherence::GetDerivOfViscosityWrtAbsPressGrad(
+    const double abspressgrad
+    ) const
+{
+
+  // visc = visc0 / ((1 - xi)*(1 - psi / | grad(pressure) |) * heaviside(1 - psi / | grad(pressure) |) + xi)
+  // case heaviside = 1:
+  // dvisc / d|grad(pressure) = visc0 * (xi - 1.0) * psi / ((xi - 1.0) * psi + | grad(pressure) |) ^ 2
+
+  if(abspressgrad <= psi_) // case heaviside(1 - psi / | grad(pressure) |) = 0
+    return 0.0;
+  else // case heaviside(1 - psi / | grad(pressure) |) = 1
+    return visc0_*(xi_-1.0)*psi_/((xi_-1.0)*psi_+abspressgrad)/((xi_-1.0)*psi_+abspressgrad);
+
+}

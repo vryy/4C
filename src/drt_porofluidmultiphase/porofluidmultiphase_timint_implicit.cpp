@@ -60,6 +60,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(
   isale_    (false),
   skipinitder_(DRT::INPUT::IntegralValue<int>(poroparams_,"SKIPINITDER")),
   output_porosity_(DRT::INPUT::IntegralValue<int>(poroparams_,"OUTPUT_POROSITY")),
+  stab_biot_(DRT::INPUT::IntegralValue<int>(poroparams_,"STAB_BIOT")),
 //  outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
   outmean_  (false),
   calcerr_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::CalcError>(poroparams_,"CALCERROR")),
@@ -69,6 +70,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(
   fdcheck_(DRT::INPUT::IntegralValue<INPAR::POROFLUIDMULTIPHASE::FDCheck>(poroparams_,"FDCHECK")),
   fdcheckeps_(poroparams_.get<double>("FDCHECKEPS")),
   fdchecktol_(poroparams_.get<double>("FDCHECKTOL")),
+  stab_biot_scaling_(poroparams_.get<double>("STAB_BIOT_SCALING")),
   time_   (0.0),
   maxtime_  (params_.get<double>("MAXTIME")),
   step_   (0),
@@ -265,6 +267,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetElementGeneralParameters() const
   eleparams.set<int>("nds_vel",nds_vel_);
   eleparams.set<int>("nds_solidpressure",nds_solidpressure_);
   eleparams.set<int>("nds_scalar",nds_scatra_);
+  eleparams.set<bool>("stab_biot",stab_biot_);
 
   eleparams.set<bool>("using generalized-alpha time integration",false);
   eleparams.set<bool>("using stationary formulation",false);

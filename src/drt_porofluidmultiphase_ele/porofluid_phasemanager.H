@@ -228,10 +228,16 @@ class PhaseManagerInterface
     //! get derivative of relative permeability of phase
     virtual double RelPermeabilityDeriv(int phasenum) const=0;
 
+    //! check for constant dynamic viscosity
+    virtual bool HasConstantDynViscosity(int phasenum) const=0;
     //! get dynamic viscosity of phase
     virtual double DynViscosity(int phasenum, double abspressgrad) const=0;
     //! get dynamic viscosity of phase
     virtual double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const=0;
+    //! get derivative of dynamic viscosity of phase
+    virtual double DynViscosityDeriv(int phasenum, double abspressgrad) const=0;
+    //! get derivative dynamic viscosity of phase
+    virtual double DynViscosityDeriv(const MAT::Material& material, int phasenum, double abspressgrad) const=0;
 
     //@}
 
@@ -415,12 +421,21 @@ class PhaseManagerCore : public PhaseManagerInterface
     virtual double RelPermeabilityDeriv(int phasenum) const
         {dserror("Derivativ of relativ permeability not available for this phase manager!");return 0.0;};
 
+    //! check for constant dynamic viscosity
+    virtual bool HasConstantDynViscosity(int phasenum) const
+        {dserror("Check for Constant Dynamic Viscosity not available for this phase manager!");return false;};
     //! get relative diffusivity of phase
     virtual double DynViscosity(int phasenum, double abspressgrad) const
         {dserror("Dynamic Viscosity not available for this phase manager!");return 0.0;};
     //! get dynamic viscosity of phase
     virtual double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const
         {dserror("Dynamic Viscosity not available for this phase manager!");return 0.0;};
+    //! get derivative of dynamic viscosity of phase
+    virtual double DynViscosityDeriv(int phasenum, double abspressgrad) const
+        {dserror("Derivative of dynamic Viscosity not available for this phase manager!");return 0.0;};
+    //! get derivative dynamic viscosity of phase
+    double DynViscosityDeriv(const MAT::Material& material, int phasenum, double abspressgrad) const
+        {dserror("Derivative of dynamic Viscosity not available for this phase manager!");return 0.0;};
 
   private:
     //! number of phases
@@ -630,12 +645,21 @@ class PhaseManagerDecorator : public PhaseManagerInterface
     virtual double RelPermeabilityDeriv(int phasenum) const
     {return phasemanager_->RelPermeabilityDeriv(phasenum);};
 
+    //! check for constant dynamic visosity
+    virtual bool HasConstantDynViscosity(int phasenum) const
+    {return phasemanager_->HasConstantDynViscosity(phasenum);};
     //! get dynamic viscosity of phase
     virtual double DynViscosity(int phasenum, double abspressgrad) const
     {return phasemanager_->DynViscosity(phasenum, abspressgrad);};
     //! get dynamic viscosity of phase
     virtual double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const
     {return phasemanager_->DynViscosity(material, phasenum, abspressgrad);};
+    //! get derivative of dynamic viscosity of phase
+    virtual double DynViscosityDeriv(int phasenum, double abspressgrad) const
+    {return phasemanager_->DynViscosityDeriv(phasenum, abspressgrad);};
+    //! get derivative dynamic viscosity of phase
+    double DynViscosityDeriv(const MAT::Material& material, int phasenum, double abspressgrad) const
+    {return phasemanager_->DynViscosityDeriv(material, phasenum, abspressgrad);};
 
     //@}
 
@@ -897,10 +921,16 @@ class PhaseManagerDiffusion : public PhaseManagerDecorator
     //! get derivative of relative permeability of phase
     double RelPermeabilityDeriv(int phasenum) const;
 
+    //! check for constant dynamic viscosity
+    bool HasConstantDynViscosity(int phasenum) const;
     //! get dynamic viscosity of phase
     double DynViscosity(int phasenum, double abspressgrad) const;
     //! get dynamic viscosity of phase
     double DynViscosity(const MAT::Material& material, int phasenum, double abspressgrad) const;
+    //! get derivative of dynamic viscosity of phase
+    double DynViscosityDeriv(int phasenum, double abspressgrad) const;
+    //! get derivative dynamic viscosity of phase
+    double DynViscosityDeriv(const MAT::Material& material, int phasenum, double abspressgrad) const;
 
     //@}
 
@@ -913,6 +943,8 @@ class PhaseManagerDiffusion : public PhaseManagerDecorator
     std::vector<double> derrelpermeabilities_;
     //! check for constant relative permeabilities of phase
     std::vector<bool> constrelpermeability_;
+    //! check for constant dynamic viscosities of phase
+    std::vector<bool> constdynviscosity_;
 
   };
 

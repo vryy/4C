@@ -442,6 +442,9 @@ protected:
   //! flag if porosity should be output
   bool output_porosity_;
 
+  //! flag for biot stabilization
+  bool stab_biot_;
+
   /*--- query and output ---------------------------------------------------*/
 
   //! flag for printing out mean values of pressures
@@ -467,6 +470,9 @@ protected:
 
   //! relative tolerance for finite difference check
   const double fdchecktol_;
+
+  //! scaling factor for biot stabilization
+  double stab_biot_scaling_;
 
   /*========================================================================*/
   //! @name Time, time-step, and iteration variables

@@ -40,6 +40,9 @@ namespace PAR
     // get viscosity
     virtual double GetViscosity(const double abspressgrad) const=0;
 
+    // get derivative of viscosity wrt |grad(p)|
+    virtual double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const=0;
+
     // check for constant viscosity
     bool HasConstantViscosity() const
     {return constviscosity_;}
@@ -74,6 +77,10 @@ namespace PAR
      double GetViscosity(const double abspressgrad) const
      {return viscosity_;};
 
+     // get derivative of viscosity wrt |grad(p)|  --> 0 in case of const. viscosity
+     double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const
+     {return 0.0;};
+
    private:
     /// @name material parameters
     //@{
@@ -106,6 +113,9 @@ namespace PAR
 
       // get viscosity
       double GetViscosity(const double abspressgrad) const;
+
+      // get derivative of viscosity wrt |grad(p)|
+      virtual double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const;
 
     private:
      /// @name material parameters

@@ -77,6 +77,13 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd,nen>::CreateEvaluator(
         tmpevaluator = Teuchos::rcp(new EvaluatorSatDivVel<nsd, nen>(assembler,curphase));
         evaluator_phase->AddEvaluator(tmpevaluator);
       }
+      // add evaluator for Biot stabilization
+      if (para.BiotStab())
+      {
+        assembler = Teuchos::rcp(new AssembleStandard(curphase,inittimederiv));
+        tmpevaluator = Teuchos::rcp(new EvaluatorBiotStab<nsd, nen>(assembler,curphase));
+        evaluator_phase->AddEvaluator(tmpevaluator);
+      }
 
       // add evaluator for the diffusive term (\nabla w, K \nabla p)
       // the diffusive term is also assembled into the last phase
@@ -137,6 +144,13 @@ DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorInterface<nsd,nen>::CreateEvaluator(
       {
         assembler = Teuchos::rcp(new AssembleStandard(curphase, false));
         tmpevaluator = Teuchos::rcp(new EvaluatorDivVel<nsd, nen>(assembler,curphase));
+        evaluator_lastphase->AddEvaluator(tmpevaluator);
+      }
+      // add evaluator for Biot stabilization
+      if (para.BiotStab())
+      {
+        assembler = Teuchos::rcp(new AssembleStandard(curphase,inittimederiv));
+        tmpevaluator = Teuchos::rcp(new EvaluatorBiotStab<nsd, nen>(assembler,curphase));
         evaluator_lastphase->AddEvaluator(tmpevaluator);
       }
 
@@ -723,6 +737,79 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorSatDivVel<nsd,nen>::EvaluateMat
 /*----------------------------------------------------------------------*
  * **********************************************************************
  *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | evaluate element matrix                             kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,nen>::EvaluateMatrixAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac,
+    bool                                                        inittimederiv
+  )
+{
+
+  dserror("Biot stabilization is still missing");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate RHS vector                                 kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,nen>::EvaluateVectorAndAssemble(
+    std::vector<Epetra_SerialDenseVector*>&                     elevec,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      rhsfac,
+    double                                                      fac,
+    bool                                                        inittimederiv
+    )
+{
+  dserror("Biot stabilization is still missing");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate off-diagonal coupling matrix with structure kremheller 06/17 |
+ *----------------------------------------------------------------------*/
+template <int nsd, int nen>
+void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorBiotStab<nsd,nen>::EvaluateMatrixODAndAssemble(
+    std::vector<Epetra_SerialDenseMatrix*>&                     elemat,
+    const LINALG::Matrix<nen,1>&                                funct,
+    const LINALG::Matrix<nsd,nen>&                              deriv,
+    const LINALG::Matrix<nsd,nen>&                              derxy,
+    const LINALG::Matrix<nsd,nsd>&                              xjm,
+    int                                                         curphase,
+    int                                                         phasetoadd,
+    int                                                         numdofpernode,
+    const POROFLUIDMANAGER::PhaseManagerInterface&              phasemanager,
+    const POROFLUIDMANAGER::VariableManagerInterface<nsd,nen>&  variablemanager,
+    double                                                      timefacfac,
+    double                                                      fac,
+    double                                                      det
+  )
+{
+  dserror("Biot stabilization is still missing");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ * **********************************************************************
+ *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | evaluate element matrix                                   vuong 09/16 |
@@ -810,6 +897,46 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixAn
           {
             const int fui = ui*numdofpernode+idof;
             mymat(fvi,fui) += timefacfac*funct(ui)*laplawf*phasemanager.SaturationDeriv(curphase,idof);
+          }
+        }
+      }
+    }
+    //----------------------------------------------------------------
+    // linearization of dynamic viscosity w.r.t. dof
+    //----------------------------------------------------------------
+    if(not phasemanager.HasConstantDynViscosity(curphase))
+    {
+      // derivative of abspressgrad w.r.t. pressure gradient
+      static LINALG::Matrix<nsd,1> dabspressgraddpresgradp(true);
+      // avoid division by zero
+      if(abspressgrad > 1.0e-12)
+        for (int i = 0; i < nsd; i++)
+          dabspressgraddpresgradp(i) = gradpres(i)/abspressgrad;
+
+      static LINALG::Matrix<nsd,1> diffflux2(true);
+      diffflux2.Multiply(permeabilitytensor,gradpres);
+      // d (1/visc) / d abspressgrad = -1.0 * visc^(-2) * d visc / d abspressgrad
+      diffflux2.Scale(-1.0*phasemanager.RelPermeability(curphase)/phasemanager.DynViscosity(curphase, abspressgrad)
+          /phasemanager.DynViscosity(curphase, abspressgrad)*phasemanager.DynViscosityDeriv(curphase, abspressgrad));
+
+      for (int vi=0; vi<nen; ++vi)
+      {
+        const int fvi = vi*numdofpernode+phasetoadd;
+        double laplawf = 0.0;
+        for (int j = 0; j<nsd; j++)
+          laplawf += derxy(j, vi)*diffflux2(j);
+        for (int ui=0; ui<nen; ++ui)
+        {
+          double gradpderxy = 0.0;
+          for (int j = 0; j<nsd; j++)
+            gradpderxy += derxy(j, ui)*dabspressgraddpresgradp(j);
+          for (int idof=0; idof<numdofpernode; ++idof)
+          {
+            const int fui = ui*numdofpernode+idof;
+            // d abspressgrad / d phi = d abspressgrad / d gradp * d gradp / d phi =
+            //                        = d abspressgrad / d gradp * d / d phi( d p / d phi * d phi / d x) =
+            //                        = d abspressgrad / d gradp * derxy * d p / d phi
+            mymat(fvi,fui) += timefacfac*laplawf*phasemanager.PressureDeriv(curphase,idof)*gradpderxy;
           }
         }
       }
@@ -953,7 +1080,8 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd,nen>::EvaluateMatrixOD
   //----------------------------------------------------------------
   // see scatra_ele_calc_OD.cpp
 
-  // TODO: anisotropic difftensor ?????
+  // TODO: anisotropic difftensor and
+  //       non-constant viscosity (because of pressure gradient, probably not really necessary)
   const double v = difftensor(0,0)*timefacfac/det;
 
   //gradient of pressure w.r.t. reference coordinates
@@ -1520,7 +1648,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassPressure<nsd,nen>::Evaluate
   //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
   // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
   // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-  //              fac       = J              --> d(fac)/dd         = fac * N_x
+  //              fac        = J              --> d(fac)/dd        = fac * N_x
   for (int vi=0; vi<nen; ++vi)
   {
     const int fvi = vi*numdofpernode+phasetoadd;
@@ -2323,7 +2451,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorMassSaturation<nsd,nen>::Evalua
   //------------------------------------------------dJ/dd = dJ/dF : dF/dd = J * F^-T . N_{\psi} = J * N_x
   // J denotes the determinant of the Jacobian of the mapping between current and parameter space, i.e. det(dx/ds)
   // in our case: timefacfac = J * dt * theta --> d(timefacfac)/dd = timefacfac * N_x
-  //              fac        = J              --> d(fac)/dd         = fac * N_x
+  //              fac        = J              --> d(fac)/dd        = fac * N_x
   for (int vi=0; vi<nen; ++vi)
   {
     const int fvi = vi*numdofpernode+phasetoadd;
