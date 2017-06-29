@@ -2556,7 +2556,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
   {
     DRT::Element* ele = visbindis_->lRowElement(i);
 
-    if( ele->Id() <= maxgid )
+    if( ele->Id() < maxgid )
       (*ownedghostsvec)[i] = 0; // owned
     else
       (*ownedghostsvec)[i] = 1; // ghost

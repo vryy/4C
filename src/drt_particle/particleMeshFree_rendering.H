@@ -127,6 +127,9 @@ private:
   //! output rendering on discretization and/or in matlab format
   INPAR::PARTICLE::RenderingOutput renderingOutput_;
 
+  //! consider boundary particles in rendering routine
+  INPAR::PARTICLE::RenderingBdryPart renderingBdryParticle_;
+
   //! average rendering vectors over time steps
   int avrgRendering_;
 

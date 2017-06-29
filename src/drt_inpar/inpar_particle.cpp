@@ -165,6 +165,21 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                   &particledyn);
 
    setStringToIntegralParameter<int>(
+                                  "EXTENDED_GHOSTING","StandardGhosting",
+                                  "Extend the ghosting",
+                                  tuple<std::string>(
+                                    "StandardGhosting",
+                                    "BdryParticleGhosting",
+                                    "AddLayerGhosting"
+                                    ),
+                                  tuple<int>(
+                                    INPAR::PARTICLE::StandardGhosting,
+                                    INPAR::PARTICLE::BdryParticleGhosting,
+                                    INPAR::PARTICLE::AddLayerGhosting
+                                    ),
+                                  &particledyn);
+
+   setStringToIntegralParameter<int>(
                                "WALL_INTERACTION_TYPE","InitParticle",
                                "wall interaction type for MeshFree interactions",
                                tuple<std::string>(
@@ -258,7 +273,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
    setStringToIntegralParameter<int>(
                                "RENDERING","None",
-                               "rendering for smoothed particle hydrodynamics",
+                               "rendering type for smoothed particle hydrodynamics",
                                tuple<std::string>(
                                  "None",
                                  "Standard",
@@ -273,7 +288,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
    setStringToIntegralParameter<int>(
                                "RENDERING_OUTPUT","DiscretAndMatlab",
-                               "rendering for smoothed particle hydrodynamics",
+                               "rendering output for smoothed particle hydrodynamics",
                                tuple<std::string>(
                                  "DiscretAndMatlab",
                                  "Discret",
@@ -283,6 +298,19 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  INPAR::PARTICLE::DiscretAndMatlab,
                                  INPAR::PARTICLE::Discret,
                                  INPAR::PARTICLE::Matlab
+                                 ),
+                               &particledyn);
+
+   setStringToIntegralParameter<int>(
+                               "RENDERING_BDRYPARTICLE","WithBdryParticle",
+                               "consider boundary particles in rendering for smoothed particle hydrodynamics",
+                               tuple<std::string>(
+                                 "WithBdryParticle",
+                                 "NoBdryParticle"
+                                 ),
+                               tuple<int>(
+                                 INPAR::PARTICLE::WithBdryParticle,
+                                 INPAR::PARTICLE::NoBdryParticle
                                  ),
                                &particledyn);
 

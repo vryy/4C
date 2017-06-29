@@ -67,6 +67,7 @@ PARTICLE::Algorithm::Algorithm(
   moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
   transfer_every_(DRT::Problem::Instance()->ParticleParams().get<int>("TRANSFER_EVERY")),
   particleInteractionType_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleInteractions>(DRT::Problem::Instance()->ParticleParams(),"PARTICLE_INTERACTION")),
+  extendedGhosting_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ExtendedGhosting>(DRT::Problem::Instance()->ParticleParams(),"EXTENDED_GHOSTING")),
   particleMat_(NULL),
   extParticleMat_(NULL),
   bin_wallcontent_(BINSTRATEGY::UTILS::BELE3),
@@ -253,6 +254,12 @@ void PARTICLE::Algorithm::Init(bool restarted)
 
   // ghost bins and particles according to the bins --> final FillComplete() call included
   SetupGhosting(binrowmap);
+
+  // determine boundary bins (physical boundary as well as boundary to other procs)
+  BinStrategy()->DetermineBoundaryRowBins();
+
+  // determine one layer ghosting around boundary bins determined in previous step
+  BinStrategy()->DetermineBoundaryColBinsIds();
 
   // the following has only to be done once --> skip in case of restart
   if(not restarted)
@@ -625,7 +632,7 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
 
   // new ghosting if necessary
   if (ghosting)
-    BinStrategy()->BinDiscret()->ExtendedGhosting(*BinColMap(),true,false,true,false);
+    BinStrategy()->BinDiscret()->ExtendedGhosting(*ExtendedBinColMap(),true,false,true,false);
   else
     BinStrategy()->BinDiscret()->FillComplete(true, false, true);
 
@@ -644,6 +651,95 @@ Teuchos::RCP<std::list<int> > PARTICLE::Algorithm::TransferParticles(const bool 
   }
 
   return deletedparticles;
+}
+
+/*----------------------------------------------------------------------*
+ | extended bin column map                                 sfuchs 06/17 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::ExtendedBinColMap()
+{
+  std::set<int> colbins;
+
+  // insert standard one layer ghosting
+  for (int lid=0; lid<BinColMap()->NumMyElements(); ++lid)
+    colbins.insert(BinColMap()->GID(lid));
+
+  // insert an additional (second) ghost layer
+  if ( extendedGhosting_ == INPAR::PARTICLE::AddLayerGhosting )
+    AddLayerGhosting(colbins);
+
+  // insert bins in the proximity of ghosted boundary particles
+  if ( extendedGhosting_ == INPAR::PARTICLE::BdryParticleGhosting )
+    BdryParticleGhosting(colbins);
+
+  std::vector<int> colbinsvec(colbins.begin(),colbins.end());
+
+  return Teuchos::rcp(new Epetra_Map(-1,(int)colbinsvec.size(),&colbinsvec[0],0,BinColMap()->Comm()));
+}
+
+/*----------------------------------------------------------------------*
+ | ghosting of an additional second bin layer              sfuchs 06/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::AddLayerGhosting(
+    std::set<int>& colbins
+    )
+{
+  // get boundary column bins
+  std::set<int> bdrycolbins = BinStrategy()->BoundaryColBinsIds();
+
+  std::vector<int> binvec(27);
+  std::set< int >::const_iterator biniter;
+  for ( biniter = bdrycolbins.begin(); biniter != bdrycolbins.end() ; ++biniter )
+  {
+    binvec.clear();
+    BinStrategy()->GetNeighborAndOwnBinIds( *biniter, binvec );
+    colbins.insert( binvec.begin(), binvec.end() );
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | ghosting of bins in proximity of boundary particles     sfuchs 06/17 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::BdryParticleGhosting(
+    std::set<int>& colbins
+    )
+{
+  // get boundary column bins
+  std::set<int> bdrycolbins = BinStrategy()->BoundaryColBinsIds();
+
+  // insert bins in the proximity of a ghosted boundary particle
+  std::vector<int> binvec(27);
+  std::set<int>::const_iterator biniter;
+  for ( biniter = bdrycolbins.begin(); biniter != bdrycolbins.end(); ++biniter )
+  {
+    // get current bin
+    DRT::Element* currbin = BinStrategy()->BinDiscret()->gElement(*biniter);
+
+    // get all particles in current bin
+    DRT::Node** particles = currbin->Nodes();
+
+    // loop over all particles in current bin
+    for( int i = 0; i < currbin->NumNode(); ++i )
+    {
+      // get current particle
+      PARTICLE::ParticleNode* particle_i = static_cast<PARTICLE::ParticleNode*>(particles[i]);
+
+      // current particle is a boundary particle
+      if( particle_i->Is_bdry_particle() )
+      {
+        binvec.clear();
+        BinStrategy()->GetNeighborAndOwnBinIds( *biniter, binvec );
+        colbins.insert( binvec.begin(), binvec.end() );
+
+        // go to next bin
+        break;
+      }
+    }
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

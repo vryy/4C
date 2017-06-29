@@ -36,7 +36,8 @@ PARTICLE::ParticleNode::ParticleNode(
   const double* coords,
   const int owner
 ) :
-DRT::Node(id,coords,owner)
+DRT::Node(id,coords,owner),
+is_bdry_particle_(false)
 {
   return;
 }
@@ -47,7 +48,8 @@ DRT::Node(id,coords,owner)
 PARTICLE::ParticleNode::ParticleNode(const PARTICLE::ParticleNode& old) :
 DRT::Node(old),
 history_particle_(old.history_particle_),
-history_wall_(old.history_wall_)
+history_wall_(old.history_wall_),
+is_bdry_particle_(old.is_bdry_particle_)
 {
 
   // not yet used and thus not necessarily consistent
@@ -98,6 +100,9 @@ void PARTICLE::ParticleNode::Print(std::ostream& os) const
     os << i->first << "  ";
   }
 
+  if(is_bdry_particle_)
+    os << "is a boundary particle!";
+
   return;
 }
 
@@ -135,6 +140,9 @@ void PARTICLE::ParticleNode::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,i->second.stick);
     AddtoPack(data,i->second.g_t,3*sizeof(double));
   }
+
+  // add flag boundary particle
+  AddtoPack(data,is_bdry_particle_);
 
   return;
 }
@@ -190,7 +198,11 @@ void PARTICLE::ParticleNode::Unpack(const std::vector<char>& data)
     history_wall_[collid] = coll;
   }
 
+  // extract flag boundary particle
+  is_bdry_particle_ = (bool)ExtractInt(position,data);
+
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+
   return;
 }

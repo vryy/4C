@@ -287,8 +287,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
     Teuchos::RCP<const Epetra_Vector> veln,
     Teuchos::RCP<const Epetra_Vector> radiusn,
     Teuchos::RCP<const Epetra_Vector> mass,
-    Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-    Teuchos::RCP<Epetra_Vector> bpDoFs)
+    Teuchos::RCP<const Epetra_Vector> specEnthalpyn)
 {
   // check
   if (colParticles_.size() != 0 or colFADParticles_.size() != 0)
@@ -306,7 +305,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
     std::cout << "However, lid row/col ids were not updated (because not yet updated). It is safe only when not parallel\n";
     std::cin.get();
   }
-  InitColParticles(bpDoFs);
+  InitColParticles();
 
   // set up positions and radii to set up the neighbours
   if(disn!=Teuchos::null)
@@ -337,10 +336,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
     Teuchos::RCP<const Epetra_Vector> radiusn,
     Teuchos::RCP<const Epetra_Vector> mass,
     Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-    Teuchos::RCP<const Epetra_Vector> temperature,
-    Teuchos::RCP<Epetra_Vector> bpDoFs)
+    Teuchos::RCP<const Epetra_Vector> temperature)
 {
-  Init(step, disn, veln, radiusn, mass, specEnthalpyn,bpDoFs);
+  Init(step, disn, veln, radiusn, mass, specEnthalpyn);
 
   // set the other state vectors
   SetStateVector(temperature, PARTICLE::Temperature);
@@ -358,13 +356,12 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
     Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
     Teuchos::RCP<const Epetra_Vector> temperature,
     Teuchos::RCP<const Epetra_Vector> densityn,
-    Teuchos::RCP<const Epetra_Vector> pressure,
-    Teuchos::RCP<Epetra_Vector> bpDoFs)
+    Teuchos::RCP<const Epetra_Vector> pressure)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::Init");
 
-  Init(step, disn, veln, radiusn, mass, specEnthalpyn, temperature, bpDoFs);
+  Init(step, disn, veln, radiusn, mass, specEnthalpyn, temperature);
 
   // set the other state vectors
   SetStateVector(densityn, PARTICLE::Density);
@@ -375,7 +372,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::Init(
 /*----------------------------------------------------------------------*
  | set all the neighbours                                  katta 12/16  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(Teuchos::RCP<Epetra_Vector> bpDoFs)
+void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles");
   const int numcolelements = discret_->NodeColMap()->NumMyElements();
@@ -383,14 +380,6 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(Teuchos::RCP
   colParticles_.resize(numcolelements);
   colFADParticles_.resize(numcolelements);
   boundaryparticles_.clear();
-
-  Epetra_Vector bpDoFs_col(*(discret_->DofColMap()),true);
-  if(bpDoFs!=Teuchos::null)
-  {
-    // export bpDoFs (which is in row map format) into overlapping column map format, since the boundary particle information
-    // of ghosted particles are also required!
-    LINALG::Export(*bpDoFs,bpDoFs_col);
-  }
 
   for (int lidNodeCol=0; lidNodeCol<numcolelements; ++lidNodeCol)
   {
@@ -402,15 +391,8 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles(Teuchos::RCP
     bool boundaryparticle = false;
     if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
     {
-      if(bpDoFs!=Teuchos::null)
-      {
-        if((bpDoFs_col)[discret_->DofColMap()->LID(lm[0])]==1)
-        {
-          boundaryparticle = true;
-          if((bpDoFs_col)[discret_->DofColMap()->LID(lm[1])]!=1 or (bpDoFs_col)[discret_->DofColMap()->LID(lm[2])]!=1)
-            dserror("For boundary particles all three DoFs have to be prescribed by a Dirichlet Condition!");
-        }
-      }
+      PARTICLE::ParticleNode* particleNode = static_cast<PARTICLE::ParticleNode*>(particle);
+      boundaryparticle = particleNode->Is_bdry_particle();
     }
 
     colParticles_[lidNodeCol] = ParticleMF(particle->Id(), particle->Owner(), lm, boundaryparticle);

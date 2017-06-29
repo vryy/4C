@@ -58,6 +58,7 @@ PARTICLE::Rendering::Rendering(
   // get type of rendering
   renderingType_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingType>(particle_params,"RENDERING");
   renderingOutput_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingOutput>(particle_params,"RENDERING_OUTPUT");
+  renderingBdryParticle_ = DRT::INPUT::IntegralValue<INPAR::PARTICLE::RenderingBdryPart>(particle_params,"RENDERING_BDRYPARTICLE");
   avrgRendering_ = particle_params.get<int>("AVRG_REND_STEPS");
 
   if ( avrgRendering_ > particle_params.get<int>("RESEVRYREND") )
@@ -215,6 +216,16 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
     {
       // determine the particle we are analyzing
       DRT::Node* particle_i = currentBinParticles[i];
+
+      // skip boundary particles in rendering routine
+      if (renderingBdryParticle_ == INPAR::PARTICLE::NoBdryParticle)
+      {
+        PARTICLE::ParticleNode* particleNode_i = static_cast<PARTICLE::ParticleNode*>(particle_i);
+
+        if (particleNode_i->Is_bdry_particle())
+          continue;
+      }
+
       // extract the gid
       const int gidNode_i = particle_i->Id();
       // determine the lid of the particle i (row style)

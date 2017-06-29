@@ -161,9 +161,6 @@ namespace PARTICLE
     //! State vectors are updated according to the new distribution of particles
     virtual void UpdateStatesAfterParticleTransfer();
 
-    //! Set initial fields in structure (e.g. initial velocities)
-    virtual void SetInitialFields();
-
     //! particle algorithm is set from outside
     virtual void SetParticleAlgorithm(Teuchos::RCP<PARTICLE::Algorithm> algorithm) { particle_algorithm_ = algorithm; }
 
@@ -482,6 +479,12 @@ namespace PARTICLE
     //! @name General purpose algorithm members
     //@{
 
+    //! Set initial fields
+    virtual void SetInitialFields();
+
+    //! Determine boundary particles
+    virtual void DetermineBdryParticles();
+
     /* Update exporter objects if layout has changed*/
     virtual void UpdateExportersIfNecessary(const Epetra_BlockMap& oldnodemap, const Epetra_BlockMap& olddofmap);
 
@@ -539,7 +542,7 @@ namespace PARTICLE
                                                   //!< containing non-overlapping
                                                   //!< map of global DOFs on Dirichlet
                                                   //!< boundary conditions
-    Teuchos::RCP<Epetra_Vector> bpDoFs_; //!< vector indicating DoFs associated with boundary particles
+    Teuchos::RCP<Epetra_Vector> dbcdofs_;         //!< vector of dirichlet bc dofs
     //@}
 
     //! @name Printing and output

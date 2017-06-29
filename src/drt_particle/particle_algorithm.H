@@ -216,6 +216,19 @@ namespace PARTICLE
     /// update state vectors which do not live in the time integrator to new layout
     virtual void UpdateStates(){};
 
+    /// build extended bin column map
+    virtual Teuchos::RCP<Epetra_Map> ExtendedBinColMap();
+
+    /// ghosting of an additional second bin layer
+    virtual void AddLayerGhosting(
+        std::set<int>& colbins
+        );
+
+    /// ghosting of bins in proximity of boundary particles
+    virtual void BdryParticleGhosting(
+        std::set<int>& colbins
+        );
+
     /// build connectivity from particle wall elements to bins
     virtual void BuildElementToBinPointers(
       bool wallpointer   ///< bool whether wall element pointer need rebuild
@@ -295,6 +308,8 @@ namespace PARTICLE
     std::map<int,std::list<Teuchos::RCP<HeatSource> > > bins2heatSources_;   ///< bins 2 heat sources map
 
     const INPAR::PARTICLE::ParticleInteractions particleInteractionType_;
+
+    const INPAR::PARTICLE::ExtendedGhosting extendedGhosting_;
 
     const MAT::PAR::ParticleMat* particleMat_;  ///< pointer to the extParticleMat material
 

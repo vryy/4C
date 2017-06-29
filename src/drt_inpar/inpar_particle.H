@@ -111,6 +111,13 @@ namespace INPAR
       WF_1D
     };
 
+    enum ExtendedGhosting
+    {
+      StandardGhosting,
+      BdryParticleGhosting,
+      AddLayerGhosting
+    };
+
     /// wall interaction type for MeshFree interactions
     enum WallInteractionType
     {
@@ -135,6 +142,12 @@ namespace INPAR
       DiscretAndMatlab,
       Discret,
       Matlab
+    };
+
+    enum RenderingBdryPart
+    {
+      WithBdryParticle,
+      NoBdryParticle
     };
 
     /// time step choice

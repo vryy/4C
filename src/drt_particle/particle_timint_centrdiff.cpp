@@ -232,7 +232,7 @@ int PARTICLE::TimIntCentrDiff::IntegrateStep()
 
   if (interHandler_ != Teuchos::null)
   {
-    interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_,bpDoFs_);
+    interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, specEnthalpyn_, temperature_, densityn_, pressure_);
     const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
 
     // In case of density summation the new density and new pressure have been determined as very first step since they are required for all the following calculations

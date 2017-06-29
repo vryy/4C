@@ -57,7 +57,7 @@ PARTICLE::TimInt::TimInt
 : discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
   dbcmaps_(Teuchos::null),
-  bpDoFs_(Teuchos::null),
+  dbcdofs_(Teuchos::null),
   output_(output),
   printlogo_(true),
   printscreen_(ioparams.get<int>("STDOUTEVRY")),
@@ -199,18 +199,17 @@ void PARTICLE::TimInt::Init()
     radiusDot_  = LINALG::CreateVector(*NodeRowMapView(), true);
   }
 
-  //Vector to identify possible boundary particle DoFs
-  const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
-  if(wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip)
-    bpDoFs_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
-
   // Apply Dirichlet BC and create dbc map extractor
   {
+    dbcdofs_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
     dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
     Teuchos::ParameterList p;
     p.set("total time", (*time_)[0]);
-    discret_->EvaluateDirichlet(p, (*dis_)(0), (*vel_)(0), (*acc_)(0), bpDoFs_, dbcmaps_);
+    discret_->EvaluateDirichlet(p, (*dis_)(0), (*vel_)(0), (*acc_)(0), dbcdofs_, dbcmaps_);
   }
+
+  // determine boundary particles
+  DetermineBdryParticles();
 
   // set initial fields
   SetInitialFields();
@@ -279,7 +278,7 @@ void PARTICLE::TimInt::Init()
 }
 
 /*----------------------------------------------------------------------*/
-/* Set initial fields in structure (e.g. initial velocities) */
+/* Set initial fields */
 void PARTICLE::TimInt::SetInitialFields()
 {
   // -----------------------------------------//
@@ -306,14 +305,7 @@ void PARTICLE::TimInt::SetInitialFields()
   else // particle mass via problem volume and density
   {
     //boundary particles are excluded for determination of particle mass since they are also not part of the consistent_problem_volume
-    const INPAR::PARTICLE::WallInteractionType wallInteractionType=DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
-    if(wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip)
-    {
-      double num_boundaryDoFs = 0.0;
-      bpDoFs_->Norm1(&num_boundaryDoFs);
-      global_num_boundaryparticles_=(int)(num_boundaryDoFs/3);
-    }
-    const int num_particles=discret_->NumGlobalNodes()-global_num_boundaryparticles_;
+    const int num_particles = discret_->NumGlobalNodes() - global_num_boundaryparticles_;
     mass_->PutScalar(initDensity * consistent_problem_volume / (double)(num_particles));
   }
 
@@ -522,6 +514,50 @@ void PARTICLE::TimInt::SetInitialFields()
 }
 
 /*----------------------------------------------------------------------*/
+/* Determine boundary particles */
+void PARTICLE::TimInt::DetermineBdryParticles()
+{
+  const INPAR::PARTICLE::WallInteractionType wallInteractionType = DRT::INPUT::IntegralValue<INPAR::PARTICLE::WallInteractionType>(DRT::Problem::Instance()->ParticleParams(),"WALL_INTERACTION_TYPE");
+  if( wallInteractionType == INPAR::PARTICLE::BoundarParticle_FreeSlip or wallInteractionType == INPAR::PARTICLE::BoundarParticle_NoSlip )
+  {
+    // local number of boundary particles on this processor
+    int local_num_boundaryparticles = 0;
+
+    // export dbcdofs (which is in row map format) into overlapping column map format
+    Epetra_Vector dbcdofs_col(*(discret_->DofColMap()),true);
+    LINALG::Export(*dbcdofs_,dbcdofs_col);
+
+    // loop over all row nodes
+    for (int lidNodeCol=0; lidNodeCol < discret_->NodeColMap()->NumMyElements(); ++lidNodeCol)
+    {
+      DRT::Node* particle_i = discret_->lColNode(lidNodeCol);
+
+      std::vector<int> lm;
+      lm.reserve(3);
+      discret_->Dof(particle_i, lm);
+
+      if ( dbcdofs_col[discret_->DofColMap()->LID(lm[0])] == 1 )
+      {
+        if ( dbcdofs_col[discret_->DofColMap()->LID(lm[1])] != 1 or dbcdofs_col[discret_->DofColMap()->LID(lm[2])] != 1 )
+          dserror("For boundary particles all three DoFs have to be prescribed by a Dirichlet Condition!");
+
+        // found a boundary particle
+        static_cast<PARTICLE::ParticleNode*>(particle_i)->Set_bdry_particle(true);
+
+        // boundary particle is in row map of this processor
+        if ( not (discret_->NodeRowMap()->LID(particle_i->Id()) < 0) )
+          local_num_boundaryparticles += 1;
+      }
+    }
+
+    // global number of boundary particles on all processors
+    discret_->Comm().SumAll(&local_num_boundaryparticles, &global_num_boundaryparticles_, 1);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* prepare time step and apply Dirichlet boundary conditions */
 void PARTICLE::TimInt::PrepareTimeStep()
 {
@@ -634,7 +670,7 @@ void PARTICLE::TimInt::DetermineMeshfreeDensAndAcc(Teuchos::RCP<Epetra_Vector> a
 {
 
   //Initialize all columns and boundary particles. Set sate vectors disn_ and veln_
-  interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, Teuchos::null, bpDoFs_);
+  interHandler_->Init(stepn_, disn_, veln_, radiusn_, mass_, Teuchos::null);
   //Set also state vector velConv
   if(velConv!=Teuchos::null)
     interHandler_->SetStateVector(velConv, PARTICLE::VelConv);

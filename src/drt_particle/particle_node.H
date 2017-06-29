@@ -138,14 +138,28 @@ public:
   virtual void Print(std::ostream& os) const ;
 
   /*!
-  \brief Print this ParticleNode
+  \brief Return collision history of this ParticleNode with particles
   */
   virtual std::map<int, Collision>& Get_history_particle(){ return  history_particle_; }
 
   /*!
-  \brief Print this ParticleNode
+  \brief Return collision history of this ParticleNode with walls
   */
   virtual std::map<int, Collision>& Get_history_wall(){ return  history_wall_; }
+
+  /*!
+  \brief Return flag for boundary particles
+  */
+  virtual bool Is_bdry_particle(){ return  is_bdry_particle_; }
+
+  /*!
+  \brief Set flag for boundary particles
+  */
+  virtual void Set_bdry_particle(bool is_bdry_particle)
+  {
+    is_bdry_particle_ = is_bdry_particle;
+    return;
+  }
 
   //@}
 
@@ -153,6 +167,8 @@ protected:
 
   std::map<int, Collision> history_particle_;
   std::map<int, Collision> history_wall_;
+
+  bool is_bdry_particle_;
 
 }; // class ParticleNode
 } // namespace PARTICLE

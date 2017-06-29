@@ -115,8 +115,7 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> veln,
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<const Epetra_Vector> mass,
-        Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-        Teuchos::RCP<Epetra_Vector> bpDoFs=Teuchos::null);
+        Teuchos::RCP<const Epetra_Vector> specEnthalpyn);
 
     virtual void Init(
         const int step,
@@ -125,8 +124,7 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> radiusn,
         Teuchos::RCP<const Epetra_Vector> mass,
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
-        Teuchos::RCP<const Epetra_Vector> temperature,
-        Teuchos::RCP<Epetra_Vector> bpDoFs=Teuchos::null);
+        Teuchos::RCP<const Epetra_Vector> temperature);
 
     virtual void Init(
         const int step,
@@ -137,11 +135,10 @@ namespace PARTICLE
         Teuchos::RCP<const Epetra_Vector> specEnthalpyn,
         Teuchos::RCP<const Epetra_Vector> temperature,
         Teuchos::RCP<const Epetra_Vector> densityn,
-        Teuchos::RCP<const Epetra_Vector> pressure,
-        Teuchos::RCP<Epetra_Vector> bpDoFs=Teuchos::null);
+        Teuchos::RCP<const Epetra_Vector> pressure);
 
     //! set up the ColParticles
-    virtual void InitColParticles(Teuchos::RCP<Epetra_Vector> bpDoFs=Teuchos::null);
+    virtual void InitColParticles();
 
     //! accelerations, modified pressures and velocities for boundary particles
     virtual void InitBoundaryData(
