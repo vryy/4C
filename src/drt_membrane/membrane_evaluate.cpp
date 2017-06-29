@@ -844,6 +844,13 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       point.MultiplyTN(funct,xrefe);
       params.set("gprefecoord",point);
 
+      // center of element in reference configuration
+      LINALG::Matrix<numnod_,1> funct_center;
+      DRT::UTILS::shape_function_2D(funct_center, 0.0, 0.0, distype);
+      LINALG::Matrix<1,noddof_> midpoint;
+      midpoint.MultiplyTN(funct_center, xrefe);
+      params.set("elecenter",midpoint);
+
       LINALG::Matrix<3,3> pk2M_glob(true);
       LINALG::Matrix<6,6> cmat_glob(true);
       double rcg33 = 0.0;

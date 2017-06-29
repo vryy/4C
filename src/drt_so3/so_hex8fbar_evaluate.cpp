@@ -754,7 +754,7 @@ int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
 /* ============================================================================*/
 
   // update element geometry
-   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i){
     const double* x = nodes[i]->X();
@@ -1222,12 +1222,14 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture || Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
-      // gp reference coordinates
-      LINALG::Matrix<NUMNOD_SOH8,1> funct(true);
-      funct = shapefcts[gp];
       LINALG::Matrix<1,NUMDIM_SOH8> point(true);
-      point.MultiplyTN(funct,xrefe);
+      soh8_GaussPointRefeCoords(point,xrefe,gp);
       params.set("gprefecoord",point);
+
+      // center of element in reference configuration
+      point.Clear();
+      soh8_ElementCenterRefeCoords(point,xrefe);
+      params.set("elecenter",point);
     }
 
     params.set<int>("gp",gp);

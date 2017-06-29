@@ -278,6 +278,74 @@ void MAT::ELASTIC::RemodelFiber::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::UpdateFiberDirs(LINALG::Matrix<3,3> const& locsys,
+                                                 const double& dt)
+{
+  LINALG::Matrix<3,3> id(true);
+  for(int i=0;i<3;++i) id(i,i) = 1.0;
+
+  for(unsigned k=0;k<potsumfiber_.size();++k)
+    potsumfiber_[k]->fiber->SetFiberVecs(-1.0,locsys,id);
+
+  SetupStructuralTensorsGR();
+
+  for(unsigned k=0;k<potsumfiber_.size();++k)
+    for(unsigned gp=0;gp<potsumfiber_[0]->cur_lambr.size();++gp)
+      potsumfiber_[k]->UpdateNewton(gp,dt);
+
+  UpdateSigH();
+
+  return;
+};
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::UpdateSigH()
+{
+  // some variables
+  LINALG::Matrix<3,3> CpreM(true);
+  LINALG::Matrix<2,1> dPI(true);
+  LINALG::Matrix<3,1> ddPII(true);
+  LINALG::Matrix<4,1> dddPIII(true);
+  LINALG::Matrix<6,1> stressactv(true);
+  LINALG::Matrix<6,6> cmatactive(true);
+  LINALG::Matrix<3,3> stressactM(true);
+
+  // temporary pointers to check the type of the remodelfiber (active or passive)
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
+  Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpoActive> t2;
+
+  // identity matrix
+  LINALG::Matrix<3,3> id(true);
+  for(int i=0;i<3;++i) id(i,i) = 1.0;
+
+  double sig = 0.0;
+  for(unsigned k=0;k<potsumfiber_.size();++k)
+  {
+    if( (t1 = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::CoupAnisoExpo>(potsumfiber_[k]->fiber)).getRawPtr() ) {
+      CpreM.Update(potsumfiber_[k]->G*potsumfiber_[k]->G,potsumfiber_[k]->AM,0.0);
+      t1->GetDerivativesAniso(dPI,ddPII,dddPIII,CpreM,0);
+      sig = 2.0*dPI(0)*potsumfiber_[k]->G*potsumfiber_[k]->G;
+      potsumfiber_[k]->growth->SetSigH(sig);
+      potsumfiber_[k]->remodel->SetSigH(sig);
+    }
+    else if( (t2 = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::CoupAnisoExpoActive>(potsumfiber_[k]->fiber)).getRawPtr() ) {
+      CpreM.Update(potsumfiber_[k]->G*potsumfiber_[k]->G,potsumfiber_[k]->AM,0.0);
+      t2->GetDerivativesAniso(dPI,ddPII,dddPIII,CpreM,0);
+      sig = 2.0*dPI(0)*potsumfiber_[k]->G*potsumfiber_[k]->G;
+      t2->EvaluateActiveStressCmatAniso(id,cmatactive,stressactv,0);
+      StressVoigtNotationVectorToMatrix(stressactv,stressactM);
+      sig += stressactM.Dot(potsumfiber_[k]->AM);
+      potsumfiber_[k]->growth->SetSigH(sig);
+      potsumfiber_[k]->remodel->SetSigH(sig);
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateAnisotropicStressCmat(LINALG::Matrix<3,3> const& CM,
                                                                LINALG::Matrix<3,3> const& iFgM,
                                                                LINALG::Matrix<6,6> & cmat,
@@ -1118,7 +1186,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdC(LINALG::TMatrix<T,3,3> const& CM
 
   LINALG::TMatrix<T,3,3> tmp(true);
   FirstDerivToMatrix(sig_fad,dsigdC);
-std::cout <<dsigdC <<std::endl;
+
   return;
 }
 

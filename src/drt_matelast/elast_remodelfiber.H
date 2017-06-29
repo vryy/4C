@@ -29,6 +29,11 @@ struct GrowthEvolution
     k_sig(k)
   {};
 
+  /// Set cauchy prestress of new mass which is deposited during G&R
+  void SetSigH(double const& sig) {
+    sig_h = sig;
+  };
+
   /// Evaluate residual of growth evolution equation
   void EvaluateFunc(double & r,                   ///< Residual
                     double const& sig,            ///< Current Cauchy stress
@@ -86,7 +91,7 @@ struct GrowthEvolution
     drhodt = cur_rho_col*k_sig*(sig-sig_h)/sig_h;
   };
 
-  double const sig_h;     ///< Cauchy prestress of new mass which is deposited during G&R
+  double sig_h;           ///< Cauchy prestress of new mass which is deposited during G&R
   double const k_sig;     ///< Growth parameter
 };
 
@@ -99,6 +104,11 @@ struct RemodelEvolution
     k_sig(k),
     t_decay(t)
   {};
+
+  /// Set cauchy prestress of new mass which is deposited during G&R
+  void SetSigH(double const& sig) {
+    sig_h = sig;
+  };
 
   /// Evaluate residual of remodel evolution equation
   void EvaluateFunc(double & r,                            ///< Residual
@@ -164,7 +174,7 @@ struct RemodelEvolution
     dlambrdt = ((k_sig*(sig-sig_h)/sig_h + 1./t_decay)*(sig-sig_h))/(2.0*dsigdCeM.Dot(YredM));
   };
 
-  double const sig_h;     ///< Cauchy prestress of new mass which is deposited during G&R
+  double sig_h;           ///< Cauchy prestress of new mass which is deposited during G&R
   double const k_sig;     ///< Growth parameter
   double const t_decay;   ///< Decay time of collagen
 };
@@ -343,6 +353,13 @@ struct FiberData
 
     /// Setup of summand
     virtual void Setup(int numgp,double rho_tot,DRT::INPUT::LineDefinition* linedef);
+
+    /// Update fiber directions with new local coordinate system (radaxicirc_)
+    void UpdateFiberDirs(LINALG::Matrix<3,3> const& locsys,       ///< local coordinate system
+                         const double& dt);                       ///< time step size
+
+    /// Update cauchy prestress of new mass which is deposited during G&R
+    void UpdateSigH();
 
     /// Returns the necessary derivations of the growth and remodel evolution equations and their residuals
     void EvaluateDerivativesInternalNewton(LINALG::Matrix<3,3> const * const defgrd,     ///< Deformation gradient

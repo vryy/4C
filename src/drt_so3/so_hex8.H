@@ -357,7 +357,14 @@ public:
 
 
   //const vector<double> GetFibervec(){return fiberdirection_;};
-  const std::vector<double> soh8_ElementCenterRefeCoords();
+  /// Evaluate center coordinates in reference system
+  void soh8_ElementCenterRefeCoords(LINALG::Matrix<1,NUMDIM_SOH8> & centercoord,                  ///< center coordinates in reference system
+                                    LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> const& xrefe) const;  ///< material coord. of element
+
+  /// Evaluate Gauß-Point coordinates in reference system
+  void soh8_GaussPointRefeCoords(LINALG::Matrix<1,NUMDIM_SOH8> & gpcoord,               ///< Gauß-Point coordinates in reference system
+                                 LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> const& xrefe,  ///< material coord. of element
+                                 const int gp) const;                                   ///< current Gauß-Point
 
   /*!
   \brief Return value how expensive it is to evaluate this element
@@ -564,11 +571,11 @@ protected:
       Epetra_MultiVector& expolstresses);  ///< nodal stresses
 
   //! Evaluate Hex8 Shapefcts to keep them static
-  const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > soh8_shapefcts();
+  const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > soh8_shapefcts() const;
   //! Evaluate Hex8 Derivs to keep them static
-  const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > soh8_derivs();
+  const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > soh8_derivs() const;
   //! Evaluate Hex8 Weights to keep them static
-  const std::vector<double> soh8_weights();
+  const std::vector<double> soh8_weights() const;
 
   //! push forward of material stresses to the current, spatial configuration
   void PK2toCauchy(

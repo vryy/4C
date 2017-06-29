@@ -2248,12 +2248,14 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
 
     if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture || Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
-      // gp reference coordinates
-      LINALG::Matrix<NUMNOD_SOH8,1> funct(true);
-      funct = shapefcts[gp];
       LINALG::Matrix<1,NUMDIM_SOH8> point(true);
-      point.MultiplyTN(funct,xrefe);
+      soh8_GaussPointRefeCoords(point,xrefe,gp);
       params.set("gprefecoord",point);
+
+      // center of element in reference configuration
+      point.Clear();
+      soh8_ElementCenterRefeCoords(point,xrefe);
+      params.set("elecenter",point);
     }
 
     params.set<int>("gp",gp);
@@ -3010,7 +3012,7 @@ void DRT::ELEMENTS::So_hex8::soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fcts at all 8 Gauss Points             maf 05/08|
  *----------------------------------------------------------------------*/
-const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > DRT::ELEMENTS::So_hex8::soh8_shapefcts()
+const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > DRT::ELEMENTS::So_hex8::soh8_shapefcts() const
 {
   std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts(NUMGPT_SOH8);
   // (r,s,t) gp-locations of fully integrated linear 8-node Hex
@@ -3036,7 +3038,7 @@ const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > DRT::ELEMENTS::So_hex8::soh8_s
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fct derivs at all 8 Gauss Points       maf 05/08|
  *----------------------------------------------------------------------*/
-const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_hex8::soh8_derivs()
+const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_hex8::soh8_derivs() const
 {
   std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(NUMGPT_SOH8);
   // (r,s,t) gp-locations of fully integrated linear 8-node Hex
@@ -3082,7 +3084,7 @@ const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_he
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Weights at all 8 Gauss Points                maf 05/08|
  *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_hex8::soh8_weights()
+const std::vector<double> DRT::ELEMENTS::So_hex8::soh8_weights() const
 {
   std::vector<double> weights(NUMGPT_SOH8);
   for (int i = 0; i < NUMGPT_SOH8; ++i) {

@@ -107,6 +107,12 @@ namespace MAT
       /// Indicator whether Hex or Membrane elements are used ( Membrane: 1, Hex: Everything else )
       const int membrane_;
 
+      /// Indicator whether geometry is a cylinder and that we want to calculate the AXI, CIR and RAD-directions
+      /// with the help of the location of the center of each element in the reference configuration
+      /// (cylinder_ == 1: cylinder aligned in x-direction; cylinder_ == 2: cylinder aligned in y-direction
+      /// cylinder_ == 3: cylinder aligned in z-direction)
+      const int cylinder_;
+
       //@}
 
       /// create material instance of matching type with my parameters
@@ -231,6 +237,26 @@ private:
   private:
     /// Setup circumferential, radial and axial structural tensor
     void SetupAxiCirRadStructuralTensor(DRT::INPUT::LineDefinition* linedef);
+
+    /// Setup prestretch (optional: setup element axi-, circ-, and rad-directions) for 3D elements
+    void SetupGR3D(LINALG::Matrix<3,3> const* const defgrd, ///< Deformation gradient
+                   Teuchos::ParameterList& params,          ///< Container for additional information
+                   const double dt,                         ///< Time step size
+                   const int gp,                            ///< Current Gauß-Point
+                   const int eleGID);                       ///< Element ID
+
+    /// Setup prestretch (optional: setup element axi-, circ-, and rad-directions) for 2D elements -> membrane
+    void SetupGR2D(Teuchos::ParameterList& params,          ///< Container for additional information
+                   const double dt,                         ///< Time step size
+                   const int gp);                           ///< Current Gauß-Point
+
+    /// Calculates AXI, CIR and RAD structural tensors and sets new fiber directions in the case of a cylinder
+    void SetupAxiCirRadCylinder(LINALG::Matrix<1,3> gprefecoord,
+                                double const dt);
+
+    /// Setup anisotropic growth tensors. Here we assume that the growth direction corresponds with
+    /// the radial/ thickness direction
+    void SetupAnisoGrowthTensors();
 
     /// Read AXI CIR RAD direction
     void ReadDir(DRT::INPUT::LineDefinition* linedef,
@@ -531,8 +557,10 @@ private:
     /// Total number of remodel fibers
     unsigned nr_rf_tot_;
 
-    /// Cylinder coordinates (axi, circ, rad)
-    std::vector<LINALG::Matrix<1,3> > cylcoords_;
+    ///                       (rad_x, axi_x, circ_x)
+    /// Cylinder coordinates  (rad_y, axi_y, circ_y)
+    ///                       (rad_z, axi_z, circ_z)
+    LINALG::Matrix<3,3> radaxicirc_;
 
     /// Axial coordinate of each Gauß-Point
     std::vector<double> gp_ax_;
@@ -550,7 +578,7 @@ private:
     std::vector<double> mue_frac_;
 
     /// First call of Evaluate()
-    std::vector<int> prestretch_;
+    std::vector<int> setup_;
   };
 
 }

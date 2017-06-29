@@ -1912,6 +1912,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
      AddNamedInt(m,"GROWTHTYPE","flag to decide what type of collagen growth is used: 1: anisotropic growth; 0: isotropic growth",false);
      AddNamedInt(m,"LOCTIMEINT","flag to decide what type of local time integration scheme is used: 1: Backward Euler Method; 0: Forward Euler Method",false);
      AddNamedInt(m,"MEMBRANE","Flag whether Hex or Membrane elements are used ( Membrane: 1, Hex: Everything else )",-1,true);
+     AddNamedInt(m,"CYLINDER","Flag that geometry is a cylinder. 1: aligned in x-direction; 2: y-direction; 3: z-direction",-1,true);
      AppendMaterialDefinition(matlist,m);
    }
 

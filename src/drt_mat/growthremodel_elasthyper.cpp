@@ -51,7 +51,8 @@ MAT::PAR::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper(
   damage_(matdata->GetInt("DAMAGE")),
   growthtype_(matdata->GetInt("GROWTHTYPE")),
   loctimeint_(matdata->GetInt("LOCTIMEINT")),
-  membrane_(matdata->GetInt("MEMBRANE"))
+  membrane_(matdata->GetInt("MEMBRANE")),
+  cylinder_(matdata->GetInt("CYLINDER"))
 {
   // check if sizes fit
   if (nummat_remodelfiber_ != (int)matids_remodelfiber_->size())
@@ -75,6 +76,10 @@ MAT::PAR::GrowthRemodel_ElastHyper::GrowthRemodel_ElastHyper(
     if ((p_mean_ == -1) || (ri_ == -1) || (t_ref_ == -1))
       dserror("you have to set the mean blood pressure, the inner radius of the vessel and thickness of the vessel wall");
   }
+
+  if(cylinder_ != -1 && cylinder_ != 1 && cylinder_ != 2 && cylinder_ != 3)
+    dserror("The parameter CYLINDER has to be either 1, 2 or 3. If you have defined a fiber direction in your"
+        ".dat file then just skip this parameter");
 }
 
 /*----------------------------------------------------------------------*/
@@ -200,9 +205,9 @@ void MAT::GrowthRemodel_ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,AplM_);
   AddtoPack(data,AgM_);
   AddtoPack(data,GM_);
-  AddtoPack(data,cylcoords_);
+  AddtoPack(data,radaxicirc_);
   AddtoPack(data,mue_frac_);
-  AddtoPack(data,prestretch_);
+  AddtoPack(data,setup_);
   AddtoPack(data,nr_rf_tot_);
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
@@ -273,9 +278,9 @@ void MAT::GrowthRemodel_ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,AplM_);
   ExtractfromPack(position,data,AgM_);
   ExtractfromPack(position,data,GM_);
-  ExtractfromPack(position,data,cylcoords_);
+  ExtractfromPack(position,data,radaxicirc_);
   ExtractfromPack(position,data,mue_frac_);
-  ExtractfromPack(position,data,prestretch_);
+  ExtractfromPack(position,data,setup_);
   ExtractfromPack(position,data,nr_rf_tot_);
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
@@ -352,7 +357,7 @@ void MAT::GrowthRemodel_ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition*
   cur_rho_el_.resize(numgp);
   init_rho_el_.resize(numgp);
   GM_.resize(numgp,LINALG::Matrix<3,3>(true));
-  prestretch_.resize(numgp,1);
+  setup_.resize(numgp,1);
 
   for(int gp=0;gp<numgp;++gp) {
     init_rho_el_[gp] = params_->density_ * params_->init_w_el_;
@@ -380,17 +385,9 @@ void MAT::GrowthRemodel_ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition*
   // Setup circumferential, radial and axial structural tensor
   SetupAxiCirRadStructuralTensor(linedef);
 
-  //TODO: Here we assume that the growth direction corresponds with the radial/ thickness direction
-  // structural tensor of growth direction
-  AgM_.Update(1.0,AradM_,0.0);
-
-  // structural tensor of the plane in which all fibers are located
-  LINALG::Matrix<3,3> id(true);
-  for(int i=0;i<3;++i)
-    id(i,i) = 1.0;
-  AplM_.Update(1.0,AradM_,0.0);
-  AplM_.Update(1.0,id,-1.0);
-
+  // Setup growth tensors in the case of anisotropic growth (--> growth in thickness direction)
+  if(params_->growthtype_ == 1)
+    SetupAnisoGrowthTensors();
 
   // variable which is multiplied with the material parameter of the elastin sheets
   mue_frac_.resize(numgp,1.0);
@@ -415,33 +412,57 @@ void MAT::GrowthRemodel_ElastHyper::SetupAxiCirRadStructuralTensor(DRT::INPUT::L
     // Read in of data
     // read local (cylindrical) cosy-directions at current element
     LINALG::Matrix<3,1> dir;
-    cylcoords_.resize(3,LINALG::Matrix<1,3> (true));
 
     // Axial direction
     ReadDir(linedef,"AXI",dir);
-    cylcoords_[0].UpdateT(1.0,dir,0.0);
+    for(int i=0;i<3;++i)
+      radaxicirc_(i,1) = dir(i);
     AaxM_.MultiplyNT(1.0,dir,dir,0.0);
 
     // Circumferential direction
     ReadDir(linedef,"CIR",dir);
-    cylcoords_[1].UpdateT(1.0,dir,0.0);
+    for(int i=0;i<3;++i)
+      radaxicirc_(i,2) = dir(i);
     AcirM_.MultiplyNT(1.0,dir,dir,0.0);
 
     // Radial direction
     ReadDir(linedef,"RAD",dir);
-    cylcoords_[2].UpdateT(1.0,dir,0.0);
+    for(int i=0;i<3;++i)
+      radaxicirc_(i,0) = dir(i);
     AradM_.MultiplyNT(1.0,dir,dir,0.0);
 
     // radial structural tensor in "stress-like" Voigt notation
-    for(int i=0;i<3;++i)
-      Aradv_(i) = AradM_(i,i);
-    Aradv_(3) = 0.5*(AradM_(0,1)+AradM_(1,0));
-    Aradv_(4) = 0.5*(AradM_(1,2)+AradM_(2,1));
-    Aradv_(5) = 0.5*(AradM_(0,2)+AradM_(2,0));
+    MatrixtoStressLikeVoigtNotation(AradM_,Aradv_);
   }
-  // No AXI CIR RAD direction defined in .dat file
+  // Cylinder flag defined in .dat file, dummy AXI, CIR and RAD directions are written till
+  // location of element center in reference configuration is available
+  else if(params_->cylinder_ == 1 || params_->cylinder_ == 2 || params_->cylinder_ == 3) {
+    radaxicirc_(0,0) = radaxicirc_(1,1) = radaxicirc_(2,2) = 1.0;
+    AaxM_(0,0) = 1.0;
+    AcirM_(1,1) = 1.0;
+    AradM_(2,2) = 1.0;
+    Aradv_(2) = 1.0;
+  }
+  // No AXI CIR RAD-direction defined in .dat file and additionally no cylinder flag was set
   else
-    dserror("Homogenized Constrained Mixture Model can so far only be used by defining AXI-, CIR- and RAD-direction in the .dat file!");
+    dserror("Homogenized Constrained Mixture Model can so far only be used by defining AXI-, CIR- and RAD-direction in the .dat file or by defining the Cylinder flag!");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::GrowthRemodel_ElastHyper::SetupAnisoGrowthTensors()
+{
+  AgM_.Update(1.0,AradM_,0.0);
+
+  // structural tensor of the plane in which all fibers are located
+  LINALG::Matrix<3,3> id(true);
+  for(int i=0;i<3;++i)
+    id(i,i) = 1.0;
+  AplM_.Update(1.0,AradM_,0.0);
+  AplM_.Update(1.0,id,-1.0);
 
   return;
 }
@@ -450,10 +471,9 @@ void MAT::GrowthRemodel_ElastHyper::SetupAxiCirRadStructuralTensor(DRT::INPUT::L
 /*----------------------------------------------------------------------*
  * Function which reads in the AXI CIR RAD directions
  *----------------------------------------------------------------------*/
-void MAT::GrowthRemodel_ElastHyper::ReadDir(
-    DRT::INPUT::LineDefinition* linedef,
-    std::string specifier,
-    LINALG::Matrix<3,1> &dir)
+void MAT::GrowthRemodel_ElastHyper::ReadDir(DRT::INPUT::LineDefinition* linedef,
+                                            std::string specifier,
+                                            LINALG::Matrix<3,1> &dir)
 {
   std::vector<double> fiber;
   linedef->ExtractDoubleVector(specifier,fiber);
@@ -468,6 +488,40 @@ void MAT::GrowthRemodel_ElastHyper::ReadDir(
   // fill final normalized vector
   for (int i = 0; i < 3; ++i)
     dir(i) = fiber[i]/fnorm;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::GrowthRemodel_ElastHyper::SetupAxiCirRadCylinder(LINALG::Matrix<1,3> elecenter,
+                                                           double const dt)
+{
+  // Clear dummy directions
+  radaxicirc_.Clear();
+  LINALG::Matrix<3,1> axdir;
+  LINALG::Matrix<3,1> raddir;
+  LINALG::Matrix<3,1> cirdir;
+
+  // Axial direction
+  radaxicirc_(params_->cylinder_-1,1) = 1.0;
+  for(int i=0;i<3;++i) axdir(i) = radaxicirc_(i,1);
+  AaxM_.MultiplyNT(1.0,axdir,axdir,0.0);
+
+  // Radial direction
+  elecenter(0,params_->cylinder_-1) = 0.0;
+  raddir.UpdateT(1./elecenter.Norm2(),elecenter,0.0);
+  for(int i=0;i<3;++i) radaxicirc_(i,0) = raddir(i);
+  AradM_.MultiplyNT(1.0,raddir,raddir,0.0);
+
+  // Circumferential direction
+  cirdir.CrossProduct(axdir,raddir);
+  for(int i=0;i<3;++i) radaxicirc_(i,2) = cirdir(i);
+  AcirM_.MultiplyNT(1.0,cirdir,cirdir,0.0);
+
+  // radial structural tensor in "stress-like" Voigt notation
+  MatrixtoStressLikeVoigtNotation(AradM_,Aradv_);
 
   return;
 }
@@ -627,6 +681,47 @@ void MAT::GrowthRemodel_ElastHyper::EvaluatePrestretch(LINALG::Matrix<3,3> const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::GrowthRemodel_ElastHyper::SetupGR3D(LINALG::Matrix<3,3> const* const defgrd,
+                                              Teuchos::ParameterList& params,
+                                              const double dt,
+                                              const int gp,
+                                              const int eleGID)
+{
+  LINALG::Matrix<1,3> gprefecoord(true);    // gp coordinates in reference configuration
+  LINALG::Matrix<1,3> axdir(true);
+  LINALG::Matrix<1,3> raddir(true);
+  gprefecoord = params.get<LINALG::Matrix<1,3> >("gprefecoord");
+
+  if((params_->cylinder_ == 1 || params_->cylinder_ == 2 || params_->cylinder_ == 3) && (setup_[0] == 1)) {
+    LINALG::Matrix<1,3> elerefecoord(true);    // element center coordinates in reference system
+    elerefecoord = params.get<LINALG::Matrix<1,3> >("elecenter");
+    SetupAxiCirRadCylinder(elerefecoord,dt);
+    if(params_->growthtype_ == 1)
+      SetupAnisoGrowthTensors();
+
+    // Update fiber directions with new local coordinate system (radaxicirc_)
+    for(unsigned k=0;k<potsumrf_.size();++k)
+      potsumrf_[k]->UpdateFiberDirs(radaxicirc_,dt);
+  }
+
+  // Evaluate radial and axial distance between origin and current Gauß-Point
+  for(int i=0;i<3;++i) {
+    axdir(0,i) = radaxicirc_(i,1);
+    raddir(0,i) = radaxicirc_(i,0);
+  }
+  gp_ax_[gp] = axdir.Dot(gprefecoord);
+  gp_rad_[gp] = raddir.Dot(gprefecoord);
+
+  // TODO: BE CAREFULL! So far, this prestretching procedure is only valid for certain materials and a cylindrical geometry.
+  //       The principle of the prestretching routine can easily be adapted to other materials or general geometries!!!
+  EvaluatePrestretch(defgrd,gp,eleGID);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::GrowthRemodel_ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                              const LINALG::Matrix<6,1>* glstrain,
                                              Teuchos::ParameterList& params,
@@ -642,6 +737,11 @@ void MAT::GrowthRemodel_ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   // time step size
   double dt = params.get<double>("delta time");
+
+  if(setup_[gp] == 1) {
+    SetupGR3D(defgrd,params,dt,gp,eleGID);
+    setup_[gp] = 0;
+  }
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -673,19 +773,6 @@ void MAT::GrowthRemodel_ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   // some initialization
   // only do at first time step
   if(t_tot_ == dt) {
-    if(prestretch_[gp] == 1) {
-      // gp coordinates in reference configuration
-      LINALG::Matrix<1,3> gprefecoord(true);
-      gprefecoord = params.get<LINALG::Matrix<1,3> >("gprefecoord");
-      gp_ax_[gp] = cylcoords_[0].Dot(gprefecoord);
-      gp_rad_[gp] = cylcoords_[2].Dot(gprefecoord);
-
-      // TODO: BE CAREFULL! So far, this prestretching procedure is only valid for certain materials and a cylindrical geometry.
-      //       The principle of the prestretching routine can easily be adapted to other materials or general geometries!!!
-      EvaluatePrestretch(defgrd,gp,eleGID);
-
-      prestretch_[gp] = 0;
-    }
     // evaluate anisotropic remodel fibers
     for(unsigned p=0;p<potsumrf_.size();++p) {
       potsumrf_[p]->EvaluateAnisotropicStressCmat(CM,iFgM,cmataniso,stressaniso,gp,dt,eleGID);
@@ -1487,6 +1574,41 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateGrowthDefGrad(LINALG::Matrix<3,3> & 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::GrowthRemodel_ElastHyper::SetupGR2D(Teuchos::ParameterList& params,
+                                              const double dt,
+                                              const int gp)
+{
+  LINALG::Matrix<1,3> gprefecoord(true);     // gp coordinates in reference configuration
+  LINALG::Matrix<1,3> axdir(true);
+  gprefecoord = params.get<LINALG::Matrix<1,3> >("gprefecoord");
+
+  if((params_->cylinder_ == 1 || params_->cylinder_ == 2 || params_->cylinder_ == 3) && (setup_[0] == 1)) {
+    LINALG::Matrix<1,3> elerefecoord(true);     // element center coordinates in reference system
+    elerefecoord = params.get<LINALG::Matrix<1,3> >("elecenter");
+    SetupAxiCirRadCylinder(elerefecoord,dt);
+    if(params_->growthtype_ == 1)
+      SetupAnisoGrowthTensors();
+
+    // Update fiber directions with new local coordinate system (radaxicirc_)
+    for(unsigned k=0;k<potsumrf_.size();++k)
+      potsumrf_[k]->UpdateFiberDirs(radaxicirc_,dt);
+  }
+
+  for(int i=0;i<3;++i)
+    axdir(0,i) = radaxicirc_(i,1);
+  gp_ax_[gp] = axdir.Dot(gprefecoord);
+
+  // update elastin prestretch in radial direction
+  GM_[gp].Update(params_->lamb_prestretch_cir_,AcirM_,0.0);
+  GM_[gp].Update(params_->lamb_prestretch_ax_,AaxM_,1.0);
+  GM_[gp].Update(1./(params_->lamb_prestretch_ax_*params_->lamb_prestretch_cir_),AradM_,1.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::GrowthRemodel_ElastHyper::EvaluateMembrane(LINALG::Matrix<3,3> const& defgrd_glob,
                                                      double & rcg33,
                                                      Teuchos::ParameterList& params,
@@ -1507,25 +1629,17 @@ void MAT::GrowthRemodel_ElastHyper::EvaluateMembrane(LINALG::Matrix<3,3> const& 
   // time step size
   double dt = params.get<double>("delta time");
 
+  if(setup_[gp] == 1) {
+    SetupGR2D(params,dt,gp);
+    setup_[gp] = 0;
+  }
+
+  // Evaluate growth deformation gradient
   // growth deformation gradient
   LINALG::Matrix<3,3> FgM(true);
   LINALG::Matrix<3,3> iFgM(true);
   LINALG::Matrix<3,3> dFgdrhoM(true);
   LINALG::Matrix<3,3> diFgdrhoM(true);
-  if(prestretch_[gp] == 1) {
-    // gp coordinates in reference configuration
-    LINALG::Matrix<1,3> gprefecoord(true);
-    gprefecoord = params.get<LINALG::Matrix<1,3> >("gprefecoord");
-    gp_ax_[gp] = cylcoords_[0].Dot(gprefecoord);
-
-    // update elastin prestretch in radial direction
-    GM_[gp].Update(params_->lamb_prestretch_cir_,AcirM_,0.0);
-    GM_[gp].Update(params_->lamb_prestretch_ax_,AaxM_,1.0);
-    GM_[gp].Update(1./(params_->lamb_prestretch_ax_*params_->lamb_prestretch_cir_),AradM_,1.0);
-    prestretch_[gp] = 0;
-  }
-
-  // Evaluate growth deformation gradient
   EvaluateGrowthDefGrad(FgM,iFgM,dFgdrhoM,diFgdrhoM,gp);
 
   // Elastic deformation gradient

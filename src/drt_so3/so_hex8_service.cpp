@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_service.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 1
+
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 #include "so_hex8.H"
@@ -15,31 +13,25 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_node.H"
 
 
-/*----------------------------------------------------------------------*
- |  return Center Coords in Reference System                   maf 11/07|
- *----------------------------------------------------------------------*/
-const std::vector<double> DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords()
+void DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords(LINALG::Matrix<1,NUMDIM_SOH8> & centercoord,
+                                                          LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> const& xrefe) const
 {
-  // update element geometry
-  DRT::Node** nodes = Nodes();
-  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
-  for (int i=0; i<NUMNOD_SOH8; ++i){
-    const double* x = nodes[i]->X();
-    xrefe(i,0) = x[0];
-    xrefe(i,1) = x[1];
-    xrefe(i,2) = x[2];
-  }
   const DRT::Element::DiscretizationType distype = Shape();
   LINALG::Matrix<NUMNOD_SOH8,1> funct;
-  // Element midpoint at r=s=t=0.0
   DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
-  LINALG::Matrix<1,NUMDIM_SOH8> midpoint;
-  //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
-  midpoint.MultiplyTN(funct, xrefe);
-  std::vector<double> centercoords(3);
-  centercoords[0] = midpoint(0,0);
-  centercoords[1] = midpoint(0,1);
-  centercoords[2] = midpoint(0,2);
-  return centercoords;
+  centercoord.MultiplyTN(funct, xrefe);
+  return;
 }
 
+
+void DRT::ELEMENTS::So_hex8::soh8_GaussPointRefeCoords(LINALG::Matrix<1,NUMDIM_SOH8> & gpcoord,
+                                                       LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> const& xrefe,
+                                                       int const gp) const
+{
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  LINALG::Matrix<NUMNOD_SOH8,1> funct(true);
+  funct = shapefcts[gp];
+  gpcoord.MultiplyTN(funct,xrefe);
+
+  return;
+}
