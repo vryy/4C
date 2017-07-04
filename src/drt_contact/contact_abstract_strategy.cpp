@@ -53,6 +53,9 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       gslipnodes_(Teuchos::null),
       gslipdofs_(Teuchos::null),
       gslipt_(Teuchos::null),
+      gsdofVertex_(Teuchos::null),
+      gsdofEdge_(Teuchos::null),
+      gsdofSurf_(Teuchos::null),
       pglmdofrowmap_(Teuchos::null),
       pgsdofrowmap_(Teuchos::null),
       pgmdofrowmap_(Teuchos::null),
@@ -76,6 +79,8 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       zuzawa_(Teuchos::null),
       stressnormal_(Teuchos::null),
       stresstangential_(Teuchos::null),
+      forcenormal_(Teuchos::null),
+      forcetangential_(Teuchos::null),
       stepnp_(-1),
       iter_(-1),
       iterls_(-1),
@@ -84,6 +89,7 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       wasincontactlts_(false),
       isselfcontact_(false),
       friction_(false),
+      nonSmoothContact_(false),
       regularized_(false),
       dualquadslave3d_(false),
       trafo_(Teuchos::null),
@@ -129,6 +135,9 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       gslipnodes_(data_ptr->GSlipNodeRowMapPtr()),
       gslipdofs_(data_ptr->GSlipDofRowMapPtr()),
       gslipt_(data_ptr->GSlipTDofRowMapPtr()),
+      gsdofVertex_(data_ptr->GSDofVertexRowMapPtr()),
+      gsdofEdge_(data_ptr->GSDofEdgeRowMapPtr()),
+      gsdofSurf_(data_ptr->GSDofSurfRowMapPtr()),
       pglmdofrowmap_(data_ptr->PGLmDofRowMapPtr()),
       pgsdofrowmap_(data_ptr->PGSlDofRowMapPtr()),
       pgmdofrowmap_(data_ptr->PGMaDofRowMapPtr()),
@@ -152,6 +161,8 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       zuzawa_(data_ptr->LmUzawaPtr()),
       stressnormal_(data_ptr->StressNormalPtr()),
       stresstangential_(data_ptr->StressTangentialPtr()),
+      forcenormal_(data_ptr->ForceNormalPtr()),
+      forcetangential_(data_ptr->ForceTangentialPtr()),
       step_(data_ptr->StepNp()),
       iter_(data_ptr->NlnIter()),
       iterls_(data_ptr->IterLS()),
@@ -160,6 +171,7 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       wasincontactlts_(data_ptr->WasInContactLastTimeStep()),
       isselfcontact_(data_ptr->IsSelfContact()),
       friction_(data_ptr->IsFriction()),
+      nonSmoothContact_(data_ptr->IsNonSmoothContact()),
       regularized_(data_ptr->IsRegularized()),
       dualquadslave3d_(data_ptr->IsDualQuadSlave3D()),
       trafo_(data_ptr->TrafoPtr()),
@@ -189,6 +201,10 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
   // set frictional contact status
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
+
+  // set nonsmooth contact status
+  if(DRT::INPUT::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES"))
+    nonSmoothContact_ = true;
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>
       (Params(), "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none)
@@ -430,6 +446,14 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
     gslipt_ = Teuchos::null;
   }
 
+  // initialize vertex, edge and surface maps for nonsmooth case
+  if(DRT::INPUT::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES"))
+  {
+    gsdofVertex_ = Teuchos::null;
+    gsdofEdge_   = Teuchos::null;
+    gsdofSurf_   = Teuchos::null;
+  }
+
   // make numbering of LM dofs consecutive and unique across N interfaces
   int offset_if = 0;
 
@@ -483,6 +507,17 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
           false);
       gslipt_ = LINALG::MergeMap(gslipt_, Interfaces()[i]->SlipTDofs(), false);
     }
+
+    // define maps for nonsmooth case
+    if(DRT::INPUT::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES"))
+    {
+      gsdofVertex_ = LINALG::MergeMap(gsdofVertex_,
+          Interfaces()[i]->SdofVertexRowmap());
+      gsdofEdge_ = LINALG::MergeMap(gsdofEdge_,
+          Interfaces()[i]->SdofEdgeRowmap());
+      gsdofSurf_ = LINALG::MergeMap(gsdofSurf_,
+          Interfaces()[i]->SdofSurfRowmap());
+    }
   }
 
   // setup global non-slave-or-master dof map
@@ -500,11 +535,12 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   gsmdofrowmap_ = LINALG::MergeMap(SlDoFRowMap(true), *gmdofrowmap_, false);
   gdisprowmap_  = LINALG::MergeMap(*gndofrowmap_, *gsmdofrowmap_, false);
 
+// TODO: check if necessary!
   // due to boundary modification we have to extend master map to slave dofs
-  if(DRT::INPUT::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES"))
-  {
-    gmdofrowmap_ = LINALG::MergeMap(SlDoFRowMap(true), *gmdofrowmap_, false);
-  }
+//  if(DRT::INPUT::IntegralValue<int>(Params(),"NONSMOOTH_GEOMETRIES"))
+//  {
+//    gmdofrowmap_ = LINALG::MergeMap(SlDoFRowMap(true), *gmdofrowmap_, false);
+//  }
 
   // initialize flags for global contact status
   if (gactivenodes_->NumGlobalElements())
@@ -701,80 +737,74 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(
   /******************************************/
   /*     VERSION WITH TIME MEASUREMENT      */
   /******************************************/
-
 #ifdef CONTACTTIME
+
   // mortar initialization and evaluation
   Comm().Barrier();
   const double t_start1 = Teuchos::Time::wallTime();
-  SetState("displacement",dis);
+  SetState(MORTAR::state_new_displacement, *dis);
   Comm().Barrier();
   const double t_end1 = Teuchos::Time::wallTime()-t_start1;
-  if (Comm().MyPID()==0) std::cout << "    -->SetState:\t" << t_end1 << " seconds\n";
+
 
   Comm().Barrier();
   const double t_start2 = Teuchos::Time::wallTime();
-  InitMortar();
+  //---------------------------------------------------------------
+  // For selfcontact the master/slave sets are updated within the -
+  // contact search, see SelfBinaryTree.                          -
+  // Therefore, we have to initialize the mortar matrices after   -
+  // interface evaluations.                                       -
+  //---------------------------------------------------------------
+  if (IsSelfContact())
+  {
+    InitEvalInterface(); // evaluate mortar terms (integrate...)
+    InitMortar();        // initialize mortar matrices and vectors
+    AssembleMortar();    // assemble mortar terms into global matrices
+  }
+  else
+  {
+    InitMortar();        // initialize mortar matrices and vectors
+    InitEvalInterface(); // evaluate mortar terms (integrate...)
+    AssembleMortar();    // assemble mortar terms into global matrices
+  }
   Comm().Barrier();
   const double t_end2 = Teuchos::Time::wallTime()-t_start2;
-  if (Comm().MyPID()==0) std::cout << "    -->MortarInit  :\t" << t_end2 << " seconds\n";
-
-  Comm().Barrier();
-  const double t_start3 = Teuchos::Time::wallTime();
-  InitEvalInterface();
-  Comm().Barrier();
-  const double t_end3 = Teuchos::Time::wallTime()-t_start3;
-  if (Comm().MyPID()==0)
-  {
-    std::cout << "    -->Interface:\t" << t_end3 << " seconds";
-    if ((int)tunbalance_.size()==0 && (int)eunbalance_.size()==0) std::cout << "\n";
-    else std::cout << " (BALANCE: " << tunbalance_.back() << " " << eunbalance_.back() << ")\n";
-  }
-
-  Comm().Barrier();
-  const double t_start4 = Teuchos::Time::wallTime();
-  AssembleMortar();
-  Comm().Barrier();
-  const double t_end4 = Teuchos::Time::wallTime()-t_start4;
-  if (Comm().MyPID()==0) std::cout << "    -->AssembleMortar  :\t" << t_end4 << " seconds\n";
 
   // evaluate relative movement for friction
   Comm().Barrier();
-  const double t_start5 = Teuchos::Time::wallTime();
-  if (predictor) EvaluateRelMovPredict();
-  else EvaluateRelMov();
-  Comm().Barrier();
-  const double t_end5 = Teuchos::Time::wallTime()-t_start5;
-  if (Comm().MyPID()==0) std::cout << "    -->RelMov  :\t" << t_end5 << " seconds\n";
+  const double t_start3 = Teuchos::Time::wallTime();
+  if (predictor)
+    EvaluateRelMovPredict();
+  else
+    EvaluateRelMov();
 
   // update active set
+  if (!predictor)
+    UpdateActiveSetSemiSmooth();
+
   Comm().Barrier();
-  const double t_start6 = Teuchos::Time::wallTime();
-  if (!predictor) UpdateActiveSetSemiSmooth();
-  Comm().Barrier();
-  const double t_end6 = Teuchos::Time::wallTime()-t_start6;
-  if (Comm().MyPID()==0) std::cout << "    -->ActivSet:\t" << t_end6 << " seconds\n";
+  const double t_end3 = Teuchos::Time::wallTime()-t_start3;
 
   // apply contact forces and stiffness
   Comm().Barrier();
-  const double t_start7 = Teuchos::Time::wallTime();
-  Initialize();
-  Comm().Barrier();
-  const double t_end7 = Teuchos::Time::wallTime()-t_start7;
-  if (Comm().MyPID()==0) std::cout << "    -->Initial :\t" << t_end7 << " seconds\n";
+  const double t_start4 = Teuchos::Time::wallTime();
+  Initialize();         // init lin-matrices
+  Evaluate(kt, f, dis); // assemble lin. matrices, condensation ...
+  EvalConstrRHS();      // evaluate the constraint rhs (saddle-point system only)
 
   Comm().Barrier();
-  const double t_start8 = Teuchos::Time::wallTime();
-  Evaluate(kt,f,dis);
-  Comm().Barrier();
-  const double t_end8 = Teuchos::Time::wallTime()-t_start8;
-  if (Comm().MyPID()==0) std::cout << "    -->Evaluate:\t" << t_end8 << " seconds\n";
+  const double t_end4 = Teuchos::Time::wallTime()-t_start4;
 
-  Comm().Barrier();
-  const double t_start9 = Teuchos::Time::wallTime();
+  //only for debugging:
   InterfaceForces();
-  Comm().Barrier();
-  const double t_end9 = Teuchos::Time::wallTime()-t_start9;
-  if (Comm().MyPID()==0) std::cout << "    -->IfForces:\t" << t_end9 << " seconds\n";
+
+  if (Comm().MyPID()==0)
+  {
+    std::cout << "    -->setstate :\t" << t_end1 << " seconds\n";
+    std::cout << "    -->interface eval. :\t" << t_end2 << " seconds\n";
+    std::cout << "    -->update active set :\t" << t_end3 << " seconds\n";
+    std::cout << "    -->modify global system :\t" << t_end4 << " seconds\n";
+  }
 
 #else
 
@@ -1636,15 +1666,12 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
 void CONTACT::CoAbstractStrategy::OutputStresses()
 {
   // reset contact stress class variables
-  stressnormal_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+  stressnormal_     = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
   stresstangential_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 
   // loop over all interfaces
   for (int i = 0; i < (int) Interfaces().size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    //if (i>0) dserror("ERROR: OutputStresses: Double active node check needed for n interfaces!");
-
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {

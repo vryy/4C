@@ -50,8 +50,11 @@ Wc_su_lm_(0)
   {
     txi()[i]=0.0;
     teta()[i]=0.0;
+    Getgltl()[i]=1.0e12;
+    Getjumpltl()[i]=1.0e12;
   }
-
+  GetDerivGltl().resize(3);
+  GetDerivJumpltl().resize(3);
   return;
 }
 
@@ -538,11 +541,6 @@ void CONTACT::CoNode::AddWGapValue(double& val)
 void CONTACT::CoNode::AddntsGapValue(double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddWGapValue: function called for master node %i", Id());
-  if (IsOnBound()==true)
-    dserror("ERROR: AddWGapValue: function called for boundary node %i", Id());
-
   // initialize if called for the first time
   if (CoData().Getgnts()==1.0e12) CoData().Getgnts()=0;
 
@@ -557,10 +555,6 @@ void CONTACT::CoNode::AddntsGapValue(double& val)
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::AddltsGapValue(double& val)
 {
-  // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: function called for master node %i", Id());
-
   // initialize if called for the first time
   if (CoData().Getglts()==1.0e12) CoData().Getglts()=0;
 
@@ -573,7 +567,7 @@ void CONTACT::CoNode::AddltsGapValue(double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the ltl gap                               farah 07/16|
  *----------------------------------------------------------------------*/
-void CONTACT::CoNode::AddltlGapValue(double& val)
+void CONTACT::CoNode::AddltlGapValue(double* val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
@@ -582,13 +576,52 @@ void CONTACT::CoNode::AddltlGapValue(double& val)
     dserror("ERROR: function call for non edge node! %i", Id());
 
   // initialize if called for the first time
-  if (CoData().Getgltl()==1.0e12) CoData().Getgltl()=0;
+  if (CoData().Getgltl()[0]==1.0e12 or
+      CoData().Getgltl()[1]==1.0e12 or
+      CoData().Getgltl()[2]==1.0e12)
+  {
+    CoData().Getgltl()[0]=0.0;
+    CoData().Getgltl()[1]=0.0;
+    CoData().Getgltl()[2]=0.0;
+  }
 
   // add given value to wGap_
-  CoData().Getgltl()+=val;
+  CoData().Getgltl()[0]+=val[0];
+  CoData().Getgltl()[1]+=val[1];
+  CoData().Getgltl()[2]+=val[2];
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the ltl jump                               farah 07/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddltlJumpValue(double* val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: function called for master node %i", Id());
+  if (!IsOnEdge())
+    dserror("ERROR: function call for non edge node! %i", Id());
+
+  // initialize if called for the first time
+  if (CoData().Getjumpltl()[0]==1.0e12 or
+      CoData().Getjumpltl()[1]==1.0e12 or
+      CoData().Getjumpltl()[2]==1.0e12)
+  {
+    CoData().Getjumpltl()[0]=0.0;
+    CoData().Getjumpltl()[1]=0.0;
+    CoData().Getjumpltl()[2]=0.0;
+  }
+
+  // add given value to wGap_
+  CoData().Getjumpltl()[0]+=val[0];
+  CoData().Getjumpltl()[1]+=val[1];
+  CoData().Getjumpltl()[2]+=val[2];
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  Add a value to scaling factor kappa                  hiermeier 04/14|
@@ -856,6 +889,248 @@ void CONTACT::CoNode::ResetDataContainer()
   modata_  = Teuchos::null;
   coporodata_ = Teuchos::null;
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Build averaged nodal edge tangents                       farah 11/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::BuildAveragedEdgeTangent()
+{
+  for (int j=0;j<3;++j)
+  {
+    MoData().EdgeTangent()[j]=0.0;
+  }
+  int nseg = NumElement();
+  DRT::Element** adjeles = Elements();
+
+  //**************************************************
+  //              CALCULATE EDGES
+  //**************************************************
+  // empty vector of slave element pointers
+  std::vector<Teuchos::RCP<MORTAR::MortarElement> > lineElementsS;
+  std::set<std::pair<int,int> > donebefore;
+
+  // loop over all surface elements
+  for(int surfele=0;surfele<nseg;++surfele)
+  {
+    CoElement* cele = dynamic_cast<CoElement*> (adjeles[surfele]);
+
+    if(cele->Shape() == DRT::Element::quad4)
+    {
+      for(int j = 0; j< 4 ; ++j)
+      {
+        int nodeIds[2]  = {0,0};
+        int nodeLIds[2] = {0,0};
+
+        if(j == 0)
+        {
+          nodeIds[0] = cele->NodeIds()[0];
+          nodeIds[1] = cele->NodeIds()[1];
+
+          nodeLIds[0] = 0;
+          nodeLIds[1] = 1;
+        }
+        else if(j == 1)
+        {
+          nodeIds[0] = cele->NodeIds()[1];
+          nodeIds[1] = cele->NodeIds()[2];
+
+          nodeLIds[0] = 1;
+          nodeLIds[1] = 2;
+        }
+        else if(j == 2)
+        {
+          nodeIds[0] = cele->NodeIds()[2];
+          nodeIds[1] = cele->NodeIds()[3];
+
+          nodeLIds[0] = 2;
+          nodeLIds[1] = 3;
+        }
+        else if(j == 3)
+        {
+          nodeIds[0] = cele->NodeIds()[3];
+          nodeIds[1] = cele->NodeIds()[0];
+
+          nodeLIds[0] = 3;
+          nodeLIds[1] = 0;
+        }
+
+        // check if both nodes on edge geometry
+        bool node0Edge = dynamic_cast<MORTAR::MortarNode*>(cele->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge = dynamic_cast<MORTAR::MortarNode*>(cele->Nodes()[nodeLIds[1]])->IsOnEdge();
+
+        if(!node0Edge or !node1Edge)
+          continue;
+
+        //create pair
+        std::pair<int,int> actIDs   = std::pair<int,int>(nodeIds[0],nodeIds[1]);
+        std::pair<int,int> actIDstw = std::pair<int,int>(nodeIds[1],nodeIds[0]);
+
+        // check if processed before
+        std::set<std::pair<int,int> >::iterator iter   = donebefore.find(actIDs);
+        std::set<std::pair<int,int> >::iterator itertw = donebefore.find(actIDstw);
+
+         // if not then create ele
+         if (iter == donebefore.end() and itertw == donebefore.end())
+         {
+           // add to set of processed nodes
+           donebefore.insert(actIDs);
+           donebefore.insert(actIDstw);
+
+           // create line ele:
+           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(
+                       new MORTAR::MortarElement(
+                           j,
+                           cele->Owner(),
+                           DRT::Element::line2,
+                           2,
+                           nodeIds,
+                           false));
+
+           // get nodes
+           DRT::Node* nodes[2] = {cele->Nodes()[nodeLIds[0]],cele->Nodes()[nodeLIds[1]]};
+           lineEle->BuildNodalPointers(nodes);
+
+           // init data container for dual shapes
+           lineEle->InitializeDataContainer();
+
+           // push back into vector
+           lineElementsS.push_back(lineEle);
+         }
+      } // end edge loop
+    }
+    else
+      dserror("ERROR: only quad4!");
+  }// end surfele loop
+
+
+  //**************************************************
+  //      GET EDGES WHICH ARE CONNECTED TO NODE
+  //**************************************************
+  std::vector<int> dummy;
+  for(int edges = 0; edges<(int)lineElementsS.size();++edges)
+  {
+    for(int count = 0;count<lineElementsS[edges]->NumNode();++count)
+    {
+      if(lineElementsS[edges]->Nodes()[count]->Id() == Id())
+        dummy.push_back(edges);
+    }
+  }
+
+  if(dummy.size()>2)
+    std::cout << "WARNING: multiple edge definitions possible!" << std::endl;
+
+  if(dummy.size()<1)
+    dserror("ERROR!");
+
+  //**************************************************
+  //      CALC ADJACENT TANGENTS
+  //**************************************************
+  CoNode* n1 = NULL;
+  CoNode* n2 = NULL;
+
+  if(lineElementsS[dummy[0]]->Nodes()[0]->Id()!=Id())
+    n1 = dynamic_cast<CoNode*>(lineElementsS[dummy[0]]->Nodes()[0]);
+  else if(lineElementsS[dummy[0]]->Nodes()[1]->Id()!=Id())
+    n1 = dynamic_cast<CoNode*>(lineElementsS[dummy[0]]->Nodes()[1]);
+  else
+    dserror("ERROR");
+
+  if(dummy.size()<2)
+  {
+    // get node itself if no adjacent edge elements could be found
+    n2 = this;
+  }
+  else
+  {
+    if(lineElementsS[dummy[1]]->Nodes()[0]->Id()!=Id())
+      n2 = dynamic_cast<CoNode*>(lineElementsS[dummy[0]]->Nodes()[0]);
+    else if(lineElementsS[dummy[1]]->Nodes()[1]->Id()!=Id())
+      n2 = dynamic_cast<CoNode*>(lineElementsS[dummy[0]]->Nodes()[1]);
+    else
+      dserror("ERROR");
+  }
+
+
+  double tmp1[3]={0.0,0.0,0.0};
+  //difference
+  tmp1[0] = n1->xspatial()[0] - n2->xspatial()[0];
+  tmp1[1] = n1->xspatial()[1] - n2->xspatial()[1];
+  tmp1[2] = n1->xspatial()[2] - n2->xspatial()[2];
+  const double length = sqrt(tmp1[0]*tmp1[0] + tmp1[1]*tmp1[1] + tmp1[2]*tmp1[2]);
+  if(length<1e-12)
+    dserror("ERROR");
+  MoData().EdgeTangent()[0] = tmp1[0]/length;
+  MoData().EdgeTangent()[1] = tmp1[1]/length;
+  MoData().EdgeTangent()[2] = tmp1[2]/length;
+
+  //**************************************************
+  //      LINEARIZATION
+  //**************************************************
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
+
+  for (int j=0;j<(int)((CoData().GetDerivTangent()).size());++j)
+    (CoData().GetDerivTangent())[j].clear();
+  (CoData().GetDerivTangent()).resize(0,0);
+  if ((int)CoData().GetDerivTangent().size()==0)
+    CoData().GetDerivTangent().resize(3,2*100);
+
+  std::vector<GEN::pairedvector<int,double> > lint(3,100);// added all sizes
+  if(n1!=NULL)
+  {
+    lint[0][n1->Dofs()[0]] += 1;
+    lint[1][n1->Dofs()[1]] += 1;
+    lint[2][n1->Dofs()[2]] += 1;
+  }
+  if(n2!=NULL)
+  {
+    lint[0][n2->Dofs()[0]] -= 1;
+    lint[1][n2->Dofs()[1]] -= 1;
+    lint[2][n2->Dofs()[2]] -= 1;
+  }
+  // first part
+  std::vector<GEN::pairedvector<int,double> > Lin1(3,100);// added all sizes
+  for (_CI p=lint[0].begin();p!=lint[0].end();++p)
+    Lin1[0][p->first] += p->second / length;
+  for (_CI p=lint[1].begin();p!=lint[1].end();++p)
+    Lin1[1][p->first] += p->second / length;
+  for (_CI p=lint[2].begin();p!=lint[2].end();++p)
+    Lin1[2][p->first] += p->second / length;
+
+  GEN::pairedvector<int,double>  Lin2(100);// added all sizes
+  for (_CI p=lint[0].begin();p!=lint[0].end();++p)
+    Lin2[p->first] += p->second * MoData().EdgeTangent()[0];
+  for (_CI p=lint[1].begin();p!=lint[1].end();++p)
+    Lin2[p->first] += p->second * MoData().EdgeTangent()[1];
+  for (_CI p=lint[2].begin();p!=lint[2].end();++p)
+    Lin2[p->first] += p->second * MoData().EdgeTangent()[2];
+
+  std::vector<GEN::pairedvector<int,double> > Lin3(3,100);// added all sizes
+  for (_CI p=Lin2.begin();p!=Lin2.end();++p)
+    Lin3[0][p->first] += p->second * MoData().EdgeTangent()[0] / (length*length*length);
+  for (_CI p=Lin2.begin();p!=Lin2.end();++p)
+    Lin3[1][p->first] += p->second * MoData().EdgeTangent()[1] / (length*length*length);
+  for (_CI p=Lin2.begin();p!=Lin2.end();++p)
+    Lin3[2][p->first] += p->second * MoData().EdgeTangent()[2] / (length*length*length);
+
+  for (_CI p=Lin1[0].begin();p!=Lin1[0].end();++p)
+    CoData().GetDerivTangent()[0][p->first] += p->second;
+  for (_CI p=Lin1[1].begin();p!=Lin1[1].end();++p)
+    CoData().GetDerivTangent()[1][p->first] += p->second;
+  for (_CI p=Lin1[2].begin();p!=Lin1[2].end();++p)
+    CoData().GetDerivTangent()[2][p->first] += p->second;
+
+  for (_CI p=Lin3[0].begin();p!=Lin3[0].end();++p)
+    CoData().GetDerivTangent()[0][p->first] -= p->second;
+  for (_CI p=Lin3[1].begin();p!=Lin3[1].end();++p)
+    CoData().GetDerivTangent()[1][p->first] -= p->second;
+  for (_CI p=Lin3[2].begin();p!=Lin3[2].end();++p)
+    CoData().GetDerivTangent()[2][p->first] -= p->second;
+
+  //std::cout << "tangent = " << MoData().EdgeTangent()[0] << "  " << MoData().EdgeTangent()[1] << "  " << MoData().EdgeTangent()[2] << std::endl;
+
+  // bye bye
   return;
 }
 

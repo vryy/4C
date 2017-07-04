@@ -57,6 +57,7 @@ sswear_(DRT::INPUT::IntegralValue<int>(imortar_,"SSWEAR")),
 wearcoeff_(-1.0),
 wearcoeffm_(-1.0),
 ssslip_(imortar_.get<double>("SSSLIP")),
+nonsmooth_(false),
 integrationtype_( DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE") )
 {
   // init gp
@@ -85,6 +86,8 @@ integrationtype_( DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"IN
     // wear coefficient
     wearcoeffm_ = imortar_.get<double>("WEARCOEFF_MASTER");
   }
+
+  nonsmooth_ = DRT::INPUT::IntegralValue<int>(imortar_,"NONSMOOTH_GEOMETRIES");
 
   return;
 }
@@ -1486,13 +1489,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   LINALG::SerialDenseMatrix mderiv(ncol,2,true);
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
+  LINALG::SerialDenseVector lmvalScale(nrow);
+  LINALG::SerialDenseMatrix lmderivScale(nrow,2,true);
 
-  // prepare directional derivative of dual shape functions
-  // this is necessary for all slave element types except tri3
-  GEN::pairedvector<int,Epetra_SerialDenseMatrix> dualmap((nrow+ncol)*ndof,0,Epetra_SerialDenseMatrix(nrow,nrow));
-  if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (sele.Shape()!=MORTAR::MortarElement::tri3 || sele.MoData().DerivDualShape()!=Teuchos::null))
-    sele.DerivShapeDual(dualmap);
+
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -1517,7 +1517,14 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   }
 
   // for cpp normal we have more lin entries
+  linsize*=10;
 
+  // prepare directional derivative of dual shape functions
+  // this is necessary for all slave element types except tri3
+  GEN::pairedvector<int,Epetra_SerialDenseMatrix> dualmap((nrow+ncol)*ndof,0,Epetra_SerialDenseMatrix(nrow,nrow));
+  if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
+      (sele.Shape()!=MORTAR::MortarElement::tri3 || sele.MoData().DerivDualShape()!=Teuchos::null))
+    sele.DerivShapeDual(dualmap);
 
   // check if the cells are tri3
   // there's nothing wrong about other shapes, but as long as they are all
@@ -1601,6 +1608,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
+    sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmvalScale,lmderivScale,nrow,false);
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -1636,6 +1644,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     double gap[1]      = {0.0};
     std::vector<GEN::pairedvector<int,double> > dnmap_unit(3,linsize);           // deriv of x,y and z comp. of gpn (unit)
     Gap_3D(sele,mele,sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
+
+    // integrate for area scaling:
+    for(int i=0;i<sele.NumNode();++i)
+    {
+      dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[i])->MoData().GetDscale() += wgt * jac * sval[i]*lmvalScale[i];
+    }
 
     //**********************************************************************
     // evaluate at GP and lin char. quantities
@@ -2432,8 +2446,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
   DRT::Element::DiscretizationType mdt = mele.Shape();
 
   // check input data
-  if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
+//  if ((!sele.IsSlave()) || (mele.IsSlave()))
+//    dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
   if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
 
@@ -2475,7 +2489,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
     CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
-  linsize *= 100;
+  linsize *= 100; // TODO: remove this safety scaling
 
   // check if the cells are tri3
   // there's nothing wrong about other shapes, but as long as they are all
@@ -2522,22 +2536,36 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
         sxi,
         sprojalpha);
     if(!success)
+    {
+//      dserror("ERROR: projection not possible!");
       return;
+    }
 
-    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(
+    success = MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(
         globgp,
         auxn,
         mele,
         mxi,
         mprojalpha);
+    if(!success)
+    {
+//      dserror("ERROR: projection not possible!");
+      return;
+    }
+
+    // check
+    double checkpos[3] = {0.0, 0.0, 0.0};
+    mele.LocalToGlobal(mxi,checkpos,0);
 
     // check GP projection (SLAVE)
-    double tol = 0.01;
+    const double sminedge = sele.MinEdgeSize();
+    const double mminedge = mele.MinEdgeSize();
+    const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
     if (sdt==DRT::Element::quad4 || sdt==DRT::Element::quad8 || sdt==DRT::Element::quad9)
     {
       if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "\n***Warning: LTS: Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
@@ -2547,7 +2575,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
     {
       if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "\n***Warning: LTS: Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << std::endl;
@@ -2559,20 +2587,24 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
     {
       if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "\n***Warning: LTS: Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
+        std::cout << "globgp=   "<< globgp[0] << "  " << globgp[1] << "  " << globgp[2] << std::endl;
+        std::cout << "checkpos= "<< checkpos[0] << "  " << checkpos[1] << "  " << checkpos[2] << std::endl;
       }
     }
     else
     {
       if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
       {
-        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Gauss point projection outside!";
+        std::cout << "\n***Warning: LTS: Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1] << std::endl;
         std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << std::endl;
+        std::cout << "globgp=   "<< globgp[0] << "  " << globgp[1] << "  " << globgp[2] << std::endl;
+        std::cout << "checkpos= "<< checkpos[0] << "  " << checkpos[1] << "  " << checkpos[2] << std::endl;
       }
     }
 
@@ -2800,7 +2832,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
           dg -= gpn[k] * sderiv(z,0) * cnode->xspatial()[k] * ps;
       }
     }
-
     //        MASTER
     // lin master nodes
     for (int z=0;z<ncol;++z)
@@ -2982,8 +3013,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
             // and add current Gauss point's contribution to dseg
             if (mnode->IsOnCorner())
             {
-              if(abs(prod)>MORTARINTTOL) cnode->AddMltsValue(mnode->Id(),-prod);
-              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id()); // only for friction!
+              if(abs(prod)>MORTARINTTOL) cnode->AddDltsValue(mnode->Id(),prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
             }
             else
             {
@@ -3042,30 +3073,31 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
         // integrate dseg
         for (int k=0; k<nrowL; ++k)
         {
-          CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
+          CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
 
-          if(mnode->IsOnCorner())
+          if(snode->IsOnCorner())
           {
             // multiply the two shape functions
             double prod = lmval[j]*sval[k]*jac*wgt;
 
-            if(abs(prod)>MORTARINTTOL) cnode->AddMltsValue(cnode->Id(),-prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id()); // only for friction!
+            if(abs(prod)>MORTARINTTOL) cnode->AddDltsValue(snode->Id(),prod);
+            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id()); // only for friction!
           }
           else
           {
             // multiply the two shape functions
             double prod = lmval[j]*sval[k]*jac*wgt;
 
-            if(abs(prod)>MORTARINTTOL) cnode->AddDltsValue(cnode->Id(),prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id()); // only for friction!
+            if(abs(prod)>MORTARINTTOL) cnode->AddDltsValue(snode->Id(),prod);
+            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id()); // only for friction!
           }
         }
       }
     }
 
     // dual shape functions
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+    if (ShapeFcn() == INPAR::MORTAR::shape_dual ||
+        ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
       bool bound = false;
       for (int j=0;j<nrowL;++j)
@@ -3151,7 +3183,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
               // move entry to derivM (with minus sign)
               // get the correct map as a reference
               std::map<int,double>& dmmap_jk =
-                  dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMlts()[sgid];
+                  dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[sgid];
 
               // (1) Lin(Phi) - dual shape functions
   //            if (dualmap.size()>0)
@@ -3168,7 +3200,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
               // (2) Lin(NSlave) - slave GP coordinates
               fac = wgt*lmderiv(j, 0)*sval[k]*jac;
               for (_CI p=dlxigp[0].begin(); p!=dlxigp[0].end(); ++p)
-                dmmap_jk[p->first] -= fac*(p->second);
+                dmmap_jk[p->first] += fac*(p->second);
 
 //              fac = wgt*lmderiv(j, 1)*sval[k]*jac;
 //              for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
@@ -3177,7 +3209,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
               // (3) Lin(NSlave) - slave GP coordinates
               fac = wgt*lmval[j]*sderiv(k, 0)*jac;
               for (_CI p=dlxigp[0].begin(); p!=dlxigp[0].end(); ++p)
-                dmmap_jk[p->first] -= fac*(p->second);
+                dmmap_jk[p->first] += fac*(p->second);
 
 //              fac = wgt*lmval[j]*sderiv(k, 1)*jac;
 //              for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
@@ -3186,7 +3218,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
               // (4) Lin(dsxideta) - intcell GP Jacobian
               fac = wgt*lmval[j]*sval[k];
               for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
-                dmmap_jk[p->first] -= fac*(p->second);
+                dmmap_jk[p->first] += fac*(p->second);
             }
 
             // node k is NO boundary node
@@ -3247,7 +3279,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
 
           int sgid = mymrtrnode->Id();
           std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[sgid];
-
 
           // integrate LinM
           for (int k=0; k<ncol; ++k)
@@ -3317,7 +3348,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
           static double fac = 0.0;
 
           // get the correct map as a reference
-          std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMlts()[mgid];
+          std::map<int,double>& dmmap_jk =
+              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMlts()[mgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -3360,7 +3392,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
           if(dynamic_cast<CoNode*>(mynodes[k])->IsOnCorner())
           {
             // get the correct map as a reference
-            std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMlts()[mgid];
+            std::map<int,double>& dmmap_jk =
+                dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[mgid];
 
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
@@ -3369,27 +3402,28 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(
             fac = wgt*lmderiv(j, 0)*sval[k]*jac;
             for (_CI p=dlxigp[0].begin(); p!=dlxigp[0].end(); ++p)
             {
-              dmmap_jk[p->first] -= fac*(p->second);
+              dmmap_jk[p->first] += fac*(p->second);
             }
 
             // (3) Lin(NMaster) - master GP coordinates
             fac = wgt*lmval[j]*sderiv(k, 0)*jac;
             for (_CI p=dlxigp[0].begin(); p!=dlxigp[0].end(); ++p)
             {
-              dmmap_jk[p->first] -= fac*(p->second);
+              dmmap_jk[p->first] += fac*(p->second);
             }
 
             // (4) Lin(dsxideta) - intcell GP Jacobian
             fac = wgt*lmval[j]*sval[k];
             for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
             {
-              dmmap_jk[p->first] -= fac*(p->second);
+              dmmap_jk[p->first] += fac*(p->second);
             }
           }
           else
           {
             // get the correct map as a reference
-            std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[mgid];
+            std::map<int,double>& dmmap_jk =
+                dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDlts()[mgid];
 
             // (1) Lin(Phi) - dual shape functions
             // this vanishes here since there are no deformation-dependent dual functions
@@ -4316,6 +4350,60 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  Compute penalty scaling factor kappa                     farah 11/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoIntegrator::IntegrateKappaPenaltyLTS(MORTAR::MortarElement& ele)
+{
+  // number of nodes (slave)
+  int nrow = ele.NumNode();
+
+  // create empty objects for shape fct. evaluation
+  LINALG::SerialDenseVector val(nrow);
+  LINALG::SerialDenseMatrix deriv(nrow,2,true);
+
+  // get slave element nodes themselves
+  DRT::Node** mynodes = ele.Nodes();
+
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = {Coordinate(gp,0), 0.0};
+    if (Dim()==3) eta[1] = Coordinate(gp,1);
+    double wgt = Weight(gp);
+
+    // evaluate shape functions
+    ele.EvaluateShapeLagMult(ShapeFcn(),eta,val,deriv,nrow);
+
+    // evaluate the Jacobian det
+    const double jac = ele.Jacobian(eta);
+
+    // compute cell gap vector *******************************************
+    // loop over all gseg vector entries
+    // nrow represents the slave side dofs !!!  */
+    for (int j=0;j<nrow;++j)
+    {
+      CoNode* mymrtrnode =
+          dynamic_cast<CoNode*>(mynodes[j]);
+
+      if(mymrtrnode->IsOnCorner())
+        continue;
+
+      // add current Gauss point's contribution to kappa
+      mymrtrnode->CoData().Kappa() += val[j]*jac*wgt;
+    }
+  }
+  //**********************************************************************
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |  Compute penalty scaling factor kappa                      popp 11/09|
  *----------------------------------------------------------------------*/
@@ -5956,8 +6044,27 @@ void inline CONTACT::CoIntegrator::GP_DM(
 
         if (snode->IsOnBoundorCE())
         {
-          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id()); // only for friction!
+          if(nonsmooth_)
+          {
+            if(snode->IsOnBound() and !snode->IsOnCornerEdge())
+            {
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id()); // only for friction!
+            }
+            else
+            {
+              if(abs(prod)>MORTARINTTOL) cnode->AddDValue(snode->Id(),prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id()); // only for friction!
+            }
+          }
+          else
+          {
+            if(snode->IsOnBoundorCE())
+            {
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id()); // only for friction!
+            }
+          }
         }
         else
         {
@@ -6017,8 +6124,11 @@ void inline CONTACT::CoIntegrator::GP_DM(
           // and add current Gauss point's contribution to dseg
           if (mnode->IsOnBoundorCE())
           {
-            if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),-prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id()); // only for friction!
+            // NONSMOOTH MODIFICATION
+//            if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),-prod);
+//            if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id()); // only for friction!
+            if(abs(prod)>MORTARINTTOL) cnode->AddDValue(mnode->Id(),prod);
+            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
           }
           else
           {
@@ -6460,6 +6570,7 @@ void CONTACT::CoIntegrator::Gap_3D(
       linsize += cnode->GetLinsize();
     }
   }
+  linsize*=10;
 
   // build directional derivative of slave GP normal (non-unit)
   GEN::pairedvector<int,double> dmap_nxsl_gp(linsize);
@@ -7777,7 +7888,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(
         {
           // move entry to derivM (with minus sign)
           // get the correct map as a reference
-          std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
+          std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           // this vanishes here since there are no deformation-dependent dual functions
@@ -7785,25 +7896,25 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(
           // (2) Lin(NSlave) - slave GP coordinates
           fac = wgt*lmderiv(j, 0)*sval[k]*jac;
           for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
 
           fac = wgt*lmderiv(j, 1)*sval[k]*jac;
           for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
 
           // (3) Lin(NSlave) - slave GP coordinates
           fac = wgt*lmval[j]*sderiv(k, 0)*jac;
           for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
 
           fac = wgt*lmval[j]*sderiv(k, 1)*jac;
           for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
 
           // (4) Lin(dsxideta) - intcell GP Jacobian
           fac = wgt*lmval[j]*sval[k];
           for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
         }
 
         // node k is NO boundary node
@@ -7919,8 +8030,12 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(
         {
           // move entry to derivM (with minus sign)
           // get the correct map as a reference
+//          std::map<int,double>& dmmap_jk =
+//              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
+
+          // NONSMOOTH MODIFICATION
           std::map<int,double>& dmmap_jk =
-              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[sgid];
+              dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
 
           // (1) Lin(Phi) - dual shape functions
           if (dualmap.size()>0)
@@ -7930,32 +8045,32 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(
               fac = wgt*sval[m]*sval[k]*jac;
               for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
                   p!=dualmap.end();++p)
-                dmmap_jk[p->first] -= fac*(p->second)(j,m);
+                dmmap_jk[p->first] += fac*(p->second)(j,m);
             }
           }
 
           // (2) Lin(NSlave) - slave GP coordinates
           fac = wgt*lmderiv(j, 0)*sval[k]*jac;
           for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
 
           fac = wgt*lmderiv(j, 1)*sval[k]*jac;
           for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
 
           // (3) Lin(NSlave) - slave GP coordinates
           fac = wgt*lmval[j]*sderiv(k, 0)*jac;
           for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
 
           fac = wgt*lmval[j]*sderiv(k, 1)*jac;
           for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
 
           // (4) Lin(dsxideta) - intcell GP Jacobian
           fac = wgt*lmval[j]*sval[k];
           for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
+            dmmap_jk[p->first] += fac*(p->second);
         }
 
         // node k is NO boundary node

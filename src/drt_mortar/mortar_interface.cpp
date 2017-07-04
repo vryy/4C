@@ -736,6 +736,14 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::InitializeCornerEdge()
 {
+  // if linear LM for quad displacements return!
+  // TODO: this case needs a special treatment
+  bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
+      IParams(), "LM_QUAD") == INPAR::MORTAR::lagmult_lin);
+
+  if(lagmultlin)
+    return;
+
   for (int i = 0; i < (Discret().NodeRowMap())->NumMyElements(); ++i)
   {
     // static_cast to the corresponding mortar/contact/friction/... node
@@ -2335,7 +2343,7 @@ void MORTAR::MortarInterface::Evaluate(
 
   // evaluate nodal normals and decide in contact case if
   // this is a nonsmooth or smooth contact
-  PreEvaluate();
+  PreEvaluate(step,iter);
 
   // evaluation routine for coupling
   EvaluateCoupling(mparams_ptr);
@@ -2383,7 +2391,7 @@ void MORTAR::MortarInterface::EvaluateCoupling(
     // 3) compute directional derivative of M and g and store into nodes
     //    (only for contact setting)
     //********************************************************************
-    EvaluateSTS(mparams_ptr);
+    MORTAR::MortarInterface::EvaluateSTS(mparams_ptr);
     break;
   }
   //*********************************
@@ -2602,7 +2610,9 @@ void MORTAR::MortarInterface::EvaluateNodalNormals() const
 /*----------------------------------------------------------------------*
  |  pre evaluate to calc normals                            farah 02/16 |
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::PreEvaluate()
+void MORTAR::MortarInterface::PreEvaluate(
+    const int& step,
+    const int& iter)
 {
   //**********************************************************************
   // search algorithm
@@ -3721,6 +3731,9 @@ void MORTAR::MortarInterface::AssembleLM(Epetra_Vector& zglobal)
 void MORTAR::MortarInterface::AssembleD(
     LINALG::SparseMatrix& dglobal)
 {
+  const bool nonsmooth =
+      DRT::INPUT::IntegralValue<int>(IParams(),"NONSMOOTH_GEOMETRIES");
+
   // get out of here if not participating in interface
   if (!lComm())
     return;
@@ -3764,8 +3777,9 @@ void MORTAR::MortarInterface::AssembleD(
           int col = kcnode  ->Dofs()[j];
 
           // do the assembly into global D matrix
-          if (shapefcn_ == INPAR::MORTAR::shape_dual
-              || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
+          if (!nonsmooth and
+              (shapefcn_ == INPAR::MORTAR::shape_dual or
+              shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin))
           {
 #ifdef MORTARTRAFO
             // do lumping of D-matrix
@@ -3781,7 +3795,8 @@ void MORTAR::MortarInterface::AssembleD(
               dglobal.Assemble(val, row, col);
 #endif // #ifdef MORTARTRAFO
           }
-          else if (shapefcn_ == INPAR::MORTAR::shape_standard)
+          else if (nonsmooth or
+                   shapefcn_ == INPAR::MORTAR::shape_standard)
           {
             // don't check for diagonality
             // since for standard shape functions, as in general when using
@@ -3848,7 +3863,7 @@ void MORTAR::MortarInterface::AssembleM(
           int col = kcnode->Dofs()[j];
 
           // do not assemble zeros into m matrix
-          if (abs(val) > 1.0e-12)
+//          if (abs(val) > 1.0e-12)
             mglobal.Assemble(val, row, col);
         }
       }

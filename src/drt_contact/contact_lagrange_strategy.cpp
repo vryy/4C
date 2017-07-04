@@ -14,36 +14,16 @@
 #include "Epetra_SerialComm.h"
 #include "contact_lagrange_strategy.H"
 #include "contact_interface.H"
+#include "contact_integrator.H"
 #include "contact_defines.H"
 #include "contact_paramsinterface.H"
+#include "contact_element.H"
 #include "friction_node.H"
 #include "../drt_mortar/mortar_utils.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
-
-///*----------------------------------------------------------------------*
-// | ctor (public)                                              popp 05/09|
-// *----------------------------------------------------------------------*/
-//CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
-//    const Epetra_Map* DofRowMap,
-//    const Epetra_Map* NodeRowMap,
-//    Teuchos::ParameterList params,
-//    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-//    int dim,
-//    Teuchos::RCP<const Epetra_Comm> comm,
-//    double alphaf,
-//    int maxdof)
-//    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
-//        DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
-//      activesetssconv_(false),
-//      activesetconv_(false),
-//      activesetsteps_(1)
-//{
-//  // empty constructor body
-//  return;
-//}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -62,7 +42,12 @@ CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
       evalForceCalled_(false),
       activesetssconv_(false),
       activesetconv_(false),
-      activesetsteps_(1)
+      activesetsteps_(1),
+      fLTLOld_(Teuchos::null),
+      fLTL_(Teuchos::null),
+      fLTLn_(Teuchos::null),
+      fLTLt_(Teuchos::null),
+      fconservation_(Teuchos::null)
 {
   // empty constructor body
   return;
@@ -170,6 +155,23 @@ void CONTACT::CoLagrangeStrategy::Initialize()
 void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                                                    Teuchos::RCP<Epetra_Vector>& feff)
 {
+  // In case of nonsmooth contact the scenario of contacting edges (non parallel)
+  // requires a penalty regularization. Here, the penalty contriutions for this
+  // special case are applied:
+  if(nonSmoothContact_)
+  {
+    // AddLineToLinContributions(kteff,feff);
+    AddLineToLinContributionsFriction(kteff,feff);
+
+    // FD check of weighted gap g derivatives + jump for LTL case
+#ifdef CONTACTFDJUMPLTL
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      interface_[i]->FDCheckJumpDerivLTL();
+    }
+#endif // #ifdef CONTACTFDJUMPLTL
+  }
+
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
@@ -281,33 +283,144 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     /* (1) Multiply Mortar matrices: m^ = inv(d) * m                    */
     /********************************************************************/
     Teuchos::RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
-    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
-    int err = 0;
 
-    // extract diagonal of invd into diag
-    invd->ExtractDiagonalCopy(*diag);
-
-    // set zero diagonal values to dummy 1.0
-    for (int i=0;i<diag->MyLength();++i)
-      if ((*diag)[i]==0.0) (*diag)[i]=1.0;
-
-    // scalar inversion of diagonal values
-    err = diag->Reciprocal(*diag);
-    if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-    if (constr_direction_==INPAR::CONTACT::constr_xyz)
+    // for nonsmooth contact inverting D is more complex:
+    // Note: this invertation if only applicable when vertex, edge and surface nodes
+    // are involved. For a falling coin (only surface and edge nodes), a special but
+    // more easy implementation is needed.
+    if(nonSmoothContact_)
     {
+      // 1. split d matrix in vertex edge and surf part
+      Teuchos::RCP<LINALG::SparseMatrix> dss, dsev, devs, devev;
+      Teuchos::RCP<Epetra_Map> gEVdofs; // merged edge and vertex dofs
+
+      // get dss
+      LINALG::SplitMatrix2x2(dmatrix_,gsdofSurf_,gEVdofs,gsdofSurf_,gEVdofs,dss,dsev,devs,devev);
+
+      // get dse and dsv
+      Teuchos::RCP<Epetra_Map> temp;
+      Teuchos::RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2;
+      Teuchos::RCP<LINALG::SparseMatrix> dse, dsv;
+
+      LINALG::SplitMatrix2x2(dsev,gsdofSurf_,temp,gsdofEdge_,gsdofVertex_,dse,dsv,tempmtx1,tempmtx2);
+
+      // get dee dev dve dvv
+      Teuchos::RCP<LINALG::SparseMatrix> dee, dev, dve, dvv;
+      LINALG::SplitMatrix2x2(devev,gsdofEdge_,gsdofVertex_,gsdofEdge_,gsdofVertex_,dee,dev,dve,dvv);
+
+      //2. invert diagonal matrices dss dee dvv
+      Teuchos::RCP<Epetra_Vector> diagV = LINALG::CreateVector(*gsdofVertex_,true);
+      Teuchos::RCP<Epetra_Vector> diagE = LINALG::CreateVector(*gsdofEdge_,true);
+      Teuchos::RCP<Epetra_Vector> diagS = LINALG::CreateVector(*gsdofSurf_,true);
+      Teuchos::RCP<LINALG::SparseMatrix> invdV = Teuchos::rcp(new LINALG::SparseMatrix(*dvv));
+      Teuchos::RCP<LINALG::SparseMatrix> invdE = Teuchos::rcp(new LINALG::SparseMatrix(*dee));
+      Teuchos::RCP<LINALG::SparseMatrix> invdS = Teuchos::rcp(new LINALG::SparseMatrix(*dss));
+
+      int err = 0;
+
+      // extract diagonal of invd into diag
+      invdV->ExtractDiagonalCopy(*diagV);
+      invdE->ExtractDiagonalCopy(*diagE);
+      invdS->ExtractDiagonalCopy(*diagS);
+
+      // set zero diagonal values to dummy 1.0
+      for (int i=0;i<diagV->MyLength();++i)
+        if (abs((*diagV)[i])<1e-12)
+          (*diagV)[i]=1.0;
+      for (int i=0;i<diagE->MyLength();++i)
+        if (abs((*diagE)[i])<1e-12)
+          (*diagE)[i]=1.0;
+      for (int i=0;i<diagS->MyLength();++i)
+        if (abs((*diagS)[i])<1e-12)
+          (*diagS)[i]=1.0;
+
+      // scalar inversion of diagonal values
+      err = diagV->Reciprocal(*diagV);
+      if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = diagE->Reciprocal(*diagE);
+      if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = diagS->Reciprocal(*diagS);
+      if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+      // re-insert inverted diagonal into invd
+      err = invdV->ReplaceDiagonalValues(*diagV);
+      err = invdE->ReplaceDiagonalValues(*diagE);
+      err = invdS->ReplaceDiagonalValues(*diagS);
+
+      // 3. multiply all sub matrices
+      invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,true));
+
+      dse->Scale(-1.0);
+      dsv->Scale(-1.0);
+      dev->Scale(-1.0);
+
+      // inv_dse
+      Teuchos::RCP<LINALG::SparseMatrix> dum1;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dse;
+      dum1     = LINALG::MLMultiply(*dse,false,*invdE,false,false,false,true);
+      dinv_dse = LINALG::MLMultiply(*invdS,false,*dum1,false,false,false,true);
+
+      //inv_dev
+      Teuchos::RCP<LINALG::SparseMatrix> dum2;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dev;
+      dum2     = LINALG::MLMultiply(*dev,false,*invdV,false,false,false,true);
+      dinv_dev = LINALG::MLMultiply(*invdE,false,*dum2,false,false,false,true);
+
+      // inv_dsv part1
+      Teuchos::RCP<LINALG::SparseMatrix> dum3;
+      Teuchos::RCP<LINALG::SparseMatrix> dum4;
+      Teuchos::RCP<LINALG::SparseMatrix> dum5;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv1;
+      dum3     = LINALG::MLMultiply(*dev,false,*invdV,false,false,false,true);
+      dum4     = LINALG::MLMultiply(*invdE,false,*dum3,false,false,false,true);
+      dum5     = LINALG::MLMultiply(*dse,false,*dum4,false,false,false,true);
+      dinv_dsv1= LINALG::MLMultiply(*invdS,false,*dum5,false,false,false,true);
+
+      // inv_dsv part2
+      Teuchos::RCP<LINALG::SparseMatrix> dum6;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv2;
+      dum6     = LINALG::MLMultiply(*dsv,false,*invdV,false,false,false,true);
+      dinv_dsv2= LINALG::MLMultiply(*invdS,false,*dum6,false,false,false,true);
+
+      // diagonal entries
+      invd->Add(*invdS,false,1.0,1.0);
+      invd->Add(*invdE,false,1.0,1.0);
+      invd->Add(*invdV,false,1.0,1.0);
+
+      invd->Add(*dinv_dev,false,1.0,1.0);
+      invd->Add(*dinv_dse,false,1.0,1.0);
+      invd->Add(*dinv_dsv1,false,1.0,1.0);
+      invd->Add(*dinv_dsv2,false,1.0,1.0);
+
+      // complete
+      invd->Complete();
+    }
+    // standard inverse diagonal matrix:
+    else
+    {
+      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
+      int err = 0;
+
+      // extract diagonal of invd into diag
+      invd->ExtractDiagonalCopy(*diag);
+
+      // set zero diagonal values to dummy 1.0
+      for (int i=0;i<diag->MyLength();++i)
+        if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+
+      // scalar inversion of diagonal values
+      err = diag->Reciprocal(*diag);
+      if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
       Teuchos::RCP<Epetra_Vector> lmDBC=LINALG::CreateVector(*gsdofrowmap_,true);
       LINALG::Export(*pgsdirichtoggle_,*lmDBC);
       Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_,true);
       tmp->Multiply(1.,*diag,*lmDBC,0.);
       diag->Update(-1.,*tmp,1.);
-    }
 
-    // re-insert inverted diagonal into invd
-    err = invd->ReplaceDiagonalValues(*diag);
-    // we cannot use this check, as we deliberately replaced zero entries
-    //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+      // re-insert inverted diagonal into invd
+      err = invd->ReplaceDiagonalValues(*diag);
+    }
 
     // do the multiplication mhat = inv(D) * M
     mhatmatrix_ = LINALG::MLMultiply(*invd,false,*mmatrix_,false,false,false,true);
@@ -1133,6 +1246,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
       Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
       LINALG::Export(*fmold,*fmoldexp);
       feff->Update(alphaf_,*fmoldexp,1.0);
+
+      // Check linear and angular momentum conservation
+  #ifdef CHECKCONSERVATIONLAWS
+      CheckConservationLaws(*fs,*fm);
+  #endif
     }
   }
 
@@ -1214,11 +1332,540 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
 }
 
 /*----------------------------------------------------------------------*
+ |  pp stresses                                              farah 11/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::OutputStresses()
+{
+  static int step = 0;
+  // call abstract function
+  CONTACT::CoAbstractStrategy::OutputStresses();
+
+  // further scaling for nonsmooth contact
+  if(nonSmoothContact_)
+  {
+    forcenormal_ =
+        Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+    DMatrix()->Multiply(true, *stressnormal_, *forcenormal_);
+    forcetangential_ =
+        Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+    DMatrix()->Multiply(true, *stresstangential_, *forcetangential_);
+
+    Teuchos::RCP<Epetra_Vector> forcenormal =
+        Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+    DMatrix()->Multiply(true, *stressnormal_, *forcenormal);
+
+    Teuchos::RCP<Epetra_Vector> forcetangential =
+        Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+    DMatrix()->Multiply(true, *stresstangential_, *forcetangential);
+
+    // add penalty force normal
+    if(fLTLn_!=Teuchos::null)
+    {
+      Teuchos::RCP<Epetra_Vector> dummy =
+          Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+      LINALG::Export(*fLTLn_,*dummy);
+      forcenormal_->Update(1.0,*dummy,1.0);
+      forcenormal->Update(1.0,*dummy,1.0);
+    }
+
+    // add penalty force tangential
+    if(fLTLt_!=Teuchos::null)
+    {
+      Teuchos::RCP<Epetra_Vector> dummy =
+          Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+      LINALG::Export(*fLTLt_,*dummy);
+      forcetangential_->Update(1.0,*dummy,1.0);
+      forcetangential->Update(1.0,*dummy,1.0);
+    }
+
+    // loop over all interfaces
+    for (int i = 0; i < (int) interface_.size(); ++i)
+    {
+      // loop over all slave row nodes on the current interface
+      for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
+      {
+        int gid = interface_[i]->SlaveRowNodes()->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node)
+          dserror("ERROR: Cannot find node with gid %", gid);
+        CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+        std::vector<int> locindex(Dim());
+
+        for (int dof = 0; dof < Dim(); ++dof)
+        {
+          locindex[dof] = (forcenormal->Map()).LID(cnode->Dofs()[dof]);
+
+          if(cnode->MoData().GetDscale()<1e-8 and cnode->Active())
+          {
+            std::cout << "WARNING: dscale not valid!" << std::endl;
+            continue;
+          }
+          else if(cnode->MoData().GetDscale()<1e-8)
+          {
+            continue;
+          }
+
+          (*forcenormal)[locindex[dof]]     /= cnode->MoData().GetDscale();
+          (*forcetangential)[locindex[dof]] /= cnode->MoData().GetDscale();
+        }
+      }
+    }
+    stresstangential_->Update(1.0,*forcetangential,0.0);
+    stressnormal_->Update(1.0,*forcenormal,0.0);
+
+    // temporary output:
+    double tangforce = 0.0;
+    forcetangential_->Norm2(&tangforce);
+    if(Comm().MyPID() == 0)
+      std::cout << "tangential force = " << tangforce << std::endl;
+
+    double normalforce = 0.0;
+    forcenormal_->Norm2(&normalforce);
+    if(Comm().MyPID() == 0)
+      std::cout << "normal force = " << normalforce << std::endl;
+
+    if(Comm().MyPID() == 0)
+    {
+      FILE* MyFile = NULL;
+      std::ostringstream filename;
+      const std::string filebase = "xxx";
+      filename << filebase <<".fric";
+      MyFile = fopen(filename.str().c_str(), "at+");
+
+      // store data
+      if (MyFile)
+      {
+        fprintf(MyFile, "%d\t", step);
+        fprintf(MyFile, "%g\t", tangforce);
+        fprintf(MyFile, "%g\n", normalforce);
+        fclose(MyFile);
+      }
+      else
+        dserror("ERROR: File could not be opened.");
+    }
+
+  }
+
+  step++;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  add penalty terms for ltl contact                        farah 11/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::SaveReferenceState(
+    Teuchos::RCP<const Epetra_Vector> dis)
+{
+  if(!nonSmoothContact_)
+    return;
+
+  // initialize the displacement field
+  SetState(MORTAR::state_new_displacement, *dis);
+
+  // guarantee uniquness
+  std::set<std::pair<int,int> > donebefore;
+
+  // kappa will be the shape function integral on the slave sides
+  // (1) build the nodal information
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // interface needs to be complete
+    if (!interface_[i]->Filled() && Comm().MyPID()==0)
+      dserror("ERROR: FillComplete() not called on interface %", i);
+
+    // get out of here if not participating in interface
+    if (!interface_[i]->lComm())
+      continue;
+
+    // reset kappa
+    // loop over all slave row nodes on the current interface
+    for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
+    {
+      int gid = interface_[i]->MasterRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
+      cnode->CoData().Kappa() = 0.0;
+    }
+
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int j=0; j<interface_[i]->MasterColElements()->NumMyElements(); ++j)
+    {
+      int gid1 = interface_[i]->MasterColElements()->GID(j);
+      DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CoElement* selement = dynamic_cast<CoElement*>(ele1);
+
+      // loop over slave edges -> match node number for tri3/quad4
+      for(int k = 0; k< selement->NumNode() ; ++k)
+      {
+        int nodeIds[2]  = {0,0};
+        int nodeLIds[2] = {0,0};
+
+        if(selement->Shape() == DRT::Element::quad4)
+        {
+          if(k == 0)
+          {
+            nodeIds[0] = selement->NodeIds()[0];
+            nodeIds[1] = selement->NodeIds()[1];
+
+            nodeLIds[0] = 0;
+            nodeLIds[1] = 1;
+          }
+          else if(k == 1)
+          {
+            nodeIds[0] = selement->NodeIds()[1];
+            nodeIds[1] = selement->NodeIds()[2];
+
+            nodeLIds[0] = 1;
+            nodeLIds[1] = 2;
+          }
+          else if(k == 2)
+          {
+            nodeIds[0] = selement->NodeIds()[2];
+            nodeIds[1] = selement->NodeIds()[3];
+
+            nodeLIds[0] = 2;
+            nodeLIds[1] = 3;
+          }
+          else if(k == 3)
+          {
+            nodeIds[0] = selement->NodeIds()[3];
+            nodeIds[1] = selement->NodeIds()[0];
+
+            nodeLIds[0] = 3;
+            nodeLIds[1] = 0;
+          }
+          else
+            dserror("ERROR: loop counter and edge number do not match!");
+        }
+        else if(selement->Shape() == DRT::Element::tri3)
+        {
+          if(k == 0)
+          {
+            nodeIds[0] = selement->NodeIds()[0];
+            nodeIds[1] = selement->NodeIds()[1];
+
+            nodeLIds[0] = 0;
+            nodeLIds[1] = 1;
+          }
+          else if(k == 1)
+          {
+            nodeIds[0] = selement->NodeIds()[1];
+            nodeIds[1] = selement->NodeIds()[2];
+
+            nodeLIds[0] = 1;
+            nodeLIds[1] = 2;
+          }
+          else if(k == 2)
+          {
+            nodeIds[0] = selement->NodeIds()[2];
+            nodeIds[1] = selement->NodeIds()[0];
+
+            nodeLIds[0] = 2;
+            nodeLIds[1] = 0;
+          }
+          else
+            dserror("ERROR: loop counter and edge number do not match!");
+        }
+
+        // check if both nodes on edge geometry
+        bool node0Edge =
+            dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[0]])->IsOnEdge();
+        bool node1Edge =
+            dynamic_cast<MORTAR::MortarNode*>(selement->Nodes()[nodeLIds[1]])->IsOnEdge();
+
+        if(!node0Edge or !node1Edge)
+          continue;
+
+        //create pair
+        std::pair<int,int> actIDs   = std::pair<int,int>(nodeIds[0],nodeIds[1]);
+        std::pair<int,int> actIDstw = std::pair<int,int>(nodeIds[1],nodeIds[0]);
+
+        // check if processed before
+        std::set<std::pair<int,int> >::iterator iter   = donebefore.find(actIDs);
+        std::set<std::pair<int,int> >::iterator itertw = donebefore.find(actIDstw);
+
+         // if not then create ele
+         if (iter == donebefore.end() and itertw == donebefore.end() )
+         {
+           // add to set of processed nodes
+           donebefore.insert(actIDs);
+           donebefore.insert(actIDstw);
+
+           // create line ele:
+           Teuchos::RCP<MORTAR::MortarElement> lineEle = Teuchos::rcp(
+                       new MORTAR::MortarElement(
+                           j,
+                           selement->Owner(),
+                           DRT::Element::line2,
+                           2,
+                           nodeIds,
+                           false));
+
+           // get nodes
+           DRT::Node* nodes[2] = {selement->Nodes()[nodeLIds[0]],selement->Nodes()[nodeLIds[1]]};
+           lineEle->BuildNodalPointers(nodes);
+
+           // init data container for dual shapes
+           lineEle->InitializeDataContainer();
+
+           // create integrator
+           CONTACT::CoIntegrator integrator(Params(),lineEle->Shape(),Comm());
+
+           // integrate kappe penalty
+           integrator.IntegrateKappaPenaltyLTS(*lineEle);
+         }
+      } // end edge loop
+    }
+
+    // loop over all slave row nodes on the current interface
+    for (int j=0; j<interface_[i]->MasterRowNodes()->NumMyElements(); ++j)
+    {
+      int gid = interface_[i]->MasterRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+      // only for edge nodes!
+      if(cnode->IsOnEdge() and !cnode->IsOnCorner())
+      {
+        // get nodal weighted gap
+        // (this is where we stored the shape function integrals)
+        double kappainv = cnode->CoData().Kappa();
+
+        // safety
+        if(abs(kappainv)<1e-12)
+        {
+          kappainv = 1.0;
+//          dserror("ERROR: gap is zero!");
+        }
+
+        // store kappa
+        cnode->CoData().Kappa() = 1.0/kappainv;
+      }
+
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  add penalty terms for ltl contact                        farah 11/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::AddMasterContributions(
+    Teuchos::RCP<LINALG::SparseOperator>& kteff,
+    Teuchos::RCP<Epetra_Vector>& feff)
+{
+  // create new contact force vector for LTL contact
+  Teuchos::RCP<Epetra_FEVector> fc=
+      Teuchos::rcp(new Epetra_FEVector(feff->Map()),true);
+
+  // create new contact stiffness matric for LTL contact
+  Teuchos::RCP<LINALG::SparseMatrix> kc =
+      Teuchos::rcp(new LINALG::SparseMatrix(
+          (dynamic_cast<Epetra_CrsMatrix*>(&(*kteff->EpetraOperator())))->RowMap(),
+          100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
+  // loop over interface and assemble force and stiffness
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // line to segment
+    interface_[i]->AddLTSforcesMaster(fc);
+    interface_[i]->AddLTSstiffnessMaster(kc);
+    // node to segment
+    interface_[i]->AddNTSforcesMaster(fc);
+    interface_[i]->AddNTSstiffnessMaster(kc);
+  }
+
+  // force
+  if(fc->GlobalAssemble(Add,false)!=0)
+    dserror("ERROR: GlobalAssemble failed");
+
+  // store fLTL values for time integration
+  fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()),true);
+  if (fLTL_->Update(1.0,*fc,0.0))
+    dserror("ERROR: Update went wrong");
+
+  if(fLTLOld_!=Teuchos::null)
+    if (feff->Update(alphaf_,*fLTLOld_,1.))
+      dserror("ERROR: Update went wrong");
+
+  if (feff->Update(1.0-alphaf_,*fc,1.))
+    dserror("ERROR: Update went wrong");
+
+  // stiffness
+  dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add);
+  kteff->UnComplete();
+  kteff->Add(*kc,false,1.0-alphaf_,1.);
+  kteff->Complete();
+
+  //bye bye
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  add penalty terms for ltl contact                        farah 10/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::AddLineToLinContributions(
+    Teuchos::RCP<LINALG::SparseOperator>& kteff,
+    Teuchos::RCP<Epetra_Vector>& feff)
+{
+  // create new contact force vector for LTL contact
+  Teuchos::RCP<Epetra_FEVector> fc=
+      Teuchos::rcp(new Epetra_FEVector(feff->Map()),true);
+
+  fconservation_=
+      Teuchos::rcp(new Epetra_Vector(feff->Map()),true);
+
+  // create new contact stiffness matric for LTL contact
+  Teuchos::RCP<LINALG::SparseMatrix> kc =
+      Teuchos::rcp(new LINALG::SparseMatrix(
+          (dynamic_cast<Epetra_CrsMatrix*>(&(*kteff->EpetraOperator())))->RowMap(),
+          100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
+  // loop over interface and assemble force and stiffness
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->AddLTLforces(fc);
+    interface_[i]->AddLTLstiffness(kc);
+  }
+
+  // get info for conservation check
+  fconservation_->Update(1.0,*fc,0.0);
+
+  // force
+  if(fc->GlobalAssemble(Add,false)!=0)
+    dserror("ERROR: GlobalAssemble failed");
+
+  // store fLTL values for time integration
+  fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()),true);
+  if (fLTL_->Update(1.0,*fc,0.0))
+    dserror("ERROR: Update went wrong");
+
+  if(fLTLOld_!=Teuchos::null)
+    if (feff->Update(alphaf_,*fLTLOld_,1.))
+      dserror("ERROR: Update went wrong");
+
+  if (feff->Update(1.0-alphaf_,*fc,1.))
+    dserror("ERROR: Update went wrong");
+
+  // stiffness
+  dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add);
+  kteff->UnComplete();
+  kteff->Add(*kc,false,1.0-alphaf_,1.);
+  kteff->Complete();
+
+  //bye bye
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  add frictional penalty terms for ltl contact             farah 10/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::AddLineToLinContributionsFriction(
+    Teuchos::RCP<LINALG::SparseOperator>& kteff,
+    Teuchos::RCP<Epetra_Vector>& feff)
+{
+  // create new contact force vector for LTL contact
+  Teuchos::RCP<Epetra_FEVector> fc=
+      Teuchos::rcp(new Epetra_FEVector(feff->Map()),true);
+
+  fconservation_=
+      Teuchos::rcp(new Epetra_Vector(feff->Map()),true);
+
+  // create new contact stiffness matric for LTL contact
+  Teuchos::RCP<LINALG::SparseMatrix> kc =
+      Teuchos::rcp(new LINALG::SparseMatrix(
+          (dynamic_cast<Epetra_CrsMatrix*>(&(*kteff->EpetraOperator())))->RowMap(),
+          100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
+  // loop over interface and assemble force and stiffness
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->AddLTLforces(fc);
+    interface_[i]->AddLTLstiffness(kc);
+  }
+
+  // store normal forces
+  fLTLn_ = Teuchos::rcp(new Epetra_Vector(fc->Map()),true);
+  if (fLTLn_->Update(1.0,*fc,0.0))
+    dserror("ERROR: Update went wrong");
+
+  // loop over interface and assemble force and stiffness
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->AddLTLforcesFric(fc);
+    interface_[i]->AddLTLstiffnessFric(kc);
+  }
+
+  // get info for conservation check
+  fconservation_->Update(1.0,*fc,0.0);
+
+  // store tangential forces
+  fLTLt_ = Teuchos::rcp(new Epetra_Vector(fc->Map()),true);
+  if (fLTLt_->Update(1.0,*fc,0.0))
+    dserror("ERROR: Update went wrong");
+  if (fLTLt_->Update(-1.0,*fLTLn_,1.0))
+    dserror("ERROR: Update went wrong");
+
+  // force
+  if(fc->GlobalAssemble(Add,false)!=0)
+    dserror("ERROR: GlobalAssemble failed");
+
+  // store fLTL values for time integration
+  fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()),true);
+  if (fLTL_->Update(1.0,*fc,0.0))
+    dserror("ERROR: Update went wrong");
+
+  if(fLTLOld_!=Teuchos::null)
+    if (feff->Update(alphaf_,*fLTLOld_,1.))
+      dserror("ERROR: Update went wrong");
+
+  if (feff->Update(1.0-alphaf_,*fc,1.))
+    dserror("ERROR: Update went wrong");
+
+  // stiffness
+  dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add);
+  kteff->UnComplete();
+  kteff->Add(*kc,false,1.0-alphaf_,1.);
+  kteff->Complete();
+
+  //bye bye
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 04/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                                                   Teuchos::RCP<Epetra_Vector>& feff)
 {
+  // In case of nonsmooth contact the scenario of contacting edges (non parallel)
+  // requires a penalty regularization. Here, the penalty contriutions for this
+  // special case are applied:
+  if(nonSmoothContact_)
+  {
+    // LTL contributions:
+    AddLineToLinContributions(kteff,feff);
+
+    // penalty support for master side quantities:
+    AddMasterContributions(kteff,feff);
+
+#ifdef CONTACTFDGAPLTL
+    // FD check of weighted gap g derivatives (non-penetr. condition)
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      interface_[i]->FDCheckGapDerivLTL();
+    }
+#endif // #ifdef CONTACTFDGAPLTL
+  }
+
+
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep()) return;
@@ -1350,32 +1997,149 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     /**********************************************************************/
     /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
     /**********************************************************************/
-
     Teuchos::RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
-    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
-    int err = 0;
 
-    // extract diagonal of invd into diag
-    invd->ExtractDiagonalCopy(*diag);
+    // for nonsmooth contact inverting D is more complex:
+    // Note: this invertation if only applicable when vertex, edge and surface nodes
+    // are involved. For a falling coin (only surface and edge nodes), a special but
+    // more easy implementation is needed.
+    if(nonSmoothContact_)
+    {
+      // 1. split d matrix in vertex edge and surf part
+      Teuchos::RCP<LINALG::SparseMatrix> dss, dsev, devs, devev;
+      Teuchos::RCP<Epetra_Map> gEVdofs; // merged edge and vertex dofs
 
-    // set zero diagonal values to dummy 1.0
-    for (int i=0;i<diag->MyLength();++i)
-      if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+      // get dss
+      LINALG::SplitMatrix2x2(dmatrix_,gsdofSurf_,gEVdofs,gsdofSurf_,gEVdofs,dss,dsev,devs,devev);
 
-    // scalar inversion of diagonal values
-    err = diag->Reciprocal(*diag);
-    if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      // get dse and dsv
+      Teuchos::RCP<Epetra_Map> temp;
+      Teuchos::RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2;
+      Teuchos::RCP<LINALG::SparseMatrix> dse, dsv;
 
-    Teuchos::RCP<Epetra_Vector> lmDBC=LINALG::CreateVector(*gsdofrowmap_,true);
-    LINALG::Export(*pgsdirichtoggle_,*lmDBC);
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_,true);
-    tmp->Multiply(1.,*diag,*lmDBC,0.);
-    diag->Update(-1.,*tmp,1.);
+      LINALG::SplitMatrix2x2(dsev,gsdofSurf_,temp,gsdofEdge_,gsdofVertex_,dse,dsv,tempmtx1,tempmtx2);
 
-    // re-insert inverted diagonal into invd
-    err = invd->ReplaceDiagonalValues(*diag);
-    // we cannot use this check, as we deliberately replaced zero entries
-    //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+      // get dee dev dve dvv
+      Teuchos::RCP<LINALG::SparseMatrix> dee, dev, dve, dvv;
+      LINALG::SplitMatrix2x2(devev,gsdofEdge_,gsdofVertex_,gsdofEdge_,gsdofVertex_,dee,dev,dve,dvv);
+
+      //2. invert diagonal matrices dss dee dvv
+      Teuchos::RCP<Epetra_Vector> diagV = LINALG::CreateVector(*gsdofVertex_,true);
+      Teuchos::RCP<Epetra_Vector> diagE = LINALG::CreateVector(*gsdofEdge_,true);
+      Teuchos::RCP<Epetra_Vector> diagS = LINALG::CreateVector(*gsdofSurf_,true);
+      Teuchos::RCP<LINALG::SparseMatrix> invdV = Teuchos::rcp(new LINALG::SparseMatrix(*dvv));
+      Teuchos::RCP<LINALG::SparseMatrix> invdE = Teuchos::rcp(new LINALG::SparseMatrix(*dee));
+      Teuchos::RCP<LINALG::SparseMatrix> invdS = Teuchos::rcp(new LINALG::SparseMatrix(*dss));
+
+      int err = 0;
+
+      // extract diagonal of invd into diag
+      invdV->ExtractDiagonalCopy(*diagV);
+      invdE->ExtractDiagonalCopy(*diagE);
+      invdS->ExtractDiagonalCopy(*diagS);
+
+      // set zero diagonal values to dummy 1.0
+      for (int i=0;i<diagV->MyLength();++i)
+        if (abs((*diagV)[i])<1e-12)
+          (*diagV)[i]=1.0;
+      for (int i=0;i<diagE->MyLength();++i)
+        if (abs((*diagE)[i])<1e-12)
+          (*diagE)[i]=1.0;
+      for (int i=0;i<diagS->MyLength();++i)
+        if (abs((*diagS)[i])<1e-12)
+          (*diagS)[i]=1.0;
+
+      // scalar inversion of diagonal values
+      err = diagV->Reciprocal(*diagV);
+      if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = diagE->Reciprocal(*diagE);
+      if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = diagS->Reciprocal(*diagS);
+      if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+      // re-insert inverted diagonal into invd
+      err = invdV->ReplaceDiagonalValues(*diagV);
+      //if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = invdE->ReplaceDiagonalValues(*diagE);
+      //if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      err = invdS->ReplaceDiagonalValues(*diagS);
+      //if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+      // 3. multiply all sub matrices
+      invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,true));
+
+      dse->Scale(-1.0);
+      dsv->Scale(-1.0);
+      dev->Scale(-1.0);
+
+      // inv_dse
+      Teuchos::RCP<LINALG::SparseMatrix> dum1;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dse;
+      dum1     = LINALG::MLMultiply(*dse,false,*invdE,false,false,false,true);
+      dinv_dse = LINALG::MLMultiply(*invdS,false,*dum1,false,false,false,true);
+
+      //inv_dev
+      Teuchos::RCP<LINALG::SparseMatrix> dum2;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dev;
+      dum2     = LINALG::MLMultiply(*dev,false,*invdV,false,false,false,true);
+      dinv_dev = LINALG::MLMultiply(*invdE,false,*dum2,false,false,false,true);
+
+      // inv_dsv part1
+      Teuchos::RCP<LINALG::SparseMatrix> dum3;
+      Teuchos::RCP<LINALG::SparseMatrix> dum4;
+      Teuchos::RCP<LINALG::SparseMatrix> dum5;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv1;
+      dum3     = LINALG::MLMultiply(*dev,false,*invdV,false,false,false,true);
+      dum4     = LINALG::MLMultiply(*invdE,false,*dum3,false,false,false,true);
+      dum5     = LINALG::MLMultiply(*dse,false,*dum4,false,false,false,true);
+      dinv_dsv1= LINALG::MLMultiply(*invdS,false,*dum5,false,false,false,true);
+
+      // inv_dsv part2
+      Teuchos::RCP<LINALG::SparseMatrix> dum6;
+      Teuchos::RCP<LINALG::SparseMatrix> dinv_dsv2;
+      dum6     = LINALG::MLMultiply(*dsv,false,*invdV,false,false,false,true);
+      dinv_dsv2= LINALG::MLMultiply(*invdS,false,*dum6,false,false,false,true);
+
+      // diagonal entries
+      invd->Add(*invdS,false,1.0,1.0);
+      invd->Add(*invdE,false,1.0,1.0);
+      invd->Add(*invdV,false,1.0,1.0);
+
+      invd->Add(*dinv_dev,false,1.0,1.0);
+      invd->Add(*dinv_dse,false,1.0,1.0);
+      invd->Add(*dinv_dsv1,false,1.0,1.0);
+      invd->Add(*dinv_dsv2,false,1.0,1.0);
+
+      invd->Complete();
+    }
+    // standard inverse diagonal matrix:
+    else
+    {
+      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
+      int err = 0;
+
+      // extract diagonal of invd into diag
+      invd->ExtractDiagonalCopy(*diag);
+
+      // set zero diagonal values to dummy 1.0
+      for (int i=0;i<diag->MyLength();++i)
+        if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+
+      // scalar inversion of diagonal values
+      err = diag->Reciprocal(*diag);
+      if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+      Teuchos::RCP<Epetra_Vector> lmDBC=LINALG::CreateVector(*gsdofrowmap_,true);
+      LINALG::Export(*pgsdirichtoggle_,*lmDBC);
+      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*gsdofrowmap_,true);
+      tmp->Multiply(1.,*diag,*lmDBC,0.);
+      diag->Update(-1.,*tmp,1.);
+
+      // re-insert inverted diagonal into invd
+      err = invd->ReplaceDiagonalValues(*diag);
+      // we cannot use this check, as we deliberately replaced zero entries
+      //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+    }
 
     // do the multiplication mhat = inv(D) * M
     mhatmatrix_ = LINALG::MLMultiply(*invd,false,*mmatrix_,false,false,false,true);
@@ -2014,6 +2778,9 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
       // Check linear and angular momentum conservation
 #ifdef CHECKCONSERVATIONLAWS
       CheckConservationLaws(*fs,*fm);
+//      double normlambda = 0.0;
+//      z_->Norm1(&normlambda);
+//      std::cout << "normlambda =  " << normlambda << std::endl;
 #endif
 
       // add old contact forces (t_n)
@@ -3776,6 +4543,102 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
 }
 
 /*----------------------------------------------------------------------*
+ |  update routine for ltl forces                            farah 10/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
+{
+  static int step = 0;
+  if(fLTL_!=Teuchos::null)
+  {
+    // store fLTL values for time integration
+    fLTLOld_ = Teuchos::rcp(new Epetra_Vector(fLTL_->Map()),true);
+    if (fLTLOld_->Update(1.0,*fLTL_,0.0))
+      dserror("ERROR: Update went wrong");
+  }
+
+  // abstract routine
+  CONTACT::CoAbstractStrategy::Update(dis);
+
+  if(fconservation_==Teuchos::null)
+    return;
+
+  // *****************************************************************
+  // This is output functionality for conservation properties of LTL
+  // penalty contact
+  // *****************************************************************
+
+//  Teuchos::RCP<Epetra_Vector> fconservationS =
+//      Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)),true);
+//  Teuchos::RCP<Epetra_Vector> fconservationM =
+//      Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true)),true);
+//
+//  LINALG::Export(*fconservation_,*fconservationS);
+//  LINALG::Export(*fconservation_,*fconservationM);
+////  fconservationM->Scale(-1.0);
+//  // check conservation properties:
+//  interface_[0]->EvalResultantMoment(*fconservationS, *fconservationM);
+//
+//
+//  double lssum = 0.0;   // local slave sum
+//  double gssum = 0.0;   // global slave sum
+//  double lmsum = 0.0;   // local master sum
+//  double gmsum = 0.0;   // global master sum
+//  double gcsum = 0.0;   // global complete sum
+//  // slave
+////  for (int i=0;i<fconservationS->MyLength();++i)
+////  {
+////    lssum+=(*fconservationS)[i];
+////  }
+////  Comm().SumAll(&lssum,&gssum,1);
+////  // master
+////  for (int i=0;i<fconservationM->MyLength();++i)
+////  {
+////    lmsum+=(*fconservationM)[i];
+////  }
+////  Comm().SumAll(&lmsum,&gmsum,1);
+//
+//
+//
+//  // complete balance check
+//  gcsum = gssum+gmsum;
+//  if (abs(gcsum)>1.0e-11)
+//    dserror("Conservation of linear momentum is not fulfilled!");
+//  if (Comm().MyPID()==0)
+//  {
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
+//    std::cout << ">>      Linear Momentum Conservation      <<" << std::endl;
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
+//    std::cout << ">>      Standard terms (lm)               <<" << std::endl;
+//    std::cout << "SLAVE:   " << std::setw(14) << gssum<< std::endl;
+//    std::cout << "MASTER:  " << std::setw(14) << gmsum << std::endl;
+//    std::cout << "Balance: " << std::setw(14) << gcsum << std::endl;
+//    std::cout << "--------------------------------------------" << std::endl;
+//  }
+//
+//
+//  FILE* MyFile = NULL;
+//  std::ostringstream filename;
+//  const std::string filebase = "xxx";
+//  filename << filebase <<".lmom";
+//  MyFile = fopen(filename.str().c_str(), "at+");
+//
+//  // store data
+//  if (MyFile)
+//  {
+//    fprintf(MyFile, "%d\t", step);
+//    fprintf(MyFile, "%g\t", gssum);
+//    fprintf(MyFile, "%g\t", gmsum);
+//    fprintf(MyFile, "%g\n", gcsum);
+//    fclose(MyFile);
+//  }
+//  else
+//    dserror("ERROR: File could not be opened.");
+//
+//  ++step;
+
+  return;
+}
+/*----------------------------------------------------------------------*
  |  Check conservation laws                              hiermeier 06/14|
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::CheckConservationLaws(const Epetra_Vector& fs,
@@ -3784,53 +4647,56 @@ void CONTACT::CoLagrangeStrategy::CheckConservationLaws(const Epetra_Vector& fs,
   // change sign (adapt sign convention from the augmented Lagrange formulation)
   Teuchos::RCP<Epetra_Vector> tmpFm = Teuchos::rcp(new Epetra_Vector(fm));
   tmpFm->Scale(-1.0);
-  /*-------------------------------*
-   | LINEAR MOMENTUM CONSERVATION  |
-   *-------------------------------*/
-  double ssum = 0.0;
-  double msum = 0.0;
-  std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
-  std::cout << ">>      Linear Momentum Conservation      <<" << std::endl;
-  std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
-  std::cout << ">>      Standard terms (lm)               <<" << std::endl;
-  for (int i=0;i<fs.GlobalLength();++i) ssum+=fs[i];
-  std::cout << "SLAVE:   " << std::setw(14) << ssum<< std::endl;
-  for (int i=0;i<fm.GlobalLength();++i) msum+=(*tmpFm)[i];
-  std::cout << "MASTER:  " << std::setw(14) << msum << std::endl;
-  std::cout << "Balance: " << std::setw(14) << ssum+msum << std::endl;
 
-  // write linear momentum conservation in xxx.lmom
-  FILE* MyFile = NULL;
-  std::ostringstream filename;
-  const std::string filebase = "xxx";
-  filename << filebase <<".lmom";
-  MyFile = fopen(filename.str().c_str(), "at+");
-
-  // store data
-  if (MyFile)
+  double lssum = 0.0;   // local slave sum
+  double gssum = 0.0;   // global slave sum
+  double lmsum = 0.0;   // local master sum
+  double gmsum = 0.0;   // global master sum
+  double gcsum = 0.0;   // global complete sum
+  // slave
+  for (int i=0;i<fs.MyLength();++i)
+    lssum+=(fs)[i];
+  Comm().SumAll(&lssum,&gssum,1);
+  // master
+  for (int i=0;i<tmpFm->MyLength();++i)
+    lmsum+=(*tmpFm)[i];
+  Comm().SumAll(&lmsum,&gmsum,1);
+  // complete balance check
+  gcsum = gssum+gmsum;
+  if (abs(gcsum)>1.0e-11)
+    dserror("Conservation of linear momentum is not fulfilled!");
+  if (Comm().MyPID()==0)
   {
-    fprintf(MyFile, "%g\t", ssum);
-    fprintf(MyFile, "%g\t", msum);
-    fprintf(MyFile, "%g\n", ssum+msum);
-    fclose(MyFile);
-  }
-  else
-    dserror("ERROR: File could not be opened.");
-
-  /*-------------------------------*
-   | ANGULAR MOMENTUM CONSERVATION |
-   *-------------------------------*/
-  std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
-  std::cout << ">>      Angular Momentum Conservation     <<" << std::endl;
-  std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    std::cout << ">>----- Interface " << std::setw(2) << i;
-    std::cout << " ---------------------<<" << std::endl;
+    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
+    std::cout << ">>      Linear Momentum Conservation      <<" << std::endl;
+    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
     std::cout << ">>      Standard terms (lm)               <<" << std::endl;
-    interface_[i]->EvalResultantMoment(fs,*tmpFm);
+    std::cout << "SLAVE:   " << std::setw(14) << gssum<< std::endl;
+    std::cout << "MASTER:  " << std::setw(14) << gmsum << std::endl;
+    std::cout << "Balance: " << std::setw(14) << gcsum << std::endl;
+    std::cout << "--------------------------------------------" << std::endl;
+  }
+
+
+
+  if (Comm().MyPID()==0)
+  {
+    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
+    std::cout << ">>      Angular Momentum Conservation     <<" << std::endl;
     std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
   }
+  for (std::size_t i=0; i<interface_.size(); ++i)
+  {
+    if (Comm().MyPID()==0)
+    {
+      std::cout << ">>----- Interface " << std::setw(2) << i;
+      std::cout << " ---------------------<<" << std::endl;
+      std::cout << ">>      Standard terms (lm)               <<" << std::endl;
+    }
+    interface_[i]->EvalResultantMoment(fs,*tmpFm);
+  }
+  if (Comm().MyPID()==0)
+    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<" << std::endl;
 
   return;
 }

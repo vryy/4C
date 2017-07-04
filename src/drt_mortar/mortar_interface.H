@@ -1411,7 +1411,9 @@ protected:
          starts
 
   */
-  virtual void PreEvaluate();
+  virtual void PreEvaluate(
+      const int& step,
+      const int& iter);
 
   /*!
   \brief Evaluate mortar interface

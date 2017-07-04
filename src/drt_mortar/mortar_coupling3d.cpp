@@ -231,8 +231,7 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
     dserror("ERROR: RoughCheckOrient called for unknown element type");
 
   // compute the unit normal vector at the master element center
-  double nmc[3] =
-  { 0.0, 0.0, 0.0 };
+  double nmc[3] = { 0.0, 0.0, 0.0 };
   MasterIntElement().ComputeUnitNormalAtXi(loccenter, nmc);
 
   // check orientation with respect to slave element
@@ -484,7 +483,10 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1,
 
   // check polygon 1 and throw dserror if not c-clockwise
   if (check1 <= 0)
+  {
+    return;
     dserror("ERROR: Polygon 1 (slave) not ordered counter-clockwise!");
+  }
 
   // check polygon 2 and reorder in c-clockwise direction
   if (check2 < 0)
@@ -1671,7 +1673,10 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
 
   // check polygon 1 and throw dserror if not c-clockwise
   if (check1 <= 0)
+  {
+    return false;
     dserror("ERROR: Polygon 1 (slave) not ordered counter-clockwise!");
+  }
 
   // check polygon 2 and reorder in c-clockwise direction
   if (check2 < 0)
@@ -1719,7 +1724,10 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     // check scalar product
     double check = n[0] * nextedge[0] + n[1] * nextedge[1] + n[2] * nextedge[2];
     if (check > 0)
+    {
+      return false;
       dserror("ERROR: Input polygon 1 not convex");
+    }
   }
 
   for (int i = 0; i < (int) poly2.size(); ++i)
@@ -1765,6 +1773,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
       bool nearcheck = RoughCheckNodes();
       if (nearcheck)
       {
+        return false;
         std::cout << "***WARNING*** Input polygon 2 not convex! (S/M-pair: "
             << sid << "/" << mid << ")" << std::endl;
       }

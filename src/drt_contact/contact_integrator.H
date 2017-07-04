@@ -201,6 +201,14 @@ public:
   void IntegrateKappaPenalty(MORTAR::MortarElement& sele, double* sxia,
       double* sxib, Teuchos::RCP<Epetra_SerialDenseVector> gseg);
 
+
+  /*!
+   \brief Compute penalty scaling factor kappa on slave element for LTS algorithm
+          for last converged configuration
+
+   */
+  void IntegrateKappaPenaltyLTS(MORTAR::MortarElement& sele);
+
   /*!
    \brief Compute penalty scaling factor kappa on slave integration element
    (special version for the 3D quadratic case)
@@ -1057,34 +1065,35 @@ protected:
     CoIntegrator operator = (const CoIntegrator& old);
     CoIntegrator(const CoIntegrator& old);
 
-    Teuchos::ParameterList&                          imortar_;     // containing contact input parameters
-    const Epetra_Comm&                               Comm_;
+    Teuchos::ParameterList&                          imortar_;     //< containing contact input parameters
+    const Epetra_Comm&                               Comm_;        //< communicator
 
-    int                                              ngp_;         // number of Gauss points
-    Epetra_SerialDenseMatrix                         coords_;      // Gauss point coordinates
-    std::vector<double>                              weights_;     // Gauss point weights
-    int                                              dim_;         // dimension of problem (2D or 3D)
+    int                                              ngp_;         //< number of Gauss points
+    Epetra_SerialDenseMatrix                         coords_;      //< Gauss point coordinates
+    std::vector<double>                              weights_;     //< Gauss point weights
+    int                                              dim_;         //< dimension of problem (2D or 3D)
 
     // inputs from parameter list
-    INPAR::MORTAR::ShapeFcn                          shapefcn_;    // lm shape function type
-    INPAR::MORTAR::LagMultQuad                       lagmultquad_; // type of lm interpolation for quadr. FE
-    bool                                             nodalscale_;  // flag for nodal scaling
-    bool                                             gpslip_;      // gp-wise evaluated slip increment
-    INPAR::MORTAR::AlgorithmType                     algo_;        // contact algorithm
-    INPAR::CONTACT::SolvingStrategy                  stype_;       // solution stratety
-    bool                                             cppnormal_;   // flag for closest point normal -> change in linsize
+    INPAR::MORTAR::ShapeFcn                          shapefcn_;    //< lm shape function type
+    INPAR::MORTAR::LagMultQuad                       lagmultquad_; //< type of lm interpolation for quadr. FE
+    bool                                             nodalscale_;  //< flag for nodal scaling
+    bool                                             gpslip_;      //< gp-wise evaluated slip increment
+    INPAR::MORTAR::AlgorithmType                     algo_;        //< contact algorithm
+    INPAR::CONTACT::SolvingStrategy                  stype_;       //< solution stratety
+    bool                                             cppnormal_;   //< flag for closest point normal -> change in linsize
 
     // wear inputs from parameter list
-    INPAR::WEAR::WearLaw                             wearlaw_;     // type of wear law
-    bool                                             wearimpl_;    // flag for implicit wear algorithm
-    INPAR::WEAR::WearSide                            wearside_;    // definition of wear surface
-    INPAR::WEAR::WearType                            weartype_;    // definition of contact wear algorithm
-    INPAR::WEAR::WearShape                           wearshapefcn_;// type of wear shape function
-    bool                                             sswear_;      // flag for steady state wear
-    double                                           wearcoeff_;   // wear coefficient
-    double                                           wearcoeffm_;  // wear coefficient master
-    double                                           ssslip_;      // fixed slip for steady state wear
+    INPAR::WEAR::WearLaw                             wearlaw_;     //< type of wear law
+    bool                                             wearimpl_;    //< flag for implicit wear algorithm
+    INPAR::WEAR::WearSide                            wearside_;    //< definition of wear surface
+    INPAR::WEAR::WearType                            weartype_;    //< definition of contact wear algorithm
+    INPAR::WEAR::WearShape                           wearshapefcn_;//< type of wear shape function
+    bool                                             sswear_;      //< flag for steady state wear
+    double                                           wearcoeff_;   //< wear coefficient
+    double                                           wearcoeffm_;  //< wear coefficient master
+    double                                           ssslip_;      //< fixed slip for steady state wear
 
+    bool                                             nonsmooth_;   //< flag for nonsmooth contact
 private:
     /// integration type from the parameter-list
     INPAR::MORTAR::IntType                           integrationtype_;

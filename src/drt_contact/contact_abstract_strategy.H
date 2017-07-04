@@ -154,6 +154,18 @@ public:
   Teuchos::RCP<Epetra_Map>& GSlipTDofRowMapPtr() { return gslipt_; };
   Teuchos::RCP<const Epetra_Map> GSlipTDofRowMapPtr() const { return gslipt_; };
 
+  //! return global slave dof row map associated with vertex nodes
+  Teuchos::RCP<Epetra_Map>& GSDofVertexRowMapPtr() { return gsdofVertex_; };
+  Teuchos::RCP<const Epetra_Map> GSDofVertexRowMapPtr() const { return gsdofVertex_; };
+
+    //! return global slave dof row map associated with edge nodes
+  Teuchos::RCP<Epetra_Map>& GSDofEdgeRowMapPtr() { return gsdofEdge_; };
+  Teuchos::RCP<const Epetra_Map> GSDofEdgeRowMapPtr() const { return gsdofEdge_; };
+
+    //! return global slave dof row map associated with surface nodes
+  Teuchos::RCP<Epetra_Map>& GSDofSurfRowMapPtr() { return gsdofSurf_; };
+  Teuchos::RCP<const Epetra_Map> GSDofSurfRowMapPtr() const { return gsdofSurf_; };
+
   //! return global LM dof row map (before parallel redistribution)
   Teuchos::RCP<Epetra_Map>& PGLmDofRowMapPtr() { return pglmdofrowmap_; };
   Teuchos::RCP<const Epetra_Map> PGLmDofRowMapPtr() const { return pglmdofrowmap_; };
@@ -296,6 +308,14 @@ public:
   Teuchos::RCP<Epetra_Vector>& StressTangentialPtr() { return stresstangential_; };
   Teuchos::RCP<const Epetra_Vector> StressTangentialPtr() const { return stresstangential_; };
 
+  //! return vector of normal contact forces at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector>& ForceNormalPtr() {return forcenormal_; };
+  Teuchos::RCP<const Epetra_Vector> ForceNormalPtr() const {return forcenormal_; };
+
+  //! return vector of tangential contact forces at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector>& ForceTangentialPtr() { return forcetangential_; };
+  Teuchos::RCP<const Epetra_Vector> ForceTangentialPtr() const { return forcetangential_; };
+
   //! return time step index at \f$t_{n+1}\f$
   int& StepNp() { return stepnp_; };
   int StepNp() const { return stepnp_;};
@@ -327,6 +347,10 @@ public:
   //! return flag for frictional contact
   bool& IsFriction() { return friction_; };
   bool IsFriction() const { return friction_; };
+
+  //! return flag for nonsmooth contact
+  bool& IsNonSmoothContact() { return nonSmoothContact_; };
+  const bool& IsNonSmoothContact() const { return nonSmoothContact_; };
 
   //! return flag for regularized contact
   bool& IsRegularized() { return regularized_; };
@@ -424,6 +448,15 @@ private:
   //! global slip slave dof row map in tangential direction (of all interfaces)
   Teuchos::RCP<Epetra_Map> gslipt_;
 
+  //! global slave dof row map of vertex nodes
+  Teuchos::RCP<Epetra_Map> gsdofVertex_;
+
+  //! global slave dof row map of edge nodes
+  Teuchos::RCP<Epetra_Map> gsdofEdge_;
+
+  //! global slave dof row map of surface nodes
+  Teuchos::RCP<Epetra_Map> gsdofSurf_;
+
   //! global LM dof row map (before parallel redistribution)
   Teuchos::RCP<Epetra_Map> pglmdofrowmap_;
 
@@ -495,6 +528,12 @@ private:
   //! vector of tangential contact forces at \f$t_{n+1}\f$
   Teuchos::RCP<Epetra_Vector> stresstangential_;
 
+  //! vector of normal contact forces at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> forcenormal_;
+
+  //! vector of tangential contact forces at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> forcetangential_;
+
   //! time step index at \f$t_{n+1}\f$
   int stepnp_;
 
@@ -518,6 +557,9 @@ private:
 
   //! flag for frictional contact
   bool friction_;
+
+  //! flag for non-smooth contact
+  bool nonSmoothContact_;
 
   //! flag for regularized contact
   bool regularized_;
@@ -863,6 +905,15 @@ public:
   //! Return vector of tangential contact stresses \f$t_{n+1}\f$
   Teuchos::RCP<Epetra_Vector> ContactTanStress() { return Data().StressTangentialPtr(); }
   Teuchos::RCP<const Epetra_Vector> ContactTanStress() const { return Data().StressTangentialPtr(); }
+
+  //! Return vector of normal contact stresses \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> ContactNorForce() { return Data().ForceNormalPtr(); }
+  Teuchos::RCP<const Epetra_Vector> ContactNorForce() const { return Data().ForceNormalPtr(); }
+
+  //! Return vector of tangential contact stresses \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> ContactTanForce() { return Data().ForceTangentialPtr(); }
+  Teuchos::RCP<const Epetra_Vector> ContactTanForce() const { return Data().ForceTangentialPtr(); }
+
 
   //! Return required Integration time
   double Inttime() { return Data().IntTime(); };
@@ -1474,6 +1525,10 @@ protected:
     Teuchos::RCP<Epetra_Map>& gslipdofs_;            //!< ref. to global slip slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map>& gslipt_;               //!< ref. to global row map of matrix T for slip dofs (of all interfaces)
 
+    Teuchos::RCP<Epetra_Map>& gsdofVertex_;          //!< ref. to global slave row map of vertex nodes
+    Teuchos::RCP<Epetra_Map>& gsdofEdge_;            //!< ref. to global slave row map of edge nodes
+    Teuchos::RCP<Epetra_Map>& gsdofSurf_;            //!< ref. to global slave row map of surface nodes
+
     Teuchos::RCP<Epetra_Map>& pglmdofrowmap_;        //!< ref. to global LM dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map>& pgsdofrowmap_;         //!< ref. to global slave dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map>& pgmdofrowmap_;         //!< ref. to global master dof row map (before parallel redistribution)
@@ -1503,6 +1558,8 @@ protected:
 
     Teuchos::RCP<Epetra_Vector>& stressnormal_;      //!< ref. to vector of normal contact forces at t_n+1
     Teuchos::RCP<Epetra_Vector>& stresstangential_;  //!< ref. to vector of tangential contact forces at t_n+1
+    Teuchos::RCP<Epetra_Vector>& forcenormal_;       //!< ref. to vector of normal contact forces at t_n+1
+    Teuchos::RCP<Epetra_Vector>& forcetangential_;   //!< ref. to vector of tangential contact forces at t_n+1
 
     int& step_;                //!< ref. to time step index
     int& iter_;                //!< ref. to nonlinear (Newton) iteration index
@@ -1513,6 +1570,7 @@ protected:
     bool& wasincontactlts_;    //!< ref. to flag indicating global contact status of last time step
     bool& isselfcontact_;      //!< ref. to flag indicating potential self contact
     bool& friction_;           //!< ref. to flag for frictional contact
+    bool& nonSmoothContact_;   //!< ref. to flag for nonsmooth contact algorithm
     bool& regularized_;        //!< ref. to flag for regularized contact
 
     bool&                                dualquadslave3d_; //!< ref. to flag indicating whether trafo should be applied

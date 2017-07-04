@@ -2524,10 +2524,26 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
   for(int i = 0; i<nnodes;++i)
   {
     MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if(mymrtrnode->IsOnBoundorCE())
+
+    if(Shape()== DRT::Element::line2 or
+       Shape()== DRT::Element::line3 or
+       Shape()== DRT::Element::nurbs2 or
+       Shape()== DRT::Element::nurbs3)
     {
-      bound = true;
-      break;
+      // is on corner or bound?
+      if(mymrtrnode->IsOnCornerorBound())
+      {
+        bound = true;
+        break;
+      }
+    }
+    else
+    { // is on corner or edge or bound ?
+      if(mymrtrnode->IsOnBoundorCE())
+      {
+        bound = true;
+        break;
+      }
     }
   }
 
@@ -4885,7 +4901,7 @@ bool MORTAR::MortarElement::DerivShapeDual(
 
 
   // do trafo
-  GEN::pairedvector<int,Epetra_SerialDenseMatrix> dummy(nnodes*nnodes*3,0,Epetra_SerialDenseMatrix(nnodes,nnodes,true));
+  GEN::pairedvector<int,Epetra_SerialDenseMatrix> dummy(nnodes*nnodes*3*10,0,Epetra_SerialDenseMatrix(nnodes,nnodes,true));
 
   typedef GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator _CIM;
   for (_CIM p=derivdual.begin();p!=derivdual.end();++p)

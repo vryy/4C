@@ -21,6 +21,7 @@
 #include "contact_defines.H"
 #include "contact_integrator.H"
 #include "contact_integrator_factory.H"
+#include "friction_node.H"
 
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
@@ -77,7 +78,7 @@ void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
     Initialize();
 
     // 2. create aux plane for master ele
-    AuxiliaryPlane();
+    AuxiliaryPlane(); //--> build everything based on line element
 
     // 3. create aux line for slave ele
     AuxiliaryLine();
@@ -96,7 +97,8 @@ void CONTACT::LineToSurfaceCoupling3d::EvaluateCoupling()
     LineClipping();
 
     // 8. intersections found?
-    if((int)InterSections().size() == 0 or (int)InterSections().size() == 1 )
+    if((int)InterSections().size() == 0 or
+        (int)InterSections().size() == 1 )
       continue;
 
     // 9. check length of Integration Line
@@ -143,6 +145,7 @@ void CONTACT::LineToSurfaceCoupling3d::Initialize()
 
   Lauxn() = 0.0;
   GetDerivAuxn().clear();
+  GetDerivAuxc().clear();
 
   // reset normal of aux line
 //  AuxnLine()[0] = 0.0;
@@ -1372,6 +1375,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
                       MasterVertices()[j],
                       SlaveVertices()[1],
                       SlaveVertices()[0]);
+
           if(out)
             std::cout << "MASTER IDS = " << MasterVertices()[j].Next()->Nodeids()[0] << "  " << MasterVertices()[j].Nodeids()[0] << std::endl;
           break;
@@ -1744,9 +1748,9 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(std::vector<std::vector
 
   // prepare storage for slave and master linearizations
   std::vector<std::vector<GEN::pairedvector<int, double> > > linsnodes(nsrows,
-      std::vector<GEN::pairedvector<int, double> >(3, linsize_ + 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
+      std::vector<GEN::pairedvector<int, double> >(3, 100 + linsize_ + 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
   std::vector<std::vector<GEN::pairedvector<int, double> > > linmnodes(nmrows,
-      std::vector<GEN::pairedvector<int, double> >(3, linsize_ + 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
+      std::vector<GEN::pairedvector<int, double> >(3, 100 + linsize_ + 3 * LineElement()->NumNode() + 3 * SurfaceElement().NumNode()));
 
   // compute slave linearizations (nsrows)
   SlaveVertexLinearization(linsnodes);
@@ -2201,7 +2205,22 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
 
     linsize_ += mycnode->GetLinsize();
   }
-  GetDerivAuxn().resize(3,linsize_);
+
+  //TODO: this is a safety scaling. Correct linsize
+  //      should be predicted
+  linsize_ *= 100;
+
+  // auxiliary normal
+  GetDerivAuxn().resize(3,linsize_*10);
+
+  // auxiliary center
+  GetDerivAuxc().resize(3,linsize_*10);
+
+  Auxc()[0] = 0.0;
+  Auxc()[1] = 0.0;
+  Auxc()[2] = 0.0;
+
+  std::vector<GEN::pairedvector<int,double> > dauxn(3,100);
 
   // average nodal normals of line element
   for (int i = 0; i < nnodes; ++i)
@@ -2213,17 +2232,179 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
     if (!mycnode)
       dserror("ERROR: ProjectSlave: Null pointer!");
 
-    Auxn()[0] -= 0.5 * mycnode->MoData().n()[0];
-    Auxn()[1] -= 0.5 * mycnode->MoData().n()[1];
-    Auxn()[2] -= 0.5 * mycnode->MoData().n()[2];
+    Auxn()[0] += 0.5 * mycnode->MoData().n()[0];
+    Auxn()[1] += 0.5 * mycnode->MoData().n()[1];
+    Auxn()[2] += 0.5 * mycnode->MoData().n()[2];
 
     for (_CI p = mycnode->CoData().GetDerivN()[0].begin(); p != mycnode->CoData().GetDerivN()[0].end(); ++p)
-      (GetDerivAuxn()[0])[p->first] -= 0.5 * (p->second);
+      (dauxn[0])[p->first] += 0.5 * (p->second);
     for (_CI p = mycnode->CoData().GetDerivN()[1].begin(); p != mycnode->CoData().GetDerivN()[1].end(); ++p)
-      (GetDerivAuxn()[1])[p->first] -= 0.5 * (p->second);
+      (dauxn[1])[p->first] += 0.5 * (p->second);
     for (_CI p = mycnode->CoData().GetDerivN()[2].begin(); p != mycnode->CoData().GetDerivN()[2].end(); ++p)
-      (GetDerivAuxn()[2])[p->first] -= 0.5 * (p->second);
+      (dauxn[2])[p->first] += 0.5 * (p->second);
+
+    // new aux center
+    for(int dim = 0; dim<Dim();++dim)
+      Auxc()[dim] += 0.5 * mycnode->xspatial()[dim];
+
+    (GetDerivAuxc()[0])[mycnode->Dofs()[0]] += 0.5;
+    (GetDerivAuxc()[1])[mycnode->Dofs()[1]] += 0.5;
+    (GetDerivAuxc()[2])[mycnode->Dofs()[2]] += 0.5;
   }
+
+  // create tangent of line element
+  double tangent[3] = {0.0, 0.0, 0.0};
+  DRT::Node* node = idiscret_.gNode(LineElement()->NodeIds()[0]);
+  if (!node)
+    dserror("ERROR: Cannot find slave element with gid %", LineElement()->NodeIds()[0]);
+  CoNode* mycnode = dynamic_cast<CoNode*>(node);
+  if (!mycnode)
+    dserror("ERROR: ProjectSlave: Null pointer!");
+
+  tangent[0] += mycnode->xspatial()[0];
+  tangent[1] += mycnode->xspatial()[1];
+  tangent[2] += mycnode->xspatial()[2];
+
+  DRT::Node* node2 = idiscret_.gNode(LineElement()->NodeIds()[1]);
+  if (!node2)
+    dserror("ERROR: Cannot find slave element with gid %", LineElement()->NodeIds()[1]);
+  CoNode* mycnode2 = dynamic_cast<CoNode*>(node2);
+  if (!mycnode2)
+    dserror("ERROR: ProjectSlave: Null pointer!");
+
+  tangent[0] -= mycnode2->xspatial()[0];
+  tangent[1] -= mycnode2->xspatial()[1];
+  tangent[2] -= mycnode2->xspatial()[2];
+
+  Epetra_SerialDenseMatrix tanplane(3,3);
+  tanplane(0,0)= 1-(tangent[0]*tangent[0]);
+  tanplane(0,1)=  -(tangent[0]*tangent[1]);
+  tanplane(0,2)=  -(tangent[0]*tangent[2]);
+  tanplane(1,0)=  -(tangent[1]*tangent[0]);
+  tanplane(1,1)= 1-(tangent[1]*tangent[1]);
+  tanplane(1,2)=  -(tangent[1]*tangent[2]);
+  tanplane(2,0)=  -(tangent[2]*tangent[0]);
+  tanplane(2,1)=  -(tangent[2]*tangent[1]);
+  tanplane(2,2)= 1-(tangent[2]*tangent[2]);
+
+  double finalauxn[3] = {0.0 , 0.0 , 0.0};
+  finalauxn[0] = tanplane(0,0) * Auxn()[0] + tanplane(0,1) * Auxn()[1] + tanplane(0,2) * Auxn()[2];
+  finalauxn[1] = tanplane(1,0) * Auxn()[0] + tanplane(1,1) * Auxn()[1] + tanplane(1,2) * Auxn()[2];
+  finalauxn[2] = tanplane(2,0) * Auxn()[0] + tanplane(2,1) * Auxn()[1] + tanplane(2,2) * Auxn()[2];
+
+  // lin tangent
+  std::vector<GEN::pairedvector<int,double> > dnmap_unit(3,linsize_*10);
+  for(int i = 0; i<Dim(); ++i)
+  {
+    dnmap_unit[i][ mycnode->Dofs()[i]]  += 1;
+    dnmap_unit[i][ mycnode2->Dofs()[i]] -= 1;
+  }
+
+
+  std::vector<GEN::pairedvector<int,double> > tplanex(3,linsize_*10);
+  std::vector<GEN::pairedvector<int,double> > tplaney(3,linsize_*10);
+  std::vector<GEN::pairedvector<int,double> > tplanez(3,linsize_*10);
+
+  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+    tplanex[0][p->first] -= tangent[0] * p->second;
+  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+    tplanex[1][p->first] -= tangent[1] * p->second;
+  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+    tplanex[2][p->first] -= tangent[2] * p->second;
+
+  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+    tplaney[0][p->first] -= tangent[0] * p->second;
+  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+    tplaney[1][p->first] -= tangent[1] * p->second;
+  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+    tplaney[2][p->first] -= tangent[2] * p->second;
+
+  for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+    tplanez[0][p->first] -= tangent[0] * p->second;
+  for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+    tplanez[1][p->first] -= tangent[1] * p->second;
+  for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+    tplanez[2][p->first] -= tangent[2] * p->second;
+
+  //------------
+  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+    tplanex[0][p->first] -= tangent[0] * p->second;
+  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+    tplanex[1][p->first] -= tangent[0] * p->second;
+  for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+    tplanex[2][p->first] -= tangent[0] * p->second;
+
+  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+    tplaney[0][p->first] -= tangent[1] * p->second;
+  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+    tplaney[1][p->first] -= tangent[1] * p->second;
+  for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+    tplaney[2][p->first] -= tangent[1] * p->second;
+
+  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+    tplanez[0][p->first] -= tangent[2] * p->second;
+  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+    tplanez[1][p->first] -= tangent[2] * p->second;
+  for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+    tplanez[2][p->first] -= tangent[2] * p->second;
+
+
+
+
+
+
+
+  for (_CI p=dauxn[0].begin(); p!=dauxn[0].end(); ++p)
+    GetDerivAuxn()[0][p->first] += tanplane(0,0) * p->second;
+  for (_CI p=dauxn[1].begin(); p!=dauxn[1].end(); ++p)
+    GetDerivAuxn()[0][p->first] += tanplane(0,1) * p->second;
+  for (_CI p=dauxn[2].begin(); p!=dauxn[2].end(); ++p)
+    GetDerivAuxn()[0][p->first] += tanplane(0,2) * p->second;
+
+  for (_CI p=dauxn[0].begin(); p!=dauxn[0].end(); ++p)
+    GetDerivAuxn()[1][p->first] += tanplane(1,0) * p->second;
+  for (_CI p=dauxn[1].begin(); p!=dauxn[1].end(); ++p)
+    GetDerivAuxn()[1][p->first] += tanplane(1,1) * p->second;
+  for (_CI p=dauxn[2].begin(); p!=dauxn[2].end(); ++p)
+    GetDerivAuxn()[1][p->first] += tanplane(1,2) * p->second;
+
+  for (_CI p=dauxn[0].begin(); p!=dauxn[0].end(); ++p)
+    GetDerivAuxn()[2][p->first] += tanplane(2,0) * p->second;
+  for (_CI p=dauxn[1].begin(); p!=dauxn[1].end(); ++p)
+    GetDerivAuxn()[2][p->first] += tanplane(2,1) * p->second;
+  for (_CI p=dauxn[2].begin(); p!=dauxn[2].end(); ++p)
+    GetDerivAuxn()[2][p->first] += tanplane(2,2) * p->second;
+
+  //-----------------------------
+  for (_CI p=tplanex[0].begin(); p!=tplanex[0].end(); ++p)
+    GetDerivAuxn()[0][p->first] += Auxn()[0] * p->second;
+  for (_CI p=tplanex[1].begin(); p!=tplanex[1].end(); ++p)
+    GetDerivAuxn()[0][p->first] += Auxn()[1] * p->second;
+  for (_CI p=tplanex[2].begin(); p!=tplanex[2].end(); ++p)
+    GetDerivAuxn()[0][p->first] += Auxn()[2] * p->second;
+
+  for (_CI p=tplaney[0].begin(); p!=tplaney[0].end(); ++p)
+    GetDerivAuxn()[1][p->first] += Auxn()[0] * p->second;
+  for (_CI p=tplaney[1].begin(); p!=tplaney[1].end(); ++p)
+    GetDerivAuxn()[1][p->first] += Auxn()[1] * p->second;
+  for (_CI p=tplaney[2].begin(); p!=tplaney[2].end(); ++p)
+    GetDerivAuxn()[1][p->first] += Auxn()[2] * p->second;
+
+  for (_CI p=tplanez[0].begin(); p!=tplanez[0].end(); ++p)
+    GetDerivAuxn()[2][p->first] += Auxn()[0] * p->second;
+  for (_CI p=tplanez[1].begin(); p!=tplanez[1].end(); ++p)
+    GetDerivAuxn()[2][p->first] += Auxn()[1] * p->second;
+  for (_CI p=tplanez[2].begin(); p!=tplanez[2].end(); ++p)
+    GetDerivAuxn()[2][p->first] += Auxn()[2] * p->second;
+
+
+  Auxn()[0] = finalauxn[0];
+  Auxn()[1] = finalauxn[1];
+  Auxn()[2] = finalauxn[2];
+
+  AuxnSurf()[0] = -Auxn()[0];
+  AuxnSurf()[1] = -Auxn()[1];
+  AuxnSurf()[2] = -Auxn()[2];
 
   return true;
 }
@@ -2344,12 +2525,12 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
 
   // map iterator
   typedef GEN::pairedvector<int, double>  :: const_iterator _CI;    // linearization of element center Auxc()
-  std  ::vector<GEN::pairedvector<int  ,double> > linauxc(3,SurfaceElement().NumNode()); // assume 3 dofs per node
+//  std::vector<GEN::pairedvector<int  ,double> > linauxc(3,10*SurfaceElement().NumNode()); // assume 3 dofs per node
 
-  for (int i = 0; i < nrow; ++i)
-      for (int dim=0; dim<3; ++dim)
-        for (_CI p=snodelin[i][dim].begin(); p!=snodelin[i][dim].end(); ++p)
-          linauxc[dim][p->first] = sval[i]*p->second;
+//  for (int i = 0; i < nrow; ++i)
+//      for (int dim=0; dim<3; ++dim)
+//        for (_CI p=snodelin[i][dim].begin(); p!=snodelin[i][dim].end(); ++p)
+//          linauxc[dim][p->first] = sval[i]*p->second;
 
   // linearization of element normal Auxn()
   std::vector<GEN::pairedvector<int, double> >& linauxn = GetDerivAuxn();
@@ -2400,15 +2581,15 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
     }
 
     // (2) slave element center coordinates (Auxc()) part
-    for (_CI p = linauxc[0].begin(); p != linauxc[0].end(); ++p)
+    for (_CI p = GetDerivAuxc()[0].begin(); p != GetDerivAuxc()[0].end(); ++p)
       for (int k = 0; k < 3; ++k)
         currlin[i][k][p->first] += Auxn()[0] * Auxn()[k] * (p->second);
 
-    for (_CI p = linauxc[1].begin(); p != linauxc[1].end(); ++p)
+    for (_CI p = GetDerivAuxc()[1].begin(); p != GetDerivAuxc()[1].end(); ++p)
       for (int k = 0; k < 3; ++k)
         currlin[i][k][p->first] += Auxn()[1] * Auxn()[k] * (p->second);
 
-    for (_CI p = linauxc[2].begin(); p != linauxc[2].end(); ++p)
+    for (_CI p = GetDerivAuxc()[2].begin(); p != GetDerivAuxc()[2].end(); ++p)
       for (int k = 0; k < 3; ++k)
         currlin[i][k][p->first] += Auxn()[2] * Auxn()[k] * (p->second);
 
@@ -2555,12 +2736,12 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
 
   // map iterator
   typedef GEN::pairedvector<int, double>  :: const_iterator _CI;    // linearization of element center Auxc()
-  std  ::vector<GEN::pairedvector<int  ,double> > linauxc(3,SurfaceElement().NumNode()); // assume 3 dofs per node
-
-  for (int i = 0; i < nrow; ++i)
-      for (int dim=0; dim<3; ++dim)
-        for (_CI p=nodelin[i][dim].begin(); p!=nodelin[i][dim].end(); ++p)
-          linauxc[dim][p->first] = sval[i]*p->second;
+//  std  ::vector<GEN::pairedvector<int  ,double> > linauxc(3,SurfaceElement().NumNode()); // assume 3 dofs per node
+//
+//  for (int i = 0; i < nrow; ++i)
+//      for (int dim=0; dim<3; ++dim)
+//        for (_CI p=nodelin[i][dim].begin(); p!=nodelin[i][dim].end(); ++p)
+//          linauxc[dim][p->first] = sval[i]*p->second;
 
   // linearization of element normal Auxn()
   std::vector<GEN::pairedvector<int, double> >& linauxn = GetDerivAuxn();
@@ -2594,15 +2775,15 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
     }
 
     // (2) slave element center coordinates (Auxc()) part
-    for (_CI p = linauxc[0].begin(); p != linauxc[0].end(); ++p)
+    for (_CI p = GetDerivAuxc()[0].begin(); p != GetDerivAuxc()[0].end(); ++p)
       for (int k = 0; k < 3; ++k)
         currlin[i][k][p->first] += Auxn()[0] * Auxn()[k] * (p->second);
 
-    for (_CI p = linauxc[1].begin(); p != linauxc[1].end(); ++p)
+    for (_CI p = GetDerivAuxc()[1].begin(); p != GetDerivAuxc()[1].end(); ++p)
       for (int k = 0; k < 3; ++k)
         currlin[i][k][p->first] += Auxn()[1] * Auxn()[k] * (p->second);
 
-    for (_CI p = linauxc[2].begin(); p != linauxc[2].end(); ++p)
+    for (_CI p = GetDerivAuxc()[2].begin(); p != GetDerivAuxc()[2].end(); ++p)
       for (int k = 0; k < 3; ++k)
         currlin[i][k][p->first] += Auxn()[2] * Auxn()[k] * (p->second);
 
@@ -2691,8 +2872,8 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateCoupling()
   double mxi[1] = {0.0};
 
   // create empty lin vectors
-  GEN::pairedvector<int,double> dsxi(3*LineMasterElement()->NumNode() + 3*LineSlaveElement()->NumNode());
-  GEN::pairedvector<int,double> dmxi(3*LineMasterElement()->NumNode() + 3*LineSlaveElement()->NumNode());
+  GEN::pairedvector<int,double> dsxi(100 + 3*LineMasterElement()->NumNode() + 3*LineSlaveElement()->NumNode());
+  GEN::pairedvector<int,double> dmxi(100 + 3*LineMasterElement()->NumNode() + 3*LineSlaveElement()->NumNode());
   LineIntersection(sxi, mxi, dsxi, dmxi);
 
   // 3. check solution
@@ -2700,7 +2881,14 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateCoupling()
   if(!valid)
     return;
 
-  // 4. evaluate terms
+  // 4. check if intersection was already done!
+  for(int i = 0; i<LineSlaveElement()->NumNode();++i)
+  {
+    if(dynamic_cast<CoNode*>(LineSlaveElement()->Nodes()[i])->MoData().GetDltl().size()>0)
+      return;
+  }
+
+  // 5. evaluate terms
   EvaluateTerms(sxi, mxi, dsxi, dmxi);
 
   return;
@@ -2716,11 +2904,11 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(
     GEN::pairedvector<int,double>& dsxi,
     GEN::pairedvector<int,double>& dmxi)
 {
-  INPAR::MORTAR::ShapeFcn shape =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEFCN");
-
-  double jac = 1.0;
-  double wgt = 1.0;
+  bool friction = false;
+  INPAR::CONTACT::FrictionType ftype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
+  if (ftype != INPAR::CONTACT::friction_none)
+    friction = true;
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = LineSlaveElement()->Nodes();
@@ -2734,19 +2922,11 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(
   int ndof = 3;
   int nrow = LineSlaveElement()->NumNode();
   int ncol = LineMasterElement()->NumNode();
-  int nlm = 1;
-
 
   // slave values
   LINALG::SerialDenseVector sval(nnodes);
   LINALG::SerialDenseMatrix sderiv(nnodes,1);
-  LINALG::SerialDenseVector lmval(nlm);
-  LINALG::SerialDenseMatrix lmderiv(nlm,1);
   LineSlaveElement()->EvaluateShape(sxi, sval, sderiv, nnodes);
-  LineSlaveElement()->EvaluateShape(sxi, lmval, lmderiv, nnodes);
-
-  lmval(0)     = 1.0;
-  lmderiv(0,0) = 0.0;
 
   // master values
   LINALG::SerialDenseVector mval(nnodes);
@@ -2755,6 +2935,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
+  typedef std::map<int,double>::const_iterator CI;
 
   int linsize = 0;
   for (int i=0;i<nrow;++i)
@@ -2762,6 +2943,10 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(
     CoNode* cnode = dynamic_cast<CoNode*> (mynodes[i]);
     linsize += cnode->GetLinsize();
   }
+
+  // TODO: this is for safety. Correct linsize
+  //       should be predicted
+  linsize*=100;
 
   //**********************************************************************
   // geometric quantities
@@ -2924,326 +3109,392 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(
     }
   }
 
+  // gap
+  CONTACT::CoNode* cnode =
+      dynamic_cast<CONTACT::CoNode*>(mynodes[0]);
 
+  // do not process slave side boundary nodes
+  // (their row entries would be zero anyway!)
+  if (cnode->IsOnBound())
+    return;
 
-  // weighted gap
-  for (int j=0;j<nlm;++j)
+  if(gap[0]>=0.0)
+    return;
+
+  double value[3] = {0.0, 0.0, 0.0};
+  value[0] = (mgpx[0]-sgpx[0]);//gap[0]*gpn[0];
+  value[1] = (mgpx[1]-sgpx[1]);//gap[0]*gpn[1];
+  value[2] = (mgpx[2]-sgpx[2]);//gap[0]*gpn[2];
+
+  // add current Gauss point's contribution to gseg
+  cnode->AddltlGapValue(value);
+
+  double lengthv = 0.0;
+  lengthv = sqrt(value[0] *value[0]  + value[1]*value[1] + value[2]*value[2]);
+  if(lengthv<1e-12)
+    dserror("ERROR: zero length!");
+  value[0] /= lengthv;
+  value[1] /= lengthv;
+  value[2] /= lengthv;
+
+  std::vector<std::map<int, double> >& dgmap =
+      cnode->CoData().GetDerivGltl();
+
+  for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
   {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
-
-    double prod = 0.0;
-    // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
-    if (shape == INPAR::MORTAR::shape_petrovgalerkin)
-      prod = sval[j]*gap[0]*jac*wgt;
-    // usual standard or dual LM approach
-    else
-      prod = lmval[j]*gap[0]*jac*wgt;
-
-    // do not process slave side boundary nodes
-    // (their row entries would be zero anyway!)
-    if (cnode->IsOnBound())
-      continue;
-
-    // add current Gauss point's contribution to gseg
-    cnode->AddltlGapValue(prod);
+    dgmap[0][p->first] += gpn[0]*(p->second);
+    dgmap[1][p->first] += gpn[1]*(p->second);
+    dgmap[2][p->first] += gpn[2]*(p->second);
   }
 
-  for (int iter=0;iter<nlm;++iter)
+  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+    dgmap[0][p->first] += gap[0] * (p->second);
+  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+    dgmap[1][p->first] += gap[0] * (p->second);
+  for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+    dgmap[2][p->first] += gap[0] * (p->second);
+
+  //*****************************************
+  // integrate D and M matrix
+  // integrate dseg
+  for (int k=0; k<nrow; ++k)
   {
-    // map iterator
-    typedef GEN::pairedvector<int,double>::const_iterator _CI;
+    CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
 
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[iter]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+    // multiply the two shape functions
+    double prod = sval[k]; // this reduces to sval[k]
 
+    if(abs(prod)>MORTARINTTOL)
+      cnode->AddDltlValue(mnode->Id(),prod);
+//    if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
+  }
+
+  // integrate mseg
+  for (int k=0; k<ncol; ++k)
+  {
+    CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+
+    // multiply the two shape functions
+    double prod = mval[k]; // this reduces to mval[k]
+
+    if(abs(prod)>MORTARINTTOL)
+      cnode->AddMltlValue(mnode->Id(),prod);
+//    if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
+  }
+
+  // integrate LinD
+  for (int k=0; k<nrow; ++k)
+  {
+    // global master node ID
+    int mgid = LineSlaveElement()->Nodes()[k]->Id();
     static double fac = 0.0;
 
-    // get the corresponding map as a reference
-    std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGltl();
+    // get the correct map as a reference
+    std::map<int,double>& ddmap_jk = cnode->CoData().GetDerivDltl()[mgid];
 
-    // switch if Petrov-Galerkin approach for LM is applied
-    if (shape == INPAR::MORTAR::shape_petrovgalerkin)
+    // (3) Lin(NMaster) - master GP coordinates
+    fac = sderiv(k, 0);
+    for (_CI p=dsxi.begin(); p!=dsxi.end(); ++p)
     {
-      // (1) Lin(Phi) - does not exist here for Petrov-Galerkin approach
-
-      // (2) Lin(N) - slave GP coordinates
-      fac = wgt*sderiv(iter,0)*gap[0]*jac;
-      for (_CI p=dsxi.begin();p!=dsxi.end();++p)
-        dgmap[p->first] += fac*(p->second);
-
-
-      // (3) Lin(g) - gap function
-      fac = wgt*sval[iter]*jac;
-      for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
-        dgmap[p->first] += fac*(p->second);
-
-      // (4) Lin(dsxideta) - intcell GP Jacobian
-//      fac = wgt*sval[iter]*gap[0];
-//      for (_CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-//        dgmap[p->first] += fac*(p->second);
+      ddmap_jk[p->first] += fac*(p->second);
     }
+  } // loop over slave nodes
 
-    // the usual standard or dual LM approach
-    else
-    {
-      // (1) Lin(Phi) - dual shape functions
-      // only line2 --> not required!
-
-      // (2) Lin(Phi) - slave GP coordinates
-        fac = wgt*lmderiv(iter,0)*gap[0]*jac;
-        for (_CI p=dsxi.begin();p!=dsxi.end();++p)
-          dgmap[p->first] += fac*(p->second);
-
-      // (3) Lin(g) - gap function
-      fac = wgt*lmval[iter]*jac;
-      for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
-        dgmap[p->first] += fac*(p->second);
-
-      // (4) Lin(dsxideta) - intcell GP Jacobian
-//      fac = wgt*lmval[iter]*gap[0];
-//      for (_CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-//        dgmap[p->first] += fac*(p->second);
-    }
-  }
-
-  // integrate D and M matrix
-  // dual shape functions
-  if (shape == INPAR::MORTAR::shape_dual ||
-      shape == INPAR::MORTAR::shape_petrovgalerkin)
+  // integrate LinM
+  for (int k=0; k<ncol; ++k)
   {
-    for (int j=0;j<nlm;++j)
+    // global master node ID
+    int mgid = LineMasterElement()->Nodes()[k]->Id();
+    static double fac = 0.0;
+
+    // get the correct map as a reference
+    std::map<int,double>& dmmap_jk = cnode->CoData().GetDerivMltl()[mgid];
+
+    // (1) Lin(Phi) - dual shape functions
+    // this vanishes here since there are no deformation-dependent dual functions
+
+    // (3) Lin(NMaster) - master GP coordinates
+    fac = mderiv(k, 0);
+    for (_CI p=dmxi.begin(); p!=dmxi.end(); ++p)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+      dmmap_jk[p->first] += fac*(p->second);
+    }
+  } // loop over master nodes
 
-      // integrate mseg
-      for (int k=0; k<ncol; ++k)
+
+//  std::cout << "element is evaluated!" << std::endl;
+
+  //***************************************************************************
+  if(friction)
+  {
+    //tangent:
+    // first jump:
+    double jump[3] = {0.0 , 0.0 , 0.0};
+    double sgpxold[3] = {0.0, 0.0, 0.0};
+    double mgpxold[3] = {0.0, 0.0, 0.0};
+
+    int oldID = -1;
+
+    // loop over all slave nodes
+    for(int i = 0; i < idiscret_.NodeColMap()->NumMyElements(); ++i)
+    {
+      int gid1 = idiscret_.NodeColMap()->GID(i);
+      DRT::Node* node1 = idiscret_.gNode(gid1);
+      if (!node1)
+        dserror("ERROR: Cannot find node with gid %", gid1);
+      CoNode* contactnode = dynamic_cast<CoNode*>(node1);
+
+      // here only slave nodes
+      if(!contactnode->IsSlave())
+        continue;
+
+      // check if dold is present
+      if (dynamic_cast<FriNode*>(contactnode)->FriData().GetDOldLTL().size()<1)
+        continue;
+
+      // store id
+      oldID = gid1;
+
+      // if we are here, break
+      break;
+    }
+
+    // linearizations
+    GEN::pairedvector<int,double> sgpxoldlinx(linsize);
+    GEN::pairedvector<int,double> sgpxoldliny(linsize);
+    GEN::pairedvector<int,double> sgpxoldlinz(linsize);
+
+    GEN::pairedvector<int,double> mgpxoldlinx(linsize);
+    GEN::pairedvector<int,double> mgpxoldliny(linsize);
+    GEN::pairedvector<int,double> mgpxoldlinz(linsize);
+
+    if(oldID>-1)
+    {
+      DRT::Node* node1 = idiscret_.gNode(oldID);
+      if (!node1)
+        dserror("ERROR: Cannot find node with gid %", oldID);
+      CoNode* contactnode = dynamic_cast<CoNode*>(node1);
+
+      // check if we have dold
+      if (dynamic_cast<FriNode*>(contactnode)->FriData().GetDOldLTL().size()>0)
       {
-        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
+        for (_CI p=dynamic_cast<FriNode*>(contactnode)->FriData().GetDOldLTL().begin();p!=dynamic_cast<FriNode*>(contactnode)->FriData().GetDOldLTL().end();++p)
+        {
+          // node id
+          int gid3 = p->first;
+          DRT::Node* snode = idiscret_.gNode(gid3);
+          if (!snode) dserror("ERROR: Cannot find node with gid");
+          CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
-        // multiply the two shape functions
-        double prod = lmval[j]*mval[k]*jac*wgt;
+          for(int dim = 0; dim<Dim();++dim)
+          {
+            sgpxold[dim]+=p->second * csnode->xspatial()[dim];
+          }
+          sgpxoldlinx[csnode->Dofs()[0]] += p->second;
+          sgpxoldliny[csnode->Dofs()[1]] += p->second;
+          sgpxoldlinz[csnode->Dofs()[2]] += p->second;
+        }
 
-        if(abs(prod)>MORTARINTTOL) cnode->AddDltlValue(cnode->Id(),prod);
-        if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id()); // only for friction!
+        //safety
+        if(dynamic_cast<FriNode*>(contactnode)->FriData().GetMOldLTL().size()<1)
+          dserror("ERROR: something went wrong!");
 
-        if(abs(prod)>MORTARINTTOL) cnode->AddMltsValue(mnode->Id(),prod);
-        if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
+        for (CI p=dynamic_cast<FriNode*>(contactnode)->FriData().GetMOldLTL().begin();p!=dynamic_cast<FriNode*>(contactnode)->FriData().GetMOldLTL().end();++p)
+        {
+          // node id
+          int gid3 = p->first;
+          DRT::Node* mnode = idiscret_.gNode(gid3);
+          if (!mnode) dserror("ERROR: Cannot find node with gid");
+          CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
+
+          for(int dim = 0; dim<Dim();++dim)
+          {
+            mgpxold[dim]+=p->second * cmnode->xspatial()[dim];
+          }
+          mgpxoldlinx[cmnode->Dofs()[0]] += p->second;
+          mgpxoldliny[cmnode->Dofs()[1]] += p->second;
+          mgpxoldlinz[cmnode->Dofs()[2]] += p->second;
+        }
       }
     }
-  }
-  else
-  {
-    for (int j=0;j<nlm;++j)
+
+    // create slip
+    for(int dim = 0; dim<Dim();++dim)
+      jump[dim] = mgpx[dim] - mgpxold[dim] - (sgpx[dim] - sgpxold[dim]);
+
+    Epetra_SerialDenseMatrix tanplane(3,3);
+    tanplane(0,0)= 1-(value[0]*value[0]);
+    tanplane(0,1)=  -(value[0]*value[1]);
+    tanplane(0,2)=  -(value[0]*value[2]);
+    tanplane(1,0)=  -(value[1]*value[0]);
+    tanplane(1,1)= 1-(value[1]*value[1]);
+    tanplane(1,2)=  -(value[1]*value[2]);
+    tanplane(2,0)=  -(value[2]*value[0]);
+    tanplane(2,1)=  -(value[2]*value[1]);
+    tanplane(2,2)= 1-(value[2]*value[2]);
+
+    double finaljump[3] = {0.0 , 0.0 , 0.0};
+    finaljump[0] = tanplane(0,0) * jump[0] + tanplane(0,1) * jump[1] + tanplane(0,2) * jump[2];
+    finaljump[1] = tanplane(1,0) * jump[0] + tanplane(1,1) * jump[1] + tanplane(1,2) * jump[2];
+    finaljump[2] = tanplane(2,0) * jump[0] + tanplane(2,1) * jump[1] + tanplane(2,2) * jump[2];
+
+    cnode->AddltlJumpValue(finaljump);
+//    std::cout << "jump = " << sqrt(finaljump[0]*finaljump[0] + finaljump[1]*finaljump[1] +finaljump[2]*finaljump[2]) << std::endl;
+
+    std::vector<std::map<int, double> >& djmapfinal =
+        cnode->CoData().GetDerivJumpltl();
+
+    std::vector<GEN::pairedvector<int,double> > djmap(3,100);
+
+    // lin slave nodes
+    for (int z=0;z<nrow;++z)
     {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
+      CoNode* node = dynamic_cast<CoNode*> (mynodes[z]);
+      for (int k=0;k<3;++k)
+        djmap[k][node->Dofs()[k]] -= sval[z];
+    }
 
-      // integrate dseg
-      for (int k=0; k<nrow; ++k)
+
+    for (int k=0; k<nrow; ++k)
+    {
+      CoNode* node = dynamic_cast<CoNode*> (mynodes[k]);
+      for (_CI p=dsxi.begin(); p!=dsxi.end(); ++p)
       {
-        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mynodes[k]);
-
-        // multiply the two shape functions
-        double prod = lmval[j]*sval[k]*jac*wgt;
-
-        if(abs(prod)>MORTARINTTOL) cnode->AddDltlValue(mnode->Id(),prod);
-        if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
+        for (int z=0;z<3;++z)
+          djmap[z][p->first] -= sderiv(k, 0)*(p->second)*node->xspatial()[z];
       }
+    } // loop over slave nodes
 
-      // integrate mseg
-      for (int k=0; k<ncol; ++k)
+
+    // lin master nodes
+    for (int z=0;z<ncol;++z)
+    {
+      CoNode* node = dynamic_cast<CoNode*> (mnodes[z]);
+      for (int k=0;k<3;++k)
+        djmap[k][node->Dofs()[k]] += mval[z];
+    }
+
+    for (int k=0; k<ncol; ++k)
+    {
+      CoNode* node = dynamic_cast<CoNode*> (mnodes[k]);
+      for (_CI p=dmxi.begin(); p!=dmxi.end(); ++p)
       {
-        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
-
-        // multiply the two shape functions
-        double prod = lmval[j]*mval[k]*jac*wgt;
-
-        if(abs(prod)>MORTARINTTOL) cnode->AddMltlValue(mnode->Id(),prod);
-        if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
+        for (int z=0;z<3;++z)
+          djmap[z][p->first] += mderiv(k, 0)*(p->second)*node->xspatial()[z];
       }
-    }
-  }
+    } // loop over slave nodes
 
-  if (shape == INPAR::MORTAR::shape_dual ||
-      shape == INPAR::MORTAR::shape_petrovgalerkin)
-  {
-    // integrate LinD
-    for (int j=0; j<nlm;++j)
-    {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
-      if (!mymrtrnode)
-        dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+    // sgpx and mgpx old
+    for (_CI p=mgpxoldlinx.begin(); p!=mgpxoldlinx.end(); ++p)
+      djmap[0][p->first] -= p->second;
+    for (_CI p=mgpxoldliny.begin(); p!=mgpxoldliny.end(); ++p)
+      djmap[1][p->first] -= p->second;
+    for (_CI p=mgpxoldlinz.begin(); p!=mgpxoldlinz.end(); ++p)
+      djmap[2][p->first] -= p->second;
 
-      int sgid = mymrtrnode->Id();
-      std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDltl()[sgid];
-
-
-      // integrate LinM
-      for (int k=0; k<ncol; ++k)
-      {
-        // global master node ID
-        int mgid = LineMasterElement()->Nodes()[k]->Id();
-        static double fac = 0.0;
-
-        // get the correct map as a reference
-        std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMltl()[mgid];
-
-        // (1) Lin(Phi) - dual shape functions
-        // this vanishes here since there are no deformation-dependent dual functions
-
-        // (2) Lin(NSlave) - slave GP coordinates
-        fac = wgt*lmderiv(j, 0)*mval[k]*jac;
-        for (_CI p=dsxi.begin(); p!=dsxi.end(); ++p)
-        {
-          dmmap_jk[p->first] += fac*(p->second);
-          ddmap_jk[p->first] += fac*(p->second);
-        }
-
-//        fac = wgt*lmderiv(j, 1)*mval[k]*jac;
-//        for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-//        {
-//          dmmap_jk[p->first] += fac*(p->second);
-//          ddmap_jk[p->first] += fac*(p->second);
-//        }
-
-        // (3) Lin(NMaster) - master GP coordinates
-        fac = wgt*lmval[j]*mderiv(k, 0)*jac;
-        for (_CI p=dmxi.begin(); p!=dmxi.end(); ++p)
-        {
-          dmmap_jk[p->first] += fac*(p->second);
-          ddmap_jk[p->first] += fac*(p->second);
-        }
-
-//        fac = wgt*lmval[j]*mderiv(k, 1)*jac;
-//        for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-//        {
-//          dmmap_jk[p->first] += fac*(p->second);
-//          ddmap_jk[p->first] += fac*(p->second);
-//        }
-
-        // (4) Lin(dsxideta) - intcell GP Jacobian
-//        fac = wgt*lmval[j]*mval[k];
-//        for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
-//        {
-//          dmmap_jk[p->first] += fac*(p->second);
-//          ddmap_jk[p->first] += fac*(p->second);
-//        }
-      } // loop over master nodes
-    }
-  }
-  else // standard case
-  {
-    // integrate LinD
-    for (int j=0; j<nlm;++j)
-    {
-      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
-      if (!mymrtrnode)
-        dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+    for (_CI p=sgpxoldlinx.begin(); p!=sgpxoldlinx.end(); ++p)
+      djmap[0][p->first] += p->second;
+    for (_CI p=sgpxoldliny.begin(); p!=sgpxoldliny.end(); ++p)
+      djmap[1][p->first] += p->second;
+    for (_CI p=sgpxoldlinz.begin(); p!=sgpxoldlinz.end(); ++p)
+      djmap[2][p->first] += p->second;
 
 
-      // integrate LinD
-      for (int k=0; k<nrow; ++k)
-      {
-        // global master node ID
-        int mgid = LineSlaveElement()->Nodes()[k]->Id();
-        static double fac = 0.0;
 
-        // get the correct map as a reference
-        std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivDltl()[mgid];
 
-        // (1) Lin(Phi) - dual shape functions
-        // this vanishes here since there are no deformation-dependent dual functions
+    std::vector<GEN::pairedvector<int,double> > tplanex(3,100);
+    std::vector<GEN::pairedvector<int,double> > tplaney(3,100);
+    std::vector<GEN::pairedvector<int,double> > tplanez(3,100);
 
-        // (2) Lin(NSlave) - slave GP coordinates
-        fac = wgt*lmderiv(j, 0)*sval[k]*jac;
-        for (_CI p=dsxi.begin(); p!=dsxi.end(); ++p)
-        {
-          ddmap_jk[p->first] += fac*(p->second);
-        }
+    for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+      tplanex[0][p->first] -= gpn[0] * p->second;
+    for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+      tplanex[1][p->first] -= gpn[1] * p->second;
+    for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+      tplanex[2][p->first] -= gpn[2] * p->second;
 
-//        fac = wgt*lmderiv(j, 1)*sval[k]*jac;
-//        for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-//        {
-//          ddmap_jk[p->first] += fac*(p->second);
-//        }
+    for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+      tplaney[0][p->first] -= gpn[0] * p->second;
+    for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+      tplaney[1][p->first] -= gpn[1] * p->second;
+    for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+      tplaney[2][p->first] -= gpn[2] * p->second;
 
-        // (3) Lin(NMaster) - master GP coordinates
-        fac = wgt*lmval[j]*sderiv(k, 0)*jac;
-        for (_CI p=dsxi.begin(); p!=dsxi.end(); ++p)
-        {
-          ddmap_jk[p->first] += fac*(p->second);
-        }
+    for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+      tplanez[0][p->first] -= gpn[0] * p->second;
+    for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+      tplanez[1][p->first] -= gpn[1] * p->second;
+    for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+      tplanez[2][p->first] -= gpn[2] * p->second;
 
-//        fac = wgt*lmval[j]*sderiv(k, 1)*jac;
-//        for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-//        {
-//          ddmap_jk[p->first] += fac*(p->second);
-//        }
+    //------------
+    for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+      tplanex[0][p->first] -= gpn[0] * p->second;
+    for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+      tplanex[1][p->first] -= gpn[0] * p->second;
+    for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+      tplanex[2][p->first] -= gpn[0] * p->second;
 
-//        fac = wgt*lmval[j]*mderiv(k, 1)*jac;
-//        for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-//        {
-//          dmmap_jk[p->first] += fac*(p->second);
-//          ddmap_jk[p->first] += fac*(p->second);
-//        }
+    for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+      tplaney[0][p->first] -= gpn[1] * p->second;
+    for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+      tplaney[1][p->first] -= gpn[1] * p->second;
+    for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+      tplaney[2][p->first] -= gpn[1] * p->second;
 
-        // (4) Lin(dsxideta) - intcell GP Jacobian
-//        fac = wgt*lmval[j]*sval[k];
-//        for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
-//        {
-//          ddmap_jk[p->first] += fac*(p->second);
-//        }
-      } // loop over slave nodes
+    for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+      tplanez[0][p->first] -= gpn[2] * p->second;
+    for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+      tplanez[1][p->first] -= gpn[2] * p->second;
+    for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
+      tplanez[2][p->first] -= gpn[2] * p->second;
 
-      // integrate LinM
-      for (int k=0; k<ncol; ++k)
-      {
-        // global master node ID
-        int mgid = LineMasterElement()->Nodes()[k]->Id();
-        static double fac = 0.0;
+    //-----------------------------
 
-        // get the correct map as a reference
-        std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivMltl()[mgid];
+    for (_CI p=djmap[0].begin(); p!=djmap[0].end(); ++p)
+      djmapfinal[0][p->first] += tanplane(0,0) * p->second;
+    for (_CI p=djmap[1].begin(); p!=djmap[1].end(); ++p)
+      djmapfinal[0][p->first] += tanplane(0,1) * p->second;
+    for (_CI p=djmap[2].begin(); p!=djmap[2].end(); ++p)
+      djmapfinal[0][p->first] += tanplane(0,2) * p->second;
 
-        // (1) Lin(Phi) - dual shape functions
-        // this vanishes here since there are no deformation-dependent dual functions
+    for (_CI p=djmap[0].begin(); p!=djmap[0].end(); ++p)
+      djmapfinal[1][p->first] += tanplane(1,0) * p->second;
+    for (_CI p=djmap[1].begin(); p!=djmap[1].end(); ++p)
+      djmapfinal[1][p->first] += tanplane(1,1) * p->second;
+    for (_CI p=djmap[2].begin(); p!=djmap[2].end(); ++p)
+      djmapfinal[1][p->first] += tanplane(1,2) * p->second;
 
-        // (2) Lin(NSlave) - slave GP coordinates
-        fac = wgt*lmderiv(j, 0)*mval[k]*jac;
-        for (_CI p=dsxi.begin(); p!=dsxi.end(); ++p)
-        {
-          dmmap_jk[p->first] += fac*(p->second);
-        }
+    for (_CI p=djmap[0].begin(); p!=djmap[0].end(); ++p)
+      djmapfinal[2][p->first] += tanplane(2,0) * p->second;
+    for (_CI p=djmap[1].begin(); p!=djmap[1].end(); ++p)
+      djmapfinal[2][p->first] += tanplane(2,1) * p->second;
+    for (_CI p=djmap[2].begin(); p!=djmap[2].end(); ++p)
+      djmapfinal[2][p->first] += tanplane(2,2) * p->second;
 
-//        fac = wgt*lmderiv(j, 1)*mval[k]*jac;
-//        for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-//        {
-//          dmmap_jk[p->first] += fac*(p->second);
-//        }
+    //-----------------------------
+    for (_CI p=tplanex[0].begin(); p!=tplanex[0].end(); ++p)
+      djmapfinal[0][p->first] += jump[0] * p->second;
+    for (_CI p=tplanex[1].begin(); p!=tplanex[1].end(); ++p)
+      djmapfinal[0][p->first] += jump[1] * p->second;
+    for (_CI p=tplanex[2].begin(); p!=tplanex[2].end(); ++p)
+      djmapfinal[0][p->first] += jump[2] * p->second;
 
-        // (3) Lin(NMaster) - master GP coordinates
-        fac = wgt*lmval[j]*mderiv(k, 0)*jac;
-        for (_CI p=dmxi.begin(); p!=dmxi.end(); ++p)
-        {
-          dmmap_jk[p->first] += fac*(p->second);
-        }
+    for (_CI p=tplaney[0].begin(); p!=tplaney[0].end(); ++p)
+      djmapfinal[1][p->first] += jump[0] * p->second;
+    for (_CI p=tplaney[1].begin(); p!=tplaney[1].end(); ++p)
+      djmapfinal[1][p->first] += jump[1] * p->second;
+    for (_CI p=tplaney[2].begin(); p!=tplaney[2].end(); ++p)
+      djmapfinal[1][p->first] += jump[2] * p->second;
 
-//        fac = wgt*lmval[j]*mderiv(k, 1)*jac;
-//        for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-//        {
-//          dmmap_jk[p->first] += fac*(p->second);
-//          ddmap_jk[p->first] += fac*(p->second);
-//        }
+    for (_CI p=tplanez[0].begin(); p!=tplanez[0].end(); ++p)
+      djmapfinal[2][p->first] += jump[0] * p->second;
+    for (_CI p=tplanez[1].begin(); p!=tplanez[1].end(); ++p)
+      djmapfinal[2][p->first] += jump[1] * p->second;
+    for (_CI p=tplanez[2].begin(); p!=tplanez[2].end(); ++p)
+      djmapfinal[2][p->first] += jump[2] * p->second;
 
-        // (4) Lin(dsxideta) - intcell GP Jacobian
-//        fac = wgt*lmval[j]*mval[k];
-//        for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
-//        {
-//          dmmap_jk[p->first] += fac*(p->second);
-//        }
-      } // loop over master nodes
-    }
-  }
-
+  }// end friction
 
   return;
 }
@@ -3257,28 +3508,114 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(
     GEN::pairedvector<int,double>& dsxi,
     GEN::pairedvector<int,double>& dmxi)
 {
+  // flag for debug output
+  const bool out = false;
+
   // only for line 2
   const int nnodes = 2;
 
-  // calculate tangents:
-  double vs[3] = {0.0, 0.0, 0.0};
-  double vm[3] = {0.0, 0.0, 0.0};
+  // prepare linearizations
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // calculate slave vector
   CoNode* ns1 = dynamic_cast<CoNode*>(LineSlaveElement()->Nodes()[0]);
   CoNode* ns2 = dynamic_cast<CoNode*>(LineSlaveElement()->Nodes()[1]);
-
-  vs[0] = ns1->xspatial()[0] - ns2->xspatial()[0];
-  vs[1] = ns1->xspatial()[1] - ns2->xspatial()[1];
-  vs[2] = ns1->xspatial()[2] - ns2->xspatial()[2];
+  ns1->BuildAveragedEdgeTangent();
+  ns2->BuildAveragedEdgeTangent();
 
   // calculate slave vector
   CoNode* nm1 = dynamic_cast<CoNode*>(LineMasterElement()->Nodes()[0]);
   CoNode* nm2 = dynamic_cast<CoNode*>(LineMasterElement()->Nodes()[1]);
+  nm1->BuildAveragedEdgeTangent();
+  nm2->BuildAveragedEdgeTangent();
 
-  vm[0] = nm1->xspatial()[0] - nm2->xspatial()[0];
-  vm[1] = nm1->xspatial()[1] - nm2->xspatial()[1];
-  vm[2] = nm1->xspatial()[2] - nm2->xspatial()[2];
+  double lengths1=sqrt(ns1->MoData().EdgeTangent()[0] * ns1->MoData().EdgeTangent()[0] + ns1->MoData().EdgeTangent()[1] * ns1->MoData().EdgeTangent()[1] + ns1->MoData().EdgeTangent()[2] * ns1->MoData().EdgeTangent()[2]);
+  double lengths2=sqrt(ns2->MoData().EdgeTangent()[0] * ns2->MoData().EdgeTangent()[0] + ns2->MoData().EdgeTangent()[1] * ns2->MoData().EdgeTangent()[1] + ns2->MoData().EdgeTangent()[2] * ns2->MoData().EdgeTangent()[2]);
+  double lengthm1=sqrt(nm1->MoData().EdgeTangent()[0] * nm1->MoData().EdgeTangent()[0] + nm1->MoData().EdgeTangent()[1] * nm1->MoData().EdgeTangent()[1] + nm1->MoData().EdgeTangent()[2] * nm1->MoData().EdgeTangent()[2]);
+  double lengthm2=sqrt(nm2->MoData().EdgeTangent()[0] * nm2->MoData().EdgeTangent()[0] + nm2->MoData().EdgeTangent()[1] * nm2->MoData().EdgeTangent()[1] + nm2->MoData().EdgeTangent()[2] * nm2->MoData().EdgeTangent()[2]);
+  if(lengths1<1e-12 or lengths2<1e-12 or lengthm1<1e-12 or lengthm2<1e-12)
+    dserror("ERROR: tangents zero length");
+
+  // calc angle between tangents
+  double ts1[3] = {0.0,0.0,0.0};
+  double ts2[3] = {0.0,0.0,0.0};
+  double tm1[3] = {0.0,0.0,0.0};
+  double tm2[3] = {0.0,0.0,0.0};
+
+  ts1[0] = ns1->MoData().EdgeTangent()[0];
+  ts1[1] = ns1->MoData().EdgeTangent()[1];
+  ts1[2] = ns1->MoData().EdgeTangent()[2];
+
+  ts2[0] = ns2->MoData().EdgeTangent()[0];
+  ts2[1] = ns2->MoData().EdgeTangent()[1];
+  ts2[2] = ns2->MoData().EdgeTangent()[2];
+
+  tm1[0] = nm1->MoData().EdgeTangent()[0];
+  tm1[1] = nm1->MoData().EdgeTangent()[1];
+  tm1[2] = nm1->MoData().EdgeTangent()[2];
+
+  tm2[0] = nm2->MoData().EdgeTangent()[0];
+  tm2[1] = nm2->MoData().EdgeTangent()[1];
+  tm2[2] = nm2->MoData().EdgeTangent()[2];
+
+  if(out)
+  {
+    std::cout << "slave 1 = " << ts1[0] << "  " << ts1[1] << "  " << ts1[2] << std::endl;
+    std::cout << "slave 2 = " << ts2[0] << "  " << ts2[1] << "  " << ts2[2] << std::endl;
+  }
+
+  double test = ts1[0]*ts2[0] + ts1[1]*ts2[1] + ts1[2]*ts2[2];
+  if(test<1e-8)
+  {
+    ns2->MoData().EdgeTangent()[0] *= -1.0;
+    ns2->MoData().EdgeTangent()[1] *= -1.0;
+    ns2->MoData().EdgeTangent()[2] *= -1.0;
+
+    ts2[0] *= -1.0;
+    ts2[1] *= -1.0;
+    ts2[2] *= -1.0;
+
+    for (_CI p=ns2->CoData().GetDerivTangent()[0].begin();p!=ns2->CoData().GetDerivTangent()[0].end();++p)
+      ns2->CoData().GetDerivTangent()[0][p->first] *= -1.0;
+    for (_CI p=ns2->CoData().GetDerivTangent()[1].begin();p!=ns2->CoData().GetDerivTangent()[1].end();++p)
+      ns2->CoData().GetDerivTangent()[1][p->first] *= -1.0;
+    for (_CI p=ns2->CoData().GetDerivTangent()[2].begin();p!=ns2->CoData().GetDerivTangent()[2].end();++p)
+      ns2->CoData().GetDerivTangent()[2][p->first] *= -1.0;
+  }
+  if(out)
+  {
+    std::cout << "----------------" << std::endl;
+    std::cout << "slave 1 = " << ts1[0] << "  " << ts1[1] << "  " << ts1[2] << std::endl;
+    std::cout << "slave 2 = " << ts2[0] << "  " << ts2[1] << "  " << ts2[2] << std::endl;
+
+    std::cout << "master 1 = " << tm1[0] << "  " << tm1[1] << "  " << tm1[2] << std::endl;
+    std::cout << "master 2 = " << tm2[0] << "  " << tm2[1] << "  " << tm2[2] << std::endl;
+  }
+
+  test = tm1[0]*tm2[0] + tm1[1]*tm2[1] + tm1[2]*tm2[2];
+  if(test<1e-8)
+  {
+    nm2->MoData().EdgeTangent()[0] *= -1.0;
+    nm2->MoData().EdgeTangent()[1] *= -1.0;
+    nm2->MoData().EdgeTangent()[2] *= -1.0;
+
+    tm2[0] *= -1.0;
+    tm2[1] *= -1.0;
+    tm2[2] *= -1.0;
+
+    for (_CI p=nm2->CoData().GetDerivTangent()[0].begin();p!=nm2->CoData().GetDerivTangent()[0].end();++p)
+      nm2->CoData().GetDerivTangent()[0][p->first] *= -1.0;
+    for (_CI p=nm2->CoData().GetDerivTangent()[1].begin();p!=nm2->CoData().GetDerivTangent()[1].end();++p)
+      nm2->CoData().GetDerivTangent()[1][p->first] *= -1.0;
+    for (_CI p=nm2->CoData().GetDerivTangent()[2].begin();p!=nm2->CoData().GetDerivTangent()[2].end();++p)
+      nm2->CoData().GetDerivTangent()[2][p->first] *= -1.0;
+  }
+  if(out)
+  {
+    std::cout << "----------------" << std::endl;
+    std::cout << "master 1 = " << tm1[0] << "  " << tm1[1] << "  " << tm1[2] << std::endl;
+    std::cout << "master 2 = " << tm2[0] << "  " << tm2[1] << "  " << tm2[2] << std::endl;
+  }
 
   // res norm
   double conv = 0.0;
@@ -3321,6 +3658,15 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(
     for(int i = 0; i < 3; ++i)
       xdiff[i] = xs[i] - xm[i];
 
+    // calculate tangents:
+    double vs[3] = {0.0, 0.0, 0.0};
+    double vm[3] = {0.0, 0.0, 0.0};
+
+    for(int i = 0; i < 3; ++i)
+      vs[i] += sval[0]*ts1[i] + sval[1]*ts2[i];
+    for(int i = 0; i < 3; ++i)
+      vm[i] += mval[0]*tm1[i] + mval[1]*tm2[i];
+
     f[0] = xdiff[0]*vs[0] + xdiff[1]*vs[1] + xdiff[2]*vs[2];
     f[1] = xdiff[0]*vm[0] + xdiff[1]*vm[1] + xdiff[2]*vm[2];
 
@@ -3340,19 +3686,34 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(
     for(int i = 0; i < 3; ++i)
       xmderiv[i] += mderiv(0,0)*nm1->xspatial()[i] + mderiv(1,0)*nm2->xspatial()[i];
 
+    double vsderiv[3] = {0.0, 0.0, 0.0};
+    double vmderiv[3] = {0.0, 0.0, 0.0};
+    for(int i = 0; i < 3; ++i)
+      vsderiv[i] += sderiv(0,0)*ts1[i] + sderiv(1,0)*ts2[i];
+    for(int i = 0; i < 3; ++i)
+      vmderiv[i] += mderiv(0,0)*tm1[i] + mderiv(1,0)*tm2[i];
 
-    df(0,0) = xsderiv[0] * vs[0] + xsderiv[1] * vs[1] + xsderiv[2] * vs[2];
-    df(1,0) = xsderiv[0] * vm[0] + xsderiv[1] * vm[1] + xsderiv[2] * vm[2];
+    df(0,0) = xsderiv[0] * vs[0]    + xsderiv[1] * vs[1]    + xsderiv[2] * vs[2] +
+              vsderiv[0] * xdiff[0] + vsderiv[1] * xdiff[1] + vsderiv[2] * xdiff[2];
 
     df(0,1) = -xmderiv[0] * vs[0] - xmderiv[1] * vs[1] - xmderiv[2] * vs[2];
-    df(1,1) = -xmderiv[0] * vm[0] - xmderiv[1] * vm[1] - xmderiv[2] * vm[2];
+
+    df(1,0) = xsderiv[0] * vm[0] + xsderiv[1] * vm[1] + xsderiv[2] * vm[2];
+
+    df(1,1) = -xmderiv[0] * vm[0]    - xmderiv[1] * vm[1]    - xmderiv[2] * vm[2] +
+               vmderiv[0] * xdiff[0] + vmderiv[1] * xdiff[1] + vmderiv[2] * xdiff[2];
 
     //**********************************************
     //   solve deta = - inv(dF) * F               //
     //**********************************************
     double jacdet = df.Invert();
     if (abs(jacdet) < 1.0e-12)
+    {
+      sxi[0] = 1e12;
+      mxi[0] = 1e12;
+      return;
       dserror("ERROR: Singular Jacobian for projection");
+    }
 
     // update eta and alpha
     xiS[0] += -df(0, 0) * f[0] - df(0, 1) * f[1];
@@ -3363,13 +3724,9 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(
   if (conv > MORTARCONVTOL)
     dserror("ERROR: LTL intersection not converged!");
 
-
   //**********************************************
   //  Linearization                             //
   //**********************************************
-  // prepare linearizations
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
   // slave values
   LINALG::SerialDenseVector sval(nnodes);
   LINALG::SerialDenseMatrix sderiv(nnodes,1);
@@ -3392,6 +3749,15 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(
   for(int i = 0; i < 3; ++i)
     xdiff[i] = xs[i] - xm[i];
 
+  // calculate tangents:
+  double vs[3] = {0.0, 0.0, 0.0};
+  double vm[3] = {0.0, 0.0, 0.0};
+
+  for(int i = 0; i < 3; ++i)
+    vs[i] += sval[0]*ts1[i] + sval[1]*ts2[i];
+  for(int i = 0; i < 3; ++i)
+    vm[i] += mval[0]*tm1[i] + mval[1]*tm2[i];
+
   std::vector<GEN::pairedvector<int,double> > xLin(3,1000);
   std::vector<GEN::pairedvector<int,double> > vsLin(3,1000);
   std::vector<GEN::pairedvector<int,double> > vmLin(3,1000);
@@ -3407,18 +3773,39 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(
   for(int i=0; i<3;++i)
     (xLin[i])[nm2->Dofs()[i]] -= mval(1);
 
+  // TODO: this would be the correct linearization! however, the old one works better. no idea why!?!?!?
   // tangent vector slave
   for(int i=0; i<3;++i)
-    (vsLin[i])[ns1->Dofs()[i]] += 1;
-  for(int i=0; i<3;++i)
-    (vsLin[i])[ns2->Dofs()[i]] -= 1;
+  {
+    for (_CI p=ns1->CoData().GetDerivTangent()[i].begin();p!=ns1->CoData().GetDerivTangent()[i].end();++p)
+      (vsLin[i])[p->first] += sval[0] * p->second;
+
+    for (_CI p=ns2->CoData().GetDerivTangent()[i].begin();p!=ns2->CoData().GetDerivTangent()[i].end();++p)
+      (vsLin[i])[p->first] += sval[1] * p->second;
+  }
 
   // tangent vector master
   for(int i=0; i<3;++i)
-    (vmLin[i])[nm1->Dofs()[i]] += 1;
-  for(int i=0; i<3;++i)
-    (vmLin[i])[nm2->Dofs()[i]] -= 1;
+  {
+    for (_CI p=nm1->CoData().GetDerivTangent()[i].begin();p!=nm1->CoData().GetDerivTangent()[i].end();++p)
+      (vmLin[i])[p->first] += mval[0] * p->second;
 
+    for (_CI p=nm2->CoData().GetDerivTangent()[i].begin();p!=nm2->CoData().GetDerivTangent()[i].end();++p)
+      (vmLin[i])[p->first] += mval[1] * p->second;
+  }
+
+  // TODO: this is the old linearization:
+  // tangent vector slave
+//  for(int i=0; i<3;++i)
+//    (vsLin[i])[ns1->Dofs()[i]] += 1;
+//  for(int i=0; i<3;++i)
+//    (vsLin[i])[ns2->Dofs()[i]] -= 1;
+//
+//  // tangent vector master
+//  for(int i=0; i<3;++i)
+//    (vmLin[i])[nm1->Dofs()[i]] += 1;
+//  for(int i=0; i<3;++i)
+//    (vmLin[i])[nm2->Dofs()[i]] -= 1;
 
   GEN::pairedvector<int,double> f0(1000);
   GEN::pairedvector<int,double> f1(1000);
@@ -3473,7 +3860,9 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(
 /*----------------------------------------------------------------------*
  |  check if intersection is in para space interval          farah 07/16|
  *----------------------------------------------------------------------*/
-bool CONTACT::LineToLineCouplingPoint3d::CheckIntersection(double* sxi,double* mxi)
+bool CONTACT::LineToLineCouplingPoint3d::CheckIntersection(
+    double* sxi,
+    double* mxi)
 {
   if(sxi[0]>=-1.0-1e-12 and sxi[0]<=1.0+1e-12 and
       mxi[0]>=-1.0-1e-12 and mxi[0]<=1.0+1e-12 )
@@ -3487,6 +3876,11 @@ bool CONTACT::LineToLineCouplingPoint3d::CheckIntersection(double* sxi,double* m
  *----------------------------------------------------------------------*/
 bool CONTACT::LineToLineCouplingPoint3d::CheckParallelity()
 {
+  // tolerance for line clipping
+  const double sminedge = LineSlaveElement()->MinEdgeSize();
+  const double mminedge = LineMasterElement()->MinEdgeSize();
+  const double tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
+
   double vs[3] = {0.0, 0.0, 0.0};
   double vm[3] = {0.0, 0.0, 0.0};
 
@@ -3514,8 +3908,9 @@ bool CONTACT::LineToLineCouplingPoint3d::CheckParallelity()
   const double scaprod = vs[0] * vm[0] + vs[1] * vm[1] + vs[2] * vm[2];
 
   // proof if scalar product equals length product --> parallelity
-  const double diff = scaprod - (lengthS * lengthM);
-  if(abs(diff)<1e-12)
+  const double diff = abs(scaprod) - (lengthS * lengthM);
+
+  if(abs(diff)<tol)
     return true;
 
   return false;
@@ -3523,13 +3918,148 @@ bool CONTACT::LineToLineCouplingPoint3d::CheckParallelity()
 
 
 
+/*----------------------------------------------------------------------*
+ |  calc current angle (rad) between edges                   farah 09/16|
+ *----------------------------------------------------------------------*/
+double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
+    GEN::pairedvector<int,double>& lineAngle)
+{
+  // define iterator for linerization
+  typedef GEN::pairedvector<int,double>::const_iterator CI;
+
+  // slave edge vector and master vector edge
+  double vs[3] = {0.0, 0.0, 0.0};
+  double vm[3] = {0.0, 0.0, 0.0};
+
+  // calculate slave vector
+  CoNode* ns1 = dynamic_cast<CoNode*>(LineSlaveElement()->Nodes()[0]);
+  CoNode* ns2 = dynamic_cast<CoNode*>(LineSlaveElement()->Nodes()[1]);
+
+  vs[0] = ns1->xspatial()[0] - ns2->xspatial()[0];
+  vs[1] = ns1->xspatial()[1] - ns2->xspatial()[1];
+  vs[2] = ns1->xspatial()[2] - ns2->xspatial()[2];
+
+  // calculate slave vector
+  CoNode* nm1 = dynamic_cast<CoNode*>(LineMasterElement()->Nodes()[0]);
+  CoNode* nm2 = dynamic_cast<CoNode*>(LineMasterElement()->Nodes()[1]);
+
+  vm[0] = nm1->xspatial()[0] - nm2->xspatial()[0];
+  vm[1] = nm1->xspatial()[1] - nm2->xspatial()[1];
+  vm[2] = nm1->xspatial()[2] - nm2->xspatial()[2];
+
+  // calculate lengths
+  const double lengthS = sqrt(vs[0] * vs[0] + vs[1] * vs[1] + vs[2] * vs[2]);
+  const double lengthM = sqrt(vm[0] * vm[0] + vm[1] * vm[1] + vm[2] * vm[2]);
+
+  // safety
+  if(lengthS<1e-12 or lengthM<1e-12)
+    dserror("ERROR: line elements of zero length!");
+
+  // calculate scalar product
+  double scaprod = vs[0] * vm[0] + vs[1] * vm[1] + vs[2] * vm[2];
+  double scaledScaprod = scaprod/(lengthS * lengthM);
+  double angleRad = acos(scaledScaprod);
+
+  //check if we used the right angle
+  bool switchSign = false;
+  if(angleRad>0.5*M_PI) // if angle is > 90°
+  {
+    switchSign = true;
+
+    // change sign of master vector
+    vm[0] = -vm[0];
+    vm[1] = -vm[1];
+    vm[2] = -vm[2];
+
+    scaprod = vs[0] * vm[0] + vs[1] * vm[1] + vs[2] * vm[2];
+    scaledScaprod = scaprod/(lengthS * lengthM);
+    angleRad = acos(scaledScaprod);
+  }
+
+  //===============================================================
+  // linearization
+
+  // delta lengthM
+  std::vector<GEN::pairedvector<int,double> > DlM(3,1000);
+  GEN::pairedvector<int,double> DlengthM(1000);
+
+  // change sign of master vectors linearization
+  if(switchSign)
+  {
+    DlM[0][nm1->Dofs()[0]] -= 1; DlM[0][nm2->Dofs()[0]] += 1;
+    DlM[1][nm1->Dofs()[1]] -= 1; DlM[1][nm2->Dofs()[1]] += 1;
+    DlM[2][nm1->Dofs()[2]] -= 1; DlM[2][nm2->Dofs()[2]] += 1;
+  }
+  else
+  {
+    DlM[0][nm1->Dofs()[0]] += 1; DlM[0][nm2->Dofs()[0]] -= 1;
+    DlM[1][nm1->Dofs()[1]] += 1; DlM[1][nm2->Dofs()[1]] -= 1;
+    DlM[2][nm1->Dofs()[2]] += 1; DlM[2][nm2->Dofs()[2]] -= 1;
+  }
 
 
+  for (CI p=DlM[0].begin();p!=DlM[0].end();++p)
+    (DlengthM)[p->first] += (p->second) * vm[0] * 1.0/(lengthM);
+  for (CI p=DlM[1].begin();p!=DlM[1].end();++p)
+    (DlengthM)[p->first] += (p->second) * vm[1] * 1.0/(lengthM);
+  for (CI p=DlM[2].begin();p!=DlM[2].end();++p)
+    (DlengthM)[p->first] += (p->second) * vm[2] * 1.0/(lengthM);
 
+  // delta lengthS
+  std::vector<GEN::pairedvector<int,double> > DlS(3,1000);
+  GEN::pairedvector<int,double> DlengthS(1000);
 
+  DlS[0][ns1->Dofs()[0]] += 1; DlS[0][ns2->Dofs()[0]] -= 1;
+  DlS[1][ns1->Dofs()[1]] += 1; DlS[1][ns2->Dofs()[1]] -= 1;
+  DlS[2][ns1->Dofs()[2]] += 1; DlS[2][ns2->Dofs()[2]] -= 1;
 
+  for (CI p=DlS[0].begin();p!=DlS[0].end();++p)
+    (DlengthS)[p->first] += (p->second) * vs[0] * 1.0/(lengthS);
+  for (CI p=DlS[1].begin();p!=DlS[1].end();++p)
+    (DlengthS)[p->first] += (p->second) * vs[1] * 1.0/(lengthS);
+  for (CI p=DlS[2].begin();p!=DlS[2].end();++p)
+    (DlengthS)[p->first] += (p->second) * vs[2] * 1.0/(lengthS);
 
+  // lin lengthS * lengthM
+  GEN::pairedvector<int,double> prodLength(1000);
 
+  for (CI p=DlengthS.begin();p!=DlengthS.end();++p)
+    (prodLength)[p->first] += (p->second) * lengthM;
+  for (CI p=DlengthM.begin();p!=DlengthM.end();++p)
+    (prodLength)[p->first] += (p->second) * lengthS;
 
+  // lin scaprod
+  GEN::pairedvector<int,double> scaProdlin(1000);
 
+  for (CI p=DlS[0].begin();p!=DlS[0].end();++p)
+    (scaProdlin)[p->first] += (p->second) * vm[0];
+  for (CI p=DlS[1].begin();p!=DlS[1].end();++p)
+    (scaProdlin)[p->first] += (p->second) * vm[1];
+  for (CI p=DlS[2].begin();p!=DlS[2].end();++p)
+    (scaProdlin)[p->first] += (p->second) * vm[2];
 
+  for (CI p=DlM[0].begin();p!=DlM[0].end();++p)
+    (scaProdlin)[p->first] += (p->second) * vs[0];
+  for (CI p=DlM[1].begin();p!=DlM[1].end();++p)
+    (scaProdlin)[p->first] += (p->second) * vs[1];
+  for (CI p=DlM[2].begin();p!=DlM[2].end();++p)
+    (scaProdlin)[p->first] += (p->second) * vs[2];
+
+  // lin scaprod/lengthprod
+  GEN::pairedvector<int,double> scaProdnormalizedLin(1000);
+  for (CI p=scaProdlin.begin();p!=scaProdlin.end();++p)
+    (scaProdnormalizedLin)[p->first] += (p->second) * 1.0/(lengthS * lengthM);
+  for (CI p=prodLength.begin();p!=prodLength.end();++p)
+    (scaProdnormalizedLin)[p->first] -= (p->second) * scaprod * 1.0/(lengthS * lengthM * lengthS * lengthM);
+
+  // lin acos(scaledscaprod)
+  double fac = (-1.0/(sqrt(1.0-scaledScaprod*scaledScaprod)));
+  //  if(switchSign)
+  //    fac *= -1.0;
+
+  for (CI p=scaProdnormalizedLin.begin();p!=scaProdnormalizedLin.end();++p)
+    (lineAngle)[p->first] += (p->second) * fac;
+
+  // bye bye
+  return angleRad;
+}

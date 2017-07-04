@@ -4,11 +4,13 @@
 \brief A class for performing self contact search in 2D / 3D based
        on binary search trees and dual graphs
 
-<pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
+
+\level 1
+
 </pre>
 
 *-----------------------------------------------------------------------*/
@@ -2188,6 +2190,7 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
   //**********************************************************************
   // STEP 5: slave and master facet sorting
   //**********************************************************************
+  std::map<int, Teuchos::RCP<SelfBinaryTreeNode> > ::iterator leafiterNew = leafsmap_.begin();
   std::map<int, Teuchos::RCP<SelfBinaryTreeNode> > ::iterator leafiter = leafsmap_.begin();
   std::map<int, Teuchos::RCP<SelfBinaryTreeNode> > ::iterator leafiter_end = leafsmap_.end();
 
@@ -2214,6 +2217,29 @@ void CONTACT::SelfBinaryTree::SearchContactSeparate()
 
     // increment iterator
     ++leafiter;
+  }
+
+  // set all nonsmooth entities to slave
+  while (leafiterNew != leafiter_end)
+  {
+    int gid = leafiterNew->first;
+    DRT::Element* element= idiscret_.gElement(gid);
+    CONTACT::CoElement* celement = dynamic_cast<CONTACT::CoElement*>(element);
+
+    // reset nodes to master
+    for (int i=0;i<(int)element->NumNode();++i)
+    {
+      DRT::Node* node = element->Nodes()[i];
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+      if(cnode->IsOnCornerEdge())
+      {
+        cnode->SetSlave()    = true;
+        celement->SetSlave() = true;
+      }
+    }
+
+    // increment iterator
+    ++leafiterNew;
   }
 
   //lComm()->Barrier();

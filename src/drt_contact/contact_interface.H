@@ -188,6 +188,66 @@ public:
     return smoothnodes_;
   }
 
+  inline Teuchos::RCP<const Epetra_Map> SdofVertexRowmap() const
+  {
+    return sdofVertexRowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SdofVertexRowmap()
+  {
+    return sdofVertexRowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SdofVertexColmap() const
+  {
+    return sdofVertexColmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SdofVertexColmap()
+  {
+    return sdofVertexColmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SdofEdgeRowmap() const
+  {
+    return sdofEdgeRowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SdofEdgeRowmap()
+  {
+    return sdofEdgeRowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SdofEdgeColmap() const
+  {
+    return sdofEdgeColmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SdofEdgeColmap()
+  {
+    return sdofEdgeColmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SdofSurfRowmap() const
+  {
+    return sdofSurfRowmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SdofSurfRowmap()
+  {
+    return sdofSurfRowmap_;
+  }
+
+  inline Teuchos::RCP<const Epetra_Map> SdofSurfColmap() const
+  {
+    return sdofSurfColmap_;
+  }
+
+  inline Teuchos::RCP<Epetra_Map>& SdofSurfColmap()
+  {
+    return sdofSurfColmap_;
+  }
+
   inline Teuchos::RCP<Epetra_Map>& NExtendedGhosting()
   {
     return nextendedghosting_;
@@ -286,6 +346,13 @@ private:
 
   Teuchos::RCP<Epetra_Map>      nonsmoothnodes_; ///< row map of all nonsmooth slave nodes
   Teuchos::RCP<Epetra_Map>      smoothnodes_;    ///< row map of all smooth slave nodes
+
+  Teuchos::RCP<Epetra_Map>      sdofVertexRowmap_; //< row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>      sdofVertexColmap_; //< row map of all smooth slave nodes
+  Teuchos::RCP<Epetra_Map>      sdofEdgeRowmap_;   //< row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>      sdofEdgeColmap_;   //< row map of all smooth slave nodes
+  Teuchos::RCP<Epetra_Map>      sdofSurfRowmap_;   //< row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>      sdofSurfColmap_;   //< row map of all smooth slave nodes
 
   Teuchos::RCP<Epetra_Map>      nextendedghosting_;
   Teuchos::RCP<Epetra_Map>      eextendedghosting_;
@@ -472,8 +539,50 @@ public:
     exit(EXIT_FAILURE); // calm down the compiler
   }
 
+  /*!
+  \brief Get row map of smooth nodes (Filled()==true is prerequisite)
 
+  */
+  virtual const Teuchos::RCP<Epetra_Map> SdofVertexRowmap() const
+  {
+    if (Filled()) return sdofVertexRowmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  /*!
+  \brief Get row map of smooth nodes (Filled()==true is prerequisite)
 
+  */
+  virtual const Teuchos::RCP<Epetra_Map> SdofVertexColmap() const
+  {
+    if (Filled()) return sdofVertexColmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  virtual const Teuchos::RCP<Epetra_Map> SdofEdgeRowmap() const
+  {
+    if (Filled()) return sdofEdgeRowmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  virtual const Teuchos::RCP<Epetra_Map> SdofEdgeColmap() const
+  {
+    if (Filled()) return sdofEdgeColmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  virtual const Teuchos::RCP<Epetra_Map> SdofSurfRowmap() const
+  {
+    if (Filled()) return sdofSurfRowmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  virtual const Teuchos::RCP<Epetra_Map> SdofSurfColmap() const
+  {
+    if (Filled()) return sdofSurfColmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
   /*!
   \brief Get number of slave / master pairs of this interface (proc local)
 
@@ -645,6 +754,18 @@ public:
   void EvaluateLTS();
 
   /*!
+  \brief evaluate coupling terms for lts coupling + lin
+
+  */
+  void EvaluateLTSMaster();
+
+  /*!
+  \brief evaluate coupling terms for lts coupling + lin
+
+  */
+  void EvaluateNTSMaster();
+
+  /*!
   \brief evaluate coupling terms for ltl coupling + lin
 
   */
@@ -669,7 +790,6 @@ public:
 
   */
   virtual bool IntegrateKappaPenalty(CONTACT::CoElement& sele);
-
   /*!
   \brief Evaluate relative movement (jump) of slave nodes
 
@@ -937,6 +1057,17 @@ public:
   */
   void FDCheckGapDeriv();
 
+  /*!
+  \brief Check gap g derivatives with finite differences LTL
+
+  */
+  void FDCheckGapDerivLTL();
+
+  /*!
+  \brief Check jump derivatives with finite differences LTL
+
+  */
+  void FDCheckJumpDerivLTL();
 
   /*!
   \brief Check alpha derivatives with finite differences (for hybrid formulation)
@@ -983,6 +1114,56 @@ public:
 
   */
   virtual void FDCheckPenaltyTracFric();
+
+
+  /*!
+  \brief Add line to line penalty forces
+
+  */
+  void AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff);
+
+  /*!
+  \brief Add line to line penalty forces
+
+  */
+  void AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff);
+
+  /*!
+  \brief Add line to line penalty forces
+
+  */
+  void AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff);
+
+  /*!
+  \brief Add line to line penalty forces - friction
+
+  */
+  void AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff);
+
+  /*!
+  \brief Add line to line penalty stiffness contribution
+
+  */
+  void AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff);
+
+  /*!
+  \brief Add line to segment penalty stiffness contribution master side
+
+  */
+  void AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatrix> kteff);
+
+  /*!
+  \brief Add line to segment penalty stiffness contribution master side
+
+  */
+  void AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatrix> kteff);
+
+
+  /*!
+  \brief Add line to line penalty stiffness contribution
+
+  */
+  void AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix> kteff);
 
   Teuchos::RCP<Epetra_Vector>& GetCn()
   {
@@ -1045,7 +1226,9 @@ protected:
   Derived version!
 
   */
-  virtual void PreEvaluate();
+  virtual void PreEvaluate(
+      const int& step,
+      const int& iter);
 
   /*!
   \brief Routine to control contact term evaluation. Here, we decide if mortar, nts
@@ -1055,6 +1238,13 @@ protected:
 
   */
   virtual void EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+
+  /*!
+  \brief Evaluate segment-to-segment coupling (mortar...)
+
+  */
+  virtual void EvaluateSTS(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
   \brief export master nodal normals for cpp calculation
@@ -1116,6 +1306,17 @@ protected:
       MORTAR::MortarNode& mnode,
       double* normal,
       std::vector<GEN::pairedvector<int,double> >& normaltonodelin);
+
+  /*!
+  \brief Compute normal between slave node and master edge ele
+
+  */
+  virtual double ComputeNormalNodeToEdge(
+      MORTAR::MortarNode& snode,
+      MORTAR::MortarElement& mele,
+      double* normal,
+      std::vector<GEN::pairedvector<int,double> >& normaltonodelin);
+
   /*!
   \brief Compute scaling factors for transition between nts, mortar etc.
 
@@ -1126,19 +1327,13 @@ protected:
   \brief 2D version of scaling computation
 
   */
-  virtual void ComputeScaling2D();
-
-  /*!
-  \brief 3D version of scaling computation
-
-  */
-  virtual void ComputeScaling3D();
+  virtual void ComputeScalingLTL();
 
   /*!
   \brief Set new cn and ct values (global interface vector)
 
   */
-  virtual void SetCnCtValues();
+  virtual void SetCnCtValues(const int& iter); // newton step
 
   /*!
   \brief Routine scale between nts, mortar, lts etc. This is required for non-smooth
@@ -1148,16 +1343,10 @@ protected:
   virtual void ScaleTerms();
 
   /*!
-  \brief 2D version of scaling routine
+  \brief LTL version of scaling routine
 
   */
-  virtual void ScaleTerms2D();
-
-  /*!
-  \brief 3D version of scaling routine
-
-  */
-  virtual void ScaleTerms3D();
+  virtual void ScaleTermsLTL();
 
   /*!
   \brief Routine to scale nodal normals between nodal averaged normal and cpp normal
@@ -1205,6 +1394,18 @@ protected:
   virtual void DetectNonSmoothGeometries();
   virtual void EvaluateAveragedNodalNormals();
 
+  /*!
+  \brief Update interface master and slave sets
+
+  This update is usually only done ONCE in the initialization phase
+  and sets up the slave and master sets (elements, nodes, dofs) for
+  the whole simulation. Yet, in the case of self contact the sets
+  need to be updated again and again during simulation time, as the
+  slave/master status is assigned dynamically.
+
+  */
+  virtual void UpdateMasterSlaveSets();
+
 private:
   /// pointer to the interface data object
   Teuchos::RCP<CONTACT::IDataContainer> idata_ptr_;
@@ -1230,19 +1431,26 @@ protected:
   bool&                          nonSmoothContact_;      ///< ref. to flag for non-smooth contact algorithm
   INPAR::CONTACT::ConstraintDirection& constr_direction_;///< ref. to direction in which the contact constraints are formulated
 
-  Teuchos::RCP<Epetra_Map>&      activenodes_;    ///< ref. to row map of all active slave nodes
-  Teuchos::RCP<Epetra_Map>&      activedofs_;     ///< ref. to row map of all active slave dofs
-  Teuchos::RCP<Epetra_Map>&      activen_;        ///< ref. to row map of global N-matrix
-  Teuchos::RCP<Epetra_Map>&      activet_;        ///< ref. to row map of global T-matrix
-  Teuchos::RCP<Epetra_Map>&      slipnodes_;      ///< ref. to row map of all slip slave nodes
-  Teuchos::RCP<Epetra_Map>&      slipdofs_;       ///< ref. to row map of all slip slave dofs
-  Teuchos::RCP<Epetra_Map>&      slipt_;          ///< ref. to row map of part of T-matrix (slip nodes)
+  Teuchos::RCP<Epetra_Map>&     activenodes_;    ///< ref. to row map of all active slave nodes
+  Teuchos::RCP<Epetra_Map>&     activedofs_;     ///< ref. to row map of all active slave dofs
+  Teuchos::RCP<Epetra_Map>&     activen_;        ///< ref. to row map of global N-matrix
+  Teuchos::RCP<Epetra_Map>&     activet_;        ///< ref. to row map of global T-matrix
+  Teuchos::RCP<Epetra_Map>&     slipnodes_;      ///< ref. to row map of all slip slave nodes
+  Teuchos::RCP<Epetra_Map>&     slipdofs_;       ///< ref. to row map of all slip slave dofs
+  Teuchos::RCP<Epetra_Map>&     slipt_;          ///< ref. to row map of part of T-matrix (slip nodes)
 
-  Teuchos::RCP<Epetra_Map>&      nonsmoothnodes_; ///< ref. to row map of all nonsmooth slave nodes
-  Teuchos::RCP<Epetra_Map>&      smoothnodes_;    ///< ref. to row map of all smooth slave nodes
+  Teuchos::RCP<Epetra_Map>&     nonsmoothnodes_; ///< ref. to row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>&     smoothnodes_;    ///< ref. to row map of all smooth slave nodes
+  Teuchos::RCP<Epetra_Map>&     sdofVertexRowmap_; //< ref. to  row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>&     sdofVertexColmap_; //< ref. to  row map of all smooth slave nodes
+  Teuchos::RCP<Epetra_Map>&     sdofEdgeRowmap_;   //< ref. to  row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>&     sdofEdgeColmap_;   //< ref. to  row map of all smooth slave nodes
+  Teuchos::RCP<Epetra_Map>&     sdofSurfRowmap_;   //< ref. to  row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>&     sdofSurfColmap_;   //< ref. to  row map of all smooth slave nodes
 
-  Teuchos::RCP<Epetra_Map>&      nextendedghosting_;
-  Teuchos::RCP<Epetra_Map>&      eextendedghosting_;
+  Teuchos::RCP<Epetra_Map>&     nextendedghosting_;
+  Teuchos::RCP<Epetra_Map>&     eextendedghosting_;
+
 
   Teuchos::RCP<SelfBinaryTree>&  binarytreeself_; ///< ref. to binary tree for self contact search
 

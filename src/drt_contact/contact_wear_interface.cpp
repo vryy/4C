@@ -1363,6 +1363,9 @@ void WEAR::WearInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMgloba
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
 
+      cn = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
+      ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
+
       // prepare assembly, get information from node
       std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
       std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
@@ -1877,6 +1880,9 @@ void WEAR::WearInterface::AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
 
+      cn = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
+      ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
+
       // prepare assembly, get information from node
       std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
       std::vector<GEN::pairedvector<int,double> > dtximap = cnode->CoData().GetDerivTxi();
@@ -2077,6 +2083,9 @@ void WEAR::WearInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
 
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+
+      cn = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
+      ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
       // prepare assembly, get information from node
       std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
@@ -2930,6 +2939,9 @@ void WEAR::WearInterface::AssembleLinWLmSt(LINALG::SparseMatrix& sglobal)
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: Node ownership inconsistency!");
 
+    cn = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
+    ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
+
     // prepare assembly, get information from node
     std::map<int,double>& dwmap = cnode->CoData().GetDerivWlm();
 
@@ -3026,6 +3038,9 @@ void WEAR::WearInterface::AssembleLinWLmSl(LINALG::SparseMatrix& sglobal)
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+
+    cn = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
+    ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
     // prepare assembly, get information from node
     std::map<int,double>& dwmap = cnode->CoData().GetDerivWlm();

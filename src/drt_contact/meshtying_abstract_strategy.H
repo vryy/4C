@@ -391,6 +391,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     bool WasInContactLastTimeStep() const { return true; }
     Teuchos::RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
     Teuchos::RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
+    Teuchos::RCP<Epetra_Vector> ContactNorForce() {return Teuchos::null;}
+    Teuchos::RCP<Epetra_Vector> ContactTanForce() {return Teuchos::null;}
     void AssembleMortar() {}
     void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) {}
     virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors, bool forcedrestart = false) const {}

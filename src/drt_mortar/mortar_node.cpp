@@ -41,10 +41,12 @@ drows_ltl_(0)
   for (int i=0;i<3;++i)
   {
     n()[i]=0.0;
+    EdgeTangent()[i] = 0.0;
     lm()[i]=0.0;
     lmold()[i]=0.0;
     lmuzawa()[i]=0.0;
     GetScale()=1.0;
+    GetDscale()=0.0;
   }
 
   return;
@@ -58,6 +60,8 @@ void MORTAR::MortarNodeDataContainer::Pack(DRT::PackBuffer& data) const
 {
   // add n_
   DRT::ParObject::AddtoPack(data,n_,3*sizeof(double));
+  // add edgetangent_
+  DRT::ParObject::AddtoPack(data,edgeTangent_,3*sizeof(double));
   // add lm_
   DRT::ParObject::AddtoPack(data,lm_,3*sizeof(double));
   // add lmold_
@@ -80,6 +84,8 @@ void MORTAR::MortarNodeDataContainer::Unpack(std::vector<char>::size_type& posit
 {
   // n_
   DRT::ParObject::ExtractfromPack(position,data,n_,3*sizeof(double));
+  // edgetangent_
+  DRT::ParObject::ExtractfromPack(position,data,edgeTangent_,3*sizeof(double));
   // lm_
   DRT::ParObject::ExtractfromPack(position,data,lm_,3*sizeof(double));
   // lmold_
@@ -332,12 +338,6 @@ void MORTAR::MortarNode::AddDValue(const int& colnode,const double& val)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddDntsValue(const int& colnode,const double& val)
 {
-  // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddDValue: function called for master node %i", Id());
-  if (IsOnBound()==true)
-    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
-
   // check if this has been called before
   if ((int)MoData().GetDnts().size()==0)
     MoData().GetDnts().resize(dentries_);
@@ -353,10 +353,6 @@ void MORTAR::MortarNode::AddDntsValue(const int& colnode,const double& val)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddDltsValue(const int& colnode,const double& val)
 {
-  // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddDValue: function called for master node %i", Id());
-
   // check if this has been called before
   if ((int)MoData().GetDlts().size()==0)
     MoData().GetDlts().resize(dentries_);
@@ -411,12 +407,6 @@ void MORTAR::MortarNode::AddMValue(const int& colnode,const double& val)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddMntsValue(const int& colnode,const double& val)
 {
-  // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddMValue: function called for master node %i", Id());
-  if (IsOnBound()==true)
-    dserror("ERROR: AddMValue: function called for boundary node %i", Id());
-
   // add the pair (col,val) to the given row
   MoData().GetMnts()[colnode] += val;
 
@@ -428,10 +418,6 @@ void MORTAR::MortarNode::AddMntsValue(const int& colnode,const double& val)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddMltsValue(const int& colnode,const double& val)
 {
-  // check if this is a master node or slave boundary node
-  if (IsSlave()==false)
-    dserror("ERROR: AddMValue: function called for master node %i", Id());
-
   // add the pair (col,val) to the given row
   MoData().GetMlts()[colnode] += val;
 

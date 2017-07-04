@@ -1272,6 +1272,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
 //          globgp[2], ele.Id());
       xi[0] = 1e12;
       xi[1] = 1e12;
+      return false;
     }
 
     // Newton iteration converged

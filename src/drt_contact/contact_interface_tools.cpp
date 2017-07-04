@@ -1210,6 +1210,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
     if (!jnode) dserror("ERROR: Cannot find node with gid %",jgid);
     CoNode* jcnode = dynamic_cast<CoNode*>(jnode);
 
+    if(!jcnode->IsOnEdge())
+      continue;
+
     // store reference normals / tangents
     refnx[j] = jcnode->MoData().n()[0];
     refny[j] = jcnode->MoData().n()[1];
@@ -1274,7 +1277,7 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if(!kcnode->IsOnCorner())
+      if(!kcnode->IsOnEdge())
         continue;
 
       // build NEW averaged normal at each slave node
@@ -1327,6 +1330,8 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
          double analy = (kcnode->CoData().GetDerivN()[d])[snode->Dofs()[i%dim]];
          double dev = finit - analy;
 
+         if(abs(finit)<1e-12)
+           continue;
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
 
@@ -1356,6 +1361,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
          double analy = (kcnode->CoData().GetDerivTxi()[d])[snode->Dofs()[i%dim]];
          double dev = finit - analy;
 
+         if(abs(finit)<1e-12)
+           continue;
+
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
          std::cout << "TANGENT_XI(" << kgid << "," << d << "," << snode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
@@ -1382,6 +1390,9 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
          double finit = (newteta[d]-refteta[d])/delta;
          double analy = (kcnode->CoData().GetDerivTeta()[d])[snode->Dofs()[i%dim]];
          double dev = finit - analy;
+
+         if(abs(finit)<1e-12)
+           continue;
 
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
@@ -1479,7 +1490,7 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      if(!kcnode->IsOnCorner())
+      if(!kcnode->IsOnEdge())
         continue;
 
       // build NEW averaged normal at each slave node
@@ -1532,6 +1543,8 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
          double analy = (kcnode->CoData().GetDerivN()[d])[mnode->Dofs()[i%dim]];
          double dev = finit - analy;
 
+         if(abs(finit)<1e-12)
+           continue;
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
 
@@ -1561,6 +1574,8 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
          double analy = (kcnode->CoData().GetDerivTxi()[d])[mnode->Dofs()[i%dim]];
          double dev = finit - analy;
 
+         if(abs(finit)<1e-12)
+           continue;
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
          std::cout << "TANGENT_XI(" << kgid << "," << d << "," << mnode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
@@ -1588,6 +1603,8 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
          double analy = (kcnode->CoData().GetDerivTeta()[d])[mnode->Dofs()[i%dim]];
          double dev = finit - analy;
 
+         if(abs(finit)<1e-12)
+           continue;
          // kgid: id of currently tested slave node
          // snode->Dofs()[fd%dim]: currently modified slave dof
          std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << mnode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
@@ -3038,6 +3055,787 @@ void CONTACT::CoInterface::FDCheckAlphaDeriv()
 
 
 /*----------------------------------------------------------------------*
+ | Finite difference check for normal gap derivatives        Farah 06/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::FDCheckGapDerivLTL()
+{
+  // FD checks only for serial case
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // create storage for gap values
+  int nrow = snoderowmap_->NumMyElements();
+  std::vector<double> refG0(nrow);
+  std::vector<double> newG0(nrow);
+  std::vector<double> refG1(nrow);
+  std::vector<double> newG1(nrow);
+  std::vector<double> refG2(nrow);
+  std::vector<double> newG2(nrow);
+  // problem dimension (2D or 3D)
+  int dim = Dim();
+
+  // store reference
+  // loop over proc's slave nodes
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    // store gap-values into refG
+    refG0[i]=cnode->CoData().Getgltl()[0];
+    refG1[i]=cnode->CoData().Getgltl()[1];
+    refG2[i]=cnode->CoData().Getgltl()[2];
+  }
+
+  // global loop to apply FD scheme to all slave dofs (=dim*nodes)
+  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
+
+    int sdof = snode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
+
+    // apply finite difference scheme
+    /*if (Comm().MyPID()==snode->Owner())
+    {
+      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%dim
+           << " Dof(g): " << snode->Dofs()[fd%dim] << std::endl;
+    }*/
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+
+      // store gap-values into newG
+      newG0[k]=kcnode->CoData().Getgltl()[0];
+      newG1[k]=kcnode->CoData().Getgltl()[1];
+      newG2[k]=kcnode->CoData().Getgltl()[2];
+
+
+      if (abs(newG0[k]-refG0[k]) > 1e-12 && newG0[k]!=1.0e12 && refG0[k] != 1.0e12)
+      {
+         double finit = (newG0[k]-refG0[k])/delta;
+         double analy = kcnode->CoData().GetDerivGltl()[0][snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+      if (abs(newG1[k]-refG1[k]) > 1e-12 && newG1[k]!=1.0e12 && refG1[k] != 1.0e12)
+      {
+         double finit = (newG1[k]-refG1[k])/delta;
+         double analy = kcnode->CoData().GetDerivGltl()[1][snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+      if (abs(newG2[k]-refG2[k]) > 1e-12 && newG2[k]!=1.0e12 && refG2[k] != 1.0e12)
+      {
+         double finit = (newG2[k]-refG2[k])/delta;
+         double analy = kcnode->CoData().GetDerivGltl()[2][snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+    }
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+  // global loop to apply FD scheme to all master dofs (=dim*nodes)
+  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize
+    // loop over all nodes to reset normals, closestnode and Mortar maps
+    // (use fully overlapping column map)
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
+
+    int mdof = mnode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
+
+    // apply finite difference scheme
+    /*if (Comm().MyPID()==mnode->Owner())
+    {
+      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%dim
+           << " Dof(g): " << mnode->Dofs()[fd%dim] << std::endl;
+    }*/
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+
+      if (kcnode->Active())
+      {
+        // check two versions of weighted gap
+        double defgap = 0.0;
+        double wii = (kcnode->MoData().GetD())[kcnode->Id()];
+
+        for (int j=0;j<dim;++j)
+          defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
+
+        std::map<int,double>& mmap = kcnode->MoData().GetM();
+        std::map<int,double>::const_iterator mcurr;
+
+        for (int m=0;m<mnodefullmap->NumMyElements();++m)
+        {
+          int gid = mnodefullmap->GID(m);
+          DRT::Node* mnode = idiscret_->gNode(gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
+          bool hasentry = false;
+
+          // look for this master node in M-map of the active slave node
+          for (mcurr=mmap.begin();mcurr!=mmap.end();++mcurr)
+            if ((mcurr->first)==cmnode->Id())
+            {
+              hasentry=true;
+              break;
+            }
+
+          double mik = mmap[cmnode->Id()];
+          double* mxi = cmnode->xspatial();
+
+          // get out of here, if master node not adjacent or coupling very weak
+          if (!hasentry || abs(mik)<1.0e-12) continue;
+
+          for (int j=0;j<dim;++j)
+            defgap+= (kcnode->MoData().n()[j]) * mik * mxi[j];
+        }
+
+        //std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << " DefGap: " << defgap << std::endl;
+        //kcnode->CoData().Getg = defgap;
+      }
+
+      // store gap-values into newG
+      newG0[k]=kcnode->CoData().Getgltl()[0];
+      newG1[k]=kcnode->CoData().Getgltl()[1];
+      newG2[k]=kcnode->CoData().Getgltl()[2];
+
+      if (abs(newG0[k]-refG0[k]) > 1e-12 && newG0[k]!=1.0e12 && refG0[k] != 1.0e12)
+      {
+         double finit = (newG0[k]-refG0[k])/delta;
+         double analy = kcnode->CoData().GetDerivGltl()[0][mnode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // mnode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+      if (abs(newG1[k]-refG1[k]) > 1e-12 && newG1[k]!=1.0e12 && refG1[k] != 1.0e12)
+      {
+         double finit = (newG1[k]-refG1[k])/delta;
+         double analy = kcnode->CoData().GetDerivGltl()[1][mnode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // mnode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+      if (abs(newG2[k]-refG2[k]) > 1e-12 && newG2[k]!=1.0e12 && refG2[k] != 1.0e12)
+      {
+         double finit = (newG2[k]-refG2[k])/delta;
+         double analy = kcnode->CoData().GetDerivGltl()[2][mnode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // mnode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivg=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+  // back to normal...
+  Initialize();
+  Evaluate();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Finite difference check for normal gap derivatives        Farah 06/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::FDCheckJumpDerivLTL()
+{
+  // FD checks only for serial case
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1)
+    dserror("ERROR: FD checks only for serial case");
+
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // create storage for gap values
+  int nrow = snoderowmap_->NumMyElements();
+  std::vector<double> refG0(nrow);
+  std::vector<double> newG0(nrow);
+  std::vector<double> refG1(nrow);
+  std::vector<double> newG1(nrow);
+  std::vector<double> refG2(nrow);
+  std::vector<double> newG2(nrow);
+  // problem dimension (2D or 3D)
+  int dim = Dim();
+
+  // store reference
+  // loop over proc's slave nodes
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    // store gap-values into refG
+    refG0[i]=cnode->CoData().Getjumpltl()[0];
+    refG1[i]=cnode->CoData().Getjumpltl()[1];
+    refG2[i]=cnode->CoData().Getjumpltl()[2];
+  }
+
+  // global loop to apply FD scheme to all slave dofs (=dim*nodes)
+  for (int fd=0; fd<dim*snodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
+
+    int sdof = snode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
+
+    // apply finite difference scheme
+    /*if (Comm().MyPID()==snode->Owner())
+    {
+      std::cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%dim
+           << " Dof(g): " << snode->Dofs()[fd%dim] << std::endl;
+    }*/
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode)
+        dserror("ERROR: Cannot find node with gid %",kgid);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+
+      // store gap-values into newG
+      newG0[k]=kcnode->CoData().Getjumpltl()[0];
+      newG1[k]=kcnode->CoData().Getjumpltl()[1];
+      newG2[k]=kcnode->CoData().Getjumpltl()[2];
+
+
+      if (abs(newG0[k]-refG0[k]) > 1e-12 && newG0[k]!=1.0e12 && refG0[k] != 1.0e12)
+      {
+         double finit = (newG0[k]-refG0[k])/delta;
+         double analy = kcnode->CoData().GetDerivJumpltl()[0][snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivj=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+      if (abs(newG1[k]-refG1[k]) > 1e-12 && newG1[k]!=1.0e12 && refG1[k] != 1.0e12)
+      {
+         double finit = (newG1[k]-refG1[k])/delta;
+         double analy = kcnode->CoData().GetDerivJumpltl()[1][snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivj=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+      if (abs(newG2[k]-refG2[k]) > 1e-12 && newG2[k]!=1.0e12 && refG2[k] != 1.0e12)
+      {
+         double finit = (newG2[k]-refG2[k])/delta;
+         double analy = kcnode->CoData().GetDerivJumpltl()[2][snode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << snode->Dofs()[fd%dim] << ") : fd=" << finit << " derivj=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+    }
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      snode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      snode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+  // global loop to apply FD scheme to all master dofs (=dim*nodes)
+  for (int fd=0; fd<dim*mnodefullmap->NumMyElements();++fd)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // Initialize
+    // loop over all nodes to reset normals, closestnode and Mortar maps
+    // (use fully overlapping column map)
+    Initialize();
+
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap->GID(fd/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
+
+    int mdof = mnode->Dofs()[fd%dim];
+    std::cout << "\nDERIVATIVE FOR M-NODE # " << gid << " DOF: " << mdof << std::endl;
+
+    // apply finite difference scheme
+    /*if (Comm().MyPID()==mnode->Owner())
+    {
+      std::cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%dim
+           << " Dof(g): " << mnode->Dofs()[fd%dim] << std::endl;
+    }*/
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] += delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************
+    Evaluate();
+
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+
+      if (kcnode->Active())
+      {
+        // check two versions of weighted gap
+        double defgap = 0.0;
+        double wii = (kcnode->MoData().GetD())[kcnode->Id()];
+
+        for (int j=0;j<dim;++j)
+          defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
+
+        std::map<int,double>& mmap = kcnode->MoData().GetM();
+        std::map<int,double>::const_iterator mcurr;
+
+        for (int m=0;m<mnodefullmap->NumMyElements();++m)
+        {
+          int gid = mnodefullmap->GID(m);
+          DRT::Node* mnode = idiscret_->gNode(gid);
+          if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+          CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
+          bool hasentry = false;
+
+          // look for this master node in M-map of the active slave node
+          for (mcurr=mmap.begin();mcurr!=mmap.end();++mcurr)
+            if ((mcurr->first)==cmnode->Id())
+            {
+              hasentry=true;
+              break;
+            }
+
+          double mik = mmap[cmnode->Id()];
+          double* mxi = cmnode->xspatial();
+
+          // get out of here, if master node not adjacent or coupling very weak
+          if (!hasentry || abs(mik)<1.0e-12) continue;
+
+          for (int j=0;j<dim;++j)
+            defgap+= (kcnode->MoData().n()[j]) * mik * mxi[j];
+        }
+
+        //std::cout << "SNode: " << kcnode->Id() << " IntGap: " << kcnode->CoData().Getg << " DefGap: " << defgap << std::endl;
+        //kcnode->CoData().Getg = defgap;
+      }
+
+      // store gap-values into newG
+      newG0[k]=kcnode->CoData().Getjumpltl()[0];
+      newG1[k]=kcnode->CoData().Getjumpltl()[1];
+      newG2[k]=kcnode->CoData().Getjumpltl()[2];
+
+      if (abs(newG0[k]-refG0[k]) > 1e-12 && newG0[k]!=1.0e12 && refG0[k] != 1.0e12)
+      {
+         double finit = (newG0[k]-refG0[k])/delta;
+         double analy = kcnode->CoData().GetDerivJumpltl()[0][mnode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // mnode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivj=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+      if (abs(newG1[k]-refG1[k]) > 1e-12 && newG1[k]!=1.0e12 && refG1[k] != 1.0e12)
+      {
+         double finit = (newG1[k]-refG1[k])/delta;
+         double analy = kcnode->CoData().GetDerivJumpltl()[1][mnode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // mnode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivj=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+      if (abs(newG2[k]-refG2[k]) > 1e-12 && newG2[k]!=1.0e12 && refG2[k] != 1.0e12)
+      {
+         double finit = (newG2[k]-refG2[k])/delta;
+         double analy = kcnode->CoData().GetDerivJumpltl()[2][mnode->Dofs()[fd%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // mnode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "(" << kgid << "," << mnode->Dofs()[fd%dim] << ") : fd=" << finit << " derivj=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+      }
+    }
+
+    // undo finite difference modification
+    if (fd%dim==0)
+    {
+      mnode->xspatial()[0] -= delta;
+    }
+    else if (fd%dim==1)
+    {
+      mnode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+  // back to normal...
+  Initialize();
+  Evaluate();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | Finite difference check for normal gap derivatives         popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckGapDeriv()
@@ -3066,6 +3864,9 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
+
+    if(!cnode->IsOnEdge())
+      continue;
 
 //    if (cnode->Active())
 //    {
@@ -3170,6 +3971,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
+      if(!kcnode->IsOnEdge())
+        continue;
 
 //      if (kcnode->Active())
 //      {
@@ -3317,6 +4120,9 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
+      if(!kcnode->IsOnEdge())
+        continue;
+
       if (kcnode->Active())
       {
         // check two versions of weighted gap
@@ -3410,6 +4216,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 
   return;
 }
+
+
 
 /*----------------------------------------------------------------------*
  | Finite difference check for tang. LM derivatives           popp 06/08|

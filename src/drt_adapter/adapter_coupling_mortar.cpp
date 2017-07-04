@@ -131,7 +131,11 @@ void ADAPTER::CouplingMortar::Setup(
   const int myrank  = masterdis->Comm().MyPID();
 
   // get mortar coupling parameters
-  const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
+  Teuchos::ParameterList inputmortar;
+  const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& cmortar = DRT::Problem::Instance()->ContactDynamicParams();
+  inputmortar.setParameters(cmortar);
+  inputmortar.setParameters(mortar);
 
   // interface displacement (=0) has to be merged from slave and master discretization
   Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_,slavedofrowmap_, false);
@@ -288,8 +292,10 @@ void ADAPTER::CouplingMortar::SetupInterface(
 
   // get mortar coupling parameters
   const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
+  const Teuchos::ParameterList& inputc      = DRT::Problem::Instance()->ContactDynamicParams();
   Teuchos::ParameterList input;
   input.setParameters(inputmortar);
+  input.setParameters(inputc);
 
   // is this a nurbs problem?
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();

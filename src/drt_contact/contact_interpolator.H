@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file contact_interpolator.H
 
-<pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
+\level 2
+
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -72,7 +73,7 @@ public:
    \brief Interpolate for nts algorithm
 
    */
-  void Interpolate(MORTAR::MortarNode& snode,
+  bool Interpolate(MORTAR::MortarNode& snode,
                      std::vector<MORTAR::MortarElement*> meles);
 
   /*!
@@ -118,7 +119,7 @@ private:
    \brief Interpolate for 3D problems
 
    */
-  void Interpolate3D(MORTAR::MortarNode& snode,
+  bool Interpolate3D(MORTAR::MortarNode& snode,
                      std::vector<MORTAR::MortarElement*> meles);
 
   /*!
@@ -222,20 +223,20 @@ private:
               double& jumpval,
               GEN::pairedvector<int,double>& dslipmatrix);
 
-  Teuchos::ParameterList&                          iparams_;     // containing contact input parameters
-  int                                              dim_;         // problem dimension
-  bool                                             pwslip_;      // point-wise evaluated slip increment
+  Teuchos::ParameterList&                          iparams_;     //< containing contact input parameters
+  int                                              dim_;         //< problem dimension
+  bool                                             pwslip_;      //< point-wise evaluated slip increment
 
   // wear inputs from parameter list
-  INPAR::WEAR::WearLaw                             wearlaw_;     // type of wear law
-  bool                                             wearimpl_;    // flag for implicit wear algorithm
-  INPAR::WEAR::WearSide                            wearside_;    // definition of wear surface
-  INPAR::WEAR::WearType                            weartype_;    // definition of contact wear algorithm
-  INPAR::WEAR::WearShape                           wearshapefcn_;// type of wear shape function
-  double                                           wearcoeff_;   // wear coefficient
-  double                                           wearcoeffm_;  // wear coefficient master
-  bool                                             sswear_;      // flag for steady state wear
-  double                                           ssslip_;      // fixed slip for steady state wear
+  INPAR::WEAR::WearLaw                             wearlaw_;     //< type of wear law
+  bool                                             wearimpl_;    //< flag for implicit wear algorithm
+  INPAR::WEAR::WearSide                            wearside_;    //< definition of wear surface
+  INPAR::WEAR::WearType                            weartype_;    //< definition of contact wear algorithm
+  INPAR::WEAR::WearShape                           wearshapefcn_;//< type of wear shape function
+  double                                           wearcoeff_;   //< wear coefficient
+  double                                           wearcoeffm_;  //< wear coefficient master
+  bool                                             sswear_;      //< flag for steady state wear
+  double                                           ssslip_;      //< fixed slip for steady state wear
 
 };
 

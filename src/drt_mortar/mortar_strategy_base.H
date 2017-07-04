@@ -241,6 +241,8 @@ class StrategyBase : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
     virtual double ConstraintNorm() const = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> ContactNorForce() = 0;
+    virtual Teuchos::RCP<Epetra_Vector> ContactTanForce() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix() = 0;
     virtual void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors, bool forcedrestart = false) const = 0;

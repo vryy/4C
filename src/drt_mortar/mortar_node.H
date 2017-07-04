@@ -104,6 +104,13 @@ public:
   }
 
   /*!
+   \brief Return current edge tangent(length 3)
+   */
+  double* EdgeTangent()
+  {
+    return edgeTangent_;
+  }
+  /*!
    \brief Return current Lagrange mutliplier in step n+1 (only for slave side!) (length 3)
    */
   double* lm()
@@ -215,7 +222,13 @@ public:
   {
     return scalefac_;
   }
-
+  /*!
+   \brief Return the d matrix scale factor of this node
+   */
+  double& GetDscale()
+  {
+    return d_nonsmooth_;
+  }
   //@}
 
 protected:
@@ -224,26 +237,28 @@ protected:
   MortarNodeDataContainer operator =(const MortarNodeDataContainer& old);
   MortarNodeDataContainer(const MortarNodeDataContainer& old);
 
-  double n_[3]; // nodal normal for contact methods
-  double lm_[3]; // current Lagrange multiplier value (n+1)
-  double lmold_[3]; // old Lagrange multiplier value (last converged state n)
-  double lmuzawa_[3]; // Uzawa Lagrange multiplier value (last Uzawa step k)
+  double n_[3];           //< nodal normal for contact methods
+  double edgeTangent_[3]; //< current edge tangent
+  double lm_[3];          //< current Lagrange multiplier value (n+1)
+  double lmold_[3];       //< old Lagrange multiplier value (last converged state n)
+  double lmuzawa_[3];     //< Uzawa Lagrange multiplier value (last Uzawa step k)
+  double d_nonsmooth_;
 
-  GEN::pairedvector<int, double> drows_; // nodal rows of D matrix for sts
-  std::map<int, double> mrows_;          // nodal rows of M matrix for sts
-  std::map<int, double> mmodrows_;       // nodal rows of Mmod matrix (sts)
+  GEN::pairedvector<int, double> drows_; //< nodal rows of D matrix for sts
+  std::map<int, double> mrows_;          //< nodal rows of M matrix for sts
+  std::map<int, double> mmodrows_;       //< nodal rows of Mmod matrix (sts)
 
   //! node-to-segment (nts) specific
-  GEN::pairedvector<int, double> drows_nts_; // nodal rows of D matrix for nts
-  std::map<int, double> mrows_nts_;          // nodal rows of M matrix for nts
+  GEN::pairedvector<int, double> drows_nts_; //< nodal rows of D matrix for nts
+  std::map<int, double> mrows_nts_;          //< nodal rows of M matrix for nts
 
   //! line-to-segment (lts) specific
-  GEN::pairedvector<int, double> drows_lts_; // nodal rows of D matrix for lts
-  std::map<int, double> mrows_lts_;          // nodal rows of M matrix for lts
+  GEN::pairedvector<int, double> drows_lts_; //< nodal rows of D matrix for lts
+  std::map<int, double> mrows_lts_;          //< nodal rows of M matrix for lts
 
   //! line-to-line (ltl) specific
-  GEN::pairedvector<int, double> drows_ltl_; // nodal rows of D matrix for lts
-  std::map<int, double> mrows_ltl_;          // nodal rows of M matrix for lts
+  GEN::pairedvector<int, double> drows_ltl_; //< nodal rows of D matrix for lts
+  std::map<int, double> mrows_ltl_;          //< nodal rows of M matrix for lts
 
   double scalefac_; // nodal scaling factor for better conditioning
 

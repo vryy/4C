@@ -1091,9 +1091,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
       dserror("ERROR: Combination of LM_NODAL_SCALE and WEAR not (yet) implemented.");
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult
-        && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")     != INPAR::WEAR::wear_none)
-      dserror("ERROR: Wear model only applicable in combination with Lagrange multiplier strategy.");
+//    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult
+//        && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")     != INPAR::WEAR::wear_none)
+//      dserror("ERROR: Wear model only applicable in combination with Lagrange multiplier strategy.");
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") == INPAR::CONTACT::friction_tresca
         && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")  != INPAR::WEAR::wear_none)
@@ -1362,8 +1362,6 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
 
-
-
   // export to problem node row map
   Teuchos::RCP<Epetra_Map> problemnodes = GetStrategy().ProblemNodes();
   Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp( new Epetra_Vector(*problemnodes));
@@ -1411,24 +1409,23 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   output.WriteVector("norcontactstress", normalstressesexp);
   output.WriteVector("tancontactstress", tangentialstressesexp);
 
-//  // nonsmooth stresses
-//  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ContactDynamicParams(),"NONSMOOTH_GEOMETRIES"))
-//  {
-//    // normal direction
-//    Teuchos::RCP<Epetra_Vector> normalstressesns    = GetStrategy().ContactNorStressNs();
-//    Teuchos::RCP<Epetra_Vector> normalstressesnsexp = Teuchos::rcp( new Epetra_Vector(*problemdofs));
-//    LINALG::Export(*normalstressesns, *normalstressesnsexp);
-//
-//    // tangential plane
-//    Teuchos::RCP<Epetra_Vector> tangentialstressesns    = GetStrategy().ContactTanStressNs();
-//    Teuchos::RCP<Epetra_Vector> tangentialstressesnsexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-//    LINALG::Export(*tangentialstressesns, *tangentialstressesnsexp);
-//
-//    // write to output
-//    // contact tractions in normal and tangential direction
-//    output.WriteVector("norcontactstressNs", normalstressesnsexp);
-//    output.WriteVector("tancontactstressNs", tangentialstressesnsexp);
-//  }
+  if(GetStrategy().ContactNorForce()!=Teuchos::null)
+  {
+    // normal direction
+    Teuchos::RCP<Epetra_Vector> normalforce    = GetStrategy().ContactNorForce();
+    Teuchos::RCP<Epetra_Vector> normalforceexp = Teuchos::rcp( new Epetra_Vector(*problemdofs));
+    LINALG::Export(*normalforce, *normalforceexp);
+
+    // tangential plane
+    Teuchos::RCP<Epetra_Vector> tangentialforce    = GetStrategy().ContactTanForce();
+    Teuchos::RCP<Epetra_Vector> tangentialforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    LINALG::Export(*tangentialforce, *tangentialforceexp);
+
+    // write to output
+    // contact tractions in normal and tangential direction
+    output.WriteVector("norslaveforce", normalforceexp);
+    output.WriteVector("tanslaveforce", tangentialforceexp);
+  }
 
 
 #ifdef CONTACTFORCEOUTPUT
@@ -1509,22 +1506,22 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 
 #endif  //MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact
 
-  // when we do a boundary modification we shift slave entries to the M matrix with
-  // negative sign. Therefore, we have to extract the right force entries from the
-  // master force which correcpond to the slave force!
-  Teuchos::RCP<Epetra_Vector> slavedummy =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap(),true));
-  LINALG::Export(*fcmasternor,*slavedummy);
-  int err = fcslavenor->Update(-1.0,*slavedummy,1.0);
-  if(err!=0)
-    dserror("ERROR");
-
-  Teuchos::RCP<Epetra_Vector> masterdummy =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap(),true));
-  LINALG::Export(*slavedummy,*masterdummy);
-  err = fcmasternor->Update(-1.0,*masterdummy,1.0);
-  if(err!=0)
-    dserror("ERROR");
+//  // when we do a boundary modification we shift slave entries to the M matrix with
+//  // negative sign. Therefore, we have to extract the right force entries from the
+//  // master force which correcpond to the slave force!
+//  Teuchos::RCP<Epetra_Vector> slavedummy =
+//      Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap(),true));
+//  LINALG::Export(*fcmasternor,*slavedummy);
+//  int err = fcslavenor->Update(-1.0,*slavedummy,1.0);
+//  if(err!=0)
+//    dserror("ERROR");
+//
+//  Teuchos::RCP<Epetra_Vector> masterdummy =
+//      Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap(),true));
+//  LINALG::Export(*slavedummy,*masterdummy);
+//  err = fcmasternor->Update(-1.0,*masterdummy,1.0);
+//  if(err!=0)
+//    dserror("ERROR");
 
   // export
   LINALG::Export(*fcslavenor,*fcslavenorexp);

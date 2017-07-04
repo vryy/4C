@@ -74,18 +74,18 @@ ssslip_(iparams_.get<double>("SSSLIP"))
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 02/16|
  *----------------------------------------------------------------------*/
-void NTS::CoInterpolator::Interpolate(MORTAR::MortarNode& snode,
+bool NTS::CoInterpolator::Interpolate(MORTAR::MortarNode& snode,
                                       std::vector<MORTAR::MortarElement*> meles)
 {
   // call sub functions for 2 and 3 dimensions
   if(dim_==2)
     Interpolate2D(snode,meles);
   else if(dim_==3)
-    Interpolate3D(snode,meles);
+    return Interpolate3D(snode,meles);
   else
     dserror("ERROR: wrong dimension");
 
-  return;
+  return true;
 }
 
 
@@ -256,18 +256,14 @@ void NTS::CoInterpolator::Interpolate2D(MORTAR::MortarNode& snode,
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 09/14|
  *----------------------------------------------------------------------*/
-void NTS::CoInterpolator::Interpolate3D(MORTAR::MortarNode& snode,
+bool NTS::CoInterpolator::Interpolate3D(MORTAR::MortarNode& snode,
                                         std::vector<MORTAR::MortarElement*> meles)
 {
+  bool success = false;
+
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
-  // check input data
-  for (int i=0;i<(int)meles.size();++i)
-  {
-    if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
-  }
 
   bool kink_projection=false;
 
@@ -356,6 +352,7 @@ void NTS::CoInterpolator::Interpolate3D(MORTAR::MortarNode& snode,
     {
       kink_projection   = true;
       mynode.HasProj()  = true;
+      success = true;
 
       int ndof = 3;
       int ncol = meles[nummaster]->NumNode();
@@ -385,6 +382,7 @@ void NTS::CoInterpolator::Interpolate3D(MORTAR::MortarNode& snode,
       double gpn[3]  = {0.0, 0.0, 0.0};
       //**************************************************************
 
+      linsize *= 100;
       // evalute the GP slave coordinate derivatives --> no entries
       std::vector<GEN::pairedvector<int,double> > dsxi(2,0);
       std::vector<GEN::pairedvector<int,double> > dmxi(2,4*linsize+ncol*ndof);
@@ -401,7 +399,7 @@ void NTS::CoInterpolator::Interpolate3D(MORTAR::MortarNode& snode,
 
   //**************************************************************
 
-  return;
+  return success;
 }
 
 
@@ -1587,6 +1585,9 @@ void NTS::CoInterpolator::DerivXiGP3D(MORTAR::MortarElement& sele,
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*> (snodes[i]);
     linsize += cnode->GetLinsize();
   }
+
+  //TODO: this is for safety. Change to reasonable value!
+  linsize *= 100;
 
   GEN::pairedvector<int,double> dmap_nxsl_gp(linsize);
   GEN::pairedvector<int,double> dmap_nysl_gp(linsize);

@@ -138,6 +138,22 @@ public:
   }
 
   /*!
+   \brief Return the old 'D' map (vector) of this node (last converged state)
+   */
+  virtual inline GEN::pairedvector<int, double>& GetDOldLTL()
+  {
+    return drowsoldLTL_;
+  }
+
+  /*!
+   \brief Return the old 'M' map (vector) of this node (last converged state)
+   */
+  virtual inline std::map<int, double>& GetMOldLTL()
+  {
+    return mrowsoldLTL_;
+  }
+
+  /*!
    \brief Return the map with according slave nodes
    */
   virtual inline std::set<int>& GetSNodes()
@@ -194,7 +210,13 @@ public:
   {
     return traction_;
   }
-
+  /*!
+   \brief Return current penalty traction (length 3)
+   */
+  virtual inline double* tractionLTL()
+  {
+    return tractionLTL_;
+  }
   /*!
    \brief Return contact status of last converged state n (active=true)
    */
@@ -210,7 +232,13 @@ public:
   {
     return tractionold_;
   }
-
+  /*!
+   \brief Return old penalty traction (length 3)
+   */
+  virtual inline double* tractionoldLTL()
+  {
+    return tractionoldLTL_;
+  }
   /*!
    \brief Return old normal vector (length 3)
    */
@@ -234,6 +262,8 @@ protected:
 
   GEN::pairedvector<int, double> drowsold_; // nodal rows of old D matrix
   std::map<int, double> mrowsold_;          // nodal rows of old M matrix
+  GEN::pairedvector<int, double> drowsoldLTL_; // nodal rows of old D matrix
+  std::map<int, double> mrowsoldLTL_;          // nodal rows of old M matrix
   std::set<int> snodes_;    // nodal set of according slave nodes
   std::set<int> mnodes_;    // nodal set of according master nodes
   std::set<int> mnodesold_; // nodal set of old according masternodes
@@ -244,6 +274,11 @@ protected:
   // penalty related quantities
   double traction_[3];    // traction vector of current time step
   double tractionold_[3]; // traction vector of previous time step
+
+  // penalty related quantities
+  double tractionLTL_[3];    // traction vector of current time step
+  double tractionoldLTL_[3]; // traction vector of previous time step
+
   double n_old_[3];       // normal of previous time step
 };
 // class FriNodeDataContainer

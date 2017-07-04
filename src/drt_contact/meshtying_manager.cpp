@@ -594,20 +594,33 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   // predefined params for meshtying and contact
   // *********************************************************************
-  if(meshtyingandcontact)
+  if(meshtyingandcontact and !DRT::INPUT::IntegralValue<int>(meshtying,"DISCR_SMOOTHING"))
   {
     // set options for mortar coupling
     mtparams.set<std::string>("SEARCH_ALGORITHM","Binarytree");
-    mtparams.set<double>("SEARCH_PARAM", 0.1);
+    mtparams.set<double>("SEARCH_PARAM", 0.3);
     mtparams.set<std::string>("SEARCH_USE_AUX_POS", "no");
     mtparams.set<std::string>("PARALLEL_REDIST","static");
     mtparams.set<std::string>("LM_SHAPEFCN","dual");
     mtparams.set<std::string>("REDUNDANT_STORAGE","Master");
     mtparams.set<std::string>("SYSTEM","condensed");
     mtparams.set<bool>("NURBS",false);
+    mtparams.set<int>("NUMGP_PER_DIM",-1);
     mtparams.set<std::string>("STRATEGY","LagrangianMultipliers");
+    mtparams.set<std::string>("INTTYPE","segments");
   }
-
+  else if(meshtyingandcontact and DRT::INPUT::IntegralValue<int>(meshtying,"DISCR_SMOOTHING"))
+  {
+    // set options for mortar coupling
+    mtparams.set<std::string>("SEARCH_ALGORITHM","Binarytree");
+    mtparams.set<double>("SEARCH_PARAM", 0.3);
+    mtparams.set<std::string>("SEARCH_USE_AUX_POS", "no");
+    mtparams.set<std::string>("PARALLEL_REDIST","static");
+    mtparams.set<std::string>("LM_SHAPEFCN","dual");
+    mtparams.set<std::string>("REDUNDANT_STORAGE","Master");
+    mtparams.set<std::string>("SYSTEM","condensed");
+    mtparams.set<bool>("NURBS",false);
+  }
   // *********************************************************************
   // smooth interfaces
   // *********************************************************************

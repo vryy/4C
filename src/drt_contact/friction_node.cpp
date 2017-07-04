@@ -31,13 +31,18 @@ DRT::ParObject* CONTACT::FriNodeType::Create(const std::vector<char> & data)
  |  ctor (public)                                             mgit 01/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNodeDataContainer::FriNodeDataContainer() :
-    slip_(false), slipold_(false),drowsold_(0)
+    slip_(false),
+    slipold_(false),
+    drowsold_(0),
+    drowsoldLTL_(0)
 {
   for (int i = 0; i < 3; ++i)
   {
     jump()[i] = 0.0;
     traction()[i] = 0.0;
     tractionold()[i] = 0.0;
+    tractionLTL()[i] = 0.0;
+    tractionoldLTL()[i] = 0.0;
   }
 
   return;
@@ -59,6 +64,10 @@ void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
   DRT::ParObject::AddtoPack(data, traction_, 3 * sizeof(double));
   // add tractionold_
   DRT::ParObject::AddtoPack(data, tractionold_, 3 * sizeof(double));
+  // add traction_
+  DRT::ParObject::AddtoPack(data, tractionLTL_, 3 * sizeof(double));
+  // add tractionold_
+  DRT::ParObject::AddtoPack(data, tractionoldLTL_, 3 * sizeof(double));
   // add n_old_
   DRT::ParObject::AddtoPack(data, n_old_, 3 * sizeof(double));
 
@@ -76,6 +85,15 @@ void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
     DRT::ParObject::AddtoPack(data, mnodesold_);
   }
 
+  int hasdata2 = drowsoldLTL_.size();
+  DRT::ParObject::AddtoPack(data, hasdata2);
+  if (hasdata2 != 0)
+  {
+    int dentries = (int)drowsoldLTL_.size();
+    DRT::ParObject::AddtoPack(data, dentries);
+    DRT::ParObject::AddtoPack(data, drowsoldLTL_);
+    DRT::ParObject::AddtoPack(data, mrowsoldLTL_);
+  }
   // add derivjump
   int hasdataderivjump = derivjump_.size();
   DRT::ParObject::AddtoPack(data, hasdataderivjump);
@@ -108,6 +126,12 @@ void CONTACT::FriNodeDataContainer::Unpack(
   // tractionold_
   DRT::ParObject::ExtractfromPack(position, data, tractionold_,
       3 * sizeof(double));
+  // traction_
+  DRT::ParObject::ExtractfromPack(position, data, tractionLTL_,
+      3 * sizeof(double));
+  // tractionold_
+  DRT::ParObject::ExtractfromPack(position, data, tractionoldLTL_,
+      3 * sizeof(double));
   // n_old_
   DRT::ParObject::ExtractfromPack(position, data, n_old_,
       3 * sizeof(double));
@@ -124,6 +148,19 @@ void CONTACT::FriNodeDataContainer::Unpack(
     DRT::ParObject::ExtractfromPack(position, data, drowsold_);
     DRT::ParObject::ExtractfromPack(position, data, mrowsold_);
     DRT::ParObject::ExtractfromPack(position, data, mnodesold_);
+  }
+
+  //drowsold_,mrowsold_,mnodesold_
+  int hasdata2;
+  DRT::ParObject::ExtractfromPack(position, data, hasdata2);
+
+  if (hasdata2 != 0)
+  {
+    int dentries = DRT::ParObject::ExtractInt(position, data);
+
+    drowsoldLTL_.resize(dentries);
+    DRT::ParObject::ExtractfromPack(position, data, drowsoldLTL_);
+    DRT::ParObject::ExtractfromPack(position, data, mrowsoldLTL_);
   }
 
   //and derivjump_
@@ -399,12 +436,6 @@ void CONTACT::FriNode::derivFrCoeffTemp(
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddSNode(int node)
 {
-  // check if this is a master node or slave boundary node
-  if (IsSlave() == false)
-    dserror("ERROR: AddSnode: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    dserror("ERROR: AddSNode: function called for boundary node %i", Id());
-
   FriData().GetSNodes().insert(node);
 
   return;
@@ -415,12 +446,6 @@ void CONTACT::FriNode::AddSNode(int node)
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddMNode(int node)
 {
-  // check if this is a master node or slave boundary node
-  if (IsSlave() == false)
-    dserror("ERROR: AddMNode: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    dserror("ERROR: AddMNode: function called for boundary node %i", Id());
-
   FriData().GetMNodes().insert(node);
 
   return;
@@ -548,10 +573,16 @@ void CONTACT::FriNode::StoreDMOld()
   // clear and zero nodal vectors
   FriData().GetDOld().clear();
   FriData().GetMOld().clear();
+  FriData().GetDOldLTL().clear();
+  FriData().GetMOldLTL().clear();
 
   // write drows_ to drowsold_
   FriData().GetDOld() = MoData().GetD();
   FriData().GetMOld() = MoData().GetM();
+
+  // write drows_ to drowsold_
+  FriData().GetDOldLTL() = MoData().GetDltl();
+  FriData().GetMOldLTL() = MoData().GetMltl();
 
   // also vectors containing the according master nodes
   FriData().GetMNodesOld().clear();
@@ -568,6 +599,9 @@ void CONTACT::FriNode::StoreTracOld()
   // write entries to old ones
   for (int j = 0; j < 3; ++j)
     FriData().tractionold()[j] = FriData().traction()[j];
+
+  for (int j = 0; j < 3; ++j)
+    FriData().tractionoldLTL()[j] = FriData().tractionLTL()[j];
 
   return;
 }

@@ -230,7 +230,11 @@ mastermaxeleid_(0)
     const Epetra_Comm& lcomm = istructdis_[interf]->Comm();
 
     // set useful parameters for mortar coupling
-    Teuchos::ParameterList input(DRT::Problem::Instance()->MortarCouplingParams());
+    Teuchos::ParameterList input;
+    const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
+    const Teuchos::ParameterList& cmortar = DRT::Problem::Instance()->ContactDynamicParams();
+    input.setParameters(cmortar);
+    input.setParameters(mortar);
     MortarParams(input);
 
     // create mortar interface for each coupling interface with INCA
@@ -448,8 +452,12 @@ mastermaxeleid_(0)
     // build mortar interface and fill it initially with fully redundant master side (=structural side)
     const Epetra_Comm& lcomm = (*idis)[interf]->Comm();
 
-    // set useful parameters for mortar coupling
-    Teuchos::ParameterList input(DRT::Problem::Instance()->MortarCouplingParams());
+    // get mortar coupling parameters
+    Teuchos::ParameterList input;
+    const Teuchos::ParameterList& mortar = DRT::Problem::Instance()->MortarCouplingParams();
+    const Teuchos::ParameterList& cmortar = DRT::Problem::Instance()->ContactDynamicParams();
+    input.setParameters(cmortar);
+    input.setParameters(mortar);
     MortarParams(input);
 
     // create mortar interface for each coupling interface with INCA

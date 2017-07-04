@@ -118,6 +118,9 @@ WEAR::Partitioned::Partitioned(const Epetra_Comm& comm) :
         Teuchos::null,
         false);
 
+    // redistribute discretizations to meet needs of volmortar coupling
+//    Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Redistribute();
+
     //setup projection matrices
     Teuchos::rcp_dynamic_cast<ADAPTER::MortarVolCoupl>(coupalestru_)->Setup();
   }

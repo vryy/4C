@@ -87,10 +87,10 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2250000 NUE 0.0 DENS 0.1 THEXPANS 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2250000 NUE 0.0 DENS 0.1 THEXPANS 0.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.12 0.24 VALUES 0 0.2 0.2
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.12 0.36 VALUES 0 0.2 0.2
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.12 0.24 VALUES 0 0 0.22
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.12 0.36 VALUES 0 0 0.44
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1

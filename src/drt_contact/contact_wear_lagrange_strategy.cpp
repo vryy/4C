@@ -410,7 +410,8 @@ void WEAR::WearLagrangeStrategy::AssembleMortar()
     // only assemble D2 for both-sided wear --> unweights the
     // weighted wear increment in master side
     // --> based on weak dirichlet bc!
-    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(),"WEAR_SIDE") == INPAR::WEAR::wear_both and
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(Params(),"WEAR_SIDE")
+        == INPAR::WEAR::wear_both and
         !wearprimvar_)
       interface_[i]->AssembleD2(*d2matrix_);
 
@@ -427,7 +428,8 @@ void WEAR::WearLagrangeStrategy::AssembleMortar()
   // wearvector_ only updated at the end of a time step --> this newton-step-wise
   // update is not elegant!
   // *********************************************************************************
-  if (!wearimpl_ and !wearprimvar_ and
+  if (!wearimpl_    and
+      !wearprimvar_ and
       Params().get<int>("PROBTYPE")!=INPAR::CONTACT::structalewear )
   {
     g_->Update(1.0,*wearvector_,1.0);
