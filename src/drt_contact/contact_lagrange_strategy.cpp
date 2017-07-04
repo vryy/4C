@@ -4547,7 +4547,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
-  static int step = 0;
   if(fLTL_!=Teuchos::null)
   {
     // store fLTL values for time integration
