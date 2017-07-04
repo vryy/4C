@@ -43,7 +43,7 @@ DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-EQUILIBRATION                   full
+EQUILIBRATION                   rowsandcolumns_maindiag
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS

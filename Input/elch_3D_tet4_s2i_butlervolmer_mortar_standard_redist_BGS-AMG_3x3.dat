@@ -41,7 +41,7 @@ EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    StandardMortar
 MATRIXTYPE                      block_condition
-EQUILIBRATION                   rows
+EQUILIBRATION                   rows_maindiag
 -------------------------------------------------------------MORTAR COUPLING
 MESH_RELOCATION                 no
 --------------------------------------------------------------------SOLVER 1

@@ -40,6 +40,7 @@ DIFFCOND_FORMULATION            yes
 EQUPOT                          divi
 ---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    StandardMortar
+EQUILIBRATION                   columns_full
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 no
 MESH_RELOCATION                 no

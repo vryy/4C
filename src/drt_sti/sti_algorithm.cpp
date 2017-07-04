@@ -76,6 +76,7 @@ STI::Algorithm::Algorithm(
     timer_(Teuchos::rcp(new Epetra_Time(comm))),
 
     residual_(Teuchos::null),
+    dtele_(0.),
     dtsolve_(0.),
 
     // initialize algebraic solver for global system of equations
@@ -405,7 +406,8 @@ STI::Algorithm::Algorithm(
       break;
     }
 
-    case INPAR::S2I::equilibration_rows:
+    case INPAR::S2I::equilibration_rows_full:
+    case INPAR::S2I::equilibration_rows_maindiag:
     {
       // initialize vector for row sums of global system matrix if necessary
       invrowsums_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),false));
@@ -1153,7 +1155,8 @@ void STI::Algorithm::EquilibrateSystem(
       break;
     }
 
-    case INPAR::S2I::equilibration_rows:
+    case INPAR::S2I::equilibration_rows_full:
+    case INPAR::S2I::equilibration_rows_maindiag:
     {
       switch(matrixtype_)
       {
@@ -1167,9 +1170,49 @@ void STI::Algorithm::EquilibrateSystem(
           // perform row equilibration
           for(int i=0; i<blocksparsematrix->Rows(); ++i)
           {
+            // initialize vector for inverse row sums
+            const Teuchos::RCP<Epetra_Vector> invrowsums(Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i,i).RowMap())));
+
             // compute inverse row sums of current main diagonal matrix block
-            const Teuchos::RCP<Epetra_Vector> invrowsums(Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i,i).RangeMap())));
-            ComputeInvRowSums(blocksparsematrix->Matrix(i,i),invrowsums);
+            if(equilibration_ == INPAR::S2I::equilibration_rows_maindiag)
+              ComputeInvRowSums(blocksparsematrix->Matrix(i,i),invrowsums);
+
+            // compute inverse row sums of current row block of global system matrix
+            else
+            {
+              // loop over all column blocks of global system matrix
+              for(int j=0; j<blocksparsematrix->Cols(); ++j)
+              {
+                // extract current block of global system matrix
+                const LINALG::SparseMatrix& matrix = blocksparsematrix->Matrix(i,j);
+
+                // loop over all rows of current matrix block
+                for(int irow=0; irow<matrix.RowMap().NumMyElements(); ++irow)
+                {
+                  // determine length of current matrix row
+                  const int length = matrix.EpetraMatrix()->NumMyEntries(irow);
+
+                  if(length > 0)
+                  {
+                    // extract current matrix row from matrix block
+                    int numentries(0);
+                    std::vector<double> values(length,0.);
+                    if(matrix.EpetraMatrix()->ExtractMyRowCopy(irow,length,numentries,&values[0]))
+                      dserror("Cannot extract matrix row with local ID %d from matrix block!",irow);
+
+                    // compute and store current row sum
+                    double rowsum(0.);
+                    for(int ientry=0; ientry<numentries; ++ientry)
+                      rowsum += std::abs(values[ientry]);
+                    (*invrowsums)[irow] += rowsum;
+                  }
+                }
+              }
+
+              // invert row sums
+              if(invrowsums->Reciprocal(*invrowsums))
+                dserror("Vector could not be inverted!");
+            }
 
             // perform row equilibration of matrix blocks in current row block of global system matrix
             for(int j=0; j<blocksparsematrix->Cols(); ++j)
@@ -1312,7 +1355,7 @@ bool STI::Algorithm::ExitNewtonRaphson()
                 << std::setw(10) << std::setprecision(3) << std::scientific << thermoresnorm_
                 << "   |      --      | "
                 << "(       --      , te = "
-                << std::setw(10) << std::setprecision(3) << scatra_->DtEle()+thermo_->DtEle() << ")" << std::endl;
+                << std::setw(10) << std::setprecision(3) << dtele_ << ")" << std::endl;
   }
 
   // subsequent Newton-Raphson iterations
@@ -1327,7 +1370,7 @@ bool STI::Algorithm::ExitNewtonRaphson()
                 << std::setw(10) << std::setprecision(3) << std::scientific << thermoresnorm_ << "   | "
                 << std::setw(10) << std::setprecision(3) << std::scientific << thermoincnorm_/thermodofnorm_ << "   | (ts = "
                 << std::setw(10) << std::setprecision(3) << dtsolve_ << ", te = "
-                << std::setw(10) << std::setprecision(3) << scatra_->DtEle()+thermo_->DtEle() << ")" << std::endl;
+                << std::setw(10) << std::setprecision(3) << dtele_ << ")" << std::endl;
 
     // convergence check
     if(scatraresnorm_ <= itertol_ and
@@ -1707,8 +1750,14 @@ void STI::Algorithm::Solve()
     // reset timer
     timer_->ResetStartTime();
 
+    // store time before evaluating elements and assembling global system of equations
+    double time = timer_->WallTime();
+
     // assemble global system of equations
     AssembleMatAndRHS();
+
+    // determine time needed for evaluating elements and assembling global system of equations
+    dtele_ = timer_->WallTime()-time;
 
     // safety check
     if(!systemmatrix_->Filled())
@@ -1726,7 +1775,7 @@ void STI::Algorithm::Solve()
     increment_->PutScalar(0.);
 
     // store time before solving global system of equations
-    const double time = timer_->WallTime();
+    time = timer_->WallTime();
 
     // equilibrate global system of equations if necessary
     EquilibrateSystem(systemmatrix_,residual_);

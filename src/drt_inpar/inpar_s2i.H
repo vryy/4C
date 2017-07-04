@@ -88,9 +88,12 @@ namespace INPAR
     enum EquilibrationMethods
     {
       equilibration_none,
-      equilibration_rows,
-      equilibration_columns,
-      equilibration_full
+      equilibration_rows_full,
+      equilibration_rows_maindiag,
+      equilibration_columns_full,
+      equilibration_columns_maindiag,
+      equilibration_rowsandcolumns_full,
+      equilibration_rowsandcolumns_maindiag
     };
 
     //! actions for mortar cell evaluation

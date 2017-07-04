@@ -46,7 +46,7 @@ EQUPOT                          divi
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 MATRIXTYPE                      block_condition
-EQUILIBRATION                   rows
+EQUILIBRATION                   rows_maindiag
 --------------------------------------------------------STI DYNAMIC
 SCATRATYPE                      Elch
 THERMO_INITIALFIELD             field_by_function

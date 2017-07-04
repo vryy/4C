@@ -236,6 +236,9 @@ namespace STI
       //! global residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> residual_;
 
+      //! time for element evaluation and assembly of global system of equations
+      double dtele_;
+
       //! time for solution of global system of equations
       double dtsolve_;
 

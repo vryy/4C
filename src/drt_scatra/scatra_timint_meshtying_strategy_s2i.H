@@ -559,11 +559,8 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! slave-side scatra-scatra interface coupling conditions
     std::map<const int,DRT::Condition* const> slaveconditions_;
 
-    //! flag for row equilibration of global system of equations
-    const bool rowequilibration_;
-
-    //! flag for column equilibration of global system of equations
-    const bool colequilibration_;
+    //! flag for equilibration of global system of equations
+    const INPAR::S2I::EquilibrationMethods equilibration_;
 
     //! flag for evaluation of interface linearizations and residuals on slave side only
     bool slaveonly_;

@@ -49,7 +49,7 @@ THERMO_LINEAR_SOLVER            2
 THERMO_CONDENSATION             yes
 ------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-EQUILIBRATION                   rows
+EQUILIBRATION                   rows_maindiag
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
