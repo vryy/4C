@@ -6,7 +6,7 @@
 Testing passive viscoelastic cell material.
 MAT_BIOCHEMOMECHANO_PASSIVE
 Note that this is not really an immersed Test! This test is testing
-only the structural model. Names ofa ll cell related tests will change
+only the structural model. Names of all cell related tests will change
 soon, anyway. Until then we can live with that, I think.
 ------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    8

@@ -548,7 +548,7 @@ void MAT::BioChemoMechanoCellPassiveFiber::Evaluate(
     // (d F^{-1}/dC) * \sigma * F^{-T} =
     // (d sqrt(C)^{-1} / dC) * R^{T} * \sigma * F^{-T}
     tempmat1.MultiplyNT(visc_stress_cauchy_mat,invdefgrd);
-    tempmat2.MultiplyTN(R,tempmat2);
+    tempmat2.MultiplyTN(R,tempmat1);
     MultFourTensorMatrix(tens3,tempmat2,dsqrtCinvdC_Tensor,false);
 
     /////////////////////////////////////////////////////////////////////
