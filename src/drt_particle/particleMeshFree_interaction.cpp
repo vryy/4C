@@ -391,7 +391,9 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::InitColParticles()
     bool boundaryparticle = false;
     if(wallInteractionType_==INPAR::PARTICLE::BoundarParticle_NoSlip or wallInteractionType_==INPAR::PARTICLE::BoundarParticle_FreeSlip)
     {
-      PARTICLE::ParticleNode* particleNode = static_cast<PARTICLE::ParticleNode*>(particle);
+      PARTICLE::ParticleNode* particleNode = dynamic_cast<PARTICLE::ParticleNode*>(particle);
+      if (particleNode == NULL)
+        dserror("Dynamic cast to ParticleNode failed");
       boundaryparticle = particleNode->Is_bdry_particle();
     }
 

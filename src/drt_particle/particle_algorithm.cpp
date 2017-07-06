@@ -519,6 +519,12 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
   // ghost bins and particles according to the bins --> final FillComplete() call included
   SetupGhosting(newelerowmap);
 
+  // determine boundary bins (physical boundary as well as boundary to other procs)
+  BinStrategy()->DetermineBoundaryRowBins();
+
+  // determine one layer ghosting around boundary bins determined in previous step
+  BinStrategy()->DetermineBoundaryColBinsIds();
+
   // update walls and connectivity
   if(particlewalldis_ != Teuchos::null)
   {
@@ -706,38 +712,120 @@ void PARTICLE::Algorithm::BdryParticleGhosting(
     std::set<int>& colbins
     )
 {
-  // get boundary column bins
-  std::set<int> bdrycolbins = BinStrategy()->BoundaryColBinsIds();
+  // map relating extended column bins to receiving processor ids
+  std::map< int, std::set<int> > towhomwhat;
 
-  // insert bins in the proximity of a ghosted boundary particle
-  std::vector<int> binvec(27);
-  std::set<int>::const_iterator biniter;
-  for ( biniter = bdrycolbins.begin(); biniter != bdrycolbins.end(); ++biniter )
+  // set to store receiving processors ids
+  std::set<int> receivingprocids;
+
+  // get boundary row bins
+  std::list<DRT::Element*> const bdryrowbins = BinStrategy()->BoundaryRowBins();
+  if ( bdryrowbins.size() == 0 )
+    dserror("Boundary row bins unknown, call function DetermineBoundaryRowBins() first!");
+
+  // loop over boundary row bins
+  std::list<DRT::Element*>::const_iterator iter;
+  for ( iter = bdryrowbins.begin(); iter != bdryrowbins.end(); ++iter )
   {
-    // get current bin
-    DRT::Element* currbin = BinStrategy()->BinDiscret()->gElement(*biniter);
+    // current boundary row bin
+    DRT::Element* bdryrowbin = *iter;
 
-    // get all particles in current bin
-    DRT::Node** particles = currbin->Nodes();
+    bool containsbdryparticle = false;
 
-    // loop over all particles in current bin
-    for( int i = 0; i < currbin->NumNode(); ++i )
+    // loop over all particles in current boundary row bin
+    DRT::Node** bdryrowbinparticles = bdryrowbin->Nodes();
+    for ( int i = 0; i < bdryrowbin->NumNode(); ++i )
     {
       // get current particle
-      PARTICLE::ParticleNode* particle_i = static_cast<PARTICLE::ParticleNode*>(particles[i]);
+      PARTICLE::ParticleNode* particleNode_i = dynamic_cast<PARTICLE::ParticleNode*>(bdryrowbinparticles[i]);
+      if ( particleNode_i == NULL )
+        dserror("Dynamic cast to ParticleNode failed");
 
       // current particle is a boundary particle
-      if( particle_i->Is_bdry_particle() )
+      if ( particleNode_i->Is_bdry_particle() )
       {
-        binvec.clear();
-        BinStrategy()->GetNeighborAndOwnBinIds( *biniter, binvec );
-        colbins.insert( binvec.begin(), binvec.end() );
-
-        // go to next bin
+        containsbdryparticle = true;
         break;
       }
     }
+
+    // current boundary row bin contains no boundary particles
+    if ( not containsbdryparticle )
+      continue;
+
+    // clear set containing receiving processors ids
+    receivingprocids.clear();
+
+    // get neighboring bins of current boundary row bin
+    std::vector<int> neighborbins;
+    neighborbins.reserve(26);
+    BinStrategy()->GetNeighborBinIds( bdryrowbin->Id(), neighborbins );
+
+    // loop over neighboring bins
+    std::vector<int>::const_iterator biniter;
+    for ( biniter = neighborbins.begin(); biniter != neighborbins.end(); ++biniter )
+    {
+      // get current bin and owner
+      DRT::Element* neighboringbin = BinStrategy()->BinDiscret()->gElement(*biniter);
+      int neighboringbinowner = neighboringbin->Owner();
+
+      // neighboring bin on same processor or does not contain any particles
+      if ( ( neighboringbinowner == MyRank() ) or ( neighboringbin->NumNode() == 0 ) )
+        continue;
+
+      // store owner of receiving neighboring bin
+      receivingprocids.insert(neighboringbinowner);
+    }
+
+    // insert current neighboring bins in map
+    std::set<int>::iterator iter;
+    for ( iter = receivingprocids.begin(); iter != receivingprocids.end(); ++iter )
+      towhomwhat[*iter].insert( neighborbins.begin(), neighborbins.end() );
   }
+
+  // ---- send ---- ( we do not need to pack anything)
+  DRT::Exporter exporter(BinStrategy()->BinDiscret()->Comm());
+  const int length = towhomwhat.size();
+  std::vector<MPI_Request> request(length);
+  int tag = 0;
+  const int numproc = BinStrategy()->BinDiscret()->Comm().NumProc();
+  std::vector<int> targetprocs( numproc, 0 );
+
+  std::map< int, std::set<int> >::const_iterator p;
+  for ( p = towhomwhat.begin(); p != towhomwhat.end(); ++p )
+  {
+    targetprocs[p->first] = 1;
+    std::vector<int> bins( (p->second).begin(), (p->second).end() );
+    exporter.ISend( MyRank(), p->first, &((bins)[0]), (int)(bins).size(), 1234, request[tag] );
+    ++tag;
+  }
+  if (tag != length) dserror("Number of messages is mixed up");
+
+  // ---- prepare receiving procs -----
+  std::vector<int> summedtargets( numproc, 0) ;
+  BinStrategy()->BinDiscret()->Comm().SumAll( targetprocs.data(), summedtargets.data(), numproc );
+
+  // ---- receive ----- (we do not need to unpack anything)
+  for( int rec = 0; rec < summedtargets[MyRank()]; ++rec )
+  {
+    std::vector<int> rdata;
+    int length = 0;
+    int tag = -1;
+    int from = -1;
+    exporter.ReceiveAny( from, tag ,rdata, length );
+    if (tag != 1234)
+      dserror("Received on proc %i data with wrong tag from proc %i", MyRank(), from);
+
+    // insert received bins
+    colbins.insert( rdata.begin(), rdata.end() );
+  }
+
+  // wait for all communication to finish
+  for ( int i = 0; i < length; ++i )
+    exporter.Wait( request[i] );
+
+  // should be no time operation (if we have done everything correctly)
+  BinStrategy()->BinDiscret()->Comm().Barrier();
 
   return;
 }

@@ -706,8 +706,6 @@ Teuchos::RCP<std::list<int> > PARTICLE::ParticleHandler::TransferParticles(
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
-  //std::cout << "TransferParticles: " << std::endl;
-
   // set of homeless particles
   std::list<Teuchos::RCP<DRT::Node> > homelessparticles;
 
@@ -974,7 +972,7 @@ void PARTICLE::ParticleHandler::GetNeighbouringBinsOfParticleContainingBoundaryR
   std::list<DRT::Element*> const boundaryrowbins = binstrategy_->BoundaryRowBins();
 
   if( boundaryrowbins.size() == 0 )
-    binstrategy_->DetermineBoundaryRowBins();
+    dserror("Boundary row bins unknown, call function DetermineBoundaryRowBins() first!");
 
   // loop over boundary row bins and add neighbors of filled row bins
   std::list<DRT::Element*>::const_iterator it;

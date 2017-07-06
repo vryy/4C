@@ -542,7 +542,10 @@ void PARTICLE::TimInt::DetermineBdryParticles()
           dserror("For boundary particles all three DoFs have to be prescribed by a Dirichlet Condition!");
 
         // found a boundary particle
-        static_cast<PARTICLE::ParticleNode*>(particle_i)->Set_bdry_particle(true);
+        PARTICLE::ParticleNode* particleNode_i = dynamic_cast<PARTICLE::ParticleNode*>(particle_i);
+        if (particle_i == NULL)
+          dserror("Dynamic cast to ParticleNode failed");
+        particleNode_i->Set_bdry_particle(true);
 
         // boundary particle is in row map of this processor
         if ( not (discret_->NodeRowMap()->LID(particle_i->Id()) < 0) )

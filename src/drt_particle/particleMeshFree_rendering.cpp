@@ -220,7 +220,9 @@ void PARTICLE::Rendering::UpdateRenderingVectors(
       // skip boundary particles in rendering routine
       if (renderingBdryParticle_ == INPAR::PARTICLE::NoBdryParticle)
       {
-        PARTICLE::ParticleNode* particleNode_i = static_cast<PARTICLE::ParticleNode*>(particle_i);
+        PARTICLE::ParticleNode* particleNode_i = dynamic_cast<PARTICLE::ParticleNode*>(particle_i);
+        if (particleNode_i == NULL)
+          dserror("Dynamic cast to ParticleNode failed");
 
         if (particleNode_i->Is_bdry_particle())
           continue;
