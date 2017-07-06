@@ -154,6 +154,7 @@ namespace INPAR
       mes_anisoactivestress_evolution,         ///< anisotropic single fiber summand with active stress computed through a simplified Bestel-Clement-Sorine model
       mes_coup1pow,                            ///< general power hyperelastic potential summand for invariant I
       mes_coup2pow,                            ///< general power hyperelastic potential summand for invariant II
+      mes_coup3pow,                            ///< general power hyperelastic potential summand for invariant III
       mes_coup13apow,                          ///< hyperelastic potential summand for multiplicative coupled invariants I1 and I3
       mes_coupanisoexpoactive,                 ///< anisotropic active fiber contribution
       mes_coupanisoexpo,                       ///< anisotropic exponential single fiber summand

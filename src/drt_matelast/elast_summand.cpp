@@ -29,6 +29,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "elast_iso2pow.H"
 #include "elast_coup1pow.H"
 #include "elast_coup2pow.H"
+#include "elast_coup3pow.H"
 #include "elast_coup13apow.H"
 #include "elast_isoexpopow.H"
 #include "elast_isomooneyrivlin.H"
@@ -177,6 +178,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::Coup2Pow(curmat));
     MAT::ELASTIC::PAR::Coup2Pow* params = static_cast<MAT::ELASTIC::PAR::Coup2Pow*>(curmat->Parameter());
     return Teuchos::rcp(new Coup2Pow(params));
+  }
+  case INPAR::MAT::mes_coup3pow:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::Coup3Pow(curmat));
+    MAT::ELASTIC::PAR::Coup3Pow* params = static_cast<MAT::ELASTIC::PAR::Coup3Pow*>(curmat->Parameter());
+    return Teuchos::rcp(new Coup3Pow(params));
   }
   case INPAR::MAT::mes_coup13apow:
   {
