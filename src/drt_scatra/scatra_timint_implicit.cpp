@@ -2862,7 +2862,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       // output performance statistics associated with linear solver into text file if applicable
       if(DRT::INPUT::IntegralValue<int>(*params_,"OUTPUTSOLVERSTATS"))
-        OutputSolverStats(*solver_,dtsolve_,Step(),iternum_);
+        OutputSolverStats(*solver_,dtsolve_,Step(),iternum_,residual_->Map().NumGlobalElements());
     }
 
     //------------------------------------------------ update solution vector

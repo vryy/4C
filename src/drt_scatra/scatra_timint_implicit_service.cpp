@@ -1113,10 +1113,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
  | output performance statistics associated with linear solver into text file   fang 02/17 |
  *-----------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputSolverStats(
-    const LINALG::Solver&   solver,     //!< linear solver
-    double                  time,       //!< solver time
-    const int&              step,       //!< time step
-    const int&              iteration   //!< Newton-Raphson iteration number
+    const LINALG::Solver&   solver,      //!< linear solver
+    double                  time,        //!< solver time
+    const int&              step,        //!< time step
+    const int&              iteration,   //!< Newton-Raphson iteration number
+    const int&              size         //!< size of linear system
     )
 {
   // safety check
@@ -1141,13 +1142,13 @@ void SCATRA::ScaTraTimIntImpl::OutputSolverStats(
     if(step == 1 and iteration == 1)
     {
       file.open(filename.c_str(),std::fstream::trunc);
-      file << "Step,NewtonRaphsonIteration,SolverIterations,SolverTimeAllProcs,SolverTimeOneProc" << std::endl;
+      file << "Step,NewtonRaphsonIteration,SystemSize,SolverIterations,SolverTimeAllProcs,SolverTimeOneProc" << std::endl;
     }
     else
       file.open(filename.c_str(),std::fstream::app);
 
     // write results
-    file << step << "," << iteration << "," << solver.getNumIters() << "," << std::setprecision(16) << std::scientific << globaltime<< "," << globaltime/comm.NumProc() << std::endl;
+    file << step << "," << iteration << "," << size << "," << solver.getNumIters() << "," << std::setprecision(16) << std::scientific << globaltime << "," << globaltime/comm.NumProc() << std::endl;
 
     // close file
     file.close();

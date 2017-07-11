@@ -1795,7 +1795,7 @@ void STI::Algorithm::Solve()
 
     // output performance statistics associated with linear solver into text file if applicable
     if(DRT::INPUT::IntegralValue<int>(*fieldparameters_,"OUTPUTSOLVERSTATS"))
-      scatra_->OutputSolverStats(*solver_,dtsolve_,Step(),iter_);
+      scatra_->OutputSolverStats(*solver_,dtsolve_,Step(),iter_,residual_->Map().NumGlobalElements());
 
     // update scatra field
     scatra_->UpdateIter(maps_->ExtractVector(increment_,0));
