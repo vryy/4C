@@ -1439,12 +1439,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
-  // contribution of iso2pow
+  // contribution of coup2pow
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("ELAST_Coup2Pow",
                                             "part of general power material",
                                             INPAR::MAT::mes_coup2pow));
+
+    AddNamedReal(m,"C","material parameter");
+    AddNamedInt(m,"D","exponent");
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // contribution of coup3pow
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_Coup3Pow",
+                                            "part of general power material",
+                                            INPAR::MAT::mes_coup3pow));
 
     AddNamedReal(m,"C","material parameter");
     AddNamedInt(m,"D","exponent");
@@ -1803,7 +1816,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
-  // vicous contribution to visohyperelastic material according to SLS-Model
+  // viscos contribution to visohyperelastic material according to SLS-Model
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("VISCO_GenMax",
@@ -1815,9 +1828,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-
   /*--------------------------------------------------------------------*/
-
 
   /*----------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*/
