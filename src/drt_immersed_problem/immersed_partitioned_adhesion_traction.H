@@ -99,16 +99,16 @@ protected:
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
 
   /*!
-  \brief Reset the set of coupled cell-ECM nodes.
+  \brief Update the set of coupled cell-ECM nodes.
 
-   Resets the coupled ECM fixpoints depending on whether there are bound surface proteins or not.
+   Updates the coupled ECM fixpoints depending on whether there are bound surface proteins or not.
 
   \param none
   \note none
   \warning none
   \return void
   */
-  void ResetAdhesionFixpoints();
+  void UpdateAdhesionInformation();
 
 
   /// print information on the current solution step

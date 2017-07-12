@@ -282,10 +282,6 @@ public:
 
    Teuchos::RCP<Epetra_Vector> GetPointerSurfaceTraction(){if(points_to_surface_traction_==Teuchos::null) dserror("null ptr"); return points_to_surface_traction_;};
 
-   void SetPointerCellAdhesionFixpoints(const Teuchos::RCP<Epetra_Vector> vector){points_to_cell_adhesion_fixpoints_=vector; return;};
-
-   Teuchos::RCP<Epetra_Vector> GetPointerCellAdhesionFixpoints(){return points_to_cell_adhesion_fixpoints_;};
-
    void SetPointerToCurrentSubsetOfBackgrdDis(std::map<int,std::set<int> >* pointer){points_to_curr_subset_of_backgrounddis_ = pointer;};
 
    std::map<int,std::set<int> >* GetPointerToCurrentSubsetOfBackgrdDis(){return points_to_curr_subset_of_backgrounddis_;};

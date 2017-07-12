@@ -93,12 +93,6 @@ private:
       const int            iquad      //!< id of current gauss point
   ) const;
 
-  //! cell adhesion fixpoint coordinates
-  Teuchos::RCP<Epetra_Vector> cell_adhesion_fixpoints_;
-
-  //! manager for global data exchange between fields
-  DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
-
 
 }; //end class ScaTraEleCalcBondReac
 

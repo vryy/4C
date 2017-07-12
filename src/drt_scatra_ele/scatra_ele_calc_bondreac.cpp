@@ -49,9 +49,6 @@ DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::ScaTraEleCalcBondReac(
         numscal,
         disname)
 {
-  // get pointer to adhesion fixpoint vector
-  exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
-  cell_adhesion_fixpoints_ = exchange_manager_->GetPointerCellAdhesionFixpoints();
 }
 
 
@@ -243,6 +240,16 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetAdhesionViolati
   // get discretization
   Teuchos::RCP<DRT::Discretization> dis = problem->GetDis("cellscatra");
 
+  // get adhesion fixpoints
+  Teuchos::RCP<const Epetra_Vector> cell_adhesion_fixpoints = dis->GetState(1,"AdhesionFixpoints");
+  if(cell_adhesion_fixpoints == Teuchos::null)
+    dserror("Cannot get AdhesionFixpoints vector from scatra discretization");
+
+  // get displacement state from structure discretization
+  Teuchos::RCP<const Epetra_Vector> dispnp = dis->GetState(1,"dispnp");
+  if (dispnp == Teuchos::null)
+    dserror("Cannot get displacement vector from scatra discretization");
+
   // is ele conditioned with CellFocalAdhesion condition?
   bool is_adhesion_element=true;
 
@@ -281,12 +288,7 @@ double DRT::ELEMENTS::ScaTraEleCalcBondReac<distype,probdim>::GetAdhesionViolati
 
     // extract fixpoint values to helper variable
     std::vector<double> myadhesionfixpoints(ldim);
-    DRT::UTILS::ExtractMyValues(*cell_adhesion_fixpoints_,myadhesionfixpoints,cell_lm);
-
-    // get displacement state from structure discretization
-    Teuchos::RCP<const Epetra_Vector> dispnp = dis->GetState(1,"dispnp");
-    if (dispnp == Teuchos::null)
-      dserror("Cannot get displacement vector from scatra discretization");
+    DRT::UTILS::ExtractMyValues(*cell_adhesion_fixpoints,myadhesionfixpoints,cell_lm);
 
     // extract displacement values to helper variable
     std::vector<double> myvalues_displ(ldim);

@@ -141,7 +141,6 @@ bool STR::MODELEVALUATOR::PartitionedSSIAdhesionDynamics::EvaluateForce()
     {
       Discret().ClearState();
       Discret().SetState(0,"adh_fixpoint_coords",fixpoint_coord_ptr_);
-      //    }
 
       // set states
       Discret().SetState(0,"displacement",disnp_ptr_);

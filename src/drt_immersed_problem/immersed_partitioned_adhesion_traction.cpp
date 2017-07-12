@@ -86,6 +86,7 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   backgroundfluiddis_     = globalproblem_->GetDis("porofluid");
   backgroundstructuredis_ = globalproblem_->GetDis("structure");
   immerseddis_            = globalproblem_->GetDis("cell");
+  immersedscatradis_      = globalproblem_->GetDis("cellscatra");
 
   // construct immersed exchange manager. singleton class that makes immersed variables comfortably accessible from everywhere in the code
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
@@ -114,13 +115,12 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
             -> GetAdhesionForcesPtr();
     exchange_manager_->SetPointerCellAdhesionForce(cell_adhesion_forces_);
 
-    // set pointer to adhesion fixpoint coordinates in model evaluator adn exchange manager
+    // set pointer to adhesion fixpoint coordinates in model evaluator and exchange manager
     cell_adhesion_nod_coords_  = Teuchos::rcp(new Epetra_Vector(*(immerseddis_->DofRowMap()),true));
     Teuchos::rcp_dynamic_cast< ::STR::MODELEVALUATOR::PartitionedSSIAdhesionDynamics>
         (multiphysicswrapper->CellmigrationModelEvaluator()->
             GetModelEvaluatorFromMap(STR::MODELEVALUATOR::MultiphysicType::mt_ssi))
             -> SetAdhesionFixpointPtr(cell_adhesion_nod_coords_);
-    exchange_manager_->SetPointerCellAdhesionFixpoints(cell_adhesion_nod_coords_);
 
     // get adhesion reset concentration
     reset_conc_ = globalproblem_->CellMigrationParams().sublist("ADHESION MODULE").get<double>("RESET_CONC");
@@ -282,6 +282,8 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::BackgroundOp(Teuchos::RCP<Ep
 
         exchange_manager_->SetEles(ElesInFirstImmersedRow);
       }
+
+      immersed_information_invalid_=false;
     } // if immersed_information_invalid_
 
     // distribute reaction force from cell boundary nodes to adjacent ECM nodes
@@ -493,9 +495,18 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::PrepareTimeStep()
 
   PrintHeader();
 
+  immerseddis_->ClearState();
+  immersedscatradis_->ClearState();
+  backgroundfluiddis_->ClearState();
+  backgroundstructuredis_->ClearState();
+
   // reset adhesion fixpoints (only needed for penalty method)
+  if(!dirichletcoupling_ and not determine_adhesion_information_)
+    UpdateAdhesionInformation();
+
+  // set state to be available in bond reactions
   if(!dirichletcoupling_)
-    ResetAdhesionFixpoints();
+    immersedscatradis_->SetState(1,"AdhesionFixpoints",cell_adhesion_nod_coords_);
 
   if(myrank_==0)
     std::cout<<"Cell-SSI Predictor: "<<std::endl;
@@ -516,76 +527,117 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::InitialGuess()
   if(dirichletcoupling_)
     return cellstructure_->Freact();
   else
-    return cell_adhesion_forces_; // todo find something reasonable
+    return cell_adhesion_forces_;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedAdhesionTraction::ResetAdhesionFixpoints()
+void IMMERSED::ImmersedPartitionedAdhesionTraction::UpdateAdhesionInformation()
 {
-  immerseddis_->SetState(0,"Dispnp",cellstructure_->Dispnp());
-  immerseddis_->SetState(1,"Phinp",cellscatra_subproblem_->ScaTraField()->ScaTraField()->Phinp());
-  backgroundstructuredis_->SetState(0,"Dispnp",porostructure_->Dispnp());
+  if(myrank_ == 0)
+  {
+    std::cout<<"################################################################################################"<<std::endl;
+    std::cout<<"###   Update Adhesion Fixpoints ...                  "<<std::endl;
+  }
 
-  Teuchos::RCP<const Epetra_Vector> ecmstate = backgroundstructuredis_->GetState("Dispnp");
+  const int num_boundspecies =
+      globalproblem_->CellMigrationParams().
+          sublist("ADHESION MODULE").
+          get<int>("NUM_BOUNDSPECIES");
+
+  // tolerance for geometric operations
+  const double tol = 1e-11;
+
+  // declare element pointers
+  DRT::Element* ele  = NULL; //!< pointer to background structure ecm element
+  DRT::Element* iele = NULL; //!< pointer to background fluid element (carries immersed information)
+
+  // declarte node pointer
+  DRT::Node* adhesion_node_ptr = NULL; //!< auxiliary pointer to adhesion node
+
+  // necessary variables
+  LINALG::Matrix<3,1> xi;                  //!< parameter space coordinate of anode in background element
+  LINALG::Matrix<8,1> shapefcts;           //!< shapefunctions must be evaluated at xi for force spreading
+  std::vector<double> anode_coord(3,0.0);  //!< current coordinates of anode
+  std::vector<double> myvalues;            //!< aux. variable for extraction of element values from state vectors
+  std::vector<double> myvalues_conc;       //!< aux. variable for extraction of element values from state vectors
+
+  // local declarations and definitions for round robin loop
+  const int numproc  = numproc_;                         //!< total number of processors
+  const int myrank   = myrank_;                          //!< my processor id
+  const int torank   = (myrank + 1) % numproc;           //!< sends to
+  const int fromrank = (myrank + numproc - 1) % numproc; //!< recieves from
+  int origin = myrank;                                   //!< owner of given point
+  DRT::Exporter exporter(Comm());                        //!< construct eporter object
+
+  // auxiliary counter for loop execution
+  int anode_count = -1;
+
+  // set states on participating discretizations
+  immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
+  immerseddis_->SetState(1,"Phinp",cellscatra_subproblem_->ScaTraField()->ScaTraField()->Phinp());
+  backgroundstructuredis_->SetState(0,"displacement",porostructure_->Dispnp());
+
+  // get condition which marks adhesion nodes
+  DRT::Condition* condition = immerseddis_->GetCondition("CellFocalAdhesion");
+  const std::vector<int>* adhesion_node_ptrs = condition->Nodes();
+  int my_adhesion_node_ptrsize = adhesion_node_ptrs->size();
+
+  // get max size over all procs
+  int max_adhesion_node_ptr_size_over_procs = -1;
+  Comm().MaxAll(&my_adhesion_node_ptrsize,&max_adhesion_node_ptr_size_over_procs,1);
+
+  Teuchos::RCP<const Epetra_Vector> ecmstate = backgroundstructuredis_->GetState("displacement");
   if(ecmstate == Teuchos::null)
-    dserror("Could not get state Dispnp from background structure");
-  Teuchos::RCP<const Epetra_Vector> cellstate = immerseddis_->GetState("Dispnp");
+    dserror("Could not get state displacement from background structure");
+  Teuchos::RCP<const Epetra_Vector> cellstate = immerseddis_->GetState("displacement");
   if(cellstate == Teuchos::null)
-    dserror("Could not get state Dispnp from cell structure");
+    dserror("Could not get state displacement from cell structure");
   Teuchos::RCP<const Epetra_Vector> cell_conc = immerseddis_->GetState(1,"Phinp");
   if(cell_conc == Teuchos::null)
     dserror("Could not get state Phinp from cell structure");
 
-  const double tol = 1e-11;
-  bool match = false;
-
-  const int num_boundspecies = globalproblem_->CellMigrationParams().sublist("ADHESION MODULE").get<int>("NUM_BOUNDSPECIES");
-
-  DRT::Element* ele;  //< pointer to background structure ecm element
-  DRT::Element* iele; //< pointer to background fluid element (carries immersed information)
-
-  LINALG::Matrix<3,1> xi(true);        //< parameter space coordinate of anode in background element
-  LINALG::Matrix<8,1> shapefcts;       //< shapefunctions must be evaluated at xi
-  std::vector<double> anode_coord(3);  //< current coordinates of anode
-  std::vector<double> myvalues_displ;  //< processor local cell element displacements
-  std::vector<double> myvalues_conc;   //< processor local cell element concentrations
-
-  // call PrepareBackgroundOp() to determine current subset of
-  // potentially covered background elements.
-  PrepareBackgroundOp();
-
-  // get condition which marks adhesion nodes
-  DRT::Condition* condition = immerseddis_->GetCondition("CellFocalAdhesion");
-  const std::vector<int>* adhesion_nodes = condition->Nodes();
-  const int adhesion_nodesize = adhesion_nodes->size();
-  DRT::Node* adhesion_node;
-
 
   // loop over all adhesion nodes
-  for(int anode=0;anode<adhesion_nodesize;anode++)
+  for(int anode=0;anode<max_adhesion_node_ptr_size_over_procs;anode++)
   {
+    // has this adhesion node been matched on any proc?
+    int matched = 0;
+    // result matching id of b
+    int matching_background_ele_id = -1;
+    // determine new anchor position for this adhesion node
+    int determine_new_position = 0;
+
+    // if no more own adhesion nodes are left to match on calling proc,
+    // send last node around until end. This way calling proc enters
+    // round robin loop below and communication can take place.
+    if(anode>(my_adhesion_node_ptrsize-1))
+    {
+      anode = my_adhesion_node_ptrsize-1;
+      determine_new_position = 0;
+      matched=1;
+    }
+    else
+      anode_count = anode;
+
+    // get adhesion node id
+    int anodeid = adhesion_node_ptrs->at(anode_count);
+    // get node pointer from immersed discretization
+    adhesion_node_ptr = immerseddis_->gNode(anodeid);
+
+    // set parameter space coordinates to arbitrary not matching values
     xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
-    match=false;
-
-    int anodeid = adhesion_nodes->at(anode);
-    adhesion_node = immerseddis_->gNode(anodeid);
-
     // get coordinates of adhesion node
-    const double* X = adhesion_node->X();
+    const double* X = adhesion_node_ptr->X();
 
-    // get displacements
-    DRT::Element** adjacent_elements = adhesion_node->Elements();
+    // get displacements of cell
+    DRT::Element** adjacent_elements = adhesion_node_ptr->Elements();
     DRT::Element::LocationArray la(2);
     adjacent_elements[0]->LocationVector(*immerseddis_,la,false);
     // extract local values of the global vectors
-    myvalues_displ.resize(la[0].lm_.size());
-    DRT::UTILS::ExtractMyValues(*cellstate,myvalues_displ,la[0].lm_);
-    double adhesioneledisp[24];
-    for(int node=0;node<8;++node)
-      for(int dof=0; dof<3;++dof)
-        adhesioneledisp[node*3+dof]=myvalues_displ[node*3+dof];
+    myvalues.resize(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*cellstate,myvalues,la[0].lm_);
 
     // get concentrations
     // extract local values of the global vectors
@@ -608,7 +660,6 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::ResetAdhesionFixpoints()
         break;
       }
     }
-
     if(locid == -1)
       dserror("could not get local index of adhesion node in element");
 
@@ -616,139 +667,256 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::ResetAdhesionFixpoints()
     double anode_conc = 0.0;
     for(int ii=0; ii<num_boundspecies; ++ii)
       anode_conc += adhesioneleconc[locid*numdofpernode+ii];
-
     // if anode_conc > reset_conc_ --> adhesion site stays at previous site
     // otherwise we have to reset the adhesion position in the background medium
-    if(anode_conc>reset_conc_ and adh_nod_param_coords_in_backgrd_ele_.find(anodeid)!=adh_nod_param_coords_in_backgrd_ele_.end())
-      break;
-
+    if(anode_conc>reset_conc_ and
+       adh_nod_param_coords_in_backgrd_ele_.find(anodeid)!=adh_nod_param_coords_in_backgrd_ele_.end())
+      determine_new_position=0;
+    else if(anode_conc <= reset_conc_ and
+       adh_nod_param_coords_in_backgrd_ele_.find(anodeid)!=adh_nod_param_coords_in_backgrd_ele_.end())
+      determine_new_position=1;
+    else if(anode_conc>reset_conc_ and
+       adh_nod_param_coords_in_backgrd_ele_.find(anodeid)==adh_nod_param_coords_in_backgrd_ele_.end() and
+            adhesion_node_ptr->Owner()==myrank_)
+      determine_new_position=1;
 
     // fill vector with current coordinate
-    anode_coord[0] = X[0] + adhesioneledisp[locid*3+0];
-    anode_coord[1] = X[1] + adhesioneledisp[locid*3+1];
-    anode_coord[2] = X[2] + adhesioneledisp[locid*3+2];
+    anode_coord[0] = X[0] + myvalues[locid*3+0];
+    anode_coord[1] = X[1] + myvalues[locid*3+1];
+    anode_coord[2] = X[2] + myvalues[locid*3+2];
 
-    // find ecm element in which adhesion node is immersed
-    // every proc that has searchboxgeom elements
-    for(std::map<int, std::set<int> >::const_iterator closele = curr_subset_of_backgrounddis_.begin(); closele != curr_subset_of_backgrounddis_.end(); closele++)
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    ////
+    ////     round robin loop
+    ////
+    //// find ecm element in which adhesion node is immersed. this ecm element is not guaranteed
+    //// to be on the same proc as the adhesion node.
+    ////
+    //// in this round-robin loop, every proc sends the adhesion node coordinates to the next
+    //// proc. Each proc tries to match the recieved coordinates to a background element.
+    ////
+    //// when the loop ends, all information are back on the proc who requested the data
+    //// originally and for every point the data should be stored in rdata.
+    ////
+    //// --> loop from 0 to numproc instead of (numproc-1) is chosen intentionally.
+    ////
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    // round robin loop
+    for (int irobin = 0; irobin < numproc; ++irobin)
     {
-      if(match)
-        break;
+      std::vector<char> sdata;
+      std::vector<char> rdata;
 
-      for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
+      // each proc searches in its own subsetof backgrd. elements for a match with the adhesion node
+      for(std::map<int, std::set<int> >::const_iterator closele = curr_subset_of_backgrounddis_.begin(); closele != curr_subset_of_backgrounddis_.end(); closele++)
       {
-        if(match)
+        if(not determine_new_position or matched)
           break;
 
-        ele=backgroundstructuredis_->gElement(*eleIter);
-        iele=backgroundfluiddis_->gElement(*eleIter);
-
-        DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(iele);
-        if(immersedele == NULL)
-          dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
-
-//        if(immersedele->IsBoundaryImmersed()) // todo doesn't work. why?
+        // search in each background element
+        for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
         {
-          bool converged = false;
-          double residual = -1234.0;
+          if(not determine_new_position or matched)
+            break;
 
-          DRT::Element::LocationArray la(1);
-          ele->LocationVector(*backgroundstructuredis_,la,false);
-          // extract local values of the global vectors
-          myvalues_displ.resize(la[0].lm_.size());
-          DRT::UTILS::ExtractMyValues(*ecmstate,myvalues_displ,la[0].lm_);
-          double sourceeledisp[24];
-          for(int node=0;node<8;++node)
-            for(int dof=0; dof<3;++dof)
-              sourceeledisp[node*3+dof]=myvalues_displ[node*4+dof];
+          ele =backgroundstructuredis_->gElement(*eleIter); //< background solid phase element
+          iele=backgroundfluiddis_->gElement(*eleIter);     //< background fluid element with same id has all immersed information
 
-          // node 1  and node 7 coords of current backgrd. element (diagonal points)
-          const double* X1 = ele->Nodes()[1]->X();
-          double x1[3];
-          x1[0]=X1[0]+sourceeledisp[1*3+0];
-          x1[1]=X1[1]+sourceeledisp[1*3+1];
-          x1[2]=X1[2]+sourceeledisp[1*3+2];
-          const double* X7 = ele->Nodes()[7]->X();
-          double diagonal = sqrt(pow(X1[0]-X7[0],2)+pow(X1[1]-X7[1],2)+pow(X1[2]-X7[2],2));
+          DRT::ELEMENTS::FluidImmersedBase* immersedele =
+              dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(iele);
+          if(immersedele == NULL)
+            dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
 
-          // calc distance of current anode to arbitrary node (e.g. node 1) of curr source element
-          double distance = sqrt(pow(x1[0]-anode_coord[0],2)+pow(x1[1]-anode_coord[1],2)+pow(x1[2]-anode_coord[2],2));
-
-          // get parameter space coords xi in source element of global point anode
-          // NOTE: if the anode is very far away from the source element ele
-          //       it is unnecessary to jump into this method and invoke a newton iteration.
-          // Therefore: only call GlobalToCurrentLocal if distance is smaller than factor*characteristic element length
-          if(distance < 2.5*diagonal)
+          // if we need to determine the local coordinates of the adhesion nodes
+          // we only try to match owned adhesion nodes (row layout of mappings)
+          if(determine_new_position)
           {
-            MORTAR::UTILS::GlobalToCurrentLocal<DRT::Element::hex8>(*ele,&sourceeledisp[0],&anode_coord[0],&xi(0),converged,residual);
-            //MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*ele,&anode_coord[0],&xi(0),converged);
-            if(converged == false)
+            bool converged = false;
+            double residual = -1234.0;
+            matching_background_ele_id = -1234;
+
+            // get background displacements
+            DRT::Element::LocationArray la(1);
+            ele->LocationVector(*backgroundstructuredis_,la,false);
+            // extract local values of the global vectors
+            myvalues.resize(la[0].lm_.size());
+            DRT::UTILS::ExtractMyValues(*ecmstate,myvalues,la[0].lm_);
+            double sourceeledisp[24];
+            for(int node=0;node<8;++node)
+              for(int dof=0; dof<3;++dof)
+                sourceeledisp[node*3+dof]=myvalues[node*4+dof];
+
+            // node 1  and node 7 coords of current backgrd. element (diagonal points)
+            const double* X1 = ele->Nodes()[1]->X();
+            double x1[3];
+            x1[0]=X1[0]+sourceeledisp[1*3+0];
+            x1[1]=X1[1]+sourceeledisp[1*3+1];
+            x1[2]=X1[2]+sourceeledisp[1*3+2];
+            const double* X7 = ele->Nodes()[7]->X();
+            double diagonal = sqrt(pow(X1[0]-X7[0],2)+pow(X1[1]-X7[1],2)+pow(X1[2]-X7[2],2));
+
+            // calc distance of current anode to arbitrary node (e.g. node 1) of curr source element
+            double distance = sqrt(pow(x1[0]-anode_coord[0],2)+pow(x1[1]-anode_coord[1],2)+pow(x1[2]-anode_coord[2],2));
+
+            // get parameter space coords xi in source element of global point anode
+            // NOTE: if the anode is very far away from the source element ele
+            //       it is unnecessary to jump into this method and invoke a newton iteration.
+            // Therefore: only call GlobalToCurrentLocal if distance is smaller than factor*characteristic element length
+            if(distance < 2.5*diagonal)
             {
-              std::cout<<"Warning! GlobalToCurrentLocal did not converge for adhesion node "<<anodeid<<". Res="<<residual<<std::endl;
+              MORTAR::UTILS::GlobalToCurrentLocal<DRT::Element::hex8>(*ele,&sourceeledisp[0],&anode_coord[0],&xi(0),converged,residual);
+
+              if(converged == false)
+              {
+                std::cout<<"Warning! GlobalToCurrentLocal did not converge for adhesion node "<<anodeid<<". Res="<<residual<<std::endl;
+                xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
+              }
+            }
+            else
+            {
               xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
             }
-          }
-          else
-          {
-            xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
-          }
-        } // if cut by boundary
 
-        // anode lies in element ele
-        if (abs(xi(0))<(1.0+tol) and abs(xi(1))<(1.0+tol) and abs(xi(2))<(1.0+tol))
+            // anode lies in element ele so we found a match.
+            // we only match adhesion node if this proc owns the background element
+            if (abs(xi(0))<(1.0+tol) and abs(xi(1))<(1.0+tol) and abs(xi(2))<(1.0+tol) and ele->Owner()==myrank_)
+            {
+              matched = 1;
+              matching_background_ele_id = ele->Id();
+              break;
+            } // if match
+          } // if determine_new_position
+
+        } // loop over all background elements
+      } // loop over curr_subset_of_backgrounddis_
+
+
+      if(numproc>1)
+      {
+        // ---- pack data for sending -----
         {
-          match = true;
-
-          // delete old pair cell adhesion node id -> xi in backgroundele in map
-          adh_nod_param_coords_in_backgrd_ele_.erase(anodeid);
-            // delete old pair adhesion node id -> backgrdele id in map
-          adh_nod_backgrd_ele_mapping_.erase(anodeid);
-          // write new pair cell adhesion node id -> xi in backgroundele in map
-          adh_nod_param_coords_in_backgrd_ele_.insert(std::pair<int,LINALG::Matrix<3,1> >(anodeid,xi));
-          // write new pair adhesion node id -> backgrdele id in map
-          adh_nod_backgrd_ele_mapping_.insert(std::pair<int,int>(anodeid,ele->Id()));
-
-          // write adhesion fixpoint coordinates in cell_adhesion_nod_coords_
-          double adhesioncoords[3];
-
-          // get ecm state
-          DRT::Element::LocationArray la(1);
-          ele->LocationVector(*backgroundstructuredis_,la,false);
-          // extract local values of the global vectors
-          myvalues_displ.resize(la[0].lm_.size());
-          DRT::UTILS::ExtractMyValues(*ecmstate,myvalues_displ,la[0].lm_);
-          std::vector<double> sourceeledisp(24);
-          for(int node=0;node<8;++node)
-            for(int dof=0; dof<3;++dof)
-              sourceeledisp[node*3+dof]=myvalues_displ[node*4+dof];
-
-          // convert xi to current coordinates
-          MORTAR::UTILS::LocalToCurrentGlobal<DRT::Element::hex8>(*ele,3,&xi(0),sourceeledisp,&adhesioncoords[0]);
-
-          // get dofs of cell adhesion node
-          std::vector<int> dofs = immerseddis_->Dof(0,immerseddis_->gNode(anodeid));
-          if(dofs.size()!=3)
-            dserror("dofs=3 expected. dofs=%d instead",dofs.size());
-
-          // write displacmement into global vector
-          for(int dof=0;dof<3;dof++)
+          DRT::PackBuffer data;
+          data.StartPacking();
           {
-            // get lid of current gid in 'dofs'
-            int lid = immerseddis_->DofRowMap()->LID(dofs[dof]);
-            int err = 0;
-            if( lid > -1)
-              err = cell_adhesion_nod_coords_->ReplaceMyValue(lid,0,adhesioncoords[dof]);
-            if(err != 0)
-              dserror("ReplaceMyValue returned err=%d",err);
-          } // loop over all dofs of adhesion anode
+            data.AddtoPack(anodeid);
+            data.AddtoPack(matching_background_ele_id);
+            data.AddtoPack(origin);
+            data.AddtoPack(determine_new_position);
+            data.AddtoPack(matched);
 
-        } // adhesion node is matched
-      } // loop over element ids
-    } // loop over curr_subset_of_backgrounddis_
+            // pack vectors
+            for(int dim=0;dim<3;++dim)
+            {
+              data.AddtoPack(anode_coord[dim]);
+              data.AddtoPack(xi(dim));
+            }
+          }
+
+          std::swap(sdata, data());
+
+        }
+        //---------------------------------
+
+        // ---- send ----
+        MPI_Request request;
+        exporter.ISend(myrank, torank, &(sdata[0]), (int)sdata.size(), 1234, request);
+
+        // ---- receive ----
+        int length = rdata.size();
+        int tag = -1;
+        int from = -1;
+        exporter.ReceiveAny(from,tag,rdata,length);
+        if (tag != 1234 or from != fromrank)
+          dserror("Received data from the wrong proc soll(%i -> %i) ist(%i -> %i)", fromrank, myrank, from, myrank);
+
+        // ---- unpack data -----
+        std::vector<char>::size_type position = 0;
+
+        anodeid                    = DRT::ParObject::ExtractInt(position,rdata);
+        matching_background_ele_id = DRT::ParObject::ExtractInt(position,rdata);
+        origin                     = DRT::ParObject::ExtractInt(position,rdata);
+        determine_new_position     = DRT::ParObject::ExtractInt(position,rdata);
+        matched                    = DRT::ParObject::ExtractInt(position,rdata);
+
+        for(int dim=0;dim<3;++dim)
+        {
+          anode_coord[dim]  = DRT::ParObject::ExtractDouble(position,rdata);
+          xi(dim)           = DRT::ParObject::ExtractDouble(position,rdata);
+        }
+
+        // wait for all communication to finish
+        exporter.Wait(request);
+        Comm().Barrier();
+      } // communicate data only if num procs > 1
+
+    } // round robin loop
+
+
+    // now all data should be back at originating processor
+    if(origin != myrank_)
+      dserror("After round-robin loop the delivered data should arrive at the origin again.");
+    if(determine_new_position and (not matched))
+      dserror("Adhesion node with id %i could not be matched on any proc. %f<%f , %i",anodeid,anode_conc,reset_conc_,determine_new_position);
+
+    // adhesion node was matched to a background element and xi coordinate was communicated.
+    // 1) we replace the adhesion information for this node.
+    // 2) we write the current global coordinates of the adhesion node to cell_adhesion_nod_coords_.
+    if(matched and determine_new_position and adhesion_node_ptr->Owner()==myrank_)
+    {
+      // delete old pair cell adhesion node id -> xi in backgroundele in map
+      adh_nod_param_coords_in_backgrd_ele_.erase(anodeid);
+        // delete old pair adhesion node id -> backgrdele id in map
+      adh_nod_backgrd_ele_mapping_.erase(anodeid);
+      // write new pair cell adhesion node id -> xi in backgroundele in map
+      adh_nod_param_coords_in_backgrd_ele_.insert(std::pair<int,LINALG::Matrix<3,1> >(anodeid,xi));
+      // write new pair adhesion node id -> backgrdele id in map
+      adh_nod_backgrd_ele_mapping_.insert(std::pair<int,int>(anodeid,ele->Id()));
+
+      // write adhesion fixpoint coordinates in cell_adhesion_nod_coords_
+
+      // get dofs of cell adhesion node
+      std::vector<int> dofs = immerseddis_->Dof(0,immerseddis_->gNode(anodeid));
+      if(dofs.size()!=3)
+        dserror("dofs=3 expected. dofs=%d instead",dofs.size());
+
+      // write displacmement into global vector
+      for(int dof=0;dof<3;dof++)
+      {
+        // get lid of current gid in 'dofs'
+        int lid = immerseddis_->DofRowMap()->LID(dofs[dof]);
+        int err = 0;
+        if( lid > -1)
+          err = cell_adhesion_nod_coords_->ReplaceMyValue(lid,0,anode_coord[dof]);
+        if(err != 0)
+          dserror("ReplaceMyValue returned err=%d",err);
+      } // loop over all dofs of adhesion anode
+
+    } // adhesion node is matched
+
   } // loop over all nodes with adhesion condition 'anode'
 
+
+  // set state to be available in bond reactions
+  immersedscatradis_->SetState(1,"AdhesionFixpoints",cell_adhesion_nod_coords_);
+
+  Comm().Barrier();
+  std::cout<<"###   PROC "<<myrank_<<": Size of 'adh_nod_param_coords_in_backgrd_ele_' = "<<adh_nod_param_coords_in_backgrd_ele_.size()<<std::endl;
+  Comm().Barrier();
+  std::cout<<"###   PROC "<<myrank_<<": Size of 'adh_nod_backgrd_ele_mapping_'         = "<<adh_nod_backgrd_ele_mapping_.size()<<std::endl;
+  Comm().Barrier();
+
+  double norm=-1234.0;
+  cell_adhesion_nod_coords_->Norm1(&norm);
+
+  if(myrank_ == 0)
+  {
+    std::cout<<"###   L1-Norm of adhesion node coords: "<<std::setprecision(11)<<norm<<std::endl;
+    std::cout<<"################################################################################################"<<std::endl;
+  }
+
   return;
-}
+} // UpdateAdhesionInformation()
 
 
 /*----------------------------------------------------------------------*/
@@ -762,12 +930,16 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(
     std::cout<<"###   Spread adhesion forces onto ecm ...                  "<<std::endl;
   }
 
-  // reinitialize map to insert new adhesion node -> background element pairs
-  // todo make dependent on immersed_information_invalid_
-  // for now, this doesn't change for the test simulations.
-  // adh_nod_param_coords_in_backgrd_ele_.clear();
-  // reinitialize mapping from adhesion node to backgrd. element id
-  //adh_nod_backgrd_ele_mapping_.clear();
+  // safety check
+  if(immersed_information_invalid_)
+    dserror("immersed information should be updated first");
+
+  // reinitialize map to insert new adhesion node -> background element id pairs
+  if (determine_adhesion_information_)
+  {
+    adh_nod_backgrd_ele_mapping_.clear();
+    adh_nod_param_coords_in_backgrd_ele_.clear();
+  }
 
   // tolerance for geometric operations
   const double tol = 1e-11;
@@ -796,7 +968,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(
   const int torank   = (myrank + 1) % numproc;           //!< sends to
   const int fromrank = (myrank + numproc - 1) % numproc; //!< recieves from
   int origin = myrank;                                   //!< owner of given point
-  DRT::Exporter exporter(Comm());                        //!< construct eporter object
+  DRT::Exporter exporter(Comm());                        //!< construct exporter object
 
   // auxiliary counter for loop execution
   int anode_count = -1;
@@ -977,12 +1149,10 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(
           if(immersedele == NULL)
             dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
 
-          // match is only possible if background element is cut by immersed boundary
-          if(immersedele->IsBoundaryImmersed())
-          {
             // if we need to determine the local coordinates of the adhesion nodes
+            // match is only possible if background element is cut by immersed boundary
             // we only try to matched owned adhesion nodes (row layout of mappings)
-            if(determine_adhesion_information_)
+            if(determine_adhesion_information_ and immersedele->IsBoundaryImmersed())
             {
               bool converged = false;
               double residual = -1234.0;
@@ -1096,7 +1266,6 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(
               finished=true;
             } // found match
 
-          } // if ele cut by immersed boundary
         } // loop over all background elements
       } // loop over curr_subset_of_backgrounddis_
 
@@ -1177,9 +1346,27 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(
       adh_nod_param_coords_in_backgrd_ele_.insert(std::pair<int,LINALG::Matrix<3,1> >(anodeid,xi));
       // write pair adhesion node id -> backgrdele id in map
       adh_nod_backgrd_ele_mapping_.insert(std::pair<int,int>(anodeid,matching_id));
+
+      if(!dirichletcoupling_)
+      {
+        // write cordinate of adhesion node
+        DRT::Node* temp_node_ptr = immerseddis_->gNode(anodeid);
+        std::vector<int> dofs = immerseddis_->Dof(0,temp_node_ptr);
+        for(int dof=0;dof<3;dof++)
+        {
+          // get lid of current gid in 'dofs'
+          int lid = immerseddis_->DofRowMap()->LID(dofs[dof]);
+          int err = 0;
+          if( lid > -1)
+            err = cell_adhesion_nod_coords_->ReplaceMyValue(lid,0,anode_coord[dof]);
+          if(err != 0)
+            dserror("ReplaceMyValue returned err=%d",err);
+        } // loop over all dofs of adhesion anode
+      }
     }
 
   } // loop over all nodes with adhesion condition 'anode'
+
 
   // second round robin loop to add contributions to ecm_adhesion_forces_ to the nodes
   // associated with matched elements who did not own these nodes
@@ -1205,17 +1392,6 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(
       std::vector<char> rdata;
 
       // do the work ...
-
-//     // material points are fixed to each other.
-//     // so there is no need to find anode<->ecm-element pairs again.
-//     // the ecm-elements interpolate their displacements always to the same
-//     // parameter space coordinate saved in adh_nod_param_coords_in_backgrd_ele_.
-//     // this displacement is then prescribed at the anode.
-//     // this is not true for the penalty formulation. however, the pairs are
-//     // reset somewhere else.
-//     xi(0)=(adh_nod_param_coords_in_backgrd_ele_.find(node_id)->second)(0);
-//     xi(1)=(adh_nod_param_coords_in_backgrd_ele_.find(node_id)->second)(1);
-//     xi(2)=(adh_nod_param_coords_in_backgrd_ele_.find(node_id)->second)(2);
 
       // check whether element is owned by this proc
       if(backgroundstructuredis_->NodeRowMap()->LID(node_id) != -1)
@@ -1288,15 +1464,36 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(
   ecm_adhesion_forces_->Norm1(&adhesionforcenorm);
 
   if(myrank_ == 0)
-  {
     std::cout<<"###   L1-Norm of  ECM Adhesion Force Vector: "<<std::setprecision(11)<<adhesionforcenorm<<std::endl;
-    std::cout<<"################################################################################################"<<std::endl;
+
+  if(determine_adhesion_information_)
+  {
+    Comm().Barrier();
+    std::cout<<"###   PROC "<<myrank_<<": Size of 'adh_nod_param_coords_in_backgrd_ele_' = "<<adh_nod_param_coords_in_backgrd_ele_.size()<<std::endl;
+    Comm().Barrier();
+    std::cout<<"###   PROC "<<myrank_<<": Size of 'adh_nod_backgrd_ele_mapping_'         = "<<adh_nod_backgrd_ele_mapping_.size()<<std::endl;
   }
+
+  if(!dirichletcoupling_)
+  {
+    double norm=-1234.0;
+    cell_adhesion_nod_coords_->Norm1(&norm);
+    if(myrank_ == 0)
+      std::cout<<"###   L1-Norm of adhesion node coords: "<<std::setprecision(11)<<norm<<std::endl;
+  }
+
+  Comm().Barrier();
+  if(myrank_ == 0)
+    std::cout<<"################################################################################################"<<std::endl;
+
+  // set state to be available in bond reactions
+  if(determine_adhesion_information_ and !dirichletcoupling_)
+    immersedscatradis_->SetState(1,"AdhesionFixpoints",cell_adhesion_nod_coords_);
 
   determine_adhesion_information_ = false;
 
   return;
-}
+} // DistributeAdhesionForce
 
 
 /*----------------------------------------------------------------------*/
@@ -1321,7 +1518,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
   // construct eporter object
   DRT::Exporter exporter(Comm());
   // matched flag
-  bool matched = false;
+  int matched = 0;
 
   // safety check
   if(adh_nod_param_coords_in_backgrd_ele_.size() != adh_nod_backgrd_ele_mapping_.size())
@@ -1350,7 +1547,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
   for (int anode=0;anode<max_adhesionnode_size_over_procs;++anode)
   {
     // reset matched flag
-    matched = false;
+    matched = 0;
 
     DRT::Node* adhesion_node = NULL;
 
@@ -1408,7 +1605,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
         {
           if(backgrdele->Owner() == myrank_)
           {
-            matched = true;
+            matched = 1;
 
             // 1) extract background element nodal displacements
             DRT::Element::LocationArray la(1);
@@ -1446,7 +1643,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
             data.AddtoPack(anode_id);
             data.AddtoPack(matching_id);
             data.AddtoPack(origin);
-            data.AddtoPack((int)matched);
+            data.AddtoPack(matched);
 
             // parameter space coordinate
             for(int dim=0;dim<3;++dim)
@@ -1541,7 +1738,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
 
   if(myrank_ == 0)
   {
-    std::cout<<"###   L2-Norm of Cell Adhesion Disp Vector: "<<std::setprecision(11)<<adhesiondispnorm<<std::endl;
+    std::cout<<"###   L2-Norm of Cell Adhesion Disp Vector  : "<<std::setprecision(11)<<adhesiondispnorm<<std::endl;
     std::cout<<"################################################################################################"<<std::endl;
   }
 
@@ -1676,7 +1873,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::ResetImmersedInformation()
   params.set<int>("Physical Type", poroscatra_subproblem_->FluidField()->PhysicalType());
   backgroundfluiddis_->Evaluate(params);
 
-  determine_adhesion_information_ = true;
+  immersed_information_invalid_ = true;
 
   return;
 }

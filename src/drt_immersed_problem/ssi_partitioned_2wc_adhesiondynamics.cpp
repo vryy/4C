@@ -213,17 +213,16 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::PreOperator2()
  *------------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_ADHESIONDYNAMICS::PostOperator1()
 {
-  // print norm of bound linker protein concentration
-  // todo generalize dofs of species
-  const int adh_node_size =
-      DRT::Problem::Instance()->GetDis("cell")->GetCondition("CellFocalAdhesion")->Nodes()->size();
-  double root = 0.0;
-  double* vals = scatra_->ScaTraField()->Phinp()->Values();
-  for(int ii=0;ii<adh_node_size;++ii)
-    root += pow(vals[ii*2+0],2.0);
-  double conc_bound = sqrt(root);
-  std::cout<<"L2-Norm of Bound Species Concentration: "<<std::setprecision(11)<<conc_bound<<std::endl;
-  std::cout<<"---------------"<<std::endl;
+  Teuchos::RCP<Epetra_Vector> phinp = scatra_->ScaTraField()->Phinp();
+  double norm=0.0;
+  phinp->Norm2(&norm);
+
+
+  if(Comm().MyPID()==0)
+  {
+    std::cout<<"L2-Norm of Concentration Vector: "<<std::setprecision(11)<<norm<<std::endl;
+    std::cout<<"---------------"<<std::endl;
+  }
 
   return;
 }
@@ -240,8 +239,11 @@ void SSI::SSI_Part2WC_ADHESIONDYNAMICS::PostOperator2()
     cell_adhesion_forces_ = exchange_manager_->GetPointerCellAdhesionForce();
   double fadhnorm =-1234.0;
   cell_adhesion_forces_->Norm2(&fadhnorm);
-  std::cout<<std::endl<<"L2-Norm of Cell Adhesion Force Vector: "<<std::setprecision(11)<<fadhnorm<<std::endl;
-  std::cout<<"---------------"<<std::endl;
+  if(Comm().MyPID()==0)
+  {
+    std::cout<<std::endl<<"L2-Norm of Cell Adhesion Force Vector: "<<std::setprecision(11)<<fadhnorm<<std::endl;
+    std::cout<<"---------------"<<std::endl;
+  }
 
   return;
 }
