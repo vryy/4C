@@ -1,13 +1,13 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
 interface to aero code (by Georg Hammerl)
-- removed in revision 23255 on 2017-07-13
+- removed in revision 23256 on 2017-07-13
 - reasons: it is unlikely that we use that particular coupling scenario in the coming years, thus reduce code complexity by not carrying it around
 - if you want to couple to other codes: check the interfaces in 23254 in Input/fs3i_aero_tfsi_flat_plate.dat and the implementation in src/drt_fs3i/aero_tfsi*
 - Removed by M. Kronbichler
 
 meshfree analysis (by Keijo Nissen)
-- removed in revision 23255 on 2017-07-13
+- removed in revision 23256 on 2017-07-13
 - reasons: invasive implementation, got outdated with respect to the standard polynomial fluid implementation, no active member of LNM can maintain this functionality
 - if you need it: Check revision 23254, get one of the test files or a file by Keijo Nissen
 - removed by M. Kronbichler

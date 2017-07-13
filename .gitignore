@@ -4,30 +4,6 @@
 #                                                   #
 #####################################################
 
-# MK personal
-strings*
-do-configure*
-guides
-*~
-baci*
-*cmake
-amesos-failure.dat
-adapt_cproject.py
-custom
-doc
-kaiser-dump.sh
-*.tar.bz2
-cut_test
-xxx*
-MartinInput/xx*
-MartinInput/*.err
-MartinInput/*relerror
-MartinInput/*control
-Output/
-*.so
-callgrind.out.*
-*/callgrind.out.*
-
 # C++ build
 *.o
 *.a
@@ -46,7 +22,6 @@ post_drt_gid
 !cmake/scripts/post_drt_gid
 post_drt_monitor
 post_drt_s8convert
-pre_locsys
 pre_curve
 !src/pre_curve
 pre_exodus
