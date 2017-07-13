@@ -10,6 +10,8 @@
 *----------------------------------------------------------------------*/
 
 
+#include "binning_strategy_utils.H"
+
 #include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_bele3/bele3.H"
@@ -18,7 +20,6 @@
 #include "../drt_so3/so_base.H"
 
 #include "../drt_lib/drt_utils_parallel.H"
-#include "binning_strategy_utils.H"
 
 namespace BINSTRATEGY
 {

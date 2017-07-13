@@ -572,9 +572,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
             "\nPlease note that the value you have to provide only applies to the element-based integration"
             "\ndomain, while pre-defined default values will be used in the segment-based boundary domain.");
 
-  if ((problemtype!=prb_tfsi_aero &&
-      (inttype == INPAR::MORTAR::inttype_elements || inttype == INPAR::MORTAR::inttype_elements_BS) &&
-      mortar.get<int>("NUMGP_PER_DIM") <= 1))
+  if ((inttype == INPAR::MORTAR::inttype_elements || inttype == INPAR::MORTAR::inttype_elements_BS) &&
+      mortar.get<int>("NUMGP_PER_DIM") <= 1)
     dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
   // *********************************************************************
@@ -587,9 +586,6 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   mtparams.setParameters(mortar);
   mtparams.setParameters(meshtying);
   mtparams.setParameters(wearlist);
-
-  // geometrically decoupled elements cannot be given via input file
-  mtparams.set<bool>("GEO_DECOUPLED", false);
 
   // *********************************************************************
   // predefined params for meshtying and contact

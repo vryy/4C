@@ -60,8 +60,7 @@ BEAMS_PENREGPARAM_C0            0.0
 // needed for old beam_contact_manager only
 BEAMS_MAXDISISCALEFAC           -1.0
 BEAMS_MAXDELTADISSCALEFAC       -1.0
---------------------------------------------------------------------MESHFREE
-TYPE                   Particle
+--------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER          cutoff
 CUTOFF_RADIUS          2
 DEFINEXAABBPER         input

@@ -27,8 +27,7 @@ WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
 VERBOSITY                       Standard
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.5
 ----------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff

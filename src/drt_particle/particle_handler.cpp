@@ -12,9 +12,8 @@
 
 #include "particle_handler.H"
 
+#include "../drt_binstrategy/drt_meshfree_multibin.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
-
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_io/io.H"

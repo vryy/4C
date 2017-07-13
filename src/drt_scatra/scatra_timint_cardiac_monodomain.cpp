@@ -112,10 +112,6 @@ void SCATRA::TimIntCardiacMonodomain::OutputState()
     output_->WriteVector("activation_time_np", activation_time_np_);
   }
 
-  // solution at nodes for meshfree problems with non-interpolatory basis functions
-  if(phiatmeshfreenodes_!=Teuchos::null)
-    output_->WriteVector("phiatmeshfreenodes",phiatmeshfreenodes_);
-
   // Recover internal state of the material (for electrophysiology)
   if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)
   {

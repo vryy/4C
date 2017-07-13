@@ -20,7 +20,6 @@
 
 #include "scatra_ele_interface.H"
 
-#include "../drt_meshfree_discret/meshfree_scatra_cell_interface.H"
 #include "../drt_inpar/inpar_scatra.H"
 
 #include "../drt_lib/drt_element.H"
@@ -56,14 +55,6 @@ public:
     const int numscal,
     const std::string& disname);
 
-  //! ProvideMeshfreeImpl
-  static MeshfreeScaTraCellInterface* ProvideMeshfreeImpl(
-    DRT::Element::DiscretizationType distype,
-    INPAR::SCATRA::ImplType problem,
-    const int numdofpernode,
-    const int numscal,
-    const std::string& disname);
-
 private:
   //! define ScatraEle instances dependent on problem
   template<DRT::Element::DiscretizationType distype,int probdim>
@@ -80,15 +71,6 @@ private:
     const int numdofpernode,
     const int numscal,
     const std::string& disname);
-
-  //! define MeshfreeScatraCell instances dependent on problem
-  template<DRT::Element::DiscretizationType distype>
-  static MeshfreeScaTraCellInterface* DefineMeshfreeProblemType(
-    INPAR::SCATRA::ImplType impltype,
-    const int numdofpernode,
-    const int numscal,
-    const std::string& disname);
-
 
 }; // end class ScaTraFactory
 

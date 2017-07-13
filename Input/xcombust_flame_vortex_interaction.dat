@@ -69,8 +69,7 @@ PARTICLEBANDWIDTH           3.0
 RESEEDING                   40
 FAST_CHECK                  yes
 RESTARTDATA                 yes
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 BIN_PER_DIR                     100 200 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      RK2

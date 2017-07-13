@@ -13,8 +13,7 @@ viscous and gravity forces leading to an initial acceleration (no GRAVITY_RAMP_T
 PROBLEMTYP                      MeshFree
 SHAPEFCT                        Meshfree
 RANDSEED                        1
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle //maxent (default),particle,geo_decoupled
+--------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.03
 PERIODICONOFF                   1 0 0
 BOUNDINGBOX                    -0.1 -0.1 -0.01 0.1 0.1 0.01

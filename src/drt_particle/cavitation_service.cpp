@@ -21,7 +21,7 @@
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
+#include "../drt_binstrategy/drt_meshfree_multibin.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mortar/mortar_utils.H"

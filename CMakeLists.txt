@@ -792,7 +792,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_levelset.cpp
   src/drt_inpar/inpar_loca_continuation.cpp
   src/drt_inpar/inpar_lubrication.cpp
-  src/drt_inpar/inpar_meshfree.cpp
+  src/drt_inpar/inpar_binningstrategy.cpp
   src/drt_inpar/inpar_mlmc.cpp
   src/drt_inpar/inpar_mortar.cpp
   src/drt_inpar/inpar_poroelast.cpp
@@ -1072,8 +1072,10 @@ set(OBJS_DRT_COMM
 )
 
 set(OBJS_DRT_UTILS
-  src/drt_particle/binning_strategy_utils.cpp
-  src/drt_particle/binning_strategy.cpp
+  src/drt_binstrategy/binning_strategy_utils.cpp
+  src/drt_binstrategy/binning_strategy.cpp
+  src/drt_binstrategy/drt_meshfree_bin.cpp
+  src/drt_binstrategy/drt_meshfree_multibin.cpp
   src/drt_fem_general/debug_nan.cpp
   src/drt_fem_general/drt_utils_boundary_integration.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
@@ -1282,8 +1284,6 @@ set(OBJS_DRT_FS3I
   src/drt_fs3i/ac_fsi_lts.cpp
   src/drt_fs3i/biofilm_fsi.cpp
   src/drt_fs3i/biofilm_fsi_utils.cpp
-  src/drt_fs3i/aero_tfsi.cpp
-  src/drt_fs3i/aero_tfsi_serv.cpp
 )
 set(OBJS_DRT_RED_AIRWAYS
   src/drt_red_airways/airwayimplicitintegration.cpp
@@ -1396,13 +1396,6 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_hdg_intfaces_calc.cpp
   src/drt_scatra_ele/scatra_ele_hdg_boundary_calc.cpp
   src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain_hdg.cpp
-)
-set(OBJS_DRT_MESHFREE_SCATRA_LIB
-  src/drt_meshfree_discret/meshfree_scatra_cell.cpp
-  src/drt_meshfree_discret/meshfree_scatra_cell_evaluate.cpp
-  src/drt_meshfree_discret/meshfree_scatra_cell_boundary_evaluate.cpp
-  src/drt_meshfree_discret/meshfree_scatra_cell_calc.cpp
-  src/drt_meshfree_discret/meshfree_scatra_cell_calc_std.cpp
 )
 set(OBJS_DRT_STI
   src/drt_sti/sti_algorithm.cpp
@@ -1536,22 +1529,10 @@ set(OBJS_DRT_NURBS_DISCRET_LIB
   src/drt_nurbs_discret/drt_knotvector.cpp
   src/drt_nurbs_discret/drt_nurbs_discret.cpp
 )
-set(OBJS_DRT_MESHFREE_DISCRET_LIB
-  src/drt_fem_general/drt_utils_maxent_basisfunctions.cpp
-  src/drt_meshfree_discret/drt_meshfree_node.cpp
+set(OBJS_DRT_BINSTRATEGY_DISCRET_LIB
   src/drt_beaminteraction/crosslinker_node.cpp
   src/drt_particle/particle_node.cpp
   src/drt_particle/particle_radius_node.cpp
-  src/drt_meshfree_discret/drt_meshfree_bin.cpp
-  src/drt_meshfree_discret/drt_meshfree_multibin.cpp
-  src/drt_meshfree_discret/drt_meshfree_utils.cpp
-  src/drt_meshfree_discret/drt_meshfree_cell.cpp
-  src/drt_meshfree_discret/drt_meshfree_cell_utils.cpp
-  src/drt_meshfree_discret/drt_meshfree_discret.cpp
-  src/drt_meshfree_discret/drt_meshfree_discret_face.cpp
-  src/drt_meshfree_discret/drt_meshfree_discret_conditions.cpp
-  src/drt_meshfree_discret/drt_meshfree_discret_evaluate.cpp
-  src/drt_meshfree_discret/drt_meshfree_discret_fillcomplete.cpp
 )
 set(OBJS_DRT_TOPOPT
   src/drt_opti/topopt_algorithm.cpp
@@ -1734,7 +1715,6 @@ set(OBJS_DRT_MORTAR
 )
 set(OBJS_DRT_MORTAR_LIB
   src/drt_mortar/mortar_element.cpp
-  src/drt_mortar/mortar_element_geo_decoupl.cpp
   src/drt_mortar/mortar_element_integrator.cpp
   src/drt_mortar/mortar_element_shapefct.cpp
   src/drt_mortar/mortar_node.cpp
@@ -2149,17 +2129,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_opti/topopt_fluidAdjoint3_impl.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp
 )
-set(OBJS_DRT_MESHFREE_FLUID_CELL_LIB
-  src/drt_meshfree_discret/meshfree_fluid_cell.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_evaluate.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_calc.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_calc_general_service.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_calc_std.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_boundary.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_boundary_evaluate.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_boundary_calc.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_boundary_calc_std.cpp
-)
 set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3.cpp
   src/drt_truss3/truss3_evaluate.cpp
@@ -2568,7 +2537,6 @@ endif (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 
 # Compile element libraries first. There are files that take time to compile.
 add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
-add_library(ele_meshfree_fluid ${OBJS_DRT_MESHFREE_FLUID_CELL_LIB})
 add_library(ele_ale ${OBJS_DRT_ALE_LIB})
 add_library(ele_b3 ${OBJS_DRT_B3_LIB})
 add_library(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
@@ -2582,7 +2550,6 @@ add_library(ele_porofluidmuliphase ${OBJS_DRT_POROFLUIDMULTIPHASE_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
 add_library(ele_sp3 ${OBJS_DRT_SP3_LIB})
-add_library(ele_meshfree_scatra ${OBJS_DRT_MESHFREE_SCATRA_LIB})
 add_library(ele_so ${OBJS_SOH8_LIB})
 add_library(ele_t3 ${OBJS_DRT_T3_LIB})
 add_library(ele_t3cl ${OBJS_DRT_T3CL_LIB})
@@ -2599,7 +2566,6 @@ set(ELEMENT_LIBRARIES
   ele_combust3
   ele_discsh3
   ele_fluid
-  ele_meshfree_fluid
   ele_opti
   ele_s8
   ele_membrane
@@ -2607,7 +2573,6 @@ set(ELEMENT_LIBRARIES
   ele_porofluidmuliphase
   ele_scatra
   ele_sp3
-  ele_meshfree_scatra
   ele_so
   ele_t3
   ele_t3cl
@@ -2747,7 +2712,7 @@ add_library(drt_lib_io ${OBJS_DRT_IO_LIB})
 #add_library(drt_lib_fluid ${OBJS_DRT_FLUID_LIB})
 add_library(drt_lib_mortar ${OBJS_DRT_MORTAR_LIB})
 add_library(drt_lib_nurbs ${OBJS_DRT_NURBS_DISCRET_LIB})
-add_library(drt_lib_meshfree ${OBJS_DRT_MESHFREE_DISCRET_LIB})
+add_library(drt_lib_binstrategy ${OBJS_DRT_BINSTRATEGY_DISCRET_LIB})
 add_library(drt_lib_surfstress ${OBJS_DRT_SURFSTRESS})
 add_library(drt_lib_utils ${OBJS_DRT_UTILS})
 add_library(drt_lib_artnet ${OBJS_DRT_ARTNET_LIB})
@@ -2776,7 +2741,7 @@ set(SUPPORT_LIBRARIES
   drt_lib_inpar
   drt_lib_io
   drt_lib_nurbs
-  drt_lib_meshfree
+  drt_lib_binstrategy
   drt_lib_statinv_ana
   drt_lib_immersed
   drt_lib_fiber

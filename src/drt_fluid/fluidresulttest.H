@@ -68,8 +68,6 @@ private:
     Teuchos::RCP<DRT::Discretization> fluiddis_;
     /// pointer to unknown vector with nodal values
     Teuchos::RCP<Epetra_Vector>       mysol_;
-    /// pointer to unknown vector with values at nodes
-    Teuchos::RCP<Epetra_Vector>       myvan_;
     /// pointer to traction vector with values
     Teuchos::RCP<Epetra_Vector>       mytraction_;
     /// pointer to traction vector with values

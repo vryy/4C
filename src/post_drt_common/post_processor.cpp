@@ -656,7 +656,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
       break;
     }
     case prb_tsi:
-    case prb_tfsi_aero:
     {
       std::cout << "Output TSI Problem" << std::endl;
 

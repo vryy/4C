@@ -78,7 +78,7 @@
 #include "../drt_lib/drt_discret_combust.H"
 #include "../drt_lib/drt_discret_xfem.H"
 
-#include "../drt_particle/binning_strategy.H"
+#include "../drt_binstrategy/binning_strategy.H"
 
 #include "../drt_poroelast/poro_utils_clonestrategy.H"
 #include "../drt_poroelast/poroelast_utils_setup.H"

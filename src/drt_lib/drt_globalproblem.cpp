@@ -48,7 +48,6 @@
 #include "../drt_mat/scatra_mat_multiscale.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_immersed_problem/immersed_discretization.H"
 #include "../drt_inpar/inpar_problemtype.H"
@@ -231,7 +230,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--DISCRETISATION", *list);
   reader.ReadGidSection("--PROBLEM SIZE", *list);
   reader.ReadGidSection("--PROBLEM TYP", *list);
-  reader.ReadGidSection("--MESHFREE", *list);
+  reader.ReadGidSection("--BINNING STRATEGY", *list);
   reader.ReadGidSection("--IO", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT", *list);
   reader.ReadGidSection("--IO/RUNTIME VTK OUTPUT/STRUCTURE", *list);
@@ -774,37 +773,6 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   nodeset[1] = &dline_fenode;
   nodeset[2] = &dsurf_fenode;
   nodeset[3] = &dvol_fenode;
-  std::map<std::string,Teuchos::RCP<Discretization> >::iterator iter;
-  for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
-  {
-    Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> actdis =
-      Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(iter->second);
-    if (actdis!=Teuchos::null)
-    {
-      int foundit = 0;
-      for(unsigned n=0; n<4; ++n)
-      {
-        for(size_t m=0; m<nodeset[n]->size(); ++m)
-        {
-          std::vector<int> nodes = (*nodeset[n])[m];
-          for (unsigned i=0; i<nodes.size(); ++i)
-          {
-            const int node = nodes[i];
-            foundit = actdis->HaveGlobalNode(node);
-            if (foundit)
-              break;
-          }
-        }
-      }
-
-      int found=0;
-      actdis->Comm().SumAll(&foundit,&found,1);
-      if (found)
-      {
-        actdis->AddNodeSetTopology(nodeset);
-      }
-    }
-  }
 
   // create list of known conditions
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > vc = DRT::INPUT::ValidConditions();
@@ -1321,14 +1289,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fluid:
   case prb_fluid_redmodels:
   {
-    if(distype == "Meshfree")
-    {
-      fluiddis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("fluid",reader.Comm(),MeshfreeParams()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::MeshfreeDiscretizationWriter(fluiddis)));
-    }
-    else if(distype == "HDG")
+    if(distype == "HDG")
     {
       fluiddis = Teuchos::rcp(new DRT::DiscretizationHDG("fluid",reader.Comm()));
 
@@ -1383,38 +1344,26 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_cardiac_monodomain:
   case prb_scatra:
   {
-    // create empty discretizations
-    if(distype == "Meshfree")
+    if(distype == "Nurbs")
     {
-      fluiddis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("fluid",reader.Comm(),MeshfreeParams()));
-      scatradis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("scatra",reader.Comm(),MeshfreeParams()));
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::MeshfreeDiscretizationWriter(fluiddis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::MeshfreeDiscretizationWriter(scatradis)));
+      fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
+    }
+    else if(distype == "HDG")
+    {
+      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::DiscretizationHDG("scatra",reader.Comm()));
     }
     else
     {
-      if(distype == "Nurbs")
-      {
-        fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
-        scatradis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
-      }
-      else if(distype == "HDG")
-      {
-        fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
-        scatradis = Teuchos::rcp(new DRT::DiscretizationHDG("scatra",reader.Comm()));
-      }
-      else
-      {
-        fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
-        scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
-      }
-
-      // create discretization writer - in constructor set into and owned by corresponding discret
-      fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
-      scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+      fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+      scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
     }
+
+    // create discretization writer - in constructor set into and owned by corresponding discret
+    fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
+    scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+
 
     AddDis("fluid", fluiddis);
     AddDis("scatra", scatradis);
@@ -1497,7 +1446,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     break;
   }
   case prb_tsi:
-  case prb_tfsi_aero:
   {
     if(distype == "Nurbs")
     {
@@ -1541,12 +1489,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_structure:
   case prb_invana:
   {
-    if(distype == "Meshfree")
-    {
-      dserror("Meshfree structure not implemented, yet.");
-      structdis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("structure",reader.Comm(),MeshfreeParams()));
-    }
-    else if(distype == "Nurbs")
+    if(distype == "Nurbs")
     {
       structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
     }
@@ -2200,12 +2143,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     // quick check whether to read in structure or airways
     if (fwdprb==INPAR::MLMC::structure)
     {
-      if(distype == "Meshfree")
-      {
-        dserror("Meshfree structure not implemented, yet.");
-        structdis = Teuchos::rcp(new DRT::MESHFREE::MeshfreeDiscretization("structure",reader.Comm(),MeshfreeParams()));
-      }
-      else if(distype == "Nurbs")
+      if(distype == "Nurbs")
       {
         dserror("Meshfree structure not implemented, yet.");
         structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));

@@ -14,8 +14,7 @@
 PROBLEMTYP                      MeshFree
 SHAPEFCT                        Meshfree
 RANDSEED                        1
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   1.0
 BOUNDINGBOX                     -3.000001 -3.000001 -3.000001 3.000001 3.000001 3.000001
 ----------------------------------------------------------STRUCTURAL DYNAMIC

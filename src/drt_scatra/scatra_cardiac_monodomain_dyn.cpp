@@ -20,7 +20,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_particle/binning_strategy.H"
+#include "../drt_binstrategy/binning_strategy.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 

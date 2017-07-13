@@ -47,11 +47,6 @@ private:
 class Element;
 class Discretization;
 
-namespace MESHFREE
-{
-  class MeshfreeDiscretization;
-}
-
 /*!
 \brief A condition of any kind
 
@@ -80,7 +75,6 @@ public:
 
   */
   friend class DRT::Discretization;
-  friend class DRT::MESHFREE::MeshfreeDiscretization;
 
   /*!
   \brief Type of condition

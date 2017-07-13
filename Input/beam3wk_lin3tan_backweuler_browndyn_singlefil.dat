@@ -53,7 +53,7 @@ MAXITER                25
 MASSLIN                rotations
 LOADLIN                yes
 NEGLECTINERTIA         yes
---------------------------------------------------------------------MESHFREE
+--------------------------------------------------------------------BINNING STRATEGY
 PERIODICONOFF          1 1 1
 BOUNDINGBOX            0 0 0 10 10 10
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

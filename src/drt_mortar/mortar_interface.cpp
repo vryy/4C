@@ -33,7 +33,6 @@
 #include "../linalg/linalg_serialdensematrix.H"
 
 #include "../drt_io/io_control.H"
-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
 
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_lib/drt_utils.H"
@@ -43,7 +42,7 @@
 #include <Epetra_Time.h>
 #include <Epetra_SerialComm.h>
 
-#include "../drt_particle/binning_strategy.H"
+#include "../drt_binstrategy/binning_strategy.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_poroelast/poroelast_utils.H"
 
@@ -239,24 +238,9 @@ MORTAR::MortarInterface::MortarInterface(
   // build interface disretization
   if (!nurbs_)
   {
-    if (!imortar_.get("GEO_DECOUPLED", false))
-    {
-      // standard case
-      idiscret_ = Teuchos::rcp(
-          new DRT::Discretization((std::string) "mortar interface", com));
-    }
-    else
-    {
-      // adapt flags in meshfree params
-      Teuchos::RCP<Teuchos::ParameterList> meshfreeparams
-        = Teuchos::rcp(new Teuchos::ParameterList(
-            DRT::Problem::Instance()->MeshfreeParams()));
-      meshfreeparams->set("TYPE", "GeoDecoupled");
-
-      idiscret_ = Teuchos::rcp(
-          new DRT::MESHFREE::MeshfreeDiscretization(
-              (std::string) "mortar interface", com, *meshfreeparams));
-    }
+    // standard case
+    idiscret_ = Teuchos::rcp(
+        new DRT::Discretization((std::string) "mortar interface", com));
   }
   else
   {
@@ -437,16 +421,6 @@ void MORTAR::MortarInterface::AddMortarNode(
 }
 
 /*----------------------------------------------------------------------*
- |  add mortar node to meshfree discretization (public)      ghamm 09/14|
- *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::AddMortarPoint(
-    Teuchos::RCP<MORTAR::MortarNode> mrtrnode)
-{
-  Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(idiscret_, true)->AddPoint(mrtrnode);
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  add mortar element (public)                              mwgee 10/07|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AddMortarElement(
@@ -494,20 +468,6 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
       nodecolmap = MasterColNodes();
     }
 
-    if(imortar_.get<bool>("GEO_DECOUPLED"))
-    {
-      Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> idiscret = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(idiscret_);
-      pointcolmap = Teuchos::rcp(new Epetra_Map(*idiscret->PointColMap()));
-      // delete points on desired side
-      for (int i = 0; i < pointcolmap->NumMyElements(); ++i)
-      {
-        int gid = pointcolmap->GID(i);
-        bool isslave = dynamic_cast<MORTAR::MortarNode*>(idiscret->gPoint(gid))->IsSlave();
-        if (isslave == slaveside)
-          idiscret->DeletePoint(gid);
-      }
-    }
-
     // delete elements on desired side
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
     {
@@ -528,21 +488,6 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
     // extract maps before deleting first element/node/point
     elecolmap = Teuchos::rcp(new Epetra_Map(*idiscret_->ElementColMap()));
     nodecolmap = Teuchos::rcp(new Epetra_Map(*idiscret_->NodeColMap()));
-
-    if(imortar_.get<bool>("GEO_DECOUPLED"))
-    {
-      Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> idiscret = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(idiscret_);
-      pointcolmap = Teuchos::rcp(new Epetra_Map(*idiscret->PointColMap()));
-
-      // delete points on desired side
-      for (int i = 0; i < pointcolmap->NumMyElements(); ++i)
-      {
-        int gid = pointcolmap->GID(i);
-        bool isslave = dynamic_cast<MORTAR::MortarNode*>(idiscret->gPoint(gid))->IsSlave();
-        if (isslave == slaveside)
-          idiscret->DeletePoint(gid);
-      }
-    }
 
     // delete elements on desired side
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)

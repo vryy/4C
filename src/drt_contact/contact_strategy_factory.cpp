@@ -482,9 +482,8 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
               "\nPlease note that the value you have to provide only applies to the element-based integration"
               "\ndomain, while pre-defined default values will be used in the segment-based boundary domain.");
 
-    if ((problemtype!=prb_tfsi_aero &&
-        (inttype == INPAR::MORTAR::inttype_elements || inttype == INPAR::MORTAR::inttype_elements_BS) &&
-        mortar.get<int>("NUMGP_PER_DIM") <= 1))
+    if ( (inttype == INPAR::MORTAR::inttype_elements || inttype == INPAR::MORTAR::inttype_elements_BS) &&
+        mortar.get<int>("NUMGP_PER_DIM") <= 1)
       dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
   } // END MORTAR CHECKS
 
@@ -557,9 +556,6 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(
        * of the contact strategy. */
       break;
   }
-
-  // geometrically decoupled elements cannot be given via input file
-  cparams.set<bool>("GEO_DECOUPLED", false);
 
   // ---------------------------------------------------------------------
   // NURBS contact

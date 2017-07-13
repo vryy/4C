@@ -36,8 +36,7 @@ RESEEDING                       8
 FAST_CHECK                      yes
 RESTARTDATA                     yes
 DELETE_CRITICAL_PARTICLES       3.0
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 BIN_PER_DIR                     51 51 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DIMENSION                       2Dz

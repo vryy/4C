@@ -20,8 +20,8 @@
 #include "../drt_adapter/adapter_particle.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_levelset/levelset_algorithm.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
-#include "../drt_particle/binning_strategy_utils.H"
+#include "../drt_binstrategy/drt_meshfree_multibin.H"
+#include "../drt_binstrategy/binning_strategy_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"

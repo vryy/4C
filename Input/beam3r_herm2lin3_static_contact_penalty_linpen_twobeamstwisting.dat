@@ -63,8 +63,7 @@ BEAMS_MAXDELTADISSCALEFAC       -1.0  //3.0
 //BEAMS_OCTREE                    octree_spherical
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    0.02
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   1.0
 DEFINEXAABBPER                  input

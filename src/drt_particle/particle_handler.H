@@ -13,7 +13,7 @@
 #ifndef PARTICLE_HANDLER_H
 #define PARTICLE_HANDLER_H
 
-#include "binning_strategy.H"
+#include "../drt_binstrategy/binning_strategy.H"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>

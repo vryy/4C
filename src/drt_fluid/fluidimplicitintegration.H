@@ -1314,11 +1314,6 @@ protected:
   Teuchos::RCP<Epetra_Vector> fldgrdisp_;
   //@}
 
-  //! @name Meshfree: velocity and pressure at nodes (for non-interpolatory meshfree basis functions)
-  //@{
-  Teuchos::RCP<Epetra_Vector> velatmeshfreenodes_;
-  //@}
-
   //! Dirichlet BCs with local co-ordinate system
   Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 

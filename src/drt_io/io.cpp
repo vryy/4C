@@ -19,8 +19,6 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
-#include "../drt_meshfree_discret/drt_meshfree_cell.H"
 #include "../drt_fluid_ele/fluid_ele_poro_immersed.H"
 
 #include "../pss_full/pss_cpp.h" // access to legacy parser module
@@ -1695,88 +1693,3 @@ void IO::DiscretizationWriter::ClearMapCache()
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  write mesh for meshfree discretization ;)        (public) nis Jan14 |
- *----------------------------------------------------------------------*/
-void IO::MeshfreeDiscretizationWriter::WriteMesh(
-  const int step,
-  const double time
-  )
-{
-  if(binio_)
-  {
-    // this is post-filter output
-    if ((step==0) and (time==0.0))
-    {
-      // cast needed to ask dis for its Points and NumState
-      Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> dis
-        = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(dis_);
-      if (dis==Teuchos::null)
-        dserror("Could not cast 'dis_' to MeshfreeDiscretization.");
-
-      //------------------------------------------------------------------------
-      // created temporary discretization for post-filter output
-      //------------------------------------------------------------------------
-      DRT::Discretization postfilter_discret(dis_->Name(),
-        Teuchos::rcp<Epetra_Comm>(Comm().Clone()));
-
-      //------------------------------------------------------------------------
-      // fill temporary discretization with elements from original discretization
-      //------------------------------------------------------------------------
-      const int numrowele = dis_->NumMyRowElements();
-      for (int i=0; i<numrowele; ++i)
-      {
-        // get geometry information of cell
-        DRT::MESHFREE::Cell<DRT::Element>* oldcell =
-            dynamic_cast<DRT::MESHFREE::Cell<DRT::Element>*>(dis_->lRowElement(i));
-        if (oldcell==NULL) dserror("Could not cast element to meshfree Cell.");
-        const int numpseudonodes = oldcell->NumPoint();
-        const int* pseudonodeids = oldcell->PointIds();
-
-        // create new element with "standard" finite element geometry information
-        // (i.e. with nodes instead of points)
-        Teuchos::RCP<DRT::Element> newele = Teuchos::rcp((DRT::Element*)(oldcell->Clone()));
-        newele->SetNodeIds(numpseudonodes,pseudonodeids);
-
-        // add this element to temporary discretization
-        postfilter_discret.AddElement(newele);
-      }
-
-      //------------------------------------------------------------------------
-      // add nodes to temporary discretization which are points in the original
-      // discretization
-      //------------------------------------------------------------------------
-      const int numrowpoints = dis->NumMyRowPoints();
-      // loop over row-points and add as node to temporary discretization
-      for (int i=0; i<numrowpoints; ++i)
-      {
-        // get geometry information of node
-        DRT::Node* oldnode = (DRT::Node*)(dis->lRowPoint(i));
-
-        // create new node - element topology is handeled by FillComplete()
-        // from element-to-node-information thoroughly handeled in loop before.
-        Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(oldnode->Clone());
-
-        // add this node to temporary discretization
-        postfilter_discret.AddNode(newnode);
-      }
-
-      //------------------------------------------------------------------------
-      // complete fill of temporary discretization
-      //------------------------------------------------------------------------
-      postfilter_discret.FillComplete(true, true, false);
-
-      //------------------------------------------------------------------------
-      // create DiscretizationWriter for temporary discretization and write mesh
-      //------------------------------------------------------------------------
-      IO::DiscretizationWriter writer(Teuchos::rcpFromRef(postfilter_discret));
-      writer.WriteMesh(step, time);
-    }
-    // this is restart-prep output
-    else
-    {
-      dserror("No restart capability of meshfree discretizations, yet. Feel free "
-          "to implement!!!");
-    }
-  }
-}

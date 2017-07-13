@@ -1003,19 +1003,6 @@ public:
   virtual void AddMortarNode(Teuchos::RCP<MORTAR::MortarNode> mrtrnode);
 
   /*!
-  \brief Add a MORTAR::MortarNode to the interface (Filled()==true NOT prerequisite)
-
-  MortarNode is used as a point within geometrically decoupled mortar elements and thus it
-  need to be stored in a point list in meshfree discretization
-
-  \param mrtrnode (in): Teuchos::rcp to a mortar node
-
-  \return Filled()==false
-
-  */
-  virtual void AddMortarPoint(Teuchos::RCP<MORTAR::MortarNode> mrtrnode);
-
-  /*!
   \brief Add a MORTAR::MortarElement to the interface (Filled()==true is prerequisite)
 
   \param mrtrele (in): Teuchos::rcp to a mortar element

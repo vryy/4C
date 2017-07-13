@@ -20,8 +20,7 @@ Test case for particle DEM involving linear-spring adhesion force:
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
 SHAPEFCT                        Meshfree
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.5
 BOUNDINGBOX                     -0.5 -0.5 -0.5 0.5 0.5 0.5
 ------------------------------------------------------------PARTICLE DYNAMIC

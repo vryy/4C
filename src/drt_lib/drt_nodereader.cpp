@@ -18,8 +18,6 @@
 #include "drt_nodereader.H"
 #include "drt_globalproblem.H"
 #include "../drt_nurbs_discret/drt_control_point.H"
-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
-#include "../drt_meshfree_discret/drt_meshfree_node.H"
 #include "../drt_immersed_problem/immersed_node.H"
 #include "../drt_particle/particle_node.H"
 #include "../drt_particle/particle_radius_node.H"
@@ -298,32 +296,6 @@ void NodeReader::Read()
                 break;
               }
 
-          }
-          // this node is a meshfree point
-          else if (tmp=="POINT")
-          {
-            double coords[3];
-            int nodeid;
-            file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
-            nodeid--;
-            maxnodeid = std::max(maxnodeid, nodeid)+1;
-            if (tmp!="COORD") dserror("failed to read node %d",nodeid);
-            std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(nodeid);
-            for (unsigned i=0; i<diss.size(); ++i)
-            {
-              // create node and add to discretization
-              Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> node = Teuchos::rcp(new DRT::MESHFREE::MeshfreeNode(nodeid,coords,myrank));
-              Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> point = Teuchos::rcp(new DRT::MESHFREE::MeshfreeNode(nodeid,coords,myrank));
-              diss[i]->AddNode(node);
-              Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(diss[i])->AddPoint(point);
-            }
-            ++bcount;
-            if (block != nblock-1) // last block takes all the rest
-              if (bcount==bsize)   // block is full
-              {
-                ++filecount;
-                break;
-              }
           }
           // this node is a Nurbs control point
           else if (tmp=="CP")

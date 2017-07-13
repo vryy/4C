@@ -15,6 +15,8 @@
 
 
 #include "drt_utils_parallel.H"
+
+#include "../drt_binstrategy/binning_strategy.H"
 #include "drt_utils_createdis.H"
 #include "drt_node.H"
 #include "drt_discret.H"
@@ -22,7 +24,6 @@
 
 #include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
-#include "../drt_particle/binning_strategy.H"
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../drt_lib/drt_condition.H"
 

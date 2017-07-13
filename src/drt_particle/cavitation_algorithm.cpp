@@ -28,7 +28,7 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/cavitationfluid.H"
 #include "../drt_mat/particle_mat.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
+#include "../drt_binstrategy/drt_meshfree_multibin.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"

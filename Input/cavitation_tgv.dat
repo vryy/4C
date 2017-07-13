@@ -22,8 +22,7 @@ PROBLEMTYP                      Cavitation
 RESTART                         0
 -----------------------------------------------------------------IO
 VERBOSITY                       Standard
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 PERIODICONOFF                   1 1 0
 DEFINEXAABBPER                  input

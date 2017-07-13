@@ -27,7 +27,7 @@
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
+#include "../drt_binstrategy/drt_meshfree_multibin.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_coordtrafo.H"

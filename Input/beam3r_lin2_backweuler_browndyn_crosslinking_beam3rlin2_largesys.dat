@@ -44,7 +44,7 @@ MAXITER                         25
 NEGLECTINERTIA                  yes
 ---------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1
----------------------------------------------------------MESHFREE
+------------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   0.4
 PERIODICONOFF                   1 1 1

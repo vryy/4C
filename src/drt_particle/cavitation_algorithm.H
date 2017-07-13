@@ -24,7 +24,7 @@
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 #include "../drt_inpar/inpar_cavitation.H"
-#include "../drt_particle/binning_strategy_utils.H"
+#include "../drt_binstrategy/binning_strategy_utils.H"
 #include "../drt_lib/drt_element.H"
 
 #include "Epetra_MpiComm.h"

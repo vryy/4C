@@ -29,7 +29,6 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
 {
   fluiddis_= fluid.discret_;
   mysol_   = fluid.velnp_;
-  myvan_   = fluid.velatmeshfreenodes_;
   mytraction_ = fluid.stressmanager_->GetPreCalcStresses(fluid.trueresidual_);
   mywss_ = fluid.stressmanager_->GetPreCalcWallShearStresses(fluid.trueresidual_);
   myerror_ = fluid.EvaluateErrorComparedToAnalyticalSol();
@@ -93,22 +92,6 @@ void FLD::FluidResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, 
         if (fluiddis_->NumDof(0,actnode)<(numdim+1))
           dserror("too few dofs at node %d for pressure testing",actnode->Id());
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(0,actnode,numdim))];
-      }
-      else if (position=="van_velx")
-        result = (*myvan_)[velnpmap.LID(fluiddis_->Dof(0,actnode,0))];
-      else if (position=="van_vely")
-        result = (*myvan_)[velnpmap.LID(fluiddis_->Dof(0,actnode,1))];
-      else if (position=="van_velz")
-      {
-        if (numdim==2)
-          dserror("Cannot test result for velz in 2D case.");
-        result = (*myvan_)[velnpmap.LID(fluiddis_->Dof(0,actnode,2))];
-      }
-      else if (position=="van_pres")
-      {
-        if (fluiddis_->NumDof(0,actnode)<(numdim+1))
-          dserror("too few dofs at node %d for pressure testing",actnode->Id());
-        result = (*myvan_)[velnpmap.LID(fluiddis_->Dof(0,actnode,numdim))];
       }
       else if (position=="tractionx")
         result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(0,actnode,0))];

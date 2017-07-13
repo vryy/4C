@@ -136,8 +136,7 @@ PARTICLEBANDWIDTH               3.0
 RESEEDING                       40
 FAST_CHECK                      yes
 RESTARTDATA                     yes
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 BIN_PER_DIR                     45 80 1
 ------------------------------------------------------------PARTICLE DYNAMIC
 DIMENSION                       2Dz

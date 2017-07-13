@@ -41,7 +41,7 @@
 
 #include "../drt_mat/crosslinkermat.H"
 #include "../drt_beam3/beam3_base.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
+#include "../drt_binstrategy/drt_meshfree_multibin.H"
 #include "beaminteraction_calc_utils.H"
 
 

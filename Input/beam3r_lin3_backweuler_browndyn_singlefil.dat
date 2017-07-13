@@ -37,7 +37,7 @@ TOLRES                 1.0E-08
 MAXITER                25
 MASSLIN                rotations
 NEGLECTINERTIA         yes
---------------------------------------------------------------------MESHFREE
+--------------------------------------------------------------------BINNING STRATEGY
 PERIODICONOFF          1 1 1
 BOUNDINGBOX            -20 -20 -20 -10 -10 -10
 ------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA

@@ -288,7 +288,7 @@ public:
   /// @name Input parameter sections
   /// direct access to parameters from input file sections
 
-  const Teuchos::ParameterList& MeshfreeParams() const { return getParameterList()->sublist("MESHFREE"); }
+  const Teuchos::ParameterList& BinningStrategyParams() const { return getParameterList()->sublist("BINNING STRATEGY"); }
   const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
   const Teuchos::ParameterList& DesignDescriptionParams() const { return getParameterList()->sublist("DESIGN DESCRIPTION"); }
   const Teuchos::ParameterList& PatSpecParams() const { return getParameterList()->sublist("PATIENT SPECIFIC"); }

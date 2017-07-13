@@ -22,8 +22,6 @@
 #include "../drt_fluid_turbulence/boxfilter.H"
 #include "../drt_fluid/fluid_utils.H"
 
-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
-
 #include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
@@ -145,12 +143,6 @@ void FLD::TimIntStationary::SolveStationaryProblem()
     //                     solve equation system
     // -------------------------------------------------------------------
     Solve();
-
-    // -------------------------------------------------------------------
-    //   compute values at nodes from nodal values for non-interpolatory basis functions
-    // -------------------------------------------------------------------
-    if (velatmeshfreenodes_!=Teuchos::null)
-      Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_)->ComputeValuesAtNodes(velnp_, velatmeshfreenodes_);
 
     // -------------------------------------------------------------------
     //                        compute flow rates

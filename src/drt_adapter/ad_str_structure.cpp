@@ -42,7 +42,7 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_poroelast.H"
-#include "../drt_inpar/inpar_meshfree.H"
+#include "../drt_inpar/inpar_binningstrategy.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>

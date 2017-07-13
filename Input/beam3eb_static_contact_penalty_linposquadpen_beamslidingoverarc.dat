@@ -72,8 +72,7 @@ BEAMS_MAXDISISCALEFAC           -1.0
 BEAMS_MAXDELTADISSCALEFAC       -1.0
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   5
 DEFINEXAABBPER                  input

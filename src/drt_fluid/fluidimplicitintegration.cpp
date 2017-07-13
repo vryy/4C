@@ -62,8 +62,6 @@
 #include "../drt_mat/newtonianfluid.H"
 #include "fluidimpedancecondition.H"
 
-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
-
 // print error file for function EvaluateErrorComparedToAnalyticalSol()
 #include "../drt_io/io_control.H"
 
@@ -116,7 +114,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   msht_(INPAR::FLUID::no_meshtying),
   facediscret_(Teuchos::null),
   fldgrdisp_(Teuchos::null),
-  velatmeshfreenodes_(Teuchos::null),
   locsysman_(Teuchos::null),
   impedancebc_(Teuchos::null),
   isimpedancebc_(false),
@@ -2985,12 +2982,6 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   velnm_->Update(1.0,*veln_ ,0.0);
   veln_ ->Update(1.0,*velnp_,0.0);
 
-  // compute values at nodes from nodal values for non-interpolatory basis functions
-  if (velatmeshfreenodes_!=Teuchos::null)
-  {
-    Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_)->ComputeValuesAtNodes(veln_, velatmeshfreenodes_);
-  }
-
   // displacement vectors for ALE
   if (alefluid_)
   {
@@ -3318,16 +3309,6 @@ void FLD::FluidImplicitTimeInt::Output()
     {
       output_->WriteVector("xwall_enrvelnp",xwall_->GetOutputVector(velnp_));
       output_->WriteVector("xwall_tauw",xwall_->GetTauwVector());
-    }
-
-    // velocity/pressure at nodes for meshfree problems with non-interpolatory basis functions
-    if(velatmeshfreenodes_!=Teuchos::null)
-    {
-      // velocity/pressure values at meshfree nodes
-      output_->WriteVector("velatmeshfreenodes",velatmeshfreenodes_);
-      // (hydrodynamic) pressure values at meshfree nodes
-      Teuchos::RCP<Epetra_Vector> pressureatmeshfreenodes = velpressplitter_->ExtractCondVector(velatmeshfreenodes_);
-      output_->WriteVector("pressureatmeshfreenodes", pressureatmeshfreenodes);
     }
 
     if (params_->get<bool>("GMSH_OUTPUT"))
@@ -6154,12 +6135,6 @@ void FLD::FluidImplicitTimeInt::Reset(
     // (only required for low-Mach-number case)
     scaaf_ = LINALG::CreateVector(*dofrowmap,true);
     scaam_ = LINALG::CreateVector(*dofrowmap,true);
-
-    // velocity/pressure at nodes for meshfree non-interpolatory basis functions
-    Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> meshfreediscret
-    = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_);
-    if (meshfreediscret!=Teuchos::null)
-      velatmeshfreenodes_ = LINALG::CreateVector(*dofrowmap,true);
 
     // history vector
     hist_ = LINALG::CreateVector(*dofrowmap,true);

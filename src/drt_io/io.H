@@ -401,28 +401,6 @@ protected:
   bool binio_;
 };
 
-/*!
-  \brief The output context of a meshfree discretization
-
-  \author Keijo Nissen
-  \date Jan14
-*/
-class MeshfreeDiscretizationWriter : public DiscretizationWriter
-{
-public:
-
-  /*!
-    Writer constructor always needs a discretization
-    Use default control file from global problem.
-   */
-  MeshfreeDiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis)
-    : DiscretizationWriter(dis)
-  {};
-
-  //! write new "field" group to control file including node and element chunks
-  virtual void WriteMesh(const int step, const double time);
-};
-
 
 }
 

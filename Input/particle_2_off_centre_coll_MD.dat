@@ -31,8 +31,7 @@ FLUID_VIS                       No
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   1.0
 BOUNDINGBOX                     -10.000001 -10.000001 -10.000001 10.000001 10.000001 10.000001
 ----------------------------------------------------------STRUCTURAL DYNAMIC

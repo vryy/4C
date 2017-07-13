@@ -74,34 +74,6 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
     &tsidyn
     );
 
-  // scaling factor for AeroTFSI problems when length unit other than SI [m] is used
-  setStringToIntegralParameter<double>("TFSI_length_unit","m",
-    "Used unit for extension in the structural model in AeroTFSI",
-    tuple<std::string>(
-      "m",
-      "cm",
-      "mm"),
-    tuple<double>(
-      1.0,
-      100.0,
-      1000.0),
-    &tsidyn
-    );
-
-  // scaling factor for AeroTFSI problems when time unit other than SI [s] is used
-  setStringToIntegralParameter<double>("TFSI_time_unit","s",
-    "Used unit for time in the structural model in AeroTFSI",
-    tuple<std::string>(
-      "s",
-      "ms",
-      "mikros"),
-    tuple<double>(
-      1.0,
-      1.0e3,
-      1.0e6),
-    &tsidyn
-    );
-
   // output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);
 

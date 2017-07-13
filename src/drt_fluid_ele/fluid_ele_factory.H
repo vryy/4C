@@ -26,7 +26,6 @@ namespace DRT
 namespace ELEMENTS
 {
   class FluidEleInterface;
-  class MeshfreeFluidCellInterface;
 
 /*--------------------------------------------------------------------------*/
 /*!
@@ -52,9 +51,6 @@ public:
   //! special ProvideImpl for XFEM problems to reduce created template combinations
   static FluidEleInterface* ProvideImplXFEM(DRT::Element::DiscretizationType distype, std::string problem);
 
-  //! special ProvideImpl for meshfree problems to reduce created template combinations
-  static MeshfreeFluidCellInterface* ProvideImplMeshfree(DRT::Element::DiscretizationType distype, std::string problem);
-
 private:
   //! define FluidEle instances dependent on problem
   template<DRT::Element::DiscretizationType distype>
@@ -63,10 +59,6 @@ private:
   //! special DefineProblemTypeXFEM for XFEM problems
   template<DRT::Element::DiscretizationType distype>
   static FluidEleInterface* DefineProblemTypeXFEM(std::string problem);
-
-  //! special DefineProblemTypeMeshfree for Meshfree problems
-  template<DRT::Element::DiscretizationType distype>
-  static MeshfreeFluidCellInterface* DefineProblemTypeMeshfree(std::string problem);
 
 }; // end class FluidFactory
 

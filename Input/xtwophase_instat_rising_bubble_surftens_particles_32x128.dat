@@ -163,8 +163,7 @@ MIN_RADIUS                      0.1
 MAX_RADIUS                      0.5
 RESEEDING                       10000
 RESTARTDATA                     No  //Yes?
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 //CUTOFF_RADIUS                   0.05
 BIN_PER_DIR                     32 128 1
 ------------------------------------------------------------PARTICLE DYNAMIC

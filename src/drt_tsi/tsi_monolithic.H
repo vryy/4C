@@ -54,12 +54,6 @@ namespace ADAPTER
  class MortarVolCoupl;
 }
 
-namespace FS3I
-{
-  class AeroTFSI;
-}
-
-
 //! TSI: Thermo-Structure Interaction
 namespace TSI
 {
@@ -90,8 +84,6 @@ namespace TSI
   //!  \date 02/08
   class Monolithic : public Algorithm
   {
-    friend class FS3I::AeroTFSI;
-
   public:
 
     explicit Monolithic(

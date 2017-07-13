@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file tsi_algorithm.H
+\file tsi_partitioned.H
 
 \brief Basis of all TSI algorithms that perform a coupling between the
        structural field equation and temperature field equations
 
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
+\maintainer Alexander Seitz
+
+\level 2
 */
 
 
@@ -26,16 +23,6 @@
  *----------------------------------------------------------------------*/
 #include "tsi_algorithm.H"
 #include "../drt_inpar/inpar_tsi.H"
-
-
-/*----------------------------------------------------------------------*
- | forward declarations                                      dano 02/12 |
- *----------------------------------------------------------------------*/
-namespace FS3I
-{
-  class AeroTFSI;
-}
-
 
 /*----------------------------------------------------------------------*
  |                                                           dano 12/09 |
@@ -62,7 +49,6 @@ namespace TSI
   //!  \date 02/08
   class Partitioned : public Algorithm
   {
-    friend class FS3I::AeroTFSI;
   public:
 
     //! create using a Epetra_Comm

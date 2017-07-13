@@ -21,8 +21,6 @@
 #include "particleMeshFree_rendering.H"
 #include "particleMeshFree_interaction.H"
 #include "../drt_adapter/adapter_particle.H"
-#include "binning_strategy.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_parmetis.H"
@@ -30,8 +28,6 @@
 #include "../drt_lib/drt_dofset_independent.H"
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
-#include "../drt_inpar/inpar_meshfree.H"
 #include "../drt_inpar/inpar_particle.H"
 #include "../drt_mat/particle_mat.H"
 #include "../drt_mat/extparticle_mat.H"
@@ -50,6 +46,9 @@
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
 
+#include "../drt_binstrategy/binning_strategy.H"
+#include "../drt_binstrategy/drt_meshfree_multibin.H"
+#include "../drt_inpar/inpar_binningstrategy.H"
 #include "particle_heatSource.H"
 #include "particle_node.H"
 
@@ -73,11 +72,6 @@ PARTICLE::Algorithm::Algorithm(
   bin_wallcontent_(BINSTRATEGY::UTILS::BELE3),
   rendering_(Teuchos::null)
 {
-  const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
-  // safety check
-  INPAR::MESHFREE::meshfreetype meshfreetype = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(meshfreeparams,"TYPE");
-  if (meshfreetype!=INPAR::MESHFREE::particle)
-    dserror("MESHFREE -> TYPE must be Particle in input file.");
 
   //Check number of space dimensions chosen for meshfree weight functions
   if(particleInteractionType_==INPAR::PARTICLE::MeshFree)

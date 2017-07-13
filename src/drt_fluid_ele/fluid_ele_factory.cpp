@@ -28,10 +28,6 @@
 #include "fluid_ele_calc_xwall.H"
 #include "fluid_ele_calc_hdg.H"
 
-#include "../drt_meshfree_discret/meshfree_fluid_cell_interface.H"
-
-#include "../drt_meshfree_discret/meshfree_fluid_cell_calc_std.H"
-
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
@@ -208,50 +204,4 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
 
   return NULL;
 }
-
-/*--------------------------------------------------------------------------*
- |  special implementation of ProvideImpl for meshfree problems             |
- |  to reduce created template combination               (public) nis Nov13 |
- *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::MeshfreeFluidCellInterface* DRT::ELEMENTS::FluidFactory::ProvideImplMeshfree(DRT::Element::DiscretizationType distype, std::string problem)
-{
-  switch(distype)
-  {
-    case DRT::Element::hex8:
-    {
-      return DefineProblemTypeMeshfree<DRT::Element::hex8>(problem);
-    }
-    case DRT::Element::tet4:
-    {
-      return DefineProblemTypeMeshfree<DRT::Element::tet4>(problem);
-    }
-    case DRT::Element::quad4:
-    {
-      return DefineProblemTypeMeshfree<DRT::Element::quad4>(problem);
-    }
-    case DRT::Element::tri3:
-    {
-      return DefineProblemTypeMeshfree<DRT::Element::tri3>(problem);
-    }
-    default:
-      dserror("Element shape %s not activated for meshfree problems. ",DRT::DistypeToString(distype).c_str());
-      break;
-    }
-  return NULL;
-}
-
-/*--------------------------------------------------------------------------*
- |                                                       (public) nis Nov13 |
- *--------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::MeshfreeFluidCellInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeMeshfree(std::string problem)
-{
-  if (problem == "std_meshfree")
-    return DRT::ELEMENTS::MeshfreeFluidCellCalcStd<distype>::Instance();
-  else
-    dserror("Defined problem type does not exist for meshfree problems!!");
-
-  return NULL;
-}
-
 

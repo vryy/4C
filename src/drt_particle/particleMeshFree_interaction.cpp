@@ -33,11 +33,11 @@
 #include "particle_heatSource.H"
 #include "particle_utils.H"
 #include "../drt_adapter/ad_str_structure.H"
+#include "../drt_binstrategy/drt_meshfree_multibin.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/extparticle_mat.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_coordtrafo.H"
@@ -218,7 +218,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::BuildPeriodicBC()
 {
 
   std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      DRT::Problem::Instance()->MeshfreeParams(),"PERIODICONOFF"));
+      DRT::Problem::Instance()->BinningStrategyParams(),"PERIODICONOFF"));
 
   bool periodic_bcs=false;
 
@@ -254,7 +254,7 @@ void PARTICLE::ParticleMeshFreeInteractionHandler::BuildPeriodicBC()
     // get bounding box specified in the input file
     box.PutScalar(1.0e12);
     std::istringstream xaabbstream( Teuchos::getNumericStringParameter(
-        DRT::Problem::Instance()->MeshfreeParams(),"BOUNDINGBOX") );
+        DRT::Problem::Instance()->BinningStrategyParams(),"BOUNDINGBOX") );
     for( int col = 0; col < 2; ++col )
     {
       for( int row = 0; row < 3; ++row )

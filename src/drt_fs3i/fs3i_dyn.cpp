@@ -21,7 +21,6 @@
 #include "fs3i_partitioned_2wc.H"
 #include "biofilm_fsi.H"
 #include "ac_fsi.H"
-#include "aero_tfsi.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_comm/comm_utils.H"
@@ -62,11 +61,6 @@ void fs3i_dyn()
     case prb_biofilm_fsi:
     {
       fs3i = Teuchos::rcp(new FS3I::BiofilmFSI(comm));
-    }
-    break;
-    case prb_tfsi_aero:
-    {
-      fs3i = Teuchos::rcp(new FS3I::AeroTFSI(comm));
     }
     break;
     case prb_fps3i:

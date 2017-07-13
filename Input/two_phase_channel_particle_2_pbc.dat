@@ -114,8 +114,7 @@ MAX_RADIUS                      0.5
 NUMPARTICLE                     2
 PARTICLEBANDWIDTH               1.0
 FAST_CHECK                      yes
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   binsperdir
 PERIODICONOFF                   1 0 1
 DEFINEXAABBPER                  input

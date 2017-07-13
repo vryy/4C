@@ -2028,7 +2028,6 @@ int main(int argc, char** argv)
       break;
     }
     case prb_tsi:
-    case prb_tfsi_aero:
     {
       if(infieldtype == "structure")
       {

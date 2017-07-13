@@ -24,7 +24,6 @@ Maintainer: Martin Kronbichler
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem_enums.H"
 #include "inpar.H"
-#include "inpar_meshfree.H"
 #include "inpar_ale.H"
 #include "inpar_solver.H"
 #include "inpar_solver_nonlin.H"
@@ -76,6 +75,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_loca_continuation.H"
 #include "../drt_tutorial/inpar_tutorial.H"
 #include "inpar_beaminteraction.H"
+#include "inpar_binningstrategy.H"
 #include "inpar_browniandyn.H"
 #include "inpar_cardiovascular0d.H"
 #include "inpar_contact_xcontact.H"
@@ -697,7 +697,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::ACOU::SetValidParameters(list);
 
   INPAR::GEO::SetValidParameters(list);
-  INPAR::MESHFREE::SetValidParameters(list);
+  INPAR::BINSTRATEGY::SetValidParameters(list);
   INPAR::PASI::SetValidParameters(list);
 
   INPAR::SOLVER::SetValidParameters(list);

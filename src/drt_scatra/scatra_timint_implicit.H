@@ -535,9 +535,6 @@ public:
   //! return scalar field phi at time n+1
   Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
 
-  //! return values of scalar field phi at nodes (meshfree)
-  Teuchos::RCP<const Epetra_Vector> Phiatmeshfreenodes() const { return phiatmeshfreenodes_; }
-
   //! return time derivative of scalar field phi at time n
   Teuchos::RCP<Epetra_Vector> Phidtn() { return phidtn_; }
 
@@ -1110,8 +1107,6 @@ protected:
   Teuchos::RCP<Epetra_Vector> phin_;
   //! phi at time n+1
   Teuchos::RCP<Epetra_Vector> phinp_;
-  //! phi at meshfree nodes (for non-interpolatory meshfree basis functions)
-  Teuchos::RCP<Epetra_Vector> phiatmeshfreenodes_;
 
   //! time derivative of phi at time n
   Teuchos::RCP<Epetra_Vector> phidtn_;

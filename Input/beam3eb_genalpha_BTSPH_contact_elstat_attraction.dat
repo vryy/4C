@@ -51,7 +51,7 @@ NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         25
 LOADLIN                         Yes
---------------------------------------------------------------------MESHFREE
+--------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER                   cutoff
 CUTOFF_RADIUS                   8
 DEFINEXAABBPER                  input

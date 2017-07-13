@@ -42,12 +42,6 @@ class CoTSILagrangeStrategy;
 class CoNitscheStrategyTsi;
 }
 
-namespace FS3I
-{
-  class AeroTFSI;
-}
-
-
 namespace ADAPTER
 {
   class Thermo;
@@ -82,7 +76,6 @@ namespace TSI
   //!  \date 02/08
   class Algorithm : public ADAPTER::AlgorithmBase
   {
-    friend class FS3I::AeroTFSI;
 
   public:
 

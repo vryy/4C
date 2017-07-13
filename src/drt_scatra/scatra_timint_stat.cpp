@@ -18,8 +18,6 @@
 
 #include "../drt_io/io.H"
 
-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
-
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -236,10 +234,6 @@ void SCATRA::TimIntStationary::Update(const int num)
     if (DoOutput() or DoBoundaryFluxStatistics())
       CalcFlux(true, num);
   }
-
-  // compute values at nodes from nodal values for non-interpolatory basis functions
-  if (phiatmeshfreenodes_!=Teuchos::null)
-    Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_)->ComputeValuesAtNodes(phinp_, phiatmeshfreenodes_);
 
   return;
 };

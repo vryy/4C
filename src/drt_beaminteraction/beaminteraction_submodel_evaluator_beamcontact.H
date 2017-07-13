@@ -16,7 +16,7 @@
 #define BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_H_
 
 
-#include "../drt_particle/binning_strategy_utils.H"
+#include "../drt_binstrategy/binning_strategy_utils.H"
 #include "beaminteraction_submodel_evaluator_generic.H"
 
 //forward declaration ...

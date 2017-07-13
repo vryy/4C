@@ -35,8 +35,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_meshfree_discret/drt_meshfree_multibin.H"
-#include "../drt_inpar/inpar_meshfree.H"
+#include "drt_meshfree_multibin.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_dofset_independent.H"
 
@@ -47,6 +46,7 @@
 #include "../drt_particle/particle_algorithm.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beam3/beam3_base.H"
+#include "../drt_inpar/inpar_binningstrategy.H"
 
 
 /*----------------------------------------------------------------------*
@@ -58,7 +58,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy() :
     cutoff_radius_(0.0),
     XAABB_(true),
     deforming_simulation_domain_handler(Teuchos::null),
-    writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
+    writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Problem::Instance()->BinningStrategyParams(),("WRITEBINS"))),
     havepbc_(false),
     particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION"))
 {
@@ -90,20 +90,20 @@ void BINSTRATEGY::BinningStrategy::Init(
   bindis_ = bindis;
   //
   deforming_simulation_domain_handler = pbb;
-  // meshfree params
-  const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
+  // binning strategy params
+  const Teuchos::ParameterList& binstrategyparams = DRT::Problem::Instance()->BinningStrategyParams();
 
   // get type of bounding box specification
-  INPAR::MESHFREE::xaabbspectype xaabbpectype =
-      DRT::INPUT::IntegralValue<INPAR::MESHFREE::xaabbspectype>(meshfreeparams,"DEFINEXAABBPER");
+  INPAR::BINSTRATEGY::xaabbspectype xaabbpectype =
+      DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::xaabbspectype>(binstrategyparams,"DEFINEXAABBPER");
 
   switch (xaabbpectype)
   {
-    case INPAR::MESHFREE::input:
+    case INPAR::BINSTRATEGY::input:
     {
       XAABB_.PutScalar(1.0e12);
       // get bounding box specified in the input file
-      std::istringstream xaabbstream(Teuchos::getNumericStringParameter(meshfreeparams,"BOUNDINGBOX"));
+      std::istringstream xaabbstream(Teuchos::getNumericStringParameter(binstrategyparams,"BOUNDINGBOX"));
       for(int col=0; col<2; col++)
       {
         for(int row=0; row<3; row++)
@@ -118,7 +118,7 @@ void BINSTRATEGY::BinningStrategy::Init(
 
       break;
     }
-    case INPAR::MESHFREE::dynamic:
+    case INPAR::BINSTRATEGY::dynamic:
     {
       CreateXAABB(discret, disnp, XAABB_);
       break;
@@ -131,20 +131,20 @@ void BINSTRATEGY::BinningStrategy::Init(
   }
 
   // get type for bin specification
-  INPAR::MESHFREE::binspectype binspectype =
-      DRT::INPUT::IntegralValue<INPAR::MESHFREE::binspectype>(meshfreeparams,"DEFINEBINSPER");
+  INPAR::BINSTRATEGY::binspectype binspectype =
+      DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::binspectype>(binstrategyparams,"DEFINEBINSPER");
 
   switch (binspectype)
   {
-    case INPAR::MESHFREE::cutoff:
+    case INPAR::BINSTRATEGY::cutoff:
     {
       // get cutoff radius
-      cutoff_radius_ = meshfreeparams.get<double>("CUTOFF_RADIUS");
+      cutoff_radius_ = binstrategyparams.get<double>("CUTOFF_RADIUS");
       if(cutoff_radius_<0.0)
         dserror("Negative cutoff radius set in input file for definition of bins. Fix it ...");
 
       // some check
-      std::istringstream binstream(Teuchos::getNumericStringParameter(meshfreeparams,"BIN_PER_DIR"));
+      std::istringstream binstream(Teuchos::getNumericStringParameter(binstrategyparams,"BIN_PER_DIR"));
       for(int idim=0; idim<3; idim++)
       {
         int val = -1;
@@ -157,10 +157,10 @@ void BINSTRATEGY::BinningStrategy::Init(
       }
       break;
     }
-    case INPAR::MESHFREE::binsperdir:
+    case INPAR::BINSTRATEGY::binsperdir:
     {
       // get number of bins per direction
-      std::istringstream binstream(Teuchos::getNumericStringParameter(meshfreeparams,"BIN_PER_DIR"));
+      std::istringstream binstream(Teuchos::getNumericStringParameter(binstrategyparams,"BIN_PER_DIR"));
       for(int idim=0; idim<3; idim++)
       {
         int val = -1;
@@ -184,7 +184,7 @@ void BINSTRATEGY::BinningStrategy::Init(
 
       break;
     }
-    case INPAR::MESHFREE::largestele:
+    case INPAR::BINSTRATEGY::largestele:
     {
       // todo:
       dserror("Biopolynet: unshifted configuration is needed (not yet here) for calculation of cutoff.");
@@ -236,7 +236,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     cutoff_radius_(cutoff_radius),
     XAABB_(XAABB),
     deforming_simulation_domain_handler(Teuchos::null),
-    writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
+    writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Problem::Instance()->BinningStrategyParams(),("WRITEBINS"))),
     havepbc_(false),
     particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
     myrank_(comm.MyPID())
@@ -275,17 +275,17 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     cutoff_radius_(0.0),
     XAABB_(true),
     deforming_simulation_domain_handler(Teuchos::null),
-    writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
+writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Problem::Instance()->BinningStrategyParams(),("WRITEBINS"))),
     havepbc_(false),
     particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
     myrank_(comm.MyPID())
 {
-  const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
+  const Teuchos::ParameterList& binstrategyparams = DRT::Problem::Instance()->BinningStrategyParams();
 
   // get cutoff radius
-  cutoff_radius_ = meshfreeparams.get<double>("CUTOFF_RADIUS");
+  cutoff_radius_ = binstrategyparams.get<double>("CUTOFF_RADIUS");
   // get number of bins per direction
-  std::istringstream binstream(Teuchos::getNumericStringParameter(meshfreeparams,"BIN_PER_DIR"));
+  std::istringstream binstream(Teuchos::getNumericStringParameter(binstrategyparams,"BIN_PER_DIR"));
   for(int idim=0; idim<3; idim++)
   {
     int val = -1;
@@ -300,7 +300,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
 
   XAABB_.PutScalar(1.0e12);
   // get bounding box specified in the input file
-  std::istringstream xaabbstream(Teuchos::getNumericStringParameter(meshfreeparams,"BOUNDINGBOX"));
+  std::istringstream xaabbstream(Teuchos::getNumericStringParameter(binstrategyparams,"BOUNDINGBOX"));
   for(int col=0; col<2; col++)
   {
     for(int row=0; row<3; row++)
@@ -334,7 +334,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     cutoff_radius_(0.0),
     XAABB_(true),
     deforming_simulation_domain_handler(Teuchos::null),
-    writebinstype_(DRT::INPUT::IntegralValue<INPAR::MESHFREE::compltype>(DRT::Problem::Instance()->MeshfreeParams(),("WRITEBINS"))),
+  writebinstype_(DRT::INPUT::IntegralValue<INPAR::BINSTRATEGY::writebins>(DRT::Problem::Instance()->BinningStrategyParams(),("WRITEBINS"))),
     havepbc_(false),
     particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
     myrank_(dis[0]->Comm().MyPID())
@@ -2060,7 +2060,7 @@ void BINSTRATEGY::BinningStrategy::CreateXAABB(
 void BINSTRATEGY::BinningStrategy::BuildPeriodicBC()
 {
   std::istringstream periodicbc(Teuchos::getNumericStringParameter(
-      DRT::Problem::Instance()->MeshfreeParams(),"PERIODICONOFF"));
+      DRT::Problem::Instance()->BinningStrategyParams(),"PERIODICONOFF"));
 
   // loop over all spatial directions
   for(int dim=0; dim<3; ++dim)
@@ -2441,7 +2441,7 @@ LINALG::Matrix<3,1> BINSTRATEGY::BinningStrategy::GetBinCentroid(const int binId
 void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const time)
 {
   // no bin output
-  if( writebinstype_ == INPAR::MESHFREE::none )
+  if( writebinstype_ == INPAR::BINSTRATEGY::none )
     return;
 
   // -------------------------------------------------------------------------
@@ -2498,7 +2498,7 @@ void BINSTRATEGY::BinningStrategy::WriteBinOutput(int const step, double const t
 
   // get max gid before adding elements
   int maxgid = bindis_->ElementRowMap()->MaxAllGID() + 1;
-  if( writebinstype_ == INPAR::MESHFREE::cols )
+  if( writebinstype_ == INPAR::BINSTRATEGY::cols )
   {
     // gather all numbers of ghosted bins that are going to be row eles
     std::vector<int> nummycol(1);

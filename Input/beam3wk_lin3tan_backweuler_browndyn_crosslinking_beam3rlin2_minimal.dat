@@ -41,8 +41,7 @@ NEGLECTINERTIA         yes
 MASSLIN                rotations
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                  1
-----------------------------------------------------------MESHFREE
-TYPE                   Particle
+-------------------------------------------------------------------------BINNING STRATEGY
 DEFINEBINSPER          cutoff
 CUTOFF_RADIUS          2
 PERIODICONOFF          1 1 1

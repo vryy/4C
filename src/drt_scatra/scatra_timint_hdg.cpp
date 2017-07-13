@@ -29,7 +29,7 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
-#include "../drt_particle/binning_strategy.H"
+#include "../drt_binstrategy/binning_strategy.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |

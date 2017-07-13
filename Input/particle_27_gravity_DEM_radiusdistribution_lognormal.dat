@@ -17,8 +17,7 @@ Test case for particle DEM:
 PROBLEMTYP                      Particle
 SHAPEFCT                        Meshfree
 RANDSEED                        1
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.035
 BOUNDINGBOX                     -0.050001 -0.050001 -0.080001 0.050001 0.050001 0.080001
 ----------------------------------------------------------STRUCTURAL DYNAMIC

@@ -22,7 +22,6 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
   {
     // problem types in alphabetical order
     string2prbtype["Acoustics"]                                        = prb_acou;
-    string2prbtype["AeroCode_Thermo_Fluid_Structure_Interaction"]      = prb_tfsi_aero;
     string2prbtype["Ale"]                                              = prb_ale;
     string2prbtype["ArterialNetwork"]                                  = prb_art_net;
     string2prbtype["Atherosclerosis_Fluid_Structure_Interaction"]      = prb_ac_fsi;

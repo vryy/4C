@@ -30,8 +30,7 @@ WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
 VERBOSITY                       Standard
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.01
 BOUNDINGBOX                     3.98 3.98 11.98 4.02 4.02 12.02
 ----------------------------------------------------------PARTICLE DYNAMIC

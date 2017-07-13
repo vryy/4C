@@ -29,10 +29,6 @@ namespace DRT
 // forward declarations
 class Element;
 class Discretization;
-namespace MESHFREE
-{
-  class MeshfreeDiscretization;
-}
 
 class NodeType : public DRT::ParObjectType
 {
@@ -64,7 +60,6 @@ public:
   \brief The Discretization is a friend of Node
   */
   friend class Discretization;
-  friend class MESHFREE::MeshfreeDiscretization;
 
   //@}
 

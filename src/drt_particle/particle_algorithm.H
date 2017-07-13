@@ -25,7 +25,7 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "particle_handler.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_particle/binning_strategy_utils.H"
+#include "../drt_binstrategy/binning_strategy_utils.H"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>

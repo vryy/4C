@@ -117,10 +117,6 @@ double SCATRA::ScaTraResultTest::ResultNode(
     result = (*scatratimint_->Phinp())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,k))];
   }
 
-  // test result in meshfree case
-  else if(quantity == "van_phi")
-    result = (*scatratimint_->Phiatmeshfreenodes())[phinpmap.LID(scatratimint_->Discretization()->Dof(0,node,0))];
-
   // test domain or boundary flux
   else if(!quantity.compare(0,12,"flux_domain_") or !quantity.compare(0,14,"flux_boundary_"))
   {

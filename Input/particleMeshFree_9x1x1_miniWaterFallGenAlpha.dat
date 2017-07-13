@@ -16,8 +16,7 @@ Mini waterfall with meshfree interactions an implicit time integration scheme. N
 PROBLEMTYP                      MeshFree
 SHAPEFCT                        Meshfree
 RANDSEED                        1
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   3
 BOUNDINGBOX                     -0.000001 -0.000001 -0.000001 50.000001 20.000001 10.000001
 ----------------------------------------------------------STRUCTURAL DYNAMIC

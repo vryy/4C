@@ -40,8 +40,6 @@
 #include "scatra_ele_calc_hdg.H"
 #include "scatra_ele_parameter_std.H"
 
-#include "../drt_meshfree_discret/meshfree_scatra_cell_calc_std.H"
-
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -369,45 +367,6 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
 
 
 /*--------------------------------------------------------------------------*
- |                                                       (public) nis Jan14 |
- *--------------------------------------------------------------------------*/
-DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::ProvideMeshfreeImpl(
-  DRT::Element::DiscretizationType distype,
-  INPAR::SCATRA::ImplType problem,
-  const int numdofpernode,
-  const int numscal,
-  const std::string& disname)
-{
-  switch(distype)
-  {
-  case DRT::Element::hex8:
-  {
-    return DefineMeshfreeProblemType<DRT::Element::hex8>(problem,numdofpernode,numscal,disname);
-  }
-  case DRT::Element::tet4:
-  {
-    return DefineMeshfreeProblemType<DRT::Element::tet4>(problem,numdofpernode,numscal,disname);
-  }
-  case DRT::Element::quad4:
-  {
-    return DefineMeshfreeProblemType<DRT::Element::quad4>(problem,numdofpernode,numscal,disname);
-  }
-  case DRT::Element::tri3:
-  {
-    return DefineMeshfreeProblemType<DRT::Element::tri3>(problem,numdofpernode,numscal,disname);
-  }
-  case DRT::Element::line2:
-  {
-    return DefineMeshfreeProblemType<DRT::Element::line2>(problem,numdofpernode,numscal,disname);
-  }
-  default:
-    dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(distype).c_str());
-    break;
-  }
-  return NULL;
-}
-
-/*--------------------------------------------------------------------------*
  |                                               (public) ehrl        Dec13 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype, int probdim>
@@ -584,23 +543,4 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
 
   return NULL;
 }
-
-/*--------------------------------------------------------------------------*
- |                                                       (public) nis Jan14 |
- *--------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::MeshfreeScaTraCellInterface* DRT::ELEMENTS::ScaTraFactory::DefineMeshfreeProblemType(
-    INPAR::SCATRA::ImplType impltype,
-  const int numdofpernode,
-  const int numscal,
-  const std::string& disname)
-{
-  if (impltype == INPAR::SCATRA::impltype_std_meshfree)
-    return DRT::ELEMENTS::MeshfreeScaTraCellCalcStd<distype>::Instance(numdofpernode,numscal,disname);
-  else
-    dserror("Defined problem type does not exist!!");
-
-  return NULL;
-}
-
 

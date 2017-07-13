@@ -52,8 +52,6 @@
 #include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
-
 #include "../drt_io/io.H"
 
 // for the condition writer output
@@ -159,7 +157,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // Initialization of degrees of freedom variables
   phin_(Teuchos::null),
   phinp_(Teuchos::null),
-  phiatmeshfreenodes_(Teuchos::null),
   phidtn_(Teuchos::null),
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
@@ -344,12 +341,6 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
-
-  // phi at nodes for meshfree non-interpolatory basis functions
-  Teuchos::RCP<DRT::MESHFREE::MeshfreeDiscretization> meshfreediscret
-  = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(discret_);
-  if (meshfreediscret!=Teuchos::null)
-    phiatmeshfreenodes_ = LINALG::CreateVector(*dofrowmap,true);
 
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);

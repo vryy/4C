@@ -51,8 +51,7 @@ RESULTSEVRY                           1
 RESTARTEVRY                     10
 -----------------------------------LEVEL-SET CONTROL/PARTICLE
 INCLUDE_PARTICLE                no //yes //no
---------------------------------------------------------------------MESHFREE
-TYPE                            Particle
+--------------------------------------------------------------------BINNING STRATEGY
 CUTOFF_RADIUS                   0.1
 //BOUNDINGBOX                     -3.000001 -3.000001 -1.100001 3.000001 3.000001 3.000001
 ------------------------------------------------------------PARTICLE DYNAMIC
