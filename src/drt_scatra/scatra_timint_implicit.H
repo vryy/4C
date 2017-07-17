@@ -440,7 +440,7 @@ public:
   //! output performance statistics associated with linear solver into text file
   static void OutputSolverStats(
       const LINALG::Solver&   solver,      //!< linear solver
-      double                  time,        //!< solver time
+      const double&           time,        //!< solver time averaged over all processors
       const int&              step,        //!< time step
       const int&              iteration,   //!< Newton-Raphson iteration number
       const int&              size         //!< size of linear system

@@ -1114,7 +1114,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
  *-----------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputSolverStats(
     const LINALG::Solver&   solver,      //!< linear solver
-    double                  time,        //!< solver time
+    const double&           time,        //!< solver time averaged over all processors
     const int&              step,        //!< time step
     const int&              iteration,   //!< Newton-Raphson iteration number
     const int&              size         //!< size of linear system
@@ -1126,10 +1126,6 @@ void SCATRA::ScaTraTimIntImpl::OutputSolverStats(
 
   // extract communicator
   const Epetra_Comm& comm = solver.Comm();
-
-  // compute accumulated solver time across all processors
-  double globaltime(0.);
-  comm.SumAll(&time,&globaltime,1);
 
   // write performance statistics to file
   if(comm.MyPID() == 0)
@@ -1148,7 +1144,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSolverStats(
       file.open(filename.c_str(),std::fstream::app);
 
     // write results
-    file << step << "," << iteration << "," << size << "," << solver.getNumIters() << "," << std::setprecision(16) << std::scientific << globaltime << "," << globaltime/comm.NumProc() << std::endl;
+    file << step << "," << iteration << "," << size << "," << solver.getNumIters() << "," << std::setprecision(16) << std::scientific << time*comm.NumProc() << "," << time << std::endl;
 
     // close file
     file.close();

@@ -1756,8 +1756,11 @@ void STI::Algorithm::Solve()
     // assemble global system of equations
     AssembleMatAndRHS();
 
-    // determine time needed for evaluating elements and assembling global system of equations
-    dtele_ = timer_->WallTime()-time;
+    // determine time needed for evaluating elements and assembling global system of equations,
+    // and take average over all processors via communication
+    double mydtele = timer_->WallTime()-time;
+    Comm().SumAll(&mydtele,&dtele_,1);
+    dtele_ /= Comm().NumProc();
 
     // safety check
     if(!systemmatrix_->Filled())
@@ -1790,8 +1793,11 @@ void STI::Algorithm::Solve()
         iter_==1
         );
 
-    // determine time needed for solving global system of equations
-    dtsolve_ = timer_->WallTime()-time;
+    // determine time needed for solving global system of equations,
+    // and take average over all processors via communication
+    double mydtsolve = timer_->WallTime()-time;
+    Comm().SumAll(&mydtsolve,&dtsolve_,1);
+    dtsolve_ /= Comm().NumProc();
 
     // output performance statistics associated with linear solver into text file if applicable
     if(DRT::INPUT::IntegralValue<int>(*fieldparameters_,"OUTPUTSOLVERSTATS"))

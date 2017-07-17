@@ -2674,8 +2674,11 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // finalize assembly of system matrix
   sysmat_->Complete();
 
-  // end time measurement for element
-  dtele_=Teuchos::Time::wallTime()-tcpuele;
+  // end time measurement for element and take average over all processors via communication
+  double mydtele = Teuchos::Time::wallTime()-tcpuele;
+  const Epetra_Comm& comm = discret_->Comm();
+  comm.SumAll(&mydtele,&dtele_,1);
+  dtele_ /= comm.NumProc();
 
   return;
 } // ScaTraTimIntImpl::AssembleMatAndRHS
@@ -2848,8 +2851,11 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       solver_->ResetTolerance();
 
-      // end time measurement for solver
-      dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
+      // end time measurement for solver and take average over all processors via communication
+      double mydtsolve = Teuchos::Time::wallTime()-tcpusolve;
+      const Epetra_Comm& comm = discret_->Comm();
+      comm.SumAll(&mydtsolve,&dtsolve_,1);
+      dtsolve_ /= comm.NumProc();
 
       // output performance statistics associated with linear solver into text file if applicable
       if(DRT::INPUT::IntegralValue<int>(*params_,"OUTPUTSOLVERSTATS"))
