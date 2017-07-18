@@ -769,9 +769,9 @@ void Assemble(Epetra_MultiVector& V, const int n,
  *  build up any communication between different processors!
  *  The entries of the source vector are added to the target vector:
  *
- *      target_vector[gid] = source_scalar * source[gid] + target_scalar * target[gid]
+ *      target_vector[GID] = source_scalar * source[GID] + target_scalar * target[GID]
  *
- *  \note The remaining gids, which are no part of the source map stay untouched!
+ *  \note The remaining GIDs, which are no part of the source map stay untouched!
  *
  *  \param scalar_target (in) : scale the target entries by this factor
  *  \param target        (out): target vector (part of the source)
@@ -783,13 +783,15 @@ void AssembleMyVector(
     double scalar_target, Epetra_Vector& target,
     double scalar_source, const Epetra_Vector& source);
 
-/*! \brief Extract a partial Eptra_Vector from a given source vector
+/*! \brief Extract a partial Epetra_Vector from a given source vector
  *         on each proc without communication
  *
  *  This methods uses a given partial map to create the partial target vector.
  *
  *  \param source     (in) : source vector ( read-only )
  *  \param target_map (in) : map of the new target vector ( read-only )
+ *
+ *  \return the extracted partial Epetra_Vector as RCP
  *
  *  \author hiermeier \date 03/17 */
 Teuchos::RCP<Epetra_Vector> ExtractMyVector(
@@ -807,7 +809,7 @@ void ExtractMyVector(
     const Epetra_Vector& source,
     Epetra_Vector& target );
 
-/*! \brief Extract a partial Eptra_Vector from a given source vector
+/*! \brief Extract a partial Epetra_Vector from a given source vector
  *         and scale the entries on each proc without communication
  *
  *  \param scalar_source (in) : scale the target entries by this factor

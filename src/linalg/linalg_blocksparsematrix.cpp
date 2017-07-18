@@ -445,6 +445,29 @@ const Epetra_Map& LINALG::BlockSparseMatrixBase::OperatorRangeMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void LINALG::BlockSparseMatrixBase::GetPartialExtractor(
+    const MultiMapExtractor& full_extractor,
+    const std::vector<unsigned>& block_ids,
+    MultiMapExtractor& partial_extractor ) const
+{
+  const unsigned num_blocks = block_ids.size();
+
+  Teuchos::RCP<Epetra_Map> full_map = Teuchos::null;
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > p_block_maps;
+  p_block_maps.reserve( num_blocks );
+  for ( const unsigned id : block_ids )
+  {
+    p_block_maps.push_back( full_extractor.Map( id ) );
+
+    full_map = MergeMap( full_map, full_extractor.Map( id ), false );
+  }
+
+  partial_extractor.Setup( *full_map, p_block_maps );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(
     const BlockSparseMatrixBase& A, bool transA,
     const BlockSparseMatrixBase& B, bool transB,

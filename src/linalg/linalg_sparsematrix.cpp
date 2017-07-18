@@ -1445,6 +1445,24 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::Transpose()
   return matrix;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::SparseMatrix::ReplaceRowMap(const Epetra_BlockMap& newmap)
+{
+  const int err = LINALG::SparseMatrixBase::ReplaceRowMap( newmap );
+
+  // change mask as well
+  if ( (not err) and savegraph_ and graph_!=Teuchos::null)
+  {
+    if ( graph_.strong_count() > 1 )
+      dserror( "The graph_ can not be changed! (strong_count = %d)",
+          graph_.strong_count() );
+
+    graph_ = Teuchos::rcp(new Epetra_CrsGraph(sysmat_->Graph()));
+  }
+
+  return err;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

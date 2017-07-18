@@ -15,7 +15,6 @@
 #ifndef LINALG_BLOCKSPARSEMATRIX_H_
 #define LINALG_BLOCKSPARSEMATRIX_H_
 
-
 #include "linalg_sparsematrix.H"
 
 
@@ -245,6 +244,13 @@ class BlockSparseMatrixBase : public SparseOperator
                                              bool savegraph,
                                              bool completeoutput);
 
+protected:
+  /// extract a partial map extractor from the full map extractor
+  void GetPartialExtractor(
+      const MultiMapExtractor& full_extractor,
+      const std::vector<unsigned>& block_ids,
+      MultiMapExtractor& partial_extractor ) const;
+
 private:
 
   /// the full domain map together with all partial domain maps
@@ -303,7 +309,24 @@ public:
       bool explicitdirichlet=true,
       bool savegraph=false);
 
+  /// clone the full block sparse matrix
+  /** Do not forget to call Complete() after cloning, even if you
+   *  use LINALG::View! */
   Teuchos::RCP<BlockSparseMatrixBase> Clone(DataAccess access);
+
+  /// clone only a part of the block sparse matrix
+  /** Do not forget to call Complete() after cloning, even if you
+   *  use LINALG::View!
+   *
+   *  \param[in] access : consider copy or view of block matrices
+   *  \param[in] row_block_ids : ID's of the row blocks to clone
+   *  \param[in] col_block_ids : ID's of the column blocks to clone
+   *
+   *  \author hiermeier \date 04/17 */
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> Clone(
+      DataAccess access,
+      const std::vector<unsigned>& row_block_ids,
+      const std::vector<unsigned>& col_block_ids );
 
   /// just a dummy that switches from strided assembly to standard assembly
   void Assemble(int eid,
@@ -343,6 +366,26 @@ public:
   }
 
   void Complete();
+
+private:
+  /** \brief internal clone method which provides the possibility to clone only
+   *         a sub-set of all blocks
+   *
+   *  This method is not supposed to be called from outside! See public variant.
+   *
+   *  \param[in] access : consider copy or view of block matrices
+   *  \param[in] row_block_ids : ID's of the row blocks to clone
+   *  \param[in] col_block_ids : ID's of the column blocks to clone
+   *  \param[in] domain_extractor : necessary domain extractor
+   *  \param[in] range_extractor : necessary range extractor
+   *
+   *  \author hiermeier \date 04/17 */
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> Clone(
+      DataAccess access,
+      const std::vector<unsigned>& row_block_ids,
+      const std::vector<unsigned>& col_block_ids,
+      const MultiMapExtractor& domain_extractor,
+      const MultiMapExtractor& range_extractor );
 };
 
 
@@ -489,26 +532,83 @@ Strategy((LINALG::BlockSparseMatrixBase&)(*this))
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>::Clone(DataAccess access)
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>::Clone(
+    DataAccess access )
+{
+  std::vector<unsigned> row_block_ids( Rows() );
+  for ( unsigned i=0; i< static_cast<unsigned>( Rows() ); ++i )
+    row_block_ids[ i ] = i;
+
+  std::vector<unsigned> col_block_ids( Cols() );
+  for ( unsigned i=0; i<  static_cast<unsigned>( Cols() ); ++i )
+    col_block_ids[ i ] = i;
+
+  return Clone( access, row_block_ids, col_block_ids, DomainExtractor(),
+      RangeExtractor() );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <class Strategy>
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>::Clone(
+    DataAccess access,
+    const std::vector<unsigned>& row_block_ids,
+    const std::vector<unsigned>& col_block_ids,
+    const MultiMapExtractor& domain_extractor,
+    const MultiMapExtractor& range_extractor )
 {
   int npr                = Matrix(0,0).MaxNumEntries();
   bool explicitdirichlet = Matrix(0,0).ExplicitDirichlet();
   bool savegraph         = Matrix(0,0).SaveGraph();
-  Teuchos::RCP<BlockSparseMatrixBase> bsm = Teuchos::rcp(new BlockSparseMatrix<Strategy>(DomainExtractor(),
-      RangeExtractor(),
+  Teuchos::RCP<BlockSparseMatrixBase> bsm = Teuchos::rcp(new BlockSparseMatrix<Strategy>(
+      domain_extractor,
+      range_extractor,
       npr,
       explicitdirichlet,
       savegraph));
-  for (int r=0; r<Rows(); ++r)
+
+  for ( std::vector<unsigned>::const_iterator r = row_block_ids.begin();
+      r != row_block_ids.end(); ++r )
   {
-    for (int c=0; c<Cols(); ++c)
+    for ( std::vector<unsigned>::const_iterator c = col_block_ids.begin();
+        c != col_block_ids.end(); ++c )
     {
-      bsm->Matrix(r,c).Assign(access,Matrix(r,c));
+      bsm->Matrix(*r,*c).Assign(access,Matrix(*r,*c));
     }
   }
   return bsm;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <class Strategy>
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>::Clone(
+    DataAccess access,
+    const std::vector<unsigned>& row_block_ids,
+    const std::vector<unsigned>& col_block_ids )
+{
+  if ( std::lower_bound( row_block_ids.begin(), row_block_ids.end(),
+       static_cast<unsigned>( Rows() ) ) != row_block_ids.end() )
+    dserror( "The partial row block ids exceed the maximal possible id!" );
+
+  if ( std::lower_bound( col_block_ids.begin(), col_block_ids.end(),
+       static_cast<unsigned>( Cols() ) ) != col_block_ids.end() )
+    dserror( "The partial column block ids exceed the maximal possible id!" );
+
+  if ( row_block_ids.size() == 0 or col_block_ids.size() == 0 )
+    dserror( "The provided row/col block id vector has a length of zero!" );
+
+  // extract domain extractors
+  MultiMapExtractor p_domain_extractor;
+  this->GetPartialExtractor( DomainExtractor(), col_block_ids, p_domain_extractor );
+
+  // extract range extractors
+  MultiMapExtractor p_range_extractor;
+  this->GetPartialExtractor( RangeExtractor(), row_block_ids, p_range_extractor );
+
+  return Clone( access, row_block_ids, col_block_ids,
+      p_domain_extractor, p_range_extractor );
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

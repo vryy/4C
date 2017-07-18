@@ -371,6 +371,9 @@ class SparseMatrix : public SparseMatrixBase
      */
     Teuchos::RCP<SparseMatrix> Transpose();
 
+    /// derived
+    virtual int ReplaceRowMap(const Epetra_BlockMap& newmap);
+
   using SparseMatrixBase::Add;
 
     /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA

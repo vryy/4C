@@ -167,6 +167,19 @@ int LINALG::SparseMatrixBase::ReplaceDiagonalValues(const Epetra_Vector &Diagona
   return sysmat_->ReplaceDiagonalValues(Diagonal);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::SparseMatrixBase::ReplaceRowMap(const Epetra_BlockMap& newmap)
+{
+  const int err = sysmat_->ReplaceRowMap( newmap );
+  if ( err )
+    return err;
+
+  // see method description
+  const_cast<Epetra_BlockMap& >( sysmat_->Map() ) = newmap;
+
+  return 0;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
